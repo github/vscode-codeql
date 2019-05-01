@@ -1,0 +1,328 @@
+{
+  "name": "QL",
+  "scopeName": "source.ql",
+  "fileTypes": [
+    "ql",
+    "qll"
+  ],
+  "patterns": [
+    {
+      "name": "whitespace.ql",
+      "match": "[ \\t\\r\\n]+"
+    },
+    {
+      "name": "comment.line.double-slash.ql",
+      "begin": "//",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.comment.ql"
+        }
+      },
+      "end": "(?=$)"
+    },
+    {
+      "name": "comment.block.ql",
+      "begin": "/\\*",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.comment.ql"
+        }
+      },
+      "end": "\\*/",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.comment.ql"
+        }
+      }
+    },
+    {
+      "name": "keyword.other.TKand.ql",
+      "match": "\\band\\b"
+    },
+    {
+      "name": "keyword.other.TKany.ql",
+      "match": "\\bany\\b"
+    },
+    {
+      "name": "keyword.other.TKas.ql",
+      "match": "\\bas\\b"
+    },
+    {
+      "name": "keyword.other.TKasc.ql",
+      "match": "\\basc\\b"
+    },
+    {
+      "name": "keyword.other.TKavg.ql",
+      "match": "\\bavg\\b"
+    },
+    {
+      "name": "keyword.other.TKboolean.ql",
+      "match": "\\bboolean\\b"
+    },
+    {
+      "name": "keyword.other.TKby.ql",
+      "match": "\\bby\\b"
+    },
+    {
+      "name": "keyword.other.TKclass.ql",
+      "match": "\\bclass\\b"
+    },
+    {
+      "name": "keyword.other.TKnewtype.ql",
+      "match": "\\bnewtype\\b"
+    },
+    {
+      "name": "keyword.other.TKcount.ql",
+      "match": "\\bcount\\b"
+    },
+    {
+      "name": "keyword.other.TKdate.ql",
+      "match": "\\bdate\\b"
+    },
+    {
+      "name": "keyword.other.TKdesc.ql",
+      "match": "\\bdesc\\b"
+    },
+    {
+      "name": "keyword.other.TKelse.ql",
+      "match": "\\belse\\b"
+    },
+    {
+      "name": "keyword.other.TKexists.ql",
+      "match": "\\bexists\\b"
+    },
+    {
+      "name": "keyword.other.TKextends.ql",
+      "match": "\\bextends\\b"
+    },
+    {
+      "name": "keyword.other.TKfalse.ql",
+      "match": "\\bfalse\\b"
+    },
+    {
+      "name": "keyword.other.TKfloat.ql",
+      "match": "\\bfloat\\b"
+    },
+    {
+      "name": "keyword.other.TKforall.ql",
+      "match": "\\bforall\\b"
+    },
+    {
+      "name": "keyword.other.TKforex.ql",
+      "match": "\\bforex\\b"
+    },
+    {
+      "name": "keyword.other.TKfrom.ql",
+      "match": "\\bfrom\\b"
+    },
+    {
+      "name": "keyword.other.TKif.ql",
+      "match": "\\bif\\b"
+    },
+    {
+      "name": "keyword.other.TKimplies.ql",
+      "match": "\\bimplies\\b"
+    },
+    {
+      "name": "keyword.other.TKimport.ql",
+      "match": "\\bimport\\b"
+    },
+    {
+      "name": "keyword.other.TKin.ql",
+      "match": "\\bin\\b"
+    },
+    {
+      "name": "keyword.other.TKinstanceof.ql",
+      "match": "\\binstanceof\\b"
+    },
+    {
+      "name": "keyword.other.TKint.ql",
+      "match": "\\bint\\b"
+    },
+    {
+      "name": "keyword.other.TKmax.ql",
+      "match": "\\bmax\\b"
+    },
+    {
+      "name": "keyword.other.TKmin.ql",
+      "match": "\\bmin\\b"
+    },
+    {
+      "name": "keyword.other.TKnot.ql",
+      "match": "\\bnot\\b"
+    },
+    {
+      "name": "keyword.other.TKnone.ql",
+      "match": "\\bnone\\b"
+    },
+    {
+      "name": "keyword.other.TKor.ql",
+      "match": "\\bor\\b"
+    },
+    {
+      "name": "keyword.other.TKorder.ql",
+      "match": "\\border\\b"
+    },
+    {
+      "name": "keyword.other.TKpredicate.ql",
+      "match": "\\bpredicate\\b"
+    },
+    {
+      "name": "keyword.other.TKrank.ql",
+      "match": "\\brank\\b"
+    },
+    {
+      "name": "keyword.other.TKresult.ql",
+      "match": "\\bresult\\b"
+    },
+    {
+      "name": "keyword.other.TKselect.ql",
+      "match": "\\bselect\\b"
+    },
+    {
+      "name": "keyword.other.TKstrictcount.ql",
+      "match": "\\bstrictcount\\b"
+    },
+    {
+      "name": "keyword.other.TKstrictsum.ql",
+      "match": "\\bstrictsum\\b"
+    },
+    {
+      "name": "keyword.other.TKstring.ql",
+      "match": "\\bstring\\b"
+    },
+    {
+      "name": "keyword.other.TKsum.ql",
+      "match": "\\bsum\\b"
+    },
+    {
+      "name": "keyword.other.TKsuper.ql",
+      "match": "\\bsuper\\b"
+    },
+    {
+      "name": "keyword.other.TKthen.ql",
+      "match": "\\bthen\\b"
+    },
+    {
+      "name": "keyword.other.TKthis.ql",
+      "match": "\\bthis\\b"
+    },
+    {
+      "name": "keyword.other.TKtrue.ql",
+      "match": "\\btrue\\b"
+    },
+    {
+      "name": "keyword.other.TKwhere.ql",
+      "match": "\\bwhere\\b"
+    },
+    {
+      "name": "variable.other.ql",
+      "match": "\\b[a-zA-Z][a-zA-Z0-9_]+\\b"
+    },
+    {
+      "name": "constant.numeric.ql",
+      "match": "[0-9]+(\\.[0-9])?"
+    },
+    {
+      "name": "string.quoted.double.ql",
+      "match": "\\\"([^\\\\\\\"\\n\\r\\t]|\\\\[\\\"nrt\\\\])*\\\""
+    },
+    {
+      "name": "punctuation.TKlt.ql",
+      "match": "<"
+    },
+    {
+      "name": "punctuation.TKle.ql",
+      "match": "<="
+    },
+    {
+      "name": "punctuation.TKeq.ql",
+      "match": "="
+    },
+    {
+      "name": "punctuation.TKgt.ql",
+      "match": ">"
+    },
+    {
+      "name": "punctuation.TKge.ql",
+      "match": ">="
+    },
+    {
+      "name": "punctuation.TKunderscore.ql",
+      "match": "_"
+    },
+    {
+      "name": "punctuation.TKminus.ql",
+      "match": "-"
+    },
+    {
+      "name": "punctuation.TKcomma.ql",
+      "match": ","
+    },
+    {
+      "name": "punctuation.TKsemi.ql",
+      "match": ";"
+    },
+    {
+      "name": "punctuation.TKne.ql",
+      "match": "!="
+    },
+    {
+      "name": "punctuation.TKdiv.ql",
+      "match": "/"
+    },
+    {
+      "name": "punctuation.TKdot.ql",
+      "match": "\\."
+    },
+    {
+      "name": "punctuation.TKrange.ql",
+      "match": "\\.\\."
+    },
+    {
+      "name": "punctuation.TKopar.ql",
+      "match": "\\("
+    },
+    {
+      "name": "punctuation.TKcpar.ql",
+      "match": "\\)"
+    },
+    {
+      "name": "punctuation.TKoblock.ql",
+      "match": "\\["
+    },
+    {
+      "name": "punctuation.TKcblock.ql",
+      "match": "\\]"
+    },
+    {
+      "name": "punctuation.TKobrace.ql",
+      "match": "\\{"
+    },
+    {
+      "name": "punctuation.TKcbrace.ql",
+      "match": "\\}"
+    },
+    {
+      "name": "punctuation.TKstar.ql",
+      "match": "\\*"
+    },
+    {
+      "name": "punctuation.TKmod.ql",
+      "match": "%"
+    },
+    {
+      "name": "punctuation.TKplus.ql",
+      "match": "\\+"
+    },
+    {
+      "name": "punctuation.TKbar.ql",
+      "match": "\\|"
+    },
+    {
+      "name": "punctuation.TKselection.ql",
+      "match": "::"
+    }
+  ],
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json"
+}
