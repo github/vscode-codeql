@@ -25,6 +25,21 @@ $ export SEMMLE_DIST=/your/path/to/semmle/distribution # for tools/odasa.jar, to
 set, and you can build and debug the extension from within vscode itself by opening this directory as a project
 and hitting F5 to start a debugging session.
 
+Using
+---
+
+### Interface
+
+The contributed commands to the command palette (default `Ctrl+Shft+P`) are:
+
+|Command|Comment|
+|---|---|
+|QL: Choose Database|Choose a database to work with|
+
+The 'QL' view should exist on the left, below explorer, version
+control, extensions, etc. icons. Within that panel you should
+be able to see a list of databases.
+
 ### Configuring a Project
 
 Suppose your working directory is called `~/js-queries`.

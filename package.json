@@ -80,10 +80,57 @@
         }
       }
     },
-    "commands": [],
-    "menus": {},
-    "viewsContainers": {},
-    "views": {}
+    "commands": [
+      {
+        "command": "ql.chooseDatabase",
+        "title": "QL: Choose Database"
+      },
+      {
+        "command": "ql.setCurrentDatabase",
+        "title": "QL: Set Current Database"
+      },
+      {
+        "command": "qlDatabases.setCurrentDatabase",
+        "title": "Make Current"
+      }
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "qlDatabases.setCurrentDatabase",
+          "group": "inline",
+          "when": "view == qlDatabases"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "ql.setCurrentDatabase",
+          "group": "9_qlCommands"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "ql.chooseDatabase"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ql-container",
+          "title": "QL",
+          "icon": "media/ql.svg"
+        }
+      ]
+    },
+    "views": {
+      "ql-container": [
+        {
+          "id": "qlDatabases",
+          "name": "Databases"
+        }
+      ]
+    }
   },
   "scripts": {
     "compile": "npm-run-all compile:*",
