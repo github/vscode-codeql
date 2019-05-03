@@ -52,6 +52,14 @@ export async function chooseDatabaseDir(ctx: ExtensionContext): Promise<vscode.U
 }
 
 /**
+ * An error thrown when we cannot find a database in a putative
+ * snapshot directory.
+ */
+class NoDatabaseError extends Error {
+
+}
+
+/**
  * One item in the user-displayed list of databases. Probably name
  * should be computed from a nearby .project file if it exists.
  */
@@ -63,7 +71,11 @@ export class DatabaseItem {
   constructor(uri: vscode.Uri) {
     this.snapshotUri = uri;
     this.name = path.basename(uri.fsPath);
-    this.dbUri = vscode.Uri.file(path.join(uri.fsPath, DatabaseItem.findDb(uri)[0])); // TODO: error handling
+    const dbRelativePath = DatabaseItem.findDb(uri)[0];
+    if (dbRelativePath == undefined) {
+      throw new NoDatabaseError(`${uri.fsPath} doesn't appear to be a valid snapshot directory.`);
+    }
+    this.dbUri = vscode.Uri.file(path.join(uri.fsPath, dbRelativePath));
     fs.exists(path.join(uri.fsPath, 'src'), (exists) => {
       if (exists) {
         this.srcRoot = vscode.Uri.file(path.join(uri.fsPath, 'src'));
@@ -150,7 +162,19 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
    * reuse that item.
    */
   setCurrentUri(dir: vscode.Uri): void {
-    let item = new DatabaseItem(dir);
+    let item: DatabaseItem;
+    try {
+      item = new DatabaseItem(dir);
+    }
+    catch (e) {
+      if (e instanceof NoDatabaseError) {
+        vscode.window.showErrorMessage(e.message);
+        return;
+      }
+      else {
+        throw e;
+      }
+    }
     let ix = this.databases.findIndex(it => it.dbUri.fsPath == dir.fsPath);
     if (ix == -1) {
       this.databases.push(item);
@@ -170,15 +194,23 @@ export class DatabaseManager {
     this.ctx = ctx;
     const db = this.ctx.workspaceState.get<string>(CURRENT_DB);
 
-    let dbi: DatabaseItem | undefined, dbs: DatabaseItem[];
-    if (db == undefined) {
-      dbi = undefined;
-      dbs = [];
+    let dbi: DatabaseItem | undefined;
+    if (db != undefined) {
+      try {
+        dbi = new DatabaseItem(vscode.Uri.file(db));
+      }
+      catch (e) {
+        if (e instanceof NoDatabaseError) {
+          vscode.window.showErrorMessage(e.message);
+          dbi = undefined;
+          this.ctx.workspaceState.update(CURRENT_DB, undefined);
+        }
+        else {
+          throw e;
+        }
+      }
     }
-    else {
-      dbi = new DatabaseItem(vscode.Uri.file(db));
-      dbs = [dbi];
-    }
+    let dbs: DatabaseItem[] = dbi == undefined ? [] : [dbi];
     const treeDataProvider = this.treeDataProvider = new DatabaseTreeDataProvider(ctx, dbs, dbi);
     Window.createTreeView('qlDatabases', { treeDataProvider });
   }
