@@ -59,7 +59,7 @@ export class DatabaseItem {
   name: string; // this is supposed to be human-readable, appears in interface
   constructor(uri: vscode.Uri) {
     this.uri = uri;
-    this.name = path.basename(path.join(uri.path, '..'));
+    this.name = path.basename(path.join(uri.fsPath, '..'));
   }
 }
 
@@ -95,7 +95,7 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
     const it = new vscode.TreeItem(element.name);
     if (element == this.current)
       it.iconPath = vscode.Uri.file(path.join(this.ctx.extensionPath, CHECKMARK_ICON));
-    it.tooltip = element.uri.path;
+    it.tooltip = element.uri.fsPath;
     return it;
   }
 
@@ -128,7 +128,7 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
    */
   setCurrentUri(dir: vscode.Uri): void {
     let item = new DatabaseItem(dir);
-    let ix = this.databases.findIndex(it => it.uri.path == dir.path);
+    let ix = this.databases.findIndex(it => it.uri.fsPath == dir.fsPath);
     if (ix == -1) {
       this.databases.push(item);
       this.setCurrentItem(item);
@@ -145,7 +145,7 @@ export class DatabaseManager {
 
   constructor(ctx: ExtensionContext) {
     this.ctx = ctx;
-    const db = this.ctx.workspaceState.get<vscode.Uri>(CURRENT_DB);
+    const db = this.ctx.workspaceState.get<string>(CURRENT_DB);
 
     let dbi: DatabaseItem | undefined, dbs: DatabaseItem[];
     if (db == undefined) {
@@ -153,7 +153,7 @@ export class DatabaseManager {
       dbs = [];
     }
     else {
-      dbi = new DatabaseItem(db);
+      dbi = new DatabaseItem(vscode.Uri.file(db));
       dbs = [dbi];
     }
     const treeDataProvider = this.treeDataProvider = new DatabaseTreeDataProvider(ctx, dbs, dbi);
@@ -179,7 +179,7 @@ export class DatabaseManager {
     if (db.scheme != 'file')
       throw new Error(`Database uri scheme ${db.scheme} not supported, only file uris are supported.`);
     this.treeDataProvider.setCurrentUri(db);
-    this.ctx.workspaceState.update(CURRENT_DB, db);
+    this.ctx.workspaceState.update(CURRENT_DB, db.fsPath);
   }
 
   /**
