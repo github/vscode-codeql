@@ -28,12 +28,12 @@ const CURRENT_DB: string = 'currentDatabase';
 const CHECKMARK_ICON: string = 'media/check.svg';
 
 /**
- * Display file selection dialog. Expects the user to choose the
- * database dir, not e.g. the project dir. Would be nice to perhaps
- * DWIM a little in case they do.
+ * Display file selection dialog. Expects the user to choose a
+ * snapshot directory, which should be the parent directory of a
+ * directory of the form `db-[language]`, for example, `db-cpp`.
  *
- * XXX: no validation is done to make sure it really is a database
- * directory.
+ * XXX: no validation is done other than checking the directory name
+ * to make sure it really is a database directory.
  */
 export async function chooseDatabaseDir(ctx: ExtensionContext): Promise<vscode.Uri | undefined> {
   const chosen = await Window.showOpenDialog(
@@ -71,19 +71,26 @@ export class DatabaseItem {
   constructor(uri: vscode.Uri) {
     this.snapshotUri = uri;
     this.name = path.basename(uri.fsPath);
-    const dbRelativePath = DatabaseItem.findDb(uri)[0];
-    if (dbRelativePath == undefined) {
+    const dbRelativePaths = DatabaseItem.findDb(uri);
+
+    if (dbRelativePaths.length == 0) {
       throw new NoDatabaseError(`${uri.fsPath} doesn't appear to be a valid snapshot directory.`);
     }
-    this.dbUri = vscode.Uri.file(path.join(uri.fsPath, dbRelativePath));
-    fs.exists(path.join(uri.fsPath, 'src'), (exists) => {
-      if (exists) {
-        this.srcRoot = vscode.Uri.file(path.join(uri.fsPath, 'src'));
-      } else {
-        console.log(`Could not determine source root for database ${uri}. Assuming paths are absolute.`);
-        this.srcRoot = undefined;
+    else {
+      const dbAbsolutePath = path.join(uri.fsPath, dbRelativePaths[0]);
+      if (dbRelativePaths.length > 1) {
+        vscode.window.showWarningMessage(`Found multiple database directories in snapshot, using ${dbAbsolutePath}`);
       }
-    });
+      this.dbUri = vscode.Uri.file(dbAbsolutePath);
+      fs.exists(path.join(uri.fsPath, 'src'), (exists) => {
+        if (exists) {
+          this.srcRoot = vscode.Uri.file(path.join(uri.fsPath, 'src'));
+        } else {
+          console.log(`Could not determine source root for database ${uri}. Assuming paths are absolute.`);
+          this.srcRoot = undefined;
+        }
+      });
+    }
   }
 
   private static findDb(uri: vscode.Uri) {
