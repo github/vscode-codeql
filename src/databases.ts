@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ExtensionContext, window as Window } from 'vscode';
@@ -55,11 +56,33 @@ export async function chooseDatabaseDir(ctx: ExtensionContext): Promise<vscode.U
  * should be computed from a nearby .project file if it exists.
  */
 export class DatabaseItem {
-  uri: vscode.Uri;
+  snapshotUri: vscode.Uri;
+  dbUri: vscode.Uri;
+  srcRoot: vscode.Uri | undefined;
   name: string; // this is supposed to be human-readable, appears in interface
   constructor(uri: vscode.Uri) {
-    this.uri = uri;
-    this.name = path.basename(path.join(uri.fsPath, '..'));
+    this.snapshotUri = uri;
+    this.name = path.basename(uri.fsPath);
+    this.dbUri = vscode.Uri.file(path.join(uri.fsPath, DatabaseItem.findDb(uri)[0])); // TODO: error handling
+    fs.exists(path.join(uri.fsPath, 'src'), (exists) => {
+      if (exists) {
+        this.srcRoot = vscode.Uri.file(path.join(uri.fsPath, 'src'));
+      } else {
+        console.log(`Could not determine source root for database ${uri}. Assuming paths are absolute.`);
+        this.srcRoot = undefined;
+      }
+    });
+  }
+
+  private static findDb(uri: vscode.Uri) {
+    let files = fs.readdirSync(uri.fsPath);
+    let matches: string[] = [];
+    files.forEach((file) => {
+      if (file.startsWith('db-')) {
+        matches.push(file);
+      }
+    })
+    return matches
   }
 }
 
@@ -95,7 +118,7 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
     const it = new vscode.TreeItem(element.name);
     if (element == this.current)
       it.iconPath = vscode.Uri.file(path.join(this.ctx.extensionPath, CHECKMARK_ICON));
-    it.tooltip = element.uri.fsPath;
+    it.tooltip = element.snapshotUri.fsPath;
     return it;
   }
 
@@ -128,7 +151,7 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
    */
   setCurrentUri(dir: vscode.Uri): void {
     let item = new DatabaseItem(dir);
-    let ix = this.databases.findIndex(it => it.uri.fsPath == dir.fsPath);
+    let ix = this.databases.findIndex(it => it.dbUri.fsPath == dir.fsPath);
     if (ix == -1) {
       this.databases.push(item);
       this.setCurrentItem(item);
@@ -167,7 +190,7 @@ export class DatabaseManager {
    */
   async getDatabaseDir(): Promise<vscode.Uri | undefined> {
     const db = this.treeDataProvider.getCurrent();
-    const chosen = db == undefined ? (await this.chooseAndSetDatabase()) : db.uri;
+    const chosen = db == undefined ? (await this.chooseAndSetDatabase()) : db.dbUri;
     return chosen;
   }
 
