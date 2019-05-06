@@ -347,6 +347,17 @@ export class DatabaseManager {
     return chosen;
   }
 
+  /**
+   * Return the current database directory. If we don't already have a
+   * current database, ask the user for one, and return that, or
+   * undefined if they cancel.
+   */
+  async getDatabaseItem(): Promise<DatabaseItem | undefined> {
+    if (this.treeDataProvider.getCurrent() == undefined)
+      await this.chooseAndSetDatabase();
+    return this.treeDataProvider.getCurrent();
+  }
+
   setCurrentItem(db: DatabaseItem) {
     try {
       db.refresh();

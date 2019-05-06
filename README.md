@@ -24,6 +24,7 @@ Otherwise, you can build and debug the extension from within VSCode itself by op
 and hitting `F5` to start a debugging session. You may need to set an environment variable:
 
 ```
+$ export SEMMLE_CODE=/your/path/to/semmle/code/checkout # for protobuf definitions
 $ export SEMMLE_DIST=/your/path/to/semmle/distribution # for tools/odasa.jar, tools/ideserver.jar
 ```
 

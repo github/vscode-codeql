@@ -5,9 +5,9 @@ const gulp = require('gulp');
 const { packageExtension } = require('./package');
 const { compileTextMateGrammar } = require('./textmate');
 const { compileTypeScript, watchTypeScript } = require('./typescript');
+const { buildProtocols } = require('./build-proto');
 
-exports.compileTypeScript = compileTypeScript;
-exports.compileTextMateGrammar = compileTextMateGrammar;
-exports.buildWithoutPackage = gulp.parallel(compileTypeScript, compileTextMateGrammar);
+const compile = gulp.series(buildProtocols, compileTypeScript);
+exports.buildWithoutPackage = gulp.parallel(compile, compileTextMateGrammar);
 exports.default = gulp.series(exports.buildWithoutPackage, packageExtension);
 exports.watchTypeScript = watchTypeScript;
