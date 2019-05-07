@@ -225,6 +225,16 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
       this.setCurrentItem(this.databases[ix]);
     }
   }
+
+  removeItem(dbi: DatabaseItem) {
+    this.databases = this.databases.filter((entry:DatabaseItem) => {
+      return entry != dbi;
+    });
+    if (this.current == dbi) {
+      this.current = undefined
+    }
+    this._onDidChangeTreeData.fire();
+  }
 }
 
 export class DatabaseManager {
@@ -290,6 +300,10 @@ export class DatabaseManager {
 
   setCurrentItem(db: DatabaseItem) {
     this.treeDataProvider.setCurrentItem(db);
+  }
+
+  removeItem(db: DatabaseItem) {
+    this.treeDataProvider.removeItem(db);
   }
 
   setCurrentDatabase(db: vscode.Uri) {
