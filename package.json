@@ -120,6 +120,14 @@
       "commandPalette": [
         {
           "command": "ql.chooseDatabase"
+        },
+        {
+          "command": "qlDatabases.setCurrentDatabase",
+          "when": "false"
+        },
+        {
+          "command": "qlDatabases.removeDatabase",
+          "when": "false"
         }
       ]
     },
