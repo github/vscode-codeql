@@ -230,8 +230,12 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
     this.databases = this.databases.filter((entry:DatabaseItem) => {
       return entry != dbi;
     });
+    this.ctx.workspaceState.update(DB_LIST, this.ctx.workspaceState.get<string[]>(DB_LIST, []).filter((entry:string) => {
+      return entry != dbi.snapshotUri.fsPath;
+    }));
     if (this.current == dbi) {
-      this.current = undefined
+      this.current = undefined;
+      this.ctx.workspaceState.update(CURRENT_DB, undefined);
     }
     this._onDidChangeTreeData.fire();
   }
@@ -303,7 +307,7 @@ export class DatabaseManager {
   }
 
   removeItem(db: DatabaseItem) {
-    this.treeDataProvider.removeItem(db);
+    this.treeDataProvider.setCurrentItem(db);
   }
 
   setCurrentDatabase(db: vscode.Uri) {
