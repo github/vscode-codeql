@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ExtensionContext, window as Window } from 'vscode';
+import { ENOENT } from 'constants';
 
 /**
  * databases.ts
@@ -16,9 +17,7 @@ import { ExtensionContext, window as Window } from 'vscode';
 
 /**
  * The name of the key in the workspaceState dictionary in which we
- * persist the current database across sessions. We could instead
- * decide to persist more information (e.g. all 'recently chosen
- * databases') or less information, as eclipse does.
+ * persist the current database across sessions.
  */
 const CURRENT_DB: string = 'currentDatabase';
 
@@ -31,6 +30,12 @@ const SELECTED_DATABASE_ICON: ThemableIconPath = {
   light: 'media/check-light-mode.svg',
   dark: 'media/check-dark-mode.svg',
 };
+
+/**
+ * The name of the key in the workspaceState dictionary in which we
+ * persist the lsit of databases across sessions.
+ */
+const DB_LIST: string = 'databaseList';
 
 /**
  * Path to icon to display next to an invalid database.
@@ -113,15 +118,24 @@ export class DatabaseItem {
     }
   }
 
-  private static findDb(uri: vscode.Uri) {
-    let files = fs.readdirSync(uri.fsPath);
-    let matches: string[] = [];
-    files.forEach((file) => {
-      if (file.startsWith('db-')) {
-        matches.push(file);
+  private static findDb(uri: vscode.Uri): string[] {
+    try {
+      let files = fs.readdirSync(uri.fsPath);
+      
+      let matches: string[] = [];
+      files.forEach((file) => {
+        if (file.startsWith('db-')) {
+          matches.push(file);
+        }
+      })
+      return matches;
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        return [];
+      } else {
+        throw e;
       }
-    })
-    return matches
+    }
   }
 }
 
@@ -219,17 +233,38 @@ export class DatabaseManager {
 
   constructor(ctx: ExtensionContext) {
     this.ctx = ctx;
-    const db = this.ctx.workspaceState.get<string>(CURRENT_DB);
+    const current_db = this.ctx.workspaceState.get<string>(CURRENT_DB);
 
-    let dbi: DatabaseItem | undefined;
-    if (db != undefined) {
+    let current_dbi: DatabaseItem | undefined = undefined;
+
+    let dbs: DatabaseItem[] = [];
+    let db_list = this.ctx.workspaceState.get<string[]>(DB_LIST, []);
+    db_list.forEach(db => {
       try {
-        dbi = new DatabaseItem(vscode.Uri.file(db));
+        let dbi = new DatabaseItem(vscode.Uri.file(db));
+        dbs.push(dbi);
+        if(current_db == db) {
+          current_dbi = dbi
+        }
       }
       catch (e) {
         if (e instanceof NoDatabaseError) {
           vscode.window.showErrorMessage(e.message);
-          dbi = undefined;
+        }
+        else {
+          throw e;
+        }
+      }
+    });
+
+    if (current_db != undefined && current_dbi == undefined) {
+      try {
+        current_dbi = new DatabaseItem(vscode.Uri.file(current_db));
+      }
+      catch (e) {
+        if (e instanceof NoDatabaseError) {
+          vscode.window.showErrorMessage(e.message);
+          current_dbi = undefined;
           this.ctx.workspaceState.update(CURRENT_DB, undefined);
         }
         else {
@@ -237,8 +272,8 @@ export class DatabaseManager {
         }
       }
     }
-    let dbs: DatabaseItem[] = dbi == undefined ? [] : [dbi];
-    const treeDataProvider = this.treeDataProvider = new DatabaseTreeDataProvider(ctx, dbs, dbi);
+
+    const treeDataProvider = this.treeDataProvider = new DatabaseTreeDataProvider(ctx, dbs, current_dbi);
     Window.createTreeView('qlDatabases', { treeDataProvider });
   }
 
@@ -262,6 +297,11 @@ export class DatabaseManager {
       throw new Error(`Database uri scheme ${db.scheme} not supported, only file uris are supported.`);
     this.treeDataProvider.setCurrentUri(db);
     this.ctx.workspaceState.update(CURRENT_DB, db.fsPath);
+    let dbs = this.ctx.workspaceState.get<string[]>(DB_LIST, []);
+    if(!(db.toString() in dbs)) {
+      dbs.push(db.fsPath);
+      this.ctx.workspaceState.update(DB_LIST, dbs);
+    }
   }
 
   /**
