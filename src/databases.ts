@@ -75,7 +75,7 @@ export async function chooseDatabaseDir(ctx: ExtensionContext): Promise<vscode.U
     return chosen[0];
   }
 }
-
+ 
 /**
  * An error thrown when we cannot find a database in a putative
  * snapshot directory.
@@ -90,28 +90,35 @@ class NoDatabaseError extends Error {
  */
 export class DatabaseItem {
   snapshotUri: vscode.Uri;
-  dbUri: vscode.Uri;
+  dbUri: vscode.Uri | undefined;
   srcRoot: vscode.Uri | undefined;
   name: string; // this is supposed to be human-readable, appears in interface
-  constructor(uri: vscode.Uri) {
+  constructor(uri: vscode.Uri, doRefresh: boolean = true) {
     this.snapshotUri = uri;
     this.name = path.basename(uri.fsPath);
-    const dbRelativePaths = DatabaseItem.findDb(uri);
+    if(doRefresh) {
+      this.refresh();
+    }
+  }
+
+  public refresh() {
+    const dbRelativePaths = DatabaseItem.findDb(this.snapshotUri);
 
     if (dbRelativePaths.length == 0) {
-      throw new NoDatabaseError(`${uri.fsPath} doesn't appear to be a valid snapshot directory.`);
+      this.dbUri = undefined;
+      throw new NoDatabaseError(`${this.snapshotUri.fsPath} does not contain a database directory.`);
     }
     else {
-      const dbAbsolutePath = path.join(uri.fsPath, dbRelativePaths[0]);
+      const dbAbsolutePath = path.join(this.snapshotUri.fsPath, dbRelativePaths[0]);
       if (dbRelativePaths.length > 1) {
         vscode.window.showWarningMessage(`Found multiple database directories in snapshot, using ${dbAbsolutePath}`);
       }
       this.dbUri = vscode.Uri.file(dbAbsolutePath);
-      fs.exists(path.join(uri.fsPath, 'src'), (exists) => {
+      fs.exists(path.join(this.snapshotUri.fsPath, 'src'), (exists) => {
         if (exists) {
-          this.srcRoot = vscode.Uri.file(path.join(uri.fsPath, 'src'));
+          this.srcRoot = vscode.Uri.file(path.join(this.snapshotUri.fsPath, 'src'));
         } else {
-          console.log(`Could not determine source root for database ${uri}. Assuming paths are absolute.`);
+          vscode.window.showInformationMessage(`Could not determine source root for database ${this.snapshotUri}. Assuming paths are absolute.`);
           this.srcRoot = undefined;
         }
       });
@@ -169,8 +176,11 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
 
   getTreeItem(element: DatabaseItem): vscode.TreeItem {
     const it = new vscode.TreeItem(element.name);
-    if (element == this.current)
+    if (element == this.current) {
       it.iconPath = joinThemableIconPath(this.ctx.extensionPath, SELECTED_DATABASE_ICON);
+    } else if (element.dbUri == undefined) {
+      it.iconPath = joinThemableIconPath(this.ctx.extensionPath, INVALID_DATABASE_ICON);
+    }
     it.tooltip = element.snapshotUri.fsPath;
     return it;
   }
@@ -203,26 +213,41 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
    * reuse that item.
    */
   setCurrentUri(dir: vscode.Uri): void {
-    let item: DatabaseItem;
-    try {
-      item = new DatabaseItem(dir);
-    }
-    catch (e) {
-      if (e instanceof NoDatabaseError) {
-        vscode.window.showErrorMessage(e.message);
-        return;
-      }
-      else {
-        throw e;
-      }
-    }
-    let ix = this.databases.findIndex(it => it.dbUri.fsPath == dir.fsPath);
+    let ix = this.databases.findIndex(it => it.snapshotUri.fsPath == dir.fsPath);
+
     if (ix == -1) {
+      let item: DatabaseItem;
+      try {
+        item = new DatabaseItem(dir);
+      }
+      catch (e) {
+        if (e instanceof NoDatabaseError) {
+          vscode.window.showErrorMessage(e.message);
+          return;
+        }
+        else {
+          throw e;
+        }
+      }
       this.databases.push(item);
       this.setCurrentItem(item);
     }
     else {
-      this.setCurrentItem(this.databases[ix]);
+      let item = this.databases[ix];
+      try {
+        item.refresh();
+      }
+      catch (e) {
+        if (e instanceof NoDatabaseError) {
+          vscode.window.showErrorMessage(e.message);
+          this._onDidChangeTreeData.fire(item);
+          return;
+        }
+        else {
+          throw e;
+        }
+      }
+      this.setCurrentItem(item);
     }
   }
 
@@ -238,6 +263,14 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
       this.ctx.workspaceState.update(CURRENT_DB, undefined);
     }
     this._onDidChangeTreeData.fire();
+  }
+
+  clearCurrentItem() {
+    this.current = undefined;
+  }
+
+  updateItem(db: DatabaseItem) {
+    this._onDidChangeTreeData.fire(db);
   }
 }
 
@@ -255,11 +288,12 @@ export class DatabaseManager {
     let db_list = this.ctx.workspaceState.get<string[]>(DB_LIST, []);
     db_list.forEach(db => {
       try {
-        let dbi = new DatabaseItem(vscode.Uri.file(db));
+        let dbi = new DatabaseItem(vscode.Uri.file(db), false);
         dbs.push(dbi);
         if(current_db == db) {
           current_dbi = dbi
         }
+        dbi.refresh();
       }
       catch (e) {
         if (e instanceof NoDatabaseError) {
@@ -273,13 +307,15 @@ export class DatabaseManager {
 
     if (current_db != undefined && current_dbi == undefined) {
       try {
-        current_dbi = new DatabaseItem(vscode.Uri.file(current_db));
+        current_dbi = new DatabaseItem(vscode.Uri.file(current_db), false);
+        current_dbi.refresh()
       }
       catch (e) {
         if (e instanceof NoDatabaseError) {
           vscode.window.showErrorMessage(e.message);
           current_dbi = undefined;
           this.ctx.workspaceState.update(CURRENT_DB, undefined);
+          this.ctx.workspaceState.update(DB_LIST, db_list.push(current_db));
         }
         else {
           throw e;
@@ -303,11 +339,26 @@ export class DatabaseManager {
   }
 
   setCurrentItem(db: DatabaseItem) {
+    try {
+      db.refresh();
+    } catch(e) {
+      if(e instanceof NoDatabaseError) {
+        vscode.window.showErrorMessage(e.message);
+        if(db == this.treeDataProvider.getCurrent()) {
+          this.treeDataProvider.clearCurrentItem();
+        } else {
+          this.treeDataProvider.updateItem(db);
+        }
+        return;
+      } else {
+        throw e;
+      }
+    }
     this.treeDataProvider.setCurrentItem(db);
   }
 
   removeItem(db: DatabaseItem) {
-    this.treeDataProvider.setCurrentItem(db);
+    this.treeDataProvider.removeItem(db);
   }
 
   setCurrentDatabase(db: vscode.Uri) {
