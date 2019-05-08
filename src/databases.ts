@@ -22,10 +22,30 @@ import { ExtensionContext, window as Window } from 'vscode';
  */
 const CURRENT_DB: string = 'currentDatabase';
 
+type ThemableIconPath = { light: string, dark: string } | string;
+
 /**
- * Path to an icon to display next to currently selected database.
+ * Path to icons to display next to currently selected database.
  */
-const CHECKMARK_ICON: string = 'media/check.svg';
+const SELECTED_DATABASE_ICON: ThemableIconPath = {
+  light: 'media/check-light-mode.svg',
+  dark: 'media/check-dark-mode.svg',
+};
+
+/**
+ * Path to icon to display next to an invalid database.
+ */
+const INVALID_DATABASE_ICON: ThemableIconPath = 'media/red-x.svg';
+
+function joinThemableIconPath(base: string, iconPath: ThemableIconPath): ThemableIconPath {
+  if (typeof iconPath == 'object')
+    return {
+      light: path.join(base, iconPath.light),
+      dark: path.join(base, iconPath.dark)
+    };
+  else
+    return path.join(base, iconPath);
+}
 
 /**
  * Display file selection dialog. Expects the user to choose a
@@ -136,7 +156,7 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
   getTreeItem(element: DatabaseItem): vscode.TreeItem {
     const it = new vscode.TreeItem(element.name);
     if (element == this.current)
-      it.iconPath = vscode.Uri.file(path.join(this.ctx.extensionPath, CHECKMARK_ICON));
+      it.iconPath = joinThemableIconPath(this.ctx.extensionPath, SELECTED_DATABASE_ICON);
     it.tooltip = element.snapshotUri.fsPath;
     return it;
   }
