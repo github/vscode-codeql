@@ -4,8 +4,7 @@
 		"out": false // set this to true to hide the "out" folder with the compiled JS files
 	},
   "files.watcherExclude": {
-    "**/.git/objects/**": true,
-    "**/.git/subtree-cache/**": true,
+    "**/.git/**": true,
     "**/node_modules/*/**": true
   },
 	"search.exclude": {
