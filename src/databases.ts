@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ExtensionContext, window as Window } from 'vscode';
-import { ENOENT } from 'constants';
 
 /**
  * databases.ts
@@ -21,6 +20,12 @@ import { ENOENT } from 'constants';
  */
 const CURRENT_DB: string = 'currentDatabase';
 
+/**
+ * The name of the key in the workspaceState dictionary in which we
+ * persist the list of databases across sessions.
+ */
+const DB_LIST: string = 'databaseList';
+
 type ThemableIconPath = { light: string, dark: string } | string;
 
 /**
@@ -30,12 +35,6 @@ const SELECTED_DATABASE_ICON: ThemableIconPath = {
   light: 'media/check-light-mode.svg',
   dark: 'media/check-dark-mode.svg',
 };
-
-/**
- * The name of the key in the workspaceState dictionary in which we
- * persist the lsit of databases across sessions.
- */
-const DB_LIST: string = 'databaseList';
 
 /**
  * Path to icon to display next to an invalid database.
@@ -213,7 +212,7 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
    * reuse that item.
    */
   setCurrentUri(dir: vscode.Uri): void {
-    let ix = this.databases.findIndex(it => it.snapshotUri.fsPath == dir.fsPath);
+    const ix = this.databases.findIndex(it => it.snapshotUri.fsPath == dir.fsPath);
 
     if (ix == -1) {
       let item: DatabaseItem;
@@ -233,7 +232,7 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
       this.setCurrentItem(item);
     }
     else {
-      let item = this.databases[ix];
+      const item = this.databases[ix];
       try {
         item.refresh();
       }
