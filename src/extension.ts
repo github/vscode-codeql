@@ -24,6 +24,7 @@ export function activate(ctx: ExtensionContext) {
   ctx.subscriptions.push(commands.registerCommand('ql.setCurrentDatabase', (db) => dbm.setCurrentDatabase(db)));
   ctx.subscriptions.push(commands.registerCommand('ql.chooseDatabase', () => dbm.chooseAndSetDatabaseSync()));
   ctx.subscriptions.push(commands.registerCommand('qlDatabases.setCurrentDatabase', (db) => dbm.setCurrentItem(db)));
+  ctx.subscriptions.push(commands.registerCommand('qlDatabases.removeDatabase', (db) => dbm.removeItem(db)));
 
   ctx.subscriptions.push(client.start());
 }

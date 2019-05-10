@@ -92,6 +92,10 @@
       {
         "command": "qlDatabases.setCurrentDatabase",
         "title": "Make Current"
+      },
+      {
+        "command": "qlDatabases.removeDatabase",
+        "title": "Remove"
       }
     ],
     "menus": {
@@ -99,6 +103,11 @@
         {
           "command": "qlDatabases.setCurrentDatabase",
           "group": "inline",
+          "when": "view == qlDatabases"
+        },
+        {
+          "command": "qlDatabases.removeDatabase",
+          "group": "9_qlCommands",
           "when": "view == qlDatabases"
         }
       ],
@@ -111,6 +120,14 @@
       "commandPalette": [
         {
           "command": "ql.chooseDatabase"
+        },
+        {
+          "command": "qlDatabases.setCurrentDatabase",
+          "when": "false"
+        },
+        {
+          "command": "qlDatabases.removeDatabase",
+          "when": "false"
         }
       ]
     },
