@@ -285,24 +285,32 @@ export class DatabaseManager {
 
     let dbs: DatabaseItem[] = [];
     let db_list = this.ctx.workspaceState.get<string[]>(DB_LIST, []);
-    db_list.forEach(db => {
-      try {
-        let dbi = new DatabaseItem(vscode.Uri.file(db), false);
-        dbs.push(dbi);
-        if(current_db == db) {
-          current_dbi = dbi
+    try {
+      db_list.forEach(db => {
+        try {
+          let dbi = new DatabaseItem(vscode.Uri.file(db), false);
+          dbs.push(dbi);
+          if(current_db == db) {
+            current_dbi = dbi
+          }
+          dbi.refresh();
         }
-        dbi.refresh();
+        catch (e) {
+          if (e instanceof NoDatabaseError) {
+            vscode.window.showErrorMessage(e.message);
+          }
+          else {
+            throw e;
+          }
+        }
+      });
+    } catch (e) {
+      if (e instanceof TypeError) {
+        // database list had an unexpected type - nothing to be done?
+        vscode.window.showErrorMessage("Database list loading failed: ${}", e.message);
+        this.ctx.workspaceState.update(DB_LIST, []);
       }
-      catch (e) {
-        if (e instanceof NoDatabaseError) {
-          vscode.window.showErrorMessage(e.message);
-        }
-        else {
-          throw e;
-        }
-      }
-    });
+    }
 
     if (current_db != undefined && current_dbi == undefined) {
       try {
@@ -314,7 +322,8 @@ export class DatabaseManager {
           vscode.window.showErrorMessage(e.message);
           current_dbi = undefined;
           this.ctx.workspaceState.update(CURRENT_DB, undefined);
-          this.ctx.workspaceState.update(DB_LIST, db_list.push(current_db));
+          db_list.push(current_db)
+          this.ctx.workspaceState.update(DB_LIST, db_list);
         }
         else {
           throw e;
