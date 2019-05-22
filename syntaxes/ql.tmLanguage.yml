@@ -575,8 +575,14 @@ repository:
       name: comment.block.documentation.ql
       # Highlight tag names within the QLDoc.
       patterns:
-      - match: '^\s*\*+\s* (@\S+)'
-        name: keyword.tag.ql
+      - begin: '(?<=/\*\*)([^*]|\*(?!/))*$'
+        while: '(^|\G)\s*\*(?!/)(?=([^*]|[*](?!/))*$)'
+        patterns:
+        - include: 'text.html.markdown#fenced_code_block'
+        - include: 'text.html.markdown#lists'
+        - include: 'text.html.markdown#inline'
+        - match: '^\s*\*+\s* (@\S+)'
+          name: keyword.tag.ql
       # A block (`/* */`) comment.
     - begin: '/\*'
       end: '\*/'

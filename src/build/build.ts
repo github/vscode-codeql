@@ -147,6 +147,7 @@ function visitAllMatchesInRule(rule: any, action: (match: any) => any)
             case 'begin':
             case 'end':
             case 'match':
+            case 'while':
                 rule[key] = action(rule[key]);
                 break;
         
