@@ -13,6 +13,9 @@
     "noFallthroughCasesInSwitch": true,
     "preserveWatchOutput": true
   },
+  "include": [
+    "src/**/*.ts"
+  ],
   "exclude": [
     "node_modules",
     "**/view"

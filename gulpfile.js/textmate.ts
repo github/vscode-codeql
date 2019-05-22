@@ -1,5 +1,8 @@
+import * as gulp from 'gulp';
 import * as js_yaml from 'js-yaml';
-import * as fs from 'fs';
+import * as through from 'through2';
+import * as PluginError from 'plugin-error';
+import * as Vinyl from 'vinyl';
 
 /**
  * Replaces all rule references with the match pattern of the referenced rule.
@@ -249,13 +252,35 @@ function transformFile(yaml: any)
     }
 }
 
-const text: string = fs.readFileSync('syntaxes/ql.tmLanguage.yml', 'utf8');
+export function transpileTextMateGrammar()
+{
+    return through.obj((file: Vinyl, encoding: string, callback: Function): void =>
+    {
+        if (file.isNull())
+        {
+            callback(null, file);
+        }
+        else if (file.isBuffer())
+        {
+            const buf: Buffer = file.contents;
+            const yamlText: string = buf.toString('utf8');
+            const jsonData: any = js_yaml.safeLoad(yamlText);
+            transformFile(jsonData);
 
-const jsonData: any = js_yaml.safeLoad(text);
-transformFile(jsonData);
-
-const jsonString: string = JSON.stringify(jsonData, null, 2);
-if (!fs.existsSync('out/syntaxes')) {
-    fs.mkdirSync('out/syntaxes');
+            file.contents = Buffer.from(JSON.stringify(jsonData, null, 2), 'utf8');
+            file.extname = '.json';
+            callback(null, file);
+        }
+        else
+        {
+            callback('error', new PluginError('transpileTextMateGrammar', 'Format not supported.'));
+        }
+    });
 }
-fs.writeFileSync('out/syntaxes/ql.tmLanguage.json', jsonString);
+
+export async function compileTextMateGrammar()
+{
+    return gulp.src('syntaxes/ql.tmLanguage.yml')
+        .pipe(transpileTextMateGrammar())
+        .pipe(gulp.dest('out/syntaxes'));
+}
