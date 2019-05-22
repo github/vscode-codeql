@@ -1,6 +1,6 @@
 import * as cp from 'child_process';
 import * as path from 'path';
-import { window as Window } from 'vscode';
+import { window as Window, workspace } from 'vscode';
 import { StreamInfo } from 'vscode-languageclient';
 
 /**
@@ -11,8 +11,8 @@ import { StreamInfo } from 'vscode-languageclient';
  */
 
 export async function spawnIdeServer(): Promise<StreamInfo> {
-  const semmleDist: string = process.env["SEMMLE_DIST"] as string;
-  const command = "java";
+  const semmleDist: string = workspace.getConfiguration('ql').get('distributionPath') as string;
+  const command = path.resolve(semmleDist, "tools/java/bin/java");
   const jvmargs = ["-jar", path.resolve(semmleDist, "tools/ideserver.jar")];
   const otherArgs = ["--check-errors", "on_change"]
   const args = jvmargs.concat(otherArgs)
