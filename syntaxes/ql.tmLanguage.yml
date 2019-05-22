@@ -581,7 +581,7 @@ repository:
         - include: 'text.html.markdown#fenced_code_block'
         - include: 'text.html.markdown#lists'
         - include: 'text.html.markdown#inline'
-        - match: '^\s*\*+\s* (@\S+)'
+        - match: '\G\s* (@\S+)'
           name: keyword.tag.ql
       # A block (`/* */`) comment.
     - begin: '/\*'
