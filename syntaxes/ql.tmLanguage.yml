@@ -229,7 +229,7 @@ repository:
 
   concat:
     match:
-      keyword: 'catch'
+      keyword: 'concat'
     name: keyword.aggregate.concat.ql
 
   count:
@@ -613,6 +613,13 @@ repository:
     - match: '(?#simple-id)'
       name: entity.name.type.namespace.ql
 
+  # The end pattern for an `as` clause, whether on an `import` directive, in an aggregate, or on a
+  # `select`.
+  end-of-as-clause:
+    match: '(?: (?<=(?#id-character)) (?!(?#id-character)) (?<!(?<!(?#id-character))as)) |
+            (?=\s* (?!(?#comment-start) | (?#simple-id)) \S) |
+            (?=\s* (?#keyword))' 
+
   # The `as` clause of an `import` directive. We treat this as a separate module-scope directive.
   import-as-clause:
     # Start at the `as` keyword.
@@ -623,9 +630,7 @@ repository:
     # - We are at the end of an identifier, and that identifier is not `as`.
     # - The next non-whitespace character is not the start of a comment or a simple-id.
     # - The next non-whitespace character is a keyword.
-    end:  '(?: (?<=(?#id-character)) (?!(?#id-character)) (?<!(?<!(?#id-character))as)) |
-           (?=\s* (?!(?#comment-start) | (?#simple-id)) \S) |
-           (?=\s* (?#keyword))'
+    end:  '(?#end-of-as-clause)'
     name: meta.block.import-as-clause.ql
     patterns:
     - include: '#non-context-sensitive'
@@ -708,9 +713,21 @@ repository:
     - match: '(?#lower-id)'
       name: entity.name.variable.parameter.ql
 
+  # An `as` clause in an aggregate or `select`.
+  expr-as-clause:
+    # Start at the `as` keyword.
+    beginPattern: '#as'
+    end:  '(?#end-of-as-clause)'
+    name: meta.block.expr-as-clause.ql
+    patterns:
+    - include: '#non-context-sensitive'
+    - match: '(?#simple-id)'
+      name: entity.name.variable.ql
+
   # The contents of a predicate body.
   predicate-body-contents:
     patterns:
+    - include: '#expr-as-clause'
     - include: '#non-context-sensitive'
       # A simple-id followed by a `::` is a module qualifier.
     - include: '#module-qualifier'
