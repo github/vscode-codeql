@@ -40,8 +40,14 @@
     ],
     "configuration": {
       "type": "object",
-      "title": "QL configuration",
+      "title": "QL",
       "properties": {
+        "ql.distributionPath": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "Location of the QL distribution"
+        },
         "ql.defaultProject.dbScheme": {
           "type": [
             "string"
