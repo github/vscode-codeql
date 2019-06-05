@@ -108,6 +108,7 @@ function gatherMatchTextForRules(yaml: any): Map<string, string>
  */
 function visitAllRulesInFile(yaml: any, action: (rule: any) => void)
 {
+    visitAllRulesInRuleMap(yaml.patterns, action);
     visitAllRulesInRuleMap(yaml.repository, action);
 }
 
@@ -280,7 +281,7 @@ export function transpileTextMateGrammar()
 
 export async function compileTextMateGrammar()
 {
-    return gulp.src('syntaxes/ql.tmLanguage.yml')
+    return gulp.src('syntaxes/*.tmLanguage.yml')
         .pipe(transpileTextMateGrammar())
         .pipe(gulp.dest('out/syntaxes'));
 }

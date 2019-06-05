@@ -33,6 +33,17 @@
           ".qll"
         ],
         "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "dbscheme",
+        "aliases": [
+          "DBScheme",
+          "dbscheme"
+        ],
+        "extensions": [
+          ".dbscheme"
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
@@ -40,6 +51,11 @@
         "language": "ql",
         "scopeName": "source.ql",
         "path": "./out/syntaxes/ql.tmLanguage.json"
+      },
+      {
+        "language": "dbscheme",
+        "scopeName": "source.dbscheme",
+        "path": "./out/syntaxes/dbscheme.tmLanguage.json"
       }
     ],
     "configuration": {
