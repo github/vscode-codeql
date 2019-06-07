@@ -551,6 +551,11 @@ repository:
       keyword: 'query'
     name: storage.modifier.query.ql
 
+  transient:
+    match:
+      keyword: 'transient'
+    name: storage.modifier.transient.ql
+
   annotation-keyword:
     patterns:
     - include: '#abstract'
@@ -565,6 +570,7 @@ repository:
     - include: '#pragma'
     - include: '#private'
     - include: '#query'
+    - include: '#transient'
 
   # A QL comment, regardless of form.
   comment:
