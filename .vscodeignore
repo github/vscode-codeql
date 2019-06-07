@@ -1,3 +1,4 @@
+.vs/**
 .vscode/**
 typings/**
 out/test/**
@@ -5,5 +6,7 @@ test/**
 src/**
 **/*.map
 .gitignore
+gulpfile.js/**
 tsconfig.json
+tsfmt.json
 vsc-extension-quickstart.md

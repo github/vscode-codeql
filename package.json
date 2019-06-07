@@ -6,11 +6,15 @@
   "private": true,
   "version": "0.0.1",
   "publisher": "Semmle",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Semmle/ql.git"
+  },
   "engines": {
     "vscode": "^1.33.0"
   },
   "categories": [
-    "Languages"
+    "Programming Languages"
   ],
   "activationEvents": [
     "onLanguage:ql"
@@ -29,13 +33,29 @@
           ".qll"
         ],
         "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "dbscheme",
+        "aliases": [
+          "DBScheme",
+          "dbscheme"
+        ],
+        "extensions": [
+          ".dbscheme"
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
       {
         "language": "ql",
         "scopeName": "source.ql",
-        "path": "./syntaxes/ql.tmLanguage.json"
+        "path": "./out/syntaxes/ql.tmLanguage.json"
+      },
+      {
+        "language": "dbscheme",
+        "scopeName": "source.dbscheme",
+        "path": "./out/syntaxes/dbscheme.tmLanguage.json"
       }
     ],
     "configuration": {
@@ -156,31 +176,34 @@
     }
   },
   "scripts": {
-    "compile": "npm-run-all compile:*",
-    "compile:extension": "tsc",
     "watch": "npm-run-all -p watch:*",
     "watch:extension": "tsc --watch",
-    "vscode:prepublish": "tsc -p ./",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "package": "vsce package",
     "format": "tsfmt -r"
   },
   "devDependencies": {
     "@types/google-protobuf": "^3.2.7",
     "@types/mocha": "^2.2.33",
-    "@types/node": "^6.0.52",
-    "@types/react": "^16.8.13",
-    "@types/react-dom": "^16.8.3",
+    "@types/node": "^6.14.6",
+    "@types/react": "^16.8.17",
+    "@types/react-dom": "^16.8.4",
     "@types/tmp": "^0.1.0",
+    "gulp": "^4.0.2",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-typescript": "^5.0.1",
+    "js-yaml": "^3.12.0",
     "npm-run-all": "^4.1.5",
+    "through2": "^3.0.1",
+    "ts-node": "^8.1.0",
     "ts-protoc-gen": "^0.9.0",
     "typescript": "^2.1.5",
     "typescript-formatter": "^7.2.2",
-    "vsce": "^1.59.0",
-    "vscode": "^1.1.33",
-    "webpack": "^4.29.6",
-    "webpack-cli": "^3.3.0"
+    "vinyl": "^2.2.0",
+    "vsce": "^1.61.0",
+    "vscode": "^1.1.34",
+    "webpack": "^4.30.0",
+    "webpack-cli": "^3.3.2"
   },
   "dependencies": {
     "google-protobuf": "^3.7.1",
@@ -188,7 +211,7 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "tmp": "^0.1.0",
-    "ts-loader": "^5.3.3",
+    "ts-loader": "^5.4.5",
     "vscode-languageclient": "^5.2.1"
   }
 }
