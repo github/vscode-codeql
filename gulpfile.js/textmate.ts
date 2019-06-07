@@ -11,21 +11,17 @@ import * as Vinyl from 'vinyl';
  * @param replacements Map from rule name to match text.
  * @returns The new regex after replacement.
  */
-function replaceReferencesWithStrings(value: string, replacements: Map<string, string>): string
-{
-    let result = value;
-    while (true)
-    {
-        const original = result;
-        for (var key in replacements)
-        {
-            result = result.replace(`(?#${key})`, `(?:${replacements[key]})`);
-        }
-        if (result === original)
-        {
-            return result;
-        }
+function replaceReferencesWithStrings(value: string, replacements: Map<string, string>): string {
+  let result = value;
+  while (true) {
+    const original = result;
+    for (var key in replacements) {
+      result = result.replace(`(?#${key})`, `(?:${replacements[key]})`);
     }
+    if (result === original) {
+      return result;
+    }
+  }
 }
 
 /**
@@ -34,15 +30,13 @@ function replaceReferencesWithStrings(value: string, replacements: Map<string, s
  * @param yaml The root of the YAML document.
  * @returns A map from macro name to replacement text.
  */
-function gatherMacros(yaml: any): Map<string, string>
-{
-    const macros = new Map<string, string>();
-    for (var key in yaml.macros)
-    {
-        macros[key] = yaml.macros[key];
-    }
+function gatherMacros(yaml: any): Map<string, string> {
+  const macros = new Map<string, string>();
+  for (var key in yaml.macros) {
+    macros[key] = yaml.macros[key];
+  }
 
-    return macros;
+  return macros;
 }
 
 /**
@@ -53,32 +47,26 @@ function gatherMacros(yaml: any): Map<string, string>
  * @returns The match text for the rule. This is either the value of the rule's `match` property,
  *  or the disjunction of the match text of all of the other rules `include`d by this rule.
  */
-function getNodeMatchText(rule: any): string
-{
-    if (rule.match !== undefined)
-    {
-        // For a match string, just use that string as the replacement.
-        return rule.match;
+function getNodeMatchText(rule: any): string {
+  if (rule.match !== undefined) {
+    // For a match string, just use that string as the replacement.
+    return rule.match;
+  }
+  else if (rule.patterns !== undefined) {
+    const patterns: string[] = [];
+    // For a list of patterns, use the disjunction of those patterns.
+    for (var patternIndex in rule.patterns) {
+      const pattern = rule.patterns[patternIndex];
+      if (pattern.include !== null) {
+        patterns.push('(?' + pattern.include + ')');
+      }
     }
-    else if (rule.patterns !== undefined)
-    {
-        const patterns: string[] = [];
-        // For a list of patterns, use the disjunction of those patterns.
-        for (var patternIndex in rule.patterns)
-        {
-            const pattern = rule.patterns[patternIndex];
-            if (pattern.include !== null)
-            {
-                patterns.push('(?' + pattern.include + ')');
-            }
-        }
 
-        return '(?:' + patterns.join('|') + ')';
-    }
-    else
-    {
-        return ''
-    }
+    return '(?:' + patterns.join('|') + ')';
+  }
+  else {
+    return ''
+  }
 }
 
 /**
@@ -88,16 +76,14 @@ function getNodeMatchText(rule: any): string
  * @returns A map whose keys are the names of rules, and whose values are the corresponding match
  *  text of each rule.
  */
-function gatherMatchTextForRules(yaml: any): Map<string, string>
-{
-    const replacements = new Map<string, string>();
-    for (var key in yaml.repository)
-    {
-        const node = yaml.repository[key];
-        replacements[key] = getNodeMatchText(node);
-    }
+function gatherMatchTextForRules(yaml: any): Map<string, string> {
+  const replacements = new Map<string, string>();
+  for (var key in yaml.repository) {
+    const node = yaml.repository[key];
+    replacements[key] = getNodeMatchText(node);
+  }
 
-    return replacements;
+  return replacements;
 }
 
 /**
@@ -106,10 +92,9 @@ function gatherMatchTextForRules(yaml: any): Map<string, string>
  * @param yaml The root of the YAML document.
  * @param action Callback to invoke on each rule.
  */
-function visitAllRulesInFile(yaml: any, action: (rule: any) => void)
-{
-    visitAllRulesInRuleMap(yaml.patterns, action);
-    visitAllRulesInRuleMap(yaml.repository, action);
+function visitAllRulesInFile(yaml: any, action: (rule: any) => void) {
+  visitAllRulesInRuleMap(yaml.patterns, action);
+  visitAllRulesInRuleMap(yaml.repository, action);
 }
 
 /**
@@ -120,20 +105,16 @@ function visitAllRulesInFile(yaml: any, action: (rule: any) => void)
  * @param ruleMap The map or array of rules to visit.
  * @param action Callback to invoke on each rule.
  */
-function visitAllRulesInRuleMap(ruleMap: any, action: (rule: any) => void)
-{
-    for (var key in ruleMap)
-    {
-        const rule = ruleMap[key];
-        if ((typeof rule) === 'object')
-        {
-            action(rule);
-            if (rule.patterns !== undefined)
-            {
-                visitAllRulesInRuleMap(rule.patterns, action);
-            }
-        }
+function visitAllRulesInRuleMap(ruleMap: any, action: (rule: any) => void) {
+  for (var key in ruleMap) {
+    const rule = ruleMap[key];
+    if ((typeof rule) === 'object') {
+      action(rule);
+      if (rule.patterns !== undefined) {
+        visitAllRulesInRuleMap(rule.patterns, action);
+      }
     }
+  }
 }
 
 /**
@@ -142,23 +123,20 @@ function visitAllRulesInRuleMap(ruleMap: any, action: (rule: any) => void)
  * @param rule The rule whose matches are to be transformed.
  * @param action The transformation to make on each match pattern.
  */
-function visitAllMatchesInRule(rule: any, action: (match: any) => any)
-{
-    for (var key in rule)
-    {
-        switch (key)
-        {
-            case 'begin':
-            case 'end':
-            case 'match':
-            case 'while':
-                rule[key] = action(rule[key]);
-                break;
-        
-            default:
-                break;
-        }
+function visitAllMatchesInRule(rule: any, action: (match: any) => any) {
+  for (var key in rule) {
+    switch (key) {
+      case 'begin':
+      case 'end':
+      case 'match':
+      case 'while':
+        rule[key] = action(rule[key]);
+        break;
+
+      default:
+        break;
     }
+  }
 }
 
 /**
@@ -168,28 +146,26 @@ function visitAllMatchesInRule(rule: any, action: (match: any) => any)
  * @param rule Rule to be transformed.
  * @param key Base key of the property to be transformed.
  */
-function expandPatternMatchProperties(rule: any, key: 'begin' | 'end')
-{
-    const patternKey = key + 'Pattern';
-    const capturesKey = key + 'Captures';
-    if (rule[patternKey] !== undefined)
-    {
-        rule[key] = `(?${rule[patternKey]})`
-        rule[capturesKey] =
+function expandPatternMatchProperties(rule: any, key: 'begin' | 'end') {
+  const patternKey = key + 'Pattern';
+  const capturesKey = key + 'Captures';
+  if (rule[patternKey] !== undefined) {
+    rule[key] = `(?${rule[patternKey]})`
+    rule[capturesKey] =
+      {
+        '0':
         {
-            '0':
-                {
-                    patterns:
-                        [
-                            {
-                                include: rule[patternKey]
-                            }
-                        ]
-                }
-        };
+          patterns:
+            [
+              {
+                include: rule[patternKey]
+              }
+            ]
+        }
+      };
 
-        rule[patternKey] = undefined;
-    }
+    rule[patternKey] = undefined;
+  }
 }
 
 /**
@@ -197,91 +173,73 @@ function expandPatternMatchProperties(rule: any, key: 'begin' | 'end')
  * 
  * @param yaml The root of the YAML document.
  */
-function transformFile(yaml: any)
-{
-    const macros = gatherMacros(yaml);
-    visitAllRulesInFile(yaml, (rule) =>
-    {
-        expandPatternMatchProperties(rule, 'begin');
-        expandPatternMatchProperties(rule, 'end');
+function transformFile(yaml: any) {
+  const macros = gatherMacros(yaml);
+  visitAllRulesInFile(yaml, (rule) => {
+    expandPatternMatchProperties(rule, 'begin');
+    expandPatternMatchProperties(rule, 'end');
+  });
+
+  // Expand macros in matches.
+  visitAllRulesInFile(yaml, (rule) => {
+    visitAllMatchesInRule(rule, (match) => {
+      if ((typeof match) === 'object') {
+        for (var key in match) {
+          return macros[key].replace('(?#)', `(?:${match[key]})`);
+        }
+        throw new Error("No key in macro map.")
+      }
+      else {
+        return match;
+      }
+    });
+  });
+
+  yaml.macros = undefined;
+
+  const replacements = gatherMatchTextForRules(yaml);
+  // Expand references in matches.
+  visitAllRulesInFile(yaml, (rule) => {
+    visitAllMatchesInRule(rule, (match) => {
+      return replaceReferencesWithStrings(match, replacements);
+    });
+  });
+
+  if (yaml.regexOptions !== undefined) {
+    const regexOptions = '(?' + yaml.regexOptions + ')';
+    visitAllRulesInFile(yaml, (rule) => {
+      visitAllMatchesInRule(rule, (match) => {
+        return regexOptions + match;
+      });
     });
 
-    // Expand macros in matches.
-    visitAllRulesInFile(yaml, (rule) =>
-    {
-        visitAllMatchesInRule(rule, (match) =>
-        {
-            if ((typeof match) === 'object')
-            {
-                for (var key in match)
-                {
-                    return macros[key].replace('(?#)', `(?:${match[key]})`);
-                }
-                throw new Error("No key in macro map.")
-            }
-            else
-            {
-                return match;
-            }
-        });
-    });
+    yaml.regexOptions = undefined;
+  }
+}
 
-    yaml.macros = undefined;
-
-    const replacements = gatherMatchTextForRules(yaml);
-    // Expand references in matches.
-    visitAllRulesInFile(yaml, (rule) =>
-    {
-        visitAllMatchesInRule(rule, (match) =>
-        {
-            return replaceReferencesWithStrings(match, replacements);
-        });
-    });
-
-    if (yaml.regexOptions !== undefined)
-    {
-        const regexOptions = '(?' + yaml.regexOptions + ')';
-        visitAllRulesInFile(yaml, (rule) =>
-        {
-            visitAllMatchesInRule(rule, (match) =>
-            {
-                return regexOptions + match;
-            });
-        });
-
-        yaml.regexOptions = undefined;
+export function transpileTextMateGrammar() {
+  return through.obj((file: Vinyl, encoding: string, callback: Function): void => {
+    if (file.isNull()) {
+      callback(null, file);
     }
+    else if (file.isBuffer()) {
+      const buf: Buffer = file.contents;
+      const yamlText: string = buf.toString('utf8');
+      const jsonData: any = js_yaml.safeLoad(yamlText);
+      transformFile(jsonData);
+
+      file.contents = Buffer.from(JSON.stringify(jsonData, null, 2), 'utf8');
+      file.extname = '.json';
+      callback(null, file);
+    }
+    else {
+      callback('error', new PluginError('transpileTextMateGrammar', 'Format not supported.'));
+    }
+  });
 }
 
-export function transpileTextMateGrammar()
-{
-    return through.obj((file: Vinyl, encoding: string, callback: Function): void =>
-    {
-        if (file.isNull())
-        {
-            callback(null, file);
-        }
-        else if (file.isBuffer())
-        {
-            const buf: Buffer = file.contents;
-            const yamlText: string = buf.toString('utf8');
-            const jsonData: any = js_yaml.safeLoad(yamlText);
-            transformFile(jsonData);
-
-            file.contents = Buffer.from(JSON.stringify(jsonData, null, 2), 'utf8');
-            file.extname = '.json';
-            callback(null, file);
-        }
-        else
-        {
-            callback('error', new PluginError('transpileTextMateGrammar', 'Format not supported.'));
-        }
-    });
-}
-
-export async function compileTextMateGrammar()
-{
-    return gulp.src('syntaxes/*.tmLanguage.yml')
-        .pipe(transpileTextMateGrammar())
-        .pipe(gulp.dest('out/syntaxes'));
+export async function compileTextMateGrammar() {
+  return gulp.src('syntaxes/*.tmLanguage.yml')
+    .pipe(transpileTextMateGrammar())
+    .pipe(gulp.dest('out/syntaxes'));
 }

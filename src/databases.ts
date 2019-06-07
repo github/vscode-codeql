@@ -75,7 +75,7 @@ export async function chooseDatabaseDir(ctx: ExtensionContext): Promise<vscode.U
     return chosen[0];
   }
 }
- 
+
 /**
  * An error thrown when we cannot find a database in a putative
  * snapshot directory.
@@ -96,7 +96,7 @@ export class DatabaseItem {
   constructor(uri: vscode.Uri, doRefresh: boolean = true) {
     this.snapshotUri = uri;
     this.name = path.basename(uri.fsPath);
-    if(doRefresh) {
+    if (doRefresh) {
       this.refresh();
     }
   }
@@ -128,7 +128,7 @@ export class DatabaseItem {
   private static findDb(uri: vscode.Uri): string[] {
     try {
       let files = fs.readdirSync(uri.fsPath);
-      
+
       let matches: string[] = [];
       files.forEach((file) => {
         if (file.startsWith('db-')) {
@@ -252,10 +252,10 @@ class DatabaseTreeDataProvider implements vscode.TreeDataProvider<DatabaseItem> 
   }
 
   removeItem(dbi: DatabaseItem) {
-    this.databases = this.databases.filter((entry:DatabaseItem) => {
+    this.databases = this.databases.filter((entry: DatabaseItem) => {
       return entry != dbi;
     });
-    this.ctx.workspaceState.update(DB_LIST, this.ctx.workspaceState.get<string[]>(DB_LIST, []).filter((entry:string) => {
+    this.ctx.workspaceState.update(DB_LIST, this.ctx.workspaceState.get<string[]>(DB_LIST, []).filter((entry: string) => {
       return entry != dbi.snapshotUri.fsPath;
     }));
     if (this.current == dbi) {
@@ -291,7 +291,7 @@ export class DatabaseManager {
         try {
           let dbi = new DatabaseItem(vscode.Uri.file(db), false);
           dbs.push(dbi);
-          if(current_db == db) {
+          if (current_db == db) {
             current_dbi = dbi
           }
           dbi.refresh();
@@ -350,10 +350,10 @@ export class DatabaseManager {
   setCurrentItem(db: DatabaseItem) {
     try {
       db.refresh();
-    } catch(e) {
-      if(e instanceof NoDatabaseError) {
+    } catch (e) {
+      if (e instanceof NoDatabaseError) {
         showAndLogErrorMessage(e.message);
-        if(db == this.treeDataProvider.getCurrent()) {
+        if (db == this.treeDataProvider.getCurrent()) {
           this.treeDataProvider.clearCurrentItem();
         } else {
           this.treeDataProvider.updateItem(db);
@@ -376,7 +376,7 @@ export class DatabaseManager {
     this.treeDataProvider.setCurrentUri(db);
     this.ctx.workspaceState.update(CURRENT_DB, db.fsPath);
     let dbs = this.ctx.workspaceState.get<string[]>(DB_LIST, []);
-    if(!(db.toString() in dbs)) {
+    if (!(db.toString() in dbs)) {
       dbs.push(db.fsPath);
       this.ctx.workspaceState.update(DB_LIST, dbs);
     }
