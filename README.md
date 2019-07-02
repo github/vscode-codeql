@@ -8,22 +8,23 @@ Building
 To build `.vsix` extension from the commandline
 ```shell
 $ npm install
-$ export SEMMLE_CODE=/your/path/to/semmle/code/checkout
-$ npm run compile
-$ npm run package
+$ npm install -g gulp
+$ export SEMMLE_CODE=/your/path/to/checkout/of/semmle/code
+$ gulp
 ```
-which can be installed with something like
+which can then be installed with something like (depending on where you have vscode installed)
 ```shell
-$ code --install-extension `pwd`/semmlestudiovscode-0.0.1.vsix
+$ code --install-extension `pwd`/semmlestudiovscode-0.0.1.vsix # normal vscode installation
+# or maybe
 $ vscode/scripts/code-cli.sh --install-extension `pwd`/semmlestudiovscode-0.0.1.vsix # if you're running from github checkout
 ```
 
-Otherwise, make sure you have
+Otherwise, you can build and debug the extension from within vscode itself by opening this directory as a project
+and hitting F5 to start a debugging session. You may need
 ```
 $ export SEMMLE_DIST=/your/path/to/semmle/distribution # for tools/odasa.jar, tools/ideserver.jar
 ```
-set, and you can build and debug the extension from within vscode itself by opening this directory as a project
-and hitting F5 to start a debugging session.
+set.
 
 Using
 ---
