@@ -8,9 +8,8 @@ Building
 To build `.vsix` extension from the commandline
 ```shell
 $ npm install
-$ npm install -g gulp
 $ export SEMMLE_CODE=/your/path/to/checkout/of/semmle/code
-$ gulp
+$ npm run gulp
 ```
 which can then be installed with something like (depending on where you have vscode installed)
 ```shell
