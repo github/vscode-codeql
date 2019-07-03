@@ -180,7 +180,8 @@
     "watch:extension": "tsc --watch",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "format": "tsfmt -r"
+    "format": "tsfmt -r",
+    "gulp": "gulp"
   },
   "devDependencies": {
     "@types/google-protobuf": "^3.2.7",
