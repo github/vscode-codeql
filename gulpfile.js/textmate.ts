@@ -6,7 +6,7 @@ import * as Vinyl from 'vinyl';
 
 /**
  * Replaces all rule references with the match pattern of the referenced rule.
- * 
+ *
  * @param value Original regex containing rule references.
  * @param replacements Map from rule name to match text.
  * @returns The new regex after replacement.
@@ -26,7 +26,7 @@ function replaceReferencesWithStrings(value: string, replacements: Map<string, s
 
 /**
  * Gather all macro definitions from the document.
- * 
+ *
  * @param yaml The root of the YAML document.
  * @returns A map from macro name to replacement text.
  */
@@ -42,7 +42,7 @@ function gatherMacros(yaml: any): Map<string, string> {
 /**
  * Return the match text to be substituted wherever the specified rule is referenced in a regular
  * expression.
- * 
+ *
  * @param rule The rule whose match text is to be retrieved.
  * @returns The match text for the rule. This is either the value of the rule's `match` property,
  *  or the disjunction of the match text of all of the other rules `include`d by this rule.
@@ -71,7 +71,7 @@ function getNodeMatchText(rule: any): string {
 
 /**
  * Generates a map from rule name to match text.
- * 
+ *
  * @param yaml The root of the YAML document.
  * @returns A map whose keys are the names of rules, and whose values are the corresponding match
  *  text of each rule.
@@ -88,7 +88,7 @@ function gatherMatchTextForRules(yaml: any): Map<string, string> {
 
 /**
  * Invoke the specified callback function on each rule definition in the file.
- * 
+ *
  * @param yaml The root of the YAML document.
  * @param action Callback to invoke on each rule.
  */
@@ -101,7 +101,7 @@ function visitAllRulesInFile(yaml: any, action: (rule: any) => void) {
  * Invoke the specified callback function on each rule definition in a map or array of rules.
  * For rules that have a `patterns` element defined child rules, the children are included in the
  * visitation.
- * 
+ *
  * @param ruleMap The map or array of rules to visit.
  * @param action Callback to invoke on each rule.
  */
@@ -119,7 +119,7 @@ function visitAllRulesInRuleMap(ruleMap: any, action: (rule: any) => void) {
 
 /**
  * Invoke the specified transformation on all match patterns in the specified rule.
- * 
+ *
  * @param rule The rule whose matches are to be transformed.
  * @param action The transformation to make on each match pattern.
  */
@@ -142,7 +142,7 @@ function visitAllMatchesInRule(rule: any, action: (match: any) => any) {
 /**
  * Replace any usage of the specified `beginPattern` or `endPattern` property with the equivalent
  * `begin`/`beginCaptures` or `end`/`endCaptures` properties.
- * 
+ *
  * @param rule Rule to be transformed.
  * @param key Base key of the property to be transformed.
  */
@@ -170,7 +170,7 @@ function expandPatternMatchProperties(rule: any, key: 'begin' | 'end') {
 
 /**
  * Transform the specified document to produce a TextMate grammar.
- * 
+ *
  * @param yaml The root of the YAML document.
  */
 function transformFile(yaml: any) {
@@ -238,7 +238,7 @@ export function transpileTextMateGrammar() {
   });
 }
 
-export async function compileTextMateGrammar() {
+export function compileTextMateGrammar() {
   return gulp.src('syntaxes/*.tmLanguage.yml')
     .pipe(transpileTextMateGrammar())
     .pipe(gulp.dest('out/syntaxes'));

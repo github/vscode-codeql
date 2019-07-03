@@ -4,7 +4,7 @@ import * as ts from 'gulp-typescript';
 
 const tsProject = ts.createProject('tsconfig.json');
 
-export async function compileTypeScript() {
+export function compileTypeScript() {
   return tsProject.src()
     .pipe(sourcemaps.init())
     .pipe(tsProject())
@@ -12,6 +12,6 @@ export async function compileTypeScript() {
     .pipe(gulp.dest('out'));
 }
 
-export async function watchTypeScript() {
+export function watchTypeScript() {
   gulp.watch('src/**/*.ts', compileTypeScript);
 }
