@@ -8,6 +8,7 @@ import * as compilation from '../gen/compilation_server_protocol_pb';
 import * as evaluation from '../gen/evaluation_server_protocol_pb';
 import { parse } from '../src/bqrs';
 import * as qsClient from '../src/queryserver-client';
+import { QLConfiguration } from '../src/config';
 
 declare module "url" {
   export function pathToFileURL(urlStr: string): Url;
@@ -44,16 +45,19 @@ const compilationSucceeded = new Checkpoint<void>();
 const evaluationSucceeded = new Checkpoint<void>();
 
 describe('using the query server', () => {
-  const semmleDist = process.env["SEMMLE_DIST"];
-  if (semmleDist == undefined) {
+  const qlDistributionPath = process.env["SEMMLE_DIST"];
+  if (qlDistributionPath == undefined) {
     throw new Error('Need environment variable SEMMLE_DIST to find query server');
   }
   const qs = new qsClient.Server({
-    logger: s => console.log('logger says', s),
-    semmleDist,
-  });
+    qlDistributionPath,
+    javaCommand: path.join(qlDistributionPath, 'tools/java/bin/java')
+  }, {
+      logger: s => console.log('logger says', s),
+    });
 
-  it('should be able to compile a query', async () => {
+  it('should be able to compile a query', async function() {
+    this.timeout(5000);
     try {
       const qlProgram = new compilation.QlProgram();
       qlProgram.setLibraryPathList([]);

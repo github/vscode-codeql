@@ -6,7 +6,7 @@ import * as compilation from '../gen/compilation_server_protocol_pb';
 import * as core from '../gen/core_messages_protocol_pb';
 import * as evaluation from '../gen/evaluation_server_protocol_pb';
 import { StreamDigester } from './digester';
-import { QLConfiguration } from './config';
+import { QLConfigurationData } from './configData';
 
 /**
  * queryserver-client.ts
@@ -131,11 +131,11 @@ export class Server {
   digester: StreamDigester;
   opts: ServerOpts;
 
-  constructor(config: QLConfiguration, opts: ServerOpts) {
+  constructor(config: QLConfigurationData, opts: ServerOpts) {
     this.opts = opts;
 
-    const command = config.javaCommand!;
-    const jvmargs = ["-cp", path.resolve(config.qlDistributionPath!, 'tools/odasa.jar'), 'com.semmle.api.server.CombinedServer'];
+    const command = config.javaCommand;
+    const jvmargs = ["-cp", path.resolve(config.qlDistributionPath, 'tools/odasa.jar'), 'com.semmle.api.server.CombinedServer'];
     const otherArgs = [];
     const args = jvmargs.concat(otherArgs);
     const child = cp.spawn(command, args);

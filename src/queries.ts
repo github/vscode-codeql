@@ -133,7 +133,7 @@ export function spawnQueryServer(config: QLConfiguration): qsClient.Server | und
   if (semmleDist) {
     const outputChannel = Window.createOutputChannel('QL Query Server');
     outputChannel.append("starting query server\n");
-    const server = new qsClient.Server(config, {
+    const server = new qsClient.Server(config.configData, {
       logger: s => outputChannel.append(s + "\n"),
     });
     outputChannel.append("query server started on pid:" + server.getPid() + "\n");

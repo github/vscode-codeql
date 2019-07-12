@@ -1,6 +1,7 @@
 import { workspace, Event, EventEmitter, ConfigurationChangeEvent, window } from 'vscode';
 import { DisposableObject } from './disposable-object';
 import * as path from 'path';
+import { QLConfigurationData } from './configData';
 
 const DISTRIBUTION_PATH = 'distributionPath';
 
@@ -29,6 +30,14 @@ export class QLConfiguration extends DisposableObject {
       return undefined;
     }
   }
+
+  public get configData(): QLConfigurationData {
+    return {
+      qlDistributionPath: this.qlDistributionPath!,
+      javaCommand: this.javaCommand!,
+    };
+  }
+
   private handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     if (e.affectsConfiguration(`ql.${DISTRIBUTION_PATH}`)) {
       this.updateConfiguration();
