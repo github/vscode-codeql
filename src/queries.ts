@@ -16,6 +16,7 @@ import { QLConfiguration } from './config';
  * Compiling and running QL queries.
  */
 
+// XXX: Tmp directory should be configuarble.
 const tmpDir = tmp.dirSync({ prefix: 'queries_', keep: false, unsafeCleanup: true });
 export const tmpDirDisposal = {
   dispose: () => {
@@ -58,7 +59,7 @@ class QueryInfo {
     const queryToRun = new evaluation.QueryToRun();
     queryToRun.setResultPath(this.resultsPath);
     queryToRun.setQloUri(vscode.Uri.file(this.compiledQueryPath).toString());
-    queryToRun.setTimeoutSecs(1000);
+    queryToRun.setTimeoutSecs(1000); // XXX should be configurable
     queryToRun.setAllowUnkownTemplates(true);
     const db = new evaluation.Database();
     db.setDatabaseDirectory(this.db.fsPath);
@@ -130,7 +131,7 @@ export type EvaluationInfo = {
 export function spawnQueryServer(config: QLConfiguration): qsClient.Server | undefined {
   const semmleDist = config.qlDistributionPath;
   if (semmleDist) {
-    const outputChannel = Window.createOutputChannel('QL Queryserver Debug');
+    const outputChannel = Window.createOutputChannel('QL Query Server');
     outputChannel.append("starting query server\n");
     const server = new qsClient.Server(config, {
       logger: s => outputChannel.append(s + "\n"),
@@ -190,9 +191,10 @@ export async function compileAndRunQueryAgainstDatabase(
   if (quickEval) {
     const pos = editor.selection.anchor;
     const posEnd = editor.selection.active;
+    // Convert from 0-based to 1-based line and column numbers.
     quickEvalPosition = {
       file: editor.document.fileName,
-      line: pos.line + 1, column: pos.character + 1,
+      startLine: pos.line + 1, startColumn: pos.character + 1,
       endLine: posEnd.line + 1, endColumn: posEnd.character + 1
     }
   }

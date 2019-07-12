@@ -28,7 +28,7 @@ export function activate(ctx: ExtensionContext) {
     return compileAndRunQueryAgainstDatabase(qs, dbItem, quickEval);
   }
 
-  function compileAndRunQuery(
+  function compileAndRunQuerySync(
     quickEval: boolean,
   ) {
     if (qs) {
@@ -61,8 +61,8 @@ export function activate(ctx: ExtensionContext) {
   ctx.subscriptions.push(commands.registerCommand('ql.chooseDatabase', () => dbm.chooseAndSetDatabaseSync()));
   ctx.subscriptions.push(commands.registerCommand('qlDatabases.setCurrentDatabase', (db) => dbm.setCurrentItem(db)));
   ctx.subscriptions.push(commands.registerCommand('qlDatabases.removeDatabase', (db) => dbm.removeItem(db)));
-  ctx.subscriptions.push(commands.registerCommand('ql.runQuery', () => compileAndRunQuery(false)));
-  ctx.subscriptions.push(commands.registerCommand('ql.quickEval', () => compileAndRunQuery(true)));
+  ctx.subscriptions.push(commands.registerCommand('ql.runQuery', () => compileAndRunQuerySync(false)));
+  ctx.subscriptions.push(commands.registerCommand('ql.quickEval', () => compileAndRunQuerySync(true)));
 
   ctx.subscriptions.push(client.start());
 }

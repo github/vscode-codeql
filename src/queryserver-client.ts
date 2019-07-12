@@ -14,21 +14,12 @@ import { QLConfiguration } from './config';
  *
  * Managing the query server for QL evaluation.
  *
- * We have to speak the protocol described in
+ * We speak the protocol described in
  * [[https://git.semmle.com/Semmle/code/queryserver-client/src/com/semmle/queryserver/client/rpc/AbstractProtoBufClient.java]],
  * which is mostly exchanging protobuf messages, but with a little bit
- * of custom RPC wrapper to tell what service we're asking for. I
- * understand that somehow our desire to support C# meant that using
- * `service { ... }` declarations in the `.proto` files wasn't
- * possible, since `protoc` doesn't generate any C# code for them.
- * (cf. [[https://github.com/protocolbuffers/protobuf/issues/2917]])
- *
- * I had been using `protobufjs`, but it had the disadvantage that it
- * seemed to require loading `.proto` files at runtime. On the other
- * hand, it did allow turning plain-old-json-objects into proto.
- * Google official `protoc` seems to not support `fromObject` (cf.
- * [[https://github.com/protocolbuffers/protobuf/issues/1591]]) Hence
- * the `.setField(...)` boilerplate below.
+ * of custom RPC wrapper to tell what service we're asking for.
+ * The reason why protobuf services weren't used is
+ * [[https://github.com/protocolbuffers/protobuf/issues/2917]]
  */
 
 /**
@@ -36,16 +27,16 @@ import { QLConfiguration } from './config';
  */
 export type Position = {
   file: string,
-  line: number, // 1-based
-  column: number, // 1-based
+  startLine: number, // 1-based
+  startColumn: number, // 1-based
   endLine: number,
   endColumn: number,
 };
 
 /**
  * Based on
- * [[https://git.semmle.com/Semmle/code/queryserver-client/src/com/semmle/queryserver/client/QueryServerServices.java]]
- * [[https://git.semmle.com/Semmle/code/queryserver-client/src/com/semmle/queryserver/client/rpc/CoreServices.java]]
+ * [[https://git.semmle.com/Semmle/code/blob/master/queryserver-client/src/com/semmle/queryserver/client/QueryServerServices.java]]
+ * [[https://git.semmle.com/Semmle/code/blob/master/queryserver-client/src/com/semmle/queryserver/client/rpc/CoreServices.java]]
  */
 enum ServiceCode {
   COMPILE_QUERY = 1,
@@ -200,6 +191,9 @@ export class Server {
             handler(evaluation.Result.deserializeBinary(buf).toObject());
           }
           else {
+            if (ServiceCode[req.service] == undefined) {
+              throw new Error(`service code ${req.service} unknown`);
+            }
             throw new Error(`service ${ServiceCode[req.service]} unimplemented`);
           }
         }
@@ -264,8 +258,8 @@ export class Server {
     else {
       const posProto = new compilation.Position();
       posProto.setFileName(quickEvalPosition.file);
-      posProto.setLine(quickEvalPosition.line);
-      posProto.setColumn(quickEvalPosition.column);
+      posProto.setLine(quickEvalPosition.startLine);
+      posProto.setColumn(quickEvalPosition.startColumn);
       posProto.setEndLine(quickEvalPosition.endLine);
       posProto.setEndColumn(quickEvalPosition.endColumn);
       const quickEvalTarget = new compilation.QuickEvalTarget();
