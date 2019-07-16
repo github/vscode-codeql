@@ -5,6 +5,10 @@ Based on [@alexet](https://git.semmle.com/alexet)'s branch.
 
 Building
 ---
+
+Make sure you have a fairly recent of vscode (>1.32) are using nodejs
+version >v10.0.0. (Tested on v10.15.1 and v10.16.0).
+
 To build `.vsix` extension from the commandline
 
 ```shell
@@ -63,10 +67,10 @@ revision-2019-June-28--10-38-01
         └── externalArtifacts
 ```
 
-In the context of QL for VSCode plugin, the `working` directory would be the database folder 
+In the context of QL for VSCode plugin, the `working` directory would be the database folder
 that you would have to browse to.
 
-The `QL` view should exist on the left, below explorer, version control, extensions, etc. icons. 
+The `QL` view should exist on the left, below explorer, version control, extensions, etc. icons.
 Within that panel you should be able to see a list of databases.
 
 ### Configuring a Project
