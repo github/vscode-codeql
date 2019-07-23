@@ -12,7 +12,7 @@ import * as path from 'path';
 export async function buildProtocols(): Promise<void> {
   let codeRoot = process.env.SEMMLE_CODE;
   if (!codeRoot) {
-    codeRoot = 'code';
+    codeRoot = '../../code';
   }
   
   const protoDir = path.join(codeRoot, 'queryserver-client', 'proto');
