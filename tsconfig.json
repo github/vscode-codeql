@@ -17,6 +17,7 @@
     "src/**/*.ts"
   ],
   "exclude": [
+    "test",
     "node_modules",
     "**/view"
   ]

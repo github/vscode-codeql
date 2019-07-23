@@ -2,6 +2,7 @@ import * as cp from 'child_process';
 import * as path from 'path';
 import { window as Window, workspace } from 'vscode';
 import { StreamInfo } from 'vscode-languageclient';
+import { QLConfiguration } from './config';
 
 /**
  * ide-server.ts
@@ -10,9 +11,12 @@ import { StreamInfo } from 'vscode-languageclient';
  * Managing the lsp server for QL.
  */
 
-export async function spawnIdeServer(): Promise<StreamInfo> {
-  const semmleDist: string = workspace.getConfiguration('ql').get('distributionPath') as string;
-  const command = path.resolve(semmleDist, "tools/java/bin/java");
+export async function spawnIdeServer(config: QLConfiguration): Promise<StreamInfo> {
+  const semmleDist = config.qlDistributionPath;
+  if (!semmleDist) {
+    throw new Error('Semmle distribution path not set.');
+  }
+  const command = config.javaCommand!;
   const jvmargs = ["-jar", path.resolve(semmleDist, "tools/ideserver.jar")];
   const otherArgs = ["--check-errors", "on_change"]
   const args = jvmargs.concat(otherArgs)
@@ -25,8 +29,8 @@ export async function spawnIdeServer(): Promise<StreamInfo> {
   if (!child || !child.pid) {
     throw new Error(`Launching server using command ${command} failed.`);
   }
-  child.stderr.on('data', data => outputChannel.append(data.toString()));
-  child.stdout.on('data', data => outputChannel.append(data.toString()));
+  child.stderr!.on('data', data => outputChannel.append(data.toString()));
+  child.stdout!.on('data', data => outputChannel.append(data.toString()));
   outputChannel.append("langauge server started on pid:" + child.pid + "\n");
-  return { writer: child.stdin, reader: child.stdout };
+  return { writer: child.stdin!, reader: child.stdout! };
 }
