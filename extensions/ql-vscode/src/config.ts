@@ -14,7 +14,7 @@ export class QLConfiguration extends DisposableObject {
     this.updateConfiguration();
     this.push(workspace.onDidChangeConfiguration(this.handleDidChangeConfiguration, this));
   }
-  
+
   public get onDidChangeDistributionPath(): Event<void> {
     return this.onDidChangeDistributionPathEmitter.event;
   }

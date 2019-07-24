@@ -75,7 +75,7 @@ async function collectPackages(context: RushContext, name: string, version: stri
       // For local packages, use `packlist` to get the list of files that npm would have packed
       // into the tarball.
       files = packlist.sync({ path: info.path });
-    } 
+    }
     else {
       // For non-local packages, just copy everything.
       files = await glob('**/*', {
@@ -107,7 +107,7 @@ async function collectPackages(context: RushContext, name: string, version: stri
 
 async function copyPackageAndModules(pkg: IPackageInfo, pkgs: PackageMap, destPath: string,
   rootNodeModulesPath: string): Promise<void> {
-  
+
   let destPackagePath: string;
   if (pkgs.hasMultipleVersions(pkg.name) || pkg.isRoot) {
     // Copy as a nested package, and let `npm dedupe` fix it up later if possible.
@@ -152,7 +152,7 @@ export async function deployPackage(packageJsonPath: string): Promise<DeployedPa
     // message that it created a package-lock.json.
     const packageLockPath = path.join(distPath, 'package-lock.json');
     await fs.writeFile(packageLockPath, '{}');
-    await cpp.spawn('npm', [ 'dedupe' ], {
+    await cpp.spawn('npm', ['dedupe'], {
       cwd: distPath,
       stdio: 'inherit'
     });
