@@ -148,11 +148,15 @@ export async function deployPackage(packageJsonPath: string): Promise<DeployedPa
     await copyPackageAndModules(rootPkg, pkgs, path.dirname(distPath), path.join(distPath, 'node_modules'));
 
     console.log(`Deduplicating dependencies of package '${rootPackage.name}'...`);
-    await fs.writeFile(path.join(distPath, 'package-lock.json'), '{}');
+    // We create a temporary `package-lock.json` file just to prevent `npm ls` from printing out the
+    // message that it created a package-lock.json.
+    const packageLockPath = path.join(distPath, 'package-lock.json');
+    await fs.writeFile(packageLockPath, '{}');
     await cpp.spawn('npm', [ 'dedupe' ], {
       cwd: distPath,
       stdio: 'inherit'
     });
+    await fs.unlink(packageLockPath);
 
     return {
       distPath: distPath,
