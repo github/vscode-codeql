@@ -198,6 +198,7 @@
     "leb": "^0.3.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "semmle-vscode-utils": "^0.0.1",
     "tmp": "^0.1.0",
     "ts-loader": "^5.4.5",
     "ts-node": "^8.1.0",

@@ -3,6 +3,7 @@ dependencies:
   '@microsoft/rush-lib': 5.10.3
   '@rush-temp/build-tasks': 'file:projects/build-tasks.tgz'
   '@rush-temp/ql-vscode': 'file:projects/ql-vscode.tgz'
+  '@rush-temp/semmle-vscode-utils': 'file:projects/semmle-vscode-utils.tgz'
   '@rush-temp/typescript-config': 'file:projects/typescript-config.tgz'
   '@types/chai': 4.1.7
   '@types/child-process-promise': 2.2.1
@@ -6361,8 +6362,20 @@ packages:
     dev: false
     name: '@rush-temp/ql-vscode'
     resolution:
-      integrity: sha512-oWhDcg7ppRUYVBpcHJRGHXpd7J0uRZq5nn72QwqvqHMavYpN/sIjcv89u6fw3zG661Z/0w0D3XM8WDnwVh8KMQ==
+      integrity: sha512-OuRiNjKIdQEuAgAgpnq1aeFbc10yqe9K/MG0JzzohtlMH0W+uK6kPc8qtdBGApSApdiL20X/adY2qtuh1OVTew==
       tarball: 'file:projects/ql-vscode.tgz'
+    version: 0.0.0
+  'file:projects/semmle-vscode-utils.tgz':
+    dependencies:
+      '@types/node': 12.6.8
+      typescript: 3.5.3
+      typescript-formatter: /typescript-formatter/7.2.2/typescript@3.5.3
+      vscode: 1.1.35
+    dev: false
+    name: '@rush-temp/semmle-vscode-utils'
+    resolution:
+      integrity: sha512-bVoTFAMKcJOnXp/SM8cl92YHP7rNwEPSaSMKHKwa3K2aLls8yGF8gnesGr/KiSwt+yri/+6pgHh3SPN6obRyJA==
+      tarball: 'file:projects/semmle-vscode-utils.tgz'
     version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
@@ -6379,6 +6392,7 @@ specifiers:
   '@microsoft/rush-lib': ~5.10.1
   '@rush-temp/build-tasks': 'file:./projects/build-tasks.tgz'
   '@rush-temp/ql-vscode': 'file:./projects/ql-vscode.tgz'
+  '@rush-temp/semmle-vscode-utils': 'file:./projects/semmle-vscode-utils.tgz'
   '@rush-temp/typescript-config': 'file:./projects/typescript-config.tgz'
   '@types/chai': ^4.1.7
   '@types/child-process-promise': ^2.2.1

@@ -357,6 +357,10 @@
       "projectFolder": "tools/build-tasks"
     },
     {
+      "packageName": "semmle-vscode-utils",
+      "projectFolder": "lib/semmle-vscode-utils"
+    },
+    {
       "packageName": "ql-vscode",
       "projectFolder": "extensions/ql-vscode",
       "shouldPublish": true
