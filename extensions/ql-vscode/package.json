@@ -190,8 +190,7 @@
     "test": "mocha --exit -r ts-node/register test/**/*.ts",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "format": "tsfmt -r",
-    "gulp": "gulp"
+    "format": "tsfmt -r"
   },
   "dependencies": {
     "google-protobuf": "^3.7.1",

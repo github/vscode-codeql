@@ -122,6 +122,17 @@
     //    */
     //   "shellCommand": "node common/scripts/my-global-command.js"
     // }
+    {
+      "commandKind": "bulk",
+      "name": "format",
+      "summary": "Reformat source code in all projects",
+      "description": "Runs the `format` npm task in each project, if present.",
+      "safeForSimultaneousRushProcesses": false,
+      "enableParallelism": true,
+      "ignoreDependencyOrder": true,
+      "ignoreMissingScript": true,
+      "allowWarningsInSuccessfulBuild": false
+    },
   ],
 
   /**
