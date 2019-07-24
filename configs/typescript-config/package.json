@@ -1,0 +1,20 @@
+{
+  "name": "typescript-config",
+  "description": "TypeScript configurations",
+  "author": "Semmle",
+  "private": true,
+  "version": "0.0.1",
+  "publisher": "Semmle",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Semmle/ql.git"
+  },
+  "scripts": {
+    "build": "",
+    "format": ""
+  },
+  "devDependencies": {
+  },
+  "dependencies": {
+  }
+}

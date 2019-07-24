@@ -149,21 +149,21 @@ function visitAllMatchesInRule(rule: any, action: (match: any) => any) {
 function expandPatternMatchProperties(rule: any, key: 'begin' | 'end') {
   const patternKey = key + 'Pattern';
   const capturesKey = key + 'Captures';
-  if (rule[patternKey] !== undefined) {
-    rule[key] = `(?${rule[patternKey]})`
-    rule[capturesKey] =
-      {
-        '0':
-        {
-          patterns:
-            [
-              {
-                include: rule[patternKey]
-              }
-            ]
-        }
+  const pattern = rule[patternKey];
+  if (pattern !== undefined) {
+    const patterns: string[] = Array.isArray(pattern) ? pattern : [pattern];
+    rule[key] = patterns.map(p => `((?${p}))`).join('|');
+    const captures = {};
+    for (const patternIndex in patterns) {
+      captures[(Number(patternIndex) + 1).toString()] = {
+        patterns: [
+          {
+            include: patterns[patternIndex]
+          }
+        ]
       };
-
+    }
+    rule[capturesKey] = captures;
     rule[patternKey] = undefined;
   }
 }

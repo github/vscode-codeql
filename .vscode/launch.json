@@ -15,7 +15,7 @@
 			"outFiles": [
 				"${workspaceRoot}/extensions/qltest-vscode/out/src/**/*.js"
 			],
-			"preLaunchTask": "gulp: buildWithoutPackage"
+			"preLaunchTask": "Build"
 		},
 		{
 			"name": "Launch Tests (ql-vscode)",
@@ -31,7 +31,7 @@
 			"outFiles": [
 				"${workspaceRoot}/extensions/qltest-vscode/out/test/**/*.js"
 			],
-			"preLaunchTask": "gulp: buildWithoutPackage"
+			"preLaunchTask": "Build"
 		}
 	]
 }
