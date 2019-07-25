@@ -219,6 +219,7 @@
     "@types/react": "^16.8.17",
     "@types/react-dom": "^16.8.4",
     "@types/tmp": "^0.1.0",
+    "@types/vscode": "^1.33.0",
     "build-tasks": "^0.0.1",
     "chai": "^4.2.0",
     "child-process-promise": "^2.2.1",
