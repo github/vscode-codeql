@@ -12,13 +12,16 @@
       "rootDir": "../../src",
       "strictNullChecks": true,
       "noFallthroughCasesInSwitch": true,
-      "preserveWatchOutput": true
+      "preserveWatchOutput": true,
+      "newLine": "lf",
+      "noImplicitReturns": true
     },
     "include": [
       "../../src/**/*.ts"
     ],
     "exclude": [
-      "../../node_modules"
+      "../../node_modules",
+      "../../test",
+      "../../**/view"
     ]
   }
-  

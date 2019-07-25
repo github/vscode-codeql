@@ -16,7 +16,7 @@ function replaceReferencesWithStrings(value: string, replacements: Map<string, s
   while (true) {
     const original = result;
     for (var key in replacements) {
-      result = result.replace(`(?#${key})`, `(?:${replacements[key]})`);
+      result = result.replace(`(?#${key})`, `(?:${replacements.get(key)})`);
     }
     if (result === original) {
       return result;
@@ -33,7 +33,7 @@ function replaceReferencesWithStrings(value: string, replacements: Map<string, s
 function gatherMacros(yaml: any): Map<string, string> {
   const macros = new Map<string, string>();
   for (var key in yaml.macros) {
-    macros[key] = yaml.macros[key];
+    macros.set(key, yaml.macros[key]);
   }
 
   return macros;
@@ -80,7 +80,7 @@ function gatherMatchTextForRules(yaml: any): Map<string, string> {
   const replacements = new Map<string, string>();
   for (var key in yaml.repository) {
     const node = yaml.repository[key];
-    replacements[key] = getNodeMatchText(node);
+    replacements.set(key, getNodeMatchText(node));
   }
 
   return replacements;
@@ -153,7 +153,7 @@ function expandPatternMatchProperties(rule: any, key: 'begin' | 'end') {
   if (pattern !== undefined) {
     const patterns: string[] = Array.isArray(pattern) ? pattern : [pattern];
     rule[key] = patterns.map(p => `((?${p}))`).join('|');
-    const captures = {};
+    const captures: { [index: string]: any } = {};
     for (const patternIndex in patterns) {
       captures[(Number(patternIndex) + 1).toString()] = {
         patterns: [
@@ -185,7 +185,7 @@ function transformFile(yaml: any) {
     visitAllMatchesInRule(rule, (match) => {
       if ((typeof match) === 'object') {
         for (var key in match) {
-          return macros[key].replace('(?#)', `(?:${match[key]})`);
+          return macros.get(key)!.replace('(?#)', `(?:${match[key]})`);
         }
         throw new Error("No key in macro map.")
       }

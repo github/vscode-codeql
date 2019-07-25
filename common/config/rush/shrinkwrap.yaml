@@ -10,11 +10,16 @@ dependencies:
   '@types/fs-extra': 8.0.0
   '@types/google-protobuf': 3.7.1
   '@types/gulp': 4.0.6
+  '@types/gulp-sourcemaps': 0.0.32
+  '@types/js-yaml': 3.12.1
   '@types/mocha': 2.2.48
   '@types/node': 12.6.8
+  '@types/npm-packlist': 1.1.1
   '@types/react': 16.8.23
   '@types/react-dom': 16.8.5
+  '@types/through2': 2.0.34
   '@types/tmp': 0.1.0
+  '@types/vinyl': 2.0.3
   ansi-colors: 4.1.1
   chai: 4.2.0
   child-process-promise: 2.2.1
@@ -236,6 +241,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-kiLxbqoi2C7NmkGj1ZpkSDyIqj4vqDEIjx7wX+O0GXV6bLX6u/oLz49CwefD0c0vzaKeBdOqmUtI8bC0bBRr0w==
+  /@types/gulp-sourcemaps/0.0.32:
+    dependencies:
+      '@types/node': 12.6.8
+    dev: false
+    resolution:
+      integrity: sha512-+7BAmptW2bxyJnJcCEuie7vLoop3FwWgCdBMzyv7MYXED/HeNMeQuX7uPCkp4vfU1TTu4CYFH0IckNPvo0VePA==
   /@types/gulp/4.0.6:
     dependencies:
       '@types/undertaker': 1.2.2
@@ -255,6 +266,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-LFt+YA7Lv2IZROMwokZKiPNORAV5N3huMs3IKnzlE430HWhWYZ8b+78HiwJXJJP1V2IEjinyJURuRJfGoaFSIA==
+  /@types/js-yaml/3.12.1:
+    dev: false
+    resolution:
+      integrity: sha512-SGGAhXLHDx+PK4YLNcNGa6goPf9XRWQNAUUbffkwVGGXIxmDKWyGGL4inzq2sPmExu431Ekb9aEMn9BkPqEYFA==
   /@types/minimatch/3.0.3:
     dev: false
     resolution:
@@ -281,6 +296,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-8KmlRxwbKZfjUHFIt3q8TF5S2B+/E5BaAoo/3mgc5h6FJzqxXkCK/VMetO+IRDtwtU6HUvovHMBn+XRj7SV9Qg==
+  /@types/npm-packlist/1.1.1:
+    dev: false
+    resolution:
+      integrity: sha512-+0ZRUpPOs4Mvvwj/pftWb14fnPN/yS6nOp6HZFyIMDuUmyPtKXcO4/SPhyRGR6dUCAn1B3hHJozD/UCrU+Mmew==
   /@types/prop-types/15.7.1:
     dev: false
     resolution:
@@ -396,6 +415,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-9a7C5VHh+1BKblaYiq+7Tfc+EOmjMdZaD1MYtkQjSoxgB69tBjW98ry6SKsi4zEIWztLOMRuL87A3bdT/Fc/4w==
+  /@types/through2/2.0.34:
+    dependencies:
+      '@types/node': 12.6.8
+    dev: false
+    resolution:
+      integrity: sha512-nhRG8+RuG/L+0fAZBQYaRflXKjTrHOKH8MFTChnf+dNVMxA3wHYYrfj0tztK0W51ABXjGfRCDc0vRkecCOrsow==
   /@types/tmp/0.1.0:
     dev: false
     resolution:
@@ -6297,7 +6322,13 @@ packages:
       '@microsoft/rush-lib': 5.10.3
       '@types/child-process-promise': 2.2.1
       '@types/fs-extra': 8.0.0
+      '@types/gulp': 4.0.6
+      '@types/gulp-sourcemaps': 0.0.32
+      '@types/js-yaml': 3.12.1
       '@types/node': 12.6.8
+      '@types/npm-packlist': 1.1.1
+      '@types/through2': 2.0.34
+      '@types/vinyl': 2.0.3
       ansi-colors: 4.1.1
       child-process-promise: 2.2.1
       fs-extra: 8.1.0
@@ -6318,7 +6349,7 @@ packages:
     dev: false
     name: '@rush-temp/build-tasks'
     resolution:
-      integrity: sha512-xjn5X1prFZOrfTzW07RD/hQaZQTe/DCAAyRp0hrf/uyuEnYDpOqg1einHA6lNhzBaVrGUO9kRggO8jiU6lbhVA==
+      integrity: sha512-fAIRyUmzLMJjp/DHNq6DhxJBC/aNjhqMaYMZZ8ZJ4Crnyh1FfXGY/3t467G9onp3MjCUug5PguXwlCCTBC95rg==
       tarball: 'file:projects/build-tasks.tgz'
     version: 0.0.0
   'file:projects/ql-vscode.tgz':
@@ -6362,7 +6393,7 @@ packages:
     dev: false
     name: '@rush-temp/ql-vscode'
     resolution:
-      integrity: sha512-OuRiNjKIdQEuAgAgpnq1aeFbc10yqe9K/MG0JzzohtlMH0W+uK6kPc8qtdBGApSApdiL20X/adY2qtuh1OVTew==
+      integrity: sha512-LzGJCiXRhPBs80pPuCJqJ47yPLJKo0Oa0rK4m2GQhEk9eE+ru/lCGiNl8Wez17Qq4MZ5XLPbLRgtOAtku/Mm8Q==
       tarball: 'file:projects/ql-vscode.tgz'
     version: 0.0.0
   'file:projects/semmle-vscode-utils.tgz':
@@ -6399,11 +6430,16 @@ specifiers:
   '@types/fs-extra': ^8.0.0
   '@types/google-protobuf': ^3.2.7
   '@types/gulp': ^4.0.6
+  '@types/gulp-sourcemaps': ~0.0.32
+  '@types/js-yaml': ~3.12.1
   '@types/mocha': ^2.2.48
   '@types/node': ^12.0.8
+  '@types/npm-packlist': ~1.1.1
   '@types/react': ^16.8.17
   '@types/react-dom': ^16.8.4
+  '@types/through2': ~2.0.34
   '@types/tmp': ^0.1.0
+  '@types/vinyl': ~2.0.3
   ansi-colors: ^4.0.1
   chai: ^4.2.0
   child-process-promise: ^2.2.1

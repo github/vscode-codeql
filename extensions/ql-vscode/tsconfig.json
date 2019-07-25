@@ -1,24 +1,3 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "target": "es6",
-    "outDir": "out",
-    "lib": [
-      "es6"
-    ],
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "rootDir": "src",
-    "strictNullChecks": true,
-    "noFallthroughCasesInSwitch": true,
-    "preserveWatchOutput": true
-  },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "test",
-    "node_modules",
-    "**/view"
-  ]
+  "extends": "./node_modules/typescript-config/extension.tsconfig.json"
 }
