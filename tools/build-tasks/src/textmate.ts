@@ -15,7 +15,7 @@ function replaceReferencesWithStrings(value: string, replacements: Map<string, s
   let result = value;
   while (true) {
     const original = result;
-    for (var key in replacements) {
+    for (const key of replacements.keys()) {
       result = result.replace(`(?#${key})`, `(?:${replacements.get(key)})`);
     }
     if (result === original) {
