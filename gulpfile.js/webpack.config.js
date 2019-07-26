@@ -6,7 +6,7 @@ module.exports = {
     resultsView: './src/view/results.tsx'
   },
   output: {
-    path: path.resolve(__dirname, 'out'),
+    path: path.resolve(__dirname, '..', 'out'),
     filename: "[name].js"
   },
   devtool: 'eval-source-map',
