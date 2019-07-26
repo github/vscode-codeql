@@ -183,8 +183,8 @@ export async function compileAndRunQueryAgainstDatabase(
     throw new Error('Can\'t run query without an active editor');
   }
   const qlProgram = new compilation.QlProgram();
-  qlProgram.setLibraryPathList(config.projects['.'].libraryPath.map(lp => path.join(root, lp)));
-  qlProgram.setDbschemePath(path.join(root, config.projects['.'].dbScheme));
+  qlProgram.setLibraryPathList(config.projects['.'].libraryPath.map(lp => path.resolve(root, lp)));
+  qlProgram.setDbschemePath(path.resolve(root, config.projects['.'].dbScheme));
   qlProgram.setQueryPath(editor.document.fileName);
 
   let quickEvalPosition: qsClient.Position | undefined;
