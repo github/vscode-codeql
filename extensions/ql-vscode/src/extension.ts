@@ -2,10 +2,11 @@ import { commands, ExtensionContext, window as Window } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import { DatabaseManager } from './databases';
 import { spawnIdeServer } from './ide-server';
-import { showResults } from './interface';
+import { InterfaceManager } from './interface';
 import { compileAndRunQueryAgainstDatabase, EvaluationInfo, spawnQueryServer, tmpDirDisposal } from './queries';
 import * as qsClient from './queryserver-client';
 import { QLConfiguration } from './config';
+import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 
 /**
 * extension.ts
@@ -16,8 +17,16 @@ import { QLConfiguration } from './config';
 
 export function activate(ctx: ExtensionContext) {
 
-  function showResultsForInfo(qs: qsClient.Server, info: EvaluationInfo) {
-    showResults(ctx, info, qs);
+  const qlConfiguration = new QLConfiguration();
+  const qs = spawnQueryServer(qlConfiguration);
+  const dbm = new DatabaseManager(ctx);
+  const qhm = new QueryHistoryManager(ctx, item => showResultsForInfo(item.info));
+  const intm = new InterfaceManager(ctx, msg => {
+    if (qs != undefined) { qs.log(msg) }
+  });
+
+  function showResultsForInfo(info: EvaluationInfo) {
+    intm.showResults(ctx, info);
   }
 
   async function compileAndRunQueryAsync(qs: qsClient.Server, quickEval: boolean): Promise<EvaluationInfo> {
@@ -31,9 +40,12 @@ export function activate(ctx: ExtensionContext) {
   function compileAndRunQuerySync(
     quickEval: boolean,
   ) {
-    if (qs) {
+    if (qs !== undefined) {
       compileAndRunQueryAsync(qs, quickEval)
-        .then(info => showResultsForInfo(qs, info))
+        .then(info => {
+          showResultsForInfo(info);
+          qhm.push(new QueryHistoryItem("query", "db", info));
+        })
         .catch(e => {
           if (e instanceof Error)
             Window.showErrorMessage(e.message);
@@ -42,11 +54,6 @@ export function activate(ctx: ExtensionContext) {
         });
     }
   }
-
-  const qlConfiguration = new QLConfiguration();
-
-  const dbm = new DatabaseManager(ctx);
-  const qs = spawnQueryServer(qlConfiguration);
 
   ctx.subscriptions.push(tmpDirDisposal);
 
