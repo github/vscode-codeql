@@ -4,7 +4,7 @@
 // checkout.
 import { ChildProcess } from 'child_process';
 import * as cpp from 'child-process-promise';
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import * as glob from 'glob-promise';
 import * as os from 'os';
 import * as path from 'path';
@@ -12,7 +12,7 @@ import * as path from 'path';
 export async function buildProtocols(): Promise<void> {
   let codeRoot = process.env.SEMMLE_CODE;
   if (!codeRoot) {
-    codeRoot = 'code';
+    codeRoot = '../../code';
   }
   
   const protoDir = path.join(codeRoot, 'queryserver-client', 'proto');
@@ -44,7 +44,7 @@ export async function buildProtocols(): Promise<void> {
   protocPath = path.join(codeRoot, 'resources/lib/protoc', protocPath);
   const tsPlugin = path.join('node_modules/.bin/protoc-gen-ts') + tsPluginSuffix;
 
-  await fs.promises.mkdir('gen', { recursive: true });
+  await fs.mkdir('gen', { recursive: true });
 
   const p = cpp.spawn(protocPath, [
     `--plugin=protoc-gen-ts=${tsPlugin}`,

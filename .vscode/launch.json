@@ -3,26 +3,35 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Launch Extension",
+			"name": "Launch Extension (ql-vscode)",
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
+			"args": [
+				"--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode"
+			],
 			"stopOnEntry": false,
 			"sourceMaps": true,
-			"outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
-			"preLaunchTask": "gulp: buildWithoutPackage"
+			"outFiles": [
+				"${workspaceRoot}/extensions/qltest-vscode/out/src/**/*.js"
+			],
+			"preLaunchTask": "Build"
 		},
 		{
-			"name": "Launch Tests",
+			"name": "Launch Tests (ql-vscode)",
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceRoot}", "--extensionTestsPath=${workspaceRoot}/out/test" ],
+			"args": [
+				"--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
+				"--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/test"
+			],
 			"stopOnEntry": false,
 			"sourceMaps": true,
-			"outFiles": [ "${workspaceRoot}/out/test/**/*.js" ],
-			"preLaunchTask": "gulp: buildWithoutPackage"
+			"outFiles": [
+				"${workspaceRoot}/extensions/qltest-vscode/out/test/**/*.js"
+			],
+			"preLaunchTask": "Build"
 		}
 	]
 }

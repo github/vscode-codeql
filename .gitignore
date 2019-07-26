@@ -1,6 +1,19 @@
-out
-server
-node_modules
-*.vsix
-gen
-code
+# Logs
+*.log
+
+# Generated files
+/dist/
+out/
+server/
+node_modules/
+gen/
+
+# Symlink to Semmle/code checkout
+/code/
+
+# Visual Studio workspace state
+.vs/
+
+# Rush files
+/common/temp/**
+package-deps.json

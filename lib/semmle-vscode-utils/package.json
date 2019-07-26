@@ -1,0 +1,28 @@
+{
+  "name": "semmle-vscode-utils",
+  "description": "Shared Semmle utilities for writing Visual Studio Code extensions",
+  "author": "Semmle",
+  "private": true,
+  "version": "0.0.1",
+  "publisher": "Semmle",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Semmle/ql.git"
+  },
+  "main": "./out/index",
+  "scripts": {
+    "build": "gulp",
+    "format": "tsfmt -r"
+  },
+  "devDependencies": {
+    "@types/node": "^12.0.8",
+    "@types/vscode": "^1.33.0",
+    "build-tasks": "^0.0.1",
+    "typescript": "^3.5.2",
+    "typescript-config": "^0.0.1",
+    "typescript-formatter": "^7.2.2",
+    "vscode": "^1.1.34"
+  },
+  "dependencies": {
+  }
+}

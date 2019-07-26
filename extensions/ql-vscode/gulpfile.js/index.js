@@ -2,9 +2,12 @@
 
 require('ts-node').register({});
 const gulp = require('gulp');
-const { packageExtension } = require('./package');
-const { compileTextMateGrammar } = require('./textmate');
-const { compileTypeScript, watchTypeScript } = require('./typescript');
+const {
+  compileTypeScript,
+  watchTypeScript,
+  packageExtension,
+  compileTextMateGrammar
+} = require('build-tasks');
 const { buildProtocols } = require('./build-proto');
 
 const compile = gulp.series(buildProtocols, compileTypeScript);

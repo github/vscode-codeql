@@ -1,0 +1,47 @@
+/**
+ * This is the main configuration file for Rush.
+ * For full documentation, please see https://rushjs.io/pages/configs/rush_json/
+ */
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.10.3",
+  "pnpmVersion": "2.15.1",
+  "pnpmOptions": {
+    "strictPeerDependencies": true,
+  },
+  "nodeSupportedVersionRange": ">=10.13.0 <11.0.0",
+  "ensureConsistentVersions": true,
+  "projectFolderMinDepth": 2,
+  "projectFolderMaxDepth": 2,
+  "gitPolicy": {
+  },
+  "repository": {
+    "url": "https://git.semmle.com/Semmle/ql-vscode.git"
+  },
+  "eventHooks": {
+    "preRushInstall": [],
+    "postRushInstall": [],
+    "preRushBuild": [],
+    "postRushBuild": []
+  },
+  "variants": [],
+  "projects": [
+    {
+      "packageName": "typescript-config",
+      "projectFolder": "configs/typescript-config"
+    },
+    {
+      "packageName": "build-tasks",
+      "projectFolder": "tools/build-tasks"
+    },
+    {
+      "packageName": "semmle-vscode-utils",
+      "projectFolder": "lib/semmle-vscode-utils"
+    },
+    {
+      "packageName": "ql-vscode",
+      "projectFolder": "extensions/ql-vscode",
+      "shouldPublish": true
+    }
+  ]
+}

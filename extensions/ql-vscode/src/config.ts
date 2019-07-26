@@ -1,5 +1,5 @@
 import { workspace, Event, EventEmitter, ConfigurationChangeEvent, window } from 'vscode';
-import { DisposableObject } from './disposable-object';
+import { DisposableObject } from 'semmle-vscode-utils';
 import * as path from 'path';
 import { QLConfigurationData } from './configData';
 
@@ -14,7 +14,7 @@ export class QLConfiguration extends DisposableObject {
     this.updateConfiguration();
     this.push(workspace.onDidChangeConfiguration(this.handleDidChangeConfiguration, this));
   }
-  
+
   public get onDidChangeDistributionPath(): Event<void> {
     return this.onDidChangeDistributionPathEmitter.event;
   }

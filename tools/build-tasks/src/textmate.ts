@@ -15,8 +15,8 @@ function replaceReferencesWithStrings(value: string, replacements: Map<string, s
   let result = value;
   while (true) {
     const original = result;
-    for (var key in replacements) {
-      result = result.replace(`(?#${key})`, `(?:${replacements[key]})`);
+    for (const key of replacements.keys()) {
+      result = result.replace(`(?#${key})`, `(?:${replacements.get(key)})`);
     }
     if (result === original) {
       return result;
@@ -33,7 +33,7 @@ function replaceReferencesWithStrings(value: string, replacements: Map<string, s
 function gatherMacros(yaml: any): Map<string, string> {
   const macros = new Map<string, string>();
   for (var key in yaml.macros) {
-    macros[key] = yaml.macros[key];
+    macros.set(key, yaml.macros[key]);
   }
 
   return macros;
@@ -80,7 +80,7 @@ function gatherMatchTextForRules(yaml: any): Map<string, string> {
   const replacements = new Map<string, string>();
   for (var key in yaml.repository) {
     const node = yaml.repository[key];
-    replacements[key] = getNodeMatchText(node);
+    replacements.set(key, getNodeMatchText(node));
   }
 
   return replacements;
@@ -149,21 +149,21 @@ function visitAllMatchesInRule(rule: any, action: (match: any) => any) {
 function expandPatternMatchProperties(rule: any, key: 'begin' | 'end') {
   const patternKey = key + 'Pattern';
   const capturesKey = key + 'Captures';
-  if (rule[patternKey] !== undefined) {
-    rule[key] = `(?${rule[patternKey]})`
-    rule[capturesKey] =
-      {
-        '0':
-        {
-          patterns:
-            [
-              {
-                include: rule[patternKey]
-              }
-            ]
-        }
+  const pattern = rule[patternKey];
+  if (pattern !== undefined) {
+    const patterns: string[] = Array.isArray(pattern) ? pattern : [pattern];
+    rule[key] = patterns.map(p => `((?${p}))`).join('|');
+    const captures: { [index: string]: any } = {};
+    for (const patternIndex in patterns) {
+      captures[(Number(patternIndex) + 1).toString()] = {
+        patterns: [
+          {
+            include: patterns[patternIndex]
+          }
+        ]
       };
-
+    }
+    rule[capturesKey] = captures;
     rule[patternKey] = undefined;
   }
 }
@@ -185,7 +185,7 @@ function transformFile(yaml: any) {
     visitAllMatchesInRule(rule, (match) => {
       if ((typeof match) === 'object') {
         for (var key in match) {
-          return macros[key].replace('(?#)', `(?:${match[key]})`);
+          return macros.get(key)!.replace('(?#)', `(?:${match[key]})`);
         }
         throw new Error("No key in macro map.")
       }
