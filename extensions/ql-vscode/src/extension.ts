@@ -40,7 +40,7 @@ export function activate(ctx: ExtensionContext) {
   function compileAndRunQuerySync(
     quickEval: boolean,
   ) {
-    if (qs != undefined) {
+    if (qs !== undefined) {
       compileAndRunQueryAsync(qs, quickEval)
         .then(info => {
           showResultsForInfo(info);

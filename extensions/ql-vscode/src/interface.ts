@@ -18,18 +18,16 @@ import * as qsClient from './queryserver-client';
  */
 
 export class InterfaceManager {
-  ctx: vscode.ExtensionContext;
   panel: vscode.WebviewPanel | undefined;
   state: ResultsViewState;
-  log: (x: string) => void;
 
-  constructor(ctx: vscode.ExtensionContext, log: (x: string) => void) {
-    this.ctx = ctx;
+  constructor(public ctx: vscode.ExtensionContext, public log: (x: string) => void) {
     this.state = { results: [] };
-    this.log = log;
   }
 
-  getPanel() {
+  // Returns the webview panel, creating it if it doesn't already
+  // exist.
+  getPanel(): vscode.WebviewPanel {
     if (this.panel == undefined) {
       const { ctx } = this;
       const panel = this.panel = Window.createWebviewPanel(
