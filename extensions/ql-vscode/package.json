@@ -233,8 +233,9 @@
     "react-dom": "^16.8.6",
     "semmle-vscode-utils": "^0.0.1",
     "tmp": "^0.1.0",
-    "vscode-languageclient": "^5.2.1",
-    "xml2js": "~0.4.19"
+    "xml2js": "~0.4.19",
+    "vscode-jsonrpc": "^4.0.0",
+    "vscode-languageclient": "^5.2.1"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",

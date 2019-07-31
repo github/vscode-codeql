@@ -2,13 +2,11 @@ import * as path from 'path';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
 import { ExtensionContext, ProgressLocation, window as Window, workspace } from 'vscode';
-import * as compilation from '../gen/compilation_server_protocol_pb';
-import { ProgressUpdate } from '../gen/core_messages_protocol_pb';
-import * as evaluation from '../gen/evaluation_server_protocol_pb';
 import { DatabaseManager, DatabaseItem } from './databases';
 import * as qsClient from './queryserver-client';
 import { QLConfiguration } from './config';
 import { DatabaseInfo } from './interface-types';
+import * as messages from './messages';
 
 /**
  * queries.ts
@@ -34,14 +32,14 @@ let queryCounter = 0;
  * output and results.
  */
 class QueryInfo {
-  program: compilation.QlProgram;
-  quickEvalPosition?: qsClient.Position;
+  program: messages.QlProgram;
+  quickEvalPosition?: messages.Position;
   compiledQueryPath: string;
   resultsPath: string;
   dbItem: DatabaseItem;
   db: vscode.Uri; // guarantee the existence of a well-defined db dir at this point
 
-  constructor(program: compilation.QlProgram, dbItem: DatabaseItem, quickEvalPosition?: qsClient.Position) {
+  constructor(program: messages.QlProgram, dbItem: DatabaseItem, quickEvalPosition?: messages.Position) {
     this.program = program;
     this.quickEvalPosition = quickEvalPosition;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${queryCounter}.qlo`);
@@ -56,74 +54,97 @@ class QueryInfo {
 
   async run(
     qs: qsClient.Server,
-  ): Promise<evaluation.Result.AsObject> {
-    const queryToRun = new evaluation.QueryToRun();
-    queryToRun.setResultPath(this.resultsPath);
-    queryToRun.setQloUri(vscode.Uri.file(this.compiledQueryPath).toString());
-    queryToRun.setTimeoutSecs(1000); // XXX should be configurable
-    queryToRun.setAllowUnkownTemplates(true);
-    const db = new evaluation.Database();
-    db.setDatabaseDirectory(this.db.fsPath);
-    db.setWorkingSet('default');
+  ): Promise<messages.EvaluationResult> {
+    let result: messages.EvaluationResult | null = null;
 
-    return withProgress({
-      location: ProgressLocation.Notification,
-      title: "Running Query",
-      cancellable: false,
-    }, (progress, token) => {
-      return new Promise<evaluation.Result.AsObject>((resolve, reject) => {
-        qs.runQuery(queryToRun, db,
-          {
-            onProgress: progress,
-            onResult: resolve,
-            onDone: () => {
-              qs.log(" - - - DONE RUNNING QUERY - - - ");
-            },
-          }
-        );
+    const callbackId = qs.registerCallback(res => { result = res });
+
+    const queryToRun: messages.QueryToRun = {
+      resultsPath: this.resultsPath,
+      qlo: vscode.Uri.file(this.compiledQueryPath).toString(),
+      allowUnknownTemplates: true,
+      id: callbackId,
+      timeoutSecs: 1000, // XXX timeout should be configurable
+    }
+    const db: messages.Database = {
+      dbDir: this.db.fsPath,
+      workingSet: 'default'
+    }
+    const params: messages.EvaluateQueriesParams = {
+      db,
+      evaluateId: callbackId,
+      queries: [queryToRun],
+      stopOnError: false,
+      useSequenceHint: false
+    }
+    try {
+      await withProgress({
+        location: ProgressLocation.Notification,
+        title: "Running Query",
+        cancellable: false,
+      }, (progress, token) => {
+        return qs.sendRequest(messages.runQueries, params, token, progress)
       });
-    });
+    } finally {
+      qs.unRegisterCallback(callbackId);
+    }
+    return result || { evaluationTime: 0, message: "No reuslt from server", queryId: 0, runId: callbackId, resultType: messages.QueryResultType.OTHER_ERROR };
   }
 
   async compileAndRun(
     qs: qsClient.Server,
-  ): Promise<evaluation.Result.AsObject> {
-    return withProgress({
-      location: ProgressLocation.Notification,
-      title: "Compiling Query",
-      cancellable: false,
-    }, (progress, token) => {
-      return new Promise<evaluation.Result.AsObject>((resolve, reject) => {
-        qs.compileQuery(this.program,
-          this.compiledQueryPath,
-          {
-            onProgress: progress,
-            onResult: x => {
-              const errors = x.messagesList.filter(msg => msg.severity == 0);
-              if (errors.length == 0) {
-                resolve(this.run(qs));
-              }
-              else {
-                errors.forEach(err =>
-                  Window.showErrorMessage(err.message)
-                );
-              }
-            },
-            onDone: () => {
-              qs.log(" - - - COMPILATION DONE - - - ");
-            },
-          },
-          this.quickEvalPosition,
-        );
-      });
-    });
+  ): Promise<messages.EvaluationResult> {
+    let compiled: messages.CheckQueryResult;
+    try {
+      const params: messages.CompileQueryParams = {
+        compilationOptions: {
+          computeNoLocationUrls: true,
+          failOnWarnings: false,
+          fastCompilation: false,
+          includeDilInQlo: true,
+          localChecking: false,
+          noComputeGetUrl: false,
+          noComputeToString: false,
+        },
+        queryToCheck: this.program,
+        resultPath: this.compiledQueryPath,
+        target: { query: {} }
+      };
 
+
+      compiled = await withProgress({
+        location: ProgressLocation.Notification,
+        title: "Compiling Query",
+        cancellable: false,
+      }, (progress, token) => {
+        return qs.sendRequest(messages.compileQuery, params, token, progress);
+      });
+    } finally {
+      qs.log(" - - - COMPILATION DONE - - - ");
+    }
+
+    const errors = (compiled.messages || []).filter(msg => msg.severity == 0);
+    if (errors.length == 0) {
+      return await this.run(qs);
+    }
+    else {
+      errors.forEach(err =>
+        Window.showErrorMessage(err.message || "ERROR HAD NO MESSAGE")
+      );
+      return {
+        evaluationTime: 0,
+        resultType: messages.QueryResultType.OTHER_ERROR,
+        queryId: 0,
+        runId: 0,
+        message: "Query had compilation errors"
+      }
+    }
   }
 }
 
 export interface EvaluationInfo {
   query: QueryInfo;
-  result: evaluation.Result.AsObject;
+  result: messages.EvaluationResult;
   database: DatabaseInfo;
 }
 
@@ -135,7 +156,7 @@ export function spawnQueryServer(config: QLConfiguration): qsClient.Server | und
   const semmleDist = config.qlDistributionPath;
   if (semmleDist) {
     const outputChannel = Window.createOutputChannel('QL Query Server');
-    outputChannel.append("starting query server\n");
+    outputChannel.append("starting jsonrpc query server\n");
     const server = new qsClient.Server(config.configData, {
       logger: s => outputChannel.append(s + "\n"),
     });
@@ -155,7 +176,7 @@ export function spawnQueryServer(config: QLConfiguration): qsClient.Server | und
 function withProgress<R>(
   options: vscode.ProgressOptions,
   task: (
-    progress: (p: ProgressUpdate.AsObject) => void,
+    progress: (p: messages.ProgressMessage) => void,
     token: vscode.CancellationToken
   ) => Thenable<R>
 ): Thenable<R> {
@@ -163,42 +184,37 @@ function withProgress<R>(
   return Window.withProgress(options,
     (progress, token) => {
       return task(p => {
-        const { text, step, maxStep } = p;
+        const { message, step, maxStep } = p;
         const increment = 100 * (step - progressAchieved) / maxStep;
         progressAchieved = step;
-        progress.report({ message: text, increment });
+        progress.report({ message, increment });
       }, token);
     });
 }
 
-export async function clearCacheInDatabase(qs: qsClient.Server, db: DatabaseItem):
-  Promise<evaluation.ClearCacheResult.AsObject> {
-
-  const database: evaluation.Database = new evaluation.Database();
-  if (db.contents === undefined) {
+export async function clearCacheInDatabase(qs: qsClient.Server, dbItem: DatabaseItem):
+  Promise<messages.ClearCacheResult> {
+  if (dbItem.contents === undefined) {
     throw new Error('Can\'t run query on invalid snapshot.');
   }
 
-  database.setDatabaseDirectory(db.contents.databaseUri.fsPath);
-  database.setWorkingSet('default');
+  const db: messages.Database = {
+    dbDir: dbItem.contents.databaseUri.fsPath,
+    workingSet: 'default',
+  };
+
+  const params: messages.ClearCacheParams = {
+    dryRun: false,
+    db,
+  };
 
   return withProgress({
     location: ProgressLocation.Notification,
     title: "Clearing Cache",
     cancellable: false,
-  }, (progress, token) => {
-    return new Promise<evaluation.ClearCacheResult.AsObject>((resolve, reject) => {
-      qs.clearCache(database,
-        {
-          onProgress: progress,
-          onResult: resolve,
-          onDone: () => {
-            qs.log(" - - - DONE CLEARING CACHE - - - ");
-          },
-        }
-      );
-    });
-  });
+  }, (progress, token) =>
+      qs.sendRequest(messages.clearCache, params, token, progress)
+  );
 }
 
 export async function compileAndRunQueryAgainstDatabase(
@@ -215,19 +231,19 @@ export async function compileAndRunQueryAgainstDatabase(
   if (editor == undefined) {
     throw new Error('Can\'t run query without an active editor');
   }
-  const qlProgram = new compilation.QlProgram();
-  qlProgram.setLibraryPathList(config.projects['.'].libraryPath.map(lp => path.resolve(root, lp)));
-  qlProgram.setDbschemePath(path.resolve(root, config.projects['.'].dbScheme));
-  qlProgram.setQueryPath(editor.document.fileName);
-
-  let quickEvalPosition: qsClient.Position | undefined;
+  const qlProgram: messages.QlProgram = {
+    libraryPath: config.projects['.'].libraryPath.map(lp => path.join(root, lp)),
+    dbschemePath: path.join(root, config.projects['.'].dbScheme),
+    queryPath: editor.document.fileName
+  };
+  let quickEvalPosition: messages.Position | undefined;
   if (quickEval) {
     const pos = editor.selection.anchor;
     const posEnd = editor.selection.active;
     // Convert from 0-based to 1-based line and column numbers.
     quickEvalPosition = {
-      file: editor.document.fileName,
-      startLine: pos.line + 1, startColumn: pos.character + 1,
+      fileName: editor.document.fileName,
+      line: pos.line + 1, column: pos.character + 1,
       endLine: posEnd.line + 1, endColumn: posEnd.character + 1
     }
   }

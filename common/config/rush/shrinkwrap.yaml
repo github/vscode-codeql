@@ -56,6 +56,8 @@ dependencies:
   typescript: 3.5.3
   typescript-formatter: 7.2.2
   vinyl: 2.2.0
+  vsce: 1.66.0
+  vscode-jsonrpc: 4.0.0
   vscode-languageclient: 5.2.1
   webpack: 4.39.1
   webpack-cli: 3.3.6
@@ -315,6 +317,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-dyYO+f6ihZEtNPDcWNR1fkoTDf3zAK3lAABDze3mz6POyIercH0lEUawUFXlG8xaQZmm1yEBON/4TsYv/laDYg==
+  /@types/node/12.7.5:
+    dev: false
+    resolution:
+      integrity: sha512-9fq4jZVhPNW8r+UYKnxF1e2HkDWOWKM5bC2/7c9wPV835I0aOrVbS/Hw/pWPk2uKrNXQqg9Z959Kz+IYDd5p3w==
   /@types/node/8.5.8:
     dev: false
     resolution:
@@ -4189,13 +4195,13 @@ packages:
       integrity: sha1-bVuTSkVpk7I9N/QKOC1vFmao5cY=
   /parse-semver/1.1.1:
     dependencies:
-      semver: 5.7.0
+      semver: 5.7.1
     dev: false
     resolution:
       integrity: sha1-mkr9bfBj3Egm+T+6SpnPIj9mbLg=
   /parse5/3.0.3:
     dependencies:
-      '@types/node': 12.7.0
+      '@types/node': 12.7.5
     dev: false
     resolution:
       integrity: sha512-rgO9Zg5LLLkfJF9E6CCmXlSE4UVceloys8JrFqCcHloC3usd/kJCyPDwH2SOlzix2j3xaP9sUX3e8+kvkuleAA==
@@ -4912,6 +4918,11 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-Ya52jSX2u7QKghxeoFGpLwCtGlt7j0oY9DYb5apt9nPlJ42ID+ulTXESnt/qAQcoSERyZ5sl3LDIOw0nAn/5DA==
+  /semver/5.7.1:
+    dev: false
+    hasBin: true
+    resolution:
+      integrity: sha512-sauaDf/PZdVgrLTNYHRtpXa1iRiKcaebiKQ1BJdpQlWH2lCvexQdX55snPFyK7QzpudqbCI0qXFfOasHdyNDGQ==
   /serialize-javascript/1.7.0:
     dev: false
     resolution:
@@ -5870,7 +5881,7 @@ packages:
       osenv: 0.1.5
       parse-semver: 1.1.1
       read: 1.0.7
-      semver: 5.7.0
+      semver: 5.7.1
       tmp: 0.0.29
       typed-rest-client: 1.2.0
       url-join: 1.1.0
@@ -6253,7 +6264,7 @@ packages:
     dev: false
     name: '@rush-temp/build-tasks'
     resolution:
-      integrity: sha512-7sDz87kKl4SCtJ2Jonsk2zwKNry/T+spMnRn0XZaQ0dsWYH/X4AGIx//a6DxERv3F1A04orMvb3wzOFDzkYUFg==
+      integrity: sha512-SzjEzgEo177CQWwT0aotEzuziaICP2MuyGHlIcpy3mgsO75qPFD4sMN2ggMhUILyRQgph/cAGwLvaQILXLYDbQ==
       tarball: 'file:projects/build-tasks.tgz'
     version: 0.0.0
   'file:projects/ql-vscode.tgz':
@@ -6300,6 +6311,7 @@ packages:
       typescript-formatter: /typescript-formatter/7.2.2/typescript@3.5.3
       vinyl: 2.2.0
       vsce: 1.66.0
+      vscode-jsonrpc: 4.0.0
       vscode-languageclient: 5.2.1
       webpack: 4.39.1
       webpack-cli: /webpack-cli/3.3.6/webpack@4.39.1
@@ -6307,7 +6319,7 @@ packages:
     dev: false
     name: '@rush-temp/ql-vscode'
     resolution:
-      integrity: sha512-x/cA0VC3li+6lhbdosw37h+aM9wIvrGkpylDhIjH2Oe/Bj6DJVlTr+DiR1gemL7wvK+nB42LW0yuFXjI8pPCWA==
+      integrity: sha512-l6ifQObCepUGrOAGtGM6oGEtV8evyIfD+UIkckjORSJo2ZL5IV9BQb1sDDOH53ktSXWL4zM1PV8ZxkvmfAi/Qg==
       tarball: 'file:projects/ql-vscode.tgz'
     version: 0.0.0
   'file:projects/semmle-vscode-utils.tgz':
@@ -6319,14 +6331,14 @@ packages:
     dev: false
     name: '@rush-temp/semmle-vscode-utils'
     resolution:
-      integrity: sha512-IQ2fPCEeC4uw1p+LXYe8QsEOKuKO72YT3QbbwZhdia3WXhY/c1A2HBFWkRHfal0oa28iizgKR1ylS65XnyF3cg==
+      integrity: sha512-SKf1HxRmSSv96215uyK39HLAmevS4GRcB3VeMjBq2ZWCh6dP4uVwpk1m4S24+hBThbY+3DGYW8by+p9uxOE7yg==
       tarball: 'file:projects/semmle-vscode-utils.tgz'
     version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
     name: '@rush-temp/typescript-config'
     resolution:
-      integrity: sha512-kSFyvKy63jUHFVXQEzALiYfsTdn7J+Y7PcqtUVo9GndU5b5Xh3rBpVbZD1QN8+y8GfT0m/sdZZQVyH0h+On11Q==
+      integrity: sha512-qJbtY2jvt6LKkmUt/seiYyXSEB6Oip/rW+SxofQEnpyplgIQv7whTZb6g5pwlSLGl8goTaQFm4NfazKhFmxXvQ==
       tarball: 'file:projects/typescript-config.tgz'
     version: 0.0.0
 registry: 'https://registry.npmjs.org/'
@@ -6390,6 +6402,8 @@ specifiers:
   typescript: ^3.5.2
   typescript-formatter: ^7.2.2
   vinyl: ^2.2.0
+  vsce: ^1.65.0
+  vscode-jsonrpc: ^4.0.0
   vscode-languageclient: ^5.2.1
   webpack: ^4.38.0
   webpack-cli: ^3.3.2

@@ -4,11 +4,11 @@ import 'mocha';
 import * as path from 'path';
 import * as tmp from 'tmp';
 import * as url from 'url';
-import * as compilation from '../gen/compilation_server_protocol_pb';
-import * as evaluation from '../gen/evaluation_server_protocol_pb';
 import { parse } from '../src/bqrs';
 import * as qsClient from '../src/queryserver-client';
 import { QLConfiguration } from '../src/config';
+import * as messages from '../src/messages';
+import { MessageConnection, RequestType, CancellationToken, CancellationTokenSource, createMessageConnection } from 'vscode-jsonrpc';
 
 declare module "url" {
   export function pathToFileURL(urlStr: string): Url;
@@ -18,6 +18,9 @@ const tmpDir = tmp.dirSync({ prefix: 'query_test_', keep: false, unsafeCleanup: 
 
 const COMPILED_QUERY_PATH = path.join(tmpDir.name, 'compiled.qlo');
 const RESULTS_PATH = path.join(tmpDir.name, 'results.bqrs');
+
+const source = new CancellationTokenSource();
+const token = source.token;
 
 class Checkpoint<T> {
   private res: () => void;
@@ -49,34 +52,40 @@ describe('using the query server', () => {
   if (qlDistributionPath == undefined) {
     throw new Error('Need environment variable SEMMLE_DIST to find query server');
   }
-  const qs = new qsClient.Server({
-    qlDistributionPath,
-    javaCommand: path.join(qlDistributionPath, 'tools/java/bin/java')
-  }, {
+  const qs = new qsClient.Server(
+    {
+      qlDistributionPath,
+      javaCommand: path.join(qlDistributionPath, 'tools/java/bin/java')
+    },
+    {
       logger: s => console.log('logger says', s),
-    });
+    }
+  );
 
   it('should be able to compile a query', async function() {
     this.timeout(5000);
     try {
-      const qlProgram = new compilation.QlProgram();
-      qlProgram.setLibraryPathList([]);
-      qlProgram.setDbschemePath(path.join(__dirname, 'data/test.dbscheme'));
-      qlProgram.setQueryPath(path.join(__dirname, 'data/query.ql'));
-
-      const result = await new Promise<compilation.CheckQueryResult.AsObject>((res, rej) => {
-        qs.compileQuery(qlProgram,
-          COMPILED_QUERY_PATH,
-          {
-            onProgress: () => { },
-            onResult: x => { res(x); },
-            onDone: () => { },
-          },
-          undefined,
-        );
-      });
-
-      expect(result.messagesList.length).to.equal(0);
+      const qlProgram: messages.QlProgram = {
+        libraryPath: [],
+        dbschemePath: path.join(__dirname, 'data/test.dbscheme'),
+        queryPath: path.join(__dirname, 'data/query.ql')
+      };
+      const params: messages.CompileQueryParams = {
+        compilationOptions: {
+          computeNoLocationUrls: true,
+          failOnWarnings: false,
+          fastCompilation: false,
+          includeDilInQlo: true,
+          localChecking: false,
+          noComputeGetUrl: false,
+          noComputeToString: false,
+        },
+        queryToCheck: qlProgram,
+        resultPath: COMPILED_QUERY_PATH,
+        target: { query: {} }
+      };
+      const result = await qs.sendRequest(messages.compileQuery, params, token, () => { });
+      expect(result.messages!.length).to.equal(0);
       compilationSucceeded.resolve();
     }
     catch (e) {
@@ -87,25 +96,28 @@ describe('using the query server', () => {
   it('should be able to run a query', async () => {
     try {
       await compilationSucceeded.done();
-      const queryToRun = new evaluation.QueryToRun();
-      queryToRun.setResultPath(RESULTS_PATH);
-      queryToRun.setQloUri(url.pathToFileURL(COMPILED_QUERY_PATH).toString());
-      queryToRun.setTimeoutSecs(1000);
-      queryToRun.setAllowUnkownTemplates(true);
-      const db = new evaluation.Database();
-      db.setDatabaseDirectory(path.join(__dirname, 'test-db'));
-      db.setWorkingSet('default');
-      const result = await new Promise<evaluation.Result.AsObject>((res, rej) => {
-        qs.runQuery(queryToRun, db,
-          {
-            onProgress: () => { },
-            onResult: res,
-            onDone: () => { },
-          }
-        )
+      const callbackId = qs.registerCallback(res => {
+        evaluationSucceeded.resolve();
       });
-      console.log(result.message);
-      evaluationSucceeded.resolve();
+      const queryToRun: messages.QueryToRun = {
+        resultsPath: RESULTS_PATH,
+        qlo: url.pathToFileURL(COMPILED_QUERY_PATH).toString(),
+        allowUnknownTemplates: true,
+        id: callbackId,
+        timeoutSecs: 1000,
+      };
+      const db: messages.Database = {
+        dbDir: path.join(__dirname, 'test-db'),
+        workingSet: 'default',
+      }
+      const params: messages.EvaluateQueriesParams = {
+        db,
+        evaluateId: callbackId,
+        queries: [queryToRun],
+        stopOnError: false,
+        useSequenceHint: false
+      };
+      await qs.sendRequest(messages.runQueries, params, token, () => { });
     }
     catch (e) {
       evaluationSucceeded.reject(e);

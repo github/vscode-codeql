@@ -8,11 +8,9 @@ const {
   packageExtension,
   compileTextMateGrammar
 } = require('build-tasks');
-const { buildProtocols } = require('./build-proto');
 const { compileView } = require('./webpack');
 
-const compile = gulp.series(buildProtocols, compileTypeScript);
-exports.buildWithoutPackage = gulp.parallel(compile, compileTextMateGrammar, compileView);
+exports.buildWithoutPackage = gulp.parallel(compileTypeScript, compileTextMateGrammar, compileView);
 exports.compileTextMateGrammar = compileTextMateGrammar;
 exports.default = gulp.series(exports.buildWithoutPackage, packageExtension);
 exports.watchTypeScript = watchTypeScript;
