@@ -8,6 +8,7 @@ import * as evaluation from '../gen/evaluation_server_protocol_pb';
 import { DatabaseManager, DatabaseItem } from './databases';
 import * as qsClient from './queryserver-client';
 import { QLConfiguration } from './config';
+import { DatabaseInfo } from './interface-types';
 
 /**
  * queries.ts
@@ -120,9 +121,10 @@ class QueryInfo {
   }
 }
 
-export type EvaluationInfo = {
-  query: QueryInfo,
-  result: evaluation.Result.AsObject,
+export interface EvaluationInfo {
+  query: QueryInfo;
+  result: evaluation.Result.AsObject;
+  database: DatabaseInfo;
 }
 
 /**
@@ -200,5 +202,12 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 
   const query = new QueryInfo(qlProgram, db, quickEvalPosition);
-  return { query, result: await query.compileAndRun(qs) };
+  return {
+    query,
+    result: await query.compileAndRun(qs),
+    database: {
+      name: db.name,
+      srcRootUri: db.srcRoot ? db.srcRoot.toString() : undefined
+    }
+  };
 }

@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 import {
   Column, ColumnType, LocationStyle, LocationValue, PoolString,
-  ResultSet, ResultSets, Tuple, TupleValue
+  ResultSet, ResultSets, Tuple, TupleValue, PrimitiveType
 } from './bqrs-types';
 import { BufferDigester, Digester, StreamDigester } from './digester';
 
@@ -108,7 +108,7 @@ async function parseResultSet(d: Digester, stringPool: Buffer): Promise<ResultSe
 async function parseResultColumnType(d: Digester): Promise<ColumnType> {
   const t = (await d.read(1)).toString('ascii');
   if (t == 'e') {
-    const primitiveType = (await d.read(1)).toString('ascii');
+    const primitiveType: PrimitiveType = <PrimitiveType>(await d.read(1)).toString('ascii');
     const hasLabel = (await d.read(1))[0] != 0;
     const locationStyle = (await d.read(1))[0];
     return { locationStyle, hasLabel, primitiveType };

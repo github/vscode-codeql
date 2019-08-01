@@ -1,0 +1,33 @@
+.ql-vscode__result-table {
+  display: none;
+}
+
+.ql-vscode__result-table--selected {
+  display: block;
+}
+
+.ql-vscode__result-table th {
+  border-bottom: 1px solid black;
+  padding: 0.5em;
+  text-align: left;
+}
+
+.ql-vscode__result-table td {
+  padding: 0.5em;
+}
+
+select {
+  background-color: var(--vscode-dropdown-background);
+  color: var(--vscode-dropdown-foreground);
+  border-color: var(--vscode-dropdown-border);
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.ql-vscode__result-table-row--odd {
+  background-color: inherit;
+}
+
+.ql-vscode__result-table-row--even {
+  background-color: var(--vscode-editor-wordHighlightBackground);
+}
