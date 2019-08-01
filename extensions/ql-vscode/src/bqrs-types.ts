@@ -15,45 +15,111 @@ export enum LocationStyle {
 }
 
 // See https://help.semmle.com/QL/learn-ql/ql/locations.html for how these are used.
-export type FivePartLocation =
-  { file: string, lineStart: number, colStart: number, lineEnd: number, colEnd: number };
+export interface FivePartLocation {
+  t: LocationStyle.FivePart;
+  file: string;
+  lineStart: number;
+  colStart: number;
+  lineEnd: number;
+  colEnd: number;
+}
 
-export type LocationValue =
-  | { t: LocationStyle.No }
-  | { t: LocationStyle.String, loc: string }
-  | { t: LocationStyle.FivePart } & FivePartLocation
+export interface StringLocation {
+  t: LocationStyle.String;
+  loc: string;
+}
+
+export interface NoLocation {
+  t: LocationStyle.No;
+}
+
+export type LocationValue = FivePartLocation | StringLocation | NoLocation;
+
+/**
+ * Determines whether the specified `LocationValue` can be resolved to an actual source file.
+ * @param loc The location to test.
+ */
+export function isResolvableLocation(loc: LocationValue | undefined): loc is FivePartLocation {
+  if (loc && (loc.t === LocationStyle.FivePart) && loc.file) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+export interface StringValue {
+  t: 's';
+  v: string;
+}
+
+export interface BooleanValue {
+  t: 'b';
+  v: boolean;
+}
+
+export interface IntValue {
+  t: 'i';
+  v: number;
+}
+
+export interface FloatValue {
+  t: 'f';
+  v: number;
+}
+
+export interface DateValue {
+  t: 'd';
+  v: Buffer;
+}
+
+export interface UrlValue {
+  t: 'u';
+  v: string;
+}
+
+export interface ElementValue {
+  t: 'e';
+  primitive: TupleValue;
+  label?: string;
+  loc: LocationValue;
+}
 
 export type TupleValue =
-  | { t: 's', v: string } // string
-  | { t: 'b', v: boolean } // boolean
-  | { t: 'i', v: number } // int
-  | { t: 'f', v: number } // float
-  | { t: 'd', v: Buffer } // FIXME: not implemented, but rarely used.
-  | { t: 'u', v: string } // url
-  | { t: 'e', primitive: TupleValue, label: string | undefined, loc: LocationValue } // location
+  | StringValue
+  | BooleanValue
+  | IntValue
+  | FloatValue
+  | DateValue
+  | UrlValue
+  | ElementValue;
 
-export type ColumnType = { primitiveType: string, locationStyle: LocationStyle, hasLabel: boolean } | string
+export type PrimitiveType = 's' | 'b' | 'i' | 'f' | 'd' | 'u' | 'e';
+
+export type ColumnType =
+  | { primitiveType: PrimitiveType, locationStyle: LocationStyle, hasLabel: boolean }
+  | string;
 
 export type Tuple = TupleValue[];
 
-export type Column = {
-  name: string,
-  t: ColumnType,
+export interface Column {
+  name: string;
+  t: ColumnType;
 }
 
-export type ResultSet = {
-  version: number,
-  name: string,
-  numTuples: number,
-  columns: Column[],
-  results: Tuple[],
+export interface ResultSet {
+  version: number;
+  name: string;
+  numTuples: number;
+  columns: Column[];
+  results: Tuple[];
 }
 
-export type ResultSets = {
+export interface ResultSets {
   header: {
     version: number,
     numberOfResultSets: number,
     stringPoolSize: number,
-  },
-  results: ResultSet[],
+  };
+  results: ResultSet[];
 }

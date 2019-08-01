@@ -1,4 +1,4 @@
-[*.{ts,js,json}]
+[*.{ts,tsx,css,js,json}]
 indent_style = space
 indent_size = 2
 charset = utf-8
