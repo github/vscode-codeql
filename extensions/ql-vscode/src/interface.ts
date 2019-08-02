@@ -10,6 +10,7 @@ import { FivePartLocation, ResultSet, LocationValue, isResolvableLocation } from
 import { FromResultsViewMsg, IntoResultsViewMsg } from './interface-types';
 import { EvaluationInfo } from './queries';
 import { ProblemResultsParser } from './result-parser';
+import { zipArchiveScheme } from './archive-filesystem-provider';
 
 /**
  * interface.ts
@@ -133,6 +134,19 @@ function handleMsgFromView(msg: FromResultsViewMsg): void {
 }
 
 /**
+ * Resolves a filename relative to a source archive URI.
+ * @param srcRoot Root of the source archive
+ * @param file Filename within the source archive. May be a file URI
+ *             or a compressed archive URI.
+ */
+function sourceArchiveMemberUri(srcRoot: Uri, file: string): Uri {
+  if (srcRoot.scheme == zipArchiveScheme)
+    return srcRoot.with({ fragment: file });
+  else
+    return Uri.parse(srcRoot.toString() + file);
+}
+
+/**
  * Resolves the specified QL location to a URI into the source archive.
  * @param loc QL location to resolve. Must have a non-empty value for `loc.file`.
  * @param srcRoot Root of the source archive
@@ -145,7 +159,7 @@ function resolveFivePartLocation(loc: FivePartLocation, srcRoot: Uri): Location 
     Math.max(0, loc.lineEnd - 1),
     Math.max(0, loc.colEnd));
 
-  return new Location(Uri.parse(srcRoot.toString() + loc.file), range);
+  return new Location(sourceArchiveMemberUri(srcRoot, loc.file), range);
 }
 
 /**

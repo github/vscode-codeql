@@ -17,3 +17,4 @@ exports.compileTextMateGrammar = compileTextMateGrammar;
 exports.default = gulp.series(exports.buildWithoutPackage, packageExtension);
 exports.watchTypeScript = watchTypeScript;
 exports.compileView = compileView;
+exports.compileTypeScript = compileTypeScript;

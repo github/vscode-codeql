@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { ExtensionContext, window as Window } from 'vscode';
 import { showAndLogErrorMessage, showAndLogWarningMessage, showAndLogInformationMessage } from './helpers';
+import { zipArchiveScheme } from './archive-filesystem-provider';
 
 /**
  * databases.ts
@@ -96,6 +97,9 @@ export class DatabaseItem {
   constructor(uri: vscode.Uri, doRefresh: boolean = true) {
     this.snapshotUri = uri;
     this.name = path.basename(uri.fsPath);
+    if (this.name == 'working') {
+      this.name = path.basename(path.join(uri.fsPath, '../..'));
+    }
     if (doRefresh) {
       this.refresh();
     }
@@ -114,14 +118,18 @@ export class DatabaseItem {
         showAndLogWarningMessage(`Found multiple database directories in snapshot, using ${dbAbsolutePath}`);
       }
       this.dbUri = vscode.Uri.file(dbAbsolutePath);
-      fs.exists(path.join(this.snapshotUri.fsPath, 'src'), (exists) => {
-        if (exists) {
-          this.srcRoot = vscode.Uri.file(path.join(this.snapshotUri.fsPath, 'src'));
-        } else {
-          showAndLogInformationMessage(`Could not determine source root for database ${this.snapshotUri}. Assuming paths are absolute.`);
-          this.srcRoot = undefined;
-        }
-      });
+      const srcDir = path.join(this.snapshotUri.fsPath, 'src');
+      const srcZip = path.join(this.snapshotUri.fsPath, '../output/src_archive.zip');
+      if (fs.existsSync(srcDir)) {
+        this.srcRoot = vscode.Uri.file(srcDir);
+      }
+      else if (fs.existsSync(srcZip)) {
+        this.srcRoot = vscode.Uri.file(srcZip).with({ scheme: zipArchiveScheme });
+      }
+      else {
+        showAndLogInformationMessage(`Could not determine source root for database ${this.snapshotUri}. Assuming paths are absolute.`);
+        this.srcRoot = undefined;
+      }
     }
   }
 
