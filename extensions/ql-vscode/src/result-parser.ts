@@ -95,8 +95,7 @@ export class ProblemResultsParser {
     }
   }
 
-  private static canParseResultSets(resultSets: ResultSets):
-    { referenceCount: number } | undefined {
+  private static canParseResultSets(resultSets: ResultSets): { referenceCount: number } | undefined {
 
     if (resultSets.header.numberOfResultSets !== 1) {
       // Wrong number of result sets.

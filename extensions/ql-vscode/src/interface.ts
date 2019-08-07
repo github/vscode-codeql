@@ -1,8 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { ExtensionContext, window as Window, workspace, languages, Uri, Diagnostic, Range, Location,
-  DiagnosticSeverity, DiagnosticRelatedInformation, Position } from 'vscode';
+import {
+  ExtensionContext, window as Window, workspace, languages, Uri, Diagnostic, Range, Location,
+  DiagnosticSeverity, DiagnosticRelatedInformation, Position
+} from 'vscode';
 import * as bqrs from './bqrs';
 import { FivePartLocation, ResultSet, LocationValue, isResolvableLocation } from './bqrs-types';
 import { FromResultsViewMsg, IntoResultsViewMsg } from './interface-types';
@@ -101,7 +103,7 @@ export class InterfaceManager {
       }
       diagnostics.push([
         codeLocation.uri,
-        [ diagnostic ]
+        [diagnostic]
       ]);
     }
 
