@@ -7,6 +7,7 @@ import { compileAndRunQueryAgainstDatabase, EvaluationInfo, spawnQueryServer, tm
 import * as qsClient from './queryserver-client';
 import { QLConfiguration } from './config';
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
+import * as archiveFilesystemProvider from './archive-filesystem-provider';
 
 /**
 * extension.ts
@@ -24,6 +25,7 @@ export function activate(ctx: ExtensionContext) {
   const intm = new InterfaceManager(ctx, msg => {
     if (qs != undefined) { qs.log(msg) }
   });
+  archiveFilesystemProvider.activate(ctx);
 
   function showResultsForInfo(info: EvaluationInfo) {
     intm.showResults(ctx, info);

@@ -44,7 +44,7 @@ export async function buildProtocols(): Promise<void> {
   protocPath = path.join(codeRoot, 'resources/lib/protoc', protocPath);
   const tsPlugin = path.join('node_modules/.bin/protoc-gen-ts') + tsPluginSuffix;
 
-  await fs.mkdir('gen', { recursive: true });
+  await fs.mkdirs('gen');
 
   const p = cpp.spawn(protocPath, [
     `--plugin=protoc-gen-ts=${tsPlugin}`,
