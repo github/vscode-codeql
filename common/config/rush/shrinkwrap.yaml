@@ -12,6 +12,7 @@ dependencies:
   '@types/google-protobuf': 3.7.1
   '@types/gulp': 4.0.6
   '@types/js-yaml': 3.12.1
+  '@types/jszip': 3.1.6
   '@types/mocha': 2.2.48
   '@types/node': 12.7.0
   '@types/npm-packlist': 1.1.1
@@ -36,6 +37,7 @@ dependencies:
   gulp-typescript: 5.0.1
   js-yaml: 3.13.1
   jsonc-parser: 2.1.0
+  jszip: 3.2.2
   leb: 0.3.0
   mocha: 6.2.0
   npm-packlist: 1.4.4
@@ -276,6 +278,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-SGGAhXLHDx+PK4YLNcNGa6goPf9XRWQNAUUbffkwVGGXIxmDKWyGGL4inzq2sPmExu431Ekb9aEMn9BkPqEYFA==
+  /@types/jszip/3.1.6:
+    dependencies:
+      '@types/node': 12.7.1
+    dev: false
+    resolution:
+      integrity: sha512-m8uFcI+O2EupCfbEVQWsBM/4nhbegjOHL7cQgBpM95FeF98kdFJXzy9/8yhx4b3lCRl/gMBhcvyh30Qt3X+XPQ==
   /@types/minimatch/3.0.3:
     dev: false
     resolution:
@@ -298,6 +306,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-vqcj1MVm2Sla4PpMfYKh1MyDN4D2f/mPIZD7RdAGqEsbE+JxfeqQHHVbRDQ0Nqn8i73gJa1HQ1Pu3+nH4Q0Yiw==
+  /@types/node/12.7.1:
+    dev: false
+    resolution:
+      integrity: sha512-aK9jxMypeSrhiYofWWBf/T7O+KwaiAHzM4sveCdWPn71lzUSMimRnKzhXDKfKwV1kWoBo2P1aGgaIYGLf9/ljw==
   /@types/node/8.5.8:
     dev: false
     resolution:
@@ -2788,6 +2800,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-DTVlMx3IYPe0/JJcYP7Gxg7ttZZu3IInhuEhbchuqneY9wWe5Ojy2mXLBaQFUQmo0AW2r3qG7m1mg86js+gnlQ==
+  /immediate/3.0.6:
+    dev: false
+    resolution:
+      integrity: sha1-nbHb0Pr43m++D13V5Wu2BigN5ps=
   /import-local/2.0.0:
     dependencies:
       pkg-dir: 3.0.0
@@ -3189,6 +3205,15 @@ packages:
     dev: false
     resolution:
       integrity: sha1-LHS27kHZPKUbe1qu6PUDYx0lKnM=
+  /jszip/3.2.2:
+    dependencies:
+      lie: 3.3.0
+      pako: 1.0.10
+      readable-stream: 2.3.6
+      set-immediate-shim: 1.0.1
+    dev: false
+    resolution:
+      integrity: sha512-NmKajvAFQpbg3taXQXr/ccS2wcucR1AZ+NtyWp2Nq7HHVsXhcJFR8p0Baf32C2yVvBylFWVeKf+WI2AnvlPhpA==
   /just-debounce/1.0.0:
     dev: false
     resolution:
@@ -3266,6 +3291,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-Mr7p+tFoMo1q6oUi2DP0GA7tHaM=
+  /lie/3.3.0:
+    dependencies:
+      immediate: 3.0.6
+    dev: false
+    resolution:
+      integrity: sha512-UaiMJzeWRlEujzAuw5LokY1L5ecNQYZKfmyZ9L7wDHb/p5etKaxXhohBcrw0EYby+G/NA52vRSN4N39dxHAIwQ==
   /liftoff/3.1.0:
     dependencies:
       extend: 3.0.2
@@ -4874,6 +4905,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-BF+XgtARrppoA93TgrJDkrPYkPc=
+  /set-immediate-shim/1.0.1:
+    dev: false
+    engines:
+      node: '>=0.10.0'
+    resolution:
+      integrity: sha1-SysbJ+uAip+NzEgaWOXlb1mfP2E=
   /set-value/2.0.1:
     dependencies:
       extend-shallow: 2.0.1
@@ -6188,15 +6225,17 @@ packages:
     dev: false
     name: '@rush-temp/build-tasks'
     resolution:
-      integrity: sha512-7sDz87kKl4SCtJ2Jonsk2zwKNry/T+spMnRn0XZaQ0dsWYH/X4AGIx//a6DxERv3F1A04orMvb3wzOFDzkYUFg==
+      integrity: sha512-SzjEzgEo177CQWwT0aotEzuziaICP2MuyGHlIcpy3mgsO75qPFD4sMN2ggMhUILyRQgph/cAGwLvaQILXLYDbQ==
       tarball: 'file:projects/build-tasks.tgz'
     version: 0.0.0
   'file:projects/ql-vscode.tgz':
     dependencies:
       '@types/chai': 4.1.7
       '@types/classnames': 2.2.9
+      '@types/fs-extra': 8.0.0
       '@types/google-protobuf': 3.7.1
       '@types/gulp': 4.0.6
+      '@types/jszip': 3.1.6
       '@types/mocha': 2.2.48
       '@types/node': 12.7.0
       '@types/react': 16.8.25
@@ -6216,6 +6255,7 @@ packages:
       gulp-sourcemaps: 2.6.5
       gulp-typescript: /gulp-typescript/5.0.1/typescript@3.5.3
       js-yaml: 3.13.1
+      jszip: 3.2.2
       leb: 0.3.0
       mocha: 6.2.0
       npm-run-all: 4.1.5
@@ -6237,7 +6277,7 @@ packages:
     dev: false
     name: '@rush-temp/ql-vscode'
     resolution:
-      integrity: sha512-wuftua1WJ478ll7QqCmFlKS8N250BJ+KT+fKZwubK6WFfC9RIuxq8g4Mive+FPi4IUEKltd8mRhqF7jaFkPGAg==
+      integrity: sha512-Fs6vNLNh0MXZTDXZDT/zxEWUY8p83L/vU364n/tHswK8SLebv2fsts1cR/3m430ydfRAGVjEHFPVu4JvcCmpjQ==
       tarball: 'file:projects/ql-vscode.tgz'
     version: 0.0.0
   'file:projects/semmle-vscode-utils.tgz':
@@ -6249,14 +6289,14 @@ packages:
     dev: false
     name: '@rush-temp/semmle-vscode-utils'
     resolution:
-      integrity: sha512-IQ2fPCEeC4uw1p+LXYe8QsEOKuKO72YT3QbbwZhdia3WXhY/c1A2HBFWkRHfal0oa28iizgKR1ylS65XnyF3cg==
+      integrity: sha512-SKf1HxRmSSv96215uyK39HLAmevS4GRcB3VeMjBq2ZWCh6dP4uVwpk1m4S24+hBThbY+3DGYW8by+p9uxOE7yg==
       tarball: 'file:projects/semmle-vscode-utils.tgz'
     version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
     name: '@rush-temp/typescript-config'
     resolution:
-      integrity: sha512-kSFyvKy63jUHFVXQEzALiYfsTdn7J+Y7PcqtUVo9GndU5b5Xh3rBpVbZD1QN8+y8GfT0m/sdZZQVyH0h+On11Q==
+      integrity: sha512-qJbtY2jvt6LKkmUt/seiYyXSEB6Oip/rW+SxofQEnpyplgIQv7whTZb6g5pwlSLGl8goTaQFm4NfazKhFmxXvQ==
       tarball: 'file:projects/typescript-config.tgz'
     version: 0.0.0
 registry: 'https://registry.npmjs.org/'
@@ -6276,6 +6316,7 @@ specifiers:
   '@types/google-protobuf': ^3.2.7
   '@types/gulp': ^4.0.6
   '@types/js-yaml': ~3.12.1
+  '@types/jszip': ~3.1.6
   '@types/mocha': ^2.2.48
   '@types/node': ^12.0.8
   '@types/npm-packlist': ~1.1.1
@@ -6300,6 +6341,7 @@ specifiers:
   gulp-typescript: ^5.0.1
   js-yaml: ^3.12.0
   jsonc-parser: ~2.1.0
+  jszip: ~3.2.2
   leb: ^0.3.0
   mocha: ^6.1.4
   npm-packlist: ~1.4.4

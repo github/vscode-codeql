@@ -22,16 +22,13 @@ export class Directory implements vscode.FileStat {
   ctime: number;
   mtime: number;
   size: number;
-  name: string;
-  entries: Map<string, File | Directory>;
+  entries: Map<string, Entry> = new Map();
 
-  constructor(name: string) {
+  constructor(public name: string) {
     this.type = vscode.FileType.Directory;
     this.ctime = Date.now();
     this.mtime = Date.now();
     this.size = 0;
-    this.name = name;
-    this.entries = new Map();
   }
 }
 
@@ -154,11 +151,13 @@ class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
  * Custom uri scheme for referring to files inside zip archives stored
  * in the filesystem.
  * For example:
- * `zip:///home/alice/semmle/home/projects/turboencabulator/revision-2019-August-02--08-50-01/output/src_archive.zip#/home/alice/foobar/foobar.c`
+ * `ql-zip-archive:///home/alice/semmle/home/projects/turboencabulator/revision-2019-August-02--08-50-01/output/src_archive.zip#/home/alice/foobar/foobar.c`
  * refers to file `/home/alice/foobar/foobar.c` inside `src_archive.zip`.
  *
+ * (cf. https://www.ietf.org/rfc/rfc2396.txt (Appendix A, page 26) for
+ * the fact that hyphens are allowed in uri schemes)
  */
-export const zipArchiveScheme = 'zip';
+export const zipArchiveScheme = 'ql-zip-archive';
 
 export function activate(ctx: vscode.ExtensionContext) {
   const schemeRootUri = vscode.Uri.parse(zipArchiveScheme + ':/');
