@@ -15,7 +15,7 @@
       "outFiles": [
         "${workspaceRoot}/dist/ql-vscode/out/**/*.js"
       ],
-    "preLaunchTask": "Build"
+      "preLaunchTask": "Build"
     },
     {
       "name": "Launch Tests (ql-vscode)",
