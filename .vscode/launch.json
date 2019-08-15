@@ -13,7 +13,7 @@
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/dist/qltest-vscode/out/**/*.js"
+        "${workspaceRoot}/dist/ql-vscode/out/**/*.js"
       ],
     "preLaunchTask": "Build"
     },
@@ -29,7 +29,8 @@
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/extensions/qltest-vscode/out/test/**/*.js"
+        "${workspaceRoot}/dist/ql-vscode/out/**/*.js",
+        "${workspaceRoot}/extensions/ql-vscode/out/test/**/*.js"
       ],
       "preLaunchTask": "Build"
     }
