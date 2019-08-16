@@ -140,10 +140,20 @@ function handleMsgFromView(msg: FromResultsViewMsg): void {
  *             or a compressed archive URI.
  */
 function sourceArchiveMemberUri(srcRoot: Uri, file: string): Uri {
+  // Strip any leading slashes from the file path, and replace `:` with `_`.
+  const relativeFilePath = file.replace(/^\/*/, '').replace(':', '_');
   if (srcRoot.scheme == zipArchiveScheme)
-    return srcRoot.with({ fragment: file });
-  else
-    return Uri.parse(srcRoot.toString() + file);
+    return srcRoot.with({ fragment: relativeFilePath });
+  else {
+    let newPath = srcRoot.path;
+    if (!newPath.endsWith('/')) {
+      // Ensure a trailing slash.
+      newPath += '/';
+    }
+    newPath += relativeFilePath;
+
+    return srcRoot.with({ path: newPath });
+  }
 }
 
 /**
