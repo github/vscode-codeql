@@ -2,7 +2,7 @@ import { FivePartLocation, ResultSet } from './bqrs-types';
 
 export interface DatabaseInfo {
   name: string;
-  srcRootUri?: string;
+  snapshotUri: string;
 }
 
 export interface PreviousExecution {
@@ -21,5 +21,5 @@ export interface IntoResultsViewMsg {
 export interface FromResultsViewMsg {
   t: 'viewSourceFile';
   loc: FivePartLocation;
-  srcRootUri: string;
+  snapshotUri: string;
 };

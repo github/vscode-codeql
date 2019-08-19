@@ -51,7 +51,7 @@ export class ResultTables
         {this.props.resultSets.map(resultSet => <option value={resultSet.name}>{resultSet.name}</option>)}
       </select>
       {this.props.resultSets.map(resultSet => {
-        return <ResultTable resultSet={resultSet} srcRootUri={this.props.database.srcRootUri} selected={resultSet.name === selectedTable}/>;
+        return <ResultTable resultSet={resultSet} snapshotUri={this.props.database.snapshotUri} selected={resultSet.name === selectedTable}/>;
       })}
     </div>;
   }
