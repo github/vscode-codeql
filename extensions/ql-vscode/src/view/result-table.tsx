@@ -8,16 +8,16 @@ import { vscode } from './results';
  * Render a location as a link which when clicked displays the original location.
  */
 function renderLocation(loc: LocationValue, label: string | undefined, _prim: TupleValue,
-  srcRootUri?: string): JSX.Element {
+  snapshotUri: string): JSX.Element {
 
   switch (loc.t) {
     case LocationStyle.FivePart: {
-      if (srcRootUri && isResolvableLocation(loc)) {
+      if (isResolvableLocation(loc)) {
         return <a href="#" onClick={(e) => {
           vscode.postMessage({
             t: 'viewSourceFile',
             loc,
-            srcRootUri
+            snapshotUri
           });
           e.preventDefault();
           e.stopPropagation();
@@ -35,7 +35,7 @@ function renderLocation(loc: LocationValue, label: string | undefined, _prim: Tu
 /**
  * Render one column of a tuple.
  */
-function renderTupleValue(v: TupleValue, sourceRootUri?: string): JSX.Element {
+function renderTupleValue(v: TupleValue, snapshotUri: string): JSX.Element {
   switch (v.t) {
     case 'i': return <span>{v.v}</span>;
     case 'u': return <a href={v.v}>{v.v}</a>;
@@ -43,14 +43,14 @@ function renderTupleValue(v: TupleValue, sourceRootUri?: string): JSX.Element {
     case 'f': return <span>{v.v}</span>;
     case 'b': return <span>{v.v}</span>;
     case 's': return <span>{v.v}</span>;
-    case 'e': return renderLocation(v.loc, v.label, v.primitive, sourceRootUri);
+    case 'e': return renderLocation(v.loc, v.label, v.primitive, snapshotUri);
   }
 }
 
 export interface ResultTableProps {
   selected: boolean;
   resultSet: ResultSet;
-  srcRootUri?: string;
+  snapshotUri: string;
 }
 
 export class ResultTable extends React.Component<ResultTableProps, {}> {
@@ -66,7 +66,7 @@ export class ResultTable extends React.Component<ResultTableProps, {}> {
   }
 
   render(): React.ReactNode {
-    const { resultSet, selected, srcRootUri } = this.props;
+    const { resultSet, selected, snapshotUri } = this.props;
 
     const tableClassName = cx(this.className, {
       [ this.selectedClassName ]: selected
@@ -85,7 +85,7 @@ export class ResultTable extends React.Component<ResultTableProps, {}> {
         {
           resultSet.results.map((tuple, i) =>
             <tr className={ (i % 2) ? this.oddRowClassName : this.evenRowClassName }>
-              {tuple.map(item => <td>{renderTupleValue(item, srcRootUri)}</td>)}
+              {tuple.map(item => <td>{renderTupleValue(item, snapshotUri)}</td>)}
             </tr>
           )
         }

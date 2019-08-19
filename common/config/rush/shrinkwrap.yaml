@@ -23,6 +23,7 @@ dependencies:
   '@types/vinyl': 2.0.3
   '@types/vscode': 1.36.0
   '@types/webpack': 4.32.1
+  '@types/xml2js': 0.4.4
   ansi-colors: 4.1.1
   chai: 4.2.0
   child-process-promise: 2.2.1
@@ -55,10 +56,10 @@ dependencies:
   typescript: 3.5.3
   typescript-formatter: 7.2.2
   vinyl: 2.2.0
-  vsce: 1.66.0
   vscode-languageclient: 5.2.1
   webpack: 4.39.1
   webpack-cli: 3.3.6
+  xml2js: 0.4.19
 packages:
   /@gulp-sourcemaps/identity-map/1.0.2:
     dependencies:
@@ -310,6 +311,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-aK9jxMypeSrhiYofWWBf/T7O+KwaiAHzM4sveCdWPn71lzUSMimRnKzhXDKfKwV1kWoBo2P1aGgaIYGLf9/ljw==
+  /@types/node/12.7.2:
+    dev: false
+    resolution:
+      integrity: sha512-dyYO+f6ihZEtNPDcWNR1fkoTDf3zAK3lAABDze3mz6POyIercH0lEUawUFXlG8xaQZmm1yEBON/4TsYv/laDYg==
   /@types/node/8.5.8:
     dev: false
     resolution:
@@ -491,6 +496,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-9n38CBx9uga1FEAdTipnt0EkbKpsCJFh7xJb1LE65FFb/A6OOLFX022vYsGC1IyVCZ/GroNg9u/RMmlDxGcLIw==
+  /@types/xml2js/0.4.4:
+    dependencies:
+      '@types/node': 12.7.2
+    dev: false
+    resolution:
+      integrity: sha512-O6Xgai01b9PB3IGA0lRIp1Ex3JBcxGDhdO0n3NIIpCyDOAjxcIGQFmkvgJpP8anTrthxOUQjBfLdRRi0Zn/TXA==
   /@types/z-schema/3.16.31:
     dev: false
     resolution:
@@ -4853,6 +4864,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
+  /sax/1.2.4:
+    dev: false
+    resolution:
+      integrity: sha512-NqVDv9TpANUjFm0N8uM5GxL36UgKi9/atZw+x7YFnQ8ckwFGKrl4xX4yWtrey3UJm5nP1kUbnYgLopqWNSRhWw==
   /scheduler/0.13.6:
     dependencies:
       loose-envify: 1.4.0
@@ -6037,6 +6052,19 @@ packages:
     dev: false
     resolution:
       integrity: sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=
+  /xml2js/0.4.19:
+    dependencies:
+      sax: 1.2.4
+      xmlbuilder: 9.0.7
+    dev: false
+    resolution:
+      integrity: sha512-esZnJZJOiJR9wWKMyuvSE1y6Dq5LCuJanqhxslH2bxM6duahNZ+HMpCLhBQGZkbX6xRf8x1Y2eJlgt2q3qo49Q==
+  /xmlbuilder/9.0.7:
+    dev: false
+    engines:
+      node: '>=4.0'
+    resolution:
+      integrity: sha1-Ey7mPS7FVlxVfiD0wi35rKaGsQ0=
   /xtend/4.0.2:
     dev: false
     engines:
@@ -6225,7 +6253,7 @@ packages:
     dev: false
     name: '@rush-temp/build-tasks'
     resolution:
-      integrity: sha512-SzjEzgEo177CQWwT0aotEzuziaICP2MuyGHlIcpy3mgsO75qPFD4sMN2ggMhUILyRQgph/cAGwLvaQILXLYDbQ==
+      integrity: sha512-7sDz87kKl4SCtJ2Jonsk2zwKNry/T+spMnRn0XZaQ0dsWYH/X4AGIx//a6DxERv3F1A04orMvb3wzOFDzkYUFg==
       tarball: 'file:projects/build-tasks.tgz'
     version: 0.0.0
   'file:projects/ql-vscode.tgz':
@@ -6243,6 +6271,7 @@ packages:
       '@types/tmp': 0.1.0
       '@types/vscode': 1.36.0
       '@types/webpack': 4.32.1
+      '@types/xml2js': 0.4.4
       chai: 4.2.0
       child-process-promise: 2.2.1
       classnames: 2.2.6
@@ -6274,10 +6303,11 @@ packages:
       vscode-languageclient: 5.2.1
       webpack: 4.39.1
       webpack-cli: /webpack-cli/3.3.6/webpack@4.39.1
+      xml2js: 0.4.19
     dev: false
     name: '@rush-temp/ql-vscode'
     resolution:
-      integrity: sha512-Fs6vNLNh0MXZTDXZDT/zxEWUY8p83L/vU364n/tHswK8SLebv2fsts1cR/3m430ydfRAGVjEHFPVu4JvcCmpjQ==
+      integrity: sha512-x/cA0VC3li+6lhbdosw37h+aM9wIvrGkpylDhIjH2Oe/Bj6DJVlTr+DiR1gemL7wvK+nB42LW0yuFXjI8pPCWA==
       tarball: 'file:projects/ql-vscode.tgz'
     version: 0.0.0
   'file:projects/semmle-vscode-utils.tgz':
@@ -6289,14 +6319,14 @@ packages:
     dev: false
     name: '@rush-temp/semmle-vscode-utils'
     resolution:
-      integrity: sha512-SKf1HxRmSSv96215uyK39HLAmevS4GRcB3VeMjBq2ZWCh6dP4uVwpk1m4S24+hBThbY+3DGYW8by+p9uxOE7yg==
+      integrity: sha512-IQ2fPCEeC4uw1p+LXYe8QsEOKuKO72YT3QbbwZhdia3WXhY/c1A2HBFWkRHfal0oa28iizgKR1ylS65XnyF3cg==
       tarball: 'file:projects/semmle-vscode-utils.tgz'
     version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
     name: '@rush-temp/typescript-config'
     resolution:
-      integrity: sha512-qJbtY2jvt6LKkmUt/seiYyXSEB6Oip/rW+SxofQEnpyplgIQv7whTZb6g5pwlSLGl8goTaQFm4NfazKhFmxXvQ==
+      integrity: sha512-kSFyvKy63jUHFVXQEzALiYfsTdn7J+Y7PcqtUVo9GndU5b5Xh3rBpVbZD1QN8+y8GfT0m/sdZZQVyH0h+On11Q==
       tarball: 'file:projects/typescript-config.tgz'
     version: 0.0.0
 registry: 'https://registry.npmjs.org/'
@@ -6327,6 +6357,7 @@ specifiers:
   '@types/vinyl': ~2.0.3
   '@types/vscode': ^1.33.0
   '@types/webpack': ^4.32.1
+  '@types/xml2js': ~0.4.4
   ansi-colors: ^4.0.1
   chai: ^4.2.0
   child-process-promise: ^2.2.1
@@ -6359,7 +6390,7 @@ specifiers:
   typescript: ^3.5.2
   typescript-formatter: ^7.2.2
   vinyl: ^2.2.0
-  vsce: ^1.65.0
   vscode-languageclient: ^5.2.1
   webpack: ^4.38.0
   webpack-cli: ^3.3.2
+  xml2js: ~0.4.19

@@ -1,6 +1,7 @@
 import { commands, ExtensionContext, window as Window } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import { DatabaseManager } from './databases';
+import { DatabaseUI } from './databases-ui';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
 import { compileAndRunQueryAgainstDatabase, EvaluationInfo, spawnQueryServer, tmpDirDisposal } from './queries';
@@ -21,10 +22,15 @@ export function activate(ctx: ExtensionContext) {
   const qlConfiguration = new QLConfiguration();
   const qs = spawnQueryServer(qlConfiguration);
   const dbm = new DatabaseManager(ctx);
+  ctx.subscriptions.push(dbm);
+  const databaseUI = new DatabaseUI(ctx, dbm);
+  ctx.subscriptions.push(databaseUI);
+
   const qhm = new QueryHistoryManager(ctx, item => showResultsForInfo(item.info));
-  const intm = new InterfaceManager(ctx, msg => {
-    if (qs != undefined) { qs.log(msg) }
+  const intm = new InterfaceManager(ctx, dbm, msg => {
+    if (qs !== undefined) { qs.log(msg) }
   });
+  ctx.subscriptions.push(intm);
   archiveFilesystemProvider.activate(ctx);
 
   function showResultsForInfo(info: EvaluationInfo) {
@@ -32,8 +38,8 @@ export function activate(ctx: ExtensionContext) {
   }
 
   async function compileAndRunQueryAsync(qs: qsClient.Server, quickEval: boolean): Promise<EvaluationInfo> {
-    const dbItem = await dbm.getDatabaseItem();
-    if (dbItem == undefined) {
+    const dbItem = await databaseUI.getDatabaseItem();
+    if (dbItem === undefined) {
       throw new Error('Can\'t run query without a selected database');
     }
     return compileAndRunQueryAgainstDatabase(qs, dbItem, quickEval);
@@ -66,10 +72,6 @@ export function activate(ctx: ExtensionContext) {
     }
   }, true);
 
-  ctx.subscriptions.push(commands.registerCommand('ql.setCurrentDatabase', (db) => dbm.setCurrentDatabase(db)));
-  ctx.subscriptions.push(commands.registerCommand('ql.chooseDatabase', () => dbm.chooseAndSetDatabaseSync()));
-  ctx.subscriptions.push(commands.registerCommand('qlDatabases.setCurrentDatabase', (db) => dbm.setCurrentItem(db)));
-  ctx.subscriptions.push(commands.registerCommand('qlDatabases.removeDatabase', (db) => dbm.removeItem(db)));
   ctx.subscriptions.push(commands.registerCommand('ql.runQuery', () => compileAndRunQuerySync(false)));
   ctx.subscriptions.push(commands.registerCommand('ql.quickEval', () => compileAndRunQuerySync(true)));
 

@@ -46,10 +46,10 @@ class QueryInfo {
     this.quickEvalPosition = quickEvalPosition;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${queryCounter}.qlo`);
     this.resultsPath = path.join(tmpDir.name, `results${queryCounter}.bqrs`);
-    if (dbItem.dbUri == undefined) {
-      throw new Error('Can\'t run query without valid database directory');
+    if (dbItem.contents === undefined) {
+      throw new Error('Can\'t run query on invalid snapshot.');
     }
-    this.db = dbItem.dbUri;
+    this.db = dbItem.contents.databaseUri;
     this.dbItem = dbItem;
     queryCounter++;
   }
@@ -207,7 +207,7 @@ export async function compileAndRunQueryAgainstDatabase(
     result: await query.compileAndRun(qs),
     database: {
       name: db.name,
-      srcRootUri: db.srcRoot ? db.srcRoot.toString() : undefined
+      snapshotUri: db.snapshotUri.toString(true)
     }
   };
 }
