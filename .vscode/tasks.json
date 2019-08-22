@@ -19,16 +19,19 @@
         "showReuseMessage": true,
         "clear": true
       },
-      "problemMatcher": {
-        "owner": "typescript",
-        "fileLocation": "absolute",
-        "pattern": {
-          "regexp": "^\\[gulp-typescript\\] ([^(]+)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\): error TS\\d+: (.*)$",
-          "file": 1,
-          "location": 2,
-          "message": 3
-        }
-      }
+      "problemMatcher": [
+        {
+          "owner": "typescript",
+          "fileLocation": "absolute",
+          "pattern": {
+            "regexp": "^\\[gulp-typescript\\] ([^(]+)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\): error TS\\d+: (.*)$",
+            "file": 1,
+            "location": 2,
+            "message": 3
+          },
+        },
+        "$ts-webpack"
+      ]
     },
     {
       "label": "Rebuild",
@@ -43,16 +46,18 @@
         "showReuseMessage": true,
         "clear": true
       },
-      "problemMatcher": {
-        "owner": "typescript",
-        "fileLocation": "absolute",
-        "pattern": {
-          "regexp": "^\\[gulp-typescript\\] ([^(]+)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\): error TS\\d+: (.*)$",
-          "file": 1,
-          "location": 2,
-          "message": 3
+      "problemMatcher": [
+        {
+          "owner": "typescript",
+          "fileLocation": "absolute",
+          "pattern": {
+            "regexp": "^\\[gulp-typescript\\] ([^(]+)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\): error TS\\d+: (.*)$",
+            "file": 1,
+            "location": 2,
+            "message": 3
+          }
         }
-      }
+      ]
     },
     {
       "label": "Update",
