@@ -32,7 +32,7 @@ function joinThemableIconPath(base: string, iconPath: ThemableIconPath): Themabl
  * Tree data provider for the databases view.
  */
 class DatabaseTreeDataProvider extends DisposableObject
-    implements TreeDataProvider<DatabaseItem> {
+  implements TreeDataProvider<DatabaseItem> {
 
   private readonly _onDidChangeTreeData = new EventEmitter<DatabaseItem | undefined>();
   private currentDatabaseItem: DatabaseItem | undefined;
@@ -104,10 +104,10 @@ class DatabaseTreeDataProvider extends DisposableObject
  */
 async function chooseDatabaseDir(): Promise<Uri | undefined> {
   const chosen = await window.showOpenDialog({
-      openLabel: 'Choose Snapshot',
-      canSelectFiles: false,
-      canSelectFolders: true,
-      canSelectMany: false,
+    openLabel: 'Choose Snapshot',
+    canSelectFiles: false,
+    canSelectFolders: true,
+    canSelectMany: false,
   });
   if (chosen == undefined) {
     return undefined;
