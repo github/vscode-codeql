@@ -131,6 +131,10 @@
         "title": "QL: Set Current Snapshot"
       },
       {
+        "command": "ql.clearCache",
+        "title": "QL: Clear Cache"
+      },
+      {
         "command": "qlDatabases.setCurrentDatabase",
         "title": "Make Current"
       },
