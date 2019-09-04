@@ -102,7 +102,7 @@ export function qlTable(type: any, options?: TableOptions): any {
     if (realOptions.name === undefined) {
       names = [key.toString()]
     }
-    else if (typeof(realOptions.name) === 'string') {
+    else if (typeof realOptions.name === 'string') {
       names = [realOptions.name];
     }
     else {
@@ -119,7 +119,7 @@ export function qlTable(type: any, options?: TableOptions): any {
       tableNames: names,
       type: type
     });
- };
+  };
 }
 
 type ParseTupleAction = (src: readonly ColumnValue[], dest: any) => void;
@@ -193,7 +193,8 @@ class CustomResultSetBinder {
 
   private bindObject(type: { new(): any }, startIndex: number, isRoot: boolean): {
     action: ParseTupleAction,
-    lastColumn: number } {
+    lastColumn: number
+  } {
 
     const columnProperties: ColumnProperty[] | undefined =
       Reflect.getMetadata(columnPropertiesSymbol, type.prototype);
@@ -252,8 +253,9 @@ class CustomResultSetBinder {
 
   private bindColumn(index: number, type: new () => any, property: ColumnProperty,
     key: PropertyKey | number): {
-    action: ParseTupleAction,
-    lastColumn: number } {
+      action: ParseTupleAction,
+      lastColumn: number
+    } {
 
     if ((index < 0) || (index >= this.schema.columns.length)) {
       throw new Error(`No matching column '${index}' found for property '${type.toString()}.${property.key.toString()}' when binding root type '${this.type.toString()}'.`);
@@ -359,7 +361,8 @@ export function createCustomResultSets<T>(reader: ResultSetsReader, type: { new(
 }
 
 function findPropertyForTable(resultSet: ResultSetSchema, tableProperties: TableProperty[]):
-    TableProperty | undefined {
+  TableProperty | undefined {
+
   const tableName = resultSet.name === '#select' ? 'select' : resultSet.name;
   return tableProperties.find(tableProperty => tableProperty.tableNames.find(name => name === tableName));
 }

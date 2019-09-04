@@ -8,7 +8,8 @@ import * as bqrs from 'semmle-bqrs';
 import { FileReader } from 'semmle-io-node';
 import {
   FivePartLocation, LocationValue, isResolvableLocation, ProblemQueryResults,
-  CustomResultSets } from 'semmle-bqrs';
+  CustomResultSets
+} from 'semmle-bqrs';
 import { FromResultsViewMsg, IntoResultsViewMsg } from './interface-types';
 import { tmpDir, EvaluationInfo } from './queries';
 import { DisposableObject } from 'semmle-vscode-utils';
