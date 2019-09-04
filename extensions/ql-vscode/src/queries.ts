@@ -1,11 +1,11 @@
 import * as path from 'path';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
-import { ExtensionContext, ProgressLocation, window as Window, workspace } from 'vscode';
+import { ProgressLocation, window as Window, workspace } from 'vscode';
 import * as compilation from '../gen/compilation_server_protocol_pb';
 import { ProgressUpdate } from '../gen/core_messages_protocol_pb';
 import * as evaluation from '../gen/evaluation_server_protocol_pb';
-import { DatabaseManager, DatabaseItem } from './databases';
+import { DatabaseItem } from './databases';
 import * as qsClient from './queryserver-client';
 import { QLConfiguration } from './config';
 import { DatabaseInfo } from './interface-types';
@@ -18,7 +18,7 @@ import { DatabaseInfo } from './interface-types';
  */
 
 // XXX: Tmp directory should be configuarble.
-const tmpDir = tmp.dirSync({ prefix: 'queries_', keep: false, unsafeCleanup: true });
+export const tmpDir = tmp.dirSync({ prefix: 'queries_', keep: false, unsafeCleanup: true });
 export const tmpDirDisposal = {
   dispose: () => {
     tmpDir.removeCallback();

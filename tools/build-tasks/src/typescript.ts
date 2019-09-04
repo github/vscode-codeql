@@ -34,6 +34,12 @@ export function compileTypeScript() {
     throw Error();
   }
 
+  //REVIEW: Better way to detect deployable projects?
+  // Since extension .js files are deployed to 'dist/<package>/out', and libraries are deployed to
+  // 'dist/<app package>/node_modules/<package>/out'.
+  const pathToRoot = (path.dirname(project.projectRelativeFolder) === 'extensions') ?
+    '../../..' : '../../../../..';
+
   return tsProject.src()
     .pipe(sourcemaps.init())
     .pipe(tsProject(goodReporter()))
@@ -46,8 +52,7 @@ export function compileTypeScript() {
     }))
     .pipe(sourcemaps.write('.', {
       includeContent: false,
-      // Since the generated .js files are deployed to 'dist/<package>/out'
-      sourceRoot: path.join('../../..', project.projectRelativeFolder)
+      sourceRoot: path.join(pathToRoot, project.projectRelativeFolder)
     }))
     .pipe(gulp.dest('out'));
 }

@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as compilation from '../gen/compilation_server_protocol_pb';
 import * as core from '../gen/core_messages_protocol_pb';
 import * as evaluation from '../gen/evaluation_server_protocol_pb';
-import { StreamDigester } from './digester';
+import { StreamDigester } from 'semmle-io';
 import { QLConfigurationData } from './configData';
 
 /**
@@ -92,19 +92,19 @@ async function parseDone(s: Server): Promise<Msg> {
 
 async function parseResult(s: Server): Promise<Msg> {
   const d = s.digester;
-  const len = await d.readUInt32();
+  const len = await d.readLEB128UInt32();
   return { t: 'result', buffer: await d.read(len) };
 }
 
 async function parseProgress(s: Server): Promise<Msg> {
   const d = s.digester;
-  const len = await d.readUInt32();
+  const len = await d.readLEB128UInt32();
   return { t: 'progress', proto: core.ProgressUpdate.deserializeBinary(await d.read(len)).toObject() };
 }
 
 async function parseUnexpectedError(s: Server): Promise<Msg> {
   const d = s.digester;
-  const len = await d.readUInt32();
+  const len = await d.readLEB128UInt32();
   return { t: 'unexpectedError', proto: core.UnexpectedError.deserializeBinary(await d.read(len)).toObject() };
 }
 
@@ -150,7 +150,7 @@ export class Server {
       this.log(`child process exited with code ${code}`);
     });
     this.child = child;
-    this.digester = new StreamDigester(child.stdout);
+    this.digester = StreamDigester.fromChunkIterator(child.stdout);
 
     this.asyncStart().catch((e: Error) => {
       this.log('Query server error: ' + e.toString() + '\n' + e.stack);
@@ -287,7 +287,7 @@ export class Server {
 
   async parseResponse(): Promise<ProtocolResponse> {
     const d = this.digester;
-    const id = await d.readUInt32();
+    const id = await d.readLEB128UInt32();
     const respType = await d.readByte();
     const parser = responseParser[respType];
     if (parser == undefined) {
