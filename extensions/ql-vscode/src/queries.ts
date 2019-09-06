@@ -131,6 +131,7 @@ export interface EvaluationInfo {
  * Start the query server.
  */
 export function spawnQueryServer(config: QLConfiguration): qsClient.Server | undefined {
+  //TODO: Handle configuration changes, query server crashes, etc.
   const semmleDist = config.qlDistributionPath;
   if (semmleDist) {
     const outputChannel = Window.createOutputChannel('QL Query Server');
