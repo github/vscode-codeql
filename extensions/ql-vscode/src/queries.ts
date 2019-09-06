@@ -131,6 +131,7 @@ export interface EvaluationInfo {
  * Start the query server.
  */
 export function spawnQueryServer(config: QLConfiguration): qsClient.Server | undefined {
+  //TODO: Handle configuration changes, query server crashes, etc.
   const semmleDist = config.qlDistributionPath;
   if (semmleDist) {
     const outputChannel = Window.createOutputChannel('QL Query Server');
@@ -168,6 +169,36 @@ function withProgress<R>(
         progress.report({ message: text, increment });
       }, token);
     });
+}
+
+export async function clearCacheInDatabase(qs: qsClient.Server, db: DatabaseItem):
+  Promise<evaluation.ClearCacheResult.AsObject> {
+
+  const database: evaluation.Database = new evaluation.Database();
+  if (db.contents === undefined) {
+    throw new Error('Can\'t run query on invalid snapshot.');
+  }
+
+  database.setDatabaseDirectory(db.contents.databaseUri.fsPath);
+  database.setWorkingSet('default');
+
+  return withProgress({
+    location: ProgressLocation.Notification,
+    title: "Clearing Cache",
+    cancellable: false,
+  }, (progress, token) => {
+    return new Promise<evaluation.ClearCacheResult.AsObject>((resolve, reject) => {
+      qs.clearCache(database,
+        {
+          onProgress: progress,
+          onResult: resolve,
+          onDone: () => {
+            qs.log(" - - - DONE CLEARING CACHE - - - ");
+          },
+        }
+      );
+    });
+  });
 }
 
 export async function compileAndRunQueryAgainstDatabase(

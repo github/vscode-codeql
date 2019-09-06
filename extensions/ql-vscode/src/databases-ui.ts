@@ -1,7 +1,9 @@
 import { DisposableObject } from "semmle-vscode-utils";
 import { DatabaseItem, DatabaseManager } from "./databases";
 import { TreeDataProvider, Event, EventEmitter, ExtensionContext, TreeItem, ProviderResult, window, commands, Uri } from "vscode";
+import * as qsClient from './queryserver-client';
 import * as path from 'path';
+import { clearCacheInDatabase } from "./queries";
 
 type ThemableIconPath = { light: string, dark: string } | string;
 
@@ -32,7 +34,7 @@ function joinThemableIconPath(base: string, iconPath: ThemableIconPath): Themabl
  * Tree data provider for the databases view.
  */
 class DatabaseTreeDataProvider extends DisposableObject
-    implements TreeDataProvider<DatabaseItem> {
+  implements TreeDataProvider<DatabaseItem> {
 
   private readonly _onDidChangeTreeData = new EventEmitter<DatabaseItem | undefined>();
   private currentDatabaseItem: DatabaseItem | undefined;
@@ -104,10 +106,10 @@ class DatabaseTreeDataProvider extends DisposableObject
  */
 async function chooseDatabaseDir(): Promise<Uri | undefined> {
   const chosen = await window.showOpenDialog({
-      openLabel: 'Choose Snapshot',
-      canSelectFiles: false,
-      canSelectFolders: true,
-      canSelectMany: false,
+    openLabel: 'Choose Snapshot',
+    canSelectFiles: false,
+    canSelectFolders: true,
+    canSelectMany: false,
   });
   if (chosen == undefined) {
     return undefined;
@@ -118,7 +120,9 @@ async function chooseDatabaseDir(): Promise<Uri | undefined> {
 }
 
 export class DatabaseUI extends DisposableObject {
-  public constructor(private ctx: ExtensionContext, private databaseManager: DatabaseManager) {
+  public constructor(private ctx: ExtensionContext, private databaseManager: DatabaseManager,
+    private readonly queryServer: qsClient.Server | undefined) {
+
     super();
 
     const treeDataProvider = this.push(new DatabaseTreeDataProvider(ctx, databaseManager));
@@ -126,6 +130,7 @@ export class DatabaseUI extends DisposableObject {
 
     ctx.subscriptions.push(commands.registerCommand('ql.chooseDatabase', this.handleChooseDatabase));
     ctx.subscriptions.push(commands.registerCommand('ql.setCurrentDatabase', this.handleSetCurrentDatabase));
+    ctx.subscriptions.push(commands.registerCommand('ql.clearCache', this.handleClearCache));
     ctx.subscriptions.push(commands.registerCommand('qlDatabases.setCurrentDatabase', this.handleMakeCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('qlDatabases.removeDatabase', this.handleRemoveDatabase));
   }
@@ -136,6 +141,14 @@ export class DatabaseUI extends DisposableObject {
 
   private handleChooseDatabase = async (): Promise<DatabaseItem | undefined> => {
     return await this.chooseAndSetDatabase();
+  }
+
+  private handleClearCache = async (): Promise<void> => {
+    if ((this.queryServer !== undefined) &&
+      (this.databaseManager.currentDatabaseItem !== undefined)) {
+
+      await clearCacheInDatabase(this.queryServer, this.databaseManager.currentDatabaseItem);
+    }
   }
 
   private handleSetCurrentDatabase = async (uri: Uri): Promise<DatabaseItem | undefined> => {

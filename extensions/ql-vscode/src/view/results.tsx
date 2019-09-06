@@ -48,13 +48,18 @@ class App extends React.Component<{}, ResultsViewState> {
 
   constructor(props: any) {
     super(props);
-    this.state = { results: undefined };
+    this.state = {
+      results: undefined,
+      database: undefined
+    };
   }
 
   render() {
     if (this.state.results == undefined)
       return <span>Results Undefined</span>;
-    return <ResultTables resultSets={this.state.results} database={this.state.database}/>;
+
+    //TODO: Remove the need for the `!` assertion.
+    return <ResultTables resultSets={this.state.results} database={this.state.database!}/>;
   }
 }
 

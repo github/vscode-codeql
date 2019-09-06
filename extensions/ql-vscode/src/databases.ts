@@ -97,12 +97,12 @@ async function readXmlFile(path: string): Promise<any> {
 function getXmlElementContent(xml: any, elementPath: string): string | undefined {
   let current = xml;
   for (const name of elementPath.split('.')) {
-    if (typeof(current) !== 'object') {
+    if (typeof current !== 'object') {
       return undefined;
     }
     current = current[name];
   }
-  if (typeof(current) === 'string') {
+  if (typeof current === 'string') {
     return current;
   }
   else {
@@ -128,7 +128,8 @@ async function findDatabase(parentDirectory: string): Promise<vscode.Uri> {
 }
 
 async function findSourceArchive(snapshotPath: string, basePath: string):
-    Promise<vscode.Uri | undefined> {
+  Promise<vscode.Uri | undefined> {
+
   const zipPath = basePath + '.zip';
   if (await fs.pathExists(basePath)) {
     return vscode.Uri.file(basePath);
@@ -143,7 +144,8 @@ async function findSourceArchive(snapshotPath: string, basePath: string):
 }
 
 async function resolveExportedSnapshot(snapshotPath: string):
-    Promise<DatabaseContents | undefined> {
+  Promise<DatabaseContents | undefined> {
+
   const dotProjectPath = path.join(snapshotPath, '.project');
   if (await fs.pathExists(dotProjectPath)) {
     // Looks like an exported snapshot.
@@ -268,8 +270,9 @@ class DatabaseItemImpl implements DatabaseItem {
   private _contents: DatabaseContents | undefined;
 
   public constructor(public readonly snapshotUri: vscode.Uri,
-      contents: DatabaseContents | undefined, private options: FullDatabaseOptions,
-      private readonly onChanged: (item: DatabaseItemImpl) => void) {
+    contents: DatabaseContents | undefined, private options: FullDatabaseOptions,
+    private readonly onChanged: (item: DatabaseItemImpl) => void) {
+
     this._contents = contents;
   }
 
@@ -383,7 +386,8 @@ export class DatabaseManager extends DisposableObject {
   }
 
   public async openDatabase(uri: vscode.Uri, options?: DatabaseOptions):
-      Promise<DatabaseItem> {
+    Promise<DatabaseItem> {
+
     const contents = await resolveSnapshotContents(uri);
     const realOptions = options || {};
     // Ignore the source archive for QLTest snapshots by default.
@@ -402,14 +406,15 @@ export class DatabaseManager extends DisposableObject {
   }
 
   private async createDatabaseItemFromPersistedState(state: PersistedDatabaseItem):
-      Promise<DatabaseItem> {
+    Promise<DatabaseItem> {
+
     let displayName: string | undefined = undefined;
     let ignoreSourceArchive = false;
     if (state.options) {
-      if (typeof(state.options.displayName) === 'string') {
+      if (typeof state.options.displayName === 'string') {
         displayName = state.options.displayName;
       }
-      if (typeof(state.options.ignoreSourceArchive) === 'boolean') {
+      if (typeof state.options.ignoreSourceArchive === 'boolean') {
         ignoreSourceArchive = state.options.ignoreSourceArchive;
       }
     }
@@ -459,7 +464,8 @@ export class DatabaseManager extends DisposableObject {
   }
 
   public async setCurrentDatabaseItem(item: DatabaseItem | undefined,
-      skipRefresh: boolean = false): Promise<void> {
+    skipRefresh: boolean = false): Promise<void> {
+
     if (!skipRefresh && (item !== undefined)) {
       await item.refresh();  // Will throw on invalid database.
     }

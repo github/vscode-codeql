@@ -23,7 +23,7 @@ export function activate(ctx: ExtensionContext) {
   const qs = spawnQueryServer(qlConfiguration);
   const dbm = new DatabaseManager(ctx);
   ctx.subscriptions.push(dbm);
-  const databaseUI = new DatabaseUI(ctx, dbm);
+  const databaseUI = new DatabaseUI(ctx, dbm, qs);
   ctx.subscriptions.push(databaseUI);
 
   const qhm = new QueryHistoryManager(ctx, item => showResultsForInfo(item.info));

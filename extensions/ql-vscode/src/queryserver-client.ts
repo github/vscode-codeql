@@ -68,6 +68,7 @@ enum EvaluationResultType {
 type ProgressMessage = core.ProgressUpdate.AsObject;
 type UnexpectedError = core.UnexpectedError.AsObject;
 type CheckQueryResult = compilation.CheckQueryResult.AsObject;
+type ClearCacheResult = evaluation.ClearCacheResult.AsObject;
 type EvaluationResult = evaluation.Result.AsObject;
 
 type RespParser = (s: Server) => Promise<Msg>;
@@ -190,6 +191,9 @@ export class Server {
           else if (req.service == ServiceCode.EVALUATE_QUERY) {
             handler(evaluation.Result.deserializeBinary(buf).toObject());
           }
+          else if (req.service === ServiceCode.CLEAR_CACHE) {
+            handler(evaluation.ClearCacheResult.deserializeBinary(buf).toObject());
+          }
           else {
             if (ServiceCode[req.service] == undefined) {
               throw new Error(`service code ${req.service} unknown`);
@@ -226,6 +230,15 @@ export class Server {
     child.stdin!.write(encodeUInt32(id)); // request id
     child.stdin!.write(encodeUInt32(buffer.length)); // protobuf length
     child.stdin!.write(buffer); // protobuf
+  }
+
+  clearCache(
+    database: evaluation.Database,
+    handlers: RequestHandlers<ClearCacheResult>
+  ) {
+    const msg = new evaluation.ClearCacheInput();
+    msg.setDb(database);
+    this.makeRequest<ClearCacheResult>(msg, { service: ServiceCode.CLEAR_CACHE, handlers });
   }
 
   runQuery(queryToRun: evaluation.QueryToRun, database: evaluation.Database, handlers: RequestHandlers<EvaluationResult>) {

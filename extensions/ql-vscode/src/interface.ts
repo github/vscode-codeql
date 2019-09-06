@@ -28,7 +28,8 @@ export class InterfaceManager extends DisposableObject {
   readonly diagnosticCollection = languages.createDiagnosticCollection(`ql-query-results`);
 
   constructor(public ctx: vscode.ExtensionContext, private databaseManager: DatabaseManager,
-      public log: (x: string) => void) {
+    public log: (x: string) => void) {
+
     super();
   }
 
