@@ -124,7 +124,11 @@
       },
       {
         "command": "ql.chooseDatabase",
-        "title": "QL: Choose Snapshot"
+        "title": "QL: Choose Snapshot",
+        "icon": {
+          "light": "media/black-plus.svg",
+          "dark": "media/white-plus.svg"
+        }
       },
       {
         "command": "ql.setCurrentDatabase",
@@ -144,6 +148,13 @@
       }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "ql.chooseDatabase",
+          "when": "view == qlDatabases",
+          "group": "navigation"
+        }
+      ],
       "view/item/context": [
         {
           "command": "qlDatabases.setCurrentDatabase",
