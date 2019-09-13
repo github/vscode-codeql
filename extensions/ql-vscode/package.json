@@ -175,6 +175,10 @@
       ],
       "commandPalette": [
         {
+          "command": "ql.runQuery",
+          "when": "editorLangId == ql"
+        },
+        {
           "command": "ql.chooseDatabase"
         },
         {
