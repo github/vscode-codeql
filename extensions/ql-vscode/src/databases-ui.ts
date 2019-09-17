@@ -3,7 +3,7 @@ import { DatabaseItem, DatabaseManager } from "./databases";
 import { TreeDataProvider, Event, EventEmitter, ExtensionContext, TreeItem, ProviderResult, window, commands, Uri } from "vscode";
 import * as qsClient from './queryserver-client';
 import * as path from 'path';
-import { clearCacheInDatabase } from "./queries";
+import { clearCacheInDatabase, upgradeDatabase } from "./queries";
 
 type ThemableIconPath = { light: string, dark: string } | string;
 
@@ -96,8 +96,18 @@ class DatabaseTreeDataProvider extends DisposableObject
   }
 }
 
+/** Gets the first element in the given list, if any, or undefined if the list is empty or undefined. */
+function getFirst(list: Uri[] | undefined): Uri | undefined {
+  if (list === undefined || list.length === 0) {
+    return undefined;
+  }
+  else {
+    return list[0];
+  }
+}
+
 /**
- * Display file selection dialog. Expects the user to choose a
+ * Displays file selection dialog. Expects the user to choose a
  * snapshot directory, which should be the parent directory of a
  * directory of the form `db-[language]`, for example, `db-cpp`.
  *
@@ -109,14 +119,38 @@ async function chooseDatabaseDir(): Promise<Uri | undefined> {
     openLabel: 'Choose Snapshot',
     canSelectFiles: false,
     canSelectFolders: true,
-    canSelectMany: false,
+    canSelectMany: false
   });
-  if (chosen == undefined) {
-    return undefined;
-  }
-  else {
-    return chosen[0];
-  }
+  return getFirst(chosen);
+}
+
+/**
+ * Displays file selection dialog. Expects the user to choose a
+ * QL database scheme file with the extension `.dbscheme`.
+ */
+async function chooseDbSchemeFile(): Promise<Uri | undefined> {
+  const chosen = await window.showOpenDialog({
+    openLabel: 'Choose QL database scheme',
+    canSelectFiles: true,
+    canSelectFolders: false,
+    canSelectMany: false,
+    filters: {'QL database scheme files': ['dbscheme']}
+  });
+  return getFirst(chosen);
+}
+
+/**
+ * Displays file selection dialog. Expects the user to choose a
+ * QL database scheme file with the extension `.dbscheme`.
+ */
+async function chooseUpgradesDirectory(): Promise<Uri | undefined> {
+  const chosen = await window.showOpenDialog({
+    openLabel: 'Choose QL database upgrades directory',
+    canSelectFiles: false,
+    canSelectFolders: true,
+    canSelectMany: false
+  });
+  return getFirst(chosen);
 }
 
 export class DatabaseUI extends DisposableObject {
@@ -130,9 +164,11 @@ export class DatabaseUI extends DisposableObject {
 
     ctx.subscriptions.push(commands.registerCommand('ql.chooseDatabase', this.handleChooseDatabase));
     ctx.subscriptions.push(commands.registerCommand('ql.setCurrentDatabase', this.handleSetCurrentDatabase));
+    ctx.subscriptions.push(commands.registerCommand('ql.upgradeCurrentDatabase', this.handleUpgradeCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('ql.clearCache', this.handleClearCache));
     ctx.subscriptions.push(commands.registerCommand('qlDatabases.setCurrentDatabase', this.handleMakeCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('qlDatabases.removeDatabase', this.handleRemoveDatabase));
+    ctx.subscriptions.push(commands.registerCommand('qlDatabases.upgradeDatabase', this.handleUpgradeDatabase));
   }
 
   private handleMakeCurrentDatabase = async (databaseItem: DatabaseItem): Promise<void> => {
@@ -141,6 +177,29 @@ export class DatabaseUI extends DisposableObject {
 
   private handleChooseDatabase = async (): Promise<DatabaseItem | undefined> => {
     return await this.chooseAndSetDatabase();
+  }
+
+  private handleUpgradeCurrentDatabase = async (): Promise<void> => {
+    await this.handleUpgradeDatabase(this.databaseManager.currentDatabaseItem);
+  }
+
+  private handleUpgradeDatabase = async (databaseItem: DatabaseItem | undefined): Promise<void> => {
+    if (this.queryServer === undefined) {
+      console.log('Received request to upgrade database, but there is no running query server.');
+      return;
+    }
+    if (databaseItem === undefined) {
+      console.log('Received request to upgrade database, but no database was provided.');
+      return;
+    }
+    // TODO: use the DB scheme and upgrades paths configured for the current workspace
+    const targetDbSchemeUri = await chooseDbSchemeFile();
+    if (targetDbSchemeUri === undefined)
+      return;
+    const upgradesDirectory = await chooseUpgradesDirectory();
+    if (upgradesDirectory === undefined)
+      return;
+    await upgradeDatabase(this.queryServer, databaseItem, targetDbSchemeUri, upgradesDirectory);
   }
 
   private handleClearCache = async (): Promise<void> => {
