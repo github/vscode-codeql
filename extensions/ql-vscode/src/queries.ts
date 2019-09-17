@@ -195,7 +195,7 @@ function withProgress<R>(
 export async function clearCacheInDatabase(qs: qsClient.Server, dbItem: DatabaseItem):
   Promise<messages.ClearCacheResult> {
   if (dbItem.contents === undefined) {
-    throw new Error('Can\'t run query on invalid snapshot.');
+    throw new Error('Can\'t clear the cache in an invalid snapshot.');
   }
 
   const db: messages.Database = {
