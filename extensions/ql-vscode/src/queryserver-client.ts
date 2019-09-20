@@ -9,7 +9,6 @@ type ServerOpts = {
 }
 
 export class Server {
-  ch: any;
   log(s: string) {
     if (this.opts && this.opts.logger) {
       (this.opts.logger)(s);
@@ -43,6 +42,9 @@ export class Server {
     });
     this.connection = createMessageConnection(child.stdout, child.stdin);
     this.connection.onRequest(completeQuery, res => {
+      if (!(res.runId in this.evaluationResultCallbacks)) {
+        this.log(`no callback associated with run id ${res.runId}`);
+      }
       this.evaluationResultCallbacks[res.runId](res);
       return {};
     })
@@ -73,11 +75,11 @@ export class Server {
     return this.child.pid;
   }
 
-  async sendRequest<P, R, E, RO>(type: RequestType<WithProgressId<P>, R, E, RO>, paramter: P, token?: CancellationToken, progress?: (res: ProgressMessage) => void): Promise<R> {
+  async sendRequest<P, R, E, RO>(type: RequestType<WithProgressId<P>, R, E, RO>, parameter: P, token?: CancellationToken, progress?: (res: ProgressMessage) => void): Promise<R> {
     let id = this.nextProgress++;
     this.progressCallbacks[id] = progress;
     try {
-      return await this.connection.sendRequest(type, { body: paramter, progressId: id }, token);
+      return await this.connection.sendRequest(type, { body: parameter, progressId: id }, token);
     } finally {
       delete this.progressCallbacks[id];
     }

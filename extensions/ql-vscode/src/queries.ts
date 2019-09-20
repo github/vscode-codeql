@@ -88,7 +88,7 @@ class QueryInfo {
     } finally {
       qs.unRegisterCallback(callbackId);
     }
-    return result || { evaluationTime: 0, message: "No reuslt from server", queryId: 0, runId: callbackId, resultType: messages.QueryResultType.OTHER_ERROR };
+    return result || { evaluationTime: 0, message: "No result from server", queryId: -1, runId: callbackId, resultType: messages.QueryResultType.OTHER_ERROR };
   }
 
   async compileAndRun(
@@ -129,7 +129,7 @@ class QueryInfo {
     }
     else {
       errors.forEach(err =>
-        Window.showErrorMessage(err.message || "ERROR HAD NO MESSAGE")
+        Window.showErrorMessage(err.message || "[no error message available]")
       );
       return {
         evaluationTime: 0,
