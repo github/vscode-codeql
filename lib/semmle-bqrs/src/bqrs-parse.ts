@@ -1,6 +1,5 @@
 import { StreamDigester } from 'semmle-io';
-import { Column } from './bqrs-types';
-import { PrimitiveTypeKind, ColumnType, ResultSetSchema, LocationStyle } from './bqrs-schema';
+import { PrimitiveTypeKind, ColumnType, ResultSetSchema, LocationStyle, ColumnSchema } from './bqrs-schema';
 import { ColumnValue, LocationValue } from './bqrs-results';
 import { decodeUInt32 } from 'leb';
 
@@ -37,9 +36,9 @@ async function parseResultColumnType(d: StreamDigester): Promise<ColumnType> {
   }
 }
 
-async function parseResultArranger(d: StreamDigester): Promise<Column[]> {
+async function parseColumnSchema(d: StreamDigester): Promise<ColumnSchema[]> {
   const numColumns = await d.readLEB128UInt32();
-  const rv: Column[] = [];
+  const rv: ColumnSchema[] = [];
   for (let i = 0; i < numColumns; i++) {
     const name = await readLengthPrefixedString(d);
     const type = await parseResultColumnType(d);
@@ -103,7 +102,7 @@ export async function parseResultSetSchema(d: StreamDigester): Promise<ResultSet
   }
   const name = await readLengthPrefixedString(d);
   const tupleCount = await d.readLEB128UInt32();
-  const columns = await parseResultArranger(d);
+  const columns = await parseColumnSchema(d);
 
   return {
     version: version,

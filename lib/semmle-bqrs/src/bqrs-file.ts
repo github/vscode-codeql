@@ -1,5 +1,5 @@
 import { RandomAccessReader, StreamDigester } from 'semmle-io';
-import { parseResultSetsHeader, StringPool, parseResultSetSchema, parseTuples, TupleParser, readTuples } from './bqrs-parse';
+import { parseResultSetsHeader, StringPool, parseResultSetSchema, readTuples } from './bqrs-parse';
 import { ResultSetsSchema, ResultSetSchema } from './bqrs-schema';
 import { ColumnValue } from './bqrs-results';
 
