@@ -119,7 +119,25 @@ export class InterfaceManager extends DisposableObject {
     const diagnostics: [Uri, ReadonlyArray<Diagnostic>][] = [];
     for await (const problemRow of results.problems.readTuples()) {
       const codeLocation = resolveLocation(problemRow.element.location, databaseItem);
-      const diagnostic = new Diagnostic(codeLocation.range, problemRow.message, DiagnosticSeverity.Warning);
+      let message: string;
+      const references = problemRow.references;
+      if (references) {
+        let referenceIndex = 0;
+        message = problemRow.message.replace(/\$\@/g, sub => {
+          if (referenceIndex < references.length) {
+            const replacement = references[referenceIndex].text;
+            referenceIndex++;
+            return replacement;
+          }
+          else {
+            return sub;
+          }
+        });
+      }
+      else {
+        message = problemRow.message;
+      }
+      const diagnostic = new Diagnostic(codeLocation.range, message, DiagnosticSeverity.Warning);
       if (problemRow.references) {
         const relatedInformation: DiagnosticRelatedInformation[] = [];
         for (const reference of problemRow.references) {
