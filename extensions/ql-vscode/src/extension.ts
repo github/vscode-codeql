@@ -72,7 +72,7 @@ export function activate(ctx: ExtensionContext) {
   ctx.subscriptions.push(tmpDirDisposal);
 
   let client = new LanguageClient('ql', () => spawnIdeServer(qlConfiguration), {
-    documentSelector: ['ql'],
+    documentSelector: ['ql', {language: 'json', pattern: '**/qlpack.json'}],
     synchronize: {
       configurationSection: 'ql'
     }
