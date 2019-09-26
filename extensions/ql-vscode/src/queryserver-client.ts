@@ -43,9 +43,11 @@ export class Server {
     this.connection = createMessageConnection(child.stdout, child.stdin);
     this.connection.onRequest(completeQuery, res => {
       if (!(res.runId in this.evaluationResultCallbacks)) {
-        this.log(`no callback associated with run id ${res.runId}`);
+        this.log(`no callback associated with run id ${res.runId}, continuing without executing any callback`);
       }
-      this.evaluationResultCallbacks[res.runId](res);
+      else {
+        this.evaluationResultCallbacks[res.runId](res);
+      }
       return {};
     })
     this.connection.onNotification(progress, res => {
