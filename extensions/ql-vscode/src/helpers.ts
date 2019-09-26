@@ -36,3 +36,16 @@ export function showAndLogInformationMessage(message: string, ...items: string[]
   console.info(message);
   return Window.showInformationMessage(message, ...items);
 }
+
+/**
+ * Opens a modal dialog for the user to make a yes/no choice.
+ * @param message — The message to show.
+ * 
+ * @return — `true` if the user clicks 'Yes', `false` if the user clicks 'No' or cancels the dialog.
+ */
+export async function showBinaryChoiceDialog(message: string): Promise<boolean> {
+  const yesItem = { title: 'Yes', isCloseAffordance: false };
+  const noItem = { title: 'No', isCloseAffordance: true }
+  const chosenItem = await Window.showInformationMessage(message, { modal: true }, yesItem, noItem);
+  return chosenItem === yesItem;
+}
