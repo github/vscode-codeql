@@ -135,14 +135,16 @@ export async function deployPackage(packageJsonPath: string): Promise<DeployedPa
 
     const rootPackage: IPackageJson = jsonc.parse(await fs.readFile(packageJsonPath, 'utf8'));
 
-    // Default to development build; use flag --dist to indicate build for distribution.
-    const isDevBuild = !process.argv.includes('--dist')
+    // Default to development build; use flag --release to indicate release build.
+    const isDevBuild = !process.argv.includes('--release')
     const distDir = path.join(context.rushConfig.rushJsonFolder, 'dist');
 
     if (isDevBuild) {
       // NOTE: rootPackage.name had better not have any regex metacharacters
-      const oldDevBuild = new RegExp('^' + rootPackage.name + '[^/]+-dev\\d+.vsix$');
-      fs.readdirSync(distDir).filter(name => name.match(oldDevBuild)).map(build => {
+      const oldDevBuildPattern = new RegExp('^' + rootPackage.name + '[^/]+-dev\\d+.vsix$');
+      // Dev package filenames are of the form
+      //    ql-vscode-0.0.1-dev20190927195520723.vsix
+      fs.readdirSync(distDir).filter(name => name.match(oldDevBuildPattern)).map(build => {
         console.log(`Deleting old dev build ${build}...`);
         fs.unlinkSync(path.join(distDir, build));
       });
