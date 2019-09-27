@@ -19,5 +19,12 @@
     },
   ],
   "parameters": [
+    {
+      "parameterKind": "flag",
+      "longName": "--dist",
+      "shortName": "-d",
+      "description": "Perform a production build",
+      "associatedCommands": [ "build", "rebuild" ],
+    }
   ]
 }
