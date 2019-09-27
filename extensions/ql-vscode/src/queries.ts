@@ -400,6 +400,17 @@ export async function compileAndRunQueryAgainstDatabase(
   if (editor == undefined) {
     throw new Error('Can\'t run query without an active editor');
   }
+
+  if (editor.document.isDirty) {
+    // TODO: add 'always save' button which records preference in configuration
+    const result = await Window.showInformationMessage(
+      'Query file is unsaved. Save now?',
+      { modal: true }, { title: 'Yes', isCloseAffordance: false }, { title: 'No', isCloseAffordance: true });
+    if (result !== undefined && result.title === 'Yes') {
+      editor.document.save();
+    }
+  }
+
   const qlProgram: messages.QlProgram = {
     libraryPath: config.projects['.'].libraryPath.map(lp => path.join(root, lp)),
     dbschemePath: path.join(root, config.projects['.'].dbScheme),
