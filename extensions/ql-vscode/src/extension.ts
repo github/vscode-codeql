@@ -9,6 +9,7 @@ import * as qsClient from './queryserver-client';
 import { QLConfiguration } from './config';
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
+import { logger, queryServerLogger, ideServerLogger } from './logging';
 
 /**
 * extension.ts
@@ -18,9 +19,12 @@ import * as archiveFilesystemProvider from './archive-filesystem-provider';
 */
 
 export function activate(ctx: ExtensionContext) {
+  ctx.subscriptions.push(logger);
+  logger.log('Starting QL extension');
 
   const qlConfiguration = new QLConfiguration();
-  const qs = spawnQueryServer(qlConfiguration);
+  ctx.subscriptions.push(queryServerLogger);
+  const qs = spawnQueryServer(qlConfiguration, queryServerLogger);
   const dbm = new DatabaseManager(ctx);
   ctx.subscriptions.push(dbm);
   const databaseUI = new DatabaseUI(ctx, dbm, qs);
@@ -65,7 +69,8 @@ export function activate(ctx: ExtensionContext) {
 
   ctx.subscriptions.push(tmpDirDisposal);
 
-  let client = new LanguageClient('ql', () => spawnIdeServer(qlConfiguration), {
+  ctx.subscriptions.push(ideServerLogger);
+  let client = new LanguageClient('ql', () => spawnIdeServer(qlConfiguration, ideServerLogger), {
     documentSelector: ['ql'],
     synchronize: {
       configurationSection: 'ql'

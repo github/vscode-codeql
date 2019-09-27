@@ -7,8 +7,8 @@ import * as qsClient from './queryserver-client';
 import { QLConfiguration } from './config';
 import { DatabaseInfo } from './interface-types';
 import * as messages from './messages';
-import { showAndLogErrorMessage, showAndLogInformationMessage, showBinaryChoiceDialog } from './helpers';
 import * as helpers from './helpers';
+import { logger, Logger } from './logging';
 
 /**
  * queries.ts
@@ -155,16 +155,15 @@ export interface EvaluationInfo {
 /**
  * Start the query server.
  */
-export function spawnQueryServer(config: QLConfiguration): qsClient.Server | undefined {
+export function spawnQueryServer(config: QLConfiguration, queryServerLogger: Logger): qsClient.Server | undefined {
   //TODO: Handle configuration changes, query server crashes, etc.
   const semmleDist = config.qlDistributionPath;
   if (semmleDist) {
-    const outputChannel = Window.createOutputChannel('QL Query Server');
-    outputChannel.append("starting jsonrpc query server\n");
+    queryServerLogger.log("Starting QL query server using JSON-RPC");
     const server = new qsClient.Server(config.configData, {
-      logger: s => outputChannel.append(s + "\n"),
+      logger: queryServerLogger,
     });
-    outputChannel.append("query server started on pid:" + server.getPid() + "\n");
+    queryServerLogger.log(`Query server started on pid: ${server.getPid()}`);
     return server;
   } else {
     return undefined;
@@ -205,7 +204,7 @@ function withProgress<R>(
 async function checkAndConfirmDatabaseUpgrade(qs: qsClient.Server, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectory: vscode.Uri):
   Promise<messages.UpgradeParams | undefined> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
-    showAndLogErrorMessage("Database is invalid, and cannot be upgraded.")
+    helpers.showAndLogErrorMessage("Database is invalid, and cannot be upgraded.")
     return;
   }
   const params: messages.UpgradeParams = {
@@ -220,7 +219,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.Server, db: DatabaseI
     checkUpgradeResult = await checkDatabaseUpgrade(qs, params);
   }
   catch (e) {
-    showAndLogErrorMessage(`Database cannot be upgraded: ${e}`);
+    helpers.showAndLogErrorMessage(`Database cannot be upgraded: ${e}`);
     return;
   }
   finally {
@@ -230,12 +229,12 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.Server, db: DatabaseI
   const checkedUpgrades = checkUpgradeResult.checkedUpgrades;
   if (checkedUpgrades === undefined) {
     const error = checkUpgradeResult.upgradeError || '[no error message available]';
-    await showAndLogErrorMessage(`Database cannot be upgraded: ${error}`);
+    await helpers.showAndLogErrorMessage(`Database cannot be upgraded: ${error}`);
     return;
   }
 
   if (checkedUpgrades.scripts.length === 0) {
-    await showAndLogInformationMessage('Database is already up to date; nothing to do.');
+    await helpers.showAndLogInformationMessage('Database is already up to date; nothing to do.');
     return;
   }
 
@@ -251,20 +250,20 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.Server, db: DatabaseI
   if (curSha != targetSha) {
     // Newlines aren't rendered in notifications: https://github.com/microsoft/vscode/issues/48900
     // A modal dialog would be rendered better, but is more intrusive.
-    await showAndLogErrorMessage(`Database cannot be upgraded to the target database scheme.
+    await helpers.showAndLogErrorMessage(`Database cannot be upgraded to the target database scheme.
     Can upgrade from ${checkedUpgrades.initialSha} (current) to ${curSha}, but cannot reach ${targetSha} (target).`);
     // TODO: give a more informative message if we think the DB is ahead of the target DB scheme
     return;
   }
 
-  console.log(descriptionMessage);
+  logger.log(descriptionMessage);
   // Ask the user to confirm the upgrade.
-  const shouldUpgrade = await showBinaryChoiceDialog(`Should the database ${db.snapshotUri} be upgraded?\n\n${descriptionMessage}`);
+  const shouldUpgrade = await helpers.showBinaryChoiceDialog(`Should the database ${db.snapshotUri} be upgraded?\n\n${descriptionMessage}`);
   if (shouldUpgrade) {
     return params;
   }
   else {
-    console.log('User cancelled the database upgrade.');
+    logger.log('User cancelled the database upgrade.');
     return;
   }
 }
@@ -288,7 +287,7 @@ export async function upgradeDatabase(qs: qsClient.Server, db: DatabaseItem, tar
     compileUpgradeResult = await compileDatabaseUpgrade(qs, upgradeParams);
   }
   catch (e) {
-    showAndLogErrorMessage(`Compilation of database upgrades failed: ${e}`);
+    helpers.showAndLogErrorMessage(`Compilation of database upgrades failed: ${e}`);
     return;
   }
   finally {
@@ -297,7 +296,7 @@ export async function upgradeDatabase(qs: qsClient.Server, db: DatabaseItem, tar
 
   if (compileUpgradeResult.compiledUpgrades === undefined) {
     const error = compileUpgradeResult.error || '[no error message available]';
-    showAndLogErrorMessage(`Compilation of database upgrades failed: ${error}`);
+    helpers.showAndLogErrorMessage(`Compilation of database upgrades failed: ${error}`);
     return;
   }
 
@@ -307,7 +306,7 @@ export async function upgradeDatabase(qs: qsClient.Server, db: DatabaseItem, tar
     return await runDatabaseUpgrade(qs, db, compileUpgradeResult.compiledUpgrades);
   }
   catch (e) {
-    showAndLogErrorMessage(`Database upgrade failed: ${e}`);
+    helpers.showAndLogErrorMessage(`Database upgrade failed: ${e}`);
     return;
   }
   finally {
