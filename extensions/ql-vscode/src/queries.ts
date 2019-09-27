@@ -8,6 +8,7 @@ import { QLConfiguration } from './config';
 import { DatabaseInfo } from './interface-types';
 import * as messages from './messages';
 import { showAndLogErrorMessage, showAndLogInformationMessage, showBinaryChoiceDialog } from './helpers';
+import * as helpers from './helpers';
 
 /**
  * queries.ts
@@ -401,12 +402,10 @@ export async function compileAndRunQueryAgainstDatabase(
     throw new Error('Can\'t run query without an active editor');
   }
 
+
   if (editor.document.isDirty) {
     // TODO: add 'always save' button which records preference in configuration
-    const result = await Window.showInformationMessage(
-      'Query file is unsaved. Save now?',
-      { modal: true }, { title: 'Yes', isCloseAffordance: false }, { title: 'No', isCloseAffordance: true });
-    if (result !== undefined && result.title === 'Yes') {
+    if (await helpers.showBinaryChoiceDialog('Query file has unsaved changes. Save now?')) {
       editor.document.save();
     }
   }
