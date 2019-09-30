@@ -138,6 +138,7 @@ export async function deployPackage(packageJsonPath: string): Promise<DeployedPa
     // Default to development build; use flag --release to indicate release build.
     const isDevBuild = !process.argv.includes('--release')
     const distDir = path.join(context.rushConfig.rushJsonFolder, 'dist');
+    await fs.mkdirs(distDir);
 
     if (isDevBuild) {
       // NOTE: rootPackage.name had better not have any regex metacharacters
