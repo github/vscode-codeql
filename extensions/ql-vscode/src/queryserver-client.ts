@@ -3,15 +3,16 @@ import { EvaluationResult, completeQuery, WithProgressId, ProgressMessage, progr
 import * as path from 'path';
 import * as cp from 'child_process';
 import { QLConfigurationData } from './configData';
+import { Logger } from './logging';
 
 type ServerOpts = {
-  logger: (s: string) => void
+  logger: Logger
 }
 
 export class Server {
   log(s: string) {
     if (this.opts && this.opts.logger) {
-      (this.opts.logger)(s);
+      (this.opts.logger.log)(s);
     }
   }
 

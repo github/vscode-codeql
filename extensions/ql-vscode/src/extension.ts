@@ -9,6 +9,7 @@ import * as qsClient from './queryserver-client';
 import { QLConfiguration } from './config';
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
+import { logger, queryServerLogger, ideServerLogger } from './logging';
 
 /**
 * extension.ts
@@ -18,6 +19,11 @@ import * as archiveFilesystemProvider from './archive-filesystem-provider';
 */
 
 export function activate(ctx: ExtensionContext) {
+  // Initialise logging, and ensure all loggers are disposed upon exit.
+  ctx.subscriptions.push(logger);
+  ctx.subscriptions.push(queryServerLogger);
+  ctx.subscriptions.push(ideServerLogger);
+  logger.log('Starting QL extension');
 
   const qlConfiguration = new QLConfiguration();
   const qs = spawnQueryServer(qlConfiguration);
