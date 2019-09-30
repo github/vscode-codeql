@@ -8,7 +8,7 @@ import { QLConfiguration } from './config';
 import { DatabaseInfo } from './interface-types';
 import * as messages from './messages';
 import * as helpers from './helpers';
-import { logger, Logger } from './logging';
+import { logger, Logger, queryServerLogger } from './logging';
 
 /**
  * queries.ts
@@ -155,7 +155,7 @@ export interface EvaluationInfo {
 /**
  * Start the query server.
  */
-export function spawnQueryServer(config: QLConfiguration, queryServerLogger: Logger): qsClient.Server | undefined {
+export function spawnQueryServer(config: QLConfiguration): qsClient.Server | undefined {
   //TODO: Handle configuration changes, query server crashes, etc.
   const semmleDist = config.qlDistributionPath;
   if (semmleDist) {

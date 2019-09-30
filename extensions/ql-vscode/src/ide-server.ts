@@ -1,9 +1,8 @@
 import * as cp from 'child_process';
 import * as path from 'path';
-import { window as Window, workspace } from 'vscode';
 import { StreamInfo } from 'vscode-languageclient';
 import { QLConfiguration } from './config';
-import { Logger } from './logging';
+import { ideServerLogger } from './logging';
 
 /**
  * ide-server.ts
@@ -12,7 +11,7 @@ import { Logger } from './logging';
  * Managing the lsp server for QL.
  */
 
-export async function spawnIdeServer(config: QLConfiguration, ideServerLogger: Logger): Promise<StreamInfo> {
+export async function spawnIdeServer(config: QLConfiguration): Promise<StreamInfo> {
   const semmleDist = config.qlDistributionPath;
   if (!semmleDist) {
     throw new Error('Semmle distribution path not set.');
@@ -28,8 +27,8 @@ export async function spawnIdeServer(config: QLConfiguration, ideServerLogger: L
   if (!child || !child.pid) {
     throw new Error(`Launching server using command ${command} failed.`);
   }
-  child.stderr!.on('data', data => ideServerLogger.append(data.toString()));
-  child.stdout!.on('data', data => ideServerLogger.append(data.toString()));
+  child.stderr!.on('data', data => ideServerLogger.logWithoutTrailingNewline(data.toString()));
+  child.stdout!.on('data', data => ideServerLogger.logWithoutTrailingNewline(data.toString()));
   ideServerLogger.log(`QL language server started on pid: ${child.pid}`);
   return { writer: child.stdin!, reader: child.stdout! };
 }

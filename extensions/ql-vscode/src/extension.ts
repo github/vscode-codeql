@@ -19,12 +19,14 @@ import { logger, queryServerLogger, ideServerLogger } from './logging';
 */
 
 export function activate(ctx: ExtensionContext) {
+  // Initialise logging, and ensure all loggers are disposed upon exit.
   ctx.subscriptions.push(logger);
+  ctx.subscriptions.push(queryServerLogger);
+  ctx.subscriptions.push(ideServerLogger);
   logger.log('Starting QL extension');
 
   const qlConfiguration = new QLConfiguration();
-  ctx.subscriptions.push(queryServerLogger);
-  const qs = spawnQueryServer(qlConfiguration, queryServerLogger);
+  const qs = spawnQueryServer(qlConfiguration);
   const dbm = new DatabaseManager(ctx);
   ctx.subscriptions.push(dbm);
   const databaseUI = new DatabaseUI(ctx, dbm, qs);
@@ -69,8 +71,7 @@ export function activate(ctx: ExtensionContext) {
 
   ctx.subscriptions.push(tmpDirDisposal);
 
-  ctx.subscriptions.push(ideServerLogger);
-  let client = new LanguageClient('ql', () => spawnIdeServer(qlConfiguration, ideServerLogger), {
+  let client = new LanguageClient('ql', () => spawnIdeServer(qlConfiguration), {
     documentSelector: ['ql'],
     synchronize: {
       configurationSection: 'ql'
