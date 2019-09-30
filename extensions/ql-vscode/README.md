@@ -6,9 +6,10 @@ Configuration
 
 ### Setting the path to Semmle Core
 
-For IntelliSense and query evaluation to work, you must configure the path to a Semmle Core distribution. This is done by setting the `ql.distributionPath` setting in your VS Code settings to point to your distribution. If you have built your own distribution from a `Semmle/code` checkout, this path will be something like `codeRoot/target/intree/standard`, where `codeRoot` is the root of your `Semmle/code` checkout.
+For IntelliSense and query evaluation to work, you must configure the path to a Semmle Core distribution.
+You must use a Semmle Core distribution from recent `master`, i.e. built after 26 September 2019 and containing [this commit](http://git.semmle.com/Semmle/code/commit/93f3c4cf00910ec5cd6f3dce58f6fb0b080a762a). This can be built from a `Semmle/code` checkout or downloaded from `master` builds of [the ODASA job on Jenkins](https://jenkins.internal.semmle.com/job/ODASA/).
 
-You can also download the release Semmle Core (odasa) from the corporate [release downloads webpage](https://wiki.semmle.com/display/REL/QL+tools+downloads).
+To configure the VS Code extension to use this distribution, set `ql.distributionPath` in your VS Code settings to point to your distribution. If you have built your own distribution from a `Semmle/code` checkout, this path will be something like `codeRoot/target/intree/standard`, where `codeRoot` is the root of your `Semmle/code` checkout.
 
 This setting can be set per-workspace, or you can set it in your
 global user settings to apply to all workspaces you open.
