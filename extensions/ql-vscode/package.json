@@ -120,11 +120,11 @@
       },
       {
         "command": "ql.quickEval",
-        "title": "QL: Quick Eval"
+        "title": "QL: Quick Evaluation"
       },
       {
         "command": "ql.chooseDatabase",
-        "title": "QL: Choose Snapshot",
+        "title": "QL: Choose Database",
         "icon": {
           "light": "media/black-plus.svg",
           "dark": "media/white-plus.svg"
@@ -132,7 +132,7 @@
       },
       {
         "command": "ql.setCurrentDatabase",
-        "title": "QL: Set Current Snapshot"
+        "title": "QL: Set Current Database"
       },
       {
         "command": "ql.upgradeCurrentDatabase",
@@ -144,11 +144,11 @@
       },
       {
         "command": "qlDatabases.setCurrentDatabase",
-        "title": "Make Current"
+        "title": "Set Current Database"
       },
       {
         "command": "qlDatabases.removeDatabase",
-        "title": "Remove"
+        "title": "Remove Database"
       },
       {
         "command": "qlDatabases.upgradeDatabase",
@@ -214,7 +214,7 @@
       "ql-container": [
         {
           "id": "qlDatabases",
-          "name": "Snapshots"
+          "name": "Databases"
         },
         {
           "id": "qlQueryHistory",
