@@ -279,10 +279,10 @@ export async function upgradeDatabase(qs: qsClient.Server, db: DatabaseItem, tar
   Promise<messages.RunUpgradeResult | undefined> {
   const upgradeParams = await checkAndConfirmDatabaseUpgrade(qs, db, targetDbScheme, upgradesDirectory);
 
-  if(upgradeParams === undefined) {
+  if (upgradeParams === undefined) {
     return;
   }
-  
+
   let compileUpgradeResult: messages.CompileUpgradeResult;
   try {
     compileUpgradeResult = await compileDatabaseUpgrade(qs, upgradeParams);
@@ -402,7 +402,6 @@ export async function compileAndRunQueryAgainstDatabase(
     throw new Error('Can\'t run query without an active editor');
   }
 
-
   if (editor.document.isDirty) {
     // TODO: add 'always save' button which records preference in configuration
     if (await helpers.showBinaryChoiceDialog('Query file has unsaved changes. Save now?')) {
@@ -410,9 +409,31 @@ export async function compileAndRunQueryAgainstDatabase(
     }
   }
 
+  // Figure out which project the current query document belongs to.
+
+  let documentProjectDir: string | undefined = undefined;
+
+  // TODO: This iterates through projects in a determinate but
+  // somewhat arbitrary order if declared project directories overlap.
+  // Should we be checking for that and raising a warning if they do?
+  Object.keys(config.projects).sort().forEach(projectDir => {
+    const absoluteProjectDir = path.join(root, projectDir);
+    if (editor.document.fileName.startsWith(absoluteProjectDir)) {
+      documentProjectDir = projectDir;
+    }
+  });
+
+  if (documentProjectDir == undefined)
+    throw new Error(`File ${editor.document.fileName} does not belong to any project in workspace configuration.`);
+
+  // The project of the current document determines which library path
+  // and dbscheme we use. The `libraryPath` field in this server
+  // message is still relative to the workspace root, not to the
+  // project root.
+  const project = config.projects[documentProjectDir];
   const qlProgram: messages.QlProgram = {
-    libraryPath: config.projects['.'].libraryPath.map(lp => path.join(root, lp)),
-    dbschemePath: path.join(root, config.projects['.'].dbScheme),
+    libraryPath: project.libraryPath.map(lp => path.join(root, lp)),
+    dbschemePath: path.join(root, project.dbScheme),
     queryPath: editor.document.fileName
   };
   let quickEvalPosition: messages.Position | undefined;
