@@ -392,7 +392,10 @@ export async function compileAndRunQueryAgainstDatabase(
   db: DatabaseItem,
   quickEval?: boolean
 ): Promise<EvaluationInfo> {
-  const config = workspace.getConfiguration('ql');
+  type Project = { libraryPath: string[], dbScheme: string };
+  type Config = { defaultProject: Project, projects: { [k: string]: Project } };
+
+  const config = workspace.getConfiguration('ql') as vscode.WorkspaceConfiguration & Config;
   const root = workspace.rootPath;
   const editor = Window.activeTextEditor;
   if (root == undefined) {
@@ -411,26 +414,39 @@ export async function compileAndRunQueryAgainstDatabase(
 
   // Figure out which project the current query document belongs to.
 
-  let documentProjectDir: string | undefined = undefined;
+  let project: Project | undefined = undefined;
 
   // TODO: This iterates through projects in a determinate but
   // somewhat arbitrary order if declared project directories overlap.
   // Should we be checking for that and raising a warning if they do?
-  Object.keys(config.projects).sort().forEach(projectDir => {
+  for (const projectDir of Object.keys(config.projects).sort()) {
     const absoluteProjectDir = path.join(root, projectDir);
     if (editor.document.fileName.startsWith(absoluteProjectDir)) {
-      documentProjectDir = projectDir;
+      project = config.projects[projectDir];
+      break;
     }
-  });
+  }
 
-  if (documentProjectDir == undefined)
+  // VSCode seems to always supply a defaultProject so long as the
+  // individual fields scoped below them are declared in package.json,
+  // so we can't just test for `config.defaultProject === undefined`
+  // to see if no default is provided. Test for default values
+  // instead.
+  if (project === undefined && !(
+    config.defaultProject.dbScheme === '' &&
+    config.defaultProject.libraryPath.length === 0)
+  ) {
+    project = config.defaultProject;
+  }
+
+  if (project === undefined) {
     throw new Error(`File ${editor.document.fileName} does not belong to any project in workspace configuration.`);
+  }
 
   // The project of the current document determines which library path
-  // and dbscheme we use. The `libraryPath` field in this server
-  // message is still relative to the workspace root, not to the
-  // project root.
-  const project = config.projects[documentProjectDir];
+  // and dbscheme we use. The `libraryPath` and `dbschemePath` fields
+  // in this server message are relative to the workspace root,
+  // not to the project root.
   const qlProgram: messages.QlProgram = {
     libraryPath: project.libraryPath.map(lp => path.join(root, lp)),
     dbschemePath: path.join(root, project.dbScheme),
