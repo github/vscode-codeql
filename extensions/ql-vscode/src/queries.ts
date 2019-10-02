@@ -132,14 +132,21 @@ class QueryInfo {
       return await this.run(qs);
     }
     else {
-      errors.forEach(err =>
-        Window.showErrorMessage(err.message || "[no error message available]")
-      );
+      // Error dialogs are limited in size and scrollability,
+      // so we include a general description of the problem,
+      // and direct the user to the output window for the detailed compilation messages.
+      // TODO: distinguish better between user-written errors and DB scheme mismatches.
+      qs.log(`Failed to compile query ${this.program.queryPath} against database scheme ${this.program.dbschemePath}:`);
+      for(const error of errors) {
+        const message = error.message || "[no error message available]";
+        qs.log(`ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`);
+      }
+      helpers.showAndLogErrorMessage("Query compilation failed. Please make sure there are no errors in the query, the database is up to date, and the query and database use the same target language. For more details on the error, go to View > Output, and choose QL Query Server from the dropdown.");
       return {
         evaluationTime: 0,
         resultType: messages.QueryResultType.OTHER_ERROR,
-        queryId: 0,
-        runId: 0,
+        queryId: -1,
+        runId: -1,
         message: "Query had compilation errors"
       }
     }
