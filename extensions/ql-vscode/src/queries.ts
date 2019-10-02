@@ -416,8 +416,8 @@ export async function compileAndRunQueryAgainstDatabase(
   };
   let quickEvalPosition: messages.Position | undefined;
   if (quickEval) {
-    const pos = editor.selection.anchor;
-    const posEnd = editor.selection.active;
+    const pos = editor.selection.start;
+    const posEnd = editor.selection.end;
     // Convert from 0-based to 1-based line and column numbers.
     quickEvalPosition = {
       fileName: editor.document.fileName,
