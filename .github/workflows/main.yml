@@ -1,0 +1,29 @@
+name: Build Extension
+on: [push]
+
+jobs:
+  build:
+    name: Build
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+
+      - name: Build
+        run: |
+          cd build
+          npm install
+          npm run build
+
+      - name: Prepare artifacts
+        run: |
+          mkdir artifacts
+          cp dist/*.vsix artifacts
+
+      - uses: actions/upload-artifact@master
+        with:
+          name: ql-for-vscode-extension
+          path: artifacts
