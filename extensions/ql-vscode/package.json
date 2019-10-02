@@ -17,7 +17,14 @@
     "Programming Languages"
   ],
   "activationEvents": [
-    "onLanguage:ql"
+    "onLanguage:ql",
+    "onView:qlDatabases",
+    "onView:qlQueryHistory",
+    "onCommand:ql.chooseDatabase",
+    "onCommand:ql.setCurrentDatabase",
+    "onCommand:qlDatabases.chooseDatabase",
+    "onCommand:qlDatabases.setCurrentDatabase",
+    "onWebviewPanel:resultsView"
   ],
   "main": "./out/extension",
   "files": [
