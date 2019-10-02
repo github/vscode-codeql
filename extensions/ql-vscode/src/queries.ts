@@ -112,7 +112,7 @@ class QueryInfo {
         },
         queryToCheck: this.program,
         resultPath: this.compiledQueryPath,
-        target: { query: {} }
+        target: !!this.quickEvalPosition ? { quickEval: { quickEvalPos: this.quickEvalPosition } } : { query: {} }
       };
 
 
