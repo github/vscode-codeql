@@ -442,13 +442,19 @@ export async function compileAndRunQueryAgainstDatabase(
     throw new Error(`File ${editor.document.fileName} does not belong to any project in workspace configuration.`);
   }
 
-  // The project of the current document determines which library path
-  // and dbscheme we use. The `libraryPath` and `dbschemePath` fields
-  // in this server message are relative to the workspace root,
-  // not to the project root.
+  if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
+    throw new Error(`Database ${db.snapshotUri} does not have a QL database scheme.`);
+  }
+
   const qlProgram: messages.QlProgram = {
+    // The project of the current document determines which library path
+    // we use. The `libraryPath` field in this server message is relative
+    // to the workspace root, not to the project root.
     libraryPath: project.libraryPath.map(lp => path.join(root, lp)),
-    dbschemePath: path.join(root, project.dbScheme),
+    // Since we are compiling and running a query against a database,
+    // we use the database's DB scheme here instead of the DB scheme
+    // from the current document's project.
+    dbschemePath: db.contents.dbSchemeUri.fsPath,
     queryPath: editor.document.fileName
   };
   let quickEvalPosition: messages.Position | undefined;
