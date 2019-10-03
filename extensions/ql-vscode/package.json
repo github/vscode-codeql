@@ -196,7 +196,7 @@
       "commandPalette": [
         {
           "command": "ql.runQuery",
-          "when": "editorLangId == ql"
+          "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
           "command": "ql.setCurrentDatabase",
