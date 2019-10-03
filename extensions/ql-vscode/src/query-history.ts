@@ -1,7 +1,7 @@
-import * as path from 'path';
 import * as vscode from 'vscode';
 import { ExtensionContext, window as Window } from 'vscode';
 import { EvaluationInfo } from './queries';
+import * as messages from './messages';
 /**
  * query-history.ts
  * ------------
@@ -28,9 +28,25 @@ export class QueryHistoryItem {
     this.time = new Date().toISOString();
   }
 
+  get statusString(): string {
+    switch(this.info.result.resultType) {
+      case messages.QueryResultType.CANCELLATION:
+        return `cancelled after ${this.info.result.evaluationTime / 1000} seconds`;
+      case messages.QueryResultType.OOM:
+        return `out of memory`;
+      case messages.QueryResultType.SUCCESS:
+        return `finished in ${this.info.result.evaluationTime / 1000} seconds`;
+      case messages.QueryResultType.TIMEOUT:
+        return `timed out after ${this.info.result.evaluationTime / 1000} seconds`;
+      case messages.QueryResultType.OTHER_ERROR:
+      default:
+        return `failed`;
+    }
+  }
+
   toString(): string {
-    const { databaseName, info, queryName, time } = this;
-    return `${queryName} on ${databaseName} (${time}) - finished in ${info.result.evaluationTime / 1000} seconds`;
+    const { databaseName, queryName, time } = this;
+    return `${queryName} on ${databaseName} (${time}) - ${this.statusString}`;
   }
 }
 

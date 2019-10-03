@@ -13,6 +13,7 @@ import { ProblemResultsParser } from './result-parser';
 import { zipArchiveScheme } from './archive-filesystem-provider';
 import { DisposableObject } from 'semmle-vscode-utils';
 import { DatabaseManager, DatabaseItem } from './databases';
+import * as messages from './messages';
 
 /**
  * interface.ts
@@ -76,6 +77,9 @@ export class InterfaceManager extends DisposableObject {
   }
 
   showResults(ctx: ExtensionContext, info: EvaluationInfo, k?: (rs: ResultSet[]) => void) {
+    if(info.result.resultType !== messages.QueryResultType.SUCCESS) {
+      return;
+    }
     bqrs.parse(fs.createReadStream(info.query.resultsPath)).then(
       parsed => {
         if (k != undefined) {
