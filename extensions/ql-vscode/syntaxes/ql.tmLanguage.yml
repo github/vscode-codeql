@@ -745,7 +745,7 @@ repository:
     - include: '#module-qualifier'
       # Any lower-id followed by a `(`, optionally with a `*` or `+` in between,
       # is a predicate name.
-    - match: '(?#lower-id)\s*(?:\*|\+)?\s*\('
+    - match: '(?#lower-id)\s*(?:\*|\+)?\s*(?=\()'
       name: entity.name.function.ql
       # Any other lower-id is assumed to be a variable name.
     - match: '(?#lower-id)'
