@@ -507,6 +507,8 @@ export class DatabaseManager extends DisposableObject {
   }
 
   public removeDatabaseItem(item: DatabaseItem) {
+    if (this._currentDatabaseItem == item)
+      this._currentDatabaseItem = undefined;
     const index = this.databaseItems.findIndex(searchItem => searchItem === item);
     if (index >= 0) {
       this._databaseItems.splice(index, 1);
