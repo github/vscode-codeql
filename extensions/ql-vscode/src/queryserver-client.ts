@@ -28,11 +28,15 @@ export class Server {
     this.opts = opts;
     const command = config.javaCommand;
     const jvmargs = ["-cp", path.resolve(config.qlDistributionPath, 'tools/odasa.jar'), 'com.semmle.api.server.CombinedServer'];
-    const otherArgs = [];
+    const otherArgs: string[] = [];
+    if (config.numThreads !== 1) {
+      otherArgs.push('--threads', config.numThreads.toString());
+    }
     const args = jvmargs.concat(otherArgs);
+    this.log(`Launching query server ${command} ${args.join(" ")}...`);
     const child = cp.spawn(command, args);
     if (!child || !child.pid) {
-      throw new Error(`Launching query server ${command} ${args} failed.`);
+      throw new Error(`Launching query server ${command} ${args.join(" ")} failed.`);
     }
     this.child = child;
     child.stderr.on('data', data => {

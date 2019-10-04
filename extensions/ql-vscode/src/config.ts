@@ -4,10 +4,12 @@ import * as path from 'path';
 import { QLConfigurationData } from './configData';
 
 const DISTRIBUTION_PATH = 'distributionPath';
+const NUM_THREADS = 'numThreads';
 
 export class QLConfiguration extends DisposableObject {
   private readonly onDidChangeDistributionPathEmitter = this.push(new EventEmitter<void>());
   private _qlDistributionPath?;
+  private _numThreads: number;
 
   constructor() {
     super();
@@ -31,10 +33,15 @@ export class QLConfiguration extends DisposableObject {
     }
   }
 
+  public get numThreads(): number {
+    return this._numThreads;
+  }
+
   public get configData(): QLConfigurationData {
     return {
       qlDistributionPath: this.qlDistributionPath!,
       javaCommand: this.javaCommand!,
+      numThreads: this.numThreads!,
     };
   }
 
@@ -46,6 +53,7 @@ export class QLConfiguration extends DisposableObject {
 
   private updateConfiguration(): void {
     this._qlDistributionPath = workspace.getConfiguration('ql').get(DISTRIBUTION_PATH) as string;
+    this._numThreads = workspace.getConfiguration('ql').get(NUM_THREADS) as number;
     if (!this.qlDistributionPath) {
       window.showErrorMessage(`Semmle distribution must be configured. Set the 'ql.${DISTRIBUTION_PATH}' setting.`);
     }
