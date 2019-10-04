@@ -9,7 +9,7 @@ const NUM_THREADS = 'numThreads';
 export class QLConfiguration extends DisposableObject {
   private readonly onDidChangeDistributionPathEmitter = this.push(new EventEmitter<void>());
   private _qlDistributionPath?;
-  private _numThreads?: number;
+  private _numThreads: number;
 
   constructor() {
     super();
@@ -33,7 +33,7 @@ export class QLConfiguration extends DisposableObject {
     }
   }
 
-  public get numThreads(): number | undefined {
+  public get numThreads(): number {
     return this._numThreads;
   }
 

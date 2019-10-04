@@ -87,7 +87,7 @@
             "string"
           ],
           "default": "",
-          "description": "Location of the dbscheme"
+          "description": "Location of the database schema (file ending with .dbscheme)"
         },
         "ql.defaultProject.libraryPath": {
           "type": "array",
@@ -120,7 +120,8 @@
         },
         "ql.numThreads": {
           "type": "number",
-          "default": 1
+          "default": 1,
+          "description": "Number of threads to run queries with"
         }
       }
     },
