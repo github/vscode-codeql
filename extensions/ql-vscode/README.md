@@ -4,20 +4,61 @@ Visual Studio Code Extension for QL
 Configuration
 ---
 
+To edit the configuration settings, right-click **QL** in the Extensions container in the sidebar and select `Configure Extension Settings`. You can also directly create and edit a `settings.json` file. (See below for more instructions.)
+
 ### Setting the path to Semmle Core
 
 <font color="red">TODO: Remove the following reference to internal jenkins before release:</font>
-For IntelliSense and query evaluation to work, you must configure the path to a Semmle Core distribution.
+For IntelliSense and query evaluation to work, set `ql.distributionPath` to point to a Semmle Core distribution.
+
 You must use a Semmle Core distribution from recent `master`, i.e. built after 26 September 2019 and containing [this commit](http://git.semmle.com/Semmle/code/commit/93f3c4cf00910ec5cd6f3dce58f6fb0b080a762a). This can be built from a `Semmle/code` checkout or downloaded from `master` builds of [the ODASA job on Jenkins](https://jenkins.internal.semmle.com/job/ODASA/).
 
-To configure the VS Code extension to use this distribution, set `ql.distributionPath` in your VS Code settings to point to your distribution. If you have built your own distribution from a `Semmle/code` checkout, this path will be something like `codeRoot/target/intree/standard`, where `codeRoot` is the root of your `Semmle/code` checkout.
+If you have built your own distribution from a `Semmle/code` checkout, this path will be something like `codeRoot/target/intree/standard`, where `codeRoot` is the root of your `Semmle/code` checkout. If you have downloaded the distribution, this might be something like `/home/$USER/odasa`.
 
 This setting can be set per-workspace, or you can set it in your
 global user settings to apply to all workspaces you open.
 
 ### Configuring a QL project
 
-* Create project configuration file. Suppose your working directory is called `~/js-queries`.
+The `ql.projects` setting provides a project configuration (that is, the location of the corresponding database schema and library path) for specific folders in the workspace.
+
+If you open the `Semmle/code` checkout as a folder in VS Code, you can copy the following into `code/.vscode/settings.json` (modifying the QL distribution path as appropriate):
+
+```json
+{
+    "ql.distributionPath": "/home/user/odasa",
+    "ql.projects": {
+        "ql/java/ql/src": {
+            "dbScheme": "ql/java/ql/src/config/semmlecode.dbscheme",
+            "libraryPath": []
+        },
+        "ql/javascript/ql/src": {
+            "dbScheme": "ql/javascript/ql/src/semmlecode.javascript.dbscheme",
+            "libraryPath": []
+        },
+        "ql/cpp/ql/src": {
+            "dbScheme": "ql/cpp/ql/src/semmlecode.cpp.dbscheme",
+            "libraryPath": []
+        },
+        "ql/csharp/ql/src": {
+            "dbScheme": "ql/csharp/ql/src/semmlecode.csharp.dbscheme",
+            "libraryPath": []
+        },
+        "ql/python/ql/src": {
+            "dbScheme": "ql/python/ql/src/semmlecode.python.dbscheme",
+            "libraryPath": []
+        },
+        "language-packs/go/ql/src": {
+            "dbScheme": "language-packs/go/ql/src/go.dbscheme",
+            "libraryPath": []
+        }
+    }
+}
+```
+
+If you use a different workspace, you should change the configuration file to point to the correct library path and database schema.
+
+For example, suppose your working directory is called `~/js-queries`.
 Then you can make a file `~/js-queries/.vscode/settings.json` with contents
 ```json
 {
@@ -31,41 +72,25 @@ Then you can make a file `~/js-queries/.vscode/settings.json` with contents
 ```
 and copy contents of the `Semmle/code/ql/javascript/ql/src` to `~/js-queries/jslib`.
 
-Using
+Using the extension
 ---
 
-### Interface
+You can find all contributed commands in the Command Palette (default `Ctrl+Shift+P`) by typing "QL", but you can also access some of them through the interface.
 
-The contributed commands to the command palette (default `Ctrl+Shift+P`) are:
+### Adding a QL database
 
-|Command|Comment|
-|---|---|
-|QL: Choose Database|Choose a database to work with|
+1. Obtain a database, for example from LGTM.com and unzip it. (In future, you'll be able to add the `.zip` file directly.)
+2. In the sidebar, go to `QL > Databases` and click "+".
+3. Browse to the database folder (the parent folder of `db-<language>` and `src`) and add it.
 
-A valid database in the context of this QL extension is a directory containing the database folder.
-Here is an example of a directory produced as a revision using `odasa bootstrap` command:
+It will now appear in the sidebar under `Databases`. If you have multiple databases, you can select which should be the current one.
 
-```
-revision-2019-June-28--10-38-01
-├── external
-│   ├── data
-│   ├── defects
-│   ├── metrics
-│   └── trap
-├── log
-├── output
-│   ├── extra-data
-│   └── results
-│       └── semmlecode-python-queries
-└── working
-    ├── db-python
-    │   └── default
-    └── trap
-        └── externalArtifacts
-```
+### Running a query
 
-In the context of QL for VSCode plugin, the `working` directory would be the database folder
-that you would have to browse to.
+1. Open an existing query from one of your QL projects, or save a new one in the project folder.
+2. Make sure that the `.ql` file is in focus.
+3. Open the Command Palette (default `Ctrl+Shift+P`) and type "Run Query".
 
-The `QL` view should exist on the left, below explorer, version control, extensions, etc. icons.
-Within that panel you should be able to see a list of databases.
+You can see the progress of the query run in the bottom right corner.
+Once it has finished, the results are displayed in the QL Query Results view.
+In the sidebar, under `Query History`, you can see the queries that you have run in the current session.
