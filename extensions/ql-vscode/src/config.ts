@@ -4,10 +4,11 @@ import * as path from 'path';
 import { QLConfigurationData } from './configData';
 
 const DISTRIBUTION_PATH = 'distributionPath';
-const NUM_THREADS = 'numThreads';
-const TIMEOUT_SECS = 'timeoutSecs';
-const QUERY_MEMORY_MB = 'queryMemoryMb';
-const _QUERY_SERVER_RESTARTING_OPTIONS = [DISTRIBUTION_PATH, NUM_THREADS, QUERY_MEMORY_MB];
+const QUERY_SERVER_SETTINGS_SECTION = 'ql.runningQueries';
+const NUMBER_OF_THREADS_SETTING = 'numberOfThreads';
+const TIMEOUT_SETTING = 'timeout';
+const MEMORY_SETTING = 'memory';
+const QUERY_SERVER_RESTARTING_SETTINGS = [DISTRIBUTION_PATH, NUMBER_OF_THREADS_SETTING, MEMORY_SETTING];
 
 export class QLConfiguration extends DisposableObject {
   private readonly _onDidChangeQueryServerConfiguration = this.push(new EventEmitter<void>());
@@ -42,7 +43,7 @@ export class QLConfiguration extends DisposableObject {
   }
 
   public get timeoutSecs(): number {
-    return workspace.getConfiguration('ql').get(TIMEOUT_SECS) as number;
+    return workspace.getConfiguration(QUERY_SERVER_SETTINGS_SECTION).get(TIMEOUT_SETTING) as number;
   }
 
   public get queryMemoryMb(): number {
@@ -61,9 +62,9 @@ export class QLConfiguration extends DisposableObject {
 
   private handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     // Check whether any options that affect query running were changed.
-    for(const option of _QUERY_SERVER_RESTARTING_OPTIONS) {
+    for(const option of QUERY_SERVER_RESTARTING_SETTINGS) {
       // TODO: compare old and new values, only update if there was actually a change?
-      if (e.affectsConfiguration(`ql.${option}`)) {
+      if (e.affectsConfiguration(`${QUERY_SERVER_SETTINGS_SECTION}.${option}`)) {
         this.updateConfiguration();
         break; // only need to do this once, if any of the settings have changed
       }
@@ -72,8 +73,8 @@ export class QLConfiguration extends DisposableObject {
 
   private updateConfiguration(): void {
     this._qlDistributionPath = workspace.getConfiguration('ql').get(DISTRIBUTION_PATH) as string;
-    this._numThreads = workspace.getConfiguration('ql').get(NUM_THREADS) as number;
-    this._queryMemoryMb = workspace.getConfiguration('ql').get(QUERY_MEMORY_MB) as number;
+    this._numThreads = workspace.getConfiguration(QUERY_SERVER_SETTINGS_SECTION).get(NUMBER_OF_THREADS_SETTING) as number;
+    this._queryMemoryMb = workspace.getConfiguration(QUERY_SERVER_SETTINGS_SECTION).get(MEMORY_SETTING) as number;
     if (!this.qlDistributionPath) {
       window.showErrorMessage(`Semmle distribution must be configured. Set the 'ql.${DISTRIBUTION_PATH}' setting.`);
     }
