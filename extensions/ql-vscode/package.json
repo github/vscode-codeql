@@ -121,7 +121,20 @@
         "ql.numThreads": {
           "type": "number",
           "default": 1,
+          "minimum": 1,
           "description": "Number of threads to run queries with"
+        },
+        "ql.timeoutSecs": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "description": "Timeout (in seconds) for running queries. Leave blank or set to zero for no timeout."
+        },
+        "ql.queryMemoryMb": {
+          "type": "number",
+          "default": 1024,
+          "minimum": 1024,
+          "description": "Memory to use (in MB) for running queries."
         }
       }
     },

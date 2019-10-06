@@ -68,7 +68,7 @@ class QueryInfo {
       qlo: vscode.Uri.file(this.compiledQueryPath).toString(),
       allowUnknownTemplates: true,
       id: callbackId,
-      timeoutSecs: 1000, // XXX timeout should be configurable
+      timeoutSecs: qs.config.timeoutSecs,
     }
     const db: messages.Database = {
       dbDir: this.db.fsPath,
@@ -109,6 +109,9 @@ class QueryInfo {
           localChecking: false,
           noComputeGetUrl: false,
           noComputeToString: false,
+        },
+        extraOptions: {
+          timeoutSecs: qs.config.timeoutSecs
         },
         queryToCheck: this.program,
         resultPath: this.compiledQueryPath,
@@ -357,7 +360,7 @@ async function runDatabaseUpgrade(qs: qsClient.Server, db: DatabaseItem, upgrade
 
   const params: messages.RunUpgradeParams = {
     db: database,
-    timeoutSecs: 1000, // TODO: make configurable
+    timeoutSecs: qs.config.timeoutSecs,
     toRun: upgrades
   };
 

@@ -16,6 +16,7 @@ export class Server {
     }
   }
 
+  config: QLConfigurationData;
   opts: ServerOpts;
   connection: MessageConnection;
   evaluationResultCallbacks: { [key: number]: (res: EvaluationResult) => void };
@@ -25,18 +26,23 @@ export class Server {
   child: cp.ChildProcess;
 
   constructor(config: QLConfigurationData, opts: ServerOpts) {
+    this.config = config;
     this.opts = opts;
     const command = config.javaCommand;
-    const jvmargs = ["-cp", path.resolve(config.qlDistributionPath, 'tools/odasa.jar'), 'com.semmle.api.server.CombinedServer'];
-    const otherArgs: string[] = [];
-    if (config.numThreads !== 1) {
-      otherArgs.push('--threads', config.numThreads.toString());
-    }
-    const args = jvmargs.concat(otherArgs);
-    this.log(`Launching query server ${command} ${args.join(" ")}...`);
+    const jvmArgs = [
+      `-Xms512m`,
+      `-Xmx${config.queryMemoryMb}m`,
+      '-cp', path.resolve(config.qlDistributionPath, 'tools/odasa.jar'),
+      'com.semmle.api.server.CombinedServer'
+    ];
+    const otherArgs = ['--threads', config.numThreads.toString()];
+
+    const args = jvmArgs.concat(otherArgs);
+    const argsString = args.join(" ");
+    this.log(`Launching query server ${command} ${argsString}...`);
     const child = cp.spawn(command, args);
     if (!child || !child.pid) {
-      throw new Error(`Launching query server ${command} ${args.join(" ")} failed.`);
+      throw new Error(`Launching query server ${command} ${argsString} failed.`);
     }
     this.child = child;
     child.stderr.on('data', data => {

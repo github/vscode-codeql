@@ -55,7 +55,10 @@ describe('using the query server', () => {
   const qs = new qsClient.Server(
     {
       qlDistributionPath,
-      javaCommand: path.join(qlDistributionPath, 'tools/java/bin/java')
+      javaCommand: path.join(qlDistributionPath, 'tools/java/bin/java'),
+      numThreads: 1,
+      queryMemoryMb: 1024,
+      timeoutSecs: 1000
     },
     {
       logger: {

@@ -4,7 +4,9 @@
 // for testing.
 
 export type QLConfigurationData = {
+  javaCommand: string,
   numThreads: number,
   qlDistributionPath: string,
-  javaCommand: string,
+  queryMemoryMb: number
+  timeoutSecs: number,
 };
