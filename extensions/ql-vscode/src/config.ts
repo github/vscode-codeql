@@ -1,7 +1,7 @@
-import { workspace, Event, EventEmitter, ConfigurationChangeEvent, window } from 'vscode';
+import { workspace, Event, EventEmitter, ConfigurationChangeEvent } from 'vscode';
 import { DisposableObject } from 'semmle-vscode-utils';
 import * as path from 'path';
-import { QLConfigurationData } from './configData';
+import * as helpers from './helpers';
 
 const DISTRIBUTION_PATH = 'distributionPath';
 const QUERY_SERVER_SETTINGS_SECTION = 'ql.runningQueries';
@@ -10,7 +10,16 @@ const TIMEOUT_SETTING = 'timeout';
 const MEMORY_SETTING = 'memory';
 const QUERY_SERVER_RESTARTING_SETTINGS = [DISTRIBUTION_PATH, NUMBER_OF_THREADS_SETTING, MEMORY_SETTING];
 
-export class QLConfiguration extends DisposableObject {
+export interface QLConfiguration {
+  javaCommand: string | undefined,
+  numThreads: number,
+  qlDistributionPath: string;
+  queryMemoryMb: number,
+  timeoutSecs: number,
+  onDidChangeQueryServerConfiguration?: Event<void>;
+}
+
+export class QLConfigurationListener extends DisposableObject implements QLConfiguration {
   private readonly _onDidChangeQueryServerConfiguration = this.push(new EventEmitter<void>());
   private _qlDistributionPath: string | undefined;
   private _numThreads: number;
@@ -26,8 +35,8 @@ export class QLConfiguration extends DisposableObject {
     return this._onDidChangeQueryServerConfiguration.event;
   }
 
-  public get qlDistributionPath(): string | undefined {
-    return this._qlDistributionPath;
+  public get qlDistributionPath(): string {
+    return this._qlDistributionPath!;
   }
 
   public get javaCommand(): string | undefined {
@@ -42,22 +51,13 @@ export class QLConfiguration extends DisposableObject {
     return this._numThreads;
   }
 
+  /** Gets the configured query timeout, in seconds. This looks up the setting at the time of access. */
   public get timeoutSecs(): number {
     return workspace.getConfiguration(QUERY_SERVER_SETTINGS_SECTION).get(TIMEOUT_SETTING) as number;
   }
 
   public get queryMemoryMb(): number {
     return this._queryMemoryMb;
-  }
-
-  public get configData(): QLConfigurationData {
-    return {
-      qlDistributionPath: this.qlDistributionPath!,
-      javaCommand: this.javaCommand!,
-      numThreads: this.numThreads!,
-      timeoutSecs: this.timeoutSecs,
-      queryMemoryMb: this.queryMemoryMb
-    };
   }
 
   private handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
@@ -76,7 +76,7 @@ export class QLConfiguration extends DisposableObject {
     this._numThreads = workspace.getConfiguration(QUERY_SERVER_SETTINGS_SECTION).get(NUMBER_OF_THREADS_SETTING) as number;
     this._queryMemoryMb = workspace.getConfiguration(QUERY_SERVER_SETTINGS_SECTION).get(MEMORY_SETTING) as number;
     if (!this.qlDistributionPath) {
-      window.showErrorMessage(`Semmle distribution must be configured. Set the 'ql.${DISTRIBUTION_PATH}' setting.`);
+      helpers.showAndLogErrorMessage(`Semmle distribution must be configured. Set the 'ql.${DISTRIBUTION_PATH}' setting.`);
     }
     this._onDidChangeQueryServerConfiguration.fire();
   }

@@ -4,11 +4,10 @@ import * as vscode from 'vscode';
 import { ExtensionContext, ProgressLocation, window as Window, workspace } from 'vscode';
 import { DatabaseManager, DatabaseItem } from './databases';
 import * as qsClient from './queryserver-client';
-import { QLConfiguration } from './config';
 import { DatabaseInfo } from './interface-types';
 import * as messages from './messages';
 import * as helpers from './helpers';
-import { logger, Logger, queryServerLogger } from './logging';
+import { logger } from './logging';
 
 /**
  * queries.ts
@@ -57,7 +56,7 @@ class QueryInfo {
   }
 
   async run(
-    qs: qsClient.Server,
+    qs: qsClient.QueryServerClient,
   ): Promise<messages.EvaluationResult> {
     let result: messages.EvaluationResult | null = null;
 
@@ -96,7 +95,7 @@ class QueryInfo {
   }
 
   async compileAndRun(
-    qs: qsClient.Server,
+    qs: qsClient.QueryServerClient,
   ): Promise<messages.EvaluationResult> {
     let compiled: messages.CheckQueryResult;
     try {
@@ -163,24 +162,6 @@ export interface EvaluationInfo {
 }
 
 /**
- * Start the query server.
- */
-export function spawnQueryServer(config: QLConfiguration): qsClient.Server | undefined {
-  //TODO: Handle configuration changes, query server crashes, etc.
-  const semmleDist = config.qlDistributionPath;
-  if (semmleDist) {
-    queryServerLogger.log("Starting QL query server using JSON-RPC");
-    const server = new qsClient.Server(config.configData, {
-      logger: queryServerLogger,
-    });
-    queryServerLogger.log(`Query server started on pid: ${server.getPid()}`);
-    return server;
-  } else {
-    return undefined;
-  }
-}
-
-/**
  * This mediates between the kind of progress callbacks we want to
  * write (where we *set* current progress position and give
  * `maxSteps`) and the kind vscode progress api expects us to write
@@ -211,7 +192,7 @@ function withProgress<R>(
  * Reports errors to both the user and the console.
  * @returns the `UpgradeParams` needed to start the upgrade, if the upgrade is possible and was confirmed by the user, or `undefined` otherwise.
  */
-async function checkAndConfirmDatabaseUpgrade(qs: qsClient.Server, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectory: vscode.Uri):
+async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectory: vscode.Uri):
   Promise<messages.UpgradeParams | undefined> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
     helpers.showAndLogErrorMessage("Database is invalid, and cannot be upgraded.")
@@ -284,7 +265,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.Server, db: DatabaseI
  * First performs a dry-run and prompts the user to confirm the upgrade.
  * Reports errors during compilation and evaluation of upgrades to the user.
  */
-export async function upgradeDatabase(qs: qsClient.Server, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectory: vscode.Uri):
+export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectory: vscode.Uri):
   Promise<messages.RunUpgradeResult | undefined> {
   const upgradeParams = await checkAndConfirmDatabaseUpgrade(qs, db, targetDbScheme, upgradesDirectory);
 
@@ -324,7 +305,7 @@ export async function upgradeDatabase(qs: qsClient.Server, db: DatabaseItem, tar
   }
 }
 
-async function checkDatabaseUpgrade(qs: qsClient.Server, upgradeParams: messages.UpgradeParams):
+async function checkDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams):
   Promise<messages.CheckUpgradeResult> {
   return withProgress({
     location: ProgressLocation.Notification,
@@ -333,7 +314,7 @@ async function checkDatabaseUpgrade(qs: qsClient.Server, upgradeParams: messages
   }, (progress, token) => qs.sendRequest(messages.checkUpgrade, upgradeParams, token, progress));
 }
 
-async function compileDatabaseUpgrade(qs: qsClient.Server, upgradeParams: messages.UpgradeParams):
+async function compileDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams):
   Promise<messages.CompileUpgradeResult> {
   const params: messages.CompileUpgradeParams = {
     upgrade: upgradeParams,
@@ -347,7 +328,7 @@ async function compileDatabaseUpgrade(qs: qsClient.Server, upgradeParams: messag
   }, (progress, token) => qs.sendRequest(messages.compileUpgrade, params, token, progress));
 }
 
-async function runDatabaseUpgrade(qs: qsClient.Server, db: DatabaseItem, upgrades: messages.CompiledUpgrades):
+async function runDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseItem, upgrades: messages.CompiledUpgrades):
   Promise<messages.RunUpgradeResult> {
 
   if (db.contents === undefined || db.contents.databaseUri === undefined) {
@@ -371,7 +352,7 @@ async function runDatabaseUpgrade(qs: qsClient.Server, db: DatabaseItem, upgrade
   }, (progress, token) => qs.sendRequest(messages.runUpgrade, params, token, progress));
 }
 
-export async function clearCacheInDatabase(qs: qsClient.Server, dbItem: DatabaseItem):
+export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbItem: DatabaseItem):
   Promise<messages.ClearCacheResult> {
   if (dbItem.contents === undefined) {
     throw new Error('Can\'t clear the cache in an invalid snapshot.');
@@ -397,7 +378,7 @@ export async function clearCacheInDatabase(qs: qsClient.Server, dbItem: Database
 }
 
 export async function compileAndRunQueryAgainstDatabase(
-  qs: qsClient.Server,
+  qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   quickEval?: boolean
 ): Promise<EvaluationInfo> {
