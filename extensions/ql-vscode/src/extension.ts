@@ -77,11 +77,13 @@ export function activate(ctx: ExtensionContext) {
 
   ctx.subscriptions.push(tmpDirDisposal);
 
-  let client = new LanguageClient('ql', () => spawnIdeServer(qlConfigurationListener), {
+  let client = new LanguageClient('QL Language Server', () => spawnIdeServer(qlConfigurationListener), {
     documentSelector: ['ql', {language: 'json', pattern: '**/qlpack.json'}],
     synchronize: {
       configurationSection: 'ql'
-    }
+    },
+    // Ensure that language server exceptions are logged to the same channel as its output.
+    outputChannel: ideServerLogger.outputChannel
   }, true);
 
   ctx.subscriptions.push(commands.registerCommand('ql.runQuery', () => compileAndRunQuerySync(false)));

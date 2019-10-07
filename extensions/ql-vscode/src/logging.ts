@@ -10,20 +10,20 @@ export interface Logger {
 
 /** A logger that writes messages to an output channel in the Output tab. */
 export class OutputChannelLogger extends DisposableObject implements Logger {
-  _outputChannel: OutputChannel;
+  outputChannel: OutputChannel;
 
   constructor(title: string) {
     super();
-    this._outputChannel = Window.createOutputChannel(title);
-    this.push(this._outputChannel);
+    this.outputChannel = Window.createOutputChannel(title);
+    this.push(this.outputChannel);
   }
 
   log(message: string) {
-    this._outputChannel.appendLine(message);
+    this.outputChannel.appendLine(message);
   }
 
   logWithoutTrailingNewline(message: string) {
-    this._outputChannel.append(message);
+    this.outputChannel.append(message);
   }
 
 }
