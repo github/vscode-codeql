@@ -4,9 +4,9 @@ import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
-import { compileAndRunQueryAgainstDatabase, EvaluationInfo, spawnQueryServer, tmpDirDisposal } from './queries';
+import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal } from './queries';
 import * as qsClient from './queryserver-client';
-import { QLConfiguration } from './config';
+import { QLConfigurationListener } from './config';
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { logger, queryServerLogger, ideServerLogger } from './logging';
@@ -26,8 +26,13 @@ export function activate(ctx: ExtensionContext) {
   ctx.subscriptions.push(ideServerLogger);
   logger.log('Starting QL extension');
 
-  const qlConfiguration = new QLConfiguration();
-  const qs = spawnQueryServer(qlConfiguration);
+  const qlConfigurationListener = new QLConfigurationListener();
+  ctx.subscriptions.push(qlConfigurationListener);
+
+  const qs = new qsClient.QueryServerClient(qlConfigurationListener, {
+    logger: queryServerLogger,
+  });
+  ctx.subscriptions.push(qs);
   const dbm = new DatabaseManager(ctx);
   ctx.subscriptions.push(dbm);
   const databaseUI = new DatabaseUI(ctx, dbm, qs);
@@ -44,7 +49,7 @@ export function activate(ctx: ExtensionContext) {
     intm.showResults(ctx, info);
   }
 
-  async function compileAndRunQueryAsync(qs: qsClient.Server, quickEval: boolean): Promise<EvaluationInfo> {
+  async function compileAndRunQueryAsync(qs: qsClient.QueryServerClient, quickEval: boolean): Promise<EvaluationInfo> {
     const dbItem = await databaseUI.getDatabaseItem();
     if (dbItem === undefined) {
       throw new Error('Can\'t run query without a selected database');
@@ -72,7 +77,7 @@ export function activate(ctx: ExtensionContext) {
 
   ctx.subscriptions.push(tmpDirDisposal);
 
-  let client = new LanguageClient('ql', () => spawnIdeServer(qlConfiguration), {
+  let client = new LanguageClient('ql', () => spawnIdeServer(qlConfigurationListener), {
     documentSelector: ['ql', {language: 'json', pattern: '**/qlpack.json'}],
     synchronize: {
       configurationSection: 'ql'

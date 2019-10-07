@@ -6,7 +6,6 @@ import * as tmp from 'tmp';
 import * as url from 'url';
 import { parse } from '../src/bqrs';
 import * as qsClient from '../src/queryserver-client';
-import { QLConfiguration } from '../src/config';
 import * as messages from '../src/messages';
 import { MessageConnection, RequestType, CancellationToken, CancellationTokenSource, createMessageConnection } from 'vscode-jsonrpc';
 
@@ -52,10 +51,13 @@ describe('using the query server', () => {
   if (qlDistributionPath == undefined) {
     throw new Error('Need environment variable SEMMLE_DIST to find query server');
   }
-  const qs = new qsClient.Server(
+  const qs = new qsClient.QueryServerClient(
     {
       qlDistributionPath,
-      javaCommand: path.join(qlDistributionPath, 'tools/java/bin/java')
+      javaCommand: path.join(qlDistributionPath, 'tools/java/bin/java'),
+      numThreads: 1,
+      queryMemoryMb: 1024,
+      timeoutSecs: 1000
     },
     {
       logger: {

@@ -116,12 +116,25 @@
             }
           },
           "default": {},
-          "description": "Library Path"
+          "description": "Database schema and library path for each QL project."
         },
-        "ql.numThreads": {
+        "ql.runningQueries.numberOfThreads": {
           "type": "number",
           "default": 1,
-          "description": "Number of threads to run queries with"
+          "minimum": 1,
+          "description": "Number of threads for running queries."
+        },
+        "ql.runningQueries.timeout": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "description": "Timeout (in seconds) for running queries. Leave blank or set to zero for no timeout."
+        },
+        "ql.runningQueries.memory": {
+          "type": "number",
+          "default": 1024,
+          "minimum": 1024,
+          "description": "Memory (in MB) to use for running queries."
         }
       }
     },
