@@ -27,7 +27,7 @@ function renderLocation(loc: LocationValue, label: string | undefined, _prim: Tu
         return <span>{label}</span>;
       }
     }
-    case LocationStyle.String: return <span>{loc.loc}</span>;
+    case LocationStyle.String: return <span>{label}</span>;
     case LocationStyle.No: return <span>{label}</span>;
   }
 }
