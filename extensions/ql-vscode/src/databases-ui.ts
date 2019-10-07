@@ -117,7 +117,7 @@ function getFirst(list: Uri[] | undefined): Uri | undefined {
  */
 async function chooseDatabaseDir(): Promise<Uri | undefined> {
   const chosen = await window.showOpenDialog({
-    openLabel: 'Choose Snapshot',
+    openLabel: 'Choose Database',
     canSelectFiles: true,
     canSelectFolders: true,
     canSelectMany: false
