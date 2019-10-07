@@ -28,7 +28,7 @@ function renderLocation(loc: LocationValue, label: string | undefined, _prim: Tu
       }
     }
     case LocationStyle.String: return <span>{loc.loc}</span>;
-    case LocationStyle.No: return <span></span>;
+    case LocationStyle.No: return <span>{label}</span>;
   }
 }
 
@@ -69,7 +69,7 @@ export class ResultTable extends React.Component<ResultTableProps, {}> {
     const { resultSet, selected, snapshotUri } = this.props;
 
     const tableClassName = cx(this.className, {
-      [ this.selectedClassName ]: selected
+      [this.selectedClassName]: selected
     });
 
     return <table className={tableClassName}>
@@ -84,7 +84,7 @@ export class ResultTable extends React.Component<ResultTableProps, {}> {
       <tbody>
         {
           resultSet.results.map((tuple, i) =>
-            <tr className={ (i % 2) ? this.oddRowClassName : this.evenRowClassName }>
+            <tr className={(i % 2) ? this.oddRowClassName : this.evenRowClassName}>
               {tuple.map(item => <td>{renderTupleValue(item, snapshotUri)}</td>)}
             </tr>
           )
