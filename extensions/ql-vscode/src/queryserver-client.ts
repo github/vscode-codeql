@@ -38,7 +38,7 @@ class ServerProcess implements Disposable {
 
 /**
  * Client that manages a query server process.
- * The server process is started upon initialisation and tracked during its lifetime.
+ * The server process is started upon initialization and tracked during its lifetime.
  * The server process is disposed when the client is disposed, or if the client asks
  * to restart it (which disposes the existing process and starts a new one).
  */

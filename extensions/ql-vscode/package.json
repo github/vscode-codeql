@@ -134,7 +134,7 @@
           "type": "number",
           "default": 1024,
           "minimum": 1024,
-          "description": "Memory to use (in MB) for running queries."
+          "description": "Memory (in MB) to use for running queries."
         }
       }
     },
