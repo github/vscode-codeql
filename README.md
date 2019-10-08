@@ -1,4 +1,4 @@
-Visual Studio Code Extension for QL
+Visual Studio Code Extension for CodeQL
 ===
 
 Based on [@alexet](https://git.semmle.com/alexet)'s branch.
