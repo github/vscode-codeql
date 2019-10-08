@@ -28,7 +28,7 @@ function renderLocation(loc: LocationValue | undefined, label: string | undefine
           return <span>{label}</span>;
         }
       }
-      case LocationStyle.String: return <span>{loc.loc}</span>;
+      case LocationStyle.String: return <span>{label}</span>;
     }
   }
 
@@ -75,7 +75,7 @@ export class ResultTable extends React.Component<ResultTableProps, ResultTableSt
     const { resultSet, selected, snapshotUri } = this.props;
 
     const tableClassName = cx(this.className, {
-      [ this.selectedClassName ]: selected
+      [this.selectedClassName]: selected
     });
 
     return <table className={tableClassName}>
