@@ -1,17 +1,17 @@
 Visual Studio Code Extension for CodeQL
 ===
 
-Based on [@alexet](https://git.semmle.com/alexet)'s branch.
+Instead of building the extension locally, you can download the VSIX file from [GitHub Actions](https://github.com/Semmle/vscode-codeql/actions). Click a recent build and download the artifacts. You can then [install](#installing) and [configure](./extensions/ql-vscode/README.md) the extension.
 
-Setup
+Setting up
 ---
 
-Make sure you have a fairly recent of vscode (>1.32) are using nodejs
+Make sure you have a fairly recent version of vscode (>1.32) and are using nodejs
 version >=v10.13.0. (Tested on v10.15.1 and v10.16.0).
 
 To build the extension, you also need a checkout of the [`Semmle/code` repo](https://git.semmle.com/Semmle/code).
 You can do one of the following:
-- Checkout the `Semmle/code` repo to a directory named `code` in the root of the `Semmle/ql-vscode` checkout.
+- Check out the `Semmle/code` repo to a directory named `code` in the root of the `Semmle/ql-vscode` checkout.
 - Create a symlink named `code` in the root of the `Semmle/ql-vscode` checkout, pointing to your actual `Semmle/code` checkout.
 - Set an environment variable to point to your `Semmle/code` checkout:
 ```shell
@@ -47,7 +47,7 @@ make sure all the right npm packages are installed, which you would normally do 
 a single-project repo. With Rush, you need to do an "update" instead:
 
 #### From VS Code
-`Terminal | Run Task... | Update`
+`Terminal > Run Task... > Update`
 
 #### From the command line
 ```shell
@@ -61,7 +61,7 @@ where possible. By default, the build also packages the extension itself into a 
 `dist` directory. To build:
 
 #### From VS Code
-`Terminal | Run Build Task...` (or just `Ctrl+Shift+B` with the default key bindings)
+`Terminal > Run Build Task...` (or just `Ctrl+Shift+B` with the default key bindings)
 
 #### From the command line
 ```shell
@@ -70,11 +70,11 @@ $ rush build --verbose
 
 ### Forcing a clean build
 
-Rush does a rasonable job of detecting which projects need to rebuilt on its own, but if you need to
+Rush does a reasonable job of detecting on its own which projects need to be rebuilt, but if you need to
 force a full rebuild of all projects:
 
 #### From VS Code
-`Terminal | Run Task... | Rebuild`
+`Terminal > Run Task... > Rebuild`
 
 #### From the command line
 ```shell
@@ -83,8 +83,11 @@ $ rush rebuild --verbose
 
 ### Installing
 
-The `.vsix` file produced by the build can be installed with something like (depending on where you
-have VSCode installed):
+You can install the `.vsix` file from within VS Code itself, from the Extensions container in the sidebar:
+
+`More Actions...` (top right) `> Install from VSIX...`
+
+Or, from the command line, use something like (depending on where you have VSCode installed):
 
 ```shell
 $ code --install-extension `pwd`/ql-vscode-0.0.1.vsix # normal VSCode installation
@@ -93,9 +96,9 @@ $ vscode/scripts/code-cli.sh --install-extension `pwd`/ql-vscode-0.0.1.vsix # if
 ```
 
 Be sure to read the
-[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your Semmle Code distribution.
+[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your Semmle Core distribution.
 
 ### Debugging
 
 You can use VS Code to debug the extension without explicitly installing it. Just open this directory as a workspace in VS Code, and hit `F5` to start a debugging session. Be sure to read the
-[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your Semmle Code distribution.
+[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your Semmle Core distribution.
