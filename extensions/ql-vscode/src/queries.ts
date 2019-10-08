@@ -16,7 +16,7 @@ import * as messages from './messages';
  */
 
 // XXX: Tmp directory should be configuarble.
-const tmpDir = tmp.dirSync({ prefix: 'queries_', keep: false, unsafeCleanup: true });
+export const tmpDir = tmp.dirSync({ prefix: 'queries_', keep: false, unsafeCleanup: true });
 export const tmpDirDisposal = {
   dispose: () => {
     tmpDir.removeCallback();
