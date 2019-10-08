@@ -135,6 +135,10 @@
         "title": "QL: Set Current Snapshot"
       },
       {
+        "command": "ql.upgradeCurrentDatabase",
+        "title": "QL: Upgrade Current Database"
+      },
+      {
         "command": "ql.clearCache",
         "title": "QL: Clear Cache"
       },
@@ -145,6 +149,10 @@
       {
         "command": "qlDatabases.removeDatabase",
         "title": "Remove"
+      },
+      {
+        "command": "qlDatabases.upgradeDatabase",
+        "title": "Upgrade Database"
       }
     ],
     "menus": {
@@ -163,6 +171,11 @@
         },
         {
           "command": "qlDatabases.removeDatabase",
+          "group": "9_qlCommands",
+          "when": "view == qlDatabases"
+        },
+        {
+          "command": "qlDatabases.upgradeDatabase",
           "group": "9_qlCommands",
           "when": "view == qlDatabases"
         }

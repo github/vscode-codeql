@@ -71,13 +71,15 @@ export interface DatabaseContents {
   databaseUri: vscode.Uri;
   /** The URI of the source archive within the snapshot, if one exists. */
   sourceArchiveUri?: vscode.Uri;
+  /** The URI of the QL database scheme within the snapshot, if exactly one exists. */
+  dbSchemeUri?: vscode.Uri;
 }
 
 /**
- * An error thrown when we cannot find a database in a putative
+ * An error thrown when we cannot find a valid database in a putative
  * snapshot directory.
  */
-class NoDatabaseError extends Error {
+class InvalidDatabaseError extends Error {
 }
 
 async function readXmlFile(path: string): Promise<any> {
@@ -116,7 +118,7 @@ async function findDatabase(parentDirectory: string): Promise<vscode.Uri> {
   });
 
   if (dbRelativePaths.length === 0) {
-    throw new NoDatabaseError(`'${parentDirectory}' does not contain a database directory.`);
+    throw new InvalidDatabaseError(`'${parentDirectory}' does not contain a database directory.`);
   }
 
   const dbAbsolutePath = path.join(parentDirectory, dbRelativePaths[0]);
@@ -199,8 +201,13 @@ async function resolveOdasaSnapshot(snapshotPath: string): Promise<DatabaseConte
   }
 }
 
+/** Gets the relative paths of all `.dbscheme` files in the given directory. */
+async function getDbSchemeFiles(dbDirectory: string): Promise<string[]> {
+  return await glob('*.dbscheme', { cwd: dbDirectory });
+}
+
 async function resolveRawDatabase(snapshotPath: string): Promise<DatabaseContents | undefined> {
-  if ((await glob('*.dbscheme', { cwd: snapshotPath })).length > 0) {
+  if ((await getDbSchemeFiles(snapshotPath)).length > 0) {
     return {
       kind: SnapshotKind.Database,
       name: path.basename(snapshotPath),
@@ -219,7 +226,7 @@ async function resolveSnapshotContents(uri: vscode.Uri): Promise<DatabaseContent
   }
   const snapshotPath = uri.fsPath;
   if (!await fs.pathExists(snapshotPath)) {
-    throw new NoDatabaseError(`Snapshot '${snapshotPath}' does not exist.`);
+    throw new InvalidDatabaseError(`Snapshot '${snapshotPath}' does not exist.`);
   }
 
   const contents = await resolveExportedSnapshot(snapshotPath) ||
@@ -227,9 +234,21 @@ async function resolveSnapshotContents(uri: vscode.Uri): Promise<DatabaseContent
     await resolveRawDatabase(snapshotPath);
 
   if (contents === undefined) {
-    throw new NoDatabaseError(`'${snapshotPath}' is not a valid snapshot.`);
+    throw new InvalidDatabaseError(`'${snapshotPath}' is not a valid snapshot.`);
   }
 
+  // Look for a single DB scheme file within the database.
+  // This should be found in the database directory, regardless of the form of snapshot.
+  const dbPath = contents.databaseUri.fsPath;
+  const dbSchemeFiles = await getDbSchemeFiles(dbPath);
+  if (dbSchemeFiles.length === 0) {
+    throw new InvalidDatabaseError(`Snapshot '${snapshotPath}' does not contain a QL database scheme under '${dbPath}'.`);
+  }
+  else if (dbSchemeFiles.length > 1) {
+    throw new InvalidDatabaseError(`Snapshot '${snapshotPath}' contains multiple QL database schemes under '${dbPath}'.`);
+  } else {
+    contents.dbSchemeUri = vscode.Uri.file(path.resolve(dbPath, dbSchemeFiles[0]));
+  }
   return contents;
 }
 
