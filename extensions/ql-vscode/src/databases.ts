@@ -35,6 +35,10 @@ export interface DatabaseOptions {
   ignoreSourceArchive?: boolean;
 }
 
+interface DbInfoFileData {
+  ['ns2:dbinfo']: { sourceLocationPrefix: string };
+}
+
 interface FullDatabaseOptions extends DatabaseOptions {
   ignoreSourceArchive: boolean;
 }
@@ -282,6 +286,16 @@ export interface DatabaseItem {
    * @param file Filename within the source archive. May be `undefined` to return a dummy file path.
    */
   resolveSourceFile(file: string | undefined): vscode.Uri;
+
+  /**
+   * Holds if the database item refers to an exported snapshot
+   */
+  isExported(): boolean;
+
+  /**
+   * Returns `sourceLocationPrefix` of exported database.
+   */
+  getSourceLocationPrefix(): Promise<string>;
 }
 
 class DatabaseItemImpl implements DatabaseItem {
@@ -383,6 +397,29 @@ class DatabaseItemImpl implements DatabaseItem {
       uri: this.databaseUri.toString(true),
       options: this.options
     };
+  }
+
+  /**
+   * Holds if the database item refers to an exported snapshot
+   */
+  public isExported(): boolean {
+    return fs.existsSync(path.join(this.snapshotUri.fsPath, '.dbinfo'));
+  }
+
+  /**
+   * Returns contents of `.dbinfo` xml file for this exported snapshot, as
+   * nested plain js object.
+   */
+  private async dbInfo(): Promise<DbInfoFileData> {
+    return await readXmlFile(path.join(this.snapshotUri.fsPath, '.dbinfo'));
+  }
+
+  /**
+   * Returns `sourceLocationPrefix` of exported database.
+   */
+  public async getSourceLocationPrefix(): Promise<string> {
+    const dbInfo = await this.dbInfo();
+    return dbInfo['ns2:dbinfo'].sourceLocationPrefix;
   }
 }
 
