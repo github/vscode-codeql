@@ -696,7 +696,7 @@ repository:
     - include: '#module-qualifier'
       # A lower-id followed by a `;` is a field name.
     - match: '(?#lower-id)(?=\s*;)'
-      name: entity.name.variable.field.ql
+      name: variable.field.ql
       # Any other lower-id is assumed to be a predicate name.
     - match: '(?#lower-id)'
       name: entity.name.function.ql
@@ -715,7 +715,7 @@ repository:
     - include: '#non-context-sensitive'
       # An upper-id followed by a `,` or a `)` is assumed to be a variable name.
     - match: '(?#upper-id)(?=\s*(?:,|\)))'
-      name: entity.name.variable.parameter.ql
+      name: variable.parameter.ql
       # A simple-id followed by a `::` is a module qualifier.
     - include: '#module-qualifier'
       # Any other upper-id is assumed to be part of a type name.
@@ -723,7 +723,7 @@ repository:
       name: entity.name.type.ql
       # Any other lower-id is assumed to be a variable name.
     - match: '(?#lower-id)'
-      name: entity.name.variable.parameter.ql
+      name: variable.parameter.ql
 
   # An `as` clause in an aggregate or `select`.
   expr-as-clause:
@@ -734,7 +734,7 @@ repository:
     patterns:
     - include: '#non-context-sensitive'
     - match: '(?#simple-id)'
-      name: entity.name.variable.ql
+      name: variable.other.ql
 
   # The contents of a predicate body.
   predicate-body-contents:
@@ -745,11 +745,11 @@ repository:
     - include: '#module-qualifier'
       # Any lower-id followed by a `(`, optionally with a `*` or `+` in between,
       # is a predicate name.
-    - match: '(?#lower-id)\s*(?:\*|\+)?\s*\('
+    - match: '(?#lower-id)\s*(?:\*|\+)?\s*(?=\()'
       name: entity.name.function.ql
       # Any other lower-id is assumed to be a variable name.
     - match: '(?#lower-id)'
-      name: entity.name.variable.ql
+      name: variable.other.ql
       # Any other upper-id is assumed to be part of a type name.
     - match: '(?#upper-id)|(?#at-lower-id)'
       name: entity.name.type.ql
@@ -789,7 +789,7 @@ repository:
     patterns:
     - include: '#non-context-sensitive'
     - match: '(?#simple-id)'
-      name: entity.name.variable.parameter.ql
+      name: variable.parameter.ql
 
   # A `language` annotation, including its arguments.
   language-annotation:
@@ -929,7 +929,7 @@ repository:
       # An upper-id followed by a `,`, `where`, `select`, or newline is assumed to be a variable
       # name.
     - match: '(?#upper-id)(?=\s*(?:,|(?#where)|(?#select)|$))'
-      name: entity.name.variable.parameter.ql
+      name: variable.parameter.ql
       # A simple-id followed by a `::` is a module qualifier.
     - include: '#module-qualifier'
       # Any other upper-id is assumed to be part of a type name.
@@ -937,7 +937,7 @@ repository:
       name: entity.name.type.ql
       # Any other lower-id is assumed to be a variable name.
     - match: '(?#lower-id)'
-      name: entity.name.variable.parameter.ql
+      name: variable.parameter.ql
 
   # The `where` section of a `select` clause.
   where-section:
@@ -968,7 +968,7 @@ repository:
     patterns:
     - include: '#non-context-sensitive'
     - match: '(?#simple-id)'
-      name: entity.name.variable.ql
+      name: variable.other.ql
   
   # A literal (not including Boolean literals, which are keywords).
   literal:
