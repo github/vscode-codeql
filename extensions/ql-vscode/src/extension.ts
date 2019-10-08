@@ -40,15 +40,15 @@ export async function activate(ctx: ExtensionContext) {
   const databaseUI = new DatabaseUI(ctx, dbm, qs);
   ctx.subscriptions.push(databaseUI);
 
-  const qhm = new QueryHistoryManager(ctx, item => showResultsForInfo(item.info));
+  const qhm = new QueryHistoryManager(ctx, async item => showResultsForInfo(item.info));
   const intm = new InterfaceManager(ctx, dbm, msg => {
     if (qs !== undefined) { qs.logger.log(msg) }
   });
   ctx.subscriptions.push(intm);
   archiveFilesystemProvider.activate(ctx);
 
-  function showResultsForInfo(info: EvaluationInfo) {
-    intm.showResults(info);
+  async function showResultsForInfo(info: EvaluationInfo): Promise<void> {
+    await intm.showResults(info);
   }
 
   async function compileAndRunQuery(quickEval: boolean) {
@@ -59,7 +59,7 @@ export async function activate(ctx: ExtensionContext) {
           throw new Error('Can\'t run query without a selected database');
         }
         const info = await compileAndRunQueryAgainstDatabase(qlConfigurationListener, qs, dbItem, quickEval);
-        showResultsForInfo(info);
+        await showResultsForInfo(info);
         qhm.push(new QueryHistoryItem(info));
       }
       catch (e) {

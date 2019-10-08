@@ -33,7 +33,7 @@ export class QueryHistoryItem {
   }
 
   get statusString(): string {
-    switch(this.info.result.resultType) {
+    switch (this.info.result.resultType) {
       case messages.QueryResultType.CANCELLATION:
         return `cancelled after ${this.info.result.evaluationTime / 1000} seconds`;
       case messages.QueryResultType.OOM:
@@ -127,12 +127,12 @@ export class QueryHistoryManager {
   treeView: vscode.TreeView<QueryHistoryItem>;
   selectedCallback: ((item: QueryHistoryItem) => void) | undefined;
 
-  constructor(ctx: ExtensionContext, selectedCallback?: (item: QueryHistoryItem) => void) {
+  constructor(ctx: ExtensionContext, selectedCallback?: (item: QueryHistoryItem) => Promise<void>) {
     this.ctx = ctx;
     this.selectedCallback = selectedCallback;
     const treeDataProvider = this.treeDataProvider = new HistoryTreeDataProvider(ctx);
     this.treeView = Window.createTreeView('qlQueryHistory', { treeDataProvider });
-    this.treeView.onDidChangeSelection(ev => {
+    this.treeView.onDidChangeSelection(async ev => {
       if (ev.selection.length == 0) {
         const current = this.treeDataProvider.getCurrent();
         if (current != undefined)
@@ -140,7 +140,8 @@ export class QueryHistoryManager {
       }
       if (ev.selection.length == 1) {
         if (this.selectedCallback) {
-          (this.selectedCallback)(ev.selection[0]);
+          const sc = this.selectedCallback;
+          await sc(ev.selection[0]);
         }
       }
     });
