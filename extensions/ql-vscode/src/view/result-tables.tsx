@@ -1,14 +1,15 @@
 import * as React from 'react';
-import './results.css';
+import { DatabaseInfo, Interpretation } from '../interface-types';
 import { ResultTable } from './result-table';
-import { DatabaseInfo } from '../interface-types';
-import { ResultSet } from './results';
+import { InterfaceResultSet } from './results';
+import './results.css';
 
 /**
  * Properties for the `ResultTables` component.
  */
 export interface ResultTablesProps {
-  resultSets: readonly ResultSet[];
+  resultSets: readonly InterfaceResultSet[];
+  interpretation: Interpretation | undefined;
   database: DatabaseInfo;
 }
 
@@ -16,7 +17,7 @@ export interface ResultTablesProps {
  * State for the `ResultTables` component.
  */
 interface ResultTablesState {
-  selectedTable: ResultSet;
+  selectedTable: InterfaceResultSet;
 }
 
 const SELECT_TABLE_NAME = '#select';
@@ -38,7 +39,7 @@ export class ResultTables
     };
   }
 
-  private static getDefaultResultSet(resultSets: readonly ResultSet[]): ResultSet {
+  private static getDefaultResultSet(resultSets: readonly InterfaceResultSet[]): InterfaceResultSet {
     return resultSets.find(resultSet =>
       resultSet.schema.name === SELECT_TABLE_NAME) || resultSets[0];
   }
@@ -53,6 +54,18 @@ export class ResultTables
   render(): React.ReactNode {
     const { selectedTable } = this.state;
 
+    const interfaceResultSets: InterfaceResultSet[] =
+      this.props.resultSets.map(rs => ({ t: 'RawResultSet', ...rs }));
+
+    if (this.props.interpretation != undefined) {
+      interfaceResultSets.push({
+        t: 'SarifResultSet',
+        schema: { name: 'sarif', version: 0, columns: [], tupleCount: 1 },
+        name: 'alerts',
+        ...this.props.interpretation,
+      });
+    }
+
     return <div>
       <select value={selectedTable.schema.name} onChange={this.onChange}>
         {
@@ -66,9 +79,10 @@ export class ResultTables
       {
         this.props.resultSets.map(resultSet =>
           <ResultTable key={resultSet.schema.name} resultSet={resultSet}
-          databaseUri={this.props.database.databaseUri} selected={resultSet === selectedTable}/>
+            databaseUri={this.props.database.databaseUri} selected={resultSet === selectedTable} />
         )
       }
-    </div>;
+    </div >;
+
   }
 }

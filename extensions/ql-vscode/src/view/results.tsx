@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as Rdom from 'react-dom';
-import { IntoResultsViewMsg, FromResultsViewMsg, DatabaseInfo } from '../interface-types';
-import { ResultTables } from './result-tables';
-import { LocationValue, ResultSetSchema, ElementBase, isResolvableLocation, PrimitiveColumnValue, PrimitiveTypeKind } from 'semmle-bqrs';
 import * as bqrs from 'semmle-bqrs';
+import { ElementBase, isResolvableLocation, LocationValue, PrimitiveColumnValue, PrimitiveTypeKind, ResultSetSchema } from 'semmle-bqrs';
+import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg } from '../interface-types';
+import { ResultTables } from './result-tables';
 
 /**
  * results.tsx
@@ -33,6 +33,13 @@ export interface ResultUri {
 export type ResultValue = ResultElement | ResultUri | string;
 
 export type ResultRow = ResultValue[];
+
+export type RawTableResultSet = { t: 'RawResultSet' } & ResultSet;
+export type PathTableResultSet = { t: 'SarifResultSet', readonly schema: ResultSetSchema, name: string } & Interpretation;
+
+export type InterfaceResultSet =
+  | RawTableResultSet
+  | PathTableResultSet;
 
 export interface ResultSet {
   readonly schema: ResultSetSchema;
@@ -71,15 +78,16 @@ function translatePrimitiveValue(value: PrimitiveColumnValue, type: PrimitiveTyp
   }
 }
 
-async function parseResultSets(response: Response): Promise<readonly ResultSet[]> {
+async function parseResultSets(response: Response): Promise<readonly InterfaceResultSet[]> {
   const chunks = getChunkIterator(response);
 
-  const resultSets: ResultSet[] = [];
+  const resultSets: InterfaceResultSet[] = [];
 
   await bqrs.parse(chunks, (resultSetSchema) => {
     const columnTypes = resultSetSchema.columns.map((column) => column.type);
     const rows: ResultRow[] = [];
     resultSets.push({
+      t: 'RawResultSet',
       schema: resultSetSchema,
       rows: rows
     });
@@ -117,10 +125,11 @@ async function parseResultSets(response: Response): Promise<readonly ResultSet[]
 interface ResultsInfo {
   resultsPath: string;
   database: DatabaseInfo;
+  interpretation: Interpretation | undefined;
 }
 
 interface Results {
-  resultSets: readonly ResultSet[];
+  resultSets: readonly InterfaceResultSet[];
   database: DatabaseInfo;
 }
 
@@ -227,7 +236,8 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
   render() {
     if (this.state.results !== null) {
       return <ResultTables resultSets={this.state.results.resultSets}
-        database={this.state.results.database}/>;
+        interpretation={this.state.resultsInfo ? this.state.resultsInfo.interpretation : undefined}
+        database={this.state.results.database} />;
     }
     else {
       return <span>{this.state.errorMessage}</span>;
@@ -237,7 +247,7 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
 
 function renderApp(resultsInfo: ResultsInfo | null): void {
   Rdom.render(
-    <App resultsInfo={resultsInfo}/>,
+    <App resultsInfo={resultsInfo} />,
     document.getElementById('root')
   );
 }
@@ -247,7 +257,8 @@ function handleMessage(msg: IntoResultsViewMsg): void {
     case 'setState':
       renderApp({
         resultsPath: msg.resultsPath,
-        database: msg.database
+        database: msg.database,
+        interpretation: msg.interpretation,
       });
       break;
   }
