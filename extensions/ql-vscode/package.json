@@ -192,9 +192,6 @@
           "when": "editorLangId == ql"
         },
         {
-          "command": "ql.chooseDatabase"
-        },
-        {
           "command": "qlDatabases.setCurrentDatabase",
           "when": "false"
         },
