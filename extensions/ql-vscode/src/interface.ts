@@ -14,6 +14,7 @@ import { FromResultsViewMsg, IntoResultsViewMsg } from './interface-types';
 import { tmpDir, EvaluationInfo } from './queries';
 import { DisposableObject } from 'semmle-vscode-utils';
 import { DatabaseManager, DatabaseItem } from './databases';
+import * as messages from './messages';
 
 /**
  * interface.ts
@@ -92,6 +93,9 @@ export class InterfaceManager extends DisposableObject {
   }
 
   private async showResultsAsync(info: EvaluationInfo): Promise<void> {
+    if (info.result.resultType !== messages.QueryResultType.SUCCESS) {
+      return;
+    }
     this.postMessage({
       t: 'setState',
       resultsPath: Uri.file(info.query.resultsPath).with({ scheme: 'vscode-resource' }).toString(true),

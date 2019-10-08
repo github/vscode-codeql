@@ -10,6 +10,7 @@ import { QLConfiguration } from './config';
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { logger, queryServerLogger, ideServerLogger } from './logging';
+import * as helpers from './helpers';
 
 /**
 * extension.ts
@@ -62,7 +63,7 @@ export function activate(ctx: ExtensionContext) {
         })
         .catch(e => {
           if (e instanceof Error)
-            Window.showErrorMessage(e.message);
+            helpers.showAndLogErrorMessage(e.message);
           else
             throw e;
         });
