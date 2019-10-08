@@ -1,8 +1,8 @@
 import * as cp from 'child_process';
 import * as path from 'path';
-import { window as Window, workspace } from 'vscode';
 import { StreamInfo } from 'vscode-languageclient';
 import { QLConfiguration } from './config';
+import { ideServerLogger } from './logging';
 
 /**
  * ide-server.ts
@@ -23,14 +23,12 @@ export async function spawnIdeServer(config: QLConfiguration): Promise<StreamInf
   const options: cp.SpawnOptions = {};
   const child = cp.spawn(command, args, options);
 
-  // Create an output for log messages
-  const outputChannel = Window.createOutputChannel('QL Ideserver Debug');
-  outputChannel.append("starting language server\n");
+  ideServerLogger.log("Starting QL language server");
   if (!child || !child.pid) {
     throw new Error(`Launching server using command ${command} failed.`);
   }
-  child.stderr!.on('data', data => outputChannel.append(data.toString()));
-  child.stdout!.on('data', data => outputChannel.append(data.toString()));
-  outputChannel.append("langauge server started on pid:" + child.pid + "\n");
+  child.stderr!.on('data', data => ideServerLogger.logWithoutTrailingNewline(data.toString()));
+  child.stdout!.on('data', data => ideServerLogger.logWithoutTrailingNewline(data.toString()));
+  ideServerLogger.log(`QL language server started on pid: ${child.pid}`);
   return { writer: child.stdin!, reader: child.stdout! };
 }

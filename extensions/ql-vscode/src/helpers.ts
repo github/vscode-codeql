@@ -1,4 +1,5 @@
 import { window as Window } from 'vscode';
+import { logger } from './logging';
 
 /**
  * Show an error message and log it to the console
@@ -9,7 +10,7 @@ import { window as Window } from 'vscode';
  * @return — A thenable that resolves to the selected item or undefined when being dismissed.
  */
 export function showAndLogErrorMessage(message: string, ...items: string[]): Thenable<string | undefined> {
-  console.error(message);
+  logger.log(message);
   return Window.showErrorMessage(message, ...items);
 }
 /**
@@ -21,7 +22,7 @@ export function showAndLogErrorMessage(message: string, ...items: string[]): The
  * @return — A thenable that resolves to the selected item or undefined when being dismissed.
  */
 export function showAndLogWarningMessage(message: string, ...items: string[]): Thenable<string | undefined> {
-  console.warn(message);
+  logger.log(message);
   return Window.showWarningMessage(message, ...items);
 }
 /**
@@ -33,7 +34,7 @@ export function showAndLogWarningMessage(message: string, ...items: string[]): T
  * @return — A thenable that resolves to the selected item or undefined when being dismissed.
  */
 export function showAndLogInformationMessage(message: string, ...items: string[]): Thenable<string | undefined> {
-  console.info(message);
+  logger.log(message);
   return Window.showInformationMessage(message, ...items);
 }
 

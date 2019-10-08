@@ -4,6 +4,7 @@ import { TreeDataProvider, Event, EventEmitter, ExtensionContext, TreeItem, Prov
 import * as qsClient from './queryserver-client';
 import * as path from 'path';
 import { clearCacheInDatabase, upgradeDatabase } from "./queries";
+import { logger } from "./logging";
 
 type ThemableIconPath = { light: string, dark: string } | string;
 
@@ -185,11 +186,11 @@ export class DatabaseUI extends DisposableObject {
 
   private handleUpgradeDatabase = async (databaseItem: DatabaseItem | undefined): Promise<void> => {
     if (this.queryServer === undefined) {
-      console.log('Received request to upgrade database, but there is no running query server.');
+      logger.log('Received request to upgrade database, but there is no running query server.');
       return;
     }
     if (databaseItem === undefined) {
-      console.log('Received request to upgrade database, but no database was provided.');
+      logger.log('Received request to upgrade database, but no database was provided.');
       return;
     }
     // TODO: use the DB scheme and upgrades paths configured for the current workspace

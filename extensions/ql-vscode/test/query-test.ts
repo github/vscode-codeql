@@ -58,7 +58,9 @@ describe('using the query server', () => {
       javaCommand: path.join(qlDistributionPath, 'tools/java/bin/java')
     },
     {
-      logger: s => console.log('logger says', s),
+      logger: {
+        log: s => console.log('logger says', s)
+      }
     }
   );
 
