@@ -19,5 +19,12 @@
     },
   ],
   "parameters": [
+    {
+      "parameterKind": "flag",
+      "longName": "--release",
+      "shortName": "-r",
+      "description": "Perform a release build",
+      "associatedCommands": [ "build", "rebuild" ],
+    }
   ]
 }
