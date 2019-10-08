@@ -6,6 +6,7 @@ Configuration
 
 ### Setting the path to Semmle Core
 
+<font color="red">TODO: Remove the following reference to internal jenkins before release:</font>
 For IntelliSense and query evaluation to work, you must configure the path to a Semmle Core distribution.
 You must use a Semmle Core distribution from recent `master`, i.e. built after 26 September 2019 and containing [this commit](http://git.semmle.com/Semmle/code/commit/93f3c4cf00910ec5cd6f3dce58f6fb0b080a762a). This can be built from a `Semmle/code` checkout or downloaded from `master` builds of [the ODASA job on Jenkins](https://jenkins.internal.semmle.com/job/ODASA/).
 
