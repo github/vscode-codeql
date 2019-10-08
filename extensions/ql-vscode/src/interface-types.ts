@@ -60,9 +60,15 @@ export interface PreviousExecution {
   durationSeconds: number;
 }
 
+export interface Interpretation {
+  sourceLocationPrefix: string;
+  sarif: Sarif;
+}
+
 export interface IntoResultsViewMsg {
   t: 'setState';
   resultsPath: string;
+  interpretation: undefined | Interpretation;
   database: DatabaseInfo;
 };
 

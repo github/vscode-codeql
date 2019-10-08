@@ -1,15 +1,17 @@
+import * as cp from 'child_process';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
-import { ExtensionContext, ProgressLocation, window as Window, workspace } from 'vscode';
-import { DatabaseManager, DatabaseItem } from './databases';
-import * as qsClient from './queryserver-client';
-import { DatabaseInfo } from './interface-types';
-import * as messages from './messages';
-import * as helpers from './helpers';
-import { logger } from './logging';
-import { QLConfiguration } from './config';
+import { ProgressLocation, window as Window, workspace } from 'vscode';
 import * as cli from './cli';
+import { QLConfiguration } from './config';
+import { DatabaseItem } from './databases';
+import * as helpers from './helpers';
+import { DatabaseInfo, Sarif } from './interface-types';
+import { logger, Logger } from './logging';
+import * as messages from './messages';
+import * as qsClient from './queryserver-client';
 
 /**
  * queries.ts
@@ -42,6 +44,7 @@ class QueryInfo {
   quickEvalPosition?: messages.Position;
   compiledQueryPath: string;
   resultsPath: string;
+  interpretedResultsPath: string;
   dbItem: DatabaseItem;
   dataset: vscode.Uri; // guarantee the existence of a well-defined dataset dir at this point
 
@@ -51,6 +54,7 @@ class QueryInfo {
     this.quickEvalPosition = quickEvalPosition;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${queryCounter}.qlo`);
     this.resultsPath = path.join(tmpDir.name, `results${queryCounter}.bqrs`);
+    this.interpretedResultsPath = path.join(tmpDir.name, `interpretedResults${queryCounter}`);
     if (dbItem.contents === undefined) {
       throw new Error('Can\'t run query on invalid database.');
     }
@@ -157,12 +161,91 @@ class QueryInfo {
       }
     }
   }
+
+  /**
+   * Holds if this query should produce interpreted results.
+   */
+  hasInterpretedResults(): boolean {
+    return this.dbItem.isExported();
+  }
+
+  /**
+   * Interpret exit code of InterpretQueryResultsOnExportedSnapshot
+   */
+  interpretExitCode(logger: Logger, exitCode: number): boolean {
+    switch (exitCode) {
+      case 0: return true;
+      case 2: // Missing kind
+        logger.log("Query cannot be interpreted for SARIF export. Please add a suitable @kind property to the query metadata.");
+        return false;
+      case 3: // Missing id
+        logger.log("Query cannot be interpreted for SARIF export. Please add a suitable @id property to the query metadata.");
+        return false;
+      case 4: // Invalid result patterns
+        logger.log("Query cannot be interpreted for SARIF export. Please ensure the appropriate columns are selected for the given query kind.");
+        return false;
+      case 5: // Incompatible kind, should not occur in this case
+        logger.log("Query cannot be interpreted for SARIF export due to an unexpected error.");
+        return false;
+      case 6: // Missing @metricType on a metric query
+        logger.log("Query cannot be interpreted for SARIF export. Please add a suitable @metricType property to the query metadata.");
+        return false;
+      case 7: // Unsupported @kind
+        logger.log("Query cannot be interpreted for SARIF export because the specified @kind value is not supported");
+        return false;
+    }
+    logger.log("Failed to export results of query.");
+    return false;
+  }
+
+  /**
+   * Call shell command to interpret results, and return when it finishes.
+   */
+  async interpretResults(config: QLConfiguration, logger: Logger): Promise<Sarif> {
+    const command = config.javaCommand!;
+    const args = [
+      "-cp", path.resolve(config.qlDistributionPath, 'tools/odasa.jar'),
+      "com.semmle.odasa.internal.InterpretQueryResultsOnExportedSnapshot",
+      "--query", this.program.queryPath,
+      "--results", this.resultsPath,
+      "--exported-snapshot", this.dbItem.snapshotUri.fsPath,
+      "--output-file", this.interpretedResultsPath,
+      "--format", "sarifv2.1.0",
+    ];
+    logger.log(`Interpreting results via shell command ${command} ${args.join(" ")}`);
+    const child = cp.spawn(command, args);
+    if (!child || !child.pid) {
+      throw new Error(`Spawning shell command to interpreting results failed.`);
+    }
+    let error = false;
+    child.stdout.on('data', data => {
+      logger.log(`stdout: ${data}`);
+    });
+    child.stderr.on('data', data => {
+      logger.log(`stderr: ${data}`);
+      error = true;
+    });
+    await new Promise((res, rej) => {
+      child.on('close', (code) => {
+        if (code != 0) {
+          logger.log(`child process exited with code ${code}`);
+          error = error || !this.interpretExitCode(logger, code);
+        }
+        if (error) rej(new Error(`Error code ${code} from results interpretation.`)); else res();
+      });
+    });
+    if (!fs.existsSync(this.interpretedResultsPath)) {
+      throw new Error(`File ${this.interpretedResultsPath} not created by results interpretation.`);
+    }
+    return JSON.parse(await fs.readFile(this.interpretedResultsPath, 'utf8'));
+  }
 }
 
 export interface EvaluationInfo {
   query: QueryInfo;
   result: messages.EvaluationResult;
   database: DatabaseInfo;
+  config: QLConfiguration;
 }
 
 /**
@@ -377,7 +460,7 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
     title: "Clearing Cache",
     cancellable: false,
   }, (progress, token) =>
-    qs.sendRequest(messages.clearCache, params, token, progress)
+      qs.sendRequest(messages.clearCache, params, token, progress)
   );
 }
 
@@ -441,16 +524,19 @@ export async function compileAndRunQueryAgainstDatabase(
   let metadata: cli.QueryMetadata | undefined;
   try {
     metadata = await cli.resolveMetadata(qs.config, qlProgram.queryPath, logger);
-  } catch(_) {
+  } catch (_) {
     // Ignore errors and provide no metadata.
   }
   const query = new QueryInfo(qlProgram, db, quickEvalPosition, metadata);
+  const result = await query.compileAndRun(qs);
+
   return {
     query,
-    result: await query.compileAndRun(qs),
+    result,
     database: {
       name: db.name,
       databaseUri: db.databaseUri.toString(true)
-    }
+    },
+    config: qs.config,
   };
 }

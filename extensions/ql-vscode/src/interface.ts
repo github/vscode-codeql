@@ -1,26 +1,20 @@
 import * as path from 'path';
-import * as vscode from 'vscode';
-import {
-  window as Window, workspace, languages, Uri, Diagnostic, Range, Location, DiagnosticSeverity,
-  DiagnosticRelatedInformation, Position
-} from 'vscode';
 import * as bqrs from 'semmle-bqrs';
+import { CustomResultSets, FivePartLocation, isResolvableLocation, LocationValue, ProblemQueryResults } from 'semmle-bqrs';
 import { FileReader } from 'semmle-io-node';
-import {
-  FivePartLocation, LocationValue, isResolvableLocation, ProblemQueryResults,
-  CustomResultSets
-} from 'semmle-bqrs';
-import { FromResultsViewMsg, IntoResultsViewMsg } from './interface-types';
-import { tmpDir, EvaluationInfo } from './queries';
 import { DisposableObject } from 'semmle-vscode-utils';
-import { DatabaseManager, DatabaseItem } from './databases';
+import * as vscode from 'vscode';
+import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Position, Range, Uri, window as Window, workspace } from 'vscode';
+import { DatabaseItem, DatabaseManager } from './databases';
+import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg } from './interface-types';
 import * as messages from './messages';
+import { EvaluationInfo, tmpDir } from './queries';
 
 /**
  * interface.ts
  * ------------
  *
- * Displaying query results and linking back to source files when the
+ * Displaying query results and linking back to sotiurce files when the
  * webview asks us to.
  */
 
@@ -92,8 +86,24 @@ export class InterfaceManager extends DisposableObject {
     if (info.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }
+
+    let interpretation: Interpretation | undefined = undefined;
+    if (info.query.dbItem.isExported()) {
+      try {
+        const sarif = await info.query.interpretResults(info.config, this);
+        const sourceLocationPrefix = await info.query.dbItem.getSourceLocationPrefix();
+        interpretation = { sarif, sourceLocationPrefix };
+      }
+      catch (e) {
+        // If interpretation fails, accept the error and continue
+        // trying to render uninterpreted results anyway.
+        this.log(`Exception during results interpretation: ${e.message} ${e.stack}`);
+      }
+    }
+
     this.postMessage({
       t: 'setState',
+      interpretation,
       resultsPath: Uri.file(info.query.resultsPath).with({ scheme: 'vscode-resource' }).toString(true),
       database: info.database
     });
