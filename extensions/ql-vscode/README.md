@@ -40,7 +40,7 @@ The contributed commands to the command palette (default `Ctrl+Shift+P`) are:
 |---|---|
 |QL: Choose Database|Choose a database to work with|
 
-A valid database in the context of this QL plugin is a directory containing the database folder.
+A valid database in the context of this QL extension is a directory containing the database folder.
 Here is an example of a directory produced as a revision using `odasa bootstrap` command:
 
 ```
