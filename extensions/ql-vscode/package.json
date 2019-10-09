@@ -228,6 +228,16 @@
           "command": "qlDatabases.removeDatabase",
           "when": "false"
         }
+      ],
+      "editor/context": [
+        {
+          "command": "ql.runQuery",
+          "when": "editorLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "ql.quickEval",
+          "when": "editorLangId == ql"
+        }
       ]
     },
     "viewsContainers": {
