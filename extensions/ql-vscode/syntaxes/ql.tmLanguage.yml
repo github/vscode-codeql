@@ -582,7 +582,7 @@ repository:
       # Highlight tag names within the QLDoc.
       patterns:
       - begin: '(?<=/\*\*)([^*]|\*(?!/))*$'
-        while: '(^|\G)\s*\*(?!/)(?=([^*]|[*](?!/))*$)'
+        while: '(^|\G)\s*([^*]|\*(?!/))(?=([^*]|[*](?!/))*$)'
         patterns:
         - include: 'text.html.markdown#fenced_code_block'
         - include: 'text.html.markdown#lists'
