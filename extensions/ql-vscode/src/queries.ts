@@ -3,12 +3,13 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
+import * as Sarif from 'sarif';
 import { ProgressLocation, window as Window, workspace } from 'vscode';
 import * as cli from './cli';
 import { QLConfiguration } from './config';
 import { DatabaseItem } from './databases';
 import * as helpers from './helpers';
-import { DatabaseInfo, Sarif } from './interface-types';
+import { DatabaseInfo } from './interface-types';
 import { logger, Logger } from './logging';
 import * as messages from './messages';
 import * as qsClient from './queryserver-client';
@@ -201,7 +202,7 @@ class QueryInfo {
   /**
    * Call shell command to interpret results, and return when it finishes.
    */
-  async interpretResults(config: QLConfiguration, logger: Logger): Promise<Sarif> {
+  async interpretResults(config: QLConfiguration, logger: Logger): Promise<Sarif.Log> {
     const command = config.javaCommand!;
     const args = [
       "-cp", path.resolve(config.qlDistributionPath, 'tools/odasa.jar'),

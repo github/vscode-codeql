@@ -1,8 +1,8 @@
 import cx from 'classnames';
 import * as path from 'path';
 import * as React from 'react';
+import * as Sarif from 'sarif';
 import { isResolvableLocation, LocationStyle, LocationValue } from 'semmle-bqrs';
-import { SarifLocation } from '../interface-types';
 import { InterfaceResultSet, PathTableResultSet, RawTableResultSet, ResultValue, vscode } from './results';
 import './results.css';
 
@@ -142,16 +142,16 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     const rows: JSX.Element[] = [];
     const sourceLocationPrefix = resultSet.sourceLocationPrefix;
 
-    function renderSarifLocation(msg: { text: string } | undefined, loc: SarifLocation): JSX.Element | undefined {
-      const region = loc.physicalLocation.region;
+    function renderSarifLocation(msg: Sarif.Message | undefined, loc: Sarif.Location): JSX.Element | undefined {
+      const region = loc.physicalLocation!.region!;
       return msg && renderLocation(
         {
           t: LocationStyle.FivePart,
-          file: path.join(sourceLocationPrefix, loc.physicalLocation.artifactLocation.uri),
-          colEnd: region.endColumn - 1,
-          colStart: region.startColumn,
-          lineEnd: region.endLine,
-          lineStart: region.startLine,
+          file: path.join(sourceLocationPrefix, loc.physicalLocation!.artifactLocation!.uri!),
+          colEnd: region.endColumn! - 1,
+          colStart: region.startColumn!,
+          lineEnd: region.endLine!,
+          lineStart: region.startLine!,
         },
         msg.text,
         databaseUri);
@@ -163,8 +163,8 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
     let resultIndex = 0;
     let expansionIndex = 0;
-    for (const result of resultSet.sarif.runs[0].results) {
-      const msg = renderSarifLocation(result.message, result.locations[0]);
+    for (const result of resultSet.sarif.runs[0].results!) {
+      const msg = renderSarifLocation(result.message, result.locations![0]);
 
       const currentResultExpanded = this.state.expanded[expansionIndex];
       const indicator = currentResultExpanded ? '-' : '+';
@@ -176,7 +176,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       resultIndex++;
       expansionIndex++;
 
-      for (const codeFlow of result.codeFlows) {
+      for (const codeFlow of result.codeFlows!) {
         for (const threadFlow of codeFlow.threadFlows) {
 
           const currentPathExpanded = this.state.expanded[expansionIndex];
@@ -189,7 +189,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           if (currentResultExpanded && currentPathExpanded) {
             let pathIndex = 1;
             for (const step of threadFlow.locations) {
-              const msg = renderSarifLocation(step.location.message, step.location);
+              const msg = renderSarifLocation(step.location!.message, step.location!);
               rows.push(<tr className={pathRowClassName}><td>{pathIndex}</td><td>- {msg}</td></tr>);
               pathIndex++;
             }
