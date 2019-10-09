@@ -54,7 +54,7 @@ class QueryInfo {
     this.quickEvalPosition = quickEvalPosition;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${queryCounter}.qlo`);
     this.resultsPath = path.join(tmpDir.name, `results${queryCounter}.bqrs`);
-    this.interpretedResultsPath = path.join(tmpDir.name, `interpretedResults${queryCounter}`);
+    this.interpretedResultsPath = path.join(tmpDir.name, `interpretedResults${queryCounter}.sarif`);
     if (dbItem.contents === undefined) {
       throw new Error('Can\'t run query on invalid database.');
     }
@@ -166,7 +166,7 @@ class QueryInfo {
    * Holds if this query should produce interpreted results.
    */
   hasInterpretedResults(): boolean {
-    return this.dbItem.isExported();
+    return this.dbItem.hasDbInfo();
   }
 
   /**
@@ -222,13 +222,16 @@ class QueryInfo {
       logger.log(`stdout: ${data}`);
     });
     child.stderr.on('data', data => {
+      // TODO: Is it actually the case that we should consider any
+      // write stderr as signalling an error condition? Revisit for
+      // the new CLI.
       logger.log(`stderr: ${data}`);
       error = true;
     });
     await new Promise((res, rej) => {
       child.on('close', (code) => {
+        logger.log(`Child process for results interpretation exited with code ${code}`);
         if (code != 0) {
-          logger.log(`child process exited with code ${code}`);
           error = error || !this.interpretExitCode(logger, code);
         }
         if (error) rej(new Error(`Error code ${code} from results interpretation.`)); else res();

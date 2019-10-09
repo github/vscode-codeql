@@ -88,7 +88,7 @@ export class InterfaceManager extends DisposableObject {
     }
 
     let interpretation: Interpretation | undefined = undefined;
-    if (info.query.dbItem.isExported()) {
+    if (info.query.dbItem.hasDbInfo()) {
       try {
         const sarif = await info.query.interpretResults(info.config, this);
         const sourceLocationPrefix = await info.query.dbItem.getSourceLocationPrefix();

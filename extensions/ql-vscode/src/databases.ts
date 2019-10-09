@@ -288,9 +288,9 @@ export interface DatabaseItem {
   resolveSourceFile(file: string | undefined): vscode.Uri;
 
   /**
-   * Holds if the database item refers to an exported snapshot
+   * Holds if the database item has a `.dbinfo` file.
    */
-  isExported(): boolean;
+  hasDbInfo(): boolean;
 
   /**
    * Returns `sourceLocationPrefix` of exported database.
@@ -402,7 +402,7 @@ class DatabaseItemImpl implements DatabaseItem {
   /**
    * Holds if the database item refers to an exported snapshot
    */
-  public isExported(): boolean {
+  public hasDbInfo(): boolean {
     return fs.existsSync(path.join(this.snapshotUri.fsPath, '.dbinfo'));
   }
 
@@ -415,7 +415,8 @@ class DatabaseItemImpl implements DatabaseItem {
   }
 
   /**
-   * Returns `sourceLocationPrefix` of exported database.
+   * Returns `sourceLocationPrefix` of database. Requires that the database
+   * has a `.dbinfo` file, which is the source of the prefix.
    */
   public async getSourceLocationPrefix(): Promise<string> {
     const dbInfo = await this.dbInfo();
