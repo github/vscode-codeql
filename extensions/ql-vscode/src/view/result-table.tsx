@@ -142,12 +142,36 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     const rows: JSX.Element[] = [];
     const sourceLocationPrefix = resultSet.sourceLocationPrefix;
 
+    function renderRelatedLocations(msg: string, relatedLocations: Sarif.Location[]): JSX.Element[] {
+      const relatedLocationsById: { [k: string]: Sarif.Location } = {};
+      for (let loc of relatedLocations) {
+        relatedLocationsById[loc.id!] = loc;
+      }
+
+      const result: JSX.Element[] = [];
+      // match things like `[link-text](related-location-id)`
+      const linkRegex = /\[(.*?)\]\((.*?)\)/;
+      const parts = msg.split(linkRegex);
+
+      for (let i = 0; i + 1 < parts.length; i += 3) {
+        const renderedLocation = renderSarifLocation({ text: parts[i + 1] }, relatedLocationsById[parts[i + 2]]);
+        result.push(<span>{parts[i]}{renderedLocation}</span>);
+      }
+      result.push(<span>{parts[parts.length]}</span>);
+      return result;
+    }
+
     function renderSarifLocation(msg: Sarif.Message | undefined, loc: Sarif.Location): JSX.Element | undefined {
       const region = loc.physicalLocation!.region!;
+      const uri = loc.physicalLocation!.artifactLocation!.uri!
+      const fileUriRegex = /file:/;
+      const effectiveLocation = uri.match(fileUriRegex) ?
+        uri.replace(fileUriRegex, '') :
+        path.join(sourceLocationPrefix, uri);
       return msg && renderLocation(
         {
           t: LocationStyle.FivePart,
-          file: path.join(sourceLocationPrefix, loc.physicalLocation!.artifactLocation!.uri!),
+          file: effectiveLocation,
           colEnd: region.endColumn! - 1,
           colStart: region.startColumn!,
           lineEnd: region.endLine!,
@@ -164,34 +188,43 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     let resultIndex = 0;
     let expansionIndex = 0;
     for (const result of resultSet.sarif.runs[0].results!) {
-      const msg = renderSarifLocation(result.message, result.locations![0]);
+      const msg: JSX.Element[] = renderRelatedLocations(result.message.text!, result.relatedLocations!);
 
       const currentResultExpanded = this.state.expanded[expansionIndex];
       const indicator = currentResultExpanded ? '-' : '+';
-      rows.push(
-        <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
-          <td onMouseDown={toggler(expansionIndex)}>{indicator} Result</td><td>{msg}</td>
-        </tr>
-      );
-      resultIndex++;
-      expansionIndex++;
+      if (result.codeFlows === undefined) {
+        rows.push(
+          <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
+            <td>Result</td><td>{msg}</td>
+          </tr>
+        );
+      }
+      else {
+        rows.push(
+          <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
+            <td onMouseDown={toggler(expansionIndex)}>{indicator} Result</td><td>{msg}</td>
+          </tr>
+        );
+        resultIndex++;
+        expansionIndex++;
 
-      for (const codeFlow of result.codeFlows!) {
-        for (const threadFlow of codeFlow.threadFlows) {
+        for (const codeFlow of result.codeFlows!) {
+          for (const threadFlow of codeFlow.threadFlows) {
 
-          const currentPathExpanded = this.state.expanded[expansionIndex];
-          if (currentResultExpanded) {
-            const indicator = currentPathExpanded ? '-' : '+';
-            rows.push(<tr><td onMouseDown={toggler(expansionIndex)}>{indicator} Path</td></tr>);
-          }
-          expansionIndex++;
+            const currentPathExpanded = this.state.expanded[expansionIndex];
+            if (currentResultExpanded) {
+              const indicator = currentPathExpanded ? '-' : '+';
+              rows.push(<tr><td onMouseDown={toggler(expansionIndex)}>{indicator} Path</td></tr>);
+            }
+            expansionIndex++;
 
-          if (currentResultExpanded && currentPathExpanded) {
-            let pathIndex = 1;
-            for (const step of threadFlow.locations) {
-              const msg = renderSarifLocation(step.location!.message, step.location!);
-              rows.push(<tr className={pathRowClassName}><td>{pathIndex}</td><td>- {msg}</td></tr>);
-              pathIndex++;
+            if (currentResultExpanded && currentPathExpanded) {
+              let pathIndex = 1;
+              for (const step of threadFlow.locations) {
+                const msg = renderSarifLocation(step.location!.message, step.location!);
+                rows.push(<tr className={pathRowClassName}><td>{pathIndex}</td><td>- {msg}</td></tr>);
+                pathIndex++;
+              }
             }
           }
         }
