@@ -168,14 +168,32 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       const effectiveLocation = uri.match(fileUriRegex) ?
         uri.replace(fileUriRegex, '') :
         path.join(sourceLocationPrefix, uri);
+
+      // We assume that the SARIF we're given always has lineStart
+      // This is not mandated by the SARIF spec, but should be true of
+      // SARIF output by our own tools.
+      const lineStart = region.startLine!;
+
+      // These defaults are from SARIF 2.10 spec, section 3.30.2, "Text Regions"
+      // https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Ref493492556
+      const lineEnd = region.endLine === undefined ? lineStart : region.endLine;
+      const colStart = region.startColumn === undefined ? 1 : region.startColumn;
+
+      // We also assume that our tools will always supply `endColumn` field, which is
+      // fortunate, since the SARIF spec says that it defaults to the end of the line, whose
+      // length we don't know at this point in the code.
+      //
+      // It is off by one with respect to the way vscode counts columns in selections.
+      const colEnd = region.endColumn! - 1;
+
       return msg && renderLocation(
         {
           t: LocationStyle.FivePart,
           file: effectiveLocation,
-          colEnd: region.endColumn! - 1,
-          colStart: region.startColumn!,
-          lineEnd: region.endLine!,
-          lineStart: region.startLine!,
+          colEnd,
+          colStart,
+          lineEnd,
+          lineStart,
         },
         msg.text,
         databaseUri);
