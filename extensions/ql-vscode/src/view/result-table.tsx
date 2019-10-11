@@ -188,7 +188,10 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     let resultIndex = 0;
     let expansionIndex = 0;
     for (const result of resultSet.sarif.runs[0].results!) {
-      const msg: JSX.Element[] = renderRelatedLocations(result.message.text!, result.relatedLocations!);
+      const msg: JSX.Element[] =
+        result.relatedLocations === undefined ?
+          [<span>{result.message.text!}</span>] :
+          renderRelatedLocations(result.message.text!, result.relatedLocations!);
 
       const currentResultExpanded = this.state.expanded[expansionIndex];
       const indicator = currentResultExpanded ? '-' : '+';
