@@ -417,7 +417,7 @@ export async function compileAndRunQueryAgainstDatabase(
     // The project of the current document determines which library path
     // we use. The `libraryPath` field in this server message is relative
     // to the workspace root, not to the project root.
-    libraryPath: packConfig["library-path"],
+    libraryPath: packConfig.libraryPath,
     // Since we are compiling and running a query against a database,
     // we use the database's DB scheme here instead of the DB scheme
     // from the current document's project.

@@ -9,10 +9,10 @@ import { logger } from "./logging";
  * The expected output of codeql resolve library-path
  */
 export interface QuerySetup {
-    "library-path": string[],
+    libraryPath: string[],
     dbscheme: string,
-    "relative-name"?: string,
-    "compilation-cache"?: string
+    relativeName?: string,
+    compilationCache?: string
 }
 
 /**
