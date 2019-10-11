@@ -392,7 +392,7 @@ export async function compileAndRunQueryAgainstDatabase(
   const workspaceFolders = workspace.workspaceFolders || [];
   let diskWorkspaceFolders: string[] = [];
   for (const workspaceFolder of workspaceFolders) {
-    if (workspaceFolder.uri.scheme == "file")
+    if (workspaceFolder.uri.scheme === "file")
       diskWorkspaceFolders.push(workspaceFolder.uri.fsPath)
   }
 
@@ -406,9 +406,8 @@ export async function compileAndRunQueryAgainstDatabase(
       editor.document.save();
     }
   }
-
   if (!db.contents || !db.contents.dbSchemeUri) {
-    throw new Error('Can\'t run query on invalid database');
+    throw new Error(`Database ${db.snapshotUri} does not have a QL database scheme.`);
   }
 
   // Figure out the library path for the query.
