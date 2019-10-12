@@ -9,8 +9,7 @@ import * as messages from './messages';
 import * as helpers from './helpers';
 import { logger } from './logging';
 import { QLConfiguration } from './config';
-import { resolveLibraryPath } from './library-paths';
-
+import * as cli from './cli';
 
 /**
  * queries.ts
@@ -411,7 +410,7 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 
   // Figure out the library path for the query.
-  const packConfig = await resolveLibraryPath(config, diskWorkspaceFolders, editor.document.uri.fsPath);
+  const packConfig = await cli.resolveLibraryPath(config, diskWorkspaceFolders, editor.document.uri.fsPath);
 
   const qlProgram: messages.QlProgram = {
     // The project of the current document determines which library path
