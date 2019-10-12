@@ -21,8 +21,31 @@ export interface QuerySetup {
  * @param queryPath The path to the query
  */
 export async function resolveLibraryPath(config: QLConfiguration, workspaces: string[], queryPath: string): Promise<QuerySetup> {
-    const subcommandArgs = ['--format', 'json', '--query', queryPath, "--search-path", ".", "--additional-packs"].concat(workspaces);
+    const subcommandArgs = [
+        '--format', 'json',
+        '--query', queryPath,
+        // TODO this can be omitted entirely when the CLI learns how to configure its own search path.
+        "--search-path", ".",
+        "--additional-packs"
+    ].concat(workspaces);
     return await runCodeQlCliCommand<QuerySetup>(config, ['resolve', 'library-path'], subcommandArgs, "Resolving library paths");
+}
+
+/** The expected output of `codeql resolve metadata`. */
+export interface QueryMetadata {
+    name?: string,
+    description?: string,
+    id?: string,
+    kind?: string
+}
+
+/**
+ * Gets the metadata for a query.
+ * @param config The configuration containing the path to the CLI.
+ * @param queryPath The path to the query.
+ */
+export async function resolveMetadata(config: QLConfiguration, queryPath: string): Promise<QueryMetadata> {
+    return await runCodeQlCliCommand<QueryMetadata>(config, ['resolve', 'metadata'], [queryPath], "Resolving query metadata");
 }
 
 /**
