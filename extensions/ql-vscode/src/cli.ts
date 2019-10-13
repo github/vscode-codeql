@@ -26,8 +26,9 @@ export async function resolveLibraryPath(config: QLConfiguration, workspaces: st
         '--query', queryPath,
         // TODO this can be omitted entirely when the CLI learns how to configure its own search path.
         "--search-path", ".",
-        "--additional-packs"
-    ].concat(workspaces);
+        "--additional-packs",
+        workspaces.join(path.delimiter)
+    ];
     return await runCodeQlCliCommand<QuerySetup>(config, ['resolve', 'library-path'], subcommandArgs, "Resolving library paths");
 }
 
