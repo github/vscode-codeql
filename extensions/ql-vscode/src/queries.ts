@@ -8,6 +8,9 @@ import { DatabaseInfo } from './interface-types';
 import * as messages from './messages';
 import * as helpers from './helpers';
 import { logger } from './logging';
+import { QLConfiguration } from './config';
+import { resolveLibraryPath } from './library-paths';
+
 
 /**
  * queries.ts
@@ -139,7 +142,7 @@ class QueryInfo {
       // and direct the user to the output window for the detailed compilation messages.
       // TODO: distinguish better between user-written errors and DB scheme mismatches.
       qs.log(`Failed to compile query ${this.program.queryPath} against database scheme ${this.program.dbschemePath}:`);
-      for(const error of errors) {
+      for (const error of errors) {
         const message = error.message || "[no error message available]";
         qs.log(`ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`);
       }
@@ -373,24 +376,26 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
     title: "Clearing Cache",
     cancellable: false,
   }, (progress, token) =>
-      qs.sendRequest(messages.clearCache, params, token, progress)
+    qs.sendRequest(messages.clearCache, params, token, progress)
   );
 }
 
 export async function compileAndRunQueryAgainstDatabase(
+  config: QLConfiguration,
   qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   quickEval?: boolean
 ): Promise<EvaluationInfo> {
-  type Project = { libraryPath: string[], dbScheme: string };
-  type Config = { defaultProject: Project, projects: { [k: string]: Project } };
 
-  const config = workspace.getConfiguration('ql') as vscode.WorkspaceConfiguration & Config;
-  const root = workspace.rootPath;
   const editor = Window.activeTextEditor;
-  if (root == undefined) {
-    throw new Error('Can\'t run query with undefined workspace');
+  // Get the workspace paths
+  const workspaceFolders = workspace.workspaceFolders || [];
+  let diskWorkspaceFolders: string[] = [];
+  for (const workspaceFolder of workspaceFolders) {
+    if (workspaceFolder.uri.scheme === "file")
+      diskWorkspaceFolders.push(workspaceFolder.uri.fsPath)
   }
+
   if (editor == undefined) {
     throw new Error('Can\'t run query without an active editor');
   }
@@ -401,47 +406,18 @@ export async function compileAndRunQueryAgainstDatabase(
       editor.document.save();
     }
   }
-
-  // Figure out which project the current query document belongs to.
-
-  let project: Project | undefined = undefined;
-
-  // TODO: This iterates through projects in a determinate but
-  // somewhat arbitrary order if declared project directories overlap.
-  // Should we be checking for that and raising a warning if they do?
-  for (const projectDir of Object.keys(config.projects).sort()) {
-    const absoluteProjectDir = path.join(root, projectDir);
-    if (editor.document.fileName.startsWith(absoluteProjectDir)) {
-      project = config.projects[projectDir];
-      break;
-    }
-  }
-
-  // VSCode seems to always supply a defaultProject so long as the
-  // individual fields scoped below them are declared in package.json,
-  // so we can't just test for `config.defaultProject === undefined`
-  // to see if no default is provided. Test for default values
-  // instead.
-  if (project === undefined && !(
-    config.defaultProject.dbScheme === '' &&
-    config.defaultProject.libraryPath.length === 0)
-  ) {
-    project = config.defaultProject;
-  }
-
-  if (project === undefined) {
-    throw new Error(`File ${editor.document.fileName} does not belong to any project in workspace configuration.`);
-  }
-
-  if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
+  if (!db.contents || !db.contents.dbSchemeUri) {
     throw new Error(`Database ${db.snapshotUri} does not have a QL database scheme.`);
   }
+
+  // Figure out the library path for the query.
+  const packConfig = await resolveLibraryPath(config, diskWorkspaceFolders, editor.document.uri.fsPath);
 
   const qlProgram: messages.QlProgram = {
     // The project of the current document determines which library path
     // we use. The `libraryPath` field in this server message is relative
     // to the workspace root, not to the project root.
-    libraryPath: project.libraryPath.map(lp => path.join(root, lp)),
+    libraryPath: packConfig.libraryPath,
     // Since we are compiling and running a query against a database,
     // we use the database's DB scheme here instead of the DB scheme
     // from the current document's project.

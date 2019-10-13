@@ -54,7 +54,7 @@ export function activate(ctx: ExtensionContext) {
     if (dbItem === undefined) {
       throw new Error('Can\'t run query without a selected database');
     }
-    return compileAndRunQueryAgainstDatabase(qs, dbItem, quickEval);
+    return compileAndRunQueryAgainstDatabase(qlConfigurationListener,qs, dbItem, quickEval);
   }
 
   function compileAndRunQuerySync(
