@@ -64,6 +64,7 @@ async function runCodeQlCliCommand<OutputType>(config: QLConfiguration, command:
     try {
         logger.log(`${description} using CodeQL CLI: ${base} ${argsString}...`);
         const result = await util.promisify(child_process.execFile)(base, args);
+        logger.log(result.stderr);
         logger.log(`CLI command succeeded.`);
         return JSON.parse(result.stdout) as OutputType;
     } catch (err) {
