@@ -13,7 +13,7 @@ dependencies:
   '@types/gulp': 4.0.6
   '@types/js-yaml': 3.12.1
   '@types/jszip': 3.1.6
-  '@types/mocha': 2.2.48
+  '@types/mocha': 5.2.7
   '@types/node': 12.7.0
   '@types/npm-packlist': 1.1.1
   '@types/react': 16.8.25
@@ -40,7 +40,7 @@ dependencies:
   jsonc-parser: 2.1.0
   jszip: 3.2.2
   leb: 0.3.0
-  mocha: 6.2.0
+  mocha: 6.2.1
   npm-packlist: 1.4.4
   npm-run-all: 4.1.5
   plugin-error: 1.0.1
@@ -292,10 +292,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
-  /@types/mocha/2.2.48:
+  /@types/mocha/5.2.7:
     dev: false
     resolution:
-      integrity: sha512-nlK/iyETgafGli8Zh9zJVCTicvU3iajSkRwOh3Hhiva598CMqNJ4NcVCGMTGKpGpTYj/9R8RLzS9NAykSSCqGw==
+      integrity: sha512-NYrtPht0wGzhwe9+/idPaBB+TqkY9AhTvOLMkThm0IoEfLaiVQZwBwyJ5puCkO3AUCWrmcoePjp2mbFocKy4SQ==
   /@types/mz/0.0.32:
     dependencies:
       '@types/node': 12.7.0
@@ -1346,14 +1346,6 @@ packages:
     dev: false
     resolution:
       integrity: sha1-EgYBU3qRbSmUD5NNo7SNWFo5IT0=
-  /cliui/4.1.0:
-    dependencies:
-      string-width: 2.1.1
-      strip-ansi: 4.0.0
-      wrap-ansi: 2.1.0
-    dev: false
-    resolution:
-      integrity: sha512-4FG+RSG9DL7uEwRUZXZn3SS34DiDPfzP0VOiEwtUWlE+AR2EIg+hSyvrIgUUfhdgR/UkAeW2QHgeP+hWrXs7jQ==
   /cliui/5.0.0:
     dependencies:
       string-width: 3.1.0
@@ -1966,6 +1958,23 @@ packages:
       node: '>= 0.4'
     resolution:
       integrity: sha512-vDZfg/ykNxQVwup/8E1BZhVzFfBxs9NqMzGcvIJrqg5k2/5Za2bWo40dK2J1pgLngZ7c+Shh8lwYtLGyrwPutg==
+  /es-abstract/1.15.0:
+    dependencies:
+      es-to-primitive: 1.2.0
+      function-bind: 1.1.1
+      has: 1.0.3
+      has-symbols: 1.0.0
+      is-callable: 1.1.4
+      is-regex: 1.0.4
+      object-inspect: 1.6.0
+      object-keys: 1.1.1
+      string.prototype.trimleft: 2.1.0
+      string.prototype.trimright: 2.1.0
+    dev: false
+    engines:
+      node: '>= 0.4'
+    resolution:
+      integrity: sha512-bhkEqWJ2t2lMeaJDuk7okMkJWI/yqgH/EoGwpcvv0XW9RWQsRspI4wt6xuyuvMvvQE3gg/D9HXppgk21w78GyQ==
   /es-to-primitive/1.2.0:
     dependencies:
       is-callable: 1.1.4
@@ -2277,7 +2286,7 @@ packages:
       integrity: sha512-lNaHNVymajmk0OJMBn8fVUAU1BtDeKIqKoVhk4xAALB57aALg6b4W0MfJ/cUE0g9YBXy5XhSlPIpYIJ7HaY/3Q==
   /flat/4.1.0:
     dependencies:
-      is-buffer: 2.0.3
+      is-buffer: 2.0.4
     dev: false
     hasBin: true
     resolution:
@@ -2967,12 +2976,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==
-  /is-buffer/2.0.3:
+  /is-buffer/2.0.4:
     dev: false
     engines:
       node: '>=4'
     resolution:
-      integrity: sha512-U15Q7MXTuZlrbymiz95PJpZxu8IlipAp4dtS3wOdgPXx3mqBnslrWU14kxfHB+Py/+2PVKSr37dMAgM2A4uArw==
+      integrity: sha512-Kq1rokWXOPXWuaMAqZiJW4XxsmD9zGx9q4aePabbn3qCRGedtH7Cm+zV8WETitMfu1wdh+Rvd6w5egwSngUX2A==
   /is-callable/1.1.4:
     dev: false
     engines:
@@ -3685,7 +3694,7 @@ packages:
     hasBin: true
     resolution:
       integrity: sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=
-  /mocha/6.2.0:
+  /mocha/6.2.1:
     dependencies:
       ansi-colors: 3.2.3
       browser-stdout: 1.3.1
@@ -3707,15 +3716,15 @@ packages:
       supports-color: 6.0.0
       which: 1.3.1
       wide-align: 1.1.3
-      yargs: 13.2.2
-      yargs-parser: 13.0.0
-      yargs-unparser: 1.5.0
+      yargs: 13.3.0
+      yargs-parser: 13.1.1
+      yargs-unparser: 1.6.0
     dev: false
     engines:
       node: '>= 6.0.0'
     hasBin: true
     resolution:
-      integrity: sha512-qwfFgY+7EKAAUAdv7VYMZQknI7YJSGesxHyhn6qD52DV8UcSZs5XwCifcZGMVIE4a5fbmhvbotxC0DLQ0oKohQ==
+      integrity: sha512-VCcWkLHwk79NYQc8cxhkmI8IigTIhsCwZ6RTxQsqK6go4UvEhzJkYuHm8B2YtlSxcYq2fY+ucr4JBwoD6ci80A==
   /move-concurrently/1.0.1:
     dependencies:
       aproba: 1.2.0
@@ -3809,7 +3818,7 @@ packages:
   /node-environment-flags/1.0.5:
     dependencies:
       object.getownpropertydescriptors: 2.0.3
-      semver: 5.7.0
+      semver: 5.7.1
     dev: false
     resolution:
       integrity: sha512-VNYPRfGfmZLx0Ye20jWzHUjyTW/c+6Wq+iLhDzUI4XmhrDd9l/FozXV3F2xOaXjvp0co0+v1YSR3CMP6g+VvLQ==
@@ -3957,6 +3966,10 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-fn2Fi3gb18mRpBupde04EnVOmYw=
+  /object-inspect/1.6.0:
+    dev: false
+    resolution:
+      integrity: sha512-GJzfBZ6DgDAmnuaM3104jR4s1Myxr3Y3zfIyN4z3UdqN69oSRacNK8UhnobDdC+7J2AHCjGwxQubNJfE70SXXQ==
   /object-keys/1.1.1:
     dev: false
     engines:
@@ -3996,7 +4009,7 @@ packages:
   /object.getownpropertydescriptors/2.0.3:
     dependencies:
       define-properties: 1.1.3
-      es-abstract: 1.13.0
+      es-abstract: 1.15.0
     dev: false
     engines:
       node: '>= 0.8'
@@ -5238,6 +5251,24 @@ packages:
       node: '>= 0.4'
     resolution:
       integrity: sha1-86rvfBcZ8XDF6rHDK/eA2W4h8vA=
+  /string.prototype.trimleft/2.1.0:
+    dependencies:
+      define-properties: 1.1.3
+      function-bind: 1.1.1
+    dev: false
+    engines:
+      node: '>= 0.4'
+    resolution:
+      integrity: sha512-FJ6b7EgdKxxbDxc79cOlok6Afd++TTs5szo+zJTUyow3ycrRfJVE2pq3vcN53XexvKZu/DJMDfeI/qMiZTrjTw==
+  /string.prototype.trimright/2.1.0:
+    dependencies:
+      define-properties: 1.1.3
+      function-bind: 1.1.1
+    dev: false
+    engines:
+      node: '>= 0.4'
+    resolution:
+      integrity: sha512-fXZTSV55dNBwv16uw+hh5jkghxSnc5oHq+5K/gXgizHwAvMetdAJlHqqoFC1FSDVPYWLkAKl2cxpUT41sV7nSg==
   /string_decoder/1.1.1:
     dependencies:
       safe-buffer: 5.1.2
@@ -6131,20 +6162,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-S+Zk8DEWE6oKpV+vI3qWkaK+jSbIK86pCwe2IF/xwIpQ8jEuxpw9NyaGjmp9+BoJv5FV2piqCDcoCtStppiq2A==
-  /yargs-parser/11.1.1:
-    dependencies:
-      camelcase: 5.3.1
-      decamelize: 1.2.0
-    dev: false
-    resolution:
-      integrity: sha512-C6kB/WJDiaxONLJQnF8ccx9SEeoTTLek8RVbaOIsrAUS8VrBEXfmeSnCZxygc+XC2sNMBIwOOnfcxiynjHsVSQ==
-  /yargs-parser/13.0.0:
-    dependencies:
-      camelcase: 5.3.1
-      decamelize: 1.2.0
-    dev: false
-    resolution:
-      integrity: sha512-w2LXjoL8oRdRQN+hOyppuXs+V/fVAYtpcrRxZuF7Kt/Oc+Jr2uAcVntaUTNT6w5ihoWfFDpNY8CPx1QskxZ/pw==
   /yargs-parser/13.1.1:
     dependencies:
       camelcase: 5.3.1
@@ -6158,49 +6175,16 @@ packages:
     dev: false
     resolution:
       integrity: sha1-J17PDX/+Bcd+ZOfIbkzZS/DhIoo=
-  /yargs-unparser/1.5.0:
+  /yargs-unparser/1.6.0:
     dependencies:
       flat: 4.1.0
       lodash: 4.17.15
-      yargs: 12.0.5
+      yargs: 13.3.0
     dev: false
     engines:
       node: '>=6'
     resolution:
-      integrity: sha512-HK25qidFTCVuj/D1VfNiEndpLIeJN78aqgR23nL3y4N0U/91cOAzqfHlF8n2BvoNDcZmJKin3ddNSvOxSr8flw==
-  /yargs/12.0.5:
-    dependencies:
-      cliui: 4.1.0
-      decamelize: 1.2.0
-      find-up: 3.0.0
-      get-caller-file: 1.0.3
-      os-locale: 3.1.0
-      require-directory: 2.1.1
-      require-main-filename: 1.0.1
-      set-blocking: 2.0.0
-      string-width: 2.1.1
-      which-module: 2.0.0
-      y18n: 4.0.0
-      yargs-parser: 11.1.1
-    dev: false
-    resolution:
-      integrity: sha512-Lhz8TLaYnxq/2ObqHDql8dX8CJi97oHxrjUcYtzKbbykPtVW9WB+poxI+NM2UIzsMgNCZTIf0AQwsjK5yMAqZw==
-  /yargs/13.2.2:
-    dependencies:
-      cliui: 4.1.0
-      find-up: 3.0.0
-      get-caller-file: 2.0.5
-      os-locale: 3.1.0
-      require-directory: 2.1.1
-      require-main-filename: 2.0.0
-      set-blocking: 2.0.0
-      string-width: 3.1.0
-      which-module: 2.0.0
-      y18n: 4.0.0
-      yargs-parser: 13.1.1
-    dev: false
-    resolution:
-      integrity: sha512-WyEoxgyTD3w5XRpAQNYUB9ycVH/PQrToaTXdYXRdOXvEy1l19br+VJsc0vcO8PTGg5ro/l/GY7F/JMEBmI0BxA==
+      integrity: sha512-W9tKgmSn0DpSatfri0nx52Joq5hVXgeLiqR/5G0sZNDoLZFOr/xjBUDcShCOGNsBnEMNo1KAMBkTej1Hm62HTw==
   /yargs/13.2.4:
     dependencies:
       cliui: 5.0.0
@@ -6217,6 +6201,21 @@ packages:
     dev: false
     resolution:
       integrity: sha512-HG/DWAJa1PAnHT9JAhNa8AbAv3FPaiLzioSjCcmuXXhP8MlpHO5vwls4g4j6n30Z74GVQj8Xa62dWVx1QCGklg==
+  /yargs/13.3.0:
+    dependencies:
+      cliui: 5.0.0
+      find-up: 3.0.0
+      get-caller-file: 2.0.5
+      require-directory: 2.1.1
+      require-main-filename: 2.0.0
+      set-blocking: 2.0.0
+      string-width: 3.1.0
+      which-module: 2.0.0
+      y18n: 4.0.0
+      yargs-parser: 13.1.1
+    dev: false
+    resolution:
+      integrity: sha512-2eehun/8ALW8TLoIl7MVaRUrg+yCnenu8B4kBlRxj3GJGDKU1Og7sMXPNm1BYyM1DOJmTZ4YeN/Nwxv+8XJsUA==
   /yargs/7.1.0:
     dependencies:
       camelcase: 3.0.0
@@ -6297,7 +6296,7 @@ packages:
     dev: false
     name: '@rush-temp/build-tasks'
     resolution:
-      integrity: sha512-7sDz87kKl4SCtJ2Jonsk2zwKNry/T+spMnRn0XZaQ0dsWYH/X4AGIx//a6DxERv3F1A04orMvb3wzOFDzkYUFg==
+      integrity: sha512-SzjEzgEo177CQWwT0aotEzuziaICP2MuyGHlIcpy3mgsO75qPFD4sMN2ggMhUILyRQgph/cAGwLvaQILXLYDbQ==
       tarball: 'file:projects/build-tasks.tgz'
     version: 0.0.0
   'file:projects/ql-vscode.tgz':
@@ -6308,7 +6307,7 @@ packages:
       '@types/google-protobuf': 3.7.1
       '@types/gulp': 4.0.6
       '@types/jszip': 3.1.6
-      '@types/mocha': 2.2.48
+      '@types/mocha': 5.2.7
       '@types/node': 12.7.0
       '@types/react': 16.8.25
       '@types/react-dom': 16.8.5
@@ -6330,7 +6329,7 @@ packages:
       js-yaml: 3.13.1
       jszip: 3.2.2
       leb: 0.3.0
-      mocha: 6.2.0
+      mocha: 6.2.1
       npm-run-all: 4.1.5
       react: 16.8.6
       react-dom: /react-dom/16.8.6/react@16.8.6
@@ -6353,7 +6352,7 @@ packages:
     dev: false
     name: '@rush-temp/ql-vscode'
     resolution:
-      integrity: sha512-JioALxH7mZ8VEx2uz7lbc8pz5JqWHGjN9nn8KbjnFN7qtponXEgFLk/Wa550b9/KqM8ddHTqwv8qNoADFnJqVQ==
+      integrity: sha512-srojki29rD9Qh5Fxls1QUbk34gyCms6DplS+b0Xs2EtqwDL33sfFjx5UjohtCsQtp/486mjssTVzK8uW2uXHqg==
       tarball: 'file:projects/ql-vscode.tgz'
     version: 0.0.0
   'file:projects/semmle-vscode-utils.tgz':
@@ -6365,14 +6364,14 @@ packages:
     dev: false
     name: '@rush-temp/semmle-vscode-utils'
     resolution:
-      integrity: sha512-IQ2fPCEeC4uw1p+LXYe8QsEOKuKO72YT3QbbwZhdia3WXhY/c1A2HBFWkRHfal0oa28iizgKR1ylS65XnyF3cg==
+      integrity: sha512-SKf1HxRmSSv96215uyK39HLAmevS4GRcB3VeMjBq2ZWCh6dP4uVwpk1m4S24+hBThbY+3DGYW8by+p9uxOE7yg==
       tarball: 'file:projects/semmle-vscode-utils.tgz'
     version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
     name: '@rush-temp/typescript-config'
     resolution:
-      integrity: sha512-kSFyvKy63jUHFVXQEzALiYfsTdn7J+Y7PcqtUVo9GndU5b5Xh3rBpVbZD1QN8+y8GfT0m/sdZZQVyH0h+On11Q==
+      integrity: sha512-qJbtY2jvt6LKkmUt/seiYyXSEB6Oip/rW+SxofQEnpyplgIQv7whTZb6g5pwlSLGl8goTaQFm4NfazKhFmxXvQ==
       tarball: 'file:projects/typescript-config.tgz'
     version: 0.0.0
 registry: 'https://registry.npmjs.org/'
@@ -6393,7 +6392,7 @@ specifiers:
   '@types/gulp': ^4.0.6
   '@types/js-yaml': ~3.12.1
   '@types/jszip': ~3.1.6
-  '@types/mocha': ^2.2.48
+  '@types/mocha': ~5.2.7
   '@types/node': ^12.0.8
   '@types/npm-packlist': ~1.1.1
   '@types/react': ^16.8.17
@@ -6420,7 +6419,7 @@ specifiers:
   jsonc-parser: ~2.1.0
   jszip: ~3.2.2
   leb: ^0.3.0
-  mocha: ^6.1.4
+  mocha: ~6.2.1
   npm-packlist: ~1.4.4
   npm-run-all: ^4.1.5
   plugin-error: ^1.0.1

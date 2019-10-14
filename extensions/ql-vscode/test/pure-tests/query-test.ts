@@ -4,9 +4,9 @@ import 'mocha';
 import * as path from 'path';
 import * as tmp from 'tmp';
 import * as url from 'url';
-import { parse } from '../src/bqrs';
-import * as qsClient from '../src/queryserver-client';
-import * as messages from '../src/messages';
+import { parse } from '../../src/bqrs';
+import * as qsClient from '../../src/queryserver-client';
+import * as messages from '../../src/messages';
 import { MessageConnection, RequestType, CancellationToken, CancellationTokenSource, createMessageConnection } from 'vscode-jsonrpc';
 
 declare module "url" {
@@ -71,8 +71,8 @@ describe('using the query server', () => {
     try {
       const qlProgram: messages.QlProgram = {
         libraryPath: [],
-        dbschemePath: path.join(__dirname, 'data/test.dbscheme'),
-        queryPath: path.join(__dirname, 'data/query.ql')
+        dbschemePath: path.join(__dirname, '../data/test.dbscheme'),
+        queryPath: path.join(__dirname, '../data/query.ql')
       };
       const params: messages.CompileQueryParams = {
         compilationOptions: {
@@ -111,7 +111,7 @@ describe('using the query server', () => {
         timeoutSecs: 1000,
       };
       const db: messages.Database = {
-        dbDir: path.join(__dirname, 'test-db'),
+        dbDir: path.join(__dirname, '../test-db'),
         workingSet: 'default',
       }
       const params: messages.EvaluateQueriesParams = {

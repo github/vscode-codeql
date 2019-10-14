@@ -17,9 +17,27 @@ interface IPackageInfo {
   copied?: boolean;
 }
 
+/**
+ * Holds if `file` shouldn't be included in the final `.vsix` package
+ * of our extension.
+ *
+ * Right now, it's just excluding files that come from integration
+ * tests. Why does `vscode-tests/` live under `src/` in the first
+ * place, creating the need to exclude them from packaging in this
+ * way? Because the `vscode-test` library appears to bake in the
+ * assumption that its test runner must be able to refer to already
+ * compiled javascript tests that are nearby in the resulting
+ * directory structure.
+ */
+function excludeFromCopy(file: string): boolean {
+  return !!file.match(new RegExp('/vscode-tests/'));
+}
+
 async function copyPackage(packageFiles: IPackageInfo, destPath: string): Promise<void> {
   for (const file of packageFiles.files) {
-    await fs.copy(path.resolve(packageFiles.sourcePath, file), path.resolve(destPath, file));
+    if (!excludeFromCopy(file)) {
+      await fs.copy(path.resolve(packageFiles.sourcePath, file), path.resolve(destPath, file));
+    }
   }
 }
 
