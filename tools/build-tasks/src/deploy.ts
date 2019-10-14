@@ -17,27 +17,9 @@ interface IPackageInfo {
   copied?: boolean;
 }
 
-/**
- * Holds if `file` shouldn't be included in the final `.vsix` package
- * of our extension.
- *
- * Right now, it's just excluding files that come from integration
- * tests. Why does `vscode-tests/` live under `src/` in the first
- * place, creating the need to exclude them from packaging in this
- * way? Because the `vscode-test` library appears to bake in the
- * assumption that its test runner must be able to refer to already
- * compiled javascript tests that are nearby in the resulting
- * directory structure.
- */
-function excludeFromCopy(file: string): boolean {
-  return !!file.match(new RegExp('/vscode-tests/'));
-}
-
 async function copyPackage(packageFiles: IPackageInfo, destPath: string): Promise<void> {
   for (const file of packageFiles.files) {
-    if (!excludeFromCopy(file)) {
-      await fs.copy(path.resolve(packageFiles.sourcePath, file), path.resolve(destPath, file));
-    }
+    await fs.copy(path.resolve(packageFiles.sourcePath, file), path.resolve(destPath, file));
   }
 }
 
@@ -181,6 +163,7 @@ export async function deployPackage(packageJsonPath: string): Promise<DeployedPa
 
     console.log(`Copying package '${rootPackage.name}' and its dependencies to '${distPath}'...`);
     await copyPackageAndModules(rootPkg, pkgs, path.dirname(distPath), path.join(distPath, 'node_modules'));
+    await fs.copy(path.resolve(rootPkg.sourcePath, ".vscodeignore"), path.resolve(distPath, ".vscodeignore"));
 
     console.log(`Deduplicating dependencies of package '${rootPackage.name}'...`);
     // We create a temporary `package-lock.json` file just to prevent `npm ls` from printing out the
