@@ -9,8 +9,7 @@ import * as messages from './messages';
 import * as helpers from './helpers';
 import { logger } from './logging';
 import { QLConfiguration } from './config';
-import { resolveLibraryPath } from './library-paths';
-
+import * as cli from './cli';
 
 /**
  * queries.ts
@@ -38,6 +37,7 @@ let queryCounter = 0;
  * output and results.
  */
 class QueryInfo {
+  metadata?: cli.QueryMetadata;
   program: messages.QlProgram;
   quickEvalPosition?: messages.Position;
   compiledQueryPath: string;
@@ -45,7 +45,8 @@ class QueryInfo {
   dbItem: DatabaseItem;
   db: vscode.Uri; // guarantee the existence of a well-defined db dir at this point
 
-  constructor(program: messages.QlProgram, dbItem: DatabaseItem, quickEvalPosition?: messages.Position) {
+  constructor(program: messages.QlProgram, dbItem: DatabaseItem, quickEvalPosition?: messages.Position, metadata?: cli.QueryMetadata) {
+    this.metadata = metadata;
     this.program = program;
     this.quickEvalPosition = quickEvalPosition;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${queryCounter}.qlo`);
@@ -411,7 +412,7 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 
   // Figure out the library path for the query.
-  const packConfig = await resolveLibraryPath(config, diskWorkspaceFolders, editor.document.uri.fsPath);
+  const packConfig = await cli.resolveLibraryPath(config, diskWorkspaceFolders, editor.document.uri.fsPath);
 
   const qlProgram: messages.QlProgram = {
     // The project of the current document determines which library path
@@ -436,7 +437,14 @@ export async function compileAndRunQueryAgainstDatabase(
     }
   }
 
-  const query = new QueryInfo(qlProgram, db, quickEvalPosition);
+  // Read the query metadata if possible, to use in the UI.
+  let metadata: cli.QueryMetadata | undefined;
+  try {
+    metadata = await cli.resolveMetadata(qs.config, qlProgram.queryPath);
+  } catch(_) {
+    // Ignore errors and provide no metadata.
+  }
+  const query = new QueryInfo(qlProgram, db, quickEvalPosition, metadata);
   return {
     query,
     result: await query.compileAndRun(qs),

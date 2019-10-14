@@ -64,7 +64,7 @@ export function activate(ctx: ExtensionContext) {
       compileAndRunQueryAsync(qs, quickEval)
         .then(info => {
           showResultsForInfo(info);
-          qhm.push(new QueryHistoryItem("query", "db", info));
+          qhm.push(new QueryHistoryItem(info));
         })
         .catch(e => {
           if (e instanceof Error)

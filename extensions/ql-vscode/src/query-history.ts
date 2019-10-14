@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { ExtensionContext, window as Window } from 'vscode';
 import { EvaluationInfo } from './queries';
 import * as messages from './messages';
+import * as path from 'path';
 /**
  * query-history.ts
  * ------------
@@ -12,8 +13,7 @@ import * as messages from './messages';
  */
 
 /**
- * One item in the user-displayed list of databases. Probably name
- * should be computed from a nearby .project file if it exists.
+ * One item in the user-displayed list of queries that have been run.
  */
 export class QueryHistoryItem {
   queryName: string;
@@ -21,9 +21,13 @@ export class QueryHistoryItem {
   databaseName: string;
   info: EvaluationInfo;
 
-  constructor(queryName: string, databaseName: string, info: EvaluationInfo) {
-    this.queryName = queryName; // XXX maybe this goes in EvaluationInfo?
-    this.databaseName = databaseName; // XXX maybe this goes in EvaluationInfo?
+  constructor(info: EvaluationInfo) {
+    if(info.query.metadata && info.query.metadata.name) {
+    this.queryName = info.query.metadata.name;
+    } else {
+      this.queryName = path.basename(info.query.program.queryPath);
+    }
+    this.databaseName = info.database.name;
     this.info = info;
     this.time = new Date().toISOString();
   }
