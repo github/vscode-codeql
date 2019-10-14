@@ -253,7 +253,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
 
   logger.log(descriptionMessage);
   // Ask the user to confirm the upgrade.
-  const shouldUpgrade = await helpers.showBinaryChoiceDialog(`Should the database ${db.snapshotUri} be upgraded?\n\n${descriptionMessage}`);
+  const shouldUpgrade = await helpers.showBinaryChoiceDialog(`Should the database ${db.snapshotUri.fsPath} be upgraded?\n\n${descriptionMessage}`);
   if (shouldUpgrade) {
     return params;
   }
