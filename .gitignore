@@ -8,6 +8,9 @@ server/
 node_modules/
 gen/
 
+# Integration test artifacts
+**/.vscode-test/**
+
 # Symlink to Semmle/code checkout
 /code/
 

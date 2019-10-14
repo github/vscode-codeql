@@ -59,6 +59,7 @@ dependencies:
   vsce: 1.66.0
   vscode-jsonrpc: 4.0.0
   vscode-languageclient: 5.2.1
+  vscode-test: 1.2.0
   webpack: 4.39.1
   webpack-cli: 3.3.6
   xml2js: 0.4.19
@@ -1681,6 +1682,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==
+  /debug/3.1.0:
+    dependencies:
+      ms: 2.0.0
+    dev: false
+    resolution:
+      integrity: sha512-OX8XqP7/1a9cqkxYw2yXss15f26NKWBpDXQd0/uK/KPqdQhxbPa994hnzjcE2VqQpDslf55723cKPUOGSmMY3g==
   /debug/3.2.6:
     dependencies:
       ms: 2.1.2
@@ -2774,6 +2781,15 @@ packages:
     dev: false
     resolution:
       integrity: sha512-IgieNijUMbkDovyoKObU1DUhm1iwNYE/fuifEoEHfd1oZKZDaONBSkal7Y01shxsM49R4XaMdGez3WnF9UfiCQ==
+  /http-proxy-agent/2.1.0:
+    dependencies:
+      agent-base: 4.3.0
+      debug: 3.1.0
+    dev: false
+    engines:
+      node: '>= 4.5.0'
+    resolution:
+      integrity: sha512-qwHbBLV7WviBl0rQsOzH6o5lwyOIvwp/BdFnvVxXORldu5TmjFfjzBcWUWS5kWAZhmv+JtiDhSuQCp4sBfbIgg==
   /https-browserify/1.0.0:
     dev: false
     resolution:
@@ -4823,6 +4839,13 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-mwqeW5XsA2qAejG46gYdENaxXjx9onRNCfn7L0duuP4hCuTIi/QO7PDK07KJfp1d+izWPrzEJDcSqBa0OZQriA==
+  /rimraf/2.7.1:
+    dependencies:
+      glob: 7.1.4
+    dev: false
+    hasBin: true
+    resolution:
+      integrity: sha512-uWjbaKIK3T1OSVptzX7Nl6PvQ3qAGtKEtVRjRuazjfL3Bx5eI409VZSqgND+4UNnmzLVdPj9FqFJNPqBZFve4w==
   /ripemd160/2.0.2:
     dependencies:
       hash-base: 3.0.4
@@ -5919,6 +5942,16 @@ packages:
     dev: false
     resolution:
       integrity: sha512-lTmS6AlAlMHOvPQemVwo3CezxBp0sNB95KNPkqp3Nxd5VFEnuG1ByM0zlRWos0zjO3ZWtkvhal0COgiV1xIA4A==
+  /vscode-test/1.2.0:
+    dependencies:
+      http-proxy-agent: 2.1.0
+      https-proxy-agent: 2.2.2
+      rimraf: 2.7.1
+    dev: false
+    engines:
+      node: '>=8.9.3'
+    resolution:
+      integrity: sha512-aowqgc8gZe0eflzVUXsBjBrlsJ8eC35kfgfSEeHu9PKA1vQKm/3rVK43TlbxGue8hKtZBElNAJ5QuYklR/vLJA==
   /watchpack/1.6.0:
     dependencies:
       chokidar: 2.1.6
@@ -6264,7 +6297,7 @@ packages:
     dev: false
     name: '@rush-temp/build-tasks'
     resolution:
-      integrity: sha512-SzjEzgEo177CQWwT0aotEzuziaICP2MuyGHlIcpy3mgsO75qPFD4sMN2ggMhUILyRQgph/cAGwLvaQILXLYDbQ==
+      integrity: sha512-7sDz87kKl4SCtJ2Jonsk2zwKNry/T+spMnRn0XZaQ0dsWYH/X4AGIx//a6DxERv3F1A04orMvb3wzOFDzkYUFg==
       tarball: 'file:projects/build-tasks.tgz'
     version: 0.0.0
   'file:projects/ql-vscode.tgz':
@@ -6313,13 +6346,14 @@ packages:
       vsce: 1.66.0
       vscode-jsonrpc: 4.0.0
       vscode-languageclient: 5.2.1
+      vscode-test: 1.2.0
       webpack: 4.39.1
       webpack-cli: /webpack-cli/3.3.6/webpack@4.39.1
       xml2js: 0.4.19
     dev: false
     name: '@rush-temp/ql-vscode'
     resolution:
-      integrity: sha512-l6ifQObCepUGrOAGtGM6oGEtV8evyIfD+UIkckjORSJo2ZL5IV9BQb1sDDOH53ktSXWL4zM1PV8ZxkvmfAi/Qg==
+      integrity: sha512-JioALxH7mZ8VEx2uz7lbc8pz5JqWHGjN9nn8KbjnFN7qtponXEgFLk/Wa550b9/KqM8ddHTqwv8qNoADFnJqVQ==
       tarball: 'file:projects/ql-vscode.tgz'
     version: 0.0.0
   'file:projects/semmle-vscode-utils.tgz':
@@ -6331,14 +6365,14 @@ packages:
     dev: false
     name: '@rush-temp/semmle-vscode-utils'
     resolution:
-      integrity: sha512-SKf1HxRmSSv96215uyK39HLAmevS4GRcB3VeMjBq2ZWCh6dP4uVwpk1m4S24+hBThbY+3DGYW8by+p9uxOE7yg==
+      integrity: sha512-IQ2fPCEeC4uw1p+LXYe8QsEOKuKO72YT3QbbwZhdia3WXhY/c1A2HBFWkRHfal0oa28iizgKR1ylS65XnyF3cg==
       tarball: 'file:projects/semmle-vscode-utils.tgz'
     version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
     name: '@rush-temp/typescript-config'
     resolution:
-      integrity: sha512-qJbtY2jvt6LKkmUt/seiYyXSEB6Oip/rW+SxofQEnpyplgIQv7whTZb6g5pwlSLGl8goTaQFm4NfazKhFmxXvQ==
+      integrity: sha512-kSFyvKy63jUHFVXQEzALiYfsTdn7J+Y7PcqtUVo9GndU5b5Xh3rBpVbZD1QN8+y8GfT0m/sdZZQVyH0h+On11Q==
       tarball: 'file:projects/typescript-config.tgz'
     version: 0.0.0
 registry: 'https://registry.npmjs.org/'
@@ -6405,6 +6439,7 @@ specifiers:
   vsce: ^1.65.0
   vscode-jsonrpc: ^4.0.0
   vscode-languageclient: ^5.2.1
+  vscode-test: ^1.0.0
   webpack: ^4.38.0
   webpack-cli: ^3.3.2
   xml2js: ~0.4.19
