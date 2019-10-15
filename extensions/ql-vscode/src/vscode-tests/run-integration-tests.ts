@@ -8,15 +8,30 @@ import { runTests } from 'vscode-test';
 async function main() {
   try {
     // The folder containing the Extension Manifest package.json
-    // Passed to `--extensionDevelopmentPath`
-    const extensionDevelopmentPath = path.resolve(__dirname, '../../');
+    // Passed to `--extensionDevelopmentPath`.
+    const extensionDevelopmentPath = path.resolve(__dirname, '../');
 
-    // The path to the extension test runner script
-    // Passed to --extensionTestsPath
-    const extensionTestsPath = path.resolve(__dirname, './index');
+    // List of integration test suites.
+    // The path to the extension test runner script is passed to --extensionTestsPath.
+    const integrationTestSuites = [
+      // Tests with no workspace selected upon launch.
+      {
+        extensionDevelopmentPath: extensionDevelopmentPath,
+        extensionTestsPath: path.resolve(__dirname, 'no-workspace', 'index')
+      },
+      // Tests with a simple workspace selected upon launch.
+      {
+        extensionDevelopmentPath: extensionDevelopmentPath,
+        extensionTestsPath: path.resolve(__dirname, 'minimal-workspace', 'index'),
+        launchArgs: [path.resolve(__dirname, '../../test/data')
+      ]
+      }
+    ];
 
-    // Download VS Code, unzip it and run the integration test.
-    await runTests({ extensionDevelopmentPath, extensionTestsPath });
+    for(const integrationTestSuite of integrationTestSuites) {
+      // Download and unzip VS Code if necessary, and run the integration test suite.
+      await runTests(integrationTestSuite);
+    }
   } catch (err) {
     console.error('Failed to run tests');
     process.exit(1);
