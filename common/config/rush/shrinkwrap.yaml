@@ -9,6 +9,7 @@ dependencies:
   '@types/child-process-promise': 2.2.1
   '@types/classnames': 2.2.9
   '@types/fs-extra': 8.0.0
+  '@types/glob': 7.1.1
   '@types/google-protobuf': 3.7.1
   '@types/gulp': 4.0.6
   '@types/js-yaml': 3.12.1
@@ -6304,6 +6305,7 @@ packages:
       '@types/chai': 4.1.7
       '@types/classnames': 2.2.9
       '@types/fs-extra': 8.0.0
+      '@types/glob': 7.1.1
       '@types/google-protobuf': 3.7.1
       '@types/gulp': 4.0.6
       '@types/jszip': 3.1.6
@@ -6352,7 +6354,7 @@ packages:
     dev: false
     name: '@rush-temp/ql-vscode'
     resolution:
-      integrity: sha512-srojki29rD9Qh5Fxls1QUbk34gyCms6DplS+b0Xs2EtqwDL33sfFjx5UjohtCsQtp/486mjssTVzK8uW2uXHqg==
+      integrity: sha512-/UeG55h13qHOwt6iHvzmb3QmDtjF4sQ2mMcloDLAaid0hPedzghTUveLN7e44c0WrCfwUbtNUkWoCL2b/1LVkQ==
       tarball: 'file:projects/ql-vscode.tgz'
     version: 0.0.0
   'file:projects/semmle-vscode-utils.tgz':
@@ -6388,6 +6390,7 @@ specifiers:
   '@types/child-process-promise': ^2.2.1
   '@types/classnames': ~2.2.9
   '@types/fs-extra': ^8.0.0
+  '@types/glob': ^7.1.1
   '@types/google-protobuf': ^3.2.7
   '@types/gulp': ^4.0.6
   '@types/js-yaml': ~3.12.1
