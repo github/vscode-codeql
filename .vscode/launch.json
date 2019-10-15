@@ -24,7 +24,8 @@
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/dist/ql-vscode",
-        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/test"
+        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/test",
+        "--disable-extensions"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
@@ -41,7 +42,8 @@
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/dist/ql-vscode",
-        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index"
+        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index",
+        "--disable-extensions"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,

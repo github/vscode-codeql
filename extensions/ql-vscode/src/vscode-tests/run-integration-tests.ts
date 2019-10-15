@@ -17,18 +17,21 @@ async function main() {
       // Tests with no workspace selected upon launch.
       {
         extensionDevelopmentPath: extensionDevelopmentPath,
-        extensionTestsPath: path.resolve(__dirname, 'no-workspace', 'index')
+        extensionTestsPath: path.resolve(__dirname, 'no-workspace', 'index'),
+        launchArgs: ['--disable-extensions'],
       },
       // Tests with a simple workspace selected upon launch.
       {
         extensionDevelopmentPath: extensionDevelopmentPath,
         extensionTestsPath: path.resolve(__dirname, 'minimal-workspace', 'index'),
-        launchArgs: [path.resolve(__dirname, '../../test/data')
-      ]
+        launchArgs: [
+          path.resolve(__dirname, '../../test/data'),
+          '--disable-extensions',
+        ]
       }
     ];
 
-    for(const integrationTestSuite of integrationTestSuites) {
+    for (const integrationTestSuite of integrationTestSuites) {
       // Download and unzip VS Code if necessary, and run the integration test suite.
       await runTests(integrationTestSuite);
     }
