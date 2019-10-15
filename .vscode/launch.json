@@ -18,7 +18,7 @@
       "preLaunchTask": "Build"
     },
     {
-      "name": "Launch Tests (ql-vscode)",
+      "name": "Launch Unit Tests (ql-vscode)",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
@@ -31,6 +31,41 @@
       "outFiles": [
         "${workspaceRoot}/dist/ql-vscode/out/**/*.js",
         "${workspaceRoot}/extensions/ql-vscode/out/test/**/*.js"
+      ],
+      "preLaunchTask": "Build"
+    },
+    {
+      "name": "Launch Integration Tests - No Workspace (ql-vscode)",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}/dist/ql-vscode",
+        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index"
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/dist/ql-vscode/out/**/*.js",
+        "${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/**/*.js"
+      ],
+      "preLaunchTask": "Build"
+    },
+    {
+      "name": "Launch Integration Tests - Minimal Workspace (ql-vscode)",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}/dist/ql-vscode",
+        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/minimal-workspace/index",
+        "${workspaceRoot}/extensions/ql-vscode/test/data",
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/dist/ql-vscode/out/**/*.js",
+        "${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/**/*.js"
       ],
       "preLaunchTask": "Build"
     }
