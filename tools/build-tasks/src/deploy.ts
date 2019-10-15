@@ -163,6 +163,7 @@ export async function deployPackage(packageJsonPath: string): Promise<DeployedPa
 
     console.log(`Copying package '${rootPackage.name}' and its dependencies to '${distPath}'...`);
     await copyPackageAndModules(rootPkg, pkgs, path.dirname(distPath), path.join(distPath, 'node_modules'));
+    await fs.copy(path.resolve(rootPkg.sourcePath, ".vscodeignore"), path.resolve(distPath, ".vscodeignore"));
 
     console.log(`Deduplicating dependencies of package '${rootPackage.name}'...`);
     // We create a temporary `package-lock.json` file just to prevent `npm ls` from printing out the
