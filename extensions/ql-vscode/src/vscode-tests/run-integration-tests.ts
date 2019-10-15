@@ -9,7 +9,7 @@ async function main() {
   try {
     // The folder containing the Extension Manifest package.json
     // Passed to `--extensionDevelopmentPath`.
-    const extensionDevelopmentPath = path.resolve(__dirname, '../');
+    const extensionDevelopmentPath = path.resolve(__dirname, '../..');
 
     // List of integration test suites.
     // The path to the extension test runner script is passed to --extensionTestsPath.
