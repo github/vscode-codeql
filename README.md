@@ -1,5 +1,6 @@
 Visual Studio Code Extension for CodeQL
 ===
+![](https://github.com/Semmle/vscode-codeql/workflows/Build%20Extension/badge.svg)
 
 Instead of building the extension locally, you can download the VSIX file from [GitHub Actions](https://github.com/Semmle/vscode-codeql/actions). Click a recent build and download the artifacts. You can then [install](#installing) and [configure](./extensions/ql-vscode/README.md) the extension.
 
