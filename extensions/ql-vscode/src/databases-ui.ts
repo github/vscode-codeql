@@ -156,7 +156,7 @@ async function chooseUpgradesDirectory(): Promise<Uri | undefined> {
 
 export class DatabaseUI extends DisposableObject {
   public constructor(private ctx: ExtensionContext, private databaseManager: DatabaseManager,
-    private readonly queryServer: qsClient.Server | undefined) {
+    private readonly queryServer: qsClient.QueryServerClient | undefined) {
 
     super();
 

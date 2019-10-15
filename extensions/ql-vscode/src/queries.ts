@@ -4,11 +4,12 @@ import * as vscode from 'vscode';
 import { ExtensionContext, ProgressLocation, window as Window, workspace } from 'vscode';
 import { DatabaseManager, DatabaseItem } from './databases';
 import * as qsClient from './queryserver-client';
-import { QLConfiguration } from './config';
 import { DatabaseInfo } from './interface-types';
 import * as messages from './messages';
 import * as helpers from './helpers';
-import { logger, Logger, queryServerLogger } from './logging';
+import { logger } from './logging';
+import { QLConfiguration } from './config';
+import * as cli from './cli';
 
 /**
  * queries.ts
@@ -36,6 +37,7 @@ let queryCounter = 0;
  * output and results.
  */
 class QueryInfo {
+  metadata?: cli.QueryMetadata;
   program: messages.QlProgram;
   quickEvalPosition?: messages.Position;
   compiledQueryPath: string;
@@ -43,7 +45,8 @@ class QueryInfo {
   dbItem: DatabaseItem;
   db: vscode.Uri; // guarantee the existence of a well-defined db dir at this point
 
-  constructor(program: messages.QlProgram, dbItem: DatabaseItem, quickEvalPosition?: messages.Position) {
+  constructor(program: messages.QlProgram, dbItem: DatabaseItem, quickEvalPosition?: messages.Position, metadata?: cli.QueryMetadata) {
+    this.metadata = metadata;
     this.program = program;
     this.quickEvalPosition = quickEvalPosition;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${queryCounter}.qlo`);
@@ -57,7 +60,7 @@ class QueryInfo {
   }
 
   async run(
-    qs: qsClient.Server,
+    qs: qsClient.QueryServerClient,
   ): Promise<messages.EvaluationResult> {
     let result: messages.EvaluationResult | null = null;
 
@@ -68,7 +71,7 @@ class QueryInfo {
       qlo: vscode.Uri.file(this.compiledQueryPath).toString(),
       allowUnknownTemplates: true,
       id: callbackId,
-      timeoutSecs: 1000, // XXX timeout should be configurable
+      timeoutSecs: qs.config.timeoutSecs,
     }
     const db: messages.Database = {
       dbDir: this.db.fsPath,
@@ -96,7 +99,7 @@ class QueryInfo {
   }
 
   async compileAndRun(
-    qs: qsClient.Server,
+    qs: qsClient.QueryServerClient,
   ): Promise<messages.EvaluationResult> {
     let compiled: messages.CheckQueryResult;
     try {
@@ -109,6 +112,9 @@ class QueryInfo {
           localChecking: false,
           noComputeGetUrl: false,
           noComputeToString: false,
+        },
+        extraOptions: {
+          timeoutSecs: qs.config.timeoutSecs
         },
         queryToCheck: this.program,
         resultPath: this.compiledQueryPath,
@@ -137,7 +143,7 @@ class QueryInfo {
       // and direct the user to the output window for the detailed compilation messages.
       // TODO: distinguish better between user-written errors and DB scheme mismatches.
       qs.log(`Failed to compile query ${this.program.queryPath} against database scheme ${this.program.dbschemePath}:`);
-      for(const error of errors) {
+      for (const error of errors) {
         const message = error.message || "[no error message available]";
         qs.log(`ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`);
       }
@@ -157,24 +163,6 @@ export interface EvaluationInfo {
   query: QueryInfo;
   result: messages.EvaluationResult;
   database: DatabaseInfo;
-}
-
-/**
- * Start the query server.
- */
-export function spawnQueryServer(config: QLConfiguration): qsClient.Server | undefined {
-  //TODO: Handle configuration changes, query server crashes, etc.
-  const semmleDist = config.qlDistributionPath;
-  if (semmleDist) {
-    queryServerLogger.log("Starting QL query server using JSON-RPC");
-    const server = new qsClient.Server(config.configData, {
-      logger: queryServerLogger,
-    });
-    queryServerLogger.log(`Query server started on pid: ${server.getPid()}`);
-    return server;
-  } else {
-    return undefined;
-  }
 }
 
 /**
@@ -208,7 +196,7 @@ function withProgress<R>(
  * Reports errors to both the user and the console.
  * @returns the `UpgradeParams` needed to start the upgrade, if the upgrade is possible and was confirmed by the user, or `undefined` otherwise.
  */
-async function checkAndConfirmDatabaseUpgrade(qs: qsClient.Server, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectory: vscode.Uri):
+async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectory: vscode.Uri):
   Promise<messages.UpgradeParams | undefined> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
     helpers.showAndLogErrorMessage("Database is invalid, and cannot be upgraded.")
@@ -265,7 +253,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.Server, db: DatabaseI
 
   logger.log(descriptionMessage);
   // Ask the user to confirm the upgrade.
-  const shouldUpgrade = await helpers.showBinaryChoiceDialog(`Should the database ${db.snapshotUri} be upgraded?\n\n${descriptionMessage}`);
+  const shouldUpgrade = await helpers.showBinaryChoiceDialog(`Should the database ${db.snapshotUri.fsPath} be upgraded?\n\n${descriptionMessage}`);
   if (shouldUpgrade) {
     return params;
   }
@@ -281,7 +269,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.Server, db: DatabaseI
  * First performs a dry-run and prompts the user to confirm the upgrade.
  * Reports errors during compilation and evaluation of upgrades to the user.
  */
-export async function upgradeDatabase(qs: qsClient.Server, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectory: vscode.Uri):
+export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectory: vscode.Uri):
   Promise<messages.RunUpgradeResult | undefined> {
   const upgradeParams = await checkAndConfirmDatabaseUpgrade(qs, db, targetDbScheme, upgradesDirectory);
 
@@ -321,7 +309,7 @@ export async function upgradeDatabase(qs: qsClient.Server, db: DatabaseItem, tar
   }
 }
 
-async function checkDatabaseUpgrade(qs: qsClient.Server, upgradeParams: messages.UpgradeParams):
+async function checkDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams):
   Promise<messages.CheckUpgradeResult> {
   return withProgress({
     location: ProgressLocation.Notification,
@@ -330,7 +318,7 @@ async function checkDatabaseUpgrade(qs: qsClient.Server, upgradeParams: messages
   }, (progress, token) => qs.sendRequest(messages.checkUpgrade, upgradeParams, token, progress));
 }
 
-async function compileDatabaseUpgrade(qs: qsClient.Server, upgradeParams: messages.UpgradeParams):
+async function compileDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams):
   Promise<messages.CompileUpgradeResult> {
   const params: messages.CompileUpgradeParams = {
     upgrade: upgradeParams,
@@ -344,7 +332,7 @@ async function compileDatabaseUpgrade(qs: qsClient.Server, upgradeParams: messag
   }, (progress, token) => qs.sendRequest(messages.compileUpgrade, params, token, progress));
 }
 
-async function runDatabaseUpgrade(qs: qsClient.Server, db: DatabaseItem, upgrades: messages.CompiledUpgrades):
+async function runDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseItem, upgrades: messages.CompiledUpgrades):
   Promise<messages.RunUpgradeResult> {
 
   if (db.contents === undefined || db.contents.databaseUri === undefined) {
@@ -357,7 +345,7 @@ async function runDatabaseUpgrade(qs: qsClient.Server, db: DatabaseItem, upgrade
 
   const params: messages.RunUpgradeParams = {
     db: database,
-    timeoutSecs: 1000, // TODO: make configurable
+    timeoutSecs: qs.config.timeoutSecs,
     toRun: upgrades
   };
 
@@ -368,7 +356,7 @@ async function runDatabaseUpgrade(qs: qsClient.Server, db: DatabaseItem, upgrade
   }, (progress, token) => qs.sendRequest(messages.runUpgrade, params, token, progress));
 }
 
-export async function clearCacheInDatabase(qs: qsClient.Server, dbItem: DatabaseItem):
+export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbItem: DatabaseItem):
   Promise<messages.ClearCacheResult> {
   if (dbItem.contents === undefined) {
     throw new Error('Can\'t clear the cache in an invalid snapshot.');
@@ -389,24 +377,26 @@ export async function clearCacheInDatabase(qs: qsClient.Server, dbItem: Database
     title: "Clearing Cache",
     cancellable: false,
   }, (progress, token) =>
-      qs.sendRequest(messages.clearCache, params, token, progress)
+    qs.sendRequest(messages.clearCache, params, token, progress)
   );
 }
 
 export async function compileAndRunQueryAgainstDatabase(
-  qs: qsClient.Server,
+  config: QLConfiguration,
+  qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   quickEval?: boolean
 ): Promise<EvaluationInfo> {
-  type Project = { libraryPath: string[], dbScheme: string };
-  type Config = { defaultProject: Project, projects: { [k: string]: Project } };
 
-  const config = workspace.getConfiguration('ql') as vscode.WorkspaceConfiguration & Config;
-  const root = workspace.rootPath;
   const editor = Window.activeTextEditor;
-  if (root == undefined) {
-    throw new Error('Can\'t run query with undefined workspace');
+  // Get the workspace paths
+  const workspaceFolders = workspace.workspaceFolders || [];
+  let diskWorkspaceFolders: string[] = [];
+  for (const workspaceFolder of workspaceFolders) {
+    if (workspaceFolder.uri.scheme === "file")
+      diskWorkspaceFolders.push(workspaceFolder.uri.fsPath)
   }
+
   if (editor == undefined) {
     throw new Error('Can\'t run query without an active editor');
   }
@@ -417,47 +407,18 @@ export async function compileAndRunQueryAgainstDatabase(
       editor.document.save();
     }
   }
-
-  // Figure out which project the current query document belongs to.
-
-  let project: Project | undefined = undefined;
-
-  // TODO: This iterates through projects in a determinate but
-  // somewhat arbitrary order if declared project directories overlap.
-  // Should we be checking for that and raising a warning if they do?
-  for (const projectDir of Object.keys(config.projects).sort()) {
-    const absoluteProjectDir = path.join(root, projectDir);
-    if (editor.document.fileName.startsWith(absoluteProjectDir)) {
-      project = config.projects[projectDir];
-      break;
-    }
-  }
-
-  // VSCode seems to always supply a defaultProject so long as the
-  // individual fields scoped below them are declared in package.json,
-  // so we can't just test for `config.defaultProject === undefined`
-  // to see if no default is provided. Test for default values
-  // instead.
-  if (project === undefined && !(
-    config.defaultProject.dbScheme === '' &&
-    config.defaultProject.libraryPath.length === 0)
-  ) {
-    project = config.defaultProject;
-  }
-
-  if (project === undefined) {
-    throw new Error(`File ${editor.document.fileName} does not belong to any project in workspace configuration.`);
-  }
-
-  if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
+  if (!db.contents || !db.contents.dbSchemeUri) {
     throw new Error(`Database ${db.snapshotUri} does not have a QL database scheme.`);
   }
+
+  // Figure out the library path for the query.
+  const packConfig = await cli.resolveLibraryPath(config, diskWorkspaceFolders, editor.document.uri.fsPath);
 
   const qlProgram: messages.QlProgram = {
     // The project of the current document determines which library path
     // we use. The `libraryPath` field in this server message is relative
     // to the workspace root, not to the project root.
-    libraryPath: project.libraryPath.map(lp => path.join(root, lp)),
+    libraryPath: packConfig.libraryPath,
     // Since we are compiling and running a query against a database,
     // we use the database's DB scheme here instead of the DB scheme
     // from the current document's project.
@@ -476,7 +437,14 @@ export async function compileAndRunQueryAgainstDatabase(
     }
   }
 
-  const query = new QueryInfo(qlProgram, db, quickEvalPosition);
+  // Read the query metadata if possible, to use in the UI.
+  let metadata: cli.QueryMetadata | undefined;
+  try {
+    metadata = await cli.resolveMetadata(qs.config, qlProgram.queryPath);
+  } catch(_) {
+    // Ignore errors and provide no metadata.
+  }
+  const query = new QueryInfo(qlProgram, db, quickEvalPosition, metadata);
   return {
     query,
     result: await query.compileAndRun(qs),

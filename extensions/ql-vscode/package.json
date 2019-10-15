@@ -82,46 +82,23 @@
           "default": "",
           "description": "Location of the QL distribution"
         },
-        "ql.defaultProject.dbScheme": {
-          "type": [
-            "string"
-          ],
-          "default": "",
-          "description": "Location of the database schema (file ending with .dbscheme)"
-        },
-        "ql.defaultProject.libraryPath": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [],
-          "description": "Library Path"
-        },
-        "ql.projects": {
-          "type": "object",
-          "patternProperties": {
-            ".*": {
-              "type": "object",
-              "properties": {
-                "dbScheme": {
-                  "type": "string"
-                },
-                "libraryPath": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "default": {},
-          "description": "Library Path"
-        },
-        "ql.numThreads": {
+        "ql.runningQueries.numberOfThreads": {
           "type": "number",
           "default": 1,
-          "description": "Number of threads to run queries with"
+          "minimum": 1,
+          "description": "Number of threads for running queries."
+        },
+        "ql.runningQueries.timeout": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "description": "Timeout (in seconds) for running queries. Leave blank or set to zero for no timeout."
+        },
+        "ql.runningQueries.memory": {
+          "type": "number",
+          "default": 1024,
+          "minimum": 1024,
+          "description": "Memory (in MB) to use for running queries."
         }
       }
     },
@@ -215,6 +192,16 @@
           "command": "qlDatabases.removeDatabase",
           "when": "false"
         }
+      ],
+      "editor/context": [
+        {
+          "command": "ql.runQuery",
+          "when": "editorLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "ql.quickEval",
+          "when": "editorLangId == ql"
+        }
       ]
     },
     "viewsContainers": {
@@ -243,7 +230,9 @@
     "build": "gulp",
     "watch": "npm-run-all -p watch:*",
     "watch:extension": "tsc --watch",
-    "test": "mocha --exit -r ts-node/register test/**/*.ts",
+    "test": "mocha --exit -r ts-node/register test/pure-tests/**/*.ts",
+    "preintegration": "rm -rf ./out/vscode-tests && gulp compileTypeScript",
+    "integration": "node ./out/vscode-tests/run-integration-tests.js",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "format": "tsfmt -r"
@@ -262,18 +251,19 @@
     "semmle-io-node": "^0.0.1",
     "semmle-vscode-utils": "^0.0.1",
     "tmp": "^0.1.0",
-    "xml2js": "~0.4.19",
     "vscode-jsonrpc": "^4.0.0",
-    "vscode-languageclient": "^5.2.1"
+    "vscode-languageclient": "^5.2.1",
+    "xml2js": "~0.4.19"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/classnames": "~2.2.9",
     "@types/fs-extra": "^8.0.0",
+    "@types/glob": "^7.1.1",
     "@types/google-protobuf": "^3.2.7",
     "@types/gulp": "^4.0.6",
     "@types/jszip": "~3.1.6",
-    "@types/mocha": "^2.2.48",
+    "@types/mocha": "~5.2.7",
     "@types/node": "^12.0.8",
     "@types/react": "^16.8.17",
     "@types/react-dom": "^16.8.4",
@@ -289,7 +279,7 @@
     "gulp": "^4.0.2",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-typescript": "^5.0.1",
-    "mocha": "^6.1.4",
+    "mocha": "~6.2.1",
     "npm-run-all": "^4.1.5",
     "style-loader": "~0.23.1",
     "through2": "^3.0.1",
@@ -300,6 +290,7 @@
     "typescript-config": "^0.0.1",
     "typescript-formatter": "^7.2.2",
     "vsce": "^1.65.0",
+    "vscode-test": "^1.0.0",
     "webpack": "^4.38.0",
     "webpack-cli": "^3.3.2"
   }

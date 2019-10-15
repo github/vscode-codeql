@@ -5,7 +5,10 @@ jobs:
   build:
     name: Build
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -19,11 +22,14 @@ jobs:
           npm run build
 
       - name: Prepare artifacts
+        if: matrix.os == 'ubuntu-latest'
         run: |
           mkdir artifacts
           cp dist/*.vsix artifacts
 
-      - uses: actions/upload-artifact@master
+      - name: Upload artifacts
+        uses: actions/upload-artifact@master
+        if: matrix.os == 'ubuntu-latest'
         with:
           name: ql-for-vscode-extension
           path: artifacts
