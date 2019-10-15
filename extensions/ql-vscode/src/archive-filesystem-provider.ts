@@ -37,7 +37,7 @@ export type Entry = File | Directory;
 
 import * as path from 'path';
 
-class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
+export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   private readOnlyError = vscode.FileSystemError.NoPermissions('write operation attempted, but source archive filesystem is readonly');
 
   root = new Directory('');
