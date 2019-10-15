@@ -231,8 +231,8 @@
     "watch": "npm-run-all -p watch:*",
     "watch:extension": "tsc --watch",
     "test": "mocha --exit -r ts-node/register test/pure-tests/**/*.ts",
-    "preintegration": "gulp compileTypeScript",
-    "integration": "node out/vscode-tests/run-integration-tests.js",
+    "preintegration": "rm -rf ./out/vscode-tests && gulp compileTypeScript",
+    "integration": "node ./out/vscode-tests/run-integration-tests.js",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "format": "tsfmt -r"
