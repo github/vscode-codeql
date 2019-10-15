@@ -231,8 +231,8 @@
     "watch": "npm-run-all -p watch:*",
     "watch:extension": "tsc --watch",
     "test": "mocha --exit -r ts-node/register test/pure-tests/**/*.ts",
-    "preintegration": "gulp compileTypeScript",
-    "integration": "node out/vscode-tests/run-integration-tests.js",
+    "preintegration": "rm -rf ./out/vscode-tests && gulp compileTypeScript",
+    "integration": "node ./out/vscode-tests/run-integration-tests.js",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "format": "tsfmt -r"
@@ -256,6 +256,7 @@
     "@types/chai": "^4.1.7",
     "@types/classnames": "~2.2.9",
     "@types/fs-extra": "^8.0.0",
+    "@types/glob": "^7.1.1",
     "@types/google-protobuf": "^3.2.7",
     "@types/gulp": "^4.0.6",
     "@types/jszip": "~3.1.6",
