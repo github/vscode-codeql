@@ -2,13 +2,28 @@ import { ResultSetSchema, LocationStyle, ColumnTypeKind } from "./bqrs-schema";
 import { ResultSetsReader, ResultSetReader } from "./bqrs-file";
 import { ElementBase, ColumnValue } from "./bqrs-results";
 
+/**
+ * Represents a binding to all remaining columns, starting at the column index specified by
+ * `startColumn`.
+ */
 export interface RestColumnIndex {
   startColumn: number
 }
 
+/**
+ * Indentifies the result column to which a property is bound. May be the index of a specific
+ * column, or an instance of `RestColumnIndex` to bind to all remaining columns.
+ */
 export type ColumnIndex = number | RestColumnIndex;
 
+/**
+ * Options that can be specified for a `@qlTable` attribute.
+ */
 export interface TableOptions {
+  /**
+   * The name of the table to bind to. If multiple values are specified, the property is bound to
+   * the the table whose name is earliest in the list.
+   */
   name?: string | string[];
 }
 
@@ -18,11 +33,19 @@ export enum QLOption {
   Forbidden = 'forbidden'
 }
 
+/**
+ * Options that can be specified for a `@qlElement` attribute.
+ */
 export interface ElementOptions {
   label?: QLOption;
   location?: QLOption;
 }
 
+/**
+ * An attribute that binds the target property to a result column representing a QL element.
+ * @param index Index of the column to be bound.
+ * @param options Binding options.
+ */
 export function qlElement(index: ColumnIndex, options: ElementOptions = {}): PropertyDecorator {
   return (proto: any, key: PropertyKey): void => {
     column(proto, {
@@ -37,6 +60,10 @@ export function qlElement(index: ColumnIndex, options: ElementOptions = {}): Pro
   }
 }
 
+/**
+ * An attribute that binds the target property to a result column containing a QL string.
+ * @param index Index of the column to be bound.
+ */
 export function qlString(index: ColumnIndex): PropertyDecorator {
   return (proto: any, key: PropertyKey): void => {
     column(proto, {
@@ -47,6 +74,12 @@ export function qlString(index: ColumnIndex): PropertyDecorator {
   }
 }
 
+/**
+ * An attribute that binds the target property to a set of result columns. The individual
+ * columns are bound to properties of the underlying type of the target property.
+ * @param index Index of the first column to be bound.
+ * @param type The type of the property.
+ */
 export function qlTuple(index: ColumnIndex, type: { new(): any }): PropertyDecorator {
   return (proto: any, key: PropertyKey): void => {
     column(proto, {
@@ -90,12 +123,18 @@ function column<T extends ColumnProperty>(proto: any, property: T): void {
 interface TableProperty {
   key: PropertyKey;
   tableNames: string[];
-  type: any;
+  rowType: any;
 }
 
 const tablePropertiesSymbol = Symbol('tableProperties');
 
-export function qlTable(type: any, options?: TableOptions): any {
+/**
+ * An attribute that binds the target property to the contents of a result table.
+ * @param rowType The type representing a single row in the bound table. The type of the target
+ *   property must be an array of this type.
+ * @param options Binding options.
+ */
+export function qlTable(rowType: any, options?: TableOptions): any {
   return (proto, key: PropertyKey) => {
     const realOptions = options || {};
     let names: string[];
@@ -117,7 +156,7 @@ export function qlTable(type: any, options?: TableOptions): any {
     tableProperties.push({
       key: key,
       tableNames: names,
-      type: type
+      rowType: rowType
     });
   };
 }
@@ -141,30 +180,30 @@ export class CustomResultSet<TTuple> {
 class CustomResultSetBinder {
   private readonly boundColumns: boolean[];
 
-  private constructor(private readonly type: { new(): any },
+  private constructor(private readonly rowType: { new(): any },
     private readonly schema: ResultSetSchema) {
 
     this.boundColumns = Array(schema.columns.length).fill(false);
   }
 
-  public static bind<TTuple>(reader: ResultSetReader, type: { new(): TTuple }):
+  public static bind<TTuple>(reader: ResultSetReader, rowType: { new(): TTuple }):
     CustomResultSet<TTuple> {
 
-    const binder = new CustomResultSetBinder(type, reader.schema);
+    const binder = new CustomResultSetBinder(rowType, reader.schema);
     const tupleParser = binder.bindRoot<TTuple>();
 
-    return new CustomResultSet<TTuple>(reader, type, tupleParser);
+    return new CustomResultSet<TTuple>(reader, rowType, tupleParser);
   }
 
   private bindRoot<TTuple>(): TupleParser<TTuple> {
-    const { action } = this.bindObject(this.type, 0, true);
+    const { action } = this.bindObject(this.rowType, 0, true);
     const unboundColumnIndex = this.boundColumns.indexOf(false);
     if (unboundColumnIndex >= 0) {
       throw new Error(`Column '${this.schema.name}[${unboundColumnIndex}]' is not bound to a property.`);
     }
 
     return tuple => {
-      let result = new this.type;
+      let result = new this.rowType;
       action(tuple, result);
       return result;
     }
@@ -258,7 +297,7 @@ class CustomResultSetBinder {
     } {
 
     if ((index < 0) || (index >= this.schema.columns.length)) {
-      throw new Error(`No matching column '${index}' found for property '${type.toString()}.${property.key.toString()}' when binding root type '${this.type.toString()}'.`);
+      throw new Error(`No matching column '${index}' found for property '${type.toString()}.${property.key.toString()}' when binding root type '${this.rowType.toString()}'.`);
     }
     if (typeof property.type === 'string') {
       // This property is bound to a single column
@@ -286,7 +325,7 @@ class CustomResultSetBinder {
     key: PropertyKey | number): ParseTupleAction {
 
     if (this.boundColumns[index]) {
-      throw new Error(`Column '${this.schema.name}[${index}]' is bound to multiple columns in root type '${this.type.toString()}'.`);
+      throw new Error(`Column '${this.schema.name}[${index}]' is bound to multiple columns in root type '${this.rowType.toString()}'.`);
     }
     const column = this.schema.columns[index];
     if (column.type.type !== property.type) {
@@ -349,7 +388,7 @@ export function createCustomResultSets<T>(reader: ResultSetsReader, type: { new(
     }
     boundProperties.add(tableProperty.key);
     customResultSets[tableProperty.key] = CustomResultSetBinder.bind(resultSet,
-      tableProperty.type);
+      tableProperty.rowType);
   }
   for (const tableProperty of tableProperties) {
     if (!boundProperties.has(tableProperty.key)) {

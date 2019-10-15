@@ -74,8 +74,6 @@ function translatePrimitiveValue(value: PrimitiveColumnValue, type: PrimitiveTyp
 async function parseResultSets(response: Response): Promise<readonly ResultSet[]> {
   const chunks = getChunkIterator(response);
 
-  const startTime = performance.now();
-
   const resultSets: ResultSet[] = [];
 
   await bqrs.parse(chunks, (resultSetSchema) => {
@@ -113,9 +111,6 @@ async function parseResultSets(response: Response): Promise<readonly ResultSet[]
     };
   });
 
-  const endTime = performance.now();
-  console.log(`parseRows: ${endTime - startTime}`);
-
   return resultSets;
 }
 
@@ -134,6 +129,8 @@ interface ResultsViewProps {
 }
 
 interface ResultsViewState {
+  // We use `null` instead of `undefined` here because in React, `undefined` is
+  // used to mean "did not change" when updating the state of a component.
   resultsInfo: ResultsInfo | null;
   results: Results | null;
   errorMessage: string;
