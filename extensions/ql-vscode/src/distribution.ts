@@ -1,5 +1,29 @@
 import * as fetch from "node-fetch";
+import * as fs from "fs-extra";
+import * as os from "os";
+import * as path from "path";
 import * as unzipper from "unzipper";
+
+export async function downloadDistribution(ownerName: string, repoName: string, outPath: string): Promise<void> {
+  const releasesApi = new ReleasesApiConsumer(ownerName, repoName);
+  const assets = await releasesApi.getAssetsForLatestRelease();
+  if (assets.length !== 1) {
+    throw new Error("Release had an unexpected number of assets")
+  }
+  const assetStream = await releasesApi.streamBinaryContentOfAsset(assets[0]);
+
+  const tmpDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "vscode-codeql"));
+  const archivePath = path.join(tmpDirectory, "distributionDownload.zip");
+  const archiveFile = fs.createWriteStream(archivePath);
+
+  await new Promise((resolve, reject) =>
+    assetStream.pipe(archiveFile)
+      .on("finish", resolve)
+      .on("error", reject)
+  );
+
+  await extractZipArchive(archivePath, outPath);
+}
  
 export interface ReleaseAsset {
   /**
