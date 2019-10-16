@@ -23,8 +23,6 @@ export interface QuerySetup {
 export async function resolveLibraryPath(config: QLConfiguration, workspaces: string[], queryPath: string): Promise<QuerySetup> {
     const subcommandArgs = [
         '--query', queryPath,
-        // TODO this can be omitted entirely when the CLI learns how to configure its own search path.
-        "--search-path", ".",
         "--additional-packs",
         workspaces.join(path.delimiter)
     ];
