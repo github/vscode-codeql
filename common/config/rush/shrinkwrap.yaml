@@ -19,6 +19,7 @@ dependencies:
   '@types/jszip': 3.1.6
   '@types/mocha': 5.2.7
   '@types/node': 12.7.0
+  '@types/node-fetch': 2.5.2
   '@types/npm-packlist': 1.1.1
   '@types/react': 16.8.25
   '@types/react-dom': 16.8.5
@@ -46,6 +47,7 @@ dependencies:
   jsonc-parser: 2.1.0
   leb: 0.3.0
   mocha: 6.2.1
+  node-fetch: 2.6.0
   npm-packlist: 1.4.4
   npm-run-all: 4.1.5
   plugin-error: 1.0.1
@@ -323,6 +325,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-cy3yebKhrHuOcrJGkfwNHhpTXQLgmXSv1BX+4p32j+VUQ6aP2eJ5cL7OvGcAQx75fCTFaAIIAKewvqL+iwSd4g==
+  /@types/node-fetch/2.5.2:
+    dependencies:
+      '@types/node': 12.11.2
+    dev: false
+    resolution:
+      integrity: sha512-djYYKmdNRSBtL1x4CiE9UJb9yZhwtI1VC+UxZD0psNznrUj80ywsxKlEGAE+QL1qvLjPbfb24VosjkYM6W4RSQ==
   /@types/node/10.14.21:
     dev: false
     resolution:
@@ -3935,6 +3943,12 @@ packages:
       node: 4.x || >=6.0.0
     resolution:
       integrity: sha1-q4hOjn5X44qUR1POxwb3iNF2i7U=
+  /node-fetch/2.6.0:
+    dev: false
+    engines:
+      node: 4.x || >=6.0.0
+    resolution:
+      integrity: sha512-8dG4H5ujfvFiqDmVu9fQ5bOHUC15JMjMY/Zumv26oOvvVJjM67KF8koCWIabKQ1GJIa9r2mMZscBq/TbdOcmNA==
   /node-libs-browser/2.2.1:
     dependencies:
       assert: 1.5.0
@@ -6448,6 +6462,7 @@ packages:
       '@types/jszip': 3.1.6
       '@types/mocha': 5.2.7
       '@types/node': 12.7.0
+      '@types/node-fetch': 2.5.2
       '@types/react': 16.8.25
       '@types/react-dom': 16.8.5
       '@types/sarif': 2.1.2
@@ -6471,6 +6486,7 @@ packages:
       jszip: 3.2.2
       leb: 0.3.0
       mocha: 6.2.1
+      node-fetch: 2.6.0
       npm-run-all: 4.1.5
       react: 16.8.6
       react-dom: /react-dom/16.8.6/react@16.8.6
@@ -6494,7 +6510,7 @@ packages:
     dev: false
     name: '@rush-temp/ql-vscode'
     resolution:
-      integrity: sha512-24FXoqSw30O7xf86Rh6Gb/+scWdd7JN+XIw5vumM8M2/UQSE84voAXAWtA9oCY4QIAFesev6sMuCud0VCaSaHA==
+      integrity: sha512-kfdk6MMgYJ4fg71v11XJEub0IoYEeP4k7Qpo39UAlQqoA1OodKzjObOezJTjrkPWgO7iua0bOewTrHMa1jtvWA==
       tarball: 'file:projects/ql-vscode.tgz'
     version: 0.0.0
   'file:projects/semmle-bqrs.tgz':
@@ -6575,6 +6591,7 @@ specifiers:
   '@types/jszip': ~3.1.6
   '@types/mocha': ~5.2.7
   '@types/node': ^12.0.8
+  '@types/node-fetch': ~2.5.2
   '@types/npm-packlist': ~1.1.1
   '@types/react': ^16.8.17
   '@types/react-dom': ^16.8.4
@@ -6602,6 +6619,7 @@ specifiers:
   jsonc-parser: ~2.1.0
   leb: ^0.3.0
   mocha: ~6.2.1
+  node-fetch: ~2.6.0
   npm-packlist: ~1.4.4
   npm-run-all: ^4.1.5
   plugin-error: ^1.0.1
