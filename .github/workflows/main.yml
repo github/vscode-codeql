@@ -20,6 +20,7 @@ jobs:
           cd build
           npm install
           npm run build-ci
+        shell: bash
 
       - name: Prepare artifacts
         if: matrix.os == 'ubuntu-latest'
