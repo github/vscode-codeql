@@ -11,7 +11,7 @@ To edit the configuration settings, right-click **QL** in the Extensions contain
 <font color="red">TODO: Remove the following reference to internal jenkins before release:</font>
 For IntelliSense and query evaluation to work, set `ql.distributionPath` to point to a Semmle Core distribution.
 
-You must use a Semmle Core distribution from recent `master`, i.e. built after 26 September 2019 and containing [this commit](http://git.semmle.com/Semmle/code/commit/93f3c4cf00910ec5cd6f3dce58f6fb0b080a762a). This can be built from a `Semmle/code` checkout or downloaded from `master` builds of [the ODASA job on Jenkins](https://jenkins.internal.semmle.com/job/ODASA/).
+You must use a Semmle Core distribution from recent `master`, i.e. built after 15 October 2019 and containing [this commit](http://git.semmle.com/Semmle/code/commit/a23097f89db42578a3f8d88558033dda16334290). This can be built from a `Semmle/code` checkout or downloaded from `master` builds of [the ODASA job on Jenkins](https://jenkins.internal.semmle.com/job/ODASA/).
 
 If you have built your own distribution from a `Semmle/code` checkout, this path will be something like `codeRoot/target/intree/standard`, where `codeRoot` is the root of your `Semmle/code` checkout. If you have downloaded the distribution, this might be something like `/home/$USER/odasa`.
 
@@ -20,57 +20,16 @@ global user settings to apply to all workspaces you open.
 
 ### Configuring a QL project
 
-The `ql.projects` setting provides a project configuration (that is, the location of the corresponding database schema and library path) for specific folders in the workspace.
+You need to set up `qlpack.json` files inside each ql pack (https://github.com/Semmle/ql/pull/2119/files added them for the main repository). All ql dependencies currently need to be in an open workspace folder.
 
-If you open the `Semmle/code` checkout as a folder in VS Code, you can copy the following into `code/.vscode/settings.json` (modifying the QL distribution path as appropriate):
+To make the standard libraries available in your workspace, click File > Add Folder to Workspace, and choose your local checkout of the `Semmle/ql` repository.
 
-```json
+To make your custom QL project depend on a standard library (e.g. for C++), create a `qlpack.json` file with the following contents:
 {
-    "ql.distributionPath": "/home/user/odasa",
-    "ql.projects": {
-        "ql/java/ql/src": {
-            "dbScheme": "ql/java/ql/src/config/semmlecode.dbscheme",
-            "libraryPath": []
-        },
-        "ql/javascript/ql/src": {
-            "dbScheme": "ql/javascript/ql/src/semmlecode.javascript.dbscheme",
-            "libraryPath": []
-        },
-        "ql/cpp/ql/src": {
-            "dbScheme": "ql/cpp/ql/src/semmlecode.cpp.dbscheme",
-            "libraryPath": []
-        },
-        "ql/csharp/ql/src": {
-            "dbScheme": "ql/csharp/ql/src/semmlecode.csharp.dbscheme",
-            "libraryPath": []
-        },
-        "ql/python/ql/src": {
-            "dbScheme": "ql/python/ql/src/semmlecode.python.dbscheme",
-            "libraryPath": []
-        },
-        "language-packs/go/ql/src": {
-            "dbScheme": "language-packs/go/ql/src/go.dbscheme",
-            "libraryPath": []
-        }
-    }
+    "name": "my-custom-cpp-pack",
+    "version": "0.0.0",
+    "libraryPathDependencies": ["codeql-cpp"]
 }
-```
-
-If you use a different workspace, you should change the configuration file to point to the correct library path and database schema.
-
-For example, suppose your working directory is called `~/js-queries`.
-Then you can make a file `~/js-queries/.vscode/settings.json` with contents
-```json
-{
-  "ql.projects": {
-    ".": {
-      "dbScheme": "jslib/semmlecode.javascript.dbscheme",
-      "libraryPath": ["jslib"]
-    }
-  }
-}
-```
-and copy contents of the `Semmle/code/ql/javascript/ql/src` to `~/js-queries/jslib`.
 
 Using the extension
 ---
