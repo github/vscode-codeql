@@ -1,11 +1,11 @@
 import { MessageConnection, RequestType, CancellationToken, createMessageConnection } from 'vscode-jsonrpc';
 import { EvaluationResult, completeQuery, WithProgressId, ProgressMessage, progress } from './messages';
-import * as path from 'path';
 import * as cp from 'child_process';
 import { Logger } from './logging';
 import { DisposableObject } from 'semmle-vscode-utils';
 import { Disposable } from 'vscode';
 import { QLConfiguration } from './config';
+import * as cli from './cli';
 
 type ServerOpts = {
   logger: Logger
@@ -64,9 +64,8 @@ export class QueryServerClient extends DisposableObject {
     this.opts = opts;
     // When the query server configuration changes, restart the query server.
     if(config.onDidChangeQueryServerConfiguration !== undefined) {
-      this.push(config.onDidChangeQueryServerConfiguration(this.restartQueryServer, this));
+      this.push(config.onDidChangeQueryServerConfiguration(async () => await this.restartQueryServer(), this));
     }
-    this.startQueryServer();
   }
 
   /** Stops the query server by disposing of the current server process. */
@@ -79,32 +78,23 @@ export class QueryServerClient extends DisposableObject {
   }
 
   /** Restarts the query server by disposing of the current server process and then starting a new one. */
-  private restartQueryServer() {
+  private async restartQueryServer() {
     this.log('Restarting query server due to configuration changes...');
     this.stopQueryServer();
-    this.startQueryServer();
+    await this.startQueryServer();
   }
 
   /** Starts a new query server process. */
-  private startQueryServer() {
+  async startQueryServer() {
+    const ramArgs = await cli.resolveRam(this.config);
     this.log("Starting QL query server using JSON-RPC...");
-    const command = this.config.javaCommand;
-    if (command === undefined) {
-      throw new Error('Semmle distribution path not set.');
-    }
-    const jvmArgs = [
-      '-cp', path.resolve(this.config.qlDistributionPath, 'tools/odasa.jar'),
-      '-Xms512m',
-      `-Xmx${this.config.queryMemoryMb.toString()}m`,
-      'com.semmle.api.server.CombinedServer'
-    ];
-    const otherArgs = ['--threads', this.config.numThreads.toString()];
-    const args = jvmArgs.concat(otherArgs);
+    const command = this.config.codeQlPath;
+    const args = ['execute', 'query-server', '-v', '--log=-', '--threads', this.config.numThreads.toString()].concat(ramArgs);
     const argsString = args.join(" ");
-    this.log(`Launching query server using ${command} ${argsString}...`);
+    this.log(`Launching query server using CodeQL CLI ${command} ${argsString}...`);
     const child = cp.spawn(command, args);
     if (!child || !child.pid) {
-      throw new Error(`Launching query server ${command} ${argsString} failed.`);
+      throw new Error(`Launching query server using command ${command} ${argsString} failed.`);
     }
 
     child.stderr.on('data', data => {
@@ -113,6 +103,7 @@ export class QueryServerClient extends DisposableObject {
     child.on('close', (code) => {
       this.log(`Child process exited with code ${code}`);
     });
+
     const connection = createMessageConnection(child.stdout, child.stdin);
     connection.onRequest(completeQuery, res => {
       if (!(res.runId in this.evaluationResultCallbacks)) {

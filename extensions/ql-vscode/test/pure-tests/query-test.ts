@@ -48,14 +48,13 @@ const compilationSucceeded = new Checkpoint<void>();
 const evaluationSucceeded = new Checkpoint<void>();
 
 describe('using the query server', () => {
-  const qlDistributionPath = process.env["SEMMLE_DIST"];
-  if (qlDistributionPath == undefined) {
-    throw new Error('Need environment variable SEMMLE_DIST to find query server');
+  const codeQlPath = process.env["CODEQL_DIST"];
+  if (codeQlPath == undefined) {
+    throw new Error('Need environment variable CODEQL_DIST to find CodeQL CLI.');
   }
   const qs = new qsClient.QueryServerClient(
     {
-      qlDistributionPath,
-      javaCommand: path.join(qlDistributionPath, 'tools/java/bin/java'),
+      codeQlPath,
       numThreads: 1,
       queryMemoryMb: 1024,
       timeoutSecs: 1000

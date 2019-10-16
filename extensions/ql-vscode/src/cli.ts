@@ -49,6 +49,14 @@ export async function resolveMetadata(config: QLConfiguration, queryPath: string
 }
 
 /**
+ * Gets the RAM setting for the query server.
+ * @param config The configuration containing the path to the CLI.
+ */
+export async function resolveRam(config: QLConfiguration): Promise<string[]> {
+    return await runCodeQlCliCommand<string[]>(config, ['resolve', 'ram'], [], "Resolving RAM settings");
+}
+
+/**
  * Runs a CodeQL CLI command, returning the output as JSON.
  * @param config The configuration containing the path to the CLI.
  * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
@@ -57,7 +65,7 @@ export async function resolveMetadata(config: QLConfiguration, queryPath: string
  * @returns The contents of the command's stdout, if the command succeeded.
  */
 async function runCodeQlCliCommand<OutputType>(config: QLConfiguration, command: string[], commandArgs: string[], description: string): Promise<OutputType> {
-    const base = path.join(config.qlDistributionPath, "tools/odasa");
+    const base = config.codeQlPath;
     const args = command.concat(commandArgs).concat('-v', '--log=-', '--format', 'json');
     const argsString = args.join(" ");
     try {

@@ -19,7 +19,7 @@ import * as helpers from './helpers';
 * A vscode extension for QL query development.
 */
 
-export function activate(ctx: ExtensionContext) {
+export async function activate(ctx: ExtensionContext) {
   // Initialise logging, and ensure all loggers are disposed upon exit.
   ctx.subscriptions.push(logger);
   ctx.subscriptions.push(queryServerLogger);
@@ -33,6 +33,8 @@ export function activate(ctx: ExtensionContext) {
     logger: queryServerLogger,
   });
   ctx.subscriptions.push(qs);
+  await qs.startQueryServer();
+
   const dbm = new DatabaseManager(ctx);
   ctx.subscriptions.push(dbm);
   const databaseUI = new DatabaseUI(ctx, dbm, qs);
