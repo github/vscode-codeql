@@ -20,7 +20,16 @@ global user settings to apply to all workspaces you open.
 
 ### Configuring a QL project
 
-You need to set up `qlpack.json` files inside each ql pack (https://github.com/Semmle/ql/pull/2119/files will add them for the main repository). All ql dependencies currently need to be in an open workspace folder.
+You need to set up `qlpack.json` files inside each ql pack (https://github.com/Semmle/ql/pull/2119/files added them for the main repository). All ql dependencies currently need to be in an open workspace folder.
+
+To make the standard libraries available in your workspace, click File > Add Folder to Workspace, and choose your local checkout of the `Semmle/ql` repository.
+
+To make your custom QL project depend on a standard library (e.g. for C++), create a `qlpack.json` file with the following contents:
+{
+    "name": "my-custom-cpp-pack",
+    "version": "0.0.0",
+    "libraryPathDependencies": ["codeql-cpp"]
+}
 
 Using the extension
 ---
