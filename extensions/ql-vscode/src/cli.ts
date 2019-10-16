@@ -22,7 +22,6 @@ export interface QuerySetup {
  */
 export async function resolveLibraryPath(config: QLConfiguration, workspaces: string[], queryPath: string): Promise<QuerySetup> {
     const subcommandArgs = [
-        '--format', 'json',
         '--query', queryPath,
         // TODO this can be omitted entirely when the CLI learns how to configure its own search path.
         "--search-path", ".",
@@ -50,7 +49,7 @@ export async function resolveMetadata(config: QLConfiguration, queryPath: string
 }
 
 /**
- * Runs a CodeQL CLI command.
+ * Runs a CodeQL CLI command, returning the output as JSON.
  * @param config The configuration containing the path to the CLI.
  * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
  * @param commandArgs The arguments to pass to the `codeql` command.
@@ -59,7 +58,7 @@ export async function resolveMetadata(config: QLConfiguration, queryPath: string
  */
 async function runCodeQlCliCommand<OutputType>(config: QLConfiguration, command: string[], commandArgs: string[], description: string): Promise<OutputType> {
     const base = path.join(config.qlDistributionPath, "tools/odasa");
-    const args = ["codeql"].concat(command).concat(commandArgs).concat('-v', '--log=-');
+    const args = command.concat(commandArgs).concat('-v', '--log=-', '--format', 'json');
     const argsString = args.join(" ");
     try {
         logger.log(`${description} using CodeQL CLI: ${base} ${argsString}...`);
