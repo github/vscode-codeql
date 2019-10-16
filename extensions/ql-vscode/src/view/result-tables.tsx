@@ -1,14 +1,14 @@
 import * as React from 'react';
-import { ResultSet } from '../bqrs-types';
-import { ResultTable } from './result-table';
 import './results.css';
+import { ResultTable } from './result-table';
 import { DatabaseInfo } from '../interface-types';
+import { ResultSet } from './results';
 
 /**
  * Properties for the `ResultTables` component.
  */
 export interface ResultTablesProps {
-  resultSets: ResultSet[];
+  resultSets: readonly ResultSet[];
   database: DatabaseInfo;
 }
 
@@ -16,7 +16,7 @@ export interface ResultTablesProps {
  * State for the `ResultTables` component.
  */
 interface ResultTablesState {
-  selectedTable: string;
+  selectedTable: ResultSet;
 }
 
 const SELECT_TABLE_NAME = '#select';
@@ -34,25 +34,41 @@ export class ResultTables
     // Display the `#select` table by default if one exists. Otherwise, display the first table in
     // the result set.
     this.state = {
-      selectedTable: props.resultSets.find(table => table.name === SELECT_TABLE_NAME) ?
-        SELECT_TABLE_NAME : props.resultSets[0].name
+      selectedTable: ResultTables.getDefaultResultSet(props.resultSets)
     };
   }
 
+  private static getDefaultResultSet(resultSets: readonly ResultSet[]): ResultSet {
+    return resultSets.find(resultSet =>
+      resultSet.schema.name === SELECT_TABLE_NAME) || resultSets[0];
+  }
+
   private onChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    this.setState({ selectedTable: event.target.value });
+    this.setState({
+      selectedTable:
+        this.props.resultSets.find(resultSet => resultSet.schema.name === event.target.value)!
+    });
   }
 
   render(): React.ReactNode {
     const { selectedTable } = this.state;
 
     return <div>
-      <select value={selectedTable} onChange={this.onChange}>
-        {this.props.resultSets.map(resultSet => <option value={resultSet.name}>{resultSet.name}</option>)}
+      <select value={selectedTable.schema.name} onChange={this.onChange}>
+        {
+          this.props.resultSets.map(resultSet =>
+            <option key={resultSet.schema.name} value={resultSet.schema.name}>
+              {resultSet.schema.name}
+            </option>
+          )
+        }
       </select>
-      {this.props.resultSets.map(resultSet => {
-        return <ResultTable resultSet={resultSet} snapshotUri={this.props.database.snapshotUri} selected={resultSet.name === selectedTable}/>;
-      })}
+      {
+        this.props.resultSets.map(resultSet =>
+          <ResultTable key={resultSet.schema.name} resultSet={resultSet}
+            snapshotUri={this.props.database.snapshotUri} selected={resultSet === selectedTable}/>
+        )
+      }
     </div>;
   }
 }

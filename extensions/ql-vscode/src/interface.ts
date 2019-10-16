@@ -1,16 +1,17 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
-  ExtensionContext, window as Window, workspace, languages, Uri, Diagnostic, Range, Location,
-  DiagnosticSeverity, DiagnosticRelatedInformation, Position
+  window as Window, workspace, languages, Uri, Diagnostic, Range, Location, DiagnosticSeverity,
+  DiagnosticRelatedInformation, Position
 } from 'vscode';
-import * as bqrs from './bqrs';
-import { FivePartLocation, ResultSet, LocationValue, isResolvableLocation } from './bqrs-types';
+import * as bqrs from 'semmle-bqrs';
+import { FileReader } from 'semmle-io-node';
+import {
+  FivePartLocation, LocationValue, isResolvableLocation, ProblemQueryResults,
+  CustomResultSets
+} from 'semmle-bqrs';
 import { FromResultsViewMsg, IntoResultsViewMsg } from './interface-types';
-import { EvaluationInfo } from './queries';
-import { ProblemResultsParser } from './result-parser';
-import { zipArchiveScheme } from './archive-filesystem-provider';
+import { tmpDir, EvaluationInfo } from './queries';
 import { DisposableObject } from 'semmle-vscode-utils';
 import { DatabaseManager, DatabaseItem } from './databases';
 import * as messages from './messages';
@@ -46,7 +47,10 @@ export class InterfaceManager extends DisposableObject {
         {
           enableScripts: true,
           retainContextWhenHidden: true,
-          localResourceRoots: [vscode.Uri.file(path.join(this.ctx.extensionPath, 'out'))]
+          localResourceRoots: [
+            vscode.Uri.file(tmpDir.name),
+            vscode.Uri.file(path.join(this.ctx.extensionPath, 'out'))
+          ]
         }
       );
       this.panel.onDidDispose(() => { this.panel = undefined; }, null, ctx.subscriptions);
@@ -54,7 +58,15 @@ export class InterfaceManager extends DisposableObject {
         .file(ctx.asAbsolutePath('out/resultsView.js'))
         .with({ scheme: 'vscode-resource' })
         .toString();
-      panel.webview.html = `<html><body><div id=root></div><script src="${scriptPath}"></script></body></html>`;
+      panel.webview.html = `
+<html>
+  <body>
+    <div id=root>
+    </div>
+      <script src="${scriptPath}">
+    </script>
+  </body>
+</html>`;
       panel.webview.onDidReceiveMessage(this.handleMsgFromView, undefined, ctx.subscriptions);
     }
     return this.panel;
@@ -76,45 +88,64 @@ export class InterfaceManager extends DisposableObject {
     this.getPanel().webview.postMessage(msg);
   }
 
-  showResults(ctx: ExtensionContext, info: EvaluationInfo, k?: (rs: ResultSet[]) => void) {
-    if(info.result.resultType !== messages.QueryResultType.SUCCESS) {
-      return;
-    }
-    bqrs.parse(fs.createReadStream(info.query.resultsPath)).then(
-      parsed => {
-        if (k != undefined) {
-          k(parsed.results);
-        }
-        this.postMessage({
-          t: 'setState',
-          results: parsed.results,
-          database: info.database
-        });
-        const problemParser = ProblemResultsParser.tryFromResultSets(parsed);
-        if (problemParser) {
-          this.showProblemResultsAsDiagnostics(problemParser, info.query.dbItem);
-        }
-        else {
-          this.diagnosticCollection.clear();
-        }
-      }).catch((e: Error) => {
-        this.log("ERROR");
-        this.log(e.toString());
-        this.log(e.stack + '');
-        throw e;
-      });
-    this.getPanel().reveal();
+  public showResults(info: EvaluationInfo): void {
+    this.showResultsAsync(info);
   }
 
-  private showProblemResultsAsDiagnostics(parser: ProblemResultsParser, databaseItem: DatabaseItem): void {
+  private async showResultsAsync(info: EvaluationInfo): Promise<void> {
+    if (info.result.resultType !== messages.QueryResultType.SUCCESS) {
+      return;
+    }
+    this.postMessage({
+      t: 'setState',
+      resultsPath: Uri.file(info.query.resultsPath).with({ scheme: 'vscode-resource' }).toString(true),
+      database: info.database
+    });
+    const fileReader = await FileReader.open(info.query.resultsPath);
+    try {
+      const resultSets = await bqrs.open(fileReader);
+      try {
+        const customResults = await bqrs.createCustomResultSets<ProblemQueryResults>(resultSets, ProblemQueryResults);
+        await this.showProblemResultsAsDiagnostics(customResults, info.query.dbItem);
+      }
+      catch (e) {
+        this.diagnosticCollection.clear();
+      }
+    }
+    finally {
+      fileReader.dispose();
+    }
+  }
+
+  private async showProblemResultsAsDiagnostics(results: CustomResultSets<ProblemQueryResults>,
+    databaseItem: DatabaseItem): Promise<void> {
+
     const diagnostics: [Uri, ReadonlyArray<Diagnostic>][] = [];
-    for (const problemRow of parser.parse()) {
-      const codeLocation = resolveLocation(problemRow.element.loc, databaseItem);
-      const diagnostic = new Diagnostic(codeLocation.range, problemRow.message, DiagnosticSeverity.Warning);
+    for await (const problemRow of results.problems.readTuples()) {
+      const codeLocation = resolveLocation(problemRow.element.location, databaseItem);
+      let message: string;
+      const references = problemRow.references;
+      if (references) {
+        let referenceIndex = 0;
+        message = problemRow.message.replace(/\$\@/g, sub => {
+          if (referenceIndex < references.length) {
+            const replacement = references[referenceIndex].text;
+            referenceIndex++;
+            return replacement;
+          }
+          else {
+            return sub;
+          }
+        });
+      }
+      else {
+        message = problemRow.message;
+      }
+      const diagnostic = new Diagnostic(codeLocation.range, message, DiagnosticSeverity.Warning);
       if (problemRow.references) {
         const relatedInformation: DiagnosticRelatedInformation[] = [];
         for (const reference of problemRow.references) {
-          const referenceLocation = tryResolveLocation(reference.element.loc, databaseItem);
+          const referenceLocation = tryResolveLocation(reference.element.location, databaseItem);
           if (referenceLocation) {
             const related = new DiagnosticRelatedInformation(referenceLocation,
               reference.text);
@@ -165,7 +196,7 @@ function resolveFivePartLocation(loc: FivePartLocation, databaseItem: DatabaseIt
  * @param loc QL location to resolve
  * @param databaseItem Snapshot in which to resolve the file location.
  */
-function resolveLocation(loc: LocationValue, databaseItem: DatabaseItem): Location {
+function resolveLocation(loc: LocationValue | undefined, databaseItem: DatabaseItem): Location {
   const resolvedLocation = tryResolveLocation(loc, databaseItem);
   if (resolvedLocation) {
     return resolvedLocation;
@@ -182,7 +213,9 @@ function resolveLocation(loc: LocationValue, databaseItem: DatabaseItem): Locati
  * @param loc QL location to resolve
  * @param databaseItem Snapshot in which to resolve the file location.
  */
-function tryResolveLocation(loc: LocationValue, databaseItem: DatabaseItem): Location | undefined {
+function tryResolveLocation(loc: LocationValue | undefined,
+  databaseItem: DatabaseItem): Location | undefined {
+
   if (isResolvableLocation(loc)) {
     return resolveFivePartLocation(loc, databaseItem);
   }

@@ -46,7 +46,7 @@ export function activate(ctx: ExtensionContext) {
   archiveFilesystemProvider.activate(ctx);
 
   function showResultsForInfo(info: EvaluationInfo) {
-    intm.showResults(ctx, info);
+    intm.showResults(info);
   }
 
   async function compileAndRunQueryAsync(qs: qsClient.QueryServerClient, quickEval: boolean): Promise<EvaluationInfo> {

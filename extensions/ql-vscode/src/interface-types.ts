@@ -1,4 +1,4 @@
-import { FivePartLocation, ResultSet } from './bqrs-types';
+import { FivePartLocation } from 'semmle-bqrs';
 
 export interface DatabaseInfo {
   name: string;
@@ -14,7 +14,7 @@ export interface PreviousExecution {
 
 export interface IntoResultsViewMsg {
   t: 'setState';
-  results: ResultSet[];
+  resultsPath: string;
   database: DatabaseInfo;
 };
 

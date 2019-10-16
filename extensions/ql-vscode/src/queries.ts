@@ -19,7 +19,7 @@ import * as cli from './cli';
  */
 
 // XXX: Tmp directory should be configuarble.
-const tmpDir = tmp.dirSync({ prefix: 'queries_', keep: false, unsafeCleanup: true });
+export const tmpDir = tmp.dirSync({ prefix: 'queries_', keep: false, unsafeCleanup: true });
 const upgradesTmpDir = tmp.dirSync({ dir: tmpDir.name, prefix: 'upgrades_', keep: false, unsafeCleanup: true });
 export const tmpDirDisposal = {
   dispose: () => {

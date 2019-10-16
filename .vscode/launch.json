@@ -13,7 +13,11 @@
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/dist/ql-vscode/out/**/*.js"
+        "${workspaceRoot}/dist/ql-vscode/out/**/*.js",
+        "${workspaceRoot}/dist/ql-vscode/node_modules/semmle-bqrs/out/**/*.js",
+        "${workspaceRoot}/dist/ql-vscode/node_modules/semmle-io/out/**/*.js",
+        "${workspaceRoot}/dist/ql-vscode/node_modules/semmle-io-node/out/**/*.js",
+        "${workspaceRoot}/dist/ql-vscode/node_modules/semmle-vscode-utils/out/**/*.js"
       ],
       "preLaunchTask": "Build"
     },
@@ -31,6 +35,10 @@
       "sourceMaps": true,
       "outFiles": [
         "${workspaceRoot}/dist/ql-vscode/out/**/*.js",
+        "${workspaceRoot}/dist/ql-vscode/node_modules/semmle-bqrs/out/**/*.js",
+        "${workspaceRoot}/dist/ql-vscode/node_modules/semmle-io/out/**/*.js",
+        "${workspaceRoot}/dist/ql-vscode/node_modules/semmle-io-node/out/**/*.js",
+        "${workspaceRoot}/dist/ql-vscode/node_modules/semmle-vscode-utils/out/**/*.js",
         "${workspaceRoot}/extensions/ql-vscode/out/test/**/*.js"
       ],
       "preLaunchTask": "Build"
