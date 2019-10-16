@@ -9,7 +9,8 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rush update && rush build"
+    "build": "rush update && rush build",
+    "build-ci": "rush install && rush build"
   },
   "author": "",
   "license": "ISC"
