@@ -129,11 +129,20 @@ export class ReleasesApiConsumer {
 
 export async function extractZipArchive(archivePath: string, outPath: string): Promise<void> {
   const archive = await unzipper.Open.file(archivePath);
-  // Type definitions for unzipper are wrong.
+  // The type definition for unzipper.Open.file(...).extract() is wrong
   await (archive.extract({
     concurrency: 4,
     path: outPath
   }) as unknown as Promise<void>);
+  // Set file permissions for extracted files
+  await Promise.all(archive.files.map(async file => {
+    // Only change file permissions if within outPath (path.join normalises the path)
+    const extractedPath = path.join(outPath, file.path);
+    if (extractedPath.indexOf(outPath) !== 0 || !(await fs.pathExists(extractedPath))) {
+      return Promise.resolve();
+    }
+    return fs.chmod(extractedPath, file.externalFileAttributes >>> 16);
+  }));
 }
 
 function isRedirectStatusCode(statusCode: number): boolean {
