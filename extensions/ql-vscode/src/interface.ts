@@ -88,11 +88,7 @@ export class InterfaceManager extends DisposableObject {
     this.getPanel().webview.postMessage(msg);
   }
 
-  public showResults(info: EvaluationInfo): void {
-    this.showResultsAsync(info);
-  }
-
-  private async showResultsAsync(info: EvaluationInfo): Promise<void> {
+  public async showResults(info: EvaluationInfo): Promise<void> {
     if (info.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }

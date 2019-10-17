@@ -40,47 +40,41 @@ export async function activate(ctx: ExtensionContext) {
   const databaseUI = new DatabaseUI(ctx, dbm, qs);
   ctx.subscriptions.push(databaseUI);
 
-  const qhm = new QueryHistoryManager(ctx, item => showResultsForInfo(item.info));
+  const qhm = new QueryHistoryManager(ctx, async item => showResultsForInfo(item.info));
   const intm = new InterfaceManager(ctx, dbm, msg => {
     if (qs !== undefined) { qs.logger.log(msg) }
   });
   ctx.subscriptions.push(intm);
   archiveFilesystemProvider.activate(ctx);
 
-  function showResultsForInfo(info: EvaluationInfo) {
-    intm.showResults(info);
+  async function showResultsForInfo(info: EvaluationInfo): Promise<void> {
+    await intm.showResults(info);
   }
 
-  async function compileAndRunQueryAsync(qs: qsClient.QueryServerClient, quickEval: boolean): Promise<EvaluationInfo> {
-    const dbItem = await databaseUI.getDatabaseItem();
-    if (dbItem === undefined) {
-      throw new Error('Can\'t run query without a selected database');
-    }
-    return compileAndRunQueryAgainstDatabase(qlConfigurationListener,qs, dbItem, quickEval);
-  }
-
-  function compileAndRunQuerySync(
-    quickEval: boolean,
-  ) {
+  async function compileAndRunQuery(quickEval: boolean) {
     if (qs !== undefined) {
-      compileAndRunQueryAsync(qs, quickEval)
-        .then(info => {
-          showResultsForInfo(info);
-          qhm.push(new QueryHistoryItem(info));
-        })
-        .catch(e => {
-          if (e instanceof Error)
-            helpers.showAndLogErrorMessage(e.message);
-          else
-            throw e;
-        });
+      try {
+        const dbItem = await databaseUI.getDatabaseItem();
+        if (dbItem === undefined) {
+          throw new Error('Can\'t run query without a selected database');
+        }
+        const info = await compileAndRunQueryAgainstDatabase(qlConfigurationListener, qs, dbItem, quickEval);
+        await showResultsForInfo(info);
+        qhm.push(new QueryHistoryItem(info));
+      }
+      catch (e) {
+        if (e instanceof Error)
+          helpers.showAndLogErrorMessage(e.message);
+        else
+          throw e;
+      }
     }
   }
 
   ctx.subscriptions.push(tmpDirDisposal);
 
   let client = new LanguageClient('QL Language Server', () => spawnIdeServer(qlConfigurationListener), {
-    documentSelector: ['ql', {language: 'json', pattern: '**/qlpack.json'}],
+    documentSelector: ['ql', { language: 'json', pattern: '**/qlpack.json' }],
     synchronize: {
       configurationSection: 'ql'
     },
@@ -88,8 +82,8 @@ export async function activate(ctx: ExtensionContext) {
     outputChannel: ideServerLogger.outputChannel
   }, true);
 
-  ctx.subscriptions.push(commands.registerCommand('ql.runQuery', () => compileAndRunQuerySync(false)));
-  ctx.subscriptions.push(commands.registerCommand('ql.quickEval', () => compileAndRunQuerySync(true)));
+  ctx.subscriptions.push(commands.registerCommand('ql.runQuery', async () => await compileAndRunQuery(false)));
+  ctx.subscriptions.push(commands.registerCommand('ql.quickEval', async () => await compileAndRunQuery(true)));
 
   ctx.subscriptions.push(client.start());
 }
