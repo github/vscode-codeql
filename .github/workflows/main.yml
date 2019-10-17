@@ -4,7 +4,6 @@ on: [push, pull_request]
 jobs:
   build:
     name: Build
-
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -19,7 +18,8 @@ jobs:
         run: |
           cd build
           npm install
-          npm run build
+          npm run build-ci
+        shell: bash
 
       - name: Prepare artifacts
         if: matrix.os == 'ubuntu-latest'
@@ -33,3 +33,21 @@ jobs:
         with:
           name: ql-for-vscode-extension
           path: artifacts
+  test:
+    name: Test
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+
+      - name: Run integration tests
+        run: |
+          cd build
+          npm install
+          npm run build-ci
+          cd ../extensions/ql-vscode
+          sudo apt-get install xvfb
+          /usr/bin/xvfb-run npm run integration
