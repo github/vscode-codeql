@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
-import * as jszip from 'jszip';
 import * as fs from 'fs-extra';
+import * as unzipper from 'unzipper';
+import * as vscode from 'vscode';
 import {logger} from './logging';
 
 export class File implements vscode.FileStat {
@@ -91,14 +91,13 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   private async _lookup(uri: vscode.Uri, silent: boolean): Promise<Entry> {
     if (!fs.existsSync(uri.path))
       throw vscode.FileSystemError.FileNotFound(uri);
-    const zipContent = await fs.readFile(uri.path);
-    const archive = await jszip.loadAsync(zipContent);
+    const archive = await unzipper.Open.file(uri.path);
     logger.log(`${JSON.stringify(uri)} ${uri.fragment}`);
     // Depending on the zip there could be a src_archive section to the path or not.
-    const file = archive.file(uri.fragment)||archive.file('src_archive/' + uri.fragment);
-    if (file === null)
+    const file = archive.files.find(f => f.path === uri.fragment || f.path === 'src_archive/' + uri.fragment);
+    if (file === undefined)
       throw vscode.FileSystemError.FileNotFound(uri);
-    return new File(uri.fragment, await file.async('nodebuffer'));
+    return new File(uri.fragment, await file.buffer());
   }
 
   private _lookupAsDirectory(uri: vscode.Uri, silent: boolean): Directory {

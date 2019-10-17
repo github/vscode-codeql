@@ -25,6 +25,7 @@ dependencies:
   '@types/sarif': 2.1.2
   '@types/through2': 2.0.34
   '@types/tmp': 0.1.0
+  '@types/unzipper': 0.10.0
   '@types/vinyl': 2.0.3
   '@types/vscode': 1.36.0
   '@types/webpack': 4.32.1
@@ -43,7 +44,6 @@ dependencies:
   gulp-typescript: 5.0.1
   js-yaml: 3.13.1
   jsonc-parser: 2.1.0
-  jszip: 3.2.2
   leb: 0.3.0
   mocha: 6.2.1
   npm-packlist: 1.4.4
@@ -61,6 +61,7 @@ dependencies:
   ts-protoc-gen: 0.9.0
   typescript: 3.5.3
   typescript-formatter: 7.2.2
+  unzipper: 0.10.5
   vinyl: 2.2.0
   vsce: 1.66.0
   vscode-jsonrpc: 4.0.0
@@ -326,6 +327,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-nuFlRdBiqbF+PJIEVxm2jLFcQWN7q7iWEJGsBV4n7v1dbI9qXB8im2pMMKMCUZe092sQb5SQft2DHfuQGK5hqQ==
+  /@types/node/12.11.2:
+    dev: false
+    resolution:
+      integrity: sha512-dsfE4BHJkLQW+reOS6b17xhZ/6FB1rB8eRRvO08nn5o+voxf3i74tuyFWNH6djdfgX7Sm5s6LD8t6mJug4dpDw==
   /@types/node/12.7.0:
     dev: false
     resolution:
@@ -503,6 +508,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-j4iepCSuY2JGW/hShVtUBagic0klYNFIXP7VweavnYnNC2EjiKxJFeaS9uaJmAT0ty9sQSqTS1aagWMZMV0HyA==
+  /@types/unzipper/0.10.0:
+    dependencies:
+      '@types/node': 12.11.2
+    dev: false
+    resolution:
+      integrity: sha512-GZL5vt0o9ZAST+7ge1Sirzc14EEJFbq6kib24nS0UglY6BHX8ERhA8cBq4XsYWcGK212FtMBZyJz6AwPvrhGLQ==
   /@types/vinyl-fs/2.4.11:
     dependencies:
       '@types/glob-stream': 6.1.0
@@ -1046,6 +1057,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-mLQ4i2QO1ytvGWFWmcngKO//JXAQueZvwEKtjgQFM4jIK0kU+ytMfplL8j+n5mspOfjHwoAg+9yhb7BwAHm36g==
+  /big-integer/1.6.47:
+    dev: false
+    engines:
+      node: '>=0.6'
+    resolution:
+      integrity: sha512-9t9f7X3as2XGX8b52GqG6ox0GvIdM86LyIXASJnDCFhYNgt+A+MByQZ3W2PyMRZjEvG5f8TEbSPfEotVuMJnQg==
   /big.js/5.2.2:
     dev: false
     resolution:
@@ -1056,6 +1073,17 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-Un7MIEDdUC5gNpcGDV97op1Ywk748MpHcFTHoYs6qnj1Z3j7I53VG3nwZhKzoBZmbdRNnb6WRdFlwl7tSDuZGw==
+  /binary/0.3.0:
+    dependencies:
+      buffers: 0.1.1
+      chainsaw: 0.1.0
+    dev: false
+    resolution:
+      integrity: sha1-n2BVO8XOjDOG87VTz/R0Yq3sqnk=
+  /bluebird/3.4.7:
+    dev: false
+    resolution:
+      integrity: sha1-9y12C+Cbf3bQjtj66Ysomo0F+rM=
   /bluebird/3.5.5:
     dev: false
     resolution:
@@ -1174,6 +1202,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-MQcXEUbCKtEo7bhqEs6560Hyd4XaovZlO/k9V3hjVUF/zwW7KBVdSK4gIt/bzwS9MbR5qob+F5jusZsb0YQK2A==
+  /buffer-indexof-polyfill/1.0.1:
+    dev: false
+    engines:
+      node: '>=0.10'
+    resolution:
+      integrity: sha1-qfuAbOgUXVQoUQznLyeLs2OmOL8=
   /buffer-xor/1.0.3:
     dev: false
     resolution:
@@ -1186,6 +1220,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-bRu2AbB6TvztlwlBMgkwJ8lbwpg=
+  /buffers/0.1.1:
+    dev: false
+    engines:
+      node: '>=0.2.0'
+    resolution:
+      integrity: sha1-skV5w77U1tOWru5tmorn9Ugqt7s=
   /builtin-status-codes/3.0.0:
     dev: false
     resolution:
@@ -1255,6 +1295,12 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha512-XQU3bhBukrOsQCuwZndwGcCVQHyZi53fQ6Ys1Fym7E4olpIqqZZhhoFJoaKVvV17lWQoXYwgWN2nF5crA8J2jw==
+  /chainsaw/0.1.0:
+    dependencies:
+      traverse: 0.3.9
+    dev: false
+    resolution:
+      integrity: sha1-XqtQsor+WAdNDVgpE4iCi15fvJg=
   /chalk/2.4.2:
     dependencies:
       ansi-styles: 3.2.1
@@ -1892,6 +1938,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-Lgd2XcJ/NjEw+7tFvfKxOzCYKZsdct5lczQ2ZaQY8Djz7pfAD3Gbp8ySJWtreII/vDlMVmxwa6pHmdxIYgttDg==
+  /duplexer2/0.1.4:
+    dependencies:
+      readable-stream: 2.3.6
+    dev: false
+    resolution:
+      integrity: sha1-ixLauHjA1p4+eJEFFmKjL8a93ME=
   /duplexify/3.7.1:
     dependencies:
       end-of-stream: 1.4.1
@@ -2419,6 +2471,17 @@ packages:
     requiresBuild: true
     resolution:
       integrity: sha512-oeyj2H3EjjonWcFjD5NvZNE9Rqe4UW+nQBU2HNeKw0koVLEFIhtyETyAakeAM3de7Z/SW5kcA+fZUait9EApnw==
+  /fstream/1.0.12:
+    dependencies:
+      graceful-fs: 4.2.2
+      inherits: 2.0.4
+      mkdirp: 0.5.1
+      rimraf: 2.7.1
+    dev: false
+    engines:
+      node: '>=0.6'
+    resolution:
+      integrity: sha512-WvJ193OHa0GHPEL+AycEJgxvBEwyfRkN1vhjca23OaPVMCaLCXTd5qAu82AjTcgP1UJmytkOKb63Ypde7raDIg==
   /function-bind/1.1.1:
     dev: false
     resolution:
@@ -3400,6 +3463,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-GnAl/knGn+i1U/wjBz3akz2stz+HrHLsxMwHQGofCDfPvlf+gDKN58UtfmUquTY4/MXeE2x7k19KQmeoZi94Iw==
+  /listenercount/1.0.1:
+    dev: false
+    resolution:
+      integrity: sha1-hMinKrWcRyUyFIDJdeZQg0LnCTc=
   /load-json-file/1.1.0:
     dependencies:
       graceful-fs: 4.2.1
@@ -5602,6 +5669,10 @@ packages:
       node: '>= 0.10'
     resolution:
       integrity: sha1-/JKtq6ByZHvAtn1rA2ZKoZUJOvY=
+  /traverse/0.3.9:
+    dev: false
+    resolution:
+      integrity: sha1-cXuPIgzAu3tE5AUUwisui7xw2Lk=
   /true-case-path/2.2.1:
     dev: false
     resolution:
@@ -5826,6 +5897,21 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-g3aHP30jNRef+x5vw6jtDfyKtVk=
+  /unzipper/0.10.5:
+    dependencies:
+      big-integer: 1.6.47
+      binary: 0.3.0
+      bluebird: 3.4.7
+      buffer-indexof-polyfill: 1.0.1
+      duplexer2: 0.1.4
+      fstream: 1.0.12
+      graceful-fs: 4.2.2
+      listenercount: 1.0.1
+      readable-stream: 2.3.6
+      setimmediate: 1.0.5
+    dev: false
+    resolution:
+      integrity: sha512-i5ufkXNjWZYxU/0nKKf6LkvW8kn9YzRvfwuPWjXP+JTFce/8bqeR0gEfbiN2IDdJa6ZU6/2IzFRLK0z1v0uptw==
   /upath/1.1.2:
     dev: false
     engines:
@@ -6348,7 +6434,7 @@ packages:
     dev: false
     name: '@rush-temp/build-tasks'
     resolution:
-      integrity: sha512-BUyDoHgX1TYQw+gqSHLp/jt669EpGoAxdYk7xJsUQ4LKBumy0+nMRtj/nUhluUP4o8PTAOh8JXhOEPYHmvWpNA==
+      integrity: sha512-V/a4+9mV/GcXh4ETZhmZ05eCAnSjTSt47JSLOuEuChTIc83dL5nhPf2C2ue9/6eYmFMWuK21KKxFZ5mBC3fDMQ==
       tarball: 'file:projects/build-tasks.tgz'
     version: 0.0.0
   'file:projects/ql-vscode.tgz':
@@ -6366,6 +6452,7 @@ packages:
       '@types/react-dom': 16.8.5
       '@types/sarif': 2.1.2
       '@types/tmp': 0.1.0
+      '@types/unzipper': 0.10.0
       '@types/vscode': 1.36.0
       '@types/webpack': 4.32.1
       '@types/xml2js': 0.4.4
@@ -6395,6 +6482,7 @@ packages:
       ts-protoc-gen: 0.9.0
       typescript: 3.5.3
       typescript-formatter: /typescript-formatter/7.2.2/typescript@3.5.3
+      unzipper: 0.10.5
       vinyl: 2.2.0
       vsce: 1.66.0
       vscode-jsonrpc: 4.0.0
@@ -6406,7 +6494,7 @@ packages:
     dev: false
     name: '@rush-temp/ql-vscode'
     resolution:
-      integrity: sha512-yAZ6UWI/0sqfgjy35qJneTaw1Olygt97TrbnaaZhdiXug6mwpYcu8Tpvi9mPkAUjTePa5QC1nFtS5jmaK4XplA==
+      integrity: sha512-24FXoqSw30O7xf86Rh6Gb/+scWdd7JN+XIw5vumM8M2/UQSE84voAXAWtA9oCY4QIAFesev6sMuCud0VCaSaHA==
       tarball: 'file:projects/ql-vscode.tgz'
     version: 0.0.0
   'file:projects/semmle-bqrs.tgz':
@@ -6418,7 +6506,7 @@ packages:
     dev: false
     name: '@rush-temp/semmle-bqrs'
     resolution:
-      integrity: sha512-sQXalSHsqeFO2hKsaWCj2rZYQmMc28YMnNmG1VTcvc/v8trkJQSqCZs1J7rgZpG+Uj05s5iBbgAa1C0uAXtgbw==
+      integrity: sha512-b0G2Obm6SCH3D2ejaa0dz1VbpHmLAcz1ZiaWCPTKGkU0b5hF1jCnZuG7DCFwqtadlsZLn3NNiY+vG9o5B+XnOQ==
       tarball: 'file:projects/semmle-bqrs.tgz'
     version: 0.0.0
   'file:projects/semmle-io-node.tgz':
@@ -6430,7 +6518,7 @@ packages:
     dev: false
     name: '@rush-temp/semmle-io-node'
     resolution:
-      integrity: sha512-MD9edC5HjrCfPmhktw6XmWotUmperj27/hDZiuMbuSlJ4jRKyiBtJ8Vk2Y4U41TrzsBlJfAwZW8tetPw5ujiLg==
+      integrity: sha512-Bj0ax/bASrHV7tamOuXZZdd3UOB4NBKdjdszIRaDvDRTu8RlEst+TVoUhkfy30qb2/6ePp3/juOJyyiBJN7u8Q==
       tarball: 'file:projects/semmle-io-node.tgz'
     version: 0.0.0
   'file:projects/semmle-io.tgz':
@@ -6441,7 +6529,7 @@ packages:
     dev: false
     name: '@rush-temp/semmle-io'
     resolution:
-      integrity: sha512-ta1lLi1COIeFwpwH523cWheWx6OE8GTqguQmOA7G6CwRF41RYbbREf/4KlOLKO/uG2akhhl+3gcWY2c5/VDC/A==
+      integrity: sha512-NtyviDSevxbd+hj4J66LucOzo8LU2hJ1Jh0eHw0Qu3tRZPUT8HcQlseyy29AvZR8n8eppfEZiAm/JdiHfmRPMA==
       tarball: 'file:projects/semmle-io.tgz'
     version: 0.0.0
   'file:projects/semmle-vscode-utils.tgz':
@@ -6453,14 +6541,14 @@ packages:
     dev: false
     name: '@rush-temp/semmle-vscode-utils'
     resolution:
-      integrity: sha512-SKf1HxRmSSv96215uyK39HLAmevS4GRcB3VeMjBq2ZWCh6dP4uVwpk1m4S24+hBThbY+3DGYW8by+p9uxOE7yg==
+      integrity: sha512-At9vOwYaPA+24KvLDtQVACbzWqELUM/cmtmhQcih9T2bssXAJi9Lig27esY04O9gs1hAIVOdiqKANsGYnfs2lA==
       tarball: 'file:projects/semmle-vscode-utils.tgz'
     version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
     name: '@rush-temp/typescript-config'
     resolution:
-      integrity: sha512-qJbtY2jvt6LKkmUt/seiYyXSEB6Oip/rW+SxofQEnpyplgIQv7whTZb6g5pwlSLGl8goTaQFm4NfazKhFmxXvQ==
+      integrity: sha512-XuUIySaNoooIduvehnlKYaHqZJmmQoCqB1RtKhNszjCYZaSSJAnKVucViWBf5oNLKSNP7NchrD7gcoBlQ3xYvw==
       tarball: 'file:projects/typescript-config.tgz'
     version: 0.0.0
 registry: 'https://registry.npmjs.org/'
@@ -6493,6 +6581,7 @@ specifiers:
   '@types/sarif': ~2.1.2
   '@types/through2': ~2.0.34
   '@types/tmp': ^0.1.0
+  '@types/unzipper': ~0.10.0
   '@types/vinyl': ~2.0.3
   '@types/vscode': ^1.33.0
   '@types/webpack': ^4.32.1
@@ -6511,7 +6600,6 @@ specifiers:
   gulp-typescript: ^5.0.1
   js-yaml: ^3.12.0
   jsonc-parser: ~2.1.0
-  jszip: ~3.2.2
   leb: ^0.3.0
   mocha: ~6.2.1
   npm-packlist: ~1.4.4
@@ -6529,6 +6617,7 @@ specifiers:
   ts-protoc-gen: ^0.9.0
   typescript: ^3.5.2
   typescript-formatter: ^7.2.2
+  unzipper: ~0.10.5
   vinyl: ^2.2.0
   vsce: ^1.65.0
   vscode-jsonrpc: ^4.0.0

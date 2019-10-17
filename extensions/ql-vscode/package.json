@@ -242,7 +242,6 @@
     "fs-extra": "^8.1.0",
     "glob-promise": "^3.4.0",
     "google-protobuf": "^3.7.1",
-    "jszip": "~3.2.2",
     "leb": "^0.3.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
@@ -251,6 +250,7 @@
     "semmle-io-node": "^0.0.1",
     "semmle-vscode-utils": "^0.0.1",
     "tmp": "^0.1.0",
+    "unzipper": "~0.10.5",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^5.2.1",
     "xml2js": "~0.4.19"
@@ -269,6 +269,7 @@
     "@types/react-dom": "^16.8.4",
     "@types/sarif": "~2.1.2",
     "@types/tmp": "^0.1.0",
+    "@types/unzipper": "~0.10.0",
     "@types/vscode": "^1.33.0",
     "@types/webpack": "^4.32.1",
     "@types/xml2js": "~0.4.4",
