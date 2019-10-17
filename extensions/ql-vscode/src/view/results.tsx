@@ -34,14 +34,14 @@ export type ResultValue = ResultElement | ResultUri | string;
 
 export type ResultRow = ResultValue[];
 
-export type RawTableResultSet = { t: 'RawResultSet' } & ResultSet;
+export type RawTableResultSet = { t: 'RawResultSet' } & RawResultSet;
 export type PathTableResultSet = { t: 'SarifResultSet', readonly schema: ResultSetSchema, name: string } & Interpretation;
 
-export type InterfaceResultSet =
+export type ResultSet =
   | RawTableResultSet
   | PathTableResultSet;
 
-export interface ResultSet {
+export interface RawResultSet {
   readonly schema: ResultSetSchema;
   readonly rows: readonly ResultRow[];
 }
@@ -78,10 +78,10 @@ function translatePrimitiveValue(value: PrimitiveColumnValue, type: PrimitiveTyp
   }
 }
 
-async function parseResultSets(response: Response): Promise<readonly InterfaceResultSet[]> {
+async function parseResultSets(response: Response): Promise<readonly ResultSet[]> {
   const chunks = getChunkIterator(response);
 
-  const resultSets: InterfaceResultSet[] = [];
+  const resultSets: ResultSet[] = [];
 
   await bqrs.parse(chunks, (resultSetSchema) => {
     const columnTypes = resultSetSchema.columns.map((column) => column.type);
@@ -129,7 +129,7 @@ interface ResultsInfo {
 }
 
 interface Results {
-  resultSets: readonly InterfaceResultSet[];
+  resultSets: readonly ResultSet[];
   database: DatabaseInfo;
 }
 
@@ -235,7 +235,7 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
 
   render() {
     if (this.state.results !== null) {
-      return <ResultTables resultSets={this.state.results.resultSets}
+      return <ResultTables rawResultSets={this.state.results.resultSets}
         interpretation={this.state.resultsInfo ? this.state.resultsInfo.interpretation : undefined}
         database={this.state.results.database} />;
     }

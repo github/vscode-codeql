@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as React from 'react';
 import * as Sarif from 'sarif';
 import { isResolvableLocation, LocationStyle, LocationValue } from 'semmle-bqrs';
-import { InterfaceResultSet, PathTableResultSet, RawTableResultSet, ResultValue, vscode } from './results';
+import { ResultSet, PathTableResultSet, RawTableResultSet, ResultValue, vscode } from './results';
 import './results.css';
 
 /**
@@ -54,7 +54,7 @@ function renderTupleValue(v: ResultValue, databaseUri: string): JSX.Element {
 
 export interface ResultTableProps {
   selected: boolean;
-  resultSet: InterfaceResultSet;
+  resultSet: ResultSet;
   databaseUri: string;
 }
 
