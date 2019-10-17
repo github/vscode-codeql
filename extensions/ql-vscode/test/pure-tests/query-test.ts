@@ -1,13 +1,14 @@
 import { expect } from 'chai';
-import * as fs from 'fs';
 import 'mocha';
 import * as path from 'path';
+import * as bqrs from 'semmle-bqrs';
+import { FileReader } from 'semmle-io-node';
 import * as tmp from 'tmp';
 import * as url from 'url';
-import { parse } from '../../src/bqrs';
-import * as qsClient from '../../src/queryserver-client';
+import { CancellationTokenSource } from 'vscode-jsonrpc';
 import * as messages from '../../src/messages';
-import { MessageConnection, RequestType, CancellationToken, CancellationTokenSource, createMessageConnection } from 'vscode-jsonrpc';
+import * as qsClient from '../../src/queryserver-client';
+
 
 declare module "url" {
   export function pathToFileURL(urlStr: string): Url;
@@ -130,13 +131,27 @@ describe('using the query server', () => {
 
   it('should be able to parse results', async () => {
     await evaluationSucceeded.done();
-    const result = await parse(fs.createReadStream(RESULTS_PATH));
-    expect(result.header.numberOfResultSets).to.equal(1);
-    const row = result.results[0].results[0];
+    let fileReader: FileReader | undefined;
+    let rows: bqrs.ColumnValue[][] = [];
+    try {
+      fileReader = await FileReader.open(RESULTS_PATH);
+      const resultSets = await bqrs.open(fileReader);
+      expect(resultSets.schema.resultSets.length).to.equal(1);
+      expect(resultSets.resultSets.length).to.equal(1);
+      for await(const row of resultSets.resultSets[0].readTuples()) {
+        rows.push(row);
+      }
+    } finally {
+      if(fileReader) {
+        fileReader.dispose();
+      }
+    }
+    expect(rows.length).to.equal(1);
+    const row = rows[0];
     expect(row.length).to.equal(4);
-    expect(row[0]).to.eql({ t: 'i', v: 42 });
-    expect(row[1]).to.eql({ t: 'f', v: 3.14159 });
-    expect(row[2]).to.eql({ t: 's', v: "hello world" });
-    expect(row[3]).to.eql({ t: 'b', v: true });
+    expect(row[0]).to.eql(42);
+    expect(row[1]).to.eql(3.14159);
+    expect(row[2]).to.eql("hello world");
+    expect(row[3]).to.eql(true);
   });
 });
