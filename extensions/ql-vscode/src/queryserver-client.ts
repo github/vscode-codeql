@@ -43,10 +43,6 @@ class ServerProcess implements Disposable {
  * to restart it (which disposes the existing process and starts a new one).
  */
 export class QueryServerClient extends DisposableObject {
-  log(s: string) {
-    (this.opts.logger.log)(s);
-  }
-
   readonly config: QLConfiguration;
   opts: ServerOpts;
   serverProcess?: ServerProcess;
@@ -68,18 +64,20 @@ export class QueryServerClient extends DisposableObject {
     }
   }
 
+  get logger() { return this.opts.logger; }
+
   /** Stops the query server by disposing of the current server process. */
   private stopQueryServer() {
     if (this.serverProcess !== undefined) {
       this.disposeAndStopTracking(this.serverProcess);
     } else {
-      this.log('No server process to be stopped.')
+      this.logger.log('No server process to be stopped.')
     }
   }
 
   /** Restarts the query server by disposing of the current server process and then starting a new one. */
   private async restartQueryServer() {
-    this.log('Restarting query server due to configuration changes...');
+    this.logger.log('Restarting query server due to configuration changes...');
     this.stopQueryServer();
     await this.startQueryServer();
   }
@@ -87,27 +85,27 @@ export class QueryServerClient extends DisposableObject {
   /** Starts a new query server process. */
   async startQueryServer() {
     const ramArgs = await cli.resolveRam(this.config, this.opts.logger);
-    this.log("Starting QL query server using JSON-RPC...");
+    this.logger.log("Starting QL query server using JSON-RPC...");
     const command = this.config.codeQlPath;
     const args = ['execute', 'query-server', '-v', '--log=-', '--threads', this.config.numThreads.toString()].concat(ramArgs);
     const argsString = args.join(" ");
-    this.log(`Launching query server using CodeQL CLI ${command} ${argsString}...`);
+    this.logger.log(`Launching query server using CodeQL CLI ${command} ${argsString}...`);
     const child = cp.spawn(command, args);
     if (!child || !child.pid) {
       throw new Error(`Launching query server using command ${command} ${argsString} failed.`);
     }
 
     child.stderr.on('data', data => {
-      this.log(`stderr: ${data}`);
+      this.logger.logWithoutTrailingNewline(data.toString());
     });
     child.on('close', (code) => {
-      this.log(`Child process exited with code ${code}`);
+      this.logger.log(`Child process exited with code ${code}`);
     });
 
     const connection = createMessageConnection(child.stdout, child.stdin);
     connection.onRequest(completeQuery, res => {
       if (!(res.runId in this.evaluationResultCallbacks)) {
-        this.log(`No callback associated with run id ${res.runId}, continuing without executing any callback`);
+        this.logger.log(`No callback associated with run id ${res.runId}, continuing without executing any callback`);
       }
       else {
         this.evaluationResultCallbacks[res.runId](res);
@@ -128,7 +126,7 @@ export class QueryServerClient extends DisposableObject {
     this.nextProgress = 0;
     this.progressCallbacks = {};
     this.evaluationResultCallbacks = {};
-    this.log(`Query server started on PID: ${this.serverProcessPid}`);
+    this.logger.log(`Query server started on PID: ${this.serverProcessPid}`);
   }
 
   registerCallback(callback: (res: EvaluationResult) => void): number {

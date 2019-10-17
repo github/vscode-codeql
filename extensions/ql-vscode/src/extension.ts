@@ -42,7 +42,7 @@ export async function activate(ctx: ExtensionContext) {
 
   const qhm = new QueryHistoryManager(ctx, item => showResultsForInfo(item.info));
   const intm = new InterfaceManager(ctx, dbm, msg => {
-    if (qs !== undefined) { qs.log(msg) }
+    if (qs !== undefined) { qs.logger.log(msg) }
   });
   ctx.subscriptions.push(intm);
   archiveFilesystemProvider.activate(ctx);

@@ -130,7 +130,7 @@ class QueryInfo {
         return qs.sendRequest(messages.compileQuery, params, token, progress);
       });
     } finally {
-      qs.log(" - - - COMPILATION DONE - - - ");
+      qs.logger.log(" - - - COMPILATION DONE - - - ");
     }
 
     const errors = (compiled.messages || []).filter(msg => msg.severity == 0);
@@ -142,10 +142,10 @@ class QueryInfo {
       // so we include a general description of the problem,
       // and direct the user to the output window for the detailed compilation messages.
       // TODO: distinguish better between user-written errors and DB scheme mismatches.
-      qs.log(`Failed to compile query ${this.program.queryPath} against database scheme ${this.program.dbschemePath}:`);
+      qs.logger.log(`Failed to compile query ${this.program.queryPath} against database scheme ${this.program.dbschemePath}:`);
       for (const error of errors) {
         const message = error.message || "[no error message available]";
-        qs.log(`ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`);
+        qs.logger.log(`ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`);
       }
       helpers.showAndLogErrorMessage("Query compilation failed. Please make sure there are no errors in the query, the database is up to date, and the query and database use the same target language. For more details on the error, go to View > Output, and choose QL Query Server from the dropdown.");
       return {
@@ -210,7 +210,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
 
   let checkUpgradeResult: messages.CheckUpgradeResult;
   try {
-    qs.log('Checking database upgrade...');
+    qs.logger.log('Checking database upgrade...');
     checkUpgradeResult = await checkDatabaseUpgrade(qs, params);
   }
   catch (e) {
@@ -218,7 +218,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
     return;
   }
   finally {
-    qs.log('Done checking database upgrade.')
+    qs.logger.log('Done checking database upgrade.')
   }
 
   const checkedUpgrades = checkUpgradeResult.checkedUpgrades;
@@ -286,7 +286,7 @@ export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: Databa
     return;
   }
   finally {
-    qs.log('Done compiling database upgrade.')
+    qs.logger.log('Done compiling database upgrade.')
   }
 
   if (compileUpgradeResult.compiledUpgrades === undefined) {
@@ -296,8 +296,8 @@ export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: Databa
   }
 
   try {
-    qs.log('Running the following database upgrade:');
-    qs.log(compileUpgradeResult.compiledUpgrades.scripts.map(s => s.description.description).join('\n'));
+    qs.logger.log('Running the following database upgrade:');
+    qs.logger.log(compileUpgradeResult.compiledUpgrades.scripts.map(s => s.description.description).join('\n'));
     return await runDatabaseUpgrade(qs, db, compileUpgradeResult.compiledUpgrades);
   }
   catch (e) {
@@ -305,7 +305,7 @@ export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: Databa
     return;
   }
   finally {
-    qs.log('Done running database upgrade.')
+    qs.logger.log('Done running database upgrade.')
   }
 }
 
