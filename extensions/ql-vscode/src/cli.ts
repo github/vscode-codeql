@@ -1,6 +1,8 @@
 import * as child_process from "child_process";
+import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as util from 'util';
+import * as Sarif from 'sarif';
 import { QLConfiguration } from "./config";
 import { Logger } from "./logging";
 
@@ -143,3 +145,30 @@ export async function spawnServer(
   return child;
 }
 
+/**
+ * Returns the SARIF format interpretation of query results.
+ * @param config The configuration containing the path to the CLI.
+ * @param metadata Query metadata according to which we should interpret results.
+ * @param resultsPath Path to the BQRS file to interpret.
+ * @param interpretedResultsPath Path to the SARIF file to output.
+ * @param logger Logger to write startup messages.
+ */
+export async function interpretBqrs(config: QLConfiguration, metadata: { kind: string, id: string }, resultsPath: string, interpretedResultsPath: string, logger: Logger): Promise<Sarif.Log> {
+  await runCodeQlCliCommand(config, ['bqrs', 'interpret'],
+    [
+      `-t=kind=${metadata.kind}`,
+      `-t=id=${metadata.id}`,
+      "--output", interpretedResultsPath,
+      "--format", "sarifv2.1.0",
+      "--sarif-run-property=foo=bar", // FIXME: remove after https://git.semmle.com/Semmle/code/pull/34785
+      "--no-group-results",
+      resultsPath,
+    ],
+    "Interpreting query results", logger);
+  const output = await fs.readFile(interpretedResultsPath, 'utf8');
+  try {
+    return JSON.parse(output) as Sarif.Log;
+  } catch (err) {
+    throw new Error(`Parsing output of interpretation failed: ${err.stderr || err}`)
+  }
+}

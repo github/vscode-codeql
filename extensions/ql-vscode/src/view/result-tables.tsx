@@ -17,7 +17,7 @@ export interface ResultTablesProps {
  * State for the `ResultTables` component.
  */
 interface ResultTablesState {
-  selectedTable: InterfaceResultSet;
+  selectedTable: string; // name of selected result set
 }
 
 const SELECT_TABLE_NAME = '#select';
@@ -29,31 +29,7 @@ const SELECT_TABLE_NAME = '#select';
 export class ResultTables
   extends React.Component<ResultTablesProps, ResultTablesState> {
 
-  constructor(props: ResultTablesProps) {
-    super(props);
-
-    // Display the `#select` table by default if one exists. Otherwise, display the first table in
-    // the result set.
-    this.state = {
-      selectedTable: ResultTables.getDefaultResultSet(props.resultSets)
-    };
-  }
-
-  private static getDefaultResultSet(resultSets: readonly InterfaceResultSet[]): InterfaceResultSet {
-    return resultSets.find(resultSet =>
-      resultSet.schema.name === SELECT_TABLE_NAME) || resultSets[0];
-  }
-
-  private onChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    this.setState({
-      selectedTable:
-        this.props.resultSets.find(resultSet => resultSet.schema.name === event.target.value)!
-    });
-  }
-
-  render(): React.ReactNode {
-    const { selectedTable } = this.state;
-
+  private getInterfaceResultSets(): InterfaceResultSet[] {
     const interfaceResultSets: InterfaceResultSet[] =
       this.props.resultSets.map(rs => ({ t: 'RawResultSet', ...rs }));
 
@@ -65,11 +41,36 @@ export class ResultTables
         ...this.props.interpretation,
       });
     }
+    return interfaceResultSets;
+  }
+
+  constructor(props: ResultTablesProps) {
+    super(props);
+
+    // Display the `#select` table by default if one exists. Otherwise, display the first table in
+    // the result set.
+    this.state = {
+      selectedTable: ResultTables.getDefaultResultSet(this.getInterfaceResultSets())
+    };
+  }
+
+  private static getDefaultResultSet(resultSets: readonly InterfaceResultSet[]): string {
+    return resultSets.some(resultSet =>
+      resultSet.schema.name === SELECT_TABLE_NAME) ? SELECT_TABLE_NAME : resultSets[0].schema.name;
+  }
+
+  private onChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+    this.setState({ selectedTable: event.target.value });
+  }
+
+  render(): React.ReactNode {
+    const selectedTable = this.state.selectedTable;
+    const interfaceResultSets = this.getInterfaceResultSets();
 
     return <div>
-      <select value={selectedTable.schema.name} onChange={this.onChange}>
+      <select value={selectedTable} onChange={this.onChange}>
         {
-          this.props.resultSets.map(resultSet =>
+          interfaceResultSets.map(resultSet =>
             <option key={resultSet.schema.name} value={resultSet.schema.name}>
               {resultSet.schema.name}
             </option>
@@ -77,12 +78,11 @@ export class ResultTables
         }
       </select>
       {
-        this.props.resultSets.map(resultSet =>
+        interfaceResultSets.map(resultSet =>
           <ResultTable key={resultSet.schema.name} resultSet={resultSet}
-            databaseUri={this.props.database.databaseUri} selected={resultSet === selectedTable} />
+            databaseUri={this.props.database.databaseUri} selected={resultSet.schema.name === selectedTable} />
         )
       }
     </div >;
-
   }
 }

@@ -171,78 +171,17 @@ class QueryInfo {
   }
 
   /**
-   * Interpret exit code of InterpretQueryResultsOnExportedSnapshot
+   * Call cli command to interpret results.
    */
-  interpretExitCode(logger: Logger, exitCode: number): boolean {
-    switch (exitCode) {
-      case 0: return true;
-      case 2: // Missing kind
-        logger.log("Query cannot be interpreted for SARIF export. Please add a suitable @kind property to the query metadata.");
-        return false;
-      case 3: // Missing id
-        logger.log("Query cannot be interpreted for SARIF export. Please add a suitable @id property to the query metadata.");
-        return false;
-      case 4: // Invalid result patterns
-        logger.log("Query cannot be interpreted for SARIF export. Please ensure the appropriate columns are selected for the given query kind.");
-        return false;
-      case 5: // Incompatible kind, should not occur in this case
-        logger.log("Query cannot be interpreted for SARIF export due to an unexpected error.");
-        return false;
-      case 6: // Missing @metricType on a metric query
-        logger.log("Query cannot be interpreted for SARIF export. Please add a suitable @metricType property to the query metadata.");
-        return false;
-      case 7: // Unsupported @kind
-        logger.log("Query cannot be interpreted for SARIF export because the specified @kind value is not supported");
-        return false;
+  async interpretResults(config: QLConfiguration, metadata: cli.QueryMetadata | undefined, logger: Logger): Promise<Sarif.Log> {
+    if (metadata == undefined) {
+      throw new Error('Can\'t interpret results without query metadata');
     }
-    logger.log("Failed to export results of query.");
-    return false;
-  }
-
-  /**
-   * Call shell command to interpret results, and return when it finishes.
-   */
-  async interpretResults(config: QLConfiguration, logger: Logger): Promise<Sarif.Log> {
-    const command = config.codeQlPath;
-    const args = [
-      "bqrs", "interpret",
-      //      "--query", this.program.queryPath,
-      "-t=kind=problem", "-t=id=made-up-id",
-      "--exported-snapshot", this.dbItem.snapshotUri.fsPath,
-      "--output", this.interpretedResultsPath,
-      "--format", "sarifv2.1.0",
-      "--no-group-results",
-      this.resultsPath,
-    ];
-    logger.log(`Interpreting results via shell command ${command} ${args.join(" ")}`);
-    const child = cp.spawn(command, args);
-    if (!child || !child.pid) {
-      throw new Error(`Spawning shell command to interpreting results failed.`);
+    const { kind, id } = metadata;
+    if (kind == undefined || id == undefined) {
+      throw new Error('Can\'t interpret results without query metadata including kind and id');
     }
-    let error = false;
-    child.stdout.on('data', data => {
-      logger.log(`stdout: ${data}`);
-    });
-    child.stderr.on('data', data => {
-      // TODO: Is it actually the case that we should consider any
-      // write stderr as signalling an error condition? Revisit for
-      // the new CLI.
-      logger.log(`stderr: ${data}`);
-      error = true;
-    });
-    await new Promise((res, rej) => {
-      child.on('close', (code) => {
-        logger.log(`Child process for results interpretation exited with code ${code}`);
-        if (code != 0) {
-          error = error || !this.interpretExitCode(logger, code);
-        }
-        if (error) rej(new Error(`Error code ${code} from results interpretation.`)); else res();
-      });
-    });
-    if (!fs.existsSync(this.interpretedResultsPath)) {
-      throw new Error(`File ${this.interpretedResultsPath} not created by results interpretation.`);
-    }
-    return JSON.parse(await fs.readFile(this.interpretedResultsPath, 'utf8'));
+    return await cli.interpretBqrs(config, { kind, id }, this.resultsPath, this.interpretedResultsPath, logger);
   }
 }
 
@@ -529,8 +468,9 @@ export async function compileAndRunQueryAgainstDatabase(
   let metadata: cli.QueryMetadata | undefined;
   try {
     metadata = await cli.resolveMetadata(qs.config, qlProgram.queryPath, logger);
-  } catch (_) {
+  } catch (e) {
     // Ignore errors and provide no metadata.
+    logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
   }
   const query = new QueryInfo(qlProgram, db, quickEvalPosition, metadata);
   const result = await query.compileAndRun(qs);

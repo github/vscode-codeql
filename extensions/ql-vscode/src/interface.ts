@@ -91,7 +91,7 @@ export class InterfaceManager extends DisposableObject {
     let interpretation: Interpretation | undefined = undefined;
     if (info.query.hasInterpretedResults()) {
       try {
-        const sarif = await info.query.interpretResults(info.config, this.logger);
+        const sarif = await info.query.interpretResults(info.config, info.query.metadata, this.logger);
         const sourceLocationPrefix = await info.query.dbItem.getSourceLocationPrefix();
         interpretation = { sarif, sourceLocationPrefix };
       }
