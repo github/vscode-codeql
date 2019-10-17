@@ -52,22 +52,32 @@ describe('using the query server', () => {
   if (codeQlPath == undefined) {
     throw new Error('Need environment variable CODEQL_DIST to find CodeQL CLI.');
   }
-  const qs = new qsClient.QueryServerClient(
-    {
-      codeQlPath,
-      numThreads: 1,
-      queryMemoryMb: 1024,
-      timeoutSecs: 1000
-    },
-    {
-      logger: {
-        log: s => console.log('logger says', s),
-        logWithoutTrailingNewline: s => {}
-      }
-    }
-  );
 
-  it('should be able to compile a query', async function() {
+  let qs: qsClient.QueryServerClient;
+  after(() => {
+    if (qs) {
+      qs.dispose();
+    }
+  });
+  it('should be able to start the query server', async () => {
+    qs = new qsClient.QueryServerClient(
+      {
+        codeQlPath,
+        numThreads: 1,
+        queryMemoryMb: 1024,
+        timeoutSecs: 1000
+      },
+      {
+        logger: {
+          log: s => console.log('logger says', s),
+          logWithoutTrailingNewline: s => { }
+        }
+      }
+    );
+    await qs.startQueryServer();
+  });
+
+  it('should be able to compile a query', async function () {
     this.timeout(5000);
     try {
       const qlProgram: messages.QlProgram = {
@@ -138,11 +148,11 @@ describe('using the query server', () => {
       const resultSets = await bqrs.open(fileReader);
       expect(resultSets.schema.resultSets.length).to.equal(1);
       expect(resultSets.resultSets.length).to.equal(1);
-      for await(const row of resultSets.resultSets[0].readTuples()) {
+      for await (const row of resultSets.resultSets[0].readTuples()) {
         rows.push(row);
       }
     } finally {
-      if(fileReader) {
+      if (fileReader) {
         fileReader.dispose();
       }
     }
