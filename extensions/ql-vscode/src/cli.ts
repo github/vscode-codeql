@@ -1,6 +1,6 @@
-import * as child_process from "child_process"
-import * as util from 'util'
-import * as path from 'path'
+import * as child_process from "child_process";
+import * as path from 'path';
+import * as util from 'util';
 import { QLConfiguration } from "./config";
 import { Logger } from "./logging";
 
@@ -75,4 +75,50 @@ async function runCodeQlCliCommand<OutputType>(config: QLConfiguration, command:
     } catch (err) {
         throw new Error(`${description} failed: ${err.stderr || err}`)
     }
+}
+
+/**
+ * Spawns a child server process using the CodeQL CLI
+ * and attaches listeners to it.
+ *
+ * @param config The configuration containing the path to the CLI.
+ * @param name Name of the server being started, to be shown in log and error messages.
+ * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
+ * @param commandArgs The arguments to pass to the `codeql` command.
+ * @param logger Logger to write startup messages.
+ * @param stderrListener Listener for log messages from the server's stderr stream.
+ * @param stdoutListener Optional listener for messages from the server's stdout stream.
+ * @returns The started child process.
+ */
+export async function spawnServer(
+    config: QLConfiguration,
+    name: string,
+    command: string[],
+    commandArgs: string[],
+    logger: Logger,
+    stderrListener: (data: any) => void,
+    stdoutListener?: (data: any) => void,
+
+): Promise<child_process.ChildProcessWithoutNullStreams> {
+    // Enable verbose logging.
+    const args = command.concat(commandArgs).concat('-v', '--log=-');
+
+    // Start the server process.
+    const base = config.codeQlPath;
+    const argsString = args.join(" ");
+    logger.log(`Starting ${name} using CodeQL CLI: ${base} ${argsString}`);
+    const child = child_process.spawn(base, args);
+    if (!child || !child.pid) {
+        throw new Error(`Failed to start ${name} using command ${base} ${argsString}.`);
+    }
+
+    // Set up event listeners.
+    child.on('close', (code) => logger.log(`Child process exited with code ${code}`));
+    child.stderr!.on('data', stderrListener);
+    if (stdoutListener !== undefined) {
+        child.stdout!.on('data', stdoutListener);
+    }
+
+    logger.log(`${name} started on PID: ${child.pid}`);
+    return child;
 }

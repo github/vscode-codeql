@@ -1,11 +1,11 @@
-import { MessageConnection, RequestType, CancellationToken, createMessageConnection } from 'vscode-jsonrpc';
-import { EvaluationResult, completeQuery, WithProgressId, ProgressMessage, progress } from './messages';
 import * as cp from 'child_process';
-import { Logger } from './logging';
 import { DisposableObject } from 'semmle-vscode-utils';
 import { Disposable } from 'vscode';
-import { QLConfiguration } from './config';
+import { CancellationToken, createMessageConnection, MessageConnection, RequestType } from 'vscode-jsonrpc';
 import * as cli from './cli';
+import { QLConfiguration } from './config';
+import { Logger } from './logging';
+import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './messages';
 
 type ServerOpts = {
   logger: Logger
@@ -59,7 +59,7 @@ export class QueryServerClient extends DisposableObject {
     // The unit tests pass in a console logger that doesn't require the VSCode API.
     this.opts = opts;
     // When the query server configuration changes, restart the query server.
-    if(config.onDidChangeQueryServerConfiguration !== undefined) {
+    if (config.onDidChangeQueryServerConfiguration !== undefined) {
       this.push(config.onDidChangeQueryServerConfiguration(async () => await this.restartQueryServer(), this));
     }
   }
@@ -85,22 +85,15 @@ export class QueryServerClient extends DisposableObject {
   /** Starts a new query server process. */
   async startQueryServer() {
     const ramArgs = await cli.resolveRam(this.config, this.opts.logger);
-    this.logger.log("Starting QL query server using JSON-RPC...");
-    const command = this.config.codeQlPath;
-    const args = ['execute', 'query-server', '-v', '--log=-', '--threads', this.config.numThreads.toString()].concat(ramArgs);
-    const argsString = args.join(" ");
-    this.logger.log(`Launching query server using CodeQL CLI ${command} ${argsString}...`);
-    const child = cp.spawn(command, args);
-    if (!child || !child.pid) {
-      throw new Error(`Launching query server using command ${command} ${argsString} failed.`);
-    }
-
-    child.stderr.on('data', data => {
-      this.logger.logWithoutTrailingNewline(data.toString());
-    });
-    child.on('close', (code) => {
-      this.logger.log(`Child process exited with code ${code}`);
-    });
+    const child = await cli.spawnServer(
+      this.config,
+      'QL query server',
+      ['execute', 'query-server'],
+      ['--threads', this.config.numThreads.toString()].concat(ramArgs),
+      this.logger,
+      data => this.logger.logWithoutTrailingNewline(data.toString())
+      // no listener for stdout
+    );
 
     const connection = createMessageConnection(child.stdout, child.stdin);
     connection.onRequest(completeQuery, res => {
@@ -126,7 +119,6 @@ export class QueryServerClient extends DisposableObject {
     this.nextProgress = 0;
     this.progressCallbacks = {};
     this.evaluationResultCallbacks = {};
-    this.logger.log(`Query server started on PID: ${this.serverProcessPid}`);
   }
 
   registerCallback(callback: (res: EvaluationResult) => void): number {
