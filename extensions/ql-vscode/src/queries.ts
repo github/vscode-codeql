@@ -1,12 +1,10 @@
-import * as cp from 'child_process';
-import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
 import * as sarif from 'sarif';
 import { ProgressLocation, window as Window, workspace } from 'vscode';
 import * as cli from './cli';
-import { QLConfiguration } from './config';
+import { QueryServerConfig } from './config';
 import { DatabaseItem } from './databases';
 import * as helpers from './helpers';
 import { DatabaseInfo } from './interface-types';
@@ -174,7 +172,7 @@ class QueryInfo {
 /**
  * Call cli command to interpret results.
  */
-export async function interpretResults(config: QLConfiguration, queryInfo: QueryInfo, logger: Logger): Promise<sarif.Log> {
+export async function interpretResults(config: QueryServerConfig, queryInfo: QueryInfo, logger: Logger): Promise<sarif.Log> {
   const { metadata } = queryInfo;
   if (metadata == undefined) {
     throw new Error('Can\'t interpret results without query metadata');
@@ -409,7 +407,7 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
 }
 
 export async function compileAndRunQueryAgainstDatabase(
-  config: QLConfiguration,
+  config: QueryServerConfig,
   qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   quickEval?: boolean

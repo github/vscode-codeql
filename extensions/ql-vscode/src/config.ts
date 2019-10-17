@@ -29,6 +29,9 @@ class Setting {
 }
 
 const ROOT_SETTING =  new Setting('ql');
+
+// Query server configuration
+
 const RUNNING_QUERIES_SETTING = new Setting('runningQueries', ROOT_SETTING);
 const DISTRIBUTION_PATH_SETTING = new Setting('distributionPath', ROOT_SETTING);
 const NUMBER_OF_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_QUERIES_SETTING);
@@ -38,7 +41,7 @@ const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
 /** When these settings change, the running query server should be restarted. */
 const QUERY_SERVER_RESTARTING_SETTINGS = [DISTRIBUTION_PATH_SETTING, NUMBER_OF_THREADS_SETTING, MEMORY_SETTING];
 
-export interface QLConfiguration {
+export interface QueryServerConfig {
   codeQlPath: string,
   numThreads: number,
   queryMemoryMb: number,
@@ -46,7 +49,22 @@ export interface QLConfiguration {
   onDidChangeQueryServerConfiguration?: Event<void>;
 }
 
-export class QLConfigurationListener extends DisposableObject implements QLConfiguration {
+// Distribution configuration
+
+const DISTRIBUTION_SETTING = new Setting('distribution', ROOT_SETTING);
+const INCLUDE_PRERELEASE_SETTING = new Setting('includePrerelease', DISTRIBUTION_SETTING);
+const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIBUTION_SETTING);
+const OWNER_NAME_SETTING = new Setting('owner', DISTRIBUTION_SETTING);
+const REPOSITORY_NAME_SETTING = new Setting('repository', DISTRIBUTION_SETTING);
+
+export interface DistributionConfig {
+  includePrerelease: boolean;
+  personalAccessToken?: string;
+  ownerName: string;
+  repositoryName: string;
+}
+
+export class QLConfigurationListener extends DisposableObject implements DistributionConfig, QueryServerConfig {
   private readonly _onDidChangeQueryServerConfiguration = this.push(new EventEmitter<void>());
   private _codeQlPath: string | undefined;
   private _numThreads: number;
@@ -77,6 +95,22 @@ export class QLConfigurationListener extends DisposableObject implements QLConfi
 
   public get queryMemoryMb(): number {
     return this._queryMemoryMb;
+  }
+
+  public get includePrerelease(): boolean {
+    return INCLUDE_PRERELEASE_SETTING.getValue();
+  }
+
+  public get personalAccessToken(): string | undefined {
+    return PERSONAL_ACCESS_TOKEN_SETTING.getValue() !== null ? PERSONAL_ACCESS_TOKEN_SETTING.getValue() : undefined;
+  }
+
+  public get ownerName(): string {
+    return OWNER_NAME_SETTING.getValue();
+  }
+
+  public get repositoryName(): string {
+    return REPOSITORY_NAME_SETTING.getValue();
   }
 
   private handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {

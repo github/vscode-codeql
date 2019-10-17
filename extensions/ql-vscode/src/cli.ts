@@ -3,7 +3,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as util from 'util';
 import * as sarif from 'sarif';
-import { QLConfiguration } from "./config";
+import { QueryServerConfig } from "./config";
 import { Logger } from "./logging";
 
 /**
@@ -40,7 +40,7 @@ export interface DbInfo {
  * @param workspaces The current open workspaces
  * @param queryPath The path to the query
  */
-export async function resolveLibraryPath(config: QLConfiguration, workspaces: string[], queryPath: string, logger: Logger): Promise<QuerySetup> {
+export async function resolveLibraryPath(config: QueryServerConfig, workspaces: string[], queryPath: string, logger: Logger): Promise<QuerySetup> {
   const subcommandArgs = [
     '--query', queryPath,
     "--additional-packs",
@@ -62,7 +62,7 @@ export interface QueryMetadata {
  * @param config The configuration containing the path to the CLI.
  * @param queryPath The path to the query.
  */
-export async function resolveMetadata(config: QLConfiguration, queryPath: string, logger: Logger): Promise<QueryMetadata> {
+export async function resolveMetadata(config: QueryServerConfig, queryPath: string, logger: Logger): Promise<QueryMetadata> {
   return await runJsonCodeQlCliCommand<QueryMetadata>(config, ['resolve', 'metadata'], [queryPath], "Resolving query metadata", logger);
 }
 
@@ -70,7 +70,7 @@ export async function resolveMetadata(config: QLConfiguration, queryPath: string
  * Gets the RAM setting for the query server.
  * @param config The configuration containing the path to the CLI.
  */
-export async function resolveRam(config: QLConfiguration, logger: Logger): Promise<string[]> {
+export async function resolveRam(config: QueryServerConfig, logger: Logger): Promise<string[]> {
   return await runJsonCodeQlCliCommand<string[]>(config, ['resolve', 'ram'], [], "Resolving RAM settings", logger);
 }
 
@@ -82,7 +82,7 @@ export async function resolveRam(config: QLConfiguration, logger: Logger): Promi
  * @param description Description of the action being run, to be shown in log and error messages.
  * @returns The contents of the command's stdout, if the command succeeded.
  */
-async function runCodeQlCliCommand(config: QLConfiguration, command: string[], commandArgs: string[], description: string, logger: Logger): Promise<string> {
+async function runCodeQlCliCommand(config: QueryServerConfig, command: string[], commandArgs: string[], description: string, logger: Logger): Promise<string> {
   const base = config.codeQlPath;
   // Add logging arguments first, in case commandArgs contains positional parameters.
   const args = command.concat('-v', '--log=-').concat(commandArgs);
@@ -106,7 +106,7 @@ async function runCodeQlCliCommand(config: QLConfiguration, command: string[], c
  * @param description Description of the action being run, to be shown in log and error messages.
  * @returns The contents of the command's stdout, if the command succeeded.
  */
-async function runJsonCodeQlCliCommand<OutputType>(config: QLConfiguration, command: string[], commandArgs: string[], description: string, logger: Logger): Promise<OutputType> {
+async function runJsonCodeQlCliCommand<OutputType>(config: QueryServerConfig, command: string[], commandArgs: string[], description: string, logger: Logger): Promise<OutputType> {
   // Add format argument first, in case commandArgs contains positional parameters.
   const args = ['--format', 'json'].concat(commandArgs);
   const result = await runCodeQlCliCommand(config, command, args, description, logger);
@@ -131,7 +131,7 @@ async function runJsonCodeQlCliCommand<OutputType>(config: QLConfiguration, comm
  * @returns The started child process.
  */
 export async function spawnServer(
-  config: QLConfiguration,
+  config: QueryServerConfig,
   name: string,
   command: string[],
   commandArgs: string[],
@@ -171,7 +171,7 @@ export async function spawnServer(
  * @param interpretedResultsPath Path to the SARIF file to output.
  * @param logger Logger to write startup messages.
  */
-export async function interpretBqrs(config: QLConfiguration, metadata: { kind: string, id: string }, resultsPath: string, interpretedResultsPath: string, logger: Logger): Promise<sarif.Log> {
+export async function interpretBqrs(config: QueryServerConfig, metadata: { kind: string, id: string }, resultsPath: string, interpretedResultsPath: string, logger: Logger): Promise<sarif.Log> {
   await runCodeQlCliCommand(config, ['bqrs', 'interpret'],
     [
       `-t=kind=${metadata.kind}`,
@@ -208,7 +208,7 @@ export async function interpretBqrs(config: QLConfiguration, metadata: { kind: s
  * @param databasePath Path to the CodeQL database to obtain information from.
  * @param logger Logger to write startup messages.
  */
-export function resolveDatabase(config: QLConfiguration, databasePath: string, logger: Logger): Promise<DbInfo> {
+export function resolveDatabase(config: QueryServerConfig, databasePath: string, logger: Logger): Promise<DbInfo> {
   return runJsonCodeQlCliCommand(config, ['resolve', 'database'], [databasePath],
     "Resolving database", logger);
 }

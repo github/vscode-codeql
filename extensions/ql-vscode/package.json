@@ -76,6 +76,30 @@
       "type": "object",
       "title": "QL",
       "properties": {
+        "ql.distribution.includePrerelease": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether prereleases should be included when installing the distribution."
+        },
+        "ql.distribution.personalAccessToken": {
+          "scope": "window",
+          "type": "string",
+          "default": null,
+          "description": "Whether prereleases should be included when installing the distribution."
+        },
+        "ql.distribution.owner": {
+          "scope": "window",
+          "type": "string",
+          "default": null,
+          "description": "The owner of the GitHub repository containing CodeQL binaries."
+        },
+        "ql.distribution.repository": {
+          "scope": "window",
+          "type": "string",
+          "default": null,
+          "description": "The name of the GitHub repository containing CodeQL binaries."
+        },
         "ql.distributionPath": {
           "scope": "window",
           "type": "string",

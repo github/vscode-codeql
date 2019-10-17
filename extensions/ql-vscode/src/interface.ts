@@ -10,7 +10,7 @@ import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg } from './interf
 import * as messages from './messages';
 import { EvaluationInfo, tmpDir, interpretResults } from './queries';
 import { Logger } from './logging';
-import { QLConfiguration } from './config';
+import { QueryServerConfig } from './config';
 
 /**
  * interface.ts
@@ -26,7 +26,7 @@ export class InterfaceManager extends DisposableObject {
   readonly diagnosticCollection = languages.createDiagnosticCollection(`ql-query-results`);
 
   constructor(public ctx: vscode.ExtensionContext, private databaseManager: DatabaseManager,
-    public config: QLConfiguration, public logger: Logger) {
+    public config: QueryServerConfig, public logger: Logger) {
 
     super();
   }
