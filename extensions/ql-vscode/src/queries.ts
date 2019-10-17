@@ -203,15 +203,16 @@ class QueryInfo {
    * Call shell command to interpret results, and return when it finishes.
    */
   async interpretResults(config: QLConfiguration, logger: Logger): Promise<Sarif.Log> {
-    const command = config.javaCommand!;
+    const command = config.codeQlPath;
     const args = [
-      "-cp", path.resolve(config.qlDistributionPath, 'tools/odasa.jar'),
-      "com.semmle.odasa.internal.InterpretQueryResultsOnExportedSnapshot",
-      "--query", this.program.queryPath,
-      "--results", this.resultsPath,
+      "bqrs", "interpret",
+      //      "--query", this.program.queryPath,
+      "-t=kind=problem", "-t=id=made-up-id",
       "--exported-snapshot", this.dbItem.snapshotUri.fsPath,
-      "--output-file", this.interpretedResultsPath,
+      "--output", this.interpretedResultsPath,
       "--format", "sarifv2.1.0",
+      "--no-group-results",
+      this.resultsPath,
     ];
     logger.log(`Interpreting results via shell command ${command} ${args.join(" ")}`);
     const child = cp.spawn(command, args);

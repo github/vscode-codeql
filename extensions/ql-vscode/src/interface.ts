@@ -9,6 +9,7 @@ import { DatabaseItem, DatabaseManager } from './databases';
 import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg } from './interface-types';
 import * as messages from './messages';
 import { EvaluationInfo, tmpDir } from './queries';
+import { Logger } from './logging';
 
 /**
  * interface.ts
@@ -24,7 +25,7 @@ export class InterfaceManager extends DisposableObject {
   readonly diagnosticCollection = languages.createDiagnosticCollection(`ql-query-results`);
 
   constructor(public ctx: vscode.ExtensionContext, private databaseManager: DatabaseManager,
-    public log: (x: string) => void) {
+    public logger: Logger) {
 
     super();
   }
@@ -90,14 +91,14 @@ export class InterfaceManager extends DisposableObject {
     let interpretation: Interpretation | undefined = undefined;
     if (info.query.hasInterpretedResults()) {
       try {
-        const sarif = await info.query.interpretResults(info.config, this);
+        const sarif = await info.query.interpretResults(info.config, this.logger);
         const sourceLocationPrefix = await info.query.dbItem.getSourceLocationPrefix();
         interpretation = { sarif, sourceLocationPrefix };
       }
       catch (e) {
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
-        this.log(`Exception during results interpretation: ${e.message} ${e.stack}`);
+        this.logger.log(`Exception during results interpretation: ${e.message} ${e.stack}`);
       }
     }
 
