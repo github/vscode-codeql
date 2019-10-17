@@ -3,10 +3,13 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import * as unzipper from "unzipper";
+import * as url from "url";
 
-export async function downloadDistribution(ownerName: string, repoName: string, outPath: string): Promise<void> {
-  const releasesApi = new ReleasesApiConsumer(ownerName, repoName);
-  const assets = await releasesApi.getAssetsForLatestRelease();
+export async function downloadDistribution(
+  ownerName: string, repoName: string, outPath: string, options: { additionalHeaders?: { [key: string]: string }, includePrerelease?: boolean } = {}):Promise<void> {
+
+  const releasesApi = new ReleasesApiConsumer(ownerName, repoName, options.additionalHeaders);
+  const assets = await releasesApi.getAssetsForLatestRelease(options);
   if (assets.length !== 1) {
     throw new Error("Release had an unexpected number of assets")
   }
@@ -85,12 +88,34 @@ export class ReleasesApiConsumer {
   }
 
   protected async makeApiCall(apiPath: string, additionalHeaders: { [key: string]: string } = {}): Promise<fetch.Response> {
-    const response = await fetch.default(ReleasesApiConsumer._apiBase + apiPath, {
-      headers: Object.assign({}, this._defaultHeaders, additionalHeaders)
-    });
-    if (response.status != 200) {
-      throw new Error(`Bad status code: ${response.status}`);
+    const response = await this.makeRawRequest(ReleasesApiConsumer._apiBase + apiPath,
+      Object.assign({}, this._defaultHeaders, additionalHeaders));
+
+    if (!response.ok) {
+      throw new Error(`API call failed with status code ${response.status}, body: ${await response.text()}`);
     }
+    return response;
+  }
+
+  private async makeRawRequest(requestUrl: string, headers: { [key: string]: string }, redirectCount: number = 0): Promise<fetch.Response> {
+    const response = await fetch.default(requestUrl, {
+      headers,
+      redirect: "manual"
+    });
+
+    const redirectUrl = response.headers.get("location");
+    if (isRedirectStatusCode(response.status) && redirectUrl && redirectCount < ReleasesApiConsumer._maxRedirects) {
+      if (url.parse(redirectUrl).host != "api.github.com") {
+        // Remove authorization header if we are redirected outside of the GitHub API.
+        //
+        // This is necessary to stream release assets since AWS fails if more than one auth
+        // mechanism is provided.
+        delete headers["Authorization"];
+        delete headers["authorization"];
+      }
+      return await this.makeRawRequest(redirectUrl, headers, redirectCount + 1)
+    }
+
     return response;
   }
 
@@ -99,12 +124,18 @@ export class ReleasesApiConsumer {
   private readonly _repoName: string;
 
   private static readonly _apiBase = "https://api.github.com";
+  private static readonly _maxRedirects = 20;
 }
 
 export async function extractZipArchive(archivePath: string, outPath: string): Promise<void> {
   const archive = await unzipper.Open.file(archivePath);
-  await archive.extract({
+  // Type definitions for unzipper are wrong.
+  await (archive.extract({
     concurrency: 4,
     path: outPath
-  }).promise();
+  }) as unknown as Promise<void>);
+}
+
+function isRedirectStatusCode(statusCode: number): boolean {
+  return statusCode === 301 || statusCode === 302 || statusCode === 303 || statusCode === 307 || statusCode === 308;
 }
