@@ -1,11 +1,11 @@
-import { MessageConnection, RequestType, CancellationToken, createMessageConnection } from 'vscode-jsonrpc';
-import { EvaluationResult, completeQuery, WithProgressId, ProgressMessage, progress } from './messages';
-import * as path from 'path';
 import * as cp from 'child_process';
-import { Logger } from './logging';
 import { DisposableObject } from 'semmle-vscode-utils';
 import { Disposable } from 'vscode';
+import { CancellationToken, createMessageConnection, MessageConnection, RequestType } from 'vscode-jsonrpc';
+import * as cli from './cli';
 import { QLConfiguration } from './config';
+import { Logger } from './logging';
+import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './messages';
 
 type ServerOpts = {
   logger: Logger
@@ -43,10 +43,6 @@ class ServerProcess implements Disposable {
  * to restart it (which disposes the existing process and starts a new one).
  */
 export class QueryServerClient extends DisposableObject {
-  log(s: string) {
-    (this.opts.logger.log)(s);
-  }
-
   readonly config: QLConfiguration;
   opts: ServerOpts;
   serverProcess?: ServerProcess;
@@ -63,60 +59,46 @@ export class QueryServerClient extends DisposableObject {
     // The unit tests pass in a console logger that doesn't require the VSCode API.
     this.opts = opts;
     // When the query server configuration changes, restart the query server.
-    if(config.onDidChangeQueryServerConfiguration !== undefined) {
-      this.push(config.onDidChangeQueryServerConfiguration(this.restartQueryServer, this));
+    if (config.onDidChangeQueryServerConfiguration !== undefined) {
+      this.push(config.onDidChangeQueryServerConfiguration(async () => await this.restartQueryServer(), this));
     }
-    this.startQueryServer();
   }
+
+  get logger() { return this.opts.logger; }
 
   /** Stops the query server by disposing of the current server process. */
   private stopQueryServer() {
     if (this.serverProcess !== undefined) {
       this.disposeAndStopTracking(this.serverProcess);
     } else {
-      this.log('No server process to be stopped.')
+      this.logger.log('No server process to be stopped.')
     }
   }
 
   /** Restarts the query server by disposing of the current server process and then starting a new one. */
-  private restartQueryServer() {
-    this.log('Restarting query server due to configuration changes...');
+  private async restartQueryServer() {
+    this.logger.log('Restarting query server due to configuration changes...');
     this.stopQueryServer();
-    this.startQueryServer();
+    await this.startQueryServer();
   }
 
   /** Starts a new query server process. */
-  private startQueryServer() {
-    this.log("Starting QL query server using JSON-RPC...");
-    const command = this.config.javaCommand;
-    if (command === undefined) {
-      throw new Error('Semmle distribution path not set.');
-    }
-    const jvmArgs = [
-      '-cp', path.resolve(this.config.qlDistributionPath, 'tools/odasa.jar'),
-      '-Xms512m',
-      `-Xmx${this.config.queryMemoryMb.toString()}m`,
-      'com.semmle.api.server.CombinedServer'
-    ];
-    const otherArgs = ['--threads', this.config.numThreads.toString()];
-    const args = jvmArgs.concat(otherArgs);
-    const argsString = args.join(" ");
-    this.log(`Launching query server using ${command} ${argsString}...`);
-    const child = cp.spawn(command, args);
-    if (!child || !child.pid) {
-      throw new Error(`Launching query server ${command} ${argsString} failed.`);
-    }
+  async startQueryServer() {
+    const ramArgs = await cli.resolveRam(this.config, this.opts.logger);
+    const child = await cli.spawnServer(
+      this.config,
+      'QL query server',
+      ['execute', 'query-server'],
+      ['--threads', this.config.numThreads.toString()].concat(ramArgs),
+      this.logger,
+      data => this.logger.logWithoutTrailingNewline(data.toString())
+      // no listener for stdout
+    );
 
-    child.stderr.on('data', data => {
-      this.log(`stderr: ${data}`);
-    });
-    child.on('close', (code) => {
-      this.log(`Child process exited with code ${code}`);
-    });
     const connection = createMessageConnection(child.stdout, child.stdin);
     connection.onRequest(completeQuery, res => {
       if (!(res.runId in this.evaluationResultCallbacks)) {
-        this.log(`No callback associated with run id ${res.runId}, continuing without executing any callback`);
+        this.logger.log(`No callback associated with run id ${res.runId}, continuing without executing any callback`);
       }
       else {
         this.evaluationResultCallbacks[res.runId](res);
@@ -137,7 +119,6 @@ export class QueryServerClient extends DisposableObject {
     this.nextProgress = 0;
     this.progressCallbacks = {};
     this.evaluationResultCallbacks = {};
-    this.log(`Query server started on PID: ${this.serverProcessPid}`);
   }
 
   registerCallback(callback: (res: EvaluationResult) => void): number {

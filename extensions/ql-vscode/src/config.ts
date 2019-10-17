@@ -1,19 +1,46 @@
 import { workspace, Event, EventEmitter, ConfigurationChangeEvent } from 'vscode';
 import { DisposableObject } from 'semmle-vscode-utils';
-import * as path from 'path';
 import * as helpers from './helpers';
 
-const DISTRIBUTION_PATH = 'distributionPath';
-const QUERY_SERVER_SETTINGS_SECTION = 'ql.runningQueries';
-const NUMBER_OF_THREADS_SETTING = 'numberOfThreads';
-const TIMEOUT_SETTING = 'timeout';
-const MEMORY_SETTING = 'memory';
-const QUERY_SERVER_RESTARTING_SETTINGS = [DISTRIBUTION_PATH, NUMBER_OF_THREADS_SETTING, MEMORY_SETTING];
+/** Helper class to look up a labelled (and possibly nested) setting. */
+class Setting {
+  name: string;
+  parent?: Setting;
+
+  constructor(name: string, parent?: Setting) {
+    this.name = name;
+    this.parent = parent;
+  }
+
+  get qualifiedName(): string {
+    if(this.parent === undefined) {
+      return this.name;
+    } else {
+      return `${this.parent.qualifiedName}.${this.name}`;
+    }
+  }
+
+  getValue<T>(): T {
+    if(this.parent === undefined) {
+      throw new Error('Cannot get the value of a root setting.');
+    }
+    return workspace.getConfiguration(this.parent.qualifiedName).get<T>(this.name)!;
+  }
+}
+
+const ROOT_SETTING =  new Setting('ql');
+const RUNNING_QUERIES_SETTING = new Setting('runningQueries', ROOT_SETTING);
+const DISTRIBUTION_PATH_SETTING = new Setting('distributionPath', ROOT_SETTING);
+const NUMBER_OF_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_QUERIES_SETTING);
+const TIMEOUT_SETTING = new Setting('timeout', RUNNING_QUERIES_SETTING);
+const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
+
+/** When these settings change, the running query server should be restarted. */
+const QUERY_SERVER_RESTARTING_SETTINGS = [DISTRIBUTION_PATH_SETTING, NUMBER_OF_THREADS_SETTING, MEMORY_SETTING];
 
 export interface QLConfiguration {
-  javaCommand: string | undefined,
+  codeQlPath: string,
   numThreads: number,
-  qlDistributionPath: string;
   queryMemoryMb: number,
   timeoutSecs: number,
   onDidChangeQueryServerConfiguration?: Event<void>;
@@ -21,7 +48,7 @@ export interface QLConfiguration {
 
 export class QLConfigurationListener extends DisposableObject implements QLConfiguration {
   private readonly _onDidChangeQueryServerConfiguration = this.push(new EventEmitter<void>());
-  private _qlDistributionPath: string | undefined;
+  private _codeQlPath: string | undefined;
   private _numThreads: number;
   private _queryMemoryMb: number;
 
@@ -35,16 +62,8 @@ export class QLConfigurationListener extends DisposableObject implements QLConfi
     return this._onDidChangeQueryServerConfiguration.event;
   }
 
-  public get qlDistributionPath(): string {
-    return this._qlDistributionPath!;
-  }
-
-  public get javaCommand(): string | undefined {
-    if (this._qlDistributionPath) {
-      return path.resolve(this._qlDistributionPath, 'tools/java/bin/java');
-    } else {
-      return undefined;
-    }
+  public get codeQlPath(): string {
+    return this._codeQlPath!;
   }
 
   public get numThreads(): number {
@@ -53,7 +72,7 @@ export class QLConfigurationListener extends DisposableObject implements QLConfi
 
   /** Gets the configured query timeout, in seconds. This looks up the setting at the time of access. */
   public get timeoutSecs(): number {
-    return workspace.getConfiguration(QUERY_SERVER_SETTINGS_SECTION).get(TIMEOUT_SETTING) as number;
+    return TIMEOUT_SETTING.getValue<number>();
   }
 
   public get queryMemoryMb(): number {
@@ -64,7 +83,7 @@ export class QLConfigurationListener extends DisposableObject implements QLConfi
     // Check whether any options that affect query running were changed.
     for(const option of QUERY_SERVER_RESTARTING_SETTINGS) {
       // TODO: compare old and new values, only update if there was actually a change?
-      if (e.affectsConfiguration(`${QUERY_SERVER_SETTINGS_SECTION}.${option}`)) {
+      if (e.affectsConfiguration(option.qualifiedName)) {
         this.updateConfiguration();
         break; // only need to do this once, if any of the settings have changed
       }
@@ -72,11 +91,11 @@ export class QLConfigurationListener extends DisposableObject implements QLConfi
   }
 
   private updateConfiguration(): void {
-    this._qlDistributionPath = workspace.getConfiguration('ql').get(DISTRIBUTION_PATH) as string;
-    this._numThreads = workspace.getConfiguration(QUERY_SERVER_SETTINGS_SECTION).get(NUMBER_OF_THREADS_SETTING) as number;
-    this._queryMemoryMb = workspace.getConfiguration(QUERY_SERVER_SETTINGS_SECTION).get(MEMORY_SETTING) as number;
-    if (!this.qlDistributionPath) {
-      helpers.showAndLogErrorMessage(`Semmle distribution must be configured. Set the 'ql.${DISTRIBUTION_PATH}' setting.`);
+    this._codeQlPath = DISTRIBUTION_PATH_SETTING.getValue<string>();
+    this._numThreads = NUMBER_OF_THREADS_SETTING.getValue<number>();
+    this._queryMemoryMb = MEMORY_SETTING.getValue<number>();
+    if (!this.codeQlPath) {
+      helpers.showAndLogErrorMessage(`CodeQL distribution must be configured. Set the '${DISTRIBUTION_PATH_SETTING.qualifiedName}' setting.`);
     }
     this._onDidChangeQueryServerConfiguration.fire();
   }
