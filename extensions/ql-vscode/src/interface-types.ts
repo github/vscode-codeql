@@ -2,7 +2,7 @@ import { FivePartLocation } from 'semmle-bqrs';
 
 export interface DatabaseInfo {
   name: string;
-  snapshotUri: string;
+  databaseUri: string;
 }
 
 export interface PreviousExecution {
@@ -21,5 +21,5 @@ export interface IntoResultsViewMsg {
 export interface FromResultsViewMsg {
   t: 'viewSourceFile';
   loc: FivePartLocation;
-  snapshotUri: string;
+  databaseUri: string;
 };

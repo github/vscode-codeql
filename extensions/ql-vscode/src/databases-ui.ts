@@ -75,7 +75,7 @@ class DatabaseTreeDataProvider extends DisposableObject
     } else if (element.error !== undefined) {
       item.iconPath = joinThemableIconPath(this.ctx.extensionPath, INVALID_DATABASE_ICON);
     }
-    item.tooltip = element.snapshotUri.fsPath;
+    item.tooltip = element.databaseUri.fsPath;
     return item;
   }
 
@@ -109,7 +109,7 @@ function getFirst(list: Uri[] | undefined): Uri | undefined {
 
 /**
  * Displays file selection dialog. Expects the user to choose a
- * snapshot directory, which should be the parent directory of a
+ * database directory, which should be the parent directory of a
  * directory of the form `db-[language]`, for example, `db-cpp`.
  *
  * XXX: no validation is done other than checking the directory name

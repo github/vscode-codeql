@@ -8,7 +8,7 @@ import { vscode, ResultSet, ResultValue } from './results';
  * Render a location as a link which when clicked displays the original location.
  */
 function renderLocation(loc: LocationValue | undefined, label: string | undefined,
-  snapshotUri: string): JSX.Element {
+  databaseUri: string): JSX.Element {
 
   if (loc !== undefined) {
     switch (loc.t) {
@@ -18,7 +18,7 @@ function renderLocation(loc: LocationValue | undefined, label: string | undefine
             vscode.postMessage({
               t: 'viewSourceFile',
               loc,
-              snapshotUri
+              databaseUri
             });
             e.preventDefault();
             e.stopPropagation();
@@ -38,7 +38,7 @@ function renderLocation(loc: LocationValue | undefined, label: string | undefine
 /**
  * Render one column of a tuple.
  */
-function renderTupleValue(v: ResultValue, snapshotUri: string): JSX.Element {
+function renderTupleValue(v: ResultValue, databaseUri: string): JSX.Element {
   if (typeof v === 'string') {
     return <span>{v}</span>
   }
@@ -46,14 +46,14 @@ function renderTupleValue(v: ResultValue, snapshotUri: string): JSX.Element {
     return <a href={v.uri}>{v.uri}</a>;
   }
   else {
-    return renderLocation(v.location, v.label, snapshotUri);
+    return renderLocation(v.location, v.label, databaseUri);
   }
 }
 
 export interface ResultTableProps {
   selected: boolean;
   resultSet: ResultSet;
-  snapshotUri: string;
+  databaseUri: string;
 }
 
 interface ResultTableState {
@@ -72,7 +72,7 @@ export class ResultTable extends React.Component<ResultTableProps, ResultTableSt
   }
 
   render(): React.ReactNode {
-    const { resultSet, selected, snapshotUri } = this.props;
+    const { resultSet, selected, databaseUri } = this.props;
 
     const tableClassName = cx(this.className, {
       [this.selectedClassName]: selected
@@ -102,7 +102,7 @@ export class ResultTable extends React.Component<ResultTableProps, ResultTableSt
                   ...row.map((value, columnIndex) =>
                     <td key={columnIndex}>
                     {
-                      renderTupleValue(value, snapshotUri)
+                      renderTupleValue(value, databaseUri)
                     }
                     </td>)
                 ]
