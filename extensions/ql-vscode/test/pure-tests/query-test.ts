@@ -61,7 +61,8 @@ describe('using the query server', () => {
     },
     {
       logger: {
-        log: s => console.log('logger says', s)
+        log: s => console.log('logger says', s),
+        logWithoutTrailingNewline: s => {}
       }
     }
   );

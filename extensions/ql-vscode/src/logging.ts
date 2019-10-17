@@ -5,7 +5,7 @@ export interface Logger {
   /** Writes the given log message, followed by a newline. */
   log(message: string): void;
   /** Writes the given log message, not followed by a newline. */
-  logWithoutTrailingNewline?(message: string): void;
+  logWithoutTrailingNewline(message: string): void;
 }
 
 /** A logger that writes messages to an output channel in the Output tab. */

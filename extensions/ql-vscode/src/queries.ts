@@ -412,7 +412,7 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 
   // Figure out the library path for the query.
-  const packConfig = await cli.resolveLibraryPath(config, diskWorkspaceFolders, editor.document.uri.fsPath);
+  const packConfig = await cli.resolveLibraryPath(config, diskWorkspaceFolders, editor.document.uri.fsPath, logger);
 
   const qlProgram: messages.QlProgram = {
     // The project of the current document determines which library path
@@ -440,7 +440,7 @@ export async function compileAndRunQueryAgainstDatabase(
   // Read the query metadata if possible, to use in the UI.
   let metadata: cli.QueryMetadata | undefined;
   try {
-    metadata = await cli.resolveMetadata(qs.config, qlProgram.queryPath);
+    metadata = await cli.resolveMetadata(qs.config, qlProgram.queryPath, logger);
   } catch(_) {
     // Ignore errors and provide no metadata.
   }

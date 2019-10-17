@@ -2,7 +2,7 @@ import * as child_process from "child_process"
 import * as util from 'util'
 import * as path from 'path'
 import { QLConfiguration } from "./config";
-import { logger } from "./logging";
+import { Logger } from "./logging";
 
 /**
  * The expected output of codeql resolve library-path.
@@ -20,13 +20,13 @@ export interface QuerySetup {
  * @param workspaces The current open workspaces
  * @param queryPath The path to the query
  */
-export async function resolveLibraryPath(config: QLConfiguration, workspaces: string[], queryPath: string): Promise<QuerySetup> {
+export async function resolveLibraryPath(config: QLConfiguration, workspaces: string[], queryPath: string, logger: Logger): Promise<QuerySetup> {
     const subcommandArgs = [
         '--query', queryPath,
         "--additional-packs",
         workspaces.join(path.delimiter)
     ];
-    return await runCodeQlCliCommand<QuerySetup>(config, ['resolve', 'library-path'], subcommandArgs, "Resolving library paths");
+    return await runCodeQlCliCommand<QuerySetup>(config, ['resolve', 'library-path'], subcommandArgs, "Resolving library paths", logger);
 }
 
 /** The expected output of `codeql resolve metadata`. */
@@ -42,16 +42,16 @@ export interface QueryMetadata {
  * @param config The configuration containing the path to the CLI.
  * @param queryPath The path to the query.
  */
-export async function resolveMetadata(config: QLConfiguration, queryPath: string): Promise<QueryMetadata> {
-    return await runCodeQlCliCommand<QueryMetadata>(config, ['resolve', 'metadata'], [queryPath], "Resolving query metadata");
+export async function resolveMetadata(config: QLConfiguration, queryPath: string, logger: Logger): Promise<QueryMetadata> {
+    return await runCodeQlCliCommand<QueryMetadata>(config, ['resolve', 'metadata'], [queryPath], "Resolving query metadata", logger);
 }
 
 /**
  * Gets the RAM setting for the query server.
  * @param config The configuration containing the path to the CLI.
  */
-export async function resolveRam(config: QLConfiguration): Promise<string[]> {
-    return await runCodeQlCliCommand<string[]>(config, ['resolve', 'ram'], [], "Resolving RAM settings");
+export async function resolveRam(config: QLConfiguration, logger: Logger): Promise<string[]> {
+    return await runCodeQlCliCommand<string[]>(config, ['resolve', 'ram'], [], "Resolving RAM settings", logger);
 }
 
 /**
@@ -62,7 +62,7 @@ export async function resolveRam(config: QLConfiguration): Promise<string[]> {
  * @param description Description of the action being run, to be shown in log and error messages.
  * @returns The contents of the command's stdout, if the command succeeded.
  */
-async function runCodeQlCliCommand<OutputType>(config: QLConfiguration, command: string[], commandArgs: string[], description: string): Promise<OutputType> {
+async function runCodeQlCliCommand<OutputType>(config: QLConfiguration, command: string[], commandArgs: string[], description: string, logger: Logger): Promise<OutputType> {
     const base = config.codeQlPath;
     const args = command.concat(commandArgs).concat('-v', '--log=-', '--format', 'json');
     const argsString = args.join(" ");

@@ -86,7 +86,7 @@ export class QueryServerClient extends DisposableObject {
 
   /** Starts a new query server process. */
   async startQueryServer() {
-    const ramArgs = await cli.resolveRam(this.config);
+    const ramArgs = await cli.resolveRam(this.config, this.opts.logger);
     this.log("Starting QL query server using JSON-RPC...");
     const command = this.config.codeQlPath;
     const args = ['execute', 'query-server', '-v', '--log=-', '--threads', this.config.numThreads.toString()].concat(ramArgs);
