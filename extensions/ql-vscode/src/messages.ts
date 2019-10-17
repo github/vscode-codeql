@@ -408,7 +408,7 @@ export interface UpgradeParams {
  */
 export interface CheckUpgradeResult {
   /**
-   * A description of the steps to take to upgrade this database.
+   * A description of the steps to take to upgrade this dataset.
    * Note that the list may be partial.
    */
   checkedUpgrades?: UpgradesDescription;
@@ -446,7 +446,7 @@ export interface UpgradesDescription {
    */
   scripts: UpgradeDescription[];
   /**
-   * The sha of the target database.
+   * The sha of the target dataset.
    */
   targetSha: string;
 }
@@ -478,7 +478,7 @@ export interface CompiledUpgrades {
   */
   initialSha: string;
   /**
-   * The path to the new database statistics
+   * The path to the new dataset statistics
    */
   newStatsPath: string;
   /**
@@ -486,13 +486,13 @@ export interface CompiledUpgrades {
    */
   scripts: CompiledUpgradeScript[];
   /**
-   * The sha of the target database.
+   * The sha of the target dataset.
    */
   targetSha: string;
 }
 
 /**
- * A compiled step to upgrade the database.
+ * A compiled step to upgrade the dataset.
  */
 export interface CompiledUpgradeScript {
   /**
@@ -548,31 +548,31 @@ export interface QloSpec {
  */
 export interface ClearCacheParams {
   /**
-   * The database for which we want to clear the cache
+   * The dataset for which we want to clear the cache
    */
-  db: Database;
+  db: Dataset;
   /**
    * Whether the cache should actually be cleared.
    */
   dryRun: boolean;
 }
 /**
- * Parameters for trimming the cache of a database
+ * Parameters for trimming the cache of a dataset
  */
 export interface TrimCacheParams {
   /**
-   * The database that we want to trim the cache of.
+   * The dataset that we want to trim the cache of.
    */
-  db: Database;
+  db: Dataset;
 }
 
 
 /**
- * A ql database
+ * A ql dataset
  */
-export interface Database {
+export interface Dataset {
   /**
-   * The path to the database
+   * The path to the dataset
    */
   dbDir: string;
   /**
@@ -597,9 +597,9 @@ export interface ClearCacheResult {
  */
 export interface EvaluateQueriesParams {
   /**
-   * The database to run on
+   * The dataset to run on
    */
-  db: Database;
+  db: Dataset;
   /**
    * An identifier used in callbacks to identify this run.
    */
@@ -614,7 +614,7 @@ export interface EvaluateQueriesParams {
   stopOnError: boolean;
   /**
    * Whether the evaluator should assume this is the final
-   * run on this database before it's cache would be deleted.
+   * run on this dataset before it's cache would be deleted.
    */
   useSequenceHint: boolean;
 }
@@ -795,9 +795,9 @@ export namespace QueryResultType {
  */
 export interface RunUpgradeParams {
   /**
-   * The database to upgrade
+   * The dataset to upgrade
    */
-  db: Database;
+  db: Dataset;
   /**
    * The per stage timeout in seconds. Use 0
    * for no timeout.
@@ -882,27 +882,27 @@ export const compileDilQuery = new rpc.RequestType<WithProgressId<CompileDilPara
  */
 export const checkUpgrade = new rpc.RequestType<WithProgressId<UpgradeParams>, CheckUpgradeResult, void, void>('compilation/checkUpgrade');
 /**
- * Compile an upgrade script to upgrade a database.
+ * Compile an upgrade script to upgrade a dataset.
  */
 export const compileUpgrade = new rpc.RequestType<WithProgressId<CompileUpgradeParams>, CompileUpgradeResult, void, void>('compilation/compileUpgrade');
 
 
 /**
- * Clear the cache of a database
+ * Clear the cache of a dataset
  */
 export const clearCache = new rpc.RequestType<WithProgressId<ClearCacheParams>, ClearCacheResult, void, void>('evaluation/clearCache');
 /**
- * Trim the cache of a database
+ * Trim the cache of a dataset
  */
 export const trimCache = new rpc.RequestType<WithProgressId<TrimCacheParams>, ClearCacheResult, void, void>('evaluation/trimCache');
 
 /**
- * Run some queries on a database
+ * Run some queries on a dataset
  */
 export const runQueries = new rpc.RequestType<WithProgressId<EvaluateQueriesParams>, EvaluationComplete, void, void>('evaluation/runQueries');
 
 /**
- * Run upgrades on a database
+ * Run upgrades on a dataset
  */
 export const runUpgrade = new rpc.RequestType<WithProgressId<RunUpgradeParams>, RunUpgradeResult, void, void>('evaluation/runUpgrade');
 

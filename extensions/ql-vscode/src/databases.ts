@@ -45,39 +45,39 @@ interface PersistedDatabaseItem {
 }
 
 /**
- * The layout of the snapshot
+ * The layout of the database
  */
-export enum SnapshotKind {
-  /** A snapshot exported by `odasa export` */
+export enum DatabaseKind {
+  /** A database exported by `odasa export` */
   Exported,
-  /** A snapshot built by `odasa buildSnapshot` */
+  /** A database built by `odasa buildSnapshot` */
   Odasa,
-  /** A raw QL database */
-  Database
+  /** A raw QL dataset */
+  Dataset
 }
 
 export interface DatabaseContents {
-  /** The layout of the snapshot */
-  kind: SnapshotKind;
+  /** The layout of the database */
+  kind: DatabaseKind;
   /**
-   * The name of the snapshot.
+   * The name of the database.
    *
    * @remarks
-   * If the project file for the snapshot specifies a name, that name will be used. Otherwise, the
-   * name is derived from the directory name of the snapshot.
+   * If the project file for the database specifies a name, that name will be used. Otherwise, the
+   * name is derived from the directory name of the database.
    */
   name: string;
-  /** The URI of the QL database within the snapshot. */
-  databaseUri: vscode.Uri;
-  /** The URI of the source archive within the snapshot, if one exists. */
+  /** The URI of the QL database within the database. */
+  datasetUri: vscode.Uri;
+  /** The URI of the source archive within the database, if one exists. */
   sourceArchiveUri?: vscode.Uri;
-  /** The URI of the QL database scheme within the snapshot, if exactly one exists. */
+  /** The URI of the QL database scheme within the database, if exactly one exists. */
   dbSchemeUri?: vscode.Uri;
 }
 
 /**
  * An error thrown when we cannot find a valid database in a putative
- * snapshot directory.
+ * database directory.
  */
 class InvalidDatabaseError extends Error {
 }
@@ -112,24 +112,24 @@ function getXmlElementContent(xml: any, elementPath: string): string | undefined
   }
 }
 
-async function findDatabase(parentDirectory: string): Promise<vscode.Uri> {
+async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
   const dbRelativePaths = await glob('db-*/', {
     cwd: parentDirectory
   });
 
   if (dbRelativePaths.length === 0) {
-    throw new InvalidDatabaseError(`'${parentDirectory}' does not contain a database directory.`);
+    throw new InvalidDatabaseError(`'${parentDirectory}' does not contain a dataset directory.`);
   }
 
   const dbAbsolutePath = path.join(parentDirectory, dbRelativePaths[0]);
   if (dbRelativePaths.length > 1) {
-    showAndLogWarningMessage(`Found multiple database directories in snapshot, using '${dbAbsolutePath}'.`);
+    showAndLogWarningMessage(`Found multiple dataset directories in database, using '${dbAbsolutePath}'.`);
   }
 
   return vscode.Uri.file(dbAbsolutePath);
 }
 
-async function findSourceArchive(snapshotPath: string, basePath: string):
+async function findSourceArchive(databasePath: string, basePath: string):
   Promise<vscode.Uri | undefined> {
 
   const zipPath = basePath + '.zip';
@@ -140,31 +140,31 @@ async function findSourceArchive(snapshotPath: string, basePath: string):
     return vscode.Uri.file(zipPath).with({ scheme: zipArchiveScheme });
   }
   else {
-    showAndLogInformationMessage(`Could not find source archive for snapshot '${snapshotPath}'. Assuming paths are absolute.`);
+    showAndLogInformationMessage(`Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`);
     return undefined;
   }
 }
 
-async function resolveExportedSnapshot(snapshotPath: string):
+async function resolveExportedDatabase(databasePath: string):
   Promise<DatabaseContents | undefined> {
 
-  const dotProjectPath = path.join(snapshotPath, '.project');
+  const dotProjectPath = path.join(databasePath, '.project');
   if (await fs.pathExists(dotProjectPath)) {
-    // Looks like an exported snapshot.
+    // Looks like an exported database.
 
     const dotProjectXml = await readXmlFile(dotProjectPath);
     const name = getXmlElementContent(dotProjectXml, 'projectDescription.name') ||
-      path.basename(snapshotPath);
+      path.basename(databasePath);
 
-    // Database and source archive are directly under the root of the snapshot.
-    const databaseUri = await findDatabase(snapshotPath);
-    const sourceArchiveUri = await findSourceArchive(snapshotPath, path.join(snapshotPath, 'src'));
+    // Database and source archive are directly under the root of the database.
+    const datasetUri = await findDataset(databasePath);
+    const sourceArchiveUri = await findSourceArchive(databasePath, path.join(databasePath, 'src'));
 
     return {
-      kind: SnapshotKind.Exported,
-      name: name,
-      databaseUri: databaseUri,
-      sourceArchiveUri: sourceArchiveUri
+      kind: DatabaseKind.Exported,
+      name,
+      datasetUri,
+      sourceArchiveUri
     };
   }
   else {
@@ -184,15 +184,15 @@ async function resolveOdasaSnapshot(snapshotPath: string): Promise<DatabaseConte
     const name = `${projectName}/${path.basename(snapshotPath)}`;
 
     // Database directory is under the 'working' directory.
-    const databaseUri = await findDatabase(path.join(snapshotPath, 'working'));
+    const datasetUri = await findDataset(path.join(snapshotPath, 'working'));
     // Source archive is under the 'output' directory.
     const sourceArchiveUri = await findSourceArchive(snapshotPath,
       path.join(snapshotPath, 'output/src_archive'));
 
     return {
-      kind: SnapshotKind.Odasa,
+      kind: DatabaseKind.Odasa,
       name: name,
-      databaseUri: databaseUri,
+      datasetUri: datasetUri,
       sourceArchiveUri: sourceArchiveUri
     };
   }
@@ -206,12 +206,12 @@ async function getDbSchemeFiles(dbDirectory: string): Promise<string[]> {
   return await glob('*.dbscheme', { cwd: dbDirectory });
 }
 
-async function resolveRawDatabase(snapshotPath: string): Promise<DatabaseContents | undefined> {
-  if ((await getDbSchemeFiles(snapshotPath)).length > 0) {
+async function resolveRawDatabase(datasetPath: string): Promise<DatabaseContents | undefined> {
+  if ((await getDbSchemeFiles(datasetPath)).length > 0) {
     return {
-      kind: SnapshotKind.Database,
-      name: path.basename(snapshotPath),
-      databaseUri: vscode.Uri.file(snapshotPath),
+      kind: DatabaseKind.Dataset,
+      name: path.basename(datasetPath),
+      datasetUri: vscode.Uri.file(datasetPath),
       sourceArchiveUri: undefined
     };
   }
@@ -220,32 +220,32 @@ async function resolveRawDatabase(snapshotPath: string): Promise<DatabaseContent
   }
 }
 
-async function resolveSnapshotContents(uri: vscode.Uri): Promise<DatabaseContents> {
+async function resolveDatabaseContents(uri: vscode.Uri): Promise<DatabaseContents> {
   if (uri.scheme !== 'file') {
-    throw new Error(`Snapshot URI scheme '${uri.scheme}' not supported; only 'file' URIs are supported.`);
+    throw new Error(`Database URI scheme '${uri.scheme}' not supported; only 'file' URIs are supported.`);
   }
-  const snapshotPath = uri.fsPath;
-  if (!await fs.pathExists(snapshotPath)) {
-    throw new InvalidDatabaseError(`Snapshot '${snapshotPath}' does not exist.`);
+  const databasePath = uri.fsPath;
+  if (!await fs.pathExists(databasePath)) {
+    throw new InvalidDatabaseError(`Database '${databasePath}' does not exist.`);
   }
 
-  const contents = await resolveExportedSnapshot(snapshotPath) ||
-    await resolveOdasaSnapshot(snapshotPath) ||
-    await resolveRawDatabase(snapshotPath);
+  const contents = await resolveExportedDatabase(databasePath) ||
+    await resolveOdasaSnapshot(databasePath) ||
+    await resolveRawDatabase(databasePath);
 
   if (contents === undefined) {
-    throw new InvalidDatabaseError(`'${snapshotPath}' is not a valid snapshot.`);
+    throw new InvalidDatabaseError(`'${databasePath}' is not a valid Database.`);
   }
 
   // Look for a single DB scheme file within the database.
-  // This should be found in the database directory, regardless of the form of snapshot.
-  const dbPath = contents.databaseUri.fsPath;
+  // This should be found in the database directory, regardless of the form of database.
+  const dbPath = contents.datasetUri.fsPath;
   const dbSchemeFiles = await getDbSchemeFiles(dbPath);
   if (dbSchemeFiles.length === 0) {
-    throw new InvalidDatabaseError(`Snapshot '${snapshotPath}' does not contain a QL database scheme under '${dbPath}'.`);
+    throw new InvalidDatabaseError(`Database '${databasePath}' does not contain a QL dbscheme under '${dbPath}'.`);
   }
   else if (dbSchemeFiles.length > 1) {
-    throw new InvalidDatabaseError(`Snapshot '${snapshotPath}' contains multiple QL database schemes under '${dbPath}'.`);
+    throw new InvalidDatabaseError(`Database '${databasePath}' contains multiple QL dbschemes under '${dbPath}'.`);
   } else {
     contents.dbSchemeUri = vscode.Uri.file(path.resolve(dbPath, dbSchemeFiles[0]));
   }
@@ -254,26 +254,26 @@ async function resolveSnapshotContents(uri: vscode.Uri): Promise<DatabaseContent
 
 /** An item in the list of available databases */
 export interface DatabaseItem {
-  /** The URI of the snapshot */
-  readonly snapshotUri: vscode.Uri;
-  /** The name of the snapshot to be displayed in the UI */
+  /** The URI of the database */
+  readonly databaseUri: vscode.Uri;
+  /** The name of the database to be displayed in the UI */
   readonly name: string;
-  /** The URI of the snapshot's source archive, or `undefined` if no source archive is to be used. */
+  /** The URI of the database's source archive, or `undefined` if no source archive is to be used. */
   readonly sourceArchive: vscode.Uri | undefined;
   /**
-   * The contents of the snapshot.
-   * Will be `undefined` if the snapshot is invalid. Can be updated by calling `refresh()`.
+   * The contents of the database.
+   * Will be `undefined` if the database is invalid. Can be updated by calling `refresh()`.
    */
   readonly contents: DatabaseContents | undefined;
-  /** If the snapshot is invalid, describes why. */
+  /** If the database is invalid, describes why. */
   readonly error: Error | undefined;
   /**
-   * Resolves the contents of the snapshot.
+   * Resolves the contents of the database.
    *
    * @remarks
-   * The contents include the database directory, source archive, and metadata about the snapshot.
-   * If the snapshot is invalid, `this.error` is updated with the error object that describes why
-   * the snapshot is invalid. This error is also thrown.
+   * The contents include the database directory, source archive, and metadata about the database.
+   * If the database is invalid, `this.error` is updated with the error object that describes why
+   * the database is invalid. This error is also thrown.
    */
   refresh(): Promise<void>;
   /**
@@ -288,7 +288,7 @@ class DatabaseItemImpl implements DatabaseItem {
   private _error: Error | undefined = undefined;
   private _contents: DatabaseContents | undefined;
 
-  public constructor(public readonly snapshotUri: vscode.Uri,
+  public constructor(public readonly databaseUri: vscode.Uri,
     contents: DatabaseContents | undefined, private options: FullDatabaseOptions,
     private readonly onChanged: (item: DatabaseItemImpl) => void) {
 
@@ -303,7 +303,7 @@ class DatabaseItemImpl implements DatabaseItem {
       return this._contents.name;
     }
     else {
-      return path.basename(this.snapshotUri.fsPath);
+      return path.basename(this.databaseUri.fsPath);
     }
   }
 
@@ -327,7 +327,7 @@ class DatabaseItemImpl implements DatabaseItem {
   public async refresh(): Promise<void> {
     try {
       try {
-        this._contents = await resolveSnapshotContents(this.snapshotUri);
+        this._contents = await resolveDatabaseContents(this.databaseUri);
         this._error = undefined;
       }
       catch (e) {
@@ -349,7 +349,7 @@ class DatabaseItemImpl implements DatabaseItem {
         return vscode.Uri.file(file);
       }
       else {
-        return this.snapshotUri;
+        return this.databaseUri;
       }
     }
     else {
@@ -380,7 +380,7 @@ class DatabaseItemImpl implements DatabaseItem {
    */
   public getPersistedState(): PersistedDatabaseItem {
     return {
-      uri: this.snapshotUri.toString(true),
+      uri: this.databaseUri.toString(true),
       options: this.options
     };
   }
@@ -407,13 +407,13 @@ export class DatabaseManager extends DisposableObject {
   public async openDatabase(uri: vscode.Uri, options?: DatabaseOptions):
     Promise<DatabaseItem> {
 
-    const contents = await resolveSnapshotContents(uri);
+    const contents = await resolveDatabaseContents(uri);
     const realOptions = options || {};
-    // Ignore the source archive for QLTest snapshots by default.
-    const isQLTestSnapshot = path.extname(uri.fsPath) === '.testproj';
+    // Ignore the source archive for QLTest databases by default.
+    const isQLTestDatabase = path.extname(uri.fsPath) === '.testproj';
     const fullOptions: FullDatabaseOptions = {
       ignoreSourceArchive: (realOptions.ignoreSourceArchive !== undefined) ?
-        realOptions.ignoreSourceArchive : isQLTestSnapshot,
+        realOptions.ignoreSourceArchive : isQLTestDatabase,
       displayName: realOptions.displayName
     };
     const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions, (item) => {
@@ -464,7 +464,7 @@ export class DatabaseManager extends DisposableObject {
           }
         }
         catch (e) {
-          // When loading from persisted state, leave invalid snapshots in the list. They will be
+          // When loading from persisted state, leave invalid databases in the list. They will be
           // marked as invalid, and cannot be set as the current database.
         }
       }
@@ -497,7 +497,7 @@ export class DatabaseManager extends DisposableObject {
 
   public findDatabaseItem(uri: vscode.Uri): DatabaseItem | undefined {
     const uriString = uri.toString(true);
-    return this._databaseItems.find(item => item.snapshotUri.toString(true) === uriString);
+    return this._databaseItems.find(item => item.databaseUri.toString(true) === uriString);
   }
 
   private addDatabaseItem(item: DatabaseItemImpl) {
@@ -519,7 +519,7 @@ export class DatabaseManager extends DisposableObject {
 
   private updatePersistedCurrentDatabaseItem(): void {
     this.ctx.workspaceState.update(CURRENT_DB, this._currentDatabaseItem ?
-      this._currentDatabaseItem.snapshotUri.toString(true) : undefined);
+      this._currentDatabaseItem.databaseUri.toString(true) : undefined);
   }
 
   private updatePersistedDatabaseList(): void {

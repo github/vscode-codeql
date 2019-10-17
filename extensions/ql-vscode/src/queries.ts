@@ -43,7 +43,7 @@ class QueryInfo {
   compiledQueryPath: string;
   resultsPath: string;
   dbItem: DatabaseItem;
-  db: vscode.Uri; // guarantee the existence of a well-defined db dir at this point
+  dataset: vscode.Uri; // guarantee the existence of a well-defined dataset dir at this point
 
   constructor(program: messages.QlProgram, dbItem: DatabaseItem, quickEvalPosition?: messages.Position, metadata?: cli.QueryMetadata) {
     this.metadata = metadata;
@@ -52,9 +52,9 @@ class QueryInfo {
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${queryCounter}.qlo`);
     this.resultsPath = path.join(tmpDir.name, `results${queryCounter}.bqrs`);
     if (dbItem.contents === undefined) {
-      throw new Error('Can\'t run query on invalid snapshot.');
+      throw new Error('Can\'t run query on invalid database.');
     }
-    this.db = dbItem.contents.databaseUri;
+    this.dataset = dbItem.contents.datasetUri;
     this.dbItem = dbItem;
     queryCounter++;
   }
@@ -73,12 +73,12 @@ class QueryInfo {
       id: callbackId,
       timeoutSecs: qs.config.timeoutSecs,
     }
-    const db: messages.Database = {
-      dbDir: this.db.fsPath,
+    const dataset: messages.Dataset = {
+      dbDir: this.dataset.fsPath,
       workingSet: 'default'
     }
     const params: messages.EvaluateQueriesParams = {
-      db,
+      db: dataset,
       evaluateId: callbackId,
       queries: [queryToRun],
       stopOnError: false,
@@ -253,7 +253,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
 
   logger.log(descriptionMessage);
   // Ask the user to confirm the upgrade.
-  const shouldUpgrade = await helpers.showBinaryChoiceDialog(`Should the database ${db.snapshotUri.fsPath} be upgraded?\n\n${descriptionMessage}`);
+  const shouldUpgrade = await helpers.showBinaryChoiceDialog(`Should the database ${db.databaseUri.fsPath} be upgraded?\n\n${descriptionMessage}`);
   if (shouldUpgrade) {
     return params;
   }
@@ -335,11 +335,11 @@ async function compileDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradePar
 async function runDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseItem, upgrades: messages.CompiledUpgrades):
   Promise<messages.RunUpgradeResult> {
 
-  if (db.contents === undefined || db.contents.databaseUri === undefined) {
+  if (db.contents === undefined || db.contents.datasetUri === undefined) {
     throw new Error('Can\'t upgrade an invalid database.');
   }
-  const database: messages.Database = {
-    dbDir: db.contents.databaseUri.fsPath,
+  const database: messages.Dataset = {
+    dbDir: db.contents.datasetUri.fsPath,
     workingSet: 'default'
   };
 
@@ -359,11 +359,11 @@ async function runDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseIt
 export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbItem: DatabaseItem):
   Promise<messages.ClearCacheResult> {
   if (dbItem.contents === undefined) {
-    throw new Error('Can\'t clear the cache in an invalid snapshot.');
+    throw new Error('Can\'t clear the cache in an invalid database.');
   }
 
-  const db: messages.Database = {
-    dbDir: dbItem.contents.databaseUri.fsPath,
+  const db: messages.Dataset = {
+    dbDir: dbItem.contents.datasetUri.fsPath,
     workingSet: 'default',
   };
 
@@ -408,7 +408,7 @@ export async function compileAndRunQueryAgainstDatabase(
     }
   }
   if (!db.contents || !db.contents.dbSchemeUri) {
-    throw new Error(`Database ${db.snapshotUri} does not have a QL database scheme.`);
+    throw new Error(`Database ${db.databaseUri} does not have a QL database scheme.`);
   }
 
   // Figure out the library path for the query.
@@ -450,7 +450,7 @@ export async function compileAndRunQueryAgainstDatabase(
     result: await query.compileAndRun(qs),
     database: {
       name: db.name,
-      snapshotUri: db.snapshotUri.toString(true)
+      databaseUri: db.databaseUri.toString(true)
     }
   };
 }

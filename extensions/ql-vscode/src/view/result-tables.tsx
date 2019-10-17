@@ -66,7 +66,7 @@ export class ResultTables
       {
         this.props.resultSets.map(resultSet =>
           <ResultTable key={resultSet.schema.name} resultSet={resultSet}
-            snapshotUri={this.props.database.snapshotUri} selected={resultSet === selectedTable}/>
+          databaseUri={this.props.database.databaseUri} selected={resultSet === selectedTable}/>
         )
       }
     </div>;

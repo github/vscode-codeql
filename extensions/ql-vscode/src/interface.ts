@@ -75,7 +75,7 @@ export class InterfaceManager extends DisposableObject {
   private handleMsgFromView = (msg: FromResultsViewMsg): void => {
     switch (msg.t) {
       case 'viewSourceFile': {
-        const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.snapshotUri));
+        const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.databaseUri));
         if (databaseItem !== undefined) {
           showLocation(msg.loc, databaseItem).catch(e => { throw e; });
         }
@@ -174,7 +174,7 @@ async function showLocation(loc: FivePartLocation, databaseItem: DatabaseItem): 
 /**
  * Resolves the specified QL location to a URI into the source archive.
  * @param loc QL location to resolve. Must have a non-empty value for `loc.file`.
- * @param databaseItem Snapshot in which to resolve the file location.
+ * @param databaseItem Database in which to resolve the file location.
  */
 function resolveFivePartLocation(loc: FivePartLocation, databaseItem: DatabaseItem): Location {
   // `Range` is a half-open interval, and is zero-based. QL locations are closed intervals, and
@@ -190,7 +190,7 @@ function resolveFivePartLocation(loc: FivePartLocation, databaseItem: DatabaseIt
 /**
  * Resolve the specified QL location to a URI into the source archive.
  * @param loc QL location to resolve
- * @param databaseItem Snapshot in which to resolve the file location.
+ * @param databaseItem Database in which to resolve the file location.
  */
 function resolveLocation(loc: LocationValue | undefined, databaseItem: DatabaseItem): Location {
   const resolvedLocation = tryResolveLocation(loc, databaseItem);
@@ -207,7 +207,7 @@ function resolveLocation(loc: LocationValue | undefined, databaseItem: DatabaseI
  * Try to resolve the specified QL location to a URI into the source archive. If no exact location
  * can be resolved, returns `undefined`.
  * @param loc QL location to resolve
- * @param databaseItem Snapshot in which to resolve the file location.
+ * @param databaseItem Database in which to resolve the file location.
  */
 function tryResolveLocation(loc: LocationValue | undefined,
   databaseItem: DatabaseItem): Location | undefined {
