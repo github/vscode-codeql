@@ -4,79 +4,125 @@ import * as os from "os";
 import * as path from "path";
 import * as unzipper from "unzipper";
 import * as url from "url";
+import { ExtensionContext } from "vscode";
+import { DistributionConfig } from "./config";
+import { logger } from "./logging";
 
-export async function downloadDistribution(
-  ownerName: string, repoName: string, outPath: string, options: { additionalHeaders?: { [key: string]: string }, includePrerelease?: boolean } = {}):Promise<void> {
-
-  const releasesApi = new ReleasesApiConsumer(ownerName, repoName, options.additionalHeaders);
-  const assets = await releasesApi.getAssetsForLatestRelease(options);
-  if (assets.length !== 1) {
-    throw new Error("Release had an unexpected number of assets")
+export class DistributionManager {
+  constructor(extensionContext: ExtensionContext, config: DistributionConfig) {
+    this._extensionContext = extensionContext;
+    this._config = config;
   }
-  const assetStream = await releasesApi.streamBinaryContentOfAsset(assets[0]);
-
-  const tmpDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "vscode-codeql"));
-  const archivePath = path.join(tmpDirectory, "distributionDownload.zip");
-  const archiveFile = fs.createWriteStream(archivePath);
-
-  await new Promise((resolve, reject) =>
-    assetStream.pipe(archiveFile)
-      .on("finish", resolve)
-      .on("error", reject)
-  );
-
-  await extractZipArchive(archivePath, outPath);
-}
- 
-export interface ReleaseAsset {
-  /**
-   * The id associated with the asset on GitHub.
-   */
-  id: number;
 
   /**
-   * The name associated with the asset on GitHub.
+   * Returns the path to the CodeQL launcher executable, or undefined if CodeQL could not be found.
    */
-  name: string;
+  public async getLauncherPath(): Promise<string | undefined> {
+    // Check extension specific distribution, then PATH.
+    // TODO: Does it make sense for users to want to use PATH when they have an extension specific
+    // distribution installed already?
+    if (this.getExtensionSpecificRelease() !== undefined) {
+      // An extension specific distribution has been installed.
+      const expectedLauncherPath = path.join(this.getExtensionSpecificDistributionPath(), "codeql", "codeql");
+      if (await fs.pathExists(expectedLauncherPath)) {
+        return expectedLauncherPath;
+      }
+      logger.log(`WARNING: Expected to find a CodeQL distribution at ${this.getExtensionSpecificDistributionPath()} but one was not found.`);
+    }
 
-  /**
-   * The size of the asset in bytes.
-   */
-  size: number;
+    if (process.env.PATH) {
+      for (const searchDirectory of process.env.PATH.split(path.delimiter)) {
+        const expectedLauncherPath = path.join(searchDirectory, "codeql");
+        if (await fs.pathExists(expectedLauncherPath)) {
+          return expectedLauncherPath;
+        }
+      }
+      logger.log("INFO: Could not find CodeQL on path.");
+    }
+
+    return undefined;
+  }
+
+  public async installOrUpdateDistribution(): Promise<DistributionInstallOrUpdateResult> {
+    const extensionSpecificRelease = this.getExtensionSpecificRelease();
+
+    if (extensionSpecificRelease === undefined && (await this.getLauncherPath()) !== undefined) {
+      // A distribution is present but it isn't managed by the extension.
+      return createInvalidDistributionLocationResult();
+    }
+    const latestRelease = await this.getLatestRelease();
+    if (extensionSpecificRelease !== undefined && latestRelease.id === extensionSpecificRelease.id) {
+      return createDistributionAlreadyUpToDateResult();
+    }
+    await this.installExtensionSpecificDistribution(latestRelease);
+    return createDistributionUpdatedResult(latestRelease);
+  }
+
+  private async getLatestRelease(): Promise<Release> {
+    const release = await this.createReleasesApiConsumer().getLatestRelease(this._config.includePrerelease);
+    if (release.assets.length !== 1) {
+      throw new Error("Release had an unexpected number of assets")
+    }
+    return release;
+  }
+
+  private async installExtensionSpecificDistribution(release: Release): Promise<void> {
+    const assetStream = await this.createReleasesApiConsumer().streamBinaryContentOfAsset(release.assets[0]);
+
+    const tmpDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "vscode-codeql"));
+    const archivePath = path.join(tmpDirectory, "distributionDownload.zip");
+    const archiveFile = fs.createWriteStream(archivePath);
+
+    await new Promise((resolve, reject) =>
+      assetStream.pipe(archiveFile)
+        .on("finish", resolve)
+        .on("error", reject)
+    );
+
+    logger.log(`Extracting distribution to ${this.getExtensionSpecificDistributionPath()}`);
+    await extractZipArchive(archivePath, this.getExtensionSpecificDistributionPath());
+
+    // Store the installed release within the global extension state.
+    this.storeExtensionSpecificRelease(release);
+  }
+
+  private createReleasesApiConsumer(): ReleasesApiConsumer {
+    return new ReleasesApiConsumer(this._config.ownerName, this._config.repositoryName, this._config.personalAccessToken);
+  }
+
+  private getExtensionSpecificDistributionPath(): string {
+    return path.join(this._extensionContext.globalStoragePath, DistributionManager._distributionFolderName);
+  }
+
+  private getExtensionSpecificRelease(): Release | undefined {
+    return this._extensionContext.globalState.get(DistributionManager._extensionSpecificReleaseStateKey);
+  }
+
+  private storeExtensionSpecificRelease(release: Release): void {
+    this._extensionContext.globalState.update(DistributionManager._extensionSpecificReleaseStateKey, release);
+  }
+
+  private readonly _config: DistributionConfig;
+  private readonly _extensionContext: ExtensionContext;
+
+  private static readonly _distributionFolderName: string = "distribution";
+  private static readonly _extensionSpecificReleaseStateKey = "distributionRelease";
 }
 
 export class ReleasesApiConsumer {
-  constructor(ownerName: string, repoName: string, additionalHeaders: { [key: string]: string } = {}) {
-    this._defaultHeaders = Object.assign({}, {
-      // Specify version of the GitHub API
-      "Accept": "application/vnd.github.v3+json"
-    }, additionalHeaders);
+  constructor(ownerName: string, repoName: string, personalAccessToken?: string) {
+    // Specify version of the GitHub API
+    this._defaultHeaders["accept"] = "application/vnd.github.v3+json";
+
+    if (personalAccessToken) {
+      this._defaultHeaders["authorization"] = `token ${personalAccessToken}`;
+    }
+    
     this._ownerName = ownerName;
     this._repoName = repoName;
   }
 
-  public async getAssetsForLatestRelease(options: { includePrerelease?: boolean } = {}): Promise<ReleaseAsset[]> {
-    const latestRelease = await this.getLatestRelease(options.includePrerelease);
-    const assets: ReleaseAsset[] = latestRelease.assets.map(asset => {
-      return {
-        id: asset.id,
-        name: asset.name,
-        size: asset.size
-      };
-    });
-    return Promise.resolve(assets);
-  }
-
-  public async streamBinaryContentOfAsset(asset: ReleaseAsset): Promise<NodeJS.ReadableStream> {
-    const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases/assets/${asset.id}`;
-
-    const response = await this.makeApiCall(apiPath, {
-      "Accept": "application/octet-stream"
-    });
-    return response.body;
-  }
-
-  private async getLatestRelease(includePrerelease: boolean | undefined): Promise<any> {
+  public async getLatestRelease(includePrerelease: boolean = false): Promise<Release> {
     if (!includePrerelease) {
       const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases/latest`;
       return await (await this.makeApiCall(apiPath)).json();
@@ -84,7 +130,30 @@ export class ReleasesApiConsumer {
 
     const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases`;
     const releases: any[] = await (await this.makeApiCall(apiPath)).json();
-    return releases.sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    const latestRelease = releases.sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    const assets: ReleaseAsset[] = latestRelease.assets.map(asset => {
+      return {
+        id: asset.id,
+        name: asset.name,
+        size: asset.size
+      };
+    });
+
+    return {
+      assets,
+      createdAt: latestRelease.created_at,
+      id: latestRelease.id,
+      name: latestRelease.name
+    };
+  }
+
+  public async streamBinaryContentOfAsset(asset: ReleaseAsset): Promise<NodeJS.ReadableStream> {
+    const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases/assets/${asset.id}`;
+
+    const response = await this.makeApiCall(apiPath, {
+      "accept": "application/octet-stream"
+    });
+    return response.body;
   }
 
   protected async makeApiCall(apiPath: string, additionalHeaders: { [key: string]: string } = {}): Promise<fetch.Response> {
@@ -110,7 +179,6 @@ export class ReleasesApiConsumer {
         //
         // This is necessary to stream release assets since AWS fails if more than one auth
         // mechanism is provided.
-        delete headers["Authorization"];
         delete headers["authorization"];
       }
       return await this.makeRawRequest(redirectUrl, headers, redirectCount + 1)
@@ -119,7 +187,7 @@ export class ReleasesApiConsumer {
     return response;
   }
 
-  private readonly _defaultHeaders: { [key: string]: string };
+  private readonly _defaultHeaders: { [key: string]: string } = {};
   private readonly _ownerName: string;
   private readonly _repoName: string;
 
@@ -147,4 +215,83 @@ export async function extractZipArchive(archivePath: string, outPath: string): P
 
 function isRedirectStatusCode(statusCode: number): boolean {
   return statusCode === 301 || statusCode === 302 || statusCode === 303 || statusCode === 307 || statusCode === 308;
+}
+
+export enum DistributionInstallOrUpdateResultKind {
+  AlreadyUpToDate,
+  DistributionUpdated,
+  /**
+   * The distribution could not be installed or updated because it is not managed by the extension.
+   */
+  InvalidDistributionLocation,
+}
+
+type DistributionInstallOrUpdateResult = DistributionAlreadyUpToDateResult | DistributionUpdatedResult | InvalidDistributionLocationResult;
+
+export interface DistributionAlreadyUpToDateResult {
+  kind: DistributionInstallOrUpdateResultKind.AlreadyUpToDate;
+}
+
+export interface DistributionUpdatedResult {
+  kind: DistributionInstallOrUpdateResultKind.DistributionUpdated;
+  updatedRelease: Release;
+}
+
+export interface InvalidDistributionLocationResult {
+  kind: DistributionInstallOrUpdateResultKind.InvalidDistributionLocation;
+}
+
+function createDistributionAlreadyUpToDateResult(): DistributionAlreadyUpToDateResult {
+  return {
+    kind: DistributionInstallOrUpdateResultKind.AlreadyUpToDate
+  };
+}
+
+function createDistributionUpdatedResult(updatedRelease: Release): DistributionUpdatedResult {
+  return {
+    kind: DistributionInstallOrUpdateResultKind.DistributionUpdated,
+    updatedRelease
+  };
+}
+
+function createInvalidDistributionLocationResult(): InvalidDistributionLocationResult {
+  return {
+    kind: DistributionInstallOrUpdateResultKind.InvalidDistributionLocation
+  };
+}
+
+export interface Release {
+  assets: ReleaseAsset[];
+
+  /**
+   * The creation date of the release on GitHub.
+   */
+  createdAt: string;
+
+  /**
+   * The id associated with the release on GitHub.
+   */
+  id: number;
+
+  /**
+   * The name associated with the release on GitHub.
+   */
+  name: string;
+}
+
+export interface ReleaseAsset {
+  /**
+   * The id associated with the asset on GitHub.
+   */
+  id: number;
+
+  /**
+   * The name associated with the asset on GitHub.
+   */
+  name: string;
+
+  /**
+   * The size of the asset in bytes.
+   */
+  size: number;
 }

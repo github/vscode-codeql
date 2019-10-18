@@ -50,3 +50,12 @@ export async function showBinaryChoiceDialog(message: string): Promise<boolean> 
   const chosenItem = await Window.showInformationMessage(message, { modal: true }, yesItem, noItem);
   return chosenItem === yesItem;
 }
+
+/**
+ * Used to perform compile time exhaustivity checking on a value.  This function will not be
+ * executed at runtime unless there is a flaw in the type system.
+ */
+export function assertNever(value: never): never {
+  logger.log("Internal error: assertNever failure");
+  return value;
+}

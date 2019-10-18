@@ -11,6 +11,7 @@ import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { logger, queryServerLogger, ideServerLogger } from './logging';
 import * as helpers from './helpers';
+import { DistributionManager, DistributionInstallOrUpdateResultKind } from './distribution';
 
 /**
 * extension.ts
@@ -19,15 +20,48 @@ import * as helpers from './helpers';
 * A vscode extension for QL query development.
 */
 
-export async function activate(ctx: ExtensionContext) {
+export async function activate(ctx: ExtensionContext): Promise<void> {
   // Initialise logging, and ensure all loggers are disposed upon exit.
   ctx.subscriptions.push(logger);
-  ctx.subscriptions.push(queryServerLogger);
-  ctx.subscriptions.push(ideServerLogger);
   logger.log('Starting QL extension');
 
   const qlConfigurationListener = new QLConfigurationListener();
   ctx.subscriptions.push(qlConfigurationListener);
+
+  const distributionManager = new DistributionManager(ctx, qlConfigurationListener);
+
+  async function downloadOrUpdateDistribution(): Promise<void> {
+    const result = await distributionManager.installOrUpdateDistribution();
+    switch (result.kind) {
+      case DistributionInstallOrUpdateResultKind.AlreadyUpToDate:
+        helpers.showAndLogInformationMessage("CodeQL tools already up to date.");
+        break;
+      case DistributionInstallOrUpdateResultKind.DistributionUpdated:
+        helpers.showAndLogInformationMessage(`CodeQL tools updated to version ${result.updatedRelease.name}.`);
+        break;
+      case DistributionInstallOrUpdateResultKind.InvalidDistributionLocation:
+        helpers.showAndLogErrorMessage("CodeQL tools are installed externally so could not be updated.");
+        break;
+      default:
+        helpers.assertNever(result);
+    }
+  }
+
+  ctx.subscriptions.push(commands.registerCommand('ql.updateTools', () => downloadOrUpdateDistribution()));
+
+  if (await distributionManager.getLauncherPath() === undefined) {
+    await downloadOrUpdateDistribution();
+  }
+  
+  activateWithInstalledDistribution(ctx, qlConfigurationListener);
+}
+
+async function activateWithInstalledDistribution(
+  ctx: ExtensionContext,
+  qlConfigurationListener: QLConfigurationListener) {
+
+  ctx.subscriptions.push(queryServerLogger);
+  ctx.subscriptions.push(ideServerLogger);
 
   const qs = new qsClient.QueryServerClient(qlConfigurationListener, {
     logger: queryServerLogger,

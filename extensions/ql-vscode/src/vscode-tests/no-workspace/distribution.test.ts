@@ -29,13 +29,13 @@ describe("Releases API consumer", () => {
 
           return Promise.resolve(new fetch.Response(JSON.stringify(responseBody)));
         }
-        return Promise.reject(new Error("Unknown API path"));
+        return Promise.reject(new Error(`Unknown API path: ${apiPath}`));
       }
     }
 
     const consumer = new MockReleasesApiConsumer(owner, repo);
 
-    const assets = await consumer.getAssetsForLatestRelease();
+    const assets = (await consumer.getLatestRelease()).assets;
 
     expect(assets.length).to.equal(expectedAssets.length);
     expectedAssets.map((expectedAsset, index) => {

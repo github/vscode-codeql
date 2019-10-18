@@ -166,6 +166,10 @@
       {
         "command": "qlDatabases.upgradeDatabase",
         "title": "Upgrade Database"
+      },
+      {
+        "command": "ql.updateTools",
+        "title": "QL: Install/Update Tools"
       }
     ],
     "menus": {
