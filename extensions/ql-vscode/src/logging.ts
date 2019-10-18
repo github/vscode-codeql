@@ -1,4 +1,4 @@
-import { window as Window, OutputChannel } from 'vscode';
+import { window as Window, OutputChannel, Progress } from 'vscode';
 import { DisposableObject } from 'semmle-vscode-utils';
 
 export interface Logger {
@@ -7,6 +7,8 @@ export interface Logger {
   /** Writes the given log message, not followed by a newline. */
   logWithoutTrailingNewline(message: string): void;
 }
+
+export type ProgressReporter = Progress<{message: string}>;
 
 /** A logger that writes messages to an output channel in the Output tab. */
 export class OutputChannelLogger extends DisposableObject implements Logger {

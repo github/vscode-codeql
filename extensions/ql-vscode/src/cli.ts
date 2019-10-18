@@ -1,10 +1,10 @@
 import * as child_process from "child_process";
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as util from 'util';
 import * as sarif from 'sarif';
+import * as util from 'util';
 import { QueryServerConfig } from "./config";
-import { Logger } from "./logging";
+import { Logger, ProgressReporter } from "./logging";
 
 /**
  * The version of the SARIF format that we are using.
@@ -70,8 +70,8 @@ export async function resolveMetadata(config: QueryServerConfig, queryPath: stri
  * Gets the RAM setting for the query server.
  * @param config The configuration containing the path to the CLI.
  */
-export async function resolveRam(config: QueryServerConfig, logger: Logger): Promise<string[]> {
-  return await runJsonCodeQlCliCommand<string[]>(config, ['resolve', 'ram'], [], "Resolving RAM settings", logger);
+export async function resolveRam(config: QueryServerConfig, logger: Logger, progressReporter?: ProgressReporter): Promise<string[]> {
+  return await runJsonCodeQlCliCommand<string[]>(config, ['resolve', 'ram'], [], "Resolving RAM settings", logger, progressReporter);
 }
 
 /**
@@ -80,14 +80,20 @@ export async function resolveRam(config: QueryServerConfig, logger: Logger): Pro
  * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
  * @param commandArgs The arguments to pass to the `codeql` command.
  * @param description Description of the action being run, to be shown in log and error messages.
+ * @param logger Logger to write command log messages, e.g. to an output channel.
+ * @param progressReporter Used to output progress messages, e.g. to the status bar.
+
  * @returns The contents of the command's stdout, if the command succeeded.
  */
-async function runCodeQlCliCommand(config: QueryServerConfig, command: string[], commandArgs: string[], description: string, logger: Logger): Promise<string> {
+async function runCodeQlCliCommand(config: QueryServerConfig, command: string[], commandArgs: string[], description: string, logger: Logger, progressReporter?: ProgressReporter): Promise<string> {
   const base = config.codeQlPath;
   // Add logging arguments first, in case commandArgs contains positional parameters.
   const args = command.concat('-v', '--log=-').concat(commandArgs);
   const argsString = args.join(" ");
   try {
+    if(progressReporter !== undefined) {
+        progressReporter.report({message: description});
+    }
     logger.log(`${description} using CodeQL CLI: ${base} ${argsString}...`);
     const result = await util.promisify(child_process.execFile)(base, args);
     logger.log(result.stderr);
@@ -104,12 +110,14 @@ async function runCodeQlCliCommand(config: QueryServerConfig, command: string[],
  * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
  * @param commandArgs The arguments to pass to the `codeql` command.
  * @param description Description of the action being run, to be shown in log and error messages.
+ * @param logger Logger to write command log messages, e.g. to an output channel.
+ * @param progressReporter Used to output progress messages, e.g. to the status bar.
  * @returns The contents of the command's stdout, if the command succeeded.
  */
-async function runJsonCodeQlCliCommand<OutputType>(config: QueryServerConfig, command: string[], commandArgs: string[], description: string, logger: Logger): Promise<OutputType> {
+async function runJsonCodeQlCliCommand<OutputType>(config: QueryServerConfig, command: string[], commandArgs: string[], description: string, logger: Logger, progressReporter?: ProgressReporter): Promise<OutputType> {
   // Add format argument first, in case commandArgs contains positional parameters.
   const args = ['--format', 'json'].concat(commandArgs);
-  const result = await runCodeQlCliCommand(config, command, args, description, logger);
+  const result = await runCodeQlCliCommand(config, command, args, description, logger, progressReporter);
   try {
     return JSON.parse(result) as OutputType;
   } catch (err) {
@@ -128,6 +136,7 @@ async function runJsonCodeQlCliCommand<OutputType>(config: QueryServerConfig, co
  * @param logger Logger to write startup messages.
  * @param stderrListener Listener for log messages from the server's stderr stream.
  * @param stdoutListener Optional listener for messages from the server's stdout stream.
+ * @param progressReporter Used to output progress messages, e.g. to the status bar.
  * @returns The started child process.
  */
 export async function spawnServer(
@@ -138,7 +147,7 @@ export async function spawnServer(
   logger: Logger,
   stderrListener: (data: any) => void,
   stdoutListener?: (data: any) => void,
-
+  progressReporter?: ProgressReporter
 ): Promise<child_process.ChildProcessWithoutNullStreams> {
   // Enable verbose logging.
   const args = command.concat(commandArgs).concat('-v', '--log=-');
@@ -146,6 +155,9 @@ export async function spawnServer(
   // Start the server process.
   const base = config.codeQlPath;
   const argsString = args.join(" ");
+  if(progressReporter !== undefined) {
+    progressReporter.report({message: `Starting ${name}`});
+  }
   logger.log(`Starting ${name} using CodeQL CLI: ${base} ${argsString}`);
   const child = child_process.spawn(base, args);
   if (!child || !child.pid) {
@@ -159,6 +171,9 @@ export async function spawnServer(
     child.stdout!.on('data', stdoutListener);
   }
 
+  if(progressReporter !== undefined) {
+    progressReporter.report({message: `Started ${name}`});
+  }
   logger.log(`${name} started on PID: ${child.pid}`);
   return child;
 }

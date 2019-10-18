@@ -4,7 +4,7 @@ import { Disposable } from 'vscode';
 import { CancellationToken, createMessageConnection, MessageConnection, RequestType } from 'vscode-jsonrpc';
 import * as cli from './cli';
 import { QueryServerConfig } from './config';
-import { Logger } from './logging';
+import { Logger, ProgressReporter } from './logging';
 import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './messages';
 
 type ServerOpts = {
@@ -36,6 +36,8 @@ class ServerProcess implements Disposable {
   }
 }
 
+type WithProgressReporting = (task: (progress: ProgressReporter, token: CancellationToken) => Thenable<void>) => Thenable<void>;
+
 /**
  * Client that manages a query server process.
  * The server process is started upon initialization and tracked during its lifetime.
@@ -50,8 +52,9 @@ export class QueryServerClient extends DisposableObject {
   progressCallbacks: { [key: number]: ((res: ProgressMessage) => void) | undefined };
   nextCallback: number;
   nextProgress: number;
+  withProgressReporting: WithProgressReporting;
 
-  constructor(config: QueryServerConfig, opts: ServerOpts) {
+  constructor(config: QueryServerConfig, opts: ServerOpts, withProgressReporting: WithProgressReporting) {
     super();
     this.config = config;
     // The logger is obtained from the caller, to ensure testability.
@@ -62,6 +65,7 @@ export class QueryServerClient extends DisposableObject {
     if (config.onDidChangeQueryServerConfiguration !== undefined) {
       this.push(config.onDidChangeQueryServerConfiguration(async () => await this.restartQueryServer(), this));
     }
+    this.withProgressReporting = withProgressReporting;
   }
 
   get logger() { return this.opts.logger; }
@@ -82,19 +86,25 @@ export class QueryServerClient extends DisposableObject {
     await this.startQueryServer();
   }
 
-  /** Starts a new query server process. */
+  /** Starts a new query server process, sending progress messages to the status bar. */
   async startQueryServer() {
-    const ramArgs = await cli.resolveRam(this.config, this.opts.logger);
+    return this.withProgressReporting(this.startQueryServerImpl);
+  }
+
+  /** Starts a new query server process, sending progress messages to the given reporter. */
+  private async startQueryServerImpl(progressReporter: ProgressReporter, _: CancellationToken) {
+    const ramArgs = await cli.resolveRam(this.config, this.opts.logger, progressReporter);
     const child = await cli.spawnServer(
       this.config,
       'QL query server',
       ['execute', 'query-server'],
       ['--threads', this.config.numThreads.toString()].concat(ramArgs),
       this.logger,
-      data => this.logger.logWithoutTrailingNewline(data.toString())
-      // no listener for stdout
+      data => this.logger.logWithoutTrailingNewline(data.toString()),
+      undefined, // no listener for stdout
+      progressReporter
     );
-
+    progressReporter.report({ message: 'Connecting to QL query server' });
     const connection = createMessageConnection(child.stdout, child.stdin);
     connection.onRequest(completeQuery, res => {
       if (!(res.runId in this.evaluationResultCallbacks)) {
@@ -115,6 +125,7 @@ export class QueryServerClient extends DisposableObject {
     // Ensure the server process is disposed together with this client.
     this.track(this.serverProcess);
     connection.listen();
+    progressReporter.report({ message: 'Connected to QL query server' });
     this.nextCallback = 0;
     this.nextProgress = 0;
     this.progressCallbacks = {};

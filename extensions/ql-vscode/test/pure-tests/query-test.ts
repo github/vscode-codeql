@@ -8,6 +8,7 @@ import * as url from 'url';
 import { CancellationTokenSource } from 'vscode-jsonrpc';
 import * as messages from '../../src/messages';
 import * as qsClient from '../../src/queryserver-client';
+import { ProgressReporter } from '../../src/logging';
 
 
 declare module "url" {
@@ -60,6 +61,9 @@ describe('using the query server', () => {
     }
   });
   it('should be able to start the query server', async () => {
+    const consoleProgressReporter: ProgressReporter = {
+      report: v => console.log(`progress reporter says ${v.message}`)
+    };
     qs = new qsClient.QueryServerClient(
       {
         codeQlPath,
@@ -72,7 +76,8 @@ describe('using the query server', () => {
           log: s => console.log('logger says', s),
           logWithoutTrailingNewline: s => { }
         }
-      }
+      },
+      task => task(consoleProgressReporter, token)
     );
     await qs.startQueryServer();
   });
