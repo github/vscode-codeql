@@ -121,7 +121,7 @@ describe('using the query server', () => {
         id: callbackId,
         timeoutSecs: 1000,
       };
-      const db: messages.Database = {
+      const db: messages.Dataset = {
         dbDir: path.join(__dirname, '../test-db'),
         workingSet: 'default',
       }
