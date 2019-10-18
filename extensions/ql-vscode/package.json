@@ -76,6 +76,12 @@
       "type": "object",
       "title": "QL",
       "properties": {
+        "ql.distribution.codeQlPath": {
+          "scope": "window",
+          "type": "string",
+          "default": null,
+          "description": "Path to the CodeQL executable that should be used by the CodeQL extension.  This overrides all other distribution settings."
+        },
         "ql.distribution.includePrerelease": {
           "scope": "window",
           "type": "boolean",
@@ -99,12 +105,6 @@
           "type": "string",
           "default": null,
           "description": "The name of the GitHub repository containing CodeQL binaries."
-        },
-        "ql.distributionPath": {
-          "scope": "window",
-          "type": "string",
-          "default": "",
-          "description": "Location of the QL distribution"
         },
         "ql.runningQueries.numberOfThreads": {
           "type": "number",

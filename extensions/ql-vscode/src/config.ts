@@ -1,6 +1,5 @@
-import { workspace, Event, EventEmitter, ConfigurationChangeEvent } from 'vscode';
 import { DisposableObject } from 'semmle-vscode-utils';
-import * as helpers from './helpers';
+import { workspace, Event, EventEmitter, ConfigurationChangeEvent } from 'vscode';
 
 /** Helper class to look up a labelled (and possibly nested) setting. */
 class Setting {
@@ -33,13 +32,12 @@ const ROOT_SETTING =  new Setting('ql');
 // Query server configuration
 
 const RUNNING_QUERIES_SETTING = new Setting('runningQueries', ROOT_SETTING);
-const DISTRIBUTION_PATH_SETTING = new Setting('distributionPath', ROOT_SETTING);
 const NUMBER_OF_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_QUERIES_SETTING);
 const TIMEOUT_SETTING = new Setting('timeout', RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
 
 /** When these settings change, the running query server should be restarted. */
-const QUERY_SERVER_RESTARTING_SETTINGS = [DISTRIBUTION_PATH_SETTING, NUMBER_OF_THREADS_SETTING, MEMORY_SETTING];
+const QUERY_SERVER_RESTARTING_SETTINGS = [NUMBER_OF_THREADS_SETTING, MEMORY_SETTING];
 
 export interface QueryServerConfig {
   codeQlPath: string,
@@ -64,11 +62,8 @@ export interface DistributionConfig {
   repositoryName: string;
 }
 
-export class QLConfigurationListener extends DisposableObject implements DistributionConfig, QueryServerConfig {
-  private readonly _onDidChangeQueryServerConfiguration = this.push(new EventEmitter<void>());
-  private _codeQlPath: string | undefined;
-  private _numThreads: number;
-  private _queryMemoryMb: number;
+abstract class ConfigListener extends DisposableObject {
+  protected readonly _onDidChangeQueryServerConfiguration = this.push(new EventEmitter<void>());
 
   constructor() {
     super();
@@ -80,23 +75,11 @@ export class QLConfigurationListener extends DisposableObject implements Distrib
     return this._onDidChangeQueryServerConfiguration.event;
   }
 
-  public get codeQlPath(): string {
-    return this._codeQlPath!;
-  }
+  protected abstract handleDidChangeConfiguration(e: ConfigurationChangeEvent): void;
+  protected abstract updateConfiguration(): void;
+}
 
-  public get numThreads(): number {
-    return this._numThreads;
-  }
-
-  /** Gets the configured query timeout, in seconds. This looks up the setting at the time of access. */
-  public get timeoutSecs(): number {
-    return TIMEOUT_SETTING.getValue<number>();
-  }
-
-  public get queryMemoryMb(): number {
-    return this._queryMemoryMb;
-  }
-
+export class DistributionConfigListener extends DisposableObject implements DistributionConfig {
   public get includePrerelease(): boolean {
     return INCLUDE_PRERELEASE_SETTING.getValue();
   }
@@ -112,8 +95,37 @@ export class QLConfigurationListener extends DisposableObject implements Distrib
   public get repositoryName(): string {
     return REPOSITORY_NAME_SETTING.getValue();
   }
+}
 
-  private handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+export class QueryServerConfigListener extends ConfigListener implements QueryServerConfig {
+  private readonly _codeQlPath: string;
+
+  private _numThreads: number;
+  private _queryMemoryMb: number;
+
+  constructor(codeQlPath: string) {
+    super();
+    this._codeQlPath = codeQlPath;
+  }
+
+  public get codeQlPath(): string {
+    return this._codeQlPath;
+  }
+
+  public get numThreads(): number {
+    return this._numThreads;
+  }
+
+  /** Gets the configured query timeout, in seconds. This looks up the setting at the time of access. */
+  public get timeoutSecs(): number {
+    return TIMEOUT_SETTING.getValue<number>();
+  }
+
+  public get queryMemoryMb(): number {
+    return this._queryMemoryMb;
+  }
+
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     // Check whether any options that affect query running were changed.
     for(const option of QUERY_SERVER_RESTARTING_SETTINGS) {
       // TODO: compare old and new values, only update if there was actually a change?
@@ -124,13 +136,9 @@ export class QLConfigurationListener extends DisposableObject implements Distrib
     }
   }
 
-  private updateConfiguration(): void {
-    this._codeQlPath = DISTRIBUTION_PATH_SETTING.getValue<string>();
+  protected updateConfiguration(): void {
     this._numThreads = NUMBER_OF_THREADS_SETTING.getValue<number>();
     this._queryMemoryMb = MEMORY_SETTING.getValue<number>();
-    if (!this.codeQlPath) {
-      helpers.showAndLogErrorMessage(`CodeQL distribution must be configured. Set the '${DISTRIBUTION_PATH_SETTING.qualifiedName}' setting.`);
-    }
     this._onDidChangeQueryServerConfiguration.fire();
   }
 }

@@ -15,7 +15,7 @@ export class DistributionManager {
   }
 
   /**
-   * Returns the path to the CodeQL launcher executable, or undefined if CodeQL could not be found.
+   * Returns the path to the CodeQL launcher executable, or undefined if one could not be found.
    */
   public async getLauncherPath(): Promise<string | undefined> {
     // Check extension specific distribution, then PATH.
@@ -23,7 +23,7 @@ export class DistributionManager {
     // distribution installed already?
     if (this.getExtensionSpecificRelease() !== undefined) {
       // An extension specific distribution has been installed.
-      const expectedLauncherPath = path.join(this.getExtensionSpecificDistributionPath(), "codeql", "codeql");
+      const expectedLauncherPath = path.join(this.getExtensionSpecificDistributionPath(), "codeql");
       if (await fs.pathExists(expectedLauncherPath)) {
         return expectedLauncherPath;
       }
@@ -79,8 +79,8 @@ export class DistributionManager {
         .on("error", reject)
     );
 
-    logger.log(`Extracting distribution to ${this.getExtensionSpecificDistributionPath()}`);
-    await extractZipArchive(archivePath, this.getExtensionSpecificDistributionPath());
+    logger.log(`Extracting distribution to ${this.getExtensionSpecificDistributionsStoragePath()}`);
+    await extractZipArchive(archivePath, this.getExtensionSpecificDistributionsStoragePath());
 
     // Store the installed release within the global extension state.
     this.storeExtensionSpecificRelease(release);
@@ -90,8 +90,12 @@ export class DistributionManager {
     return new ReleasesApiConsumer(this._config.ownerName, this._config.repositoryName, this._config.personalAccessToken);
   }
 
-  private getExtensionSpecificDistributionPath(): string {
+  private getExtensionSpecificDistributionsStoragePath(): string {
     return path.join(this._extensionContext.globalStoragePath, DistributionManager._distributionFolderName);
+  }
+
+  private getExtensionSpecificDistributionPath(): string {
+    return path.join(this.getExtensionSpecificDistributionsStoragePath(), "codeql");
   }
 
   private getExtensionSpecificRelease(): Release | undefined {

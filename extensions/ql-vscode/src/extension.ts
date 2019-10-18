@@ -6,7 +6,7 @@ import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
 import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal } from './queries';
 import * as qsClient from './queryserver-client';
-import { QLConfigurationListener } from './config';
+import { QueryServerConfigListener, DistributionConfigListener } from './config';
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { logger, queryServerLogger, ideServerLogger } from './logging';
@@ -25,10 +25,9 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   ctx.subscriptions.push(logger);
   logger.log('Starting QL extension');
 
-  const qlConfigurationListener = new QLConfigurationListener();
-  ctx.subscriptions.push(qlConfigurationListener);
-
-  const distributionManager = new DistributionManager(ctx, qlConfigurationListener);
+  const distributionConfigListener = new DistributionConfigListener();
+  ctx.subscriptions.push(distributionConfigListener);
+  const distributionManager = new DistributionManager(ctx, distributionConfigListener);
 
   async function downloadOrUpdateDistribution(): Promise<void> {
     const result = await distributionManager.installOrUpdateDistribution();
@@ -52,13 +51,14 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   if (await distributionManager.getLauncherPath() === undefined) {
     await downloadOrUpdateDistribution();
   }
-  
-  activateWithInstalledDistribution(ctx, qlConfigurationListener);
+
+  const codeQlPath = await distributionManager.getLauncherPath();
+  activateWithInstalledDistribution(ctx, codeQlPath!);
 }
 
-async function activateWithInstalledDistribution(
-  ctx: ExtensionContext,
-  qlConfigurationListener: QLConfigurationListener) {
+async function activateWithInstalledDistribution(ctx: ExtensionContext, codeQlPath: string) {
+  const qlConfigurationListener = new QueryServerConfigListener(codeQlPath);
+  ctx.subscriptions.push(qlConfigurationListener);
 
   ctx.subscriptions.push(queryServerLogger);
   ctx.subscriptions.push(ideServerLogger);
