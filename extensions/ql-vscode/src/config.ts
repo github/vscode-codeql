@@ -50,12 +50,14 @@ export interface QueryServerConfig {
 // Distribution configuration
 
 const DISTRIBUTION_SETTING = new Setting('distribution', ROOT_SETTING);
+const CUSTOM_CODEQL_PATH_SETTING = new Setting('codeQlPath', DISTRIBUTION_SETTING);
 const INCLUDE_PRERELEASE_SETTING = new Setting('includePrerelease', DISTRIBUTION_SETTING);
 const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIBUTION_SETTING);
 const OWNER_NAME_SETTING = new Setting('owner', DISTRIBUTION_SETTING);
 const REPOSITORY_NAME_SETTING = new Setting('repository', DISTRIBUTION_SETTING);
 
 export interface DistributionConfig {
+  customCodeQlPath?: string;
   includePrerelease: boolean;
   personalAccessToken?: string;
   ownerName: string;
@@ -80,6 +82,10 @@ abstract class ConfigListener extends DisposableObject {
 }
 
 export class DistributionConfigListener extends DisposableObject implements DistributionConfig {
+  public get customCodeQlPath(): string | undefined {
+    return CUSTOM_CODEQL_PATH_SETTING.getValue() !== null ? CUSTOM_CODEQL_PATH_SETTING.getValue() : undefined;
+  }
+
   public get includePrerelease(): boolean {
     return INCLUDE_PRERELEASE_SETTING.getValue();
   }

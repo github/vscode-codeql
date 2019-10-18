@@ -7,6 +7,7 @@ import * as url from "url";
 import { ExtensionContext } from "vscode";
 import { DistributionConfig } from "./config";
 import { logger } from "./logging";
+import { showAndLogErrorMessage } from "./helpers";
 
 export class DistributionManager {
   constructor(extensionContext: ExtensionContext, config: DistributionConfig) {
@@ -17,17 +18,24 @@ export class DistributionManager {
   /**
    * Returns the path to the CodeQL launcher executable, or undefined if one could not be found.
    */
-  public async getLauncherPath(): Promise<string | undefined> {
-    // Check extension specific distribution, then PATH.
-    // TODO: Does it make sense for users to want to use PATH when they have an extension specific
-    // distribution installed already?
+  public async getCodeQlPath(): Promise<string | undefined> {
+    // Check config setting, then extension specific distribution, then PATH.
+    if (this._config.customCodeQlPath !== undefined) {
+      if (!await fs.pathExists(this._config.customCodeQlPath)) {
+        showAndLogErrorMessage("The CodeQL executable path is specified by a configuration setting, but a CodeQL " +
+          "executable could not be found at that path.  Please check that a CodeQL executable exists at the " + 
+          "specified path, or remove the setting.");
+      }
+      return this._config.customCodeQlPath;
+    }
+
     if (this.getExtensionSpecificRelease() !== undefined) {
       // An extension specific distribution has been installed.
       const expectedLauncherPath = path.join(this.getExtensionSpecificDistributionPath(), "codeql");
       if (await fs.pathExists(expectedLauncherPath)) {
         return expectedLauncherPath;
       }
-      logger.log(`WARNING: Expected to find a CodeQL distribution at ${this.getExtensionSpecificDistributionPath()} but one was not found.`);
+      logger.log(`WARNING: Expected to find a CodeQL distribution at ${this.getExtensionSpecificDistributionPath()} but one was not found.  Will try PATH.`);
     }
 
     if (process.env.PATH) {
@@ -46,7 +54,7 @@ export class DistributionManager {
   public async installOrUpdateDistribution(): Promise<DistributionInstallOrUpdateResult> {
     const extensionSpecificRelease = this.getExtensionSpecificRelease();
 
-    if (extensionSpecificRelease === undefined && (await this.getLauncherPath()) !== undefined) {
+    if (extensionSpecificRelease === undefined && (await this.getCodeQlPath()) !== undefined) {
       // A distribution is present but it isn't managed by the extension.
       return createInvalidDistributionLocationResult();
     }

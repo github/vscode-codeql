@@ -48,11 +48,11 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
   ctx.subscriptions.push(commands.registerCommand('ql.updateTools', () => downloadOrUpdateDistribution()));
 
-  if (await distributionManager.getLauncherPath() === undefined) {
+  if (await distributionManager.getCodeQlPath() === undefined) {
     await downloadOrUpdateDistribution();
   }
 
-  const codeQlPath = await distributionManager.getLauncherPath();
+  const codeQlPath = await distributionManager.getCodeQlPath();
   activateWithInstalledDistribution(ctx, codeQlPath!);
 }
 
