@@ -64,7 +64,8 @@ export async function resolveRam(config: QLConfiguration, logger: Logger): Promi
  */
 async function runCodeQlCliCommand(config: QLConfiguration, command: string[], commandArgs: string[], description: string, logger: Logger): Promise<string> {
   const base = config.codeQlPath;
-  const args = command.concat(commandArgs).concat('-v', '--log=-');
+  // Add logging arguments first, in case commandArgs contains positional parameters.
+  const args = command.concat('-v', '--log=-').concat(commandArgs);
   const argsString = args.join(" ");
   try {
     logger.log(`${description} using CodeQL CLI: ${base} ${argsString}...`);
@@ -86,7 +87,9 @@ async function runCodeQlCliCommand(config: QLConfiguration, command: string[], c
  * @returns The contents of the command's stdout, if the command succeeded.
  */
 async function runJsonCodeQlCliCommand<OutputType>(config: QLConfiguration, command: string[], commandArgs: string[], description: string, logger: Logger): Promise<OutputType> {
-  const result = await runCodeQlCliCommand(config, command, commandArgs.concat(['--format', 'json']), description, logger);
+  // Add format argument first, in case commandArgs contains positional parameters.
+  const args = ['--format', 'json'].concat(commandArgs);
+  const result = await runCodeQlCliCommand(config, command, args, description, logger);
   try {
     return JSON.parse(result) as OutputType;
   } catch (err) {
