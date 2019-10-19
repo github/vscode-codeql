@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import * as fs from 'fs';
 import 'mocha';
 import * as path from 'path';
 import * as bqrs from 'semmle-bqrs';
@@ -45,10 +46,33 @@ class Checkpoint<T> {
   }
 }
 
-const compilationSucceeded = new Checkpoint<void>();
-const evaluationSucceeded = new Checkpoint<void>();
+type ResultSets = {
+  [name: string]: bqrs.ColumnValue[][]
+}
 
-describe('using the query server', () => {
+type QueryTestCase = {
+  queryPath: string,
+  expectedResultSets: ResultSets
+}
+
+// Test cases: queries to run and their expected results.
+const queryTestCases: QueryTestCase[] = [
+  {
+    queryPath: path.join(__dirname, '../data/query.ql'),
+    expectedResultSets: {
+      '#select': [[42, 3.14159, "hello world", true]]
+    }
+  },
+  {
+    queryPath: path.join(__dirname, '../data/multiple-result-sets.ql'),
+    expectedResultSets: {
+      'edges': [[1, 2], [2, 3]],
+      '#select': [["s"]]
+    }
+  }
+];
+
+describe('using the query server', function () {
   const codeQlPath = process.env["CODEQL_DIST"];
   if (codeQlPath == undefined) {
     throw new Error('Need environment variable CODEQL_DIST to find CodeQL CLI.');
@@ -60,7 +84,7 @@ describe('using the query server', () => {
       qs.dispose();
     }
   });
-  it('should be able to start the query server', async () => {
+  it('should be able to start the query server', async function () {
     const consoleProgressReporter: ProgressReporter = {
       report: v => console.log(`progress reporter says ${v.message}`)
     };
@@ -82,91 +106,104 @@ describe('using the query server', () => {
     await qs.startQueryServer();
   });
 
-  it('should be able to compile a query', async function () {
-    this.timeout(5000);
-    try {
-      const qlProgram: messages.QlProgram = {
-        libraryPath: [],
-        dbschemePath: path.join(__dirname, '../data/test.dbscheme'),
-        queryPath: path.join(__dirname, '../data/query.ql')
-      };
-      const params: messages.CompileQueryParams = {
-        compilationOptions: {
-          computeNoLocationUrls: true,
-          failOnWarnings: false,
-          fastCompilation: false,
-          includeDilInQlo: true,
-          localChecking: false,
-          noComputeGetUrl: false,
-          noComputeToString: false,
-        },
-        queryToCheck: qlProgram,
-        resultPath: COMPILED_QUERY_PATH,
-        target: { query: {} }
-      };
-      const result = await qs.sendRequest(messages.compileQuery, params, token, () => { });
-      expect(result.messages!.length).to.equal(0);
-      compilationSucceeded.resolve();
-    }
-    catch (e) {
-      compilationSucceeded.reject(e);
-    }
-  });
+  // Note this does not work with arrow functions as the test case bodies:
+  // ensure they are all written with standard anonymous functions.
+  this.timeout(5000);
 
-  it('should be able to run a query', async () => {
-    try {
-      await compilationSucceeded.done();
-      const callbackId = qs.registerCallback(res => {
-        evaluationSucceeded.resolve();
-      });
-      const queryToRun: messages.QueryToRun = {
-        resultsPath: RESULTS_PATH,
-        qlo: url.pathToFileURL(COMPILED_QUERY_PATH).toString(),
-        allowUnknownTemplates: true,
-        id: callbackId,
-        timeoutSecs: 1000,
-      };
-      const db: messages.Dataset = {
-        dbDir: path.join(__dirname, '../test-db'),
-        workingSet: 'default',
-      }
-      const params: messages.EvaluateQueriesParams = {
-        db,
-        evaluateId: callbackId,
-        queries: [queryToRun],
-        stopOnError: false,
-        useSequenceHint: false
-      };
-      await qs.sendRequest(messages.runQueries, params, token, () => { });
-    }
-    catch (e) {
-      evaluationSucceeded.reject(e);
-    }
-  });
+  for (const queryTestCase of queryTestCases) {
+    const queryName = path.basename(queryTestCase.queryPath);
+    const compilationSucceeded = new Checkpoint<void>();
+    const evaluationSucceeded = new Checkpoint<void>();
 
-  it('should be able to parse results', async () => {
-    await evaluationSucceeded.done();
-    let fileReader: FileReader | undefined;
-    let rows: bqrs.ColumnValue[][] = [];
-    try {
-      fileReader = await FileReader.open(RESULTS_PATH);
-      const resultSets = await bqrs.open(fileReader);
-      expect(resultSets.schema.resultSets.length).to.equal(1);
-      expect(resultSets.resultSets.length).to.equal(1);
-      for await (const row of resultSets.resultSets[0].readTuples()) {
-        rows.push(row);
+    it(`should be able to compile query ${queryName}`, async function () {
+      expect(fs.existsSync(queryTestCase.queryPath)).to.be.true;
+      try {
+        const qlProgram: messages.QlProgram = {
+          libraryPath: [],
+          dbschemePath: path.join(__dirname, '../data/test.dbscheme'),
+          queryPath: queryTestCase.queryPath
+        };
+        const params: messages.CompileQueryParams = {
+          compilationOptions: {
+            computeNoLocationUrls: true,
+            failOnWarnings: false,
+            fastCompilation: false,
+            includeDilInQlo: true,
+            localChecking: false,
+            noComputeGetUrl: false,
+            noComputeToString: false,
+          },
+          queryToCheck: qlProgram,
+          resultPath: COMPILED_QUERY_PATH,
+          target: { query: {} }
+        };
+        const result = await qs.sendRequest(messages.compileQuery, params, token, () => { });
+        expect(result.messages!.length).to.equal(0);
+        compilationSucceeded.resolve();
       }
-    } finally {
-      if (fileReader) {
-        fileReader.dispose();
+      catch (e) {
+        compilationSucceeded.reject(e);
       }
-    }
-    expect(rows.length).to.equal(1);
-    const row = rows[0];
-    expect(row.length).to.equal(4);
-    expect(row[0]).to.eql(42);
-    expect(row[1]).to.eql(3.14159);
-    expect(row[2]).to.eql("hello world");
-    expect(row[3]).to.eql(true);
-  });
+    });
+
+    it(`should be able to run query ${queryName}`, async function () {
+      try {
+        await compilationSucceeded.done();
+        const callbackId = qs.registerCallback(res => {
+          evaluationSucceeded.resolve();
+        });
+        const queryToRun: messages.QueryToRun = {
+          resultsPath: RESULTS_PATH,
+          qlo: url.pathToFileURL(COMPILED_QUERY_PATH).toString(),
+          allowUnknownTemplates: true,
+          id: callbackId,
+          timeoutSecs: 1000,
+        };
+        const db: messages.Dataset = {
+          dbDir: path.join(__dirname, '../test-db'),
+          workingSet: 'default',
+        }
+        const params: messages.EvaluateQueriesParams = {
+          db,
+          evaluateId: callbackId,
+          queries: [queryToRun],
+          stopOnError: false,
+          useSequenceHint: false
+        };
+        await qs.sendRequest(messages.runQueries, params, token, () => { });
+      }
+      catch (e) {
+        evaluationSucceeded.reject(e);
+      }
+    });
+
+    const actualResultSets: ResultSets = {};
+    it(`should be able to parse results of query ${queryName}`, async function () {
+      let fileReader: FileReader | undefined;
+      try {
+        await evaluationSucceeded.done();
+        fileReader = await FileReader.open(RESULTS_PATH);
+        const resultSetsReader = await bqrs.open(fileReader);
+        for (const reader of resultSetsReader.resultSets) {
+          const actualRows: bqrs.ColumnValue[][] = [];
+          for await (const row of reader.readTuples()) {
+            actualRows.push(row);
+          }
+          actualResultSets[reader.schema.name] = actualRows;
+        }
+      } finally {
+        if (fileReader) {
+          fileReader.dispose();
+        }
+      }
+    });
+
+    it(`should have correct results for query ${queryName}`, async function () {
+      expect(actualResultSets!).not.to.be.empty;
+      expect(Object.keys(actualResultSets!).sort()).to.eql(Object.keys(queryTestCase.expectedResultSets).sort());
+      for (const name in queryTestCase.expectedResultSets) {
+        expect(actualResultSets![name]).to.eql(queryTestCase.expectedResultSets[name], `Results for query predicate ${name} do not match`);
+      }
+    });
+  }
 });
