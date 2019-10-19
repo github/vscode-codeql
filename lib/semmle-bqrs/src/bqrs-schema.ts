@@ -55,7 +55,7 @@ export interface ResultSetSchema {
 }
 
 /**
- * The schema describe the contents of a BQRS file.
+ * The schema describing the contents of a BQRS file.
  */
 export interface ResultSetsSchema {
   readonly version: number,
