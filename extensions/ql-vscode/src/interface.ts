@@ -138,10 +138,13 @@ export class InterfaceManager extends DisposableObject {
       }
     }
 
+    const resultsUriOnDisk = Uri.file(info.query.resultsPath);
+    const resultsPath = this.getPanel().webview.asWebviewUri(resultsUriOnDisk).toString(true);
+
     this.postMessage({
       t: 'setState',
       interpretation,
-      resultsPath: Uri.file(info.query.resultsPath).with({ scheme: 'vscode-resource' }).toString(true),
+      resultsPath: resultsPath,
       database: info.database
     });
     const fileReader = await FileReader.open(info.query.resultsPath);
