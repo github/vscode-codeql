@@ -31,7 +31,7 @@ export class DistributionManager {
 
     if (this.getExtensionSpecificRelease() !== undefined) {
       // An extension specific distribution has been installed.
-      const expectedLauncherPath = path.join(this.getExtensionSpecificDistributionPath(), "codeql");
+      const expectedLauncherPath = path.join(this.getExtensionSpecificDistributionPath(), DistributionManager._launcherName);
       if (await fs.pathExists(expectedLauncherPath)) {
         return expectedLauncherPath;
       }
@@ -47,7 +47,7 @@ export class DistributionManager {
 
     if (process.env.PATH) {
       for (const searchDirectory of process.env.PATH.split(path.delimiter)) {
-        const expectedLauncherPath = path.join(searchDirectory, "codeql");
+        const expectedLauncherPath = path.join(searchDirectory, DistributionManager._launcherName);
         if (await fs.pathExists(expectedLauncherPath)) {
           return expectedLauncherPath;
         }
@@ -58,6 +58,11 @@ export class DistributionManager {
     return undefined;
   }
 
+  /**
+   * Installs an extension-managed distribution, or updates one if one has already been installed.
+   * 
+   * Returns a failed promise if an unexpected error occurs during installation.
+   */
   public async installOrUpdateDistribution(
     progressCallback?: (p: ProgressUpdate) => void): Promise<DistributionInstallOrUpdateResult> {
     const extensionSpecificRelease = this.getExtensionSpecificRelease();
@@ -87,7 +92,7 @@ export class DistributionManager {
   private async getLatestRelease(): Promise<Release> {
     const release = await this.createReleasesApiConsumer().getLatestRelease(this._config.includePrerelease);
     if (release.assets.length !== 1) {
-      throw new Error("Release had an unexpected number of assets")
+      throw new Error("Release had an unexpected number of assets");
     }
     return release;
   }
@@ -132,11 +137,11 @@ export class DistributionManager {
   }
 
   private getExtensionSpecificDistributionsStoragePath(): string {
-    return path.join(this._extensionContext.globalStoragePath, DistributionManager._distributionFolderName);
+    return path.join(this._extensionContext.globalStoragePath, DistributionManager._distributionsFolderName);
   }
 
   private getExtensionSpecificDistributionPath(): string {
-    return path.join(this.getExtensionSpecificDistributionsStoragePath(), "codeql");
+    return path.join(this.getExtensionSpecificDistributionsStoragePath(), DistributionManager._extractedDistributionFolderName);
   }
 
   private getExtensionSpecificRelease(): Release | undefined {
@@ -150,8 +155,10 @@ export class DistributionManager {
   private readonly _config: DistributionConfig;
   private readonly _extensionContext: ExtensionContext;
 
-  private static readonly _distributionFolderName: string = "distribution";
+  private static readonly _distributionsFolderName: string = "distributions";
   private static readonly _extensionSpecificReleaseStateKey = "distributionRelease";
+  private static readonly _extractedDistributionFolderName: string = "codeql";
+  private static readonly _launcherName: string = "codeql";
 }
 
 export class ReleasesApiConsumer {
@@ -170,7 +177,8 @@ export class ReleasesApiConsumer {
   public async getLatestRelease(includePrerelease: boolean = false): Promise<Release> {
     if (!includePrerelease) {
       const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases/latest`;
-      return await (await this.makeApiCall(apiPath)).json();
+      const response = await this.makeApiCall(apiPath);
+      return response.json();
     }
 
     const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases`;
@@ -308,6 +316,9 @@ function createInvalidDistributionLocationResult(): InvalidDistributionLocationR
   };
 }
 
+/**
+ * A release on GitHub.
+ */
 export interface Release {
   assets: ReleaseAsset[];
 
@@ -327,6 +338,9 @@ export interface Release {
   name: string;
 }
 
+/**
+ * An asset corresponding to a release on GitHub.
+ */
 export interface ReleaseAsset {
   /**
    * The id associated with the asset on GitHub.

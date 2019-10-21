@@ -65,16 +65,12 @@ export interface DistributionConfig {
 }
 
 abstract class ConfigListener extends DisposableObject {
-  protected readonly _onDidChangeQueryServerConfiguration = this.push(new EventEmitter<void>());
+  protected readonly _onDidChangeConfiguration = this.push(new EventEmitter<void>());
 
   constructor() {
     super();
     this.updateConfiguration();
     this.push(workspace.onDidChangeConfiguration(this.handleDidChangeConfiguration, this));
-  }
-
-  public get onDidChangeQueryServerConfiguration(): Event<void> {
-    return this._onDidChangeQueryServerConfiguration.event;
   }
 
   protected abstract handleDidChangeConfiguration(e: ConfigurationChangeEvent): void;
@@ -131,6 +127,10 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
     return this._queryMemoryMb;
   }
 
+  public get onDidChangeQueryServerConfiguration(): Event<void> {
+    return this._onDidChangeConfiguration.event;
+  }
+
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     // Check whether any options that affect query running were changed.
     for(const option of QUERY_SERVER_RESTARTING_SETTINGS) {
@@ -145,6 +145,6 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
   protected updateConfiguration(): void {
     this._numThreads = NUMBER_OF_THREADS_SETTING.getValue<number>();
     this._queryMemoryMb = MEMORY_SETTING.getValue<number>();
-    this._onDidChangeQueryServerConfiguration.fire();
+    this._onDidChangeConfiguration.fire();
   }
 }

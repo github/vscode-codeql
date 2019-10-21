@@ -92,7 +92,7 @@
           "scope": "window",
           "type": "string",
           "default": null,
-          "description": "Whether prereleases should be included when installing the distribution."
+          "description": "GitHub personal access token for authenticating to GitHub.  This is required if ql.distribution.owner and ql.distribution.repository refer to a private repository."
         },
         "ql.distribution.owner": {
           "scope": "window",
