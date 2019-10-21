@@ -94,7 +94,7 @@ export class InterfaceManager extends DisposableObject {
       const scriptPathOnDisk = vscode.Uri
         .file(ctx.asAbsolutePath('out/resultsView.js'));
       const stylesheetPathOnDisk = vscode.Uri
-        .file(ctx.asAbsolutePath('out/results.css'));
+        .file(ctx.asAbsolutePath('out/resultsView.css'));
       getHtmlForWebview(panel.webview, scriptPathOnDisk, stylesheetPathOnDisk);
       panel.webview.onDidReceiveMessage(this.handleMsgFromView, undefined, ctx.subscriptions);
     }
