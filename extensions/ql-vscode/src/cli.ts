@@ -203,11 +203,9 @@ export async function interpretBqrs(config: QLConfiguration, metadata: { kind: s
 }
 
 /**
- * Returns the `DbInfoFileData` for a database.
+ * Returns the `DbInfo` for a database.
  * @param config The configuration containing the path to the CLI.
- * @param metadata Query metadata according to which we should interpret results.
- * @param resultsPath Path to the BQRS file to interpret.
- * @param interpretedResultsPath Path to the SARIF file to output.
+ * @param databasePath Path to the CodeQL database to obtain information from.
  * @param logger Logger to write startup messages.
  */
 export function resolveDatabase(config: QLConfiguration, databasePath: string, logger: Logger): Promise<DbInfo> {
