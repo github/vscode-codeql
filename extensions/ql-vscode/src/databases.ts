@@ -48,12 +48,10 @@ interface PersistedDatabaseItem {
  * The layout of the database
  */
 export enum DatabaseKind {
-  /** A database exported by `odasa export` */
-  Exported,
-  /** A database built by `odasa buildSnapshot` */
-  Odasa,
-  /** A raw QL dataset */
-  Dataset
+  /** A normal database */
+  Database,
+  /** A raw dataset */
+  RawDataset
 }
 
 export interface DatabaseContents {
@@ -61,13 +59,9 @@ export interface DatabaseContents {
   kind: DatabaseKind;
   /**
    * The name of the database.
-   *
-   * @remarks
-   * If the project file for the database specifies a name, that name will be used. Otherwise, the
-   * name is derived from the directory name of the database.
    */
   name: string;
-  /** The URI of the QL database within the database. */
+  /** The URI of the QL dataset within the database. */
   datasetUri: vscode.Uri;
   /** The URI of the source archive within the database, if one exists. */
   sourceArchiveUri?: vscode.Uri;
@@ -82,41 +76,23 @@ export interface DatabaseContents {
 class InvalidDatabaseError extends Error {
 }
 
-async function readXmlFile(path: string): Promise<any> {
-  const xml = await fs.readFile(path, 'utf8');
-  return new Promise((resolve, reject) => {
-    xml2js.parseString(xml, { explicitArray: false }, (err, result) => {
-      if (err) {
-        reject(err);
-      }
-      else {
-        resolve(result);
-      }
-    });
-  });
-}
-
-function getXmlElementContent(xml: any, elementPath: string): string | undefined {
-  let current = xml;
-  for (const name of elementPath.split('.')) {
-    if (typeof current !== 'object') {
-      return undefined;
-    }
-    current = current[name];
-  }
-  if (typeof current === 'string') {
-    return current;
-  }
-  else {
-    return undefined;
-  }
-}
 
 async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
-  const dbRelativePaths = await glob('db-*/', {
+  /*
+   * Look directly in the root
+   */
+  let dbRelativePaths = await glob('db-*/', {
     cwd: parentDirectory
   });
 
+  if (dbRelativePaths.length === 0) {
+    /*
+     * Check If they are in the old location
+     */
+    dbRelativePaths = await glob('working/db-*/', {
+      cwd: parentDirectory
+    });
+  }
   if (dbRelativePaths.length === 0) {
     throw new InvalidDatabaseError(`'${parentDirectory}' does not contain a dataset directory.`);
   }
@@ -129,76 +105,42 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
   return vscode.Uri.file(dbAbsolutePath);
 }
 
-async function findSourceArchive(databasePath: string, basePath: string):
+async function findSourceArchive(databasePath: string):
   Promise<vscode.Uri | undefined> {
 
-  const zipPath = basePath + '.zip';
-  if (await fs.pathExists(basePath)) {
-    return vscode.Uri.file(basePath);
+  const relativePaths = ['src', 'output/src_archive']
+
+  for (const relativePath of relativePaths) {
+    const basePath = path.join(databasePath, relativePath);
+    const zipPath = basePath + '.zip';
+
+    if (await fs.pathExists(basePath)) {
+      return vscode.Uri.file(basePath);
+    }
+    else if (await fs.pathExists(zipPath)) {
+      return vscode.Uri.file(zipPath).with({ scheme: zipArchiveScheme });
+    }
   }
-  else if (await fs.pathExists(zipPath)) {
-    return vscode.Uri.file(zipPath).with({ scheme: zipArchiveScheme });
-  }
-  else {
-    showAndLogInformationMessage(`Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`);
-    return undefined;
-  }
+  showAndLogInformationMessage(`Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`);
+  return undefined;
 }
 
-async function resolveExportedDatabase(databasePath: string):
+async function resolveDatabase(databasePath: string):
   Promise<DatabaseContents | undefined> {
 
-  const dotProjectPath = path.join(databasePath, '.project');
-  if (await fs.pathExists(dotProjectPath)) {
-    // Looks like an exported database.
+  const name = path.basename(databasePath);
 
-    const dotProjectXml = await readXmlFile(dotProjectPath);
-    const name = getXmlElementContent(dotProjectXml, 'projectDescription.name') ||
-      path.basename(databasePath);
+  // Look for dataset and source archive.
+  const datasetUri = await findDataset(databasePath);
+  const sourceArchiveUri = await findSourceArchive(databasePath);
 
-    // Database and source archive are directly under the root of the database.
-    const datasetUri = await findDataset(databasePath);
-    const sourceArchiveUri = await findSourceArchive(databasePath, path.join(databasePath, 'src'));
+  return {
+    kind: DatabaseKind.Database,
+    name,
+    datasetUri,
+    sourceArchiveUri
+  };
 
-    return {
-      kind: DatabaseKind.Exported,
-      name,
-      datasetUri,
-      sourceArchiveUri
-    };
-  }
-  else {
-    return undefined;
-  }
-}
-
-async function resolveOdasaSnapshot(snapshotPath: string): Promise<DatabaseContents | undefined> {
-  const snapshotFilePath = path.join(snapshotPath, 'snapshot');
-  if (await fs.pathExists(snapshotFilePath)) {
-    // Looks like an Odasa snapshot.
-    const odasaProjectDirectory = path.resolve(snapshotPath, '..');
-    const odasaProjectFilePath = path.join(odasaProjectDirectory, 'project');
-    const projectXml = await readXmlFile(odasaProjectFilePath);
-    const projectName = getXmlElementContent(projectXml, 'project.name') ||
-      path.basename(odasaProjectDirectory);
-    const name = `${projectName}/${path.basename(snapshotPath)}`;
-
-    // Database directory is under the 'working' directory.
-    const datasetUri = await findDataset(path.join(snapshotPath, 'working'));
-    // Source archive is under the 'output' directory.
-    const sourceArchiveUri = await findSourceArchive(snapshotPath,
-      path.join(snapshotPath, 'output/src_archive'));
-
-    return {
-      kind: DatabaseKind.Odasa,
-      name: name,
-      datasetUri: datasetUri,
-      sourceArchiveUri: sourceArchiveUri
-    };
-  }
-  else {
-    return undefined;
-  }
 }
 
 /** Gets the relative paths of all `.dbscheme` files in the given directory. */
@@ -206,10 +148,10 @@ async function getDbSchemeFiles(dbDirectory: string): Promise<string[]> {
   return await glob('*.dbscheme', { cwd: dbDirectory });
 }
 
-async function resolveRawDatabase(datasetPath: string): Promise<DatabaseContents | undefined> {
+async function resolveRawDataset(datasetPath: string): Promise<DatabaseContents | undefined> {
   if ((await getDbSchemeFiles(datasetPath)).length > 0) {
     return {
-      kind: DatabaseKind.Dataset,
+      kind: DatabaseKind.RawDataset,
       name: path.basename(datasetPath),
       datasetUri: vscode.Uri.file(datasetPath),
       sourceArchiveUri: undefined
@@ -229,16 +171,14 @@ async function resolveDatabaseContents(uri: vscode.Uri): Promise<DatabaseContent
     throw new InvalidDatabaseError(`Database '${databasePath}' does not exist.`);
   }
 
-  const contents = await resolveExportedDatabase(databasePath) ||
-    await resolveOdasaSnapshot(databasePath) ||
-    await resolveRawDatabase(databasePath);
+  const contents = await resolveDatabase(databasePath) || await resolveRawDataset(databasePath);
 
   if (contents === undefined) {
-    throw new InvalidDatabaseError(`'${databasePath}' is not a valid Database.`);
+    throw new InvalidDatabaseError(`'${databasePath}' is not a valid database.`);
   }
 
-  // Look for a single DB scheme file within the database.
-  // This should be found in the database directory, regardless of the form of database.
+  // Look for a single dbscheme file within the database.
+  // This should be found in the dataset directory, regardless of the form of database.
   const dbPath = contents.datasetUri.fsPath;
   const dbSchemeFiles = await getDbSchemeFiles(dbPath);
   if (dbSchemeFiles.length === 0) {

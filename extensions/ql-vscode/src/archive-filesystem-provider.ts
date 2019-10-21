@@ -94,7 +94,8 @@ class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     const zipContent = await fs.readFile(uri.path);
     const archive = await jszip.loadAsync(zipContent);
     logger.log(`${JSON.stringify(uri)} ${uri.fragment}`);
-    const file = archive.file('src_archive/' + uri.fragment);
+    // Depending on the zip there could be a src_archive section to the path or not.
+    const file = archive.file(uri.fragment)||archive.file('src_archive/' + uri.fragment);
     if (file === null)
       throw vscode.FileSystemError.FileNotFound(uri);
     return new File(uri.fragment, await file.async('nodebuffer'));
