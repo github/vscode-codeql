@@ -157,7 +157,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         const renderedLocation = renderSarifLocation({ text: parts[i + 1] }, relatedLocationsById[parts[i + 2]]);
         result.push(<span>{parts[i]}{renderedLocation}</span>);
       }
-      result.push(<span>{parts[parts.length]}</span>);
+      result.push(<span>{parts[parts.length - 1]}</span>);
       return result;
     }
 
@@ -243,9 +243,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       const currentResultExpanded = this.state.expanded[expansionIndex];
       const indicator = currentResultExpanded ? '-' : '+';
       if (result.codeFlows === undefined) {
+        let rowHeader = <td>Result</td>;
+        if (result.locations !== undefined && result.locations.length > 0) {
+          rowHeader = <td>{renderSarifLocation({ text: 'Result' }, result.locations[0])}</td>;
+        }
         rows.push(
           <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
-            <td>Result</td><td>{msg}</td>
+            {rowHeader}<td>{msg}</td>
           </tr>
         );
       }
