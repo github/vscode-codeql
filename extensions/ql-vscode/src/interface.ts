@@ -95,7 +95,7 @@ export class InterfaceManager extends DisposableObject {
     ) {
       try {
         const sarif = await interpretResults(this.config, info.query, this.logger);
-        const sourceLocationPrefix = await info.query.dbItem.getSourceLocationPrefix();
+        const sourceLocationPrefix = await info.query.dbItem.getSourceLocationPrefix(this.config, this.logger);
         interpretation = { sarif, sourceLocationPrefix };
       }
       catch (e) {

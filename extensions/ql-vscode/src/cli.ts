@@ -22,6 +22,19 @@ export interface QuerySetup {
 }
 
 /**
+ * The expected output of codeql resolve database.
+ */
+export interface DbInfo {
+  sourceLocationPrefix: string;
+  columnKind: string;
+  unicodeNewlines: boolean;
+  sourceArchiveZip: string;
+  sourceArchiveRoot: string;
+  datasetFolder: string;
+  logsFolder: string;
+}
+
+/**
  * Resolve the library path and dbscheme for a query.
  * @param config The configuration
  * @param workspaces The current open workspaces
@@ -187,4 +200,17 @@ export async function interpretBqrs(config: QLConfiguration, metadata: { kind: s
   } catch (err) {
     throw new Error(`Parsing output of interpretation failed: ${err.stderr || err}`)
   }
+}
+
+/**
+ * Returns the `DbInfoFileData` for a database.
+ * @param config The configuration containing the path to the CLI.
+ * @param metadata Query metadata according to which we should interpret results.
+ * @param resultsPath Path to the BQRS file to interpret.
+ * @param interpretedResultsPath Path to the SARIF file to output.
+ * @param logger Logger to write startup messages.
+ */
+export function resolveDatabase(config: QLConfiguration, databasePath: string, logger: Logger): Promise<DbInfo> {
+  return runJsonCodeQlCliCommand(config, ['resolve', 'database'], [databasePath],
+    "Resolving database", logger);
 }

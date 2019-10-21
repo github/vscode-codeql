@@ -2,11 +2,13 @@ import * as fs from 'fs-extra';
 import * as glob from 'glob-promise';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import * as xml2js from 'xml2js';
+import * as cli from './cli';
 import { ExtensionContext } from 'vscode';
 import { showAndLogErrorMessage, showAndLogWarningMessage, showAndLogInformationMessage } from './helpers';
 import { zipArchiveScheme } from './archive-filesystem-provider';
 import { DisposableObject } from 'semmle-vscode-utils';
+import { QLConfiguration } from './config';
+import { Logger } from './logging';
 
 /**
  * databases.ts
@@ -33,10 +35,6 @@ const DB_LIST: string = 'databaseList';
 export interface DatabaseOptions {
   displayName?: string;
   ignoreSourceArchive?: boolean;
-}
-
-interface DbInfoFileData {
-  ['ns2:dbinfo']: { sourceLocationPrefix: string };
 }
 
 interface FullDatabaseOptions extends DatabaseOptions {
@@ -235,7 +233,7 @@ export interface DatabaseItem {
   /**
    * Returns `sourceLocationPrefix` of exported database.
    */
-  getSourceLocationPrefix(): Promise<string>;
+  getSourceLocationPrefix(config: QLConfiguration, logger: Logger): Promise<string>;
 }
 
 class DatabaseItemImpl implements DatabaseItem {
@@ -347,20 +345,12 @@ class DatabaseItemImpl implements DatabaseItem {
   }
 
   /**
-   * Returns contents of `.dbinfo` xml file for this exported snapshot, as
-   * nested plain js object.
-   */
-  private async dbInfo(): Promise<DbInfoFileData> {
-    return await readXmlFile(path.join(this.databaseUri.fsPath, '.dbinfo'));
-  }
-
-  /**
    * Returns `sourceLocationPrefix` of database. Requires that the database
    * has a `.dbinfo` file, which is the source of the prefix.
    */
-  public async getSourceLocationPrefix(): Promise<string> {
-    const dbInfo = await this.dbInfo();
-    return dbInfo['ns2:dbinfo'].sourceLocationPrefix;
+  public async getSourceLocationPrefix(config: QLConfiguration, logger: Logger): Promise<string> {
+    const dbInfo = await cli.resolveDatabase(config, this.databaseUri.fsPath, logger);
+    return dbInfo.sourceLocationPrefix;
   }
 }
 
@@ -376,7 +366,9 @@ export class DatabaseManager extends DisposableObject {
   private readonly _databaseItems: DatabaseItemImpl[] = [];
   private _currentDatabaseItem: DatabaseItem | undefined = undefined;
 
-  constructor(private ctx: ExtensionContext) {
+  constructor(private ctx: ExtensionContext,
+    public config: QLConfiguration,
+    public logger: Logger) {
     super();
 
     this.loadPersistedState();  // Let this run async.
