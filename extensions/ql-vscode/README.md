@@ -6,17 +6,38 @@ Configuration
 
 To edit the configuration settings, right-click **QL** in the Extensions container in the sidebar and select `Configure Extension Settings`. You can also directly create and edit a `settings.json` file. (See below for more instructions.)
 
-### Setting the path to Semmle Core
+### Getting a CodeQL distribution
 
-<font color="red">TODO: Remove the following reference to internal jenkins before release:</font>
-For IntelliSense and query evaluation to work, set `ql.distributionPath` to point to a Semmle Core distribution.
+<font color="red">TODO: Remove the references to internal tools in the following sections before release.</font>
 
-You must use a Semmle Core distribution from recent `master`, i.e. built after 15 October 2019 and containing [this commit](http://git.semmle.com/Semmle/code/commit/a23097f89db42578a3f8d88558033dda16334290). This can be built from a `Semmle/code` checkout or downloaded from `master` builds of [the ODASA job on Jenkins](https://jenkins.internal.semmle.com/job/ODASA/).
+#### Recommended for internal users: Download distribution from internal Jenkins
 
-If you have built your own distribution from a `Semmle/code` checkout, this path will be something like `codeRoot/target/intree/standard`, where `codeRoot` is the root of your `Semmle/code` checkout. If you have downloaded the distribution, this might be something like `/home/$USER/odasa`.
+For IntelliSense and query evaluation to work, set `ql.distribution.codeQlPath` to point to a CodeQL binary.
 
-This setting can be set per-workspace, or you can set it in your
-global user settings to apply to all workspaces you open.
+You can download a CodeQL binary from [Jenkins](https://jenkins.internal.semmle.com/job/CodeQL-CLI/) (open the last successful artifacts and download `codeql-all.zip`).  Upon extracting the archive, the CodeQL binary path will be `extractionRoot/codeql/codeql` where `extractionRoot` is the folder in which you extracted the zip.
+
+To build your own CodeQL binary, you must use a Semmle Core distribution from recent `master`, i.e. built after 15 October 2019 and containing [this commit](http://git.semmle.com/Semmle/code/commit/a23097f89db42578a3f8d88558033dda16334290). Then run `./build target/intree/codeql`.  The CodeQL binary path will be `codeRoot/target/intree/codeql/codeql`, where `codeRoot` is the root of your `Semmle/code` checkout.
+
+This setting can be set per-workspace, or you can set it in your global user settings to apply to all workspaces you open.
+
+#### Using a `codeql` binary on your PATH
+
+If you already have a `codeql` binary on your path, the extension will use this binary.
+
+#### Using an extension-managed distribution
+
+We envision many end-users electing to have the extension manage its distribution of CodeQL. When the extension is publicly released, this will require no configuration, however before then you will need to add the following configuration to `.vscode/settings.json` or another vscode settings file:
+
+```json
+"ql.distribution.includePrerelease": true,
+"ql.distribution.personalAccessToken": "SUBSTITUTE THIS WITH YOUR PERSONAL ACCESS TOKEN",
+"ql.distribution.owner": "github",
+"ql.distribution.repository": "codeql-cli-binaries",
+```
+
+A personal access token is required to authenticate to the [private binaries repository](https://github.com/github/codeql-cli-binaries). To obtain one, follow the instructions [here](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) and [here](https://help.github.com/en/github/authenticating-to-github/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on). The token must be assigned the [`repo`](https://developer.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps/) scope to have access to the releases of this repository.
+
+You can use the "QL: Install/Update Tools" command to update the extension-managed distribution.
 
 ### Configuring a QL project
 

@@ -16,14 +16,14 @@ export class DistributionManager {
   }
 
   /**
-   * Returns the path to the CodeQL launcher executable, or undefined if one could not be found.
+   * Returns the path to the CodeQL launcher binary, or undefined if one could not be found.
    */
   public async getCodeQlPath(): Promise<string | undefined> {
     // Check config setting, then extension specific distribution, then PATH.
     if (this._config.customCodeQlPath !== undefined) {
       if (!await fs.pathExists(this._config.customCodeQlPath)) {
-        showAndLogErrorMessage("The CodeQL executable path is specified by a configuration setting, but a CodeQL " +
-          "executable could not be found at that path.  Please check that a CodeQL executable exists at the " + 
+        showAndLogErrorMessage("The CodeQL binary path is specified by a configuration setting, but a CodeQL " +
+          "binary could not be found at that path. Please check that a CodeQL binary exists at the " + 
           "specified path, or remove the setting.");
       }
       return this._config.customCodeQlPath;
@@ -35,7 +35,7 @@ export class DistributionManager {
       if (await fs.pathExists(expectedLauncherPath)) {
         return expectedLauncherPath;
       }
-      logger.log(`WARNING: Expected to find a CodeQL distribution at ${this.getExtensionSpecificDistributionPath()} but one was not found.  Will try PATH.`);
+      logger.log(`WARNING: Expected to find a CodeQL binary at ${expectedLauncherPath} but one was not found.  Will try PATH.`);
     }
 
     if (process.env.PATH) {

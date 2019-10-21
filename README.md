@@ -4,7 +4,7 @@ Visual Studio Code Extension for CodeQL
 
 Instead of building the extension locally, you can download the VSIX file from [GitHub Actions](https://github.com/Semmle/vscode-codeql/actions). Click a recent build and download the artifacts. You can then [install](#installing) and [configure](./extensions/ql-vscode/README.md) the extension.
 
-Setting up
+Setting up a local build
 ---
 
 Make sure you have a fairly recent version of vscode (>1.32) and are using nodejs
