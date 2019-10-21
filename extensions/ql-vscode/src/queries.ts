@@ -88,7 +88,7 @@ class QueryInfo {
       useSequenceHint: false
     }
     try {
-      await withProgress({
+      await helpers.withProgress({
         location: ProgressLocation.Notification,
         title: "Running Query",
         cancellable: false,
@@ -125,7 +125,7 @@ class QueryInfo {
       };
 
 
-      compiled = await withProgress({
+      compiled = await helpers.withProgress({
         location: ProgressLocation.Notification,
         title: "Compiling Query",
         cancellable: false,
@@ -188,31 +188,6 @@ export interface EvaluationInfo {
   query: QueryInfo;
   result: messages.EvaluationResult;
   database: DatabaseInfo;
-}
-
-/**
- * This mediates between the kind of progress callbacks we want to
- * write (where we *set* current progress position and give
- * `maxSteps`) and the kind vscode progress api expects us to write
- * (which increment progress by a certain amount out of 100%)
- */
-function withProgress<R>(
-  options: vscode.ProgressOptions,
-  task: (
-    progress: (p: messages.ProgressMessage) => void,
-    token: vscode.CancellationToken
-  ) => Thenable<R>
-): Thenable<R> {
-  let progressAchieved = 0;
-  return Window.withProgress(options,
-    (progress, token) => {
-      return task(p => {
-        const { message, step, maxStep } = p;
-        const increment = 100 * (step - progressAchieved) / maxStep;
-        progressAchieved = step;
-        progress.report({ message, increment });
-      }, token);
-    });
 }
 
 /**
@@ -336,7 +311,7 @@ export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: Databa
 
 async function checkDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams):
   Promise<messages.CheckUpgradeResult> {
-  return withProgress({
+  return helpers.withProgress({
     location: ProgressLocation.Notification,
     title: "Checking for database upgrades",
     cancellable: true,
@@ -350,7 +325,7 @@ async function compileDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradePar
     upgradeTempDir: upgradesTmpDir.name
   }
 
-  return withProgress({
+  return helpers.withProgress({
     location: ProgressLocation.Notification,
     title: "Compiling database upgrades",
     cancellable: true,
@@ -374,7 +349,7 @@ async function runDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseIt
     toRun: upgrades
   };
 
-  return withProgress({
+  return helpers.withProgress({
     location: ProgressLocation.Notification,
     title: "Running database upgrades",
     cancellable: true,
@@ -397,7 +372,7 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
     db,
   };
 
-  return withProgress({
+  return helpers.withProgress({
     location: ProgressLocation.Notification,
     title: "Clearing Cache",
     cancellable: false,

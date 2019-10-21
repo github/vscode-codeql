@@ -6,8 +6,8 @@ import * as unzipper from "unzipper";
 import * as url from "url";
 import { ExtensionContext } from "vscode";
 import { DistributionConfig } from "./config";
+import { ProgressUpdate, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
-import { showAndLogErrorMessage } from "./helpers";
 
 export class DistributionManager {
   constructor(extensionContext: ExtensionContext, config: DistributionConfig) {
@@ -35,7 +35,14 @@ export class DistributionManager {
       if (await fs.pathExists(expectedLauncherPath)) {
         return expectedLauncherPath;
       }
-      logger.log(`WARNING: Expected to find a CodeQL binary at ${expectedLauncherPath} but one was not found.  Will try PATH.`);
+      logger.log(`WARNING: Expected to find a CodeQL binary at ${expectedLauncherPath} but one was not found. ` + 
+        "Will try PATH.");
+      try {
+        await this.removeDistribution();
+      } catch (e) {
+        logger.log("WARNING: Tried to remove corrupted distribution at " +
+          `${this.getExtensionSpecificDistributionPath()} but encountered error ${e}.`);
+      }
     }
 
     if (process.env.PATH) {
@@ -51,7 +58,8 @@ export class DistributionManager {
     return undefined;
   }
 
-  public async installOrUpdateDistribution(): Promise<DistributionInstallOrUpdateResult> {
+  public async installOrUpdateDistribution(
+    progressCallback?: (p: ProgressUpdate) => void): Promise<DistributionInstallOrUpdateResult> {
     const extensionSpecificRelease = this.getExtensionSpecificRelease();
 
     if (extensionSpecificRelease === undefined && (await this.getCodeQlPath()) !== undefined) {
@@ -62,8 +70,18 @@ export class DistributionManager {
     if (extensionSpecificRelease !== undefined && latestRelease.id === extensionSpecificRelease.id) {
       return createDistributionAlreadyUpToDateResult();
     }
-    await this.installExtensionSpecificDistribution(latestRelease);
+    await this.installExtensionSpecificDistribution(latestRelease, progressCallback);
     return createDistributionUpdatedResult(latestRelease);
+  }
+
+  /**
+   * Remove the extension-managed distribution.
+   * 
+   * This should not be called for a distribution that is currently in use, as rmdir may fail.
+   */
+  private async removeDistribution(): Promise<void> {
+    this.storeExtensionSpecificRelease(undefined);
+    await fs.rmdir(this.getExtensionSpecificDistributionPath());
   }
 
   private async getLatestRelease(): Promise<Release> {
@@ -74,15 +92,30 @@ export class DistributionManager {
     return release;
   }
 
-  private async installExtensionSpecificDistribution(release: Release): Promise<void> {
+  private async installExtensionSpecificDistribution(release: Release,
+    progressCallback?: (p: ProgressUpdate) => void): Promise<void> {
     const assetStream = await this.createReleasesApiConsumer().streamBinaryContentOfAsset(release.assets[0]);
 
     const tmpDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "vscode-codeql"));
     const archivePath = path.join(tmpDirectory, "distributionDownload.zip");
     const archiveFile = fs.createWriteStream(archivePath);
 
+    const contentLength = assetStream.headers.get("content-length");
+    let numBytesDownloaded = 0;
+
+    if (progressCallback && contentLength !== null) {
+      assetStream.body.on("data", data => {
+        numBytesDownloaded += data.length;
+        progressCallback({
+          step: numBytesDownloaded,
+          maxStep: parseInt(contentLength, 10),
+          message: "Downloading distribution",
+        });
+      });
+    }
+
     await new Promise((resolve, reject) =>
-      assetStream.pipe(archiveFile)
+      assetStream.body.pipe(archiveFile)
         .on("finish", resolve)
         .on("error", reject)
     );
@@ -110,7 +143,7 @@ export class DistributionManager {
     return this._extensionContext.globalState.get(DistributionManager._extensionSpecificReleaseStateKey);
   }
 
-  private storeExtensionSpecificRelease(release: Release): void {
+  private storeExtensionSpecificRelease(release: Release | undefined): void {
     this._extensionContext.globalState.update(DistributionManager._extensionSpecificReleaseStateKey, release);
   }
 
@@ -159,13 +192,12 @@ export class ReleasesApiConsumer {
     };
   }
 
-  public async streamBinaryContentOfAsset(asset: ReleaseAsset): Promise<NodeJS.ReadableStream> {
+  public async streamBinaryContentOfAsset(asset: ReleaseAsset): Promise<fetch.Response> {
     const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases/assets/${asset.id}`;
 
-    const response = await this.makeApiCall(apiPath, {
+    return await this.makeApiCall(apiPath, {
       "accept": "application/octet-stream"
     });
-    return response.body;
   }
 
   protected async makeApiCall(apiPath: string, additionalHeaders: { [key: string]: string } = {}): Promise<fetch.Response> {
@@ -178,7 +210,10 @@ export class ReleasesApiConsumer {
     return response;
   }
 
-  private async makeRawRequest(requestUrl: string, headers: { [key: string]: string }, redirectCount: number = 0): Promise<fetch.Response> {
+  private async makeRawRequest(
+    requestUrl: string,
+    headers: { [key: string]: string },
+    redirectCount: number = 0): Promise<fetch.Response> {
     const response = await fetch.default(requestUrl, {
       headers,
       redirect: "manual"
@@ -238,7 +273,8 @@ export enum DistributionInstallOrUpdateResultKind {
   InvalidDistributionLocation,
 }
 
-type DistributionInstallOrUpdateResult = DistributionAlreadyUpToDateResult | DistributionUpdatedResult | InvalidDistributionLocationResult;
+type DistributionInstallOrUpdateResult = DistributionAlreadyUpToDateResult | DistributionUpdatedResult |
+  InvalidDistributionLocationResult;
 
 export interface DistributionAlreadyUpToDateResult {
   kind: DistributionInstallOrUpdateResultKind.AlreadyUpToDate;

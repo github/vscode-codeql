@@ -1,4 +1,4 @@
-import { commands, ExtensionContext, window as Window } from 'vscode';
+import { commands, ExtensionContext, ProgressOptions, ProgressLocation } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
@@ -29,8 +29,14 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   ctx.subscriptions.push(distributionConfigListener);
   const distributionManager = new DistributionManager(ctx, distributionConfigListener);
 
-  async function downloadOrUpdateDistribution(): Promise<void> {
-    const result = await distributionManager.installOrUpdateDistribution();
+  async function downloadOrUpdateDistribution(progressTitle: string): Promise<void> {
+    const progressOptions: ProgressOptions = {
+      location: ProgressLocation.Notification,
+      title: progressTitle,
+      cancellable: false,
+    };
+    const result = await helpers.withProgress(progressOptions,
+      progress => distributionManager.installOrUpdateDistribution(progress));
     switch (result.kind) {
       case DistributionInstallOrUpdateResultKind.AlreadyUpToDate:
         helpers.showAndLogInformationMessage("CodeQL tools already up to date.");
@@ -46,10 +52,10 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     }
   }
 
-  ctx.subscriptions.push(commands.registerCommand('ql.updateTools', () => downloadOrUpdateDistribution()));
+  ctx.subscriptions.push(commands.registerCommand('ql.updateTools', () => downloadOrUpdateDistribution("Checking for CodeQL Updates")));
 
   if (await distributionManager.getCodeQlPath() === undefined) {
-    await downloadOrUpdateDistribution();
+    await downloadOrUpdateDistribution("Installing CodeQL Distribution");
   }
 
   const codeQlPath = await distributionManager.getCodeQlPath();
