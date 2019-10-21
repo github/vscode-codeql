@@ -35,7 +35,7 @@ export async function activate(ctx: ExtensionContext) {
   ctx.subscriptions.push(qs);
   await qs.startQueryServer();
 
-  const dbm = new DatabaseManager(ctx);
+  const dbm = new DatabaseManager(ctx, qlConfigurationListener, logger);
   ctx.subscriptions.push(dbm);
   const databaseUI = new DatabaseUI(ctx, dbm, qs);
   ctx.subscriptions.push(databaseUI);
