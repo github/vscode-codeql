@@ -8,14 +8,15 @@ import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages
 import { DatabaseItem, DatabaseManager } from './databases';
 import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg } from './interface-types';
 import * as messages from './messages';
-import { EvaluationInfo, tmpDir } from './queries';
+import { EvaluationInfo, tmpDir, interpretResults } from './queries';
 import { Logger } from './logging';
+import { QLConfiguration } from './config';
 
 /**
  * interface.ts
  * ------------
  *
- * Displaying query results and linking back to sotiurce files when the
+ * Displaying query results and linking back to source files when the
  * webview asks us to.
  */
 
@@ -25,7 +26,7 @@ export class InterfaceManager extends DisposableObject {
   readonly diagnosticCollection = languages.createDiagnosticCollection(`ql-query-results`);
 
   constructor(public ctx: vscode.ExtensionContext, private databaseManager: DatabaseManager,
-    public logger: Logger) {
+    public config: QLConfiguration, public logger: Logger) {
 
     super();
   }
@@ -89,16 +90,18 @@ export class InterfaceManager extends DisposableObject {
     }
 
     let interpretation: Interpretation | undefined = undefined;
-    if (info.query.hasInterpretedResults()) {
+    if (info.query.hasInterpretedResults()
+      && info.query.quickEvalPosition === undefined // never do results interpretation if quickEval
+    ) {
       try {
-        const sarif = await info.query.interpretResults(info.config, info.query.metadata, this.logger);
+        const sarif = await interpretResults(this.config, info.query, this.logger);
         const sourceLocationPrefix = await info.query.dbItem.getSourceLocationPrefix();
         interpretation = { sarif, sourceLocationPrefix };
       }
       catch (e) {
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
-        this.logger.log(`Exception during results interpretation: ${e.message} ${e.stack}`);
+        this.logger.log(`Exception during results interpretation: ${e.message}. Will show raw results instead.`);
       }
     }
 

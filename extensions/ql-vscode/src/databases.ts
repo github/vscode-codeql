@@ -403,7 +403,7 @@ class DatabaseItemImpl implements DatabaseItem {
    * Holds if the database item refers to an exported snapshot
    */
   public hasDbInfo(): boolean {
-    return fs.existsSync(path.join(this.snapshotUri.fsPath, '.dbinfo'));
+    return fs.existsSync(path.join(this.databaseUri.fsPath, '.dbinfo'));
   }
 
   /**
@@ -411,7 +411,7 @@ class DatabaseItemImpl implements DatabaseItem {
    * nested plain js object.
    */
   private async dbInfo(): Promise<DbInfoFileData> {
-    return await readXmlFile(path.join(this.snapshotUri.fsPath, '.dbinfo'));
+    return await readXmlFile(path.join(this.databaseUri.fsPath, '.dbinfo'));
   }
 
   /**

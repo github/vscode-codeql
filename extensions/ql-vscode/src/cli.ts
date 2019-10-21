@@ -2,9 +2,14 @@ import * as child_process from "child_process";
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as util from 'util';
-import * as Sarif from 'sarif';
+import * as sarif from 'sarif';
 import { QLConfiguration } from "./config";
 import { Logger } from "./logging";
+
+/**
+ * The version of the SARIF format that we are using.
+ */
+const SARIF_FORMAT = "sarifv2.1.0";
 
 /**
  * The expected output of codeql resolve library-path.
@@ -153,21 +158,32 @@ export async function spawnServer(
  * @param interpretedResultsPath Path to the SARIF file to output.
  * @param logger Logger to write startup messages.
  */
-export async function interpretBqrs(config: QLConfiguration, metadata: { kind: string, id: string }, resultsPath: string, interpretedResultsPath: string, logger: Logger): Promise<Sarif.Log> {
+export async function interpretBqrs(config: QLConfiguration, metadata: { kind: string, id: string }, resultsPath: string, interpretedResultsPath: string, logger: Logger): Promise<sarif.Log> {
   await runCodeQlCliCommand(config, ['bqrs', 'interpret'],
     [
       `-t=kind=${metadata.kind}`,
       `-t=id=${metadata.id}`,
       "--output", interpretedResultsPath,
-      "--format", "sarifv2.1.0",
-      "--sarif-run-property=foo=bar", // FIXME: remove after https://git.semmle.com/Semmle/code/pull/34785
+      "--format", SARIF_FORMAT,
+
+      // TODO: This flag means that we don't group interpreted results
+      // by primary location. We may want to revisit whether we call
+      // interpretation with and without this flag, or do some
+      // grouping client-side.
       "--no-group-results",
+
       resultsPath,
     ],
     "Interpreting query results", logger);
-  const output = await fs.readFile(interpretedResultsPath, 'utf8');
+
+  let output: string;
   try {
-    return JSON.parse(output) as Sarif.Log;
+    output = await fs.readFile(interpretedResultsPath, 'utf8');
+  } catch (err) {
+    throw new Error(`Reading output of interpretation failed: ${err.stderr || err}`)
+  }
+  try {
+    return JSON.parse(output) as sarif.Log;
   } catch (err) {
     throw new Error(`Parsing output of interpretation failed: ${err.stderr || err}`)
   }

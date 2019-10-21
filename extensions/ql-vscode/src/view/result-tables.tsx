@@ -36,6 +36,10 @@ export class ResultTables
     if (this.props.interpretation != undefined) {
       resultSets.push({
         t: 'SarifResultSet',
+        // FIXME: The values of version, columns, tupleCount are
+        // unused stubs because a SarifResultSet schema isn't used the
+        // same way as a RawResultSet. Probably should pull `name` field
+        // out.
         schema: { name: 'alerts', version: 0, columns: [], tupleCount: 1 },
         name: 'alerts',
         ...this.props.interpretation,

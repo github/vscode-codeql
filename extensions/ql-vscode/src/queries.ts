@@ -3,7 +3,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
-import * as Sarif from 'sarif';
+import * as sarif from 'sarif';
 import { ProgressLocation, window as Window, workspace } from 'vscode';
 import * as cli from './cli';
 import { QLConfiguration } from './config';
@@ -169,27 +169,27 @@ class QueryInfo {
   hasInterpretedResults(): boolean {
     return this.dbItem.hasDbInfo();
   }
+}
 
-  /**
-   * Call cli command to interpret results.
-   */
-  async interpretResults(config: QLConfiguration, metadata: cli.QueryMetadata | undefined, logger: Logger): Promise<Sarif.Log> {
-    if (metadata == undefined) {
-      throw new Error('Can\'t interpret results without query metadata');
-    }
-    const { kind, id } = metadata;
-    if (kind == undefined || id == undefined) {
-      throw new Error('Can\'t interpret results without query metadata including kind and id');
-    }
-    return await cli.interpretBqrs(config, { kind, id }, this.resultsPath, this.interpretedResultsPath, logger);
+/**
+ * Call cli command to interpret results.
+ */
+export async function interpretResults(config: QLConfiguration, queryInfo: QueryInfo, logger: Logger): Promise<sarif.Log> {
+  const { metadata } = queryInfo;
+  if (metadata == undefined) {
+    throw new Error('Can\'t interpret results without query metadata');
   }
+  const { kind, id } = metadata;
+  if (kind == undefined || id == undefined) {
+    throw new Error('Can\'t interpret results without query metadata including kind and id');
+  }
+  return await cli.interpretBqrs(config, { kind, id }, queryInfo.resultsPath, queryInfo.interpretedResultsPath, logger);
 }
 
 export interface EvaluationInfo {
   query: QueryInfo;
   result: messages.EvaluationResult;
   database: DatabaseInfo;
-  config: QLConfiguration;
 }
 
 /**
@@ -481,7 +481,6 @@ export async function compileAndRunQueryAgainstDatabase(
     database: {
       name: db.name,
       databaseUri: db.databaseUri.toString(true)
-    },
-    config: qs.config,
+    }
   };
 }

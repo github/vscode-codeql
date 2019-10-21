@@ -161,20 +161,43 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return result;
     }
 
+    function renderNonLocation(msg: Sarif.Message | undefined, locationHint: string): JSX.Element | undefined {
+      if (msg == undefined)
+        return undefined;
+      if (msg.text === undefined)
+        return undefined;
+      return <span title={locationHint}>{msg.text}</span>;
+    }
+
     function renderSarifLocation(msg: Sarif.Message | undefined, loc: Sarif.Location): JSX.Element | undefined {
-      const region = loc.physicalLocation!.region!;
-      const uri = loc.physicalLocation!.artifactLocation!.uri!
+      if (loc.physicalLocation === undefined)
+        return renderNonLocation(msg, 'no physical location');
+
+      const physicalLocation = loc.physicalLocation;
+
+      if (physicalLocation.artifactLocation === undefined)
+        return renderNonLocation(msg, 'no artifact location');
+
+      if (physicalLocation.artifactLocation.uri === undefined)
+        return renderNonLocation(msg, 'artifact location has no uri');
+
+      const uri = physicalLocation.artifactLocation.uri;
+
+      if (physicalLocation.region === undefined)
+        return <span>{uri}</span>;
+
+      const region = physicalLocation.region;
       const fileUriRegex = /file:/;
       const effectiveLocation = uri.match(fileUriRegex) ?
         uri.replace(fileUriRegex, '') :
         path.join(sourceLocationPrefix, uri);
 
-      // We assume that the SARIF we're given always has lineStart
+      // We assume that the SARIF we're given always has startLine
       // This is not mandated by the SARIF spec, but should be true of
       // SARIF output by our own tools.
       const lineStart = region.startLine!;
 
-      // These defaults are from SARIF 2.10 spec, section 3.30.2, "Text Regions"
+      // These defaults are from SARIF 2.1.0 spec, section 3.30.2, "Text Regions"
       // https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Ref493492556
       const lineEnd = region.endLine === undefined ? lineStart : region.endLine;
       const colStart = region.startColumn === undefined ? 1 : region.startColumn;
@@ -190,10 +213,10 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         {
           t: LocationStyle.FivePart,
           file: effectiveLocation,
-          colEnd,
+          lineStart,
           colStart,
           lineEnd,
-          lineStart,
+          colEnd,
         },
         msg.text,
         databaseUri);
@@ -203,13 +226,19 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return (e) => this.toggle(e, index);
     }
 
+    const noResults = <span>No Results</span>; // TODO: Maybe make this look nicer
     let resultIndex = 0;
     let expansionIndex = 0;
-    for (const result of resultSet.sarif.runs[0].results!) {
+
+    if (resultSet.sarif.runs.length === 0) return noResults;
+    if (resultSet.sarif.runs[0].results === undefined) return noResults;
+
+    for (const result of resultSet.sarif.runs[0].results) {
+      const text = result.message.text || '[no text]'
       const msg: JSX.Element[] =
         result.relatedLocations === undefined ?
-          [<span>{result.message.text!}</span>] :
-          renderRelatedLocations(result.message.text!, result.relatedLocations!);
+          [<span>{text}</span>] :
+          renderRelatedLocations(text, result.relatedLocations);
 
       const currentResultExpanded = this.state.expanded[expansionIndex];
       const indicator = currentResultExpanded ? '-' : '+';
@@ -229,22 +258,26 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         resultIndex++;
         expansionIndex++;
 
-        for (const codeFlow of result.codeFlows!) {
-          for (const threadFlow of codeFlow.threadFlows) {
+        if (result.codeFlows !== undefined) {
+          for (const codeFlow of result.codeFlows) {
+            for (const threadFlow of codeFlow.threadFlows) {
 
-            const currentPathExpanded = this.state.expanded[expansionIndex];
-            if (currentResultExpanded) {
-              const indicator = currentPathExpanded ? '-' : '+';
-              rows.push(<tr><td onMouseDown={toggler(expansionIndex)}>{indicator} Path</td></tr>);
-            }
-            expansionIndex++;
+              const currentPathExpanded = this.state.expanded[expansionIndex];
+              if (currentResultExpanded) {
+                const indicator = currentPathExpanded ? '-' : '+';
+                rows.push(<tr><td onMouseDown={toggler(expansionIndex)}>{indicator} Path</td></tr>);
+              }
+              expansionIndex++;
 
-            if (currentResultExpanded && currentPathExpanded) {
-              let pathIndex = 1;
-              for (const step of threadFlow.locations) {
-                const msg = renderSarifLocation(step.location!.message, step.location!);
-                rows.push(<tr className={pathRowClassName}><td>{pathIndex}</td><td>- {msg}</td></tr>);
-                pathIndex++;
+              if (currentResultExpanded && currentPathExpanded) {
+                let pathIndex = 1;
+                for (const step of threadFlow.locations) {
+                  const msg = step.location !== undefined && step.location.message !== undefined ?
+                    renderSarifLocation(step.location.message, step.location) :
+                    '[no location]';
+                  rows.push(<tr className={pathRowClassName}><td>{pathIndex}</td><td>- {msg}</td></tr>);
+                  pathIndex++;
+                }
               }
             }
           }

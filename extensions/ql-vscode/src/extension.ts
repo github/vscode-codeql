@@ -41,7 +41,7 @@ export async function activate(ctx: ExtensionContext) {
   ctx.subscriptions.push(databaseUI);
 
   const qhm = new QueryHistoryManager(ctx, async item => showResultsForInfo(item.info));
-  const intm = new InterfaceManager(ctx, dbm, queryServerLogger);
+  const intm = new InterfaceManager(ctx, dbm, qlConfigurationListener, queryServerLogger);
   ctx.subscriptions.push(intm);
   archiveFilesystemProvider.activate(ctx);
 
