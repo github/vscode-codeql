@@ -1,15 +1,18 @@
+import * as cp from 'child_process';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
-import { ExtensionContext, ProgressLocation, window as Window, workspace } from 'vscode';
-import { DatabaseManager, DatabaseItem } from './databases';
-import * as qsClient from './queryserver-client';
-import { DatabaseInfo } from './interface-types';
-import * as messages from './messages';
-import * as helpers from './helpers';
-import { logger } from './logging';
-import { QLConfiguration } from './config';
+import * as sarif from 'sarif';
+import { ProgressLocation, window as Window, workspace } from 'vscode';
 import * as cli from './cli';
+import { QLConfiguration } from './config';
+import { DatabaseItem } from './databases';
+import * as helpers from './helpers';
+import { DatabaseInfo } from './interface-types';
+import { logger, Logger } from './logging';
+import * as messages from './messages';
+import * as qsClient from './queryserver-client';
 
 /**
  * queries.ts
@@ -42,6 +45,7 @@ class QueryInfo {
   quickEvalPosition?: messages.Position;
   compiledQueryPath: string;
   resultsPath: string;
+  interpretedResultsPath: string;
   dbItem: DatabaseItem;
   dataset: vscode.Uri; // guarantee the existence of a well-defined dataset dir at this point
 
@@ -51,6 +55,7 @@ class QueryInfo {
     this.quickEvalPosition = quickEvalPosition;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${queryCounter}.qlo`);
     this.resultsPath = path.join(tmpDir.name, `results${queryCounter}.bqrs`);
+    this.interpretedResultsPath = path.join(tmpDir.name, `interpretedResults${queryCounter}.sarif`);
     if (dbItem.contents === undefined) {
       throw new Error('Can\'t run query on invalid database.');
     }
@@ -157,6 +162,28 @@ class QueryInfo {
       }
     }
   }
+
+  /**
+   * Holds if this query should produce interpreted results.
+   */
+  hasInterpretedResults(): boolean {
+    return this.dbItem.hasDbInfo();
+  }
+}
+
+/**
+ * Call cli command to interpret results.
+ */
+export async function interpretResults(config: QLConfiguration, queryInfo: QueryInfo, logger: Logger): Promise<sarif.Log> {
+  const { metadata } = queryInfo;
+  if (metadata == undefined) {
+    throw new Error('Can\'t interpret results without query metadata');
+  }
+  const { kind, id } = metadata;
+  if (kind == undefined || id == undefined) {
+    throw new Error('Can\'t interpret results without query metadata including kind and id');
+  }
+  return await cli.interpretBqrs(config, { kind, id }, queryInfo.resultsPath, queryInfo.interpretedResultsPath, logger);
 }
 
 export interface EvaluationInfo {
@@ -377,7 +404,7 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
     title: "Clearing Cache",
     cancellable: false,
   }, (progress, token) =>
-    qs.sendRequest(messages.clearCache, params, token, progress)
+      qs.sendRequest(messages.clearCache, params, token, progress)
   );
 }
 
@@ -441,13 +468,16 @@ export async function compileAndRunQueryAgainstDatabase(
   let metadata: cli.QueryMetadata | undefined;
   try {
     metadata = await cli.resolveMetadata(qs.config, qlProgram.queryPath, logger);
-  } catch(_) {
+  } catch (e) {
     // Ignore errors and provide no metadata.
+    logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
   }
   const query = new QueryInfo(qlProgram, db, quickEvalPosition, metadata);
+  const result = await query.compileAndRun(qs);
+
   return {
     query,
-    result: await query.compileAndRun(qs),
+    result,
     database: {
       name: db.name,
       databaseUri: db.databaseUri.toString(true)

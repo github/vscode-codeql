@@ -1,20 +1,16 @@
 import * as path from 'path';
-import * as vscode from 'vscode';
-import {
-  window as Window, workspace, languages, Uri, Diagnostic, Range, Location, DiagnosticSeverity,
-  DiagnosticRelatedInformation, Position
-} from 'vscode';
 import * as bqrs from 'semmle-bqrs';
+import { CustomResultSets, FivePartLocation, isResolvableLocation, LocationValue, ProblemQueryResults } from 'semmle-bqrs';
 import { FileReader } from 'semmle-io-node';
-import {
-  FivePartLocation, LocationValue, isResolvableLocation, ProblemQueryResults,
-  CustomResultSets
-} from 'semmle-bqrs';
-import { FromResultsViewMsg, IntoResultsViewMsg } from './interface-types';
-import { tmpDir, EvaluationInfo } from './queries';
 import { DisposableObject } from 'semmle-vscode-utils';
-import { DatabaseManager, DatabaseItem } from './databases';
+import * as vscode from 'vscode';
+import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Position, Range, Uri, window as Window, workspace } from 'vscode';
+import { DatabaseItem, DatabaseManager } from './databases';
+import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg } from './interface-types';
 import * as messages from './messages';
+import { EvaluationInfo, tmpDir, interpretResults } from './queries';
+import { Logger } from './logging';
+import { QLConfiguration } from './config';
 
 /**
  * interface.ts
@@ -30,7 +26,7 @@ export class InterfaceManager extends DisposableObject {
   readonly diagnosticCollection = languages.createDiagnosticCollection(`ql-query-results`);
 
   constructor(public ctx: vscode.ExtensionContext, private databaseManager: DatabaseManager,
-    public log: (x: string) => void) {
+    public config: QLConfiguration, public logger: Logger) {
 
     super();
   }
@@ -92,8 +88,26 @@ export class InterfaceManager extends DisposableObject {
     if (info.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }
+
+    let interpretation: Interpretation | undefined = undefined;
+    if (info.query.hasInterpretedResults()
+      && info.query.quickEvalPosition === undefined // never do results interpretation if quickEval
+    ) {
+      try {
+        const sarif = await interpretResults(this.config, info.query, this.logger);
+        const sourceLocationPrefix = await info.query.dbItem.getSourceLocationPrefix();
+        interpretation = { sarif, sourceLocationPrefix };
+      }
+      catch (e) {
+        // If interpretation fails, accept the error and continue
+        // trying to render uninterpreted results anyway.
+        this.logger.log(`Exception during results interpretation: ${e.message}. Will show raw results instead.`);
+      }
+    }
+
     this.postMessage({
       t: 'setState',
+      interpretation,
       resultsPath: Uri.file(info.query.resultsPath).with({ scheme: 'vscode-resource' }).toString(true),
       database: info.database
     });

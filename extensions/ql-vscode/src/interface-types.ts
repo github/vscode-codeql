@@ -1,4 +1,5 @@
 import { FivePartLocation } from 'semmle-bqrs';
+import * as sarif from 'sarif';
 
 export interface DatabaseInfo {
   name: string;
@@ -12,9 +13,15 @@ export interface PreviousExecution {
   durationSeconds: number;
 }
 
+export interface Interpretation {
+  sourceLocationPrefix: string;
+  sarif: sarif.Log;
+}
+
 export interface IntoResultsViewMsg {
   t: 'setState';
   resultsPath: string;
+  interpretation: undefined | Interpretation;
   database: DatabaseInfo;
 };
 

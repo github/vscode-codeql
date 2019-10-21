@@ -14,6 +14,7 @@
 
 .ql-vscode__result-table td {
   padding: 0.5em;
+  white-space: pre-wrap;
 }
 
 select {
@@ -30,4 +31,8 @@ select {
 
 .ql-vscode__result-table-row--even {
   background-color: var(--vscode-editor-wordHighlightBackground);
+}
+
+.ql-vscode__result-table-row--path {
+  background-color: var(--vscode-editor-wordHighlightStrongBackground);
 }

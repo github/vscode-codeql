@@ -267,6 +267,7 @@
     "@types/node": "^12.0.8",
     "@types/react": "^16.8.17",
     "@types/react-dom": "^16.8.4",
+    "@types/sarif": "~2.1.2",
     "@types/tmp": "^0.1.0",
     "@types/vscode": "^1.33.0",
     "@types/webpack": "^4.32.1",
