@@ -4,15 +4,18 @@ import * as os from "os";
 import * as path from "path";
 import * as unzipper from "unzipper";
 import * as url from "url";
-import { ExtensionContext } from "vscode";
+import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "./config";
 import { ProgressUpdate, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
 
 export class DistributionManager {
+  private readonly _onDidChangeDistribution: Event<void> | undefined;
+
   constructor(extensionContext: ExtensionContext, config: DistributionConfig) {
     this._extensionContext = extensionContext;
     this._config = config;
+    this._onDidChangeDistribution = config.onDidChangeDistributionConfiguration;
   }
 
   /**
@@ -77,6 +80,10 @@ export class DistributionManager {
     }
     await this.installExtensionSpecificDistribution(latestRelease, progressCallback);
     return createDistributionUpdatedResult(latestRelease);
+  }
+
+  public get onDidChangeDistribution(): Event<void> | undefined {
+    return this._onDidChangeDistribution;
   }
 
   /**

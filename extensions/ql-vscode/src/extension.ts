@@ -58,12 +58,11 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     await downloadOrUpdateDistribution("Installing CodeQL Distribution");
   }
 
-  const codeQlPath = await distributionManager.getCodeQlPath();
-  activateWithInstalledDistribution(ctx, codeQlPath!);
+  activateWithInstalledDistribution(ctx, distributionManager);
 }
 
-async function activateWithInstalledDistribution(ctx: ExtensionContext, codeQlPath: string) {
-  const qlConfigurationListener = new QueryServerConfigListener(codeQlPath);
+async function activateWithInstalledDistribution(ctx: ExtensionContext, distributionManager: DistributionManager) {
+  const qlConfigurationListener = await QueryServerConfigListener.createQueryServerConfigListener(distributionManager);
   ctx.subscriptions.push(qlConfigurationListener);
 
   ctx.subscriptions.push(queryServerLogger);

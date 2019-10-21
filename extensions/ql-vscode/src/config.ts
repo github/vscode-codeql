@@ -1,5 +1,6 @@
 import { DisposableObject } from 'semmle-vscode-utils';
 import { workspace, Event, EventEmitter, ConfigurationChangeEvent } from 'vscode';
+import { DistributionManager } from './distribution';
 
 /** Helper class to look up a labelled (and possibly nested) setting. */
 class Setting {
@@ -29,6 +30,27 @@ class Setting {
 
 const ROOT_SETTING =  new Setting('ql');
 
+// Distribution configuration
+
+const DISTRIBUTION_SETTING = new Setting('distribution', ROOT_SETTING);
+const CUSTOM_CODEQL_PATH_SETTING = new Setting('codeQlPath', DISTRIBUTION_SETTING);
+const INCLUDE_PRERELEASE_SETTING = new Setting('includePrerelease', DISTRIBUTION_SETTING);
+const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIBUTION_SETTING);
+const OWNER_NAME_SETTING = new Setting('owner', DISTRIBUTION_SETTING);
+const REPOSITORY_NAME_SETTING = new Setting('repository', DISTRIBUTION_SETTING);
+
+/** When these settings change, the distribution should be updated. */
+const DISTRIBUTION_CHANGE_SETTINGS = [CUSTOM_CODEQL_PATH_SETTING, INCLUDE_PRERELEASE_SETTING, PERSONAL_ACCESS_TOKEN_SETTING, OWNER_NAME_SETTING, REPOSITORY_NAME_SETTING];
+
+export interface DistributionConfig {
+  customCodeQlPath?: string;
+  includePrerelease: boolean;
+  personalAccessToken?: string;
+  ownerName: string;
+  repositoryName: string;
+  onDidChangeDistributionConfiguration?: Event<void>;
+}
+
 // Query server configuration
 
 const RUNNING_QUERIES_SETTING = new Setting('runningQueries', ROOT_SETTING);
@@ -47,23 +69,6 @@ export interface QueryServerConfig {
   onDidChangeQueryServerConfiguration?: Event<void>;
 }
 
-// Distribution configuration
-
-const DISTRIBUTION_SETTING = new Setting('distribution', ROOT_SETTING);
-const CUSTOM_CODEQL_PATH_SETTING = new Setting('codeQlPath', DISTRIBUTION_SETTING);
-const INCLUDE_PRERELEASE_SETTING = new Setting('includePrerelease', DISTRIBUTION_SETTING);
-const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIBUTION_SETTING);
-const OWNER_NAME_SETTING = new Setting('owner', DISTRIBUTION_SETTING);
-const REPOSITORY_NAME_SETTING = new Setting('repository', DISTRIBUTION_SETTING);
-
-export interface DistributionConfig {
-  customCodeQlPath?: string;
-  includePrerelease: boolean;
-  personalAccessToken?: string;
-  ownerName: string;
-  repositoryName: string;
-}
-
 abstract class ConfigListener extends DisposableObject {
   protected readonly _onDidChangeConfiguration = this.push(new EventEmitter<void>());
 
@@ -73,11 +78,25 @@ abstract class ConfigListener extends DisposableObject {
     this.push(workspace.onDidChangeConfiguration(this.handleDidChangeConfiguration, this));
   }
 
+  /**
+   * Calls `updateConfiguration` if any of the `relevantSettings` have changed.
+   */
+  protected handleDidChangeConfigurationForRelevantSettings(relevantSettings: Setting[], e: ConfigurationChangeEvent): void {
+    // Check whether any options that affect query running were changed.
+    for (const option of relevantSettings) {
+      // TODO: compare old and new values, only update if there was actually a change?
+      if (e.affectsConfiguration(option.qualifiedName)) {
+        this.updateConfiguration();
+        break; // only need to do this once, if any of the settings have changed
+      }
+    }
+  }
+
   protected abstract handleDidChangeConfiguration(e: ConfigurationChangeEvent): void;
   protected abstract updateConfiguration(): void;
 }
 
-export class DistributionConfigListener extends DisposableObject implements DistributionConfig {
+export class DistributionConfigListener extends ConfigListener implements DistributionConfig {
   public get customCodeQlPath(): string | undefined {
     return CUSTOM_CODEQL_PATH_SETTING.getValue() !== null ? CUSTOM_CODEQL_PATH_SETTING.getValue() : undefined;
   }
@@ -97,17 +116,35 @@ export class DistributionConfigListener extends DisposableObject implements Dist
   public get repositoryName(): string {
     return REPOSITORY_NAME_SETTING.getValue();
   }
+
+  public get onDidChangeDistributionConfiguration(): Event<void> {
+    return this._onDidChangeConfiguration.event;
+  }
+
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+    this.handleDidChangeConfigurationForRelevantSettings(DISTRIBUTION_CHANGE_SETTINGS, e);
+  }
+
+  protected updateConfiguration(): void {
+    this._onDidChangeConfiguration.fire();
+  }
 }
 
 export class QueryServerConfigListener extends ConfigListener implements QueryServerConfig {
-  private readonly _codeQlPath: string;
-
   private _numThreads: number;
   private _queryMemoryMb: number;
 
-  constructor(codeQlPath: string) {
+  private constructor(private readonly _codeQlPath: string) {
     super();
-    this._codeQlPath = codeQlPath;
+  }
+
+  public static async createQueryServerConfigListener(distributionManager: DistributionManager): Promise<QueryServerConfigListener> {
+    const codeQlPath = await distributionManager.getCodeQlPath();
+    const config = new QueryServerConfigListener(codeQlPath!);
+    if (distributionManager.onDidChangeDistribution) {
+      config.push(distributionManager.onDidChangeDistribution(() => config._onDidChangeConfiguration.fire()));
+    }
+    return config;
   }
 
   public get codeQlPath(): string {
@@ -132,14 +169,7 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
   }
 
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
-    // Check whether any options that affect query running were changed.
-    for(const option of QUERY_SERVER_RESTARTING_SETTINGS) {
-      // TODO: compare old and new values, only update if there was actually a change?
-      if (e.affectsConfiguration(option.qualifiedName)) {
-        this.updateConfiguration();
-        break; // only need to do this once, if any of the settings have changed
-      }
-    }
+    this.handleDidChangeConfigurationForRelevantSettings(QUERY_SERVER_RESTARTING_SETTINGS, e);
   }
 
   protected updateConfiguration(): void {
