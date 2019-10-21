@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import * as path from 'path';
 import * as bqrs from 'semmle-bqrs';
 import { CustomResultSets, FivePartLocation, isResolvableLocation, LocationValue, ProblemQueryResults } from 'semmle-bqrs';
@@ -19,6 +20,46 @@ import { QueryServerConfig } from './config';
  * Displaying query results and linking back to source files when the
  * webview asks us to.
  */
+
+/** Gets a nonce string created with 128 bits of entropy. */
+function getNonce(): string {
+  return crypto.randomBytes(16).toString('base64');
+}
+
+/**
+ * Returns HTML to populate the given webview.
+ * Uses a content security policy that only loads the given script.
+ */
+function getHtmlForWebview(webview: vscode.Webview, scriptUriOnDisk: vscode.Uri, stylesheetUriOnDisk: vscode.Uri) {
+  // Convert the on-disk URIs into webview URIs.
+  const scriptWebviewUri = webview.asWebviewUri(scriptUriOnDisk);
+  const stylesheetWebviewUri = webview.asWebviewUri(stylesheetUriOnDisk);
+  // Use a nonce in the content security policy to uniquely identify the above resources.
+  const nonce = getNonce();
+  /*
+   * Content security policy:
+   * default-src: allow nothing by default.
+   * script-src: allow only the given script, using the nonce.
+   * style-src: allow only the given stylesheet, using the nonce.
+   * connect-src: only allow fetch calls to webview resource URIs
+   * (this is used to load BQRS result files).
+   */
+  const html = `
+<html>
+  <head>
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; connect-src ${webview.cspSource};">
+    <link nonce="${nonce}" rel="stylesheet" href="${stylesheetWebviewUri}">
+  </head>
+  <body>
+    <div id=root>
+    </div>
+      <script nonce="${nonce}" src="${scriptWebviewUri}">
+    </script>
+  </body>
+</html>`;
+  webview.html = html;
+}
 
 export class InterfaceManager extends DisposableObject {
   panel: vscode.WebviewPanel | undefined;
@@ -50,19 +91,11 @@ export class InterfaceManager extends DisposableObject {
         }
       );
       this.panel.onDidDispose(() => { this.panel = undefined; }, null, ctx.subscriptions);
-      const scriptPath = vscode.Uri
-        .file(ctx.asAbsolutePath('out/resultsView.js'))
-        .with({ scheme: 'vscode-resource' })
-        .toString();
-      panel.webview.html = `
-<html>
-  <body>
-    <div id=root>
-    </div>
-      <script src="${scriptPath}">
-    </script>
-  </body>
-</html>`;
+      const scriptPathOnDisk = vscode.Uri
+        .file(ctx.asAbsolutePath('out/resultsView.js'));
+      const stylesheetPathOnDisk = vscode.Uri
+        .file(ctx.asAbsolutePath('out/results.css'));
+      getHtmlForWebview(panel.webview, scriptPathOnDisk, stylesheetPathOnDisk);
       panel.webview.onDidReceiveMessage(this.handleMsgFromView, undefined, ctx.subscriptions);
     }
     return this.panel;

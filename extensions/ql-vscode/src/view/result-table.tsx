@@ -4,7 +4,6 @@ import * as React from 'react';
 import * as Sarif from 'sarif';
 import { isResolvableLocation, LocationStyle, LocationValue } from 'semmle-bqrs';
 import { ResultSet, PathTableResultSet, RawTableResultSet, ResultValue, vscode } from './results';
-import './results.css';
 
 /**
  * Render a location as a link which when clicked displays the original location.

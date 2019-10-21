@@ -2,7 +2,6 @@ import * as React from 'react';
 import { DatabaseInfo, Interpretation } from '../interface-types';
 import { ResultTable } from './result-table';
 import { ResultSet } from './results';
-import './results.css';
 
 /**
  * Properties for the `ResultTables` component.
