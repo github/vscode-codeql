@@ -25,9 +25,9 @@ export class DistributionManager {
     // Check config setting, then extension specific distribution, then PATH.
     if (this._config.customCodeQlPath !== undefined) {
       if (!await fs.pathExists(this._config.customCodeQlPath)) {
-        showAndLogErrorMessage("The CodeQL binary path is specified by a configuration setting, but a CodeQL " +
-          "binary could not be found at that path. Please check that a CodeQL binary exists at the " + 
-          "specified path, or remove the setting.");
+        showAndLogErrorMessage(`The CodeQL binary path is specified as "${this._config.customCodeQlPath}" ` +
+          "by a configuration setting, but a CodeQL binary could not be found at that path. Please check " +
+          "that a CodeQL binary exists at the specified path or remove the setting.");
       }
       return this._config.customCodeQlPath;
     }
