@@ -127,7 +127,9 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
   }
 
   toggle(e: React.MouseEvent, i: number) {
-    this.setState({ expanded: { ...this.state.expanded, [i]: !(this.state.expanded[i]) } });
+    this.setState(previousState => ({
+      expanded: { ...previousState.expanded, [i]: !(previousState.expanded[i]) }
+    }));
     e.stopPropagation();
     e.preventDefault();
   }
