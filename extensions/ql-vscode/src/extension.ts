@@ -1,17 +1,17 @@
-import { commands, ExtensionContext, ProgressOptions, ProgressLocation } from 'vscode';
+import { commands, ExtensionContext, ProgressLocation, ProgressOptions, window as Window } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
+import * as archiveFilesystemProvider from './archive-filesystem-provider';
+import { DistributionConfigListener, QueryServerConfigListener } from './config';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
+import { DistributionInstallOrUpdateResultKind, DistributionManager } from './distribution';
+import * as helpers from './helpers';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
+import { ideServerLogger, logger, queryServerLogger } from './logging';
 import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal } from './queries';
-import * as qsClient from './queryserver-client';
-import { QueryServerConfigListener, DistributionConfigListener } from './config';
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
-import * as archiveFilesystemProvider from './archive-filesystem-provider';
-import { logger, queryServerLogger, ideServerLogger } from './logging';
-import * as helpers from './helpers';
-import { DistributionManager, DistributionInstallOrUpdateResultKind } from './distribution';
+import * as qsClient from './queryserver-client';
 
 /**
 * extension.ts
@@ -70,7 +70,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   const qs = new qsClient.QueryServerClient(qlConfigurationListener, {
     logger: queryServerLogger,
-  });
+  }, task => Window.withProgress({ title: 'QL query server', location: ProgressLocation.Window }, task));
   ctx.subscriptions.push(qs);
   await qs.startQueryServer();
 
