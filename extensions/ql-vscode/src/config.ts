@@ -134,7 +134,7 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
   private _numThreads: number;
   private _queryMemoryMb: number;
 
-  private constructor(private readonly _codeQlPath: string) {
+  private constructor(private _codeQlPath: string) {
     super();
   }
 
@@ -142,7 +142,11 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
     const codeQlPath = await distributionManager.getCodeQlPath();
     const config = new QueryServerConfigListener(codeQlPath!);
     if (distributionManager.onDidChangeDistribution) {
-      config.push(distributionManager.onDidChangeDistribution(() => config._onDidChangeConfiguration.fire()));
+      config.push(distributionManager.onDidChangeDistribution(async () => {
+        const codeQlPath = await distributionManager.getCodeQlPath();
+        config._codeQlPath = codeQlPath!;
+        config._onDidChangeConfiguration.fire();
+      }));
     }
     return config;
   }
