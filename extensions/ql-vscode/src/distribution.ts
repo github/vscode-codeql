@@ -68,14 +68,15 @@ export class DistributionManager {
    */
   public async installOrUpdateDistribution(
     progressCallback?: (p: ProgressUpdate) => void): Promise<DistributionInstallOrUpdateResult> {
+    const codeQlPath = await this.getCodeQlPath();
     const extensionSpecificRelease = this.getExtensionSpecificRelease();
 
-    if (extensionSpecificRelease === undefined && (await this.getCodeQlPath()) !== undefined) {
+    if (extensionSpecificRelease === undefined && codeQlPath !== undefined) {
       // A distribution is present but it isn't managed by the extension.
       return createInvalidDistributionLocationResult();
     }
     const latestRelease = await this.getLatestRelease();
-    if (extensionSpecificRelease !== undefined && latestRelease.id === extensionSpecificRelease.id) {
+    if (extensionSpecificRelease !== undefined && codeQlPath !== undefined && latestRelease.id === extensionSpecificRelease.id) {
       return createDistributionAlreadyUpToDateResult();
     }
     await this.installExtensionSpecificDistribution(latestRelease, progressCallback);
@@ -108,7 +109,7 @@ export class DistributionManager {
     progressCallback?: (p: ProgressUpdate) => void): Promise<void> {
     const assetStream = await this.createReleasesApiConsumer().streamBinaryContentOfAsset(release.assets[0]);
 
-    const tmpDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "vscode-codeql"));
+    const tmpDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "vscode-codeql"));
     const archivePath = path.join(tmpDirectory, "distributionDownload.zip");
     const archiveFile = fs.createWriteStream(archivePath);
 
@@ -134,6 +135,8 @@ export class DistributionManager {
 
     logger.log(`Extracting distribution to ${this.getExtensionSpecificDistributionsStoragePath()}`);
     await extractZipArchive(archivePath, this.getExtensionSpecificDistributionsStoragePath());
+
+    await fs.remove(tmpDirectory);
 
     // Store the installed release within the global extension state.
     this.storeExtensionSpecificRelease(release);
