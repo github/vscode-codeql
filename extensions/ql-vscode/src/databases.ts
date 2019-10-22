@@ -234,7 +234,7 @@ export interface DatabaseItem {
   /**
    * Returns `sourceLocationPrefix` of exported database.
    */
-  getSourceLocationPrefix(config: QueryServerConfig, logger: Logger): Promise<string>;
+  getSourceLocationPrefix(server : cli.CodeQLCliServer): Promise<string>;
 
   /**
    * Returns the root uri of the virtual filesystem for this database's source archive,
@@ -365,8 +365,8 @@ class DatabaseItemImpl implements DatabaseItem {
    * Returns `sourceLocationPrefix` of database. Requires that the database
    * has a `.dbinfo` file, which is the source of the prefix.
    */
-  public async getSourceLocationPrefix(config: QueryServerConfig, logger: Logger): Promise<string> {
-    const dbInfo = await cli.resolveDatabase(config, this.databaseUri.fsPath, logger);
+  public async getSourceLocationPrefix(server: cli.CodeQLCliServer): Promise<string> {
+    const dbInfo = await server.resolveDatabase(this.databaseUri.fsPath);
     return dbInfo.sourceLocationPrefix;
   }
 

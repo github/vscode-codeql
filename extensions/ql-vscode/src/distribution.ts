@@ -15,7 +15,12 @@ export class GithubApiError extends Error {
   }
 }
 
-export class DistributionManager {
+export interface DistributionProvider {
+  getCodeQlPath(): Promise<string | undefined>,
+  onDidChangeDistribution?: Event<void>
+}
+
+export class DistributionManager implements DistributionProvider {
   constructor(extensionContext: ExtensionContext, config: DistributionConfig) {
     this._config = config;
     this._extensionSpecificDistributionManager = new ExtensionSpecificDistributionManager(extensionContext, config);

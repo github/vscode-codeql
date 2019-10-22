@@ -12,6 +12,7 @@ import * as messages from './messages';
 import { EvaluationInfo, tmpDir, interpretResults } from './queries';
 import { Logger } from './logging';
 import { QueryServerConfig } from './config';
+import { CodeQLCliServer } from './cli';
 
 /**
  * interface.ts
@@ -80,7 +81,7 @@ export class InterfaceManager extends DisposableObject {
   readonly diagnosticCollection = languages.createDiagnosticCollection(`codeql-query-results`);
 
   constructor(public ctx: vscode.ExtensionContext, private databaseManager: DatabaseManager,
-    public config: QueryServerConfig, public logger: Logger) {
+    public cliServer: CodeQLCliServer, public logger: Logger) {
 
     super();
     this.push(this.diagnosticCollection);
@@ -153,12 +154,12 @@ export class InterfaceManager extends DisposableObject {
       && info.query.quickEvalPosition === undefined // never do results interpretation if quickEval
     ) {
       try {
-        const sourceLocationPrefix = await info.query.dbItem.getSourceLocationPrefix(this.config, this.logger);
+        const sourceLocationPrefix = await info.query.dbItem.getSourceLocationPrefix(this.cliServer);
         const sourceArchiveUri = info.query.dbItem.sourceArchive;
         const sourceInfo = sourceArchiveUri === undefined ?
           undefined :
           { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
-        const sarif = await interpretResults(this.config, info.query, this.logger, sourceInfo);
+        const sarif = await interpretResults(this.cliServer, info.query, sourceInfo);
         interpretation = { sarif, sourceLocationPrefix };
       }
       catch (e) {
