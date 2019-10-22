@@ -7,7 +7,7 @@ import { ExtensionContext } from 'vscode';
 import { showAndLogErrorMessage, showAndLogWarningMessage, showAndLogInformationMessage } from './helpers';
 import { zipArchiveScheme } from './archive-filesystem-provider';
 import { DisposableObject } from 'semmle-vscode-utils';
-import { QLConfiguration } from './config';
+import { QueryServerConfig } from './config';
 import { Logger } from './logging';
 
 /**
@@ -233,7 +233,7 @@ export interface DatabaseItem {
   /**
    * Returns `sourceLocationPrefix` of exported database.
    */
-  getSourceLocationPrefix(config: QLConfiguration, logger: Logger): Promise<string>;
+  getSourceLocationPrefix(config: QueryServerConfig, logger: Logger): Promise<string>;
 }
 
 class DatabaseItemImpl implements DatabaseItem {
@@ -348,7 +348,7 @@ class DatabaseItemImpl implements DatabaseItem {
    * Returns `sourceLocationPrefix` of database. Requires that the database
    * has a `.dbinfo` file, which is the source of the prefix.
    */
-  public async getSourceLocationPrefix(config: QLConfiguration, logger: Logger): Promise<string> {
+  public async getSourceLocationPrefix(config: QueryServerConfig, logger: Logger): Promise<string> {
     const dbInfo = await cli.resolveDatabase(config, this.databaseUri.fsPath, logger);
     return dbInfo.sourceLocationPrefix;
   }
@@ -367,7 +367,7 @@ export class DatabaseManager extends DisposableObject {
   private _currentDatabaseItem: DatabaseItem | undefined = undefined;
 
   constructor(private ctx: ExtensionContext,
-    public config: QLConfiguration,
+    public config: QueryServerConfig,
     public logger: Logger) {
     super();
 

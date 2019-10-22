@@ -1,6 +1,6 @@
-import { workspace, Event, EventEmitter, ConfigurationChangeEvent } from 'vscode';
 import { DisposableObject } from 'semmle-vscode-utils';
-import * as helpers from './helpers';
+import { workspace, Event, EventEmitter, ConfigurationChangeEvent } from 'vscode';
+import { DistributionManager } from './distribution';
 
 /** Helper class to look up a labelled (and possibly nested) setting. */
 class Setting {
@@ -29,16 +29,39 @@ class Setting {
 }
 
 const ROOT_SETTING =  new Setting('ql');
+
+// Distribution configuration
+
+const DISTRIBUTION_SETTING = new Setting('distribution', ROOT_SETTING);
+const CUSTOM_CODEQL_PATH_SETTING = new Setting('codeQlPath', DISTRIBUTION_SETTING);
+const INCLUDE_PRERELEASE_SETTING = new Setting('includePrerelease', DISTRIBUTION_SETTING);
+const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIBUTION_SETTING);
+const OWNER_NAME_SETTING = new Setting('owner', DISTRIBUTION_SETTING);
+const REPOSITORY_NAME_SETTING = new Setting('repository', DISTRIBUTION_SETTING);
+
+/** When these settings change, the distribution should be updated. */
+const DISTRIBUTION_CHANGE_SETTINGS = [CUSTOM_CODEQL_PATH_SETTING, INCLUDE_PRERELEASE_SETTING, PERSONAL_ACCESS_TOKEN_SETTING, OWNER_NAME_SETTING, REPOSITORY_NAME_SETTING];
+
+export interface DistributionConfig {
+  customCodeQlPath?: string;
+  includePrerelease: boolean;
+  personalAccessToken?: string;
+  ownerName: string;
+  repositoryName: string;
+  onDidChangeDistributionConfiguration?: Event<void>;
+}
+
+// Query server configuration
+
 const RUNNING_QUERIES_SETTING = new Setting('runningQueries', ROOT_SETTING);
-const DISTRIBUTION_PATH_SETTING = new Setting('distributionPath', ROOT_SETTING);
 const NUMBER_OF_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_QUERIES_SETTING);
 const TIMEOUT_SETTING = new Setting('timeout', RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
 
 /** When these settings change, the running query server should be restarted. */
-const QUERY_SERVER_RESTARTING_SETTINGS = [DISTRIBUTION_PATH_SETTING, NUMBER_OF_THREADS_SETTING, MEMORY_SETTING];
+const QUERY_SERVER_RESTARTING_SETTINGS = [NUMBER_OF_THREADS_SETTING, MEMORY_SETTING];
 
-export interface QLConfiguration {
+export interface QueryServerConfig {
   codeQlPath: string,
   numThreads: number,
   queryMemoryMb: number,
@@ -46,11 +69,8 @@ export interface QLConfiguration {
   onDidChangeQueryServerConfiguration?: Event<void>;
 }
 
-export class QLConfigurationListener extends DisposableObject implements QLConfiguration {
-  private readonly _onDidChangeQueryServerConfiguration = this.push(new EventEmitter<void>());
-  private _codeQlPath: string | undefined;
-  private _numThreads: number;
-  private _queryMemoryMb: number;
+abstract class ConfigListener extends DisposableObject {
+  protected readonly _onDidChangeConfiguration = this.push(new EventEmitter<void>());
 
   constructor() {
     super();
@@ -58,12 +78,81 @@ export class QLConfigurationListener extends DisposableObject implements QLConfi
     this.push(workspace.onDidChangeConfiguration(this.handleDidChangeConfiguration, this));
   }
 
-  public get onDidChangeQueryServerConfiguration(): Event<void> {
-    return this._onDidChangeQueryServerConfiguration.event;
+  /**
+   * Calls `updateConfiguration` if any of the `relevantSettings` have changed.
+   */
+  protected handleDidChangeConfigurationForRelevantSettings(relevantSettings: Setting[], e: ConfigurationChangeEvent): void {
+    // Check whether any options that affect query running were changed.
+    for (const option of relevantSettings) {
+      // TODO: compare old and new values, only update if there was actually a change?
+      if (e.affectsConfiguration(option.qualifiedName)) {
+        this.updateConfiguration();
+        break; // only need to do this once, if any of the settings have changed
+      }
+    }
+  }
+
+  protected abstract handleDidChangeConfiguration(e: ConfigurationChangeEvent): void;
+  protected abstract updateConfiguration(): void;
+}
+
+export class DistributionConfigListener extends ConfigListener implements DistributionConfig {
+  public get customCodeQlPath(): string | undefined {
+    return CUSTOM_CODEQL_PATH_SETTING.getValue() !== null ? CUSTOM_CODEQL_PATH_SETTING.getValue() : undefined;
+  }
+
+  public get includePrerelease(): boolean {
+    return INCLUDE_PRERELEASE_SETTING.getValue();
+  }
+
+  public get personalAccessToken(): string | undefined {
+    return PERSONAL_ACCESS_TOKEN_SETTING.getValue() !== null ? PERSONAL_ACCESS_TOKEN_SETTING.getValue() : undefined;
+  }
+
+  public get ownerName(): string {
+    return OWNER_NAME_SETTING.getValue();
+  }
+
+  public get repositoryName(): string {
+    return REPOSITORY_NAME_SETTING.getValue();
+  }
+
+  public get onDidChangeDistributionConfiguration(): Event<void> {
+    return this._onDidChangeConfiguration.event;
+  }
+
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+    this.handleDidChangeConfigurationForRelevantSettings(DISTRIBUTION_CHANGE_SETTINGS, e);
+  }
+
+  protected updateConfiguration(): void {
+    this._onDidChangeConfiguration.fire();
+  }
+}
+
+export class QueryServerConfigListener extends ConfigListener implements QueryServerConfig {
+  private _numThreads: number;
+  private _queryMemoryMb: number;
+
+  private constructor(private _codeQlPath: string) {
+    super();
+  }
+
+  public static async createQueryServerConfigListener(distributionManager: DistributionManager): Promise<QueryServerConfigListener> {
+    const codeQlPath = await distributionManager.getCodeQlPath();
+    const config = new QueryServerConfigListener(codeQlPath!);
+    if (distributionManager.onDidChangeDistribution) {
+      config.push(distributionManager.onDidChangeDistribution(async () => {
+        const codeQlPath = await distributionManager.getCodeQlPath();
+        config._codeQlPath = codeQlPath!;
+        config._onDidChangeConfiguration.fire();
+      }));
+    }
+    return config;
   }
 
   public get codeQlPath(): string {
-    return this._codeQlPath!;
+    return this._codeQlPath;
   }
 
   public get numThreads(): number {
@@ -79,24 +168,17 @@ export class QLConfigurationListener extends DisposableObject implements QLConfi
     return this._queryMemoryMb;
   }
 
-  private handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
-    // Check whether any options that affect query running were changed.
-    for(const option of QUERY_SERVER_RESTARTING_SETTINGS) {
-      // TODO: compare old and new values, only update if there was actually a change?
-      if (e.affectsConfiguration(option.qualifiedName)) {
-        this.updateConfiguration();
-        break; // only need to do this once, if any of the settings have changed
-      }
-    }
+  public get onDidChangeQueryServerConfiguration(): Event<void> {
+    return this._onDidChangeConfiguration.event;
   }
 
-  private updateConfiguration(): void {
-    this._codeQlPath = DISTRIBUTION_PATH_SETTING.getValue<string>();
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+    this.handleDidChangeConfigurationForRelevantSettings(QUERY_SERVER_RESTARTING_SETTINGS, e);
+  }
+
+  protected updateConfiguration(): void {
     this._numThreads = NUMBER_OF_THREADS_SETTING.getValue<number>();
     this._queryMemoryMb = MEMORY_SETTING.getValue<number>();
-    if (!this.codeQlPath) {
-      helpers.showAndLogErrorMessage(`CodeQL distribution must be configured. Set the '${DISTRIBUTION_PATH_SETTING.qualifiedName}' setting.`);
-    }
-    this._onDidChangeQueryServerConfiguration.fire();
+    this._onDidChangeConfiguration.fire();
   }
 }

@@ -1,6 +1,6 @@
 import { StreamInfo } from 'vscode-languageclient';
 import * as cli from './cli';
-import { QLConfiguration } from './config';
+import { QueryServerConfig } from './config';
 import { ideServerLogger } from './logging';
 
 /**
@@ -10,7 +10,7 @@ import { ideServerLogger } from './logging';
  * Managing the lsp server for QL.
  */
 
-export async function spawnIdeServer(config: QLConfiguration): Promise<StreamInfo> {
+export async function spawnIdeServer(config: QueryServerConfig): Promise<StreamInfo> {
   const child = await cli.spawnServer(
     config,
     'QL language server',

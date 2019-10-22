@@ -6,11 +6,12 @@ const {
   compileTypeScript,
   watchTypeScript,
   packageExtension,
-  compileTextMateGrammar
+  compileTextMateGrammar,
+  copyTestData
 } = require('build-tasks');
 const { compileView } = require('./webpack');
 
-exports.buildWithoutPackage = gulp.parallel(compileTypeScript, compileTextMateGrammar, compileView);
+exports.buildWithoutPackage = gulp.parallel(compileTypeScript, compileTextMateGrammar, compileView, copyTestData);
 exports.compileTextMateGrammar = compileTextMateGrammar;
 exports.default = gulp.series(exports.buildWithoutPackage, packageExtension);
 exports.watchTypeScript = watchTypeScript;

@@ -1,5 +1,45 @@
-import { window as Window } from 'vscode';
+import { window as Window, CancellationToken, ProgressOptions } from 'vscode';
 import { logger } from './logging';
+
+export interface ProgressUpdate {
+  /**
+   * The current step
+   */
+  step: number;
+  /**
+   * The maximum step. This *should* be constant for a single job.
+   */
+  maxStep: number;
+  /**
+   * The current progress message
+   */
+  message: string;
+}
+
+/**
+ * This mediates between the kind of progress callbacks we want to
+ * write (where we *set* current progress position and give
+ * `maxSteps`) and the kind vscode progress api expects us to write
+ * (which increment progress by a certain amount out of 100%)
+ */
+export function withProgress<R>(
+  options: ProgressOptions,
+  task: (
+    progress: (p: ProgressUpdate) => void,
+    token: CancellationToken
+  ) => Thenable<R>
+): Thenable<R> {
+  let progressAchieved = 0;
+  return Window.withProgress(options,
+    (progress, token) => {
+      return task(p => {
+        const { message, step, maxStep } = p;
+        const increment = 100 * (step - progressAchieved) / maxStep;
+        progressAchieved = step;
+        progress.report({ message, increment });
+      }, token);
+    });
+}
 
 /**
  * Show an error message and log it to the console
@@ -49,4 +89,13 @@ export async function showBinaryChoiceDialog(message: string): Promise<boolean> 
   const noItem = { title: 'No', isCloseAffordance: true }
   const chosenItem = await Window.showInformationMessage(message, { modal: true }, yesItem, noItem);
   return chosenItem === yesItem;
+}
+
+/**
+ * Used to perform compile time exhaustivity checking on a value.  This function will not be
+ * executed at runtime unless there is a flaw in the type system.
+ */
+export function assertNever(value: never): never {
+  logger.log("Internal error: assertNever failure");
+  return value;
 }

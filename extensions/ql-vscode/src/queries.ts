@@ -1,12 +1,10 @@
-import * as cp from 'child_process';
-import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
 import * as sarif from 'sarif';
 import { ProgressLocation, window as Window, workspace } from 'vscode';
 import * as cli from './cli';
-import { QLConfiguration } from './config';
+import { QueryServerConfig } from './config';
 import { DatabaseItem } from './databases';
 import * as helpers from './helpers';
 import { DatabaseInfo } from './interface-types';
@@ -90,7 +88,7 @@ class QueryInfo {
       useSequenceHint: false
     }
     try {
-      await withProgress({
+      await helpers.withProgress({
         location: ProgressLocation.Notification,
         title: "Running Query",
         cancellable: false,
@@ -127,7 +125,7 @@ class QueryInfo {
       };
 
 
-      compiled = await withProgress({
+      compiled = await helpers.withProgress({
         location: ProgressLocation.Notification,
         title: "Compiling Query",
         cancellable: false,
@@ -174,7 +172,7 @@ class QueryInfo {
 /**
  * Call cli command to interpret results.
  */
-export async function interpretResults(config: QLConfiguration, queryInfo: QueryInfo, logger: Logger): Promise<sarif.Log> {
+export async function interpretResults(config: QueryServerConfig, queryInfo: QueryInfo, logger: Logger): Promise<sarif.Log> {
   const { metadata } = queryInfo;
   if (metadata == undefined) {
     throw new Error('Can\'t interpret results without query metadata');
@@ -190,31 +188,6 @@ export interface EvaluationInfo {
   query: QueryInfo;
   result: messages.EvaluationResult;
   database: DatabaseInfo;
-}
-
-/**
- * This mediates between the kind of progress callbacks we want to
- * write (where we *set* current progress position and give
- * `maxSteps`) and the kind vscode progress api expects us to write
- * (which increment progress by a certain amount out of 100%)
- */
-function withProgress<R>(
-  options: vscode.ProgressOptions,
-  task: (
-    progress: (p: messages.ProgressMessage) => void,
-    token: vscode.CancellationToken
-  ) => Thenable<R>
-): Thenable<R> {
-  let progressAchieved = 0;
-  return Window.withProgress(options,
-    (progress, token) => {
-      return task(p => {
-        const { message, step, maxStep } = p;
-        const increment = 100 * (step - progressAchieved) / maxStep;
-        progressAchieved = step;
-        progress.report({ message, increment });
-      }, token);
-    });
 }
 
 /**
@@ -338,7 +311,7 @@ export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: Databa
 
 async function checkDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams):
   Promise<messages.CheckUpgradeResult> {
-  return withProgress({
+  return helpers.withProgress({
     location: ProgressLocation.Notification,
     title: "Checking for database upgrades",
     cancellable: true,
@@ -352,7 +325,7 @@ async function compileDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradePar
     upgradeTempDir: upgradesTmpDir.name
   }
 
-  return withProgress({
+  return helpers.withProgress({
     location: ProgressLocation.Notification,
     title: "Compiling database upgrades",
     cancellable: true,
@@ -376,7 +349,7 @@ async function runDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseIt
     toRun: upgrades
   };
 
-  return withProgress({
+  return helpers.withProgress({
     location: ProgressLocation.Notification,
     title: "Running database upgrades",
     cancellable: true,
@@ -399,7 +372,7 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
     db,
   };
 
-  return withProgress({
+  return helpers.withProgress({
     location: ProgressLocation.Notification,
     title: "Clearing Cache",
     cancellable: false,
@@ -409,7 +382,7 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
 }
 
 export async function compileAndRunQueryAgainstDatabase(
-  config: QLConfiguration,
+  config: QueryServerConfig,
   qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   quickEval?: boolean

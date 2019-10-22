@@ -3,7 +3,7 @@ import { DisposableObject } from 'semmle-vscode-utils';
 import { Disposable } from 'vscode';
 import { CancellationToken, createMessageConnection, MessageConnection, RequestType } from 'vscode-jsonrpc';
 import * as cli from './cli';
-import { QLConfiguration } from './config';
+import { QueryServerConfig } from './config';
 import { Logger } from './logging';
 import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './messages';
 
@@ -43,7 +43,7 @@ class ServerProcess implements Disposable {
  * to restart it (which disposes the existing process and starts a new one).
  */
 export class QueryServerClient extends DisposableObject {
-  readonly config: QLConfiguration;
+  readonly config: QueryServerConfig;
   opts: ServerOpts;
   serverProcess?: ServerProcess;
   evaluationResultCallbacks: { [key: number]: (res: EvaluationResult) => void };
@@ -51,7 +51,7 @@ export class QueryServerClient extends DisposableObject {
   nextCallback: number;
   nextProgress: number;
 
-  constructor(config: QLConfiguration, opts: ServerOpts) {
+  constructor(config: QueryServerConfig, opts: ServerOpts) {
     super();
     this.config = config;
     // The logger is obtained from the caller, to ensure testability.

@@ -1,4 +1,4 @@
-import { commands, ExtensionContext, window as Window } from 'vscode';
+import { commands, ExtensionContext, ProgressOptions, ProgressLocation } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
@@ -6,11 +6,12 @@ import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
 import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal } from './queries';
 import * as qsClient from './queryserver-client';
-import { QLConfigurationListener } from './config';
+import { QueryServerConfigListener, DistributionConfigListener } from './config';
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { logger, queryServerLogger, ideServerLogger } from './logging';
 import * as helpers from './helpers';
+import { DistributionManager, DistributionInstallOrUpdateResultKind } from './distribution';
 
 /**
 * extension.ts
@@ -19,15 +20,53 @@ import * as helpers from './helpers';
 * A vscode extension for QL query development.
 */
 
-export async function activate(ctx: ExtensionContext) {
+export async function activate(ctx: ExtensionContext): Promise<void> {
   // Initialise logging, and ensure all loggers are disposed upon exit.
   ctx.subscriptions.push(logger);
-  ctx.subscriptions.push(queryServerLogger);
-  ctx.subscriptions.push(ideServerLogger);
   logger.log('Starting QL extension');
 
-  const qlConfigurationListener = new QLConfigurationListener();
+  const distributionConfigListener = new DistributionConfigListener();
+  ctx.subscriptions.push(distributionConfigListener);
+  const distributionManager = new DistributionManager(ctx, distributionConfigListener);
+
+  async function downloadOrUpdateDistribution(progressTitle: string): Promise<void> {
+    const progressOptions: ProgressOptions = {
+      location: ProgressLocation.Notification,
+      title: progressTitle,
+      cancellable: false,
+    };
+    const result = await helpers.withProgress(progressOptions,
+      progress => distributionManager.installOrUpdateDistribution(progress));
+    switch (result.kind) {
+      case DistributionInstallOrUpdateResultKind.AlreadyUpToDate:
+        helpers.showAndLogInformationMessage("CodeQL tools already up to date.");
+        break;
+      case DistributionInstallOrUpdateResultKind.DistributionUpdated:
+        helpers.showAndLogInformationMessage(`CodeQL tools updated to version ${result.updatedRelease.name}.`);
+        break;
+      case DistributionInstallOrUpdateResultKind.InvalidDistributionLocation:
+        helpers.showAndLogErrorMessage("CodeQL tools are installed externally so could not be updated.");
+        break;
+      default:
+        helpers.assertNever(result);
+    }
+  }
+
+  ctx.subscriptions.push(commands.registerCommand('ql.updateTools', () => downloadOrUpdateDistribution("Checking for CodeQL Updates")));
+
+  if (await distributionManager.getCodeQlPath() === undefined) {
+    await downloadOrUpdateDistribution("Installing CodeQL Distribution");
+  }
+
+  activateWithInstalledDistribution(ctx, distributionManager);
+}
+
+async function activateWithInstalledDistribution(ctx: ExtensionContext, distributionManager: DistributionManager) {
+  const qlConfigurationListener = await QueryServerConfigListener.createQueryServerConfigListener(distributionManager);
   ctx.subscriptions.push(qlConfigurationListener);
+
+  ctx.subscriptions.push(queryServerLogger);
+  ctx.subscriptions.push(ideServerLogger);
 
   const qs = new qsClient.QueryServerClient(qlConfigurationListener, {
     logger: queryServerLogger,

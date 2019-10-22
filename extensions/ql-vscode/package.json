@@ -76,11 +76,35 @@
       "type": "object",
       "title": "QL",
       "properties": {
-        "ql.distributionPath": {
+        "ql.distribution.codeQlPath": {
           "scope": "window",
           "type": "string",
-          "default": "",
-          "description": "Location of the QL distribution"
+          "default": null,
+          "description": "Path to the CodeQL executable that should be used by the CodeQL extension.  This overrides all other distribution settings."
+        },
+        "ql.distribution.includePrerelease": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether prereleases should be included when installing the distribution."
+        },
+        "ql.distribution.personalAccessToken": {
+          "scope": "window",
+          "type": "string",
+          "default": null,
+          "description": "GitHub personal access token for authenticating to GitHub.  This is required if ql.distribution.owner and ql.distribution.repository refer to a private repository."
+        },
+        "ql.distribution.owner": {
+          "scope": "window",
+          "type": "string",
+          "default": null,
+          "description": "The owner of the GitHub repository containing CodeQL binaries."
+        },
+        "ql.distribution.repository": {
+          "scope": "window",
+          "type": "string",
+          "default": null,
+          "description": "The name of the GitHub repository containing CodeQL binaries."
         },
         "ql.runningQueries.numberOfThreads": {
           "type": "number",
@@ -142,6 +166,10 @@
       {
         "command": "qlDatabases.upgradeDatabase",
         "title": "Upgrade Database"
+      },
+      {
+        "command": "ql.updateTools",
+        "title": "QL: Install/Update Tools"
       }
     ],
     "menus": {
@@ -231,7 +259,7 @@
     "watch": "npm-run-all -p watch:*",
     "watch:extension": "tsc --watch",
     "test": "mocha --exit -r ts-node/register test/pure-tests/**/*.ts",
-    "preintegration": "rm -rf ./out/vscode-tests && gulp compileTypeScript",
+    "preintegration": "rm -rf ./out/vscode-tests && gulp",
     "integration": "node ./out/vscode-tests/run-integration-tests.js",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "postinstall": "node ./node_modules/vscode/bin/install",
@@ -242,8 +270,8 @@
     "fs-extra": "^8.1.0",
     "glob-promise": "^3.4.0",
     "google-protobuf": "^3.7.1",
-    "jszip": "~3.2.2",
     "leb": "^0.3.0",
+    "node-fetch": "~2.6.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "semmle-bqrs": "^0.0.1",
@@ -251,6 +279,7 @@
     "semmle-io-node": "^0.0.1",
     "semmle-vscode-utils": "^0.0.1",
     "tmp": "^0.1.0",
+    "unzipper": "~0.10.5",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^5.2.1",
     "xml2js": "~0.4.19"
@@ -265,10 +294,12 @@
     "@types/jszip": "~3.1.6",
     "@types/mocha": "~5.2.7",
     "@types/node": "^12.0.8",
+    "@types/node-fetch": "~2.5.2",
     "@types/react": "^16.8.17",
     "@types/react-dom": "^16.8.4",
     "@types/sarif": "~2.1.2",
     "@types/tmp": "^0.1.0",
+    "@types/unzipper": "~0.10.0",
     "@types/vscode": "^1.33.0",
     "@types/webpack": "^4.32.1",
     "@types/xml2js": "~0.4.4",
