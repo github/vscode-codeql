@@ -88,11 +88,12 @@ export class QueryServerClient extends DisposableObject {
 
   /** Starts a new query server process, sending progress messages to the status bar. */
   async startQueryServer() {
-    return this.withProgressReporting(this.startQueryServerImpl);
+    // Use an arrow function to preserve the value of `this`.
+    return this.withProgressReporting((progress, _) => this.startQueryServerImpl(progress));
   }
 
   /** Starts a new query server process, sending progress messages to the given reporter. */
-  private async startQueryServerImpl(progressReporter: ProgressReporter, _: CancellationToken) {
+  private async startQueryServerImpl(progressReporter: ProgressReporter) {
     const ramArgs = await cli.resolveRam(this.config, this.opts.logger, progressReporter);
     const child = await cli.spawnServer(
       this.config,
