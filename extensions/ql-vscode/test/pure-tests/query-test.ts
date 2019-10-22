@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import 'mocha';
 import * as path from 'path';
 import * as bqrs from 'semmle-bqrs';
