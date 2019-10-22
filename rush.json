@@ -9,7 +9,7 @@
   "pnpmOptions": {
     "strictPeerDependencies": true,
   },
-  "nodeSupportedVersionRange": ">=10.13.0 <11.0.0",
+  "nodeSupportedVersionRange": ">=10.13.0 <13.0.0",
   "ensureConsistentVersions": true,
   "projectFolderMinDepth": 2,
   "projectFolderMaxDepth": 2,
