@@ -10,6 +10,7 @@ export interface ResultTablesProps {
   rawResultSets: readonly ResultSet[];
   interpretation: Interpretation | undefined;
   database: DatabaseInfo;
+  resultsPath: string | undefined;
 }
 
 /**
@@ -83,7 +84,8 @@ export class ResultTables
       {
         resultSets.map(resultSet =>
           <ResultTable key={resultSet.schema.name} resultSet={resultSet}
-            databaseUri={this.props.database.databaseUri} selected={resultSet.schema.name === selectedTable} />
+            databaseUri={this.props.database.databaseUri} selected={resultSet.schema.name === selectedTable}
+            resultsPath={this.props.resultsPath} />
         )
       }
     </div >;

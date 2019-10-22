@@ -55,6 +55,7 @@ export interface ResultTableProps {
   selected: boolean;
   resultSet: ResultSet;
   databaseUri: string;
+  resultsPath: string | undefined;
 }
 
 export type RawTableProps = ResultTableProps & { resultSet: RawTableResultSet };
@@ -76,7 +77,7 @@ export class RawTable extends React.Component<RawTableProps, {}> {
   }
 
   render(): React.ReactNode {
-    const { resultSet, selected, databaseUri } = this.props;
+    const { resultSet, selected, databaseUri, resultsPath } = this.props;
 
     const tableClassName = cx(className, {
       [selectedClassName]: selected
@@ -307,9 +308,9 @@ export class ResultTable extends React.Component<ResultTableProps, {}> {
     const { resultSet } = this.props;
     switch (resultSet.t) {
       case 'RawResultSet': return <RawTable
-        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} />;
+        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} resultsPath={this.props.resultsPath} />;
       case 'SarifResultSet': return <PathTable
-        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} />;
+        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} resultsPath={this.props.resultsPath} />;
     }
   }
 }
