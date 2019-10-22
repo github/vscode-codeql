@@ -111,7 +111,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   ctx.subscriptions.push(tmpDirDisposal);
 
   let client = new LanguageClient('QL Language Server', () => spawnIdeServer(qlConfigurationListener), {
-    documentSelector: ['ql', { language: 'json', pattern: '**/qlpack.json' }],
+    documentSelector: ['ql', { language: 'yaml', pattern: '**/qlpack.yml' }],
     synchronize: {
       configurationSection: 'ql'
     },
