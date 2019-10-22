@@ -91,9 +91,9 @@ You can install the `.vsix` file from within VS Code itself, from the Extensions
 Or, from the command line, use something like (depending on where you have VSCode installed):
 
 ```shell
-$ code --install-extension `pwd`/ql-vscode-0.0.1.vsix # normal VSCode installation
+$ code --install-extension ql-vscode-0.0.1.vsix # normal VSCode installation
 # or maybe
-$ vscode/scripts/code-cli.sh --install-extension `pwd`/ql-vscode-0.0.1.vsix # if you're running from github checkout
+$ vscode/scripts/code-cli.sh --install-extension ql-vscode-0.0.1.vsix # if you're running from github checkout
 ```
 
 Be sure to read the
