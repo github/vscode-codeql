@@ -237,7 +237,8 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
     if (this.state.results !== null) {
       return <ResultTables rawResultSets={this.state.results.resultSets}
         interpretation={this.state.resultsInfo ? this.state.resultsInfo.interpretation : undefined}
-        database={this.state.results.database} />;
+        database={this.state.results.database}
+        resultsPath={this.state.resultsInfo ? this.state.resultsInfo.resultsPath : undefined} />;
     }
     else {
       return <span>{this.state.errorMessage}</span>;

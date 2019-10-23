@@ -70,6 +70,7 @@ export class InterfaceManager extends DisposableObject {
     public config: QueryServerConfig, public logger: Logger) {
 
     super();
+    this.push(this.diagnosticCollection);
   }
 
   // Returns the webview panel, creating it if it doesn't already
@@ -96,17 +97,29 @@ export class InterfaceManager extends DisposableObject {
       const stylesheetPathOnDisk = vscode.Uri
         .file(ctx.asAbsolutePath('out/resultsView.css'));
       getHtmlForWebview(panel.webview, scriptPathOnDisk, stylesheetPathOnDisk);
-      panel.webview.onDidReceiveMessage(this.handleMsgFromView, undefined, ctx.subscriptions);
+      panel.webview.onDidReceiveMessage(async (e) => this.handleMsgFromView(e), undefined, ctx.subscriptions);
     }
     return this.panel;
   }
 
-  private handleMsgFromView = (msg: FromResultsViewMsg): void => {
+  private handleMsgFromView = async (msg: FromResultsViewMsg): Promise<void> => {
     switch (msg.t) {
       case 'viewSourceFile': {
         const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.databaseUri));
         if (databaseItem !== undefined) {
-          showLocation(msg.loc, databaseItem).catch(e => { throw e; });
+          await showLocation(msg.loc, databaseItem);
+        }
+        break;
+      }
+      case 'toggleDiagnostics': {
+        if (msg.visible) {
+          const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.databaseUri));
+          if(databaseItem !== undefined) {
+            await this.showResultsAsDiagnostics(msg.resultsPath, databaseItem);
+          }
+        } else {
+          // TODO: Only clear diagnostics on the same database.
+          this.diagnosticCollection.clear();
         }
         break;
       }
@@ -147,12 +160,17 @@ export class InterfaceManager extends DisposableObject {
       resultsPath: resultsPath,
       database: info.database
     });
-    const fileReader = await FileReader.open(info.query.resultsPath);
+  }
+
+  private async showResultsAsDiagnostics(resultsPath: string, database: DatabaseItem) {
+    // URIs from the webview have the vscode-resource scheme, so use only the filesystem path.
+    const resultsPathOnDisk = Uri.parse(resultsPath).fsPath;
+    const fileReader = await FileReader.open(resultsPathOnDisk);
     try {
       const resultSets = await bqrs.open(fileReader);
       try {
-        const customResults = await bqrs.createCustomResultSets<ProblemQueryResults>(resultSets, ProblemQueryResults);
-        await this.showProblemResultsAsDiagnostics(customResults, info.query.dbItem);
+        const customResults = bqrs.createCustomResultSets<ProblemQueryResults>(resultSets, ProblemQueryResults);
+        await this.showProblemResultsAsDiagnostics(customResults, database);
       }
       catch (e) {
         this.diagnosticCollection.clear();

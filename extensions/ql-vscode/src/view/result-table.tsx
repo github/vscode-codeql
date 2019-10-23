@@ -55,6 +55,7 @@ export interface ResultTableProps {
   selected: boolean;
   resultSet: ResultSet;
   databaseUri: string;
+  resultsPath: string | undefined;
 }
 
 export type RawTableProps = ResultTableProps & { resultSet: RawTableResultSet };
@@ -65,6 +66,7 @@ export interface PathTableState {
 }
 
 const className = 'ql-vscode__result-table';
+const tableMetadataClassName = `${className}-metadata`;
 const selectedClassName = `${className}--selected`;
 const evenRowClassName = 'ql-vscode__result-table-row--even';
 const oddRowClassName = 'ql-vscode__result-table-row--odd';
@@ -76,13 +78,26 @@ export class RawTable extends React.Component<RawTableProps, {}> {
   }
 
   render(): React.ReactNode {
-    const { resultSet, selected, databaseUri } = this.props;
+    const { resultSet, selected, databaseUri, resultsPath } = this.props;
 
     const tableClassName = cx(className, {
       [selectedClassName]: selected
     });
 
-    return <table className={tableClassName}>
+    return <div>
+      <div className={tableMetadataClassName}>
+      <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
+      <input type="checkbox" id="toggle-diagnostics" name="toggle-diagnostics" onChange={(e) => {
+        if(resultsPath !== undefined) {
+            vscode.postMessage({
+              t: 'toggleDiagnostics',
+              resultsPath: resultsPath,
+              databaseUri: databaseUri,
+              visible: e.target.checked
+            });
+        }}} />
+      </div>
+    <table className={tableClassName}>
       <thead>
         <tr>
           {
@@ -115,7 +130,8 @@ export class RawTable extends React.Component<RawTableProps, {}> {
           )
         }
       </tbody>
-    </table>;
+    </table>
+    </div>;
   }
 }
 
@@ -307,9 +323,9 @@ export class ResultTable extends React.Component<ResultTableProps, {}> {
     const { resultSet } = this.props;
     switch (resultSet.t) {
       case 'RawResultSet': return <RawTable
-        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} />;
+        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} resultsPath={this.props.resultsPath} />;
       case 'SarifResultSet': return <PathTable
-        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} />;
+        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} resultsPath={this.props.resultsPath} />;
     }
   }
 }
