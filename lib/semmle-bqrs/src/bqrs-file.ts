@@ -3,14 +3,23 @@ import { parseResultSetsHeader, StringPool, parseResultSetSchema, readTuples } f
 import { ResultSetsSchema, ResultSetSchema } from './bqrs-schema';
 import { ColumnValue } from './bqrs-results';
 
+/**
+ * The result of parsing data from a specific file region.
+ */
 interface RegionResult<T> {
+  /** The parsed data. */
   result: T,
-  finalPosition: number
+  /** The exclusive end position of the parsed data in the file. */
+  finalOffset: number
 }
 
-async function inFileRegion<T>(file: RandomAccessReader, start: number, end: number | undefined,
-  parse: (d: StreamDigester) => Promise<T>): Promise<RegionResult<T>> {
-
+/** Reads data from the specified region of the file, and parses it using the given function. */
+async function inFileRegion<T>(
+  file: RandomAccessReader,
+  start: number,
+  end: number | undefined,
+  parse: (d: StreamDigester) => Promise<T>
+): Promise<RegionResult<T>> {
   const stream = file.readStream(start, end);
   try {
     const d = StreamDigester.fromChunkIterator(stream);
@@ -18,7 +27,7 @@ async function inFileRegion<T>(file: RandomAccessReader, start: number, end: num
 
     return {
       result: result,
-      finalPosition: d.position
+      finalOffset: start + d.position
     };
   }
   finally {
@@ -35,7 +44,7 @@ export interface ResultSetReader {
    */
   readonly schema: ResultSetSchema;
   /**
-   * Read all of the tuples in the result set.
+   * Reads all of the tuples in the result set.
    */
   readTuples(): AsyncIterableIterator<ColumnValue[]>;
 }
@@ -53,6 +62,12 @@ export interface ResultSetsReader {
   findResultSetByName(name: string): ResultSetReader | undefined;
 }
 
+/**
+ * Metadata for a single `ResultSet` in a BQRS file.
+ * Does not contain the result tuples themselves.
+ * Includes the offset and length of the tuple data in the file,
+ * which can be used to read the tuples.
+ */
 interface ResultSetInfo {
   schema: ResultSetSchema;
   rowsOffset: number;
@@ -118,28 +133,45 @@ class ResultSetsReaderImpl implements ResultSetsReader {
   }
 
   public static async open(file: RandomAccessReader): Promise<ResultSetsReader> {
-    const { result: header, finalPosition: stringPoolOffset } =
+    // Parse the header of the entire BQRS file.
+    const { result: header, finalOffset: stringPoolOffset } =
       await inFileRegion(file, 0, undefined, d => parseResultSetsHeader(d));
 
+    // The header is followed by a shared string pool.
+    // We have saved the offset and length of the string pool within the file,
+    // so we can read it later when needed.
+    // For now, skip over the string pool to reach the starting point of the first result set.
     let currentResultSetOffset = stringPoolOffset + header.stringPoolSize;
 
+    //  Parse information about each result set within the file.
     const resultSets: ResultSetInfo[] = [];
     for (let resultSetIndex = 0; resultSetIndex < header.resultSetCount; resultSetIndex++) {
-      const { result: info, finalPosition } =
-        await inFileRegion(file, currentResultSetOffset, undefined, async (d) => {
-          const length = await d.readLEB128UInt32();
-          const headerStartPosition = d.position;
-          const resultSetSchema = await parseResultSetSchema(d);
+      // Read the length of this result set (encoded as a single byte).
+      // Note: reading length and schema together from a file region may be more efficient.
+      // Reading them separately just makes it easier to compute the
+      // starting offset and length of the schema.
+      const { result: resultSetLength, finalOffset: resultSetSchemaOffset } =
+        await inFileRegion(file, currentResultSetOffset, undefined, d => d.readLEB128UInt32());
 
-          return {
-            schema: resultSetSchema,
-            rowsOffset: d.position + currentResultSetOffset,
-            rowsLength: length - (d.position - headerStartPosition)
-          };
-        });
+      // Read the schema of this result set.
+      const { result: resultSetSchema, finalOffset: resultSetRowsOffset } =
+        await inFileRegion(file, resultSetSchemaOffset, undefined, d => parseResultSetSchema(d));
+      const resultSetSchemaLength = resultSetRowsOffset - resultSetSchemaOffset;
 
+      // The schema is followed by the tuple/row data for the result set.
+      // We save the offset and length of the tuple data within the file,
+      // so we can read it later when needed.
+      const info: ResultSetInfo = {
+        // length of result set = length of schema + length of tuple data
+        // The 1 byte that encodes the length itself is not counted.
+        rowsLength: resultSetLength - resultSetSchemaLength,
+        rowsOffset: resultSetRowsOffset,
+        schema: resultSetSchema,
+      };
       resultSets.push(info);
-      currentResultSetOffset = finalPosition;
+      // Skip over the tuple data of the current result set,
+      // to reach the starting offset of the next result set.
+      currentResultSetOffset = info.rowsOffset + info.rowsLength;
     }
 
     const schema: ResultSetsSchema = {

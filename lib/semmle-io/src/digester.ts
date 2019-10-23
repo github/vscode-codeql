@@ -266,10 +266,6 @@ export class StreamDigester {
   }
 }
 
-/**
- * The longest possible byte length of a (sanely) encoded LEB128 UInt32:
- * `0xff 0xff 0xff 0xff 0x8f` (5 bytes)
- */
 function decodeDate(buffer: Buffer, offset: number): Date {
   const low = buffer.readUInt32LE(offset);
   const high = buffer.readUInt32LE(offset + 4);
@@ -285,6 +281,10 @@ function decodeDate(buffer: Buffer, offset: number): Date {
   return new Date(year, month, day, hours, minutes, seconds, ms);
 }
 
+/**
+ * The longest possible byte length of a correctly encoded LEB128 UInt32:
+ * `0xff 0xff 0xff 0xff 0x8f` (5 bytes)
+ */
 const MAX_ENCODED_UINT32_LENGTH = 5;
 
 function canDecodeLEB128UInt32(buffer: Buffer, offset: number, byteCount: number): number {
