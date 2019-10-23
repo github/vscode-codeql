@@ -25,8 +25,17 @@ export interface IntoResultsViewMsg {
   database: DatabaseInfo;
 };
 
-export interface FromResultsViewMsg {
+export type FromResultsViewMsg = ViewSourceFileMsg | ToggleDiagnostics;
+
+interface ViewSourceFileMsg {
   t: 'viewSourceFile';
   loc: FivePartLocation;
   databaseUri: string;
+};
+
+interface ToggleDiagnostics {
+  t: 'toggleDiagnostics';
+  databaseUri: string;
+  resultsPath: string;
+  visible: boolean;
 };

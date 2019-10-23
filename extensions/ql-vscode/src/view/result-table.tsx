@@ -66,6 +66,7 @@ export interface PathTableState {
 }
 
 const className = 'ql-vscode__result-table';
+const tableMetadataClassName = `${className}-metadata`;
 const selectedClassName = `${className}--selected`;
 const evenRowClassName = 'ql-vscode__result-table-row--even';
 const oddRowClassName = 'ql-vscode__result-table-row--odd';
@@ -83,7 +84,20 @@ export class RawTable extends React.Component<RawTableProps, {}> {
       [selectedClassName]: selected
     });
 
-    return <table className={tableClassName}>
+    return <div>
+      <div className={tableMetadataClassName}>
+      <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
+      <input type="checkbox" id="toggle-diagnostics" name="toggle-diagnostics" onChange={(e) => {
+        if(resultsPath !== undefined) {
+            vscode.postMessage({
+              t: 'toggleDiagnostics',
+              resultsPath: resultsPath,
+              databaseUri: databaseUri,
+              visible: e.target.checked
+            });
+        }}} />
+      </div>
+    <table className={tableClassName}>
       <thead>
         <tr>
           {
@@ -116,7 +130,8 @@ export class RawTable extends React.Component<RawTableProps, {}> {
           )
         }
       </tbody>
-    </table>;
+    </table>
+    </div>;
   }
 }
 
