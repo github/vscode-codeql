@@ -55,17 +55,29 @@ export class DistributionManager {
   }
 
   /**
-   * Installs an extension-managed distribution, or updates one if one has already been installed.
+   * Check for updates to the extension-managed distribution.  If one has not already been installed,
+   * this will return an update available result with the latest available release.
    * 
    * Returns a failed promise if an unexpected error occurs during installation.
    */
-  public async installOrUpdateExtensionManagedDistribution(progressCallback?: (p: ProgressUpdate) => void):
-    Promise<DistributionInstallOrUpdateResult> {
-    if (this._extensionSpecificDistributionManager.getCodeQlPath() === undefined && this.getCodeQlPath() !== undefined) {
+  public async checkForUpdatesToExtensionManagedDistribution(): Promise<DistributionUpdateCheckResult> {
+    const codeQlPath = await this.getCodeQlPath();
+    const extensionManagedCodeQlPath = await this._extensionSpecificDistributionManager.getCodeQlPath();
+    if (codeQlPath !== undefined && extensionManagedCodeQlPath === undefined) {
       // A distribution is present but it isn't managed by the extension.
       return createInvalidDistributionLocationResult();
     }
-    return this._extensionSpecificDistributionManager.installOrUpdateDistribution(progressCallback);
+    return this._extensionSpecificDistributionManager.checkForUpdatesToDistribution();
+  }
+
+  /**
+   * Installs a release of the extension-managed distribution.
+   * 
+   * Returns a failed promise if an unexpected error occurs during installation.
+   */
+  public installExtensionManagedDistributionRelease(release: Release,
+    progressCallback?: (p: ProgressUpdate) => void): Promise<void> {
+    return this._extensionSpecificDistributionManager.installDistributionRelease(release, progressCallback);
   }
 
   public get onDidChangeDistribution(): Event<void> | undefined {
@@ -103,12 +115,12 @@ class ExtensionSpecificDistributionManager {
   }
 
   /**
-   * Installs an extension-managed distribution, or updates one if one has already been installed.
+   * Check for updates to the extension-managed distribution.  If one has not already been installed,
+   * this will return an update available result with the latest available release.
    * 
    * Returns a failed promise if an unexpected error occurs during installation.
    */
-  public async installOrUpdateDistribution(
-    progressCallback?: (p: ProgressUpdate) => void): Promise<DistributionAlreadyUpToDateResult | DistributionUpdatedResult> {
+  public async checkForUpdatesToDistribution(): Promise<DistributionUpdateCheckResult> {
     const codeQlPath = await this.getCodeQlPath();
     const extensionSpecificRelease = this.getInstalledRelease();
     const latestRelease = await this.getLatestRelease();
@@ -116,34 +128,25 @@ class ExtensionSpecificDistributionManager {
     if (extensionSpecificRelease !== undefined && codeQlPath !== undefined && latestRelease.id === extensionSpecificRelease.id) {
       return createDistributionAlreadyUpToDateResult();
     }
-    await this.downloadDistribution(latestRelease, progressCallback);
-
-    // Store the installed release within the global extension state.
-    this.storeInstalledRelease(latestRelease);
-
-    return createDistributionUpdatedResult(latestRelease);
+    return createUpdateAvailableResult(latestRelease);
   }
 
   /**
-   * Remove the extension-managed distribution.
+   * Installs a release of the extension-managed distribution.
    * 
-   * This should not be called for a distribution that is currently in use, as rmdir may fail.
+   * Returns a failed promise if an unexpected error occurs during installation.
    */
-  private async removeDistribution(): Promise<void> {
-    this.storeInstalledRelease(undefined);
-    await fs.rmdir(this.getDistributionPath());
-  }
-
-  private async getLatestRelease(): Promise<Release> {
-    const release = await this.createReleasesApiConsumer().getLatestRelease(this._config.includePrerelease);
-    if (release.assets.length !== 1) {
-      throw new Error("Release had an unexpected number of assets");
-    }
-    return release;
+  public async installDistributionRelease(release: Release,
+    progressCallback?: (p: ProgressUpdate) => void): Promise<void> {
+    await this.downloadDistribution(release, progressCallback);
+    // Store the installed release within the global extension state.
+    this.storeInstalledRelease(release);
   }
 
   private async downloadDistribution(release: Release,
     progressCallback?: (p: ProgressUpdate) => void): Promise<void> {
+    await this.removeDistribution();
+
     const assetStream = await this.createReleasesApiConsumer().streamBinaryContentOfAsset(release.assets[0]);
 
     const tmpDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "vscode-codeql"));
@@ -154,13 +157,20 @@ class ExtensionSpecificDistributionManager {
     let numBytesDownloaded = 0;
 
     if (progressCallback && contentLength !== null) {
-      assetStream.body.on("data", data => {
-        numBytesDownloaded += data.length;
+      const updateProgress = () => {
         progressCallback({
           step: numBytesDownloaded,
           maxStep: parseInt(contentLength, 10),
-          message: "Downloading distribution",
+          message: "Downloading distribution…",
         });
+      };
+
+      // Display the progress straight away rather than waiting for the first chunk.
+      updateProgress();
+
+      assetStream.body.on("data", data => {
+        numBytesDownloaded += data.length;
+        updateProgress();
       });
     }
 
@@ -176,16 +186,38 @@ class ExtensionSpecificDistributionManager {
     await fs.remove(tmpDirectory);
   }
 
+  /**
+   * Remove the extension-managed distribution.
+   * 
+   * This should not be called for a distribution that is currently in use, as remove may fail.
+   */
+  private async removeDistribution(): Promise<void> {
+    this.storeInstalledRelease(undefined);
+    if (await fs.pathExists(this.getCurrentDistributionStoragePath())) {
+      await fs.remove(this.getCurrentDistributionStoragePath());
+    }
+  }
+
+  private async getLatestRelease(): Promise<Release> {
+    const release = await this.createReleasesApiConsumer().getLatestRelease(this._config.includePrerelease);
+    if (release.assets.length !== 1) {
+      throw new Error("Release had an unexpected number of assets");
+    }
+    return release;
+  }
+
   private createReleasesApiConsumer(): ReleasesApiConsumer {
     return new ReleasesApiConsumer(this._config.ownerName, this._config.repositoryName, this._config.personalAccessToken);
   }
 
   private getCurrentDistributionStoragePath(): string {
-    return path.join(this._extensionContext.globalStoragePath, ExtensionSpecificDistributionManager._currentDistributionFolderName);
+    return path.join(this._extensionContext.globalStoragePath,
+      ExtensionSpecificDistributionManager._currentDistributionFolderName);
   }
 
   private getDistributionPath(): string {
-    return path.join(this.getCurrentDistributionStoragePath(), ExtensionSpecificDistributionManager._codeQlExtractedFolderName);
+    return path.join(this.getCurrentDistributionStoragePath(),
+      ExtensionSpecificDistributionManager._codeQlExtractedFolderName);
   }
 
   private getInstalledRelease(): Release | undefined {
@@ -323,47 +355,47 @@ function isRedirectStatusCode(statusCode: number): boolean {
   return statusCode === 301 || statusCode === 302 || statusCode === 303 || statusCode === 307 || statusCode === 308;
 }
 
-export enum DistributionInstallOrUpdateResultKind {
+export enum DistributionResultKind {
   AlreadyUpToDate,
-  DistributionUpdated,
-  /**
-   * The distribution could not be installed or updated because it is not managed by the extension.
-   */
   InvalidDistributionLocation,
+  UpdateAvailable
 }
 
-type DistributionInstallOrUpdateResult = DistributionAlreadyUpToDateResult | DistributionUpdatedResult |
-  InvalidDistributionLocationResult;
+type DistributionUpdateCheckResult = DistributionAlreadyUpToDateResult | InvalidDistributionLocationResult |
+  UpdateAvailableResult;
 
 export interface DistributionAlreadyUpToDateResult {
-  kind: DistributionInstallOrUpdateResultKind.AlreadyUpToDate;
+  kind: DistributionResultKind.AlreadyUpToDate;
 }
 
-export interface DistributionUpdatedResult {
-  kind: DistributionInstallOrUpdateResultKind.DistributionUpdated;
-  updatedRelease: Release;
-}
-
+/**
+ * The distribution could not be installed or updated because it is not managed by the extension.
+ */
 export interface InvalidDistributionLocationResult {
-  kind: DistributionInstallOrUpdateResultKind.InvalidDistributionLocation;
+  kind: DistributionResultKind.InvalidDistributionLocation;
+}
+
+export interface UpdateAvailableResult {
+  kind: DistributionResultKind.UpdateAvailable;
+  updatedRelease: Release;
 }
 
 function createDistributionAlreadyUpToDateResult(): DistributionAlreadyUpToDateResult {
   return {
-    kind: DistributionInstallOrUpdateResultKind.AlreadyUpToDate
-  };
-}
-
-function createDistributionUpdatedResult(updatedRelease: Release): DistributionUpdatedResult {
-  return {
-    kind: DistributionInstallOrUpdateResultKind.DistributionUpdated,
-    updatedRelease
+    kind: DistributionResultKind.AlreadyUpToDate
   };
 }
 
 function createInvalidDistributionLocationResult(): InvalidDistributionLocationResult {
   return {
-    kind: DistributionInstallOrUpdateResultKind.InvalidDistributionLocation
+    kind: DistributionResultKind.InvalidDistributionLocation
+  };
+}
+
+function createUpdateAvailableResult(updatedRelease: Release): UpdateAvailableResult {
+  return {
+    kind: DistributionResultKind.UpdateAvailable,
+    updatedRelease
   };
 }
 

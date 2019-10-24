@@ -4,7 +4,7 @@ import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { DistributionConfigListener, QueryServerConfigListener } from './config';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
-import { DistributionInstallOrUpdateResultKind, DistributionManager, GithubApiError } from './distribution';
+import { DistributionResultKind, DistributionManager, GithubApiError } from './distribution';
 import * as helpers from './helpers';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
@@ -65,23 +65,28 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   ctx.subscriptions.push(distributionConfigListener);
   const distributionManager = new DistributionManager(ctx, distributionConfigListener);
 
-  async function installOrUpdateDistribution(progressTitle: string): Promise<void> {
-    const progressOptions: ProgressOptions = {
-      location: ProgressLocation.Notification,
-      title: progressTitle,
-      cancellable: false,
-    };
-    const result = await helpers.withProgress(progressOptions,
-      progress => distributionManager.installOrUpdateExtensionManagedDistribution(progress));
+  async function installOrUpdateDistribution(progressTitle: string, shouldPromptBeforeUpdate: boolean): Promise<void> {
+    const result = await distributionManager.checkForUpdatesToExtensionManagedDistribution();
     switch (result.kind) {
-      case DistributionInstallOrUpdateResultKind.AlreadyUpToDate:
+      case DistributionResultKind.AlreadyUpToDate:
         helpers.showAndLogInformationMessage("CodeQL tools already up to date.");
         break;
-      case DistributionInstallOrUpdateResultKind.DistributionUpdated:
-        helpers.showAndLogInformationMessage(`CodeQL tools updated to version ${result.updatedRelease.name}.`);
-        break;
-      case DistributionInstallOrUpdateResultKind.InvalidDistributionLocation:
+      case DistributionResultKind.InvalidDistributionLocation:
         helpers.showAndLogErrorMessage("CodeQL tools are installed externally so could not be updated.");
+        break;
+      case DistributionResultKind.UpdateAvailable:
+        const updateAvailableMessage = `A CodeQL update is available.  Upgrade to version "${result.updatedRelease.name}"?`;
+        if (!shouldPromptBeforeUpdate || await helpers.showInformationMessageWithAction(updateAvailableMessage, "Upgrade")) {
+          const progressOptions: ProgressOptions = {
+            location: ProgressLocation.Notification,
+            title: progressTitle,
+            cancellable: false,
+          };
+          await helpers.withProgress(progressOptions, progress =>
+            distributionManager.installExtensionManagedDistributionRelease(result.updatedRelease, progress));
+
+          helpers.showAndLogInformationMessage(`CodeQL tools updated to version "${result.updatedRelease.name}".`);
+        }
         break;
       default:
         helpers.assertNever(result);
@@ -91,7 +96,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   registerErrorStubs(ctx, command => `Can't execute ${command}: missing CodeQL command-line tools distribution.`);
 
   ctx.subscriptions.push(commands.registerCommand('ql.updateTools', async () => {
-    await installOrUpdateDistribution("Checking for CodeQL Updates");
+    await installOrUpdateDistribution("Checking for CodeQL Updates", true);
     if (!beganMainExtensionActivation) {
       await activateWithInstalledDistribution(ctx, distributionManager);
     }
@@ -99,7 +104,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
   if (await distributionManager.getCodeQlPath() === undefined) {
     try {
-      await installOrUpdateDistribution("Installing CodeQL Distribution");
+      await installOrUpdateDistribution("Installing CodeQL Distribution", false);
     }
     catch (e) {
       if (e instanceof GithubApiError && (e.status == 404 || e.status == 403)) {
