@@ -386,6 +386,15 @@ class DatabaseItemImpl implements DatabaseItem {
 
 }
 
+/**
+ * A promise that resolves when the event `event` fires.
+ */
+function eventFired<T>(event: vscode.Event<T>): Promise<void> {
+  return new Promise((res, rej) => {
+    const disposable = event(_ => { res(); disposable.dispose(); });
+  });
+}
+
 export class DatabaseManager extends DisposableObject {
   private readonly _onDidChangeDatabaseItem =
     this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
