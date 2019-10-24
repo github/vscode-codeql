@@ -70,8 +70,25 @@ function ensureDir(map: DirMap, dir: string) {
   }
 }
 
+type Archive = {
+  unzipped: unzipper.CentralDirectory,
+  dirMap: DirMap,
+};
+
 export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   private readOnlyError = vscode.FileSystemError.NoPermissions('write operation attempted, but source archive filesystem is readonly');
+  private archives: { [path: string]: Archive } = {};
+
+  private async getArchive(zipPath: string): Promise<Archive> {
+    if (this.archives[zipPath] === undefined) {
+      if (!fs.existsSync(zipPath))
+        throw vscode.FileSystemError.FileNotFound(zipPath);
+      const archive: Archive = { unzipped: await unzipper.Open.file(zipPath), dirMap: {} };
+      archive.unzipped.files.forEach(f => { ensureFile(archive.dirMap, path.resolve('/', f.path)); });
+      this.archives[zipPath] = archive;
+    }
+    return this.archives[zipPath];
+  }
 
   root = new Directory('');
 
