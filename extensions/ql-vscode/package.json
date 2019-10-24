@@ -79,7 +79,7 @@
         "ql.distribution.codeQlPath": {
           "scope": "window",
           "type": "string",
-          "default": null,
+          "default": "",
           "description": "Path to the CodeQL executable that should be used by the CodeQL extension.  This overrides all other distribution settings."
         },
         "ql.distribution.includePrerelease": {
@@ -91,19 +91,19 @@
         "ql.distribution.personalAccessToken": {
           "scope": "window",
           "type": "string",
-          "default": null,
+          "default": "",
           "description": "GitHub personal access token for authenticating to GitHub.  This is required if ql.distribution.owner and ql.distribution.repository refer to a private repository."
         },
         "ql.distribution.owner": {
           "scope": "window",
           "type": "string",
-          "default": null,
+          "default": "",
           "description": "The owner of the GitHub repository containing CodeQL binaries."
         },
         "ql.distribution.repository": {
           "scope": "window",
           "type": "string",
-          "default": null,
+          "default": "",
           "description": "The name of the GitHub repository containing CodeQL binaries."
         },
         "ql.runningQueries.numberOfThreads": {
