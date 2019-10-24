@@ -320,7 +320,7 @@ class DatabaseItemImpl implements DatabaseItem {
         // Strip any leading slashes from the file path, and replace `:` with `_`.
         const relativeFilePath = file.replace(/^\/*/, '').replace(':', '_');
         if (sourceArchive.scheme == zipArchiveScheme)
-          return sourceArchive.with({ fragment: relativeFilePath });
+          return sourceArchive.with({ authority: encodeURIComponent(relativeFilePath) });
         else {
           let newPath = sourceArchive.path;
           if (!newPath.endsWith('/')) {
@@ -371,7 +371,7 @@ class DatabaseItemImpl implements DatabaseItem {
     const sourceArchive = this.sourceArchive;
     if (sourceArchive === undefined || !sourceArchive.fsPath.endsWith('.zip'))
       return undefined;
-    return vscode.Uri.parse(`${zipArchiveScheme}:/`).with({ fragment: sourceArchive.fsPath });
+    return vscode.Uri.parse(`${zipArchiveScheme}:/`).with({ authority: encodeURIComponent(sourceArchive.fsPath) });
   }
 
   /**
@@ -381,7 +381,13 @@ class DatabaseItemImpl implements DatabaseItem {
     const sourceArchiveUri = this.getExplorerUri();
     if (sourceArchiveUri === undefined)
       return false;
-    return uri.scheme === zipArchiveScheme && uri.fragment === sourceArchiveUri.fsPath;
+    // The asymmetric use of decodeURIComponent on one side of the
+    // equality below is due to the fact that `.authority` getter
+    // returns the unescaped or escaped authority depending on the
+    // provenance of the authority portion of the uri: whether it was
+    // directly constructed from vscode.Uri.parse or whether it came
+    // from `.with({authority: ...})`.
+    return uri.scheme === zipArchiveScheme && uri.authority === decodeURIComponent(sourceArchiveUri.authority);
   }
 
 }
