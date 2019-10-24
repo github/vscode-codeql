@@ -234,6 +234,16 @@ export interface DatabaseItem {
    * Returns `sourceLocationPrefix` of exported database.
    */
   getSourceLocationPrefix(config: QueryServerConfig, logger: Logger): Promise<string>;
+
+  /**
+   * Returns the root uri of the virtual filesystem for this database's source archive.
+   */
+  getExplorerUri(): vscode.Uri | undefined;
+
+  /**
+   * Holds if `uri` belongs to this database's source archive.
+   */
+  belongsToExplorerUri(uri: vscode.Uri): boolean;
 }
 
 class DatabaseItemImpl implements DatabaseItem {
@@ -352,6 +362,27 @@ class DatabaseItemImpl implements DatabaseItem {
     const dbInfo = await cli.resolveDatabase(config, this.databaseUri.fsPath, logger);
     return dbInfo.sourceLocationPrefix;
   }
+
+  /**
+   * Returns the root uri of the virtual filesystem for this database's source archive.
+   */
+  public getExplorerUri(): vscode.Uri | undefined {
+    const sourceArchive = this.sourceArchive;
+    if (sourceArchive === undefined || !sourceArchive.fsPath.endsWith('.zip'))
+      return undefined;
+    return vscode.Uri.parse(`${zipArchiveScheme}:/`).with({ fragment: sourceArchive.fsPath });
+  }
+
+  /**
+   * Holds if `uri` belongs to this database's source archive.
+   */
+  public belongsToExplorerUri(uri: vscode.Uri): boolean {
+    const sourceArchiveUri = this.getExplorerUri();
+    if (sourceArchiveUri === undefined)
+      return false;
+    return uri.scheme === zipArchiveScheme && uri.fragment === sourceArchiveUri.fsPath;
+  }
+
 }
 
 export class DatabaseManager extends DisposableObject {
