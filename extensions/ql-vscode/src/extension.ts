@@ -58,7 +58,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     await downloadOrUpdateDistribution("Installing CodeQL Distribution");
   }
 
-  activateWithInstalledDistribution(ctx, distributionManager);
+  await activateWithInstalledDistribution(ctx, distributionManager);
 }
 
 async function activateWithInstalledDistribution(ctx: ExtensionContext, distributionManager: DistributionManager) {
