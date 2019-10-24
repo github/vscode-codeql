@@ -37,6 +37,39 @@ export type Entry = File | Directory;
 
 import * as path from 'path';
 
+/**
+ * A map containing directory hierarchy information in a convenient form.
+ *
+ * For example, if dirMap : DirMap, and /foo/bar/baz.c is a file in the
+ * directory structure being represented, then
+ *
+ * dirMap['/foo'] = {'bar': vscode.FileType.Directory}
+ * dirMap['/foo/bar'] = {'baz': vscode.FileType.File}
+ */
+export type DirMap = { [k: string]: { [e: string]: vscode.FileType } };
+
+/**
+ * Make sure `file` and all of its parent directories are represented in `map`.
+ */
+function ensureFile(map: DirMap, file: string) {
+  const dirname = path.dirname(file);
+  ensureDir(map, dirname);
+  map[dirname][path.basename(file)] = vscode.FileType.File;
+}
+
+/**
+ * Make sure `dir` and all of its parent directories are represented in `dirEntries`.
+ */
+function ensureDir(map: DirMap, dir: string) {
+  if (map[dir] === undefined) {
+    map[dir] = {};
+    if (dir !== path.dirname(dir)) { // not the root directory
+      ensureDir(map, path.dirname(dir));
+      map[path.dirname(dir)][path.basename(dir)] = vscode.FileType.Directory;
+    }
+  }
+}
+
 export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   private readOnlyError = vscode.FileSystemError.NoPermissions('write operation attempted, but source archive filesystem is readonly');
 
