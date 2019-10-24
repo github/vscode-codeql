@@ -107,7 +107,7 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
   return vscode.Uri.file(dbAbsolutePath);
 }
 
-async function findSourceArchive(databasePath: string):
+async function findSourceArchive(databasePath: string, silent: boolean = false):
   Promise<vscode.Uri | undefined> {
 
   const relativePaths = ['src', 'output/src_archive']
@@ -123,7 +123,8 @@ async function findSourceArchive(databasePath: string):
       return vscode.Uri.file(zipPath).with({ scheme: zipArchiveScheme });
     }
   }
-  showAndLogInformationMessage(`Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`);
+  if (!silent)
+    showAndLogInformationMessage(`Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`);
   return undefined;
 }
 
