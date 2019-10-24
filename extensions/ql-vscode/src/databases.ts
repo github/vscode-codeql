@@ -389,9 +389,16 @@ class DatabaseItemImpl implements DatabaseItem {
 /**
  * A promise that resolves when the event `event` fires.
  */
-function eventFired<T>(event: vscode.Event<T>): Promise<void> {
+function eventFired<T>(event: vscode.Event<T>, timeoutMs: number = 1000): Promise<void> {
   return new Promise((res, rej) => {
-    const disposable = event(_ => { res(); disposable.dispose(); });
+    const disposable = event(_ => {
+      res(); disposable.dispose();
+    });
+    setTimeout(() => {
+      logger.log(`Waiting for event ${event} timed out after ${timeoutMs}ms`);
+      res();
+      disposable.dispose();
+    }, timeoutMs);
   });
 }
 
