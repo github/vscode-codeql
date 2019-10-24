@@ -45,6 +45,20 @@
   opacity: 0.6;
 }
 
+.vscode-codeql__result-table .sort-none::after {
+  /* Want to take up the same space as the other sort directions */
+  content: " ▲";
+  visibility: hidden;
+}
+
+.vscode-codeql__result-table .sort-asc::after {
+  content: " ▲";
+}
+
+.vscode-codeql__result-table .sort-desc::after {
+  content: " ▼";
+}
+
 .vscode-codeql__result-table td {
   margin: 0;
   padding: 0;
