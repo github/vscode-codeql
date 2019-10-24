@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import * as unzipper from 'unzipper';
 import * as vscode from 'vscode';
-import {logger} from './logging';
+import { logger } from './logging';
 
 export class File implements vscode.FileStat {
   type: vscode.FileType;
@@ -158,7 +158,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
  * (cf. https://www.ietf.org/rfc/rfc2396.txt (Appendix A, page 26) for
  * the fact that hyphens are allowed in uri schemes)
  */
-export const zipArchiveScheme = 'ql-zip-archive';
+export const zipArchiveScheme = 'codeql-zip-archive';
 
 export function activate(ctx: vscode.ExtensionContext) {
   const schemeRootUri = vscode.Uri.parse(zipArchiveScheme + ':/');
