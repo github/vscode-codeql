@@ -98,12 +98,12 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     return await this._lookup(uri, false);
   }
 
-  readDirectory(uri: vscode.Uri): [string, vscode.FileType][] {
+  async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
     logger.log(`readdir ${uri}`);
-    const entry = this._lookupAsDirectory(uri, false);
-    let result: [string, vscode.FileType][] = [];
-    for (const [name, child] of entry.entries) {
-      result.push([name, child.type]);
+    const archive = await this.getArchive(uri.fragment);
+    const result = Object.entries(archive.dirMap[uri.path]);
+    if (result === undefined) {
+      throw vscode.FileSystemError.FileNotFound(uri);
     }
     return result;
   }
@@ -139,15 +139,27 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   // content lookup
 
   private async _lookup(uri: vscode.Uri, silent: boolean): Promise<Entry> {
-    if (!fs.existsSync(uri.path))
-      throw vscode.FileSystemError.FileNotFound(uri);
-    const archive = await unzipper.Open.file(uri.path);
-    logger.log(`${JSON.stringify(uri)} ${uri.fragment}`);
-    // Depending on the zip there could be a src_archive section to the path or not.
-    const file = archive.files.find(f => f.path === uri.fragment || f.path === 'src_archive/' + uri.fragment);
-    if (file === undefined)
-      throw vscode.FileSystemError.FileNotFound(uri);
-    return new File(uri.fragment, await file.buffer());
+    const archive = await this.getArchive(uri.fragment);
+
+    // this is a path inside the archive, so don't use `.fsPath`, and
+    // use '/' as path separator throughout
+    const reqPath = uri.path;
+
+    const file = archive.unzipped.files.find(f => path.resolve('/', f.path) === reqPath);
+    if (file !== undefined) {
+      if (file.type === 'File') {
+        return new File(reqPath, await file.buffer());
+      }
+      else { // file.type === 'Directory'
+        // I haven't observed this case in practice. Could it happen
+        // with a zip file that contains empty directories?
+        return new Directory(reqPath);
+      }
+    }
+    if (archive.dirMap[reqPath] !== undefined) {
+      return new Directory(reqPath);
+    }
+    throw vscode.FileSystemError.FileNotFound(uri);
   }
 
   private _lookupAsDirectory(uri: vscode.Uri, silent: boolean): Directory {
