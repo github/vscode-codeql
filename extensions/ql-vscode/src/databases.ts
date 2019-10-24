@@ -8,7 +8,7 @@ import { showAndLogErrorMessage, showAndLogWarningMessage, showAndLogInformation
 import { zipArchiveScheme } from './archive-filesystem-provider';
 import { DisposableObject } from 'semmle-vscode-utils';
 import { QueryServerConfig } from './config';
-import { Logger } from './logging';
+import { Logger, logger } from './logging';
 
 /**
  * databases.ts
@@ -506,14 +506,55 @@ export class DatabaseManager extends DisposableObject {
     }
   }
 
+  /**
+   * Returns the index of the workspace folder that corresponds to the source archive of `item`
+   * if there is one, and -1 otherwise.
+   */
+  private getDatabaseWorkspaceFolderIndex(item: DatabaseItem): number {
+    return (vscode.workspace.workspaceFolders || [])
+      .findIndex(folder => item.belongsToExplorerUri(folder.uri));
+  }
+
   public findDatabaseItem(uri: vscode.Uri): DatabaseItem | undefined {
     const uriString = uri.toString(true);
     return this._databaseItems.find(item => item.databaseUri.toString(true) === uriString);
   }
 
-  private addDatabaseItem(item: DatabaseItemImpl) {
+  private async addDatabaseItem(item: DatabaseItemImpl) {
     this._databaseItems.push(item);
     this.updatePersistedDatabaseList();
+    const sourceArchive = await findSourceArchive(item.databaseUri.fsPath, true);
+    if (sourceArchive !== undefined && sourceArchive.scheme == zipArchiveScheme) {
+      // The folder may already be in workspace state from a previous
+      // session. If not, add it.
+      const index = this.getDatabaseWorkspaceFolderIndex(item);
+      if (index === -1) {
+        // Add that filesystem as a folder to the current workspace.
+        //
+        // It's important that we add workspace folders to the end,
+        // rather than beginning of the list, because the first
+        // workspace folder is special; if it gets updated, the entire
+        // extension host is restarted. (cf.
+        // https://github.com/microsoft/vscode/blob/e0d2ed907d1b22808c56127678fb436d604586a7/src/vs/workbench/contrib/relauncher/browser/relauncher.contribution.ts#L209-L214)
+        //
+        // This is undesirable, as we might be adding and removing many
+        // workspace folders as the user adds and removes databases.
+        const end = (vscode.workspace.workspaceFolders || []).length;
+        const uri = item.getExplorerUri();
+        if (uri === undefined) {
+          logger.log(`Couldn't obtain file explorer uri for ${item.name}`);
+        }
+        else {
+          vscode.workspace.updateWorkspaceFolders(end, 0, {
+            name: `[${item.name} source archive]`,
+            uri,
+          });
+          // vscode api documentation says we must to wait for this event
+          // between multiple `updateWorkspaceFolders` calls.
+          await eventFired(vscode.workspace.onDidChangeWorkspaceFolders);
+        }
+      }
+    }
     this._onDidChangeDatabaseItem.fire(undefined);
   }
 
@@ -525,6 +566,12 @@ export class DatabaseManager extends DisposableObject {
       this._databaseItems.splice(index, 1);
     }
     this.updatePersistedDatabaseList();
+
+    // Delete folder from workspace, if it is still there
+    const folderIndex = (vscode.workspace.workspaceFolders || []).findIndex(folder => item.belongsToExplorerUri(folder.uri));
+    if (index >= 0)
+      vscode.workspace.updateWorkspaceFolders(folderIndex, 1);
+
     this._onDidChangeDatabaseItem.fire(undefined);
   }
 
