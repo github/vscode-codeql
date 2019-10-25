@@ -202,6 +202,11 @@
         {
           "command": "ql.setCurrentDatabase",
           "group": "9_qlCommands"
+        },
+        {
+          "command": "ql.runQuery",
+          "group": "9_qlCommands",
+          "when": "resourceLangId == ql && resourceExtname == .ql"
         }
       ],
       "commandPalette": [
