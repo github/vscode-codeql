@@ -250,10 +250,8 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
 
 /**
  * Custom uri scheme for referring to files inside zip archives stored
- * in the filesystem.
- * For example:
- * `ql-zip-archive:///home/alice/semmle/home/projects/turboencabulator/revision-2019-August-02--08-50-01/output/src_archive.zip#/home/alice/foobar/foobar.c`
- * refers to file `/home/alice/foobar/foobar.c` inside `src_archive.zip`.
+ * in the filesystem. See `encodeSourceArchiveUri`/`decodeSourceArchiveUri` for
+ * how these uris are constructed.
  *
  * (cf. https://www.ietf.org/rfc/rfc2396.txt (Appendix A, page 26) for
  * the fact that hyphens are allowed in uri schemes)
