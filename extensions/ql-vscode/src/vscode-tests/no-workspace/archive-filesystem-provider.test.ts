@@ -17,7 +17,7 @@ describe("archive filesystem provider", () => {
 
 describe('source archive uri encoding', function() {
   it('should work round trip with mixed case and unicode', function() {
-    const ref = { sourceArchiveZipPath: "I-\u2665-codeql.zip", pathWithinSourceArchive: "/foo/bar" };
+    const ref = { sourceArchiveZipPath: "/I-\u2665-codeql.zip", pathWithinSourceArchive: "/foo/bar" };
     const result = decodeSourceArchiveUri(encodeSourceArchiveUri(ref));
     expect(result.sourceArchiveZipPath).to.equal(ref.sourceArchiveZipPath);
     expect(result.pathWithinSourceArchive).to.equal(ref.pathWithinSourceArchive);
