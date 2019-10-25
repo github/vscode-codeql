@@ -153,8 +153,12 @@ export class InterfaceManager extends DisposableObject {
       && info.query.quickEvalPosition === undefined // never do results interpretation if quickEval
     ) {
       try {
-        const sarif = await interpretResults(this.config, info.query, this.logger);
         const sourceLocationPrefix = await info.query.dbItem.getSourceLocationPrefix(this.config, this.logger);
+        const sourceArchiveUri = info.query.dbItem.sourceArchive;
+        const sourceInfo = sourceArchiveUri === undefined ?
+          undefined :
+          { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
+        const sarif = await interpretResults(this.config, info.query, this.logger, sourceInfo);
         interpretation = { sarif, sourceLocationPrefix };
       }
       catch (e) {

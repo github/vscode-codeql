@@ -172,7 +172,7 @@ class QueryInfo {
 /**
  * Call cli command to interpret results.
  */
-export async function interpretResults(config: QueryServerConfig, queryInfo: QueryInfo, logger: Logger): Promise<sarif.Log> {
+export async function interpretResults(config: QueryServerConfig, queryInfo: QueryInfo, logger: Logger, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
   const { metadata } = queryInfo;
   if (metadata == undefined) {
     throw new Error('Can\'t interpret results without query metadata');
@@ -181,7 +181,7 @@ export async function interpretResults(config: QueryServerConfig, queryInfo: Que
   if (kind == undefined || id == undefined) {
     throw new Error('Can\'t interpret results without query metadata including kind and id');
   }
-  return await cli.interpretBqrs(config, { kind, id }, queryInfo.resultsPath, queryInfo.interpretedResultsPath, logger);
+  return await cli.interpretBqrs(config, { kind, id }, queryInfo.resultsPath, queryInfo.interpretedResultsPath, logger, sourceInfo);
 }
 
 export interface EvaluationInfo {
