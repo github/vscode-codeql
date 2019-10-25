@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as cli from './cli';
 import { ExtensionContext } from 'vscode';
 import { showAndLogErrorMessage, showAndLogWarningMessage, showAndLogInformationMessage } from './helpers';
-import { zipArchiveScheme } from './archive-filesystem-provider';
+import { zipArchiveScheme, encodeSourceArchiveUri, decodeSourceArchiveUri } from './archive-filesystem-provider';
 import { DisposableObject } from 'semmle-vscode-utils';
 import { QueryServerConfig } from './config';
 import { Logger, logger } from './logging';
@@ -237,14 +237,15 @@ export interface DatabaseItem {
   getSourceLocationPrefix(config: QueryServerConfig, logger: Logger): Promise<string>;
 
   /**
-   * Returns the root uri of the virtual filesystem for this database's source archive.
+   * Returns the root uri of the virtual filesystem for this database's source archive,
+   * as displayed in the filesystem explorer.
    */
-  getExplorerUri(): vscode.Uri | undefined;
+  getSourceArchiveExplorerUri(): vscode.Uri | undefined;
 
   /**
    * Holds if `uri` belongs to this database's source archive.
    */
-  belongsToExplorerUri(uri: vscode.Uri): boolean;
+  belongsToSourceArchiveExplorerUri(uri: vscode.Uri): boolean;
 }
 
 class DatabaseItemImpl implements DatabaseItem {
@@ -321,9 +322,9 @@ class DatabaseItemImpl implements DatabaseItem {
         // Strip any leading slashes from the file path, and replace `:` with `_`.
         const relativeFilePath = absoluteFilePath.replace(/^\/*/, '').replace(':', '_');
         if (sourceArchive.scheme == zipArchiveScheme) {
-          return sourceArchive.with({
-            path: absoluteFilePath,
-            authority: encodeURIComponent(sourceArchive.fsPath)
+          return encodeSourceArchiveUri({
+            pathWithinSourceArchive: absoluteFilePath,
+            sourceArchiveZipPath: sourceArchive.fsPath,
           });
         }
         else {
@@ -372,29 +373,25 @@ class DatabaseItemImpl implements DatabaseItem {
   /**
    * Returns the root uri of the virtual filesystem for this database's source archive.
    */
-  public getExplorerUri(): vscode.Uri | undefined {
+  public getSourceArchiveExplorerUri(): vscode.Uri | undefined {
     const sourceArchive = this.sourceArchive;
     if (sourceArchive === undefined || !sourceArchive.fsPath.endsWith('.zip'))
       return undefined;
-    return vscode.Uri.parse(`${zipArchiveScheme}:/`).with({ authority: encodeURIComponent(sourceArchive.fsPath) });
+    return encodeSourceArchiveUri({
+      pathWithinSourceArchive: '/',
+      sourceArchiveZipPath: sourceArchive.fsPath,
+    });
   }
 
   /**
    * Holds if `uri` belongs to this database's source archive.
    */
-  public belongsToExplorerUri(uri: vscode.Uri): boolean {
-    const sourceArchiveUri = this.getExplorerUri();
-    if (sourceArchiveUri === undefined)
+  public belongsToSourceArchiveExplorerUri(uri: vscode.Uri): boolean {
+    if (this.sourceArchive === undefined)
       return false;
-    // The asymmetric use of decodeURIComponent on one side of the
-    // equality below is due to the fact that `.authority` getter
-    // returns the unescaped or escaped authority depending on the
-    // provenance of the authority portion of the uri: whether it was
-    // directly constructed from vscode.Uri.parse or whether it came
-    // from `.with({authority: ...})`.
-    return uri.scheme === zipArchiveScheme && uri.authority === decodeURIComponent(sourceArchiveUri.authority);
+    return uri.scheme === zipArchiveScheme &&
+      decodeSourceArchiveUri(uri).sourceArchiveZipPath === this.sourceArchive.fsPath;
   }
-
 }
 
 /**
@@ -530,7 +527,7 @@ export class DatabaseManager extends DisposableObject {
    */
   private getDatabaseWorkspaceFolderIndex(item: DatabaseItem): number {
     return (vscode.workspace.workspaceFolders || [])
-      .findIndex(folder => item.belongsToExplorerUri(folder.uri));
+      .findIndex(folder => item.belongsToSourceArchiveExplorerUri(folder.uri));
   }
 
   public findDatabaseItem(uri: vscode.Uri): DatabaseItem | undefined {
@@ -556,11 +553,12 @@ export class DatabaseManager extends DisposableObject {
       // This is undesirable, as we might be adding and removing many
       // workspace folders as the user adds and removes databases.
       const end = (vscode.workspace.workspaceFolders || []).length;
-      const uri = item.getExplorerUri();
+      const uri = item.getSourceArchiveExplorerUri();
       if (uri === undefined) {
         logger.log(`Couldn't obtain file explorer uri for ${item.name}`);
       }
       else {
+        logger.log(`Adding workspace folder for ${item.name} source archive at index ${end}`);
         vscode.workspace.updateWorkspaceFolders(end, 0, {
           name: `[${item.name} source archive]`,
           uri,
@@ -583,9 +581,11 @@ export class DatabaseManager extends DisposableObject {
     this.updatePersistedDatabaseList();
 
     // Delete folder from workspace, if it is still there
-    const folderIndex = (vscode.workspace.workspaceFolders || []).findIndex(folder => item.belongsToExplorerUri(folder.uri));
-    if (index >= 0)
+    const folderIndex = (vscode.workspace.workspaceFolders || []).findIndex(folder => item.belongsToSourceArchiveExplorerUri(folder.uri));
+    if (index >= 0) {
+      logger.log(`Removing workspace folder at index ${folderIndex}`);
       vscode.workspace.updateWorkspaceFolders(folderIndex, 1);
+    }
 
     this._onDidChangeDatabaseItem.fire(undefined);
   }
