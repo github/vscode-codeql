@@ -559,6 +559,12 @@ export class DatabaseManager extends DisposableObject {
       }
       else {
         logger.log(`Adding workspace folder for ${item.name} source archive at index ${end}`);
+        if ((vscode.workspace.workspaceFolders || []).length < 2) {
+          // Adding this workspace folder makes the workspace
+          // multi-root, which may surprise the user. Let them know
+          // we're doing this.
+          vscode.window.showInformationMessage(`Adding workspace folder for source archive of database ${item.name}.`);
+        }
         vscode.workspace.updateWorkspaceFolders(end, 0, {
           name: `[${item.name} source archive]`,
           uri,
