@@ -55,19 +55,20 @@ export type ZipFileReference = { sourceArchiveZipPath: string, pathWithinSourceA
 
 export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
   const { sourceArchiveZipPath, pathWithinSourceArchive } = ref;
-  // aggressively urlencode everything, because paths might
-  // be mixed case, and authority does not respect case.
-  const authority = Buffer.from(sourceArchiveZipPath).toString('hex').replace(/../g, x => '%' + x);
+  const authority = sourceArchiveZipPath.length.toString();
   return vscode.Uri.parse(zipArchiveScheme + ':/').with({
-    path: pathWithinSourceArchive,
+    path: path.join(sourceArchiveZipPath, pathWithinSourceArchive),
     authority,
   });
 }
 
 export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
+  const zipLength = parseInt(uri.authority);
+  if (zipLength === undefined)
+    throw new Error(`Can't decode uri ${uri}, authority should be a number`);
   return {
-    pathWithinSourceArchive: uri.path,
-    sourceArchiveZipPath: decodeURIComponent(uri.authority),
+    pathWithinSourceArchive: uri.path.substr(zipLength),
+    sourceArchiveZipPath: uri.path.substr(0, zipLength),
   };
 }
 
