@@ -5,10 +5,10 @@ import * as vscode from 'vscode';
 import * as cli from './cli';
 import { ExtensionContext } from 'vscode';
 import { showAndLogErrorMessage, showAndLogWarningMessage, showAndLogInformationMessage } from './helpers';
-import { zipArchiveScheme } from './archive-filesystem-provider';
+import { zipArchiveScheme, encodeSourceArchiveUri, decodeSourceArchiveUri } from './archive-filesystem-provider';
 import { DisposableObject } from 'semmle-vscode-utils';
 import { QueryServerConfig } from './config';
-import { Logger } from './logging';
+import { Logger, logger } from './logging';
 
 /**
  * databases.ts
@@ -107,7 +107,7 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
   return vscode.Uri.file(dbAbsolutePath);
 }
 
-async function findSourceArchive(databasePath: string):
+async function findSourceArchive(databasePath: string, silent: boolean = false):
   Promise<vscode.Uri | undefined> {
 
   const relativePaths = ['src', 'output/src_archive']
@@ -123,7 +123,8 @@ async function findSourceArchive(databasePath: string):
       return vscode.Uri.file(zipPath).with({ scheme: zipArchiveScheme });
     }
   }
-  showAndLogInformationMessage(`Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`);
+  if (!silent)
+    showAndLogInformationMessage(`Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`);
   return undefined;
 }
 
@@ -234,6 +235,17 @@ export interface DatabaseItem {
    * Returns `sourceLocationPrefix` of exported database.
    */
   getSourceLocationPrefix(config: QueryServerConfig, logger: Logger): Promise<string>;
+
+  /**
+   * Returns the root uri of the virtual filesystem for this database's source archive,
+   * as displayed in the filesystem explorer.
+   */
+  getSourceArchiveExplorerUri(): vscode.Uri | undefined;
+
+  /**
+   * Holds if `uri` belongs to this database's source archive.
+   */
+  belongsToSourceArchiveExplorerUri(uri: vscode.Uri): boolean;
 }
 
 class DatabaseItemImpl implements DatabaseItem {
@@ -306,10 +318,15 @@ class DatabaseItemImpl implements DatabaseItem {
     }
     else {
       if (file !== undefined) {
+        const absoluteFilePath = file.replace(':', '_');
         // Strip any leading slashes from the file path, and replace `:` with `_`.
-        const relativeFilePath = file.replace(/^\/*/, '').replace(':', '_');
-        if (sourceArchive.scheme == zipArchiveScheme)
-          return sourceArchive.with({ fragment: relativeFilePath });
+        const relativeFilePath = absoluteFilePath.replace(/^\/*/, '').replace(':', '_');
+        if (sourceArchive.scheme == zipArchiveScheme) {
+          return encodeSourceArchiveUri({
+            pathWithinSourceArchive: absoluteFilePath,
+            sourceArchiveZipPath: sourceArchive.fsPath,
+          });
+        }
         else {
           let newPath = sourceArchive.path;
           if (!newPath.endsWith('/')) {
@@ -352,6 +369,45 @@ class DatabaseItemImpl implements DatabaseItem {
     const dbInfo = await cli.resolveDatabase(config, this.databaseUri.fsPath, logger);
     return dbInfo.sourceLocationPrefix;
   }
+
+  /**
+   * Returns the root uri of the virtual filesystem for this database's source archive.
+   */
+  public getSourceArchiveExplorerUri(): vscode.Uri | undefined {
+    const sourceArchive = this.sourceArchive;
+    if (sourceArchive === undefined || !sourceArchive.fsPath.endsWith('.zip'))
+      return undefined;
+    return encodeSourceArchiveUri({
+      pathWithinSourceArchive: '/',
+      sourceArchiveZipPath: sourceArchive.fsPath,
+    });
+  }
+
+  /**
+   * Holds if `uri` belongs to this database's source archive.
+   */
+  public belongsToSourceArchiveExplorerUri(uri: vscode.Uri): boolean {
+    if (this.sourceArchive === undefined)
+      return false;
+    return uri.scheme === zipArchiveScheme &&
+      decodeSourceArchiveUri(uri).sourceArchiveZipPath === this.sourceArchive.fsPath;
+  }
+}
+
+/**
+ * A promise that resolves when the event `event` fires.
+ */
+function eventFired<T>(event: vscode.Event<T>, timeoutMs: number = 1000): Promise<void> {
+  return new Promise((res, rej) => {
+    const disposable = event(_ => {
+      res(); disposable.dispose();
+    });
+    setTimeout(() => {
+      logger.log(`Waiting for event ${event} timed out after ${timeoutMs}ms`);
+      res();
+      disposable.dispose();
+    }, timeoutMs);
+  });
 }
 
 export class DatabaseManager extends DisposableObject {
@@ -465,14 +521,59 @@ export class DatabaseManager extends DisposableObject {
     }
   }
 
+  /**
+   * Returns the index of the workspace folder that corresponds to the source archive of `item`
+   * if there is one, and -1 otherwise.
+   */
+  private getDatabaseWorkspaceFolderIndex(item: DatabaseItem): number {
+    return (vscode.workspace.workspaceFolders || [])
+      .findIndex(folder => item.belongsToSourceArchiveExplorerUri(folder.uri));
+  }
+
   public findDatabaseItem(uri: vscode.Uri): DatabaseItem | undefined {
     const uriString = uri.toString(true);
     return this._databaseItems.find(item => item.databaseUri.toString(true) === uriString);
   }
 
-  private addDatabaseItem(item: DatabaseItemImpl) {
+  private async addDatabaseItem(item: DatabaseItemImpl) {
     this._databaseItems.push(item);
     this.updatePersistedDatabaseList();
+    // The folder may already be in workspace state from a previous
+    // session. If not, add it.
+    const index = this.getDatabaseWorkspaceFolderIndex(item);
+    if (index === -1) {
+      // Add that filesystem as a folder to the current workspace.
+      //
+      // It's important that we add workspace folders to the end,
+      // rather than beginning of the list, because the first
+      // workspace folder is special; if it gets updated, the entire
+      // extension host is restarted. (cf.
+      // https://github.com/microsoft/vscode/blob/e0d2ed907d1b22808c56127678fb436d604586a7/src/vs/workbench/contrib/relauncher/browser/relauncher.contribution.ts#L209-L214)
+      //
+      // This is undesirable, as we might be adding and removing many
+      // workspace folders as the user adds and removes databases.
+      const end = (vscode.workspace.workspaceFolders || []).length;
+      const uri = item.getSourceArchiveExplorerUri();
+      if (uri === undefined) {
+        logger.log(`Couldn't obtain file explorer uri for ${item.name}`);
+      }
+      else {
+        logger.log(`Adding workspace folder for ${item.name} source archive at index ${end}`);
+        if ((vscode.workspace.workspaceFolders || []).length < 2) {
+          // Adding this workspace folder makes the workspace
+          // multi-root, which may surprise the user. Let them know
+          // we're doing this.
+          vscode.window.showInformationMessage(`Adding workspace folder for source archive of database ${item.name}.`);
+        }
+        vscode.workspace.updateWorkspaceFolders(end, 0, {
+          name: `[${item.name} source archive]`,
+          uri,
+        });
+        // vscode api documentation says we must to wait for this event
+        // between multiple `updateWorkspaceFolders` calls.
+        await eventFired(vscode.workspace.onDidChangeWorkspaceFolders);
+      }
+    }
     this._onDidChangeDatabaseItem.fire(undefined);
   }
 
@@ -484,6 +585,14 @@ export class DatabaseManager extends DisposableObject {
       this._databaseItems.splice(index, 1);
     }
     this.updatePersistedDatabaseList();
+
+    // Delete folder from workspace, if it is still there
+    const folderIndex = (vscode.workspace.workspaceFolders || []).findIndex(folder => item.belongsToSourceArchiveExplorerUri(folder.uri));
+    if (index >= 0) {
+      logger.log(`Removing workspace folder at index ${folderIndex}`);
+      vscode.workspace.updateWorkspaceFolders(folderIndex, 1);
+    }
+
     this._onDidChangeDatabaseItem.fire(undefined);
   }
 

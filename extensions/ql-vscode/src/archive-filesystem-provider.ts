@@ -1,7 +1,12 @@
 import * as fs from 'fs-extra';
 import * as unzipper from 'unzipper';
 import * as vscode from 'vscode';
-import {logger} from './logging';
+import { logger } from './logging';
+
+// All path operations in this file must be on paths *within* the zip
+// archive.
+import * as _path from 'path';
+const path = _path.posix;
 
 export class File implements vscode.FileStat {
   type: vscode.FileType;
@@ -35,10 +40,85 @@ export class Directory implements vscode.FileStat {
 
 export type Entry = File | Directory;
 
-import * as path from 'path';
+/**
+ * A map containing directory hierarchy information in a convenient form.
+ *
+ * For example, if dirMap : DirectoryHierarchyMap, and /foo/bar/baz.c is a file in the
+ * directory structure being represented, then
+ *
+ * dirMap['/foo'] = {'bar': vscode.FileType.Directory}
+ * dirMap['/foo/bar'] = {'baz': vscode.FileType.File}
+ */
+export type DirectoryHierarchyMap = { [k: string]: { [e: string]: vscode.FileType } };
+
+export type ZipFileReference = { sourceArchiveZipPath: string, pathWithinSourceArchive: string };
+
+export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
+  const { sourceArchiveZipPath, pathWithinSourceArchive } = ref;
+  const authority = sourceArchiveZipPath.length.toString();
+  return vscode.Uri.parse(zipArchiveScheme + ':/').with({
+    path: path.join(sourceArchiveZipPath, pathWithinSourceArchive),
+    authority,
+  });
+}
+
+export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
+  const zipLength = parseInt(uri.authority);
+  if (zipLength === undefined)
+    throw new Error(`Can't decode uri ${uri}, authority should be a number`);
+  return {
+    pathWithinSourceArchive: uri.path.substr(zipLength),
+    sourceArchiveZipPath: uri.path.substr(0, zipLength),
+  };
+}
+
+/**
+ * Make sure `file` and all of its parent directories are represented in `map`.
+ */
+function ensureFile(map: DirectoryHierarchyMap, file: string) {
+  const dirname = path.dirname(file);
+  if (dirname === '.' || dirname === undefined) {
+    const error = `Ill-formed path ${file} in zip archive (expected absolute path)`;
+    logger.log(error);
+    throw new Error(error);
+  }
+  ensureDir(map, dirname);
+  map[dirname][path.basename(file)] = vscode.FileType.File;
+}
+
+/**
+ * Make sure `dir` and all of its parent directories are represented in `map`.
+ */
+function ensureDir(map: DirectoryHierarchyMap, dir: string) {
+  const parent = path.dirname(dir);
+  if (map[dir] === undefined) {
+    map[dir] = {};
+    if (dir !== parent) { // not the root directory
+      ensureDir(map, parent);
+      map[parent][path.basename(dir)] = vscode.FileType.Directory;
+    }
+  }
+}
+
+type Archive = {
+  unzipped: unzipper.CentralDirectory,
+  dirMap: DirectoryHierarchyMap,
+};
 
 export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   private readOnlyError = vscode.FileSystemError.NoPermissions('write operation attempted, but source archive filesystem is readonly');
+  private archives: { [zipPath: string]: Archive } = {};
+
+  private async getArchive(zipPath: string): Promise<Archive> {
+    if (this.archives[zipPath] === undefined) {
+      if (!await fs.pathExists(zipPath))
+        throw vscode.FileSystemError.FileNotFound(zipPath);
+      const archive: Archive = { unzipped: await unzipper.Open.file(zipPath), dirMap: {} };
+      archive.unzipped.files.forEach(f => { ensureFile(archive.dirMap, path.resolve('/', f.path)); });
+      this.archives[zipPath] = archive;
+    }
+    return this.archives[zipPath];
+  }
 
   root = new Directory('');
 
@@ -48,12 +128,13 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     return await this._lookup(uri, false);
   }
 
-  readDirectory(uri: vscode.Uri): [string, vscode.FileType][] {
+  async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
     logger.log(`readdir ${uri}`);
-    const entry = this._lookupAsDirectory(uri, false);
-    let result: [string, vscode.FileType][] = [];
-    for (const [name, child] of entry.entries) {
-      result.push([name, child.type]);
+    const ref = decodeSourceArchiveUri(uri);
+    const archive = await this.getArchive(ref.sourceArchiveZipPath);
+    const result = Object.entries(archive.dirMap[ref.pathWithinSourceArchive]);
+    if (result === undefined) {
+      throw vscode.FileSystemError.FileNotFound(uri);
     }
     return result;
   }
@@ -89,15 +170,34 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   // content lookup
 
   private async _lookup(uri: vscode.Uri, silent: boolean): Promise<Entry> {
-    if (!fs.existsSync(uri.path))
-      throw vscode.FileSystemError.FileNotFound(uri);
-    const archive = await unzipper.Open.file(uri.path);
-    logger.log(`${JSON.stringify(uri)} ${uri.fragment}`);
-    // Depending on the zip there could be a src_archive section to the path or not.
-    const file = archive.files.find(f => f.path === uri.fragment || f.path === 'src_archive/' + uri.fragment);
-    if (file === undefined)
-      throw vscode.FileSystemError.FileNotFound(uri);
-    return new File(uri.fragment, await file.buffer());
+    const ref = decodeSourceArchiveUri(uri);
+    const archive = await this.getArchive(ref.sourceArchiveZipPath);
+
+    // this is a path inside the archive, so don't use `.fsPath`, and
+    // use '/' as path separator throughout
+    const reqPath = ref.pathWithinSourceArchive;
+
+    const file = archive.unzipped.files.find(
+      f => {
+        const absolutePath = path.resolve('/', f.path);
+        return absolutePath === reqPath
+          || absolutePath === path.join('/src_archive', reqPath);
+      }
+    );
+    if (file !== undefined) {
+      if (file.type === 'File') {
+        return new File(reqPath, await file.buffer());
+      }
+      else { // file.type === 'Directory'
+        // I haven't observed this case in practice. Could it happen
+        // with a zip file that contains empty directories?
+        return new Directory(reqPath);
+      }
+    }
+    if (archive.dirMap[reqPath] !== undefined) {
+      return new Directory(reqPath);
+    }
+    throw vscode.FileSystemError.FileNotFound(uri);
   }
 
   private _lookupAsDirectory(uri: vscode.Uri, silent: boolean): Directory {
@@ -117,7 +217,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   }
 
   private _lookupParentDirectory(uri: vscode.Uri): Directory {
-    const dirname = uri.with({ path: path.posix.dirname(uri.path) });
+    const dirname = uri.with({ path: path.dirname(uri.path) });
     return this._lookupAsDirectory(dirname, false);
   }
 
@@ -150,15 +250,13 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
 
 /**
  * Custom uri scheme for referring to files inside zip archives stored
- * in the filesystem.
- * For example:
- * `ql-zip-archive:///home/alice/semmle/home/projects/turboencabulator/revision-2019-August-02--08-50-01/output/src_archive.zip#/home/alice/foobar/foobar.c`
- * refers to file `/home/alice/foobar/foobar.c` inside `src_archive.zip`.
+ * in the filesystem. See `encodeSourceArchiveUri`/`decodeSourceArchiveUri` for
+ * how these uris are constructed.
  *
  * (cf. https://www.ietf.org/rfc/rfc2396.txt (Appendix A, page 26) for
  * the fact that hyphens are allowed in uri schemes)
  */
-export const zipArchiveScheme = 'ql-zip-archive';
+export const zipArchiveScheme = 'codeql-zip-archive';
 
 export function activate(ctx: vscode.ExtensionContext) {
   const schemeRootUri = vscode.Uri.parse(zipArchiveScheme + ':/');

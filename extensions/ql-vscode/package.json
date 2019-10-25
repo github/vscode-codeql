@@ -24,7 +24,8 @@
     "onCommand:ql.setCurrentDatabase",
     "onCommand:qlDatabases.chooseDatabase",
     "onCommand:qlDatabases.setCurrentDatabase",
-    "onWebviewPanel:resultsView"
+    "onWebviewPanel:resultsView",
+    "onFileSystem:codeql-zip-archive"
   ],
   "main": "./out/extension",
   "files": [
