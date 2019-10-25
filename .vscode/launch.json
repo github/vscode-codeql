@@ -8,7 +8,8 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/dist/ql-vscode"
+        "--extensionDevelopmentPath=${workspaceRoot}/dist/ql-vscode",
+        "--disable-extensions"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
