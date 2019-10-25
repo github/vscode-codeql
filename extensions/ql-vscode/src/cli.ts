@@ -2,11 +2,9 @@ import * as child_process from "child_process";
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sarif from 'sarif';
-import * as util from 'util';
-import { QueryServerConfig, DistributionConfig } from "./config";
 import { Logger, ProgressReporter } from "./logging";
 import { Disposable } from "vscode";
-import { DistributionManager, DistributionProvider } from "./distribution";
+import { DistributionProvider } from "./distribution";
 
 /**
  * The version of the SARIF format that we are using.
@@ -342,6 +340,18 @@ export class CodeQLCliServer implements Disposable {
       throw new Error(`Parsing output of interpretation failed: ${err.stderr || err}`)
     }
   }
+
+  async sortBqrs(resultsPath: string, sortedResultsPath: string, sortKeys: number[], sortDirections: ("asc" | "desc")[]): Promise<void> {
+    await this.runCodeQlCliCommand(['bqrs', 'decode'],
+      [
+        "--format=bqrs",
+        `--output=${sortedResultsPath}`,
+        `--sort-key=${sortKeys.join(",")}`,
+        `--sort-direction=${sortDirections.join(",")}`,
+        resultsPath
+      ],
+      "Sorting query results");
+  }
   
   /**
    * Returns the `DbInfo` for a database.
@@ -424,4 +434,3 @@ export function spawnServer(
   logger.log(`${name} started on PID: ${child.pid}`);
   return child;
 }
-
