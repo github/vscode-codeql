@@ -77,6 +77,11 @@ export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
  */
 function ensureFile(map: DirectoryHierarchyMap, file: string) {
   const dirname = path.dirname(file);
+  if (dirname === '.' || dirname === undefined) {
+    const error = `Ill-formed path ${file} in zip archive (expected absolute path)`;
+    logger.log(error);
+    throw new Error(error);
+  }
   ensureDir(map, dirname);
   map[dirname][path.basename(file)] = vscode.FileType.File;
 }
