@@ -5,6 +5,8 @@ import * as sarif from 'sarif';
 import { Logger, ProgressReporter } from "./logging";
 import { Disposable } from "vscode";
 import { DistributionProvider } from "./distribution";
+import { SortDirection } from "./interface-types";
+import { assertNever } from "./helpers-pure";
 
 /**
  * The version of the SARIF format that we are using.
@@ -341,18 +343,32 @@ export class CodeQLCliServer implements Disposable {
     }
   }
 
-  async sortBqrs(resultsPath: string, sortedResultsPath: string, sortKeys: number[], sortDirections: ("asc" | "desc")[]): Promise<void> {
+
+  async sortBqrs(resultsPath: string, sortedResultsPath: string, resultSet: string, sortKeys: number[], sortDirections: SortDirection[]): Promise<void> {
+    const sortDirectionStrings = sortDirections.map(direction => {
+      switch (direction) {
+        case SortDirection.asc:
+          return "asc";
+        case SortDirection.desc:
+          return "desc";
+        default:
+          return assertNever(direction);
+      }
+    });
+
     await this.runCodeQlCliCommand(['bqrs', 'decode'],
       [
         "--format=bqrs",
+        `--result-set=${resultSet}`,
         `--output=${sortedResultsPath}`,
         `--sort-key=${sortKeys.join(",")}`,
-        `--sort-direction=${sortDirections.join(",")}`,
+        `--sort-direction=${sortDirectionStrings.join(",")}`,
         resultsPath
       ],
       "Sorting query results");
   }
-  
+
+
   /**
    * Returns the `DbInfo` for a database.
    * @param databasePath Path to the CodeQL database to obtain information from.

@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as Rdom from 'react-dom';
 import * as bqrs from 'semmle-bqrs';
 import { ElementBase, isResolvableLocation, LocationValue, PrimitiveColumnValue, PrimitiveTypeKind, ResultSetSchema } from 'semmle-bqrs';
-import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg } from '../interface-types';
+import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortState, SortedResultSetInfo } from '../interface-types';
 import { ResultTables } from './result-tables';
 
 /**
@@ -126,10 +126,12 @@ interface ResultsInfo {
   resultsPath: string;
   database: DatabaseInfo;
   interpretation: Interpretation | undefined;
+  sortedResultsMap: Map<string, SortedResultSetInfo>;
 }
 
 interface Results {
   resultSets: readonly ResultSet[];
+  sortStates: Map<string, SortState>;
   database: DatabaseInfo;
 }
 
@@ -204,10 +206,10 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
       let results: Results | null = null;
       let statusText: string = '';
       try {
-        const response = await fetch(resultsInfo.resultsPath);
         results = {
-          resultSets: await parseResultSets(response),
-          database: resultsInfo.database
+          resultSets: await this.getResultSets(resultsInfo),
+          database: resultsInfo.database,
+          sortStates: this.getSortStates(resultsInfo)
         };
       }
       catch (e) {
@@ -233,12 +235,36 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
     }
   }
 
+  private async getResultSets(resultsInfo: ResultsInfo): Promise<readonly ResultSet[]> {
+    const unsortedResponse = await fetch(resultsInfo.resultsPath);
+    const unsortedResultSets = await parseResultSets(unsortedResponse);
+    return Promise.all(unsortedResultSets.map(async unsortedResultSet => {
+      const sortedResultSetInfo = resultsInfo.sortedResultsMap.get(unsortedResultSet.schema.name);
+      if (sortedResultSetInfo === undefined) {
+        return unsortedResultSet;
+      }
+      const response = await fetch(sortedResultSetInfo.resultsPath);
+      const resultSets = await parseResultSets(response);
+      if (resultSets.length != 1) {
+        throw new Error(`Expected sorted BQRS to contain a single result set, encountered ${resultSets.length} result sets.`);
+      }
+      return resultSets[0];
+    }));
+  }
+
+  private getSortStates(resultsInfo: ResultsInfo): Map<string, SortState> {
+    const entries = Array.from(resultsInfo.sortedResultsMap.entries());
+    return new Map(entries.map(([key, sortedResultSetInfo]) =>
+      [key, sortedResultSetInfo.sortState]));
+  }
+
   render() {
     if (this.state.results !== null) {
       return <ResultTables rawResultSets={this.state.results.resultSets}
         interpretation={this.state.resultsInfo ? this.state.resultsInfo.interpretation : undefined}
         database={this.state.results.database}
-        resultsPath={this.state.resultsInfo ? this.state.resultsInfo.resultsPath : undefined} />;
+        resultsPath={this.state.resultsInfo ? this.state.resultsInfo.resultsPath : undefined}
+        sortStates={this.state.results.sortStates} />;
     }
     else {
       return <span>{this.state.errorMessage}</span>;
@@ -258,8 +284,9 @@ function handleMessage(msg: IntoResultsViewMsg): void {
     case 'setState':
       renderApp({
         resultsPath: msg.resultsPath,
+        sortedResultsMap: new Map(Object.entries(msg.sortedResultsMap)),
         database: msg.database,
-        interpretation: msg.interpretation,
+        interpretation: msg.interpretation
       });
       break;
   }

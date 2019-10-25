@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { isResolvableLocation, LocationStyle, LocationValue } from 'semmle-bqrs';
 import { ResultSet, vscode } from './results';
-
-
+import { SortState } from '../interface-types';
 
 export interface ResultTableProps {
   selected: boolean;
   resultSet: ResultSet;
   databaseUri: string;
   resultsPath: string | undefined;
+  sortState?: SortState;
 }
 
 export const className = 'vscode-codeql__result-table';

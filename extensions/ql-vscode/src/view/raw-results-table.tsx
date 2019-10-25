@@ -1,16 +1,16 @@
 import cx from 'classnames';
 import * as React from "react";
 import { className, evenRowClassName, oddRowClassName, renderLocation, ResultTableProps, selectedClassName } from "./result-table-utils";
-import { RawTableResultSet, ResultValue } from "./results";
+import { RawTableResultSet, ResultValue, vscode } from "./results";
 import { assertNever } from "../helpers-pure";
+import { SortDirection, SortState } from "../interface-types";
 
-export type RawTableProps = ResultTableProps & { resultSet: RawTableResultSet };
-
-export interface RawTableState {
+export type RawTableProps = ResultTableProps & { 
+  resultSet: RawTableResultSet,
   sortState?: SortState;
-}
+};
 
-export class RawTable extends React.Component<RawTableProps, RawTableState> {
+export class RawTable extends React.Component<RawTableProps, {}> {
   constructor(props: RawTableProps) {
     super(props);
 
@@ -34,8 +34,8 @@ export class RawTable extends React.Component<RawTableProps, RawTableState> {
               <th key={-1}><b>#</b></th>,
               ...resultSet.schema.columns.map((col, index) => {
                 const displayName = col.name || `[${index}]`;
-                const sortDirection = this.state.sortState && index === this.state.sortState.columnIndex ? this.state.sortState.direction : undefined;
-                return <th className={"sort-" + (sortDirection !== undefined ? sorting.Direction[sortDirection] : "none")} key={index} onClick={() => this.toggleSortStateForColumn(index)}><b>{displayName}</b></th>;
+                const sortDirection = this.props.sortState && index === this.props.sortState.columnIndex ? this.props.sortState.direction : undefined;
+                return <th className={"sort-" + (sortDirection !== undefined ? SortDirection[sortDirection] : "none")} key={index} onClick={() => this.toggleSortStateForColumn(index)}><b>{displayName}</b></th>;
               })
             ]
           }
@@ -64,20 +64,17 @@ export class RawTable extends React.Component<RawTableProps, RawTableState> {
   }
 
   private toggleSortStateForColumn(index: number) {
-    this.setState(previousState => {
-      const prevDirection = previousState.sortState && previousState.sortState.columnIndex === index ?
-        previousState.sortState.direction : undefined;
-      const nextDirection = sorting.nextDirection(prevDirection);
-      if (nextDirection === undefined) {
-        return { sortState: undefined };
-      } else {
-        return {
-          sortState: {
-            columnIndex: index,
-            direction: nextDirection
-          }
-        };
-      }
+    const sortState = this.props.sortState;
+    const prevDirection = sortState && sortState.columnIndex === index ? sortState.direction : undefined;
+    const nextDirection = nextSortDirection(prevDirection);
+    const nextSortState = nextDirection === undefined ? undefined : {
+      columnIndex: index,
+      direction: nextDirection
+    };
+    vscode.postMessage({
+      t: 'changeSort',
+      resultSetName: this.props.resultSet.schema.name,
+      sortState: nextSortState
     });
   }
 }
@@ -98,26 +95,15 @@ function renderTupleValue(v: ResultValue, databaseUri: string): JSX.Element {
   }
 }
 
-namespace sorting {
-  export enum Direction {
-    asc, desc
+function nextSortDirection(direction: SortDirection | undefined): SortDirection | undefined {
+  switch (direction) {
+    case SortDirection.asc:
+      return SortDirection.desc;
+    case SortDirection.desc:
+      return undefined;
+    case undefined:
+      return SortDirection.asc;
+    default:
+      return assertNever(direction);
   }
-
-  export function nextDirection(direction: Direction | undefined): Direction | undefined {
-    switch (direction) {
-      case Direction.asc:
-        return Direction.desc;
-      case Direction.desc:
-        return undefined;
-      case undefined:
-        return Direction.asc;
-      default:
-        return assertNever(direction);
-    }
-  }
-}
-
-export interface SortState {
-  columnIndex: number;
-  direction: sorting.Direction;
 }

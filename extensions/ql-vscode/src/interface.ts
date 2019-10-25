@@ -7,12 +7,13 @@ import { DisposableObject } from 'semmle-vscode-utils';
 import * as vscode from 'vscode';
 import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Position, Range, Uri, window as Window, workspace } from 'vscode';
 import { DatabaseItem, DatabaseManager } from './databases';
-import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg } from './interface-types';
+import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg, ResultsInfo, SortedResultsMap, SortedResultSetInfo } from './interface-types';
 import * as messages from './messages';
-import { EvaluationInfo, tmpDir, interpretResults } from './queries';
+import { EvaluationInfo, interpretResults, tmpDir, QueryInfo } from './queries';
 import { Logger } from './logging';
-import { QueryServerConfig } from './config';
 import { CodeQLCliServer } from './cli';
+import { showAndLogErrorMessage } from './helpers';
+import { assertNever } from './helpers-pure';
 
 /**
  * interface.ts
@@ -76,23 +77,24 @@ export function webviewUriToFileUri(webviewUri: string): Uri {
 }
 
 export class InterfaceManager extends DisposableObject {
-  panel: vscode.WebviewPanel | undefined;
+  private _displayedEvaluationInfo?: EvaluationInfo;
+  private _panel: vscode.WebviewPanel | undefined;
 
-  readonly diagnosticCollection = languages.createDiagnosticCollection(`codeql-query-results`);
+  private readonly _diagnosticCollection = languages.createDiagnosticCollection(`codeql-query-results`);
 
   constructor(public ctx: vscode.ExtensionContext, private databaseManager: DatabaseManager,
     public cliServer: CodeQLCliServer, public logger: Logger) {
 
     super();
-    this.push(this.diagnosticCollection);
+    this.push(this._diagnosticCollection);
   }
 
   // Returns the webview panel, creating it if it doesn't already
   // exist.
   getPanel(): vscode.WebviewPanel {
-    if (this.panel == undefined) {
+    if (this._panel == undefined) {
       const { ctx } = this;
-      const panel = this.panel = Window.createWebviewPanel(
+      const panel = this._panel = Window.createWebviewPanel(
         'resultsView', // internal name
         'CodeQL Query Results', // user-visible name
         vscode.ViewColumn.Beside,
@@ -105,7 +107,7 @@ export class InterfaceManager extends DisposableObject {
           ]
         }
       );
-      this.panel.onDidDispose(() => { this.panel = undefined; }, null, ctx.subscriptions);
+      this._panel.onDidDispose(() => { this._panel = undefined; }, null, ctx.subscriptions);
       const scriptPathOnDisk = vscode.Uri
         .file(ctx.asAbsolutePath('out/resultsView.js'));
       const stylesheetPathOnDisk = vscode.Uri
@@ -113,10 +115,10 @@ export class InterfaceManager extends DisposableObject {
       getHtmlForWebview(panel.webview, scriptPathOnDisk, stylesheetPathOnDisk);
       panel.webview.onDidReceiveMessage(async (e) => this.handleMsgFromView(e), undefined, ctx.subscriptions);
     }
-    return this.panel;
+    return this._panel;
   }
 
-  private handleMsgFromView = async (msg: FromResultsViewMsg): Promise<void> => {
+  private async handleMsgFromView(msg: FromResultsViewMsg): Promise<void> {
     switch (msg.t) {
       case 'viewSourceFile': {
         const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.databaseUri));
@@ -133,10 +135,21 @@ export class InterfaceManager extends DisposableObject {
           }
         } else {
           // TODO: Only clear diagnostics on the same database.
-          this.diagnosticCollection.clear();
+          this._diagnosticCollection.clear();
         }
         break;
       }
+      case 'changeSort': {
+        if (this._displayedEvaluationInfo === undefined) {
+          showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
+          break;
+        }
+        await this._displayedEvaluationInfo.query.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
+        await this.showResults(this._displayedEvaluationInfo);
+        break;
+      }
+      default:
+        assertNever(msg);
     }
   }
 
@@ -149,17 +162,34 @@ export class InterfaceManager extends DisposableObject {
       return;
     }
 
+    const interpretation = await this.interpretResultsInfo(info.query, info.query.resultsInfo);
+
+    const sortedResultsMap: SortedResultsMap = {};
+    info.query.sortedResultsInfo.forEach((v, k) =>
+      sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v));
+
+    this._displayedEvaluationInfo = info;
+    this.postMessage({
+      t: 'setState',
+      interpretation,
+      resultsPath: this.convertPathToWebviewUri(info.query.resultsInfo.resultsPath),
+      sortedResultsMap,
+      database: info.database,
+    });
+  }
+
+  private async interpretResultsInfo(query: QueryInfo, resultsInfo: ResultsInfo): Promise<Interpretation | undefined> {
     let interpretation: Interpretation | undefined = undefined;
-    if (info.query.hasInterpretedResults()
-      && info.query.quickEvalPosition === undefined // never do results interpretation if quickEval
+    if (query.hasInterpretedResults()
+      && query.quickEvalPosition === undefined // never do results interpretation if quickEval
     ) {
       try {
-        const sourceLocationPrefix = await info.query.dbItem.getSourceLocationPrefix(this.cliServer);
-        const sourceArchiveUri = info.query.dbItem.sourceArchive;
+        const sourceLocationPrefix = await query.dbItem.getSourceLocationPrefix(this.cliServer);
+        const sourceArchiveUri = query.dbItem.sourceArchive;
         const sourceInfo = sourceArchiveUri === undefined ?
           undefined :
           { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
-        const sarif = await interpretResults(this.cliServer, info.query, sourceInfo);
+        const sarif = await interpretResults(this.cliServer, query, resultsInfo, sourceInfo);
         interpretation = { sarif, sourceLocationPrefix };
       }
       catch (e) {
@@ -169,15 +199,7 @@ export class InterfaceManager extends DisposableObject {
       }
     }
 
-    const resultsUriOnDisk = Uri.file(info.query.resultsPath);
-    const resultsPath = fileUriToWebviewUri(this.getPanel(), resultsUriOnDisk);
-
-    this.postMessage({
-      t: 'setState',
-      interpretation,
-      resultsPath: resultsPath,
-      database: info.database
-    });
+    return interpretation;
   }
 
   private async showResultsAsDiagnostics(resultsPath: string, database: DatabaseItem) {
@@ -191,7 +213,7 @@ export class InterfaceManager extends DisposableObject {
         await this.showProblemResultsAsDiagnostics(customResults, database);
       }
       catch (e) {
-        this.diagnosticCollection.clear();
+        this._diagnosticCollection.clear();
       }
     }
     finally {
@@ -242,7 +264,18 @@ export class InterfaceManager extends DisposableObject {
       ]);
     }
 
-    this.diagnosticCollection.set(diagnostics);
+    this._diagnosticCollection.set(diagnostics);
+  }
+
+  private convertPathToWebviewUri(path: string): string {
+    return fileUriToWebviewUri(this.getPanel(), Uri.file(path));
+  }
+
+  private convertPathPropertiesToWebviewUris(info: SortedResultSetInfo): SortedResultSetInfo {
+    return {
+      resultsPath: this.convertPathToWebviewUri(info.resultsPath),
+      sortState: info.sortState
+    };
   }
 }
 

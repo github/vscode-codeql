@@ -18,14 +18,27 @@ export interface Interpretation {
   sarif: sarif.Log;
 }
 
+export interface ResultsInfo {
+  resultsPath: string;
+  interpretedResultsPath: string;
+}
+
+export interface SortedResultSetInfo {
+  resultsPath: string;
+  sortState: SortState;
+}
+
+export type SortedResultsMap = { [resultSet: string]: SortedResultSetInfo };
+
 export interface IntoResultsViewMsg {
   t: 'setState';
   resultsPath: string;
+  sortedResultsMap: SortedResultsMap;
   interpretation: undefined | Interpretation;
   database: DatabaseInfo;
 };
 
-export type FromResultsViewMsg = ViewSourceFileMsg | ToggleDiagnostics;
+export type FromResultsViewMsg = ViewSourceFileMsg | ToggleDiagnostics | ChangeSortMsg;
 
 interface ViewSourceFileMsg {
   t: 'viewSourceFile';
@@ -39,3 +52,18 @@ interface ToggleDiagnostics {
   resultsPath: string;
   visible: boolean;
 };
+
+export enum SortDirection {
+  asc, desc
+}
+
+export interface SortState {
+  columnIndex: number;
+  direction: SortDirection;
+}
+
+interface ChangeSortMsg {
+  t: 'changeSort';
+  resultSetName: string;
+  sortState?: SortState;
+}
