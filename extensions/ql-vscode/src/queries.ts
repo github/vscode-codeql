@@ -397,8 +397,29 @@ export async function compileAndRunQueryAgainstDatabase(
       diskWorkspaceFolders.push(workspaceFolder.uri.fsPath)
   }
 
+
+
+
+
   if (editor == undefined) {
     throw new Error('Can\'t run query without an active editor');
+  }
+  if (editor.document.uri.scheme !== "file") {
+    throw new Error('Can only run queries on disk');
+  }
+
+  const queryPath = editor.document.fileName;
+
+  let quickEvalPosition: messages.Position | undefined;
+  if (quickEval) {
+    const pos = editor.selection.start;
+    const posEnd = editor.selection.end;
+    // Convert from 0-based to 1-based line and column numbers.
+    quickEvalPosition = {
+      fileName: queryPath,
+      line: pos.line + 1, column: pos.character + 1,
+      endLine: posEnd.line + 1, endColumn: posEnd.character + 1
+    }
   }
 
   if (editor.document.isDirty) {
@@ -412,7 +433,7 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 
   // Figure out the library path for the query.
-  const packConfig = await cli.resolveLibraryPath(config, diskWorkspaceFolders, editor.document.uri.fsPath, logger);
+  const packConfig = await cli.resolveLibraryPath(config, diskWorkspaceFolders, queryPath, logger);
 
   const qlProgram: messages.QlProgram = {
     // The project of the current document determines which library path
@@ -423,19 +444,9 @@ export async function compileAndRunQueryAgainstDatabase(
     // we use the database's DB scheme here instead of the DB scheme
     // from the current document's project.
     dbschemePath: db.contents.dbSchemeUri.fsPath,
-    queryPath: editor.document.fileName
+    queryPath: queryPath
   };
-  let quickEvalPosition: messages.Position | undefined;
-  if (quickEval) {
-    const pos = editor.selection.start;
-    const posEnd = editor.selection.end;
-    // Convert from 0-based to 1-based line and column numbers.
-    quickEvalPosition = {
-      fileName: editor.document.fileName,
-      line: pos.line + 1, column: pos.character + 1,
-      endLine: posEnd.line + 1, endColumn: posEnd.character + 1
-    }
-  }
+
 
   // Read the query metadata if possible, to use in the UI.
   let metadata: cli.QueryMetadata | undefined;
