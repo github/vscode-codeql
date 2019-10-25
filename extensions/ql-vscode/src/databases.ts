@@ -317,10 +317,15 @@ class DatabaseItemImpl implements DatabaseItem {
     }
     else {
       if (file !== undefined) {
+        const absoluteFilePath = file.replace(':', '_');
         // Strip any leading slashes from the file path, and replace `:` with `_`.
-        const relativeFilePath = file.replace(/^\/*/, '').replace(':', '_');
-        if (sourceArchive.scheme == zipArchiveScheme)
-          return sourceArchive.with({ authority: encodeURIComponent(relativeFilePath) });
+        const relativeFilePath = absoluteFilePath.replace(/^\/*/, '').replace(':', '_');
+        if (sourceArchive.scheme == zipArchiveScheme) {
+          return sourceArchive.with({
+            path: absoluteFilePath,
+            authority: encodeURIComponent(sourceArchive.fsPath)
+          });
+        }
         else {
           let newPath = sourceArchive.path;
           if (!newPath.endsWith('/')) {

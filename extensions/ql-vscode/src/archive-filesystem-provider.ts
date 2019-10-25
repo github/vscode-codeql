@@ -100,7 +100,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
 
   async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
     logger.log(`readdir ${uri}`);
-    const archive = await this.getArchive(uri.authority);
+    const archive = await this.getArchive(decodeURIComponent(uri.authority));
     const result = Object.entries(archive.dirMap[uri.path]);
     if (result === undefined) {
       throw vscode.FileSystemError.FileNotFound(uri);
@@ -139,7 +139,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   // content lookup
 
   private async _lookup(uri: vscode.Uri, silent: boolean): Promise<Entry> {
-    const archive = await this.getArchive(uri.authority);
+    const archive = await this.getArchive(decodeURIComponent(uri.authority));
 
     // this is a path inside the archive, so don't use `.fsPath`, and
     // use '/' as path separator throughout
