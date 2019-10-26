@@ -7,10 +7,18 @@
 name: Release
 on:
   push:
-    # Sequence of patterns matched against refs/tags
+    # Path filters are not evaluated for pushes to tags.
+    # (source: https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#onpushpull_requestpaths)
+    # So this workflow is triggered in the following events:
+    # - Release event: a SemVer tag, e.g. v1.0.0 or v1.0.0-alpha, is pushed
     tags:
-    #  Run when a SemVer tag, e.g. v1.0.0 or v1.0.0-alpha, is pushed.
-    - 'v[0-9]+.[0-9]+.[0-9]+*'
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+    # OR
+    # - Test event: this file is modified on a branch in the main repo containing `/actions/` in the name.
+    branches:
+      - '**/actions/**'
+    paths:
+      - '**/workflows/release.yml'
 
 jobs:
   build:
