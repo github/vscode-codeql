@@ -168,7 +168,7 @@ export class DistributionManager {
   private static readonly _distributionsFolderName: string = "distributions";
   private static readonly _extensionSpecificReleaseStateKey = "distributionRelease";
   private static readonly _extractedDistributionFolderName: string = "codeql";
-  private static readonly _launcherName: string = "codeql";
+  private static readonly _launcherName: string = (os.platform() === "win32") ? "codeql.cmd" : "codeql";
 }
 
 export class ReleasesApiConsumer {
