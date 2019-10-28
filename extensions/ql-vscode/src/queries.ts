@@ -91,7 +91,7 @@ class QueryInfo {
       await helpers.withProgress({
         location: ProgressLocation.Notification,
         title: "Running Query",
-        cancellable: false,
+        cancellable: true,
       }, (progress, token) => {
         return qs.sendRequest(messages.runQueries, params, token, progress)
       });
@@ -128,7 +128,7 @@ class QueryInfo {
       compiled = await helpers.withProgress({
         location: ProgressLocation.Notification,
         title: "Compiling Query",
-        cancellable: false,
+        cancellable: true,
       }, (progress, token) => {
         return qs.sendRequest(messages.compileQuery, params, token, progress);
       });
