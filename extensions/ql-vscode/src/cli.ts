@@ -178,6 +178,13 @@ export async function spawnServer(
   return child;
 }
 
+// `codeql bqrs interpret` requires both of these to be present or
+// both absent.
+export interface SourceInfo {
+  sourceArchive: string;
+  sourceLocationPrefix: string;
+}
+
 /**
  * Returns the SARIF format interpretation of query results.
  * @param config The configuration containing the path to the CLI.
@@ -186,23 +193,26 @@ export async function spawnServer(
  * @param interpretedResultsPath Path to the SARIF file to output.
  * @param logger Logger to write startup messages.
  */
-export async function interpretBqrs(config: QueryServerConfig, metadata: { kind: string, id: string }, resultsPath: string, interpretedResultsPath: string, logger: Logger): Promise<sarif.Log> {
-  await runCodeQlCliCommand(config, ['bqrs', 'interpret'],
-    [
-      `-t=kind=${metadata.kind}`,
-      `-t=id=${metadata.id}`,
-      "--output", interpretedResultsPath,
-      "--format", SARIF_FORMAT,
-
-      // TODO: This flag means that we don't group interpreted results
-      // by primary location. We may want to revisit whether we call
-      // interpretation with and without this flag, or do some
-      // grouping client-side.
-      "--no-group-results",
-
-      resultsPath,
-    ],
-    "Interpreting query results", logger);
+export async function interpretBqrs(config: QueryServerConfig, metadata: { kind: string, id: string }, resultsPath: string, interpretedResultsPath: string, logger: Logger, sourceInfo?: SourceInfo): Promise<sarif.Log> {
+  const args = [
+    `-t=kind=${metadata.kind}`,
+    `-t=id=${metadata.id}`,
+    "--output", interpretedResultsPath,
+    "--format", SARIF_FORMAT,
+    // TODO: This flag means that we don't group interpreted results
+    // by primary location. We may want to revisit whether we call
+    // interpretation with and without this flag, or do some
+    // grouping client-side.
+    "--no-group-results",
+  ];
+  if (sourceInfo !== undefined) {
+    args.push(
+      "--source-archive", sourceInfo.sourceArchive,
+      "--source-location-prefix", sourceInfo.sourceLocationPrefix
+    );
+  }
+  args.push(resultsPath);
+  await runCodeQlCliCommand(config, ['bqrs', 'interpret'], args, "Interpreting query results", logger);
 
   let output: string;
   try {
