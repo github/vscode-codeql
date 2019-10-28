@@ -1,4 +1,4 @@
-import { commands, ExtensionContext, ProgressLocation, ProgressOptions, window as Window, Disposable } from 'vscode';
+import { commands, extensions, ExtensionContext, ProgressLocation, ProgressOptions, window as Window, Disposable } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { DistributionConfigListener, QueryServerConfigListener } from './config';
@@ -36,28 +36,21 @@ let beganMainExtensionActivation = false;
 const errorStubs: Disposable[] = [];
 
 /**
- * The set of commands that need error stubs in the absence of a valid
- * CodeQL distribution. This is all available commands, minus
- * `ql.updateTools`, which should still be available in order to
- * bootstrap the rest.
- */
-const stubbedCommands = [
-  'ql.runQuery',
-  'ql.quickEval',
-  'ql.chooseDatabase',
-  'ql.setCurrentDatabase',
-  'ql.upgradeCurrentDatabase',
-  'ql.clearCache',
-  'qlDatabases.setCurrentDatabase',
-  'qlDatabases.removeDatabase',
-  'qlDatabases.upgradeDatabase'
-];
-
-/**
  * If the user tries to execute vscode commands after extension activation is failed, give
  * a sensible error message.
  */
 function registerErrorStubs(ctx: ExtensionContext, message: (command: string) => string) {
+  const extensionId = 'Semmle.ql-vscode'; // TODO: Is there a better way of obtaining this?
+  const extension = extensions.getExtension(extensionId);
+  if (extension === undefined)
+    throw new Error(`Can't find extension ${extensionId}`);
+
+  // We want to stub out all commands except the one that lets the
+  // user download a CodeQL distrubtion.
+  const stubbedCommands = extension.packageJSON.contributes.commands
+    .map(entry => entry.command)
+    .filter(command => command !== "ql.updateTools");
+
   stubbedCommands.forEach(command => {
     errorStubs.push(commands.registerCommand(command, () => Window.showErrorMessage(message(command))));
   });
