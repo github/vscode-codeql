@@ -105,7 +105,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
       if (e instanceof GithubApiError && (e.status == 404 || e.status == 403)) {
         const errorMessageResponse = Window.showErrorMessage(`Unable to download a CodeQL distribution. See
 https://github.com/github/vscode-codeql/blob/master/extensions/ql-vscode/README.md for more details about how
-to obtain codeql binaries.`, 'edit settings');
+to obtain CodeQL binaries.`, 'Edit Settings');
         // We're deliberately not `await`ing this promise, just
         // asynchronously letting the user follow the convenience link
         // if they want to.
