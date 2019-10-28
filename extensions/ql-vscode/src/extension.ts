@@ -95,12 +95,12 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     }
   }
 
-  registerErrorStubs(ctx, command => `Can't execute ${command}: missing codeql command-line tools distribution.`);
+  registerErrorStubs(ctx, command => `Can't execute ${command}: missing CodeQL command-line tools distribution.`);
 
   ctx.subscriptions.push(commands.registerCommand('ql.updateTools', async () => {
     await downloadOrUpdateDistribution("Checking for CodeQL Updates");
     if (!beganMainExtensionActivation) {
-      activateWithInstalledDistribution(ctx, distributionManager);
+      await activateWithInstalledDistribution(ctx, distributionManager);
     }
   }));
 
@@ -110,9 +110,17 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     }
     catch (e) {
       if (e instanceof GithubApiError && (e.status == 404 || e.status == 403)) {
-        Window.showErrorMessage(`Unable to download codeql distribution. See
+        const errorMessageResponse = Window.showErrorMessage(`Unable to download a CodeQL distribution. See
 https://github.com/github/vscode-codeql/blob/master/extensions/ql-vscode/README.md for more details about how
-to obtain codeql binaries.`);
+to obtain codeql binaries.`, 'edit settings');
+        // We're deliberately not `await`ing this promise, just
+        // asynchronously letting the user follow the convenience link
+        // if they want to.
+        errorMessageResponse.then(response => {
+          if (response !== undefined) {
+            commands.executeCommand('workbench.action.openSettingsJson');
+          }
+        });
       }
       throw e;
     }
