@@ -9,6 +9,12 @@ import { DistributionConfig } from "./config";
 import { ProgressUpdate, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
 
+export class GithubApiError extends Error {
+  constructor(public status: number, public body: string) {
+    super(`API call failed with status code ${status}, body: ${body}`);
+  }
+}
+
 export class DistributionManager {
   private readonly _onDidChangeDistribution: Event<void> | undefined;
 
@@ -223,7 +229,7 @@ export class ReleasesApiConsumer {
       Object.assign({}, this._defaultHeaders, additionalHeaders));
 
     if (!response.ok) {
-      throw new Error(`API call failed with status code ${response.status}, body: ${await response.text()}`);
+      throw new GithubApiError(response.status, await response.text());
     }
     return response;
   }
