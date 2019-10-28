@@ -81,7 +81,7 @@
           "scope": "window",
           "type": "string",
           "default": "",
-          "description": "Path to the CodeQL executable that should be used by the CodeQL extension.  This overrides all other distribution settings."
+          "description": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.cmd` on Windows. This overrides all other distribution settings."
         },
         "ql.distribution.includePrerelease": {
           "scope": "window",

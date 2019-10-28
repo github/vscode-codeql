@@ -61,6 +61,19 @@ function getHtmlForWebview(webview: vscode.Webview, scriptUriOnDisk: vscode.Uri,
   webview.html = html;
 }
 
+/** Converts a filesystem URI into a webview URI string that the given panel can use to read the file. */
+export function fileUriToWebviewUri(panel: vscode.WebviewPanel, fileUriOnDisk: Uri): string {
+  return panel.webview.asWebviewUri(fileUriOnDisk).toString(true);
+}
+
+/** Converts a URI string received from a webview into a local filesystem URI for the same resource. */
+export function webviewUriToFileUri(webviewUri: string): Uri {
+  // Webview URIs used the vscode-resource scheme. The filesystem path of the resource can be obtained from the path component of the webview URI.
+  const path = Uri.parse(webviewUri).path;
+  // For this path to be interpreted on the filesystem, we need to parse it as a filesystem URI for the current platform.
+  return Uri.file(path);
+}
+
 export class InterfaceManager extends DisposableObject {
   panel: vscode.WebviewPanel | undefined;
 
@@ -152,7 +165,7 @@ export class InterfaceManager extends DisposableObject {
     }
 
     const resultsUriOnDisk = Uri.file(info.query.resultsPath);
-    const resultsPath = this.getPanel().webview.asWebviewUri(resultsUriOnDisk).toString(true);
+    const resultsPath = fileUriToWebviewUri(this.getPanel(), resultsUriOnDisk);
 
     this.postMessage({
       t: 'setState',
@@ -163,8 +176,8 @@ export class InterfaceManager extends DisposableObject {
   }
 
   private async showResultsAsDiagnostics(resultsPath: string, database: DatabaseItem) {
-    // URIs from the webview have the vscode-resource scheme, so use only the filesystem path.
-    const resultsPathOnDisk = Uri.parse(resultsPath).fsPath;
+    // URIs from the webview have the vscode-resource scheme, so convert into a filesystem URI first.
+    const resultsPathOnDisk = webviewUriToFileUri(resultsPath).fsPath;
     const fileReader = await FileReader.open(resultsPathOnDisk);
     try {
       const resultSets = await bqrs.open(fileReader);
