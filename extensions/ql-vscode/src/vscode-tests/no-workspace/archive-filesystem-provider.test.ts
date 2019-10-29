@@ -1,7 +1,6 @@
 import { expect } from "chai";
 import * as path from "path";
-import { Uri } from "vscode";
-import { ArchiveFileSystemProvider, zipArchiveScheme, decodeSourceArchiveUri, encodeSourceArchiveUri } from "../../archive-filesystem-provider";
+import { ArchiveFileSystemProvider, decodeSourceArchiveUri, encodeSourceArchiveUri, ZipFileReference } from "../../archive-filesystem-provider";
 
 describe("archive filesystem provider", () => {
   it("reads empty file correctly", async () => {
@@ -15,11 +14,25 @@ describe("archive filesystem provider", () => {
   });
 });
 
-describe('source archive uri encoding', function() {
-  it('should work round trip with mixed case and unicode', function() {
-    const ref = { sourceArchiveZipPath: "/I-\u2665-codeql.zip", pathWithinSourceArchive: "/foo/bar" };
-    const result = decodeSourceArchiveUri(encodeSourceArchiveUri(ref));
-    expect(result.sourceArchiveZipPath).to.equal(ref.sourceArchiveZipPath);
-    expect(result.pathWithinSourceArchive).to.equal(ref.pathWithinSourceArchive);
-  });
+describe('source archive uri encoding', function () {
+  const testCases: { name: string, input: ZipFileReference }[] = [
+    {
+      name: 'mixed case and unicode',
+      input: { sourceArchiveZipPath: "/I-\u2665-codeql.zip", pathWithinSourceArchive: "/foo/bar" }
+    },
+    {
+      name: 'Windows path',
+      input: { sourceArchiveZipPath: "C:/Users/My Name/folder/src.zip", pathWithinSourceArchive: "/foo/bar.ext" }
+    },
+    {
+      name: 'Unix path',
+      input: { sourceArchiveZipPath: "/home/folder/src.zip", pathWithinSourceArchive: "/foo/bar.ext" }
+    }
+  ];
+  for (const testCase of testCases) {
+    it(`should work round trip with ${testCase.name}`, function () {
+      const output = decodeSourceArchiveUri(encodeSourceArchiveUri(testCase.input));
+      expect(output).to.eql(testCase.input);
+    });
+  }
 });
