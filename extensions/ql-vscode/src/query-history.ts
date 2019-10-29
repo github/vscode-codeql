@@ -22,8 +22,8 @@ export class QueryHistoryItem {
   info: EvaluationInfo;
 
   constructor(info: EvaluationInfo) {
-    if(info.query.metadata && info.query.metadata.name) {
-    this.queryName = info.query.metadata.name;
+    if (info.query.metadata && info.query.metadata.name) {
+      this.queryName = info.query.metadata.name;
     } else {
       this.queryName = path.basename(info.query.program.queryPath);
     }
