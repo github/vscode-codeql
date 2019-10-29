@@ -65,14 +65,14 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   ctx.subscriptions.push(distributionConfigListener);
   const distributionManager = new DistributionManager(ctx, distributionConfigListener);
 
-  async function downloadOrUpdateDistribution(progressTitle: string): Promise<void> {
+  async function installOrUpdateDistribution(progressTitle: string): Promise<void> {
     const progressOptions: ProgressOptions = {
       location: ProgressLocation.Notification,
       title: progressTitle,
       cancellable: false,
     };
     const result = await helpers.withProgress(progressOptions,
-      progress => distributionManager.installOrUpdateDistribution(progress));
+      progress => distributionManager.installOrUpdateExtensionManagedDistribution(progress));
     switch (result.kind) {
       case DistributionInstallOrUpdateResultKind.AlreadyUpToDate:
         helpers.showAndLogInformationMessage("CodeQL tools already up to date.");
@@ -91,7 +91,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   registerErrorStubs(ctx, command => `Can't execute ${command}: missing CodeQL command-line tools distribution.`);
 
   ctx.subscriptions.push(commands.registerCommand('ql.updateTools', async () => {
-    await downloadOrUpdateDistribution("Checking for CodeQL Updates");
+    await installOrUpdateDistribution("Checking for CodeQL Updates");
     if (!beganMainExtensionActivation) {
       await activateWithInstalledDistribution(ctx, distributionManager);
     }
@@ -99,7 +99,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
   if (await distributionManager.getCodeQlPath() === undefined) {
     try {
-      await downloadOrUpdateDistribution("Installing CodeQL Distribution");
+      await installOrUpdateDistribution("Installing CodeQL Distribution");
     }
     catch (e) {
       if (e instanceof GithubApiError && (e.status == 404 || e.status == 403)) {

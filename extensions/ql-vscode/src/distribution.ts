@@ -16,11 +16,9 @@ export class GithubApiError extends Error {
 }
 
 export class DistributionManager {
-  private readonly _onDidChangeDistribution: Event<void> | undefined;
-
   constructor(extensionContext: ExtensionContext, config: DistributionConfig) {
-    this._extensionContext = extensionContext;
     this._config = config;
+    this._extensionSpecificDistributionManager = new ExtensionSpecificDistributionManager(extensionContext, config);
     this._onDidChangeDistribution = config.onDidChangeDistributionConfiguration;
   }
 
@@ -38,25 +36,14 @@ export class DistributionManager {
       return this._config.customCodeQlPath;
     }
 
-    if (this.getExtensionSpecificRelease() !== undefined) {
-      // An extension specific distribution has been installed.
-      const expectedLauncherPath = path.join(this.getExtensionSpecificDistributionPath(), DistributionManager._launcherName);
-      if (await fs.pathExists(expectedLauncherPath)) {
-        return expectedLauncherPath;
-      }
-      logger.log(`WARNING: Expected to find a CodeQL binary at ${expectedLauncherPath} but one was not found. ` + 
-        "Will try PATH.");
-      try {
-        await this.removeDistribution();
-      } catch (e) {
-        logger.log("WARNING: Tried to remove corrupted distribution at " +
-          `${this.getExtensionSpecificDistributionPath()} but encountered error ${e}.`);
-      }
+    const extensionSpecificCodeQlPath = this._extensionSpecificDistributionManager.getCodeQlPath();
+    if (extensionSpecificCodeQlPath !== undefined) {
+      return extensionSpecificCodeQlPath;
     }
 
     if (process.env.PATH) {
       for (const searchDirectory of process.env.PATH.split(path.delimiter)) {
-        const expectedLauncherPath = path.join(searchDirectory, DistributionManager._launcherName);
+        const expectedLauncherPath = path.join(searchDirectory, codeQlLauncherName());
         if (await fs.pathExists(expectedLauncherPath)) {
           return expectedLauncherPath;
         }
@@ -72,25 +59,69 @@ export class DistributionManager {
    * 
    * Returns a failed promise if an unexpected error occurs during installation.
    */
-  public async installOrUpdateDistribution(
-    progressCallback?: (p: ProgressUpdate) => void): Promise<DistributionInstallOrUpdateResult> {
-    const codeQlPath = await this.getCodeQlPath();
-    const extensionSpecificRelease = this.getExtensionSpecificRelease();
-
-    if (extensionSpecificRelease === undefined && codeQlPath !== undefined) {
+  public async installOrUpdateExtensionManagedDistribution(progressCallback?: (p: ProgressUpdate) => void):
+    Promise<DistributionInstallOrUpdateResult> {
+    if (this._extensionSpecificDistributionManager.getCodeQlPath() === undefined && this.getCodeQlPath() !== undefined) {
       // A distribution is present but it isn't managed by the extension.
       return createInvalidDistributionLocationResult();
     }
-    const latestRelease = await this.getLatestRelease();
-    if (extensionSpecificRelease !== undefined && codeQlPath !== undefined && latestRelease.id === extensionSpecificRelease.id) {
-      return createDistributionAlreadyUpToDateResult();
-    }
-    await this.installExtensionSpecificDistribution(latestRelease, progressCallback);
-    return createDistributionUpdatedResult(latestRelease);
+    return this._extensionSpecificDistributionManager.installOrUpdateDistribution(progressCallback);
   }
 
   public get onDidChangeDistribution(): Event<void> | undefined {
     return this._onDidChangeDistribution;
+  }
+
+  private readonly _config: DistributionConfig;
+  private readonly _extensionSpecificDistributionManager: ExtensionSpecificDistributionManager;
+  private readonly _onDidChangeDistribution: Event<void> | undefined;
+}
+
+class ExtensionSpecificDistributionManager {
+  constructor(extensionContext: ExtensionContext, config: DistributionConfig) {
+    this._extensionContext = extensionContext;
+    this._config = config;
+  }
+
+  public async getCodeQlPath(): Promise<string | undefined> {
+    if (this.getInstalledRelease() !== undefined) {
+      // An extension specific distribution has been installed.
+      const expectedLauncherPath = path.join(this.getDistributionPath(), codeQlLauncherName());
+      if (await fs.pathExists(expectedLauncherPath)) {
+        return expectedLauncherPath;
+      }
+      logger.log(`WARNING: Expected to find a CodeQL binary at ${expectedLauncherPath} but one was not found. ` +
+        "Will try PATH.");
+      try {
+        await this.removeDistribution();
+      } catch (e) {
+        logger.log("WARNING: Tried to remove corrupted distribution at " +
+          `${this.getDistributionPath()} but encountered error ${e}.`);
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Installs an extension-managed distribution, or updates one if one has already been installed.
+   * 
+   * Returns a failed promise if an unexpected error occurs during installation.
+   */
+  public async installOrUpdateDistribution(
+    progressCallback?: (p: ProgressUpdate) => void): Promise<DistributionAlreadyUpToDateResult | DistributionUpdatedResult> {
+    const codeQlPath = await this.getCodeQlPath();
+    const extensionSpecificRelease = this.getInstalledRelease();
+    const latestRelease = await this.getLatestRelease();
+
+    if (extensionSpecificRelease !== undefined && codeQlPath !== undefined && latestRelease.id === extensionSpecificRelease.id) {
+      return createDistributionAlreadyUpToDateResult();
+    }
+    await this.downloadDistribution(latestRelease, progressCallback);
+
+    // Store the installed release within the global extension state.
+    this.storeInstalledRelease(latestRelease);
+
+    return createDistributionUpdatedResult(latestRelease);
   }
 
   /**
@@ -99,8 +130,8 @@ export class DistributionManager {
    * This should not be called for a distribution that is currently in use, as rmdir may fail.
    */
   private async removeDistribution(): Promise<void> {
-    this.storeExtensionSpecificRelease(undefined);
-    await fs.rmdir(this.getExtensionSpecificDistributionPath());
+    this.storeInstalledRelease(undefined);
+    await fs.rmdir(this.getDistributionPath());
   }
 
   private async getLatestRelease(): Promise<Release> {
@@ -111,7 +142,7 @@ export class DistributionManager {
     return release;
   }
 
-  private async installExtensionSpecificDistribution(release: Release,
+  private async downloadDistribution(release: Release,
     progressCallback?: (p: ProgressUpdate) => void): Promise<void> {
     const assetStream = await this.createReleasesApiConsumer().streamBinaryContentOfAsset(release.assets[0]);
 
@@ -139,42 +170,38 @@ export class DistributionManager {
         .on("error", reject)
     );
 
-    logger.log(`Extracting distribution to ${this.getExtensionSpecificDistributionsStoragePath()}`);
-    await extractZipArchive(archivePath, this.getExtensionSpecificDistributionsStoragePath());
+    logger.log(`Extracting distribution to ${this.getCurrentDistributionStoragePath()}`);
+    await extractZipArchive(archivePath, this.getCurrentDistributionStoragePath());
 
     await fs.remove(tmpDirectory);
-
-    // Store the installed release within the global extension state.
-    this.storeExtensionSpecificRelease(release);
   }
 
   private createReleasesApiConsumer(): ReleasesApiConsumer {
     return new ReleasesApiConsumer(this._config.ownerName, this._config.repositoryName, this._config.personalAccessToken);
   }
 
-  private getExtensionSpecificDistributionsStoragePath(): string {
-    return path.join(this._extensionContext.globalStoragePath, DistributionManager._distributionsFolderName);
+  private getCurrentDistributionStoragePath(): string {
+    return path.join(this._extensionContext.globalStoragePath, ExtensionSpecificDistributionManager._currentDistributionFolderName);
   }
 
-  private getExtensionSpecificDistributionPath(): string {
-    return path.join(this.getExtensionSpecificDistributionsStoragePath(), DistributionManager._extractedDistributionFolderName);
+  private getDistributionPath(): string {
+    return path.join(this.getCurrentDistributionStoragePath(), ExtensionSpecificDistributionManager._codeQlExtractedFolderName);
   }
 
-  private getExtensionSpecificRelease(): Release | undefined {
-    return this._extensionContext.globalState.get(DistributionManager._extensionSpecificReleaseStateKey);
+  private getInstalledRelease(): Release | undefined {
+    return this._extensionContext.globalState.get(ExtensionSpecificDistributionManager._installedReleaseStateKey);
   }
 
-  private storeExtensionSpecificRelease(release: Release | undefined): void {
-    this._extensionContext.globalState.update(DistributionManager._extensionSpecificReleaseStateKey, release);
+  private storeInstalledRelease(release: Release | undefined): void {
+    this._extensionContext.globalState.update(ExtensionSpecificDistributionManager._installedReleaseStateKey, release);
   }
 
   private readonly _config: DistributionConfig;
   private readonly _extensionContext: ExtensionContext;
 
-  private static readonly _distributionsFolderName: string = "distributions";
-  private static readonly _extensionSpecificReleaseStateKey = "distributionRelease";
-  private static readonly _extractedDistributionFolderName: string = "codeql";
-  private static readonly _launcherName: string = (os.platform() === "win32") ? "codeql.cmd" : "codeql";
+  private static readonly _currentDistributionFolderName: string = "distribution";
+  private static readonly _installedReleaseStateKey = "distributionRelease";
+  private static readonly _codeQlExtractedFolderName: string = "codeql";
 }
 
 export class ReleasesApiConsumer {
@@ -185,7 +212,7 @@ export class ReleasesApiConsumer {
     if (personalAccessToken) {
       this._defaultHeaders["authorization"] = `token ${personalAccessToken}`;
     }
-    
+
     this._ownerName = ownerName;
     this._repoName = repoName;
   }
@@ -286,6 +313,10 @@ export async function extractZipArchive(archivePath: string, outPath: string): P
     }
     return fs.chmod(extractedPath, file.externalFileAttributes >>> 16);
   }));
+}
+
+function codeQlLauncherName(): string {
+  return (os.platform() === "win32") ? "codeql.cmd" : "codeql";
 }
 
 function isRedirectStatusCode(statusCode: number): boolean {
