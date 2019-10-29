@@ -171,6 +171,10 @@
       {
         "command": "ql.checkForUpdatesToTools",
         "title": "QL: Check for Updates to Command-Line Tools"
+      },
+      {
+        "command": "qlQueryHistory.openQuery",
+        "title": "Open Query"
       }
     ],
     "menus": {
@@ -196,6 +200,11 @@
           "command": "qlDatabases.upgradeDatabase",
           "group": "9_qlCommands",
           "when": "view == qlDatabases"
+        },
+        {
+          "command": "qlQueryHistory.openQuery",
+          "group": "9_qlCommands",
+          "when": "view == qlQueryHistory"
         }
       ],
       "explorer/context": [

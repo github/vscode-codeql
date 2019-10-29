@@ -127,6 +127,11 @@ export class QueryHistoryManager {
   treeView: vscode.TreeView<QueryHistoryItem>;
   selectedCallback: ((item: QueryHistoryItem) => void) | undefined;
 
+  async handleOpenQuery(queryHistoryItem: QueryHistoryItem) {
+    const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.info.query.queryPath));
+    await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+  }
+
   constructor(ctx: ExtensionContext, selectedCallback?: (item: QueryHistoryItem) => Promise<void>) {
     this.ctx = ctx;
     this.selectedCallback = selectedCallback;
@@ -145,6 +150,8 @@ export class QueryHistoryManager {
         }
       }
     });
+
+    ctx.subscriptions.push(vscode.commands.registerCommand('qlQueryHistory.openQuery', this.handleOpenQuery));
   }
 
   push(item: QueryHistoryItem) {
