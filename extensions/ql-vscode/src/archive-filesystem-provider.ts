@@ -53,22 +53,60 @@ export type DirectoryHierarchyMap = { [k: string]: { [e: string]: vscode.FileTyp
 
 export type ZipFileReference = { sourceArchiveZipPath: string, pathWithinSourceArchive: string };
 
+/** Encodes a reference to a source file within a zipped source archive into a single URI. */
 export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
   const { sourceArchiveZipPath, pathWithinSourceArchive } = ref;
-  const authority = sourceArchiveZipPath.length.toString();
+
+  // These two paths are put into a single URI with a custom scheme.
+  // The path and authority components of the URI encode the two paths.
+
+  // The path component of the URI contains both paths, joined by a slash.
+  let encodedPath = path.join(sourceArchiveZipPath, pathWithinSourceArchive);
+
+  // If a URI contains an authority component, then the path component
+  // must either be empty or begin with a slash ("/") character.
+  // (Source: https://tools.ietf.org/html/rfc3986#section-3.3)
+  // Since we will use an authority component, we add a leading slash if necessary
+  // (paths on Windows usually start with the drive letter).
+  let sourceArchiveZipPathStartIndex: number;
+  if (encodedPath.startsWith('/')) {
+    sourceArchiveZipPathStartIndex = 0;
+  } else {
+    encodedPath = '/' + encodedPath;
+    sourceArchiveZipPathStartIndex = 1;
+  }
+
+  // The authority component of the URI records the 0-based inclusive start and exclusive end index
+  // of the source archive zip path within the path component of the resulting URI.
+  // This lets us separate the paths, ignoring the leading slash if we added one.
+  const sourceArchiveZipPathEndIndex = sourceArchiveZipPathStartIndex + sourceArchiveZipPath.length;
+  const authority = `${sourceArchiveZipPathStartIndex}-${sourceArchiveZipPathEndIndex}`;
   return vscode.Uri.parse(zipArchiveScheme + ':/').with({
-    path: path.join(sourceArchiveZipPath, pathWithinSourceArchive),
+    path: encodedPath,
     authority,
   });
 }
 
+const sourceArchiveUriAuthorityPattern = /^(\d+)\-(\d+)$/;
+
+class InvalidSourceArchiveUriError extends Error {
+  constructor(uri: vscode.Uri) {
+    super(`Can't decode uri ${uri}: authority should be of the form startIndex-endIndex (where both indices are integers).`);
+  }
+}
+
+/** Decodes an encoded source archive URI into its corresponding paths. Inverse of `encodeSourceArchiveUri`. */
 export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
-  const zipLength = parseInt(uri.authority);
-  if (zipLength === undefined)
-    throw new Error(`Can't decode uri ${uri}, authority should be a number`);
+  const match = sourceArchiveUriAuthorityPattern.exec(uri.authority);
+  if (match === null)
+    throw new InvalidSourceArchiveUriError(uri);
+  const zipPathStartIndex = parseInt(match[1]);
+  const zipPathEndIndex = parseInt(match[2]);
+  if (zipPathStartIndex === undefined || zipPathEndIndex === undefined)
+    throw new InvalidSourceArchiveUriError(uri);
   return {
-    pathWithinSourceArchive: uri.path.substr(zipLength),
-    sourceArchiveZipPath: uri.path.substr(0, zipLength),
+    pathWithinSourceArchive: uri.path.substring(zipPathEndIndex),
+    sourceArchiveZipPath: uri.path.substring(zipPathStartIndex, zipPathEndIndex),
   };
 }
 
