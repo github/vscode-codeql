@@ -1,4 +1,4 @@
-Visual Studio Code Extension for CodeQL
+CodeQL for Visual Studio Code
 ===
 ![](https://github.com/Semmle/vscode-codeql/workflows/Build%20Extension/badge.svg)
 
