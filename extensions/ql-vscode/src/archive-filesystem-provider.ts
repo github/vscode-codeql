@@ -87,7 +87,7 @@ export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
   });
 }
 
-const sourceArchiveUriAuthorityPattern = /(\d+)\-(\d+)/;
+const sourceArchiveUriAuthorityPattern = /^(\d+)\-(\d+)$/;
 
 class InvalidSourceArchiveUriError extends Error {
   constructor(uri: vscode.Uri) {
@@ -104,10 +104,9 @@ export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
   const zipPathEndIndex = parseInt(match[2]);
   if (zipPathStartIndex === undefined || zipPathEndIndex === undefined)
     throw new InvalidSourceArchiveUriError(uri);
-  const zipPathLength = zipPathEndIndex - zipPathStartIndex;
   return {
-    pathWithinSourceArchive: uri.path.substr(zipPathEndIndex),
-    sourceArchiveZipPath: uri.path.substr(zipPathStartIndex, zipPathLength),
+    pathWithinSourceArchive: uri.path.substring(zipPathEndIndex),
+    sourceArchiveZipPath: uri.path.substring(zipPathStartIndex, zipPathEndIndex),
   };
 }
 
