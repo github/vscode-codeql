@@ -92,6 +92,19 @@ export async function showBinaryChoiceDialog(message: string): Promise<boolean> 
 }
 
 /**
+ * Show an information message with a customisable action.
+ * @param message — The message to show.
+ * @param actionMessage - The call to action message.
+ * 
+ * @return — `true` if the user clicks the action, `false` if the user cancels the dialog.
+ */
+export async function showInformationMessageWithAction(message: string, actionMessage: string): Promise<boolean> {
+  const actionItem = { title: actionMessage, isCloseAffordance: false };
+  const chosenItem = await Window.showInformationMessage(message, actionItem);
+  return chosenItem === actionItem;
+}
+
+/**
  * Used to perform compile time exhaustivity checking on a value.  This function will not be
  * executed at runtime unless there is a flaw in the type system.
  */

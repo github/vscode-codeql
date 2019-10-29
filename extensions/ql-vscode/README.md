@@ -26,7 +26,7 @@ Until then, you will need to add the following configuration to your VS Code use
 
 A personal access token is required to authenticate to the [private binaries repository](https://github.com/github/codeql-cli-binaries). To obtain one, follow the instructions [here](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) and [here](https://help.github.com/en/github/authenticating-to-github/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on). The token must be assigned the [`repo`](https://developer.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps/) scope to have access to the releases of this repository.
 
-You can use the "QL: Install/Update Tools" command to update the extension-managed distribution.
+The extension will check for updates every day. To check for updates immediately, you can use the "QL: Check for Updates to Command-Line Tools" command.
 
 #### Semmle-internal users: Manually specify which distribution to use
 

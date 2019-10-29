@@ -4,7 +4,7 @@ import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { DistributionConfigListener, QueryServerConfigListener } from './config';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
-import { DistributionInstallOrUpdateResultKind, DistributionManager, GithubApiError } from './distribution';
+import { DistributionResultKind, DistributionManager, GithubApiError } from './distribution';
 import * as helpers from './helpers';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
@@ -45,11 +45,7 @@ function registerErrorStubs(ctx: ExtensionContext, message: (command: string) =>
   if (extension === undefined)
     throw new Error(`Can't find extension ${extensionId}`);
 
-  // We want to stub out all commands except the one that lets the
-  // user download a CodeQL distrubtion.
-  const stubbedCommands = extension.packageJSON.contributes.commands
-    .map(entry => entry.command)
-    .filter(command => command !== "ql.updateTools");
+  const stubbedCommands = extension.packageJSON.contributes.commands.map(entry => entry.command);
 
   stubbedCommands.forEach(command => {
     errorStubs.push(commands.registerCommand(command, () => Window.showErrorMessage(message(command))));
@@ -65,47 +61,54 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   ctx.subscriptions.push(distributionConfigListener);
   const distributionManager = new DistributionManager(ctx, distributionConfigListener);
 
-  async function downloadOrUpdateDistribution(progressTitle: string): Promise<void> {
-    const progressOptions: ProgressOptions = {
-      location: ProgressLocation.Notification,
-      title: progressTitle,
-      cancellable: false,
-    };
-    const result = await helpers.withProgress(progressOptions,
-      progress => distributionManager.installOrUpdateDistribution(progress));
+  const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
+
+  async function installOrUpdateDistribution(progressTitle: string): Promise<void> {
+    const result = await distributionManager.checkForUpdatesToExtensionManagedDistribution();
     switch (result.kind) {
-      case DistributionInstallOrUpdateResultKind.AlreadyUpToDate:
+      case DistributionResultKind.AlreadyUpToDate:
         helpers.showAndLogInformationMessage("CodeQL tools already up to date.");
         break;
-      case DistributionInstallOrUpdateResultKind.DistributionUpdated:
-        helpers.showAndLogInformationMessage(`CodeQL tools updated to version ${result.updatedRelease.name}.`);
-        break;
-      case DistributionInstallOrUpdateResultKind.InvalidDistributionLocation:
+      case DistributionResultKind.InvalidDistributionLocation:
         helpers.showAndLogErrorMessage("CodeQL tools are installed externally so could not be updated.");
+        break;
+      case DistributionResultKind.UpdateAvailable:
+        if (beganMainExtensionActivation) {
+          const updateAvailableMessage = `Version "${result.updatedRelease.name}" of the CodeQL tools is now available. ` +
+            "The update will be installed after Visual Studio Code restarts. Restart now to upgrade?";
+          ctx.globalState.update(shouldUpdateOnNextActivationKey, true);
+          if (await helpers.showInformationMessageWithAction(updateAvailableMessage, "Restart and Upgrade")) {
+            await commands.executeCommand("workbench.action.reloadWindow");
+          }
+        } else {
+          const progressOptions: ProgressOptions = {
+            location: ProgressLocation.Notification,
+            title: progressTitle,
+            cancellable: false,
+          };
+          await helpers.withProgress(progressOptions, progress =>
+            distributionManager.installExtensionManagedDistributionRelease(result.updatedRelease, progress));
+
+          ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
+          helpers.showAndLogInformationMessage(`CodeQL tools updated to version "${result.updatedRelease.name}".`);
+        }
         break;
       default:
         helpers.assertNever(result);
     }
   }
 
-  registerErrorStubs(ctx, command => `Can't execute ${command}: missing CodeQL command-line tools distribution.`);
-
-  ctx.subscriptions.push(commands.registerCommand('ql.updateTools', async () => {
-    await downloadOrUpdateDistribution("Checking for CodeQL Updates");
-    if (!beganMainExtensionActivation) {
-      await activateWithInstalledDistribution(ctx, distributionManager);
-    }
-  }));
+  registerErrorStubs(ctx, command => `Can't execute ${command}: missing CodeQL command-line tools.`);
 
   if (await distributionManager.getCodeQlPath() === undefined) {
     try {
-      await downloadOrUpdateDistribution("Installing CodeQL Distribution");
+      await installOrUpdateDistribution("Installing CodeQL command-line tools");
     }
     catch (e) {
       if (e instanceof GithubApiError && (e.status == 404 || e.status == 403)) {
-        const errorMessageResponse = Window.showErrorMessage(`Unable to download a CodeQL distribution. See
+        const errorMessageResponse = Window.showErrorMessage(`Unable to download CodeQL command-line tools. See
 https://github.com/github/vscode-codeql/blob/master/extensions/ql-vscode/README.md for more details about how
-to obtain CodeQL binaries.`, 'Edit Settings');
+to obtain CodeQL command-line tools.`, 'Edit Settings');
         // We're deliberately not `await`ing this promise, just
         // asynchronously letting the user follow the convenience link
         // if they want to.
@@ -119,10 +122,14 @@ to obtain CodeQL binaries.`, 'Edit Settings');
     }
   }
 
-  await activateWithInstalledDistribution(ctx, distributionManager);
+  if (ctx.globalState.get(shouldUpdateOnNextActivationKey)) {
+    await installOrUpdateDistribution("Updating CodeQL command-line tools");
+  }
+
+  await activateWithInstalledDistribution(ctx, distributionManager, installOrUpdateDistribution);
 }
 
-async function activateWithInstalledDistribution(ctx: ExtensionContext, distributionManager: DistributionManager) {
+async function activateWithInstalledDistribution(ctx: ExtensionContext, distributionManager: DistributionManager, installOrUpdateDistribution: (progressTitle: string) => Promise<void>) {
   beganMainExtensionActivation = true;
   // Remove any error stubs command handlers left over from first part
   // of activation.
@@ -193,6 +200,10 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   ctx.subscriptions.push(commands.registerCommand('ql.runQuery', async () => await compileAndRunQuery(false)));
   ctx.subscriptions.push(commands.registerCommand('ql.quickEval', async () => await compileAndRunQuery(true)));
+
+  ctx.subscriptions.push(commands.registerCommand('ql.checkForUpdatesToTools', async () => {
+    await installOrUpdateDistribution("Checking for updates to CodeQL command-line tools");
+  }));
 
   ctx.subscriptions.push(client.start());
 }
