@@ -85,8 +85,8 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<QueryHistoryIte
     const it = new vscode.TreeItem(element.toString());
 
     it.command = {
-      title: 'Show Result',
-      command: 'qlQueryHistory.setCurrentExecution',
+      title: 'Query History Item',
+      command: 'qlQueryHistory.itemClicked',
       arguments: [element],
     };
 
@@ -121,15 +121,32 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<QueryHistoryIte
   }
 }
 
+/**
+ * Number of milliseconds two clicks have to arrive apart to be
+ * considered a double-click.
+ */
+const DOUBLE_CLICK_TIME = 500;
+
 export class QueryHistoryManager {
   treeDataProvider: HistoryTreeDataProvider;
   ctx: ExtensionContext;
   treeView: vscode.TreeView<QueryHistoryItem>;
   selectedCallback: ((item: QueryHistoryItem) => void) | undefined;
+  lastItemClick: { time: Date, item: QueryHistoryItem } | undefined;
 
   async handleOpenQuery(queryHistoryItem: QueryHistoryItem) {
     const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.info.query.queryPath));
     await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+  }
+
+  async handleItemClicked(queryHistoryItem: QueryHistoryItem) {
+    const now = new Date();
+    if (this.lastItemClick !== undefined
+      && (now.valueOf() - this.lastItemClick.time.valueOf()) < DOUBLE_CLICK_TIME
+      && queryHistoryItem == this.lastItemClick.item) {
+      this.handleOpenQuery(queryHistoryItem);
+    }
+    this.lastItemClick = { time: now, item: queryHistoryItem };
   }
 
   constructor(ctx: ExtensionContext, selectedCallback?: (item: QueryHistoryItem) => Promise<void>) {
@@ -152,6 +169,9 @@ export class QueryHistoryManager {
     });
 
     ctx.subscriptions.push(vscode.commands.registerCommand('qlQueryHistory.openQuery', this.handleOpenQuery));
+    ctx.subscriptions.push(vscode.commands.registerCommand('qlQueryHistory.itemClicked', async (item) => {
+      return this.handleItemClicked(item);
+    }));
   }
 
   push(item: QueryHistoryItem) {

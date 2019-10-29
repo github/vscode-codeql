@@ -175,6 +175,10 @@
       {
         "command": "qlQueryHistory.openQuery",
         "title": "Open Query"
+      },
+      {
+        "command": "qlQueryHistory.itemClicked",
+        "title": "Query History Item"
       }
     ],
     "menus": {
