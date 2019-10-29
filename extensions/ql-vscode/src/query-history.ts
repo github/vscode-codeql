@@ -135,7 +135,7 @@ export class QueryHistoryManager {
   lastItemClick: { time: Date, item: QueryHistoryItem } | undefined;
 
   async handleOpenQuery(queryHistoryItem: QueryHistoryItem) {
-    const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.info.query.queryPath));
+    const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.info.query.program.queryPath));
     await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
   }
 

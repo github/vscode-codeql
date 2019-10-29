@@ -174,7 +174,7 @@
       },
       {
         "command": "qlQueryHistory.openQuery",
-        "title": "Open Query"
+        "title": "CodeQL: Open Query"
       },
       {
         "command": "qlQueryHistory.itemClicked",
@@ -237,6 +237,14 @@
         },
         {
           "command": "qlDatabases.removeDatabase",
+          "when": "false"
+        },
+        {
+          "command": "qlQueryHistory.openQuery",
+          "when": "false"
+        },
+        {
+          "command": "qlQueryHistory.itemClicked",
           "when": "false"
         }
       ],

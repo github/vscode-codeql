@@ -47,7 +47,6 @@ class QueryInfo {
   constructor(
     public program: messages.QlProgram,
     public dbItem: DatabaseItem,
-    public queryPath: string,
     public quickEvalPosition?: messages.Position,
     public metadata?: cli.QueryMetadata
   ) {
@@ -58,7 +57,6 @@ class QueryInfo {
       throw new Error('Can\'t run query on invalid database.');
     }
     this.dataset = dbItem.contents.datasetUri;
-    this.dbItem = dbItem;
     queryCounter++;
   }
 
@@ -451,7 +449,7 @@ export async function compileAndRunQueryAgainstDatabase(
     // Ignore errors and provide no metadata.
     logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
   }
-  const query = new QueryInfo(qlProgram, db, queryPath, quickEvalPosition, metadata);
+  const query = new QueryInfo(qlProgram, db, quickEvalPosition, metadata);
   const result = await query.compileAndRun(qs);
 
   return {
