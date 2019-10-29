@@ -1,5 +1,5 @@
-import { commands, extensions, ExtensionContext, ProgressLocation, ProgressOptions, window as Window, Disposable } from 'vscode';
-import { LanguageClient } from 'vscode-languageclient';
+import { commands, Disposable, ExtensionContext, extensions, ProgressLocation, ProgressOptions, window as Window } from 'vscode';
+import { ErrorCodes, LanguageClient, ResponseError } from 'vscode-languageclient';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { DistributionConfigListener, QueryServerConfigListener } from './config';
 import { DatabaseManager } from './databases';
@@ -166,7 +166,10 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
         qhm.push(new QueryHistoryItem(info));
       }
       catch (e) {
-        if (e instanceof Error)
+        if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
+          logger.log(e.message);
+        }
+        else if (e instanceof Error)
           helpers.showAndLogErrorMessage(e.message);
         else
           throw e;
