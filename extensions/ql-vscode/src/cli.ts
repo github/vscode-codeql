@@ -35,6 +35,15 @@ export interface DbInfo {
 }
 
 /**
+ * The expected output of codeql resolve upgrades
+ */
+export interface UpgradesInfo {
+  scripts: string[];
+  finalDbscheme: string;
+}
+
+
+/**
  * Resolve the library path and dbscheme for a query.
  * @param config The configuration
  * @param workspaces The current open workspaces
@@ -231,9 +240,30 @@ export async function interpretBqrs(config: QueryServerConfig, metadata: { kind:
  * Returns the `DbInfo` for a database.
  * @param config The configuration containing the path to the CLI.
  * @param databasePath Path to the CodeQL database to obtain information from.
- * @param logger Logger to write startup messages.
+ * @param logger Logger to write messages.
  */
 export function resolveDatabase(config: QueryServerConfig, databasePath: string, logger: Logger): Promise<DbInfo> {
   return runJsonCodeQlCliCommand(config, ['resolve', 'database'], [databasePath],
     "Resolving database", logger);
+}
+
+/**
+ * Gets information necessary for upgrading a database.
+ * @param config The configuration containing the path to the CLI.
+ * @param dbScheme the path to the dbscheme of the database to be upgraded.
+ * @param searchPath A list of directories to search for upgrade scripts.
+ * @param logger Logger to write messages.
+ * @returns A list of database upgrade script directories
+ */
+export function resolveUpgrades(config: QueryServerConfig, dbScheme: string, searchPath: string[], logger: Logger): Promise<UpgradesInfo> {
+  const args = searchPath.map(pathElement => `--additional-packs=${pathElement}`);
+  args.push(`--dbscheme=${dbScheme}`);
+
+  return runJsonCodeQlCliCommand<UpgradesInfo>(
+    config,
+    ['resolve', 'upgrades'],
+    args,
+    "Resolving database upgrade scripts",
+    logger
+  );
 }
