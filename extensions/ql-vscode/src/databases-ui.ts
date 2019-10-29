@@ -1,10 +1,11 @@
-import { DisposableObject } from "semmle-vscode-utils";
-import { DatabaseItem, DatabaseManager } from "./databases";
-import { TreeDataProvider, Event, EventEmitter, ExtensionContext, TreeItem, ProviderResult, window, commands, Uri } from "vscode";
-import * as qsClient from './queryserver-client';
 import * as path from 'path';
-import { clearCacheInDatabase, upgradeDatabase } from "./queries";
+import { DisposableObject } from "semmle-vscode-utils";
+import { commands, Event, EventEmitter, ExtensionContext, ProviderResult, TreeDataProvider, TreeItem, Uri, window, workspace } from "vscode";
+import * as cli from './cli';
+import { DatabaseItem, DatabaseManager } from "./databases";
 import { logger } from "./logging";
+import { clearCacheInDatabase, upgradeDatabase } from "./queries";
+import * as qsClient from './queryserver-client';
 
 type ThemableIconPath = { light: string, dark: string } | string;
 
@@ -125,35 +126,6 @@ async function chooseDatabaseDir(): Promise<Uri | undefined> {
   return getFirst(chosen);
 }
 
-/**
- * Displays file selection dialog. Expects the user to choose a
- * CodeQL database scheme file with the extension `.dbscheme`.
- */
-async function chooseDbSchemeFile(): Promise<Uri | undefined> {
-  const chosen = await window.showOpenDialog({
-    openLabel: 'Choose CodeQL database scheme',
-    canSelectFiles: true,
-    canSelectFolders: false,
-    canSelectMany: false,
-    filters: {'CodeQL database scheme files': ['dbscheme']}
-  });
-  return getFirst(chosen);
-}
-
-/**
- * Displays file selection dialog. Expects the user to choose a
- * folder of CodeQL database upgrade scripts.
- */
-async function chooseUpgradesDirectory(): Promise<Uri | undefined> {
-  const chosen = await window.showOpenDialog({
-    openLabel: 'Choose CodeQL database upgrades directory',
-    canSelectFiles: false,
-    canSelectFolders: true,
-    canSelectMany: false
-  });
-  return getFirst(chosen);
-}
-
 export class DatabaseUI extends DisposableObject {
   public constructor(private ctx: ExtensionContext, private databaseManager: DatabaseManager,
     private readonly queryServer: qsClient.QueryServerClient | undefined) {
@@ -193,13 +165,46 @@ export class DatabaseUI extends DisposableObject {
       logger.log('Received request to upgrade database, but no database was provided.');
       return;
     }
-    // TODO: use the DB scheme and upgrades paths configured for the current workspace
-    const targetDbSchemeUri = await chooseDbSchemeFile();
-    if (targetDbSchemeUri === undefined)
+    if (databaseItem.contents === undefined) {
+      logger.log('Received request to upgrade database, but database contents could not be found.');
       return;
-    const upgradesDirectory = await chooseUpgradesDirectory();
-    if (upgradesDirectory === undefined)
+    }
+    if (databaseItem.contents.dbSchemeUri === undefined) {
+      logger.log('Received request to upgrade database, but database has no schema.');
       return;
+    }
+
+    // Search for upgrade scripts in any workspace folders available
+    const searchPath: string[] = [];
+    if (workspace.workspaceFolders !== undefined) {
+      workspace.workspaceFolders
+        .forEach(folder => { if (folder.uri.scheme === 'file') { searchPath.push(folder.uri.fsPath); } });
+    }
+
+    const upgradeInfo = await cli.resolveUpgrades(
+      this.queryServer.config,
+      databaseItem.contents.dbSchemeUri.fsPath,
+      searchPath,
+      logger
+    );
+
+    const { scripts, finalDbscheme } = upgradeInfo;
+
+    if (finalDbscheme === undefined) {
+      logger.log('Could not determine target dbscheme to upgrade to.');
+      return;
+    }
+
+    const parentDirs = scripts.map(dir => path.dirname(dir));
+    const uniqueParentDirs = Array.from(new Map(parentDirs.map(dir => [dir, true])).keys());
+    const targetDbSchemeUri = Uri.file(finalDbscheme);
+
+    if (uniqueParentDirs.length !== 1) {
+      logger.log('Expected exactly one directory containing all upgrades, got ${uniqueParentDirs} instead.');
+      return;
+    }
+
+    const upgradesDirectory = Uri.file(uniqueParentDirs[0]);
     await upgradeDatabase(this.queryServer, databaseItem, targetDbSchemeUri, upgradesDirectory);
   }
 
