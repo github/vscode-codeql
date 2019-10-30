@@ -13,7 +13,7 @@ It's used to find problems in code bases using CodeQL.
 
 ### Installing the extension
 
-Install and open Visual Studio Code. Press **Ctrl+Shift+X** or **Cmd+Shift+X** to open the Extensions pane. Find and install the CodeQL extension. You can also install the extension from the Marketplace.
+Install and open Visual Studio Code. Press **Ctrl+Shift+X** or **Cmd+Shift+X** to open the Extensions pane. At the top right of the Extensions pane, select **More Actions** > **Install from VSIX**, locate the `vscode-codeql` installer, and select **Install**. In the future, you'll be able to install the extension directly from the Marketplace.
 
 > The CodeQL extension requires a minimum of Visual Studio Code 1.39. Older versions are not supported.
 
@@ -80,7 +80,7 @@ You can find all commands contributed by the extension in the Command Palette (*
    - You can build databases of open-source code on your local machine using the CodeQL CLI.
 2. Unzip the database.
 2. In the VS Code sidebar, go to **CodeQL** > **Databases** and click **+**.
-3. Browse to the unzipped database folder (the parent folder that contains `db-<language>` and `src` folders) and add it.
+3. Browse to the unzipped database folder (the parent folder that contains `db-<language>` and `src`) and add it.
 
 It will now appear in the sidebar under **Databases**. If you have multiple databases, you can select which one to query by clicking **Set Current Database**.
 
