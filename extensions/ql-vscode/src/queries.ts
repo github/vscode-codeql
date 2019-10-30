@@ -148,7 +148,7 @@ class QueryInfo {
         const message = error.message || "[no error message available]";
         qs.logger.log(`ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`);
       }
-      helpers.showAndLogErrorMessage("Query compilation failed. Please make sure there are no errors in the query, the database is up to date, and the query and database use the same target language. For more details on the error, go to View > Output, and choose QL Query Server from the dropdown.");
+      helpers.showAndLogErrorMessage("Query compilation failed. Please make sure there are no errors in the query, the database is up to date, and the query and database use the same target language. For more details on the error, go to View > Output, and choose CodeQL Query Server from the dropdown.");
       return {
         evaluationTime: 0,
         resultType: messages.QueryResultType.OTHER_ERROR,
@@ -423,7 +423,7 @@ export async function compileAndRunQueryAgainstDatabase(
     }
   }
   if (!db.contents || !db.contents.dbSchemeUri) {
-    throw new Error(`Database ${db.databaseUri} does not have a QL database scheme.`);
+    throw new Error(`Database ${db.databaseUri} does not have a CodeQL database scheme.`);
   }
 
   // Figure out the library path for the query.

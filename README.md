@@ -1,6 +1,6 @@
 CodeQL for Visual Studio Code
 ===
-![](https://github.com/Semmle/vscode-codeql/workflows/Build%20Extension/badge.svg)
+![](https://github.com/github/vscode-codeql/workflows/Build%20Extension/badge.svg)
 
 Instead of building the extension locally, you can download the VSIX file from [GitHub Actions](https://github.com/Semmle/vscode-codeql/actions). Click a recent build and download the artifacts. You can then [install](#installing) and [configure](./extensions/ql-vscode/README.md) the extension.
 
@@ -12,8 +12,8 @@ version >=v10.13.0. (Tested on v10.15.1 and v10.16.0).
 
 To build the extension, you also need a checkout of the [`Semmle/code` repo](https://git.semmle.com/Semmle/code).
 You can do one of the following:
-- Check out the `Semmle/code` repo to a directory named `code` in the root of the `Semmle/ql-vscode` checkout.
-- Create a symlink named `code` in the root of the `Semmle/ql-vscode` checkout, pointing to your actual `Semmle/code` checkout.
+- Check out the `Semmle/code` repo to a directory named `code` in the root of the `github/vscode-codeql` checkout.
+- Create a symlink named `code` in the root of the `github/vscode-codeql` checkout, pointing to your actual `Semmle/code` checkout.
 - Set an environment variable to point to your `Semmle/code` checkout:
 ```shell
 $ export SEMMLE_CODE=/your/path/to/semmle/code/checkout # for protobuf definitions
@@ -97,9 +97,9 @@ $ vscode/scripts/code-cli.sh --install-extension dist/ql-vscode-*.vsix # if you'
 ```
 
 Be sure to read the
-[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your Semmle Core distribution.
+[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your CodeQL CLI distribution.
 
 ### Debugging
 
 You can use VS Code to debug the extension without explicitly installing it. Just open this directory as a workspace in VS Code, and hit `F5` to start a debugging session. Be sure to read the
-[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your Semmle Core distribution.
+[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your CodeQL CLI distribution.

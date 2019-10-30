@@ -28,7 +28,7 @@ class Setting {
   }
 }
 
-const ROOT_SETTING =  new Setting('ql');
+const ROOT_SETTING =  new Setting('codeQL');
 
 // Distribution configuration
 

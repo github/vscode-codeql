@@ -127,26 +127,26 @@ async function chooseDatabaseDir(): Promise<Uri | undefined> {
 
 /**
  * Displays file selection dialog. Expects the user to choose a
- * QL database scheme file with the extension `.dbscheme`.
+ * CodeQL database scheme file with the extension `.dbscheme`.
  */
 async function chooseDbSchemeFile(): Promise<Uri | undefined> {
   const chosen = await window.showOpenDialog({
-    openLabel: 'Choose QL database scheme',
+    openLabel: 'Choose CodeQL database scheme',
     canSelectFiles: true,
     canSelectFolders: false,
     canSelectMany: false,
-    filters: {'QL database scheme files': ['dbscheme']}
+    filters: {'CodeQL database scheme files': ['dbscheme']}
   });
   return getFirst(chosen);
 }
 
 /**
  * Displays file selection dialog. Expects the user to choose a
- * QL database scheme file with the extension `.dbscheme`.
+ * folder of CodeQL database upgrade scripts.
  */
 async function chooseUpgradesDirectory(): Promise<Uri | undefined> {
   const chosen = await window.showOpenDialog({
-    openLabel: 'Choose QL database upgrades directory',
+    openLabel: 'Choose CodeQL database upgrades directory',
     canSelectFiles: false,
     canSelectFolders: true,
     canSelectMany: false
@@ -161,15 +161,15 @@ export class DatabaseUI extends DisposableObject {
     super();
 
     const treeDataProvider = this.push(new DatabaseTreeDataProvider(ctx, databaseManager));
-    this.push(window.createTreeView('qlDatabases', { treeDataProvider }));
+    this.push(window.createTreeView('codeQLDatabases', { treeDataProvider }));
 
-    ctx.subscriptions.push(commands.registerCommand('ql.chooseDatabase', this.handleChooseDatabase));
-    ctx.subscriptions.push(commands.registerCommand('ql.setCurrentDatabase', this.handleSetCurrentDatabase));
-    ctx.subscriptions.push(commands.registerCommand('ql.upgradeCurrentDatabase', this.handleUpgradeCurrentDatabase));
-    ctx.subscriptions.push(commands.registerCommand('ql.clearCache', this.handleClearCache));
-    ctx.subscriptions.push(commands.registerCommand('qlDatabases.setCurrentDatabase', this.handleMakeCurrentDatabase));
-    ctx.subscriptions.push(commands.registerCommand('qlDatabases.removeDatabase', this.handleRemoveDatabase));
-    ctx.subscriptions.push(commands.registerCommand('qlDatabases.upgradeDatabase', this.handleUpgradeDatabase));
+    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabase', this.handleChooseDatabase));
+    ctx.subscriptions.push(commands.registerCommand('codeQL.setCurrentDatabase', this.handleSetCurrentDatabase));
+    ctx.subscriptions.push(commands.registerCommand('codeQL.upgradeCurrentDatabase', this.handleUpgradeCurrentDatabase));
+    ctx.subscriptions.push(commands.registerCommand('codeQL.clearCache', this.handleClearCache));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.setCurrentDatabase', this.handleMakeCurrentDatabase));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.removeDatabase', this.handleRemoveDatabase));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.upgradeDatabase', this.handleUpgradeDatabase));
   }
 
   private handleMakeCurrentDatabase = async (databaseItem: DatabaseItem): Promise<void> => {

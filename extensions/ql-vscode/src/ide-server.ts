@@ -5,18 +5,15 @@ import { QueryServerConfig } from './config';
 import { ideServerLogger } from './logging';
 
 /**
- * ide-server.ts
- * -------------
- *
- * Managing the lsp server for QL.
+ * Managing the language server for CodeQL.
  */
 
-/** Starts a new QL language server process, sending progress messages to the status bar. */
+/** Starts a new CodeQL language server process, sending progress messages to the status bar. */
 export async function spawnIdeServer(config: QueryServerConfig): Promise<StreamInfo> {
-  return window.withProgress({ title: 'QL language server', location: ProgressLocation.Window }, async (progressReporter, _) => {
+  return window.withProgress({ title: 'CodeQL language server', location: ProgressLocation.Window }, async (progressReporter, _) => {
     const child = await cli.spawnServer(
       config,
-      'QL language server',
+      'CodeQL language server',
       ['execute', 'language-server'],
       ['--check-errors', 'ON_CHANGE'],
       ideServerLogger,

@@ -1,13 +1,13 @@
 {
   "name": "semmle-vscode-utils",
-  "description": "Shared Semmle utilities for writing Visual Studio Code extensions",
-  "author": "Semmle",
+  "description": "Shared utilities for writing Visual Studio Code extensions",
+  "author": "GitHub",
   "private": true,
   "version": "0.0.1",
-  "publisher": "Semmle",
+  "publisher": "GitHub",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Semmle/ql.git"
+    "url": "https://github.com/github/vscode-codeql"
   },
   "main": "./out/index",
   "scripts": {

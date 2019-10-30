@@ -47,12 +47,12 @@ interface PersistedDatabaseItem {
 }
 
 /**
- * The layout of the database
+ * The layout of the database.
  */
 export enum DatabaseKind {
-  /** A normal database */
+  /** A CodeQL database */
   Database,
-  /** A raw dataset */
+  /** A raw QL dataset */
   RawDataset
 }
 
@@ -67,7 +67,7 @@ export interface DatabaseContents {
   datasetUri: vscode.Uri;
   /** The URI of the source archive within the database, if one exists. */
   sourceArchiveUri?: vscode.Uri;
-  /** The URI of the QL database scheme within the database, if exactly one exists. */
+  /** The URI of the CodeQL database scheme within the database, if exactly one exists. */
   dbSchemeUri?: vscode.Uri;
 }
 
@@ -185,10 +185,10 @@ async function resolveDatabaseContents(uri: vscode.Uri): Promise<DatabaseContent
   const dbPath = contents.datasetUri.fsPath;
   const dbSchemeFiles = await getDbSchemeFiles(dbPath);
   if (dbSchemeFiles.length === 0) {
-    throw new InvalidDatabaseError(`Database '${databasePath}' does not contain a QL dbscheme under '${dbPath}'.`);
+    throw new InvalidDatabaseError(`Database '${databasePath}' does not contain a CodeQL dbscheme under '${dbPath}'.`);
   }
   else if (dbSchemeFiles.length > 1) {
-    throw new InvalidDatabaseError(`Database '${databasePath}' contains multiple QL dbschemes under '${dbPath}'.`);
+    throw new InvalidDatabaseError(`Database '${databasePath}' contains multiple CodeQL dbschemes under '${dbPath}'.`);
   } else {
     contents.dbSchemeUri = vscode.Uri.file(path.resolve(dbPath, dbSchemeFiles[0]));
   }

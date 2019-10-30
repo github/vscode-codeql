@@ -1,14 +1,14 @@
 {
   "name": "ql-vscode",
-  "displayName": "QL",
-  "description": "QL for Visual Studio Code",
-  "author": "Semmle",
+  "displayName": "CodeQL",
+  "description": "CodeQL for Visual Studio Code",
+  "author": "GitHub",
   "private": true,
   "version": "0.0.1",
-  "publisher": "Semmle",
+  "publisher": "GitHub",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Semmle/ql.git"
+    "url": "https://github.com/github/vscode-codeql"
   },
   "engines": {
     "vscode": "^1.39.0"
@@ -18,12 +18,12 @@
   ],
   "activationEvents": [
     "onLanguage:ql",
-    "onView:qlDatabases",
-    "onView:qlQueryHistory",
-    "onCommand:ql.chooseDatabase",
-    "onCommand:ql.setCurrentDatabase",
-    "onCommand:qlDatabases.chooseDatabase",
-    "onCommand:qlDatabases.setCurrentDatabase",
+    "onView:codeQLDatabases",
+    "onView:codeQLQueryHistory",
+    "onCommand:codeQL.chooseDatabase",
+    "onCommand:codeQL.setCurrentDatabase",
+    "onCommand:codeQLDatabases.chooseDatabase",
+    "onCommand:codeQLDatabases.setCurrentDatabase",
     "onWebviewPanel:resultsView",
     "onFileSystem:codeql-zip-archive"
   ],
@@ -41,7 +41,8 @@
         "id": "ql",
         "aliases": [
           "QL",
-          "ql"
+          "ql",
+          "CodeQL"
         ],
         "extensions": [
           ".ql",
@@ -75,51 +76,51 @@
     ],
     "configuration": {
       "type": "object",
-      "title": "QL",
+      "title": "CodeQL",
       "properties": {
-        "ql.distribution.codeQlPath": {
+        "codeQL.distribution.codeQlPath": {
           "scope": "window",
           "type": "string",
           "default": "",
-          "description": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.cmd` on Windows. This overrides all other distribution settings."
+          "description": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codecodeQL.cmd` on Windows. This overrides all other distribution settings."
         },
-        "ql.distribution.includePrerelease": {
+        "codeQL.distribution.includePrerelease": {
           "scope": "window",
           "type": "boolean",
           "default": false,
           "description": "Whether prereleases should be included when installing the distribution."
         },
-        "ql.distribution.personalAccessToken": {
+        "codeQL.distribution.personalAccessToken": {
           "scope": "window",
           "type": "string",
           "default": "",
-          "description": "GitHub personal access token for authenticating to GitHub.  This is required if ql.distribution.owner and ql.distribution.repository refer to a private repository."
+          "description": "GitHub personal access token for authenticating to GitHub.  This is required if codeQL.distribution.owner and codeQL.distribution.repository refer to a private repository."
         },
-        "ql.distribution.owner": {
+        "codeQL.distribution.owner": {
           "scope": "window",
           "type": "string",
           "default": "",
           "description": "The owner of the GitHub repository containing CodeQL binaries."
         },
-        "ql.distribution.repository": {
+        "codeQL.distribution.repository": {
           "scope": "window",
           "type": "string",
           "default": "",
           "description": "The name of the GitHub repository containing CodeQL binaries."
         },
-        "ql.runningQueries.numberOfThreads": {
+        "codeQL.runningQueries.numberOfThreads": {
           "type": "number",
           "default": 1,
           "minimum": 1,
           "description": "Number of threads for running queries."
         },
-        "ql.runningQueries.timeout": {
+        "codeQL.runningQueries.timeout": {
           "type": "number",
           "default": 0,
           "minimum": 0,
           "description": "Timeout (in seconds) for running queries. Leave blank or set to zero for no timeout."
         },
-        "ql.runningQueries.memory": {
+        "codeQL.runningQueries.memory": {
           "type": "number",
           "default": 1024,
           "minimum": 1024,
@@ -129,132 +130,132 @@
     },
     "commands": [
       {
-        "command": "ql.runQuery",
-        "title": "QL: Run Query"
+        "command": "codeQL.runQuery",
+        "title": "CodeQL: Run Query"
       },
       {
-        "command": "ql.quickEval",
-        "title": "QL: Quick Evaluation"
+        "command": "codeQL.quickEval",
+        "title": "CodeQL: Quick Evaluation"
       },
       {
-        "command": "ql.chooseDatabase",
-        "title": "QL: Choose Database",
+        "command": "codeQL.chooseDatabase",
+        "title": "CodeQL: Choose Database",
         "icon": {
           "light": "media/black-plus.svg",
           "dark": "media/white-plus.svg"
         }
       },
       {
-        "command": "ql.setCurrentDatabase",
-        "title": "QL: Set Current Database"
+        "command": "codeQL.setCurrentDatabase",
+        "title": "CodeQL: Set Current Database"
       },
       {
-        "command": "ql.upgradeCurrentDatabase",
-        "title": "QL: Upgrade Current Database"
+        "command": "codeQL.upgradeCurrentDatabase",
+        "title": "CodeQL: Upgrade Current Database"
       },
       {
-        "command": "ql.clearCache",
-        "title": "QL: Clear Cache"
+        "command": "codeQL.clearCache",
+        "title": "CodeQL: Clear Cache"
       },
       {
-        "command": "qlDatabases.setCurrentDatabase",
+        "command": "codeQLDatabases.setCurrentDatabase",
         "title": "Set Current Database"
       },
       {
-        "command": "qlDatabases.removeDatabase",
+        "command": "codeQLDatabases.removeDatabase",
         "title": "Remove Database"
       },
       {
-        "command": "qlDatabases.upgradeDatabase",
+        "command": "codeQLDatabases.upgradeDatabase",
         "title": "Upgrade Database"
       },
       {
-        "command": "ql.checkForUpdatesToTools",
-        "title": "QL: Check for Updates to Command-Line Tools"
+        "command": "codeQL.checkForUpdatesToTools",
+        "title": "CodeQL: Check for Updates to Command-Line Tools"
       },
       {
-        "command": "qlQueryHistory.openQuery",
+        "command": "codeQLQueryHistory.openQuery",
         "title": "CodeQL: Open Query"
       },
       {
-        "command": "qlQueryHistory.itemClicked",
+        "command": "codeQLQueryHistory.itemClicked",
         "title": "Query History Item"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "ql.chooseDatabase",
-          "when": "view == qlDatabases",
+          "command": "codeQL.chooseDatabase",
+          "when": "view == codeQLDatabases",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "qlDatabases.setCurrentDatabase",
+          "command": "codeQLDatabases.setCurrentDatabase",
           "group": "inline",
-          "when": "view == qlDatabases"
+          "when": "view == codeQLDatabases"
         },
         {
-          "command": "qlDatabases.removeDatabase",
+          "command": "codeQLDatabases.removeDatabase",
           "group": "9_qlCommands",
-          "when": "view == qlDatabases"
+          "when": "view == codeQLDatabases"
         },
         {
-          "command": "qlDatabases.upgradeDatabase",
+          "command": "codeQLDatabases.upgradeDatabase",
           "group": "9_qlCommands",
-          "when": "view == qlDatabases"
+          "when": "view == codeQLDatabases"
         },
         {
-          "command": "qlQueryHistory.openQuery",
+          "command": "codeQLQueryHistory.openQuery",
           "group": "9_qlCommands",
-          "when": "view == qlQueryHistory"
+          "when": "view == codeQLQueryHistory"
         }
       ],
       "explorer/context": [
         {
-          "command": "ql.setCurrentDatabase",
+          "command": "codeQL.setCurrentDatabase",
           "group": "9_qlCommands"
         },
         {
-          "command": "ql.runQuery",
+          "command": "codeQL.runQuery",
           "group": "9_qlCommands",
           "when": "resourceLangId == ql && resourceExtname == .ql"
         }
       ],
       "commandPalette": [
         {
-          "command": "ql.runQuery",
+          "command": "codeQL.runQuery",
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "ql.setCurrentDatabase",
+          "command": "codeQL.setCurrentDatabase",
           "when": "false"
         },
         {
-          "command": "qlDatabases.setCurrentDatabase",
+          "command": "codeQLDatabases.setCurrentDatabase",
           "when": "false"
         },
         {
-          "command": "qlDatabases.removeDatabase",
+          "command": "codeQLDatabases.removeDatabase",
           "when": "false"
         },
         {
-          "command": "qlQueryHistory.openQuery",
+          "command": "codeQLQueryHistory.openQuery",
           "when": "false"
         },
         {
-          "command": "qlQueryHistory.itemClicked",
+          "command": "codeQLQueryHistory.itemClicked",
           "when": "false"
         }
       ],
       "editor/context": [
         {
-          "command": "ql.runQuery",
+          "command": "codeQL.runQuery",
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "ql.quickEval",
+          "command": "codeQL.quickEval",
           "when": "editorLangId == ql"
         }
       ]
@@ -263,7 +264,7 @@
       "activitybar": [
         {
           "id": "ql-container",
-          "title": "QL",
+          "title": "CodeQL",
           "icon": "media/ql.svg"
         }
       ]
@@ -271,11 +272,11 @@
     "views": {
       "ql-container": [
         {
-          "id": "qlDatabases",
+          "id": "codeQLDatabases",
           "name": "Databases"
         },
         {
-          "id": "qlQueryHistory",
+          "id": "codeQLQueryHistory",
           "name": "Query History"
         }
       ]
