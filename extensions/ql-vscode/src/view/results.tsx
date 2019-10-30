@@ -139,12 +139,17 @@ interface ResultsViewProps {
   resultsInfo: ResultsInfo | null;
 }
 
-interface ResultsViewState {
+interface ResultsState {
   // We use `null` instead of `undefined` here because in React, `undefined` is
   // used to mean "did not change" when updating the state of a component.
   resultsInfo: ResultsInfo | null;
   results: Results | null;
   errorMessage: string;
+}
+
+interface ResultsViewState {
+  displayedResults: ResultsState;
+  nextResults: ResultsState | null;
 }
 
 /**
@@ -156,26 +161,35 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
   constructor(props: any) {
     super(props);
     this.state = {
-      resultsInfo: null,
-      results: null,
-      errorMessage: ''
+      displayedResults: {
+        resultsInfo: null,
+        results: null,
+        errorMessage: ''
+      },
+      nextResults: null
     };
   }
 
   static getDerivedStateFromProps(nextProps: Readonly<ResultsViewProps>,
     prevState: ResultsViewState): Partial<ResultsViewState> | null {
 
+    const resultsInfoSame = (prevState.nextResults && nextProps.resultsInfo === prevState.nextResults.resultsInfo) ||
+      (!prevState.nextResults && nextProps.resultsInfo === prevState.displayedResults.resultsInfo);
+
     // Only update if `resultsInfo` changed.
-    if (nextProps.resultsInfo !== prevState.resultsInfo) {
-      return {
+    if (resultsInfoSame) {
+      return null;
+    }
+
+    return {
+      displayedResults: prevState.displayedResults,
+      nextResults: {
         resultsInfo: nextProps.resultsInfo,
         results: null,
         errorMessage: (nextProps.resultsInfo !== null) ?
           'Loading results...' : 'No results to display'
-      };
-    }
-
-    return null;
+      }
+    };
   }
 
   componentDidMount() {
@@ -185,7 +199,7 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
   componentDidUpdate(prevProps: Readonly<ResultsViewProps>, prevState: Readonly<ResultsViewState>):
     void {
 
-    if (this.state.results === null) {
+    if (this.state.nextResults !== null) {
       this.loadResults(this.props.resultsInfo);
     }
   }
@@ -227,9 +241,12 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
       // Only set state if this results info is still current.
       if (resultsInfo === this.currentResultsInfo) {
         this.setState({
-          resultsInfo: resultsInfo,
-          results: results,
-          errorMessage: statusText
+          displayedResults: {
+            resultsInfo: resultsInfo,
+            results: results,
+            errorMessage: statusText
+          },
+          nextResults: null
         });
       }
     }
@@ -259,15 +276,16 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
   }
 
   render() {
-    if (this.state.results !== null) {
-      return <ResultTables rawResultSets={this.state.results.resultSets}
-        interpretation={this.state.resultsInfo ? this.state.resultsInfo.interpretation : undefined}
-        database={this.state.results.database}
-        resultsPath={this.state.resultsInfo ? this.state.resultsInfo.resultsPath : undefined}
-        sortStates={this.state.results.sortStates} />;
+    const displayedResults = this.state.displayedResults;
+    if (displayedResults.results !== null) {
+      return <ResultTables rawResultSets={displayedResults.results.resultSets}
+        interpretation={displayedResults.resultsInfo ? displayedResults.resultsInfo.interpretation : undefined}
+        database={displayedResults.results.database}
+        resultsPath={displayedResults.resultsInfo ? displayedResults.resultsInfo.resultsPath : undefined}
+        sortStates={displayedResults.results.sortStates} />;
     }
     else {
-      return <span>{this.state.errorMessage}</span>;
+      return <span>{displayedResults.errorMessage}</span>;
     }
   }
 }
