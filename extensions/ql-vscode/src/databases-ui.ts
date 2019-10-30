@@ -196,16 +196,12 @@ export class DatabaseUI extends DisposableObject {
     }
 
     const parentDirs = scripts.map(dir => path.dirname(dir));
-    const uniqueParentDirs = Array.from(new Map(parentDirs.map(dir => [dir, true])).keys());
+    const uniqueParentDirs = new Set(parentDirs);
     const targetDbSchemeUri = Uri.file(finalDbscheme);
 
-    if (uniqueParentDirs.length !== 1) {
-      logger.log('Expected exactly one directory containing all upgrades, got ${uniqueParentDirs} instead.');
-      return;
-    }
 
-    const upgradesDirectory = Uri.file(uniqueParentDirs[0]);
-    await upgradeDatabase(this.queryServer, databaseItem, targetDbSchemeUri, upgradesDirectory);
+    const upgradesDirectories = Array.from(uniqueParentDirs).map(filePath => Uri.file(filePath));
+    await upgradeDatabase(this.queryServer, databaseItem, targetDbSchemeUri, upgradesDirectories);
   }
 
   private handleClearCache = async (): Promise<void> => {

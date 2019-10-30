@@ -100,8 +100,8 @@ async function runCodeQlCliCommand(config: QueryServerConfig, command: string[],
   const args = command.concat('-v', '--log=-').concat(commandArgs);
   const argsString = args.join(" ");
   try {
-    if(progressReporter !== undefined) {
-        progressReporter.report({message: description});
+    if (progressReporter !== undefined) {
+      progressReporter.report({ message: description });
     }
     logger.log(`${description} using CodeQL CLI: ${base} ${argsString}...`);
     const result = await util.promisify(child_process.execFile)(base, args);
@@ -164,8 +164,8 @@ export async function spawnServer(
   // Start the server process.
   const base = config.codeQlPath;
   const argsString = args.join(" ");
-  if(progressReporter !== undefined) {
-    progressReporter.report({message: `Starting ${name}`});
+  if (progressReporter !== undefined) {
+    progressReporter.report({ message: `Starting ${name}` });
   }
   logger.log(`Starting ${name} using CodeQL CLI: ${base} ${argsString}`);
   const child = child_process.spawn(base, args);
@@ -180,8 +180,8 @@ export async function spawnServer(
     child.stdout!.on('data', stdoutListener);
   }
 
-  if(progressReporter !== undefined) {
-    progressReporter.report({message: `Started ${name}`});
+  if (progressReporter !== undefined) {
+    progressReporter.report({ message: `Started ${name}` });
   }
   logger.log(`${name} started on PID: ${child.pid}`);
   return child;
@@ -256,8 +256,7 @@ export function resolveDatabase(config: QueryServerConfig, databasePath: string,
  * @returns A list of database upgrade script directories
  */
 export function resolveUpgrades(config: QueryServerConfig, dbScheme: string, searchPath: string[], logger: Logger): Promise<UpgradesInfo> {
-  const args = searchPath.map(pathElement => `--additional-packs=${pathElement}`);
-  args.push(`--dbscheme=${dbScheme}`);
+  const args = ['--additional-packs', searchPath.join(path.delimiter), '--dbscheme', dbScheme];
 
   return runJsonCodeQlCliCommand<UpgradesInfo>(
     config,

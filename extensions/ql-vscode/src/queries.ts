@@ -194,7 +194,7 @@ export interface EvaluationInfo {
  * Reports errors to both the user and the console.
  * @returns the `UpgradeParams` needed to start the upgrade, if the upgrade is possible and was confirmed by the user, or `undefined` otherwise.
  */
-async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectory: vscode.Uri):
+async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectories: vscode.Uri[]):
   Promise<messages.UpgradeParams | undefined> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
     helpers.showAndLogErrorMessage("Database is invalid, and cannot be upgraded.")
@@ -203,7 +203,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
   const params: messages.UpgradeParams = {
     fromDbscheme: db.contents.dbSchemeUri.fsPath,
     toDbscheme: targetDbScheme.fsPath,
-    additionalUpgrades: [upgradesDirectory.fsPath]
+    additionalUpgrades: upgradesDirectories.map(uri => uri.fsPath)
   };
 
   let checkUpgradeResult: messages.CheckUpgradeResult;
@@ -267,9 +267,9 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
  * First performs a dry-run and prompts the user to confirm the upgrade.
  * Reports errors during compilation and evaluation of upgrades to the user.
  */
-export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectory: vscode.Uri):
+export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectories: vscode.Uri[]):
   Promise<messages.RunUpgradeResult | undefined> {
-  const upgradeParams = await checkAndConfirmDatabaseUpgrade(qs, db, targetDbScheme, upgradesDirectory);
+  const upgradeParams = await checkAndConfirmDatabaseUpgrade(qs, db, targetDbScheme, upgradesDirectories);
 
   if (upgradeParams === undefined) {
     return;
