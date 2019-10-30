@@ -175,7 +175,7 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
   }
 
   static getDerivedStateFromProps(nextProps: Readonly<ResultsViewProps>,
-    prevState: ResultsViewState): Partial<ResultsViewState> | null {
+    prevState: ResultsViewState): ResultsViewState | null {
 
     const resultsInfoSame = (prevState.nextResults && nextProps.resultsInfo === prevState.nextResults.resultsInfo) ||
       (!prevState.nextResults && nextProps.resultsInfo === prevState.displayedResults.resultsInfo);
@@ -185,13 +185,32 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
       return null;
     }
 
+    if (nextProps.resultsInfo === null) {
+      // No results to display
+      return {
+        displayedResults: {
+          resultsInfo: null,
+          results: null,
+          errorMessage: 'No results to display'
+        },
+        isExpectingResultsUpdate: false,
+        nextResults: null
+      };
+    }
+
+    const displayedResults = prevState.displayedResults;
+    if (prevState.displayedResults.resultsInfo === null) {
+      // First run
+      displayedResults.errorMessage = 'Loading results…';
+    }
+
     return {
-      displayedResults: prevState.displayedResults,
+      displayedResults,
+      isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
       nextResults: {
         resultsInfo: nextProps.resultsInfo,
         results: null,
-        errorMessage: (nextProps.resultsInfo !== null) ?
-          'Loading results...' : 'No results to display'
+        errorMessage: ''
       }
     };
   }
