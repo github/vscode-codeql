@@ -17,6 +17,8 @@ Install and open Visual Studio Code. Press **Ctrl+Shift+X** or **Cmd+Shift+X** t
 
 > The CodeQL extension requires a minimum of Visual Studio Code 1.39. Older versions are not supported.
 
+> **Note for internal testers**: If you installed an older version of the extension before the beta release, you will need to uninstall it from the Extensions pane before using the beta release (or newer). If you set up a workspace (containing CodeQL databases) with an older version, you will need to create a fresh workspace with the same folders, or delete and re-add each database.
+
 ## Configuring the extension
 
 To edit the configuration settings, right-click **CodeQL** in the Extensions container in the sidebar and select **Configure Extension Settings**.
