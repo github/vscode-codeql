@@ -78,7 +78,7 @@
       "type": "object",
       "title": "CodeQL",
       "properties": {
-        "codeQL.distribution.codeQlPath": {
+        "codeQL.distribution.executablePath": {
           "scope": "window",
           "type": "string",
           "default": "",

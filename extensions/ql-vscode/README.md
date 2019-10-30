@@ -37,7 +37,7 @@ Options for obtaining a CodeQL distribution:
 - Download from [Semmle-internal Jenkins](https://jenkins.internal.semmle.com/job/CodeQL-CLI/) (open the last successful artifacts and download `codeql-all.zip`).  Upon extracting the archive, the CodeQL binary path will be `extractionRoot/codeql/codeql` where `extractionRoot` is the folder in which you extracted the zip.
 - Build your own from the `Semmle/code` repository by running `./build target/intree/codeql`. The CodeQL binary path will be `codeRoot/target/intree/codeql/codeql` (or `codeql.cmd` on Windows), where `codeRoot` is the root of your `Semmle/code` checkout.
 
-Once you have a binary on your machine, edit the setting `codeQL.distribution.codeQlPath` to point to it.
+Once you have a binary on your machine, edit the setting `codeQL.distribution.executablePath` to point to it.
 This can be set per-workspace, or you can set it in your global user settings to apply to all workspaces you open.
 
 #### Using a `codeql` binary on your PATH
