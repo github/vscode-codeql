@@ -12,6 +12,11 @@ import { Logger, ProgressReporter } from "./logging";
 const SARIF_FORMAT = "sarifv2.1.0";
 
 /**
+ * Flags to pass to all cli commands.
+ */
+const LOGGING_FLAGS = ['-v', '--log-to-stderr'];
+
+/**
  * The expected output of codeql resolve library-path.
  */
 export interface QuerySetup {
@@ -88,11 +93,11 @@ export async function resolveRam(config: QueryServerConfig, logger: Logger, prog
 async function runCodeQlCliCommand(config: QueryServerConfig, command: string[], commandArgs: string[], description: string, logger: Logger, progressReporter?: ProgressReporter): Promise<string> {
   const base = config.codeQlPath;
   // Add logging arguments first, in case commandArgs contains positional parameters.
-  const args = command.concat('-v', '--log=-').concat(commandArgs);
+  const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
   const argsString = args.join(" ");
   try {
-    if(progressReporter !== undefined) {
-        progressReporter.report({message: description});
+    if (progressReporter !== undefined) {
+      progressReporter.report({ message: description });
     }
     logger.log(`${description} using CodeQL CLI: ${base} ${argsString}...`);
     const result = await util.promisify(child_process.execFile)(base, args);
@@ -150,13 +155,13 @@ export async function spawnServer(
   progressReporter?: ProgressReporter
 ): Promise<child_process.ChildProcessWithoutNullStreams> {
   // Enable verbose logging.
-  const args = command.concat(commandArgs).concat('-v', '--log=-');
+  const args = command.concat(commandArgs).concat(LOGGING_FLAGS);
 
   // Start the server process.
   const base = config.codeQlPath;
   const argsString = args.join(" ");
-  if(progressReporter !== undefined) {
-    progressReporter.report({message: `Starting ${name}`});
+  if (progressReporter !== undefined) {
+    progressReporter.report({ message: `Starting ${name}` });
   }
   logger.log(`Starting ${name} using CodeQL CLI: ${base} ${argsString}`);
   const child = child_process.spawn(base, args);
@@ -171,8 +176,8 @@ export async function spawnServer(
     child.stdout!.on('data', stdoutListener);
   }
 
-  if(progressReporter !== undefined) {
-    progressReporter.report({message: `Started ${name}`});
+  if (progressReporter !== undefined) {
+    progressReporter.report({ message: `Started ${name}` });
   }
   logger.log(`${name} started on PID: ${child.pid}`);
   return child;
