@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as Rdom from 'react-dom';
 import * as bqrs from 'semmle-bqrs';
 import { ElementBase, isResolvableLocation, LocationValue, PrimitiveColumnValue, PrimitiveTypeKind, ResultSetSchema } from 'semmle-bqrs';
+import { assertNever } from '../helpers-pure';
 import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortState, SortedResultSetInfo } from '../interface-types';
 import { ResultTables } from './result-tables';
 
@@ -150,6 +151,7 @@ interface ResultsState {
 interface ResultsViewState {
   displayedResults: ResultsState;
   nextResults: ResultsState | null;
+  isExpectingResultsUpdate: boolean;
 }
 
 /**
@@ -157,6 +159,7 @@ interface ResultsViewState {
  */
 class App extends React.Component<ResultsViewProps, ResultsViewState> {
   private currentResultsInfo: ResultsInfo | null = null;
+  private vscodeMessageHandler: ((ev: MessageEvent) => void) | undefined = undefined;
 
   constructor(props: any) {
     super(props);
@@ -166,7 +169,8 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
         results: null,
         errorMessage: ''
       },
-      nextResults: null
+      nextResults: null,
+      isExpectingResultsUpdate: false
     };
   }
 
@@ -193,6 +197,8 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
   }
 
   componentDidMount() {
+    this.vscodeMessageHandler = evt => this.handleMessage(evt.data as IntoResultsViewMsg);
+    window.addEventListener('message', this.vscodeMessageHandler);
     this.loadResults(this.props.resultsInfo);
   }
 
@@ -205,6 +211,9 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
   }
 
   componentWillUnmount() {
+    if (this.vscodeMessageHandler) {
+      window.removeEventListener('message', this.vscodeMessageHandler);
+    }
     // Ensure that we don't call `setState` after we're unmounted.
     this.currentResultsInfo = null;
   }
@@ -246,7 +255,8 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
             results: results,
             errorMessage: statusText
           },
-          nextResults: null
+          nextResults: null,
+          isExpectingResultsUpdate: false
         });
       }
     }
@@ -283,10 +293,24 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
         database={displayedResults.results.database}
         resultsPath={displayedResults.resultsInfo ? displayedResults.resultsInfo.resultsPath : undefined}
         sortStates={displayedResults.results.sortStates}
-        isLoadingNewResults={this.state.nextResults !== null} />;
+        isLoadingNewResults={this.state.isExpectingResultsUpdate || this.state.nextResults !== null} />;
     }
     else {
       return <span>{displayedResults.errorMessage}</span>;
+    }
+  }
+
+  handleMessage(msg: IntoResultsViewMsg): void {
+    switch (msg.t) {
+      case 'setState':
+        break;
+      case 'resultsUpdating':
+        this.setState({
+          isExpectingResultsUpdate: true
+        });
+        break;
+      default:
+        assertNever(msg);
     }
   }
 }
@@ -308,6 +332,10 @@ function handleMessage(msg: IntoResultsViewMsg): void {
         interpretation: msg.interpretation
       });
       break;
+    case 'resultsUpdating':
+      break;
+    default:
+      assertNever(msg);
   }
 }
 

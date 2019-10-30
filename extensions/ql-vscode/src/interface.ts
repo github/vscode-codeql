@@ -144,6 +144,8 @@ export class InterfaceManager extends DisposableObject {
           showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
           break;
         }
+        // Notify the webview that it should expect new results.
+        await this.postMessage({ t: 'resultsUpdating' });
         await this._displayedEvaluationInfo.query.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
         await this.showResults(this._displayedEvaluationInfo);
         break;
@@ -153,8 +155,8 @@ export class InterfaceManager extends DisposableObject {
     }
   }
 
-  postMessage(msg: IntoResultsViewMsg) {
-    this.getPanel().webview.postMessage(msg);
+  postMessage(msg: IntoResultsViewMsg): Thenable<boolean> {
+    return this.getPanel().webview.postMessage(msg);
   }
 
   public async showResults(info: EvaluationInfo): Promise<void> {
@@ -169,7 +171,7 @@ export class InterfaceManager extends DisposableObject {
       sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v));
 
     this._displayedEvaluationInfo = info;
-    this.postMessage({
+    await this.postMessage({
       t: 'setState',
       interpretation,
       resultsPath: this.convertPathToWebviewUri(info.query.resultsInfo.resultsPath),

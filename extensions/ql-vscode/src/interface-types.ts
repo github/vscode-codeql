@@ -30,13 +30,24 @@ export interface SortedResultSetInfo {
 
 export type SortedResultsMap = { [resultSet: string]: SortedResultSetInfo };
 
-export interface IntoResultsViewMsg {
+/**
+ * A message to indicate that the results are being updated.
+ * 
+ * As a result of receiving this message, listeners might want to display a loading indicator.
+ */
+export interface ResultsUpdatingMsg {
+  t: 'resultsUpdating';
+}
+
+export interface SetStateMsg {
   t: 'setState';
   resultsPath: string;
   sortedResultsMap: SortedResultsMap;
   interpretation: undefined | Interpretation;
   database: DatabaseInfo;
 };
+
+export type IntoResultsViewMsg = ResultsUpdatingMsg | SetStateMsg;
 
 export type FromResultsViewMsg = ViewSourceFileMsg | ToggleDiagnostics | ChangeSortMsg;
 
