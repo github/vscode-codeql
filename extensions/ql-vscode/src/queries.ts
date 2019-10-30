@@ -38,19 +38,18 @@ let queryCounter = 0;
  * output and results.
  */
 class QueryInfo {
-  metadata?: cli.QueryMetadata;
-  program: messages.QlProgram;
-  quickEvalPosition?: messages.Position;
   compiledQueryPath: string;
   resultsPath: string;
   interpretedResultsPath: string;
-  dbItem: DatabaseItem;
+
   dataset: vscode.Uri; // guarantee the existence of a well-defined dataset dir at this point
 
-  constructor(program: messages.QlProgram, dbItem: DatabaseItem, quickEvalPosition?: messages.Position, metadata?: cli.QueryMetadata) {
-    this.metadata = metadata;
-    this.program = program;
-    this.quickEvalPosition = quickEvalPosition;
+  constructor(
+    public program: messages.QlProgram,
+    public dbItem: DatabaseItem,
+    public quickEvalPosition?: messages.Position,
+    public metadata?: cli.QueryMetadata
+  ) {
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${queryCounter}.qlo`);
     this.resultsPath = path.join(tmpDir.name, `results${queryCounter}.bqrs`);
     this.interpretedResultsPath = path.join(tmpDir.name, `interpretedResults${queryCounter}.sarif`);
@@ -58,7 +57,6 @@ class QueryInfo {
       throw new Error('Can\'t run query on invalid database.');
     }
     this.dataset = dbItem.contents.datasetUri;
-    this.dbItem = dbItem;
     queryCounter++;
   }
 
@@ -397,10 +395,6 @@ export async function compileAndRunQueryAgainstDatabase(
       diskWorkspaceFolders.push(workspaceFolder.uri.fsPath)
   }
 
-
-
-
-
   if (editor == undefined) {
     throw new Error('Can\'t run query without an active editor');
   }
@@ -446,7 +440,6 @@ export async function compileAndRunQueryAgainstDatabase(
     dbschemePath: db.contents.dbSchemeUri.fsPath,
     queryPath: queryPath
   };
-
 
   // Read the query metadata if possible, to use in the UI.
   let metadata: cli.QueryMetadata | undefined;

@@ -171,6 +171,14 @@
       {
         "command": "ql.checkForUpdatesToTools",
         "title": "QL: Check for Updates to Command-Line Tools"
+      },
+      {
+        "command": "qlQueryHistory.openQuery",
+        "title": "CodeQL: Open Query"
+      },
+      {
+        "command": "qlQueryHistory.itemClicked",
+        "title": "Query History Item"
       }
     ],
     "menus": {
@@ -196,6 +204,11 @@
           "command": "qlDatabases.upgradeDatabase",
           "group": "9_qlCommands",
           "when": "view == qlDatabases"
+        },
+        {
+          "command": "qlQueryHistory.openQuery",
+          "group": "9_qlCommands",
+          "when": "view == qlQueryHistory"
         }
       ],
       "explorer/context": [
@@ -224,6 +237,14 @@
         },
         {
           "command": "qlDatabases.removeDatabase",
+          "when": "false"
+        },
+        {
+          "command": "qlQueryHistory.openQuery",
+          "when": "false"
+        },
+        {
+          "command": "qlQueryHistory.itemClicked",
           "when": "false"
         }
       ],
