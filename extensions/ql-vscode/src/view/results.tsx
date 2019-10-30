@@ -282,7 +282,8 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
         interpretation={displayedResults.resultsInfo ? displayedResults.resultsInfo.interpretation : undefined}
         database={displayedResults.results.database}
         resultsPath={displayedResults.resultsInfo ? displayedResults.resultsInfo.resultsPath : undefined}
-        sortStates={displayedResults.results.sortStates} />;
+        sortStates={displayedResults.results.sortStates}
+        isLoadingNewResults={this.state.nextResults !== null} />;
     }
     else {
       return <span>{displayedResults.errorMessage}</span>;

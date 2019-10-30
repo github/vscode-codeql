@@ -15,6 +15,7 @@ export interface ResultTablesProps {
   database: DatabaseInfo;
   resultsPath: string | undefined;
   sortStates: Map<string, SortState>;
+  isLoadingNewResults: boolean;
 }
 
 /**
@@ -26,6 +27,7 @@ interface ResultTablesState {
 
 const ALERTS_TABLE_NAME = 'alerts';
 const SELECT_TABLE_NAME = '#select';
+const UPDATING_RESULTS_TEXT_CLASS_NAME = "vscode-codeql__result-tables-updating-text";
 
 /**
  * Displays multiple `ResultTable` tables, where the table to be displayed is selected by a
@@ -106,6 +108,11 @@ export class ResultTables
             }
           }} />
         </div>
+        {
+          this.props.isLoadingNewResults ? 
+            <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>Updating results…</span>
+            : null
+        }
       </div>
       {
         resultSets.map(resultSet =>
