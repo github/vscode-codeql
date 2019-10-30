@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@master
         if: matrix.os == 'ubuntu-latest'
         with:
-          name: ql-for-vscode-extension
+          name: vscode-codeql-extension
           path: artifacts
   test:
     name: Test

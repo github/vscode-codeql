@@ -1,5 +1,5 @@
 {
-  "name": "ql-vscode",
+  "name": "vscode-codeql",
   "displayName": "CodeQL",
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
