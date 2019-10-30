@@ -144,7 +144,7 @@ export async function deployPackage(packageJsonPath: string): Promise<DeployedPa
       // NOTE: rootPackage.name had better not have any regex metacharacters
       const oldDevBuildPattern = new RegExp('^' + rootPackage.name + '[^/]+-dev\\d+.vsix$');
       // Dev package filenames are of the form
-      //    ql-vscode-0.0.1-dev20190927195520723.vsix
+      //    vscode-codeql-0.0.1-dev20190927195520723.vsix
       fs.readdirSync(distDir).filter(name => name.match(oldDevBuildPattern)).map(build => {
         console.log(`Deleting old dev build ${build}...`);
         fs.unlinkSync(path.join(distDir, build));

@@ -31,10 +31,10 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
 }
 
 /** The global logger for the extension. */
-export const logger = new OutputChannelLogger('QL Extension Log');
+export const logger = new OutputChannelLogger('CodeQL Extension Log');
 
 /** The logger for messages from the query server. */
-export const queryServerLogger = new OutputChannelLogger('QL Query Server');
+export const queryServerLogger = new OutputChannelLogger('CodeQL Query Server');
 
 /** The logger for messages from the language server. */
-export const ideServerLogger = new OutputChannelLogger('QL Language Server');
+export const ideServerLogger = new OutputChannelLogger('CodeQL Language Server');

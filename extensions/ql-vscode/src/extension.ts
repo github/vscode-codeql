@@ -17,7 +17,7 @@ import * as qsClient from './queryserver-client';
 * extension.ts
 * ------------
 *
-* A vscode extension for QL query development.
+* A vscode extension for CodeQL query development.
 */
 
 /**
@@ -40,7 +40,7 @@ const errorStubs: Disposable[] = [];
  * a sensible error message.
  */
 function registerErrorStubs(ctx: ExtensionContext, message: (command: string) => string) {
-  const extensionId = 'Semmle.ql-vscode'; // TODO: Is there a better way of obtaining this?
+  const extensionId = 'GitHub.vscode-codeql'; // TODO: Is there a better way of obtaining this?
   const extension = extensions.getExtension(extensionId);
   if (extension === undefined)
     throw new Error(`Can't find extension ${extensionId}`);
@@ -55,7 +55,7 @@ function registerErrorStubs(ctx: ExtensionContext, message: (command: string) =>
 export async function activate(ctx: ExtensionContext): Promise<void> {
   // Initialise logging, and ensure all loggers are disposed upon exit.
   ctx.subscriptions.push(logger);
-  logger.log('Starting QL extension');
+  logger.log('Starting CodeQL extension');
 
   const distributionConfigListener = new DistributionConfigListener();
   ctx.subscriptions.push(distributionConfigListener);
@@ -143,7 +143,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   const qs = new qsClient.QueryServerClient(qlConfigurationListener, {
     logger: queryServerLogger,
-  }, task => Window.withProgress({ title: 'QL query server', location: ProgressLocation.Window }, task));
+  }, task => Window.withProgress({ title: 'CodeQL query server', location: ProgressLocation.Window }, task));
   ctx.subscriptions.push(qs);
   await qs.startQueryServer();
 
@@ -186,22 +186,22 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   ctx.subscriptions.push(tmpDirDisposal);
 
-  let client = new LanguageClient('QL Language Server', () => spawnIdeServer(qlConfigurationListener), {
+  let client = new LanguageClient('CodeQL Language Server', () => spawnIdeServer(qlConfigurationListener), {
     documentSelector: [
       { language: 'ql', scheme: 'file' },
       { language: 'yaml', scheme: 'file', pattern: '**/qlpack.yml' }
     ],
     synchronize: {
-      configurationSection: 'ql'
+      configurationSection: 'codeQL'
     },
     // Ensure that language server exceptions are logged to the same channel as its output.
     outputChannel: ideServerLogger.outputChannel
   }, true);
 
-  ctx.subscriptions.push(commands.registerCommand('ql.runQuery', async () => await compileAndRunQuery(false)));
-  ctx.subscriptions.push(commands.registerCommand('ql.quickEval', async () => await compileAndRunQuery(true)));
+  ctx.subscriptions.push(commands.registerCommand('codeQL.runQuery', async () => await compileAndRunQuery(false)));
+  ctx.subscriptions.push(commands.registerCommand('codeQL.quickEval', async () => await compileAndRunQuery(true)));
 
-  ctx.subscriptions.push(commands.registerCommand('ql.checkForUpdatesToTools', async () => {
+  ctx.subscriptions.push(commands.registerCommand('codeQL.checkForUpdatesToTools', async () => {
     await installOrUpdateDistribution("Checking for updates to CodeQL command-line tools");
   }));
 

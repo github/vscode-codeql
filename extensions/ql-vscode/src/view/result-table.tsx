@@ -65,12 +65,12 @@ export interface PathTableState {
   expanded: { [k: string]: boolean };
 }
 
-const className = 'ql-vscode__result-table';
+const className = 'vscode-codeql__result-table';
 const tableMetadataClassName = `${className}-metadata`;
 const selectedClassName = `${className}--selected`;
-const evenRowClassName = 'ql-vscode__result-table-row--even';
-const oddRowClassName = 'ql-vscode__result-table-row--odd';
-const pathRowClassName = 'ql-vscode__result-table-row--path';
+const evenRowClassName = 'vscode-codeql__result-table-row--even';
+const oddRowClassName = 'vscode-codeql__result-table-row--odd';
+const pathRowClassName = 'vscode-codeql__result-table-row--path';
 
 export class RawTable extends React.Component<RawTableProps, {}> {
   constructor(props: RawTableProps) {

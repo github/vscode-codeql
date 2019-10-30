@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 describe('launching with a minimal workspace', async () => {
-  const ext = vscode.extensions.getExtension('Semmle.ql-vscode');
+  const ext = vscode.extensions.getExtension('GitHub.vscode-codeql');
   it('should install the extension', () => {
     assert(ext);
   });

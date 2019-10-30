@@ -1,13 +1,13 @@
 {
   "name": "semmle-io",
   "description": "I/O utilities",
-  "author": "Semmle",
+  "author": "GitHub",
   "private": true,
   "version": "0.0.1",
-  "publisher": "Semmle",
+  "publisher": "GitHub",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Semmle/ql.git"
+    "url": "https://github.com/github/vscode-codeql"
   },
   "main": "./out/index",
   "files": [

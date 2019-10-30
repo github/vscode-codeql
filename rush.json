@@ -16,7 +16,7 @@
   "gitPolicy": {
   },
   "repository": {
-    "url": "https://git.semmle.com/Semmle/ql-vscode.git"
+    "url": "https://github.com/github/vscode-codeql"
   },
   "eventHooks": {
     "preRushInstall": [],
@@ -51,7 +51,7 @@
       "projectFolder": "lib/semmle-vscode-utils"
     },
     {
-      "packageName": "ql-vscode",
+      "packageName": "vscode-codeql",
       "projectFolder": "extensions/ql-vscode",
       "shouldPublish": true
     }

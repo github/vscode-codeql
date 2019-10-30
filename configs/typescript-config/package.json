@@ -1,13 +1,13 @@
 {
   "name": "typescript-config",
   "description": "TypeScript configurations",
-  "author": "Semmle",
+  "author": "GitHub",
   "private": true,
   "version": "0.0.1",
-  "publisher": "Semmle",
+  "publisher": "GitHub",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Semmle/ql.git"
+    "url": "https://github.com/github/vscode-codeql"
   },
   "scripts": {
     "build": "",

@@ -97,7 +97,7 @@ export class QueryServerClient extends DisposableObject {
     const ramArgs = await cli.resolveRam(this.config, this.opts.logger, progressReporter);
     const child = await cli.spawnServer(
       this.config,
-      'QL query server',
+      'CodeQL query server',
       ['execute', 'query-server'],
       ['--threads', this.config.numThreads.toString()].concat(ramArgs),
       this.logger,
@@ -105,7 +105,7 @@ export class QueryServerClient extends DisposableObject {
       undefined, // no listener for stdout
       progressReporter
     );
-    progressReporter.report({ message: 'Connecting to QL query server' });
+    progressReporter.report({ message: 'Connecting to CodeQL query server' });
     const connection = createMessageConnection(child.stdout, child.stdin);
     connection.onRequest(completeQuery, res => {
       if (!(res.runId in this.evaluationResultCallbacks)) {
@@ -126,7 +126,7 @@ export class QueryServerClient extends DisposableObject {
     // Ensure the server process is disposed together with this client.
     this.track(this.serverProcess);
     connection.listen();
-    progressReporter.report({ message: 'Connected to QL query server' });
+    progressReporter.report({ message: 'Connected to CodeQL query server' });
     this.nextCallback = 0;
     this.nextProgress = 0;
     this.progressCallbacks = {};

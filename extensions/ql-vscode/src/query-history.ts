@@ -86,7 +86,7 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<QueryHistoryIte
 
     it.command = {
       title: 'Query History Item',
-      command: 'qlQueryHistory.itemClicked',
+      command: 'codeQLQueryHistory.itemClicked',
       arguments: [element],
     };
 
@@ -153,7 +153,7 @@ export class QueryHistoryManager {
     this.ctx = ctx;
     this.selectedCallback = selectedCallback;
     const treeDataProvider = this.treeDataProvider = new HistoryTreeDataProvider(ctx);
-    this.treeView = Window.createTreeView('qlQueryHistory', { treeDataProvider });
+    this.treeView = Window.createTreeView('codeQLQueryHistory', { treeDataProvider });
     this.treeView.onDidChangeSelection(async ev => {
       if (ev.selection.length == 0) {
         const current = this.treeDataProvider.getCurrent();
@@ -168,8 +168,8 @@ export class QueryHistoryManager {
       }
     });
 
-    ctx.subscriptions.push(vscode.commands.registerCommand('qlQueryHistory.openQuery', this.handleOpenQuery));
-    ctx.subscriptions.push(vscode.commands.registerCommand('qlQueryHistory.itemClicked', async (item) => {
+    ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.openQuery', this.handleOpenQuery));
+    ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.itemClicked', async (item) => {
       return this.handleItemClicked(item);
     }));
   }

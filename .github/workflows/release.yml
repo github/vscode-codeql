@@ -58,7 +58,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@master
         with:
-          name: ql-for-vscode-extension
+          name: vscode-codeql-extension
           path: artifacts
 
         # TODO Run tests, or check that a test run on the same branch succeeded.

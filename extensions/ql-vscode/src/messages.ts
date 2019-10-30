@@ -1,6 +1,6 @@
 /**
  * Types for messages exchanged during jsonrpc communication with the
- * the QL query server.
+ * the CodeQL query server.
  */
 
 import * as rpc from 'vscode-jsonrpc';

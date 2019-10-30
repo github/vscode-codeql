@@ -1,24 +1,24 @@
-.ql-vscode__result-table {
+.vscode-codeql__result-table {
   display: none;
 }
 
-.ql-vscode__result-table--selected {
+.vscode-codeql__result-table--selected {
   display: block;
 }
 
-.ql-vscode__result-table-metadata {
+.vscode-codeql__result-table-metadata {
   border-bottom: 1px solid black;
   padding: 0.5em 0;
   text-align: left;
 }
 
-.ql-vscode__result-table th {
+.vscode-codeql__result-table th {
   border-bottom: 1px solid black;
   padding: 0.5em;
   text-align: left;
 }
 
-.ql-vscode__result-table td {
+.vscode-codeql__result-table td {
   padding: 0.5em;
   white-space: pre-wrap;
 }
@@ -31,14 +31,14 @@ select {
   font-size: inherit;
 }
 
-.ql-vscode__result-table-row--odd {
+.vscode-codeql__result-table-row--odd {
   background-color: inherit;
 }
 
-.ql-vscode__result-table-row--even {
+.vscode-codeql__result-table-row--even {
   background-color: var(--vscode-editor-wordHighlightBackground);
 }
 
-.ql-vscode__result-table-row--path {
+.vscode-codeql__result-table-row--path {
   background-color: var(--vscode-editor-wordHighlightStrongBackground);
 }

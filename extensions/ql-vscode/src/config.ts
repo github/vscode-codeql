@@ -28,12 +28,12 @@ class Setting {
   }
 }
 
-const ROOT_SETTING =  new Setting('ql');
+const ROOT_SETTING =  new Setting('codeQL');
 
 // Distribution configuration
 
 const DISTRIBUTION_SETTING = new Setting('distribution', ROOT_SETTING);
-const CUSTOM_CODEQL_PATH_SETTING = new Setting('codeQlPath', DISTRIBUTION_SETTING);
+const CUSTOM_CODEQL_PATH_SETTING = new Setting('executablePath', DISTRIBUTION_SETTING);
 const INCLUDE_PRERELEASE_SETTING = new Setting('includePrerelease', DISTRIBUTION_SETTING);
 const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIBUTION_SETTING);
 const OWNER_NAME_SETTING = new Setting('owner', DISTRIBUTION_SETTING);

@@ -77,7 +77,7 @@ export function webviewUriToFileUri(webviewUri: string): Uri {
 export class InterfaceManager extends DisposableObject {
   panel: vscode.WebviewPanel | undefined;
 
-  readonly diagnosticCollection = languages.createDiagnosticCollection(`ql-query-results`);
+  readonly diagnosticCollection = languages.createDiagnosticCollection(`codeql-query-results`);
 
   constructor(public ctx: vscode.ExtensionContext, private databaseManager: DatabaseManager,
     public config: QueryServerConfig, public logger: Logger) {
@@ -93,7 +93,7 @@ export class InterfaceManager extends DisposableObject {
       const { ctx } = this;
       const panel = this.panel = Window.createWebviewPanel(
         'resultsView', // internal name
-        'QL Query Results', // user-visible name
+        'CodeQL Query Results', // user-visible name
         vscode.ViewColumn.Beside,
         {
           enableScripts: true,
@@ -257,12 +257,12 @@ async function showLocation(loc: FivePartLocation, databaseItem: DatabaseItem): 
 }
 
 /**
- * Resolves the specified QL location to a URI into the source archive.
- * @param loc QL location to resolve. Must have a non-empty value for `loc.file`.
+ * Resolves the specified CodeQL location to a URI into the source archive.
+ * @param loc CodeQL location to resolve. Must have a non-empty value for `loc.file`.
  * @param databaseItem Database in which to resolve the file location.
  */
 function resolveFivePartLocation(loc: FivePartLocation, databaseItem: DatabaseItem): Location {
-  // `Range` is a half-open interval, and is zero-based. QL locations are closed intervals, and
+  // `Range` is a half-open interval, and is zero-based. CodeQL locations are closed intervals, and
   // are one-based. Adjust accordingly.
   const range = new Range(Math.max(0, loc.lineStart - 1),
     Math.max(0, loc.colStart - 1),
@@ -273,8 +273,8 @@ function resolveFivePartLocation(loc: FivePartLocation, databaseItem: DatabaseIt
 }
 
 /**
- * Resolve the specified QL location to a URI into the source archive.
- * @param loc QL location to resolve
+ * Resolve the specified CodeQL location to a URI into the source archive.
+ * @param loc CodeQL location to resolve
  * @param databaseItem Database in which to resolve the file location.
  */
 function resolveLocation(loc: LocationValue | undefined, databaseItem: DatabaseItem): Location {
@@ -289,9 +289,9 @@ function resolveLocation(loc: LocationValue | undefined, databaseItem: DatabaseI
 }
 
 /**
- * Try to resolve the specified QL location to a URI into the source archive. If no exact location
+ * Try to resolve the specified CodeQL location to a URI into the source archive. If no exact location
  * can be resolved, returns `undefined`.
- * @param loc QL location to resolve
+ * @param loc CodeQL location to resolve
  * @param databaseItem Database in which to resolve the file location.
  */
 function tryResolveLocation(loc: LocationValue | undefined,
