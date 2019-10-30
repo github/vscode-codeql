@@ -6,6 +6,21 @@ import { isResolvableLocation, LocationStyle, LocationValue } from 'semmle-bqrs'
 import { ResultSet, PathTableResultSet, RawTableResultSet, ResultValue, vscode } from './results';
 
 /**
+ * Computes a combined path normalized to reflect conventional normalization
+ * of windows paths into zip archive paths.
+ * @param sourceLocationPrefix The source location prefix of a database. May be
+ * unix style `/foo/bar/baz` or windows-style `C:\foo\bar\baz`.
+ * @param pathAfterPrefix A path relative to sourceLocationPrefix. Must only use
+ * unix path separators.
+ * @returns A string that is valid for the `.file` field of a `FivePartLocation`:
+ * directory separators are normalized, but drive letters `C:` may appear.
+ */
+function getPathRelativeToSourceLocationPrefix(sourceLocationPrefix: string, pathAfterPrefix: string) {
+  const normalizedSourceLocationPrefix = sourceLocationPrefix.replace(/\\/g, '/');
+  return path.join(normalizedSourceLocationPrefix, pathAfterPrefix);
+}
+
+/**
  * Render a location as a link which when clicked displays the original location.
  */
 function renderLocation(loc: LocationValue | undefined, label: string | undefined,
@@ -198,6 +213,8 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       if (physicalLocation.artifactLocation.uri === undefined)
         return renderNonLocation(msg, 'artifact location has no uri');
 
+      // This is not necessarily really a uri; it could either be a
+      // file uri or a relative path.
       const uri = physicalLocation.artifactLocation.uri;
 
       if (physicalLocation.region === undefined)
@@ -207,7 +224,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       const fileUriRegex = /file:/;
       const effectiveLocation = uri.match(fileUriRegex) ?
         uri.replace(fileUriRegex, '') :
-        path.join(sourceLocationPrefix, uri);
+        getPathRelativeToSourceLocationPrefix(sourceLocationPrefix, uri);
 
       // We assume that the SARIF we're given always has startLine
       // This is not mandated by the SARIF spec, but should be true of
