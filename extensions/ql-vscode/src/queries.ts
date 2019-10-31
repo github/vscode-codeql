@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
 import * as sarif from 'sarif';
@@ -171,6 +172,9 @@ class QueryInfo {
  * Call cli command to interpret results.
  */
 export async function interpretResults(config: QueryServerConfig, queryInfo: QueryInfo, logger: Logger, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
+  if (await fs.pathExists(queryInfo.interpretedResultsPath)) {
+    return JSON.parse(await fs.readFile(queryInfo.interpretedResultsPath, 'utf8'));
+  }
   const { metadata } = queryInfo;
   if (metadata == undefined) {
     throw new Error('Can\'t interpret results without query metadata');
