@@ -30,6 +30,8 @@ class Checkpoint<T> {
   private promise: Promise<T>;
 
   constructor() {
+    this.res = () => { };
+    this.rej = () => { };
     this.promise = new Promise((res, rej) => { this.res = res; this.rej = rej; })
   }
 
@@ -73,7 +75,7 @@ const queryTestCases: QueryTestCase[] = [
 ];
 
 describe('using the query server', function () {
-  before(function() {
+  before(function () {
     if (process.env["CODEQL_PATH"] === undefined) {
       console.log('The environment variable CODEQL_PATH is not set. The query server tests, which require the CodeQL CLI, will be skipped.');
       this.skip();

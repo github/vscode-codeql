@@ -257,8 +257,22 @@ export class ReleasesApiConsumer {
     }
 
     const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases`;
-    const releases: Release[] = await (await this.makeApiCall(apiPath)).json();
-    return releases.sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    const releases: GithubRelease[] = await (await this.makeApiCall(apiPath)).json();
+    const latestRelease = releases.sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    const assets: ReleaseAsset[] = latestRelease.assets.map(asset => {
+      return {
+        id: asset.id,
+        name: asset.name,
+        size: asset.size
+      };
+    });
+
+    return {
+      assets,
+      createdAt: latestRelease.created_at,
+      id: latestRelease.id,
+      name: latestRelease.name
+    };
   }
 
   public async streamBinaryContentOfAsset(asset: ReleaseAsset): Promise<fetch.Response> {
@@ -394,7 +408,7 @@ export interface Release {
   /**
    * The creation date of the release on GitHub.
    */
-  created_at: string;
+  createdAt: string;
 
   /**
    * The id associated with the release on GitHub.
@@ -411,6 +425,49 @@ export interface Release {
  * An asset corresponding to a release on GitHub.
  */
 export interface ReleaseAsset {
+  /**
+   * The id associated with the asset on GitHub.
+   */
+  id: number;
+
+  /**
+   * The name associated with the asset on GitHub.
+   */
+  name: string;
+
+  /**
+   * The size of the asset in bytes.
+   */
+  size: number;
+}
+
+
+/**
+ *The json returned from github for a release.
+ */
+export interface GithubRelease {
+  assets: ReleaseAsset[];
+
+  /**
+   * The creation date of the release on GitHub.
+   */
+  created_at: string;
+
+  /**
+   * The id associated with the release on GitHub.
+   */
+  id: number;
+
+  /**
+   * The name associated with the release on GitHub.
+   */
+  name: string;
+}
+
+/**
+ * The json returned by github for an asset in a release.
+ */
+export interface GithubReleaseAsset {
   /**
    * The id associated with the asset on GitHub.
    */
