@@ -147,7 +147,7 @@ export class InterfaceManager extends DisposableObject {
         // Notify the webview that it should expect new results.
         await this.postMessage({ t: 'resultsUpdating' });
         await this._displayedEvaluationInfo.query.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
-        await this.showResults(this._displayedEvaluationInfo);
+        await this.showResults(this._displayedEvaluationInfo, true);
         break;
       }
       default:
@@ -159,7 +159,7 @@ export class InterfaceManager extends DisposableObject {
     return this.getPanel().webview.postMessage(msg);
   }
 
-  public async showResults(info: EvaluationInfo): Promise<void> {
+  public async showResults(info: EvaluationInfo, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
     if (info.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }
@@ -177,6 +177,7 @@ export class InterfaceManager extends DisposableObject {
       resultsPath: this.convertPathToWebviewUri(info.query.resultsInfo.resultsPath),
       sortedResultsMap,
       database: info.database,
+      shouldKeepOldResultsWhileRendering
     });
   }
 

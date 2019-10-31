@@ -45,6 +45,12 @@ export interface SetStateMsg {
   sortedResultsMap: SortedResultsMap;
   interpretation: undefined | Interpretation;
   database: DatabaseInfo;
+  /**
+   * Whether to keep displaying the old results while rendering the new results.
+   * 
+   * This is useful to prevent properties like scroll state being lost when rendering the sorted results after sorting a column.
+   */
+  shouldKeepOldResultsWhileRendering: boolean;
 };
 
 export type IntoResultsViewMsg = ResultsUpdatingMsg | SetStateMsg;

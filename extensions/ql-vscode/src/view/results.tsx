@@ -128,6 +128,10 @@ interface ResultsInfo {
   database: DatabaseInfo;
   interpretation: Interpretation | undefined;
   sortedResultsMap: Map<string, SortedResultSetInfo>;
+  /**
+   * See {@link SetStateMsg.shouldKeepOldResultsWhileRendering}.
+   */
+  shouldKeepOldResultsWhileRendering: boolean;
 }
 
 interface Results {
@@ -170,41 +174,22 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
         errorMessage: ''
       },
       nextResults: null,
-      isExpectingResultsUpdate: false
+      isExpectingResultsUpdate: true
     };
   }
 
   static getDerivedStateFromProps(nextProps: Readonly<ResultsViewProps>,
     prevState: ResultsViewState): ResultsViewState | null {
 
-    const resultsInfoSame = (prevState.nextResults && nextProps.resultsInfo === prevState.nextResults.resultsInfo) ||
-      (!prevState.nextResults && nextProps.resultsInfo === prevState.displayedResults.resultsInfo);
+    const isResultsInfoSame = (prevState.nextResults && nextProps.resultsInfo === prevState.nextResults.resultsInfo) ||
+      (!prevState.nextResults && nextProps.resultsInfo && nextProps.resultsInfo === prevState.displayedResults.resultsInfo);
 
     // Only update if `resultsInfo` changed.
-    if (resultsInfoSame) {
+    if (isResultsInfoSame) {
       return null;
     }
 
-    if (nextProps.resultsInfo === null) {
-      // No results to display
-      return {
-        displayedResults: {
-          resultsInfo: null,
-          results: null,
-          errorMessage: 'No results to display'
-        },
-        isExpectingResultsUpdate: false,
-        nextResults: null
-      };
-    }
-
-    const displayedResults = prevState.displayedResults;
-    if (prevState.displayedResults.resultsInfo === null) {
-      // First run
-      displayedResults.errorMessage = 'Loading results…';
-    }
-
-    return {
+    const stateWithDisplayedResults = (displayedResults: ResultsState) => ({
       displayedResults,
       isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
       nextResults: {
@@ -212,7 +197,25 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
         results: null,
         errorMessage: ''
       }
-    };
+    });
+
+    if (!prevState.isExpectingResultsUpdate && nextProps.resultsInfo === null) {
+      // No results to display
+      return stateWithDisplayedResults({
+        resultsInfo: null,
+        results: null,
+        errorMessage: 'No results to display'
+      });
+    }
+    if (!nextProps.resultsInfo || !nextProps.resultsInfo.shouldKeepOldResultsWhileRendering) {
+      // Display loading message
+      return stateWithDisplayedResults({
+        resultsInfo: null,
+        results: null,
+        errorMessage: 'Loading results…'
+      });
+    }
+    return stateWithDisplayedResults(prevState.displayedResults);
   }
 
   componentDidMount() {
@@ -348,7 +351,8 @@ function handleMessage(msg: IntoResultsViewMsg): void {
         resultsPath: msg.resultsPath,
         sortedResultsMap: new Map(Object.entries(msg.sortedResultsMap)),
         database: msg.database,
-        interpretation: msg.interpretation
+        interpretation: msg.interpretation,
+        shouldKeepOldResultsWhileRendering: msg.shouldKeepOldResultsWhileRendering
       });
       break;
     case 'resultsUpdating':
