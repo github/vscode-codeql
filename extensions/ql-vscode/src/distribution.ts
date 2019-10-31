@@ -443,9 +443,9 @@ export interface ReleaseAsset {
 
 
 /**
- *The json returned from github for a release.
+ * The json returned from github for a release.
  */
-export interface GithubRelease {
+interface GithubRelease {
   assets: ReleaseAsset[];
 
   /**
@@ -467,7 +467,7 @@ export interface GithubRelease {
 /**
  * The json returned by github for an asset in a release.
  */
-export interface GithubReleaseAsset {
+interface GithubReleaseAsset {
   /**
    * The id associated with the asset on GitHub.
    */
