@@ -1,8 +1,7 @@
 import * as webpack from 'webpack';
+import {config} from './webpack.config';
 
-const config: webpack.Configuration = require('./webpack.config.js');
-
-export function compileView(cb) {
+export function compileView(cb : (err?: Error) => void) {
   webpack(config).run((error, stats) => {
     if (error) {
       cb(error);

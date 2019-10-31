@@ -93,7 +93,9 @@ abstract class ConfigListener extends DisposableObject {
   }
 
   protected abstract handleDidChangeConfiguration(e: ConfigurationChangeEvent): void;
-  protected abstract updateConfiguration(): void;
+  private updateConfiguration(): void{
+    this._onDidChangeConfiguration.fire();
+  }
 }
 
 export class DistributionConfigListener extends ConfigListener implements DistributionConfig {
@@ -124,16 +126,9 @@ export class DistributionConfigListener extends ConfigListener implements Distri
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     this.handleDidChangeConfigurationForRelevantSettings(DISTRIBUTION_CHANGE_SETTINGS, e);
   }
-
-  protected updateConfiguration(): void {
-    this._onDidChangeConfiguration.fire();
-  }
 }
 
 export class QueryServerConfigListener extends ConfigListener implements QueryServerConfig {
-  private _numThreads: number;
-  private _queryMemoryMb: number;
-
   private constructor(private _codeQlPath: string) {
     super();
   }
@@ -156,7 +151,7 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
   }
 
   public get numThreads(): number {
-    return this._numThreads;
+    return NUMBER_OF_THREADS_SETTING.getValue<number>();
   }
 
   /** Gets the configured query timeout, in seconds. This looks up the setting at the time of access. */
@@ -165,7 +160,7 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
   }
 
   public get queryMemoryMb(): number {
-    return this._queryMemoryMb;
+    return MEMORY_SETTING.getValue<number>();
   }
 
   public get onDidChangeQueryServerConfiguration(): Event<void> {
@@ -174,11 +169,5 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
 
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     this.handleDidChangeConfigurationForRelevantSettings(QUERY_SERVER_RESTARTING_SETTINGS, e);
-  }
-
-  protected updateConfiguration(): void {
-    this._numThreads = NUMBER_OF_THREADS_SETTING.getValue<number>();
-    this._queryMemoryMb = MEMORY_SETTING.getValue<number>();
-    this._onDidChangeConfiguration.fire();
   }
 }
