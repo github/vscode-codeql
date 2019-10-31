@@ -358,7 +358,8 @@ class DatabaseItemImpl implements DatabaseItem {
    * Holds if the database item refers to an exported snapshot
    */
   public hasDbInfo(): boolean {
-    return fs.existsSync(path.join(this.databaseUri.fsPath, '.dbinfo'));
+  return fs.existsSync(path.join(this.databaseUri.fsPath, '.dbinfo'))
+   || fs.existsSync(path.join(this.databaseUri.fsPath, 'codeql-database.yml'));;
   }
 
   /**
