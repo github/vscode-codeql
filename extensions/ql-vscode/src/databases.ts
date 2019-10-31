@@ -251,6 +251,8 @@ export interface DatabaseItem {
 class DatabaseItemImpl implements DatabaseItem {
   private _error: Error | undefined = undefined;
   private _contents: DatabaseContents | undefined;
+  /** A cache of database info */
+  private _dbinfo: cli.DbInfo | undefined;
 
   public constructor(public readonly databaseUri: vscode.Uri,
     contents: DatabaseContents | undefined, private options: FullDatabaseOptions,
@@ -362,11 +364,21 @@ class DatabaseItemImpl implements DatabaseItem {
   }
 
   /**
+   * Returns information about a database.
+   */
+  public async getDbInfo(config: QueryServerConfig, logger: Logger): Promise<cli.DbInfo> {
+    if (this._dbinfo === undefined) {
+      this._dbinfo = await cli.resolveDatabase(config, this.databaseUri.fsPath, logger);
+    }
+    return this._dbinfo;
+  }
+
+  /**
    * Returns `sourceLocationPrefix` of database. Requires that the database
    * has a `.dbinfo` file, which is the source of the prefix.
    */
   public async getSourceLocationPrefix(config: QueryServerConfig, logger: Logger): Promise<string> {
-    const dbInfo = await cli.resolveDatabase(config, this.databaseUri.fsPath, logger);
+    const dbInfo = await this.getDbInfo(config, logger);
     return dbInfo.sourceLocationPrefix;
   }
 
