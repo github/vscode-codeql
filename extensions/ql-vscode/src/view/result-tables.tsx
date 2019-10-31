@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { DatabaseInfo, Interpretation } from '../interface-types';
-import { ResultTable } from './result-table';
+import { ResultTableProps } from './result-table-utils';
 import { ResultSet } from './results';
+import { RawTable } from './raw-results-table';
+import { PathTable } from './alert-table';
 
 /**
  * Properties for the `ResultTables` component.
@@ -89,5 +91,22 @@ export class ResultTables
         )
       }
     </div >;
+  }
+}
+
+class ResultTable extends React.Component<ResultTableProps, {}> {
+
+  constructor(props: ResultTableProps) {
+    super(props);
+  }
+
+  render(): React.ReactNode {
+    const { resultSet } = this.props;
+    switch (resultSet.t) {
+      case 'RawResultSet': return <RawTable
+        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} resultsPath={this.props.resultsPath} />;
+      case 'SarifResultSet': return <PathTable
+        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} resultsPath={this.props.resultsPath} />;
+    }
   }
 }
