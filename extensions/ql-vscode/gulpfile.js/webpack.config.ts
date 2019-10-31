@@ -1,6 +1,7 @@
-const path = require('path');
+import * as path from 'path';
+import * as webpack from 'webpack';
 
-module.exports = {
+export const config : webpack.Configuration = {
   mode: 'development',
   entry: {
     resultsView: './src/view/results.tsx'
