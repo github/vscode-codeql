@@ -46,23 +46,19 @@ function parseSarifPlainTextMessage(message: string): SarifMessageComponent[] {
   results.push(unescapeSarifText(message.substring(curIndex, message.length)));
   return results;
 }
-  
-
-
 
 /**
- * Computes a combined path normalized to reflect conventional normalization
+ * Computes a path normalized to reflect conventional normalization
  * of windows paths into zip archive paths.
  * @param sourceLocationPrefix The source location prefix of a database. May be
  * unix style `/foo/bar/baz` or windows-style `C:\foo\bar\baz`.
- * @param pathAfterPrefix A path relative to sourceLocationPrefix. Must only use
- * unix path separators.
+ * @param sarifRelativeUri A uri relative to sourceLocationPrefix.
  * @returns A string that is valid for the `.file` field of a `FivePartLocation`:
  * directory separators are normalized, but drive letters `C:` may appear.
  */
-export function getPathRelativeToSourceLocationPrefix(sourceLocationPrefix: string, sarifRelativePath: string) {
+export function getPathRelativeToSourceLocationPrefix(sourceLocationPrefix: string, sarifRelativeUui: string) {
     const normalizedSourceLocationPrefix = sourceLocationPrefix.replace(/\\/g, '/');
-    return path.join(normalizedSourceLocationPrefix, sarifRelativePath);
+    return path.join(normalizedSourceLocationPrefix, decodeURIComponent(sarifRelativeUui));
   }
 
 export class PathTable extends React.Component<PathTableProps, PathTableState> {
@@ -128,8 +124,8 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         if (physicalLocation.artifactLocation.uri === undefined)
           return renderNonLocation(msg, 'artifact location has no uri');
   
-        // This is not necessarily really a uri; it could either be a
-        // file uri or a relative path.
+        // This is not necessarily really an absolute uri; it could either be a
+        // file uri or a relative uri.
         const uri = physicalLocation.artifactLocation.uri;
   
         if (physicalLocation.region === undefined)
@@ -138,7 +134,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         const region = physicalLocation.region;
         const fileUriRegex = /file:/;
         const effectiveLocation = uri.match(fileUriRegex) ?
-          uri.replace(fileUriRegex, '') :
+          decodeURIComponent(uri.replace(fileUriRegex, '')) :
           getPathRelativeToSourceLocationPrefix(sourceLocationPrefix, uri);
   
         // We assume that the SARIF we're given always has startLine
