@@ -12,6 +12,43 @@ export interface PathTableState {
     expanded: { [k: string]: boolean };
   }
 
+interface SarifLink {
+  dest: number
+  text: string
+}
+
+type SarifMessageComponent = string | SarifLink
+
+/**
+ * Unescape "[", "]" and "\\" like in sarif plain text messages
+ */
+function unescapeSarifText(message: string): string {
+  return message.replace(/\\\[/g, "[").replace(/\\\]/g, "]").replace(/\\\\/, "\\");
+}
+
+function parseSarifPlainTextMessage(message: string): SarifMessageComponent[] {
+  let results: SarifMessageComponent[] = [];
+
+  // We want something like "[linkText](4)", except that "[" and "]" may be escaped. The lookbehind asserts
+  // that the initial [ is not escaped. Then we parse a link text with "[" and "]" escaped. Then we parse the numerical target.
+  // Technically we could have any uri in the target but we don't output that yet.
+  // The possibility of escaping outside the link is not mentioned in the sarif spec but we always output sartif this way.
+  const linkRegex = /(?<=(?<!\\)(\\\\)*)\[(?<linkText>([^\\\]\[]|\\\\|\\\]|\\\[)*)\]\((?<linkTarget>[0-9]+)\)/g;
+  let result: RegExpExecArray | null;
+  let curIndex = 0;
+  while ((result = linkRegex.exec(message)) !== null) {
+    results.push(unescapeSarifText(message.substring(curIndex, result.index)));
+    const linkText = result.groups!["linkText"];
+    const linkTarget = +result.groups!["linkTarget"];
+    results.push({ dest: linkTarget, text: unescapeSarifText(linkText) });
+    curIndex = result.index + result[0].length;
+  }
+  results.push(unescapeSarifText(message.substring(curIndex, message.length)));
+  return results;
+}
+  
+
+
 
 /**
  * Computes a combined path normalized to reflect conventional normalization
@@ -60,26 +97,26 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
   
         const result: JSX.Element[] = [];
         // match things like `[link-text](related-location-id)`
-        const linkRegex = /\[(.*?)\]\((.*?)\)/;
-        const parts = msg.split(linkRegex);
+        const parts = parseSarifPlainTextMessage(msg);
   
-        for (let i = 0; i + 1 < parts.length; i += 3) {
-          const renderedLocation = renderSarifLocation({ text: parts[i + 1] }, relatedLocationsById[parts[i + 2]]);
-          result.push(<span>{parts[i]}{renderedLocation}</span>);
-        }
-        result.push(<span>{parts[parts.length - 1]}</span>);
-        return result;
+  
+        for (const part of parts) {
+          if (typeof part === "string") {
+            result.push(<span>{part} </span>);
+          } else {
+            const renderedLocation = renderSarifLocation(part.text, relatedLocationsById[part.dest]);
+            result.push(<span>{renderedLocation} </span>);
+          }
+        }        return result;
       }
   
-      function renderNonLocation(msg: Sarif.Message | undefined, locationHint: string): JSX.Element | undefined {
+      function renderNonLocation(msg: string | undefined, locationHint: string): JSX.Element | undefined {
         if (msg == undefined)
           return undefined;
-        if (msg.text === undefined)
-          return undefined;
-        return <span title={locationHint}>{msg.text}</span>;
+        return <span title={locationHint}>{msg}</span>;
       }
   
-      function renderSarifLocation(msg: Sarif.Message | undefined, loc: Sarif.Location): JSX.Element | undefined {
+      function renderSarifLocation(msg: string | undefined, loc: Sarif.Location): JSX.Element | undefined {
         if (loc.physicalLocation === undefined)
           return renderNonLocation(msg, 'no physical location');
   
@@ -121,7 +158,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         // It is off by one with respect to the way vscode counts columns in selections.
         const colEnd = region.endColumn! - 1;
   
-        return msg && renderLocation(
+        return renderLocation(
           {
             t: LocationStyle.FivePart,
             file: effectiveLocation,
@@ -130,7 +167,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
             lineEnd,
             colEnd,
           },
-          msg.text,
+          msg,
           databaseUri);
       }
   
@@ -157,7 +194,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         if (result.codeFlows === undefined) {
           let rowHeader = <td>Result</td>;
           if (result.locations !== undefined && result.locations.length > 0) {
-            rowHeader = <td>{renderSarifLocation({ text: 'Result' }, result.locations[0])}</td>;
+            rowHeader = <td>{renderSarifLocation('Result', result.locations[0])}</td>;
           }
           rows.push(
             <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
@@ -189,7 +226,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
                   let pathIndex = 1;
                   for (const step of threadFlow.locations) {
                     const msg = step.location !== undefined && step.location.message !== undefined ?
-                      renderSarifLocation(step.location.message, step.location) :
+                      renderSarifLocation(step.location.message.text, step.location) :
                       '[no location]';
                     rows.push(<tr className={pathRowClassName}><td>{pathIndex}</td><td>- {msg}</td></tr>);
                     pathIndex++;
