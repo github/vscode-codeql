@@ -20,6 +20,7 @@ interface ResultTablesState {
   selectedTable: string; // name of selected result set
 }
 
+const ALERTS_TABLE_NAME = 'alerts';
 const SELECT_TABLE_NAME = '#select';
 
 /**
@@ -40,8 +41,8 @@ export class ResultTables
         // unused stubs because a SarifResultSet schema isn't used the
         // same way as a RawResultSet. Probably should pull `name` field
         // out.
-        schema: { name: 'alerts', version: 0, columns: [], tupleCount: 1 },
-        name: 'alerts',
+        schema: { name: ALERTS_TABLE_NAME, version: 0, columns: [], tupleCount: 1 },
+        name: ALERTS_TABLE_NAME,
         ...this.props.interpretation,
       });
     }
@@ -51,16 +52,16 @@ export class ResultTables
   constructor(props: ResultTablesProps) {
     super(props);
 
-    // Display the `#select` table by default if one exists. Otherwise, display the first table in
-    // the result set.
     this.state = {
+      // Get the result set that should be displayed by default
       selectedTable: ResultTables.getDefaultResultSet(this.getResultSets())
     };
   }
 
   private static getDefaultResultSet(resultSets: readonly ResultSet[]): string {
-    return resultSets.some(resultSet =>
-      resultSet.schema.name === SELECT_TABLE_NAME) ? SELECT_TABLE_NAME : resultSets[0].schema.name;
+    const resultSetNames = resultSets.map(resultSet => resultSet.schema.name)
+    // Choose first available result set from the array
+    return [ALERTS_TABLE_NAME, SELECT_TABLE_NAME, resultSets[0].schema.name].filter(resultSetName => resultSetNames.includes(resultSetName))[0];
   }
 
   private onChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
