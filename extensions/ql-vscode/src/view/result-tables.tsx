@@ -21,6 +21,7 @@ interface ResultTablesState {
 }
 
 const ALERTS_TABLE_NAME = 'alerts';
+const SELECT_TABLE_NAME = '#select';
 
 /**
  * Displays multiple `ResultTable` tables, where the table to be displayed is selected by a
@@ -51,16 +52,16 @@ export class ResultTables
   constructor(props: ResultTablesProps) {
     super(props);
 
-    // Display the `alerts` table by default if one exists. Otherwise, display the first table in
-    // the result set.
     this.state = {
+      // Get the result set that should be displayed by default
       selectedTable: ResultTables.getDefaultResultSet(this.getResultSets())
     };
   }
 
   private static getDefaultResultSet(resultSets: readonly ResultSet[]): string {
-    return resultSets.some(resultSet =>
-      resultSet.schema.name === ALERTS_TABLE_NAME) ? ALERTS_TABLE_NAME : resultSets[0].schema.name;
+    const resultSetNames = resultSets.map(resultSet => resultSet.schema.name)
+    // Choose first available result set from the array
+    return [ALERTS_TABLE_NAME, SELECT_TABLE_NAME, resultSets[0].schema.name].filter(resultSetName => resultSetNames.includes(resultSetName))[0];
   }
 
   private onChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
