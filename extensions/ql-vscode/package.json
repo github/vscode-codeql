@@ -20,6 +20,7 @@
     "onLanguage:ql",
     "onView:codeQLDatabases",
     "onView:codeQLQueryHistory",
+    "onCommand:codeQL.checkForUpdatesToTools",
     "onCommand:codeQL.chooseDatabase",
     "onCommand:codeQL.setCurrentDatabase",
     "onCommand:codeQLDatabases.chooseDatabase",
