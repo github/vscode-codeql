@@ -28,7 +28,7 @@ export function renderLocation(loc: LocationValue | undefined, label: string | u
     switch (loc.t) {
       case LocationStyle.FivePart: {
         if (isResolvableLocation(loc)) {
-          return <a href="#" onClick={(e) => {
+          return <a href="#" className="vscode-codeql__result-table-location-link" onClick={(e) => {
             vscode.postMessage({
               t: 'viewSourceFile',
               loc,
@@ -48,6 +48,3 @@ export function renderLocation(loc: LocationValue | undefined, label: string | u
 
   return <span />
 }
-
-
-
