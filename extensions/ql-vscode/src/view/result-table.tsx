@@ -117,10 +117,10 @@ export class RawTable extends React.Component<RawTableProps, {}> {
         <tr>
           {
             [
-              <th key={-1}><b>#</b></th>,
+              <th key={-1}>#</th>,
               ...resultSet.schema.columns.map((col, index) => {
                 const displayName = col.name || `[${index}]`;
-                return <th key={index}><b>{displayName}</b></th>;
+                return <th key={index}>{displayName}</th>;
               })
             ]
           }
