@@ -1,5 +1,7 @@
 .vscode-codeql__result-table {
   display: none;
+  border-collapse: collapse;
+  width: 100%;
 }
 
 .vscode-codeql__result-table--selected {
@@ -7,20 +9,32 @@
 }
 
 .vscode-codeql__result-table-metadata {
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid rgba(88,96,105,0.25);
   padding: 0.5em 0;
   text-align: left;
 }
 
 .vscode-codeql__result-table th {
-  border-bottom: 1px solid black;
-  padding: 0.5em;
-  text-align: left;
+  border-bottom: 1px solid rgba(88,96,105,0.25);
+  font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+  background: rgba(225,228,232, 0.25);
+  padding: 0.25em 0.5em;
+  text-align: center;
+  font-weight: normal;
+  opacity: 0.6;
 }
 
 .vscode-codeql__result-table td {
-  padding: 0.5em;
+  margin: 0;
+  padding: 0;
+  padding: 0.25em 0.5em;
   white-space: pre-wrap;
+  text-align: left;
+}
+
+.vscode-codeql__result-table-location-link {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 11px;
 }
 
 select {
@@ -36,9 +50,5 @@ select {
 }
 
 .vscode-codeql__result-table-row--even {
-  background-color: var(--vscode-editor-wordHighlightBackground);
-}
-
-.vscode-codeql__result-table-row--path {
-  background-color: var(--vscode-editor-wordHighlightStrongBackground);
+  background-color: rgba(209,213,218, 0.3);
 }
