@@ -1,9 +1,10 @@
+import cx from 'classnames';
 import * as React from 'react';
 import { DatabaseInfo, Interpretation } from '../interface-types';
-import { ResultTableProps } from './result-table-utils';
-import { ResultSet } from './results';
-import { RawTable } from './raw-results-table';
 import { PathTable } from './alert-table';
+import { RawTable } from './raw-results-table';
+import { ResultTableProps, toggleDiagnosticsClassName, toggleDiagnosticsSelectedClassName, tableSelectionHeaderClassName } from './result-table-utils';
+import { ResultSet, vscode } from './results';
 
 /**
  * Properties for the `ResultTables` component.
@@ -73,17 +74,38 @@ export class ResultTables
   render(): React.ReactNode {
     const selectedTable = this.state.selectedTable;
     const resultSets = this.getResultSets();
+    const { database, resultsPath } = this.props;
+
+    // Only show the Problems view display checkbox for the alerts table.
+    const toggleDiagnosticsClass = cx(toggleDiagnosticsClassName, {
+      [toggleDiagnosticsSelectedClassName]: selectedTable === ALERTS_TABLE_NAME
+    });
 
     return <div>
-      <select value={selectedTable} onChange={this.onChange}>
-        {
-          resultSets.map(resultSet =>
-            <option key={resultSet.schema.name} value={resultSet.schema.name}>
-              {resultSet.schema.name}
-            </option>
-          )
-        }
-      </select>
+      <div className={tableSelectionHeaderClassName}>
+        <select value={selectedTable} onChange={this.onChange}>
+          {
+            resultSets.map(resultSet =>
+              <option key={resultSet.schema.name} value={resultSet.schema.name}>
+                {resultSet.schema.name}
+              </option>
+            )
+          }
+        </select>
+        <div className={toggleDiagnosticsClass}>
+          <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
+          <input type="checkbox" id="toggle-diagnostics" name="toggle-diagnostics" onChange={(e) => {
+            if (resultsPath !== undefined) {
+              vscode.postMessage({
+                t: 'toggleDiagnostics',
+                resultsPath: resultsPath,
+                databaseUri: database.databaseUri,
+                visible: e.target.checked
+              });
+            }
+          }} />
+        </div>
+      </div>
       {
         resultSets.map(resultSet =>
           <ResultTable key={resultSet.schema.name} resultSet={resultSet}

@@ -8,10 +8,20 @@
   display: block;
 }
 
-.vscode-codeql__result-table-metadata {
+.vscode-codeql__table-selection-header {
+  display: flex;
   border-bottom: 1px solid rgba(88,96,105,0.25);
   padding: 0.5em 0;
+}
+
+.vscode-codeql__result-table-toggle-diagnostics {
+  display: none;
   text-align: left;
+  margin-left: auto;
+}
+
+.vscode-codeql__result-table-toggle-diagnostics--selected {
+  display: inline-block;
 }
 
 .vscode-codeql__result-table th {
