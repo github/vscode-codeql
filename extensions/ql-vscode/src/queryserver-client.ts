@@ -91,7 +91,7 @@ export class QueryServerClient extends DisposableObject {
 
   /** Starts a new query server process, sending progress messages to the given reporter. */
   private async startQueryServerImpl(progressReporter: ProgressReporter) {
-    const ramArgs = await this.cliServer.resolveRam(progressReporter);
+    const ramArgs = await this.cliServer.resolveRam(this.config.queryMemoryMb, progressReporter);
     const args = ['--threads', this.config.numThreads.toString()].concat(ramArgs);
     if(this.config.debug) {
       args.push('--debug', '--tuple-counting');

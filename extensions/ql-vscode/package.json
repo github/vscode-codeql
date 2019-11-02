@@ -123,9 +123,8 @@
         },
         "codeQL.runningQueries.memory": {
           "type": "number",
-          "default": 1024,
           "minimum": 1024,
-          "description": "Memory (in MB) to use for running queries."
+          "description": "Memory (in MB) to use for running queries. Leave blank for CodeQL to choose a suitable value based on your system's available memory."
         },
         "codeQL.runningQueries.debug": {
           "type": "boolean",

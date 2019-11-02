@@ -66,7 +66,7 @@ export interface QueryServerConfig {
   codeQlPath: string,
   debug: boolean,
   numThreads: number,
-  queryMemoryMb: number,
+  queryMemoryMb?: number,
   timeoutSecs: number,
   onDidChangeQueryServerConfiguration?: Event<void>;
 }
@@ -161,8 +161,8 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
     return TIMEOUT_SETTING.getValue<number>();
   }
 
-  public get queryMemoryMb(): number {
-    return MEMORY_SETTING.getValue<number>();
+  public get queryMemoryMb(): number | undefined {
+    return MEMORY_SETTING.getValue<number | undefined>();
   }
 
   public get debug(): boolean {

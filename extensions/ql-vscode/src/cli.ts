@@ -295,9 +295,17 @@ export class CodeQLCliServer implements Disposable {
 
   /**
    * Gets the RAM setting for the query server.
+   * @param queryMemoryMb The maximum amount of RAM to use, in MB.
+   * Leave `undefined` for CodeQL to choose a limit based on the available system memory.
+   * @returns String arguments that can be passed to the CodeQL query server,
+   * indicating how to split the given RAM limit between heap and off-heap memory.
    */
-  async resolveRam(progressReporter?: ProgressReporter): Promise<string[]> {
-    return await this.runJsonCodeQlCliCommand<string[]>(['resolve', 'ram'], [], "Resolving RAM settings", progressReporter);
+  async resolveRam(queryMemoryMb: number | undefined, progressReporter?: ProgressReporter): Promise<string[]> {
+    const args: string[] = [];
+    if(queryMemoryMb !== undefined) {
+      args.push('--ram', queryMemoryMb.toString());
+    }
+    return await this.runJsonCodeQlCliCommand<string[]>(['resolve', 'ram'], args, "Resolving RAM settings", progressReporter);
   }
 
 
