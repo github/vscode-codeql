@@ -125,6 +125,11 @@
           "default": 1024,
           "minimum": 1024,
           "description": "Memory (in MB) to use for running queries."
+        },
+        "codeQL.runningQueries.debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug logging and tuple counting when running CodeQL queries. This information is useful for debugging query performance."
         }
       }
     },

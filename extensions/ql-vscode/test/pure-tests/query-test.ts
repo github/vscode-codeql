@@ -112,7 +112,8 @@ describe('using the query server', function () {
         codeQlPath,
         numThreads: 1,
         queryMemoryMb: 1024,
-        timeoutSecs: 1000
+        timeoutSecs: 1000,
+        debug: false
       },
       cliServer,
       {
