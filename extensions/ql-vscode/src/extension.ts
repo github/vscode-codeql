@@ -12,6 +12,7 @@ import { ideServerLogger, logger, queryServerLogger } from './logging';
 import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal } from './queries';
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 import * as qsClient from './queryserver-client';
+import { CodeQLCliServer } from './cli';
 
 /**
 * extension.ts
@@ -142,7 +143,11 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   ctx.subscriptions.push(queryServerLogger);
   ctx.subscriptions.push(ideServerLogger);
 
-  const qs = new qsClient.QueryServerClient(qlConfigurationListener, {
+
+  const cliServer = new CodeQLCliServer(distributionManager, logger);
+  ctx.subscriptions.push(cliServer);
+  
+  const qs = new qsClient.QueryServerClient(qlConfigurationListener, cliServer, {
     logger: queryServerLogger,
   }, task => Window.withProgress({ title: 'CodeQL query server', location: ProgressLocation.Window }, task));
   ctx.subscriptions.push(qs);
@@ -150,11 +155,11 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   const dbm = new DatabaseManager(ctx, qlConfigurationListener, logger);
   ctx.subscriptions.push(dbm);
-  const databaseUI = new DatabaseUI(ctx, dbm, qs);
+  const databaseUI = new DatabaseUI(ctx, cliServer, dbm, qs);
   ctx.subscriptions.push(databaseUI);
 
   const qhm = new QueryHistoryManager(ctx, async item => showResultsForInfo(item.info));
-  const intm = new InterfaceManager(ctx, dbm, qlConfigurationListener, queryServerLogger);
+  const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
   ctx.subscriptions.push(intm);
   archiveFilesystemProvider.activate(ctx);
 
@@ -169,7 +174,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
         if (dbItem === undefined) {
           throw new Error('Can\'t run query without a selected database');
         }
-        const info = await compileAndRunQueryAgainstDatabase(qlConfigurationListener, qs, dbItem, quickEval);
+        const info = await compileAndRunQueryAgainstDatabase(cliServer, qs, dbItem, quickEval);
         await showResultsForInfo(info);
         qhm.push(new QueryHistoryItem(info));
       }

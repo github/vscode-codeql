@@ -3,8 +3,10 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sarif from 'sarif';
 import * as util from 'util';
-import { QueryServerConfig } from "./config";
+import { QueryServerConfig, DistributionConfig } from "./config";
 import { Logger, ProgressReporter } from "./logging";
+import { Disposable } from "vscode";
+import { DistributionManager, DistributionProvider } from "./distribution";
 
 /**
  * The version of the SARIF format that we are using.
@@ -47,22 +49,6 @@ export interface UpgradesInfo {
   finalDbscheme: string;
 }
 
-
-/**
- * Resolve the library path and dbscheme for a query.
- * @param config The configuration
- * @param workspaces The current open workspaces
- * @param queryPath The path to the query
- */
-export async function resolveLibraryPath(config: QueryServerConfig, workspaces: string[], queryPath: string, logger: Logger): Promise<QuerySetup> {
-  const subcommandArgs = [
-    '--query', queryPath,
-    "--additional-packs",
-    workspaces.join(path.delimiter)
-  ];
-  return await runJsonCodeQlCliCommand<QuerySetup>(config, ['resolve', 'library-path'], subcommandArgs, "Resolving library paths", logger);
-}
-
 /** The expected output of `codeql resolve metadata`. */
 export interface QueryMetadata {
   name?: string,
@@ -71,71 +57,310 @@ export interface QueryMetadata {
   kind?: string
 }
 
-/**
- * Gets the metadata for a query.
- * @param config The configuration containing the path to the CLI.
- * @param queryPath The path to the query.
- */
-export async function resolveMetadata(config: QueryServerConfig, queryPath: string, logger: Logger): Promise<QueryMetadata> {
-  return await runJsonCodeQlCliCommand<QueryMetadata>(config, ['resolve', 'metadata'], [queryPath], "Resolving query metadata", logger);
+// `codeql bqrs interpret` requires both of these to be present or
+// both absent.
+export interface SourceInfo {
+  sourceArchive: string;
+  sourceLocationPrefix: string;
 }
 
 /**
- * Gets the RAM setting for the query server.
- * @param config The configuration containing the path to the CLI.
+ * This class manages a cli server started by "codeql execute cli-server" to
+ * run commands without the overhead of starting a new java
+ * virtual machine each time. This class also controls access to the server
+ * by queueing the commands sent to it.
  */
-export async function resolveRam(config: QueryServerConfig, logger: Logger, progressReporter?: ProgressReporter): Promise<string[]> {
-  return await runJsonCodeQlCliCommand<string[]>(config, ['resolve', 'ram'], [], "Resolving RAM settings", logger, progressReporter);
-}
+export class CodeQLCliServer implements Disposable {
 
-/**
- * Runs a CodeQL CLI command, returning the output as a string.
- * @param config The configuration containing the path to the CLI.
- * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
- * @param commandArgs The arguments to pass to the `codeql` command.
- * @param description Description of the action being run, to be shown in log and error messages.
- * @param logger Logger to write command log messages, e.g. to an output channel.
- * @param progressReporter Used to output progress messages, e.g. to the status bar.
+  /** The process for the cli server, or undefined if one doesn't exist yet */
+  process?: child_process.ChildProcessWithoutNullStreams;
+  /** Queue of future commands*/
+  commandQueue: (() => void)[];
+  /** Whether a command is running */
+  commandInProcess: boolean;
+  /**  A buffer with a single null byte. */
+  nullBuffer: Buffer;
 
- * @returns The contents of the command's stdout, if the command succeeded.
- */
-async function runCodeQlCliCommand(config: QueryServerConfig, command: string[], commandArgs: string[], description: string, logger: Logger, progressReporter?: ProgressReporter): Promise<string> {
-  const base = config.codeQlPath;
-  // Add logging arguments first, in case commandArgs contains positional parameters.
-  const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
-  const argsString = args.join(" ");
-  try {
-    if (progressReporter !== undefined) {
+  constructor(private config: DistributionProvider, private logger: Logger) {
+    this.commandQueue = [];
+    this.commandInProcess = false;
+    this.nullBuffer = Buffer.alloc(1);
+    if (this.config.onDidChangeDistribution) {
+      this.config.onDidChangeDistribution(() => {
+        this.restartCliServer();
+      });
+    }
+  }
+
+
+  dispose() {
+    if (this.process) {
+      this.process.kill();
+      this.process = undefined;
+    }
+  }
+
+  /**
+   * Restart the server when the current command terminates
+   */
+  private restartCliServer() {
+    let callback = () => {
+      try {
+        if (this.process) {
+          this.process.kill();
+          this.process = undefined;
+        }
+      } finally {
+        this.runNext();
+      }
+    };
+
+    // If the server is not running a command run this immediately
+    // otherwise add to the front of the queue (as we want to run this after the next command()).
+    if (this.commandInProcess) {
+      this.commandQueue.unshift(callback)
+    } else {
+      callback();
+    }
+
+  }
+
+  /**
+   * Launch the cli server
+   */
+  private async launchProcess(): Promise<child_process.ChildProcessWithoutNullStreams> {
+    const config = await this.config.getCodeQlPath();
+    if (!config) {
+      throw new Error("Failed to find codeql distribution")
+    }
+    return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, data => { })
+  }
+
+  private async runCodeQlCliInternal(command: string[], commandArgs: string[], description: string): Promise<string> {
+    let stderrBuffers: Buffer[] = [];
+    if (this.commandInProcess) {
+      throw new Error("runCodeQlCliInternal called while cli was running")
+    }
+    this.commandInProcess = true;
+    try {
+      //Launch the process if it doesn't exist
+      if (!this.process) {
+        this.process = await this.launchProcess()
+      }
+      // Grab the process so that typescript know that it is always defined.
+      const process = this.process;
+      // The array of fragments of stdout
+      let stdoutBuffers: Buffer[] = [];
+
+      // Compute the full args array
+      const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
+      const argsString = args.join(" ");
+      this.logger.log(`${description} using CodeQL CLI: ${argsString}...`);
+      try {
+        await new Promise((resolve, reject) => {
+          // Start listening to stdout
+          process.stdout.addListener('data', (newData: Buffer) => {
+            stdoutBuffers.push(newData);
+            // If the buffer ends in '0' then exit.
+            // We don't have to check the middle as no output will be written after the null until
+            // the next command starts
+            if (newData.length > 0 && newData.readUInt8(newData.length - 1) === 0) {
+              resolve();
+            }
+          });
+          // Listen to stderr
+          process.stderr.addListener('data', (newData: Buffer) => {
+            stderrBuffers.push(newData);
+          });
+          // Listen for process exit.
+          process.addListener("close", (code) => reject(code));
+          // Write the command followed by a null terminator.
+          process.stdin.write(JSON.stringify(args), "utf8")
+          process.stdin.write(this.nullBuffer)
+        });
+        // Join all the data together
+        let fullBuffer = Buffer.concat(stdoutBuffers);
+        // Make sure we remove the terminator;
+        let data = fullBuffer.toString("utf8", 0, fullBuffer.length - 1);
+        this.logger.log(`CLI command succeeded.`);
+        return data;
+      } catch (err) {
+        // Kill the process if it isn't already dead.
+        process.kill();
+        // Remove it so future commands know to restart the server
+        this.process = undefined;
+        // Report the error (if there is a stderr then use that otherwise just report the error cod or nodejs error)
+        if (stderrBuffers.length == 0) {
+          throw new Error(`${description} failed: ${err}`)
+        } else {
+          throw new Error(`${description} failed: ${Buffer.concat(stderrBuffers).toString("utf8")}`);
+        }
+      } finally {
+        this.logger.log(Buffer.concat(stderrBuffers).toString("utf8"));
+        // Remove the listeners we set up.
+        process.stdout.removeAllListeners('data')
+        process.stderr.removeAllListeners('data')
+        process.removeAllListeners("close");
+      }
+    } finally {
+      this.commandInProcess = false;
+      // start running the next command immediately
+      this.runNext();
+    }
+  }
+
+  /**
+   * Run the next command in the queue
+   */
+  private runNext() {
+    const callback = this.commandQueue.shift();
+    if (callback) {
+      callback();
+    }
+  }
+
+  /**
+   * Runs a CodeQL CLI command on the server, returning the output as a string.
+   * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
+   * @param commandArgs The arguments to pass to the `codeql` command.
+   * @param description Description of the action being run, to be shown in log and error messages.
+   * @param progressReporter Used to output progress messages, e.g. to the status bar.
+   * @returns The contents of the command's stdout, if the command succeeded.
+   */
+  runCodeQlCliCommand(command: string[], commandArgs: string[], description: string, progressReporter?: ProgressReporter): Promise<string> {
+    if (progressReporter) {
       progressReporter.report({ message: description });
     }
-    logger.log(`${description} using CodeQL CLI: ${base} ${argsString}...`);
-    const result = await util.promisify(child_process.execFile)(base, args);
-    logger.log(result.stderr);
-    logger.log(`CLI command succeeded.`);
-    return result.stdout;
-  } catch (err) {
-    throw new Error(`${description} failed: ${err.stderr || err}`)
-  }
-}
 
-/**
- * Runs a CodeQL CLI command, returning the output as JSON.
- * @param config The configuration containing the path to the CLI.
- * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
- * @param commandArgs The arguments to pass to the `codeql` command.
- * @param description Description of the action being run, to be shown in log and error messages.
- * @param logger Logger to write command log messages, e.g. to an output channel.
- * @param progressReporter Used to output progress messages, e.g. to the status bar.
- * @returns The contents of the command's stdout, if the command succeeded.
- */
-async function runJsonCodeQlCliCommand<OutputType>(config: QueryServerConfig, command: string[], commandArgs: string[], description: string, logger: Logger, progressReporter?: ProgressReporter): Promise<OutputType> {
-  // Add format argument first, in case commandArgs contains positional parameters.
-  const args = ['--format', 'json'].concat(commandArgs);
-  const result = await runCodeQlCliCommand(config, command, args, description, logger, progressReporter);
-  try {
-    return JSON.parse(result) as OutputType;
-  } catch (err) {
-    throw new Error(`Parsing output of ${description} failed: ${err.stderr || err}`)
+    return new Promise((resolve, reject) => {
+      // Construct the command that actually does the work
+      const callback = () => {
+        try {
+          this.runCodeQlCliInternal(command, commandArgs, description).then(resolve, reject);
+        } catch (err) {
+          reject(err);
+        }
+      }
+      // If the server is not running a command, then run the given command immediately,
+      // otherwise add to the queue
+      if (this.commandInProcess) {
+        this.commandQueue.push(callback)
+      } else {
+        callback();
+      }
+    });
+  }
+
+  /**
+   * Runs a CodeQL CLI command, returning the output as JSON.
+   * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
+   * @param commandArgs The arguments to pass to the `codeql` command.
+   * @param description Description of the action being run, to be shown in log and error messages.
+   * @param progressReporter Used to output progress messages, e.g. to the status bar.
+   * @returns The contents of the command's stdout, if the command succeeded.
+   */
+  async runJsonCodeQlCliCommand<OutputType>(command: string[], commandArgs: string[], description: string, progressReporter?: ProgressReporter): Promise<OutputType> {
+    // Add format argument first, in case commandArgs contains positional parameters.
+    const args = ['--format', 'json'].concat(commandArgs);
+    const result = await this.runCodeQlCliCommand(command, args, description, progressReporter);
+    try {
+      return JSON.parse(result) as OutputType;
+    } catch (err) {
+      throw new Error(`Parsing output of ${description} failed: ${err.stderr || err}`)
+    }
+  }
+
+  /**
+   * Resolve the library path and dbscheme for a query.
+   * @param config The configuration
+   * @param workspaces The current open workspaces
+   * @param queryPath The path to the query
+   */
+  async resolveLibraryPath(workspaces: string[], queryPath: string): Promise<QuerySetup> {
+    const subcommandArgs = [
+      '--query', queryPath,
+      "--additional-packs",
+      workspaces.join(path.delimiter)
+    ];
+    return await this.runJsonCodeQlCliCommand<QuerySetup>(['resolve', 'library-path'], subcommandArgs, "Resolving library paths");
+  }
+
+  /**
+   * Gets the metadata for a query.
+   * @param queryPath The path to the query.
+   */
+  async resolveMetadata(queryPath: string): Promise<QueryMetadata> {
+    return await this.runJsonCodeQlCliCommand<QueryMetadata>(['resolve', 'metadata'], [queryPath], "Resolving query metadata");
+  }
+
+  /**
+   * Gets the RAM setting for the query server.
+   */
+  async resolveRam(progressReporter?: ProgressReporter): Promise<string[]> {
+    return await this.runJsonCodeQlCliCommand<string[]>(['resolve', 'ram'], [], "Resolving RAM settings", progressReporter);
+  }
+
+
+  async interpretBqrs(metadata: { kind: string, id: string }, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
+    const args = [
+      `-t=kind=${metadata.kind}`,
+      `-t=id=${metadata.id}`,
+      "--output", interpretedResultsPath,
+      "--format", SARIF_FORMAT,
+      // TODO: This flag means that we don't group interpreted results
+      // by primary location. We may want to revisit whether we call
+      // interpretation with and without this flag, or do some
+      // grouping client-side.
+      "--no-group-results",
+    ];
+    if (sourceInfo !== undefined) {
+      args.push(
+        "--source-archive", sourceInfo.sourceArchive,
+        "--source-location-prefix", sourceInfo.sourceLocationPrefix
+      );
+    }
+    args.push(resultsPath);
+    await this.runCodeQlCliCommand(['bqrs', 'interpret'], args, "Interpreting query results");
+  
+    let output: string;
+    try {
+      output = await fs.readFile(interpretedResultsPath, 'utf8');
+    } catch (err) {
+      throw new Error(`Reading output of interpretation failed: ${err.stderr || err}`)
+    }
+    try {
+      return JSON.parse(output) as sarif.Log;
+    } catch (err) {
+      throw new Error(`Parsing output of interpretation failed: ${err.stderr || err}`)
+    }
+  }
+  
+  /**
+   * Returns the `DbInfo` for a database.
+   * @param databasePath Path to the CodeQL database to obtain information from.
+   */
+  resolveDatabase(databasePath: string): Promise<DbInfo> {
+    return this.runJsonCodeQlCliCommand(['resolve', 'database'], [databasePath],
+      "Resolving database");
+  }
+
+
+  /**
+   * Gets information necessary for upgrading a database.
+   * @param config The configuration containing the path to the CLI.
+   * @param dbScheme the path to the dbscheme of the database to be upgraded.
+   * @param searchPath A list of directories to search for upgrade scripts.
+   * @param logger Logger to write messages.
+   * @returns A list of database upgrade script directories
+   */
+  resolveUpgrades(dbScheme: string, searchPath: string[]): Promise<UpgradesInfo> {
+    const args = ['--additional-packs', searchPath.join(path.delimiter), '--dbscheme', dbScheme];
+
+    return this.runJsonCodeQlCliCommand<UpgradesInfo>(
+      ['resolve', 'upgrades'],
+      args,
+      "Resolving database upgrade scripts",
+    );
   }
 }
 
@@ -153,8 +378,8 @@ async function runJsonCodeQlCliCommand<OutputType>(config: QueryServerConfig, co
  * @param progressReporter Used to output progress messages, e.g. to the status bar.
  * @returns The started child process.
  */
-export async function spawnServer(
-  config: QueryServerConfig,
+export function spawnServer(
+  codeqlPath: string,
   name: string,
   command: string[],
   commandArgs: string[],
@@ -162,12 +387,12 @@ export async function spawnServer(
   stderrListener: (data: any) => void,
   stdoutListener?: (data: any) => void,
   progressReporter?: ProgressReporter
-): Promise<child_process.ChildProcessWithoutNullStreams> {
+): child_process.ChildProcessWithoutNullStreams {
   // Enable verbose logging.
   const args = command.concat(commandArgs).concat(LOGGING_FLAGS);
 
   // Start the server process.
-  const base = config.codeQlPath;
+  const base = codeqlPath;
   const argsString = args.join(" ");
   if (progressReporter !== undefined) {
     progressReporter.report({ message: `Starting ${name}` });
@@ -192,82 +417,3 @@ export async function spawnServer(
   return child;
 }
 
-// `codeql bqrs interpret` requires both of these to be present or
-// both absent.
-export interface SourceInfo {
-  sourceArchive: string;
-  sourceLocationPrefix: string;
-}
-
-/**
- * Returns the SARIF format interpretation of query results.
- * @param config The configuration containing the path to the CLI.
- * @param metadata Query metadata according to which we should interpret results.
- * @param resultsPath Path to the BQRS file to interpret.
- * @param interpretedResultsPath Path to the SARIF file to output.
- * @param logger Logger to write startup messages.
- */
-export async function interpretBqrs(config: QueryServerConfig, metadata: { kind: string, id: string }, resultsPath: string, interpretedResultsPath: string, logger: Logger, sourceInfo?: SourceInfo): Promise<sarif.Log> {
-  const args = [
-    `-t=kind=${metadata.kind}`,
-    `-t=id=${metadata.id}`,
-    "--output", interpretedResultsPath,
-    "--format", SARIF_FORMAT,
-    // TODO: This flag means that we don't group interpreted results
-    // by primary location. We may want to revisit whether we call
-    // interpretation with and without this flag, or do some
-    // grouping client-side.
-    "--no-group-results",
-  ];
-  if (sourceInfo !== undefined) {
-    args.push(
-      "--source-archive", sourceInfo.sourceArchive,
-      "--source-location-prefix", sourceInfo.sourceLocationPrefix
-    );
-  }
-  args.push(resultsPath);
-  await runCodeQlCliCommand(config, ['bqrs', 'interpret'], args, "Interpreting query results", logger);
-
-  let output: string;
-  try {
-    output = await fs.readFile(interpretedResultsPath, 'utf8');
-  } catch (err) {
-    throw new Error(`Reading output of interpretation failed: ${err.stderr || err}`)
-  }
-  try {
-    return JSON.parse(output) as sarif.Log;
-  } catch (err) {
-    throw new Error(`Parsing output of interpretation failed: ${err.stderr || err}`)
-  }
-}
-
-/**
- * Returns the `DbInfo` for a database.
- * @param config The configuration containing the path to the CLI.
- * @param databasePath Path to the CodeQL database to obtain information from.
- * @param logger Logger to write messages.
- */
-export function resolveDatabase(config: QueryServerConfig, databasePath: string, logger: Logger): Promise<DbInfo> {
-  return runJsonCodeQlCliCommand(config, ['resolve', 'database'], [databasePath],
-    "Resolving database", logger);
-}
-
-/**
- * Gets information necessary for upgrading a database.
- * @param config The configuration containing the path to the CLI.
- * @param dbScheme the path to the dbscheme of the database to be upgraded.
- * @param searchPath A list of directories to search for upgrade scripts.
- * @param logger Logger to write messages.
- * @returns A list of database upgrade script directories
- */
-export function resolveUpgrades(config: QueryServerConfig, dbScheme: string, searchPath: string[], logger: Logger): Promise<UpgradesInfo> {
-  const args = ['--additional-packs', searchPath.join(path.delimiter), '--dbscheme', dbScheme];
-
-  return runJsonCodeQlCliCommand<UpgradesInfo>(
-    config,
-    ['resolve', 'upgrades'],
-    args,
-    "Resolving database upgrade scripts",
-    logger
-  );
-}

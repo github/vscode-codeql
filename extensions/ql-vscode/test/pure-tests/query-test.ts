@@ -9,6 +9,7 @@ import * as url from 'url';
 import { CancellationTokenSource } from 'vscode-jsonrpc';
 import * as messages from '../../src/messages';
 import * as qsClient from '../../src/queryserver-client';
+import * as cli from '../../src/cli';
 import { ProgressReporter } from '../../src/logging';
 
 
@@ -84,15 +85,28 @@ describe('using the query server', function () {
 
   const codeQlPath = process.env["CODEQL_PATH"]!;
   let qs: qsClient.QueryServerClient;
+  let cliServer: cli.CodeQLCliServer;
   after(() => {
     if (qs) {
       qs.dispose();
+    }
+    if (cliServer) {
+      cliServer.dispose();
     }
   });
   it('should be able to start the query server', async function () {
     const consoleProgressReporter: ProgressReporter = {
       report: v => console.log(`progress reporter says ${v.message}`)
     };
+    const logger = {
+      log: (s: string) => console.log('logger says', s),
+      logWithoutTrailingNewline: (s: string) => { }
+    };
+    cliServer = new cli.CodeQLCliServer({
+      async getCodeQlPath(): Promise<string | undefined> {
+        return codeQlPath;
+      },
+    }, logger)
     qs = new qsClient.QueryServerClient(
       {
         codeQlPath,
@@ -100,11 +114,9 @@ describe('using the query server', function () {
         queryMemoryMb: 1024,
         timeoutSecs: 1000
       },
+      cliServer,
       {
-        logger: {
-          log: s => console.log('logger says', s),
-          logWithoutTrailingNewline: s => { }
-        }
+        logger
       },
       task => task(consoleProgressReporter, token)
     );

@@ -127,7 +127,7 @@ async function chooseDatabaseDir(): Promise<Uri | undefined> {
 }
 
 export class DatabaseUI extends DisposableObject {
-  public constructor(private ctx: ExtensionContext, private databaseManager: DatabaseManager,
+  public constructor(private ctx: ExtensionContext, private cliserver: cli.CodeQLCliServer, private databaseManager: DatabaseManager,
     private readonly queryServer: qsClient.QueryServerClient | undefined) {
 
     super();
@@ -181,11 +181,9 @@ export class DatabaseUI extends DisposableObject {
         .forEach(folder => { if (folder.uri.scheme === 'file') { searchPath.push(folder.uri.fsPath); } });
     }
 
-    const upgradeInfo = await cli.resolveUpgrades(
-      this.queryServer.config,
+    const upgradeInfo = await this.cliserver.resolveUpgrades(
       databaseItem.contents.dbSchemeUri.fsPath,
       searchPath,
-      logger
     );
 
     const { scripts, finalDbscheme } = upgradeInfo;

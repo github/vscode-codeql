@@ -171,7 +171,7 @@ class QueryInfo {
 /**
  * Call cli command to interpret results.
  */
-export async function interpretResults(config: QueryServerConfig, queryInfo: QueryInfo, logger: Logger, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
+export async function interpretResults(server: cli.CodeQLCliServer, queryInfo: QueryInfo, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
   if (await fs.pathExists(queryInfo.interpretedResultsPath)) {
     return JSON.parse(await fs.readFile(queryInfo.interpretedResultsPath, 'utf8'));
   }
@@ -183,7 +183,7 @@ export async function interpretResults(config: QueryServerConfig, queryInfo: Que
   if (kind == undefined || id == undefined) {
     throw new Error('Can\'t interpret results without query metadata including kind and id');
   }
-  return await cli.interpretBqrs(config, { kind, id }, queryInfo.resultsPath, queryInfo.interpretedResultsPath, logger, sourceInfo);
+  return await server.interpretBqrs({ kind, id }, queryInfo.resultsPath, queryInfo.interpretedResultsPath, sourceInfo);
 }
 
 export interface EvaluationInfo {
@@ -379,12 +379,12 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
     title: "Clearing Cache",
     cancellable: false,
   }, (progress, token) =>
-      qs.sendRequest(messages.clearCache, params, token, progress)
+    qs.sendRequest(messages.clearCache, params, token, progress)
   );
 }
 
 export async function compileAndRunQueryAgainstDatabase(
-  config: QueryServerConfig,
+  cliServer: cli.CodeQLCliServer,
   qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   quickEval?: boolean
@@ -431,7 +431,7 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 
   // Figure out the library path for the query.
-  const packConfig = await cli.resolveLibraryPath(config, diskWorkspaceFolders, queryPath, logger);
+  const packConfig = await cliServer.resolveLibraryPath(diskWorkspaceFolders, editor.document.uri.fsPath);
 
   const qlProgram: messages.QlProgram = {
     // The project of the current document determines which library path
@@ -448,7 +448,7 @@ export async function compileAndRunQueryAgainstDatabase(
   // Read the query metadata if possible, to use in the UI.
   let metadata: cli.QueryMetadata | undefined;
   try {
-    metadata = await cli.resolveMetadata(qs.config, qlProgram.queryPath, logger);
+    metadata = await cliServer.resolveMetadata(qlProgram.queryPath);
   } catch (e) {
     // Ignore errors and provide no metadata.
     logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
