@@ -99,8 +99,8 @@ describe('using the query server', function () {
       report: v => console.log(`progress reporter says ${v.message}`)
     };
     const logger = {
-      log: s => console.log('logger says', s),
-      logWithoutTrailingNewline: s => { }
+      log: (s: string) => console.log('logger says', s),
+      logWithoutTrailingNewline: (s: string) => { }
     };
     cliServer = new cli.CodeQLCliServer({
       async getCodeQlPath(): Promise<string | undefined> {
