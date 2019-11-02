@@ -59,6 +59,10 @@ export class QueryServerClient extends DisposableObject {
       this.push(config.onDidChangeQueryServerConfiguration(async () => await this.restartQueryServer(), this));
     }
     this.withProgressReporting = withProgressReporting;
+    this.nextCallback = 0;
+    this.nextProgress = 0;
+    this.progressCallbacks = {};
+    this.evaluationResultCallbacks = {};
   }
 
   get logger() { return this.opts.logger; }

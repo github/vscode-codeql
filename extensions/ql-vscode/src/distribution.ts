@@ -262,7 +262,7 @@ export class ReleasesApiConsumer {
     }
 
     const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases`;
-    const releases: any[] = await (await this.makeApiCall(apiPath)).json();
+    const releases: GithubRelease[] = await (await this.makeApiCall(apiPath)).json();
     const latestRelease = releases.sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
     const assets: ReleaseAsset[] = latestRelease.assets.map(asset => {
       return {
@@ -430,6 +430,49 @@ export interface Release {
  * An asset corresponding to a release on GitHub.
  */
 export interface ReleaseAsset {
+  /**
+   * The id associated with the asset on GitHub.
+   */
+  id: number;
+
+  /**
+   * The name associated with the asset on GitHub.
+   */
+  name: string;
+
+  /**
+   * The size of the asset in bytes.
+   */
+  size: number;
+}
+
+
+/**
+ * The json returned from github for a release.
+ */
+interface GithubRelease {
+  assets: ReleaseAsset[];
+
+  /**
+   * The creation date of the release on GitHub.
+   */
+  created_at: string;
+
+  /**
+   * The id associated with the release on GitHub.
+   */
+  id: number;
+
+  /**
+   * The name associated with the release on GitHub.
+   */
+  name: string;
+}
+
+/**
+ * The json returned by github for an asset in a release.
+ */
+interface GithubReleaseAsset {
   /**
    * The id associated with the asset on GitHub.
    */

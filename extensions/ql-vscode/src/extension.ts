@@ -46,7 +46,8 @@ function registerErrorStubs(ctx: ExtensionContext, message: (command: string) =>
   if (extension === undefined)
     throw new Error(`Can't find extension ${extensionId}`);
 
-  const stubbedCommands = extension.packageJSON.contributes.commands.map(entry => entry.command);
+  const stubbedCommands: string[]
+    = extension.packageJSON.contributes.commands.map((entry: { command: string }) => entry.command);
 
   stubbedCommands.forEach(command => {
     errorStubs.push(commands.registerCommand(command, () => Window.showErrorMessage(message(command))));
