@@ -1,4 +1,4 @@
-import { commands, Disposable, ExtensionContext, extensions, ProgressLocation, ProgressOptions, window as Window } from 'vscode';
+import { commands, Disposable, ExtensionContext, extensions, ProgressLocation, ProgressOptions, window as Window, Uri } from 'vscode';
 import { ErrorCodes, LanguageClient, ResponseError } from 'vscode-languageclient';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { DistributionConfigListener, QueryServerConfigListener } from './config';
@@ -171,7 +171,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   const cliServer = new CodeQLCliServer(distributionManager, logger);
   ctx.subscriptions.push(cliServer);
-  
+
   const qs = new qsClient.QueryServerClient(qlConfigurationListener, cliServer, {
     logger: queryServerLogger,
   }, task => Window.withProgress({ title: 'CodeQL query server', location: ProgressLocation.Window }, task));
@@ -192,14 +192,14 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     await intm.showResults(info);
   }
 
-  async function compileAndRunQuery(quickEval: boolean) {
+  async function compileAndRunQuery(quickEval: boolean, selectedQuery: Uri | undefined) {
     if (qs !== undefined) {
       try {
         const dbItem = await databaseUI.getDatabaseItem();
         if (dbItem === undefined) {
           throw new Error('Can\'t run query without a selected database');
         }
-        const info = await compileAndRunQueryAgainstDatabase(cliServer, qs, dbItem, quickEval);
+        const info = await compileAndRunQueryAgainstDatabase(cliServer, qs, dbItem, quickEval, selectedQuery);
         await showResultsForInfo(info);
         qhm.push(new QueryHistoryItem(info));
       }
@@ -229,8 +229,8 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     outputChannel: ideServerLogger.outputChannel
   }, true);
 
-  ctx.subscriptions.push(commands.registerCommand('codeQL.runQuery', async () => await compileAndRunQuery(false)));
-  ctx.subscriptions.push(commands.registerCommand('codeQL.quickEval', async () => await compileAndRunQuery(true)));
+  ctx.subscriptions.push(commands.registerCommand('codeQL.runQuery', async (uri: Uri | undefined) => await compileAndRunQuery(false, uri)));
+  ctx.subscriptions.push(commands.registerCommand('codeQL.quickEval', async (uri: Uri | undefined) => await compileAndRunQuery(true, uri)));
 
   ctx.subscriptions.push(client.start());
 }

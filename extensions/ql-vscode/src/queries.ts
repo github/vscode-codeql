@@ -1,15 +1,13 @@
-import * as path from 'path';
 import * as fs from 'fs-extra';
+import * as path from 'path';
+import * as sarif from 'sarif';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
-import * as sarif from 'sarif';
-import { ProgressLocation, window as Window, workspace } from 'vscode';
 import * as cli from './cli';
-import { QueryServerConfig } from './config';
 import { DatabaseItem } from './databases';
 import * as helpers from './helpers';
 import { DatabaseInfo } from './interface-types';
-import { logger, Logger } from './logging';
+import { logger } from './logging';
 import * as messages from './messages';
 import * as qsClient from './queryserver-client';
 
@@ -88,7 +86,7 @@ class QueryInfo {
     }
     try {
       await helpers.withProgress({
-        location: ProgressLocation.Notification,
+        location: vscode.ProgressLocation.Notification,
         title: "Running Query",
         cancellable: true,
       }, (progress, token) => {
@@ -125,7 +123,7 @@ class QueryInfo {
 
 
       compiled = await helpers.withProgress({
-        location: ProgressLocation.Notification,
+        location: vscode.ProgressLocation.Notification,
         title: "Compiling Query",
         cancellable: true,
       }, (progress, token) => {
@@ -323,7 +321,7 @@ export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: Databa
 async function checkDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams):
   Promise<messages.CheckUpgradeResult> {
   return helpers.withProgress({
-    location: ProgressLocation.Notification,
+    location: vscode.ProgressLocation.Notification,
     title: "Checking for database upgrades",
     cancellable: true,
   }, (progress, token) => qs.sendRequest(messages.checkUpgrade, upgradeParams, token, progress));
@@ -337,7 +335,7 @@ async function compileDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradePar
   }
 
   return helpers.withProgress({
-    location: ProgressLocation.Notification,
+    location: vscode.ProgressLocation.Notification,
     title: "Compiling database upgrades",
     cancellable: true,
   }, (progress, token) => qs.sendRequest(messages.compileUpgrade, params, token, progress));
@@ -361,7 +359,7 @@ async function runDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseIt
   };
 
   return helpers.withProgress({
-    location: ProgressLocation.Notification,
+    location: vscode.ProgressLocation.Notification,
     title: "Running database upgrades",
     cancellable: true,
   }, (progress, token) => qs.sendRequest(messages.runUpgrade, params, token, progress));
@@ -384,7 +382,7 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
   };
 
   return helpers.withProgress({
-    location: ProgressLocation.Notification,
+    location: vscode.ProgressLocation.Notification,
     title: "Clearing Cache",
     cancellable: false,
   }, (progress, token) =>
@@ -392,55 +390,119 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
   );
 }
 
-export async function compileAndRunQueryAgainstDatabase(
-  cliServer: cli.CodeQLCliServer,
-  qs: qsClient.QueryServerClient,
-  db: DatabaseItem,
-  quickEval?: boolean
-): Promise<EvaluationInfo> {
-
-  const editor = Window.activeTextEditor;
-  // Get the workspace paths
-  const workspaceFolders = workspace.workspaceFolders || [];
+/** Gets all active workspace folders that are on the filesystem. */
+function getOnDiskWorkspaceFolders() {
+  const workspaceFolders = vscode.workspace.workspaceFolders || [];
   let diskWorkspaceFolders: string[] = [];
   for (const workspaceFolder of workspaceFolders) {
     if (workspaceFolder.uri.scheme === "file")
       diskWorkspaceFolders.push(workspaceFolder.uri.fsPath)
   }
+  return diskWorkspaceFolders;
+}
 
-  if (editor == undefined) {
-    throw new Error('Can\'t run query without an active editor');
-  }
-  if (editor.document.uri.scheme !== "file") {
-    throw new Error('Can only run queries on disk');
-  }
+/** Gets the selected position within the given editor. */
+function getSelectedPosition(editor: vscode.TextEditor): messages.Position {
+  const pos = editor.selection.start;
+  const posEnd = editor.selection.end;
+  // Convert from 0-based to 1-based line and column numbers.
+  return {
+    fileName: editor.document.fileName,
+    line: pos.line + 1, column: pos.character + 1,
+    endLine: posEnd.line + 1, endColumn: posEnd.character + 1
+  };
+}
 
-  const queryPath = editor.document.fileName;
-
-  let quickEvalPosition: messages.Position | undefined;
-  if (quickEval) {
-    const pos = editor.selection.start;
-    const posEnd = editor.selection.end;
-    // Convert from 0-based to 1-based line and column numbers.
-    quickEvalPosition = {
-      fileName: queryPath,
-      line: pos.line + 1, column: pos.character + 1,
-      endLine: posEnd.line + 1, endColumn: posEnd.character + 1
-    }
-  }
-
-  if (editor.document.isDirty) {
+/** Prompts the user to save `document` if it has unsaved changes. */
+async function promptUserToSaveChanges(document: vscode.TextDocument) {
+  if (document.isDirty) {
     // TODO: add 'always save' button which records preference in configuration
     if (await helpers.showBinaryChoiceDialog('Query file has unsaved changes. Save now?')) {
-      editor.document.save();
+      await document.save();
     }
   }
+}
+
+type SelectedQuery = {
+  queryPath: string,
+  quickEvalPosition?: messages.Position
+};
+
+/**
+ * Determines which QL file to run during an invocation of `Run Query` or `Quick Evaluation`, as follows:
+ * - If the command was called by clicking on a file, then use that file.
+ * - Otherwise, use the file open in the current editor.
+ * - In either case, prompt the user to save the file if it is open with unsaved changes.
+ * - For `Quick Evaluation`, ensure the selected file is also the one open in the editor,
+ * and use the selected region.
+ * @param selectedResourceUri The selected resource when the command was run.
+ * @param quickEval Whether the command being run is `Quick Evaluation`.
+*/
+async function determineSelectedQuery(selectedResourceUri: vscode.Uri | undefined, quickEval: boolean): Promise<SelectedQuery> {
+  const editor = vscode.window.activeTextEditor;
+
+  // Choose which QL file to use.
+  let queryUri: vscode.Uri;
+  if (selectedResourceUri === undefined) {
+    // No resource was passed to the command handler, so obtain it from the active editor.
+    // This usually happens when the command is called from the Command Palette.
+    if (editor === undefined) {
+      throw new Error('No query was selected. Please select a query and try again.');
+    } else {
+      queryUri = editor.document.uri;
+    }
+  } else {
+    // A resource was passed to the command handler, so use it.
+    queryUri = selectedResourceUri;
+  }
+
+  if (queryUri.scheme !== 'file') {
+    throw new Error('Can only run queries that are on disk.');
+  }
+  const queryPath = queryUri.fsPath;
+
+  // Whether we chose the file from the active editor or from a context menu,
+  // if the same file is open with unsaved changes in the active editor,
+  // then prompt the user to save it first.
+  if (editor !== undefined && editor.document.uri.fsPath === queryPath) {
+    await promptUserToSaveChanges(editor.document);
+  }
+
+  let quickEvalPosition: messages.Position | undefined = undefined;
+  if (quickEval) {
+    if (editor == undefined) {
+      throw new Error('Can\'t run quick evaluation without an active editor.');
+    }
+    if (editor.document.fileName !== queryPath) {
+      // For Quick Evaluation we expect these to be the same.
+      // Report an error if we end up in this (hopefully unlikely) situation.
+      throw new Error('The selected resource for quick evaluation should match the active editor.');
+    }
+    quickEvalPosition = getSelectedPosition(editor);
+  }
+
+  return { queryPath, quickEvalPosition };
+}
+
+export async function compileAndRunQueryAgainstDatabase(
+  cliServer: cli.CodeQLCliServer,
+  qs: qsClient.QueryServerClient,
+  db: DatabaseItem,
+  quickEval: boolean,
+  selectedQueryUri: vscode.Uri | undefined
+): Promise<EvaluationInfo> {
+
   if (!db.contents || !db.contents.dbSchemeUri) {
     throw new Error(`Database ${db.databaseUri} does not have a CodeQL database scheme.`);
   }
 
+  // Determine which query to run, based on the selection and the active editor.
+  const { queryPath, quickEvalPosition } = await determineSelectedQuery(selectedQueryUri, quickEval);
+
+  // Get the workspace folder paths.
+  const diskWorkspaceFolders = getOnDiskWorkspaceFolders();
   // Figure out the library path for the query.
-  const packConfig = await cliServer.resolveLibraryPath(diskWorkspaceFolders, editor.document.uri.fsPath);
+  const packConfig = await cliServer.resolveLibraryPath(diskWorkspaceFolders, queryPath);
 
   // Check whether the query has an entirely different schema from the
   // database. (Queries that merely need the database to be upgraded
@@ -473,6 +535,7 @@ export async function compileAndRunQueryAgainstDatabase(
     // Ignore errors and provide no metadata.
     logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
   }
+
   const query = new QueryInfo(qlProgram, db, quickEvalPosition, metadata);
   const result = await query.compileAndRun(qs);
 
