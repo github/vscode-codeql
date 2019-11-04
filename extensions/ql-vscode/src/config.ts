@@ -57,12 +57,14 @@ const RUNNING_QUERIES_SETTING = new Setting('runningQueries', ROOT_SETTING);
 const NUMBER_OF_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_QUERIES_SETTING);
 const TIMEOUT_SETTING = new Setting('timeout', RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
+const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
 
 /** When these settings change, the running query server should be restarted. */
-const QUERY_SERVER_RESTARTING_SETTINGS = [NUMBER_OF_THREADS_SETTING, MEMORY_SETTING];
+const QUERY_SERVER_RESTARTING_SETTINGS = [NUMBER_OF_THREADS_SETTING, MEMORY_SETTING, DEBUG_SETTING];
 
 export interface QueryServerConfig {
   codeQlPath: string,
+  debug: boolean,
   numThreads: number,
   queryMemoryMb: number,
   timeoutSecs: number,
@@ -93,7 +95,9 @@ abstract class ConfigListener extends DisposableObject {
   }
 
   protected abstract handleDidChangeConfiguration(e: ConfigurationChangeEvent): void;
-  protected abstract updateConfiguration(): void;
+  private updateConfiguration(): void{
+    this._onDidChangeConfiguration.fire();
+  }
 }
 
 export class DistributionConfigListener extends ConfigListener implements DistributionConfig {
@@ -124,16 +128,9 @@ export class DistributionConfigListener extends ConfigListener implements Distri
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     this.handleDidChangeConfigurationForRelevantSettings(DISTRIBUTION_CHANGE_SETTINGS, e);
   }
-
-  protected updateConfiguration(): void {
-    this._onDidChangeConfiguration.fire();
-  }
 }
 
 export class QueryServerConfigListener extends ConfigListener implements QueryServerConfig {
-  private _numThreads: number;
-  private _queryMemoryMb: number;
-
   private constructor(private _codeQlPath: string) {
     super();
   }
@@ -156,7 +153,7 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
   }
 
   public get numThreads(): number {
-    return this._numThreads;
+    return NUMBER_OF_THREADS_SETTING.getValue<number>();
   }
 
   /** Gets the configured query timeout, in seconds. This looks up the setting at the time of access. */
@@ -165,7 +162,11 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
   }
 
   public get queryMemoryMb(): number {
-    return this._queryMemoryMb;
+    return MEMORY_SETTING.getValue<number>();
+  }
+
+  public get debug(): boolean {
+    return DEBUG_SETTING.getValue<boolean>();
   }
 
   public get onDidChangeQueryServerConfiguration(): Event<void> {
@@ -174,11 +175,5 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
 
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     this.handleDidChangeConfigurationForRelevantSettings(QUERY_SERVER_RESTARTING_SETTINGS, e);
-  }
-
-  protected updateConfiguration(): void {
-    this._numThreads = NUMBER_OF_THREADS_SETTING.getValue<number>();
-    this._queryMemoryMb = MEMORY_SETTING.getValue<number>();
-    this._onDidChangeConfiguration.fire();
   }
 }

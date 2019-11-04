@@ -1,7 +1,10 @@
+import cx from 'classnames';
 import * as React from 'react';
 import { DatabaseInfo, Interpretation } from '../interface-types';
-import { ResultTable } from './result-table';
-import { ResultSet } from './results';
+import { PathTable } from './alert-table';
+import { RawTable } from './raw-results-table';
+import { ResultTableProps, toggleDiagnosticsClassName, toggleDiagnosticsSelectedClassName, tableSelectionHeaderClassName } from './result-table-utils';
+import { ResultSet, vscode } from './results';
 
 /**
  * Properties for the `ResultTables` component.
@@ -20,6 +23,7 @@ interface ResultTablesState {
   selectedTable: string; // name of selected result set
 }
 
+const ALERTS_TABLE_NAME = 'alerts';
 const SELECT_TABLE_NAME = '#select';
 
 /**
@@ -40,8 +44,8 @@ export class ResultTables
         // unused stubs because a SarifResultSet schema isn't used the
         // same way as a RawResultSet. Probably should pull `name` field
         // out.
-        schema: { name: 'alerts', version: 0, columns: [], tupleCount: 1 },
-        name: 'alerts',
+        schema: { name: ALERTS_TABLE_NAME, version: 0, columns: [], tupleCount: 1 },
+        name: ALERTS_TABLE_NAME,
         ...this.props.interpretation,
       });
     }
@@ -51,16 +55,16 @@ export class ResultTables
   constructor(props: ResultTablesProps) {
     super(props);
 
-    // Display the `#select` table by default if one exists. Otherwise, display the first table in
-    // the result set.
     this.state = {
+      // Get the result set that should be displayed by default
       selectedTable: ResultTables.getDefaultResultSet(this.getResultSets())
     };
   }
 
   private static getDefaultResultSet(resultSets: readonly ResultSet[]): string {
-    return resultSets.some(resultSet =>
-      resultSet.schema.name === SELECT_TABLE_NAME) ? SELECT_TABLE_NAME : resultSets[0].schema.name;
+    const resultSetNames = resultSets.map(resultSet => resultSet.schema.name)
+    // Choose first available result set from the array
+    return [ALERTS_TABLE_NAME, SELECT_TABLE_NAME, resultSets[0].schema.name].filter(resultSetName => resultSetNames.includes(resultSetName))[0];
   }
 
   private onChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -70,17 +74,38 @@ export class ResultTables
   render(): React.ReactNode {
     const selectedTable = this.state.selectedTable;
     const resultSets = this.getResultSets();
+    const { database, resultsPath } = this.props;
+
+    // Only show the Problems view display checkbox for the alerts table.
+    const toggleDiagnosticsClass = cx(toggleDiagnosticsClassName, {
+      [toggleDiagnosticsSelectedClassName]: selectedTable === ALERTS_TABLE_NAME
+    });
 
     return <div>
-      <select value={selectedTable} onChange={this.onChange}>
-        {
-          resultSets.map(resultSet =>
-            <option key={resultSet.schema.name} value={resultSet.schema.name}>
-              {resultSet.schema.name}
-            </option>
-          )
-        }
-      </select>
+      <div className={tableSelectionHeaderClassName}>
+        <select value={selectedTable} onChange={this.onChange}>
+          {
+            resultSets.map(resultSet =>
+              <option key={resultSet.schema.name} value={resultSet.schema.name}>
+                {resultSet.schema.name}
+              </option>
+            )
+          }
+        </select>
+        <div className={toggleDiagnosticsClass}>
+          <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
+          <input type="checkbox" id="toggle-diagnostics" name="toggle-diagnostics" onChange={(e) => {
+            if (resultsPath !== undefined) {
+              vscode.postMessage({
+                t: 'toggleDiagnostics',
+                resultsPath: resultsPath,
+                databaseUri: database.databaseUri,
+                visible: e.target.checked
+              });
+            }
+          }} />
+        </div>
+      </div>
       {
         resultSets.map(resultSet =>
           <ResultTable key={resultSet.schema.name} resultSet={resultSet}
@@ -89,5 +114,22 @@ export class ResultTables
         )
       }
     </div >;
+  }
+}
+
+class ResultTable extends React.Component<ResultTableProps, {}> {
+
+  constructor(props: ResultTableProps) {
+    super(props);
+  }
+
+  render(): React.ReactNode {
+    const { resultSet } = this.props;
+    switch (resultSet.t) {
+      case 'RawResultSet': return <RawTable
+        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} resultsPath={this.props.resultsPath} />;
+      case 'SarifResultSet': return <PathTable
+        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} resultsPath={this.props.resultsPath} />;
+    }
   }
 }

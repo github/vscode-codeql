@@ -234,7 +234,7 @@ export interface DatabaseItem {
   /**
    * Returns `sourceLocationPrefix` of exported database.
    */
-  getSourceLocationPrefix(config: QueryServerConfig, logger: Logger): Promise<string>;
+  getSourceLocationPrefix(server : cli.CodeQLCliServer): Promise<string>;
 
   /**
    * Returns the root uri of the virtual filesystem for this database's source archive,
@@ -251,6 +251,8 @@ export interface DatabaseItem {
 class DatabaseItemImpl implements DatabaseItem {
   private _error: Error | undefined = undefined;
   private _contents: DatabaseContents | undefined;
+  /** A cache of database info */
+  private _dbinfo: cli.DbInfo | undefined;
 
   public constructor(public readonly databaseUri: vscode.Uri,
     contents: DatabaseContents | undefined, private options: FullDatabaseOptions,
@@ -358,15 +360,26 @@ class DatabaseItemImpl implements DatabaseItem {
    * Holds if the database item refers to an exported snapshot
    */
   public hasDbInfo(): boolean {
-    return fs.existsSync(path.join(this.databaseUri.fsPath, '.dbinfo'));
+  return fs.existsSync(path.join(this.databaseUri.fsPath, '.dbinfo'))
+   || fs.existsSync(path.join(this.databaseUri.fsPath, 'codeql-database.yml'));;
+  }
+
+  /**
+   * Returns information about a database.
+   */
+  private async getDbInfo(server: cli.CodeQLCliServer): Promise<cli.DbInfo> {
+    if (this._dbinfo === undefined) {
+      this._dbinfo = await server.resolveDatabase(this.databaseUri.fsPath);
+    }
+    return this._dbinfo;
   }
 
   /**
    * Returns `sourceLocationPrefix` of database. Requires that the database
    * has a `.dbinfo` file, which is the source of the prefix.
    */
-  public async getSourceLocationPrefix(config: QueryServerConfig, logger: Logger): Promise<string> {
-    const dbInfo = await cli.resolveDatabase(config, this.databaseUri.fsPath, logger);
+  public async getSourceLocationPrefix(server: cli.CodeQLCliServer): Promise<string> {
+    const dbInfo = await this.getDbInfo(server);
     return dbInfo.sourceLocationPrefix;
   }
 

@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
 import * as sarif from 'sarif';
@@ -170,16 +171,28 @@ class QueryInfo {
 /**
  * Call cli command to interpret results.
  */
-export async function interpretResults(config: QueryServerConfig, queryInfo: QueryInfo, logger: Logger, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
+export async function interpretResults(server: cli.CodeQLCliServer, queryInfo: QueryInfo, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
+  if (await fs.pathExists(queryInfo.interpretedResultsPath)) {
+    return JSON.parse(await fs.readFile(queryInfo.interpretedResultsPath, 'utf8'));
+  }
   const { metadata } = queryInfo;
   if (metadata == undefined) {
     throw new Error('Can\'t interpret results without query metadata');
   }
-  const { kind, id } = metadata;
-  if (kind == undefined || id == undefined) {
-    throw new Error('Can\'t interpret results without query metadata including kind and id');
+  let { kind, id } = metadata;
+  if (kind == undefined) {
+    throw new Error('Can\'t interpret results without query metadata including kind');
   }
-  return await cli.interpretBqrs(config, { kind, id }, queryInfo.resultsPath, queryInfo.interpretedResultsPath, logger, sourceInfo);
+  if (id == undefined) {
+    // Interpretation per se doesn't really require an id, but the
+    // SARIF format does, so in the absence of one, we invent one
+    // based on the query path.
+    //
+    // Just to be careful, sanitize to remove '/' since SARIF (section
+    // 3.27.5 "ruleId property") says that it has special meaning.
+    id = queryInfo.program.queryPath.replace(/\//g, '-');
+  }
+  return await server.interpretBqrs({ kind, id }, queryInfo.resultsPath, queryInfo.interpretedResultsPath, sourceInfo);
 }
 
 export interface EvaluationInfo {
@@ -380,7 +393,7 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
 }
 
 export async function compileAndRunQueryAgainstDatabase(
-  config: QueryServerConfig,
+  cliServer: cli.CodeQLCliServer,
   qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   quickEval?: boolean
@@ -427,7 +440,18 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 
   // Figure out the library path for the query.
-  const packConfig = await cli.resolveLibraryPath(config, diskWorkspaceFolders, queryPath, logger);
+  const packConfig = await cliServer.resolveLibraryPath(diskWorkspaceFolders, editor.document.uri.fsPath);
+
+  // Check whether the query has an entirely different schema from the
+  // database. (Queries that merely need the database to be upgraded
+  // won't trigger this check)
+  // This test will produce confusing results if we ever change the name of the database schema files.
+  const querySchemaName = path.basename(packConfig.dbscheme);
+  const dbSchemaName = path.basename(db.contents.dbSchemeUri.fsPath);
+  if (querySchemaName != dbSchemaName) {
+    logger.log(`Query schema was ${querySchemaName}, but database schema was ${dbSchemaName}.`);
+    throw new Error(`The query ${path.basename(queryPath)} cannot be run against the selected database: their target languages are different. Please select a different database and try again.`);
+  }
 
   const qlProgram: messages.QlProgram = {
     // The project of the current document determines which library path
@@ -444,7 +468,7 @@ export async function compileAndRunQueryAgainstDatabase(
   // Read the query metadata if possible, to use in the UI.
   let metadata: cli.QueryMetadata | undefined;
   try {
-    metadata = await cli.resolveMetadata(qs.config, qlProgram.queryPath, logger);
+    metadata = await cliServer.resolveMetadata(qlProgram.queryPath);
   } catch (e) {
     // Ignore errors and provide no metadata.
     logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);

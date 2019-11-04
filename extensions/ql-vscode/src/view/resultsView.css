@@ -8,11 +8,32 @@
   display: block;
 }
 
-.vscode-codeql__result-table-metadata {
+.vscode-codeql__table-selection-header {
+  display: flex;
   border-bottom: 1px solid rgba(88,96,105,0.25);
   padding: 0.5em 0;
-  text-align: left;
 }
+
+.vscode-codeql__result-table-toggle-diagnostics {
+  display: none;
+  text-align: left;
+  margin-left: auto;
+}
+
+.vscode-codeql__result-table-toggle-diagnostics--selected {
+  display: inline-block;
+}
+
+/* Keep the checkbox and its label in horizontal alignment. */
+.vscode-codeql__result-table-toggle-diagnostics--selected label,
+.vscode-codeql__result-table-toggle-diagnostics--selected input {
+  display: inline-block;
+  vertical-align: middle;
+}
+.vscode-codeql__result-table-toggle-diagnostics--selected input {
+  margin: 3px 3px 1px 3px;
+}
+
 
 .vscode-codeql__result-table th {
   border-bottom: 1px solid rgba(88,96,105,0.25);
@@ -20,7 +41,7 @@
   background: rgba(225,228,232, 0.25);
   padding: 0.25em 0.5em;
   text-align: center;
-  font-weight: 600;
+  font-weight: normal;
   opacity: 0.6;
 }
 
@@ -34,7 +55,6 @@
 
 .vscode-codeql__result-table-location-link {
   font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
-  font-size: 11px;
 }
 
 select {

@@ -9,13 +9,28 @@ import { DistributionConfig } from "./config";
 import { ProgressUpdate, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
 
-export class GithubApiError extends Error {
-  constructor(public status: number, public body: string) {
-    super(`API call failed with status code ${status}, body: ${body}`);
-  }
+/**
+ * Default value for the owner name of the extension-managed distribution on GitHub.
+ * 
+ * We set the default here rather than as a default config value so that this default is invoked
+ * upon blanking the setting.
+ */
+const DEFAULT_DISTRIBUTION_OWNER_NAME = "github";
+
+/**
+ * Default value for the repository name of the extension-managed distribution on GitHub.
+ * 
+ * We set the default here rather than as a default config value so that this default is invoked
+ * upon blanking the setting.
+ */
+const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
+
+export interface DistributionProvider {
+  getCodeQlPath(): Promise<string | undefined>,
+  onDidChangeDistribution?: Event<void>
 }
 
-export class DistributionManager {
+export class DistributionManager implements DistributionProvider {
   constructor(extensionContext: ExtensionContext, config: DistributionConfig) {
     this._config = config;
     this._extensionSpecificDistributionManager = new ExtensionSpecificDistributionManager(extensionContext, config);
@@ -207,7 +222,9 @@ class ExtensionSpecificDistributionManager {
   }
 
   private createReleasesApiConsumer(): ReleasesApiConsumer {
-    return new ReleasesApiConsumer(this._config.ownerName, this._config.repositoryName, this._config.personalAccessToken);
+    const ownerName = this._config.ownerName ? this._config.ownerName : DEFAULT_DISTRIBUTION_OWNER_NAME;
+    const repositoryName = this._config.repositoryName ? this._config.repositoryName : DEFAULT_DISTRIBUTION_REPOSITORY_NAME;
+    return new ReleasesApiConsumer(ownerName, repositoryName, this._config.personalAccessToken);
   }
 
   private getCurrentDistributionStoragePath(): string {
@@ -257,7 +274,7 @@ export class ReleasesApiConsumer {
     }
 
     const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases`;
-    const releases: any[] = await (await this.makeApiCall(apiPath)).json();
+    const releases: GithubRelease[] = await (await this.makeApiCall(apiPath)).json();
     const latestRelease = releases.sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
     const assets: ReleaseAsset[] = latestRelease.assets.map(asset => {
       return {
@@ -439,4 +456,53 @@ export interface ReleaseAsset {
    * The size of the asset in bytes.
    */
   size: number;
+}
+
+
+/**
+ * The json returned from github for a release.
+ */
+interface GithubRelease {
+  assets: ReleaseAsset[];
+
+  /**
+   * The creation date of the release on GitHub.
+   */
+  created_at: string;
+
+  /**
+   * The id associated with the release on GitHub.
+   */
+  id: number;
+
+  /**
+   * The name associated with the release on GitHub.
+   */
+  name: string;
+}
+
+/**
+ * The json returned by github for an asset in a release.
+ */
+interface GithubReleaseAsset {
+  /**
+   * The id associated with the asset on GitHub.
+   */
+  id: number;
+
+  /**
+   * The name associated with the asset on GitHub.
+   */
+  name: string;
+
+  /**
+   * The size of the asset in bytes.
+   */
+  size: number;
+}
+
+export class GithubApiError extends Error {
+  constructor(public status: number, public body: string) {
+    super(`API call failed with status code ${status}, body: ${body}`);
+  }
 }

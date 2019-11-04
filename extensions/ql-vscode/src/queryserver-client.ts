@@ -45,8 +45,6 @@ type WithProgressReporting = (task: (progress: ProgressReporter, token: Cancella
  * to restart it (which disposes the existing process and starts a new one).
  */
 export class QueryServerClient extends DisposableObject {
-  readonly config: QueryServerConfig;
-  opts: ServerOpts;
   serverProcess?: ServerProcess;
   evaluationResultCallbacks: { [key: number]: (res: EvaluationResult) => void };
   progressCallbacks: { [key: number]: ((res: ProgressMessage) => void) | undefined };
@@ -54,18 +52,17 @@ export class QueryServerClient extends DisposableObject {
   nextProgress: number;
   withProgressReporting: WithProgressReporting;
 
-  constructor(config: QueryServerConfig, opts: ServerOpts, withProgressReporting: WithProgressReporting) {
+  constructor(readonly config: QueryServerConfig, readonly cliServer: cli.CodeQLCliServer, readonly opts: ServerOpts, withProgressReporting: WithProgressReporting) {
     super();
-    this.config = config;
-    // The logger is obtained from the caller, to ensure testability.
-    // The extension passes in its dedicated query server logger.
-    // The unit tests pass in a console logger that doesn't require the VSCode API.
-    this.opts = opts;
     // When the query server configuration changes, restart the query server.
     if (config.onDidChangeQueryServerConfiguration !== undefined) {
       this.push(config.onDidChangeQueryServerConfiguration(async () => await this.restartQueryServer(), this));
     }
     this.withProgressReporting = withProgressReporting;
+    this.nextCallback = 0;
+    this.nextProgress = 0;
+    this.progressCallbacks = {};
+    this.evaluationResultCallbacks = {};
   }
 
   get logger() { return this.opts.logger; }
@@ -94,12 +91,16 @@ export class QueryServerClient extends DisposableObject {
 
   /** Starts a new query server process, sending progress messages to the given reporter. */
   private async startQueryServerImpl(progressReporter: ProgressReporter) {
-    const ramArgs = await cli.resolveRam(this.config, this.opts.logger, progressReporter);
-    const child = await cli.spawnServer(
-      this.config,
+    const ramArgs = await this.cliServer.resolveRam(progressReporter);
+    const args = ['--threads', this.config.numThreads.toString()].concat(ramArgs);
+    if(this.config.debug) {
+      args.push('--debug', '--tuple-counting');
+    }
+    const child = cli.spawnServer(
+      this.config.codeQlPath,
       'CodeQL query server',
       ['execute', 'query-server'],
-      ['--threads', this.config.numThreads.toString()].concat(ramArgs),
+      args,
       this.logger,
       data => this.logger.logWithoutTrailingNewline(data.toString()),
       undefined, // no listener for stdout

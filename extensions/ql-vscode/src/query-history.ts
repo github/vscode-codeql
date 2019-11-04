@@ -140,13 +140,25 @@ export class QueryHistoryManager {
   }
 
   async handleItemClicked(queryHistoryItem: QueryHistoryItem) {
+    this.treeDataProvider.setCurrentItem(queryHistoryItem);
+
     const now = new Date();
-    if (this.lastItemClick !== undefined
-      && (now.valueOf() - this.lastItemClick.time.valueOf()) < DOUBLE_CLICK_TIME
-      && queryHistoryItem == this.lastItemClick.item) {
-      this.handleOpenQuery(queryHistoryItem);
-    }
+    const prevItemClick = this.lastItemClick;
     this.lastItemClick = { time: now, item: queryHistoryItem };
+
+    if (prevItemClick !== undefined
+      && (now.valueOf() - prevItemClick.time.valueOf()) < DOUBLE_CLICK_TIME
+      && queryHistoryItem == prevItemClick.item) {
+      // show original query file on double click
+      await this.handleOpenQuery(queryHistoryItem);
+    }
+    else {
+      // show results on single click
+      if (this.selectedCallback !== undefined) {
+        const sc = this.selectedCallback;
+        await sc(queryHistoryItem);
+      }
+    }
   }
 
   constructor(ctx: ExtensionContext, selectedCallback?: (item: QueryHistoryItem) => Promise<void>) {
@@ -160,14 +172,7 @@ export class QueryHistoryManager {
         if (current != undefined)
           this.treeView.reveal(current); // don't allow selection to become empty
       }
-      if (ev.selection.length == 1) {
-        if (this.selectedCallback) {
-          const sc = this.selectedCallback;
-          await sc(ev.selection[0]);
-        }
-      }
     });
-
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.openQuery', this.handleOpenQuery));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.itemClicked', async (item) => {
       return this.handleItemClicked(item);
