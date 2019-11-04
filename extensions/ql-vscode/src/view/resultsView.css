@@ -72,3 +72,7 @@ select {
 .vscode-codeql__result-table-row--even {
   background-color: rgba(209,213,218, 0.3);
 }
+
+.octicon {
+  fill: inherit;
+}
