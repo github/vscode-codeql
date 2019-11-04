@@ -1,37 +1,49 @@
 # CodeQL extension for Visual Studio Code
 
-This extension adds rich language support for CodeQL to VS Code.
-It's used to find problems in code bases using CodeQL.
+This extension updates VS Code to include rich language support for using [CodeQL](https://help.semmle.com/codeql) to find problems in code bases.
+In particular, it adds IntelliSense for query and library files, and provides an easy way to explore the large repository of [CodeQL security queries](https://github.com/Semmle/ql).
 
-## Getting started
+## Quick start overview
+
+The information in this `README` file describes the quickest way to start using CodeQL.
+For information about other configurations, see the separate [help topics](https://help.semmle.com/codeql/codeql-for-vscode.html).
+
+**Quick start: Installation and configuration**
 
 1. [Install the extension](#installing-the-extension)
-1. [Configure access to a CodeQL distribution](#configuring-a-codeql-distribution)
-1. [Configure a CodeQL project](#configuring-codeql-projects)
-1. [Add a CodeQL database](#adding-a-codeql-database)
+1. Beta release only: [Configure access to the CodeQL CLI](#configuring-access-to-the-codeql-cli)
+1. [Clone the CodeQL starter workspace](#cloning-the-codeql-starter-workspace)
+
+**Quick start: using CodeQL**
+
+1. [Import a database from LGTM.com](#importing-a-database-from-lgtm.com)
 1. [Run a query](#running-a-query)
+
+-----
+
+## Quick start: Installation and configuration
 
 ### Installing the extension
 
-Install and open Visual Studio Code. Press **Ctrl+Shift+X** or **Cmd+Shift+X** to open the Extensions pane. At the top right of the Extensions pane, select **More Actions** > **Install from VSIX**, locate the `vscode-codeql` installer, and select **Install**. In the future, you'll be able to install the extension directly from the Marketplace.
+The CodeQL extension requires a minimum of Visual Studio Code 1.39. Older versions are not supported.
 
-> The CodeQL extension requires a minimum of Visual Studio Code 1.39. Older versions are not supported.
+1. Install and open Visual Studio Code.
+1. Download the CodeQL extension: https://github.com/github/vscode-codeql/releases.
+1. Open the Extensions view (press **Ctrl+Shift+X** or **Cmd+Shift+X**).
+1. At the top right of the Extensions view, select **More Actions** > **Install from VSIX**.
+1. Locate the `vscode-codeql` installer, and select **Install**.
 
-> **Note for internal testers**: If you installed an older version of the extension before the beta release, you will need to uninstall it from the Extensions pane before using the beta release (or newer). If you set up a workspace (containing CodeQL databases) with an older version, you will need to create a fresh workspace with the same folders, or delete and re-add each database.
+In the future, you'll be able to install the extension directly from the Marketplace.
 
-## Configuring the extension
+> **Note for internal testers**: If you installed a pre-beta version of the extension, you will need to uninstall it from the Extensions view before using the beta release (or newer). If you've set up a workspace containing CodeQL databases with an older version, you will also need to create a fresh workspace with the same folders, or delete and re-add each database.
 
-To edit the configuration settings, right-click **CodeQL** in the Extensions container in the sidebar and select **Configure Extension Settings**.
+### Configuring access to the CodeQL CLI
 
-You can also access these settings from the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**): choose **Preferences: Open User Settings** or **Preferences: Open Workspace Settings** and search for `CodeQL`, or choose **Preferences: Open Settings (JSON)** and edit the settings file manually.
+The extension uses the [CodeQL CLI](https://help.semmle.com/codeql/codeql-cli.html) to compile and run queries. The extension can automatically manage access to the CLI for you (recommended), or you can use settings to specify a different version of the CLI.
 
-### Configuring a CodeQL distribution
+<font color="red">TODO: Remove the remainder of this section before public release and replace with a link to more information in the CodeQL documentation.</font>
 
-<font color="red">TODO: Edit this section before public release.</font>
-
-The extension uses the CodeQL CLI tools to compile and run queries. You can have the extension automatically manage this for you (recommended), or manually specify where to find the CodeQL CLI.
-
-When the extension is publicly released, if you choose to have the extension manage the CLI tools automatically, this will require no configuration.
+When the extension is publicly released, you will only need to specify the location of the CodeQL CLI if you want to override the default version of the CLI.
 Until then, you need to add the following configuration to your VS Code user or workspace settings.
 
 ```json
@@ -45,56 +57,57 @@ To check for updates to the distribution, you can use the **CodeQL: Check for Up
 
 If you have any difficulty setting up CodeQL CLI access, see the **CodeQL Extension Log** in the **Output** view for any error messages.
 
-> For information about configuring the extension to use other versions of the CodeQL CLI, see [Notes for Semmle internal users](#notes-for-semmle-internal-users) below.
+For information about configuring the extension to use other versions of the CodeQL CLI, see [Notes for Semmle internal users](#notes-for-semmle-internal-users) below.
 
-### Configuring CodeQL projects
+### Cloning the CodeQL starter workspace
 
-There are two main options here:
+When you're working with CodeQL, you need access to the standard CodeQL libraries and queries.
+Initially, we recommend that you clone and use the ready-to-use starter workspace, https://github.com/github/vscode-codeql-starter/.
+This includes libraries and queries for the main supported languages, with folders set up ready for your custom queries. After cloning the workspace, you can use it in the same way as any other VS Code workspace—with the added advantage that you can easily update the CodeQL libraries.
 
-1. Clone https://github.com/github/vscode-codeql-starter/ for a ready-to-use VS Code workspace with libraries and queries for all supported languages.
-1. Add each language that you want to include to an existing workspace.
+For information about how to add further languages, or to configure an existing workspace for CodeQL, see [TODO](https://help.semmle.com/codeql/codeql-for-vscode.html)
 
-#### Adding standard CodeQL libraries
+## Quick start: using CodeQL
 
-To make the standard libraries available in your workspace:
+You can find all the commands contributed by the extension in the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**) by typing `CodeQL`, many of them are also accessible through the interface, and via keyboard short cuts.
 
-1. Select **File** > **Add Folder to Workspace**, and choose your local checkout of the `Semmle/ql` repository.
-1. Create one new folder per target language, using either the **New Folder** or **Add Folder to Workspace** options, to hold custom queries.
-1. Create a `qlpack.yml` file in each target language folder. This tells CodeQL the target language for that folder and what its dependencies are. (The `master` branch of `Semmle/ql` already has these files.) CodeQL will look for the dependencies in all the open workspace folders, or on the user's search path.
+### Importing a database from LGTM.com
 
-For example, to make a custom CodeQL folder depend on the CodeQL standard library for C++, create a `qlpack.yml` file with the following contents:
+While you can use the [CodeQL CLI to create your own databases](hhttps://help.semmle.com/codeql/codeql-cli/procedures/create-codeql-database.html), the simplest way to start is by downloading a database from LGTM.com.
 
-```ql
-name: my-custom-cpp-pack
-version: 0.0.0
-libraryPathDependencies: codeql-cpp
-```
+1. Log in to LGTM.com.
+1. Find a project you're interested in and display the **Integrations** tab (for example, [Apache Kafka](https://lgtm.com/projects/g/apache/kafka/ci/)).
+1. Scroll to the **CodeQL databases for local analysis** section at the bottom of the page.
+1. Download databases for the languages that you want to explore.
+1. Unzip the databases.
+1. For each database that you want to import:
+    1. In the VS Code sidebar, go to **CodeQL** > **Databases** and click **+**.
+    1. Browse to the unzipped database folder (the parent folder that contains `db-<language>` and `src`) and select **Choose database** to add it.
 
-## Using the extension
-
-You can find all commands contributed by the extension in the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**) by typing `CodeQL`, but you can also access some of them through the interface.
-
-### Adding a CodeQL database
-
-1. Obtain a CodeQL database:
-   - You can download databases of open-source code from the **integrations** tab for any project on LGTM.com. 
-     Note that LGTM uses the term "QL snapshot" for a CodeQL database. For more information, see the 'Downloading QL snapshots to run queries on' section of [Running queries in your IDE](https://lgtm.com/help/lgtm/running-queries-ide)).
-   - You can build databases of open-source code on your local machine using the CodeQL CLI.
-2. Unzip the database.
-2. In the VS Code sidebar, go to **CodeQL** > **Databases** and click **+**.
-3. Browse to the unzipped database folder (the parent folder that contains `db-<language>` and `src`) and add it.
-
-It will now appear in the sidebar under **Databases**. If you have multiple databases, you can select which one to query by clicking **Set Current Database**.
+When the import is complete, each CodeQL database is displayed in the CodeQL sidebar under **Databases**.
 
 ### Running a query
 
-1. Open an existing query from one of your CodeQL projects, or save a new one in the project folder.
-2. Make sure that the `.ql` file is in focus.
-3. Open the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**) and type `Run Query`. Alternatively, right-click and select "CodeQL: Run Query".
+The instructions below assume that you're using the CodeQL starter workspace, or that you've added the CodeQL libraries and queries repository to your workspace.
 
-You can see the progress of the query run in the bottom right corner.
-Once it has finished, the results are displayed in the CodeQL Query Results view. The dropdown menu will let you choose between different forms of result output.
-In the sidebar, under `Query History`, you can see the queries that you have run in the current session.
+1. Expand the `ql` folder and locate a query to run. The standard queries are grouped by target language and then type, for example: `ql/java/ql/src/Likely Bugs`.
+1. Open a query (`.ql`) file.
+3. Right-click in the query window and select **CodeQL: Run Query**. Alternatively, open the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**), type `Run Query`, then select **CodeQL: Run Query**.
+
+The CodeQL CLI runs the query on the current database and reports progress in the bottom right corner of the application.
+When the results are ready, they're displayed in the CodeQL Query Results view. Use the dropdown menu to choose between different forms of result output.
+
+If the query fails with: `Query compilation failed.` Check that the query and the database are both for the same target language.
+
+## What next?
+
+For more information about the CodeQL extension, see [CodeQL for Visual Studio Code](https://help.semmle.com/codeql/codeql-for-vscode.html). Otherwise, you could:
+
+* [Create a database for a different codebase](hhttps://help.semmle.com/codeql/codeql-cli/procedures/create-codeql-database.html)
+* [Try out variant analysis](https://help.semmle.com/QL/learn-ql/ql-training.html)
+* [Learn more about CodeQL](https://help.semmle.com/QL/learn-ql/)
+* [Read how security researchers use CodeQL to find CVEs](https://blog.semmle.com/tags/cve/)
+
 
 ---
 
@@ -102,16 +115,20 @@ In the sidebar, under `Query History`, you can see the queries that you have run
 
 ## Notes for Semmle internal users
 
-### Manually specify which distribution of the CodeQL CLI to use
+### Using a `codeql` binary on your PATH
 
-Options for obtaining a CodeQL distribution:
+If you already have a `codeql` binary on your path, the extension will use this binary.
+
+### Manually specify which version of the CodeQL CLI to use
+
+Options for obtaining a version of the CodeQL CLI:
 - Download from the [private binaries repository](https://github.com/github/codeql-cli-binaries/releases).
-- Download from [Semmle-internal Jenkins](https://jenkins.internal.semmle.com/job/CodeQL-CLI/) (open the last successful artifacts and download `codeql-all.zip`).  Upon extracting the archive, the CodeQL binary path will be `extractionRoot/codeql/codeql` where `extractionRoot` is the folder in which you extracted the zip.
-- Build your own from the `Semmle/code` repository by running `./build target/intree/codeql`. The CodeQL binary path will be `codeRoot/target/intree/codeql/codeql` (or `codeql.cmd` on Windows), where `codeRoot` is the root of your `Semmle/code` checkout.
+- Download from [Semmle-internal Jenkins](https://jenkins.internal.semmle.com/job/CodeQL-CLI/):
+  1. Open the last successful artifacts and download `codeql-all.zip`.
+  1. After extracting the archive, the CodeQL binary path will be `<extractionRoot>/codeql/codeql` where _`<extractionRoot>`_ is the folder where you extracted the zip.
+- Build your own version of the CodeQL CLI from the `Semmle/code` repository by running `./build target/intree/codeql`. The CodeQL binary path will be `codeRoot/target/intree/codeql/codeql` (or `codeql.cmd` on Windows), where `codeRoot` is the root of your `Semmle/code` checkout.
 
 Once you have a binary on your machine, edit the setting `codeQL.distribution.executablePath` to point to it.
 This can be set per-workspace, or you can set it in your global user settings to apply to all workspaces you open.
 
-### Using a `codeql` binary on your PATH
 
-If you already have a `codeql` binary on your path, the extension will use this binary.
