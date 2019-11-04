@@ -95,12 +95,11 @@ function renderTupleValue(v: ResultValue, databaseUri: string): JSX.Element {
   }
 }
 
-function nextSortDirection(direction: SortDirection | undefined): SortDirection | undefined {
+function nextSortDirection(direction: SortDirection | undefined): SortDirection {
   switch (direction) {
     case SortDirection.asc:
       return SortDirection.desc;
     case SortDirection.desc:
-      return undefined;
     case undefined:
       return SortDirection.asc;
     default:
