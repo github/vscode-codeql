@@ -91,12 +91,16 @@ export class QueryServerClient extends DisposableObject {
 
   /** Starts a new query server process, sending progress messages to the given reporter. */
   private async startQueryServerImpl(progressReporter: ProgressReporter) {
-    const ramArgs = await this.cliServer.resolveRam();
+    const ramArgs = await this.cliServer.resolveRam(progressReporter);
+    const args = ['--threads', this.config.numThreads.toString()].concat(ramArgs);
+    if(this.config.debug) {
+      args.push('--debug', '--tuple-counting');
+    }
     const child = cli.spawnServer(
       this.config.codeQlPath,
       'CodeQL query server',
       ['execute', 'query-server'],
-      ['--threads', this.config.numThreads.toString()].concat(ramArgs),
+      args,
       this.logger,
       data => this.logger.logWithoutTrailingNewline(data.toString()),
       undefined, // no listener for stdout

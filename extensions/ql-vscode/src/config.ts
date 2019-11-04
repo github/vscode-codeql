@@ -57,12 +57,14 @@ const RUNNING_QUERIES_SETTING = new Setting('runningQueries', ROOT_SETTING);
 const NUMBER_OF_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_QUERIES_SETTING);
 const TIMEOUT_SETTING = new Setting('timeout', RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
+const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
 
 /** When these settings change, the running query server should be restarted. */
-const QUERY_SERVER_RESTARTING_SETTINGS = [NUMBER_OF_THREADS_SETTING, MEMORY_SETTING];
+const QUERY_SERVER_RESTARTING_SETTINGS = [NUMBER_OF_THREADS_SETTING, MEMORY_SETTING, DEBUG_SETTING];
 
 export interface QueryServerConfig {
   codeQlPath: string,
+  debug: boolean,
   numThreads: number,
   queryMemoryMb: number,
   timeoutSecs: number,
@@ -161,6 +163,10 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
 
   public get queryMemoryMb(): number {
     return MEMORY_SETTING.getValue<number>();
+  }
+
+  public get debug(): boolean {
+    return DEBUG_SETTING.getValue<boolean>();
   }
 
   public get onDidChangeQueryServerConfiguration(): Event<void> {
