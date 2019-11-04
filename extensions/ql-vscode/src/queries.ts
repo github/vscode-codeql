@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sarif from 'sarif';
@@ -30,6 +31,8 @@ export const tmpDirDisposal = {
 
 let queryCounter = 0;
 
+export class UserCancellationException extends Error { }
+
 /**
  * A collection of evaluation-time information about a query,
  * including the query itself, and where we have decided to put
@@ -46,8 +49,9 @@ class QueryInfo {
   constructor(
     public program: messages.QlProgram,
     public dbItem: DatabaseItem,
+    public queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
     public quickEvalPosition?: messages.Position,
-    public metadata?: cli.QueryMetadata
+    public metadata?: cli.QueryMetadata,
   ) {
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${queryCounter}.qlo`);
     this.resultsPath = path.join(tmpDir.name, `results${queryCounter}.bqrs`);
@@ -141,7 +145,6 @@ class QueryInfo {
       // Error dialogs are limited in size and scrollability,
       // so we include a general description of the problem,
       // and direct the user to the output window for the detailed compilation messages.
-      // TODO: distinguish better between user-written errors and DB scheme mismatches.
       qs.logger.log(`Failed to compile query ${this.program.queryPath} against database scheme ${this.program.dbschemePath}:`);
       for (const error of errors) {
         const message = error.message || "[no error message available]";
@@ -267,8 +270,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
     return params;
   }
   else {
-    logger.log('User cancelled the database upgrade.');
-    return;
+    throw new UserCancellationException('User cancelled the database upgrade.');
   }
 }
 
@@ -402,6 +404,55 @@ function getSelectedPosition(editor: vscode.TextEditor): messages.Position {
   };
 }
 
+/**
+ * Compare the dbscheme implied by the query `query` and that of the current database.
+ * If they are compatible, do nothing.
+ * If they are incompatible but the database can be upgraded, suggest that upgrade.
+ * If they are incompatible and the database cannot be upgraded, throw an error.
+ */
+async function checkDbschemeCompatibility(
+  cliServer: cli.CodeQLCliServer,
+  qs: qsClient.QueryServerClient,
+  query: QueryInfo
+): Promise<void> {
+  const searchPath = helpers.getOnDiskWorkspaceFolders();
+
+  if (query.dbItem.contents !== undefined && query.dbItem.contents.dbSchemeUri !== undefined) {
+    const info = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath);
+    function hash(filename: string): string {
+      return crypto.createHash('sha256').update(fs.readFileSync(filename)).digest('hex');
+    }
+
+    // At this point, we have learned about three dbschemes:
+
+    // this.program.dbschemePath is the dbscheme of the actual
+    // database we're querying.
+    const dbschemeOfDb = hash(query.program.dbschemePath);
+
+    // this.queryDbScheme is the dbscheme of the query we're
+    // running, including the library we've resolved it to use.
+    const dbschemeOfLib = hash(query.queryDbscheme);
+
+    // info.finalDbscheme is which database we're able to upgrade to
+    const upgradableTo = hash(info.finalDbscheme);
+
+    if (upgradableTo != dbschemeOfLib) {
+      throw new Error(`Query ${query.program.queryPath} expects database scheme ${query.queryDbscheme}, but database has scheme ${query.program.dbschemePath}, and no database upgrades are available. The database may be newer than the ql library; to fix this problem, try upgrading the ql library.`);
+    }
+
+    if (upgradableTo == dbschemeOfLib &&
+      dbschemeOfDb != dbschemeOfLib) {
+      // Try to upgrade the database
+      await upgradeDatabase(
+        qs,
+        query.dbItem,
+        vscode.Uri.file(info.finalDbscheme),
+        searchPath.map(file => vscode.Uri.file(file))
+      );
+    }
+  }
+}
+
 /** Prompts the user to save `document` if it has unsaved changes. */
 async function promptUserToSaveChanges(document: vscode.TextDocument) {
   if (document.isDirty) {
@@ -525,7 +576,8 @@ export async function compileAndRunQueryAgainstDatabase(
     logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
   }
 
-  const query = new QueryInfo(qlProgram, db, quickEvalPosition, metadata);
+  const query = new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata);
+  await checkDbschemeCompatibility(cliServer, qs, query);
   const result = await query.compileAndRun(qs);
 
   return {
