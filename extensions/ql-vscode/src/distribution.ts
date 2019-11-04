@@ -9,11 +9,21 @@ import { DistributionConfig } from "./config";
 import { ProgressUpdate, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
 
-export class GithubApiError extends Error {
-  constructor(public status: number, public body: string) {
-    super(`API call failed with status code ${status}, body: ${body}`);
-  }
-}
+/**
+ * Default value for the owner name of the extension-managed distribution on GitHub.
+ * 
+ * We set the default here rather than as a default config value so that this default is invoked
+ * upon blanking the setting.
+ */
+const DEFAULT_DISTRIBUTION_OWNER_NAME = "github";
+
+/**
+ * Default value for the repository name of the extension-managed distribution on GitHub.
+ * 
+ * We set the default here rather than as a default config value so that this default is invoked
+ * upon blanking the setting.
+ */
+const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
 
 export interface DistributionProvider {
   getCodeQlPath(): Promise<string | undefined>,
@@ -212,7 +222,9 @@ class ExtensionSpecificDistributionManager {
   }
 
   private createReleasesApiConsumer(): ReleasesApiConsumer {
-    return new ReleasesApiConsumer(this._config.ownerName, this._config.repositoryName, this._config.personalAccessToken);
+    const ownerName = this._config.ownerName ? this._config.ownerName : DEFAULT_DISTRIBUTION_OWNER_NAME;
+    const repositoryName = this._config.repositoryName ? this._config.repositoryName : DEFAULT_DISTRIBUTION_REPOSITORY_NAME;
+    return new ReleasesApiConsumer(ownerName, repositoryName, this._config.personalAccessToken);
   }
 
   private getCurrentDistributionStoragePath(): string {
@@ -487,4 +499,10 @@ interface GithubReleaseAsset {
    * The size of the asset in bytes.
    */
   size: number;
+}
+
+export class GithubApiError extends Error {
+  constructor(public status: number, public body: string) {
+    super(`API call failed with status code ${status}, body: ${body}`);
+  }
 }
