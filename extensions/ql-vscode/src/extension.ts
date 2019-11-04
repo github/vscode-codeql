@@ -37,10 +37,17 @@ let beganMainExtensionActivation = false;
 const errorStubs: Disposable[] = [];
 
 /**
+ * Holds when we are installing or checking for updates to the distribution.
+ */
+let isInstallingOrUpdatingDistribution = false;
+
+/**
  * If the user tries to execute vscode commands after extension activation is failed, give
  * a sensible error message.
+ * 
+ * @param excludedCommands List of commands for which we should not register error stubs.
  */
-function registerErrorStubs(ctx: ExtensionContext, message: (command: string) => string) {
+function registerErrorStubs(ctx: ExtensionContext, message: (command: string) => string, excludedCommands: string[]) {
   const extensionId = 'GitHub.vscode-codeql'; // TODO: Is there a better way of obtaining this?
   const extension = extensions.getExtension(extensionId);
   if (extension === undefined)
@@ -50,7 +57,9 @@ function registerErrorStubs(ctx: ExtensionContext, message: (command: string) =>
     = extension.packageJSON.contributes.commands.map((entry: { command: string }) => entry.command);
 
   stubbedCommands.forEach(command => {
-    errorStubs.push(commands.registerCommand(command, () => Window.showErrorMessage(message(command))));
+    if (excludedCommands.indexOf(command) === -1) {
+      errorStubs.push(commands.registerCommand(command, () => Window.showErrorMessage(message(command))));
+    }
   });
 }
 
@@ -65,7 +74,9 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
   const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
 
-  async function installOrUpdateDistribution(progressTitle: string): Promise<void> {
+  registerErrorStubs(ctx, command => `Can't execute ${command}: missing CodeQL command-line tools.`, [checkForUpdatesCommand]);
+
+  async function installOrUpdateDistributionWithProgressTitle(progressTitle: string): Promise<void> {
     const result = await distributionManager.checkForUpdatesToExtensionManagedDistribution();
     switch (result.kind) {
       case DistributionResultKind.AlreadyUpToDate:
@@ -100,17 +111,21 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     }
   }
 
-  registerErrorStubs(ctx, command => `Can't execute ${command}: missing CodeQL command-line tools.`);
-
-  if (await distributionManager.getCodeQlPath() === undefined) {
-    try {
-      await installOrUpdateDistribution("Installing CodeQL command-line tools");
+  async function installOrUpdateDistribution(): Promise<void> {
+    if (isInstallingOrUpdatingDistribution) {
+      throw new Error("Already installing or updating a distribution");
     }
-    catch (e) {
+    isInstallingOrUpdatingDistribution = true;
+    try {
+      const codeQlInstalled = await distributionManager.getCodeQlPath() !== undefined;
+      const messageText = ctx.globalState.get(shouldUpdateOnNextActivationKey) ? "Updating CodeQL command-line tools" :
+                          codeQlInstalled ? "Checking for updates to CodeQL command-line tools" : "Installing CodeQL command-line tools";
+      await installOrUpdateDistributionWithProgressTitle(messageText);
+    } catch (e) {
       if (e instanceof GithubApiError && (e.status == 404 || e.status == 403)) {
-        const errorMessageResponse = Window.showErrorMessage(`Unable to download CodeQL command-line tools. See
-https://github.com/github/vscode-codeql/blob/master/extensions/ql-vscode/README.md for more details about how
-to obtain CodeQL command-line tools.`, 'Edit Settings');
+        const errorMessageResponse = Window.showErrorMessage("Unable to download CodeQL command-line tools. See " + 
+          "https://github.com/github/vscode-codeql/blob/master/extensions/ql-vscode/README.md for more details about how " +
+          "to obtain CodeQL command-line tools.", "Edit Settings");
         // We're deliberately not `await`ing this promise, just
         // asynchronously letting the user follow the convenience link
         // if they want to.
@@ -121,17 +136,27 @@ to obtain CodeQL command-line tools.`, 'Edit Settings');
         });
       }
       throw e;
+    } finally {
+      isInstallingOrUpdatingDistribution = false;
     }
   }
 
-  if (ctx.globalState.get(shouldUpdateOnNextActivationKey)) {
-    await installOrUpdateDistribution("Updating CodeQL command-line tools");
+  ctx.subscriptions.push(distributionConfigListener.onDidChangeDistributionConfiguration(async () => {
+    if (await distributionManager.getCodeQlPath() === undefined && !isInstallingOrUpdatingDistribution) {
+      await installOrUpdateDistribution();
+    }
+  }));
+
+  ctx.subscriptions.push(commands.registerCommand(checkForUpdatesCommand, installOrUpdateDistribution));
+
+  if (await distributionManager.getCodeQlPath() === undefined || ctx.globalState.get(shouldUpdateOnNextActivationKey)) {
+    await installOrUpdateDistribution();
   }
 
-  await activateWithInstalledDistribution(ctx, distributionManager, installOrUpdateDistribution);
+  await activateWithInstalledDistribution(ctx, distributionManager);
 }
 
-async function activateWithInstalledDistribution(ctx: ExtensionContext, distributionManager: DistributionManager, installOrUpdateDistribution: (progressTitle: string) => Promise<void>) {
+async function activateWithInstalledDistribution(ctx: ExtensionContext, distributionManager: DistributionManager) {
   beganMainExtensionActivation = true;
   // Remove any error stubs command handlers left over from first part
   // of activation.
@@ -207,9 +232,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   ctx.subscriptions.push(commands.registerCommand('codeQL.runQuery', async () => await compileAndRunQuery(false)));
   ctx.subscriptions.push(commands.registerCommand('codeQL.quickEval', async () => await compileAndRunQuery(true)));
 
-  ctx.subscriptions.push(commands.registerCommand('codeQL.checkForUpdatesToTools', async () => {
-    await installOrUpdateDistribution("Checking for updates to CodeQL command-line tools");
-  }));
-
   ctx.subscriptions.push(client.start());
 }
+
+const checkForUpdatesCommand = 'codeQL.checkForUpdatesToTools';
