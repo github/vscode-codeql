@@ -12,8 +12,10 @@ export interface ResultTableProps {
 }
 
 export const className = 'vscode-codeql__result-table';
-export const tableMetadataClassName = `${className}-metadata`;
+export const tableSelectionHeaderClassName = 'vscode-codeql__table-selection-header';
+export const toggleDiagnosticsClassName = `${className}-toggle-diagnostics`;
 export const selectedClassName = `${className}--selected`;
+export const toggleDiagnosticsSelectedClassName = `${toggleDiagnosticsClassName}--selected`;
 export const evenRowClassName = 'vscode-codeql__result-table-row--even';
 export const oddRowClassName = 'vscode-codeql__result-table-row--odd';
 export const pathRowClassName = 'vscode-codeql__result-table-row--path';

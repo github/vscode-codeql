@@ -1,7 +1,7 @@
-import { ResultTableProps, className, selectedClassName, tableMetadataClassName, oddRowClassName, evenRowClassName, renderLocation } from "./result-table-utils";
-import * as React from "react";
 import cx from 'classnames';
-import { RawTableResultSet, vscode, ResultValue } from "./results";
+import * as React from "react";
+import { className, evenRowClassName, oddRowClassName, renderLocation, ResultTableProps, selectedClassName } from "./result-table-utils";
+import { RawTableResultSet, ResultValue } from "./results";
 
 export type RawTableProps = ResultTableProps & { resultSet: RawTableResultSet };
 
@@ -14,26 +14,13 @@ export class RawTable extends React.Component<RawTableProps, {}> {
   }
 
   render(): React.ReactNode {
-    const { resultSet, selected, databaseUri, resultsPath } = this.props;
+    const { resultSet, selected, databaseUri } = this.props;
 
     const tableClassName = cx(className, {
       [selectedClassName]: selected
     });
 
-    return <div>
-      <div className={tableMetadataClassName}>
-      <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
-      <input type="checkbox" id="toggle-diagnostics" name="toggle-diagnostics" onChange={(e) => {
-        if(resultsPath !== undefined) {
-            vscode.postMessage({
-              t: 'toggleDiagnostics',
-              resultsPath: resultsPath,
-              databaseUri: databaseUri,
-              visible: e.target.checked
-            });
-        }}} />
-      </div>
-    <table className={tableClassName}>
+    return <table className={tableClassName}>
       <thead>
         <tr>
           {
@@ -66,8 +53,7 @@ export class RawTable extends React.Component<RawTableProps, {}> {
           )
         }
       </tbody>
-    </table>
-    </div>;
+    </table>;
   }
 }
 
