@@ -436,11 +436,12 @@ export async function compileAndRunQueryAgainstDatabase(
   // Check whether the query has an entirely different schema from the
   // database. (Queries that merely need the database to be upgraded
   // won't trigger this check)
+  // This test will produce confusing results if we ever change the name of the database schema files.
   const querySchemaName = path.basename(packConfig.dbscheme);
   const dbSchemaName = path.basename(db.contents.dbSchemeUri.fsPath);
   if (querySchemaName != dbSchemaName) {
     logger.log(`Query schema was ${querySchemaName}, but database schema was ${dbSchemaName}.`);
-    throw new Error(`Query compilation failed. Query should be run with database of the same language.`);
+    throw new Error(`The query ${path.basename(queryPath)} cannot be run against the selected database: their target languages are different. Please select a different database and try again.`);
   }
 
   const qlProgram: messages.QlProgram = {
