@@ -140,10 +140,6 @@ interface Results {
   database: DatabaseInfo;
 }
 
-interface ResultsViewProps {
-  resultsInfo: ResultsInfo | null;
-}
-
 interface ResultsState {
   // We use `null` instead of `undefined` here because in React, `undefined` is
   // used to mean "did not change" when updating the state of a component.
@@ -154,17 +150,14 @@ interface ResultsState {
 
 interface ResultsViewState {
   displayedResults: ResultsState;
-  nextResults: ResultsState | null;
+  nextResultsInfo: ResultsInfo | null;
   isExpectingResultsUpdate: boolean;
 }
 
 /**
  * A minimal state container for displaying results.
  */
-class App extends React.Component<ResultsViewProps, ResultsViewState> {
-  private currentResultsInfo: ResultsInfo | null = null;
-  private vscodeMessageHandler: ((ev: MessageEvent) => void) | undefined = undefined;
-
+class App extends React.Component<{}, ResultsViewState> {
   constructor(props: any) {
     super(props);
     this.state = {
@@ -173,115 +166,103 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
         results: null,
         errorMessage: ''
       },
-      nextResults: null,
+      nextResultsInfo: null,
       isExpectingResultsUpdate: true
     };
   }
 
-  static getDerivedStateFromProps(nextProps: Readonly<ResultsViewProps>,
-    prevState: ResultsViewState): ResultsViewState | null {
+  handleMessage(msg: IntoResultsViewMsg): void {
+    switch (msg.t) {
+      case 'setState':
+        this.updateStateWithNewResultsInfo({
+          resultsPath: msg.resultsPath,
+          sortedResultsMap: new Map(Object.entries(msg.sortedResultsMap)),
+          database: msg.database,
+          interpretation: msg.interpretation,
+          shouldKeepOldResultsWhileRendering: msg.shouldKeepOldResultsWhileRendering
+        });
 
-    const isResultsInfoSame = (prevState.nextResults && nextProps.resultsInfo === prevState.nextResults.resultsInfo) ||
-      (!prevState.nextResults && nextProps.resultsInfo && nextProps.resultsInfo === prevState.displayedResults.resultsInfo);
-
-    // Only update if `resultsInfo` changed.
-    if (isResultsInfoSame) {
-      return null;
+        this.loadResults();
+        break;
+      case 'resultsUpdating':
+        this.setState({
+          isExpectingResultsUpdate: true
+        });
+        break;
+      default:
+        assertNever(msg);
     }
+  }
+  
+  private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
+    this.setState(prevState => {
+      const stateWithDisplayedResults = (displayedResults: ResultsState) => ({
+        displayedResults,
+        isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
+        nextResultsInfo: resultsInfo
+      });
 
-    const stateWithDisplayedResults = (displayedResults: ResultsState) => ({
-      displayedResults,
-      isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
-      nextResults: {
-        resultsInfo: nextProps.resultsInfo,
-        results: null,
-        errorMessage: ''
+      if (!prevState.isExpectingResultsUpdate && resultsInfo === null) {
+        // No results to display
+        return stateWithDisplayedResults({
+          resultsInfo: null,
+          results: null,
+          errorMessage: 'No results to display'
+        });
       }
+      if (!resultsInfo || !resultsInfo.shouldKeepOldResultsWhileRendering) {
+        // Display loading message
+        return stateWithDisplayedResults({
+          resultsInfo: null,
+          results: null,
+          errorMessage: 'Loading results…'
+        });
+      }
+      return stateWithDisplayedResults(prevState.displayedResults);
     });
-
-    if (!prevState.isExpectingResultsUpdate && nextProps.resultsInfo === null) {
-      // No results to display
-      return stateWithDisplayedResults({
-        resultsInfo: null,
-        results: null,
-        errorMessage: 'No results to display'
-      });
-    }
-    if (!nextProps.resultsInfo || !nextProps.resultsInfo.shouldKeepOldResultsWhileRendering) {
-      // Display loading message
-      return stateWithDisplayedResults({
-        resultsInfo: null,
-        results: null,
-        errorMessage: 'Loading results…'
-      });
-    }
-    return stateWithDisplayedResults(prevState.displayedResults);
   }
 
-  componentDidMount() {
-    this.vscodeMessageHandler = evt => this.handleMessage(evt.data as IntoResultsViewMsg);
-    window.addEventListener('message', this.vscodeMessageHandler);
-    this.loadResults(this.props.resultsInfo);
-  }
-
-  componentDidUpdate(prevProps: Readonly<ResultsViewProps>, prevState: Readonly<ResultsViewState>):
-    void {
-
-    if (this.state.nextResults !== null) {
-      this.loadResults(this.props.resultsInfo);
-    }
-  }
-
-  componentWillUnmount() {
-    if (this.vscodeMessageHandler) {
-      window.removeEventListener('message', this.vscodeMessageHandler);
-    }
-    // Ensure that we don't call `setState` after we're unmounted.
-    this.currentResultsInfo = null;
-  }
-
-  private async loadResults(resultsInfo: ResultsInfo | null): Promise<void> {
-    if (resultsInfo === this.currentResultsInfo) {
-      // No change
+  private async loadResults(): Promise<void> {
+    const resultsInfo = this.state.nextResultsInfo;
+    if (resultsInfo === null) {
       return;
     }
 
-    this.currentResultsInfo = resultsInfo;
-    if (resultsInfo !== null) {
-      let results: Results | null = null;
-      let statusText: string = '';
-      try {
-        results = {
-          resultSets: await this.getResultSets(resultsInfo),
-          database: resultsInfo.database,
-          sortStates: this.getSortStates(resultsInfo)
-        };
-      }
-      catch (e) {
-        let errorMessage: string;
-        if (e instanceof Error) {
-          errorMessage = e.message;
-        }
-        else {
-          errorMessage = 'Unknown error';
-        }
-
-        statusText = `Error loading results: ${errorMessage}`;
-      }
-
-      // Only set state if this results info is still current.
-      if (resultsInfo === this.currentResultsInfo) {
-        this.setState({
-          displayedResults: {
-            resultsInfo: resultsInfo,
-            results: results,
-            errorMessage: statusText
-          },
-          nextResults: null,
-          isExpectingResultsUpdate: false
-        });
-      }
+    let results: Results | null = null;
+    let statusText: string = '';
+    try {
+      results = {
+        resultSets: await this.getResultSets(resultsInfo),
+        database: resultsInfo.database,
+        sortStates: this.getSortStates(resultsInfo)
+      };
     }
+    catch (e) {
+      let errorMessage: string;
+      if (e instanceof Error) {
+        errorMessage = e.message;
+      } else {
+        errorMessage = 'Unknown error';
+      }
+
+      statusText = `Error loading results: ${errorMessage}`;
+    }
+
+    this.setState(prevState => {
+      // Only set state if this results info is still current.
+      if (resultsInfo !== prevState.nextResultsInfo) {
+        return null;
+      }
+      return {
+        displayedResults: {
+          resultsInfo,
+          results,
+          errorMessage: statusText
+        },
+        nextResultsInfo: null,
+        isExpectingResultsUpdate: false
+      }
+    });
   }
 
   private async getResultSets(resultsInfo: ResultsInfo): Promise<readonly ResultSet[]> {
@@ -315,55 +296,28 @@ class App extends React.Component<ResultsViewProps, ResultsViewState> {
         database={displayedResults.results.database}
         resultsPath={displayedResults.resultsInfo ? displayedResults.resultsInfo.resultsPath : undefined}
         sortStates={displayedResults.results.sortStates}
-        isLoadingNewResults={this.state.isExpectingResultsUpdate || this.state.nextResults !== null} />;
+        isLoadingNewResults={this.state.isExpectingResultsUpdate || this.state.nextResultsInfo !== null} />;
     }
     else {
       return <span>{displayedResults.errorMessage}</span>;
     }
   }
 
-  handleMessage(msg: IntoResultsViewMsg): void {
-    switch (msg.t) {
-      case 'setState':
-        break;
-      case 'resultsUpdating':
-        this.setState({
-          isExpectingResultsUpdate: true
-        });
-        break;
-      default:
-        assertNever(msg);
+  componentDidMount() {
+    this.vscodeMessageHandler = evt => this.handleMessage(evt.data as IntoResultsViewMsg);
+    window.addEventListener('message', this.vscodeMessageHandler);
+  }
+
+  componentWillUnmount() {
+    if (this.vscodeMessageHandler) {
+      window.removeEventListener('message', this.vscodeMessageHandler);
     }
   }
+
+  private vscodeMessageHandler: ((ev: MessageEvent) => void) | undefined = undefined;
 }
 
-function renderApp(resultsInfo: ResultsInfo | null): void {
-  Rdom.render(
-    <App resultsInfo={resultsInfo} />,
-    document.getElementById('root')
-  );
-}
-
-function handleMessage(msg: IntoResultsViewMsg): void {
-  switch (msg.t) {
-    case 'setState':
-      renderApp({
-        resultsPath: msg.resultsPath,
-        sortedResultsMap: new Map(Object.entries(msg.sortedResultsMap)),
-        database: msg.database,
-        interpretation: msg.interpretation,
-        shouldKeepOldResultsWhileRendering: msg.shouldKeepOldResultsWhileRendering
-      });
-      break;
-    case 'resultsUpdating':
-      break;
-    default:
-      assertNever(msg);
-  }
-}
-
-renderApp(null);
-
-window.addEventListener('message', event => {
-  handleMessage(event.data as IntoResultsViewMsg);
-});
+Rdom.render(
+  <App />,
+  document.getElementById('root')
+);
