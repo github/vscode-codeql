@@ -27,6 +27,8 @@ You can also access these settings from the Command Palette (**Ctrl+Shift+P** or
 
 ### Configuring a CodeQL distribution
 
+<font color="red">TODO: Edit this section before public release.</font>
+
 The extension uses the CodeQL CLI tools to compile and run queries. You can have the extension automatically manage this for you (recommended), or manually specify where to find the CodeQL CLI.
 
 When the extension is publicly released, if you choose to have the extension manage the CLI tools automatically, this will require no configuration.
@@ -35,13 +37,11 @@ Until then, you need to add the following configuration to your VS Code user or 
 ```json
 "codeQL.distribution.includePrerelease": true,
 "codeQL.distribution.personalAccessToken": "SUBSTITUTE THIS WITH YOUR PERSONAL ACCESS TOKEN",
-"codeQL.distribution.owner": "github",
-"codeQL.distribution.repository": "codeql-cli-binaries",
 ```
 
 The extension needs a personal access token to authenticate with the [private binaries repository](https://github.com/github/codeql-cli-binaries). The token must be assigned the [`repo`](https://developer.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps/) scope to have access to the releases of this repository. For details of how to obtain a personal access token, see [Creating a personal access token for the command line](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) and [Authorizing a personal access token for use with SAML single sign-on](https://help.github.com/en/github/authenticating-to-github/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on).
 
-The extension will check for updates every day. To check for updates immediately, you can use the **CodeQL: Check for Updates to Command-Line Tools** command.
+To check for updates to the distribution, you can use the **CodeQL: Check for Updates to Command-Line Tools** command.
 
 If you have any difficulty setting up CodeQL CLI access, see the **CodeQL Extension Log** in the **Output** view for any error messages.
 
