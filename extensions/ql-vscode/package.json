@@ -232,7 +232,11 @@
       "commandPalette": [
         {
           "command": "codeQL.runQuery",
-          "when": "editorLangId == ql && resourceExtname == .ql"
+          "when": "resourceLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.quickEval",
+          "when": "editorLangId == ql"
         },
         {
           "command": "codeQL.setCurrentDatabase",
