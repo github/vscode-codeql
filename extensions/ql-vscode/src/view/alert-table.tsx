@@ -207,14 +207,23 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         }
         rows.push(
           <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
-            {rowHeader}<td>{msg}</td>
+            <td>{rowHeader}</td>
+            <td colSpan={3}>{msg}</td>
           </tr>
         );
       }
       else {
         rows.push(
           <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
-            <td onMouseDown={toggler(expansionIndex)}>{indicator} {octiconListUnordered}</td><td>{msg}</td>
+            <td className="vscode-codeql__icon-cell" onMouseDown={toggler(expansionIndex)}>
+              {indicator}
+            </td>
+            <td className="vscode-codeql__icon-cell">
+              {octiconListUnordered}
+            </td>
+            <td colSpan={2}>
+              {msg}
+            </td>
           </tr>
         );
         resultIndex++;
@@ -226,8 +235,16 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
               const currentPathExpanded = this.state.expanded[expansionIndex];
               if (currentResultExpanded) {
-                const indicator = currentPathExpanded ? '-' : '+';
-                rows.push(<tr><td onMouseDown={toggler(expansionIndex)}>{indicator} Path</td></tr>);
+                const indicator = currentPathExpanded ? octiconChevronDown : octiconChevronDown;
+                rows.push(
+                  <tr>
+                    <td></td>
+                    <td onMouseDown={toggler(expansionIndex)}>{indicator}</td>
+                    <td className="vscode-codeql__text-center" colSpan={2}>
+                      Path
+                    </td>
+                  </tr>
+                );
               }
               expansionIndex++;
 
@@ -237,7 +254,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
                   const msg = step.location !== undefined && step.location.message !== undefined ?
                     renderSarifLocation(step.location.message.text, step.location) :
                     '[no location]';
-                  rows.push(<tr className={pathRowClassName}><td>{pathIndex}</td><td>- {msg}</td></tr>);
+                  rows.push(
+                    <tr className={pathRowClassName}>
+                      <td></td>
+                      <td></td>
+                      <td className="vscode-codeql__path-index-cell">{pathIndex}</td>
+                      <td>{msg}</td>
+                    </tr>);
                   pathIndex++;
                 }
               }

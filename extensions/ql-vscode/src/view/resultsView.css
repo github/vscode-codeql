@@ -73,6 +73,15 @@ select {
   background-color: rgba(209,213,218, 0.3);
 }
 
+td.vscode-codeql__icon-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+td.vscode-codeql__path-index-cell {
+  text-align: right;
+}
+
 .octicon {
   fill: inherit;
 }
