@@ -179,9 +179,18 @@ export async function interpretResults(server: cli.CodeQLCliServer, queryInfo: Q
   if (metadata == undefined) {
     throw new Error('Can\'t interpret results without query metadata');
   }
-  const { kind, id } = metadata;
-  if (kind == undefined || id == undefined) {
-    throw new Error('Can\'t interpret results without query metadata including kind and id');
+  let { kind, id } = metadata;
+  if (kind == undefined) {
+    throw new Error('Can\'t interpret results without query metadata including kind');
+  }
+  if (id == undefined) {
+    // Interpretation per se doesn't really require an id, but the
+    // SARIF format does, so in the absence of one, we invent one
+    // based on the query path.
+    //
+    // Just to be careful, sanitize to remove '/' since SARIF (section
+    // 3.27.5 "ruleId property") says that it has special meaning.
+    id = queryInfo.program.queryPath.replace(/\//g, '-');
   }
   return await server.interpretBqrs({ kind, id }, queryInfo.resultsPath, queryInfo.interpretedResultsPath, sourceInfo);
 }
@@ -379,7 +388,7 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
     title: "Clearing Cache",
     cancellable: false,
   }, (progress, token) =>
-    qs.sendRequest(messages.clearCache, params, token, progress)
+      qs.sendRequest(messages.clearCache, params, token, progress)
   );
 }
 
