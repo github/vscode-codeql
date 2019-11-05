@@ -215,7 +215,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       else {
         rows.push(
           <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
-            <td className="vscode-codeql__icon-cell" onMouseDown={toggler(expansionIndex)}>
+            <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(expansionIndex)}>
               {indicator}
             </td>
             <td className="vscode-codeql__icon-cell">
@@ -235,11 +235,11 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
               const currentPathExpanded = this.state.expanded[expansionIndex];
               if (currentResultExpanded) {
-                const indicator = currentPathExpanded ? octiconChevronDown : octiconChevronDown;
+                const indicator = currentPathExpanded ? octiconChevronDown : octiconChevronRight;
                 rows.push(
                   <tr>
-                    <td></td>
-                    <td onMouseDown={toggler(expansionIndex)}>{indicator}</td>
+                    <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
+                    <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(expansionIndex)}>{indicator}</td>
                     <td className="vscode-codeql__text-center" colSpan={2}>
                       Path
                     </td>
@@ -256,8 +256,8 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
                     '[no location]';
                   rows.push(
                     <tr className={pathRowClassName}>
-                      <td></td>
-                      <td></td>
+                      <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
+                      <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                       <td className="vscode-codeql__path-index-cell">{pathIndex}</td>
                       <td>{msg}</td>
                     </tr>);
