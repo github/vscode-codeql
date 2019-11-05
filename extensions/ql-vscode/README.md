@@ -1,27 +1,31 @@
 # CodeQL extension for Visual Studio Code
 
-This extension updates VS Code to include rich language support for using [CodeQL](https://help.semmle.com/codeql) to find problems in code bases.
-In particular, it adds IntelliSense for query and library files, and provides an easy way to explore the large repository of [CodeQL security queries](https://github.com/Semmle/ql).
+This project is an extension for Visual Studio Code that adds rich language support for [CodeQL](https://help.semmle.com/codeql). It's used to find problems in code bases using CodeQL. In particular, the extension:
+
+* Enables you to use CodeQL to query databases and discover problems in code bases.
+* Shows the flow of data through the results of path queries, which is essential for triaging security results.
+* Provides a large, open source repository of [CodeQL security queries](https://github.com/Semmle/ql) to explore.
+* Adds IntelliSense to support you writing and editing your own CodeQL query and library files.
 
 ## Quick start overview
 
 The information in this `README` file describes the quickest way to start using CodeQL.
-For information about other configurations, see the separate [help topics](https://help.semmle.com/codeql/codeql-for-vscode.html).
+For information about other configurations, see the separate [CodeQL help](https://help.semmle.com/codeql/codeql-for-vscode.html).
 
-**Quick start: Installation and configuration**
+**Quick start: Installing and configuring the extension**
 
 1. [Install the extension](#installing-the-extension).
 1. Beta release only: [Configure access to the CodeQL CLI](#configuring-access-to-the-codeql-cli).
 1. [Clone the CodeQL starter workspace](#cloning-the-codeql-starter-workspace).
 
-**Quick start: using CodeQL**
+**Quick start: Using CodeQL**
 
 1. [Import a database from LGTM.com](#importing-a-database-from-lgtm.com).
 1. [Run a query](#running-a-query).
 
 -----
 
-## Quick start: Installation and configuration
+## Quick start: Installing and configuring the extension
 
 ### Installing the extension
 
@@ -63,11 +67,11 @@ For information about configuring the extension to use other versions of the Cod
 
 When you're working with CodeQL, you need access to the standard CodeQL libraries and queries.
 Initially, we recommend that you clone and use the ready-to-use starter workspace, https://github.com/github/vscode-codeql-starter/.
-This includes libraries and queries for the main supported languages, with folders set up ready for your custom queries. After cloning the workspace, you can use it in the same way as any other VS Code workspace—with the added advantage that you can easily update the CodeQL libraries.
+This includes libraries and queries for the main supported languages, with folders set up ready for your custom queries. After cloning the workspace (use `git clone --recursive`), you can use it in the same way as any other VS Code workspace—with the added advantage that you can easily update the CodeQL libraries.
 
 For information about how to add further languages, or to configure an existing workspace for CodeQL, see [TODO](https://help.semmle.com/codeql/codeql-for-vscode.html)
 
-## Quick start: using CodeQL
+## Quick start: Using CodeQL
 
 You can find all the commands contributed by the extension in the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**) by typing `CodeQL`, many of them are also accessible through the interface, and via keyboard shortcuts.
 
@@ -94,10 +98,10 @@ The instructions below assume that you're using the CodeQL starter workspace, or
 1. Open a query (`.ql`) file.
 3. Right-click in the query window and select **CodeQL: Run Query**. Alternatively, open the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**), type `Run Query`, then select **CodeQL: Run Query**.
 
-The CodeQL CLI runs the query on the current database and reports progress in the bottom right corner of the application.
+The CodeQL extension runs the query on the current database using the CLI and reports progress in the bottom right corner of the application.
 When the results are ready, they're displayed in the CodeQL Query Results view. Use the dropdown menu to choose between different forms of result output.
 
-If the query fails with: `Query compilation failed.` Check that the query and the database are both for the same target language.
+If there are any problems running a query, a notification is displayed in the bottom right corner of the application. In addition to the error message, the notification includes details of how to fix the problem.
 
 ## What next?
 
