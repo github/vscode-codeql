@@ -5,7 +5,7 @@
 }
 
 .vscode-codeql__result-table--selected {
-  display: block;
+  display: table;
 }
 
 .vscode-codeql__table-selection-header {
@@ -71,4 +71,33 @@ select {
 
 .vscode-codeql__result-table-row--even {
   background-color: rgba(209,213,218, 0.3);
+}
+
+td.vscode-codeql__icon-cell {
+  text-align: center;
+  position: relative;
+  white-space: nowrap;
+  margin: 0;
+  padding: 0;
+}
+
+td.vscode-codeql__dropdown-cell:hover {
+  cursor: pointer;
+}
+
+td.vscode-codeql__path-index-cell {
+  text-align: right;
+}
+
+.vscode-codeql__vertical-rule {
+  border-left: 1px solid var(--vscode-dropdown-border);
+  height: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.octicon {
+  fill: var(--vscode-editor-foreground);
+  margin-top: .25em;
 }
