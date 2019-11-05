@@ -98,5 +98,5 @@ td.vscode-codeql__path-index-cell {
 }
 
 .octicon {
-  fill: inherit;
+  fill: var(--vscode-editor-foreground);
 }
