@@ -6,6 +6,7 @@ import { DatabaseItem, DatabaseManager } from "./databases";
 import { logger } from "./logging";
 import { clearCacheInDatabase, upgradeDatabase } from "./queries";
 import * as qsClient from './queryserver-client';
+import { getOnDiskWorkspaceFolders } from "./helpers";
 
 type ThemableIconPath = { light: string, dark: string } | string;
 
@@ -175,11 +176,7 @@ export class DatabaseUI extends DisposableObject {
     }
 
     // Search for upgrade scripts in any workspace folders available
-    const searchPath: string[] = [];
-    if (workspace.workspaceFolders !== undefined) {
-      workspace.workspaceFolders
-        .forEach(folder => { if (folder.uri.scheme === 'file') { searchPath.push(folder.uri.fsPath); } });
-    }
+    const searchPath: string[] = getOnDiskWorkspaceFolders();
 
     const upgradeInfo = await this.cliserver.resolveUpgrades(
       databaseItem.contents.dbSchemeUri.fsPath,

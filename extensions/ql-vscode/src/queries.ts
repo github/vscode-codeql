@@ -390,17 +390,6 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
   );
 }
 
-/** Gets all active workspace folders that are on the filesystem. */
-function getOnDiskWorkspaceFolders() {
-  const workspaceFolders = vscode.workspace.workspaceFolders || [];
-  let diskWorkspaceFolders: string[] = [];
-  for (const workspaceFolder of workspaceFolders) {
-    if (workspaceFolder.uri.scheme === "file")
-      diskWorkspaceFolders.push(workspaceFolder.uri.fsPath)
-  }
-  return diskWorkspaceFolders;
-}
-
 /** Gets the selected position within the given editor. */
 function getSelectedPosition(editor: vscode.TextEditor): messages.Position {
   const pos = editor.selection.start;
@@ -500,7 +489,7 @@ export async function compileAndRunQueryAgainstDatabase(
   const { queryPath, quickEvalPosition } = await determineSelectedQuery(selectedQueryUri, quickEval);
 
   // Get the workspace folder paths.
-  const diskWorkspaceFolders = getOnDiskWorkspaceFolders();
+  const diskWorkspaceFolders = helpers.getOnDiskWorkspaceFolders();
   // Figure out the library path for the query.
   const packConfig = await cliServer.resolveLibraryPath(diskWorkspaceFolders, queryPath);
 
