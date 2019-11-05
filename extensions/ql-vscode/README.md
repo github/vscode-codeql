@@ -104,7 +104,7 @@ If the query fails with: `Query compilation failed.` Check that the query and th
 For more information about the CodeQL extension, see [CodeQL for Visual Studio Code](https://help.semmle.com/codeql/codeql-for-vscode.html). Otherwise, you could:
 
 * [Create a database for a different codebase](hhttps://help.semmle.com/codeql/codeql-cli/procedures/create-codeql-database.html).
-* [Try out variant analysis](https://help.semmle.com/QL/learn-ql/ql-training.html)
+* [Try out variant analysis](https://help.semmle.com/QL/learn-ql/ql-training.html).
 * [Learn more about CodeQL](https://help.semmle.com/QL/learn-ql/)
 * [Read how security researchers use CodeQL to find CVEs](https://blog.semmle.com/tags/cve/)
 
