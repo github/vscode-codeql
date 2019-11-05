@@ -1,11 +1,11 @@
 import cx from 'classnames';
+import * as octicons from './octicons';
 import * as path from 'path';
-import * as React from "react";
-import * as Sarif from "sarif";
-import { LocationStyle, FivePartLocation, StringLocation } from "semmle-bqrs";
-import { className, evenRowClassName, oddRowClassName, pathRowClassName, renderLocation, ResultTableProps, selectedClassName } from "./result-table-utils";
-import { PathTableResultSet } from "./results";
-
+import * as React from 'react';
+import * as Sarif from 'sarif';
+import { FivePartLocation, LocationStyle, StringLocation } from 'semmle-bqrs';
+import { className, evenRowClassName, oddRowClassName, pathRowClassName, renderLocation, ResultTableProps, selectedClassName } from './result-table-utils';
+import { PathTableResultSet } from './results';
 
 export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
 export interface PathTableState {
@@ -198,18 +198,6 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     }
 
     const noResults = <span>No Results</span>; // TODO: Maybe make this look nicer
-    const octiconChevronDown = <svg className="octicon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.976 10.072l4.357-4.357.62.618L8.284 11h-.618L3 6.333l.62-.618 4.356 4.357z" />
-    </svg>;
-    const octiconChevronRight = <svg className="octicon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M5.7 13.7L5 13l4.6-4.6L5 3.7l.7-.7 5 5v.7l-5 5z" />
-    </svg>;
-    const octiconListUnordered = <svg className="octicon octicon-light" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M2 3H1v1h1V3zm0 3H1v1h1V6zM1 9h1v1H1V9zm1 3H1v1h1v-1zm2-9h11v1H4V3zm11 3H4v1h11V6zM4 9h11v1H4V9zm11 3H4v1h11v-1z" />
-    </svg>;
-    const octiconInfo = <svg className="octicon octicon-light" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M8.568 1.03a6.8 6.8 0 0 1 4.192 2.02 7.06 7.06 0 0 1 .46 9.39 6.85 6.85 0 0 1-8.58 1.74 7 7 0 0 1-3.12-3.5 7.12 7.12 0 0 1-.23-4.71 7 7 0 0 1 2.77-3.79 6.8 6.8 0 0 1 4.508-1.15zm.472 12.85a5.89 5.89 0 0 0 3.41-2.07 6.07 6.07 0 0 0-.4-8.06 5.82 5.82 0 0 0-7.43-.74 6.06 6.06 0 0 0 .5 10.29 5.81 5.81 0 0 0 3.92.58zM8.51 7h-1v4h1V7zm0-2h-1v1h1V5z" />
-    </svg>;
 
     let resultIndex = 0;
     let expansionIndex = 0;
@@ -225,7 +213,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           renderRelatedLocations(text, result.relatedLocations);
 
       const currentResultExpanded = this.state.expanded[expansionIndex];
-      const indicator = currentResultExpanded ? octiconChevronDown : octiconChevronRight;
+      const indicator = currentResultExpanded ? octicons.chevronDown : octicons.chevronRight;
       const location = result.locations !== undefined && result.locations.length > 0 &&
         renderSarifLocation(result.locations[0]);
       const locationCells = <td>{location}</td>;
@@ -233,7 +221,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       if (result.codeFlows === undefined) {
         rows.push(
           <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
-            <td className="vscode-codeql__icon-cell">{octiconInfo}</td>
+            <td className="vscode-codeql__icon-cell">{octicons.info}</td>
             <td colSpan={4}>
               {msg}
             </td>
@@ -248,7 +236,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
               {indicator}
             </td>
             <td className="vscode-codeql__icon-cell">
-              {octiconListUnordered}
+              {octicons.listUnordered}
             </td>
             <td colSpan={2}>
               {msg}
@@ -265,7 +253,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
               const currentPathExpanded = this.state.expanded[expansionIndex];
               if (currentResultExpanded) {
-                const indicator = currentPathExpanded ? octiconChevronDown : octiconChevronRight;
+                const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
                 rows.push(
                   <tr>
                     <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
