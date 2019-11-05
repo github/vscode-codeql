@@ -1,4 +1,4 @@
-import { window as Window, CancellationToken, ProgressOptions } from 'vscode';
+import { window as Window, CancellationToken, ProgressOptions, workspace } from 'vscode';
 import { logger } from './logging';
 
 export interface ProgressUpdate {
@@ -111,4 +111,15 @@ export async function showInformationMessageWithAction(message: string, actionMe
 export function assertNever(value: never): never {
   logger.log("Internal error: assertNever failure");
   return value;
+}
+
+/** Gets all active workspace folders that are on the filesystem. */
+export function getOnDiskWorkspaceFolders() {
+  const workspaceFolders = workspace.workspaceFolders || [];
+  let diskWorkspaceFolders: string[] = [];
+  for (const workspaceFolder of workspaceFolders) {
+    if (workspaceFolder.uri.scheme === "file")
+      diskWorkspaceFolders.push(workspaceFolder.uri.fsPath)
+  }
+  return diskWorkspaceFolders;
 }
