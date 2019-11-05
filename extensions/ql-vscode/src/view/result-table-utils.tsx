@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { isResolvableLocation, LocationStyle, LocationValue } from 'semmle-bqrs';
+import { isResolvableLocation, LocationStyle, LocationValue, FivePartLocation } from 'semmle-bqrs';
 import { ResultSet, vscode } from './results';
 import { SortState } from '../interface-types';
 
@@ -20,6 +20,21 @@ export const evenRowClassName = 'vscode-codeql__result-table-row--even';
 export const oddRowClassName = 'vscode-codeql__result-table-row--odd';
 export const pathRowClassName = 'vscode-codeql__result-table-row--path';
 
+export function jumpToLocationHandler(
+  loc: FivePartLocation,
+  databaseUri: string
+): (e: React.MouseEvent) => void {
+  return (e) => {
+    vscode.postMessage({
+      t: 'viewSourceFile',
+      loc,
+      databaseUri
+    });
+    e.preventDefault();
+    e.stopPropagation();
+  };
+}
+
 /**
  * Render a location as a link which when clicked displays the original location.
  */
@@ -30,15 +45,9 @@ export function renderLocation(loc: LocationValue | undefined, label: string | u
     switch (loc.t) {
       case LocationStyle.FivePart: {
         if (isResolvableLocation(loc)) {
-          return <a href="#" className="vscode-codeql__result-table-location-link" onClick={(e) => {
-            vscode.postMessage({
-              t: 'viewSourceFile',
-              loc,
-              databaseUri
-            });
-            e.preventDefault();
-            e.stopPropagation();
-          }}>{label}</a>;
+          return <a href="#"
+            className="vscode-codeql__result-table-location-link"
+            onClick={jumpToLocationHandler(loc, databaseUri)}>{label}</a>;
         }
         else {
           return <span>{label}</span>;
