@@ -17,7 +17,7 @@ For information about other configurations, see the separate [help topics](https
 **Quick start: using CodeQL**
 
 1. [Import a database from LGTM.com](#importing-a-database-from-lgtm.com).
-1. [Run a query](#running-a-query)
+1. [Run a query](#running-a-query).
 
 -----
 
@@ -69,7 +69,7 @@ For information about how to add further languages, or to configure an existing 
 
 ## Quick start: using CodeQL
 
-You can find all the commands contributed by the extension in the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**) by typing `CodeQL`, many of them are also accessible through the interface, and via keyboard short cuts.
+You can find all the commands contributed by the extension in the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**) by typing `CodeQL`, many of them are also accessible through the interface, and via keyboard shortcuts.
 
 ### Importing a database from LGTM.com
 
@@ -117,7 +117,7 @@ For more information about the CodeQL extension, see [CodeQL for Visual Studio C
 
 ### Using a `codeql` binary on your PATH
 
-If you already have a `codeql` binary on your path, the extension will use this binary.
+If you already have a `codeql` binary on your PATH, the extension will use this binary.
 
 ### Manually specify which version of the CodeQL CLI to use
 
