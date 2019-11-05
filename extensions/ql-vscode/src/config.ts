@@ -1,6 +1,7 @@
 import { DisposableObject } from 'semmle-vscode-utils';
 import { workspace, Event, EventEmitter, ConfigurationChangeEvent } from 'vscode';
 import { DistributionManager } from './distribution';
+import { logger } from './logging';
 
 /** Helper class to look up a labelled (and possibly nested) setting. */
 class Setting {
@@ -162,7 +163,12 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
   }
 
   public get queryMemoryMb(): number | undefined {
-    return MEMORY_SETTING.getValue<number | undefined>();
+    const memory = MEMORY_SETTING.getValue<number>();
+    if (memory == 0 || typeof (memory) !== 'number') {
+      logger.log(`Ignoring value '${memory}' for setting ${MEMORY_SETTING.qualifiedName}`);
+      return undefined;
+    }
+    return memory;
   }
 
   public get debug(): boolean {
