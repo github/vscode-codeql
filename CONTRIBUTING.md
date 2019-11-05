@@ -135,6 +135,15 @@ Be sure to read the
 You can use VS Code to debug the extension without explicitly installing it. Just open this directory as a workspace in VS Code, and hit `F5` to start a debugging session. Be sure to read the
 [README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your CodeQL CLI distribution.
 
+## Releasing
+
+1. Create a branch for the release: `git checkout -b release-vxx.xx.xx`
+1. Make sure your local dependencies are up to date: `rush update`
+1. Make a build: `rush install`
+1. Log into the [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage/publishers/github)
+1. Click the `...` menu in the CodeQL row and click Update
+1. Drag the `.vsix` file from the `dist` folder into the Marketplace and click Upload
+
 ## Resources
 
 - [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
