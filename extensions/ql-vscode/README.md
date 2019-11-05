@@ -12,7 +12,7 @@ For information about other configurations, see the separate [help topics](https
 
 1. [Install the extension](#installing-the-extension).
 1. Beta release only: [Configure access to the CodeQL CLI](#configuring-access-to-the-codeql-cli).
-1. [Clone the CodeQL starter workspace](#cloning-the-codeql-starter-workspace)
+1. [Clone the CodeQL starter workspace](#cloning-the-codeql-starter-workspace).
 
 **Quick start: using CodeQL**
 
