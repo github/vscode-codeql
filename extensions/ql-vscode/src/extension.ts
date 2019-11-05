@@ -9,7 +9,7 @@ import * as helpers from './helpers';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
-import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal } from './queries';
+import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal, UserCancellationException } from './queries';
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 import * as qsClient from './queryserver-client';
 import { CodeQLCliServer } from './cli';
@@ -204,7 +204,10 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
         qhm.push(new QueryHistoryItem(info));
       }
       catch (e) {
-        if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
+        if (e instanceof UserCancellationException) {
+          logger.log(e.message);
+        }
+        else if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
           logger.log(e.message);
         }
         else if (e instanceof Error)

@@ -2,9 +2,10 @@ import * as path from 'path';
 import { DisposableObject } from "semmle-vscode-utils";
 import { commands, Event, EventEmitter, ExtensionContext, ProviderResult, TreeDataProvider, TreeItem, Uri, window, workspace } from "vscode";
 import * as cli from './cli';
+import * as helpers from './helpers';
 import { DatabaseItem, DatabaseManager } from "./databases";
 import { logger } from "./logging";
-import { clearCacheInDatabase, upgradeDatabase } from "./queries";
+import { clearCacheInDatabase, upgradeDatabase, UserCancellationException } from "./queries";
 import * as qsClient from './queryserver-client';
 import { getOnDiskWorkspaceFolders } from "./helpers";
 
@@ -196,7 +197,16 @@ export class DatabaseUI extends DisposableObject {
 
 
     const upgradesDirectories = Array.from(uniqueParentDirs).map(filePath => Uri.file(filePath));
-    await upgradeDatabase(this.queryServer, databaseItem, targetDbSchemeUri, upgradesDirectories);
+    try {
+      await upgradeDatabase(this.queryServer, databaseItem, targetDbSchemeUri, upgradesDirectories);
+    }
+    catch (e) {
+      if (e instanceof UserCancellationException) {
+        logger.log(e.message);
+      }
+      else
+        throw e;
+    }
   }
 
   private handleClearCache = async (): Promise<void> => {
