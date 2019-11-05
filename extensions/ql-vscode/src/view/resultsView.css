@@ -99,4 +99,5 @@ td.vscode-codeql__path-index-cell {
 
 .octicon {
   fill: var(--vscode-editor-foreground);
+  margin-top: .25em;
 }
