@@ -419,25 +419,26 @@ async function checkDbschemeCompatibility(
 
   if (query.dbItem.contents !== undefined && query.dbItem.contents.dbSchemeUri !== undefined) {
     const info = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath);
-    function hash(filename: string): string {
-      return crypto.createHash('sha256').update(fs.readFileSync(filename)).digest('hex');
+    async function hash(filename: string): Promise<string> {
+      return crypto.createHash('sha256').update(await fs.readFile(filename)).digest('hex');
     }
 
     // At this point, we have learned about three dbschemes:
 
-    // this.program.dbschemePath is the dbscheme of the actual
+    // query.program.dbschemePath is the dbscheme of the actual
     // database we're querying.
-    const dbschemeOfDb = hash(query.program.dbschemePath);
+    const dbschemeOfDb = await hash(query.program.dbschemePath);
 
-    // this.queryDbScheme is the dbscheme of the query we're
+    // query.queryDbScheme is the dbscheme of the query we're
     // running, including the library we've resolved it to use.
-    const dbschemeOfLib = hash(query.queryDbscheme);
+    const dbschemeOfLib = await hash(query.queryDbscheme);
 
     // info.finalDbscheme is which database we're able to upgrade to
-    const upgradableTo = hash(info.finalDbscheme);
+    const upgradableTo = await hash(info.finalDbscheme);
 
     if (upgradableTo != dbschemeOfLib) {
-      throw new Error(`Query ${query.program.queryPath} expects database scheme ${query.queryDbscheme}, but database has scheme ${query.program.dbschemePath}, and no database upgrades are available. The database may be newer than the ql library; to fix this problem, try upgrading the ql library.`);
+      logger.log(`Query ${query.program.queryPath} expects database scheme ${query.queryDbscheme}, but database has scheme ${query.program.dbschemePath}, and no upgrade path found`);
+      throw new Error(`Query ${query.program.queryPath} expects database scheme ${query.queryDbscheme}, but the current database has a different scheme, and no database upgrades are available. The current database scheme may be newer than the CodeQL query libraries in your workspace. Please try using a newer version of the query libraries.`);
     }
 
     if (upgradableTo == dbschemeOfLib &&
