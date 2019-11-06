@@ -259,6 +259,8 @@ export class InterfaceManager extends DisposableObject {
         await this.showProblemResultsAsDiagnostics(customResults, database);
       }
       catch (e) {
+        const msg = e instanceof Error ? e.message : e.toString();
+        this.logger.log(`Exception while computing problem results as diagnostics: ${msg}`);
         this._diagnosticCollection.clear();
       }
     }
