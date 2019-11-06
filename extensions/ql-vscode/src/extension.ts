@@ -4,7 +4,7 @@ import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { DistributionConfigListener, QueryServerConfigListener } from './config';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
-import { DistributionResultKind, DistributionManager, GithubApiError } from './distribution';
+import { DistributionUpdateCheckResultKind, DistributionManager, GithubApiError } from './distribution';
 import * as helpers from './helpers';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager, WebviewReveal } from './interface';
@@ -80,13 +80,13 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   async function installOrUpdateDistributionWithProgressTitle(progressTitle: string): Promise<void> {
     const result = await distributionManager.checkForUpdatesToExtensionManagedDistribution();
     switch (result.kind) {
-      case DistributionResultKind.AlreadyUpToDate:
+      case DistributionUpdateCheckResultKind.AlreadyUpToDate:
         helpers.showAndLogInformationMessage("CodeQL tools already up to date.");
         break;
-      case DistributionResultKind.InvalidDistributionLocation:
+      case DistributionUpdateCheckResultKind.InvalidDistributionLocation:
         helpers.showAndLogErrorMessage("CodeQL tools are installed externally so could not be updated.");
         break;
-      case DistributionResultKind.UpdateAvailable:
+      case DistributionUpdateCheckResultKind.UpdateAvailable:
         if (beganMainExtensionActivation) {
           const updateAvailableMessage = `Version "${result.updatedRelease.name}" of the CodeQL tools is now available. ` +
             "The update will be installed after Visual Studio Code restarts. Restart now to upgrade?";

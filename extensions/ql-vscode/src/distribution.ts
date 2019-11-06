@@ -8,6 +8,14 @@ import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "./config";
 import { ProgressUpdate, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
+import { getCodeQlCliVersion, Version } from "./cli-version";
+
+/**
+ * distribution.ts
+ * ------------
+ *
+ * Management of CodeQL CLI binaries.
+ */
 
 /**
  * Default value for the owner name of the extension-managed distribution on GitHub.
@@ -25,6 +33,18 @@ const DEFAULT_DISTRIBUTION_OWNER_NAME = "github";
  */
 const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
 
+/**
+ * Version constraint for the CLI tools.
+ * 
+ * This applies to both extension-managed and CLI distributions.
+ */
+const DISTRIBUTION_VERSION_CONSTRAINT: VersionConstraint = {
+  description: "2.0.*",
+  isVersionCompatible: (v: Version) => {
+    return v.majorVersion === 2 && v.minorVersion === 0
+  }
+}
+
 export interface DistributionProvider {
   getCodeQlPath(): Promise<string | undefined>,
   onDidChangeDistribution?: Event<void>
@@ -38,35 +58,47 @@ export class DistributionManager implements DistributionProvider {
   }
 
   /**
-   * Returns the path to the CodeQL launcher binary, or undefined if one could not be found.
+   * Look up a CodeQL launcher binary.
+   */
+  public async getDistribution(): Promise<FindDistributionResult> {
+    const codeQlPath = await this.getCodeQlPathWithoutVersionCheck();
+    if (codeQlPath === undefined) {
+      return {
+        kind: FindDistributionResultKind.NoDistribution,
+      };
+    }
+    const version = await getCodeQlCliVersion(codeQlPath, logger);
+    if (version !== undefined && !DISTRIBUTION_VERSION_CONSTRAINT.isVersionCompatible(version)) {
+      return {
+        codeQlPath,
+        kind: FindDistributionResultKind.IncompatibleDistribution,
+        version,
+      };
+    }
+    if (version === undefined) {
+      return {
+        codeQlPath,
+        kind: FindDistributionResultKind.UnknownCompatibilityDistribution,
+      }
+    }
+    return {
+      codeQlPath,
+      kind: FindDistributionResultKind.CompatibleDistribution,
+      version
+    };
+  }
+
+  /**
+   * Returns the path to the CodeQL launcher binary, or undefined if a compatible binary not be found.
    */
   public async getCodeQlPath(): Promise<string | undefined> {
-    // Check config setting, then extension specific distribution, then PATH.
-    if (this._config.customCodeQlPath !== undefined) {
-      if (!await fs.pathExists(this._config.customCodeQlPath)) {
-        showAndLogErrorMessage(`The CodeQL binary path is specified as "${this._config.customCodeQlPath}" ` +
-          "by a configuration setting, but a CodeQL binary could not be found at that path. Please check " +
-          "that a CodeQL binary exists at the specified path or remove the setting.");
-      }
-      return this._config.customCodeQlPath;
+    const result = await this.getDistribution();
+    switch (result.kind) {
+      case FindDistributionResultKind.CompatibleDistribution:
+        return result.codeQlPath;
+      default:
+        return undefined;
     }
-
-    const extensionSpecificCodeQlPath = this._extensionSpecificDistributionManager.getCodeQlPath();
-    if (extensionSpecificCodeQlPath !== undefined) {
-      return extensionSpecificCodeQlPath;
-    }
-
-    if (process.env.PATH) {
-      for (const searchDirectory of process.env.PATH.split(path.delimiter)) {
-        const expectedLauncherPath = path.join(searchDirectory, codeQlLauncherName());
-        if (await fs.pathExists(expectedLauncherPath)) {
-          return expectedLauncherPath;
-        }
-      }
-      logger.log("INFO: Could not find CodeQL on path.");
-    }
-
-    return undefined;
   }
 
   /**
@@ -97,6 +129,35 @@ export class DistributionManager implements DistributionProvider {
 
   public get onDidChangeDistribution(): Event<void> | undefined {
     return this._onDidChangeDistribution;
+  }
+
+  private async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
+    // Check config setting, then extension specific distribution, then PATH.
+    if (this._config.customCodeQlPath !== undefined) {
+      if (!await fs.pathExists(this._config.customCodeQlPath)) {
+        showAndLogErrorMessage(`The CodeQL binary path is specified as "${this._config.customCodeQlPath}" ` +
+          "by a configuration setting, but a CodeQL binary could not be found at that path. Please check " +
+          "that a CodeQL binary exists at the specified path or remove the setting.");
+      }
+      return this._config.customCodeQlPath;
+    }
+
+    const extensionSpecificCodeQlPath = this._extensionSpecificDistributionManager.getCodeQlPath();
+    if (extensionSpecificCodeQlPath !== undefined) {
+      return extensionSpecificCodeQlPath;
+    }
+
+    if (process.env.PATH) {
+      for (const searchDirectory of process.env.PATH.split(path.delimiter)) {
+        const expectedLauncherPath = path.join(searchDirectory, codeQlLauncherName());
+        if (await fs.pathExists(expectedLauncherPath)) {
+          return expectedLauncherPath;
+        }
+      }
+      logger.log("INFO: Could not find CodeQL on path.");
+    }
+
+    return undefined;
   }
 
   private readonly _config: DistributionConfig;
@@ -372,7 +433,42 @@ function isRedirectStatusCode(statusCode: number): boolean {
   return statusCode === 301 || statusCode === 302 || statusCode === 303 || statusCode === 307 || statusCode === 308;
 }
 
-export enum DistributionResultKind {
+/*
+ * Types and helper functions relating to those types.
+ */
+
+export enum FindDistributionResultKind {
+  CompatibleDistribution,
+  UnknownCompatibilityDistribution,
+  IncompatibleDistribution,
+  NoDistribution
+}
+
+type FindDistributionResult = CompatibleDistributionResult | UnknownCompatibilityDistributionResult |
+  IncompatibleDistributionResult | NoDistributionResult;
+
+interface CompatibleDistributionResult {
+  codeQlPath: string;
+  kind: FindDistributionResultKind.CompatibleDistribution;
+  version: Version
+}
+
+interface UnknownCompatibilityDistributionResult {
+  codeQlPath: string;
+  kind: FindDistributionResultKind.UnknownCompatibilityDistribution;
+}
+
+interface IncompatibleDistributionResult {
+  codeQlPath: string;
+  kind: FindDistributionResultKind.IncompatibleDistribution;
+  version: Version;
+}
+
+interface NoDistributionResult {
+  kind: FindDistributionResultKind.NoDistribution;
+}
+
+export enum DistributionUpdateCheckResultKind {
   AlreadyUpToDate,
   InvalidDistributionLocation,
   UpdateAvailable
@@ -382,36 +478,36 @@ type DistributionUpdateCheckResult = DistributionAlreadyUpToDateResult | Invalid
   UpdateAvailableResult;
 
 export interface DistributionAlreadyUpToDateResult {
-  kind: DistributionResultKind.AlreadyUpToDate;
+  kind: DistributionUpdateCheckResultKind.AlreadyUpToDate;
 }
 
 /**
  * The distribution could not be installed or updated because it is not managed by the extension.
  */
 export interface InvalidDistributionLocationResult {
-  kind: DistributionResultKind.InvalidDistributionLocation;
+  kind: DistributionUpdateCheckResultKind.InvalidDistributionLocation;
 }
 
 export interface UpdateAvailableResult {
-  kind: DistributionResultKind.UpdateAvailable;
+  kind: DistributionUpdateCheckResultKind.UpdateAvailable;
   updatedRelease: Release;
 }
 
 function createDistributionAlreadyUpToDateResult(): DistributionAlreadyUpToDateResult {
   return {
-    kind: DistributionResultKind.AlreadyUpToDate
+    kind: DistributionUpdateCheckResultKind.AlreadyUpToDate
   };
 }
 
 function createInvalidDistributionLocationResult(): InvalidDistributionLocationResult {
   return {
-    kind: DistributionResultKind.InvalidDistributionLocation
+    kind: DistributionUpdateCheckResultKind.InvalidDistributionLocation
   };
 }
 
 function createUpdateAvailableResult(updatedRelease: Release): UpdateAvailableResult {
   return {
-    kind: DistributionResultKind.UpdateAvailable,
+    kind: DistributionUpdateCheckResultKind.UpdateAvailable,
     updatedRelease
   };
 }
@@ -463,7 +559,7 @@ export interface ReleaseAsset {
  * The json returned from github for a release.
  */
 interface GithubRelease {
-  assets: ReleaseAsset[];
+  assets: GithubReleaseAsset[];
 
   /**
    * The creation date of the release on GitHub.
@@ -499,6 +595,11 @@ interface GithubReleaseAsset {
    * The size of the asset in bytes.
    */
   size: number;
+}
+
+interface VersionConstraint {
+  description: string;
+  isVersionCompatible(version: Version): boolean;
 }
 
 export class GithubApiError extends Error {
