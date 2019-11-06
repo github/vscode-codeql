@@ -1,6 +1,6 @@
 # CodeQL extension for Visual Studio Code
 
-This project is an extension for Visual Studio Code that adds rich language support for [CodeQL](https://help.semmle.com/codeql). It's used to find problems in code bases using CodeQL. In particular, the extension:
+This project is an extension for Visual Studio Code that adds rich language support for [CodeQL](https://help.semmle.com/codeql). It's used to find problems in codebases using CodeQL. In particular, the extension:
 
 * Enables you to use CodeQL to query databases and discover problems in code bases.
 * Shows the flow of data through the results of path queries, which is essential for triaging security results.
