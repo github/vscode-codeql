@@ -18,7 +18,7 @@ Please note that this project is released with a [Contributor Code of Conduct][c
 0. Create a new branch: `git checkout -b my-branch-name`
 0. Make your change
 0. Push to your fork and [submit a pull request][pr]
-0. Pat your self on the back and wait for your pull request to be reviewed and merged.
+0. Pat yourself on the back and wait for your pull request to be reviewed and merged.
 
 Here are a few things you can do that will increase the likelihood of your pull request being accepted:
 
@@ -111,7 +111,7 @@ Or, from the command line, use something like (depending on where you have VSCod
 ```shell
 $ code --install-extension dist/vscode-codeql-*.vsix # normal VSCode installation
 # or maybe
-$ vscode/scripts/code-cli.sh --install-extension dist/vscode-codeql-*.vsix # if you're running from github checkout
+$ vscode/scripts/code-cli.sh --install-extension dist/vscode-codeql-*.vsix # if you're using the open-source version from a checkout of https://github.com/microsoft/vscode
 ```
 
 Be sure to read the
