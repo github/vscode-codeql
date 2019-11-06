@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Position, Range, Uri, window as Window, workspace } from 'vscode';
 import { DatabaseItem, DatabaseManager } from './databases';
 import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg, ResultsInfo, SortedResultsMap, SortedResultSetInfo } from './interface-types';
+import * as helpers from './helpers';
 import * as messages from './messages';
 import { EvaluationInfo, interpretResults, tmpDir, QueryInfo } from './queries';
 import { Logger } from './logging';
@@ -26,6 +27,14 @@ import { assertNever } from './helpers-pure';
 /** Gets a nonce string created with 128 bits of entropy. */
 function getNonce(): string {
   return crypto.randomBytes(16).toString('base64');
+}
+
+/**
+ * Whether to force webview to reveal
+ */
+export enum WebviewReveal {
+  Forced,
+  NotForced,
 }
 
 /**
@@ -97,7 +106,7 @@ export class InterfaceManager extends DisposableObject {
       const panel = this._panel = Window.createWebviewPanel(
         'resultsView', // internal name
         'CodeQL Query Results', // user-visible name
-        vscode.ViewColumn.Beside,
+        { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
         {
           enableScripts: true,
           retainContextWhenHidden: true,
@@ -130,7 +139,7 @@ export class InterfaceManager extends DisposableObject {
       case 'toggleDiagnostics': {
         if (msg.visible) {
           const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.databaseUri));
-          if(databaseItem !== undefined) {
+          if (databaseItem !== undefined) {
             await this.showResultsAsDiagnostics(msg.resultsPath, databaseItem);
           }
         } else {
@@ -147,7 +156,7 @@ export class InterfaceManager extends DisposableObject {
         // Notify the webview that it should expect new results.
         await this.postMessage({ t: 'resultsUpdating' });
         await this._displayedEvaluationInfo.query.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
-        await this.showResults(this._displayedEvaluationInfo, true);
+        await this.showResults(this._displayedEvaluationInfo, WebviewReveal.NotForced, true);
         break;
       }
       default:
@@ -159,7 +168,16 @@ export class InterfaceManager extends DisposableObject {
     return this.getPanel().webview.postMessage(msg);
   }
 
-  public async showResults(info: EvaluationInfo, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
+  /**
+   * Show query results in webview panel.
+   * @param info Evaluation info for the executed query.
+   * @param shouldKeepOldResultsWhileRendering Should keep old results while rendering.
+   * @param forceReveal Force the webview panel to be visible and
+   * Appropriate when the user has just performed an explicit
+   * UI interaction requesting results, e.g. clicking on a query
+   * history entry.
+   */
+  public async showResults(info: EvaluationInfo, forceReveal: WebviewReveal, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
     if (info.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }
@@ -171,6 +189,31 @@ export class InterfaceManager extends DisposableObject {
       sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v));
 
     this._displayedEvaluationInfo = info;
+
+    const panel = this.getPanel();
+
+    if (forceReveal === WebviewReveal.Forced) {
+      panel.reveal(undefined, true);
+    }
+    else if (!panel.visible) {
+      // The results panel exists, (`.getPanel()` guarantees it) but
+      // is not visible; it's in a not-currently-viewed tab. Show a
+      // more asynchronous message to not so abruptly interrupt
+      // user's workflow by immediately revealing the panel.
+      const showButton = 'View Results';
+      const resultPromise = vscode.window.showInformationMessage(
+        `Finished running query ${helpers.getQueryName(info)}.`,
+        showButton
+      );
+      // Address this click asynchronously so we still update the
+      // query history immediately.
+      resultPromise.then(result => {
+        if (result === showButton) {
+          panel.reveal();
+        }
+      });
+    }
+
     await this.postMessage({
       t: 'setState',
       interpretation,

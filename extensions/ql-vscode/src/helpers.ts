@@ -1,5 +1,7 @@
+import * as path from 'path';
 import { CancellationToken, ProgressOptions, window as Window, workspace } from 'vscode';
 import { logger } from './logging';
+import { EvaluationInfo } from './queries';
 
 export interface ProgressUpdate {
   /**
@@ -113,4 +115,16 @@ export function getOnDiskWorkspaceFolders() {
       diskWorkspaceFolders.push(workspaceFolder.uri.fsPath)
   }
   return diskWorkspaceFolders;
+}
+
+/**
+ * Gets a human-readable name for an evaluated query.
+ * Uses metadata if it exists, and defaults to the query file name.
+ */
+export function getQueryName(info: EvaluationInfo) {
+  if (info.query.metadata && info.query.metadata.name) {
+    return info.query.metadata.name;
+  } else {
+    return path.basename(info.query.program.queryPath);
+  }
 }
