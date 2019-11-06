@@ -13,13 +13,14 @@ import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal, User
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 import * as qsClient from './queryserver-client';
 import { CodeQLCliServer } from './cli';
+import { assertNever } from './helpers-pure';
 
 /**
-* extension.ts
-* ------------
-*
-* A vscode extension for CodeQL query development.
-*/
+ * extension.ts
+ * ------------
+ *
+ * A vscode extension for CodeQL query development.
+ */
 
 /**
  * Holds when we have proceeded past the initial phase of extension activation in which
@@ -107,7 +108,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
         }
         break;
       default:
-        helpers.assertNever(result);
+        assertNever(result);
     }
   }
 

@@ -2,7 +2,8 @@ import * as React from 'react';
 import * as Rdom from 'react-dom';
 import * as bqrs from 'semmle-bqrs';
 import { ElementBase, isResolvableLocation, LocationValue, PrimitiveColumnValue, PrimitiveTypeKind, ResultSetSchema } from 'semmle-bqrs';
-import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg } from '../interface-types';
+import { assertNever } from '../helpers-pure';
+import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortState, SortedResultSetInfo } from '../interface-types';
 import { ResultTables } from './result-tables';
 
 /**
@@ -126,18 +127,20 @@ interface ResultsInfo {
   resultsPath: string;
   database: DatabaseInfo;
   interpretation: Interpretation | undefined;
+  sortedResultsMap: Map<string, SortedResultSetInfo>;
+  /**
+   * See {@link SetStateMsg.shouldKeepOldResultsWhileRendering}.
+   */
+  shouldKeepOldResultsWhileRendering: boolean;
 }
 
 interface Results {
   resultSets: readonly ResultSet[];
+  sortStates: Map<string, SortState>;
   database: DatabaseInfo;
 }
 
-interface ResultsViewProps {
-  resultsInfo: ResultsInfo | null;
-}
-
-interface ResultsViewState {
+interface ResultsState {
   // We use `null` instead of `undefined` here because in React, `undefined` is
   // used to mean "did not change" when updating the state of a component.
   resultsInfo: ResultsInfo | null;
@@ -145,128 +148,176 @@ interface ResultsViewState {
   errorMessage: string;
 }
 
+interface ResultsViewState {
+  displayedResults: ResultsState;
+  nextResultsInfo: ResultsInfo | null;
+  isExpectingResultsUpdate: boolean;
+}
+
 /**
  * A minimal state container for displaying results.
  */
-class App extends React.Component<ResultsViewProps, ResultsViewState> {
-  private currentResultsInfo: ResultsInfo | null = null;
-
+class App extends React.Component<{}, ResultsViewState> {
   constructor(props: any) {
     super(props);
     this.state = {
-      resultsInfo: null,
-      results: null,
-      errorMessage: ''
+      displayedResults: {
+        resultsInfo: null,
+        results: null,
+        errorMessage: ''
+      },
+      nextResultsInfo: null,
+      isExpectingResultsUpdate: true
     };
   }
 
-  static getDerivedStateFromProps(nextProps: Readonly<ResultsViewProps>,
-    prevState: ResultsViewState): Partial<ResultsViewState> | null {
+  handleMessage(msg: IntoResultsViewMsg): void {
+    switch (msg.t) {
+      case 'setState':
+        this.updateStateWithNewResultsInfo({
+          resultsPath: msg.resultsPath,
+          sortedResultsMap: new Map(Object.entries(msg.sortedResultsMap)),
+          database: msg.database,
+          interpretation: msg.interpretation,
+          shouldKeepOldResultsWhileRendering: msg.shouldKeepOldResultsWhileRendering
+        });
 
-    // Only update if `resultsInfo` changed.
-    if (nextProps.resultsInfo !== prevState.resultsInfo) {
-      return {
-        resultsInfo: nextProps.resultsInfo,
-        results: null,
-        errorMessage: (nextProps.resultsInfo !== null) ?
-          'Loading results...' : 'No results to display'
-      };
-    }
-
-    return null;
-  }
-
-  componentDidMount() {
-    this.loadResults(this.props.resultsInfo);
-  }
-
-  componentDidUpdate(prevProps: Readonly<ResultsViewProps>, prevState: Readonly<ResultsViewState>):
-    void {
-
-    if (this.state.results === null) {
-      this.loadResults(this.props.resultsInfo);
+        this.loadResults();
+        break;
+      case 'resultsUpdating':
+        this.setState({
+          isExpectingResultsUpdate: true
+        });
+        break;
+      default:
+        assertNever(msg);
     }
   }
+  
+  private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
+    this.setState(prevState => {
+      const stateWithDisplayedResults = (displayedResults: ResultsState) => ({
+        displayedResults,
+        isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
+        nextResultsInfo: resultsInfo
+      });
 
-  componentWillUnmount() {
-    // Ensure that we don't call `setState` after we're unmounted.
-    this.currentResultsInfo = null;
+      if (!prevState.isExpectingResultsUpdate && resultsInfo === null) {
+        // No results to display
+        return stateWithDisplayedResults({
+          resultsInfo: null,
+          results: null,
+          errorMessage: 'No results to display'
+        });
+      }
+      if (!resultsInfo || !resultsInfo.shouldKeepOldResultsWhileRendering) {
+        // Display loading message
+        return stateWithDisplayedResults({
+          resultsInfo: null,
+          results: null,
+          errorMessage: 'Loading results…'
+        });
+      }
+      return stateWithDisplayedResults(prevState.displayedResults);
+    });
   }
 
-  private async loadResults(resultsInfo: ResultsInfo | null): Promise<void> {
-    if (resultsInfo === this.currentResultsInfo) {
-      // No change
+  private async loadResults(): Promise<void> {
+    const resultsInfo = this.state.nextResultsInfo;
+    if (resultsInfo === null) {
       return;
     }
 
-    this.currentResultsInfo = resultsInfo;
-    if (resultsInfo !== null) {
-      let results: Results | null = null;
-      let statusText: string = '';
-      try {
-        const response = await fetch(resultsInfo.resultsPath);
-        results = {
-          resultSets: await parseResultSets(response),
-          database: resultsInfo.database
-        };
-      }
-      catch (e) {
-        let errorMessage: string;
-        if (e instanceof Error) {
-          errorMessage = e.message;
-        }
-        else {
-          errorMessage = 'Unknown error';
-        }
-
-        statusText = `Error loading results: ${errorMessage}`;
-      }
-
-      // Only set state if this results info is still current.
-      if (resultsInfo === this.currentResultsInfo) {
-        this.setState({
-          resultsInfo: resultsInfo,
-          results: results,
-          errorMessage: statusText
-        });
-      }
+    let results: Results | null = null;
+    let statusText: string = '';
+    try {
+      results = {
+        resultSets: await this.getResultSets(resultsInfo),
+        database: resultsInfo.database,
+        sortStates: this.getSortStates(resultsInfo)
+      };
     }
+    catch (e) {
+      let errorMessage: string;
+      if (e instanceof Error) {
+        errorMessage = e.message;
+      } else {
+        errorMessage = 'Unknown error';
+      }
+
+      statusText = `Error loading results: ${errorMessage}`;
+    }
+
+    this.setState(prevState => {
+      // Only set state if this results info is still current.
+      if (resultsInfo !== prevState.nextResultsInfo) {
+        return null;
+      }
+      return {
+        displayedResults: {
+          resultsInfo,
+          results,
+          errorMessage: statusText
+        },
+        nextResultsInfo: null,
+        isExpectingResultsUpdate: false
+      }
+    });
+  }
+
+  private async getResultSets(resultsInfo: ResultsInfo): Promise<readonly ResultSet[]> {
+    const unsortedResponse = await fetch(resultsInfo.resultsPath);
+    const unsortedResultSets = await parseResultSets(unsortedResponse);
+    return Promise.all(unsortedResultSets.map(async unsortedResultSet => {
+      const sortedResultSetInfo = resultsInfo.sortedResultsMap.get(unsortedResultSet.schema.name);
+      if (sortedResultSetInfo === undefined) {
+        return unsortedResultSet;
+      }
+      const response = await fetch(sortedResultSetInfo.resultsPath);
+      const resultSets = await parseResultSets(response);
+      if (resultSets.length != 1) {
+        throw new Error(`Expected sorted BQRS to contain a single result set, encountered ${resultSets.length} result sets.`);
+      }
+      return resultSets[0];
+    }));
+  }
+
+  private getSortStates(resultsInfo: ResultsInfo): Map<string, SortState> {
+    const entries = Array.from(resultsInfo.sortedResultsMap.entries());
+    return new Map(entries.map(([key, sortedResultSetInfo]) =>
+      [key, sortedResultSetInfo.sortState]));
   }
 
   render() {
-    if (this.state.results !== null) {
-      return <ResultTables rawResultSets={this.state.results.resultSets}
-        interpretation={this.state.resultsInfo ? this.state.resultsInfo.interpretation : undefined}
-        database={this.state.results.database}
-        resultsPath={this.state.resultsInfo ? this.state.resultsInfo.resultsPath : undefined} />;
+    const displayedResults = this.state.displayedResults;
+    if (displayedResults.results !== null) {
+      return <ResultTables rawResultSets={displayedResults.results.resultSets}
+        interpretation={displayedResults.resultsInfo ? displayedResults.resultsInfo.interpretation : undefined}
+        database={displayedResults.results.database}
+        resultsPath={displayedResults.resultsInfo ? displayedResults.resultsInfo.resultsPath : undefined}
+        sortStates={displayedResults.results.sortStates}
+        isLoadingNewResults={this.state.isExpectingResultsUpdate || this.state.nextResultsInfo !== null} />;
     }
     else {
-      return <span>{this.state.errorMessage}</span>;
+      return <span>{displayedResults.errorMessage}</span>;
     }
   }
-}
 
-function renderApp(resultsInfo: ResultsInfo | null): void {
-  Rdom.render(
-    <App resultsInfo={resultsInfo} />,
-    document.getElementById('root')
-  );
-}
-
-function handleMessage(msg: IntoResultsViewMsg): void {
-  switch (msg.t) {
-    case 'setState':
-      renderApp({
-        resultsPath: msg.resultsPath,
-        database: msg.database,
-        interpretation: msg.interpretation,
-      });
-      break;
+  componentDidMount() {
+    this.vscodeMessageHandler = evt => this.handleMessage(evt.data as IntoResultsViewMsg);
+    window.addEventListener('message', this.vscodeMessageHandler);
   }
+
+  componentWillUnmount() {
+    if (this.vscodeMessageHandler) {
+      window.removeEventListener('message', this.vscodeMessageHandler);
+    }
+  }
+
+  private vscodeMessageHandler: ((ev: MessageEvent) => void) | undefined = undefined;
 }
 
-renderApp(null);
-
-window.addEventListener('message', event => {
-  handleMessage(event.data as IntoResultsViewMsg);
-});
+Rdom.render(
+  <App />,
+  document.getElementById('root')
+);

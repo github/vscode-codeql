@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import * as cli from './cli';
 import { DatabaseItem } from './databases';
 import * as helpers from './helpers';
-import { DatabaseInfo } from './interface-types';
+import { DatabaseInfo, SortState, ResultsInfo, SortedResultSetInfo } from './interface-types';
 import { logger } from './logging';
 import * as messages from './messages';
 import * as qsClient from './queryserver-client';
@@ -39,11 +39,13 @@ export class UserCancellationException extends Error { }
  * temporary files associated with it, such as the compiled query
  * output and results.
  */
-class QueryInfo {
+export class QueryInfo {
   compiledQueryPath: string;
-  resultsPath: string;
-  interpretedResultsPath: string;
-
+  resultsInfo: ResultsInfo;
+  /**
+   * Map from result set name to SortedResultSetInfo.
+   */
+  sortedResultsInfo: Map<string, SortedResultSetInfo>;
   dataset: vscode.Uri; // guarantee the existence of a well-defined dataset dir at this point
 
   constructor(
@@ -54,8 +56,11 @@ class QueryInfo {
     public metadata?: cli.QueryMetadata,
   ) {
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${queryCounter}.qlo`);
-    this.resultsPath = path.join(tmpDir.name, `results${queryCounter}.bqrs`);
-    this.interpretedResultsPath = path.join(tmpDir.name, `interpretedResults${queryCounter}.sarif`);
+    this.resultsInfo = {
+      resultsPath: path.join(tmpDir.name, `results${queryCounter}.bqrs`),
+      interpretedResultsPath: path.join(tmpDir.name, `interpretedResults${queryCounter}.sarif`)
+    };
+    this.sortedResultsInfo = new Map();
     if (dbItem.contents === undefined) {
       throw new Error('Can\'t run query on invalid database.');
     }
@@ -71,7 +76,7 @@ class QueryInfo {
     const callbackId = qs.registerCallback(res => { result = res });
 
     const queryToRun: messages.QueryToRun = {
-      resultsPath: this.resultsPath,
+      resultsPath: this.resultsInfo.resultsPath,
       qlo: vscode.Uri.file(this.compiledQueryPath).toString(),
       allowUnknownTemplates: true,
       id: callbackId,
@@ -167,14 +172,29 @@ class QueryInfo {
   hasInterpretedResults(): boolean {
     return this.dbItem.hasDbInfo();
   }
+
+  async updateSortState(server: cli.CodeQLCliServer, resultSetName: string, sortState: SortState | undefined): Promise<void> {
+    if (sortState === undefined) {
+      this.sortedResultsInfo.delete(resultSetName);
+      return;
+    }
+
+    const sortedResultSetInfo: SortedResultSetInfo = {
+      resultsPath: path.join(tmpDir.name, `sortedResults${queryCounter}-${resultSetName}.bqrs`),
+      sortState
+    };
+
+    await server.sortBqrs(this.resultsInfo.resultsPath, sortedResultSetInfo.resultsPath, resultSetName, [sortState.columnIndex], [sortState.direction]);
+    this.sortedResultsInfo.set(resultSetName, sortedResultSetInfo);
+  }
 }
 
 /**
  * Call cli command to interpret results.
  */
-export async function interpretResults(server: cli.CodeQLCliServer, queryInfo: QueryInfo, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
-  if (await fs.pathExists(queryInfo.interpretedResultsPath)) {
-    return JSON.parse(await fs.readFile(queryInfo.interpretedResultsPath, 'utf8'));
+export async function interpretResults(server: cli.CodeQLCliServer, queryInfo: QueryInfo, resultsInfo: ResultsInfo, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
+  if (await fs.pathExists(resultsInfo.interpretedResultsPath)) {
+    return JSON.parse(await fs.readFile(resultsInfo.interpretedResultsPath, 'utf8'));
   }
   const { metadata } = queryInfo;
   if (metadata == undefined) {
@@ -193,7 +213,7 @@ export async function interpretResults(server: cli.CodeQLCliServer, queryInfo: Q
     // 3.27.5 "ruleId property") says that it has special meaning.
     id = queryInfo.program.queryPath.replace(/\//g, '-');
   }
-  return await server.interpretBqrs({ kind, id }, queryInfo.resultsPath, queryInfo.interpretedResultsPath, sourceInfo);
+  return await server.interpretBqrs({ kind, id }, resultsInfo.resultsPath, resultsInfo.interpretedResultsPath, sourceInfo);
 }
 
 export interface EvaluationInfo {

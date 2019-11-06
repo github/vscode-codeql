@@ -18,14 +18,44 @@ export interface Interpretation {
   sarif: sarif.Log;
 }
 
-export interface IntoResultsViewMsg {
+export interface ResultsInfo {
+  resultsPath: string;
+  interpretedResultsPath: string;
+}
+
+export interface SortedResultSetInfo {
+  resultsPath: string;
+  sortState: SortState;
+}
+
+export type SortedResultsMap = { [resultSet: string]: SortedResultSetInfo };
+
+/**
+ * A message to indicate that the results are being updated.
+ * 
+ * As a result of receiving this message, listeners might want to display a loading indicator.
+ */
+export interface ResultsUpdatingMsg {
+  t: 'resultsUpdating';
+}
+
+export interface SetStateMsg {
   t: 'setState';
   resultsPath: string;
+  sortedResultsMap: SortedResultsMap;
   interpretation: undefined | Interpretation;
   database: DatabaseInfo;
+  /**
+   * Whether to keep displaying the old results while rendering the new results.
+   * 
+   * This is useful to prevent properties like scroll state being lost when rendering the sorted results after sorting a column.
+   */
+  shouldKeepOldResultsWhileRendering: boolean;
 };
 
-export type FromResultsViewMsg = ViewSourceFileMsg | ToggleDiagnostics;
+export type IntoResultsViewMsg = ResultsUpdatingMsg | SetStateMsg;
+
+export type FromResultsViewMsg = ViewSourceFileMsg | ToggleDiagnostics | ChangeSortMsg;
 
 interface ViewSourceFileMsg {
   t: 'viewSourceFile';
@@ -39,3 +69,18 @@ interface ToggleDiagnostics {
   resultsPath: string;
   visible: boolean;
 };
+
+export enum SortDirection {
+  asc, desc
+}
+
+export interface SortState {
+  columnIndex: number;
+  direction: SortDirection;
+}
+
+interface ChangeSortMsg {
+  t: 'changeSort';
+  resultSetName: string;
+  sortState?: SortState;
+}

@@ -104,15 +104,6 @@ export async function showInformationMessageWithAction(message: string, actionMe
   return chosenItem === actionItem;
 }
 
-/**
- * Used to perform compile time exhaustivity checking on a value.  This function will not be
- * executed at runtime unless there is a flaw in the type system.
- */
-export function assertNever(value: never): never {
-  logger.log("Internal error: assertNever failure");
-  return value;
-}
-
 /** Gets all active workspace folders that are on the filesystem. */
 export function getOnDiskWorkspaceFolders() {
   const workspaceFolders = workspace.workspaceFolders || [];

@@ -1,6 +1,6 @@
 import cx from 'classnames';
 import * as React from 'react';
-import { DatabaseInfo, Interpretation } from '../interface-types';
+import { DatabaseInfo, Interpretation, SortState } from '../interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
 import { ResultTableProps, toggleDiagnosticsClassName, toggleDiagnosticsSelectedClassName, tableSelectionHeaderClassName } from './result-table-utils';
@@ -14,6 +14,8 @@ export interface ResultTablesProps {
   interpretation: Interpretation | undefined;
   database: DatabaseInfo;
   resultsPath: string | undefined;
+  sortStates: Map<string, SortState>;
+  isLoadingNewResults: boolean;
 }
 
 /**
@@ -25,6 +27,7 @@ interface ResultTablesState {
 
 const ALERTS_TABLE_NAME = 'alerts';
 const SELECT_TABLE_NAME = '#select';
+const UPDATING_RESULTS_TEXT_CLASS_NAME = "vscode-codeql__result-tables-updating-text";
 
 /**
  * Displays multiple `ResultTable` tables, where the table to be displayed is selected by a
@@ -105,15 +108,20 @@ export class ResultTables
             }
           }} />
         </div>
+        {
+          this.props.isLoadingNewResults ? 
+            <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>Updating results…</span>
+            : null
+        }
       </div>
       {
         resultSets.map(resultSet =>
           <ResultTable key={resultSet.schema.name} resultSet={resultSet}
             databaseUri={this.props.database.databaseUri} selected={resultSet.schema.name === selectedTable}
-            resultsPath={this.props.resultsPath} />
+            resultsPath={this.props.resultsPath} sortState={this.props.sortStates.get(resultSet.schema.name)} />
         )
       }
-    </div >;
+    </div>;
   }
 }
 
@@ -127,9 +135,11 @@ class ResultTable extends React.Component<ResultTableProps, {}> {
     const { resultSet } = this.props;
     switch (resultSet.t) {
       case 'RawResultSet': return <RawTable
-        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} resultsPath={this.props.resultsPath} />;
+        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri}
+        resultsPath={this.props.resultsPath} sortState={this.props.sortState} />;
       case 'SarifResultSet': return <PathTable
-        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri} resultsPath={this.props.resultsPath} />;
+        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri}
+        resultsPath={this.props.resultsPath} />;
     }
   }
 }
