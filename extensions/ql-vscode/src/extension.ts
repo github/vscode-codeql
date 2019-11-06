@@ -1,4 +1,4 @@
-import { commands, Disposable, ExtensionContext, extensions, ProgressLocation, ProgressOptions, window as Window, Uri } from 'vscode';
+import { commands, Disposable, ExtensionContext, extensions, ProgressLocation, ProgressOptions, window as Window, Uri, Webview } from 'vscode';
 import { ErrorCodes, LanguageClient, ResponseError } from 'vscode-languageclient';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { DistributionConfigListener, QueryServerConfigListener } from './config';
@@ -7,7 +7,7 @@ import { DatabaseUI } from './databases-ui';
 import { DistributionResultKind, DistributionManager, GithubApiError } from './distribution';
 import * as helpers from './helpers';
 import { spawnIdeServer } from './ide-server';
-import { InterfaceManager } from './interface';
+import { InterfaceManager, WebviewReveal } from './interface';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
 import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal, UserCancellationException } from './queries';
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
@@ -45,7 +45,7 @@ let isInstallingOrUpdatingDistribution = false;
 /**
  * If the user tries to execute vscode commands after extension activation is failed, give
  * a sensible error message.
- * 
+ *
  * @param excludedCommands List of commands for which we should not register error stubs.
  */
 function registerErrorStubs(ctx: ExtensionContext, message: (command: string) => string, excludedCommands: string[]) {
@@ -120,11 +120,11 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     try {
       const codeQlInstalled = await distributionManager.getCodeQlPath() !== undefined;
       const messageText = ctx.globalState.get(shouldUpdateOnNextActivationKey) ? "Updating CodeQL command-line tools" :
-                          codeQlInstalled ? "Checking for updates to CodeQL command-line tools" : "Installing CodeQL command-line tools";
+        codeQlInstalled ? "Checking for updates to CodeQL command-line tools" : "Installing CodeQL command-line tools";
       await installOrUpdateDistributionWithProgressTitle(messageText);
     } catch (e) {
       if (e instanceof GithubApiError && (e.status == 404 || e.status == 403)) {
-        const errorMessageResponse = Window.showErrorMessage("Unable to download CodeQL command-line tools. See " + 
+        const errorMessageResponse = Window.showErrorMessage("Unable to download CodeQL command-line tools. See " +
           "https://github.com/github/vscode-codeql/blob/master/extensions/ql-vscode/README.md for more details about how " +
           "to obtain CodeQL command-line tools.", "Edit Settings");
         // We're deliberately not `await`ing this promise, just
@@ -184,13 +184,13 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   const databaseUI = new DatabaseUI(ctx, cliServer, dbm, qs);
   ctx.subscriptions.push(databaseUI);
 
-  const qhm = new QueryHistoryManager(ctx, async item => showResultsForInfo(item.info));
+  const qhm = new QueryHistoryManager(ctx, async item => showResultsForInfo(item.info, WebviewReveal.Forced));
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
   ctx.subscriptions.push(intm);
   archiveFilesystemProvider.activate(ctx);
 
-  async function showResultsForInfo(info: EvaluationInfo): Promise<void> {
-    await intm.showResults(info);
+  async function showResultsForInfo(info: EvaluationInfo, forceReveal: WebviewReveal): Promise<void> {
+    await intm.showResults(info, false, forceReveal);
   }
 
   async function compileAndRunQuery(quickEval: boolean, selectedQuery: Uri | undefined) {
@@ -201,7 +201,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
           throw new Error('Can\'t run query without a selected database');
         }
         const info = await compileAndRunQueryAgainstDatabase(cliServer, qs, dbItem, quickEval, selectedQuery);
-        await showResultsForInfo(info);
+        await showResultsForInfo(info, WebviewReveal.NotForced);
         qhm.push(new QueryHistoryItem(info));
       }
       catch (e) {

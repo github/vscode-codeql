@@ -29,6 +29,14 @@ function getNonce(): string {
 }
 
 /**
+ * Whether to force webview to reveal
+ */
+export enum WebviewReveal {
+  Forced,
+  NotForced,
+}
+
+/**
  * Returns HTML to populate the given webview.
  * Uses a content security policy that only loads the given script.
  */
@@ -130,7 +138,7 @@ export class InterfaceManager extends DisposableObject {
       case 'toggleDiagnostics': {
         if (msg.visible) {
           const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.databaseUri));
-          if(databaseItem !== undefined) {
+          if (databaseItem !== undefined) {
             await this.showResultsAsDiagnostics(msg.resultsPath, databaseItem);
           }
         } else {
@@ -147,7 +155,7 @@ export class InterfaceManager extends DisposableObject {
         // Notify the webview that it should expect new results.
         await this.postMessage({ t: 'resultsUpdating' });
         await this._displayedEvaluationInfo.query.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
-        await this.showResults(this._displayedEvaluationInfo, true);
+        await this.showResults(this._displayedEvaluationInfo, true, WebviewReveal.NotForced);
         break;
       }
       default:
@@ -159,7 +167,16 @@ export class InterfaceManager extends DisposableObject {
     return this.getPanel().webview.postMessage(msg);
   }
 
-  public async showResults(info: EvaluationInfo, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
+  /**
+   * Show query results in webview panel.
+   * @param info Evaluation info for the executed query.
+   * @param shouldKeepOldResultsWhileRendering Should keep old results while rendering.
+   * @param forceReveal Force the webview panel to be visible and
+   * active. Appropriate when the user has just performed an explicit
+   * UI interaction requesting results, e.g. clicking on a query
+   * history entry.
+   */
+  public async showResults(info: EvaluationInfo, shouldKeepOldResultsWhileRendering: boolean = false, forceReveal: WebviewReveal): Promise<void> {
     if (info.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }
@@ -171,6 +188,30 @@ export class InterfaceManager extends DisposableObject {
       sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v));
 
     this._displayedEvaluationInfo = info;
+
+    const panel = this.getPanel();
+
+    if (!panel.visible) {
+      if (forceReveal === WebviewReveal.Forced) {
+        panel.reveal();
+      }
+      else {
+        // The results panel exists, (`.getPanel()` guarantees it) but
+        // is not visible; it's in a not-currently-viewed tab. Show a
+        // more asynchronous message to not so abruptly interrupt
+        // user's workflow by immediately revealing the panel.
+        const showButton = 'Show';
+        const resultPromise = vscode.window.showInformationMessage('Query results available.', showButton);
+        // Address this click asynchronously so we still update the
+        // query history immediately.
+        resultPromise.then(result => {
+          if (result === showButton) {
+            panel.reveal();
+          }
+        });
+      }
+    }
+
     await this.postMessage({
       t: 'setState',
       interpretation,
