@@ -20,7 +20,7 @@ For information about other configurations, see the separate [CodeQL help](https
 
 **Quick start: Using CodeQL**
 
-1. [Import a database from LGTM.com](#importing-a-database-from-lgtm.com).
+1. [Import a database from LGTM.com](#importing-a-database-from-lgtmcom).
 1. [Run a query](#running-a-query).
 
 -----
