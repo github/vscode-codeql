@@ -94,8 +94,17 @@ export class CodeQLCliServer implements Disposable {
 
 
   dispose() {
+    this.killProcessIfRunning();
+  }
+
+  killProcessIfRunning() {
     if (this.process) {
       this.process.kill();
+      // Close the stdout. 
+      // This is important on windows where the child porcess may not die cleanly
+      this.process.stdin.end();
+      this.process.stdout.destroy();
+      this.process.stderr.destroy();
       this.process = undefined;
     }
   }
@@ -106,10 +115,7 @@ export class CodeQLCliServer implements Disposable {
   private restartCliServer() {
     let callback = () => {
       try {
-        if (this.process) {
-          this.process.kill();
-          this.process = undefined;
-        }
+        this.killProcessIfRunning();
       } finally {
         this.runNext();
       }
@@ -186,10 +192,8 @@ export class CodeQLCliServer implements Disposable {
         return data;
       } catch (err) {
         // Kill the process if it isn't already dead.
-        process.kill();
-        // Remove it so future commands know to restart the server
-        this.process = undefined;
-        // Report the error (if there is a stderr then use that otherwise just report the error cod or nodejs error)
+        this.killProcessIfRunning();       
+         // Report the error (if there is a stderr then use that otherwise just report the error cod or nodejs error)
         if (stderrBuffers.length == 0) {
           throw new Error(`${description} failed: ${err}`)
         } else {
