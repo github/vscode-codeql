@@ -14,6 +14,7 @@ export interface ResultTablesProps {
   interpretation: Interpretation | undefined;
   database: DatabaseInfo;
   resultsPath: string | undefined;
+  kind: string | undefined;
   sortStates: Map<string, SortState>;
   isLoadingNewResults: boolean;
 }
@@ -77,7 +78,7 @@ export class ResultTables
   render(): React.ReactNode {
     const selectedTable = this.state.selectedTable;
     const resultSets = this.getResultSets();
-    const { database, resultsPath } = this.props;
+    const { database, resultsPath, kind } = this.props;
 
     // Only show the Problems view display checkbox for the alerts table.
     const toggleDiagnosticsClass = cx(toggleDiagnosticsClassName, {
@@ -103,13 +104,14 @@ export class ResultTables
                 t: 'toggleDiagnostics',
                 resultsPath: resultsPath,
                 databaseUri: database.databaseUri,
-                visible: e.target.checked
+                visible: e.target.checked,
+                kind: kind
               });
             }
           }} />
         </div>
         {
-          this.props.isLoadingNewResults ? 
+          this.props.isLoadingNewResults ?
             <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>Updating results…</span>
             : null
         }
