@@ -289,7 +289,7 @@ async function showLocation(loc: FivePartLocation, databaseItem: DatabaseItem): 
     const editor = await Window.showTextDocument(doc, vscode.ViewColumn.One);
     const sel = new vscode.Selection(resolvedLocation.range.start, resolvedLocation.range.end);
     editor.selection = sel;
-    editor.revealRange(sel);
+    editor.revealRange(sel, vscode.TextEditorRevealType.InCenter);
   }
 }
 
