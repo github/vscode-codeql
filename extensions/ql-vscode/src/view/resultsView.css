@@ -97,6 +97,7 @@ td.vscode-codeql__icon-cell {
   white-space: nowrap;
   margin: 0;
   padding: 0;
+  width: 24px;
 }
 
 td.vscode-codeql__dropdown-cell:hover {
@@ -118,4 +119,8 @@ td.vscode-codeql__path-index-cell {
 .octicon {
   fill: var(--vscode-editor-foreground);
   margin-top: .25em;
+}
+
+.octicon-light {
+  opacity: 0.6;
 }
