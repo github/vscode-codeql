@@ -29,21 +29,8 @@ Here are a few things you can do that will increase the likelihood of your pull 
 
 ## Setting up a local build
 
-Instead of building the extension locally, you can download the VSIX file from [GitHub Actions](https://github.com/Semmle/vscode-codeql/actions). Click a recent build and download the artifacts. You can then [install](#installing) and [configure](./extensions/ql-vscode/README.md) the extension.
-
 Make sure you have a fairly recent version of vscode (>1.32) and are using nodejs
 version >=v10.13.0. (Tested on v10.15.1 and v10.16.0).
-
-To build the extension, you also need a checkout of the [`Semmle/code` repo](https://git.semmle.com/Semmle/code).
-You can do one of the following:
-
-- Check out the `Semmle/code` repo to a directory named `code` in the root of the `github/vscode-codeql` checkout.
-- Create a symlink named `code` in the root of the `github/vscode-codeql` checkout, pointing to your actual `Semmle/code` checkout.
-- Set an environment variable to point to your `Semmle/code` checkout:
-
-```shell
-export SEMMLE_CODE=/your/path/to/semmle/code/checkout # for protobuf definitions
-```
 
 This repo uses [Rush](https://rushjs.io) to handle package management, building, and other
 operations across multiple projects. See the Rush "[Getting started as a developer](https://rushjs.io/pages/developer/new_developer/)" docs
@@ -137,12 +124,12 @@ You can use VS Code to debug the extension without explicitly installing it. Jus
 
 ## Releasing
 
-1. Create a branch for the release: `git checkout -b release-vxx.xx.xx`
-1. Make sure your local dependencies are up to date: `rush update`
-1. Make a build: `rush install`
+1. Trigger a release build by adding a new tag on master of the format `vxx.xx.xx`
+1. Download the release build of the VSIX from the draft GitHub release that is created
 1. Log into the [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage/publishers/github)
 1. Click the `...` menu in the CodeQL row and click Update
 1. Drag the `.vsix` file from the `dist` folder into the Marketplace and click Upload
+1. Publish the GitHub release
 
 ## Resources
 
