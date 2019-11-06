@@ -99,12 +99,17 @@ export class CodeQLCliServer implements Disposable {
 
   killProcessIfRunning() {
     if (this.process) {
-      this.process.kill();
-      // Close the stdout. 
-      // This is important on windows where the child porcess may not die cleanly
+      // Tell the Java CLI server process to shut down.
+      this.logger.log('Sending shutdown request');
+      this.process.stdin.write(JSON.stringify(["shutdown"]), "utf8");
+      this.process.stdin.write(this.nullBuffer)
+      this.logger.log('Sent shutdown request');
+      // Close the stdin and stdout streams.
+      // This is important on Windows where the child process may not die cleanly.
       this.process.stdin.end();
       this.process.stdout.destroy();
       this.process.stderr.destroy();
+      this.process.kill();
       this.process = undefined;
     }
   }
