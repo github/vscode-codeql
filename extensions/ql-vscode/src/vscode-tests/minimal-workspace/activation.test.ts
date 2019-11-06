@@ -18,7 +18,7 @@ describe('launching with a minimal workspace', async () => {
     const document = await vscode.workspace.openTextDocument(documentPath);
     assert(document.languageId === 'ql');
     // Delay slightly so that the extension has time to activate.
-    this.timeout(1000);
+    this.timeout(3000);
     setTimeout(() => {
       assert(ext!.isActive);
     }, 1000);
