@@ -96,7 +96,6 @@ export class ResultTables
           }
         </select>
         <div className={toggleDiagnosticsClass}>
-          <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
           <input type="checkbox" id="toggle-diagnostics" name="toggle-diagnostics" onChange={(e) => {
             if (resultsPath !== undefined) {
               vscode.postMessage({
@@ -107,6 +106,7 @@ export class ResultTables
               });
             }
           }} />
+          <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
         </div>
         {
           this.props.isLoadingNewResults ? 

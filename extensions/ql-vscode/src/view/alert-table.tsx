@@ -1,11 +1,11 @@
 import cx from 'classnames';
+import * as octicons from './octicons';
 import * as path from 'path';
-import * as React from "react";
-import * as Sarif from "sarif";
-import { LocationStyle } from "semmle-bqrs";
-import { className, evenRowClassName, oddRowClassName, pathRowClassName, renderLocation, ResultTableProps, selectedClassName } from "./result-table-utils";
-import { PathTableResultSet } from "./results";
-
+import * as React from 'react';
+import * as Sarif from 'sarif';
+import { FivePartLocation, LocationStyle, StringLocation } from 'semmle-bqrs';
+import { className, evenRowClassName, oddRowClassName, pathRowClassName, renderLocation, ResultTableProps, selectedClassName } from './result-table-utils';
+import { PathTableResultSet } from './results';
 
 export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
 export interface PathTableState {
@@ -16,6 +16,11 @@ interface SarifLink {
   dest: number
   text: string
 }
+
+type ParsedSarifLocation =
+  | FivePartLocation
+  | StringLocation
+  | { t: 'NoLocation', hint: string };
 
 type SarifMessageComponent = string | SarifLink
 
@@ -100,7 +105,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         if (typeof part === "string") {
           result.push(<span>{part} </span>);
         } else {
-          const renderedLocation = renderSarifLocation(part.text, relatedLocationsById[part.dest]);
+          const renderedLocation = renderSarifLocationWithText(part.text, relatedLocationsById[part.dest]);
           result.push(<span>{renderedLocation} </span>);
         }
       } return result;
@@ -112,24 +117,20 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return <span title={locationHint}>{msg}</span>;
     }
 
-    function renderSarifLocation(msg: string | undefined, loc: Sarif.Location): JSX.Element | undefined {
-      if (loc.physicalLocation === undefined)
-        return renderNonLocation(msg, 'no physical location');
-
+    function parseSarifLocation(loc: Sarif.Location): ParsedSarifLocation {
       const physicalLocation = loc.physicalLocation;
-
+      if (physicalLocation === undefined)
+        return { t: 'NoLocation', hint: 'no physical location' };
       if (physicalLocation.artifactLocation === undefined)
-        return renderNonLocation(msg, 'no artifact location');
-
+        return { t: 'NoLocation', hint: 'no artifact location' };
       if (physicalLocation.artifactLocation.uri === undefined)
-        return renderNonLocation(msg, 'artifact location has no uri');
+        return { t: 'NoLocation', hint: 'artifact location has no uri' };
 
       // This is not necessarily really an absolute uri; it could either be a
       // file uri or a relative uri.
       const uri = physicalLocation.artifactLocation.uri;
-
       if (physicalLocation.region === undefined)
-        return <span>{uri}</span>;
+        return { t: LocationStyle.String, loc: uri };
 
       const region = physicalLocation.region;
       const fileUriRegex = /file:/;
@@ -154,17 +155,42 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       // It is off by one with respect to the way vscode counts columns in selections.
       const colEnd = region.endColumn! - 1;
 
-      return renderLocation(
-        {
-          t: LocationStyle.FivePart,
-          file: effectiveLocation,
-          lineStart,
-          colStart,
-          lineEnd,
-          colEnd,
-        },
-        msg,
-        databaseUri);
+      return {
+        t: LocationStyle.FivePart,
+        file: effectiveLocation,
+        lineStart,
+        colStart,
+        lineEnd,
+        colEnd,
+      };
+    }
+
+    function renderSarifLocationWithText(text: string | undefined, loc: Sarif.Location): JSX.Element | undefined {
+      const parsedLoc = parseSarifLocation(loc);
+      switch (parsedLoc.t) {
+        case 'NoLocation':
+          return renderNonLocation(text, parsedLoc.hint);
+        case LocationStyle.String:
+          return <span>{parsedLoc.loc}</span>;
+        case LocationStyle.FivePart:
+          return renderLocation(parsedLoc, text, databaseUri);
+      }
+    }
+
+    /**
+     * Render sarif location as a link with the text being simply a
+     * human-readable form of the location itself.
+     */
+    function renderSarifLocation(loc: Sarif.Location): JSX.Element | undefined {
+      const parsedLoc = parseSarifLocation(loc);
+      switch (parsedLoc.t) {
+        case 'NoLocation':
+          return renderNonLocation("[no location]", parsedLoc.hint);
+        case LocationStyle.String:
+          return <span>{parsedLoc.loc}</span>;
+        case LocationStyle.FivePart:
+          return renderLocation(parsedLoc, `${parsedLoc.file}, line ${parsedLoc.lineStart}`, databaseUri);
+      }
     }
 
     const toggler: (index: number) => (e: React.MouseEvent) => void = (index) => {
@@ -172,18 +198,6 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     }
 
     const noResults = <span>No Results</span>; // TODO: Maybe make this look nicer
-    const octiconChevronDown = <svg className="octicon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M7.976 10.072l4.357-4.357.62.618L8.284 11h-.618L3 6.333l.62-.618 4.356 4.357z" />
-</svg>;
-    const octiconChevronRight = <svg className="octicon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M5.7 13.7L5 13l4.6-4.6L5 3.7l.7-.7 5 5v.7l-5 5z" />
-</svg>;
-    const octiconListUnordered = <svg className="octicon octicon-light" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M2 3H1v1h1V3zm0 3H1v1h1V6zM1 9h1v1H1V9zm1 3H1v1h1v-1zm2-9h11v1H4V3zm11 3H4v1h11V6zM4 9h11v1H4V9zm11 3H4v1h11v-1z" />
-</svg>;
-    const octiconInfo = <svg className="octicon octicon-light" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.568 1.03a6.8 6.8 0 0 1 4.192 2.02 7.06 7.06 0 0 1 .46 9.39 6.85 6.85 0 0 1-8.58 1.74 7 7 0 0 1-3.12-3.5 7.12 7.12 0 0 1-.23-4.71 7 7 0 0 1 2.77-3.79 6.8 6.8 0 0 1 4.508-1.15zm.472 12.85a5.89 5.89 0 0 0 3.41-2.07 6.07 6.07 0 0 0-.4-8.06 5.82 5.82 0 0 0-7.43-.74 6.06 6.06 0 0 0 .5 10.29 5.81 5.81 0 0 0 3.92.58zM8.51 7h-1v4h1V7zm0-2h-1v1h1V5z" />
-</svg>;
 
     let resultIndex = 0;
     let expansionIndex = 0;
@@ -199,18 +213,19 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           renderRelatedLocations(text, result.relatedLocations);
 
       const currentResultExpanded = this.state.expanded[expansionIndex];
-      const indicator = currentResultExpanded ? octiconChevronDown : octiconChevronRight;
+      const indicator = currentResultExpanded ? octicons.chevronDown : octicons.chevronRight;
+      const location = result.locations !== undefined && result.locations.length > 0 &&
+        renderSarifLocation(result.locations[0]);
+      const locationCells = <td>{location}</td>;
+
       if (result.codeFlows === undefined) {
-        let rowHeader = <span></span>;
-        if (result.locations !== undefined && result.locations.length > 0) {
-          rowHeader = <span>{renderSarifLocation('Result', result.locations[0])}: </span>;
-        }
         rows.push(
           <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
-            <td className="vscode-codeql__icon-cell">{octiconInfo}</td>
+            <td className="vscode-codeql__icon-cell">{octicons.info}</td>
             <td colSpan={4}>
-              {rowHeader}{msg}
+              {msg}
             </td>
+            {locationCells}
           </tr>
         );
       }
@@ -221,12 +236,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
               {indicator}
             </td>
             <td className="vscode-codeql__icon-cell">
-              {octiconListUnordered}
+              {octicons.listUnordered}
             </td>
             <td colSpan={2}>
               {msg}
             </td>
-          </tr>
+            {locationCells}
+          </tr >
         );
         resultIndex++;
         expansionIndex++;
@@ -237,7 +253,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
               const currentPathExpanded = this.state.expanded[expansionIndex];
               if (currentResultExpanded) {
-                const indicator = currentPathExpanded ? octiconChevronDown : octiconChevronRight;
+                const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
                 rows.push(
                   <tr>
                     <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
@@ -254,14 +270,19 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
                 let pathIndex = 1;
                 for (const step of threadFlow.locations) {
                   const msg = step.location !== undefined && step.location.message !== undefined ?
-                    renderSarifLocation(step.location.message.text, step.location) :
+                    renderSarifLocationWithText(step.location.message.text, step.location) :
                     '[no location]';
+                  const additionalMsg = step.location !== undefined ?
+                    renderSarifLocation(step.location) :
+                    '';
+
                   rows.push(
                     <tr className={pathRowClassName}>
                       <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                       <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                       <td className="vscode-codeql__path-index-cell">{pathIndex}</td>
                       <td>{msg}</td>
+                      <td>{additionalMsg}</td>
                     </tr>);
                   pathIndex++;
                 }
@@ -273,7 +294,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     }
 
     return <table className={tableClassName}>
-        <tbody>{rows}</tbody>
-      </table>;
+      <tbody>{rows}</tbody>
+    </table>;
   }
 }
