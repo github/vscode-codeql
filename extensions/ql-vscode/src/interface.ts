@@ -156,7 +156,7 @@ export class InterfaceManager extends DisposableObject {
         // Notify the webview that it should expect new results.
         await this.postMessage({ t: 'resultsUpdating' });
         await this._displayedEvaluationInfo.query.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
-        await this.showResults(this._displayedEvaluationInfo, true, WebviewReveal.NotForced);
+        await this.showResults(this._displayedEvaluationInfo, WebviewReveal.NotForced, true);
         break;
       }
       default:
@@ -173,11 +173,11 @@ export class InterfaceManager extends DisposableObject {
    * @param info Evaluation info for the executed query.
    * @param shouldKeepOldResultsWhileRendering Should keep old results while rendering.
    * @param forceReveal Force the webview panel to be visible and
-   * active. Appropriate when the user has just performed an explicit
+   * Appropriate when the user has just performed an explicit
    * UI interaction requesting results, e.g. clicking on a query
    * history entry.
    */
-  public async showResults(info: EvaluationInfo, shouldKeepOldResultsWhileRendering: boolean = false, forceReveal: WebviewReveal): Promise<void> {
+  public async showResults(info: EvaluationInfo, forceReveal: WebviewReveal, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
     if (info.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }
@@ -193,7 +193,7 @@ export class InterfaceManager extends DisposableObject {
     const panel = this.getPanel();
 
     if (forceReveal === WebviewReveal.Forced) {
-      panel.reveal();
+      panel.reveal(undefined, true);
     }
     else if (!panel.visible) {
       // The results panel exists, (`.getPanel()` guarantees it) but

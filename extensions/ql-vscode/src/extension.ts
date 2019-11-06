@@ -190,7 +190,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   archiveFilesystemProvider.activate(ctx);
 
   async function showResultsForInfo(info: EvaluationInfo, forceReveal: WebviewReveal): Promise<void> {
-    await intm.showResults(info, false, forceReveal);
+    await intm.showResults(info, forceReveal, false);
   }
 
   async function compileAndRunQuery(quickEval: boolean, selectedQuery: Uri | undefined) {
