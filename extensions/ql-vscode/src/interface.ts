@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Position, Range, Uri, window as Window, workspace } from 'vscode';
 import { DatabaseItem, DatabaseManager } from './databases';
 import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg, ResultsInfo, SortedResultsMap, SortedResultSetInfo } from './interface-types';
+import * as helpers from './helpers';
 import * as messages from './messages';
 import { EvaluationInfo, interpretResults, tmpDir, QueryInfo } from './queries';
 import { Logger } from './logging';
@@ -105,7 +106,7 @@ export class InterfaceManager extends DisposableObject {
       const panel = this._panel = Window.createWebviewPanel(
         'resultsView', // internal name
         'CodeQL Query Results', // user-visible name
-        vscode.ViewColumn.Beside,
+        { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
         {
           enableScripts: true,
           retainContextWhenHidden: true,
@@ -191,25 +192,26 @@ export class InterfaceManager extends DisposableObject {
 
     const panel = this.getPanel();
 
-    if (!panel.visible) {
-      if (forceReveal === WebviewReveal.Forced) {
-        panel.reveal();
-      }
-      else {
-        // The results panel exists, (`.getPanel()` guarantees it) but
-        // is not visible; it's in a not-currently-viewed tab. Show a
-        // more asynchronous message to not so abruptly interrupt
-        // user's workflow by immediately revealing the panel.
-        const showButton = 'Show';
-        const resultPromise = vscode.window.showInformationMessage('Query results available.', showButton);
-        // Address this click asynchronously so we still update the
-        // query history immediately.
-        resultPromise.then(result => {
-          if (result === showButton) {
-            panel.reveal();
-          }
-        });
-      }
+    if (forceReveal === WebviewReveal.Forced) {
+      panel.reveal();
+    }
+    else if (!panel.visible) {
+      // The results panel exists, (`.getPanel()` guarantees it) but
+      // is not visible; it's in a not-currently-viewed tab. Show a
+      // more asynchronous message to not so abruptly interrupt
+      // user's workflow by immediately revealing the panel.
+      const showButton = 'View Results';
+      const resultPromise = vscode.window.showInformationMessage(
+        `Finished running query ${helpers.getQueryName(info)}.`,
+        showButton
+      );
+      // Address this click asynchronously so we still update the
+      // query history immediately.
+      resultPromise.then(result => {
+        if (result === showButton) {
+          panel.reveal();
+        }
+      });
     }
 
     await this.postMessage({

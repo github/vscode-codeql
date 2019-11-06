@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ExtensionContext, window as Window } from 'vscode';
 import { EvaluationInfo } from './queries';
+import * as helpers from './helpers';
 import * as messages from './messages';
 import * as path from 'path';
 /**
@@ -22,11 +23,7 @@ export class QueryHistoryItem {
   info: EvaluationInfo;
 
   constructor(info: EvaluationInfo) {
-    if (info.query.metadata && info.query.metadata.name) {
-      this.queryName = info.query.metadata.name;
-    } else {
-      this.queryName = path.basename(info.query.program.queryPath);
-    }
+    this.queryName = helpers.getQueryName(info);
     this.databaseName = info.database.name;
     this.info = info;
     this.time = new Date().toISOString();
@@ -181,6 +178,6 @@ export class QueryHistoryManager {
 
   push(item: QueryHistoryItem) {
     this.treeDataProvider.push(item);
-    this.treeView.reveal(item, { select: true, focus: true });
+    this.treeView.reveal(item, { select: true });
   }
 }
