@@ -272,12 +272,17 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
                   const msg = step.location !== undefined && step.location.message !== undefined ?
                     renderSarifLocationWithText(step.location.message.text, step.location) :
                     '[no location]';
+                  const additionalMsg = step.location !== undefined ?
+                    renderSarifLocation(step.location) :
+                    '';
+
                   rows.push(
                     <tr className={pathRowClassName}>
                       <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                       <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                       <td className="vscode-codeql__path-index-cell">{pathIndex}</td>
                       <td>{msg}</td>
+                      <td>{additionalMsg}</td>
                     </tr>);
                   pathIndex++;
                 }
