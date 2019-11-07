@@ -167,7 +167,6 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   }
 
   async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
-    logger.log(`readdir ${uri}`);
     const ref = decodeSourceArchiveUri(uri);
     const archive = await this.getArchive(ref.sourceArchiveZipPath);
     const result = Object.entries(archive.dirMap[ref.pathWithinSourceArchive]);
