@@ -220,7 +220,8 @@
       "explorer/context": [
         {
           "command": "codeQL.setCurrentDatabase",
-          "group": "9_qlCommands"
+          "group": "9_qlCommands",
+          "when": "resourceScheme == codeql-zip-archive || explorerResourceIsFolder"
         },
         {
           "command": "codeQL.runQuery",
