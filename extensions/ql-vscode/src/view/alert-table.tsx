@@ -247,7 +247,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         rows.push(
           <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
             <td className="vscode-codeql__icon-cell">{octicons.info}</td>
-            <td colSpan={4}>
+            <td colSpan={3}>
               {msg}
             </td>
             {locationCells}
