@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as React from 'react';
 import * as Sarif from 'sarif';
 import { FivePartLocation, LocationStyle, StringLocation } from 'semmle-bqrs';
-import { className, evenRowClassName, oddRowClassName, pathRowClassName, renderLocation, ResultTableProps, selectedClassName } from './result-table-utils';
+import { className, pathRowClassName, renderLocation, ResultTableProps, selectedClassName, zebraStripe } from './result-table-utils';
 import { PathTableResultSet } from './results';
 
 export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
@@ -245,7 +245,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
       if (result.codeFlows === undefined) {
         rows.push(
-          <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
+          <tr {...zebraStripe(resultIndex)}>
             <td className="vscode-codeql__icon-cell">{octicons.info}</td>
             <td colSpan={3}>
               {msg}
@@ -267,7 +267,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
                                                   * the path when expanding the result */
           [expansionIndex];
         rows.push(
-          <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
+          <tr {...zebraStripe(resultIndex)}>
             <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(indices)}>
               {indicator}
             </td>

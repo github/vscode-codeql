@@ -1,11 +1,11 @@
 import cx from 'classnames';
 import * as React from "react";
-import { className, evenRowClassName, oddRowClassName, renderLocation, ResultTableProps, selectedClassName } from "./result-table-utils";
+import { className, renderLocation, ResultTableProps, selectedClassName, zebraStripe } from "./result-table-utils";
 import { RawTableResultSet, ResultValue, vscode } from "./results";
 import { assertNever } from "../helpers-pure";
 import { SortDirection, SortState } from "../interface-types";
 
-export type RawTableProps = ResultTableProps & { 
+export type RawTableProps = ResultTableProps & {
   resultSet: RawTableResultSet,
   sortState?: SortState;
 };
@@ -44,7 +44,7 @@ export class RawTable extends React.Component<RawTableProps, {}> {
       <tbody>
         {
           this.props.resultSet.rows.map((row, rowIndex) =>
-            <tr key={rowIndex} className={(rowIndex % 2) ? oddRowClassName : evenRowClassName}>
+            <tr key={rowIndex} {...zebraStripe(rowIndex)}>
               {
                 [
                   <td key={-1}>{rowIndex + 1}</td>,
