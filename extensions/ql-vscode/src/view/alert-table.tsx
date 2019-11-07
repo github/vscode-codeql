@@ -19,6 +19,11 @@ interface SarifLink {
 
 type ParsedSarifLocation =
   | FivePartLocation
+  // FivePartLocation has a `file` field, but it will sometimes include
+  // a source location prefix, which contains build-specific information the user
+  // doesn't really need to see. We ensure that `userVisibleFile` will not contain
+  // that, and is appropriate for display in the UI.
+  & { userVisibleFile: string }
   | StringLocation
   | { t: 'NoLocation', hint: string };
 
@@ -72,10 +77,24 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     this.state = { expanded: {} };
   }
 
-  toggle(e: React.MouseEvent, i: number) {
-    this.setState(previousState => ({
-      expanded: { ...previousState.expanded, [i]: !(previousState.expanded[i]) }
-    }));
+  /**
+   * Given a list of `indices`, toggle the first, and if we 'open' the
+   * first item, open all the rest as well. This mimics vscode's file
+   * explorer tree view behavior.
+   */
+  toggle(e: React.MouseEvent, indices: number[]) {
+    this.setState(previousState => {
+      if (previousState.expanded[indices[0]]) {
+        return { expanded: { ...previousState.expanded, [indices[0]]: false } };
+      }
+      else {
+        const expanded = { ...previousState.expanded };
+        for (const index of indices) {
+          expanded[index] = true;
+        }
+        return { expanded };
+      }
+    });
     e.stopPropagation();
     e.preventDefault();
   }
@@ -133,10 +152,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         return { t: LocationStyle.String, loc: uri };
 
       const region = physicalLocation.region;
-      const fileUriRegex = /file:/;
+      const fileUriRegex = /^file:/;
       const effectiveLocation = uri.match(fileUriRegex) ?
         decodeURIComponent(uri.replace(fileUriRegex, '')) :
         getPathRelativeToSourceLocationPrefix(sourceLocationPrefix, uri);
+      const userVisibleFile = uri.match(fileUriRegex) ?
+        decodeURIComponent(uri.replace(fileUriRegex, '')) :
+        uri;
 
       // We assume that the SARIF we're given always has startLine
       // This is not mandated by the SARIF spec, but should be true of
@@ -158,6 +180,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return {
         t: LocationStyle.FivePart,
         file: effectiveLocation,
+        userVisibleFile,
         lineStart,
         colStart,
         lineEnd,
@@ -189,12 +212,14 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         case LocationStyle.String:
           return <span>{parsedLoc.loc}</span>;
         case LocationStyle.FivePart:
-          return renderLocation(parsedLoc, `${parsedLoc.file}, line ${parsedLoc.lineStart}`, databaseUri);
+          const shortLocation = `${path.basename(parsedLoc.userVisibleFile)}:${parsedLoc.lineStart}:${parsedLoc.colStart}`;
+          const longLocation = `${parsedLoc.userVisibleFile}`;
+          return renderLocation(parsedLoc, shortLocation, databaseUri, longLocation);
       }
     }
 
-    const toggler: (index: number) => (e: React.MouseEvent) => void = (index) => {
-      return (e) => this.toggle(e, index);
+    const toggler: (indices: number[]) => (e: React.MouseEvent) => void = (indices) => {
+      return (e) => this.toggle(e, indices);
     }
 
     const noResults = <span>No Results</span>; // TODO: Maybe make this look nicer
@@ -216,13 +241,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       const indicator = currentResultExpanded ? octicons.chevronDown : octicons.chevronRight;
       const location = result.locations !== undefined && result.locations.length > 0 &&
         renderSarifLocation(result.locations[0]);
-      const locationCells = <td>{location}</td>;
+      const locationCells = <td className="vscode-codeql__location-cell">{location}</td>;
 
       if (result.codeFlows === undefined) {
         rows.push(
           <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
             <td className="vscode-codeql__icon-cell">{octicons.info}</td>
-            <td colSpan={4}>
+            <td colSpan={3}>
               {msg}
             </td>
             {locationCells}
@@ -230,9 +255,20 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         );
       }
       else {
+        const paths: Sarif.ThreadFlow[] = [];
+        for (const codeFlow of result.codeFlows) {
+          for (const threadFlow of codeFlow.threadFlows) {
+            paths.push(threadFlow);
+          }
+        }
+
+        const indices = paths.length == 1 ?
+          [expansionIndex, expansionIndex + 1] : /* if there's exactly one path, auto-expand
+                                                  * the path when expanding the result */
+          [expansionIndex];
         rows.push(
           <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
-            <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(expansionIndex)}>
+            <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(indices)}>
               {indicator}
             </td>
             <td className="vscode-codeql__icon-cell">
@@ -247,49 +283,45 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         resultIndex++;
         expansionIndex++;
 
-        if (result.codeFlows !== undefined) {
-          for (const codeFlow of result.codeFlows) {
-            for (const threadFlow of codeFlow.threadFlows) {
-
-              const currentPathExpanded = this.state.expanded[expansionIndex];
-              if (currentResultExpanded) {
-                const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
-                rows.push(
-                  <tr>
-                    <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
-                    <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(expansionIndex)}>{indicator}</td>
-                    <td className="vscode-codeql__text-center" colSpan={2}>
-                      Path
+        paths.forEach(path => {
+          const currentPathExpanded = this.state.expanded[expansionIndex];
+          if (currentResultExpanded) {
+            const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
+            rows.push(
+              <tr>
+                <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
+                <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler([expansionIndex])}>{indicator}</td>
+                <td className="vscode-codeql__text-center" colSpan={2}>
+                  Path
                     </td>
-                  </tr>
-                );
-              }
-              expansionIndex++;
+              </tr>
+            );
+          }
+          expansionIndex++;
 
-              if (currentResultExpanded && currentPathExpanded) {
-                let pathIndex = 1;
-                for (const step of threadFlow.locations) {
-                  const msg = step.location !== undefined && step.location.message !== undefined ?
-                    renderSarifLocationWithText(step.location.message.text, step.location) :
-                    '[no location]';
-                  const additionalMsg = step.location !== undefined ?
-                    renderSarifLocation(step.location) :
-                    '';
+          if (currentResultExpanded && currentPathExpanded) {
+            let pathIndex = 1;
+            for (const step of path.locations) {
+              const msg = step.location !== undefined && step.location.message !== undefined ?
+                renderSarifLocationWithText(step.location.message.text, step.location) :
+                '[no location]';
+              const additionalMsg = step.location !== undefined ?
+                renderSarifLocation(step.location) :
+                '';
 
-                  rows.push(
-                    <tr className={pathRowClassName}>
-                      <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
-                      <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
-                      <td className="vscode-codeql__path-index-cell">{pathIndex}</td>
-                      <td>{msg}</td>
-                      <td>{additionalMsg}</td>
-                    </tr>);
-                  pathIndex++;
-                }
-              }
+              rows.push(
+                <tr className={pathRowClassName}>
+                  <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
+                  <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
+                  <td className="vscode-codeql__path-index-cell">{pathIndex}</td>
+                  <td>{msg}</td>
+                  <td className="vscode-codeql__location-cell">{additionalMsg}</td>
+                </tr>);
+              pathIndex++;
             }
           }
-        }
+        });
+
       }
     }
 
