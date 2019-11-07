@@ -221,7 +221,7 @@
         {
           "command": "codeQL.setCurrentDatabase",
           "group": "9_qlCommands",
-          "when": "resourceScheme == codeql-zip-archive || explorerResourceIsFolder "
+          "when": "resourceScheme == codeql-zip-archive || explorerResourceIsFolder"
         },
         {
           "command": "codeQL.runQuery",
