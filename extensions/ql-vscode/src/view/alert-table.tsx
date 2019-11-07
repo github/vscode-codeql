@@ -310,13 +310,14 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
                 renderSarifLocation(step.location) :
                 '';
 
+              const stepIndex = resultIndex + pathIndex;
               rows.push(
-                <tr {...zebraStripe(resultIndex)}>
+                <tr>
                   <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                   <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
-                  <td className="vscode-codeql__path-index-cell">{pathIndex}</td>
-                  <td>{msg}</td>
-                  <td className="vscode-codeql__location-cell">{additionalMsg}</td>
+                  <td {...zebraStripe(stepIndex, 'vscode-codeql__path-index-cell')}>{pathIndex}</td>
+                  <td {...zebraStripe(stepIndex)}>{msg} </td>
+                  <td {...zebraStripe(stepIndex, 'vscode-codeql__location-cell')}>{additionalMsg}</td>
                 </tr>);
               pathIndex++;
             }
