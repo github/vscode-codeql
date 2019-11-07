@@ -56,7 +56,7 @@ export interface SetStateMsg {
 
 export type IntoResultsViewMsg = ResultsUpdatingMsg | SetStateMsg;
 
-export type FromResultsViewMsg = ViewSourceFileMsg | ToggleDiagnostics | ChangeSortMsg;
+export type FromResultsViewMsg = ViewSourceFileMsg | ToggleDiagnostics | ChangeSortMsg | ResultViewLoaded;
 
 interface ViewSourceFileMsg {
   t: 'viewSourceFile';
@@ -70,6 +70,10 @@ interface ToggleDiagnostics {
   resultsPath: string;
   visible: boolean;
   kind?: string;
+};
+
+interface ResultViewLoaded {
+  t: 'resultViewLoaded';
 };
 
 export enum SortDirection {
