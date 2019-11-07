@@ -324,3 +324,5 @@ Rdom.render(
   <App />,
   document.getElementById('root')
 );
+
+vscode.postMessage({t: "resultViewLoaded"})

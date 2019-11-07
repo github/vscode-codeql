@@ -88,6 +88,8 @@ export function webviewUriToFileUri(webviewUri: string): Uri {
 export class InterfaceManager extends DisposableObject {
   private _displayedEvaluationInfo?: EvaluationInfo;
   private _panel: vscode.WebviewPanel | undefined;
+  private _panelLoaded = false;
+  private _panelLoadedCallBacks: (() => void)[] = [];
 
   private readonly _diagnosticCollection = languages.createDiagnosticCollection(`codeql-query-results`);
 
@@ -148,6 +150,11 @@ export class InterfaceManager extends DisposableObject {
         }
         break;
       }
+      case "resultViewLoaded":
+        this._panelLoaded = true;
+        this._panelLoadedCallBacks.forEach(cb => cb())
+        this._panelLoadedCallBacks = [];
+        break
       case 'changeSort': {
         if (this._displayedEvaluationInfo === undefined) {
           showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
@@ -166,6 +173,16 @@ export class InterfaceManager extends DisposableObject {
 
   postMessage(msg: IntoResultsViewMsg): Thenable<boolean> {
     return this.getPanel().webview.postMessage(msg);
+  }
+
+  private waitForPanelLoaded(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (this._panelLoaded) {
+        resolve();
+      } else {
+        this._panelLoadedCallBacks.push(resolve)
+      }
+    })
   }
 
   /**
@@ -191,7 +208,7 @@ export class InterfaceManager extends DisposableObject {
     this._displayedEvaluationInfo = info;
 
     const panel = this.getPanel();
-
+    await this.waitForPanelLoaded();
     if (forceReveal === WebviewReveal.Forced) {
       panel.reveal(undefined, true);
     }
