@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as React from 'react';
 import * as Sarif from 'sarif';
 import { FivePartLocation, LocationStyle, StringLocation } from 'semmle-bqrs';
-import { className, pathRowClassName, renderLocation, ResultTableProps, selectedClassName, zebraStripe } from './result-table-utils';
+import { className, renderLocation, ResultTableProps, selectedClassName, zebraStripe } from './result-table-utils';
 import { PathTableResultSet } from './results';
 
 export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
@@ -266,6 +266,8 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           [expansionIndex, expansionIndex + 1] : /* if there's exactly one path, auto-expand
                                                   * the path when expanding the result */
           [expansionIndex];
+
+        resultIndex++;
         rows.push(
           <tr {...zebraStripe(resultIndex)}>
             <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(indices)}>
@@ -280,7 +282,6 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
             {locationCells}
           </tr >
         );
-        resultIndex++;
         expansionIndex++;
 
         paths.forEach(path => {
@@ -288,12 +289,12 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           if (currentResultExpanded) {
             const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
             rows.push(
-              <tr>
+              <tr {...zebraStripe(resultIndex)}>
                 <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                 <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler([expansionIndex])}>{indicator}</td>
-                <td className="vscode-codeql__text-center" colSpan={2}>
+                <td className="vscode-codeql__text-center" colSpan={3}>
                   Path
-                    </td>
+                </td>
               </tr>
             );
           }
@@ -310,7 +311,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
                 '';
 
               rows.push(
-                <tr className={pathRowClassName}>
+                <tr {...zebraStripe(resultIndex)}>
                   <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                   <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                   <td className="vscode-codeql__path-index-cell">{pathIndex}</td>
