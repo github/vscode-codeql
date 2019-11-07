@@ -125,6 +125,7 @@ async function parseResultSets(response: Response): Promise<readonly ResultSet[]
 
 interface ResultsInfo {
   resultsPath: string;
+  kind: string | undefined;
   database: DatabaseInfo;
   interpretation: Interpretation | undefined;
   sortedResultsMap: Map<string, SortedResultSetInfo>;
@@ -176,6 +177,7 @@ class App extends React.Component<{}, ResultsViewState> {
       case 'setState':
         this.updateStateWithNewResultsInfo({
           resultsPath: msg.resultsPath,
+          kind: msg.kind,
           sortedResultsMap: new Map(Object.entries(msg.sortedResultsMap)),
           database: msg.database,
           interpretation: msg.interpretation,
@@ -193,7 +195,7 @@ class App extends React.Component<{}, ResultsViewState> {
         assertNever(msg);
     }
   }
-  
+
   private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
     this.setState(prevState => {
       const stateWithDisplayedResults = (displayedResults: ResultsState) => ({
@@ -295,6 +297,7 @@ class App extends React.Component<{}, ResultsViewState> {
         interpretation={displayedResults.resultsInfo ? displayedResults.resultsInfo.interpretation : undefined}
         database={displayedResults.results.database}
         resultsPath={displayedResults.resultsInfo ? displayedResults.resultsInfo.resultsPath : undefined}
+        kind={displayedResults.resultsInfo ? displayedResults.resultsInfo.kind : undefined}
         sortStates={displayedResults.results.sortStates}
         isLoadingNewResults={this.state.isExpectingResultsUpdate || this.state.nextResultsInfo !== null} />;
     }

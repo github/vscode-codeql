@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 import * as path from 'path';
 import * as bqrs from 'semmle-bqrs';
-import { CustomResultSets, FivePartLocation, isResolvableLocation, LocationValue, ProblemQueryResults } from 'semmle-bqrs';
+import { CustomResultSets, FivePartLocation, isResolvableLocation, LocationValue, ProblemQueryResults, PathProblemQueryResults } from 'semmle-bqrs';
 import { FileReader } from 'semmle-io-node';
 import { DisposableObject } from 'semmle-vscode-utils';
 import * as vscode from 'vscode';
@@ -140,7 +140,7 @@ export class InterfaceManager extends DisposableObject {
         if (msg.visible) {
           const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.databaseUri));
           if (databaseItem !== undefined) {
-            await this.showResultsAsDiagnostics(msg.resultsPath, databaseItem);
+            await this.showResultsAsDiagnostics(msg.resultsPath, msg.kind, databaseItem);
           }
         } else {
           // TODO: Only clear diagnostics on the same database.
@@ -220,7 +220,8 @@ export class InterfaceManager extends DisposableObject {
       resultsPath: this.convertPathToWebviewUri(info.query.resultsInfo.resultsPath),
       sortedResultsMap,
       database: info.database,
-      shouldKeepOldResultsWhileRendering
+      shouldKeepOldResultsWhileRendering,
+      kind: info.query.metadata ? info.query.metadata.kind : undefined
     });
   }
 
@@ -248,15 +249,31 @@ export class InterfaceManager extends DisposableObject {
     return interpretation;
   }
 
-  private async showResultsAsDiagnostics(resultsPath: string, database: DatabaseItem) {
+  private async showResultsAsDiagnostics(resultsPath: string, kind: string | undefined,
+    database: DatabaseItem) {
+
     // URIs from the webview have the vscode-resource scheme, so convert into a filesystem URI first.
     const resultsPathOnDisk = webviewUriToFileUri(resultsPath).fsPath;
     const fileReader = await FileReader.open(resultsPathOnDisk);
     try {
       const resultSets = await bqrs.open(fileReader);
       try {
-        const customResults = bqrs.createCustomResultSets<ProblemQueryResults>(resultSets, ProblemQueryResults);
-        await this.showProblemResultsAsDiagnostics(customResults, database);
+        switch (kind || 'problem') {
+          case 'problem': {
+            const customResults = bqrs.createCustomResultSets<ProblemQueryResults>(resultSets, ProblemQueryResults);
+            await this.showProblemResultsAsDiagnostics(customResults, database);
+          }
+            break;
+
+          case 'path-problem': {
+            const customResults = bqrs.createCustomResultSets<PathProblemQueryResults>(resultSets, PathProblemQueryResults);
+            await this.showProblemResultsAsDiagnostics(customResults, database);
+          }
+            break;
+
+          default:
+            throw new Error(`Unrecognized query kind '${kind}'.`);
+        }
       }
       catch (e) {
         const msg = e instanceof Error ? e.message : e.toString();

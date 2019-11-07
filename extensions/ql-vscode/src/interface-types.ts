@@ -32,7 +32,7 @@ export type SortedResultsMap = { [resultSet: string]: SortedResultSetInfo };
 
 /**
  * A message to indicate that the results are being updated.
- * 
+ *
  * As a result of receiving this message, listeners might want to display a loading indicator.
  */
 export interface ResultsUpdatingMsg {
@@ -45,9 +45,10 @@ export interface SetStateMsg {
   sortedResultsMap: SortedResultsMap;
   interpretation: undefined | Interpretation;
   database: DatabaseInfo;
+  kind?: string;
   /**
    * Whether to keep displaying the old results while rendering the new results.
-   * 
+   *
    * This is useful to prevent properties like scroll state being lost when rendering the sorted results after sorting a column.
    */
   shouldKeepOldResultsWhileRendering: boolean;
@@ -68,6 +69,7 @@ interface ToggleDiagnostics {
   databaseUri: string;
   resultsPath: string;
   visible: boolean;
+  kind?: string;
 };
 
 export enum SortDirection {
