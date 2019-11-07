@@ -26,7 +26,7 @@ export class QueryHistoryItem {
     this.queryName = helpers.getQueryName(info);
     this.databaseName = info.database.name;
     this.info = info;
-    this.time = new Date().toISOString();
+    this.time = new Date().toLocaleString();
   }
 
   get statusString(): string {
@@ -47,7 +47,7 @@ export class QueryHistoryItem {
 
   toString(): string {
     const { databaseName, queryName, time } = this;
-    return `${queryName} on ${databaseName} (${time}) - ${this.statusString}`;
+    return `[${time}] ${queryName} on ${databaseName} - ${this.statusString}`;
   }
 }
 
