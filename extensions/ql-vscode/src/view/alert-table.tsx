@@ -78,18 +78,18 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
   }
 
   /**
-   * Given a list of `indexes`, toggle the first, and if we 'open' the
+   * Given a list of `indices`, toggle the first, and if we 'open' the
    * first item, open all the rest as well. This mimics vscode's file
    * explorer tree view behavior.
    */
-  toggle(e: React.MouseEvent, indexes: number[]) {
+  toggle(e: React.MouseEvent, indices: number[]) {
     this.setState(previousState => {
-      if (previousState.expanded[indexes[0]]) {
-        return { expanded: { ...previousState.expanded, [indexes[0]]: false } };
+      if (previousState.expanded[indices[0]]) {
+        return { expanded: { ...previousState.expanded, [indices[0]]: false } };
       }
       else {
         const expanded = { ...previousState.expanded };
-        for (const index of indexes) {
+        for (const index of indices) {
           expanded[index] = true;
         }
         return { expanded };
@@ -218,8 +218,8 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       }
     }
 
-    const toggler: (indexes: number[]) => (e: React.MouseEvent) => void = (indexes) => {
-      return (e) => this.toggle(e, indexes);
+    const toggler: (indices: number[]) => (e: React.MouseEvent) => void = (indices) => {
+      return (e) => this.toggle(e, indices);
     }
 
     const noResults = <span>No Results</span>; // TODO: Maybe make this look nicer
@@ -262,13 +262,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           }
         }
 
-        const indexes = paths.length == 1 ?
+        const indices = paths.length == 1 ?
           [expansionIndex, expansionIndex + 1] : /* if there's exactly one path, auto-expand
                                                   * the path when expanding the result */
           [expansionIndex];
         rows.push(
           <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
-            <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(indexes)}>
+            <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(indices)}>
               {indicator}
             </td>
             <td className="vscode-codeql__icon-cell">
