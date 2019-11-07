@@ -458,9 +458,49 @@ export class DatabaseManager extends DisposableObject {
     const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions, (item) => {
       this._onDidChangeDatabaseItem.fire(item);
     });
-    this.addDatabaseItem(databaseItem);
+    await this.addDatabaseItem(databaseItem);
+    await this.addDatabaseSourceArchiveFolder(databaseItem);
 
     return databaseItem;
+  }
+
+  private async addDatabaseSourceArchiveFolder(item: DatabaseItem) {
+    // The folder may already be in workspace state from a previous
+    // session. If not, add it.
+    const index = this.getDatabaseWorkspaceFolderIndex(item);
+    if (index === -1) {
+      // Add that filesystem as a folder to the current workspace.
+      //
+      // It's important that we add workspace folders to the end,
+      // rather than beginning of the list, because the first
+      // workspace folder is special; if it gets updated, the entire
+      // extension host is restarted. (cf.
+      // https://github.com/microsoft/vscode/blob/e0d2ed907d1b22808c56127678fb436d604586a7/src/vs/workbench/contrib/relauncher/browser/relauncher.contribution.ts#L209-L214)
+      //
+      // This is undesirable, as we might be adding and removing many
+      // workspace folders as the user adds and removes databases.
+      const end = (vscode.workspace.workspaceFolders || []).length;
+      const uri = item.getSourceArchiveExplorerUri();
+      if (uri === undefined) {
+        logger.log(`Couldn't obtain file explorer uri for ${item.name}`);
+      }
+      else {
+        logger.log(`Adding workspace folder for ${item.name} source archive at index ${end}`);
+        if ((vscode.workspace.workspaceFolders || []).length < 2) {
+          // Adding this workspace folder makes the workspace
+          // multi-root, which may surprise the user. Let them know
+          // we're doing this.
+          vscode.window.showInformationMessage(`Adding workspace folder for source archive of database ${item.name}.`);
+        }
+        vscode.workspace.updateWorkspaceFolders(end, 0, {
+          name: `[${item.name} source archive]`,
+          uri,
+        });
+        // vscode api documentation says we must to wait for this event
+        // between multiple `updateWorkspaceFolders` calls.
+        await eventFired(vscode.workspace.onDidChangeWorkspaceFolders);
+      }
+    }
   }
 
   private async createDatabaseItemFromPersistedState(state: PersistedDatabaseItem):
@@ -484,7 +524,7 @@ export class DatabaseManager extends DisposableObject {
       (item) => {
         this._onDidChangeDatabaseItem.fire(item)
       });
-    this.addDatabaseItem(item);
+    await this.addDatabaseItem(item);
 
     return item;
   }
@@ -551,42 +591,6 @@ export class DatabaseManager extends DisposableObject {
   private async addDatabaseItem(item: DatabaseItemImpl) {
     this._databaseItems.push(item);
     this.updatePersistedDatabaseList();
-    // The folder may already be in workspace state from a previous
-    // session. If not, add it.
-    const index = this.getDatabaseWorkspaceFolderIndex(item);
-    if (index === -1) {
-      // Add that filesystem as a folder to the current workspace.
-      //
-      // It's important that we add workspace folders to the end,
-      // rather than beginning of the list, because the first
-      // workspace folder is special; if it gets updated, the entire
-      // extension host is restarted. (cf.
-      // https://github.com/microsoft/vscode/blob/e0d2ed907d1b22808c56127678fb436d604586a7/src/vs/workbench/contrib/relauncher/browser/relauncher.contribution.ts#L209-L214)
-      //
-      // This is undesirable, as we might be adding and removing many
-      // workspace folders as the user adds and removes databases.
-      const end = (vscode.workspace.workspaceFolders || []).length;
-      const uri = item.getSourceArchiveExplorerUri();
-      if (uri === undefined) {
-        logger.log(`Couldn't obtain file explorer uri for ${item.name}`);
-      }
-      else {
-        logger.log(`Adding workspace folder for ${item.name} source archive at index ${end}`);
-        if ((vscode.workspace.workspaceFolders || []).length < 2) {
-          // Adding this workspace folder makes the workspace
-          // multi-root, which may surprise the user. Let them know
-          // we're doing this.
-          vscode.window.showInformationMessage(`Adding workspace folder for source archive of database ${item.name}.`);
-        }
-        vscode.workspace.updateWorkspaceFolders(end, 0, {
-          name: `[${item.name} source archive]`,
-          uri,
-        });
-        // vscode api documentation says we must to wait for this event
-        // between multiple `updateWorkspaceFolders` calls.
-        await eventFired(vscode.workspace.onDidChangeWorkspaceFolders);
-      }
-    }
     this._onDidChangeDatabaseItem.fire(undefined);
   }
 
