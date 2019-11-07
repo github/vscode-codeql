@@ -408,9 +408,11 @@ class DatabaseItemImpl implements DatabaseItem {
 }
 
 /**
- * A promise that resolves when the event `event` fires.
+ * A promise that resolves to an event's result value when the event
+ * `event` fires. If waiting for the event takes too long (by default
+ * >1000ms) log a warning, and resolve to undefined.
  */
-function eventFired<T>(event: vscode.Event<T>, timeoutMs: number = 1000): Promise<void> {
+function eventFired<T>(event: vscode.Event<T>, timeoutMs: number = 1000): Promise<T | undefined> {
   return new Promise((res, rej) => {
     let timeout: NodeJS.Timeout | undefined;
     let disposable: vscode.Disposable | undefined;
@@ -418,12 +420,12 @@ function eventFired<T>(event: vscode.Event<T>, timeoutMs: number = 1000): Promis
       if (timeout !== undefined) clearTimeout(timeout);
       if (disposable !== undefined) disposable.dispose();
     }
-    disposable = event(_ => {
-      res(); dispose();
+    disposable = event(e => {
+      res(e); dispose();
     });
     timeout = setTimeout(() => {
       logger.log(`Waiting for event ${event} timed out after ${timeoutMs}ms`);
-      rej(); dispose();
+      res(undefined); dispose();
     }, timeoutMs);
   });
 }
