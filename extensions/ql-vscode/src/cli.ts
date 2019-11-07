@@ -143,7 +143,7 @@ export class CodeQLCliServer implements Disposable {
    * Launch the cli server
    */
   private async launchProcess(): Promise<child_process.ChildProcessWithoutNullStreams> {
-    const config = await this.config.getCodeQlPath();
+    const config = await this.config.getCodeQlPathWithoutVersionCheck();
     if (!config) {
       throw new Error("Failed to find codeql distribution")
     }

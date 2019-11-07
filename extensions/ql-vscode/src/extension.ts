@@ -4,7 +4,7 @@ import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { DistributionConfigListener, QueryServerConfigListener } from './config';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
-import { DistributionUpdateCheckResultKind, DistributionManager, GithubApiError } from './distribution';
+import { DistributionUpdateCheckResultKind, DistributionManager, FindDistributionResult, FindDistributionResultKind, GithubApiError, DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT } from './distribution';
 import * as helpers from './helpers';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager, WebviewReveal } from './interface';
@@ -71,20 +71,24 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
   const distributionConfigListener = new DistributionConfigListener();
   ctx.subscriptions.push(distributionConfigListener);
-  const distributionManager = new DistributionManager(ctx, distributionConfigListener);
+  const distributionManager = new DistributionManager(ctx, distributionConfigListener, DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT);
 
   const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
 
   registerErrorStubs(ctx, command => `Can't execute ${command}: missing CodeQL command-line tools.`, [checkForUpdatesCommand]);
 
-  async function installOrUpdateDistributionWithProgressTitle(progressTitle: string): Promise<void> {
+  async function installOrUpdateDistributionWithProgressTitle(progressTitle: string, isSilentIfCannotUpdate: boolean): Promise<void> {
     const result = await distributionManager.checkForUpdatesToExtensionManagedDistribution();
     switch (result.kind) {
       case DistributionUpdateCheckResultKind.AlreadyUpToDate:
-        helpers.showAndLogInformationMessage("CodeQL tools already up to date.");
+        if (!isSilentIfCannotUpdate) {
+          helpers.showAndLogInformationMessage("CodeQL tools already up to date.");
+        }
         break;
       case DistributionUpdateCheckResultKind.InvalidDistributionLocation:
-        helpers.showAndLogErrorMessage("CodeQL tools are installed externally so could not be updated.");
+        if (isSilentIfCannotUpdate) {
+          helpers.showAndLogErrorMessage("CodeQL tools are installed externally so could not be updated.");
+        }
         break;
       case DistributionUpdateCheckResultKind.UpdateAvailable:
         if (beganMainExtensionActivation) {
@@ -112,18 +116,20 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     }
   }
 
-  async function installOrUpdateDistribution(): Promise<void> {
+  async function installOrUpdateDistribution(isSilentIfCannotUpdate: boolean): Promise<void> {
     if (isInstallingOrUpdatingDistribution) {
       throw new Error("Already installing or updating a distribution");
     }
     isInstallingOrUpdatingDistribution = true;
     try {
-      const codeQlInstalled = await distributionManager.getCodeQlPath() !== undefined;
+      const codeQlInstalled = await distributionManager.getCodeQlPathWithoutVersionCheck() !== undefined;
       const messageText = ctx.globalState.get(shouldUpdateOnNextActivationKey) ? "Updating CodeQL command-line tools" :
         codeQlInstalled ? "Checking for updates to CodeQL command-line tools" : "Installing CodeQL command-line tools";
-      await installOrUpdateDistributionWithProgressTitle(messageText);
+      await installOrUpdateDistributionWithProgressTitle(messageText, isSilentIfCannotUpdate);
     } catch (e) {
-      if (e instanceof GithubApiError && (e.status == 404 || e.status == 403)) {
+      // Don't rethrow the exception, because if the config is changed, we want to be able to retry installing
+      // or updating the distribution.
+      if (e instanceof GithubApiError && (e.status == 404 || e.status == 403 || e.status === 401)) {
         const errorMessageResponse = Window.showErrorMessage("Unable to download CodeQL command-line tools. See " +
           "https://github.com/github/vscode-codeql/blob/master/extensions/ql-vscode/README.md for more details about how " +
           "to obtain CodeQL command-line tools.", "Edit Settings");
@@ -135,26 +141,62 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
             commands.executeCommand('workbench.action.openSettingsJson');
           }
         });
+      } else {
+        helpers.showAndLogErrorMessage("Unable to download CodeQL command-line tools. " + e);
       }
-      throw e;
     } finally {
       isInstallingOrUpdatingDistribution = false;
     }
   }
 
-  ctx.subscriptions.push(distributionConfigListener.onDidChangeDistributionConfiguration(async () => {
-    if (await distributionManager.getCodeQlPath() === undefined && !isInstallingOrUpdatingDistribution) {
-      await installOrUpdateDistribution();
+  async function getDistributionDisplayingDistributionWarnings(): Promise<FindDistributionResult> {
+    const result = await distributionManager.getDistribution();
+    switch (result.kind) {
+      case FindDistributionResultKind.CompatibleDistribution:
+        // Include this case so we can check exhaustivity.
+        break;
+      case FindDistributionResultKind.IncompatibleDistribution:
+        helpers.showAndLogWarningMessage("The current version of the CodeQL command-line tools is incompatible with this extension.");
+        break;
+      case FindDistributionResultKind.UnknownCompatibilityDistribution:
+        helpers.showAndLogWarningMessage("Compatibility with the configured CodeQL command-line tools could not be determined. " + 
+          "You may experience problems using the extension.");
+        break;
+      case FindDistributionResultKind.NoDistribution:
+        helpers.showAndLogErrorMessage("The CodeQL command-line tools could not be found.");
+        break;
+      default:
+        assertNever(result);
     }
+    return result;
+  }
+
+  async function tryActivateWithInstalledDistribution(): Promise<void> {
+    // Display the warnings even if the extension has already activated.
+    const distributionResult = await getDistributionDisplayingDistributionWarnings();
+
+    if (beganMainExtensionActivation) {
+      return;
+    }
+
+    if (distributionResult.kind !== FindDistributionResultKind.NoDistribution) {
+      await activateWithInstalledDistribution(ctx, distributionManager);
+    }
+  } 
+
+  ctx.subscriptions.push(distributionConfigListener.onDidChangeDistributionConfiguration(async () => {
+    if (await distributionManager.getCodeQlPathWithoutVersionCheck() === undefined && !isInstallingOrUpdatingDistribution) {
+      await installOrUpdateDistribution(false);
+    }
+    await tryActivateWithInstalledDistribution();
   }));
 
   ctx.subscriptions.push(commands.registerCommand(checkForUpdatesCommand, installOrUpdateDistribution));
 
-  if (await distributionManager.getCodeQlPath() === undefined || ctx.globalState.get(shouldUpdateOnNextActivationKey)) {
-    await installOrUpdateDistribution();
-  }
+  // Check for updates to the distribution.
+  await installOrUpdateDistribution(true);
 
-  await activateWithInstalledDistribution(ctx, distributionManager);
+  await tryActivateWithInstalledDistribution();
 }
 
 async function activateWithInstalledDistribution(ctx: ExtensionContext, distributionManager: DistributionManager) {

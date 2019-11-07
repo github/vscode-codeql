@@ -8,7 +8,7 @@ import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "./config";
 import { ProgressUpdate, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
-import { getCodeQlCliVersion, Version } from "./cli-version";
+import { getCodeQlCliVersion, tryParseVersionString, Version } from "./cli-version";
 
 /**
  * distribution.ts
@@ -38,7 +38,7 @@ const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
  * 
  * This applies to both extension-managed and CLI distributions.
  */
-const DISTRIBUTION_VERSION_CONSTRAINT: VersionConstraint = {
+export const DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT: VersionConstraint = {
   description: "2.0.*",
   isVersionCompatible: (v: Version) => {
     return v.majorVersion === 2 && v.minorVersion === 0
@@ -46,15 +46,16 @@ const DISTRIBUTION_VERSION_CONSTRAINT: VersionConstraint = {
 }
 
 export interface DistributionProvider {
-  getCodeQlPath(): Promise<string | undefined>,
+  getCodeQlPathWithoutVersionCheck(): Promise<string | undefined>,
   onDidChangeDistribution?: Event<void>
 }
 
 export class DistributionManager implements DistributionProvider {
-  constructor(extensionContext: ExtensionContext, config: DistributionConfig) {
+  constructor(extensionContext: ExtensionContext, config: DistributionConfig, versionConstraint: VersionConstraint) {
     this._config = config;
-    this._extensionSpecificDistributionManager = new ExtensionSpecificDistributionManager(extensionContext, config);
+    this._extensionSpecificDistributionManager = new ExtensionSpecificDistributionManager(extensionContext, config, versionConstraint);
     this._onDidChangeDistribution = config.onDidChangeDistributionConfiguration;
+    this._versionConstraint = versionConstraint;
   }
 
   /**
@@ -68,7 +69,7 @@ export class DistributionManager implements DistributionProvider {
       };
     }
     const version = await getCodeQlCliVersion(codeQlPath, logger);
-    if (version !== undefined && !DISTRIBUTION_VERSION_CONSTRAINT.isVersionCompatible(version)) {
+    if (version !== undefined && !this._versionConstraint.isVersionCompatible(version)) {
       return {
         codeQlPath,
         kind: FindDistributionResultKind.IncompatibleDistribution,
@@ -89,16 +90,36 @@ export class DistributionManager implements DistributionProvider {
   }
 
   /**
-   * Returns the path to the CodeQL launcher binary, or undefined if a compatible binary not be found.
+   * Returns the path to a possibly-compatible CodeQL launcher binary, or undefined if a binary not be found.
    */
-  public async getCodeQlPath(): Promise<string | undefined> {
-    const result = await this.getDistribution();
-    switch (result.kind) {
-      case FindDistributionResultKind.CompatibleDistribution:
-        return result.codeQlPath;
-      default:
+  public async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
+    // Check config setting, then extension specific distribution, then PATH.
+    if (this._config.customCodeQlPath !== undefined) {
+      if (!await fs.pathExists(this._config.customCodeQlPath)) {
+        showAndLogErrorMessage(`The CodeQL binary path is specified as "${this._config.customCodeQlPath}" ` +
+          "by a configuration setting, but a CodeQL binary could not be found at that path. Please check " +
+          "that a CodeQL binary exists at the specified path or remove the setting.");
         return undefined;
+      }
+      return this._config.customCodeQlPath;
     }
+
+    const extensionSpecificCodeQlPath = this._extensionSpecificDistributionManager.getCodeQlPathWithoutVersionCheck();
+    if (extensionSpecificCodeQlPath !== undefined) {
+      return extensionSpecificCodeQlPath;
+    }
+
+    if (process.env.PATH) {
+      for (const searchDirectory of process.env.PATH.split(path.delimiter)) {
+        const expectedLauncherPath = path.join(searchDirectory, codeQlLauncherName());
+        if (await fs.pathExists(expectedLauncherPath)) {
+          return expectedLauncherPath;
+        }
+      }
+      logger.log("INFO: Could not find CodeQL on path.");
+    }
+
+    return undefined;
   }
 
   /**
@@ -108,8 +129,8 @@ export class DistributionManager implements DistributionProvider {
    * Returns a failed promise if an unexpected error occurs during installation.
    */
   public async checkForUpdatesToExtensionManagedDistribution(): Promise<DistributionUpdateCheckResult> {
-    const codeQlPath = await this.getCodeQlPath();
-    const extensionManagedCodeQlPath = await this._extensionSpecificDistributionManager.getCodeQlPath();
+    const codeQlPath = await this.getCodeQlPathWithoutVersionCheck();
+    const extensionManagedCodeQlPath = await this._extensionSpecificDistributionManager.getCodeQlPathWithoutVersionCheck();
     if (codeQlPath !== undefined && extensionManagedCodeQlPath === undefined) {
       // A distribution is present but it isn't managed by the extension.
       return createInvalidDistributionLocationResult();
@@ -131,47 +152,20 @@ export class DistributionManager implements DistributionProvider {
     return this._onDidChangeDistribution;
   }
 
-  private async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
-    // Check config setting, then extension specific distribution, then PATH.
-    if (this._config.customCodeQlPath !== undefined) {
-      if (!await fs.pathExists(this._config.customCodeQlPath)) {
-        showAndLogErrorMessage(`The CodeQL binary path is specified as "${this._config.customCodeQlPath}" ` +
-          "by a configuration setting, but a CodeQL binary could not be found at that path. Please check " +
-          "that a CodeQL binary exists at the specified path or remove the setting.");
-      }
-      return this._config.customCodeQlPath;
-    }
-
-    const extensionSpecificCodeQlPath = this._extensionSpecificDistributionManager.getCodeQlPath();
-    if (extensionSpecificCodeQlPath !== undefined) {
-      return extensionSpecificCodeQlPath;
-    }
-
-    if (process.env.PATH) {
-      for (const searchDirectory of process.env.PATH.split(path.delimiter)) {
-        const expectedLauncherPath = path.join(searchDirectory, codeQlLauncherName());
-        if (await fs.pathExists(expectedLauncherPath)) {
-          return expectedLauncherPath;
-        }
-      }
-      logger.log("INFO: Could not find CodeQL on path.");
-    }
-
-    return undefined;
-  }
-
   private readonly _config: DistributionConfig;
   private readonly _extensionSpecificDistributionManager: ExtensionSpecificDistributionManager;
   private readonly _onDidChangeDistribution: Event<void> | undefined;
+  private readonly _versionConstraint: VersionConstraint;
 }
 
 class ExtensionSpecificDistributionManager {
-  constructor(extensionContext: ExtensionContext, config: DistributionConfig) {
+  constructor(extensionContext: ExtensionContext, config: DistributionConfig, versionConstraint: VersionConstraint) {
     this._extensionContext = extensionContext;
     this._config = config;
+    this._versionConstraint = versionConstraint;
   }
 
-  public async getCodeQlPath(): Promise<string | undefined> {
+  public async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
     if (this.getInstalledRelease() !== undefined) {
       // An extension specific distribution has been installed.
       const expectedLauncherPath = path.join(this.getDistributionPath(), codeQlLauncherName());
@@ -197,7 +191,7 @@ class ExtensionSpecificDistributionManager {
    * Returns a failed promise if an unexpected error occurs during installation.
    */
   public async checkForUpdatesToDistribution(): Promise<DistributionUpdateCheckResult> {
-    const codeQlPath = await this.getCodeQlPath();
+    const codeQlPath = await this.getCodeQlPathWithoutVersionCheck();
     const extensionSpecificRelease = this.getInstalledRelease();
     const latestRelease = await this.getLatestRelease();
 
@@ -275,7 +269,7 @@ class ExtensionSpecificDistributionManager {
   }
 
   private async getLatestRelease(): Promise<Release> {
-    const release = await this.createReleasesApiConsumer().getLatestRelease(this._config.includePrerelease);
+    const release = await this.createReleasesApiConsumer().getLatestRelease(this._versionConstraint, this._config.includePrerelease);
     if (release.assets.length !== 1) {
       throw new Error("Release had an unexpected number of assets");
     }
@@ -308,6 +302,7 @@ class ExtensionSpecificDistributionManager {
 
   private readonly _config: DistributionConfig;
   private readonly _extensionContext: ExtensionContext;
+  private readonly _versionConstraint: VersionConstraint;
 
   private static readonly _currentDistributionFolderName: string = "distribution";
   private static readonly _installedReleaseStateKey = "distributionRelease";
@@ -327,16 +322,28 @@ export class ReleasesApiConsumer {
     this._repoName = repoName;
   }
 
-  public async getLatestRelease(includePrerelease: boolean = false): Promise<Release> {
-    if (!includePrerelease) {
-      const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases/latest`;
-      const response = await this.makeApiCall(apiPath);
-      return response.json();
-    }
-
+  public async getLatestRelease(versionConstraint: VersionConstraint, includePrerelease: boolean = false): Promise<Release> {
     const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases`;
-    const releases: GithubRelease[] = await (await this.makeApiCall(apiPath)).json();
-    const latestRelease = releases.sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    const allReleases: GithubRelease[] = await (await this.makeApiCall(apiPath)).json();
+    const compatibleReleases = allReleases.filter(release => {
+      if (release.prerelease && !includePrerelease) {
+        return false;
+      }
+
+      const version = tryParseVersionString(release.tag_name);
+      if (version === undefined || !versionConstraint.isVersionCompatible(version)) {
+        return false;
+      }
+
+      return true;
+    });
+    // tryParseVersionString must succeed due to the previous filtering step
+    const latestRelease = compatibleReleases.sort((a, b) =>
+      versionCompare(tryParseVersionString(b.tag_name)!, tryParseVersionString(a.tag_name)!))[0];
+    if (latestRelease === undefined) {
+      throw new Error("No compatible CodeQL command-line tools releases were found. " + 
+        "Please check that the CodeQL extension is up to date.");
+    }
     const assets: ReleaseAsset[] = latestRelease.assets.map(asset => {
       return {
         id: asset.id,
@@ -425,6 +432,26 @@ export async function extractZipArchive(archivePath: string, outPath: string): P
   }));
 }
 
+/**
+ * Version comparison.
+ * 
+ * Returns a positive number if a is greater than b.
+ * Returns 0 if a equals b.
+ * Returns a negative number if a is less than b.
+ */
+export function versionCompare(a: Version, b: Version): number {
+  if (a.majorVersion !== b.majorVersion) {
+    return a.majorVersion - b.majorVersion;
+  }
+  if (a.minorVersion !== b.minorVersion) {
+    return a.minorVersion - b.minorVersion;
+  }
+  if (a.patchVersion !== b.patchVersion) {
+    return a.patchVersion - b.patchVersion;
+  }
+  return 0;
+}
+
 function codeQlLauncherName(): string {
   return (os.platform() === "win32") ? "codeql.cmd" : "codeql";
 }
@@ -444,7 +471,7 @@ export enum FindDistributionResultKind {
   NoDistribution
 }
 
-type FindDistributionResult = CompatibleDistributionResult | UnknownCompatibilityDistributionResult |
+export type FindDistributionResult = CompatibleDistributionResult | UnknownCompatibilityDistributionResult |
   IncompatibleDistributionResult | NoDistributionResult;
 
 interface CompatibleDistributionResult {
@@ -558,7 +585,7 @@ export interface ReleaseAsset {
 /**
  * The json returned from github for a release.
  */
-interface GithubRelease {
+export interface GithubRelease {
   assets: GithubReleaseAsset[];
 
   /**
@@ -575,12 +602,22 @@ interface GithubRelease {
    * The name associated with the release on GitHub.
    */
   name: string;
+
+  /**
+   * Whether the release is a prerelease.
+   */
+  prerelease: boolean;
+
+  /**
+   * The tag name.  This should be the version.
+   */
+  tag_name: string;
 }
 
 /**
  * The json returned by github for an asset in a release.
  */
-interface GithubReleaseAsset {
+export interface GithubReleaseAsset {
   /**
    * The id associated with the asset on GitHub.
    */
