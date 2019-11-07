@@ -1,105 +1,25 @@
-CodeQL for Visual Studio Code
-===
-![](https://github.com/github/vscode-codeql/workflows/Build%20Extension/badge.svg)
+# CodeQL for Visual Studio Code
 
-Instead of building the extension locally, you can download the VSIX file from [GitHub Actions](https://github.com/Semmle/vscode-codeql/actions). Click a recent build and download the artifacts. You can then [install](#installing) and [configure](./extensions/ql-vscode/README.md) the extension.
+This project is an extension for Visual Studio Code that adds rich language support for CodeQL. It's used to find problems in code bases using CodeQL. It's written primarily in TypeScript.
 
-Setting up a local build
----
+The extension is released. You can download it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=github.vscode-codeql)
 
-Make sure you have a fairly recent version of vscode (>1.32) and are using nodejs
-version >=v10.13.0. (Tested on v10.15.1 and v10.16.0).
+![CI status badge](https://github.com/github/vscode-codeql/workflows/Build%20Extension/badge.svg)
 
-To build the extension, you also need a checkout of the [`Semmle/code` repo](https://git.semmle.com/Semmle/code).
-You can do one of the following:
-- Check out the `Semmle/code` repo to a directory named `code` in the root of the `github/vscode-codeql` checkout.
-- Create a symlink named `code` in the root of the `github/vscode-codeql` checkout, pointing to your actual `Semmle/code` checkout.
-- Set an environment variable to point to your `Semmle/code` checkout:
-```shell
-$ export SEMMLE_CODE=/your/path/to/semmle/code/checkout # for protobuf definitions
-```
+## Features
 
-This repo uses [Rush](https://rushjs.io) to handle package management, building, and other
-operations across multiple projects. See the Rush "[Getting started as a developer](https://rushjs.io/pages/developer/new_developer/)" docs
-for more details.
+TODO
 
-If you plan on building from the command line, it's easiest if Rush is installed globally:
+## Project goals and scope
 
-```shell
-npm install -g @microsoft/rush
-```
+This project will track new feature development in CodeQL and, whenever appropriate, bring that functionality to the Visual Studio Code experience.
 
-Note that when you run the `rush` command from the globally installed version, it will examine the
-`rushVersion` property in the repo's `rush.json`, and if it differs from the globally installed
-version, it will download, cache, and run the version of Rush specified in the `rushVersion`
-property.
+## Contributing
 
-If you plan on only building via VS Code tasks, you don't need Rush installed at all, since those
-tasks run `common/scripts/install-run-rush.js` to bootstrap a locally installed and cached copy of
-Rush.
+This project welcomes contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to build, install, and contribute.
 
-Building
----
+## License
 
-### Installing all packages (instead of `npm install`)
+This project is [licensed](LICENSE.md) under the MIT License. 
 
-After updating any `package.json` file, or after checking or pulling a new branch, you need to
-make sure all the right npm packages are installed, which you would normally do via `npm install` in
-a single-project repo. With Rush, you need to do an "update" instead:
-
-#### From VS Code
-`Terminal > Run Task... > Update`
-
-#### From the command line
-```shell
-$ rush update
-```
-
-### Building all projects (instead of `gulp`)
-
-Rush builds all projects in the repo, in dependency order, building multiple projects in parallel
-where possible. By default, the build also packages the extension itself into a .vsix file in the
-`dist` directory. To build:
-
-#### From VS Code
-`Terminal > Run Build Task...` (or just `Ctrl+Shift+B` with the default key bindings)
-
-#### From the command line
-```shell
-$ rush build --verbose
-```
-
-### Forcing a clean build
-
-Rush does a reasonable job of detecting on its own which projects need to be rebuilt, but if you need to
-force a full rebuild of all projects:
-
-#### From VS Code
-`Terminal > Run Task... > Rebuild`
-
-#### From the command line
-```shell
-$ rush rebuild --verbose
-```
-
-### Installing
-
-You can install the `.vsix` file from within VS Code itself, from the Extensions container in the sidebar:
-
-`More Actions...` (top right) `> Install from VSIX...`
-
-Or, from the command line, use something like (depending on where you have VSCode installed):
-
-```shell
-$ code --install-extension dist/vscode-codeql-*.vsix # normal VSCode installation
-# or maybe
-$ vscode/scripts/code-cli.sh --install-extension dist/vscode-codeql-*.vsix # if you're running from github checkout
-```
-
-Be sure to read the
-[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your CodeQL CLI distribution.
-
-### Debugging
-
-You can use VS Code to debug the extension without explicitly installing it. Just open this directory as a workspace in VS Code, and hit `F5` to start a debugging session. Be sure to read the
-[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your CodeQL CLI distribution.
+When using the GitHub logos, be sure to follow the [GitHub logo guidelines](https://github.com/logos).
