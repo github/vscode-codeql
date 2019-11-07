@@ -412,13 +412,18 @@ class DatabaseItemImpl implements DatabaseItem {
  */
 function eventFired<T>(event: vscode.Event<T>, timeoutMs: number = 1000): Promise<void> {
   return new Promise((res, rej) => {
-    const disposable = event(_ => {
-      res(); disposable.dispose();
+    let timeout: NodeJS.Timeout | undefined;
+    let disposable: vscode.Disposable | undefined;
+    function dispose() {
+      if (timeout !== undefined) clearTimeout(timeout);
+      if (disposable !== undefined) disposable.dispose();
+    }
+    disposable = event(_ => {
+      res(); dispose();
     });
-    setTimeout(() => {
+    timeout = setTimeout(() => {
       logger.log(`Waiting for event ${event} timed out after ${timeoutMs}ms`);
-      res();
-      disposable.dispose();
+      rej(); dispose();
     }, timeoutMs);
   });
 }
