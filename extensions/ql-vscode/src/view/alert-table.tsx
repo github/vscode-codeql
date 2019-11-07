@@ -77,10 +77,24 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     this.state = { expanded: {} };
   }
 
-  toggle(e: React.MouseEvent, i: number) {
-    this.setState(previousState => ({
-      expanded: { ...previousState.expanded, [i]: !(previousState.expanded[i]) }
-    }));
+  /**
+   * Given a list of `indexes`, toggle the first, and if we 'open' the
+   * first item, open all the rest as well. This mimics vscode's file
+   * explorer tree view behavior.
+   */
+  toggle(e: React.MouseEvent, indexes: number[]) {
+    this.setState(previousState => {
+      if (previousState.expanded[indexes[0]]) {
+        return { expanded: { ...previousState.expanded, [indexes[0]]: false } };
+      }
+      else {
+        const expanded = { ...previousState.expanded };
+        for (const index of indexes) {
+          expanded[index] = true;
+        }
+        return { expanded };
+      }
+    });
     e.stopPropagation();
     e.preventDefault();
   }
@@ -204,8 +218,8 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       }
     }
 
-    const toggler: (index: number) => (e: React.MouseEvent) => void = (index) => {
-      return (e) => this.toggle(e, index);
+    const toggler: (indexes: number[]) => (e: React.MouseEvent) => void = (indexes) => {
+      return (e) => this.toggle(e, indexes);
     }
 
     const noResults = <span>No Results</span>; // TODO: Maybe make this look nicer
@@ -241,9 +255,20 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         );
       }
       else {
+        const paths: Sarif.ThreadFlow[] = [];
+        for (const codeFlow of result.codeFlows) {
+          for (const threadFlow of codeFlow.threadFlows) {
+            paths.push(threadFlow);
+          }
+        }
+
+        const indexes = paths.length == 1 ?
+          [expansionIndex, expansionIndex + 1] : /* if there's exactly one path, auto-expand
+                                                  * the path when expanding the result */
+          [expansionIndex];
         rows.push(
           <tr className={(resultIndex % 2) ? oddRowClassName : evenRowClassName}>
-            <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(expansionIndex)}>
+            <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(indexes)}>
               {indicator}
             </td>
             <td className="vscode-codeql__icon-cell">
@@ -258,49 +283,45 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         resultIndex++;
         expansionIndex++;
 
-        if (result.codeFlows !== undefined) {
-          for (const codeFlow of result.codeFlows) {
-            for (const threadFlow of codeFlow.threadFlows) {
-
-              const currentPathExpanded = this.state.expanded[expansionIndex];
-              if (currentResultExpanded) {
-                const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
-                rows.push(
-                  <tr>
-                    <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
-                    <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(expansionIndex)}>{indicator}</td>
-                    <td className="vscode-codeql__text-center" colSpan={2}>
-                      Path
+        paths.forEach(path => {
+          const currentPathExpanded = this.state.expanded[expansionIndex];
+          if (currentResultExpanded) {
+            const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
+            rows.push(
+              <tr>
+                <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
+                <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler([expansionIndex])}>{indicator}</td>
+                <td className="vscode-codeql__text-center" colSpan={2}>
+                  Path
                     </td>
-                  </tr>
-                );
-              }
-              expansionIndex++;
+              </tr>
+            );
+          }
+          expansionIndex++;
 
-              if (currentResultExpanded && currentPathExpanded) {
-                let pathIndex = 1;
-                for (const step of threadFlow.locations) {
-                  const msg = step.location !== undefined && step.location.message !== undefined ?
-                    renderSarifLocationWithText(step.location.message.text, step.location) :
-                    '[no location]';
-                  const additionalMsg = step.location !== undefined ?
-                    renderSarifLocation(step.location) :
-                    '';
+          if (currentResultExpanded && currentPathExpanded) {
+            let pathIndex = 1;
+            for (const step of path.locations) {
+              const msg = step.location !== undefined && step.location.message !== undefined ?
+                renderSarifLocationWithText(step.location.message.text, step.location) :
+                '[no location]';
+              const additionalMsg = step.location !== undefined ?
+                renderSarifLocation(step.location) :
+                '';
 
-                  rows.push(
-                    <tr className={pathRowClassName}>
-                      <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
-                      <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
-                      <td className="vscode-codeql__path-index-cell">{pathIndex}</td>
-                      <td>{msg}</td>
-                      <td className="vscode-codeql__location-cell">{additionalMsg}</td>
-                    </tr>);
-                  pathIndex++;
-                }
-              }
+              rows.push(
+                <tr className={pathRowClassName}>
+                  <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
+                  <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
+                  <td className="vscode-codeql__path-index-cell">{pathIndex}</td>
+                  <td>{msg}</td>
+                  <td className="vscode-codeql__location-cell">{additionalMsg}</td>
+                </tr>);
+              pathIndex++;
             }
           }
-        }
+        });
+
       }
     }
 
