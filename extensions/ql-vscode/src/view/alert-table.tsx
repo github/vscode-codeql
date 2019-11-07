@@ -19,6 +19,11 @@ interface SarifLink {
 
 type ParsedSarifLocation =
   | FivePartLocation
+  // FivePartLocation has a `file` field, but it will sometimes include
+  // a source location prefix, which contains build-specific information the user
+  // doesn't really need to see. We ensure that `userVisibleFile` will not contain
+  // that, and is appropriate for display in the UI.
+  & { userVisibleFile: string }
   | StringLocation
   | { t: 'NoLocation', hint: string };
 
@@ -133,10 +138,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         return { t: LocationStyle.String, loc: uri };
 
       const region = physicalLocation.region;
-      const fileUriRegex = /file:/;
+      const fileUriRegex = /^file:/;
       const effectiveLocation = uri.match(fileUriRegex) ?
         decodeURIComponent(uri.replace(fileUriRegex, '')) :
         getPathRelativeToSourceLocationPrefix(sourceLocationPrefix, uri);
+      const userVisibleFile = uri.match(fileUriRegex) ?
+        decodeURIComponent(uri.replace(fileUriRegex, '')) :
+        uri;
 
       // We assume that the SARIF we're given always has startLine
       // This is not mandated by the SARIF spec, but should be true of
@@ -158,6 +166,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return {
         t: LocationStyle.FivePart,
         file: effectiveLocation,
+        userVisibleFile,
         lineStart,
         colStart,
         lineEnd,
@@ -189,7 +198,9 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         case LocationStyle.String:
           return <span>{parsedLoc.loc}</span>;
         case LocationStyle.FivePart:
-          return renderLocation(parsedLoc, `${parsedLoc.file}, line ${parsedLoc.lineStart}`, databaseUri);
+          const shortLocation = `${path.basename(parsedLoc.userVisibleFile)}:${parsedLoc.lineStart}:${parsedLoc.colStart}`;
+          const longLocation = `${parsedLoc.userVisibleFile}`;
+          return renderLocation(parsedLoc, shortLocation, databaseUri, longLocation);
       }
     }
 
@@ -216,7 +227,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       const indicator = currentResultExpanded ? octicons.chevronDown : octicons.chevronRight;
       const location = result.locations !== undefined && result.locations.length > 0 &&
         renderSarifLocation(result.locations[0]);
-      const locationCells = <td>{location}</td>;
+      const locationCells = <td className="vscode-codeql__location-cell">{location}</td>;
 
       if (result.codeFlows === undefined) {
         rows.push(
@@ -282,7 +293,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
                       <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                       <td className="vscode-codeql__path-index-cell">{pathIndex}</td>
                       <td>{msg}</td>
-                      <td>{additionalMsg}</td>
+                      <td className="vscode-codeql__location-cell">{additionalMsg}</td>
                     </tr>);
                   pathIndex++;
                 }

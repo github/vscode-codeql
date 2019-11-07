@@ -39,7 +39,7 @@ export function jumpToLocationHandler(
  * Render a location as a link which when clicked displays the original location.
  */
 export function renderLocation(loc: LocationValue | undefined, label: string | undefined,
-  databaseUri: string): JSX.Element {
+  databaseUri: string, title?: string): JSX.Element {
 
   if (loc !== undefined) {
     switch (loc.t) {
@@ -47,10 +47,11 @@ export function renderLocation(loc: LocationValue | undefined, label: string | u
         if (isResolvableLocation(loc)) {
           return <a href="#"
             className="vscode-codeql__result-table-location-link"
+            title={title}
             onClick={jumpToLocationHandler(loc, databaseUri)}>{label}</a>;
         }
         else {
-          return <span>{label}</span>;
+          return <span title={title}>{label}</span>;
         }
       }
       case LocationStyle.String: return <span>{label}</span>;
