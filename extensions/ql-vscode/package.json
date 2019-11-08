@@ -80,35 +80,35 @@
       "type": "object",
       "title": "CodeQL",
       "properties": {
-        "codeQL.distribution.executablePath": {
+        "codeQL.cli.executablePath": {
           "scope": "window",
           "type": "string",
           "default": "",
-          "description": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.cmd` on Windows. This overrides all other distribution settings."
+          "description": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.cmd` on Windows. This overrides all other CodeQL CLI settings."
         },
-        "codeQL.distribution.includePrerelease": {
+        "codeQL.cli.includePrerelease": {
           "scope": "window",
           "type": "boolean",
           "default": false,
-          "description": "Whether prereleases should be included when installing the distribution."
+          "description": "Whether prereleases should be included when installing the CodeQL cli."
         },
-        "codeQL.distribution.personalAccessToken": {
+        "codeQL.cli.personalAccessToken": {
           "scope": "window",
           "type": "string",
           "default": "",
-          "description": "GitHub personal access token for authenticating to GitHub.  This is required if codeQL.distribution.owner and codeQL.distribution.repository refer to a private repository."
+          "description": "GitHub personal access token for authenticating to GitHub.  This is required if `codeQL.cli.owner` and `codeQL.cli.repository` refer to a private repository."
         },
-        "codeQL.distribution.owner": {
+        "codeQL.cli.owner": {
           "scope": "window",
           "type": "string",
           "default": "",
-          "description": "The owner of the GitHub repository containing CodeQL binaries."
+          "description": "The owner of the GitHub repository containing the CodeQL CLI tools."
         },
-        "codeQL.distribution.repository": {
+        "codeQL.cli.repository": {
           "scope": "window",
           "type": "string",
           "default": "",
-          "description": "The name of the GitHub repository containing CodeQL binaries."
+          "description": "The name of the GitHub repository containing CodeQL CLI tools."
         },
         "codeQL.runningQueries.numberOfThreads": {
           "type": "number",

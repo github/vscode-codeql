@@ -51,13 +51,13 @@ When the extension is publicly released, you will only need to specify the locat
 Until then, you need to add the following configuration to your VS Code user or workspace settings.
 
 ```json
-"codeQL.distribution.includePrerelease": true,
-"codeQL.distribution.personalAccessToken": "SUBSTITUTE THIS WITH YOUR PERSONAL ACCESS TOKEN",
+"codeQL.cli.includePrerelease": true,
+"codeQL.cli.personalAccessToken": "SUBSTITUTE THIS WITH YOUR PERSONAL ACCESS TOKEN",
 ```
 
 The extension needs a personal access token to authenticate with the [private binaries repository](https://github.com/github/codeql-cli-binaries). The token must be assigned the [`repo`](https://developer.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps/) scope to have access to the releases of this repository. For details of how to obtain a personal access token, see [Creating a personal access token for the command line](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) and [Authorizing a personal access token for use with SAML single sign-on](https://help.github.com/en/github/authenticating-to-github/authorizing-a-personal-access-token-for-use-with-saml-single-sign-on).
 
-To check for updates to the distribution, you can use the **CodeQL: Check for Updates to Command-Line Tools** command.
+To check for updates to the CodeQL command-line tools, you can use the **CodeQL: Check for Updates to Command-Line Tools** command.
 
 If you have any difficulty setting up CodeQL CLI access, see the **CodeQL Extension Log** in the **Output** view for any error messages.
 
@@ -132,7 +132,7 @@ Options for obtaining a version of the CodeQL CLI:
   1. After extracting the archive, the CodeQL binary path will be `<extractionRoot>/codeql/codeql` where _`<extractionRoot>`_ is the folder where you extracted the zip.
 - Build your own version of the CodeQL CLI from the `Semmle/code` repository by running `./build target/intree/codeql`. The CodeQL binary path will be `codeRoot/target/intree/codeql/codeql` (or `codeql.cmd` on Windows), where `codeRoot` is the root of your `Semmle/code` checkout.
 
-Once you have a binary on your machine, edit the setting `codeQL.distribution.executablePath` to point to it.
+Once you have a binary on your machine, edit the setting `codeQL.cli.executablePath` to point to it.
 This can be set per-workspace, or you can set it in your global user settings to apply to all workspaces you open.
 
 
