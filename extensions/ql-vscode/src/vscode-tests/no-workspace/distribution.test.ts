@@ -148,7 +148,8 @@ describe("Release version ordering", () => {
       majorVersion,
       minorVersion,
       patchVersion,
-      tailString
+      rawString: `${majorVersion}.${minorVersion}.${patchVersion}+${tailString}`,
+      tailString,
     };
   }
 
