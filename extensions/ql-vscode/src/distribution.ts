@@ -96,9 +96,9 @@ export class DistributionManager implements DistributionProvider {
     // Check config setting, then extension specific distribution, then PATH.
     if (this._config.customCodeQlPath !== undefined) {
       if (!await fs.pathExists(this._config.customCodeQlPath)) {
-        showAndLogErrorMessage(`The CodeQL binary path is specified as "${this._config.customCodeQlPath}" ` +
-          "by a configuration setting, but a CodeQL binary could not be found at that path. Please check " +
-          "that a CodeQL binary exists at the specified path or remove the setting.");
+        showAndLogErrorMessage(`The CodeQL executable path is specified as "${this._config.customCodeQlPath}" ` +
+          "by a configuration setting, but a CodeQL executable could not be found at that path. Please check " +
+          "that a CodeQL executable exists at the specified path or remove the setting.");
         return undefined;
       }
       return this._config.customCodeQlPath;
@@ -231,7 +231,7 @@ class ExtensionSpecificDistributionManager {
         progressCallback({
           step: numBytesDownloaded,
           maxStep: parseInt(contentLength, 10),
-          message: "Downloading distribution…",
+          message: "Downloading CodeQL command-line tools…",
         });
       };
 
@@ -250,7 +250,7 @@ class ExtensionSpecificDistributionManager {
         .on("error", reject)
     );
 
-    logger.log(`Extracting distribution to ${this.getCurrentDistributionStoragePath()}`);
+    logger.log(`Extracting CodeQL command-line tools to ${this.getCurrentDistributionStoragePath()}`);
     await extractZipArchive(archivePath, this.getCurrentDistributionStoragePath());
 
     await fs.remove(tmpDirectory);

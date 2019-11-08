@@ -118,7 +118,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
   async function installOrUpdateDistribution(isSilentIfCannotUpdate: boolean): Promise<void> {
     if (isInstallingOrUpdatingDistribution) {
-      throw new Error("Already installing or updating a distribution");
+      throw new Error("Already installing or updating CodeQL command-line tools");
     }
     isInstallingOrUpdatingDistribution = true;
     try {
