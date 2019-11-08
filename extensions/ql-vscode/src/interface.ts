@@ -111,6 +111,7 @@ export class InterfaceManager extends DisposableObject {
         { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
         {
           enableScripts: true,
+          enableFindWidget: true,
           retainContextWhenHidden: true,
           localResourceRoots: [
             vscode.Uri.file(tmpDir.name),
