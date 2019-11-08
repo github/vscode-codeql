@@ -177,7 +177,7 @@ class ExtensionSpecificDistributionManager {
       try {
         await this.removeDistribution();
       } catch (e) {
-        logger.log("WARNING: Tried to remove corrupted distribution at " +
+        logger.log("WARNING: Tried to remove corrupted CodeQL command-line tools at " +
           `${this.getDistributionPath()} but encountered error ${e}.`);
       }
     }

@@ -115,12 +115,12 @@ $ vscode/scripts/code-cli.sh --install-extension dist/vscode-codeql-*.vsix # if 
 ```
 
 Be sure to read the
-[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your CodeQL CLI distribution.
+[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to the CodeQL CLI tools.
 
 ### Debugging
 
 You can use VS Code to debug the extension without explicitly installing it. Just open this directory as a workspace in VS Code, and hit `F5` to start a debugging session. Be sure to read the
-[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to your CodeQL CLI distribution.
+[README.md](./extensions/ql-vscode/README.md) for the extension itself for information on necessary configuration, including setting the path to the CodeQL CLI tools.
 
 ## Releasing
 
