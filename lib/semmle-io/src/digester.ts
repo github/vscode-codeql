@@ -272,10 +272,10 @@ function decodeDate(buffer: Buffer, offset: number): Date {
 
   const year = (high & 0x1ffffff0) >> 4;
   const month = high & 0x0000000f;
-  const day = low & 0xf8000000 >> 27;
-  const hours = low & 0x07c00000 >> 22;
-  const minutes = low & 0x003f0000 >> 16;
-  const seconds = low & 0x0000fc00 >> 10;
+  const day = (low & 0xf8000000) >>> 27;
+  const hours = (low & 0x07c00000) >> 22;
+  const minutes = (low & 0x003f0000) >> 16;
+  const seconds = (low & 0x0000fc00) >> 10;
   const ms = low & 0x000003ff;
 
   return new Date(year, month, day, hours, minutes, seconds, ms);
