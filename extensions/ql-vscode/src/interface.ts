@@ -135,7 +135,22 @@ export class InterfaceManager extends DisposableObject {
       case 'viewSourceFile': {
         const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.databaseUri));
         if (databaseItem !== undefined) {
-          await showLocation(msg.loc, databaseItem);
+          try {
+            await showLocation(msg.loc, databaseItem);
+          }
+          catch (e) {
+            if (e instanceof Error) {
+              if (e.message.match(/File not found/)) {
+                vscode.window.showErrorMessage(`Original file of this result is not in the database's source archive.`);
+              }
+              else {
+                this.logger.log(`Unable to handleMsgFromView: ${e.message}`);
+              }
+            }
+            else {
+              this.logger.log(`Unable to handleMsgFromView: ${e}`);
+            }
+          }
         }
         break;
       }
