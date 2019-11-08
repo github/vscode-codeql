@@ -2,6 +2,7 @@ import * as child_process from "child_process";
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sarif from 'sarif';
+import * as util from 'util';
 import { Logger, ProgressReporter } from "./logging";
 import { Disposable } from "vscode";
 import { DistributionProvider } from "./distribution";
@@ -19,7 +20,7 @@ const SARIF_FORMAT = "sarifv2.1.0";
 const LOGGING_FLAGS = ['-v', '--log-to-stderr'];
 
 /**
- * The expected output of codeql resolve library-path.
+ * The expected output of `codeql resolve library-path`.
  */
 export interface QuerySetup {
   libraryPath: string[],
@@ -29,7 +30,7 @@ export interface QuerySetup {
 }
 
 /**
- * The expected output of codeql resolve database.
+ * The expected output of `codeql resolve database`.
  */
 export interface DbInfo {
   sourceLocationPrefix: string;
@@ -42,14 +43,16 @@ export interface DbInfo {
 }
 
 /**
- * The expected output of codeql resolve upgrades
+ * The expected output of `codeql resolve upgrades`.
  */
 export interface UpgradesInfo {
   scripts: string[];
   finalDbscheme: string;
 }
 
-/** The expected output of `codeql resolve metadata`. */
+/**
+ * The expected output of `codeql resolve metadata`.
+ */
 export interface QueryMetadata {
   name?: string,
   description?: string,
@@ -65,7 +68,7 @@ export interface SourceInfo {
 }
 
 /**
- * This class manages a cli server started by "codeql execute cli-server" to
+ * This class manages a cli server started by `codeql execute cli-server` to
  * run commands without the overhead of starting a new java
  * virtual machine each time. This class also controls access to the server
  * by queueing the commands sent to it.
@@ -147,7 +150,7 @@ export class CodeQLCliServer implements Disposable {
    * Launch the cli server
    */
   private async launchProcess(): Promise<child_process.ChildProcessWithoutNullStreams> {
-    const config = await this.config.getCodeQlPath();
+    const config = await this.config.getCodeQlPathWithoutVersionCheck();
     if (!config) {
       throw new Error("Failed to find codeql distribution")
     }
@@ -465,4 +468,32 @@ export function spawnServer(
   }
   logger.log(`${name} started on PID: ${child.pid}`);
   return child;
+}
+
+/**
+ * Runs a CodeQL CLI command without invoking the CLI server, returning the output as a string.
+ * @param config The configuration containing the path to the CLI.
+ * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
+ * @param commandArgs The arguments to pass to the `codeql` command.
+ * @param description Description of the action being run, to be shown in log and error messages.
+ * @param logger Logger to write command log messages, e.g. to an output channel.
+ * @param progressReporter Used to output progress messages, e.g. to the status bar.
+ * @returns The contents of the command's stdout, if the command succeeded.
+ */
+export async function runCodeQlCliCommand(codeQlPath: string, command: string[], commandArgs: string[], description: string, logger: Logger, progressReporter?: ProgressReporter): Promise<string> {
+  // Add logging arguments first, in case commandArgs contains positional parameters.
+  const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
+  const argsString = args.join(" ");
+  try {
+    if (progressReporter !== undefined) {
+      progressReporter.report({ message: description });
+    }
+    logger.log(`${description} using CodeQL CLI: ${codeQlPath} ${argsString}...`);
+    const result = await util.promisify(child_process.execFile)(codeQlPath, args);
+    logger.log(result.stderr);
+    logger.log(`CLI command succeeded.`);
+    return result.stdout;
+  } catch (err) {
+    throw new Error(`${description} failed: ${err.stderr || err}`)
+  }
 }

@@ -103,7 +103,7 @@ describe('using the query server', function () {
       logWithoutTrailingNewline: (s: string) => { }
     };
     cliServer = new cli.CodeQLCliServer({
-      async getCodeQlPath(): Promise<string | undefined> {
+      async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
         return codeQlPath;
       },
     }, logger)

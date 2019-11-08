@@ -137,11 +137,11 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
   }
 
   public static async createQueryServerConfigListener(distributionManager: DistributionManager): Promise<QueryServerConfigListener> {
-    const codeQlPath = await distributionManager.getCodeQlPath();
+    const codeQlPath = await distributionManager.getCodeQlPathWithoutVersionCheck();
     const config = new QueryServerConfigListener(codeQlPath!);
     if (distributionManager.onDidChangeDistribution) {
       config.push(distributionManager.onDidChangeDistribution(async () => {
-        const codeQlPath = await distributionManager.getCodeQlPath();
+        const codeQlPath = await distributionManager.getCodeQlPathWithoutVersionCheck();
         config._codeQlPath = codeQlPath!;
         config._onDidChangeConfiguration.fire();
       }));
