@@ -194,7 +194,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         case 'NoLocation':
           return renderNonLocation(text, parsedLoc.hint);
         case LocationStyle.String:
-          return <span>{parsedLoc.loc}</span>;
+          return <span className="vscode-codeql__title" title={parsedLoc.loc}>{text}</span>;
         case LocationStyle.FivePart:
           return renderLocation(parsedLoc, text, databaseUri);
       }
