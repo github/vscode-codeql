@@ -338,8 +338,13 @@ export class ReleasesApiConsumer {
       return true;
     });
     // tryParseVersionString must succeed due to the previous filtering step
-    const latestRelease = compatibleReleases.sort((a, b) =>
-      versionCompare(tryParseVersionString(b.tag_name)!, tryParseVersionString(a.tag_name)!))[0];
+    const latestRelease = compatibleReleases.sort((a, b) => {
+      const versionComparison = versionCompare(tryParseVersionString(b.tag_name)!, tryParseVersionString(a.tag_name)!);
+      if (versionComparison === 0) {
+        return b.created_at.localeCompare(a.created_at);
+      }
+      return versionComparison;
+    })[0];
     if (latestRelease === undefined) {
       throw new Error("No compatible CodeQL command-line tools releases were found. " + 
         "Please check that the CodeQL extension is up to date.");
