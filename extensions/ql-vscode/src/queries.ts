@@ -107,9 +107,9 @@ export class QueryInfo {
     return result || { evaluationTime: 0, message: "No result from server", queryId: -1, runId: callbackId, resultType: messages.QueryResultType.OTHER_ERROR };
   }
 
-  async compileAndRun(
+  async compile(
     qs: qsClient.QueryServerClient,
-  ): Promise<messages.EvaluationResult> {
+  ): Promise<messages.CompilationMessage[]> {
     let compiled: messages.CheckQueryResult;
     try {
       const params: messages.CompileQueryParams = {
@@ -142,28 +142,7 @@ export class QueryInfo {
       qs.logger.log(" - - - COMPILATION DONE - - - ");
     }
 
-    const errors = (compiled.messages || []).filter(msg => msg.severity == 0);
-    if (errors.length == 0) {
-      return await this.run(qs);
-    }
-    else {
-      // Error dialogs are limited in size and scrollability,
-      // so we include a general description of the problem,
-      // and direct the user to the output window for the detailed compilation messages.
-      qs.logger.log(`Failed to compile query ${this.program.queryPath} against database scheme ${this.program.dbschemePath}:`);
-      for (const error of errors) {
-        const message = error.message || "[no error message available]";
-        qs.logger.log(`ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`);
-      }
-      helpers.showAndLogErrorMessage("Query compilation failed. Please make sure there are no errors in the query, the database is up to date, and the query and database use the same target language. For more details on the error, go to View > Output, and choose CodeQL Query Server from the dropdown.");
-      return {
-        evaluationTime: 0,
-        resultType: messages.QueryResultType.OTHER_ERROR,
-        queryId: -1,
-        runId: -1,
-        message: "Query had compilation errors"
-      }
-    }
+    return (compiled.messages || []).filter(msg => msg.severity == 0);
   }
 
   /**
@@ -408,7 +387,7 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
     title: "Clearing Cache",
     cancellable: false,
   }, (progress, token) =>
-      qs.sendRequest(messages.clearCache, params, token, progress)
+    qs.sendRequest(messages.clearCache, params, token, progress)
   );
 }
 
@@ -599,14 +578,56 @@ export async function compileAndRunQueryAgainstDatabase(
 
   const query = new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata);
   await checkDbschemeCompatibility(cliServer, qs, query);
-  const result = await query.compileAndRun(qs);
 
-  return {
-    query,
-    result,
-    database: {
-      name: db.name,
-      databaseUri: db.databaseUri.toString(true)
+  const errors = await query.compile(qs);
+
+
+  if (errors.length == 0) {
+    const result = await query.run(qs);
+    return {
+      query,
+      result,
+      database: {
+        name: db.name,
+        databaseUri: db.databaseUri.toString(true)
+      }
+    };
+  } else {
+    // Error dialogs are limited in size and scrollability,
+    // so we include a general description of the problem,
+    // and direct the user to the output window for the detailed compilation messages.
+    // However we don't show quick eval errors there so we need to display them anyway.
+    qs.logger.log(`Failed to compile query ${query.program.queryPath} against database scheme ${query.program.dbschemePath}:`);
+
+    let formattedMessages: string[] = [];
+
+    for (const error of errors) {
+      const message = error.message || "[no error message available]";
+      const formatted = `ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`;
+      formattedMessages.push(formatted);
+      qs.logger.log(formatted);
     }
-  };
+    if (quickEval && formattedMessages.length <= 3) {
+      helpers.showAndLogErrorMessage("Quick evaluation compilation failed: \n" + formattedMessages.join("\n"));
+    } else {
+      helpers.showAndLogErrorMessage((quickEval ? "Query" : "Quick evaluation") +
+        " compilation failed. Please make sure there are no errors in the query, the database is up to date," +
+        " and the query and database use the same target language. For more details on the error, go to View > Output," +
+        " and choose CodeQL Query Server from the dropdown.");
+    }
+    return {
+      query,
+      result: {
+        evaluationTime: 0,
+        resultType: messages.QueryResultType.OTHER_ERROR,
+        queryId: -1,
+        runId: -1,
+        message: "Query had compilation errors"
+      },
+      database: {
+        name: db.name,
+        databaseUri: db.databaseUri.toString(true)
+      }
+    }
+  }
 }
