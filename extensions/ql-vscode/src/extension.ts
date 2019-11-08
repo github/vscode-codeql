@@ -13,7 +13,6 @@ import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal, User
 import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 import * as qsClient from './queryserver-client';
 import { CodeQLCliServer } from './cli';
-import { stringForVersion } from './cli-version';
 import { assertNever } from './helpers-pure';
 
 /**
@@ -154,7 +153,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     const result = await distributionManager.getDistribution();
     switch (result.kind) {
       case FindDistributionResultKind.CompatibleDistribution:
-        logger.log(`Found compatible version of CodeQL command-line tools (version ${stringForVersion(result.version)})`);
+        logger.log(`Found compatible version of CodeQL command-line tools (version ${result.version.rawString})`);
         break;
       case FindDistributionResultKind.IncompatibleDistribution:
         helpers.showAndLogWarningMessage("The current version of the CodeQL command-line tools is incompatible with this extension.");
