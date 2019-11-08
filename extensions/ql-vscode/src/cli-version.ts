@@ -36,6 +36,11 @@ export function tryParseVersionString(versionString: string): Version | undefine
   }
 }
 
+export function stringForVersion(version: Version): string {
+  return `${version.majorVersion}.${version.minorVersion}.${version.patchVersion}` +
+    ((version.tailString) ? `-${version.tailString}` : "");
+}
+
 /**
  * A version of the CodeQL CLI.
  */
