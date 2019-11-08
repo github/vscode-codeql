@@ -60,3 +60,10 @@ export function renderLocation(loc: LocationValue | undefined, label: string | u
 
   return <span />
 }
+
+/**
+ * Returns the attributes for a zebra-striped table row at position `index`.
+ */
+export function zebraStripe(index: number, ...otherClasses: string[]): { className: string } {
+  return { className: [(index % 2) ? oddRowClassName : evenRowClassName, otherClasses].join(' ') };
+}
