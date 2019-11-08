@@ -122,7 +122,13 @@ export function getOnDiskWorkspaceFolders() {
  * Uses metadata if it exists, and defaults to the query file name.
  */
 export function getQueryName(info: EvaluationInfo) {
-  if (info.query.metadata && info.query.metadata.name) {
+  // Queries run through quick evaluation are not usually the entire query file.
+  // Label them differently and include the line numbers.
+  if(info.query.quickEvalPosition !== undefined) {
+    const {line, endLine, fileName} = info.query.quickEvalPosition;
+    const lineInfo = line === endLine ? `${line}` : `${line}-${endLine}`;
+    return `Quick evaluation of ${path.basename(fileName)}:${lineInfo}`;
+  } else if (info.query.metadata && info.query.metadata.name) {
     return info.query.metadata.name;
   } else {
     return path.basename(info.query.program.queryPath);
