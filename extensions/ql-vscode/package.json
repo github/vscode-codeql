@@ -6,6 +6,7 @@
   "private": true,
   "version": "0.0.1",
   "publisher": "GitHub",
+  "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
   "repository": {
     "type": "git",
