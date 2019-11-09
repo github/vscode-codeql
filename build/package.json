@@ -12,6 +12,5 @@
     "build": "rush update && rush build",
     "build-ci": "rush install && rush build"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "GitHub"
 }

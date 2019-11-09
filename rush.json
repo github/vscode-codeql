@@ -13,8 +13,7 @@
   "ensureConsistentVersions": true,
   "projectFolderMinDepth": 2,
   "projectFolderMaxDepth": 2,
-  "gitPolicy": {
-  },
+  "gitPolicy": {},
   "repository": {
     "url": "https://github.com/github/vscode-codeql"
   },

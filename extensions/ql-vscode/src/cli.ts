@@ -207,8 +207,8 @@ export class CodeQLCliServer implements Disposable {
         return data;
       } catch (err) {
         // Kill the process if it isn't already dead.
-        this.killProcessIfRunning();       
-         // Report the error (if there is a stderr then use that otherwise just report the error cod or nodejs error)
+        this.killProcessIfRunning();
+        // Report the error (if there is a stderr then use that otherwise just report the error cod or nodejs error)
         if (stderrBuffers.length == 0) {
           throw new Error(`${description} failed: ${err}`)
         } else {
@@ -321,7 +321,7 @@ export class CodeQLCliServer implements Disposable {
    */
   async resolveRam(queryMemoryMb: number | undefined, progressReporter?: ProgressReporter): Promise<string[]> {
     const args: string[] = [];
-    if(queryMemoryMb !== undefined) {
+    if (queryMemoryMb !== undefined) {
       args.push('--ram', queryMemoryMb.toString());
     }
     return await this.runJsonCodeQlCliCommand<string[]>(['resolve', 'ram'], args, "Resolving RAM settings", progressReporter);
@@ -348,7 +348,7 @@ export class CodeQLCliServer implements Disposable {
     }
     args.push(resultsPath);
     await this.runCodeQlCliCommand(['bqrs', 'interpret'], args, "Interpreting query results");
-  
+
     let output: string;
     try {
       output = await fs.readFile(interpretedResultsPath, 'utf8');

@@ -93,7 +93,7 @@ export class QueryServerClient extends DisposableObject {
   private async startQueryServerImpl(progressReporter: ProgressReporter) {
     const ramArgs = await this.cliServer.resolveRam(this.config.queryMemoryMb, progressReporter);
     const args = ['--threads', this.config.numThreads.toString()].concat(ramArgs);
-    if(this.config.debug) {
+    if (this.config.debug) {
       args.push('--debug', '--tuple-counting');
     }
     const child = cli.spawnServer(

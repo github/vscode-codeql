@@ -8,7 +8,7 @@ export interface Logger {
   logWithoutTrailingNewline(message: string): void;
 }
 
-export type ProgressReporter = Progress<{message: string}>;
+export type ProgressReporter = Progress<{ message: string }>;
 
 /** A logger that writes messages to an output channel in the Output tab. */
 export class OutputChannelLogger extends DisposableObject implements Logger {

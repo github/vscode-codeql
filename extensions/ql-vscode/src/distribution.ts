@@ -346,7 +346,7 @@ export class ReleasesApiConsumer {
       return versionComparison;
     })[0];
     if (latestRelease === undefined) {
-      throw new Error("No compatible CodeQL command-line tools releases were found. " + 
+      throw new Error("No compatible CodeQL command-line tools releases were found. " +
         "Please check that the CodeQL extension is up to date.");
     }
     const assets: ReleaseAsset[] = latestRelease.assets.map(asset => {

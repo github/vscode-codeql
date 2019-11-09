@@ -8,12 +8,8 @@ import * as leb from 'leb';
  * binary formats used by the QL query server a little more uniform
  * and convenient.
  *
- * I feel like I probably shouldn't have to have written some of this
- * code, but I looked at even node streams in 'paused' rather than
- * 'flowing' state, and it still seemed inconvenient to directly use
- * them with async/await. Maybe I'm wrong and there's a handy library
- * on npm to do exactly that. Would be nice to delete a lot of this in
- * that case.
+ * This works around limitations in using Node streams (whether 'paused' or 'flowing')
+ * with async/await. This code can be simplified if there is a convenient library for doing this.
  */
 
 export type ChunkIterator = AsyncIterable<Uint8Array>;
