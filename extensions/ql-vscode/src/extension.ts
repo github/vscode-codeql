@@ -159,7 +159,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
         helpers.showAndLogWarningMessage("The current version of the CodeQL command-line tools is incompatible with this extension.");
         break;
       case FindDistributionResultKind.UnknownCompatibilityDistribution:
-        helpers.showAndLogWarningMessage("Compatibility with the configured CodeQL command-line tools could not be determined. " + 
+        helpers.showAndLogWarningMessage("Compatibility with the configured CodeQL command-line tools could not be determined. " +
           "You may experience problems using the extension.");
         break;
       case FindDistributionResultKind.NoDistribution:
@@ -182,7 +182,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     if (distributionResult.kind !== FindDistributionResultKind.NoDistribution) {
       await activateWithInstalledDistribution(ctx, distributionManager);
     }
-  } 
+  }
 
   ctx.subscriptions.push(distributionConfigListener.onDidChangeDistributionConfiguration(async () => {
     if (await distributionManager.getCodeQlPathWithoutVersionCheck() === undefined && !isInstallingOrUpdatingDistribution) {

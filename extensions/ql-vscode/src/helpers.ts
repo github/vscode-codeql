@@ -124,8 +124,8 @@ export function getOnDiskWorkspaceFolders() {
 export function getQueryName(info: EvaluationInfo) {
   // Queries run through quick evaluation are not usually the entire query file.
   // Label them differently and include the line numbers.
-  if(info.query.quickEvalPosition !== undefined) {
-    const {line, endLine, fileName} = info.query.quickEvalPosition;
+  if (info.query.quickEvalPosition !== undefined) {
+    const { line, endLine, fileName } = info.query.quickEvalPosition;
     const lineInfo = line === endLine ? `${line}` : `${line}-${endLine}`;
     return `Quick evaluation of ${path.basename(fileName)}:${lineInfo}`;
   } else if (info.query.metadata && info.query.metadata.name) {

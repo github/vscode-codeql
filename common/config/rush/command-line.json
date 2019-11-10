@@ -4,7 +4,6 @@
  */
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
-
   "commands": [
     {
       "commandKind": "bulk",
@@ -16,7 +15,7 @@
       "ignoreDependencyOrder": true,
       "ignoreMissingScript": true,
       "allowWarningsInSuccessfulBuild": false
-    },
+    }
   ],
   "parameters": [
     {
@@ -24,7 +23,10 @@
       "longName": "--release",
       "shortName": "-r",
       "description": "Perform a release build",
-      "associatedCommands": [ "build", "rebuild" ],
+      "associatedCommands": [
+        "build",
+        "rebuild"
+      ],
     }
   ]
 }

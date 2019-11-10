@@ -13,8 +13,6 @@
     "build": "",
     "format": ""
   },
-  "devDependencies": {
-  },
-  "dependencies": {
-  }
+  "devDependencies": {},
+  "dependencies": {}
 }

@@ -14,7 +14,7 @@ class Setting {
   }
 
   get qualifiedName(): string {
-    if(this.parent === undefined) {
+    if (this.parent === undefined) {
       return this.name;
     } else {
       return `${this.parent.qualifiedName}.${this.name}`;
@@ -22,14 +22,14 @@ class Setting {
   }
 
   getValue<T>(): T {
-    if(this.parent === undefined) {
+    if (this.parent === undefined) {
       throw new Error('Cannot get the value of a root setting.');
     }
     return workspace.getConfiguration(this.parent.qualifiedName).get<T>(this.name)!;
   }
 }
 
-const ROOT_SETTING =  new Setting('codeQL');
+const ROOT_SETTING = new Setting('codeQL');
 
 // Distribution configuration
 
@@ -96,7 +96,7 @@ abstract class ConfigListener extends DisposableObject {
   }
 
   protected abstract handleDidChangeConfiguration(e: ConfigurationChangeEvent): void;
-  private updateConfiguration(): void{
+  private updateConfiguration(): void {
     this._onDidChangeConfiguration.fire();
   }
 }

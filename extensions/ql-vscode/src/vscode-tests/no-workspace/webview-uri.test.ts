@@ -3,8 +3,8 @@ import * as tmp from "tmp";
 import { window, ViewColumn, Uri } from "vscode";
 import { fileUriToWebviewUri, webviewUriToFileUri } from '../../interface';
 
-describe('webview uri conversion', function() {
-  it('should correctly round trip from filesystem to webview and back', function() {
+describe('webview uri conversion', function () {
+  it('should correctly round trip from filesystem to webview and back', function () {
     const tmpFile = tmp.fileSync({ prefix: 'uri_test_', postfix: '.bqrs', keep: false });
     const fileUriOnDisk = Uri.file(tmpFile.name);
     const panel = window.createWebviewPanel(
@@ -18,7 +18,7 @@ describe('webview uri conversion', function() {
         ]
       }
     );
-    after(function() {
+    after(function () {
       panel.dispose();
       tmpFile.removeCallback();
     });

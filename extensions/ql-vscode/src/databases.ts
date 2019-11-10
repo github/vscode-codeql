@@ -234,7 +234,7 @@ export interface DatabaseItem {
   /**
    * Returns `sourceLocationPrefix` of exported database.
    */
-  getSourceLocationPrefix(server : cli.CodeQLCliServer): Promise<string>;
+  getSourceLocationPrefix(server: cli.CodeQLCliServer): Promise<string>;
 
   /**
    * Returns the root uri of the virtual filesystem for this database's source archive,
@@ -360,8 +360,8 @@ class DatabaseItemImpl implements DatabaseItem {
    * Holds if the database item refers to an exported snapshot
    */
   public hasDbInfo(): boolean {
-  return fs.existsSync(path.join(this.databaseUri.fsPath, '.dbinfo'))
-   || fs.existsSync(path.join(this.databaseUri.fsPath, 'codeql-database.yml'));;
+    return fs.existsSync(path.join(this.databaseUri.fsPath, '.dbinfo'))
+      || fs.existsSync(path.join(this.databaseUri.fsPath, 'codeql-database.yml'));;
   }
 
   /**

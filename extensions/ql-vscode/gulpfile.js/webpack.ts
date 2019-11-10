@@ -1,7 +1,7 @@
 import * as webpack from 'webpack';
-import {config} from './webpack.config';
+import { config } from './webpack.config';
 
-export function compileView(cb : (err?: Error) => void) {
+export function compileView(cb: (err?: Error) => void) {
   webpack(config).run((error, stats) => {
     if (error) {
       cb(error);

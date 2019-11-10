@@ -236,7 +236,7 @@ export class InterfaceManager extends DisposableObject {
       const showButton = 'View Results';
       const queryName = helpers.getQueryName(info);
       let queryNameForMessage: string;
-      if(queryName.length > 0) {
+      if (queryName.length > 0) {
         // lower case the first character
         queryNameForMessage = queryName.charAt(0).toLowerCase() + queryName.substring(1);
       } else {

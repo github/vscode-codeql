@@ -11,9 +11,6 @@ gen/
 # Integration test artifacts
 **/.vscode-test/**
 
-# Symlink to Semmle/code checkout
-/code/
-
 # Visual Studio workspace state
 .vs/
 

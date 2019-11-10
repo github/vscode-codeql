@@ -8,5 +8,5 @@ tool, since
    and rush itself gives error messages since it thinks `node_modules` is not supposed 
    to exist, since rush is supposed to be managing subproject dependencies.
 
-Thankfully, running rush from a subdirectory searches parent directories for `rush.json`
+Running rush from a subdirectory searches parent directories for `rush.json`
 and does the build starting from that file's location.
