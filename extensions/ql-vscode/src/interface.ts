@@ -98,6 +98,7 @@ export class InterfaceManager extends DisposableObject {
 
     super();
     this.push(this._diagnosticCollection);
+    this.push(vscode.window.onDidChangeTextEditorSelection(this.handleSelectionChange.bind(this)));
   }
 
   // Returns the webview panel, creating it if it doesn't already
@@ -398,16 +399,40 @@ export class InterfaceManager extends DisposableObject {
       sortState: info.sortState
     };
   }
+
+  private handleSelectionChange(event: vscode.TextEditorSelectionChangeEvent) {
+    if (event.kind === vscode.TextEditorSelectionChangeKind.Command) {
+      return; // Ignore selection events we caused ourselves.
+    }
+    let editor = vscode.window.activeTextEditor;
+    if (editor !== undefined) {
+      editor.setDecorations(shownLocationDecoration, []);
+      editor.setDecorations(shownLocationLineDecoration, []);
+    }
+  }
 }
+
+const findMatchBackground = new vscode.ThemeColor('editor.findMatchBackground');
+const findRangeHighlightBackground = new vscode.ThemeColor('editor.findRangeHighlightBackground');
+
+const shownLocationDecoration = vscode.window.createTextEditorDecorationType({
+  backgroundColor: findMatchBackground,
+});
+
+const shownLocationLineDecoration = vscode.window.createTextEditorDecorationType({
+  backgroundColor: findRangeHighlightBackground,
+  isWholeLine: true
+});
 
 async function showLocation(loc: ResolvableLocationValue, databaseItem: DatabaseItem): Promise<void> {
   const resolvedLocation = tryResolveLocation(loc, databaseItem);
   if (resolvedLocation) {
     const doc = await workspace.openTextDocument(resolvedLocation.uri);
     const editor = await Window.showTextDocument(doc, vscode.ViewColumn.One);
-    const sel = new vscode.Selection(resolvedLocation.range.start, resolvedLocation.range.end);
-    editor.selection = sel;
-    editor.revealRange(sel, vscode.TextEditorRevealType.InCenter);
+    editor.selection = new vscode.Selection(resolvedLocation.range.start, resolvedLocation.range.end);
+    editor.revealRange(resolvedLocation.range, vscode.TextEditorRevealType.InCenter);
+    editor.setDecorations(shownLocationDecoration, [resolvedLocation.range]);
+    editor.setDecorations(shownLocationLineDecoration, [resolvedLocation.range]);
   }
 }
 
