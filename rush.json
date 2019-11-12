@@ -1,0 +1,58 @@
+/**
+ * This is the main configuration file for Rush.
+ * For full documentation, please see https://rushjs.io/pages/configs/rush_json/
+ */
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.11.2",
+  "pnpmVersion": "2.15.1",
+  "pnpmOptions": {
+    "strictPeerDependencies": true,
+  },
+  "nodeSupportedVersionRange": ">=10.13.0 <13.0.0",
+  "ensureConsistentVersions": true,
+  "projectFolderMinDepth": 2,
+  "projectFolderMaxDepth": 2,
+  "gitPolicy": {},
+  "repository": {
+    "url": "https://github.com/github/vscode-codeql"
+  },
+  "eventHooks": {
+    "preRushInstall": [],
+    "postRushInstall": [],
+    "preRushBuild": [],
+    "postRushBuild": []
+  },
+  "variants": [],
+  "projects": [
+    {
+      "packageName": "typescript-config",
+      "projectFolder": "configs/typescript-config"
+    },
+    {
+      "packageName": "build-tasks",
+      "projectFolder": "tools/build-tasks"
+    },
+    {
+      "packageName": "semmle-bqrs",
+      "projectFolder": "lib/semmle-bqrs"
+    },
+    {
+      "packageName": "semmle-io",
+      "projectFolder": "lib/semmle-io"
+    },
+    {
+      "packageName": "semmle-io-node",
+      "projectFolder": "lib/semmle-io-node"
+    },
+    {
+      "packageName": "semmle-vscode-utils",
+      "projectFolder": "lib/semmle-vscode-utils"
+    },
+    {
+      "packageName": "vscode-codeql",
+      "projectFolder": "extensions/ql-vscode",
+      "shouldPublish": true
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+/**
+ * This configuration file defines custom commands for the "rush" command-line.
+ * For full documentation, please see https://rushjs.io/pages/configs/command_line_json/
+ */
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+  "commands": [
+    {
+      "commandKind": "bulk",
+      "name": "format",
+      "summary": "Reformat source code in all projects",
+      "description": "Runs the `format` npm task in each project, if present.",
+      "safeForSimultaneousRushProcesses": false,
+      "enableParallelism": true,
+      "ignoreDependencyOrder": true,
+      "ignoreMissingScript": true,
+      "allowWarningsInSuccessfulBuild": false
+    }
+  ],
+  "parameters": [
+    {
+      "parameterKind": "flag",
+      "longName": "--release",
+      "shortName": "-r",
+      "description": "Perform a release build",
+      "associatedCommands": [
+        "build",
+        "rebuild"
+      ],
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+// A launch configuration that compiles the extension and then opens it inside a new window
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Extension (vscode-codeql)",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql",
+        "--disable-extensions"
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/dist/vscode-codeql/out/**/*.js",
+        "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-bqrs/out/**/*.js",
+        "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-io/out/**/*.js",
+        "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-io-node/out/**/*.js",
+        "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-vscode-utils/out/**/*.js"
+      ],
+      "preLaunchTask": "Build"
+    },
+    {
+      "name": "Launch Unit Tests (vscode-codeql)",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql",
+        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/test",
+        "--disable-extensions"
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/dist/vscode-codeql/out/**/*.js",
+        "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-bqrs/out/**/*.js",
+        "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-io/out/**/*.js",
+        "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-io-node/out/**/*.js",
+        "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-vscode-utils/out/**/*.js",
+        "${workspaceRoot}/extensions/ql-vscode/out/test/**/*.js"
+      ],
+      "preLaunchTask": "Build"
+    },
+    {
+      "name": "Launch Integration Tests - No Workspace (vscode-codeql)",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql",
+        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index",
+        "--disable-extensions"
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/dist/vscode-codeql/out/**/*.js",
+        "${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/**/*.js"
+      ],
+      "preLaunchTask": "Build"
+    },
+    {
+      "name": "Launch Integration Tests - Minimal Workspace (vscode-codeql)",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql",
+        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/minimal-workspace/index",
+        "${workspaceRoot}/extensions/ql-vscode/test/data",
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/dist/vscode-codeql/out/**/*.js",
+        "${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/**/*.js"
+      ],
+      "preLaunchTask": "Build"
+    }
+  ]
+}

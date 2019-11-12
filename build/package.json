@@ -1,0 +1,17 @@
+{
+  "name": "build",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "@microsoft/rush": "^5.10.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rush update && rush build",
+    "build-ci": "rush install && rush build",
+    "build-release": "rush install && rush build --release"
+  },
+  "author": "GitHub"
+}
