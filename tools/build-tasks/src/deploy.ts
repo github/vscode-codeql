@@ -154,7 +154,7 @@ export async function deployPackage(packageJsonPath: string): Promise<DeployedPa
 
     if (isDevBuild) {
       // NOTE: rootPackage.name had better not have any regex metacharacters
-      const oldDevBuildPattern = new RegExp('^' + rootPackage.name + '[^/]+-dev[0-9.]+.vsix$');
+      const oldDevBuildPattern = new RegExp('^' + rootPackage.name + '[^/]+-dev[0-9.]+\\.vsix$');
       // Dev package filenames are of the form
       //    vscode-codeql-0.0.1-dev.2019.9.27.19.55.20.vsix
       (await fs.readdir(distDir)).filter(name => name.match(oldDevBuildPattern)).map(build => {
