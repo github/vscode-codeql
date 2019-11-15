@@ -19,7 +19,19 @@ interface IPackageInfo {
 
 async function copyPackage(packageFiles: IPackageInfo, destPath: string): Promise<void> {
   for (const file of packageFiles.files) {
-    await fs.copy(path.resolve(packageFiles.sourcePath, file), path.resolve(destPath, file));
+    const sourceFilePath = path.resolve(packageFiles.sourcePath, file);
+    const destFilePath = path.resolve(destPath, file);
+    if (packageFiles.isRoot && (file === 'package.json')) {
+      // For non-release builds, we tweak the version number of the extension to add a prerelease
+      // suffix. Rather than just copying `package.json`, we'll parse the original copy, update the
+      // `version` property, and write it out to the new location.
+      const packageJson = jsonc.parse((await fs.readFile(sourceFilePath)).toString());
+      packageJson.version = packageFiles.version;
+      await fs.writeFile(destFilePath, JSON.stringify(packageJson));
+    }
+    else {
+      await fs.copy(sourceFilePath, destFilePath);
+    }
   }
 }
 
@@ -142,14 +154,17 @@ export async function deployPackage(packageJsonPath: string): Promise<DeployedPa
 
     if (isDevBuild) {
       // NOTE: rootPackage.name had better not have any regex metacharacters
-      const oldDevBuildPattern = new RegExp('^' + rootPackage.name + '[^/]+-dev\\d+.vsix$');
+      const oldDevBuildPattern = new RegExp('^' + rootPackage.name + '[^/]+-dev[0-9.]+.vsix$');
       // Dev package filenames are of the form
-      //    vscode-codeql-0.0.1-dev20190927195520723.vsix
-      fs.readdirSync(distDir).filter(name => name.match(oldDevBuildPattern)).map(build => {
+      //    vscode-codeql-0.0.1-dev.2019.9.27.19.55.20.vsix
+      (await fs.readdir(distDir)).filter(name => name.match(oldDevBuildPattern)).map(build => {
         console.log(`Deleting old dev build ${build}...`);
         fs.unlinkSync(path.join(distDir, build));
       });
-      rootPackage.version = rootPackage.version + '-dev' + new Date().toISOString().replace(/[^0-9]/g, '');
+      const now = new Date();
+      rootPackage.version = rootPackage.version +
+        `-dev.${now.getUTCFullYear()}.${now.getUTCMonth() + 1}.${now.getUTCDate()}` +
+        `.${now.getUTCHours()}.${now.getUTCMinutes()}.${now.getUTCSeconds()}`;
     }
 
     const distPath = path.join(distDir, rootPackage.name);
