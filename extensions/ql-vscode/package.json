@@ -314,7 +314,7 @@
     "@types/react-dom": "^16.8.4",
     "@types/sarif": "~2.1.2",
     "@types/tmp": "^0.1.0",
-    "@types/unzipper": "~0.10.0",
+    "@types/unzipper": "~0.10.1",
     "@types/vscode": "^1.39.0",
     "@types/webpack": "^4.32.1",
     "@types/xml2js": "~0.4.4",

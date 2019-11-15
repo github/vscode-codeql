@@ -443,12 +443,10 @@ export class ReleasesApiConsumer {
 
 export async function extractZipArchive(archivePath: string, outPath: string): Promise<void> {
   const archive = await unzipper.Open.file(archivePath);
-  // This cast is necessary as the type definition for unzipper.Open.file(...).extract() is incorrect.
-  // It can be removed when https://github.com/DefinitelyTyped/DefinitelyTyped/pull/40240 is merged.
-  await (archive.extract({
+  await archive.extract({
     concurrency: 4,
     path: outPath
-  }) as unknown as Promise<void>);
+  });
   // Set file permissions for extracted files
   await Promise.all(archive.files.map(async file => {
     // Only change file permissions if within outPath (path.join normalises the path)

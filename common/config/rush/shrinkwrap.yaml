@@ -26,7 +26,7 @@ dependencies:
   '@types/sarif': 2.1.2
   '@types/through2': 2.0.34
   '@types/tmp': 0.1.0
-  '@types/unzipper': 0.10.0
+  '@types/unzipper': 0.10.1
   '@types/vinyl': 2.0.3
   '@types/vscode': 1.39.0
   '@types/webpack': 4.32.1
@@ -336,6 +336,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-dsfE4BHJkLQW+reOS6b17xhZ/6FB1rB8eRRvO08nn5o+voxf3i74tuyFWNH6djdfgX7Sm5s6LD8t6mJug4dpDw==
+  /@types/node/12.12.7:
+    dev: false
+    resolution:
+      integrity: sha512-E6Zn0rffhgd130zbCbAr/JdXfXkoOUFAKNs/rF8qnafSJ8KYaA/j3oz7dcwal+lYjLA7xvdd5J4wdYpCTlP8+w==
   /@types/node/12.7.0:
     dev: false
     resolution:
@@ -513,12 +517,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-j4iepCSuY2JGW/hShVtUBagic0klYNFIXP7VweavnYnNC2EjiKxJFeaS9uaJmAT0ty9sQSqTS1aagWMZMV0HyA==
-  /@types/unzipper/0.10.0:
+  /@types/unzipper/0.10.1:
     dependencies:
-      '@types/node': 12.11.2
+      '@types/node': 12.12.7
     dev: false
     resolution:
-      integrity: sha512-GZL5vt0o9ZAST+7ge1Sirzc14EEJFbq6kib24nS0UglY6BHX8ERhA8cBq4XsYWcGK212FtMBZyJz6AwPvrhGLQ==
+      integrity: sha512-I53zUuPGMR/ry/s61qdlk/NkJHwhekycCqI7IXWFcJHOK+oIFUhnCPT26Wbf4UYNLpFjeujFioXGH+SWY4yUUQ==
   /@types/vinyl-fs/2.4.11:
     dependencies:
       '@types/glob-stream': 6.1.0
@@ -6445,7 +6449,7 @@ packages:
     dev: false
     name: '@rush-temp/build-tasks'
     resolution:
-      integrity: sha512-WBog5Gepo348LYeu7FAZMORJpgx0CNFM+IjgLcKNFYnN9YOCRQogUkRL7ZmBt8WXoew1S5OyVltmEM8XPy8i+w==
+      integrity: sha512-ta2kXnX7phnKrO7rxdJl5A9Vtd8B4RDyoae3vhdI1d+COeITaXDd9xdPxo8lvduPSJTw2+HnzOgOu2pMAKSjTw==
       tarball: 'file:projects/build-tasks.tgz'
     version: 0.0.0
   'file:projects/semmle-bqrs.tgz':
@@ -6457,7 +6461,7 @@ packages:
     dev: false
     name: '@rush-temp/semmle-bqrs'
     resolution:
-      integrity: sha512-ufPu8zLXf9JvPCRycWLiFTDb5rZ7bqxQZuiFjy1DAxnatEG5VJITPSXwDFVc11qpjJpaFd4hI+4QtOda7d5zww==
+      integrity: sha512-24GdnvMbGfQIWMfgDhift+kYJDnG7dX03NrpX4ajZ2rckteysvq2/K7XI1OXGvUuqrt3m0/+GRDHpSI9XKDJJA==
       tarball: 'file:projects/semmle-bqrs.tgz'
     version: 0.0.0
   'file:projects/semmle-io-node.tgz':
@@ -6469,7 +6473,7 @@ packages:
     dev: false
     name: '@rush-temp/semmle-io-node'
     resolution:
-      integrity: sha512-jB3C3WWEI991Kr3knPKUwqqNi040WmYCubLJJG7AK1nz3V1YjmyLHIAdjqwOgDNXYKCQPC6tlaEgljbs2Q/kIQ==
+      integrity: sha512-Bj0ax/bASrHV7tamOuXZZdd3UOB4NBKdjdszIRaDvDRTu8RlEst+TVoUhkfy30qb2/6ePp3/juOJyyiBJN7u8Q==
       tarball: 'file:projects/semmle-io-node.tgz'
     version: 0.0.0
   'file:projects/semmle-io.tgz':
@@ -6480,7 +6484,7 @@ packages:
     dev: false
     name: '@rush-temp/semmle-io'
     resolution:
-      integrity: sha512-6DFvjDclWTihDToSf31Hh+wQNhLGkA37l4QajeW/w6gS4NHjSrFL1qBlS7dLUY80VC/8nQJH9foe3r6dfEfQYw==
+      integrity: sha512-NtyviDSevxbd+hj4J66LucOzo8LU2hJ1Jh0eHw0Qu3tRZPUT8HcQlseyy29AvZR8n8eppfEZiAm/JdiHfmRPMA==
       tarball: 'file:projects/semmle-io.tgz'
     version: 0.0.0
   'file:projects/semmle-vscode-utils.tgz':
@@ -6492,14 +6496,14 @@ packages:
     dev: false
     name: '@rush-temp/semmle-vscode-utils'
     resolution:
-      integrity: sha512-yE5S1wsnrsJ8lTt9O9ALedlvH37M9sWQha7sL5iQ3P6dn2KsyUItGsJDnFoh2f0wy3TpZuj3p/KTEDBbgjXBGg==
+      integrity: sha512-5y5r8SDoN9Fp44naC9gUe8rOexeckXg2T0h9QCJAIcEgnFqOxzRc6Rv9gbMUStFKNh+rFlvmYmgPAdg5QkfgUg==
       tarball: 'file:projects/semmle-vscode-utils.tgz'
     version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
     name: '@rush-temp/typescript-config'
     resolution:
-      integrity: sha512-kSFyvKy63jUHFVXQEzALiYfsTdn7J+Y7PcqtUVo9GndU5b5Xh3rBpVbZD1QN8+y8GfT0m/sdZZQVyH0h+On11Q==
+      integrity: sha512-XuUIySaNoooIduvehnlKYaHqZJmmQoCqB1RtKhNszjCYZaSSJAnKVucViWBf5oNLKSNP7NchrD7gcoBlQ3xYvw==
       tarball: 'file:projects/typescript-config.tgz'
     version: 0.0.0
   'file:projects/vscode-codeql.tgz':
@@ -6518,7 +6522,7 @@ packages:
       '@types/react-dom': 16.8.5
       '@types/sarif': 2.1.2
       '@types/tmp': 0.1.0
-      '@types/unzipper': 0.10.0
+      '@types/unzipper': 0.10.1
       '@types/vscode': 1.39.0
       '@types/webpack': 4.32.1
       '@types/xml2js': 0.4.4
@@ -6561,7 +6565,7 @@ packages:
     dev: false
     name: '@rush-temp/vscode-codeql'
     resolution:
-      integrity: sha512-4D0poyvlkfs11cShLhxGs1IFE/Ji8lAWG573P7jg1mpZsv9LiTvr4g4u5F22HV3+kHa1GWYeTNzsGf5Ky1LsCA==
+      integrity: sha512-DE97bdxda65gVLZne73QzBpj2hyCbyzvQiRZxrJqDP1rkF62EGNohBSmlEQs8H2Jp8hxh5RhPhm/yUx70G7KEA==
       tarball: 'file:projects/vscode-codeql.tgz'
     version: 0.0.0
 registry: 'https://registry.npmjs.org/'
@@ -6595,7 +6599,7 @@ specifiers:
   '@types/sarif': ~2.1.2
   '@types/through2': ~2.0.34
   '@types/tmp': ^0.1.0
-  '@types/unzipper': ~0.10.0
+  '@types/unzipper': ~0.10.1
   '@types/vinyl': ~2.0.3
   '@types/vscode': ^1.39.0
   '@types/webpack': ^4.32.1
