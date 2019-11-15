@@ -20,7 +20,7 @@ For information about other configurations, see the separate [CodeQL help](https
 
 **Quick start: Using CodeQL**
 
-1. [Import a database from LGTM.com](#importing-a-database-from-lgtmcom).
+1. [Import a database from LGTM](#importing-a-database-from-lgtm).
 1. [Run a query](#running-a-query).
 
 -----
@@ -56,7 +56,7 @@ For information about configuring an existing workspace for CodeQL, [see the doc
 
 You can find all the commands contributed by the extension in the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**) by typing `CodeQL`, many of them are also accessible through the interface, and via keyboard shortcuts.
 
-### Importing a database from LGTM.com
+### Importing a database from LGTM
 
 While you can use the [CodeQL CLI to create your own databases](https://help.semmle.com/codeql/codeql-cli/procedures/create-codeql-database.html), the simplest way to start is by downloading a database from LGTM.com.
 
