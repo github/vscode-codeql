@@ -161,7 +161,11 @@
       },
       {
         "command": "codeQLQueryHistory.openQuery",
-        "title": "CodeQL: Open Query"
+        "title": "Open Query"
+      },
+      {
+        "command": "codeQLQueryHistory.removeHistoryItem",
+        "title": "Remove History Item"
       },
       {
         "command": "codeQLQueryHistory.itemClicked",
@@ -194,6 +198,11 @@
         },
         {
           "command": "codeQLQueryHistory.openQuery",
+          "group": "9_qlCommands",
+          "when": "view == codeQLQueryHistory"
+        },
+        {
+          "command": "codeQLQueryHistory.removeHistoryItem",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory"
         }
@@ -233,6 +242,10 @@
         },
         {
           "command": "codeQLQueryHistory.openQuery",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.removeHistoryItem",
           "when": "false"
         },
         {
