@@ -238,14 +238,6 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     throw vscode.FileSystemError.FileNotFound(uri);
   }
 
-  private async _lookupAsDirectory(uri: vscode.Uri, silent: boolean): Promise<Directory> {
-    let entry = await this._lookup(uri, silent);
-    if (entry instanceof Directory) {
-      return entry;
-    }
-    throw vscode.FileSystemError.FileNotADirectory(uri);
-  }
-
   private async _lookupAsFile(uri: vscode.Uri, silent: boolean): Promise<File> {
     let entry = await this._lookup(uri, silent);
     if (entry instanceof File) {
@@ -254,35 +246,15 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     throw vscode.FileSystemError.FileIsADirectory(uri);
   }
 
-  private _lookupParentDirectory(uri: vscode.Uri): Promise<Directory> {
-    const dirname = uri.with({ path: path.dirname(uri.path) });
-    return this._lookupAsDirectory(dirname, false);
-  }
-
   // file events
 
   private _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
-  private _bufferedEvents: vscode.FileChangeEvent[] = [];
-  private _fireSoonHandle?: NodeJS.Timer;
 
   readonly onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> = this._emitter.event;
 
   watch(_resource: vscode.Uri): vscode.Disposable {
     // ignore, fires for all changes...
     return new vscode.Disposable(() => { });
-  }
-
-  private _fireSoon(...events: vscode.FileChangeEvent[]): void {
-    this._bufferedEvents.push(...events);
-
-    if (this._fireSoonHandle) {
-      clearTimeout(this._fireSoonHandle);
-    }
-
-    this._fireSoonHandle = setTimeout(() => {
-      this._emitter.fire(this._bufferedEvents);
-      this._bufferedEvents.length = 0;
-    }, 5);
   }
 }
 
