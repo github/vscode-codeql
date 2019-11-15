@@ -115,6 +115,21 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<QueryHistoryIte
   setCurrentItem(item: QueryHistoryItem) {
     this.current = item;
   }
+
+  remove(item: QueryHistoryItem) {
+    if (this.current === item)
+      this.current = undefined;
+    const index = this.history.findIndex(i => i === item);
+    if (index >= 0) {
+      this.history.splice(index, 1);
+      if (this.current === undefined && this.history.length > 0) {
+        // Try to keep a current item, near the deleted item if there
+        // are any available.
+        this.current = this.history[Math.min(index, this.history.length - 1)];
+      }
+      this._onDidChangeTreeData.fire();
+    }
+  }
 }
 
 /**
@@ -130,9 +145,25 @@ export class QueryHistoryManager {
   selectedCallback: ((item: QueryHistoryItem) => void) | undefined;
   lastItemClick: { time: Date, item: QueryHistoryItem } | undefined;
 
+  async invokeCallbackOn(queryHistoryItem: QueryHistoryItem) {
+    if (this.selectedCallback !== undefined) {
+      const sc = this.selectedCallback;
+      await sc(queryHistoryItem);
+    }
+  }
+
   async handleOpenQuery(queryHistoryItem: QueryHistoryItem) {
     const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.info.query.program.queryPath));
     await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+  }
+
+  async handleRemoveHistoryItem(queryHistoryItem: QueryHistoryItem) {
+    this.treeDataProvider.remove(queryHistoryItem);
+    const current = this.treeDataProvider.getCurrent();
+    if (current !== undefined) {
+      this.treeView.reveal(current);
+      await this.invokeCallbackOn(current);
+    }
   }
 
   async handleItemClicked(queryHistoryItem: QueryHistoryItem) {
@@ -150,10 +181,7 @@ export class QueryHistoryManager {
     }
     else {
       // show results on single click
-      if (this.selectedCallback !== undefined) {
-        const sc = this.selectedCallback;
-        await sc(queryHistoryItem);
-      }
+      await this.invokeCallbackOn(queryHistoryItem);
     }
   }
 
@@ -170,6 +198,7 @@ export class QueryHistoryManager {
       }
     });
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.openQuery', this.handleOpenQuery));
+    ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.removeHistoryItem', this.handleRemoveHistoryItem.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.itemClicked', async (item) => {
       return this.handleItemClicked(item);
     }));
