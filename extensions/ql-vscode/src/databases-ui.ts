@@ -2,7 +2,7 @@ import * as path from 'path';
 import { DisposableObject } from "semmle-vscode-utils";
 import { commands, Event, EventEmitter, ExtensionContext, ProviderResult, TreeDataProvider, TreeItem, Uri, window } from "vscode";
 import * as cli from './cli';
-import { DatabaseItem, DatabaseManager } from "./databases";
+import { DatabaseItem, DatabaseManager, getUpgradesDirectories } from "./databases";
 import { logger } from "./logging";
 import { clearCacheInDatabase, upgradeDatabase, UserCancellationException } from "./queries";
 import * as qsClient from './queryserver-client';
@@ -189,15 +189,10 @@ export class DatabaseUI extends DisposableObject {
       logger.log('Could not determine target dbscheme to upgrade to.');
       return;
     }
-
-    const parentDirs = scripts.map(dir => path.dirname(dir));
-    const uniqueParentDirs = new Set(parentDirs);
     const targetDbSchemeUri = Uri.file(finalDbscheme);
 
-
-    const upgradesDirectories = Array.from(uniqueParentDirs).map(filePath => Uri.file(filePath));
     try {
-      await upgradeDatabase(this.queryServer, databaseItem, targetDbSchemeUri, upgradesDirectories);
+      await upgradeDatabase(this.queryServer, databaseItem, targetDbSchemeUri, getUpgradesDirectories(scripts));
     }
     catch (e) {
       if (e instanceof UserCancellationException) {
