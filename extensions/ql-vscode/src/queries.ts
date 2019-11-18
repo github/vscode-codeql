@@ -5,7 +5,7 @@ import * as sarif from 'sarif';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
 import * as cli from './cli';
-import { DatabaseItem } from './databases';
+import { DatabaseItem, getUpgradesDirectories } from './databases';
 import * as helpers from './helpers';
 import { DatabaseInfo, SortState, ResultsInfo, SortedResultSetInfo } from './interface-types';
 import { logger } from './logging';
@@ -388,18 +388,18 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
     title: "Clearing Cache",
     cancellable: false,
   }, (progress, token) =>
-    qs.sendRequest(messages.clearCache, params, token, progress)
+      qs.sendRequest(messages.clearCache, params, token, progress)
   );
 }
 
 /**
- * 
+ *
  * @param filePath This needs to be equivalent to java Path.toRealPath(NO_FOLLOW_LINKS)
- * 
+ *
  */
 async function convertToQlPath(filePath: string): Promise<string> {
   if (process.platform === "win32") {
-    
+
     if (path.parse(filePath).root === filePath) {
       // Java assumes uppercase drive letters are canonical.
       return filePath.toUpperCase();
@@ -447,7 +447,7 @@ async function checkDbschemeCompatibility(
   const searchPath = helpers.getOnDiskWorkspaceFolders();
 
   if (query.dbItem.contents !== undefined && query.dbItem.contents.dbSchemeUri !== undefined) {
-    const info = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath);
+    const { scripts, finalDbscheme } = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath);
     async function hash(filename: string): Promise<string> {
       return crypto.createHash('sha256').update(await fs.readFile(filename)).digest('hex');
     }
@@ -463,7 +463,7 @@ async function checkDbschemeCompatibility(
     const dbschemeOfLib = await hash(query.queryDbscheme);
 
     // info.finalDbscheme is which database we're able to upgrade to
-    const upgradableTo = await hash(info.finalDbscheme);
+    const upgradableTo = await hash(finalDbscheme);
 
     if (upgradableTo != dbschemeOfLib) {
       logger.log(`Query ${query.program.queryPath} expects database scheme ${query.queryDbscheme}, but database has scheme ${query.program.dbschemePath}, and no upgrade path found`);
@@ -476,8 +476,8 @@ async function checkDbschemeCompatibility(
       await upgradeDatabase(
         qs,
         query.dbItem,
-        vscode.Uri.file(info.finalDbscheme),
-        searchPath.map(file => vscode.Uri.file(file))
+        vscode.Uri.file(finalDbscheme),
+        getUpgradesDirectories(scripts)
       );
     }
   }

@@ -629,3 +629,13 @@ export class DatabaseManager extends DisposableObject {
     this.ctx.workspaceState.update(DB_LIST, this._databaseItems.map(item => item.getPersistedState()));
   }
 }
+
+/**
+ * Get the set of directories containing upgrades, given a list of
+ * scripts returned by the cli's upgrade resolution.
+ */
+export function getUpgradesDirectories(scripts: string[]): vscode.Uri[] {
+  const parentDirs = scripts.map(dir => path.dirname(dir));
+  const uniqueParentDirs = new Set(parentDirs);
+  return Array.from(uniqueParentDirs).map(filePath => vscode.Uri.file(filePath));
+}
