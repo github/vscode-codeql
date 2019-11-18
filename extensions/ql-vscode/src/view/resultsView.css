@@ -1,11 +1,7 @@
 .vscode-codeql__result-table {
-  display: none;
+  display: table;
   border-collapse: collapse;
   width: 100%;
-}
-
-.vscode-codeql__result-table--selected {
-  display: table;
 }
 
 .vscode-codeql__table-selection-header {
@@ -18,22 +14,18 @@
 }
 
 .vscode-codeql__result-table-toggle-diagnostics {
-  display: none;
+  display: inline-block;
   text-align: left;
   margin-left: auto;
 }
 
-.vscode-codeql__result-table-toggle-diagnostics--selected {
-  display: inline-block;
-}
-
 /* Keep the checkbox and its label in horizontal alignment. */
-.vscode-codeql__result-table-toggle-diagnostics--selected label,
-.vscode-codeql__result-table-toggle-diagnostics--selected input {
+.vscode-codeql__result-table-toggle-diagnostics label,
+.vscode-codeql__result-table-toggle-diagnostics input {
   display: inline-block;
   vertical-align: middle;
 }
-.vscode-codeql__result-table-toggle-diagnostics--selected input {
+.vscode-codeql__result-table-toggle-diagnostics input {
   margin: 3px 3px 1px 3px;
 }
 

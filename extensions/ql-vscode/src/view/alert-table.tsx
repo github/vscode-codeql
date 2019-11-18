@@ -1,10 +1,9 @@
-import cx from 'classnames';
 import * as path from 'path';
 import * as React from 'react';
 import * as Sarif from 'sarif';
 import { LocationStyle, ResolvableLocationValue } from 'semmle-bqrs';
 import * as octicons from './octicons';
-import { className, renderLocation, ResultTableProps, selectedClassName, zebraStripe } from './result-table-utils';
+import { className, renderLocation, ResultTableProps, zebraStripe } from './result-table-utils';
 import { PathTableResultSet } from './results';
 
 export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
@@ -99,11 +98,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
   }
 
   render(): JSX.Element {
-    const { selected, databaseUri, resultSet } = this.props;
-
-    const tableClassName = cx(className, {
-      [selectedClassName]: selected
-    });
+    const { databaseUri, resultSet } = this.props;
 
     const rows: JSX.Element[] = [];
     const { numTruncatedResults, sourceLocationPrefix } = resultSet;
@@ -342,7 +337,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       </td></tr>);
     }
 
-    return <table className={tableClassName}>
+    return <table className={className}>
       <tbody>{rows}</tbody>
     </table>;
   }

@@ -1,9 +1,8 @@
-import cx from 'classnames';
 import * as React from 'react';
 import { DatabaseInfo, Interpretation, SortState } from '../interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
-import { ResultTableProps, toggleDiagnosticsClassName, toggleDiagnosticsSelectedClassName, tableSelectionHeaderClassName } from './result-table-utils';
+import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName } from './result-table-utils';
 import { ResultSet, vscode } from './results';
 
 /**
@@ -76,14 +75,26 @@ export class ResultTables
   }
 
   render(): React.ReactNode {
-    const selectedTable = this.state.selectedTable;
+    const { selectedTable } = this.state;
     const resultSets = this.getResultSets();
     const { database, resultsPath, kind } = this.props;
 
     // Only show the Problems view display checkbox for the alerts table.
-    const toggleDiagnosticsClass = cx(toggleDiagnosticsClassName, {
-      [toggleDiagnosticsSelectedClassName]: selectedTable === ALERTS_TABLE_NAME
-    });
+    const diagnosticsCheckBox = selectedTable === ALERTS_TABLE_NAME ?
+      <div className={toggleDiagnosticsClassName}>
+        <input type="checkbox" id="toggle-diagnostics" name="toggle-diagnostics" onChange={(e) => {
+          if (resultsPath !== undefined) {
+            vscode.postMessage({
+              t: 'toggleDiagnostics',
+              resultsPath: resultsPath,
+              databaseUri: database.databaseUri,
+              visible: e.target.checked,
+              kind: kind
+            });
+          }
+        }} />
+        <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
+      </div> : undefined;
 
     return <div>
       <div className={tableSelectionHeaderClassName}>
@@ -96,20 +107,7 @@ export class ResultTables
             )
           }
         </select>
-        <div className={toggleDiagnosticsClass}>
-          <input type="checkbox" id="toggle-diagnostics" name="toggle-diagnostics" onChange={(e) => {
-            if (resultsPath !== undefined) {
-              vscode.postMessage({
-                t: 'toggleDiagnostics',
-                resultsPath: resultsPath,
-                databaseUri: database.databaseUri,
-                visible: e.target.checked,
-                kind: kind
-              });
-            }
-          }} />
-          <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
-        </div>
+        {diagnosticsCheckBox}
         {
           this.props.isLoadingNewResults ?
             <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>Updating results…</span>
@@ -118,9 +116,12 @@ export class ResultTables
       </div>
       {
         resultSets.map(resultSet =>
-          <ResultTable key={resultSet.schema.name} resultSet={resultSet}
-            databaseUri={this.props.database.databaseUri} selected={resultSet.schema.name === selectedTable}
-            resultsPath={this.props.resultsPath} sortState={this.props.sortStates.get(resultSet.schema.name)} />
+          resultSet.schema.name === selectedTable ?
+            <ResultTable key={resultSet.schema.name} resultSet={resultSet}
+              databaseUri={this.props.database.databaseUri}
+              resultsPath={this.props.resultsPath}
+              sortState={this.props.sortStates.get(resultSet.schema.name)} /> :
+            undefined
         )
       }
     </div>;
@@ -137,10 +138,10 @@ class ResultTable extends React.Component<ResultTableProps, {}> {
     const { resultSet } = this.props;
     switch (resultSet.t) {
       case 'RawResultSet': return <RawTable
-        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri}
+        resultSet={resultSet} databaseUri={this.props.databaseUri}
         resultsPath={this.props.resultsPath} sortState={this.props.sortState} />;
       case 'SarifResultSet': return <PathTable
-        selected={this.props.selected} resultSet={resultSet} databaseUri={this.props.databaseUri}
+        resultSet={resultSet} databaseUri={this.props.databaseUri}
         resultsPath={this.props.resultsPath} />;
     }
   }
