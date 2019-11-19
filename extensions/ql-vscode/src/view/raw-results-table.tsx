@@ -1,6 +1,5 @@
-import cx from 'classnames';
 import * as React from "react";
-import { className, renderLocation, ResultTableProps, selectedClassName, zebraStripe } from "./result-table-utils";
+import { renderLocation, ResultTableProps, zebraStripe, className } from "./result-table-utils";
 import { RawTableResultSet, ResultValue, vscode } from "./results";
 import { assertNever } from "../helpers-pure";
 import { SortDirection, SortState, RAW_RESULTS_LIMIT } from "../interface-types";
@@ -16,11 +15,7 @@ export class RawTable extends React.Component<RawTableProps, {}> {
   }
 
   render(): React.ReactNode {
-    const { resultSet, selected, databaseUri } = this.props;
-
-    const tableClassName = cx(className, {
-      [selectedClassName]: selected
-    });
+    const { resultSet, databaseUri } = this.props;
 
     let dataRows = this.props.resultSet.rows;
     let numTruncatedResults = 0;
@@ -52,7 +47,7 @@ export class RawTable extends React.Component<RawTableProps, {}> {
       </td></tr>);
     }
 
-    return <table className={tableClassName}>
+    return <table className={className}>
       <thead>
         <tr>
           {
