@@ -434,7 +434,7 @@ async function showLocation(loc: ResolvableLocationValue, databaseItem: Database
     // trigger based on where we place the cursor/selection, and will compete for the user's attention.
     // For reference:
     // - Occurences are highlighted when the cursor is next to or inside a word or a whole word is selected.
-    // - Brackets are highlighted when the cursor is next to a bracket and there is a non-empty selection.
+    // - Brackets are highlighted when the cursor is next to a bracket and there is an empty selection.
     // - Multi-line selections explicitly highlight line-break characters, but multi-line decorators do not.
     //
     // For single-line ranges, select the whole range, mainly to disable bracket highlighting.
