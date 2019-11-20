@@ -1,4 +1,4 @@
-import { EventEmitter, Event, Uri, workspace, WorkspaceFoldersChangeEvent, WorkspaceFolder, RelativePattern } from 'vscode';
+import { EventEmitter, Event, Uri, workspace, WorkspaceFolder, RelativePattern } from 'vscode';
 import { CodeQLCliServer, ResolvedQLPacks } from './cli';
 import { Discovery } from './discovery';
 

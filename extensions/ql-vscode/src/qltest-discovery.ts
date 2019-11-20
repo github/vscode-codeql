@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { QLPackDiscovery } from './qlpack-discovery';
 import { Discovery } from './discovery';
-import { EventEmitter, Event, FileSystemWatcher, Uri, GlobPattern, workspace, WorkspaceFolder, RelativePattern } from 'vscode';
+import { EventEmitter, Event, Uri, GlobPattern, workspace, RelativePattern } from 'vscode';
 import { DisposableObject } from 'semmle-vscode-utils';
 
 /**
