@@ -68,6 +68,13 @@ export interface SourceInfo {
 }
 
 /**
+ * The expected output of `codeql resolve qlpacks`.
+ */
+export interface ResolvedQLPacks {
+  [index: string]: string[];
+}
+
+/**
  * This class manages a cli server started by `codeql execute cli-server` to
  * run commands without the overhead of starting a new java
  * virtual machine each time. This class also controls access to the server
@@ -301,6 +308,21 @@ export class CodeQLCliServer implements Disposable {
       workspaces.join(path.delimiter)
     ];
     return await this.runJsonCodeQlCliCommand<QuerySetup>(['resolve', 'library-path'], subcommandArgs, "Resolving library paths");
+  }
+
+  /**
+   * Finds all available QL packs.
+   * @param workspaces The current open workspaces
+   * @param searchPath Overrides the default QL pack search path
+   */
+  async resolveQLPacks(workspaces: string[], searchPath?: string[]): Promise<ResolvedQLPacks> {
+    const subcommandArgs = [
+      '--additional-packs', workspaces.join(path.delimiter)
+    ];
+    if (searchPath !== undefined) {
+      subcommandArgs.push('--search-path', searchPath.join(path.delimiter));
+    }
+    return await this.runJsonCodeQlCliCommand<ResolvedQLPacks>(['resolve', 'qlpacks'], subcommandArgs, 'Resolving QL packs');
   }
 
   /**

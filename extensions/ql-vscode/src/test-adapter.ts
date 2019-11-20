@@ -1,0 +1,335 @@
+import * as fs from 'fs-extra';
+import * as os from 'os';
+import * as path from 'path';
+import * as vscode from 'vscode';
+import {
+  TestAdapter,
+  TestLoadStartedEvent,
+  TestLoadFinishedEvent,
+  TestRunStartedEvent,
+  TestRunFinishedEvent,
+  TestSuiteEvent,
+  TestEvent,
+  TestSuiteInfo,
+  TestInfo,
+  TestHub
+} from 'vscode-test-adapter-api';
+import { TestAdapterRegistrar } from 'vscode-test-adapter-util';
+import { QLTestFile, QLTestNode, QLTestDirectory, QLTestDiscovery } from './qltest-discovery';
+import { Event, EventEmitter, window, Diagnostic, Uri, Range, DiagnosticSeverity, OutputChannel, CancellationToken, workspace, Disposable, CancellationTokenSource } from 'vscode';
+import { DisposableObject } from 'semmle-vscode-utils';
+import { QLTestOptions, QLTestHandler, QLOptions, qlTest } from './odasa';
+import { QLPackDiscovery } from './qlpack-discovery';
+import { CodeQLCliServer } from './cli';
+
+/**
+ * Get the full path of the `.expected` file for the specified QL test.
+ * @param testPath The full path to the test file.
+ */
+export function getExpectedFile(testPath: string): string {
+  return getTestOutputFile(testPath, '.expected');
+}
+
+/**
+ * Get the full path of the `.actual` file for the specified QL test.
+ * @param testPath The full path to the test file.
+ */
+export function getActualFile(testPath: string): string {
+  return getTestOutputFile(testPath, '.actual');
+}
+
+/**
+ * Get the directory containing the specified QL test.
+ * @param testPath The full path to the test file.
+ */
+export function getTestDirectory(testPath: string): string {
+  return path.dirname(testPath);
+}
+
+/**
+ * Gets the the full path to a particular output file of the specified QL test.
+ * @param testPath The full path to the QL test.
+ * @param extension The file extension of the output file.
+ */
+function getTestOutputFile(testPath: string, extension: string): string {
+  return changeExtension(testPath, extension);
+}
+
+/**
+ * A factory service that creates `QLTestAdapter` objects for workspace folders on demand.
+ */
+export class QLTestAdapterFactory extends DisposableObject {
+  constructor(testHub: TestHub, cliServer: CodeQLCliServer) {
+    super();
+
+    // this will register a QLTestAdapter for each WorkspaceFolder
+    this.push(new TestAdapterRegistrar(
+      testHub,
+      workspaceFolder => new QLTestAdapter(workspaceFolder, cliServer)
+    ));
+  }
+}
+
+interface QLTaskOptions {
+  output?: OutputChannel;
+  token?: CancellationToken;
+}
+
+/**
+ * Gets the number of threads to be used for running QL tests.
+ */
+function getQLTestThreadCount(): number {
+  const threadCount = workspace.getConfiguration('codeQL.tests').get<number>('numberOfThreads');
+  return threadCount || os.cpus().length;
+}
+
+/**
+ * Gets the path to the ODASA distribution to be used for running QL tests.
+ */
+function getDistributionPath(): string {
+  const semmleDist =
+    workspace.getConfiguration('codeQL.tests').get<string>('odasaDistributionPath');
+  if (semmleDist === undefined) {
+    throw new Error("'codeQL.tests.odasaDistributionPath' must be set to the path containing the Odasa distribution.");
+  }
+
+  return semmleDist;
+}
+
+/**
+ * Gets the path to the directory containing the ODASA license file.
+ */
+function getLicensePath(): string | undefined {
+  return workspace.getConfiguration('codeQL.tests').get<string>('odasaLicensePath');
+}
+
+/**
+ * Change the file extension of the specified path.
+ * @param p The original file path.
+ * @param ext The new extension, including the `.`.
+ */
+function changeExtension(p: string, ext: string): string {
+  return p.substr(0, p.length - path.extname(p).length) + ext;
+}
+
+const inlineExpectationLinePattern = /^\| (?<file>[^:]+)\:(?<startLine>\d+):(?<startColumn>\d+):(?<endLine>\d+):(?<endColumn>\d+) \| (?<element>(?:[^|\\]|\\\\)*) \| (?<message>(?:[^\|\\]|\\\\)*) \|$/;
+const inlineExpectationMessagePattern = /^Unexpected result|Fixed false positive|Fixed false negative|Missing result|Invalid expectation syntax/;
+
+/**
+ * Test adapter for QL tests.
+ */
+export class QLTestAdapter extends DisposableObject implements TestAdapter {
+  private readonly qlPackDiscovery: QLPackDiscovery;
+  private readonly qlTestDiscovery: QLTestDiscovery;
+  private readonly _tests = this.push(
+    new EventEmitter<TestLoadStartedEvent | TestLoadFinishedEvent>());
+  private readonly _testStates = this.push(
+    new EventEmitter<TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent |
+      TestEvent>());
+  private readonly _autorun = this.push(new EventEmitter<void>());
+  private readonly output = this.push(window.createOutputChannel('CodeQL Tests'));
+  private runningTask?: vscode.CancellationTokenSource = undefined;
+
+  constructor(
+    public readonly workspaceFolder: vscode.WorkspaceFolder,
+    private readonly cliServer: CodeQLCliServer
+  ) {
+    super();
+
+    this.qlPackDiscovery = this.push(new QLPackDiscovery(workspaceFolder, cliServer));
+    this.qlTestDiscovery = this.push(new QLTestDiscovery(this.qlPackDiscovery));
+
+    this.push(this.qlTestDiscovery.onDidChangeTests(this.discoverTests, this));
+  }
+
+  public get tests(): Event<TestLoadStartedEvent | TestLoadFinishedEvent> {
+    return this._tests.event;
+  }
+
+  public get testStates(): Event<TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent |
+    TestEvent> {
+
+    return this._testStates.event;
+  }
+
+  public get autorun(): Event<void> | undefined {
+    return this._autorun.event;
+  }
+
+  private static createTestOrSuiteInfos(testNodes: readonly QLTestNode[]):
+    (TestSuiteInfo | TestInfo)[] {
+
+    return testNodes.map((childNode) => {
+      return QLTestAdapter.createTestOrSuiteInfo(childNode);
+    });
+  }
+
+  private static createTestOrSuiteInfo(testNode: QLTestNode): TestSuiteInfo | TestInfo {
+    if (testNode instanceof QLTestFile) {
+      return QLTestAdapter.createTestInfo(testNode);
+    }
+    else if (testNode instanceof QLTestDirectory) {
+      return QLTestAdapter.createTestSuiteInfo(testNode, testNode.name);
+    }
+    else {
+      throw new Error('Unexpected test type.');
+    }
+  }
+
+  private static createTestInfo(testFile: QLTestFile): TestInfo {
+    return {
+      type: 'test',
+      id: testFile.path,
+      label: testFile.name,
+      tooltip: testFile.path,
+      file: testFile.path
+    };
+  }
+
+  private static createTestSuiteInfo(testDirectory: QLTestDirectory, label: string):
+    TestSuiteInfo {
+
+    return {
+      type: 'suite',
+      id: testDirectory.path,
+      label: label,
+      children: QLTestAdapter.createTestOrSuiteInfos(testDirectory.children),
+      tooltip: testDirectory.path
+    };
+  }
+
+  public async load(): Promise<void> {
+    this.discoverTests();
+  }
+
+  private discoverTests(): void {
+    this._tests.fire(<TestLoadStartedEvent>{ type: 'started' });
+
+    const testDirectories = this.qlTestDiscovery.testDirectories;
+    const testSuite: TestSuiteInfo = {
+      type: 'suite',
+      label: 'CodeQL',
+      id: '.',
+      children: testDirectories.map(
+        testDirectory => QLTestAdapter.createTestSuiteInfo(testDirectory, testDirectory.name))
+    };
+
+    this._tests.fire(<TestLoadFinishedEvent>{ type: 'finished', suite: testSuite });
+  }
+
+  public async run(tests: string[]): Promise<void> {
+    if (this.runningTask !== undefined) {
+      throw new Error('Tests already running.');
+    }
+
+    this.output.clear();
+    this.output.show(true);
+
+    this.runningTask = this.track(new CancellationTokenSource());
+
+    this._testStates.fire(<TestRunStartedEvent>{ type: 'started', tests: tests });
+
+    const testAdapter = this;
+
+    try {
+      const taskOptions: QLTaskOptions = {
+        output: this.output,
+        token: this.runningTask.token,
+      };
+      const testOptions: QLTestOptions = {
+        acceptOutput: false,
+        generateGraphs: false,
+        leaveTempFiles: true,
+        tests: tests
+      };
+      const adapter = this;
+      const handler: QLTestHandler = {
+        onTestPassed(testId: string): void {
+          testAdapter._testStates.fire({
+            type: 'test',
+            test: testId,
+            state: 'passed'
+          });
+        },
+        onTestFailed(testId: string): void {
+          testAdapter._testStates.fire({
+            type: 'test',
+            test: testId,
+            state: 'failed'
+          });
+        }
+      };
+      await this.runTests(taskOptions, testOptions, handler);
+    }
+    catch (e) {
+    }
+    testAdapter._testStates.fire(<TestRunFinishedEvent>{ type: 'finished' });
+    testAdapter.clearTask();
+  }
+
+  private clearTask(): void {
+    if (this.runningTask !== undefined) {
+      const runningTask = this.runningTask;
+      this.runningTask = undefined;
+      this.disposeAndStopTracking(runningTask);
+    }
+  }
+
+  public cancel(): void {
+    if (this.runningTask !== undefined) {
+      this.output.appendLine('Cancelling test run...');
+      this.runningTask.cancel();
+      this.clearTask();
+    }
+  }
+
+  private async runTests(taskOptions: QLTaskOptions, testOptions: QLTestOptions,
+    handler: QLTestHandler): Promise<void> {
+
+    const workspaceFolderPaths =
+      (workspace.workspaceFolders ?? []).map(workspaceFolder => workspaceFolder.uri.fsPath);
+    const querySetup = await this.cliServer.resolveLibraryPath(workspaceFolderPaths,
+      testOptions.tests[0]);
+
+    if (taskOptions.output) {
+      taskOptions.output.appendLine(`Library Path: ${querySetup.libraryPath}`);
+    }
+
+    const qlTestOptions: QLTestOptions = {
+      ...testOptions,
+      threads: getQLTestThreadCount(),
+      libraryPaths: querySetup.libraryPath,
+      optimize: true
+    };
+
+    let cancellationRegistration: Disposable = {
+      dispose() { }
+    };
+
+    const qlOptions: QLOptions = {
+      distributionPath: getDistributionPath(),
+      licensePath: getLicensePath(),
+      output(line: string): void {
+        if (taskOptions.output) {
+          taskOptions.output.appendLine(line);
+        }
+      },
+      registerOnCancellationRequested(h: () => void) {
+        if (taskOptions.token) {
+          cancellationRegistration = taskOptions.token.onCancellationRequested(e => {
+            h();
+          });
+        }
+      }
+    }
+
+    try {
+      await qlTest(qlOptions, qlTestOptions, handler);
+    }
+    finally {
+      if (cancellationRegistration !== undefined) {
+        cancellationRegistration.dispose();
+      }
+    }
+  }
+}

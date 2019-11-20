@@ -18,6 +18,9 @@
   "categories": [
     "Programming Languages"
   ],
+  "extensionDependencies": [
+    "hbenl.vscode-test-explorer"
+  ],
   "activationEvents": [
     "onLanguage:ql",
     "onView:codeQLDatabases",
@@ -95,14 +98,20 @@
           "description": "Number of threads for running queries."
         },
         "codeQL.runningQueries.timeout": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "default": null,
           "minimum": 0,
           "maximum": 2147483647,
           "description": "Timeout (in seconds) for running queries. Leave blank or set to zero for no timeout."
         },
         "codeQL.runningQueries.memory": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "default": null,
           "minimum": 1024,
           "description": "Memory (in MB) to use for running queries. Leave blank for CodeQL to choose a suitable value based on your system's available memory."
@@ -111,6 +120,22 @@
           "type": "boolean",
           "default": false,
           "description": "Enable debug logging and tuple counting when running CodeQL queries. This information is useful for debugging query performance."
+        },
+        "codeQL.tests.odasaDistributionPath": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "description": "Location of the ODASA distribution"
+        },
+        "codeQL.tests.odasaLicensePath": {
+          "scope": "window",
+          "type": "string",
+          "description": "Location of the directory containing the ODASA license file"
+        },
+        "codeQL.tests.numberOfThreads": {
+          "scope": "window",
+          "type": "integer",
+          "description": "Number of threads to use for CodeQL test execution"
         }
       }
     },
@@ -170,6 +195,14 @@
       {
         "command": "codeQLQueryHistory.itemClicked",
         "title": "Query History Item"
+      },
+      {
+        "command": "codeQLTests.showOutputDifferences",
+        "title": "CodeQL: Show Test Output Differences"
+      },
+      {
+        "command": "codeQLTests.acceptOutput",
+        "title": "CodeQL: Accept Test Output"
       }
     ],
     "menus": {
@@ -205,6 +238,16 @@
           "command": "codeQLQueryHistory.removeHistoryItem",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory"
+        },
+        {
+          "command": "codeQLTests.showOutputDifferences",
+          "group": "qltest@1",
+          "when": "view == test-explorer && viewItem == testWithSource"
+        },
+        {
+          "command": "codeQLTests.acceptOutput",
+          "group": "qltest@2",
+          "when": "view == test-explorer && viewItem == testWithSource"
         }
       ],
       "explorer/context": [
@@ -298,6 +341,7 @@
     "format": "tsfmt -r"
   },
   "dependencies": {
+    "child-process-promise": "^2.2.1",
     "classnames": "~2.2.6",
     "fs-extra": "^8.1.0",
     "glob-promise": "^3.4.0",
@@ -310,10 +354,13 @@
     "tmp": "^0.1.0",
     "unzipper": "~0.10.5",
     "vscode-jsonrpc": "^4.0.0",
-    "vscode-languageclient": "^5.2.1"
+    "vscode-languageclient": "^5.2.1",
+    "vscode-test-adapter-api": "~1.7.0",
+    "vscode-test-adapter-util": "~0.7.0"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
+    "@types/child-process-promise": "^2.2.1",
     "@types/classnames": "~2.2.9",
     "@types/fs-extra": "^8.0.0",
     "@types/glob": "^7.1.1",
@@ -333,7 +380,6 @@
     "@types/xml2js": "~0.4.4",
     "build-tasks": "^0.0.1",
     "chai": "^4.2.0",
-    "child-process-promise": "^2.2.1",
     "css-loader": "~3.1.0",
     "glob": "^7.1.4",
     "gulp": "^4.0.2",

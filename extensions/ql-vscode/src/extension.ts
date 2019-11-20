@@ -14,6 +14,9 @@ import { QueryHistoryItem, QueryHistoryManager } from './query-history';
 import * as qsClient from './queryserver-client';
 import { CodeQLCliServer } from './cli';
 import { assertNever } from './helpers-pure';
+import { TestHub, testExplorerExtensionId } from 'vscode-test-adapter-api';
+import { QLTestAdapterFactory } from './test-adapter';
+import { TestUIService } from './test-ui';
 
 /**
  * extension.ts
@@ -77,7 +80,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   const distributionManager = new DistributionManager(ctx, distributionConfigListener, DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT);
 
   const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
-  
+
   registerErrorStubs(ctx, [checkForUpdatesCommand], command => () => {
     Window.showErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
   });
@@ -278,6 +281,16 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     // Ensure that language server exceptions are logged to the same channel as its output.
     outputChannel: ideServerLogger.outputChannel
   }, true);
+
+  const testExplorerExtension = extensions.getExtension<TestHub>(testExplorerExtensionId);
+  if (testExplorerExtension) {
+    const testHub = testExplorerExtension.exports;
+    const testAdapterFactory = new QLTestAdapterFactory(testHub, cliServer);
+    ctx.subscriptions.push(testAdapterFactory);
+
+    const testUIService = new TestUIService(testHub);
+    ctx.subscriptions.push(testUIService);
+  }
 
   ctx.subscriptions.push(commands.registerCommand('codeQL.runQuery', async (uri: Uri | undefined) => await compileAndRunQuery(false, uri)));
   ctx.subscriptions.push(commands.registerCommand('codeQL.quickEval', async (uri: Uri | undefined) => await compileAndRunQuery(true, uri)));
