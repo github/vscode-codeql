@@ -11,7 +11,7 @@ import { spawnIdeServer } from './ide-server';
 import { InterfaceManager, WebviewReveal } from './interface';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
 import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal, UserCancellationException } from './queries';
-import { QueryHistoryItem, QueryHistoryManager } from './query-history';
+import { QueryHistoryManager } from './query-history';
 import * as qsClient from './queryserver-client';
 import { CodeQLCliServer } from './cli';
 import { assertNever } from './helpers-pure';
@@ -78,7 +78,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   const distributionManager = new DistributionManager(ctx, distributionConfigListener, DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT);
 
   const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
-  
+
   registerErrorStubs(ctx, [checkForUpdatesCommand], command => () => {
     helpers.showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
   });
