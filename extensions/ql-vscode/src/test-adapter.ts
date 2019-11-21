@@ -16,11 +16,12 @@ import {
 } from 'vscode-test-adapter-api';
 import { TestAdapterRegistrar } from 'vscode-test-adapter-util';
 import { QLTestFile, QLTestNode, QLTestDirectory, QLTestDiscovery } from './qltest-discovery';
-import { Event, EventEmitter, window, Diagnostic, Uri, Range, DiagnosticSeverity, OutputChannel, CancellationToken, workspace, Disposable, CancellationTokenSource } from 'vscode';
+import { Event, EventEmitter, window, Diagnostic, Uri, Range, DiagnosticSeverity, OutputChannel, CancellationToken, workspace, Disposable, CancellationTokenSource, commands } from 'vscode';
 import { DisposableObject } from 'semmle-vscode-utils';
-import { QLTestOptions, QLTestHandler, QLOptions, qlTest } from './odasa';
+import { QLTestOptions, QLTestHandler, QLOptions, qlTest, isOdasaAvailable } from './odasa';
 import { QLPackDiscovery } from './qlpack-discovery';
 import { CodeQLCliServer } from './cli';
+import { showAndLogErrorMessage } from './helpers';
 
 /**
  * Get the full path of the `.expected` file for the specified QL test.
@@ -324,6 +325,19 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     }
 
     try {
+      if (!await isOdasaAvailable(qlOptions)) {
+        const action = showAndLogErrorMessage("'codeQL.tests.odasaDistributionPath' does not " +
+          "point to a distribution of Semmle Core. Semmle Core is required in order to run " +
+          "CodeQL tests. This requirement will be removed as soon as the CodeQL CLI supports " +
+          "running tests.",
+          'Edit Settings');
+        action.then(response => {
+          if (response !== undefined) {
+            commands.executeCommand('workbench.action.openSettings2');
+          }
+        });
+        // Attempt to invoke `odasa` anyway, just to get a more precise error in the log.
+      }
       await qlTest(qlOptions, qlTestOptions, handler);
     }
     finally {

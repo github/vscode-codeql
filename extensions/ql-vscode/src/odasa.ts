@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as child_process from 'child-process-promise';
 import * as readline from 'readline';
+import * as fs from 'fs-extra';
 
 export interface QLTestHandler {
   onTestPassed(testId: string): void;
@@ -96,6 +97,11 @@ function getOdasaPath(options: QLOptions): string {
   }
 }
 
+export async function isOdasaAvailable(options: QLOptions): Promise<boolean> {
+  const odasaPath = getOdasaPath(options);
+  return await fs.pathExists(odasaPath);
+}
+
 async function runOdasa(command: string, args: string[], options: QLOptions,
   matcher: QLOutputMatcher): Promise<void> {
 
@@ -148,11 +154,19 @@ async function runOdasa(command: string, args: string[], options: QLOptions,
     options.registerOnCancellationRequested(() => proc.childProcess.kill());
   }
 
-  const result = await proc;
-  if (result.code === 0) {
-    return;
+  try {
+    const result = await proc;
+    if (result.code === 0) {
+      return;
+    }
+    else {
+      throw new Error(`'odasa ${command}' failed with exit code '${result.code}'.`);
+    }
   }
-  else {
-    throw new Error(`'odasa ${command}' failed with exit code '${result.code}'.`);
+  catch (e) {
+    if (options.output) {
+      options.output(e.message);
+    }
+    throw e;
   }
 }
