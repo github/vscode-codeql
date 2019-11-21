@@ -99,6 +99,12 @@ export class InterfaceManager extends DisposableObject {
     super();
     this.push(this._diagnosticCollection);
     this.push(vscode.window.onDidChangeTextEditorSelection(this.handleSelectionChange.bind(this)));
+    this.push(vscode.commands.registerCommand('codeQLQueryResults.nextPathStep', this.navigatePathStep.bind(this, 1)));
+    this.push(vscode.commands.registerCommand('codeQLQueryResults.previousPathStep', this.navigatePathStep.bind(this, -1)));
+  }
+
+  navigatePathStep(direction: number) {
+    this.postMessage({ t: "navigatePath", direction });
   }
 
   // Returns the webview panel, creating it if it doesn't already

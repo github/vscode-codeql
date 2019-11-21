@@ -4,8 +4,8 @@ import * as Sarif from 'sarif';
 import * as Keys from '../result-keys';
 import { LocationStyle, ResolvableLocationValue } from 'semmle-bqrs';
 import * as octicons from './octicons';
-import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe } from './result-table-utils';
-import { PathTableResultSet } from './results';
+import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation } from './result-table-utils';
+import { PathTableResultSet, onNavigation, NavigationEvent } from './results';
 
 export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
 export interface PathTableState {
@@ -75,6 +75,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
   constructor(props: PathTableProps) {
     super(props);
     this.state = { expanded: {}, selectedPathNode: undefined };
+    this.handleNavigationEvent = this.handleNavigationEvent.bind(this);
   }
 
   /**
@@ -289,6 +290,37 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     return <table className={className}>
       <tbody>{rows}</tbody>
     </table>;
+  }
+
+  private handleNavigationEvent(event: NavigationEvent) {
+    this.setState(prevState => {
+      let { selectedPathNode } = prevState;
+      if (selectedPathNode === undefined) return prevState;
+
+      let path = Keys.getPath(this.props.resultSet.sarif, selectedPathNode);
+      if (path === undefined) return prevState;
+
+      let nextIndex = selectedPathNode.pathNodeIndex + event.direction;
+      if (nextIndex < 0 || nextIndex >= path.locations.length) return prevState;
+
+      let sarifLoc = path.locations[nextIndex].location;
+      if (sarifLoc === undefined) return prevState;
+
+      let loc = parseSarifLocation(sarifLoc, this.props.resultSet.sourceLocationPrefix);
+      if (loc.t === 'NoLocation') return prevState;
+
+      jumpToLocation(loc, this.props.databaseUri);
+      let newSelection = { ...selectedPathNode, pathNodeIndex: nextIndex };
+      return { ...prevState, selectedPathNode: newSelection };
+    });
+  }
+
+  componentDidMount() {
+    onNavigation.addListener(this.handleNavigationEvent);
+  }
+
+  componentWillUnmount() {
+    onNavigation.removeListener(this.handleNavigationEvent);
   }
 }
 

@@ -24,15 +24,19 @@ export function jumpToLocationHandler(
   callback?: () => void
 ): (e: React.MouseEvent) => void {
   return (e) => {
-    vscode.postMessage({
-      t: 'viewSourceFile',
-      loc,
-      databaseUri
-    });
+    jumpToLocation(loc, databaseUri);
     e.preventDefault();
     e.stopPropagation();
     if (callback) callback();
   };
+}
+
+export function jumpToLocation(loc: ResolvableLocationValue, databaseUri: string) {
+  vscode.postMessage({
+    t: 'viewSourceFile',
+    loc,
+    databaseUri
+  });
 }
 
 /**
