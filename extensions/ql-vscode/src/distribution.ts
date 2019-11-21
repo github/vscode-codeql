@@ -400,6 +400,13 @@ export class ReleasesApiConsumer {
       Object.assign({}, this._defaultHeaders, additionalHeaders));
 
     if (!response.ok) {
+      // Check for rate limiting
+      const rateLimitResetValue = response.headers.get("X-RateLimit-Reset");
+      if (response.status === 403 && rateLimitResetValue) {
+        const secondsToMillisecondsFactor = 1000;
+        const rateLimitResetDate = new Date(parseInt(rateLimitResetValue, 10) * secondsToMillisecondsFactor);
+        throw new GithubRateLimitedError(response.status, await response.text(), rateLimitResetDate);
+      }
       throw new GithubApiError(response.status, await response.text());
     }
     return response;
@@ -671,5 +678,11 @@ interface VersionConstraint {
 export class GithubApiError extends Error {
   constructor(public status: number, public body: string) {
     super(`API call failed with status code ${status}, body: ${body}`);
+  }
+}
+
+export class GithubRateLimitedError extends GithubApiError {
+  constructor(public status: number, public body: string, public rateLimitResetDate: Date) {
+    super(status, body);
   }
 }
