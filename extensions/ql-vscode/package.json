@@ -122,16 +122,16 @@
           "default": false,
           "description": "Enable debug logging and tuple counting when running CodeQL queries. This information is useful for debugging query performance."
         },
-        "codeQL.tests.odasaDistributionPath": {
+        "codeQL.tests.semmleCoreDistributionPath": {
           "scope": "window",
           "type": "string",
           "default": "",
-          "description": "Location of the ODASA distribution"
+          "description": "Location of the Semmle Core distribution"
         },
-        "codeQL.tests.odasaLicensePath": {
+        "codeQL.tests.semmleCoreLicensePath": {
           "scope": "window",
           "type": "string",
-          "description": "Location of the directory containing the ODASA license file"
+          "description": "Location of the directory containing the Semmle Core license file"
         },
         "codeQL.tests.numberOfThreads": {
           "scope": "window",

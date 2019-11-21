@@ -1,4 +1,3 @@
-import * as fs from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -89,9 +88,9 @@ function getQLTestThreadCount(): number {
  */
 function getDistributionPath(): string {
   const semmleDist =
-    workspace.getConfiguration('codeQL.tests').get<string>('odasaDistributionPath');
+    workspace.getConfiguration('codeQL.tests').get<string>('semmleCoreDistributionPath');
   if (semmleDist === undefined) {
-    throw new Error("'codeQL.tests.odasaDistributionPath' must be set to the path containing the Odasa distribution.");
+    throw new Error("'codeQL.tests.semmleCoreDistributionPath' must be set to the path containing the Semmle Core distribution.");
   }
 
   return semmleDist;
@@ -101,7 +100,7 @@ function getDistributionPath(): string {
  * Gets the path to the directory containing the ODASA license file.
  */
 function getLicensePath(): string | undefined {
-  return workspace.getConfiguration('codeQL.tests').get<string>('odasaLicensePath');
+  return workspace.getConfiguration('codeQL.tests').get<string>('semmleCoreLicensePath');
 }
 
 /**
@@ -326,7 +325,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
 
     try {
       if (!await isOdasaAvailable(qlOptions)) {
-        const action = showAndLogErrorMessage("'codeQL.tests.odasaDistributionPath' does not " +
+        const action = showAndLogErrorMessage("'codeQL.tests.semmleCoreDistributionPath' does not " +
           "point to a distribution of Semmle Core. Semmle Core is required in order to run " +
           "CodeQL tests. This requirement will be removed as soon as the CodeQL CLI supports " +
           "running tests.",
