@@ -25,6 +25,7 @@
     "onLanguage:ql",
     "onView:codeQLDatabases",
     "onView:codeQLQueryHistory",
+    "onView:test-explorer",
     "onCommand:codeQL.checkForUpdatesToCLI",
     "onCommand:codeQL.chooseDatabase",
     "onCommand:codeQL.setCurrentDatabase",
