@@ -152,6 +152,7 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
     super();
 
     this.push(this.qlPackDiscovery.onDidChangeQLPacks(this.handleDidChangeQLPacks, this));
+    this.push(this.watcher.onDidChange(this.handleDidChange, this));
 
     this.refresh();
   }
@@ -167,6 +168,10 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
   public get testDirectories(): QLTestDirectory[] { return this._testDirectories; }
 
   private handleDidChangeQLPacks(): void {
+    this.refresh();
+  }
+
+  private handleDidChange(uri: Uri): void {
     this.refresh();
   }
 
