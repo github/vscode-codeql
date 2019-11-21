@@ -47,12 +47,29 @@ export class QueryHistoryItem {
     }
   }
 
-  toString(): string {
+  interpolate(template: string): string {
+    const { databaseName, queryName, time, statusString } = this;
+    const replacements: { [k: string]: string } = {
+      t: time,
+      q: queryName,
+      d: databaseName,
+      s: statusString,
+      '%': '%',
+    };
+    return template.replace(/%(.)/g, (match, key) => {
+      const replacement = replacements[key];
+      return replacement !== undefined ? replacement : match;
+    });
+  }
+
+  getLabel(): string {
     if (this.label !== undefined)
       return this.label;
+    return '[%t] %q on %d - %s';
+  }
 
-    const { databaseName, queryName, time } = this;
-    return `[${time}] ${queryName} on ${databaseName} - ${this.statusString}`;
+  toString(): string {
+    return this.interpolate(this.getLabel());
   }
 }
 
@@ -178,9 +195,9 @@ export class QueryHistoryManager {
 
   async handleSetLabel(queryHistoryItem: QueryHistoryItem) {
     const response = await vscode.window.showInputBox({
-      prompt: 'Label: ',
+      prompt: 'Label:',
       placeHolder: '(use default)',
-      value: queryHistoryItem.toString(),
+      value: queryHistoryItem.getLabel(),
     });
     // undefined response means the user cancelled the dialog; don't change anything
     if (response !== undefined) {
