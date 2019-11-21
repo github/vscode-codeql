@@ -178,6 +178,10 @@
       {
         "command": "codeQLQueryResults.previousPathStep",
         "title": "CodeQL: Show Previous Step on Path"
+      },
+      {
+        "command": "codeQLQueryHistory.setLabel",
+        "title": "Set Label"
       }
     ],
     "menus": {
@@ -211,6 +215,11 @@
         },
         {
           "command": "codeQLQueryHistory.removeHistoryItem",
+          "group": "9_qlCommands",
+          "when": "view == codeQLQueryHistory"
+        },
+        {
+          "command": "codeQLQueryHistory.setLabel",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory"
         }
@@ -258,6 +267,10 @@
         },
         {
           "command": "codeQLQueryHistory.itemClicked",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.setLabel",
           "when": "false"
         }
       ],
