@@ -133,67 +133,6 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return <span title={locationHint}>{msg}</span>;
     }
 
-    function parseSarifLocation(loc: Sarif.Location): ParsedSarifLocation {
-      const physicalLocation = loc.physicalLocation;
-      if (physicalLocation === undefined)
-        return { t: 'NoLocation', hint: 'no physical location' };
-      if (physicalLocation.artifactLocation === undefined)
-        return { t: 'NoLocation', hint: 'no artifact location' };
-      if (physicalLocation.artifactLocation.uri === undefined)
-        return { t: 'NoLocation', hint: 'artifact location has no uri' };
-
-      // This is not necessarily really an absolute uri; it could either be a
-      // file uri or a relative uri.
-      const uri = physicalLocation.artifactLocation.uri;
-
-      const fileUriRegex = /^file:/;
-      const effectiveLocation = uri.match(fileUriRegex) ?
-        decodeURIComponent(uri.replace(fileUriRegex, '')) :
-        getPathRelativeToSourceLocationPrefix(sourceLocationPrefix, uri);
-      const userVisibleFile = uri.match(fileUriRegex) ?
-        decodeURIComponent(uri.replace(fileUriRegex, '')) :
-        uri;
-
-      if (physicalLocation.region === undefined) {
-        // If the region property is absent, the physicalLocation object refers to the entire file.
-        // Source: https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Toc16012638.
-        // TODO: Do we get here if we provide a non-filesystem URL?
-        return {
-          t: LocationStyle.WholeFile,
-          file: effectiveLocation,
-          userVisibleFile,
-        };
-      } else {
-        const region = physicalLocation.region;
-        // We assume that the SARIF we're given always has startLine
-        // This is not mandated by the SARIF spec, but should be true of
-        // SARIF output by our own tools.
-        const lineStart = region.startLine!;
-
-        // These defaults are from SARIF 2.1.0 spec, section 3.30.2, "Text Regions"
-        // https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Ref493492556
-        const lineEnd = region.endLine === undefined ? lineStart : region.endLine;
-        const colStart = region.startColumn === undefined ? 1 : region.startColumn;
-
-        // We also assume that our tools will always supply `endColumn` field, which is
-        // fortunate, since the SARIF spec says that it defaults to the end of the line, whose
-        // length we don't know at this point in the code.
-        //
-        // It is off by one with respect to the way vscode counts columns in selections.
-        const colEnd = region.endColumn! - 1;
-
-        return {
-          t: LocationStyle.FivePart,
-          file: effectiveLocation,
-          userVisibleFile,
-          lineStart,
-          colStart,
-          lineEnd,
-          colEnd,
-        };
-      }
-    }
-
     const updateSelectionCallback = (pathNodeKey: Keys.PathNode | undefined) => {
       return () => {
         this.setState(previousState => ({
@@ -204,7 +143,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     };
 
     function renderSarifLocationWithText(text: string | undefined, loc: Sarif.Location, pathNodeKey: Keys.PathNode | undefined): JSX.Element | undefined {
-      const parsedLoc = parseSarifLocation(loc);
+      const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
       switch (parsedLoc.t) {
         case 'NoLocation':
           return renderNonLocation(text, parsedLoc.hint);
@@ -220,7 +159,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
      * human-readable form of the location itself.
      */
     function renderSarifLocation(loc: Sarif.Location, pathNodeKey: Keys.PathNode | undefined): JSX.Element | undefined {
-      const parsedLoc = parseSarifLocation(loc);
+      const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
       let shortLocation, longLocation: string;
       switch (parsedLoc.t) {
         case 'NoLocation':
@@ -350,5 +289,66 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     return <table className={className}>
       <tbody>{rows}</tbody>
     </table>;
+  }
+}
+
+function parseSarifLocation(loc: Sarif.Location, sourceLocationPrefix: string): ParsedSarifLocation {
+  const physicalLocation = loc.physicalLocation;
+  if (physicalLocation === undefined)
+    return { t: 'NoLocation', hint: 'no physical location' };
+  if (physicalLocation.artifactLocation === undefined)
+    return { t: 'NoLocation', hint: 'no artifact location' };
+  if (physicalLocation.artifactLocation.uri === undefined)
+    return { t: 'NoLocation', hint: 'artifact location has no uri' };
+
+  // This is not necessarily really an absolute uri; it could either be a
+  // file uri or a relative uri.
+  const uri = physicalLocation.artifactLocation.uri;
+
+  const fileUriRegex = /^file:/;
+  const effectiveLocation = uri.match(fileUriRegex) ?
+    decodeURIComponent(uri.replace(fileUriRegex, '')) :
+    getPathRelativeToSourceLocationPrefix(sourceLocationPrefix, uri);
+  const userVisibleFile = uri.match(fileUriRegex) ?
+    decodeURIComponent(uri.replace(fileUriRegex, '')) :
+    uri;
+
+  if (physicalLocation.region === undefined) {
+    // If the region property is absent, the physicalLocation object refers to the entire file.
+    // Source: https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Toc16012638.
+    // TODO: Do we get here if we provide a non-filesystem URL?
+    return {
+      t: LocationStyle.WholeFile,
+      file: effectiveLocation,
+      userVisibleFile,
+    };
+  } else {
+    const region = physicalLocation.region;
+    // We assume that the SARIF we're given always has startLine
+    // This is not mandated by the SARIF spec, but should be true of
+    // SARIF output by our own tools.
+    const lineStart = region.startLine!;
+
+    // These defaults are from SARIF 2.1.0 spec, section 3.30.2, "Text Regions"
+    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Ref493492556
+    const lineEnd = region.endLine === undefined ? lineStart : region.endLine;
+    const colStart = region.startColumn === undefined ? 1 : region.startColumn;
+
+    // We also assume that our tools will always supply `endColumn` field, which is
+    // fortunate, since the SARIF spec says that it defaults to the end of the line, whose
+    // length we don't know at this point in the code.
+    //
+    // It is off by one with respect to the way vscode counts columns in selections.
+    const colEnd = region.endColumn! - 1;
+
+    return {
+      t: LocationStyle.FivePart,
+      file: effectiveLocation,
+      userVisibleFile,
+      lineStart,
+      colStart,
+      lineEnd,
+      colEnd,
+    };
   }
 }
