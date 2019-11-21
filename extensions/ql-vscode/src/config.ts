@@ -37,6 +37,8 @@ const DISTRIBUTION_SETTING = new Setting('cli', ROOT_SETTING);
 const CUSTOM_CODEQL_PATH_SETTING = new Setting('executablePath', DISTRIBUTION_SETTING);
 const INCLUDE_PRERELEASE_SETTING = new Setting('includePrerelease', DISTRIBUTION_SETTING);
 const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIBUTION_SETTING);
+const QUERY_HISTORY_SETTING = new Setting('queryHistory', ROOT_SETTING);
+const QUERY_HISTORY_FORMAT_SETTING = new Setting('format', QUERY_HISTORY_SETTING);
 
 /** When these settings change, the distribution should be updated. */
 const DISTRIBUTION_CHANGE_SETTINGS = [CUSTOM_CODEQL_PATH_SETTING, INCLUDE_PRERELEASE_SETTING, PERSONAL_ACCESS_TOKEN_SETTING];
@@ -68,6 +70,14 @@ export interface QueryServerConfig {
   queryMemoryMb?: number,
   timeoutSecs: number,
   onDidChangeQueryServerConfiguration?: Event<void>;
+}
+
+/** When these settings change, the query history should be refreshed. */
+const QUERY_HISTORY_SETTINGS = [QUERY_HISTORY_FORMAT_SETTING];
+
+export interface QueryHistoryConfig {
+  format: string,
+  onDidChangeQueryHistoryConfiguration: Event<void>;
 }
 
 abstract class ConfigListener extends DisposableObject {
@@ -174,5 +184,19 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
 
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     this.handleDidChangeConfigurationForRelevantSettings(QUERY_SERVER_RESTARTING_SETTINGS, e);
+  }
+}
+
+export class QueryHistoryConfigListener extends ConfigListener implements QueryHistoryConfig {
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+    this.handleDidChangeConfigurationForRelevantSettings(QUERY_HISTORY_SETTINGS, e);
+  }
+
+  public get onDidChangeQueryHistoryConfiguration(): Event<void> {
+    return this._onDidChangeConfiguration.event;
+  }
+
+  public get format(): string {
+    return QUERY_HISTORY_FORMAT_SETTING.getValue<string>();
   }
 }

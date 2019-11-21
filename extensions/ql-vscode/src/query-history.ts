@@ -3,6 +3,7 @@ import { ExtensionContext, window as Window } from 'vscode';
 import { EvaluationInfo } from './queries';
 import * as helpers from './helpers';
 import * as messages from './messages';
+import { QueryHistoryConfig } from './config';
 /**
  * query-history.ts
  * ------------
@@ -23,6 +24,7 @@ export class QueryHistoryItem {
 
   constructor(
     info: EvaluationInfo,
+    public config: QueryHistoryConfig,
     public label?: string, // user-settable label
   ) {
     this.queryName = helpers.getQueryName(info);
@@ -65,7 +67,7 @@ export class QueryHistoryItem {
   getLabel(): string {
     if (this.label !== undefined)
       return this.label;
-    return '[%t] %q on %d - %s';
+    return this.config.format;
   }
 
   toString(): string {
@@ -229,7 +231,11 @@ export class QueryHistoryManager {
     }
   }
 
-  constructor(ctx: ExtensionContext, selectedCallback?: (item: QueryHistoryItem) => Promise<void>) {
+  constructor(
+    ctx: ExtensionContext,
+    private queryHistoryConfigListener: QueryHistoryConfig,
+    selectedCallback?: (item: QueryHistoryItem) => Promise<void>
+  ) {
     this.ctx = ctx;
     this.selectedCallback = selectedCallback;
     const treeDataProvider = this.treeDataProvider = new HistoryTreeDataProvider(ctx);
@@ -247,9 +253,13 @@ export class QueryHistoryManager {
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.itemClicked', async (item) => {
       return this.handleItemClicked(item);
     }));
+    queryHistoryConfigListener.onDidChangeQueryHistoryConfiguration(() => {
+      this.treeDataProvider.refresh();
+    });
   }
 
-  push(item: QueryHistoryItem) {
+  push(evaluationInfo: EvaluationInfo) {
+    const item = new QueryHistoryItem(evaluationInfo, this.queryHistoryConfigListener);
     this.treeDataProvider.push(item);
     this.treeView.reveal(item, { select: true });
   }
