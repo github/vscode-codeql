@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -86,7 +86,7 @@
       "title": "CodeQL",
       "properties": {
         "codeQL.cli.executablePath": {
-          "scope": "window",
+          "scope": "machine",
           "type": "string",
           "default": "",
           "description": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.cmd` on Windows. This overrides all other CodeQL CLI settings."

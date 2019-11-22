@@ -98,6 +98,7 @@ export class InterfaceManager extends DisposableObject {
 
     super();
     this.push(this._diagnosticCollection);
+    this.push(vscode.window.onDidChangeTextEditorSelection(this.handleSelectionChange.bind(this)));
   }
 
   // Returns the webview panel, creating it if it doesn't already
@@ -398,16 +399,54 @@ export class InterfaceManager extends DisposableObject {
       sortState: info.sortState
     };
   }
+
+  private handleSelectionChange(event: vscode.TextEditorSelectionChangeEvent) {
+    if (event.kind === vscode.TextEditorSelectionChangeKind.Command) {
+      return; // Ignore selection events we caused ourselves.
+    }
+    let editor = vscode.window.activeTextEditor;
+    if (editor !== undefined) {
+      editor.setDecorations(shownLocationDecoration, []);
+      editor.setDecorations(shownLocationLineDecoration, []);
+    }
+  }
 }
+
+const findMatchBackground = new vscode.ThemeColor('editor.findMatchBackground');
+const findRangeHighlightBackground = new vscode.ThemeColor('editor.findRangeHighlightBackground');
+
+const shownLocationDecoration = vscode.window.createTextEditorDecorationType({
+  backgroundColor: findMatchBackground,
+});
+
+const shownLocationLineDecoration = vscode.window.createTextEditorDecorationType({
+  backgroundColor: findRangeHighlightBackground,
+  isWholeLine: true
+});
 
 async function showLocation(loc: ResolvableLocationValue, databaseItem: DatabaseItem): Promise<void> {
   const resolvedLocation = tryResolveLocation(loc, databaseItem);
   if (resolvedLocation) {
     const doc = await workspace.openTextDocument(resolvedLocation.uri);
     const editor = await Window.showTextDocument(doc, vscode.ViewColumn.One);
-    const sel = new vscode.Selection(resolvedLocation.range.start, resolvedLocation.range.end);
-    editor.selection = sel;
-    editor.revealRange(sel, vscode.TextEditorRevealType.InCenter);
+    let range = resolvedLocation.range;
+    // When highlighting the range, vscode's occurrence-match and bracket-match highlighting will
+    // trigger based on where we place the cursor/selection, and will compete for the user's attention.
+    // For reference:
+    // - Occurences are highlighted when the cursor is next to or inside a word or a whole word is selected.
+    // - Brackets are highlighted when the cursor is next to a bracket and there is an empty selection.
+    // - Multi-line selections explicitly highlight line-break characters, but multi-line decorators do not.
+    //
+    // For single-line ranges, select the whole range, mainly to disable bracket highlighting.
+    // For multi-line ranges, place the cursor at the beginning to avoid visual artifacts from selected line-breaks.
+    // Multi-line ranges are usually large enough to overshadow the noise from bracket highlighting.
+    let selectionEnd = (range.start.line === range.end.line)
+        ? range.end
+        : range.start;
+    editor.selection = new vscode.Selection(range.start, selectionEnd);
+    editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+    editor.setDecorations(shownLocationDecoration, [range]);
+    editor.setDecorations(shownLocationLineDecoration, [range]);
   }
 }
 

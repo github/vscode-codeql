@@ -37,18 +37,16 @@ const DISTRIBUTION_SETTING = new Setting('cli', ROOT_SETTING);
 const CUSTOM_CODEQL_PATH_SETTING = new Setting('executablePath', DISTRIBUTION_SETTING);
 const INCLUDE_PRERELEASE_SETTING = new Setting('includePrerelease', DISTRIBUTION_SETTING);
 const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIBUTION_SETTING);
-const OWNER_NAME_SETTING = new Setting('owner', DISTRIBUTION_SETTING);
-const REPOSITORY_NAME_SETTING = new Setting('repository', DISTRIBUTION_SETTING);
 
 /** When these settings change, the distribution should be updated. */
-const DISTRIBUTION_CHANGE_SETTINGS = [CUSTOM_CODEQL_PATH_SETTING, INCLUDE_PRERELEASE_SETTING, PERSONAL_ACCESS_TOKEN_SETTING, OWNER_NAME_SETTING, REPOSITORY_NAME_SETTING];
+const DISTRIBUTION_CHANGE_SETTINGS = [CUSTOM_CODEQL_PATH_SETTING, INCLUDE_PRERELEASE_SETTING, PERSONAL_ACCESS_TOKEN_SETTING];
 
 export interface DistributionConfig {
   customCodeQlPath?: string;
   includePrerelease: boolean;
   personalAccessToken?: string;
-  ownerName: string;
-  repositoryName: string;
+  ownerName?: string;
+  repositoryName?: string;
   onDidChangeDistributionConfiguration?: Event<void>;
 }
 
@@ -112,14 +110,6 @@ export class DistributionConfigListener extends ConfigListener implements Distri
 
   public get personalAccessToken(): string | undefined {
     return PERSONAL_ACCESS_TOKEN_SETTING.getValue() ? PERSONAL_ACCESS_TOKEN_SETTING.getValue() : undefined;
-  }
-
-  public get ownerName(): string {
-    return OWNER_NAME_SETTING.getValue();
-  }
-
-  public get repositoryName(): string {
-    return REPOSITORY_NAME_SETTING.getValue();
   }
 
   public get onDidChangeDistributionConfiguration(): Event<void> {
