@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { CancellationToken, ProgressOptions, window as Window, workspace } from 'vscode';
 import { logger } from './logging';
-import { EvaluationInfo } from './queries';
+import { QueryInfo } from './run-queries';
 
 export interface ProgressUpdate {
   /**
@@ -121,16 +121,16 @@ export function getOnDiskWorkspaceFolders() {
  * Gets a human-readable name for an evaluated query.
  * Uses metadata if it exists, and defaults to the query file name.
  */
-export function getQueryName(info: EvaluationInfo) {
+export function getQueryName(query: QueryInfo) {
   // Queries run through quick evaluation are not usually the entire query file.
   // Label them differently and include the line numbers.
-  if (info.query.quickEvalPosition !== undefined) {
-    const { line, endLine, fileName } = info.query.quickEvalPosition;
+  if (query.quickEvalPosition !== undefined) {
+    const { line, endLine, fileName } = query.quickEvalPosition;
     const lineInfo = line === endLine ? `${line}` : `${line}-${endLine}`;
     return `Quick evaluation of ${path.basename(fileName)}:${lineInfo}`;
-  } else if (info.query.metadata && info.query.metadata.name) {
-    return info.query.metadata.name;
+  } else if (query.metadata && query.metadata.name) {
+    return query.metadata.name;
   } else {
-    return path.basename(info.query.program.queryPath);
+    return path.basename(query.program.queryPath);
   }
 }

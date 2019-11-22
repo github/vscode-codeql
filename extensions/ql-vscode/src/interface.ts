@@ -9,13 +9,13 @@ import * as vscode from 'vscode';
 import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Range, Uri, window as Window, workspace } from 'vscode';
 import { CodeQLCliServer } from './cli';
 import { DatabaseItem, DatabaseManager } from './databases';
-import * as helpers from './helpers';
 import { showAndLogErrorMessage } from './helpers';
 import { assertNever } from './helpers-pure';
-import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg, ResultsPaths, SortedResultSetInfo, SortedResultsMap, INTERPRETED_RESULTS_PER_RUN_LIMIT, QueryMetadata } from './interface-types';
+import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortedResultSetInfo, SortedResultsMap, INTERPRETED_RESULTS_PER_RUN_LIMIT, QueryMetadata, ResultsPaths } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
-import { EvaluationInfo, interpretResults, QueryInfo, tmpDir } from './queries';
+import { tmpDir, QueryInfo } from './run-queries';
+import { CompletedQuery, interpretResults } from './query-results';
 
 /**
  * interface.ts
@@ -87,7 +87,7 @@ export function webviewUriToFileUri(webviewUri: string): Uri {
 }
 
 export class InterfaceManager extends DisposableObject {
-  private _displayedEvaluationInfo?: EvaluationInfo;
+  private _displayedQuery?: CompletedQuery;
   private _panel: vscode.WebviewPanel | undefined;
   private _panelLoaded = false;
   private _panelLoadedCallBacks: (() => void)[] = [];
@@ -180,14 +180,14 @@ export class InterfaceManager extends DisposableObject {
         this._panelLoadedCallBacks = [];
         break;
       case 'changeSort': {
-        if (this._displayedEvaluationInfo === undefined) {
+        if (this._displayedQuery === undefined) {
           showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
           break;
         }
         // Notify the webview that it should expect new results.
         await this.postMessage({ t: 'resultsUpdating' });
-        await this._displayedEvaluationInfo.query.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
-        await this.showResults(this._displayedEvaluationInfo, WebviewReveal.NotForced, true);
+        await this._displayedQuery.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
+        await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
         break;
       }
       default:
@@ -218,18 +218,18 @@ export class InterfaceManager extends DisposableObject {
    * UI interaction requesting results, e.g. clicking on a query
    * history entry.
    */
-  public async showResults(info: EvaluationInfo, forceReveal: WebviewReveal, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
-    if (info.result.resultType !== messages.QueryResultType.SUCCESS) {
+  public async showResults(results: CompletedQuery, forceReveal: WebviewReveal, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
+    if (results.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }
 
-    const interpretation = await this.interpretResultsInfo(info.query, info.query.resultsPaths);
+    const interpretation = await this.interpretResultsInfo(results.query);
 
     const sortedResultsMap: SortedResultsMap = {};
-    info.query.sortedResultsInfo.forEach((v, k) =>
+    results.sortedResultsInfo.forEach((v, k) =>
       sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v));
 
-    this._displayedEvaluationInfo = info;
+    this._displayedQuery = results;
 
     const panel = this.getPanel();
     await this.waitForPanelLoaded();
@@ -242,7 +242,7 @@ export class InterfaceManager extends DisposableObject {
       // more asynchronous message to not so abruptly interrupt
       // user's workflow by immediately revealing the panel.
       const showButton = 'View Results';
-      const queryName = helpers.getQueryName(info);
+      const queryName = results.queryName;
       const resultPromise = vscode.window.showInformationMessage(
         `Finished running query ${(queryName.length > 0) ? ` “${queryName}”` : ''}.`,
         showButton
@@ -259,17 +259,17 @@ export class InterfaceManager extends DisposableObject {
     await this.postMessage({
       t: 'setState',
       interpretation,
-      origResultsPaths: info.query.resultsPaths,
-      resultsPath: this.convertPathToWebviewUri(info.query.resultsPaths.resultsPath),
+      origResultsPaths: results.query.resultsPaths,
+      resultsPath: this.convertPathToWebviewUri(results.query.resultsPaths.resultsPath),
       sortedResultsMap,
-      database: info.database,
+      database: results.database,
       shouldKeepOldResultsWhileRendering,
-      metadata: info.query.metadata
+      metadata: results.query.metadata
     });
   }
 
-private async getTruncatedResults(metadata : QueryMetadata | undefined ,resultsInfo: ResultsPaths, sourceInfo : cli.SourceInfo  | undefined, sourceLocationPrefix : string ) : Promise<Interpretation> {
-  const sarif = await interpretResults(this.cliServer, metadata, resultsInfo, sourceInfo);
+private async getTruncatedResults(metadata : QueryMetadata | undefined ,resultsPaths: ResultsPaths, sourceInfo : cli.SourceInfo  | undefined, sourceLocationPrefix : string ) : Promise<Interpretation> {
+  const sarif = await interpretResults(this.cliServer, metadata, resultsPaths.interpretedResultsPath, sourceInfo);
   // For performance reasons, limit the number of results we try
   // to serialize and send to the webview. TODO: possibly also
   // limit number of paths per result, number of steps per path,
@@ -289,7 +289,7 @@ private async getTruncatedResults(metadata : QueryMetadata | undefined ,resultsI
   ;
 }
 
-  private async interpretResultsInfo(query: QueryInfo, resultsInfo: ResultsPaths): Promise<Interpretation | undefined> {
+  private async interpretResultsInfo(query: QueryInfo): Promise<Interpretation | undefined> {
     let interpretation: Interpretation | undefined = undefined;
     if (query.hasInterpretedResults()
       && query.quickEvalPosition === undefined // never do results interpretation if quickEval
@@ -300,7 +300,7 @@ private async getTruncatedResults(metadata : QueryMetadata | undefined ,resultsI
         const sourceInfo = sourceArchiveUri === undefined ?
           undefined :
           { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
-        interpretation = await this.getTruncatedResults(query.metadata, resultsInfo, sourceInfo, sourceLocationPrefix);
+        interpretation = await this.getTruncatedResults(query.metadata, query.resultsPaths, sourceInfo, sourceLocationPrefix);
       }
       catch (e) {
         // If interpretation fails, accept the error and continue

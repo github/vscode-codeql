@@ -4,9 +4,10 @@ import { commands, Event, EventEmitter, ExtensionContext, ProviderResult, TreeDa
 import * as cli from './cli';
 import { DatabaseItem, DatabaseManager, getUpgradesDirectories } from "./databases";
 import { logger } from "./logging";
-import { clearCacheInDatabase, upgradeDatabase, UserCancellationException } from "./queries";
+import { clearCacheInDatabase, UserCancellationException } from "./run-queries";
 import * as qsClient from './queryserver-client';
 import { getOnDiskWorkspaceFolders } from "./helpers";
+import { upgradeDatabase } from './upgrades';
 
 type ThemableIconPath = { light: string, dark: string } | string;
 

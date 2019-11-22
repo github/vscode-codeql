@@ -1,17 +1,17 @@
 import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as sarif from 'sarif';
 import * as tmp from 'tmp';
 import * as vscode from 'vscode';
 import * as cli from './cli';
 import { DatabaseItem, getUpgradesDirectories } from './databases';
 import * as helpers from './helpers';
-import { DatabaseInfo, SortState, ResultsPaths, SortedResultSetInfo, QueryMetadata } from './interface-types';
+import { DatabaseInfo, QueryMetadata, ResultsPaths } from './interface-types';
 import { logger } from './logging';
 import * as messages from './messages';
 import * as qsClient from './queryserver-client';
 import { promisify } from 'util';
+import { upgradeDatabase } from './upgrades';
 
 /**
  * queries.ts
@@ -22,7 +22,7 @@ import { promisify } from 'util';
 
 // XXX: Tmp directory should be configuarble.
 export const tmpDir = tmp.dirSync({ prefix: 'queries_', keep: false, unsafeCleanup: true });
-const upgradesTmpDir = tmp.dirSync({ dir: tmpDir.name, prefix: 'upgrades_', keep: false, unsafeCleanup: true });
+export const upgradesTmpDir = tmp.dirSync({ dir: tmpDir.name, prefix: 'upgrades_', keep: false, unsafeCleanup: true });
 export const tmpDirDisposal = {
   dispose: () => {
     upgradesTmpDir.removeCallback();
@@ -40,30 +40,26 @@ export class UserCancellationException extends Error { }
  * output and results.
  */
 export class QueryInfo {
-  compiledQueryPath: string;
-  resultsPaths: ResultsPaths;
+
+  readonly compiledQueryPath: string;
+  readonly resultsPaths: ResultsPaths;
+  readonly dataset: vscode.Uri; // guarantee the existence of a well-defined dataset dir at this point
+  readonly queryID: number;
   private static nextQueryId = 0;
 
-  /**
-   * Map from result set name to SortedResultSetInfo.
-   */
-  sortedResultsInfo: Map<string, SortedResultSetInfo>;
-  dataset: vscode.Uri; // guarantee the existence of a well-defined dataset dir at this point
-  queryId: number;
   constructor(
-    public program: messages.QlProgram,
-    public dbItem: DatabaseItem,
-    public queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
-    public quickEvalPosition?: messages.Position,
-    public metadata?: QueryMetadata,
+    public readonly program: messages.QlProgram,
+    public readonly dbItem: DatabaseItem,
+    public readonly queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
+    public readonly quickEvalPosition?: messages.Position,
+    public readonly metadata?: QueryMetadata,
   ) {
-    this.queryId = QueryInfo.nextQueryId++;
-    this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${this.queryId}.qlo`);
+    this.queryID = QueryInfo.nextQueryId++;
+    this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${this.queryID}.qlo`);
     this.resultsPaths = {
-      interpretedResultsPath: path.join(tmpDir.name, `interpretedResults${this.queryId}.sarif`),
-      resultsPath: path.join(tmpDir.name, `results${this.queryId}.bqrs`),
+      resultsPath: path.join(tmpDir.name, `results${this.queryID}.bqrs`),
+      interpretedResultsPath: path.join(tmpDir.name, `interpretedResults${this.queryID}.sarif`)
     };
-    this.sortedResultsInfo = new Map();
     if (dbItem.contents === undefined) {
       throw new Error('Can\'t run query on invalid database.');
     }
@@ -157,215 +153,12 @@ export class QueryInfo {
     }
     return hasMetadataFile;
   }
-
-  async updateSortState(server: cli.CodeQLCliServer, resultSetName: string, sortState: SortState | undefined): Promise<void> {
-    if (sortState === undefined) {
-      this.sortedResultsInfo.delete(resultSetName);
-      return;
-    }
-
-    const sortedResultSetInfo: SortedResultSetInfo = {
-      resultsPath: path.join(tmpDir.name, `sortedResults${this.queryId}-${resultSetName}.bqrs`),
-      sortState
-    };
-
-    await server.sortBqrs(this.resultsPaths.resultsPath, sortedResultSetInfo.resultsPath, resultSetName, [sortState.columnIndex], [sortState.direction]);
-    this.sortedResultsInfo.set(resultSetName, sortedResultSetInfo);
-  }
 }
 
-/**
- * Call cli command to interpret results.
- */
-export async function interpretResults(server: cli.CodeQLCliServer, metadata: QueryMetadata | undefined, resultsInfo: ResultsPaths, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
-
-  if (await fs.pathExists(resultsInfo.interpretedResultsPath)) {
-    return JSON.parse(await fs.readFile(resultsInfo.interpretedResultsPath, 'utf8'));
-  }
-  if (metadata == undefined) {
-    throw new Error('Can\'t interpret results without query metadata');
-  }
-  let { kind, id } = metadata;
-  if (kind == undefined) {
-    throw new Error('Can\'t interpret results without query metadata including kind');
-  }
-  if (id == undefined) {
-    // Interpretation per se doesn't really require an id, but the
-    // SARIF format does, so in the absence of one, we use a dummy id.
-    id = "dummy-id";
-  }
-  return await server.interpretBqrs( { kind, id }, resultsInfo.resultsPath, resultsInfo.interpretedResultsPath,  sourceInfo);
-}
-
-export interface EvaluationInfo {
-  query: QueryInfo;
-  result: messages.EvaluationResult;
-  database: DatabaseInfo;
-}
-
-/**
- * Checks whether the given database can be upgraded to the given target DB scheme,
- * and whether the user wants to proceed with the upgrade.
- * Reports errors to both the user and the console.
- * @returns the `UpgradeParams` needed to start the upgrade, if the upgrade is possible and was confirmed by the user, or `undefined` otherwise.
- */
-async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectories: vscode.Uri[]):
-  Promise<messages.UpgradeParams | undefined> {
-  if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
-    helpers.showAndLogErrorMessage("Database is invalid, and cannot be upgraded.");
-    return;
-  }
-  const params: messages.UpgradeParams = {
-    fromDbscheme: db.contents.dbSchemeUri.fsPath,
-    toDbscheme: targetDbScheme.fsPath,
-    additionalUpgrades: upgradesDirectories.map(uri => uri.fsPath)
-  };
-
-  let checkUpgradeResult: messages.CheckUpgradeResult;
-  try {
-    qs.logger.log('Checking database upgrade...');
-    checkUpgradeResult = await checkDatabaseUpgrade(qs, params);
-  }
-  catch (e) {
-    helpers.showAndLogErrorMessage(`Database cannot be upgraded: ${e}`);
-    return;
-  }
-  finally {
-    qs.logger.log('Done checking database upgrade.');
-  }
-
-  const checkedUpgrades = checkUpgradeResult.checkedUpgrades;
-  if (checkedUpgrades === undefined) {
-    const error = checkUpgradeResult.upgradeError || '[no error message available]';
-    await helpers.showAndLogErrorMessage(`Database cannot be upgraded: ${error}`);
-    return;
-  }
-
-  if (checkedUpgrades.scripts.length === 0) {
-    await helpers.showAndLogInformationMessage('Database is already up to date; nothing to do.');
-    return;
-  }
-
-  let curSha = checkedUpgrades.initialSha;
-  let descriptionMessage = '';
-  for (const script of checkedUpgrades.scripts) {
-    descriptionMessage += `Would perform upgrade: ${script.description}\n`;
-    descriptionMessage += `\t-> Compatibility: ${script.compatibility}\n`;
-    curSha = script.newSha;
-  }
-
-  const targetSha = checkedUpgrades.targetSha;
-  if (curSha != targetSha) {
-    // Newlines aren't rendered in notifications: https://github.com/microsoft/vscode/issues/48900
-    // A modal dialog would be rendered better, but is more intrusive.
-    await helpers.showAndLogErrorMessage(`Database cannot be upgraded to the target database scheme.
-    Can upgrade from ${checkedUpgrades.initialSha} (current) to ${curSha}, but cannot reach ${targetSha} (target).`);
-    // TODO: give a more informative message if we think the DB is ahead of the target DB scheme
-    return;
-  }
-
-  logger.log(descriptionMessage);
-  // Ask the user to confirm the upgrade.
-  const shouldUpgrade = await helpers.showBinaryChoiceDialog(`Should the database ${db.databaseUri.fsPath} be upgraded?\n\n${descriptionMessage}`);
-  if (shouldUpgrade) {
-    return params;
-  }
-  else {
-    throw new UserCancellationException('User cancelled the database upgrade.');
-  }
-}
-
-/**
- * Command handler for 'Upgrade Database'.
- * Attempts to upgrade the given database to the given target DB scheme, using the given directory of upgrades.
- * First performs a dry-run and prompts the user to confirm the upgrade.
- * Reports errors during compilation and evaluation of upgrades to the user.
- */
-export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectories: vscode.Uri[]):
-  Promise<messages.RunUpgradeResult | undefined> {
-  const upgradeParams = await checkAndConfirmDatabaseUpgrade(qs, db, targetDbScheme, upgradesDirectories);
-
-  if (upgradeParams === undefined) {
-    return;
-  }
-
-  let compileUpgradeResult: messages.CompileUpgradeResult;
-  try {
-    compileUpgradeResult = await compileDatabaseUpgrade(qs, upgradeParams);
-  }
-  catch (e) {
-    helpers.showAndLogErrorMessage(`Compilation of database upgrades failed: ${e}`);
-    return;
-  }
-  finally {
-    qs.logger.log('Done compiling database upgrade.')
-  }
-
-  if (compileUpgradeResult.compiledUpgrades === undefined) {
-    const error = compileUpgradeResult.error || '[no error message available]';
-    helpers.showAndLogErrorMessage(`Compilation of database upgrades failed: ${error}`);
-    return;
-  }
-
-  try {
-    qs.logger.log('Running the following database upgrade:');
-    qs.logger.log(compileUpgradeResult.compiledUpgrades.scripts.map(s => s.description.description).join('\n'));
-    return await runDatabaseUpgrade(qs, db, compileUpgradeResult.compiledUpgrades);
-  }
-  catch (e) {
-    helpers.showAndLogErrorMessage(`Database upgrade failed: ${e}`);
-    return;
-  }
-  finally {
-    qs.logger.log('Done running database upgrade.')
-  }
-}
-
-async function checkDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams):
-  Promise<messages.CheckUpgradeResult> {
-  return helpers.withProgress({
-    location: vscode.ProgressLocation.Notification,
-    title: "Checking for database upgrades",
-    cancellable: true,
-  }, (progress, token) => qs.sendRequest(messages.checkUpgrade, upgradeParams, token, progress));
-}
-
-async function compileDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams):
-  Promise<messages.CompileUpgradeResult> {
-  const params: messages.CompileUpgradeParams = {
-    upgrade: upgradeParams,
-    upgradeTempDir: upgradesTmpDir.name
-  }
-
-  return helpers.withProgress({
-    location: vscode.ProgressLocation.Notification,
-    title: "Compiling database upgrades",
-    cancellable: true,
-  }, (progress, token) => qs.sendRequest(messages.compileUpgrade, params, token, progress));
-}
-
-async function runDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseItem, upgrades: messages.CompiledUpgrades):
-  Promise<messages.RunUpgradeResult> {
-
-  if (db.contents === undefined || db.contents.datasetUri === undefined) {
-    throw new Error('Can\'t upgrade an invalid database.');
-  }
-  const database: messages.Dataset = {
-    dbDir: db.contents.datasetUri.fsPath,
-    workingSet: 'default'
-  };
-
-  const params: messages.RunUpgradeParams = {
-    db: database,
-    timeoutSecs: qs.config.timeoutSecs,
-    toRun: upgrades
-  };
-
-  return helpers.withProgress({
-    location: vscode.ProgressLocation.Notification,
-    title: "Running database upgrades",
-    cancellable: true,
-  }, (progress, token) => qs.sendRequest(messages.runUpgrade, params, token, progress));
+export interface QueryWithResults {
+  readonly query: QueryInfo;
+  readonly result: messages.EvaluationResult;
+  readonly database: DatabaseInfo;
 }
 
 export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbItem: DatabaseItem):
@@ -561,7 +354,7 @@ export async function compileAndRunQueryAgainstDatabase(
   db: DatabaseItem,
   quickEval: boolean,
   selectedQueryUri: vscode.Uri | undefined
-): Promise<EvaluationInfo> {
+): Promise<QueryWithResults> {
 
   if (!db.contents || !db.contents.dbSchemeUri) {
     throw new Error(`Database ${db.databaseUri} does not have a CodeQL database scheme.`);

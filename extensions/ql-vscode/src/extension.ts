@@ -10,11 +10,12 @@ import * as helpers from './helpers';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager, WebviewReveal } from './interface';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
-import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal, UserCancellationException } from './queries';
+import { compileAndRunQueryAgainstDatabase, tmpDirDisposal, UserCancellationException } from './run-queries';
 import { QueryHistoryManager } from './query-history';
-import * as qsClient from './queryserver-client';
 import { CodeQLCliServer } from './cli';
 import { assertNever } from './helpers-pure';
+import * as qsClient from './queryserver-client';
+import { CompletedQuery } from './query-results';
 
 /**
  * extension.ts
@@ -248,14 +249,14 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   const qhm = new QueryHistoryManager(
     ctx,
     queryHistoryConfigurationListener,
-    async item => showResultsForInfo(item.info, WebviewReveal.Forced)
+    async item => showResultsForCompletedQuery(item, WebviewReveal.Forced)
   );
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
   ctx.subscriptions.push(intm);
   archiveFilesystemProvider.activate(ctx);
 
-  async function showResultsForInfo(info: EvaluationInfo, forceReveal: WebviewReveal): Promise<void> {
-    await intm.showResults(info, forceReveal, false);
+  async function showResultsForCompletedQuery(query: CompletedQuery, forceReveal: WebviewReveal): Promise<void> {
+    await intm.showResults(query, forceReveal, false);
   }
 
   async function compileAndRunQuery(quickEval: boolean, selectedQuery: Uri | undefined) {
@@ -266,8 +267,8 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
           throw new Error('Can\'t run query without a selected database');
         }
         const info = await compileAndRunQueryAgainstDatabase(cliServer, qs, dbItem, quickEval, selectedQuery);
-        await showResultsForInfo(info, WebviewReveal.NotForced);
-        qhm.push(info);
+        const item = qhm.addQuery(info);
+        await showResultsForCompletedQuery(item, WebviewReveal.NotForced);
       }
       catch (e) {
         if (e instanceof UserCancellationException) {
