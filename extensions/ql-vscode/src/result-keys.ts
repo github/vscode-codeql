@@ -30,7 +30,7 @@ export const none: PathNode | undefined = undefined;
 export function getResult(sarif: sarif.Log, key: Result): sarif.Result | undefined {
   if (sarif.runs.length === 0) return undefined;
   if (sarif.runs[0].results === undefined) return undefined;
-  let results = sarif.runs[0].results;
+  const results = sarif.runs[0].results;
   return results[key.resultIndex];
 }
 
