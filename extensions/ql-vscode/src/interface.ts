@@ -236,15 +236,8 @@ export class InterfaceManager extends DisposableObject {
       // user's workflow by immediately revealing the panel.
       const showButton = 'View Results';
       const queryName = helpers.getQueryName(info);
-      let queryNameForMessage: string;
-      if (queryName.length > 0) {
-        // lower case the first character
-        queryNameForMessage = queryName.charAt(0).toLowerCase() + queryName.substring(1);
-      } else {
-        queryNameForMessage = 'query';
-      }
       const resultPromise = vscode.window.showInformationMessage(
-        `Finished running ${queryNameForMessage}.`,
+        `Finished running query ${(queryName.length > 0) ? ` “${queryName}”` : ''}.`,
         showButton
       );
       // Address this click asynchronously so we still update the
