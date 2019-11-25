@@ -30,7 +30,6 @@ export const tmpDirDisposal = {
   }
 };
 
-let queryCounter = 0;
 
 export class UserCancellationException extends Error { }
 
@@ -43,6 +42,8 @@ export class UserCancellationException extends Error { }
 export class QueryInfo {
   compiledQueryPath: string;
   resultsInfo: ResultsInfo;
+  private static nextQueryId = 0;
+
   /**
    * Map from result set name to SortedResultSetInfo.
    */
@@ -56,7 +57,7 @@ export class QueryInfo {
     public quickEvalPosition?: messages.Position,
     public metadata?: cli.QueryMetadata,
   ) {
-    this.queryId = queryCounter++;
+    this.queryId = QueryInfo.nextQueryId++;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${this.queryId}.qlo`);
     this.resultsInfo = {
       resultsPath: path.join(tmpDir.name, `results${this.queryId}.bqrs`),
