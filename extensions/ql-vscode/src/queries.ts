@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import * as cli from './cli';
 import { DatabaseItem, getUpgradesDirectories } from './databases';
 import * as helpers from './helpers';
-import { DatabaseInfo, SortState, ResultsInfo, SortedResultSetInfo } from './interface-types';
+import { DatabaseInfo, SortState, ResultsInfo, SortedResultSetInfo, QueryMetadata } from './interface-types';
 import { logger } from './logging';
 import * as messages from './messages';
 import * as qsClient from './queryserver-client';
@@ -55,13 +55,12 @@ export class QueryInfo {
     public dbItem: DatabaseItem,
     public queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
     public quickEvalPosition?: messages.Position,
-    public metadata?: cli.QueryMetadata,
+    public metadata?: QueryMetadata,
   ) {
     this.queryId = QueryInfo.nextQueryId++;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${this.queryId}.qlo`);
     this.resultsInfo = {
       resultsPath: path.join(tmpDir.name, `results${this.queryId}.bqrs`),
-      interpretedResultsPath: path.join(tmpDir.name, `interpretedResults${this.queryId}.sarif`)
     };
     this.sortedResultsInfo = new Map();
     if (dbItem.contents === undefined) {
@@ -177,11 +176,12 @@ export class QueryInfo {
 /**
  * Call cli command to interpret results.
  */
-export async function interpretResults(server: cli.CodeQLCliServer, queryInfo: QueryInfo, resultsInfo: ResultsInfo, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
-  if (await fs.pathExists(resultsInfo.interpretedResultsPath)) {
-    return JSON.parse(await fs.readFile(resultsInfo.interpretedResultsPath, 'utf8'));
+export async function interpretResults(server: cli.CodeQLCliServer, metadata: QueryMetadata | undefined, resultsPath: string, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
+  const interpretedResultsPath = resultsPath + ".interpreted.sarif"
+
+  if (await fs.pathExists(interpretedResultsPath)) {
+    return JSON.parse(await fs.readFile(interpretedResultsPath, 'utf8'));
   }
-  const { metadata } = queryInfo;
   if (metadata == undefined) {
     throw new Error('Can\'t interpret results without query metadata');
   }
@@ -191,14 +191,10 @@ export async function interpretResults(server: cli.CodeQLCliServer, queryInfo: Q
   }
   if (id == undefined) {
     // Interpretation per se doesn't really require an id, but the
-    // SARIF format does, so in the absence of one, we invent one
-    // based on the query path.
-    //
-    // Just to be careful, sanitize to remove '/' since SARIF (section
-    // 3.27.5 "ruleId property") says that it has special meaning.
-    id = queryInfo.program.queryPath.replace(/\//g, '-');
+    // SARIF format does, so in the absence of one, we use a dummy id.
+    id = "dummy-id";
   }
-  return await server.interpretBqrs({ kind, id }, resultsInfo.resultsPath, resultsInfo.interpretedResultsPath, sourceInfo);
+  return await server.interpretBqrs( { kind, id }, resultsPath, interpretedResultsPath,  sourceInfo);
 }
 
 export interface EvaluationInfo {
@@ -603,7 +599,7 @@ export async function compileAndRunQueryAgainstDatabase(
   };
 
   // Read the query metadata if possible, to use in the UI.
-  let metadata: cli.QueryMetadata | undefined;
+  let metadata: QueryMetadata | undefined;
   try {
     metadata = await cliServer.resolveMetadata(qlProgram.queryPath);
   } catch (e) {

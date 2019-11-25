@@ -6,7 +6,7 @@ import * as util from 'util';
 import { Logger, ProgressReporter } from "./logging";
 import { Disposable } from "vscode";
 import { DistributionProvider } from "./distribution";
-import { SortDirection } from "./interface-types";
+import { SortDirection, QueryMetadata } from "./interface-types";
 import { assertNever } from "./helpers-pure";
 
 /**
@@ -48,16 +48,6 @@ export interface DbInfo {
 export interface UpgradesInfo {
   scripts: string[];
   finalDbscheme: string;
-}
-
-/**
- * The expected output of `codeql resolve metadata`.
- */
-export interface QueryMetadata {
-  name?: string,
-  description?: string,
-  id?: string,
-  kind?: string
 }
 
 // `codeql bqrs interpret` requires both of these to be present or

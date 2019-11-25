@@ -3,7 +3,7 @@ import * as Rdom from 'react-dom';
 import * as bqrs from 'semmle-bqrs';
 import { ElementBase, LocationValue, PrimitiveColumnValue, PrimitiveTypeKind, ResultSetSchema, tryGetResolvableLocation } from 'semmle-bqrs';
 import { assertNever } from '../helpers-pure';
-import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortedResultSetInfo, SortState, NavigatePathMsg } from '../interface-types';
+import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortedResultSetInfo, SortState, NavigatePathMsg, QueryMetadata } from '../interface-types';
 import { ResultTables } from './result-tables';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 
@@ -127,7 +127,6 @@ async function parseResultSets(response: Response): Promise<readonly ResultSet[]
 
 interface ResultsInfo {
   resultsPath: string;
-  kind: string | undefined;
   database: DatabaseInfo;
   interpretation: Interpretation | undefined;
   sortedResultsMap: Map<string, SortedResultSetInfo>;
@@ -135,6 +134,7 @@ interface ResultsInfo {
    * See {@link SetStateMsg.shouldKeepOldResultsWhileRendering}.
    */
   shouldKeepOldResultsWhileRendering: boolean;
+  metadata?: QueryMetadata
 }
 
 interface Results {
@@ -186,11 +186,11 @@ class App extends React.Component<{}, ResultsViewState> {
       case 'setState':
         this.updateStateWithNewResultsInfo({
           resultsPath: msg.resultsPath,
-          kind: msg.kind,
           sortedResultsMap: new Map(Object.entries(msg.sortedResultsMap)),
           database: msg.database,
           interpretation: msg.interpretation,
-          shouldKeepOldResultsWhileRendering: msg.shouldKeepOldResultsWhileRendering
+          shouldKeepOldResultsWhileRendering: msg.shouldKeepOldResultsWhileRendering,
+          metadata: msg.metadata
         });
 
         this.loadResults();
@@ -309,7 +309,7 @@ class App extends React.Component<{}, ResultsViewState> {
         interpretation={displayedResults.resultsInfo ? displayedResults.resultsInfo.interpretation : undefined}
         database={displayedResults.results.database}
         resultsPath={displayedResults.resultsInfo ? displayedResults.resultsInfo.resultsPath : undefined}
-        kind={displayedResults.resultsInfo ? displayedResults.resultsInfo.kind : undefined}
+        metadata={displayedResults.resultsInfo ? displayedResults.resultsInfo.metadata : undefined}
         sortStates={displayedResults.results.sortStates}
         isLoadingNewResults={this.state.isExpectingResultsUpdate || this.state.nextResultsInfo !== null} />;
     }
