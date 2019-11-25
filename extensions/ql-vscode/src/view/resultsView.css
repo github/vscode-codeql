@@ -87,6 +87,10 @@ select {
   background-color: var(--vscode-textBlockQuote-background);
 }
 
+.vscode-codeql__result-table-row--selected {
+  background-color: var(--vscode-editor-findMatchBackground);
+}
+
 td.vscode-codeql__icon-cell {
   text-align: center;
   position: relative;

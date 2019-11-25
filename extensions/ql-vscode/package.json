@@ -170,6 +170,14 @@
       {
         "command": "codeQLQueryHistory.itemClicked",
         "title": "Query History Item"
+      },
+      {
+        "command": "codeQLQueryResults.nextPathStep",
+        "title": "CodeQL: Show Next Step on Path"
+      },
+      {
+        "command": "codeQLQueryResults.previousPathStep",
+        "title": "CodeQL: Show Previous Step on Path"
       }
     ],
     "menus": {
