@@ -30,7 +30,6 @@ export const tmpDirDisposal = {
   }
 };
 
-let queryCounter = 0;
 
 export class UserCancellationException extends Error { }
 
@@ -43,12 +42,14 @@ export class UserCancellationException extends Error { }
 export class QueryInfo {
   compiledQueryPath: string;
   resultsInfo: ResultsInfo;
+  private static nextQueryId = 0;
+
   /**
    * Map from result set name to SortedResultSetInfo.
    */
   sortedResultsInfo: Map<string, SortedResultSetInfo>;
   dataset: vscode.Uri; // guarantee the existence of a well-defined dataset dir at this point
-
+  queryId: number;
   constructor(
     public program: messages.QlProgram,
     public dbItem: DatabaseItem,
@@ -56,17 +57,17 @@ export class QueryInfo {
     public quickEvalPosition?: messages.Position,
     public metadata?: cli.QueryMetadata,
   ) {
-    this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${queryCounter}.qlo`);
+    this.queryId = QueryInfo.nextQueryId++;
+    this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${this.queryId}.qlo`);
     this.resultsInfo = {
-      resultsPath: path.join(tmpDir.name, `results${queryCounter}.bqrs`),
-      interpretedResultsPath: path.join(tmpDir.name, `interpretedResults${queryCounter}.sarif`)
+      resultsPath: path.join(tmpDir.name, `results${this.queryId}.bqrs`),
+      interpretedResultsPath: path.join(tmpDir.name, `interpretedResults${this.queryId}.sarif`)
     };
     this.sortedResultsInfo = new Map();
     if (dbItem.contents === undefined) {
       throw new Error('Can\'t run query on invalid database.');
     }
     this.dataset = dbItem.contents.datasetUri;
-    queryCounter++;
   }
 
   async run(
@@ -160,7 +161,7 @@ export class QueryInfo {
     }
 
     const sortedResultSetInfo: SortedResultSetInfo = {
-      resultsPath: path.join(tmpDir.name, `sortedResults${queryCounter}-${resultSetName}.bqrs`),
+      resultsPath: path.join(tmpDir.name, `sortedResults${this.queryId}-${resultSetName}.bqrs`),
       sortState
     };
 
