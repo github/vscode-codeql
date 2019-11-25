@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { LocationValue, ResolvableLocationValue, tryGetResolvableLocation } from 'semmle-bqrs';
-import { SortState } from '../interface-types';
+import { SortState, QueryMetadata } from '../interface-types';
 import { ResultSet, vscode } from './results';
 
 export interface ResultTableProps {
   resultSet: ResultSet;
   databaseUri: string;
+  metadata?: QueryMetadata
   resultsPath: string | undefined;
   sortState?: SortState;
 }
