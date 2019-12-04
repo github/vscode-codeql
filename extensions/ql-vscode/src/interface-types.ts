@@ -65,7 +65,15 @@ export interface SetStateMsg {
   shouldKeepOldResultsWhileRendering: boolean;
 };
 
-export type IntoResultsViewMsg = ResultsUpdatingMsg | SetStateMsg;
+/** Advance to the next or previous path no in the path viewer */
+export interface NavigatePathMsg {
+  t: 'navigatePath',
+
+  /** 1 for next, -1 for previous */
+  direction: number;
+}
+
+export type IntoResultsViewMsg = ResultsUpdatingMsg | SetStateMsg | NavigatePathMsg;
 
 export type FromResultsViewMsg = ViewSourceFileMsg | ToggleDiagnostics | ChangeSortMsg | ResultViewLoaded;
 

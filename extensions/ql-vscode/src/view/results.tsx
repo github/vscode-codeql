@@ -3,8 +3,9 @@ import * as Rdom from 'react-dom';
 import * as bqrs from 'semmle-bqrs';
 import { ElementBase, LocationValue, PrimitiveColumnValue, PrimitiveTypeKind, ResultSetSchema, tryGetResolvableLocation } from 'semmle-bqrs';
 import { assertNever } from '../helpers-pure';
-import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortedResultSetInfo, SortState } from '../interface-types';
+import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortedResultSetInfo, SortState, NavigatePathMsg } from '../interface-types';
 import { ResultTables } from './result-tables';
+import { EventHandlers as EventHandlerList } from './event-handler-list';
 
 /**
  * results.tsx
@@ -156,6 +157,13 @@ interface ResultsViewState {
   isExpectingResultsUpdate: boolean;
 }
 
+export type NavigationEvent = NavigatePathMsg;
+
+/**
+ * Event handlers to be notified of navigation events coming from outside the webview.
+ */
+export const onNavigation = new EventHandlerList<NavigationEvent>();
+
 /**
  * A minimal state container for displaying results.
  */
@@ -191,6 +199,9 @@ class App extends React.Component<{}, ResultsViewState> {
         this.setState({
           isExpectingResultsUpdate: true
         });
+        break;
+      case 'navigatePath':
+        onNavigation.fire(msg);
         break;
       default:
         assertNever(msg);

@@ -99,6 +99,12 @@ export class InterfaceManager extends DisposableObject {
     super();
     this.push(this._diagnosticCollection);
     this.push(vscode.window.onDidChangeTextEditorSelection(this.handleSelectionChange.bind(this)));
+    this.push(vscode.commands.registerCommand('codeQLQueryResults.nextPathStep', this.navigatePathStep.bind(this, 1)));
+    this.push(vscode.commands.registerCommand('codeQLQueryResults.previousPathStep', this.navigatePathStep.bind(this, -1)));
+  }
+
+  navigatePathStep(direction: number) {
+    this.postMessage({ t: "navigatePath", direction });
   }
 
   // Returns the webview panel, creating it if it doesn't already
@@ -236,15 +242,8 @@ export class InterfaceManager extends DisposableObject {
       // user's workflow by immediately revealing the panel.
       const showButton = 'View Results';
       const queryName = helpers.getQueryName(info);
-      let queryNameForMessage: string;
-      if (queryName.length > 0) {
-        // lower case the first character
-        queryNameForMessage = queryName.charAt(0).toLowerCase() + queryName.substring(1);
-      } else {
-        queryNameForMessage = 'query';
-      }
       const resultPromise = vscode.window.showInformationMessage(
-        `Finished running ${queryNameForMessage}.`,
+        `Finished running query ${(queryName.length > 0) ? ` “${queryName}”` : ''}.`,
         showButton
       );
       // Address this click asynchronously so we still update the

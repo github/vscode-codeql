@@ -1,14 +1,16 @@
 import * as path from 'path';
 import * as React from 'react';
 import * as Sarif from 'sarif';
+import * as Keys from '../result-keys';
 import { LocationStyle, ResolvableLocationValue } from 'semmle-bqrs';
 import * as octicons from './octicons';
-import { className, renderLocation, ResultTableProps, zebraStripe } from './result-table-utils';
-import { PathTableResultSet } from './results';
+import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation } from './result-table-utils';
+import { PathTableResultSet, onNavigation, NavigationEvent } from './results';
 
 export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
 export interface PathTableState {
   expanded: { [k: string]: boolean };
+  selectedPathNode: undefined | Keys.PathNode;
 }
 
 interface SarifLink {
@@ -72,7 +74,8 @@ export function getPathRelativeToSourceLocationPrefix(sourceLocationPrefix: stri
 export class PathTable extends React.Component<PathTableProps, PathTableState> {
   constructor(props: PathTableProps) {
     super(props);
-    this.state = { expanded: {} };
+    this.state = { expanded: {}, selectedPathNode: undefined };
+    this.handleNavigationEvent = this.handleNavigationEvent.bind(this);
   }
 
   /**
@@ -118,7 +121,8 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         if (typeof part === "string") {
           result.push(<span>{part} </span>);
         } else {
-          const renderedLocation = renderSarifLocationWithText(part.text, relatedLocationsById[part.dest]);
+          const renderedLocation = renderSarifLocationWithText(part.text, relatedLocationsById[part.dest],
+              undefined);
           result.push(<span>{renderedLocation} </span>);
         }
       } return result;
@@ -130,75 +134,23 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return <span title={locationHint}>{msg}</span>;
     }
 
-    function parseSarifLocation(loc: Sarif.Location): ParsedSarifLocation {
-      const physicalLocation = loc.physicalLocation;
-      if (physicalLocation === undefined)
-        return { t: 'NoLocation', hint: 'no physical location' };
-      if (physicalLocation.artifactLocation === undefined)
-        return { t: 'NoLocation', hint: 'no artifact location' };
-      if (physicalLocation.artifactLocation.uri === undefined)
-        return { t: 'NoLocation', hint: 'artifact location has no uri' };
-
-      // This is not necessarily really an absolute uri; it could either be a
-      // file uri or a relative uri.
-      const uri = physicalLocation.artifactLocation.uri;
-
-      const fileUriRegex = /^file:/;
-      const effectiveLocation = uri.match(fileUriRegex) ?
-        decodeURIComponent(uri.replace(fileUriRegex, '')) :
-        getPathRelativeToSourceLocationPrefix(sourceLocationPrefix, uri);
-      const userVisibleFile = uri.match(fileUriRegex) ?
-        decodeURIComponent(uri.replace(fileUriRegex, '')) :
-        uri;
-
-      if (physicalLocation.region === undefined) {
-        // If the region property is absent, the physicalLocation object refers to the entire file.
-        // Source: https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Toc16012638.
-        // TODO: Do we get here if we provide a non-filesystem URL?
-        return {
-          t: LocationStyle.WholeFile,
-          file: effectiveLocation,
-          userVisibleFile,
-        };
-      } else {
-        const region = physicalLocation.region;
-        // We assume that the SARIF we're given always has startLine
-        // This is not mandated by the SARIF spec, but should be true of
-        // SARIF output by our own tools.
-        const lineStart = region.startLine!;
-
-        // These defaults are from SARIF 2.1.0 spec, section 3.30.2, "Text Regions"
-        // https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Ref493492556
-        const lineEnd = region.endLine === undefined ? lineStart : region.endLine;
-        const colStart = region.startColumn === undefined ? 1 : region.startColumn;
-
-        // We also assume that our tools will always supply `endColumn` field, which is
-        // fortunate, since the SARIF spec says that it defaults to the end of the line, whose
-        // length we don't know at this point in the code.
-        //
-        // It is off by one with respect to the way vscode counts columns in selections.
-        const colEnd = region.endColumn! - 1;
-
-        return {
-          t: LocationStyle.FivePart,
-          file: effectiveLocation,
-          userVisibleFile,
-          lineStart,
-          colStart,
-          lineEnd,
-          colEnd,
-        };
+    const updateSelectionCallback = (pathNodeKey: Keys.PathNode | undefined) => {
+      return () => {
+        this.setState(previousState => ({
+          ...previousState,
+          selectedPathNode: pathNodeKey
+        }));
       }
-    }
+    };
 
-    function renderSarifLocationWithText(text: string | undefined, loc: Sarif.Location): JSX.Element | undefined {
-      const parsedLoc = parseSarifLocation(loc);
+    function renderSarifLocationWithText(text: string | undefined, loc: Sarif.Location, pathNodeKey: Keys.PathNode | undefined): JSX.Element | undefined {
+      const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
       switch (parsedLoc.t) {
         case 'NoLocation':
           return renderNonLocation(text, parsedLoc.hint);
         case LocationStyle.FivePart:
         case LocationStyle.WholeFile:
-          return renderLocation(parsedLoc, text, databaseUri);
+            return renderLocation(parsedLoc, text, databaseUri, undefined, updateSelectionCallback(pathNodeKey));
       }
       return undefined;
     }
@@ -207,8 +159,8 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
      * Render sarif location as a link with the text being simply a
      * human-readable form of the location itself.
      */
-    function renderSarifLocation(loc: Sarif.Location): JSX.Element | undefined {
-      const parsedLoc = parseSarifLocation(loc);
+    function renderSarifLocation(loc: Sarif.Location, pathNodeKey: Keys.PathNode | undefined): JSX.Element | undefined {
+      const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
       let shortLocation, longLocation: string;
       switch (parsedLoc.t) {
         case 'NoLocation':
@@ -216,11 +168,11 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         case LocationStyle.WholeFile:
           shortLocation = `${path.basename(parsedLoc.userVisibleFile)}`;
           longLocation = `${parsedLoc.userVisibleFile}`;
-          return renderLocation(parsedLoc, shortLocation, databaseUri, longLocation);
+          return renderLocation(parsedLoc, shortLocation, databaseUri, longLocation, updateSelectionCallback(pathNodeKey));
         case LocationStyle.FivePart:
           shortLocation = `${path.basename(parsedLoc.userVisibleFile)}:${parsedLoc.lineStart}:${parsedLoc.colStart}`;
           longLocation = `${parsedLoc.userVisibleFile}`;
-          return renderLocation(parsedLoc, shortLocation, databaseUri, longLocation);
+          return renderLocation(parsedLoc, shortLocation, databaseUri, longLocation, updateSelectionCallback(pathNodeKey));
       }
     }
 
@@ -245,7 +197,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       const currentResultExpanded = this.state.expanded[expansionIndex];
       const indicator = currentResultExpanded ? octicons.chevronDown : octicons.chevronRight;
       const location = result.locations !== undefined && result.locations.length > 0 &&
-        renderSarifLocation(result.locations[0]);
+        renderSarifLocation(result.locations[0], Keys.none);
       const locationCells = <td className="vscode-codeql__location-cell">{location}</td>;
 
       if (result.codeFlows === undefined) {
@@ -260,12 +212,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         );
       }
       else {
-        const paths: Sarif.ThreadFlow[] = [];
-        for (const codeFlow of result.codeFlows) {
-          for (const threadFlow of codeFlow.threadFlows) {
-            paths.push(threadFlow);
-          }
-        }
+        const paths: Sarif.ThreadFlow[] = Keys.getAllPaths(result);
 
         const indices = paths.length == 1 ?
           [expansionIndex, expansionIndex + 1] : /* if there's exactly one path, auto-expand
@@ -288,7 +235,8 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         );
         expansionIndex++;
 
-        paths.forEach(path => {
+        paths.forEach((path, pathIndex) => {
+          const pathKey = { resultIndex, pathIndex };
           const currentPathExpanded = this.state.expanded[expansionIndex];
           if (currentResultExpanded) {
             const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
@@ -305,25 +253,27 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           expansionIndex++;
 
           if (currentResultExpanded && currentPathExpanded) {
-            let pathIndex = 1;
-            for (const step of path.locations) {
+            const pathNodes = path.locations;
+            for (let pathNodeIndex = 0; pathNodeIndex < pathNodes.length; ++pathNodeIndex) {
+              const pathNodeKey: Keys.PathNode = { ...pathKey, pathNodeIndex };
+              const step = pathNodes[pathNodeIndex];
               const msg = step.location !== undefined && step.location.message !== undefined ?
-                renderSarifLocationWithText(step.location.message.text, step.location) :
+                renderSarifLocationWithText(step.location.message.text, step.location, pathNodeKey) :
                 '[no location]';
               const additionalMsg = step.location !== undefined ?
-                renderSarifLocation(step.location) :
+                renderSarifLocation(step.location, pathNodeKey) :
                 '';
-
-              const stepIndex = resultIndex + pathIndex;
+              let isSelected = Keys.equalsNotUndefined(this.state.selectedPathNode, pathNodeKey);
+              const stepIndex = pathNodeIndex + 1; // Convert to 1-based
+              const zebraIndex = resultIndex + stepIndex;
               rows.push(
-                <tr>
+                <tr className={isSelected ? 'vscode-codeql__selected-path-node' : undefined}>
                   <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                   <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
-                  <td {...zebraStripe(stepIndex, 'vscode-codeql__path-index-cell')}>{pathIndex}</td>
-                  <td {...zebraStripe(stepIndex)}>{msg} </td>
-                  <td {...zebraStripe(stepIndex, 'vscode-codeql__location-cell')}>{additionalMsg}</td>
+                  <td {...selectableZebraStripe(isSelected, zebraIndex, 'vscode-codeql__path-index-cell')}>{stepIndex}</td>
+                  <td {...selectableZebraStripe(isSelected, zebraIndex)}>{msg} </td>
+                  <td {...selectableZebraStripe(isSelected, zebraIndex, 'vscode-codeql__location-cell')}>{additionalMsg}</td>
                 </tr>);
-              pathIndex++;
             }
           }
         });
@@ -340,5 +290,97 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     return <table className={className}>
       <tbody>{rows}</tbody>
     </table>;
+  }
+
+  private handleNavigationEvent(event: NavigationEvent) {
+    this.setState(prevState => {
+      let { selectedPathNode } = prevState;
+      if (selectedPathNode === undefined) return prevState;
+
+      let path = Keys.getPath(this.props.resultSet.sarif, selectedPathNode);
+      if (path === undefined) return prevState;
+
+      let nextIndex = selectedPathNode.pathNodeIndex + event.direction;
+      if (nextIndex < 0 || nextIndex >= path.locations.length) return prevState;
+
+      let sarifLoc = path.locations[nextIndex].location;
+      if (sarifLoc === undefined) return prevState;
+
+      let loc = parseSarifLocation(sarifLoc, this.props.resultSet.sourceLocationPrefix);
+      if (loc.t === 'NoLocation') return prevState;
+
+      jumpToLocation(loc, this.props.databaseUri);
+      let newSelection = { ...selectedPathNode, pathNodeIndex: nextIndex };
+      return { ...prevState, selectedPathNode: newSelection };
+    });
+  }
+
+  componentDidMount() {
+    onNavigation.addListener(this.handleNavigationEvent);
+  }
+
+  componentWillUnmount() {
+    onNavigation.removeListener(this.handleNavigationEvent);
+  }
+}
+
+function parseSarifLocation(loc: Sarif.Location, sourceLocationPrefix: string): ParsedSarifLocation {
+  const physicalLocation = loc.physicalLocation;
+  if (physicalLocation === undefined)
+    return { t: 'NoLocation', hint: 'no physical location' };
+  if (physicalLocation.artifactLocation === undefined)
+    return { t: 'NoLocation', hint: 'no artifact location' };
+  if (physicalLocation.artifactLocation.uri === undefined)
+    return { t: 'NoLocation', hint: 'artifact location has no uri' };
+
+  // This is not necessarily really an absolute uri; it could either be a
+  // file uri or a relative uri.
+  const uri = physicalLocation.artifactLocation.uri;
+
+  const fileUriRegex = /^file:/;
+  const effectiveLocation = uri.match(fileUriRegex) ?
+    decodeURIComponent(uri.replace(fileUriRegex, '')) :
+    getPathRelativeToSourceLocationPrefix(sourceLocationPrefix, uri);
+  const userVisibleFile = uri.match(fileUriRegex) ?
+    decodeURIComponent(uri.replace(fileUriRegex, '')) :
+    uri;
+
+  if (physicalLocation.region === undefined) {
+    // If the region property is absent, the physicalLocation object refers to the entire file.
+    // Source: https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Toc16012638.
+    // TODO: Do we get here if we provide a non-filesystem URL?
+    return {
+      t: LocationStyle.WholeFile,
+      file: effectiveLocation,
+      userVisibleFile,
+    };
+  } else {
+    const region = physicalLocation.region;
+    // We assume that the SARIF we're given always has startLine
+    // This is not mandated by the SARIF spec, but should be true of
+    // SARIF output by our own tools.
+    const lineStart = region.startLine!;
+
+    // These defaults are from SARIF 2.1.0 spec, section 3.30.2, "Text Regions"
+    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Ref493492556
+    const lineEnd = region.endLine === undefined ? lineStart : region.endLine;
+    const colStart = region.startColumn === undefined ? 1 : region.startColumn;
+
+    // We also assume that our tools will always supply `endColumn` field, which is
+    // fortunate, since the SARIF spec says that it defaults to the end of the line, whose
+    // length we don't know at this point in the code.
+    //
+    // It is off by one with respect to the way vscode counts columns in selections.
+    const colEnd = region.endColumn! - 1;
+
+    return {
+      t: LocationStyle.FivePart,
+      file: effectiveLocation,
+      userVisibleFile,
+      lineStart,
+      colStart,
+      lineEnd,
+      colEnd,
+    };
   }
 }
