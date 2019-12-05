@@ -227,9 +227,9 @@ export interface DatabaseItem {
   resolveSourceFile(file: string | undefined): vscode.Uri;
 
   /**
-   * Holds if the database item has a `.dbinfo` file.
+   * Holds if the database item has a `.dbinfo` or `codeql-database.yml` file.
    */
-  hasDbInfo(): boolean;
+  hasMetadataFile(): Promise<boolean>;
 
   /**
    * Returns `sourceLocationPrefix` of exported database.
@@ -359,9 +359,11 @@ class DatabaseItemImpl implements DatabaseItem {
   /**
    * Holds if the database item refers to an exported snapshot
    */
-  public hasDbInfo(): boolean {
-    return fs.existsSync(path.join(this.databaseUri.fsPath, '.dbinfo'))
-      || fs.existsSync(path.join(this.databaseUri.fsPath, 'codeql-database.yml'));;
+  public async hasMetadataFile(): Promise<boolean> {
+    return (await Promise.all([
+      fs.pathExists(path.join(this.databaseUri.fsPath, '.dbinfo')),
+      fs.pathExists(path.join(this.databaseUri.fsPath, 'codeql-database.yml'))
+    ])).some(x => x);
   }
 
   /**
