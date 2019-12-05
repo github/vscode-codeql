@@ -51,6 +51,11 @@ export interface UpgradesInfo {
 }
 
 /**
+ * The expected output of `codeql resolve qlpacks`.
+ */
+export type QlpacksInfo = { [name: string]: string[] };
+
+/**
  * The expected output of `codeql resolve metadata`.
  */
 export interface QueryMetadata {
@@ -396,7 +401,6 @@ export class CodeQLCliServer implements Disposable {
       "Resolving database");
   }
 
-
   /**
    * Gets information necessary for upgrading a database.
    * @param dbScheme the path to the dbscheme of the database to be upgraded.
@@ -410,6 +414,21 @@ export class CodeQLCliServer implements Disposable {
       ['resolve', 'upgrades'],
       args,
       "Resolving database upgrade scripts",
+    );
+  }
+
+  /**
+   * Gets information about available qlpacks
+   * @param searchPath A list of directories to search for qlpacks
+   * @returns A dictionary mapping qlpack name to the directory it comes from
+   */
+  resolveQlpacks(searchPath: string[]): Promise<QlpacksInfo> {
+    const args = ['--additional-packs', searchPath.join(path.delimiter)];
+
+    return this.runJsonCodeQlCliCommand<QlpacksInfo>(
+      ['resolve', 'qlpacks'],
+      args,
+      "Resolving qlpack information",
     );
   }
 }
