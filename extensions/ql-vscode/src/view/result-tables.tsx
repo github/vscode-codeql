@@ -29,6 +29,24 @@ const ALERTS_TABLE_NAME = 'alerts';
 const SELECT_TABLE_NAME = '#select';
 const UPDATING_RESULTS_TEXT_CLASS_NAME = "vscode-codeql__result-tables-updating-text";
 
+function getResultCount(resultSet: ResultSet): number {
+  switch (resultSet.t) {
+    case 'RawResultSet':
+      return resultSet.schema.tupleCount;
+    case 'SarifResultSet':
+      if (resultSet.sarif.runs.length === 0) return 0;
+      if (resultSet.sarif.runs[0].results === undefined) return 0;
+      return resultSet.sarif.runs[0].results.length + resultSet.numTruncatedResults;
+  }
+}
+
+function renderResultCountString(resultSet: ResultSet): JSX.Element {
+  const resultCount = getResultCount(resultSet);
+  return <span className="number-of-results">
+    {resultCount} {resultCount === 1 ? 'result' : 'results'}
+  </span>;
+}
+
 /**
  * Displays multiple `ResultTable` tables, where the table to be displayed is selected by a
  * dropdown.
@@ -96,6 +114,9 @@ export class ResultTables
         <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
       </div> : undefined;
 
+    const resultSet = resultSets.find(resultSet => resultSet.schema.name == selectedTable);
+    const numberOfResults = resultSet && renderResultCountString(resultSet);
+
     return <div>
       <div className={tableSelectionHeaderClassName}>
         <select value={selectedTable} onChange={this.onChange}>
@@ -107,6 +128,7 @@ export class ResultTables
             )
           }
         </select>
+        {numberOfResults}
         {diagnosticsCheckBox}
         {
           this.props.isLoadingNewResults ?
@@ -115,14 +137,11 @@ export class ResultTables
         }
       </div>
       {
-        resultSets.map(resultSet =>
-          resultSet.schema.name === selectedTable ?
-            <ResultTable key={resultSet.schema.name} resultSet={resultSet}
-              databaseUri={this.props.database.databaseUri}
-              resultsPath={this.props.resultsPath}
-              sortState={this.props.sortStates.get(resultSet.schema.name)} /> :
-            undefined
-        )
+        resultSet &&
+        <ResultTable key={resultSet.schema.name} resultSet={resultSet}
+          databaseUri={this.props.database.databaseUri}
+          resultsPath={this.props.resultsPath}
+          sortState={this.props.sortStates.get(resultSet.schema.name)} />
       }
     </div>;
   }
