@@ -144,7 +144,14 @@ async function parsePrimitiveColumn(d: StreamDigester, type: PrimitiveTypeKind,
   switch (type) {
     case 's': return await parseString(d, pool);
     case 'b': return await d.readByte() !== 0;
-    case 'i': return await d.readLEB128UInt32();
+    case 'i': {
+      const unsignedValue = await d.readLEB128UInt32();
+      // `int` column values are encoded as 32-bit unsigned LEB128, but are really 32-bit two's
+      // complement signed integers. The easiest way to reinterpret from an unsigned int32 to a
+      // signed int32 in JavaScript is to use a bitwise operator, which does this coercion on its
+      // operands automatically.
+      return unsignedValue | 0;
+    }
     case 'f': return await d.readDoubleLE();
     case 'd': return await d.readDate();
     case 'u': return await parseString(d, pool);
