@@ -90,7 +90,7 @@ class DatabaseTreeDataProvider extends DisposableObject
     }
   }
 
-  public getParent(element: DatabaseItem): ProviderResult<DatabaseItem> {
+  public getParent(_element: DatabaseItem): ProviderResult<DatabaseItem> {
     return null;
   }
 
@@ -128,7 +128,7 @@ async function chooseDatabaseDir(): Promise<Uri | undefined> {
 }
 
 export class DatabaseUI extends DisposableObject {
-  public constructor(private ctx: ExtensionContext, private cliserver: cli.CodeQLCliServer, private databaseManager: DatabaseManager,
+  public constructor(ctx: ExtensionContext, private cliserver: cli.CodeQLCliServer, private databaseManager: DatabaseManager,
     private readonly queryServer: qsClient.QueryServerClient | undefined) {
 
     super();

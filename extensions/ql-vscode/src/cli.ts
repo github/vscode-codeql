@@ -154,7 +154,7 @@ export class CodeQLCliServer implements Disposable {
     if (!config) {
       throw new Error("Failed to find codeql distribution")
     }
-    return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, data => { })
+    return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, _data => {})
   }
 
   private async runCodeQlCliInternal(command: string[], commandArgs: string[], description: string): Promise<string> {

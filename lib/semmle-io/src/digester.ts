@@ -124,7 +124,7 @@ export class StreamDigester {
   }
 
   /**
-   * Implements an async read that span multple buffers.
+   * Implements an async read that spans multiple buffers.
    *
    * @param canReadFunc Callback function to determine how many bytes are required to complete the
    *  read operation.
@@ -186,7 +186,7 @@ export class StreamDigester {
   private readKnownSizeAcrossSeam<T>(byteCount: number,
     readFunc: (buffer: Buffer, offset: number) => T): Promise<T> {
 
-    return this.readAcrossSeam((buffer, offset, availableByteCount) => byteCount, readFunc);
+    return this.readAcrossSeam((_buffer, _offset, _availableByteCount) => byteCount, readFunc);
   }
 
   private readKnownSize<T>(byteCount: number, readFunc: (buffer: Buffer, offset: number) => T):

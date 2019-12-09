@@ -89,7 +89,6 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<QueryHistoryIte
   private _onDidChangeTreeData: vscode.EventEmitter<QueryHistoryItem | undefined> = new vscode.EventEmitter<QueryHistoryItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<QueryHistoryItem | undefined> = this._onDidChangeTreeData.event;
 
-  private ctx: ExtensionContext;
   private history: QueryHistoryItem[] = [];
 
   /**
@@ -97,8 +96,7 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<QueryHistoryIte
    */
   private current: QueryHistoryItem | undefined;
 
-  constructor(ctx: ExtensionContext) {
-    this.ctx = ctx;
+  constructor() {
     this.history = [];
   }
 
@@ -123,7 +121,7 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<QueryHistoryIte
     }
   }
 
-  getParent(element: QueryHistoryItem): vscode.ProviderResult<QueryHistoryItem> {
+  getParent(_element: QueryHistoryItem): vscode.ProviderResult<QueryHistoryItem> {
     return null;
   }
 
@@ -238,7 +236,7 @@ export class QueryHistoryManager {
   ) {
     this.ctx = ctx;
     this.selectedCallback = selectedCallback;
-    const treeDataProvider = this.treeDataProvider = new HistoryTreeDataProvider(ctx);
+    const treeDataProvider = this.treeDataProvider = new HistoryTreeDataProvider();
     this.treeView = Window.createTreeView('codeQLQueryHistory', { treeDataProvider });
     this.treeView.onDidChangeSelection(async ev => {
       if (ev.selection.length == 0) {

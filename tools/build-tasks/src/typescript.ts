@@ -43,7 +43,7 @@ export function compileTypeScript() {
   return tsProject.src()
     .pipe(sourcemaps.init())
     .pipe(tsProject(goodReporter()))
-    .pipe(sourcemaps.mapSources((sourcePath, file) => {
+    .pipe(sourcemaps.mapSources((sourcePath, _file) => {
       // The source path is kind of odd, because it's relative to the `tsconfig.json` file in the
       // `typescript-config` package, which lives in the `node_modules` directory of the package
       // that is being built. It starts out as something like '../../../src/foo.ts', and we need to
