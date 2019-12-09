@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DatabaseInfo, Interpretation, SortState, QueryMetadata } from '../interface-types';
+import { DatabaseInfo, Interpretation, SortState, QueryMetadata, ResultsPaths } from '../interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
 import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName } from './result-table-utils';
@@ -13,7 +13,8 @@ export interface ResultTablesProps {
   interpretation: Interpretation | undefined;
   database: DatabaseInfo;
   metadata? : QueryMetadata
-  resultsPath: string | undefined;
+  resultsPath: string ;
+  origResultsPaths: ResultsPaths;
   sortStates: Map<string, SortState>;
   isLoadingNewResults: boolean;
 }
@@ -95,7 +96,7 @@ export class ResultTables
   render(): React.ReactNode {
     const { selectedTable } = this.state;
     const resultSets = this.getResultSets();
-    const { database, resultsPath, metadata } = this.props;
+    const { database, resultsPath, metadata, origResultsPaths } = this.props;
 
     // Only show the Problems view display checkbox for the alerts table.
     const diagnosticsCheckBox = selectedTable === ALERTS_TABLE_NAME ?
@@ -104,7 +105,7 @@ export class ResultTables
           if (resultsPath !== undefined) {
             vscode.postMessage({
               t: 'toggleDiagnostics',
-              resultsPath: resultsPath,
+              origResultsPaths: origResultsPaths,
               databaseUri: database.databaseUri,
               visible: e.target.checked,
               metadata: metadata

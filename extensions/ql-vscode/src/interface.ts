@@ -6,13 +6,13 @@ import { parseSarifLocation, parseSarifPlainTextMessage }  from './sarif-utils';
 import { FivePartLocation, LocationValue, ResolvableLocationValue, WholeFileLocation, tryGetResolvableLocation, LocationStyle } from 'semmle-bqrs';
 import { DisposableObject } from 'semmle-vscode-utils';
 import * as vscode from 'vscode';
-import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Position, Range, Uri, window as Window, workspace } from 'vscode';
+import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Range, Uri, window as Window, workspace } from 'vscode';
 import { CodeQLCliServer } from './cli';
 import { DatabaseItem, DatabaseManager } from './databases';
 import * as helpers from './helpers';
 import { showAndLogErrorMessage } from './helpers';
 import { assertNever } from './helpers-pure';
-import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg, ResultsInfo, SortedResultSetInfo, SortedResultsMap, INTERPRETED_RESULTS_PER_RUN_LIMIT, QueryMetadata } from './interface-types';
+import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg, ResultsPaths, SortedResultSetInfo, SortedResultsMap, INTERPRETED_RESULTS_PER_RUN_LIMIT, QueryMetadata } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
 import { EvaluationInfo, interpretResults, QueryInfo, tmpDir } from './queries';
@@ -166,7 +166,7 @@ export class InterfaceManager extends DisposableObject {
         if (msg.visible) {
           const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.databaseUri));
           if (databaseItem !== undefined) {
-            await this.showResultsAsDiagnostics(msg.resultsPath, msg.metadata, databaseItem);
+            await this.showResultsAsDiagnostics(msg.origResultsPaths, msg.metadata, databaseItem);
           }
         } else {
           // TODO: Only clear diagnostics on the same database.
@@ -223,7 +223,7 @@ export class InterfaceManager extends DisposableObject {
       return;
     }
 
-    const interpretation = await this.interpretResultsInfo(info.query, info.query.resultsInfo);
+    const interpretation = await this.interpretResultsInfo(info.query, info.query.resultsPaths);
 
     const sortedResultsMap: SortedResultsMap = {};
     info.query.sortedResultsInfo.forEach((v, k) =>
@@ -259,7 +259,8 @@ export class InterfaceManager extends DisposableObject {
     await this.postMessage({
       t: 'setState',
       interpretation,
-      resultsPath: this.convertPathToWebviewUri(info.query.resultsInfo.resultsPath),
+      origResultsPaths: info.query.resultsPaths,
+      resultsPath: this.convertPathToWebviewUri(info.query.resultsPaths.resultsPath),
       sortedResultsMap,
       database: info.database,
       shouldKeepOldResultsWhileRendering,
@@ -267,8 +268,8 @@ export class InterfaceManager extends DisposableObject {
     });
   }
 
-private async getTruncatedResults(metadata : QueryMetadata | undefined ,resultsPathOnDisk: string, sourceInfo : cli.SourceInfo  | undefined, sourceLocationPrefix : string ) : Promise<Interpretation> {
-  const sarif = await interpretResults(this.cliServer, metadata, resultsPathOnDisk, sourceInfo);
+private async getTruncatedResults(metadata : QueryMetadata | undefined ,resultsInfo: ResultsPaths, sourceInfo : cli.SourceInfo  | undefined, sourceLocationPrefix : string ) : Promise<Interpretation> {
+  const sarif = await interpretResults(this.cliServer, metadata, resultsInfo, sourceInfo);
   // For performance reasons, limit the number of results we try
   // to serialize and send to the webview. TODO: possibly also
   // limit number of paths per result, number of steps per path,
@@ -288,7 +289,7 @@ private async getTruncatedResults(metadata : QueryMetadata | undefined ,resultsP
   ;
 }
 
-  private async interpretResultsInfo(query: QueryInfo, resultsInfo: ResultsInfo): Promise<Interpretation | undefined> {
+  private async interpretResultsInfo(query: QueryInfo, resultsInfo: ResultsPaths): Promise<Interpretation | undefined> {
     let interpretation: Interpretation | undefined = undefined;
     if (query.hasInterpretedResults()
       && query.quickEvalPosition === undefined // never do results interpretation if quickEval
@@ -299,7 +300,7 @@ private async getTruncatedResults(metadata : QueryMetadata | undefined ,resultsP
         const sourceInfo = sourceArchiveUri === undefined ?
           undefined :
           { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
-        interpretation = await this.getTruncatedResults(query.metadata, resultsInfo.resultsPath, sourceInfo, sourceLocationPrefix);
+        interpretation = await this.getTruncatedResults(query.metadata, resultsInfo, sourceInfo, sourceLocationPrefix);
       }
       catch (e) {
         // If interpretation fails, accept the error and continue
@@ -311,15 +312,13 @@ private async getTruncatedResults(metadata : QueryMetadata | undefined ,resultsP
   }
 
 
-  private async showResultsAsDiagnostics(webviewResultsUri: string, metadata: QueryMetadata | undefined, database: DatabaseItem) {
-    // URIs from the webview have the vscode-resource scheme, so convert into a filesystem URI first.
-    const resultsPathOnDisk = webviewUriToFileUri(webviewResultsUri).fsPath;
+  private async showResultsAsDiagnostics(resultsInfo: ResultsPaths, metadata: QueryMetadata | undefined, database: DatabaseItem) {
     const sourceLocationPrefix = await database.getSourceLocationPrefix(this.cliServer);
     const sourceArchiveUri = database.sourceArchive;
     const sourceInfo = sourceArchiveUri === undefined ?
       undefined :
       { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
-    const interpretation = await this.getTruncatedResults(metadata, resultsPathOnDisk, sourceInfo, sourceLocationPrefix);
+    const interpretation = await this.getTruncatedResults(metadata, resultsInfo, sourceInfo, sourceLocationPrefix);
 
     try {
       await this.showProblemResultsAsDiagnostics(interpretation, database);

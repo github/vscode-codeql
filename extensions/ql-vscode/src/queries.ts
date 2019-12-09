@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import * as cli from './cli';
 import { DatabaseItem, getUpgradesDirectories } from './databases';
 import * as helpers from './helpers';
-import { DatabaseInfo, SortState, ResultsInfo, SortedResultSetInfo, QueryMetadata } from './interface-types';
+import { DatabaseInfo, SortState, ResultsPaths, SortedResultSetInfo, QueryMetadata } from './interface-types';
 import { logger } from './logging';
 import * as messages from './messages';
 import * as qsClient from './queryserver-client';
@@ -50,7 +50,7 @@ export class UserCancellationException extends Error { }
  */
 export class QueryInfo {
   compiledQueryPath: string;
-  resultsInfo: ResultsInfo;
+  resultsPaths: ResultsPaths;
   private static nextQueryId = 0;
 
   /**
@@ -68,7 +68,8 @@ export class QueryInfo {
   ) {
     this.queryId = QueryInfo.nextQueryId++;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${this.queryId}.qlo`);
-    this.resultsInfo = {
+    this.resultsPaths = {
+      interpretedResultsPath: path.join(tmpDir.name, `interpretedResults${this.queryId}.sarif`),
       resultsPath: path.join(tmpDir.name, `results${this.queryId}.bqrs`),
     };
     this.sortedResultsInfo = new Map();
@@ -86,7 +87,7 @@ export class QueryInfo {
     const callbackId = qs.registerCallback(res => { result = res });
 
     const queryToRun: messages.QueryToRun = {
-      resultsPath: this.resultsInfo.resultsPath,
+      resultsPath: this.resultsPaths.resultsPath,
       qlo: vscode.Uri.file(this.compiledQueryPath).toString(),
       allowUnknownTemplates: true,
       id: callbackId,
@@ -177,7 +178,7 @@ export class QueryInfo {
       sortState
     };
 
-    await server.sortBqrs(this.resultsInfo.resultsPath, sortedResultSetInfo.resultsPath, resultSetName, [sortState.columnIndex], [sortState.direction]);
+    await server.sortBqrs(this.resultsPaths.resultsPath, sortedResultSetInfo.resultsPath, resultSetName, [sortState.columnIndex], [sortState.direction]);
     this.sortedResultsInfo.set(resultSetName, sortedResultSetInfo);
   }
 }
@@ -185,11 +186,10 @@ export class QueryInfo {
 /**
  * Call cli command to interpret results.
  */
-export async function interpretResults(server: cli.CodeQLCliServer, metadata: QueryMetadata | undefined, resultsPath: string, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
-  const interpretedResultsPath = resultsPath + ".interpreted.sarif"
+export async function interpretResults(server: cli.CodeQLCliServer, metadata: QueryMetadata | undefined, resultsInfo: ResultsPaths, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
 
-  if (await fs.pathExists(interpretedResultsPath)) {
-    return JSON.parse(await fs.readFile(interpretedResultsPath, 'utf8'));
+  if (await fs.pathExists(resultsInfo.interpretedResultsPath)) {
+    return JSON.parse(await fs.readFile(resultsInfo.interpretedResultsPath, 'utf8'));
   }
   if (metadata == undefined) {
     throw new Error('Can\'t interpret results without query metadata');
@@ -203,7 +203,7 @@ export async function interpretResults(server: cli.CodeQLCliServer, metadata: Qu
     // SARIF format does, so in the absence of one, we use a dummy id.
     id = "dummy-id";
   }
-  return await server.interpretBqrs( { kind, id }, resultsPath, interpretedResultsPath,  sourceInfo);
+  return await server.interpretBqrs( { kind, id }, resultsInfo.resultsPath, resultsInfo.interpretedResultsPath,  sourceInfo);
 }
 
 export interface EvaluationInfo {
