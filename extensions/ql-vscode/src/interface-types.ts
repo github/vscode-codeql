@@ -37,8 +37,9 @@ export interface Interpretation {
   sarif: sarif.Log;
 }
 
-export interface ResultsInfo {
+export interface ResultsPaths {
   resultsPath: string;
+  interpretedResultsPath: string;
 }
 
 export interface SortedResultSetInfo {
@@ -60,6 +61,7 @@ export interface ResultsUpdatingMsg {
 export interface SetStateMsg {
   t: 'setState';
   resultsPath: string;
+  origResultsPaths: ResultsPaths;
   sortedResultsMap: SortedResultsMap;
   interpretation: undefined | Interpretation;
   database: DatabaseInfo;
@@ -94,7 +96,7 @@ interface ToggleDiagnostics {
   t: 'toggleDiagnostics';
   databaseUri: string;
   metadata?: QueryMetadata
-  resultsPath: string;
+  origResultsPaths: ResultsPaths;
   visible: boolean;
   kind?: string;
 };
