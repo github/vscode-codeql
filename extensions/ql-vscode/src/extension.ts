@@ -1,7 +1,7 @@
 import { commands, Disposable, ExtensionContext, extensions, ProgressLocation, ProgressOptions, window as Window, Uri } from 'vscode';
 import { ErrorCodes, LanguageClient, ResponseError } from 'vscode-languageclient';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
-import { DistributionConfigListener, QueryServerConfigListener } from './config';
+import { DistributionConfigListener, QueryServerConfigListener, QueryHistoryConfigListener } from './config';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
 import { DistributionUpdateCheckResultKind, DistributionManager, FindDistributionResult, FindDistributionResultKind, GithubApiError,
@@ -11,7 +11,7 @@ import { spawnIdeServer } from './ide-server';
 import { InterfaceManager, WebviewReveal } from './interface';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
 import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal, UserCancellationException } from './queries';
-import { QueryHistoryItem, QueryHistoryManager } from './query-history';
+import { QueryHistoryManager } from './query-history';
 import * as qsClient from './queryserver-client';
 import { CodeQLCliServer } from './cli';
 import { assertNever } from './helpers-pure';
@@ -78,7 +78,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   const distributionManager = new DistributionManager(ctx, distributionConfigListener, DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT);
 
   const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
-  
+
   registerErrorStubs(ctx, [checkForUpdatesCommand], command => () => {
     helpers.showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
   });
@@ -244,7 +244,12 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   const databaseUI = new DatabaseUI(ctx, cliServer, dbm, qs);
   ctx.subscriptions.push(databaseUI);
 
-  const qhm = new QueryHistoryManager(ctx, async item => showResultsForInfo(item.info, WebviewReveal.Forced));
+  const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
+  const qhm = new QueryHistoryManager(
+    ctx,
+    queryHistoryConfigurationListener,
+    async item => showResultsForInfo(item.info, WebviewReveal.Forced)
+  );
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
   ctx.subscriptions.push(intm);
   archiveFilesystemProvider.activate(ctx);
@@ -262,7 +267,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
         }
         const info = await compileAndRunQueryAgainstDatabase(cliServer, qs, dbItem, quickEval, selectedQuery);
         await showResultsForInfo(info, WebviewReveal.NotForced);
-        qhm.push(new QueryHistoryItem(info));
+        qhm.push(info);
       }
       catch (e) {
         if (e instanceof UserCancellationException) {

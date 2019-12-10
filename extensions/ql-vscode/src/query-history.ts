@@ -3,6 +3,7 @@ import { ExtensionContext, window as Window } from 'vscode';
 import { EvaluationInfo } from './queries';
 import * as helpers from './helpers';
 import * as messages from './messages';
+import { QueryHistoryConfig } from './config';
 /**
  * query-history.ts
  * ------------
@@ -21,7 +22,11 @@ export class QueryHistoryItem {
   databaseName: string;
   info: EvaluationInfo;
 
-  constructor(info: EvaluationInfo) {
+  constructor(
+    info: EvaluationInfo,
+    public config: QueryHistoryConfig,
+    public label?: string, // user-settable label
+  ) {
     this.queryName = helpers.getQueryName(info);
     this.databaseName = info.database.name;
     this.info = info;
@@ -44,9 +49,29 @@ export class QueryHistoryItem {
     }
   }
 
+  interpolate(template: string): string {
+    const { databaseName, queryName, time, statusString } = this;
+    const replacements: { [k: string]: string } = {
+      t: time,
+      q: queryName,
+      d: databaseName,
+      s: statusString,
+      '%': '%',
+    };
+    return template.replace(/%(.)/g, (match, key) => {
+      const replacement = replacements[key];
+      return replacement !== undefined ? replacement : match;
+    });
+  }
+
+  getLabel(): string {
+    if (this.label !== undefined)
+      return this.label;
+    return this.config.format;
+  }
+
   toString(): string {
-    const { databaseName, queryName, time } = this;
-    return `[${time}] ${queryName} on ${databaseName} - ${this.statusString}`;
+    return this.interpolate(this.getLabel());
   }
 }
 
@@ -109,7 +134,7 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<QueryHistoryIte
   push(item: QueryHistoryItem): void {
     this.current = item;
     this.history.push(item);
-    this._onDidChangeTreeData.fire();
+    this.refresh();
   }
 
   setCurrentItem(item: QueryHistoryItem) {
@@ -127,8 +152,12 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<QueryHistoryIte
         // are any available.
         this.current = this.history[Math.min(index, this.history.length - 1)];
       }
-      this._onDidChangeTreeData.fire();
+      this.refresh();
     }
+  }
+
+  refresh() {
+    this._onDidChangeTreeData.fire();
   }
 }
 
@@ -166,6 +195,23 @@ export class QueryHistoryManager {
     }
   }
 
+  async handleSetLabel(queryHistoryItem: QueryHistoryItem) {
+    const response = await vscode.window.showInputBox({
+      prompt: 'Label:',
+      placeHolder: '(use default)',
+      value: queryHistoryItem.getLabel(),
+    });
+    // undefined response means the user cancelled the dialog; don't change anything
+    if (response !== undefined) {
+      if (response === '')
+        // Interpret empty string response as "go back to using default"
+        queryHistoryItem.label = undefined;
+      else
+        queryHistoryItem.label = response;
+      this.treeDataProvider.refresh();
+    }
+  }
+
   async handleItemClicked(queryHistoryItem: QueryHistoryItem) {
     this.treeDataProvider.setCurrentItem(queryHistoryItem);
 
@@ -185,7 +231,11 @@ export class QueryHistoryManager {
     }
   }
 
-  constructor(ctx: ExtensionContext, selectedCallback?: (item: QueryHistoryItem) => Promise<void>) {
+  constructor(
+    ctx: ExtensionContext,
+    private queryHistoryConfigListener: QueryHistoryConfig,
+    selectedCallback?: (item: QueryHistoryItem) => Promise<void>
+  ) {
     this.ctx = ctx;
     this.selectedCallback = selectedCallback;
     const treeDataProvider = this.treeDataProvider = new HistoryTreeDataProvider(ctx);
@@ -199,12 +249,17 @@ export class QueryHistoryManager {
     });
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.openQuery', this.handleOpenQuery));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.removeHistoryItem', this.handleRemoveHistoryItem.bind(this)));
+    ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.setLabel', this.handleSetLabel.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.itemClicked', async (item) => {
       return this.handleItemClicked(item);
     }));
+    queryHistoryConfigListener.onDidChangeQueryHistoryConfiguration(() => {
+      this.treeDataProvider.refresh();
+    });
   }
 
-  push(item: QueryHistoryItem) {
+  push(evaluationInfo: EvaluationInfo) {
+    const item = new QueryHistoryItem(evaluationInfo, this.queryHistoryConfigListener);
     this.treeDataProvider.push(item);
     this.treeView.reveal(item, { select: true });
   }
