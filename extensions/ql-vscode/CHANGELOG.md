@@ -1,5 +1,11 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.0.2 - 13 December 2019
+
+- Fix rendering of negative numbers in results
+- Allow customization of query history labels
+- Show number of results in results view
+
 ## 1.0.1 - 21 November 2019
 
 - Change `codeQL.cli.executablePath` to a per-machine setting, so it can no longer be set at the user or workspace level. This helps prevent arbitrary code execution when using a VS Code workspace from an untrusted source.
