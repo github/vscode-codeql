@@ -163,7 +163,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   // metadata
 
   async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
-    return await this._lookup(uri, false);
+    return await this._lookup(uri);
   }
 
   async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
@@ -180,7 +180,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   // file contents
 
   async readFile(uri: vscode.Uri): Promise<Uint8Array> {
-    const data = (await this._lookupAsFile(uri, false)).data;
+    const data = (await this._lookupAsFile(uri)).data;
     if (data) {
       return data;
     }
@@ -189,25 +189,25 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
 
   // write operations, all disabled
 
-  writeFile(uri: vscode.Uri, content: Uint8Array, options: { create: boolean, overwrite: boolean }): void {
+  writeFile(_uri: vscode.Uri, _content: Uint8Array, _options: { create: boolean, overwrite: boolean }): void {
     throw this.readOnlyError;
   }
 
-  rename(oldUri: vscode.Uri, newUri: vscode.Uri, options: { overwrite: boolean }): void {
+  rename(_oldUri: vscode.Uri, _newUri: vscode.Uri, _options: { overwrite: boolean }): void {
     throw this.readOnlyError;
   }
 
-  delete(uri: vscode.Uri): void {
+  delete(_uri: vscode.Uri): void {
     throw this.readOnlyError;
   }
 
-  createDirectory(uri: vscode.Uri): void {
+  createDirectory(_uri: vscode.Uri): void {
     throw this.readOnlyError;
   }
 
   // content lookup
 
-  private async _lookup(uri: vscode.Uri, silent: boolean): Promise<Entry> {
+  private async _lookup(uri: vscode.Uri): Promise<Entry> {
     const ref = decodeSourceArchiveUri(uri);
     const archive = await this.getArchive(ref.sourceArchiveZipPath);
 
@@ -238,8 +238,8 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     throw vscode.FileSystemError.FileNotFound(uri);
   }
 
-  private async _lookupAsFile(uri: vscode.Uri, silent: boolean): Promise<File> {
-    let entry = await this._lookup(uri, silent);
+  private async _lookupAsFile(uri: vscode.Uri): Promise<File> {
+    let entry = await this._lookup(uri);
     if (entry instanceof File) {
       return entry;
     }

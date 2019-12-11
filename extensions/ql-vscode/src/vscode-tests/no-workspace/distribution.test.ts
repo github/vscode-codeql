@@ -48,7 +48,7 @@ describe("Releases API consumer", () => {
 
   it("picking latest release: is based on version", async () => {
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
-      protected async makeApiCall(apiPath: string, additionalHeaders: { [key: string]: string } = {}): Promise<fetch.Response> {
+      protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
         if (apiPath === `/repos/${owner}/${repo}/releases`) {
           return Promise.resolve(new fetch.Response(JSON.stringify(sampleReleaseResponse)));
         }
@@ -64,7 +64,7 @@ describe("Releases API consumer", () => {
 
   it("picking latest release: obeys version constraints", async () => {
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
-      protected async makeApiCall(apiPath: string, additionalHeaders: { [key: string]: string } = {}): Promise<fetch.Response> {
+      protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
         if (apiPath === `/repos/${owner}/${repo}/releases`) {
           return Promise.resolve(new fetch.Response(JSON.stringify(sampleReleaseResponse)));
         }
@@ -83,7 +83,7 @@ describe("Releases API consumer", () => {
 
   it("picking latest release: includes prereleases when option set", async () => {
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
-      protected async makeApiCall(apiPath: string, additionalHeaders: { [key: string]: string } = {}): Promise<fetch.Response> {
+      protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
         if (apiPath === `/repos/${owner}/${repo}/releases`) {
           return Promise.resolve(new fetch.Response(JSON.stringify(sampleReleaseResponse)));
         }
@@ -112,7 +112,7 @@ describe("Releases API consumer", () => {
     ];
 
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
-      protected async makeApiCall(apiPath: string, additionalHeaders: { [key: string]: string } = {}): Promise<fetch.Response> {
+      protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
         if (apiPath === `/repos/${owner}/${repo}/releases`) {
           const responseBody: GithubRelease[] = [{
             "assets": expectedAssets,

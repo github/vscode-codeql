@@ -415,7 +415,7 @@ class DatabaseItemImpl implements DatabaseItem {
  * >1000ms) log a warning, and resolve to undefined.
  */
 function eventFired<T>(event: vscode.Event<T>, timeoutMs: number = 1000): Promise<T | undefined> {
-  return new Promise((res, rej) => {
+  return new Promise((res, _rej) => {
     let timeout: NodeJS.Timeout | undefined;
     let disposable: vscode.Disposable | undefined;
     function dispose() {

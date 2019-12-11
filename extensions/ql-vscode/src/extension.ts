@@ -49,7 +49,7 @@ let isInstallingOrUpdatingDistribution = false;
  *
  * @param excludedCommands List of commands for which we should not register error stubs.
  */
-function registerErrorStubs(ctx: ExtensionContext, excludedCommands: string[], stubGenerator: (command: string) => () => void) {
+function registerErrorStubs(excludedCommands: string[], stubGenerator: (command: string) => () => void) {
   // Remove existing stubs
   errorStubs.forEach(stub => stub.dispose());
 
@@ -79,7 +79,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
   const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
 
-  registerErrorStubs(ctx, [checkForUpdatesCommand], command => () => {
+  registerErrorStubs([checkForUpdatesCommand], command => () => {
     helpers.showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
   });
 
@@ -189,7 +189,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     if (!beganMainExtensionActivation && distributionResult.kind !== FindDistributionResultKind.NoDistribution) {
       await activateWithInstalledDistribution(ctx, distributionManager);
     } else if (distributionResult.kind === FindDistributionResultKind.NoDistribution) {
-      registerErrorStubs(ctx, [checkForUpdatesCommand], command => async () => {
+      registerErrorStubs([checkForUpdatesCommand], command => async () => {
         const installActionName = "Install CodeQL CLI";
         const chosenAction = await helpers.showAndLogErrorMessage(`Can't execute ${command}: missing CodeQL CLI.`, installActionName);
         if (chosenAction === installActionName) {

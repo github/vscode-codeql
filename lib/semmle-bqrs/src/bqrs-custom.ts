@@ -166,7 +166,7 @@ type ParseTupleAction = (src: readonly ColumnValue[], dest: any) => void;
 type TupleParser<T> = (src: readonly ColumnValue[]) => T;
 
 export class CustomResultSet<TTuple> {
-  public constructor(private reader: ResultSetReader, private readonly type: { new(): TTuple },
+  public constructor(private reader: ResultSetReader,
     private readonly tupleParser: TupleParser<TTuple>) {
   }
 
@@ -192,7 +192,7 @@ class CustomResultSetBinder {
     const binder = new CustomResultSetBinder(rowType, reader.schema);
     const tupleParser = binder.bindRoot<TTuple>();
 
-    return new CustomResultSet<TTuple>(reader, rowType, tupleParser);
+    return new CustomResultSet<TTuple>(reader, tupleParser);
   }
 
   private bindRoot<TTuple>(): TupleParser<TTuple> {
