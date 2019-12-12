@@ -238,11 +238,13 @@ export class QueryHistoryManager {
     this.selectedCallback = selectedCallback;
     const treeDataProvider = this.treeDataProvider = new HistoryTreeDataProvider();
     this.treeView = Window.createTreeView('codeQLQueryHistory', { treeDataProvider });
+    // Lazily update the tree view selection due to limitations of TreeView API (see
+    // `updateTreeViewSelectionIfVisible` doc for details)
+    this.treeView.onDidChangeVisibility(async _ev => this.updateTreeViewSelectionIfVisible());
+    // Don't allow the selection to become empty
     this.treeView.onDidChangeSelection(async ev => {
       if (ev.selection.length == 0) {
-        const current = this.treeDataProvider.getCurrent();
-        if (current != undefined)
-          this.treeView.reveal(current); // don't allow selection to become empty
+        this.updateTreeViewSelectionIfVisible();
       }
     });
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.openQuery', this.handleOpenQuery));
@@ -259,6 +261,26 @@ export class QueryHistoryManager {
   push(evaluationInfo: EvaluationInfo) {
     const item = new QueryHistoryItem(evaluationInfo, this.queryHistoryConfigListener);
     this.treeDataProvider.push(item);
-    this.treeView.reveal(item, { select: true });
+    this.updateTreeViewSelectionIfVisible();
+  }
+
+  /**
+   * Update the tree view selection if the tree view is visible.
+   *
+   * If the tree view is not visible, we must wait until it becomes visible before updating the
+   * selection. This is because the only mechanism for updating the selection of the tree view
+   * has the side-effect of revealing the tree view. This changes the active sidebar to CodeQL,
+   * interrupting user workflows such as writing a commit message on the source control sidebar.
+   */
+  private updateTreeViewSelectionIfVisible() {
+    if (this.treeView.visible) {
+      const current = this.treeDataProvider.getCurrent();
+      if (current != undefined) {
+        // We must fire the onDidChangeTreeData event to ensure the current element can be selected
+        // using `reveal` if the tree view was not visible when the current element was added. 
+        this.treeDataProvider.refresh();
+        this.treeView.reveal(current);
+      }
+    }
   }
 }
