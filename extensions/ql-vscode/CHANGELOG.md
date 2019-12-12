@@ -2,9 +2,13 @@
 
 ## 1.0.2 - 13 December 2019
 
-- Fix rendering of negative numbers in results
-- Allow customization of query history labels
-- Show number of results in results view
+- Fix rendering of negative numbers in results.
+- Allow customization of query history labels from settings and from
+  query history view context menu.
+- Show number of results in results view.
+- Add commands `CodeQL: Show Next Step on Path` and `CodeQL: Show
+  Previous Step on Path` for navigating the steps on the currently
+  shown path result.
 
 ## 1.0.1 - 21 November 2019
 
