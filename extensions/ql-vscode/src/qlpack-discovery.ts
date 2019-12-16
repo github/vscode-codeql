@@ -35,7 +35,7 @@ export class QLPackDiscovery extends Discovery<ResolvedQLPacks> {
 
   public get qlPacks(): readonly QLPack[] { return this._qlPacks; }
 
-  private handleQLPackFileChanged(uri: Uri): void {
+  private handleQLPackFileChanged(_uri: Uri): void {
     this.refresh();
   }
 

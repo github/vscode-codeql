@@ -218,7 +218,7 @@ function transformFile(yaml: any) {
 }
 
 export function transpileTextMateGrammar() {
-  return through.obj((file: Vinyl, encoding: string, callback: Function): void => {
+  return through.obj((file: Vinyl, _encoding: string, callback: Function): void => {
     if (file.isNull()) {
       callback(null, file);
     }

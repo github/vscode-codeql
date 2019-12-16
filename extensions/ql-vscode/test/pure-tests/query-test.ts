@@ -100,7 +100,7 @@ describe('using the query server', function () {
     };
     const logger = {
       log: (s: string) => console.log('logger says', s),
-      logWithoutTrailingNewline: (s: string) => { }
+      logWithoutTrailingNewline: (s: string) => console.log('logger says', s)
     };
     cliServer = new cli.CodeQLCliServer({
       async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
@@ -167,7 +167,7 @@ describe('using the query server', function () {
     it(`should be able to run query ${queryName}`, async function () {
       try {
         await compilationSucceeded.done();
-        const callbackId = qs.registerCallback(res => {
+        const callbackId = qs.registerCallback(_res => {
           evaluationSucceeded.resolve();
         });
         const queryToRun: messages.QueryToRun = {

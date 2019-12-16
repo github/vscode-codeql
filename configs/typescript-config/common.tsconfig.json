@@ -15,7 +15,9 @@
     "preserveWatchOutput": true,
     "newLine": "lf",
     "noImplicitReturns": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "include": [
     "../../src/**/*.ts"

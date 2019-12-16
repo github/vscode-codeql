@@ -171,7 +171,7 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
     this.refresh();
   }
 
-  private handleDidChange(uri: Uri): void {
+  private handleDidChange(_uri: Uri): void {
     this.refresh();
   }
 

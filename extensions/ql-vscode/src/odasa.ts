@@ -33,7 +33,7 @@ interface QLOutputMatcher {
   processStdErrLine?(line: string): void;
 }
 
-const testFinishedRegex = /^\[\d+\/\d+\] (.*): (OK|FAILED)/;
+const testFinishedRegex = /^\[ *\d+\/\d+\] (.*): (OK|FAILED)/;
 
 export async function qlTest(taskOptions: QLOptions, testOptions: QLTestOptions,
   handler: QLTestHandler): Promise<void> {

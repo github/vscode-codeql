@@ -150,8 +150,12 @@ export class QueryInfo {
   /**
    * Holds if this query should produce interpreted results.
    */
-  hasInterpretedResults(): boolean {
-    return this.dbItem.hasDbInfo();
+  async hasInterpretedResults(): Promise<boolean> {
+    const hasMetadataFile = await this.dbItem.hasMetadataFile();
+    if (!hasMetadataFile) {
+      logger.log("Cannot produce interpreted results since the database does not have a .dbinfo or codeql-database.yml file.");
+    }
+    return hasMetadataFile;
   }
 
   async updateSortState(server: cli.CodeQLCliServer, resultSetName: string, sortState: SortState | undefined): Promise<void> {

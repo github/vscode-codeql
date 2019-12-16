@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { Uri, TextDocumentShowOptions, commands, languages, window, DiagnosticCollection } from 'vscode';
+import { Uri, TextDocumentShowOptions, commands, window } from 'vscode';
 import { TestTreeNode } from './test-tree-node';
 import { DisposableObject, UIService } from 'semmle-vscode-utils';
 import { TestHub, TestController, TestAdapter, TestRunStartedEvent, TestRunFinishedEvent, TestEvent, TestSuiteEvent } from 'vscode-test-adapter-api';
@@ -10,13 +10,13 @@ import { QLTestAdapter, getExpectedFile, getActualFile } from './test-adapter';
  * Test event listener. Currently unused, but left in to keep the plumbing hooked up for future use.
  */
 class QLTestListener extends DisposableObject {
-  constructor(private readonly adapter: TestAdapter) {
+  constructor(adapter: TestAdapter) {
     super();
 
     this.push(adapter.testStates(this.onTestStatesEvent, this));
   }
 
-  private onTestStatesEvent(e: TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent): void {
+  private onTestStatesEvent(_e: TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent): void {
   }
 }
 

@@ -15,7 +15,7 @@ import {
 } from 'vscode-test-adapter-api';
 import { TestAdapterRegistrar } from 'vscode-test-adapter-util';
 import { QLTestFile, QLTestNode, QLTestDirectory, QLTestDiscovery } from './qltest-discovery';
-import { Event, EventEmitter, window, Diagnostic, Uri, Range, DiagnosticSeverity, OutputChannel, CancellationToken, workspace, Disposable, CancellationTokenSource, commands } from 'vscode';
+import { Event, EventEmitter, window, OutputChannel, CancellationToken, workspace, Disposable, CancellationTokenSource, commands } from 'vscode';
 import { DisposableObject } from 'semmle-vscode-utils';
 import { QLTestOptions, QLTestHandler, QLOptions, qlTest, isOdasaAvailable } from './odasa';
 import { QLPackDiscovery } from './qlpack-discovery';
@@ -111,9 +111,6 @@ function getLicensePath(): string | undefined {
 function changeExtension(p: string, ext: string): string {
   return p.substr(0, p.length - path.extname(p).length) + ext;
 }
-
-const inlineExpectationLinePattern = /^\| (?<file>[^:]+)\:(?<startLine>\d+):(?<startColumn>\d+):(?<endLine>\d+):(?<endColumn>\d+) \| (?<element>(?:[^|\\]|\\\\)*) \| (?<message>(?:[^\|\\]|\\\\)*) \|$/;
-const inlineExpectationMessagePattern = /^Unexpected result|Fixed false positive|Fixed false negative|Missing result|Invalid expectation syntax/;
 
 /**
  * Test adapter for QL tests.
@@ -242,7 +239,6 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
         leaveTempFiles: true,
         tests: tests
       };
-      const adapter = this;
       const handler: QLTestHandler = {
         onTestPassed(testId: string): void {
           testAdapter._testStates.fire({
@@ -316,7 +312,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
       },
       registerOnCancellationRequested(h: () => void) {
         if (taskOptions.token) {
-          cancellationRegistration = taskOptions.token.onCancellationRequested(e => {
+          cancellationRegistration = taskOptions.token.onCancellationRequested(_e => {
             h();
           });
         }

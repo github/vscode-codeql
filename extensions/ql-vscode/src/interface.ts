@@ -199,7 +199,7 @@ export class InterfaceManager extends DisposableObject {
   }
 
   private waitForPanelLoaded(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       if (this._panelLoaded) {
         resolve();
       } else {
