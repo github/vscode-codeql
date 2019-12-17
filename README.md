@@ -6,7 +6,7 @@ The extension is released. You can download it from the [Visual Studio Marketpla
 
 To see what has changed in the last few versions of the extension, see the [Changelog](https://github.com/github/vscode-codeql/blob/master/extensions/ql-vscode/CHANGELOG.md).
 
-![CI status badge](https://github.com/github/vscode-codeql/workflows/Build%20Extension/badge.svg)
+[![CI status badge](https://github.com/github/vscode-codeql/workflows/Build%20Extension/badge.svg)](https://github.com/github/vscode-codeql/actions?query=workflow%3A%22Build+Extension%22)
 
 ## Features
 
