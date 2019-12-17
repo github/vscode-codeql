@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -95,14 +95,20 @@
           "description": "Number of threads for running queries."
         },
         "codeQL.runningQueries.timeout": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "default": null,
           "minimum": 0,
           "maximum": 2147483647,
           "description": "Timeout (in seconds) for running queries. Leave blank or set to zero for no timeout."
         },
         "codeQL.runningQueries.memory": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "default": null,
           "minimum": 1024,
           "description": "Memory (in MB) to use for running queries. Leave blank for CodeQL to choose a suitable value based on your system's available memory."
