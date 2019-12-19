@@ -6,7 +6,7 @@ import * as unzipper from "unzipper";
 import * as url from "url";
 import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "./config";
-import { ProgressUpdate, showAndLogErrorMessage } from "./helpers";
+import { InvocationRateLimiter, InvocationRateLimiterResultKind, ProgressUpdate, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
 import { getCodeQlCliVersion, tryParseVersionString, Version } from "./cli-version";
 
@@ -55,6 +55,11 @@ export class DistributionManager implements DistributionProvider {
     this._config = config;
     this._extensionSpecificDistributionManager = new ExtensionSpecificDistributionManager(extensionContext, config, versionConstraint);
     this._onDidChangeDistribution = config.onDidChangeDistributionConfiguration;
+    this._updateCheckRateLimiter = new InvocationRateLimiter(
+      extensionContext,
+      "extensionSpecificDistributionUpdateCheck",
+      () => this._extensionSpecificDistributionManager.checkForUpdatesToDistribution()
+    );
     this._versionConstraint = versionConstraint;
   }
 
@@ -128,14 +133,21 @@ export class DistributionManager implements DistributionProvider {
    * 
    * Returns a failed promise if an unexpected error occurs during installation.
    */
-  public async checkForUpdatesToExtensionManagedDistribution(): Promise<DistributionUpdateCheckResult> {
+  public async checkForUpdatesToExtensionManagedDistribution(
+    minSecondsSinceLastUpdateCheck: number): Promise<DistributionUpdateCheckResult> {
     const codeQlPath = await this.getCodeQlPathWithoutVersionCheck();
     const extensionManagedCodeQlPath = await this._extensionSpecificDistributionManager.getCodeQlPathWithoutVersionCheck();
     if (codeQlPath !== undefined && codeQlPath !== extensionManagedCodeQlPath) {
       // A distribution is present but it isn't managed by the extension.
-      return createInvalidDistributionLocationResult();
+      return createInvalidLocationResult();
     }
-    return this._extensionSpecificDistributionManager.checkForUpdatesToDistribution();
+    const updateCheckResult = await this._updateCheckRateLimiter.invokeFunctionIfIntervalElapsed(minSecondsSinceLastUpdateCheck);
+    switch (updateCheckResult.kind) {
+      case InvocationRateLimiterResultKind.Invoked:
+        return updateCheckResult.result;
+      case InvocationRateLimiterResultKind.RateLimited:
+        return createAlreadyCheckedRecentlyResult();
+    }
   }
 
   /**
@@ -154,6 +166,7 @@ export class DistributionManager implements DistributionProvider {
 
   private readonly _config: DistributionConfig;
   private readonly _extensionSpecificDistributionManager: ExtensionSpecificDistributionManager;
+  private readonly _updateCheckRateLimiter: InvocationRateLimiter<DistributionUpdateCheckResult>;
   private readonly _onDidChangeDistribution: Event<void> | undefined;
   private readonly _versionConstraint: VersionConstraint;
 }
@@ -196,7 +209,7 @@ class ExtensionSpecificDistributionManager {
     const latestRelease = await this.getLatestRelease();
 
     if (extensionSpecificRelease !== undefined && codeQlPath !== undefined && latestRelease.id === extensionSpecificRelease.id) {
-      return createDistributionAlreadyUpToDateResult();
+      return createAlreadyUpToDateResult();
     }
     return createUpdateAvailableResult(latestRelease);
   }
@@ -234,7 +247,7 @@ class ExtensionSpecificDistributionManager {
 
       if (progressCallback && contentLength !== null) {
         const totalNumBytes = parseInt(contentLength, 10);
-        const bytesToDisplayMB = (numBytes: number) => `${(numBytes/(1024*1024)).toFixed(1)} MB`;
+        const bytesToDisplayMB = (numBytes: number) => `${(numBytes / (1024 * 1024)).toFixed(1)} MB`;
         const updateProgress = () => {
           progressCallback({
             step: numBytesDownloaded,
@@ -258,7 +271,7 @@ class ExtensionSpecificDistributionManager {
           .on("error", reject)
       );
 
-      this.bumpDistributionFolderIndex();
+      await this.bumpDistributionFolderIndex();
 
       logger.log(`Extracting CodeQL CLI to ${this.getDistributionStoragePath()}`);
       await extractZipArchive(archivePath, this.getDistributionStoragePath());
@@ -293,10 +306,10 @@ class ExtensionSpecificDistributionManager {
     return new ReleasesApiConsumer(ownerName, repositoryName, this._config.personalAccessToken);
   }
 
-  private bumpDistributionFolderIndex(): void {
+  private async bumpDistributionFolderIndex(): Promise<void> {
     const index = this._extensionContext.globalState.get(
       ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey, 0);
-    this._extensionContext.globalState.update(
+    await this._extensionContext.globalState.update(
       ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey, index + 1);
   }
 
@@ -317,8 +330,8 @@ class ExtensionSpecificDistributionManager {
     return this._extensionContext.globalState.get(ExtensionSpecificDistributionManager._installedReleaseStateKey);
   }
 
-  private storeInstalledRelease(release: Release | undefined): void {
-    this._extensionContext.globalState.update(ExtensionSpecificDistributionManager._installedReleaseStateKey, release);
+  private async storeInstalledRelease(release: Release | undefined): Promise<void> {
+    await this._extensionContext.globalState.update(ExtensionSpecificDistributionManager._installedReleaseStateKey, release);
   }
 
   private readonly _config: DistributionConfig;
@@ -532,23 +545,28 @@ interface NoDistributionResult {
 }
 
 export enum DistributionUpdateCheckResultKind {
+  AlreadyCheckedRecentlyResult,
   AlreadyUpToDate,
-  InvalidDistributionLocation,
+  InvalidLocation,
   UpdateAvailable
 }
 
-type DistributionUpdateCheckResult = DistributionAlreadyUpToDateResult | InvalidDistributionLocationResult |
+type DistributionUpdateCheckResult = AlreadyCheckedRecentlyResult | AlreadyUpToDateResult | InvalidLocationResult |
   UpdateAvailableResult;
 
-export interface DistributionAlreadyUpToDateResult {
+export interface AlreadyCheckedRecentlyResult {
+  kind: DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult
+}
+
+export interface AlreadyUpToDateResult {
   kind: DistributionUpdateCheckResultKind.AlreadyUpToDate;
 }
 
 /**
  * The distribution could not be installed or updated because it is not managed by the extension.
  */
-export interface InvalidDistributionLocationResult {
-  kind: DistributionUpdateCheckResultKind.InvalidDistributionLocation;
+export interface InvalidLocationResult {
+  kind: DistributionUpdateCheckResultKind.InvalidLocation;
 }
 
 export interface UpdateAvailableResult {
@@ -556,15 +574,21 @@ export interface UpdateAvailableResult {
   updatedRelease: Release;
 }
 
-function createDistributionAlreadyUpToDateResult(): DistributionAlreadyUpToDateResult {
+function createAlreadyCheckedRecentlyResult(): AlreadyCheckedRecentlyResult {
+  return {
+    kind: DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult
+  };
+}
+
+function createAlreadyUpToDateResult(): AlreadyUpToDateResult {
   return {
     kind: DistributionUpdateCheckResultKind.AlreadyUpToDate
   };
 }
 
-function createInvalidDistributionLocationResult(): InvalidDistributionLocationResult {
+function createInvalidLocationResult(): InvalidLocationResult {
   return {
-    kind: DistributionUpdateCheckResultKind.InvalidDistributionLocation
+    kind: DistributionUpdateCheckResultKind.InvalidLocation
   };
 }
 
