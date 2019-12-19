@@ -46,10 +46,10 @@ export function withProgress<R>(
 /**
  * Show an error message and log it to the console
  *
- * @param message — The message to show.
- * @param items — A set of items that will be rendered as actions in the message.
+ * @param message The message to show.
+ * @param items A set of items that will be rendered as actions in the message.
  *
- * @return — A thenable that resolves to the selected item or undefined when being dismissed.
+ * @return A thenable that resolves to the selected item or undefined when being dismissed.
  */
 export function showAndLogErrorMessage(message: string, ...items: string[]): Thenable<string | undefined> {
   logger.log(message);
@@ -58,10 +58,10 @@ export function showAndLogErrorMessage(message: string, ...items: string[]): The
 /**
  * Show a warning message and log it to the console
  *
- * @param message — The message to show.
- * @param items — A set of items that will be rendered as actions in the message.
+ * @param message The message to show.
+ * @param items A set of items that will be rendered as actions in the message.
  *
- * @return — A thenable that resolves to the selected item or undefined when being dismissed.
+ * @return A thenable that resolves to the selected item or undefined when being dismissed.
  */
 export function showAndLogWarningMessage(message: string, ...items: string[]): Thenable<string | undefined> {
   logger.log(message);
@@ -70,10 +70,10 @@ export function showAndLogWarningMessage(message: string, ...items: string[]): T
 /**
  * Show an information message and log it to the console
  *
- * @param message — The message to show.
- * @param items — A set of items that will be rendered as actions in the message.
+ * @param message The message to show.
+ * @param items A set of items that will be rendered as actions in the message.
  *
- * @return — A thenable that resolves to the selected item or undefined when being dismissed.
+ * @return A thenable that resolves to the selected item or undefined when being dismissed.
  */
 export function showAndLogInformationMessage(message: string, ...items: string[]): Thenable<string | undefined> {
   logger.log(message);
@@ -82,9 +82,9 @@ export function showAndLogInformationMessage(message: string, ...items: string[]
 
 /**
  * Opens a modal dialog for the user to make a yes/no choice.
- * @param message — The message to show.
+ * @param message The message to show.
  *
- * @return — `true` if the user clicks 'Yes', `false` if the user clicks 'No' or cancels the dialog.
+ * @return `true` if the user clicks 'Yes', `false` if the user clicks 'No' or cancels the dialog.
  */
 export async function showBinaryChoiceDialog(message: string): Promise<boolean> {
   const yesItem = { title: 'Yes', isCloseAffordance: false };
@@ -95,10 +95,10 @@ export async function showBinaryChoiceDialog(message: string): Promise<boolean> 
 
 /**
  * Show an information message with a customisable action.
- * @param message — The message to show.
- * @param actionMessage - The call to action message.
+ * @param message The message to show.
+ * @param actionMessage The call to action message.
  *
- * @return — `true` if the user clicks the action, `false` if the user cancels the dialog.
+ * @return `true` if the user clicks the action, `false` if the user cancels the dialog.
  */
 export async function showInformationMessageWithAction(message: string, actionMessage: string): Promise<boolean> {
   const actionItem = { title: actionMessage, isCloseAffordance: false };
