@@ -54,9 +54,25 @@ jobs:
           npm run build-ci
         shell: bash
 
-      - name: Run unit tests
+      - name: Install CodeQL
+        run: |
+          mkdir codeql-home
+          curl -L --silent https://github.com/github/codeql-cli-binaries/releases/latest/download/codeql.zip -o codeql-home/codeql.zip
+          unzip -q -o codeql-home/codeql.zip -d codeql-home
+          rm codeql-home/codeql.zip
+        shell: bash
+
+      - name: Run unit tests (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           cd extensions/ql-vscode
+          CODEQL_PATH=$GITHUB_WORKSPACE/codeql-home/codeql/codeql npm run test
+
+      - name: Run unit tests (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd extensions/ql-vscode
+          $env:CODEQL_PATH=$(Join-Path $env:GITHUB_WORKSPACE -ChildPath 'codeql-home/codeql/codeql.cmd')
           npm run test
 
       - name: Run integration tests (Linux)
