@@ -74,7 +74,7 @@ function getHtmlForWebview(webview: vscode.Webview, scriptUriOnDisk: vscode.Uri,
 
 /** Converts a filesystem URI into a webview URI string that the given panel can use to read the file. */
 export function fileUriToWebviewUri(panel: vscode.WebviewPanel, fileUriOnDisk: Uri): string {
-  return encodeURI(panel.webview.asWebviewUri(fileUriOnDisk).toString(true));
+  return panel.webview.asWebviewUri(fileUriOnDisk).toString();
 }
 
 /** Converts a URI string received from a webview into a local filesystem URI for the same resource. */
