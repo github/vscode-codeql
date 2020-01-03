@@ -127,21 +127,13 @@
           "default": "[%t] %q on %d - %s",
           "description": "Default string for how to label query history items. %t is the time of the query, %q is the query name, %d is the database name, and %s is a status string."
         },
-        "codeQL.tests.semmleCoreDistributionPath": {
-          "scope": "window",
-          "type": "string",
-          "default": "",
-          "description": "Location of the Semmle Core distribution"
-        },
-        "codeQL.tests.semmleCoreLicensePath": {
-          "scope": "window",
-          "type": "string",
-          "description": "Location of the directory containing the Semmle Core license file"
-        },
-        "codeQL.tests.numberOfThreads": {
+        "codeQL.runningTests.numberOfThreads": {
           "scope": "window",
           "type": "integer",
-          "description": "Number of threads to use for CodeQL test execution"
+          "default": 1,
+          "minimum": 1,
+          "maximum": 1024,
+          "description": "Number of threads for running CodeQL tests."
         }
       }
     },

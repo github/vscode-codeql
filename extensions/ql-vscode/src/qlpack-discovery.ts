@@ -1,4 +1,5 @@
-import { EventEmitter, Event, Uri, workspace, WorkspaceFolder, RelativePattern } from 'vscode';
+import { EventEmitter, Event, Uri, WorkspaceFolder, RelativePattern } from 'vscode';
+import { MultiFileSystemWatcher } from 'semmle-vscode-utils';
 import { CodeQLCliServer, ResolvedQLPacks } from './cli';
 import { Discovery } from './discovery';
 
@@ -12,6 +13,7 @@ export interface QLPack {
  */
 export class QLPackDiscovery extends Discovery<ResolvedQLPacks> {
   private readonly _onDidChangeQLPacks = this.push(new EventEmitter<void>());
+  private readonly watcher = this.push(new MultiFileSystemWatcher());
   private _qlPacks: readonly QLPack[] = [];
 
   constructor(private readonly workspaceFolder: WorkspaceFolder,
@@ -21,12 +23,9 @@ export class QLPackDiscovery extends Discovery<ResolvedQLPacks> {
 
     // Watch for any changes to `qlpack.yml` files in this workspace folder.
     // TODO: The CLI server should tell us what paths to watch for.
-    const watcher = workspace.createFileSystemWatcher(
-      new RelativePattern(this.workspaceFolder, '**/qlpack.yml'));
-    this.push(watcher);
-    this.push(watcher.onDidChange(this.handleQLPackFileChanged, this));
-    this.push(watcher.onDidCreate(this.handleQLPackFileChanged, this));
-    this.push(watcher.onDidDelete(this.handleQLPackFileChanged, this));
+    this.watcher.addWatch(new RelativePattern(this.workspaceFolder, '**/qlpack.yml'));
+    this.watcher.addWatch(new RelativePattern(this.workspaceFolder, '**/.codeqlmanifest.json'));
+    this.push(this.watcher.onDidChange(this.handleQLPackFileChanged, this));
 
     this.refresh();
   }

@@ -1,4 +1,3 @@
-import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
@@ -15,12 +14,12 @@ import {
 } from 'vscode-test-adapter-api';
 import { TestAdapterRegistrar } from 'vscode-test-adapter-util';
 import { QLTestFile, QLTestNode, QLTestDirectory, QLTestDiscovery } from './qltest-discovery';
-import { Event, EventEmitter, window, OutputChannel, CancellationToken, workspace, Disposable, CancellationTokenSource, commands } from 'vscode';
+import { Event, EventEmitter, CancellationTokenSource } from 'vscode';
 import { DisposableObject } from 'semmle-vscode-utils';
-import { QLTestOptions, QLTestHandler, QLOptions, qlTest, isOdasaAvailable } from './odasa';
 import { QLPackDiscovery } from './qlpack-discovery';
 import { CodeQLCliServer } from './cli';
-import { showAndLogErrorMessage } from './helpers';
+import { getOnDiskWorkspaceFolders } from './helpers';
+import { testLogger } from './logging';
 
 /**
  * Get the full path of the `.expected` file for the specified QL test.
@@ -70,39 +69,6 @@ export class QLTestAdapterFactory extends DisposableObject {
   }
 }
 
-interface QLTaskOptions {
-  output?: OutputChannel;
-  token?: CancellationToken;
-}
-
-/**
- * Gets the number of threads to be used for running QL tests.
- */
-function getQLTestThreadCount(): number {
-  const threadCount = workspace.getConfiguration('codeQL.tests').get<number>('numberOfThreads');
-  return threadCount || os.cpus().length;
-}
-
-/**
- * Gets the path to the ODASA distribution to be used for running QL tests.
- */
-function getDistributionPath(): string {
-  const semmleDist =
-    workspace.getConfiguration('codeQL.tests').get<string>('semmleCoreDistributionPath');
-  if (semmleDist === undefined) {
-    throw new Error("'codeQL.tests.semmleCoreDistributionPath' must be set to the path containing the Semmle Core distribution.");
-  }
-
-  return semmleDist;
-}
-
-/**
- * Gets the path to the directory containing the ODASA license file.
- */
-function getLicensePath(): string | undefined {
-  return workspace.getConfiguration('codeQL.tests').get<string>('semmleCoreLicensePath');
-}
-
 /**
  * Change the file extension of the specified path.
  * @param p The original file path.
@@ -124,7 +90,6 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     new EventEmitter<TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent |
       TestEvent>());
   private readonly _autorun = this.push(new EventEmitter<void>());
-  private readonly output = this.push(window.createOutputChannel('CodeQL Tests'));
   private runningTask?: vscode.CancellationTokenSource = undefined;
 
   constructor(
@@ -134,7 +99,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     super();
 
     this.qlPackDiscovery = this.push(new QLPackDiscovery(workspaceFolder, cliServer));
-    this.qlTestDiscovery = this.push(new QLTestDiscovery(this.qlPackDiscovery));
+    this.qlTestDiscovery = this.push(new QLTestDiscovery(this.qlPackDiscovery, cliServer));
 
     this.push(this.qlTestDiscovery.onDidChangeTests(this.discoverTests, this));
   }
@@ -219,8 +184,8 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
       throw new Error('Tests already running.');
     }
 
-    this.output.clear();
-    this.output.show(true);
+    testLogger.outputChannel.clear();
+    testLogger.outputChannel.show(true);
 
     this.runningTask = this.track(new CancellationTokenSource());
 
@@ -229,33 +194,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     const testAdapter = this;
 
     try {
-      const taskOptions: QLTaskOptions = {
-        output: this.output,
-        token: this.runningTask.token,
-      };
-      const testOptions: QLTestOptions = {
-        acceptOutput: false,
-        generateGraphs: false,
-        leaveTempFiles: true,
-        tests: tests
-      };
-      const handler: QLTestHandler = {
-        onTestPassed(testId: string): void {
-          testAdapter._testStates.fire({
-            type: 'test',
-            test: testId,
-            state: 'passed'
-          });
-        },
-        onTestFailed(testId: string): void {
-          testAdapter._testStates.fire({
-            type: 'test',
-            test: testId,
-            state: 'failed'
-          });
-        }
-      };
-      await this.runTests(taskOptions, testOptions, handler);
+      await this.runTests(tests);
     }
     catch (e) {
     }
@@ -273,72 +212,22 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
 
   public cancel(): void {
     if (this.runningTask !== undefined) {
-      this.output.appendLine('Cancelling test run...');
+      testLogger.log('Cancelling test run...');
       this.runningTask.cancel();
       this.clearTask();
     }
   }
 
-  private async runTests(taskOptions: QLTaskOptions, testOptions: QLTestOptions,
-    handler: QLTestHandler): Promise<void> {
-
-    const workspaceFolderPaths =
-      (workspace.workspaceFolders ?? []).map(workspaceFolder => workspaceFolder.uri.fsPath);
-    const querySetup = await this.cliServer.resolveLibraryPath(workspaceFolderPaths,
-      testOptions.tests[0]);
-
-    if (taskOptions.output) {
-      taskOptions.output.appendLine(`Library Path: ${querySetup.libraryPath}`);
-    }
-
-    const qlTestOptions: QLTestOptions = {
-      ...testOptions,
-      threads: getQLTestThreadCount(),
-      libraryPaths: querySetup.libraryPath,
-      optimize: true
-    };
-
-    let cancellationRegistration: Disposable = {
-      dispose() { }
-    };
-
-    const qlOptions: QLOptions = {
-      distributionPath: getDistributionPath(),
-      licensePath: getLicensePath(),
-      output(line: string): void {
-        if (taskOptions.output) {
-          taskOptions.output.appendLine(line);
-        }
-      },
-      registerOnCancellationRequested(h: () => void) {
-        if (taskOptions.token) {
-          cancellationRegistration = taskOptions.token.onCancellationRequested(_e => {
-            h();
-          });
-        }
-      }
-    }
-
-    try {
-      if (!await isOdasaAvailable(qlOptions)) {
-        const action = showAndLogErrorMessage("'codeQL.tests.semmleCoreDistributionPath' does not " +
-          "point to a distribution of Semmle Core. Semmle Core is required in order to run " +
-          "CodeQL tests. This requirement will be removed as soon as the CodeQL CLI supports " +
-          "running tests.",
-          'Edit Settings');
-        action.then(response => {
-          if (response !== undefined) {
-            commands.executeCommand('workbench.action.openSettings2');
-          }
-        });
-        // Attempt to invoke `odasa` anyway, just to get a more precise error in the log.
-      }
-      await qlTest(qlOptions, qlTestOptions, handler);
-    }
-    finally {
-      if (cancellationRegistration !== undefined) {
-        cancellationRegistration.dispose();
-      }
+  private async runTests(tests: string[]): Promise<void> {
+    const workspacePaths = await getOnDiskWorkspaceFolders();
+    for await (const event of await this.cliServer.runTests(tests, workspacePaths, {
+      logger: testLogger
+    })) {
+      this._testStates.fire({
+        type: 'test',
+        state: event.pass ? 'passed' : 'failed',
+        test: event.test
+      });
     }
   }
 }
