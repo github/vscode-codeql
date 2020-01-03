@@ -83,9 +83,14 @@ describe('using the query server', function () {
     }
   });
 
+  // Note this does not work with arrow functions as the test case bodies:
+  // ensure they are all written with standard anonymous functions.
+  this.timeout(10000);
+
   const codeQlPath = process.env["CODEQL_PATH"]!;
   let qs: qsClient.QueryServerClient;
   let cliServer: cli.CodeQLCliServer;
+  const queryServerStarted = new Checkpoint<void>();
   after(() => {
     if (qs) {
       qs.dispose();
@@ -94,6 +99,7 @@ describe('using the query server', function () {
       cliServer.dispose();
     }
   });
+
   it('should be able to start the query server', async function () {
     const consoleProgressReporter: ProgressReporter = {
       report: (v: {message: string}) => console.log(`progress reporter says ${v.message}`)
@@ -122,18 +128,17 @@ describe('using the query server', function () {
       task => task(consoleProgressReporter, token)
     );
     await qs.startQueryServer();
+    queryServerStarted.resolve();
   });
-
-  // Note this does not work with arrow functions as the test case bodies:
-  // ensure they are all written with standard anonymous functions.
-  this.timeout(5000);
 
   for (const queryTestCase of queryTestCases) {
     const queryName = path.basename(queryTestCase.queryPath);
     const compilationSucceeded = new Checkpoint<void>();
     const evaluationSucceeded = new Checkpoint<void>();
+    const parsedResults = new Checkpoint<void>();
 
     it(`should be able to compile query ${queryName}`, async function () {
+      await queryServerStarted.done();
       expect(fs.existsSync(queryTestCase.queryPath)).to.be.true;
       try {
         const qlProgram: messages.QlProgram = {
@@ -209,6 +214,7 @@ describe('using the query server', function () {
           }
           actualResultSets[reader.schema.name] = actualRows;
         }
+        parsedResults.resolve();
       } finally {
         if (fileReader) {
           fileReader.dispose();
@@ -217,6 +223,7 @@ describe('using the query server', function () {
     });
 
     it(`should have correct results for query ${queryName}`, async function () {
+      await parsedResults.done();
       expect(actualResultSets!).not.to.be.empty;
       expect(Object.keys(actualResultSets!).sort()).to.eql(Object.keys(queryTestCase.expectedResultSets).sort());
       for (const name in queryTestCase.expectedResultSets) {

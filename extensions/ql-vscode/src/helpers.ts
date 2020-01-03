@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { CancellationToken, ProgressOptions, window as Window, workspace } from 'vscode';
+import { CancellationToken, ExtensionContext, ProgressOptions, window as Window, workspace } from 'vscode';
 import { logger } from './logging';
 import { EvaluationInfo } from './queries';
 
@@ -46,10 +46,10 @@ export function withProgress<R>(
 /**
  * Show an error message and log it to the console
  *
- * @param message — The message to show.
- * @param items — A set of items that will be rendered as actions in the message.
+ * @param message The message to show.
+ * @param items A set of items that will be rendered as actions in the message.
  *
- * @return — A thenable that resolves to the selected item or undefined when being dismissed.
+ * @return A thenable that resolves to the selected item or undefined when being dismissed.
  */
 export function showAndLogErrorMessage(message: string, ...items: string[]): Thenable<string | undefined> {
   logger.log(message);
@@ -58,10 +58,10 @@ export function showAndLogErrorMessage(message: string, ...items: string[]): The
 /**
  * Show a warning message and log it to the console
  *
- * @param message — The message to show.
- * @param items — A set of items that will be rendered as actions in the message.
+ * @param message The message to show.
+ * @param items A set of items that will be rendered as actions in the message.
  *
- * @return — A thenable that resolves to the selected item or undefined when being dismissed.
+ * @return A thenable that resolves to the selected item or undefined when being dismissed.
  */
 export function showAndLogWarningMessage(message: string, ...items: string[]): Thenable<string | undefined> {
   logger.log(message);
@@ -70,10 +70,10 @@ export function showAndLogWarningMessage(message: string, ...items: string[]): T
 /**
  * Show an information message and log it to the console
  *
- * @param message — The message to show.
- * @param items — A set of items that will be rendered as actions in the message.
+ * @param message The message to show.
+ * @param items A set of items that will be rendered as actions in the message.
  *
- * @return — A thenable that resolves to the selected item or undefined when being dismissed.
+ * @return A thenable that resolves to the selected item or undefined when being dismissed.
  */
 export function showAndLogInformationMessage(message: string, ...items: string[]): Thenable<string | undefined> {
   logger.log(message);
@@ -82,9 +82,9 @@ export function showAndLogInformationMessage(message: string, ...items: string[]
 
 /**
  * Opens a modal dialog for the user to make a yes/no choice.
- * @param message — The message to show.
+ * @param message The message to show.
  *
- * @return — `true` if the user clicks 'Yes', `false` if the user clicks 'No' or cancels the dialog.
+ * @return `true` if the user clicks 'Yes', `false` if the user clicks 'No' or cancels the dialog.
  */
 export async function showBinaryChoiceDialog(message: string): Promise<boolean> {
   const yesItem = { title: 'Yes', isCloseAffordance: false };
@@ -95,10 +95,10 @@ export async function showBinaryChoiceDialog(message: string): Promise<boolean> 
 
 /**
  * Show an information message with a customisable action.
- * @param message — The message to show.
- * @param actionMessage - The call to action message.
+ * @param message The message to show.
+ * @param actionMessage The call to action message.
  *
- * @return — `true` if the user clicks the action, `false` if the user cancels the dialog.
+ * @return `true` if the user clicks the action, `false` if the user cancels the dialog.
  */
 export async function showInformationMessageWithAction(message: string, actionMessage: string): Promise<boolean> {
   const actionItem = { title: actionMessage, isCloseAffordance: false };
@@ -133,4 +133,82 @@ export function getQueryName(info: EvaluationInfo) {
   } else {
     return path.basename(info.query.program.queryPath);
   }
+}
+
+/**
+ * Provides a utility method to invoke a function only if a minimum time interval has elapsed since
+ * the last invocation of that function.
+ */
+export class InvocationRateLimiter<T> {
+  constructor(extensionContext: ExtensionContext, funcIdentifier: string, func: () => Promise<T>) {
+    this._extensionContext = extensionContext;
+    this._func = func;
+    this._funcIdentifier = funcIdentifier;
+  }
+
+  /**
+   * Invoke the function if `minSecondsSinceLastInvocation` seconds have elapsed since the last invocation.
+   */
+  public async invokeFunctionIfIntervalElapsed(minSecondsSinceLastInvocation: number): Promise<InvocationRateLimiterResult<T>> {
+    const updateCheckStartDate = new Date();
+    const lastInvocationDate = this.getLastInvocationDate();
+    if (minSecondsSinceLastInvocation && lastInvocationDate && lastInvocationDate <= updateCheckStartDate &&
+      lastInvocationDate.getTime() + minSecondsSinceLastInvocation * 1000 > updateCheckStartDate.getTime()) {
+      return createRateLimitedResult();
+    }
+    const result = await this._func();
+    await this.setLastInvocationDate(updateCheckStartDate);
+    return createInvokedResult(result);
+  }
+
+  private getLastInvocationDate(): Date | undefined {
+    const maybeDate: Date | undefined =
+      this._extensionContext.globalState.get(InvocationRateLimiter._invocationRateLimiterPrefix + this._funcIdentifier);
+    return maybeDate ? new Date(maybeDate) : undefined;
+  }
+
+  private async setLastInvocationDate(date: Date): Promise<void> {
+    return await this._extensionContext.globalState.update(InvocationRateLimiter._invocationRateLimiterPrefix + this._funcIdentifier, date);
+  }
+
+  private readonly _extensionContext: ExtensionContext;
+  private readonly _func: () => Promise<T>;
+  private readonly _funcIdentifier: string;
+
+  private static readonly _invocationRateLimiterPrefix = "invocationRateLimiter_lastInvocationDate_";
+}
+
+export enum InvocationRateLimiterResultKind {
+  Invoked,
+  RateLimited
+}
+
+/**
+ * The function was invoked and returned the value `result`.
+ */
+interface InvokedResult<T> {
+  kind: InvocationRateLimiterResultKind.Invoked,
+  result: T
+}
+
+/**
+ * The function was not invoked as the minimum interval since the last invocation had not elapsed.
+ */
+interface RateLimitedResult {
+  kind: InvocationRateLimiterResultKind.RateLimited
+}
+
+type InvocationRateLimiterResult<T> = InvokedResult<T> | RateLimitedResult;
+
+function createInvokedResult<T>(result: T): InvokedResult<T> {
+  return {
+    kind: InvocationRateLimiterResultKind.Invoked,
+    result
+  };
+}
+
+function createRateLimitedResult(): RateLimitedResult {
+  return {
+    kind: InvocationRateLimiterResultKind.RateLimited
+  };
 }

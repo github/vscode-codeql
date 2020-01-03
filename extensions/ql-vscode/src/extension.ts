@@ -4,8 +4,10 @@ import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { DistributionConfigListener, QueryServerConfigListener, QueryHistoryConfigListener } from './config';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
-import { DistributionUpdateCheckResultKind, DistributionManager, FindDistributionResult, FindDistributionResultKind, GithubApiError,
-  DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT, GithubRateLimitedError } from './distribution';
+import {
+  DistributionUpdateCheckResultKind, DistributionManager, FindDistributionResult, FindDistributionResultKind, GithubApiError,
+  DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT, GithubRateLimitedError
+} from './distribution';
 import * as helpers from './helpers';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager, WebviewReveal } from './interface';
@@ -86,29 +88,32 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     helpers.showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
   });
 
-  interface ReportingConfig {
+  interface DistributionUpdateConfig {
+    isUserInitiated: boolean;
     shouldDisplayMessageWhenNoUpdates: boolean;
-    shouldErrorIfUpdateFails: boolean;
   }
 
-  async function installOrUpdateDistributionWithProgressTitle(progressTitle: string, reportingConfig: ReportingConfig): Promise<void> {
-    const result = await distributionManager.checkForUpdatesToExtensionManagedDistribution();
+  async function installOrUpdateDistributionWithProgressTitle(progressTitle: string, config: DistributionUpdateConfig): Promise<void> {
+    const minSecondsSinceLastUpdateCheck = config.isUserInitiated ? 0 : 86400;
+    const noUpdatesLoggingFunc = config.shouldDisplayMessageWhenNoUpdates ?
+      helpers.showAndLogInformationMessage : async (message: string) => logger.log(message);
+    const result = await distributionManager.checkForUpdatesToExtensionManagedDistribution(minSecondsSinceLastUpdateCheck);
     switch (result.kind) {
-      case DistributionUpdateCheckResultKind.AlreadyUpToDate:
-        if (reportingConfig.shouldDisplayMessageWhenNoUpdates) {
-          helpers.showAndLogInformationMessage("CodeQL CLI already up to date.");
-        }
+      case DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult:
+        logger.log("Didn't perform CodeQL CLI update check since a check was already performed within the previous " +
+          `${minSecondsSinceLastUpdateCheck} seconds.`);
         break;
-      case DistributionUpdateCheckResultKind.InvalidDistributionLocation:
-        if (reportingConfig.shouldDisplayMessageWhenNoUpdates) {
-          helpers.showAndLogErrorMessage("CodeQL CLI is installed externally so could not be updated.");
-        }
+      case DistributionUpdateCheckResultKind.AlreadyUpToDate:
+        await noUpdatesLoggingFunc("CodeQL CLI already up to date.");
+        break;
+      case DistributionUpdateCheckResultKind.InvalidLocation:
+        await noUpdatesLoggingFunc("CodeQL CLI is installed externally so could not be updated.");
         break;
       case DistributionUpdateCheckResultKind.UpdateAvailable:
         if (beganMainExtensionActivation) {
           const updateAvailableMessage = `Version "${result.updatedRelease.name}" of the CodeQL CLI is now available. ` +
             "The update will be installed after Visual Studio Code restarts. Restart now to upgrade?";
-          ctx.globalState.update(shouldUpdateOnNextActivationKey, true);
+          await ctx.globalState.update(shouldUpdateOnNextActivationKey, true);
           if (await helpers.showInformationMessageWithAction(updateAvailableMessage, "Restart and Upgrade")) {
             await commands.executeCommand("workbench.action.reloadWindow");
           }
@@ -121,7 +126,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
           await helpers.withProgress(progressOptions, progress =>
             distributionManager.installExtensionManagedDistributionRelease(result.updatedRelease, progress));
 
-          ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
+          await ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
           helpers.showAndLogInformationMessage(`CodeQL CLI updated to version "${result.updatedRelease.name}".`);
         }
         break;
@@ -130,7 +135,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     }
   }
 
-  async function installOrUpdateDistribution(reportingConfig: ReportingConfig): Promise<void> {
+  async function installOrUpdateDistribution(config: DistributionUpdateConfig): Promise<void> {
     if (isInstallingOrUpdatingDistribution) {
       throw new Error("Already installing or updating CodeQL CLI");
     }
@@ -140,11 +145,11 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     const messageText = willUpdateCodeQl ? "Updating CodeQL CLI" :
       codeQlInstalled ? "Checking for updates to CodeQL CLI" : "Installing CodeQL CLI";
     try {
-      await installOrUpdateDistributionWithProgressTitle(messageText, reportingConfig);
+      await installOrUpdateDistributionWithProgressTitle(messageText, config);
     } catch (e) {
       // Don't rethrow the exception, because if the config is changed, we want to be able to retry installing
       // or updating the distribution.
-      const alertFunction = (codeQlInstalled && !reportingConfig.shouldErrorIfUpdateFails) ?
+      const alertFunction = (codeQlInstalled && !config.isUserInitiated) ?
         helpers.showAndLogWarningMessage : helpers.showAndLogErrorMessage;
       const taskDescription = (willUpdateCodeQl ? "update" :
         codeQlInstalled ? "check for updates to" : "install") + " CodeQL CLI";
@@ -183,8 +188,8 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     return result;
   }
 
-  async function installOrUpdateThenTryActivate(reportingConfig: ReportingConfig): Promise<void> {
-    await installOrUpdateDistribution(reportingConfig);
+  async function installOrUpdateThenTryActivate(config: DistributionUpdateConfig): Promise<void> {
+    await installOrUpdateDistribution(config);
 
     // Display the warnings even if the extension has already activated.
     const distributionResult = await getDistributionDisplayingDistributionWarnings();
@@ -197,8 +202,8 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
         const chosenAction = await helpers.showAndLogErrorMessage(`Can't execute ${command}: missing CodeQL CLI.`, installActionName);
         if (chosenAction === installActionName) {
           installOrUpdateThenTryActivate({
-            shouldDisplayMessageWhenNoUpdates: false,
-            shouldErrorIfUpdateFails: true
+            isUserInitiated: true,
+            shouldDisplayMessageWhenNoUpdates: false
           });
         }
       });
@@ -206,17 +211,17 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   }
 
   ctx.subscriptions.push(distributionConfigListener.onDidChangeDistributionConfiguration(() => installOrUpdateThenTryActivate({
-    shouldDisplayMessageWhenNoUpdates: false,
-    shouldErrorIfUpdateFails: true
+    isUserInitiated: true,
+    shouldDisplayMessageWhenNoUpdates: false
   })));
   ctx.subscriptions.push(commands.registerCommand(checkForUpdatesCommand, () => installOrUpdateThenTryActivate({
-    shouldDisplayMessageWhenNoUpdates: true,
-    shouldErrorIfUpdateFails: true
+    isUserInitiated: true,
+    shouldDisplayMessageWhenNoUpdates: true
   })));
 
   await installOrUpdateThenTryActivate({
-    shouldDisplayMessageWhenNoUpdates: false,
-    shouldErrorIfUpdateFails: !!ctx.globalState.get(shouldUpdateOnNextActivationKey)
+    isUserInitiated: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
+    shouldDisplayMessageWhenNoUpdates: false
   });
 }
 
