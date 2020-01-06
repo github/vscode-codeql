@@ -14,7 +14,7 @@ import {
 } from 'vscode-test-adapter-api';
 import { TestAdapterRegistrar } from 'vscode-test-adapter-util';
 import { QLTestFile, QLTestNode, QLTestDirectory, QLTestDiscovery } from './qltest-discovery';
-import { Event, EventEmitter, CancellationTokenSource } from 'vscode';
+import { Event, EventEmitter, CancellationTokenSource, CancellationToken } from 'vscode';
 import { DisposableObject } from 'semmle-vscode-utils';
 import { QLPackDiscovery } from './qlpack-discovery';
 import { CodeQLCliServer } from './cli';
@@ -194,7 +194,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     const testAdapter = this;
 
     try {
-      await this.runTests(tests);
+      await this.runTests(tests, this.runningTask.token);
     }
     catch (e) {
     }
@@ -218,9 +218,10 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     }
   }
 
-  private async runTests(tests: string[]): Promise<void> {
+  private async runTests(tests: string[], cancellationToken: CancellationToken): Promise<void> {
     const workspacePaths = await getOnDiskWorkspaceFolders();
     for await (const event of await this.cliServer.runTests(tests, workspacePaths, {
+      cancellationToken: cancellationToken,
       logger: testLogger
     })) {
       this._testStates.fire({

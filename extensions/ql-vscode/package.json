@@ -371,6 +371,7 @@
     "semmle-io-node": "^0.0.1",
     "semmle-vscode-utils": "^0.0.1",
     "tmp": "^0.1.0",
+    "tree-kill": "~1.2.2",
     "unzipper": "~0.10.5",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^5.2.1",

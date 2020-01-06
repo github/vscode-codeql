@@ -3,9 +3,10 @@ import * as cpp from 'child-process-promise';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sarif from 'sarif';
+import * as tk from 'tree-kill';
 import * as util from 'util';
 import { Logger, ProgressReporter } from './logging';
-import { Disposable } from 'vscode';
+import { Disposable, CancellationToken } from 'vscode';
 import { DistributionProvider } from './distribution';
 import { SortDirection } from './interface-types';
 import { assertNever } from './helpers-pure';
@@ -86,6 +87,7 @@ export type ResolvedTests = string[];
  * Options for `codeql test run`.
  */
 export interface TestRunOptions {
+  cancellationToken?: CancellationToken;
   logger?: Logger;
 }
 
@@ -286,12 +288,14 @@ export class CodeQLCliServer implements Disposable {
    *
    * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
    * @param commandArgs The arguments to pass to the `codeql` command.
+   * @param cancellationToken CancellationToken to terminate the test process.
    * @param logger Logger to write text output from the command.
    * @returns The sequence of async events produced by the command.
    */
   private async* runAsyncCodeQlCliCommandInternal(
     command: string[],
     commandArgs: string[],
+    cancellationToken?: CancellationToken,
     logger?: Logger
   ): AsyncGenerator<string, void, unknown> {
     // Add format argument first, in case commandArgs contains positional parameters.
@@ -306,16 +310,29 @@ export class CodeQLCliServer implements Disposable {
     const childPromise = cpp.spawn(codeqlPath, args);
     const child = childPromise.childProcess;
 
-    if (logger !== undefined) {
-      // The human-readable output goes to stderr.
-      logStream(child.stderr!, logger);
-    }
+    let cancellationRegistration: Disposable | undefined = undefined;
+    try {
+      if (cancellationToken !== undefined) {
+        cancellationRegistration = cancellationToken.onCancellationRequested(_e => {
+          tk(child.pid);
+        });
+      }
+      if (logger !== undefined) {
+        // The human-readable output goes to stderr.
+        logStream(child.stderr!, logger);
+      }
 
-    for await (const event of await splitStreamAtSeparators(child.stdout!, ['\0'])) {
-      yield event;
-    }
+      for await (const event of await splitStreamAtSeparators(child.stdout!, ['\0'])) {
+        yield event;
+      }
 
-    await childPromise;
+      await childPromise;
+    }
+    finally {
+      if (cancellationRegistration !== undefined) {
+        cancellationRegistration.dispose();
+      }
+    }
   }
 
   /**
@@ -325,6 +342,7 @@ export class CodeQLCliServer implements Disposable {
    * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
    * @param commandArgs The arguments to pass to the `codeql` command.
    * @param description Description of the action being run, to be shown in log and error messages.
+   * @param cancellationToken CancellationToken to terminate the test process.
    * @param logger Logger to write text output from the command.
    * @returns The sequence of async events produced by the command.
    */
@@ -332,9 +350,11 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     description: string,
+    cancellationToken?: CancellationToken,
     logger?: Logger
   ): AsyncGenerator<EventType, void, unknown> {
-    for await (const event of await this.runAsyncCodeQlCliCommandInternal(command, commandArgs, logger)) {
+    for await (const event of await this.runAsyncCodeQlCliCommandInternal(command, commandArgs,
+      cancellationToken, logger)) {
       try {
         yield JSON.parse(event) as EventType;
       } catch (err) {
@@ -451,7 +471,7 @@ export class CodeQLCliServer implements Disposable {
     ];
 
     for await (const event of await this.runAsyncCodeQlCliCommand<TestCompleted>(['test', 'run'],
-      subcommandArgs, 'Run CodeQL Tests', options.logger)) {
+      subcommandArgs, 'Run CodeQL Tests', options.cancellationToken, options.logger)) {
       yield event;
     }
   }
