@@ -13,6 +13,11 @@ import { QueryHistoryConfig } from './config';
  * `TreeDataProvider` subclass below.
  */
 
+export type QueryHistoryItemOptions = {
+  label?: string, // user-settable label
+  queryText?: string, // stored query for quick query
+}
+
 /**
  * One item in the user-displayed list of queries that have been run.
  */
@@ -25,7 +30,7 @@ export class QueryHistoryItem {
   constructor(
     info: EvaluationInfo,
     public config: QueryHistoryConfig,
-    public label?: string, // user-settable label
+    public options: QueryHistoryItemOptions = {},
   ) {
     this.queryName = helpers.getQueryName(info);
     this.databaseName = info.database.name;
@@ -65,8 +70,8 @@ export class QueryHistoryItem {
   }
 
   getLabel(): string {
-    if (this.label !== undefined)
-      return this.label;
+    if (this.options.label !== undefined)
+      return this.options.label;
     return this.config.format;
   }
 
@@ -203,9 +208,9 @@ export class QueryHistoryManager {
     if (response !== undefined) {
       if (response === '')
         // Interpret empty string response as "go back to using default"
-        queryHistoryItem.label = undefined;
+        queryHistoryItem.options.label = undefined;
       else
-        queryHistoryItem.label = response;
+        queryHistoryItem.options.label = response;
       this.treeDataProvider.refresh();
     }
   }
@@ -258,8 +263,8 @@ export class QueryHistoryManager {
     });
   }
 
-  push(evaluationInfo: EvaluationInfo) {
-    const item = new QueryHistoryItem(evaluationInfo, this.queryHistoryConfigListener);
+  push(evaluationInfo: EvaluationInfo, options: QueryHistoryItemOptions = {}) {
+    const item = new QueryHistoryItem(evaluationInfo, this.queryHistoryConfigListener, options);
     this.treeDataProvider.push(item);
     this.updateTreeViewSelectionIfVisible();
   }
@@ -277,7 +282,7 @@ export class QueryHistoryManager {
       const current = this.treeDataProvider.getCurrent();
       if (current != undefined) {
         // We must fire the onDidChangeTreeData event to ensure the current element can be selected
-        // using `reveal` if the tree view was not visible when the current element was added. 
+        // using `reveal` if the tree view was not visible when the current element was added.
         this.treeDataProvider.refresh();
         this.treeView.reveal(current);
       }
