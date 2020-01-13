@@ -13,6 +13,10 @@ import { UserCancellationException } from './queries';
 const QUICK_QUERIES_DIR_NAME = 'quick-queries';
 const QUICK_QUERY_QUERY_NAME = 'quick-query.ql';
 
+export function isQuickQueryPath(queryPath: string): boolean {
+  return path.basename(queryPath) === QUICK_QUERY_QUERY_NAME;
+}
+
 async function getQlPackFor(cliServer: CodeQLCliServer, dbschemePath: string): Promise<string> {
   const qlpacks = await cliServer.resolveQlpacks(helpers.getOnDiskWorkspaceFolders());
   const packs: { packDir: string | undefined, packName: string }[] =

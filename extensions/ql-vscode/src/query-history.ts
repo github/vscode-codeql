@@ -30,7 +30,7 @@ export class QueryHistoryItem {
   constructor(
     info: EvaluationInfo,
     public config: QueryHistoryConfig,
-    public options: QueryHistoryItemOptions = {},
+    public options: QueryHistoryItemOptions = info.historyItemOptions,
   ) {
     this.queryName = helpers.getQueryName(info);
     this.databaseName = info.database.name;
@@ -184,9 +184,15 @@ export class QueryHistoryManager {
     }
   }
 
-  async handleOpenQuery(queryHistoryItem: QueryHistoryItem) {
+  async handleOpenQuery(queryHistoryItem: QueryHistoryItem): Promise<void> {
     const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.info.query.program.queryPath));
-    await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+    const editor = await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+    const queryText = queryHistoryItem.options.queryText;
+    if (queryText !== undefined) {
+      await editor.edit(edit => edit.replace(textDocument.validateRange(
+        new vscode.Range(0, 0, textDocument.lineCount, 0)), queryText)
+      );
+    }
   }
 
   async handleRemoveHistoryItem(queryHistoryItem: QueryHistoryItem) {
@@ -263,8 +269,8 @@ export class QueryHistoryManager {
     });
   }
 
-  push(evaluationInfo: EvaluationInfo, options: QueryHistoryItemOptions = {}) {
-    const item = new QueryHistoryItem(evaluationInfo, this.queryHistoryConfigListener, options);
+  push(evaluationInfo: EvaluationInfo) {
+    const item = new QueryHistoryItem(evaluationInfo, this.queryHistoryConfigListener);
     this.treeDataProvider.push(item);
     this.updateTreeViewSelectionIfVisible();
   }
