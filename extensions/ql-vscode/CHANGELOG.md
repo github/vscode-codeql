@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.0.4
+
 ## 1.0.3 - 13 January 2020
 
 - Reduce the frequency of CodeQL CLI update checks to help avoid hitting GitHub API limits of 60 requests per
