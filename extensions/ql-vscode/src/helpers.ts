@@ -140,7 +140,12 @@ export function getQueryName(info: EvaluationInfo) {
  * the last invocation of that function.
  */
 export class InvocationRateLimiter<T> {
-  constructor(extensionContext: ExtensionContext, funcIdentifier: string, func: () => Promise<T>) {
+  constructor(
+    extensionContext: ExtensionContext,
+    funcIdentifier: string,
+    func: () => Promise<T>,
+    createDate: (dateString?: string) => Date = s => s ? new Date(s) : new Date()) {
+    this._createDate = createDate;
     this._extensionContext = extensionContext;
     this._func = func;
     this._funcIdentifier = funcIdentifier;
@@ -150,7 +155,7 @@ export class InvocationRateLimiter<T> {
    * Invoke the function if `minSecondsSinceLastInvocation` seconds have elapsed since the last invocation.
    */
   public async invokeFunctionIfIntervalElapsed(minSecondsSinceLastInvocation: number): Promise<InvocationRateLimiterResult<T>> {
-    const updateCheckStartDate = new Date();
+    const updateCheckStartDate = this._createDate();
     const lastInvocationDate = this.getLastInvocationDate();
     if (minSecondsSinceLastInvocation && lastInvocationDate && lastInvocationDate <= updateCheckStartDate &&
       lastInvocationDate.getTime() + minSecondsSinceLastInvocation * 1000 > updateCheckStartDate.getTime()) {
@@ -162,15 +167,16 @@ export class InvocationRateLimiter<T> {
   }
 
   private getLastInvocationDate(): Date | undefined {
-    const maybeDate: Date | undefined =
+    const maybeDateString: string | undefined =
       this._extensionContext.globalState.get(InvocationRateLimiter._invocationRateLimiterPrefix + this._funcIdentifier);
-    return maybeDate ? new Date(maybeDate) : undefined;
+    return maybeDateString ? this._createDate(maybeDateString) : undefined;
   }
 
   private async setLastInvocationDate(date: Date): Promise<void> {
     return await this._extensionContext.globalState.update(InvocationRateLimiter._invocationRateLimiterPrefix + this._funcIdentifier, date);
   }
 
+  private readonly _createDate: (dateString?: string) => Date;
   private readonly _extensionContext: ExtensionContext;
   private readonly _func: () => Promise<T>;
   private readonly _funcIdentifier: string;

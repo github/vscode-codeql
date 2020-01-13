@@ -4,8 +4,19 @@ import { ExtensionContext, Memento } from "vscode";
 import { InvocationRateLimiter } from "../../helpers";
 
 describe("Invocation rate limiter", () => {
+  // 1 January 2020
+  let currentUnixTime = 1577836800;
+
+  function createDate(dateString?: string): Date {
+    if (dateString) {
+      return new Date(dateString);
+    }
+    const numMillisecondsPerSecond = 1000;
+    return new Date(currentUnixTime * numMillisecondsPerSecond);
+  }
+
   function createInvocationRateLimiter<T>(funcIdentifier: string, func: () => Promise<T>): InvocationRateLimiter<T> {
-    return new InvocationRateLimiter(new MockExtensionContext(), funcIdentifier, func);
+    return new InvocationRateLimiter(new MockExtensionContext(), funcIdentifier, func, s => createDate(s));
   }
 
   it("initially invokes function", async () => {
@@ -17,7 +28,7 @@ describe("Invocation rate limiter", () => {
     expect(numTimesFuncCalled).to.equal(1);
   });
 
-  it("doesn't invoke function within time period", async () => {
+  it("doesn't invoke function again if no time has passed", async () => {
     let numTimesFuncCalled = 0;
     const invocationRateLimiter = createInvocationRateLimiter("funcid", async () => {
       numTimesFuncCalled++;
@@ -27,7 +38,18 @@ describe("Invocation rate limiter", () => {
     expect(numTimesFuncCalled).to.equal(1);
   });
 
-  it("invoke function again after 0s time period has elapsed", async () => {
+  it("doesn't invoke function again if requested time since last invocation hasn't passed", async () => {
+    let numTimesFuncCalled = 0;
+    const invocationRateLimiter = createInvocationRateLimiter("funcid", async () => {
+      numTimesFuncCalled++;
+    });
+    await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
+    currentUnixTime += 1;
+    await invocationRateLimiter.invokeFunctionIfIntervalElapsed(2);
+    expect(numTimesFuncCalled).to.equal(1);
+  });
+
+  it("invokes function again immediately if requested time since last invocation is 0 seconds", async () => {
     let numTimesFuncCalled = 0;
     const invocationRateLimiter = createInvocationRateLimiter("funcid", async () => {
       numTimesFuncCalled++;
@@ -37,13 +59,13 @@ describe("Invocation rate limiter", () => {
     expect(numTimesFuncCalled).to.equal(2);
   });
 
-  it("invoke function again after 1s time period has elapsed", async () => {
+  it("invokes function again after requested time since last invocation has elapsed", async () => {
     let numTimesFuncCalled = 0;
     const invocationRateLimiter = createInvocationRateLimiter("funcid", async () => {
       numTimesFuncCalled++;
     });
     await invocationRateLimiter.invokeFunctionIfIntervalElapsed(1);
-    await new Promise((resolve, _reject) => setTimeout(() => resolve(), 1000));
+    currentUnixTime += 1;
     await invocationRateLimiter.invokeFunctionIfIntervalElapsed(1);
     expect(numTimesFuncCalled).to.equal(2);
   });
