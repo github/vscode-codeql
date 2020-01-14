@@ -45,17 +45,18 @@ async function getQlPackFor(cliServer: CodeQLCliServer, dbschemePath: string): P
 }
 
 /**
- * `getBaseText` heuristically returns an appropriate import
- * statement prelude based on the filename of the dbscheme file
- * given. This information might be more appropriately provided by
- * the qlpack itself.
+ * `getBaseText` heuristically returns an appropriate import statement
+ * prelude based on the filename of the dbscheme file given. TODO: add
+ * a 'default import' field to the qlpack itself, and use that.
  */
 function getBaseText(dbschemeBase: string) {
   if (dbschemeBase == 'semmlecode.javascript.dbscheme') return 'import javascript\n\nselect ""';
   if (dbschemeBase == 'semmlecode.cpp.dbscheme') return 'import cpp\n\nselect ""';
-  if (dbschemeBase == 'semmlecode.java.dbscheme') return 'import java\n\nselect ""';
+  if (dbschemeBase == 'semmlecode.dbscheme') return 'import java\n\nselect ""';
   if (dbschemeBase == 'semmlecode.python.dbscheme') return 'import python\n\nselect ""';
-  return '';
+  if (dbschemeBase == 'semmlecode.csharp.dbscheme') return 'import csharp\n\nselect ""';
+  if (dbschemeBase == 'go.dbscheme') return 'import go\n\nselect ""';
+  return 'select ""';
 }
 
 async function getQuickQueriesDir(ctx: ExtensionContext): Promise<string> {
@@ -108,9 +109,10 @@ export async function displayQuickQuery(ctx: ExtensionContext, cliServer: CodeQL
       throw new Error(`Can't find dbscheme for current database in ${datasetFolder}`);
     }
 
+    dbschemes.sort();
     const dbscheme = dbschemes[0];
     if (dbschemes.length > 1) {
-      logger.log(`Found multiple dbschemes in ${datasetFolder}; arbitrarily choosing the first, ${dbscheme}`);
+      Window.showErrorMessage(`Found multiple dbschemes in ${datasetFolder} during quick query; arbitrarily choosing the first, ${dbscheme}, to decide what library to use.`);
     }
 
     const qlpack = await getQlPackFor(cliServer, dbscheme);
