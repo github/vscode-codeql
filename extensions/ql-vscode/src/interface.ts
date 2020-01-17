@@ -427,7 +427,10 @@ async function showLocation(loc: ResolvableLocationValue, databaseItem: Database
   const resolvedLocation = tryResolveLocation(loc, databaseItem);
   if (resolvedLocation) {
     const doc = await workspace.openTextDocument(resolvedLocation.uri);
-    const editor = await Window.showTextDocument(doc, vscode.ViewColumn.One);
+    const editorsWithDoc = Window.visibleTextEditors.filter(e => e.document === doc);
+    const editor = editorsWithDoc.length > 0
+          ? editorsWithDoc[0]
+          : await Window.showTextDocument(doc, vscode.ViewColumn.One);
     let range = resolvedLocation.range;
     // When highlighting the range, vscode's occurrence-match and bracket-match highlighting will
     // trigger based on where we place the cursor/selection, and will compete for the user's attention.
