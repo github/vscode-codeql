@@ -85,7 +85,7 @@
           "scope": "machine",
           "type": "string",
           "default": "",
-          "description": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.cmd` on Windows. This overrides all other CodeQL CLI settings."
+          "description": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.exe` on Windows. This overrides all other CodeQL CLI settings."
         },
         "codeQL.runningQueries.numberOfThreads": {
           "type": "integer",
