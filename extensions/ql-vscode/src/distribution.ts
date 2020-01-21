@@ -502,7 +502,7 @@ export function versionCompare(a: Version, b: Version): number {
 }
 
 function codeQlLauncherName(): string {
-  return (os.platform() === "win32") ? "codeql.exe" : "codeql";
+  return (os.platform() === "win32") ? "codeql.cmd" : "codeql";
 }
 
 function isRedirectStatusCode(statusCode: number): boolean {
