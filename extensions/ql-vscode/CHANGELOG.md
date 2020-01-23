@@ -3,6 +3,8 @@
 ## 1.0.4
 
 - Disable word-based autocomplete by default.
+- Add command `CodeQL: Quick Query` for easy query creation without
+  having to choose a place in the filesystem to store the query file.
 
 ## 1.0.3 - 13 January 2020
 
