@@ -39,6 +39,14 @@
     "language-configuration.json"
   ],
   "contributes": {
+    "configurationDefaults": {
+      "[ql]": {
+        "editor.wordBasedSuggestions": false
+      },
+      "[dbscheme]": {
+        "editor.wordBasedSuggestions": false
+      }
+    },
     "languages": [
       {
         "id": "ql",
