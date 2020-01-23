@@ -42,6 +42,9 @@
     "configurationDefaults": {
       "[ql]": {
         "editor.wordBasedSuggestions": false
+      },
+      "[dbscheme]": {
+        "editor.wordBasedSuggestions": false
       }
     },
     "languages": [
