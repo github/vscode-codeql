@@ -12,6 +12,8 @@ import { logger } from './logging';
 import * as messages from './messages';
 import * as qsClient from './queryserver-client';
 import { promisify } from 'util';
+import { QueryHistoryItemOptions } from './query-history';
+import { isQuickQueryPath } from './quick-query';
 
 /**
  * queries.ts
@@ -205,6 +207,7 @@ export interface EvaluationInfo {
   query: QueryInfo;
   result: messages.EvaluationResult;
   database: DatabaseInfo;
+  historyItemOptions: QueryHistoryItemOptions;
 }
 
 /**
@@ -393,7 +396,7 @@ export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbIte
     title: "Clearing Cache",
     cancellable: false,
   }, (progress, token) =>
-      qs.sendRequest(messages.clearCache, params, token, progress)
+    qs.sendRequest(messages.clearCache, params, token, progress)
   );
 }
 
@@ -574,6 +577,12 @@ export async function compileAndRunQueryAgainstDatabase(
   // Determine which query to run, based on the selection and the active editor.
   const { queryPath, quickEvalPosition } = await determineSelectedQuery(selectedQueryUri, quickEval);
 
+  // If this is quick query, store the query text
+  const historyItemOptions: QueryHistoryItemOptions = {};
+  if (isQuickQueryPath(queryPath)) {
+    historyItemOptions.queryText = await fs.readFile(queryPath, 'utf8');
+  }
+
   // Get the workspace folder paths.
   const diskWorkspaceFolders = helpers.getOnDiskWorkspaceFolders();
   // Figure out the library path for the query.
@@ -616,7 +625,6 @@ export async function compileAndRunQueryAgainstDatabase(
 
   const errors = await query.compile(qs);
 
-
   if (errors.length == 0) {
     const result = await query.run(qs);
     return {
@@ -625,7 +633,8 @@ export async function compileAndRunQueryAgainstDatabase(
       database: {
         name: db.name,
         databaseUri: db.databaseUri.toString(true)
-      }
+      },
+      historyItemOptions
     };
   } else {
     // Error dialogs are limited in size and scrollability,
@@ -650,6 +659,7 @@ export async function compileAndRunQueryAgainstDatabase(
         " and the query and database use the same target language. For more details on the error, go to View > Output," +
         " and choose CodeQL Query Server from the dropdown.");
     }
+
     return {
       query,
       result: {
@@ -662,7 +672,8 @@ export async function compileAndRunQueryAgainstDatabase(
       database: {
         name: db.name,
         databaseUri: db.databaseUri.toString(true)
-      }
+      },
+      historyItemOptions,
     };
   }
 }

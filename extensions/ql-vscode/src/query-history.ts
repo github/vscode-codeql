@@ -13,6 +13,11 @@ import { QueryHistoryConfig } from './config';
  * `TreeDataProvider` subclass below.
  */
 
+export type QueryHistoryItemOptions = {
+  label?: string, // user-settable label
+  queryText?: string, // stored query for quick query
+}
+
 /**
  * One item in the user-displayed list of queries that have been run.
  */
@@ -25,7 +30,7 @@ export class QueryHistoryItem {
   constructor(
     info: EvaluationInfo,
     public config: QueryHistoryConfig,
-    public label?: string, // user-settable label
+    public options: QueryHistoryItemOptions = info.historyItemOptions,
   ) {
     this.queryName = helpers.getQueryName(info);
     this.databaseName = info.database.name;
@@ -65,8 +70,8 @@ export class QueryHistoryItem {
   }
 
   getLabel(): string {
-    if (this.label !== undefined)
-      return this.label;
+    if (this.options.label !== undefined)
+      return this.options.label;
     return this.config.format;
   }
 
@@ -179,9 +184,15 @@ export class QueryHistoryManager {
     }
   }
 
-  async handleOpenQuery(queryHistoryItem: QueryHistoryItem) {
+  async handleOpenQuery(queryHistoryItem: QueryHistoryItem): Promise<void> {
     const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.info.query.program.queryPath));
-    await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+    const editor = await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+    const queryText = queryHistoryItem.options.queryText;
+    if (queryText !== undefined) {
+      await editor.edit(edit => edit.replace(textDocument.validateRange(
+        new vscode.Range(0, 0, textDocument.lineCount, 0)), queryText)
+      );
+    }
   }
 
   async handleRemoveHistoryItem(queryHistoryItem: QueryHistoryItem) {
@@ -203,9 +214,9 @@ export class QueryHistoryManager {
     if (response !== undefined) {
       if (response === '')
         // Interpret empty string response as "go back to using default"
-        queryHistoryItem.label = undefined;
+        queryHistoryItem.options.label = undefined;
       else
-        queryHistoryItem.label = response;
+        queryHistoryItem.options.label = response;
       this.treeDataProvider.refresh();
     }
   }
@@ -277,7 +288,7 @@ export class QueryHistoryManager {
       const current = this.treeDataProvider.getCurrent();
       if (current != undefined) {
         // We must fire the onDidChangeTreeData event to ensure the current element can be selected
-        // using `reveal` if the tree view was not visible when the current element was added. 
+        // using `reveal` if the tree view was not visible when the current element was added.
         this.treeDataProvider.refresh();
         this.treeView.reveal(current);
       }
