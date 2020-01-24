@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.0.5
+
 ## 1.0.4 - 24 January 2020
 
 - Disable word-based autocomplete by default.
