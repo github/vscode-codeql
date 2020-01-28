@@ -16,6 +16,13 @@ import { QueryHistoryItemOptions } from './query-history';
 import { isQuickQueryPath } from './quick-query';
 
 /**
+ * Maximum number of lines to put in a binary choice dialog message,
+ * to work around the fact that we can't guarantee a scrollable text
+ * box for it.
+ */
+const MAX_MESSAGE_LINES = 20;
+
+/**
  * queries.ts
  * -------------
  *
@@ -273,7 +280,13 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
 
   logger.log(descriptionMessage);
   // Ask the user to confirm the upgrade.
-  const shouldUpgrade = await helpers.showBinaryChoiceDialog(`Should the database ${db.databaseUri.fsPath} be upgraded?\n\n${descriptionMessage}`);
+
+  let messageLines = descriptionMessage.split('\n');
+  if (messageLines.length > MAX_MESSAGE_LINES) {
+    messageLines = messageLines.slice(0, MAX_MESSAGE_LINES);
+    messageLines.push("... [full list of changes can be found in Output > CodeQL Extension Log]");
+  }
+  const shouldUpgrade = await helpers.showBinaryChoiceDialog(`Should the database ${db.databaseUri.fsPath} be upgraded?\n\n${messageLines.join("\n")}`);
   if (shouldUpgrade) {
     return params;
   }
