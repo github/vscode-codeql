@@ -16,11 +16,11 @@ import { QueryHistoryItemOptions } from './query-history';
 import { isQuickQueryPath } from './quick-query';
 
 /**
- * Maximum number of lines to put in a binary choice dialog message,
+ * Maximum number of lines to include from database upgrade message,
  * to work around the fact that we can't guarantee a scrollable text
- * box for it.
+ * box for it when displaying in dialog boxes.
  */
-const MAX_MESSAGE_LINES = 20;
+const MAX_UPGRADE_MESSAGE_LINES = 10;
 
 /**
  * queries.ts
@@ -281,12 +281,26 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
   logger.log(descriptionMessage);
   // Ask the user to confirm the upgrade.
 
+  const showLogItem: vscode.MessageItem = { title: 'No, Show Changes', isCloseAffordance: true };
+  const yesItem = { title: 'Yes', isCloseAffordance: false };
+  const noItem = { title: 'No', isCloseAffordance: true }
+  let dialogOptions: vscode.MessageItem[] = [yesItem, noItem];
+
   let messageLines = descriptionMessage.split('\n');
-  if (messageLines.length > MAX_MESSAGE_LINES) {
-    messageLines = messageLines.slice(0, MAX_MESSAGE_LINES);
-    messageLines.push("... [full list of changes can be found in Output > CodeQL Extension Log]");
+  if (messageLines.length > MAX_UPGRADE_MESSAGE_LINES) {
+    messageLines = messageLines.slice(0, MAX_UPGRADE_MESSAGE_LINES);
+    messageLines.push("... [truncating list of upgrades, click 'No, Show Changes' see full list]");
+    dialogOptions.push(showLogItem);
   }
-  const shouldUpgrade = await helpers.showBinaryChoiceDialog(`Should the database ${db.databaseUri.fsPath} be upgraded?\n\n${messageLines.join("\n")}`);
+
+  const message = `Should the database ${db.databaseUri.fsPath} be upgraded?\n\n${messageLines.join("\n")}`;
+  const chosenItem = await vscode.window.showInformationMessage(message, { modal: true }, ...dialogOptions);
+
+  if (chosenItem === showLogItem) {
+    logger.outputChannel.show();
+  }
+
+  const shouldUpgrade = chosenItem === yesItem;
   if (shouldUpgrade) {
     return params;
   }
