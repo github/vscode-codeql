@@ -289,7 +289,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
   let messageLines = descriptionMessage.split('\n');
   if (messageLines.length > MAX_UPGRADE_MESSAGE_LINES) {
     messageLines = messageLines.slice(0, MAX_UPGRADE_MESSAGE_LINES);
-    messageLines.push("... [truncating list of upgrades, click 'No, Show Changes' see full list]");
+    messageLines.push(`The list of upgrades was truncated, click "No, Show Changes" to see the full list.`);
     dialogOptions.push(showLogItem);
   }
 
@@ -300,8 +300,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
     logger.outputChannel.show();
   }
 
-  const shouldUpgrade = chosenItem === yesItem;
-  if (shouldUpgrade) {
+  if (chosenItem === yesItem) {
     return params;
   }
   else {
