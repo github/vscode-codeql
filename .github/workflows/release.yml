@@ -29,6 +29,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
 
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10.18.1'
+
       # The checkout action does not fetch the master branch.
       # Fetch the master branch so that we can base the version bump PR against master.
       - name: Fetch master branch
