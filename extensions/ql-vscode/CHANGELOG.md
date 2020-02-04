@@ -2,6 +2,9 @@
 
 ## 1.0.5
 
+- Add an icon next to any failed query runs in the query history
+  view.
+
 ## 1.0.4 - 24 January 2020
 
 - Disable word-based autocomplete by default.
