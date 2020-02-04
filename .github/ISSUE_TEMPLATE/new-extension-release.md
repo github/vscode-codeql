@@ -14,4 +14,4 @@ assignees: ''
 - [ ] Log into the [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage/publishers/github).
 - [ ] Click the `...` menu in the CodeQL row and click **Update**.
 - [ ] Drag the `.vsix` file you downloaded from the GitHub release into the Marketplace and click **Upload**.
-- [ ] Publish the GitHub release.
+- [ ] Publish the draft GitHub release and confirm the new release is marked as the latest release at https://github.com/github/vscode-codeql/releases.
