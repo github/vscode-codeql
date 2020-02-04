@@ -1,4 +1,4 @@
-import { QueryWithResults, tmpDir, QueryInfo } from "./queries";
+import { QueryWithResults, tmpDir, QueryInfo } from "./run-queries";
 import * as messages from './messages';
 import * as helpers from './helpers';
 import * as cli from './cli';

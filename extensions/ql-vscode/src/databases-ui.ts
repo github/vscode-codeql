@@ -5,7 +5,7 @@ import * as cli from './cli';
 import { DatabaseItem, DatabaseManager, getUpgradesDirectories } from './databases';
 import { getOnDiskWorkspaceFolders } from './helpers';
 import { logger } from './logging';
-import { clearCacheInDatabase, UserCancellationException } from './queries';
+import { clearCacheInDatabase, UserCancellationException } from './run-queries';
 import * as qsClient from './queryserver-client';
 import { upgradeDatabase } from './upgrades';
 

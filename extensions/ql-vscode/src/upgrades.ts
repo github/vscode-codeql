@@ -4,7 +4,7 @@ import * as helpers from './helpers';
 import { logger } from './logging';
 import * as messages from './messages';
 import * as qsClient from './queryserver-client';
-import { upgradesTmpDir, UserCancellationException } from './queries';
+import { upgradesTmpDir, UserCancellationException } from './run-queries';
 
 /**
  * Maximum number of lines to include from database upgrade message,

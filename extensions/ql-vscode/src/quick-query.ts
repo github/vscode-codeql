@@ -8,7 +8,7 @@ import { CodeQLCliServer } from './cli';
 import { DatabaseUI } from './databases-ui';
 import * as helpers from './helpers';
 import { logger } from './logging';
-import { UserCancellationException } from './queries';
+import { UserCancellationException } from './run-queries';
 
 const QUICK_QUERIES_DIR_NAME = 'quick-queries';
 const QUICK_QUERY_QUERY_NAME = 'quick-query.ql';

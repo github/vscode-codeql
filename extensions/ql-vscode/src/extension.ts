@@ -12,7 +12,7 @@ import * as helpers from './helpers';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager, WebviewReveal } from './interface';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
-import { compileAndRunQueryAgainstDatabase, tmpDirDisposal, UserCancellationException } from './queries';
+import { compileAndRunQueryAgainstDatabase, tmpDirDisposal, UserCancellationException } from './run-queries';
 import { CompletedQuery } from './query-results';
 import { QueryHistoryManager } from './query-history';
 import * as qsClient from './queryserver-client';

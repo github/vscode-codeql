@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { CancellationToken, ExtensionContext, ProgressOptions, window as Window, workspace } from 'vscode';
 import { logger } from './logging';
-import { QueryInfo } from './queries';
+import { QueryInfo } from './run-queries';
 
 export interface ProgressUpdate {
   /**

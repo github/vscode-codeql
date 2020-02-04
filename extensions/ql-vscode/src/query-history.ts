@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { ExtensionContext, window as Window } from 'vscode';
 import { CompletedQuery } from './query-results';
 import { QueryHistoryConfig } from './config';
-import { QueryWithResults } from './queries';
+import { QueryWithResults } from './run-queries';
 
 /**
  * query-history.ts

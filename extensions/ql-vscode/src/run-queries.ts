@@ -16,7 +16,7 @@ import { isQuickQueryPath } from './quick-query';
 import { upgradeDatabase } from './upgrades';
 
 /**
- * queries.ts
+ * run-queries.ts
  * -------------
  *
  * Compiling and running QL queries.

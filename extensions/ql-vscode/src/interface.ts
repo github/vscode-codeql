@@ -14,7 +14,7 @@ import { assertNever } from './helpers-pure';
 import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg, ResultsPaths, SortedResultSetInfo, SortedResultsMap, INTERPRETED_RESULTS_PER_RUN_LIMIT, QueryMetadata } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
-import { QueryInfo, tmpDir } from './queries';
+import { QueryInfo, tmpDir } from './run-queries';
 import { CompletedQuery, interpretResults } from './query-results';
 
 /**
