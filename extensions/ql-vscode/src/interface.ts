@@ -2,20 +2,20 @@ import * as crypto from 'crypto';
 import * as path from 'path';
 import * as cli from './cli';
 import * as Sarif from 'sarif';
-import { parseSarifLocation, parseSarifPlainTextMessage }  from './sarif-utils';
+import { parseSarifLocation, parseSarifPlainTextMessage } from './sarif-utils';
 import { FivePartLocation, LocationValue, ResolvableLocationValue, WholeFileLocation, tryGetResolvableLocation, LocationStyle } from 'semmle-bqrs';
 import { DisposableObject } from 'semmle-vscode-utils';
 import * as vscode from 'vscode';
 import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Range, Uri, window as Window, workspace } from 'vscode';
 import { CodeQLCliServer } from './cli';
 import { DatabaseItem, DatabaseManager } from './databases';
-import * as helpers from './helpers';
 import { showAndLogErrorMessage } from './helpers';
 import { assertNever } from './helpers-pure';
 import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg, ResultsPaths, SortedResultSetInfo, SortedResultsMap, INTERPRETED_RESULTS_PER_RUN_LIMIT, QueryMetadata } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
-import { EvaluationInfo, interpretResults, QueryInfo, tmpDir } from './queries';
+import { QueryInfo, tmpDir } from './queries';
+import { CompletedQuery, interpretResults } from './query-results';
 
 /**
  * interface.ts
@@ -87,7 +87,7 @@ export function webviewUriToFileUri(webviewUri: string): Uri {
 }
 
 export class InterfaceManager extends DisposableObject {
-  private _displayedEvaluationInfo?: EvaluationInfo;
+  private _displayedQuery?: CompletedQuery;
   private _panel: vscode.WebviewPanel | undefined;
   private _panelLoaded = false;
   private _panelLoadedCallBacks: (() => void)[] = [];
@@ -180,14 +180,14 @@ export class InterfaceManager extends DisposableObject {
         this._panelLoadedCallBacks = [];
         break;
       case 'changeSort': {
-        if (this._displayedEvaluationInfo === undefined) {
+        if (this._displayedQuery === undefined) {
           showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
           break;
         }
         // Notify the webview that it should expect new results.
         await this.postMessage({ t: 'resultsUpdating' });
-        await this._displayedEvaluationInfo.query.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
-        await this.showResults(this._displayedEvaluationInfo, WebviewReveal.NotForced, true);
+        await this._displayedQuery.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
+        await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
         break;
       }
       default:
@@ -211,25 +211,25 @@ export class InterfaceManager extends DisposableObject {
 
   /**
    * Show query results in webview panel.
-   * @param info Evaluation info for the executed query.
+   * @param results Evaluation info for the executed query.
    * @param shouldKeepOldResultsWhileRendering Should keep old results while rendering.
    * @param forceReveal Force the webview panel to be visible and
    * Appropriate when the user has just performed an explicit
    * UI interaction requesting results, e.g. clicking on a query
    * history entry.
    */
-  public async showResults(info: EvaluationInfo, forceReveal: WebviewReveal, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
-    if (info.result.resultType !== messages.QueryResultType.SUCCESS) {
+  public async showResults(results: CompletedQuery, forceReveal: WebviewReveal, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
+    if (results.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }
 
-    const interpretation = await this.interpretResultsInfo(info.query, info.query.resultsPaths);
+    const interpretation = await this.interpretResultsInfo(results.query);
 
     const sortedResultsMap: SortedResultsMap = {};
-    info.query.sortedResultsInfo.forEach((v, k) =>
+    results.sortedResultsInfo.forEach((v, k) =>
       sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v));
 
-    this._displayedEvaluationInfo = info;
+    this._displayedQuery = results;
 
     const panel = this.getPanel();
     await this.waitForPanelLoaded();
@@ -242,7 +242,7 @@ export class InterfaceManager extends DisposableObject {
       // more asynchronous message to not so abruptly interrupt
       // user's workflow by immediately revealing the panel.
       const showButton = 'View Results';
-      const queryName = helpers.getQueryName(info);
+      const queryName = results.queryName;
       const resultPromise = vscode.window.showInformationMessage(
         `Finished running query ${(queryName.length > 0) ? ` “${queryName}”` : ''}.`,
         showButton
@@ -259,37 +259,37 @@ export class InterfaceManager extends DisposableObject {
     await this.postMessage({
       t: 'setState',
       interpretation,
-      origResultsPaths: info.query.resultsPaths,
-      resultsPath: this.convertPathToWebviewUri(info.query.resultsPaths.resultsPath),
+      origResultsPaths: results.query.resultsPaths,
+      resultsPath: this.convertPathToWebviewUri(results.query.resultsPaths.resultsPath),
       sortedResultsMap,
-      database: info.database,
+      database: results.database,
       shouldKeepOldResultsWhileRendering,
-      metadata: info.query.metadata
+      metadata: results.query.metadata
     });
   }
 
-private async getTruncatedResults(metadata : QueryMetadata | undefined ,resultsInfo: ResultsPaths, sourceInfo : cli.SourceInfo  | undefined, sourceLocationPrefix : string ) : Promise<Interpretation> {
-  const sarif = await interpretResults(this.cliServer, metadata, resultsInfo, sourceInfo);
-  // For performance reasons, limit the number of results we try
-  // to serialize and send to the webview. TODO: possibly also
-  // limit number of paths per result, number of steps per path,
-  // or throw an error if we are in aggregate trying to send
-  // massively too much data, as it can make the extension
-  // unresponsive.
-  let numTruncatedResults = 0;
-  sarif.runs.forEach(run => {
-    if (run.results !== undefined) {
-      if (run.results.length > INTERPRETED_RESULTS_PER_RUN_LIMIT) {
-        numTruncatedResults += run.results.length - INTERPRETED_RESULTS_PER_RUN_LIMIT;
-        run.results = run.results.slice(0, INTERPRETED_RESULTS_PER_RUN_LIMIT);
+  private async getTruncatedResults(metadata: QueryMetadata | undefined, resultsPaths: ResultsPaths, sourceInfo: cli.SourceInfo | undefined, sourceLocationPrefix: string): Promise<Interpretation> {
+    const sarif = await interpretResults(this.cliServer, metadata, resultsPaths.interpretedResultsPath, sourceInfo);
+    // For performance reasons, limit the number of results we try
+    // to serialize and send to the webview. TODO: possibly also
+    // limit number of paths per result, number of steps per path,
+    // or throw an error if we are in aggregate trying to send
+    // massively too much data, as it can make the extension
+    // unresponsive.
+    let numTruncatedResults = 0;
+    sarif.runs.forEach(run => {
+      if (run.results !== undefined) {
+        if (run.results.length > INTERPRETED_RESULTS_PER_RUN_LIMIT) {
+          numTruncatedResults += run.results.length - INTERPRETED_RESULTS_PER_RUN_LIMIT;
+          run.results = run.results.slice(0, INTERPRETED_RESULTS_PER_RUN_LIMIT);
+        }
       }
-    }
-  });
-  return { sarif, sourceLocationPrefix, numTruncatedResults };
-  ;
-}
+    });
+    return { sarif, sourceLocationPrefix, numTruncatedResults };
+    ;
+  }
 
-  private async interpretResultsInfo(query: QueryInfo, resultsInfo: ResultsPaths): Promise<Interpretation | undefined> {
+  private async interpretResultsInfo(query: QueryInfo): Promise<Interpretation | undefined> {
     let interpretation: Interpretation | undefined = undefined;
     if (query.hasInterpretedResults()
       && query.quickEvalPosition === undefined // never do results interpretation if quickEval
@@ -300,7 +300,7 @@ private async getTruncatedResults(metadata : QueryMetadata | undefined ,resultsI
         const sourceInfo = sourceArchiveUri === undefined ?
           undefined :
           { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
-        interpretation = await this.getTruncatedResults(query.metadata, resultsInfo, sourceInfo, sourceLocationPrefix);
+        interpretation = await this.getTruncatedResults(query.metadata, query.resultsPaths, sourceInfo, sourceLocationPrefix);
       }
       catch (e) {
         // If interpretation fails, accept the error and continue
@@ -331,7 +331,7 @@ private async getTruncatedResults(metadata : QueryMetadata | undefined ,resultsI
 
   }
 
-  private async showProblemResultsAsDiagnostics(interpretation : Interpretation, databaseItem: DatabaseItem): Promise<void> {
+  private async showProblemResultsAsDiagnostics(interpretation: Interpretation, databaseItem: DatabaseItem): Promise<void> {
     const { sarif, sourceLocationPrefix } = interpretation;
 
 
@@ -443,8 +443,8 @@ async function showLocation(loc: ResolvableLocationValue, databaseItem: Database
     const doc = await workspace.openTextDocument(resolvedLocation.uri);
     const editorsWithDoc = Window.visibleTextEditors.filter(e => e.document === doc);
     const editor = editorsWithDoc.length > 0
-          ? editorsWithDoc[0]
-          : await Window.showTextDocument(doc, vscode.ViewColumn.One);
+      ? editorsWithDoc[0]
+      : await Window.showTextDocument(doc, vscode.ViewColumn.One);
     let range = resolvedLocation.range;
     // When highlighting the range, vscode's occurrence-match and bracket-match highlighting will
     // trigger based on where we place the cursor/selection, and will compete for the user's attention.
@@ -457,8 +457,8 @@ async function showLocation(loc: ResolvableLocationValue, databaseItem: Database
     // For multi-line ranges, place the cursor at the beginning to avoid visual artifacts from selected line-breaks.
     // Multi-line ranges are usually large enough to overshadow the noise from bracket highlighting.
     let selectionEnd = (range.start.line === range.end.line)
-        ? range.end
-        : range.start;
+      ? range.end
+      : range.start;
     editor.selection = new vscode.Selection(range.start, selectionEnd);
     editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
     editor.setDecorations(shownLocationDecoration, [range]);

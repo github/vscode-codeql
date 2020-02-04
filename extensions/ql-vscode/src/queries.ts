@@ -1,14 +1,13 @@
 import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as sarif from 'sarif';
 import * as tmp from 'tmp';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
 import * as cli from './cli';
 import { DatabaseItem, getUpgradesDirectories } from './databases';
 import * as helpers from './helpers';
-import { DatabaseInfo, QueryMetadata, ResultsPaths, SortedResultSetInfo, SortState } from './interface-types';
+import { DatabaseInfo, QueryMetadata, ResultsPaths } from './interface-types';
 import { logger } from './logging';
 import * as messages from './messages';
 import { QueryHistoryItemOptions } from './query-history';
@@ -42,30 +41,26 @@ export class UserCancellationException extends Error { }
  * output and results.
  */
 export class QueryInfo {
-  compiledQueryPath: string;
-  resultsPaths: ResultsPaths;
   private static nextQueryId = 0;
 
-  /**
-   * Map from result set name to SortedResultSetInfo.
-   */
-  sortedResultsInfo: Map<string, SortedResultSetInfo>;
-  dataset: vscode.Uri; // guarantee the existence of a well-defined dataset dir at this point
-  queryId: number;
+  readonly compiledQueryPath: string;
+  readonly resultsPaths: ResultsPaths;
+  readonly dataset: vscode.Uri; // guarantee the existence of a well-defined dataset dir at this point
+  readonly queryID: number;
+
   constructor(
-    public program: messages.QlProgram,
-    public dbItem: DatabaseItem,
-    public queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
-    public quickEvalPosition?: messages.Position,
-    public metadata?: QueryMetadata,
+    public readonly program: messages.QlProgram,
+    public readonly dbItem: DatabaseItem,
+    public readonly queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
+    public readonly quickEvalPosition?: messages.Position,
+    public readonly metadata?: QueryMetadata,
   ) {
-    this.queryId = QueryInfo.nextQueryId++;
-    this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${this.queryId}.qlo`);
+    this.queryID = QueryInfo.nextQueryId++;
+    this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${this.queryID}.qlo`);
     this.resultsPaths = {
-      interpretedResultsPath: path.join(tmpDir.name, `interpretedResults${this.queryId}.sarif`),
-      resultsPath: path.join(tmpDir.name, `results${this.queryId}.bqrs`),
+      resultsPath: path.join(tmpDir.name, `results${this.queryID}.bqrs`),
+      interpretedResultsPath: path.join(tmpDir.name, `interpretedResults${this.queryID}.sarif`),
     };
-    this.sortedResultsInfo = new Map();
     if (dbItem.contents === undefined) {
       throw new Error('Can\'t run query on invalid database.');
     }
@@ -159,51 +154,13 @@ export class QueryInfo {
     }
     return hasMetadataFile;
   }
-
-  async updateSortState(server: cli.CodeQLCliServer, resultSetName: string, sortState: SortState | undefined): Promise<void> {
-    if (sortState === undefined) {
-      this.sortedResultsInfo.delete(resultSetName);
-      return;
-    }
-
-    const sortedResultSetInfo: SortedResultSetInfo = {
-      resultsPath: path.join(tmpDir.name, `sortedResults${this.queryId}-${resultSetName}.bqrs`),
-      sortState
-    };
-
-    await server.sortBqrs(this.resultsPaths.resultsPath, sortedResultSetInfo.resultsPath, resultSetName, [sortState.columnIndex], [sortState.direction]);
-    this.sortedResultsInfo.set(resultSetName, sortedResultSetInfo);
-  }
 }
 
-/**
- * Call cli command to interpret results.
- */
-export async function interpretResults(server: cli.CodeQLCliServer, metadata: QueryMetadata | undefined, resultsInfo: ResultsPaths, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
-
-  if (await fs.pathExists(resultsInfo.interpretedResultsPath)) {
-    return JSON.parse(await fs.readFile(resultsInfo.interpretedResultsPath, 'utf8'));
-  }
-  if (metadata == undefined) {
-    throw new Error('Can\'t interpret results without query metadata');
-  }
-  let { kind, id } = metadata;
-  if (kind == undefined) {
-    throw new Error('Can\'t interpret results without query metadata including kind');
-  }
-  if (id == undefined) {
-    // Interpretation per se doesn't really require an id, but the
-    // SARIF format does, so in the absence of one, we use a dummy id.
-    id = "dummy-id";
-  }
-  return await server.interpretBqrs({ kind, id }, resultsInfo.resultsPath, resultsInfo.interpretedResultsPath, sourceInfo);
-}
-
-export interface EvaluationInfo {
-  query: QueryInfo;
-  result: messages.EvaluationResult;
-  database: DatabaseInfo;
-  historyItemOptions: QueryHistoryItemOptions;
+export interface QueryWithResults {
+  readonly query: QueryInfo;
+  readonly result: messages.EvaluationResult;
+  readonly database: DatabaseInfo;
+  readonly options: QueryHistoryItemOptions;
 }
 
 export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbItem: DatabaseItem):
@@ -399,7 +356,7 @@ export async function compileAndRunQueryAgainstDatabase(
   db: DatabaseItem,
   quickEval: boolean,
   selectedQueryUri: vscode.Uri | undefined
-): Promise<EvaluationInfo> {
+): Promise<QueryWithResults> {
 
   if (!db.contents || !db.contents.dbSchemeUri) {
     throw new Error(`Database ${db.databaseUri} does not have a CodeQL database scheme.`);
@@ -465,7 +422,7 @@ export async function compileAndRunQueryAgainstDatabase(
         name: db.name,
         databaseUri: db.databaseUri.toString(true)
       },
-      historyItemOptions
+      options: historyItemOptions
     };
   } else {
     // Error dialogs are limited in size and scrollability,
@@ -504,7 +461,7 @@ export async function compileAndRunQueryAgainstDatabase(
         name: db.name,
         databaseUri: db.databaseUri.toString(true)
       },
-      historyItemOptions,
+      options: historyItemOptions,
     };
   }
 }
