@@ -8,6 +8,7 @@ assignees: ''
 
 ---
 
+- [ ] Update this issue title to refer to the version of the release
 - [ ] Trigger a release build on Actions by adding a new tag on master of the format `vxx.xx.xx`
 - [ ] Monitor the status of the release build in the `Release` workflow in the Actions tab.
 - [ ] Download the VSIX from the draft GitHub release that is created when the release build finishes.
