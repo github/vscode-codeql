@@ -1,12 +1,13 @@
 import * as path from 'path';
-import { DisposableObject } from "semmle-vscode-utils";
-import { commands, Event, EventEmitter, ExtensionContext, ProviderResult, TreeDataProvider, TreeItem, Uri, window } from "vscode";
+import { DisposableObject } from 'semmle-vscode-utils';
+import { commands, Event, EventEmitter, ExtensionContext, ProviderResult, TreeDataProvider, TreeItem, Uri, window } from 'vscode';
 import * as cli from './cli';
-import { DatabaseItem, DatabaseManager, getUpgradesDirectories } from "./databases";
-import { logger } from "./logging";
-import { clearCacheInDatabase, upgradeDatabase, UserCancellationException } from "./queries";
+import { DatabaseItem, DatabaseManager, getUpgradesDirectories } from './databases';
+import { getOnDiskWorkspaceFolders } from './helpers';
+import { logger } from './logging';
+import { clearCacheInDatabase, UserCancellationException } from './queries';
 import * as qsClient from './queryserver-client';
-import { getOnDiskWorkspaceFolders } from "./helpers";
+import { upgradeDatabase } from './upgrades';
 
 type ThemableIconPath = { light: string, dark: string } | string;
 
