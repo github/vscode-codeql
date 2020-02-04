@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { ExtensionContext, window as Window } from 'vscode';
 import { EvaluationInfo } from './queries';
@@ -17,6 +18,11 @@ export type QueryHistoryItemOptions = {
   label?: string, // user-settable label
   queryText?: string, // stored query for quick query
 }
+
+/**
+ * Path to icon to display next to a failed query history item.
+ */
+const FAILED_QUERY_HISTORY_ITEM_ICON: string = 'media/red-x.svg';
 
 /**
  * One item in the user-displayed list of queries that have been run.
@@ -75,6 +81,10 @@ export class QueryHistoryItem {
     return this.config.format;
   }
 
+  get didRunSuccessfully(): boolean {
+    return this.info.result.resultType === messages.QueryResultType.SUCCESS;
+  }
+
   toString(): string {
     return this.interpolate(this.getLabel());
   }
@@ -94,6 +104,7 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<QueryHistoryIte
   private _onDidChangeTreeData: vscode.EventEmitter<QueryHistoryItem | undefined> = new vscode.EventEmitter<QueryHistoryItem | undefined>();
   readonly onDidChangeTreeData: vscode.Event<QueryHistoryItem | undefined> = this._onDidChangeTreeData.event;
 
+  private ctx: ExtensionContext;
   private history: QueryHistoryItem[] = [];
 
   /**
@@ -101,8 +112,8 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<QueryHistoryIte
    */
   private current: QueryHistoryItem | undefined;
 
-  constructor() {
-    this.history = [];
+  constructor(ctx: ExtensionContext) {
+    this.ctx = ctx;
   }
 
   getTreeItem(element: QueryHistoryItem): vscode.TreeItem {
@@ -113,6 +124,10 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<QueryHistoryIte
       command: 'codeQLQueryHistory.itemClicked',
       arguments: [element],
     };
+
+    if (!element.didRunSuccessfully) {
+      it.iconPath = path.join(this.ctx.extensionPath, FAILED_QUERY_HISTORY_ITEM_ICON);
+    }
 
     return it;
   }
@@ -247,7 +262,7 @@ export class QueryHistoryManager {
   ) {
     this.ctx = ctx;
     this.selectedCallback = selectedCallback;
-    const treeDataProvider = this.treeDataProvider = new HistoryTreeDataProvider();
+    const treeDataProvider = this.treeDataProvider = new HistoryTreeDataProvider(ctx);
     this.treeView = Window.createTreeView('codeQLQueryHistory', { treeDataProvider });
     // Lazily update the tree view selection due to limitations of TreeView API (see
     // `updateTreeViewSelectionIfVisible` doc for details)
