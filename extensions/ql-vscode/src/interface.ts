@@ -1,20 +1,21 @@
 import * as crypto from 'crypto';
 import * as path from 'path';
-import * as bqrs from 'semmle-bqrs';
-import { CustomResultSets, FivePartLocation, LocationStyle, LocationValue, PathProblemQueryResults, ProblemQueryResults, ResolvableLocationValue, tryGetResolvableLocation, WholeFileLocation } from 'semmle-bqrs';
-import { FileReader } from 'semmle-io-node';
+import * as Sarif from 'sarif';
+import { FivePartLocation, LocationStyle, LocationValue, ResolvableLocationValue, tryGetResolvableLocation, WholeFileLocation } from 'semmle-bqrs';
 import { DisposableObject } from 'semmle-vscode-utils';
 import * as vscode from 'vscode';
-import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Position, Range, Uri, window as Window, workspace } from 'vscode';
+import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Range, Uri, window as Window, workspace } from 'vscode';
+import * as cli from './cli';
 import { CodeQLCliServer } from './cli';
 import { DatabaseItem, DatabaseManager } from './databases';
-import * as helpers from './helpers';
 import { showAndLogErrorMessage } from './helpers';
 import { assertNever } from './helpers-pure';
-import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg, ResultsInfo, SortedResultSetInfo, SortedResultsMap, INTERPRETED_RESULTS_PER_RUN_LIMIT } from './interface-types';
+import { FromResultsViewMsg, Interpretation, INTERPRETED_RESULTS_PER_RUN_LIMIT, IntoResultsViewMsg, QueryMetadata, ResultsPaths, SortedResultSetInfo, SortedResultsMap } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
-import { EvaluationInfo, interpretResults, QueryInfo, tmpDir } from './queries';
+import { CompletedQuery, interpretResults } from './query-results';
+import { QueryInfo, tmpDir } from './run-queries';
+import { parseSarifLocation, parseSarifPlainTextMessage } from './sarif-utils';
 
 /**
  * interface.ts
@@ -86,7 +87,7 @@ export function webviewUriToFileUri(webviewUri: string): Uri {
 }
 
 export class InterfaceManager extends DisposableObject {
-  private _displayedEvaluationInfo?: EvaluationInfo;
+  private _displayedQuery?: CompletedQuery;
   private _panel: vscode.WebviewPanel | undefined;
   private _panelLoaded = false;
   private _panelLoadedCallBacks: (() => void)[] = [];
@@ -165,7 +166,7 @@ export class InterfaceManager extends DisposableObject {
         if (msg.visible) {
           const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.databaseUri));
           if (databaseItem !== undefined) {
-            await this.showResultsAsDiagnostics(msg.resultsPath, msg.kind, databaseItem);
+            await this.showResultsAsDiagnostics(msg.origResultsPaths, msg.metadata, databaseItem);
           }
         } else {
           // TODO: Only clear diagnostics on the same database.
@@ -179,14 +180,14 @@ export class InterfaceManager extends DisposableObject {
         this._panelLoadedCallBacks = [];
         break;
       case 'changeSort': {
-        if (this._displayedEvaluationInfo === undefined) {
+        if (this._displayedQuery === undefined) {
           showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
           break;
         }
         // Notify the webview that it should expect new results.
         await this.postMessage({ t: 'resultsUpdating' });
-        await this._displayedEvaluationInfo.query.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
-        await this.showResults(this._displayedEvaluationInfo, WebviewReveal.NotForced, true);
+        await this._displayedQuery.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
+        await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
         break;
       }
       default:
@@ -210,25 +211,25 @@ export class InterfaceManager extends DisposableObject {
 
   /**
    * Show query results in webview panel.
-   * @param info Evaluation info for the executed query.
+   * @param results Evaluation info for the executed query.
    * @param shouldKeepOldResultsWhileRendering Should keep old results while rendering.
    * @param forceReveal Force the webview panel to be visible and
    * Appropriate when the user has just performed an explicit
    * UI interaction requesting results, e.g. clicking on a query
    * history entry.
    */
-  public async showResults(info: EvaluationInfo, forceReveal: WebviewReveal, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
-    if (info.result.resultType !== messages.QueryResultType.SUCCESS) {
+  public async showResults(results: CompletedQuery, forceReveal: WebviewReveal, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
+    if (results.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }
 
-    const interpretation = await this.interpretResultsInfo(info.query, info.query.resultsInfo);
+    const interpretation = await this.interpretResultsInfo(results.query);
 
     const sortedResultsMap: SortedResultsMap = {};
-    info.query.sortedResultsInfo.forEach((v, k) =>
+    results.sortedResultsInfo.forEach((v, k) =>
       sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v));
 
-    this._displayedEvaluationInfo = info;
+    this._displayedQuery = results;
 
     const panel = this.getPanel();
     await this.waitForPanelLoaded();
@@ -241,7 +242,7 @@ export class InterfaceManager extends DisposableObject {
       // more asynchronous message to not so abruptly interrupt
       // user's workflow by immediately revealing the panel.
       const showButton = 'View Results';
-      const queryName = helpers.getQueryName(info);
+      const queryName = results.queryName;
       const resultPromise = vscode.window.showInformationMessage(
         `Finished running query ${(queryName.length > 0) ? ` “${queryName}”` : ''}.`,
         showButton
@@ -258,17 +259,39 @@ export class InterfaceManager extends DisposableObject {
     await this.postMessage({
       t: 'setState',
       interpretation,
-      resultsPath: this.convertPathToWebviewUri(info.query.resultsInfo.resultsPath),
+      origResultsPaths: results.query.resultsPaths,
+      resultsPath: this.convertPathToWebviewUri(results.query.resultsPaths.resultsPath),
       sortedResultsMap,
-      database: info.database,
+      database: results.database,
       shouldKeepOldResultsWhileRendering,
-      kind: info.query.metadata ? info.query.metadata.kind : undefined
+      metadata: results.query.metadata
     });
   }
 
-  private async interpretResultsInfo(query: QueryInfo, resultsInfo: ResultsInfo): Promise<Interpretation | undefined> {
+  private async getTruncatedResults(metadata: QueryMetadata | undefined, resultsPaths: ResultsPaths, sourceInfo: cli.SourceInfo | undefined, sourceLocationPrefix: string): Promise<Interpretation> {
+    const sarif = await interpretResults(this.cliServer, metadata, resultsPaths.interpretedResultsPath, sourceInfo);
+    // For performance reasons, limit the number of results we try
+    // to serialize and send to the webview. TODO: possibly also
+    // limit number of paths per result, number of steps per path,
+    // or throw an error if we are in aggregate trying to send
+    // massively too much data, as it can make the extension
+    // unresponsive.
+    let numTruncatedResults = 0;
+    sarif.runs.forEach(run => {
+      if (run.results !== undefined) {
+        if (run.results.length > INTERPRETED_RESULTS_PER_RUN_LIMIT) {
+          numTruncatedResults += run.results.length - INTERPRETED_RESULTS_PER_RUN_LIMIT;
+          run.results = run.results.slice(0, INTERPRETED_RESULTS_PER_RUN_LIMIT);
+        }
+      }
+    });
+    return { sarif, sourceLocationPrefix, numTruncatedResults };
+    ;
+  }
+
+  private async interpretResultsInfo(query: QueryInfo): Promise<Interpretation | undefined> {
     let interpretation: Interpretation | undefined = undefined;
-    if (query.hasInterpretedResults()
+    if (await query.hasInterpretedResults()
       && query.quickEvalPosition === undefined // never do results interpretation if quickEval
     ) {
       try {
@@ -277,23 +300,7 @@ export class InterfaceManager extends DisposableObject {
         const sourceInfo = sourceArchiveUri === undefined ?
           undefined :
           { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
-        const sarif = await interpretResults(this.cliServer, query, resultsInfo, sourceInfo);
-        // For performance reasons, limit the number of results we try
-        // to serialize and send to the webview. TODO: possibly also
-        // limit number of paths per result, number of steps per path,
-        // or throw an error if we are in aggregate trying to send
-        // massively too much data, as it can make the extension
-        // unresponsive.
-        let numTruncatedResults = 0;
-        sarif.runs.forEach(run => {
-          if (run.results !== undefined) {
-            if (run.results.length > INTERPRETED_RESULTS_PER_RUN_LIMIT) {
-              numTruncatedResults += run.results.length - INTERPRETED_RESULTS_PER_RUN_LIMIT;
-              run.results = run.results.slice(0, INTERPRETED_RESULTS_PER_RUN_LIMIT);
-            }
-          }
-        });
-        interpretation = { sarif, sourceLocationPrefix, numTruncatedResults };
+        interpretation = await this.getTruncatedResults(query.metadata, query.resultsPaths, sourceInfo, sourceLocationPrefix);
       }
       catch (e) {
         // If interpretation fails, accept the error and continue
@@ -301,90 +308,97 @@ export class InterfaceManager extends DisposableObject {
         this.logger.log(`Exception during results interpretation: ${e.message}. Will show raw results instead.`);
       }
     }
-
     return interpretation;
   }
 
-  private async showResultsAsDiagnostics(resultsPath: string, kind: string | undefined,
-    database: DatabaseItem) {
 
-    // URIs from the webview have the vscode-resource scheme, so convert into a filesystem URI first.
-    const resultsPathOnDisk = webviewUriToFileUri(resultsPath).fsPath;
-    const fileReader = await FileReader.open(resultsPathOnDisk);
+  private async showResultsAsDiagnostics(resultsInfo: ResultsPaths, metadata: QueryMetadata | undefined, database: DatabaseItem) {
+    const sourceLocationPrefix = await database.getSourceLocationPrefix(this.cliServer);
+    const sourceArchiveUri = database.sourceArchive;
+    const sourceInfo = sourceArchiveUri === undefined ?
+      undefined :
+      { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
+    const interpretation = await this.getTruncatedResults(metadata, resultsInfo, sourceInfo, sourceLocationPrefix);
+
     try {
-      const resultSets = await bqrs.open(fileReader);
-      try {
-        switch (kind || 'problem') {
-          case 'problem': {
-            const customResults = bqrs.createCustomResultSets<ProblemQueryResults>(resultSets, ProblemQueryResults);
-            await this.showProblemResultsAsDiagnostics(customResults, database);
-          }
-            break;
-
-          case 'path-problem': {
-            const customResults = bqrs.createCustomResultSets<PathProblemQueryResults>(resultSets, PathProblemQueryResults);
-            await this.showProblemResultsAsDiagnostics(customResults, database);
-          }
-            break;
-
-          default:
-            throw new Error(`Unrecognized query kind '${kind}'.`);
-        }
-      }
-      catch (e) {
-        const msg = e instanceof Error ? e.message : e.toString();
-        this.logger.log(`Exception while computing problem results as diagnostics: ${msg}`);
-        this._diagnosticCollection.clear();
-      }
+      await this.showProblemResultsAsDiagnostics(interpretation, database);
     }
-    finally {
-      fileReader.dispose();
+    catch (e) {
+      const msg = e instanceof Error ? e.message : e.toString();
+      this.logger.log(`Exception while computing problem results as diagnostics: ${msg}`);
+      this._diagnosticCollection.clear();
     }
+
   }
 
-  private async showProblemResultsAsDiagnostics(results: CustomResultSets<ProblemQueryResults>,
-    databaseItem: DatabaseItem): Promise<void> {
+  private async showProblemResultsAsDiagnostics(interpretation: Interpretation, databaseItem: DatabaseItem): Promise<void> {
+    const { sarif, sourceLocationPrefix } = interpretation;
+
+
+    if (!sarif.runs || !sarif.runs[0].results) {
+      this.logger.log("Didn't find a run in the sarif results. Error processing sarif?")
+      return;
+    }
 
     const diagnostics: [Uri, ReadonlyArray<Diagnostic>][] = [];
-    for await (const problemRow of results.problems.readTuples()) {
-      const codeLocation = resolveLocation(problemRow.element.location, databaseItem);
-      let message: string;
-      const references = problemRow.references;
-      if (references) {
-        let referenceIndex = 0;
-        message = problemRow.message.replace(/\$\@/g, sub => {
-          if (referenceIndex < references.length) {
-            const replacement = references[referenceIndex].text;
-            referenceIndex++;
-            return replacement;
-          }
-          else {
-            return sub;
-          }
-        });
+
+    for (const result of sarif.runs[0].results) {
+      const message = result.message.text;
+      if (message === undefined) {
+        this.logger.log("Sarif had result without plaintext message")
+        continue;
       }
-      else {
-        message = problemRow.message;
+      if (!result.locations) {
+        this.logger.log("Sarif had result without location")
+        continue;
       }
-      const diagnostic = new Diagnostic(codeLocation.range, message, DiagnosticSeverity.Warning);
-      if (problemRow.references) {
-        const relatedInformation: DiagnosticRelatedInformation[] = [];
-        for (const reference of problemRow.references) {
-          const referenceLocation = tryResolveLocation(reference.element.location, databaseItem);
+
+      const sarifLoc = parseSarifLocation(result.locations[0], sourceLocationPrefix);
+      if (sarifLoc.t == "NoLocation") {
+        continue;
+      }
+      const resultLocation = tryResolveLocation(sarifLoc, databaseItem)
+      if (!resultLocation) {
+        this.logger.log("Sarif location was not resolvable " + sarifLoc)
+        continue;
+      }
+      const parsedMessage = parseSarifPlainTextMessage(message);
+      const relatedInformation: DiagnosticRelatedInformation[] = [];
+      const relatedLocationsById: { [k: number]: Sarif.Location } = {};
+
+
+      for (let loc of result.relatedLocations || []) {
+        relatedLocationsById[loc.id!] = loc;
+      }
+      let resultMessageChunks: string[] = [];
+      for (const section of parsedMessage) {
+        if (typeof section === "string") {
+          resultMessageChunks.push(section);
+        } else {
+          resultMessageChunks.push(section.text);
+          const sarifChunkLoc = parseSarifLocation(relatedLocationsById[section.dest], sourceLocationPrefix);
+          if (sarifChunkLoc.t == "NoLocation") {
+            continue;
+          }
+          const referenceLocation = tryResolveLocation(sarifChunkLoc, databaseItem);
+
+
           if (referenceLocation) {
             const related = new DiagnosticRelatedInformation(referenceLocation,
-              reference.text);
+              section.text);
             relatedInformation.push(related);
           }
         }
-        diagnostic.relatedInformation = relatedInformation;
       }
+      const diagnostic = new Diagnostic(resultLocation.range, resultMessageChunks.join(""), DiagnosticSeverity.Warning);
+      diagnostic.relatedInformation = relatedInformation;
+
       diagnostics.push([
-        codeLocation.uri,
+        resultLocation.uri,
         [diagnostic]
       ]);
-    }
 
+    }
     this._diagnosticCollection.set(diagnostics);
   }
 
@@ -429,8 +443,8 @@ async function showLocation(loc: ResolvableLocationValue, databaseItem: Database
     const doc = await workspace.openTextDocument(resolvedLocation.uri);
     const editorsWithDoc = Window.visibleTextEditors.filter(e => e.document === doc);
     const editor = editorsWithDoc.length > 0
-          ? editorsWithDoc[0]
-          : await Window.showTextDocument(doc, vscode.ViewColumn.One);
+      ? editorsWithDoc[0]
+      : await Window.showTextDocument(doc, vscode.ViewColumn.One);
     let range = resolvedLocation.range;
     // When highlighting the range, vscode's occurrence-match and bracket-match highlighting will
     // trigger based on where we place the cursor/selection, and will compete for the user's attention.
@@ -443,8 +457,8 @@ async function showLocation(loc: ResolvableLocationValue, databaseItem: Database
     // For multi-line ranges, place the cursor at the beginning to avoid visual artifacts from selected line-breaks.
     // Multi-line ranges are usually large enough to overshadow the noise from bracket highlighting.
     let selectionEnd = (range.start.line === range.end.line)
-        ? range.end
-        : range.start;
+      ? range.end
+      : range.start;
     editor.selection = new vscode.Selection(range.start, selectionEnd);
     editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
     editor.setDecorations(shownLocationDecoration, [range]);
@@ -477,22 +491,6 @@ function resolveWholeFileLocation(loc: WholeFileLocation, databaseItem: Database
   // A location corresponding to the start of the file.
   const range = new Range(0, 0, 0, 0);
   return new Location(databaseItem.resolveSourceFile(loc.file), range);
-}
-
-/**
- * Resolve the specified CodeQL location to a URI into the source archive.
- * @param loc CodeQL location to resolve
- * @param databaseItem Database in which to resolve the file location.
- */
-function resolveLocation(loc: LocationValue | undefined, databaseItem: DatabaseItem): Location {
-  const resolvedLocation = tryResolveLocation(loc, databaseItem);
-  if (resolvedLocation) {
-    return resolvedLocation;
-  }
-  else {
-    // Return a fake position in the source archive directory itself.
-    return new Location(databaseItem.resolveSourceFile(undefined), new Position(0, 0));
-  }
 }
 
 /**

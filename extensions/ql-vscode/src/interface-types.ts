@@ -16,6 +16,14 @@ export interface DatabaseInfo {
   databaseUri: string;
 }
 
+/** Arbitrary query metadata */
+export interface QueryMetadata {	
+  name?: string,	
+  description?: string,	
+  id?: string,	
+  kind?: string	
+}
+
 export interface PreviousExecution {
   queryName: string;
   time: string;
@@ -29,7 +37,7 @@ export interface Interpretation {
   sarif: sarif.Log;
 }
 
-export interface ResultsInfo {
+export interface ResultsPaths {
   resultsPath: string;
   interpretedResultsPath: string;
 }
@@ -53,10 +61,11 @@ export interface ResultsUpdatingMsg {
 export interface SetStateMsg {
   t: 'setState';
   resultsPath: string;
+  origResultsPaths: ResultsPaths;
   sortedResultsMap: SortedResultsMap;
   interpretation: undefined | Interpretation;
   database: DatabaseInfo;
-  kind?: string;
+  metadata?: QueryMetadata
   /**
    * Whether to keep displaying the old results while rendering the new results.
    *
@@ -86,7 +95,8 @@ interface ViewSourceFileMsg {
 interface ToggleDiagnostics {
   t: 'toggleDiagnostics';
   databaseUri: string;
-  resultsPath: string;
+  metadata?: QueryMetadata
+  origResultsPaths: ResultsPaths;
   visible: boolean;
   kind?: string;
 };

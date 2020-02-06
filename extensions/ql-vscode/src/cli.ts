@@ -6,7 +6,7 @@ import * as util from 'util';
 import { Logger, ProgressReporter } from "./logging";
 import { Disposable } from "vscode";
 import { DistributionProvider } from "./distribution";
-import { SortDirection } from "./interface-types";
+import { SortDirection, QueryMetadata } from "./interface-types";
 import { assertNever } from "./helpers-pure";
 
 /**
@@ -54,16 +54,6 @@ export interface UpgradesInfo {
  * The expected output of `codeql resolve qlpacks`.
  */
 export type QlpacksInfo = { [name: string]: string[] };
-
-/**
- * The expected output of `codeql resolve metadata`.
- */
-export interface QueryMetadata {
-  name?: string,
-  description?: string,
-  id?: string,
-  kind?: string
-}
 
 // `codeql bqrs interpret` requires both of these to be present or
 // both absent.
@@ -159,7 +149,7 @@ export class CodeQLCliServer implements Disposable {
     if (!config) {
       throw new Error("Failed to find codeql distribution")
     }
-    return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, _data => {})
+    return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, _data => { })
   }
 
   private async runCodeQlCliInternal(command: string[], commandArgs: string[], description: string): Promise<string> {
