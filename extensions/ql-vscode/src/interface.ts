@@ -1,21 +1,21 @@
 import * as crypto from 'crypto';
 import * as path from 'path';
-import * as cli from './cli';
 import * as Sarif from 'sarif';
-import { parseSarifLocation, parseSarifPlainTextMessage } from './sarif-utils';
-import { FivePartLocation, LocationValue, ResolvableLocationValue, WholeFileLocation, tryGetResolvableLocation, LocationStyle } from 'semmle-bqrs';
+import { FivePartLocation, LocationStyle, LocationValue, ResolvableLocationValue, tryGetResolvableLocation, WholeFileLocation } from 'semmle-bqrs';
 import { DisposableObject } from 'semmle-vscode-utils';
 import * as vscode from 'vscode';
 import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Range, Uri, window as Window, workspace } from 'vscode';
+import * as cli from './cli';
 import { CodeQLCliServer } from './cli';
 import { DatabaseItem, DatabaseManager } from './databases';
 import { showAndLogErrorMessage } from './helpers';
 import { assertNever } from './helpers-pure';
-import { FromResultsViewMsg, Interpretation, IntoResultsViewMsg, ResultsPaths, SortedResultSetInfo, SortedResultsMap, INTERPRETED_RESULTS_PER_RUN_LIMIT, QueryMetadata } from './interface-types';
+import { FromResultsViewMsg, Interpretation, INTERPRETED_RESULTS_PER_RUN_LIMIT, IntoResultsViewMsg, QueryMetadata, ResultsPaths, SortedResultSetInfo, SortedResultsMap } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
-import { QueryInfo, tmpDir } from './run-queries';
 import { CompletedQuery, interpretResults } from './query-results';
+import { QueryInfo, tmpDir } from './run-queries';
+import { parseSarifLocation, parseSarifPlainTextMessage } from './sarif-utils';
 
 /**
  * interface.ts
@@ -291,7 +291,7 @@ export class InterfaceManager extends DisposableObject {
 
   private async interpretResultsInfo(query: QueryInfo): Promise<Interpretation | undefined> {
     let interpretation: Interpretation | undefined = undefined;
-    if (query.hasInterpretedResults()
+    if (await query.hasInterpretedResults()
       && query.quickEvalPosition === undefined // never do results interpretation if quickEval
     ) {
       try {
