@@ -85,6 +85,10 @@ export class CompletedQuery implements QueryWithResults {
     return this.config.format;
   }
 
+  get didRunSuccessfully(): boolean {
+    return this.result.resultType === messages.QueryResultType.SUCCESS;
+  }
+
   toString(): string {
     return this.interpolate(this.getLabel());
   }
