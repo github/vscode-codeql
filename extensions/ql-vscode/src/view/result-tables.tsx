@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DatabaseInfo, Interpretation, SortState, QueryMetadata, ResultsPaths } from '../interface-types';
+import { DatabaseInfo, Interpretation, RawResultsSortState, QueryMetadata, ResultsPaths } from '../interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
 import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName } from './result-table-utils';
@@ -12,10 +12,10 @@ export interface ResultTablesProps {
   rawResultSets: readonly ResultSet[];
   interpretation: Interpretation | undefined;
   database: DatabaseInfo;
-  metadata? : QueryMetadata
-  resultsPath: string ;
+  metadata?: QueryMetadata
+  resultsPath: string;
   origResultsPaths: ResultsPaths;
-  sortStates: Map<string, SortState>;
+  sortStates: Map<string, RawResultsSortState>;
   isLoadingNewResults: boolean;
 }
 

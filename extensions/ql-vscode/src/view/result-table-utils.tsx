@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { LocationValue, ResolvableLocationValue, tryGetResolvableLocation } from 'semmle-bqrs';
-import { SortState, QueryMetadata } from '../interface-types';
+import { RawResultsSortState, QueryMetadata } from '../interface-types';
 import { ResultSet, vscode } from './results';
 
 export interface ResultTableProps {
@@ -8,7 +8,7 @@ export interface ResultTableProps {
   databaseUri: string;
   metadata?: QueryMetadata
   resultsPath: string | undefined;
-  sortState?: SortState;
+  sortState?: RawResultsSortState;
 }
 
 export const className = 'vscode-codeql__result-table';
@@ -80,6 +80,6 @@ export function zebraStripe(index: number, ...otherClasses: string[]): { classNa
  */
 export function selectableZebraStripe(isSelected: boolean, index: number, ...otherClasses: string[]): { className: string } {
   return isSelected
-      ? { className: [selectedRowClassName, ...otherClasses].join(' ') }
-      : zebraStripe(index, ...otherClasses)
+    ? { className: [selectedRowClassName, ...otherClasses].join(' ') }
+    : zebraStripe(index, ...otherClasses)
 }

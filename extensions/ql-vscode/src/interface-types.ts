@@ -17,11 +17,11 @@ export interface DatabaseInfo {
 }
 
 /** Arbitrary query metadata */
-export interface QueryMetadata {	
-  name?: string,	
-  description?: string,	
-  id?: string,	
-  kind?: string	
+export interface QueryMetadata {
+  name?: string,
+  description?: string,
+  id?: string,
+  kind?: string
 }
 
 export interface PreviousExecution {
@@ -34,6 +34,7 @@ export interface PreviousExecution {
 export interface Interpretation {
   sourceLocationPrefix: string;
   numTruncatedResults: number;
+  sortState: InterpretedResultsSortState;
   sarif: sarif.Log;
 }
 
@@ -44,7 +45,7 @@ export interface ResultsPaths {
 
 export interface SortedResultSetInfo {
   resultsPath: string;
-  sortState: SortState;
+  sortState: RawResultsSortState;
 }
 
 export type SortedResultsMap = { [resultSet: string]: SortedResultSetInfo };
@@ -84,7 +85,12 @@ export interface NavigatePathMsg {
 
 export type IntoResultsViewMsg = ResultsUpdatingMsg | SetStateMsg | NavigatePathMsg;
 
-export type FromResultsViewMsg = ViewSourceFileMsg | ToggleDiagnostics | ChangeSortMsg | ResultViewLoaded;
+export type FromResultsViewMsg =
+  | ViewSourceFileMsg
+  | ToggleDiagnostics
+  | ChangeRawResultsSortMsg
+  | ChangeInterpretedResultsSortMsg
+  | ResultViewLoaded;
 
 interface ViewSourceFileMsg {
   t: 'viewSourceFile';
@@ -109,13 +115,22 @@ export enum SortDirection {
   asc, desc
 }
 
-export interface SortState {
+export interface RawResultsSortState {
   columnIndex: number;
   direction: SortDirection;
 }
 
-interface ChangeSortMsg {
+export interface InterpretedResultsSortState {
+  sortBy: 'file-position' | 'alert-message';
+}
+
+interface ChangeRawResultsSortMsg {
   t: 'changeSort';
   resultSetName: string;
-  sortState?: SortState;
+  sortState?: RawResultsSortState;
+}
+
+interface ChangeInterpretedResultsSortMsg {
+  t: 'changeInterpretedSort';
+  sortState?: InterpretedResultsSortState;
 }

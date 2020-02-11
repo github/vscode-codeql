@@ -2,11 +2,11 @@ import * as React from "react";
 import { renderLocation, ResultTableProps, zebraStripe, className } from "./result-table-utils";
 import { RawTableResultSet, ResultValue, vscode } from "./results";
 import { assertNever } from "../helpers-pure";
-import { SortDirection, SortState, RAW_RESULTS_LIMIT } from "../interface-types";
+import { SortDirection, RAW_RESULTS_LIMIT, RawResultsSortState } from "../interface-types";
 
 export type RawTableProps = ResultTableProps & {
   resultSet: RawTableResultSet,
-  sortState?: SortState;
+  sortState?: RawResultsSortState;
 };
 
 export class RawTable extends React.Component<RawTableProps, {}> {
