@@ -86,6 +86,22 @@ export function webviewUriToFileUri(webviewUri: string): Uri {
   return Uri.file(path);
 }
 
+function sortInterpretedResults(results: Sarif.Result[], sortState: InterpretedResultsSortState): void {
+  switch (sortState.sortBy) {
+    case 'alert-message':
+      results.sort((a, b) =>
+        a.message.text === undefined ? 0 :
+          b.message.text === undefined ? 0 :
+            a.message.text?.localeCompare(b.message.text));
+      break;
+    case 'file-position':
+      // default to the order found in the sarif file
+      break;
+    default:
+      assertNever(sortState.sortBy);
+  }
+}
+
 export class InterfaceManager extends DisposableObject {
   private _displayedQuery?: CompletedQuery;
   private _panel: vscode.WebviewPanel | undefined;
@@ -287,9 +303,11 @@ export class InterfaceManager extends DisposableObject {
     // or throw an error if we are in aggregate trying to send
     // massively too much data, as it can make the extension
     // unresponsive.
+
     let numTruncatedResults = 0;
     sarif.runs.forEach(run => {
       if (run.results !== undefined) {
+        sortInterpretedResults(run.results, sortState);
         if (run.results.length > INTERPRETED_RESULTS_PER_RUN_LIMIT) {
           numTruncatedResults += run.results.length - INTERPRETED_RESULTS_PER_RUN_LIMIT;
           run.results = run.results.slice(0, INTERPRETED_RESULTS_PER_RUN_LIMIT);
