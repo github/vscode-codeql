@@ -13,6 +13,7 @@ export interface ResultTableProps {
 
 export const className = 'vscode-codeql__result-table';
 export const tableSelectionHeaderClassName = 'vscode-codeql__table-selection-header';
+export const alertExtrasClassName = `${className}-alert-extras`;
 export const toggleDiagnosticsClassName = `${className}-toggle-diagnostics`;
 export const evenRowClassName = 'vscode-codeql__result-table-row--even';
 export const oddRowClassName = 'vscode-codeql__result-table-row--odd';

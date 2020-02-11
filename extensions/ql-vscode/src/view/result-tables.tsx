@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { DatabaseInfo, Interpretation, RawResultsSortState, QueryMetadata, ResultsPaths } from '../interface-types';
+import { DatabaseInfo, Interpretation, RawResultsSortState, QueryMetadata, ResultsPaths, InterpretedResultsSortOrder, InterpretedResultsSortState } from '../interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
-import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName } from './result-table-utils';
+import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName, alertExtrasClassName } from './result-table-utils';
 import { ResultSet, vscode } from './results';
 
 /**
@@ -16,6 +16,7 @@ export interface ResultTablesProps {
   resultsPath: string;
   origResultsPaths: ResultsPaths;
   sortStates: Map<string, RawResultsSortState>;
+  interpretedSortState?: InterpretedResultsSortState;
   isLoadingNewResults: boolean;
 }
 
@@ -89,17 +90,21 @@ export class ResultTables
     return [ALERTS_TABLE_NAME, SELECT_TABLE_NAME, resultSets[0].schema.name].filter(resultSetName => resultSetNames.includes(resultSetName))[0];
   }
 
-  private onChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+  private onTableSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
     this.setState({ selectedTable: event.target.value });
   }
 
-  render(): React.ReactNode {
-    const { selectedTable } = this.state;
-    const resultSets = this.getResultSets();
-    const { database, resultsPath, metadata, origResultsPaths } = this.props;
+  private onSortChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+    vscode.postMessage({
+      t: 'changeInterpretedSort',
+      sortState: { sortBy: event.target.value as InterpretedResultsSortOrder },
+    });
+  }
 
-    // Only show the Problems view display checkbox for the alerts table.
-    const diagnosticsCheckBox = selectedTable === ALERTS_TABLE_NAME ?
+  private alertTableExtras(): JSX.Element | undefined {
+    const { database, resultsPath, metadata, origResultsPaths, interpretedSortState } = this.props;
+
+    const displayProblemsAsAlertsToggle =
       <div className={toggleDiagnosticsClassName}>
         <input type="checkbox" id="toggle-diagnostics" name="toggle-diagnostics" onChange={(e) => {
           if (resultsPath !== undefined) {
@@ -113,14 +118,31 @@ export class ResultTables
           }
         }} />
         <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
-      </div> : undefined;
+      </div>;
+
+    const interpretedResultsSortSelect = <select value={interpretedSortState?.sortBy || 'file-position'}
+      onChange={this.onSortChange}>
+      <option value={'file-position'}>Source File Position</option>
+      <option value={'alert-message'}>Alert Message</option>
+    </select>;
+
+    return <div className={alertExtrasClassName}>
+      Sort:
+      {interpretedResultsSortSelect}
+      {displayProblemsAsAlertsToggle}
+    </div>
+  }
+
+  render(): React.ReactNode {
+    const { selectedTable } = this.state;
+    const resultSets = this.getResultSets();
 
     const resultSet = resultSets.find(resultSet => resultSet.schema.name == selectedTable);
     const numberOfResults = resultSet && renderResultCountString(resultSet);
 
     return <div>
       <div className={tableSelectionHeaderClassName}>
-        <select value={selectedTable} onChange={this.onChange}>
+        <select value={selectedTable} onChange={this.onTableSelectionChange}>
           {
             resultSets.map(resultSet =>
               <option key={resultSet.schema.name} value={resultSet.schema.name}>
@@ -130,7 +152,7 @@ export class ResultTables
           }
         </select>
         {numberOfResults}
-        {diagnosticsCheckBox}
+        {selectedTable === ALERTS_TABLE_NAME ? this.alertTableExtras() : undefined}
         {
           this.props.isLoadingNewResults ?
             <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>Updating results…</span>
@@ -144,7 +166,7 @@ export class ResultTables
           resultsPath={this.props.resultsPath}
           sortState={this.props.sortStates.get(resultSet.schema.name)} />
       }
-    </div>;
+    </div >;
   }
 }
 

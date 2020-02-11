@@ -120,8 +120,11 @@ export interface RawResultsSortState {
   direction: SortDirection;
 }
 
+export type InterpretedResultsSortOrder =
+  'file-position' | 'alert-message';
+
 export interface InterpretedResultsSortState {
-  sortBy: 'file-position' | 'alert-message';
+  sortBy: InterpretedResultsSortOrder;
 }
 
 interface ChangeRawResultsSortMsg {

@@ -314,6 +314,7 @@ class App extends React.Component<{}, ResultsViewState> {
         resultsPath={displayedResults.resultsInfo.resultsPath}
         metadata={displayedResults.resultsInfo ? displayedResults.resultsInfo.metadata : undefined}
         sortStates={displayedResults.results.sortStates}
+        interpretedSortState={displayedResults.resultsInfo.interpretation?.sortState}
         isLoadingNewResults={this.state.isExpectingResultsUpdate || this.state.nextResultsInfo !== null} />;
     }
     else {
