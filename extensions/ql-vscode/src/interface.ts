@@ -269,7 +269,7 @@ export class InterfaceManager extends DisposableObject {
   }
 
   private async getTruncatedResults(metadata: QueryMetadata | undefined, resultsPaths: ResultsPaths, sourceInfo: cli.SourceInfo | undefined, sourceLocationPrefix: string): Promise<Interpretation> {
-    const sarif = await interpretResults(this.cliServer, metadata, resultsPaths.interpretedResultsPath, sourceInfo);
+    const sarif = await interpretResults(this.cliServer, metadata, resultsPaths.resultsPath, sourceInfo);
     // For performance reasons, limit the number of results we try
     // to serialize and send to the webview. TODO: possibly also
     // limit number of paths per result, number of steps per path,
