@@ -4,9 +4,10 @@ import * as Sarif from 'sarif';
 import * as Keys from '../result-keys';
 import { LocationStyle } from 'semmle-bqrs';
 import * as octicons from './octicons';
-import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation } from './result-table-utils';
-import { PathTableResultSet, onNavigation, NavigationEvent } from './results';
+import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection } from './result-table-utils';
+import { PathTableResultSet, onNavigation, NavigationEvent, vscode } from './results';
 import { parseSarifPlainTextMessage, parseSarifLocation } from '../sarif-utils';
+import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortState } from '../interface-types';
 
 export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
 export interface PathTableState {
@@ -43,8 +44,39 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     e.preventDefault();
   }
 
+  sortClass(column: InterpretedResultsSortColumn): string {
+    const sortState = this.props.resultSet.sortState;
+    if (sortState !== undefined && sortState.sortBy === column) {
+      return sortState.sortDirection === SortDirection.asc ? 'sort-asc' : 'sort-desc';
+    }
+    else {
+      return 'sort-none';
+    }
+  }
+
+  toggleSortStateForColumn(column: InterpretedResultsSortColumn): void {
+    const oldSortState = this.props.resultSet.sortState;
+    const prevDirection = oldSortState && oldSortState.sortBy === column ? oldSortState.sortDirection : undefined;
+    const nextDirection = nextSortDirection(prevDirection);
+    const sortState: InterpretedResultsSortState | undefined =
+      nextDirection === undefined ? undefined :
+        { sortBy: column, sortDirection: nextDirection };
+    vscode.postMessage({
+      t: 'changeInterpretedSort',
+      sortState,
+    });
+  }
+
   render(): JSX.Element {
     const { databaseUri, resultSet } = this.props;
+
+    const header = <thead>
+      <tr>
+        <th colSpan={2}></th>
+        <th className={this.sortClass('alert-message') + ' vscode-codeql__alert-message-cell'} colSpan={2} onClick={() => this.toggleSortStateForColumn('alert-message')}>Message</th>
+        <th className={this.sortClass('file-position') + ' vscode-codeql__location-cell'} onClick={() => this.toggleSortStateForColumn('file-position')}>Location</th>
+      </tr>
+    </thead>;
 
     const rows: JSX.Element[] = [];
     const { numTruncatedResults, sourceLocationPrefix } = resultSet;
@@ -65,7 +97,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           result.push(<span>{part} </span>);
         } else {
           const renderedLocation = renderSarifLocationWithText(part.text, relatedLocationsById[part.dest],
-              undefined);
+            undefined);
           result.push(<span>{renderedLocation} </span>);
         }
       } return result;
@@ -93,7 +125,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           return renderNonLocation(text, parsedLoc.hint);
         case LocationStyle.FivePart:
         case LocationStyle.WholeFile:
-            return renderLocation(parsedLoc, text, databaseUri, undefined, updateSelectionCallback(pathNodeKey));
+          return renderLocation(parsedLoc, text, databaseUri, undefined, updateSelectionCallback(pathNodeKey));
       }
       return undefined;
     }
@@ -231,6 +263,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     }
 
     return <table className={className}>
+      {header}
       <tbody>{rows}</tbody>
     </table>;
   }

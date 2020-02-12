@@ -10,7 +10,7 @@ import { CodeQLCliServer } from './cli';
 import { DatabaseItem, DatabaseManager } from './databases';
 import { showAndLogErrorMessage } from './helpers';
 import { assertNever } from './helpers-pure';
-import { FromResultsViewMsg, Interpretation, INTERPRETED_RESULTS_PER_RUN_LIMIT, IntoResultsViewMsg, QueryMetadata, ResultsPaths, SortedResultSetInfo, SortedResultsMap, InterpretedResultsSortState } from './interface-types';
+import { FromResultsViewMsg, Interpretation, INTERPRETED_RESULTS_PER_RUN_LIMIT, IntoResultsViewMsg, QueryMetadata, ResultsPaths, SortedResultSetInfo, SortedResultsMap, InterpretedResultsSortState, SortDirection } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
 import { CompletedQuery, interpretResults } from './query-results';
@@ -86,19 +86,28 @@ export function webviewUriToFileUri(webviewUri: string): Uri {
   return Uri.file(path);
 }
 
-function sortInterpretedResults(results: Sarif.Result[], sortState: InterpretedResultsSortState): void {
-  switch (sortState.sortBy) {
-    case 'alert-message':
-      results.sort((a, b) =>
-        a.message.text === undefined ? 0 :
-          b.message.text === undefined ? 0 :
-            a.message.text?.localeCompare(b.message.text));
-      break;
-    case 'file-position':
-      // default to the order found in the sarif file
-      break;
-    default:
-      assertNever(sortState.sortBy);
+function sortInterpretedResults(results: Sarif.Result[], sortState: InterpretedResultsSortState | undefined): void {
+  function locToString(locs: Sarif.Location[] | undefined): string {
+    if (locs === undefined) return '';
+    return JSON.stringify(locs[0]) || '';
+  }
+
+  if (sortState !== undefined) {
+    const direction = sortState.sortDirection === SortDirection.asc ? 1 : -1;
+    switch (sortState.sortBy) {
+      case 'alert-message':
+        results.sort((a, b) =>
+          a.message.text === undefined ? 0 :
+            b.message.text === undefined ? 0 :
+              direction * (a.message.text?.localeCompare(b.message.text)));
+        break;
+      case 'file-position':
+        results.sort((a, b) =>
+          direction * locToString(a.locations).localeCompare(locToString(b.locations)));
+        break;
+      default:
+        assertNever(sortState.sortBy);
+    }
   }
 }
 
@@ -295,7 +304,7 @@ export class InterfaceManager extends DisposableObject {
     });
   }
 
-  private async getTruncatedResults(metadata: QueryMetadata | undefined, resultsPaths: ResultsPaths, sourceInfo: cli.SourceInfo | undefined, sourceLocationPrefix: string, sortState: InterpretedResultsSortState): Promise<Interpretation> {
+  private async getTruncatedResults(metadata: QueryMetadata | undefined, resultsPaths: ResultsPaths, sourceInfo: cli.SourceInfo | undefined, sourceLocationPrefix: string, sortState: InterpretedResultsSortState | undefined): Promise<Interpretation> {
     const sarif = await interpretResults(this.cliServer, metadata, resultsPaths.resultsPath, sourceInfo);
     // For performance reasons, limit the number of results we try
     // to serialize and send to the webview. TODO: possibly also
@@ -317,7 +326,7 @@ export class InterfaceManager extends DisposableObject {
     return { sarif, sourceLocationPrefix, numTruncatedResults, sortState };
   }
 
-  private async interpretResultsInfo(query: QueryInfo, sortState: InterpretedResultsSortState): Promise<Interpretation | undefined> {
+  private async interpretResultsInfo(query: QueryInfo, sortState: InterpretedResultsSortState | undefined): Promise<Interpretation | undefined> {
     let interpretation: Interpretation | undefined = undefined;
     if (await query.hasInterpretedResults()
       && query.quickEvalPosition === undefined // never do results interpretation if quickEval
@@ -351,7 +360,7 @@ export class InterfaceManager extends DisposableObject {
       resultsInfo,
       sourceInfo,
       sourceLocationPrefix,
-      { sortBy: 'file-position' } // sort order doesn't matter for showing diagnostics in parallel
+      undefined,
     );
 
     try {

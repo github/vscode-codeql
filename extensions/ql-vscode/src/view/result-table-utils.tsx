@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { LocationValue, ResolvableLocationValue, tryGetResolvableLocation } from 'semmle-bqrs';
-import { RawResultsSortState, QueryMetadata } from '../interface-types';
+import { RawResultsSortState, QueryMetadata, SortDirection } from '../interface-types';
 import { ResultSet, vscode } from './results';
+import { assertNever } from '../helpers-pure';
 
 export interface ResultTableProps {
   resultSet: ResultSet;
@@ -83,4 +84,19 @@ export function selectableZebraStripe(isSelected: boolean, index: number, ...oth
   return isSelected
     ? { className: [selectedRowClassName, ...otherClasses].join(' ') }
     : zebraStripe(index, ...otherClasses)
+}
+
+/**
+ * Returns the next sort direction when cycling through sort directions while clicking.
+ */
+export function nextSortDirection(direction: SortDirection | undefined): SortDirection {
+  switch (direction) {
+    case SortDirection.asc:
+      return SortDirection.desc;
+    case SortDirection.desc:
+    case undefined:
+      return SortDirection.asc;
+    default:
+      return assertNever(direction);
+  }
 }

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DatabaseInfo, Interpretation, RawResultsSortState, QueryMetadata, ResultsPaths, InterpretedResultsSortOrder, InterpretedResultsSortState } from '../interface-types';
+import { DatabaseInfo, Interpretation, RawResultsSortState, QueryMetadata, ResultsPaths, InterpretedResultsSortState } from '../interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
 import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName, alertExtrasClassName } from './result-table-utils';
@@ -94,15 +94,8 @@ export class ResultTables
     this.setState({ selectedTable: event.target.value });
   }
 
-  private onSortChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    vscode.postMessage({
-      t: 'changeInterpretedSort',
-      sortState: { sortBy: event.target.value as InterpretedResultsSortOrder },
-    });
-  }
-
   private alertTableExtras(): JSX.Element | undefined {
-    const { database, resultsPath, metadata, origResultsPaths, interpretedSortState } = this.props;
+    const { database, resultsPath, metadata, origResultsPaths } = this.props;
 
     const displayProblemsAsAlertsToggle =
       <div className={toggleDiagnosticsClassName}>
@@ -120,15 +113,7 @@ export class ResultTables
         <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
       </div>;
 
-    const interpretedResultsSortSelect = <select value={interpretedSortState?.sortBy || 'file-position'}
-      onChange={this.onSortChange}>
-      <option value={'file-position'}>Source File Position</option>
-      <option value={'alert-message'}>Alert Message</option>
-    </select>;
-
     return <div className={alertExtrasClassName}>
-      Sort:
-      {interpretedResultsSortSelect}
       {displayProblemsAsAlertsToggle}
     </div>
   }

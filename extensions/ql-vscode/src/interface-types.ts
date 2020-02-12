@@ -34,7 +34,7 @@ export interface PreviousExecution {
 export interface Interpretation {
   sourceLocationPrefix: string;
   numTruncatedResults: number;
-  sortState: InterpretedResultsSortState;
+  sortState?: InterpretedResultsSortState;
   sarif: sarif.Log;
 }
 
@@ -120,11 +120,12 @@ export interface RawResultsSortState {
   direction: SortDirection;
 }
 
-export type InterpretedResultsSortOrder =
+export type InterpretedResultsSortColumn =
   'file-position' | 'alert-message';
 
 export interface InterpretedResultsSortState {
-  sortBy: InterpretedResultsSortOrder;
+  sortBy: InterpretedResultsSortColumn;
+  sortDirection: SortDirection;
 }
 
 interface ChangeRawResultsSortMsg {

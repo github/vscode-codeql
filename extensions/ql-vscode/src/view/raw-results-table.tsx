@@ -1,7 +1,6 @@
 import * as React from "react";
-import { renderLocation, ResultTableProps, zebraStripe, className } from "./result-table-utils";
+import { renderLocation, ResultTableProps, zebraStripe, className, nextSortDirection } from "./result-table-utils";
 import { RawTableResultSet, ResultValue, vscode } from "./results";
-import { assertNever } from "../helpers-pure";
 import { SortDirection, RAW_RESULTS_LIMIT, RawResultsSortState } from "../interface-types";
 
 export type RawTableProps = ResultTableProps & {
@@ -84,7 +83,6 @@ export class RawTable extends React.Component<RawTableProps, {}> {
   }
 }
 
-
 /**
  * Render one column of a tuple.
  */
@@ -97,17 +95,5 @@ function renderTupleValue(v: ResultValue, databaseUri: string): JSX.Element {
   }
   else {
     return renderLocation(v.location, v.label, databaseUri);
-  }
-}
-
-function nextSortDirection(direction: SortDirection | undefined): SortDirection {
-  switch (direction) {
-    case SortDirection.asc:
-      return SortDirection.desc;
-    case SortDirection.desc:
-    case undefined:
-      return SortDirection.asc;
-    default:
-      return assertNever(direction);
   }
 }

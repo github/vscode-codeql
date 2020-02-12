@@ -112,8 +112,12 @@ td.vscode-codeql__path-index-cell {
   text-align: right;
 }
 
-td.vscode-codeql__location-cell {
-  text-align: right;
+.vscode-codeql__alert-message-cell {
+  text-align: left !important;
+}
+
+.vscode-codeql__location-cell {
+  text-align: right !important;
 }
 
 .vscode-codeql__vertical-rule {
