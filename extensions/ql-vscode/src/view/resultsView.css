@@ -45,6 +45,13 @@
   opacity: 0.6;
 }
 
+.vscode-codeql__result-table .sort-asc,
+.vscode-codeql__result-table .sort-desc,
+.vscode-codeql__result-table .sort-none {
+   cursor: pointer;
+   user-select: none;
+}
+
 .vscode-codeql__result-table .sort-none::after {
   /* Want to take up the same space as the other sort directions */
   content: " ▲";
