@@ -1,13 +1,5 @@
 name: Build Extension
-on:
-  push:
-    paths:
-    - '**'
-    - '!**.md'
-  pull_request:
-    paths:
-    - '**'
-    - '!**.md'
+on: [push, pull_request]
 
 jobs:
   build:
