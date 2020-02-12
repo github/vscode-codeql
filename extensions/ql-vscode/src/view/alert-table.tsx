@@ -15,8 +15,6 @@ export interface PathTableState {
   selectedPathNode: undefined | Keys.PathNode;
 }
 
-type InterpretedResultsColumn = InterpretedResultsSortColumn | 'file-position';
-
 export class PathTable extends React.Component<PathTableProps, PathTableState> {
   constructor(props: PathTableProps) {
     super(props);
@@ -56,18 +54,15 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     }
   }
 
-  getNextSortState(column: InterpretedResultsColumn): InterpretedResultsSortState | undefined {
-    if (column === 'file-position') {
-      return undefined;
-    }
+  getNextSortState(column: InterpretedResultsSortColumn): InterpretedResultsSortState | undefined {
     const oldSortState = this.props.resultSet.sortState;
     const prevDirection = oldSortState && oldSortState.sortBy === column ? oldSortState.sortDirection : undefined;
-    const nextDirection = nextSortDirection(prevDirection);
+    const nextDirection = nextSortDirection(prevDirection, true);
     return nextDirection === undefined ? undefined :
       { sortBy: column, sortDirection: nextDirection };
   }
 
-  toggleSortStateForColumn(column: InterpretedResultsSortColumn | 'file-position'): void {
+  toggleSortStateForColumn(column: InterpretedResultsSortColumn): void {
     vscode.postMessage({
       t: 'changeInterpretedSort',
       sortState: this.getNextSortState(column),
@@ -80,8 +75,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     const header = <thead>
       <tr>
         <th colSpan={2}></th>
-        <th className={this.sortClass('alert-message') + ' vscode-codeql__alert-message-cell'} colSpan={2} onClick={() => this.toggleSortStateForColumn('alert-message')}>Message</th>
-        <th className={'sort-none vscode-codeql__location-cell'} onClick={() => this.toggleSortStateForColumn('file-position')}>Location</th>
+        <th className={this.sortClass('alert-message') + ' vscode-codeql__alert-message-cell'} colSpan={3} onClick={() => this.toggleSortStateForColumn('alert-message')}>Message</th>
       </tr>
     </thead>;
 

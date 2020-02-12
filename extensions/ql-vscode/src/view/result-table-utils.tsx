@@ -88,12 +88,14 @@ export function selectableZebraStripe(isSelected: boolean, index: number, ...oth
 
 /**
  * Returns the next sort direction when cycling through sort directions while clicking.
+ * if `includeUndefined` is true, include `undefined` in the cycle.
  */
-export function nextSortDirection(direction: SortDirection | undefined): SortDirection {
+export function nextSortDirection(direction: SortDirection | undefined, includeUndefined?: boolean): SortDirection | undefined {
   switch (direction) {
     case SortDirection.asc:
       return SortDirection.desc;
     case SortDirection.desc:
+      return includeUndefined ? undefined : SortDirection.asc;
     case undefined:
       return SortDirection.asc;
     default:
