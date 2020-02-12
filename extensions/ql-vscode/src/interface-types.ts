@@ -121,7 +121,7 @@ export interface RawResultsSortState {
 }
 
 export type InterpretedResultsSortColumn =
-  'file-position' | 'alert-message';
+  'alert-message';
 
 export interface InterpretedResultsSortState {
   sortBy: InterpretedResultsSortColumn;

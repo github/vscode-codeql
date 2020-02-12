@@ -87,11 +87,6 @@ export function webviewUriToFileUri(webviewUri: string): Uri {
 }
 
 function sortInterpretedResults(results: Sarif.Result[], sortState: InterpretedResultsSortState | undefined): void {
-  function locToString(locs: Sarif.Location[] | undefined): string {
-    if (locs === undefined) return '';
-    return JSON.stringify(locs[0]) || '';
-  }
-
   if (sortState !== undefined) {
     const direction = sortState.sortDirection === SortDirection.asc ? 1 : -1;
     switch (sortState.sortBy) {
@@ -100,10 +95,6 @@ function sortInterpretedResults(results: Sarif.Result[], sortState: InterpretedR
           a.message.text === undefined ? 0 :
             b.message.text === undefined ? 0 :
               direction * (a.message.text?.localeCompare(b.message.text)));
-        break;
-      case 'file-position':
-        results.sort((a, b) =>
-          direction * locToString(a.locations).localeCompare(locToString(b.locations)));
         break;
       default:
         assertNever(sortState.sortBy);

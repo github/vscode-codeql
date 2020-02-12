@@ -15,6 +15,8 @@ export interface PathTableState {
   selectedPathNode: undefined | Keys.PathNode;
 }
 
+type InterpretedResultsColumn = InterpretedResultsSortColumn | 'file-position';
+
 export class PathTable extends React.Component<PathTableProps, PathTableState> {
   constructor(props: PathTableProps) {
     super(props);
@@ -54,16 +56,21 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     }
   }
 
-  toggleSortStateForColumn(column: InterpretedResultsSortColumn): void {
+  getNextSortState(column: InterpretedResultsColumn): InterpretedResultsSortState | undefined {
+    if (column === 'file-position') {
+      return undefined;
+    }
     const oldSortState = this.props.resultSet.sortState;
     const prevDirection = oldSortState && oldSortState.sortBy === column ? oldSortState.sortDirection : undefined;
     const nextDirection = nextSortDirection(prevDirection);
-    const sortState: InterpretedResultsSortState | undefined =
-      nextDirection === undefined ? undefined :
-        { sortBy: column, sortDirection: nextDirection };
+    return nextDirection === undefined ? undefined :
+      { sortBy: column, sortDirection: nextDirection };
+  }
+
+  toggleSortStateForColumn(column: InterpretedResultsSortColumn | 'file-position'): void {
     vscode.postMessage({
       t: 'changeInterpretedSort',
-      sortState,
+      sortState: this.getNextSortState(column),
     });
   }
 
@@ -74,7 +81,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       <tr>
         <th colSpan={2}></th>
         <th className={this.sortClass('alert-message') + ' vscode-codeql__alert-message-cell'} colSpan={2} onClick={() => this.toggleSortStateForColumn('alert-message')}>Message</th>
-        <th className={this.sortClass('file-position') + ' vscode-codeql__location-cell'} onClick={() => this.toggleSortStateForColumn('file-position')}>Location</th>
+        <th className={'sort-none vscode-codeql__location-cell'} onClick={() => this.toggleSortStateForColumn('file-position')}>Location</th>
       </tr>
     </thead>;
 
