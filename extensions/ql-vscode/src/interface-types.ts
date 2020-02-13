@@ -34,8 +34,10 @@ export interface PreviousExecution {
 export interface Interpretation {
   sourceLocationPrefix: string;
   numTruncatedResults: number;
-  // sortState being undefined means don't sort, just present results in the order
-  // they appear in the sarif file.
+  /**
+   * sortState being undefined means don't sort, just present results in the order
+   * they appear in the sarif file.
+   */
   sortState?: InterpretedResultsSortState;
   sarif: sarif.Log;
 }
@@ -130,17 +132,21 @@ export interface InterpretedResultsSortState {
   sortDirection: SortDirection;
 }
 
-// sortState being undefined means don't sort, just present results in the order
-// they appear in the bqrs file.
 interface ChangeRawResultsSortMsg {
   t: 'changeSort';
   resultSetName: string;
+  /**
+   * sortState being undefined means don't sort, just present results in the order
+   * they appear in the sarif file.
+   */
   sortState?: RawResultsSortState;
 }
 
-// sortState being undefined means don't sort, just present results in the order
-// they appear in the sarif file.
 interface ChangeInterpretedResultsSortMsg {
   t: 'changeInterpretedSort';
+  /**
+   * sortState being undefined means don't sort, just present results in the order
+   * they appear in the sarif file.
+   */
   sortState?: InterpretedResultsSortState;
 }
