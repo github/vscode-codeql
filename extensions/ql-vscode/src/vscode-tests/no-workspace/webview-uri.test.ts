@@ -4,7 +4,7 @@ import * as tmp from "tmp";
 import { window, ViewColumn, Uri } from "vscode";
 import { fileUriToWebviewUri, webviewUriToFileUri } from '../../interface';
 
-describe('webview uri conversion', function () {
+describe('webview uri conversion', function() {
   const fileSuffix = '.bqrs';
 
   function setupWebview(filePrefix: string) {
@@ -21,7 +21,7 @@ describe('webview uri conversion', function () {
         ]
       }
     );
-    after(function () {
+    after(function() {
       panel.dispose();
       tmpFile.removeCallback();
     });
@@ -34,15 +34,15 @@ describe('webview uri conversion', function () {
       panel
     }
   }
-  
-  it('should correctly round trip from filesystem to webview and back', function () {
+
+  it('should correctly round trip from filesystem to webview and back', function() {
     const { fileUriOnDisk, panel } = setupWebview('');
     const webviewUri = fileUriToWebviewUri(panel, fileUriOnDisk);
     const reconstructedFileUri = webviewUriToFileUri(webviewUri);
     expect(reconstructedFileUri.toString(true)).to.equal(fileUriOnDisk.toString(true));
   });
 
-  it("does not double-encode # in URIs", function () {
+  it("does not double-encode # in URIs", function() {
     const { fileUriOnDisk, panel } = setupWebview('#');
     const webviewUri = fileUriToWebviewUri(panel, fileUriOnDisk);
     const parsedUri = Uri.parse(webviewUri);

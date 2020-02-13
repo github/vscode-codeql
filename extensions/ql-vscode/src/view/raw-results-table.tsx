@@ -54,7 +54,7 @@ export class RawTable extends React.Component<RawTableProps, {}> {
               <th key={-1}><b>#</b></th>,
               ...resultSet.schema.columns.map((col, index) => {
                 const displayName = col.name || `[${index}]`;
-                const sortDirection = this.props.sortState && index === this.props.sortState.columnIndex ? this.props.sortState.direction : undefined;
+                const sortDirection = this.props.sortState && index === this.props.sortState.columnIndex ? this.props.sortState.sortDirection : undefined;
                 return <th className={"sort-" + (sortDirection !== undefined ? SortDirection[sortDirection] : "none")} key={index} onClick={() => this.toggleSortStateForColumn(index)}><b>{displayName}</b></th>;
               })
             ]
@@ -69,11 +69,11 @@ export class RawTable extends React.Component<RawTableProps, {}> {
 
   private toggleSortStateForColumn(index: number) {
     const sortState = this.props.sortState;
-    const prevDirection = sortState && sortState.columnIndex === index ? sortState.direction : undefined;
+    const prevDirection = sortState && sortState.columnIndex === index ? sortState.sortDirection : undefined;
     const nextDirection = nextSortDirection(prevDirection);
     const nextSortState = nextDirection === undefined ? undefined : {
       columnIndex: index,
-      direction: nextDirection
+      sortDirection: nextDirection
     };
     vscode.postMessage({
       t: 'changeSort',

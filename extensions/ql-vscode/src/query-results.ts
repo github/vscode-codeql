@@ -113,7 +113,7 @@ export class CompletedQuery implements QueryWithResults {
       sortState
     };
 
-    await server.sortBqrs(this.query.resultsPaths.resultsPath, sortedResultSetInfo.resultsPath, resultSetName, [sortState.columnIndex], [sortState.direction]);
+    await server.sortBqrs(this.query.resultsPaths.resultsPath, sortedResultSetInfo.resultsPath, resultSetName, [sortState.columnIndex], [sortState.sortDirection]);
     this.sortedResultsInfo.set(resultSetName, sortedResultSetInfo);
   }
 

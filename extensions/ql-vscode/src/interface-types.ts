@@ -117,7 +117,7 @@ export enum SortDirection {
 
 export interface RawResultsSortState {
   columnIndex: number;
-  direction: SortDirection;
+  sortDirection: SortDirection;
 }
 
 export type InterpretedResultsSortColumn =
