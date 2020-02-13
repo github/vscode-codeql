@@ -86,15 +86,22 @@ export function webviewUriToFileUri(webviewUri: string): Uri {
   return Uri.file(path);
 }
 
+function sortMultiplier(sortDirection: SortDirection): number {
+  switch (sortDirection) {
+    case SortDirection.asc: return 1;
+    case SortDirection.desc: return -1;
+  }
+}
+
 function sortInterpretedResults(results: Sarif.Result[], sortState: InterpretedResultsSortState | undefined): void {
   if (sortState !== undefined) {
-    const direction = sortState.sortDirection === SortDirection.asc ? 1 : -1;
+    const multiplier = sortMultiplier(sortState.sortDirection);
     switch (sortState.sortBy) {
       case 'alert-message':
         results.sort((a, b) =>
           a.message.text === undefined ? 0 :
             b.message.text === undefined ? 0 :
-              direction * (a.message.text?.localeCompare(b.message.text)));
+              multiplier * (a.message.text?.localeCompare(b.message.text)));
         break;
       default:
         assertNever(sortState.sortBy);
