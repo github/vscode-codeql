@@ -21,7 +21,7 @@ export class CompletedQuery implements QueryWithResults {
    */
   sortedResultsInfo: Map<string, SortedResultSetInfo>;
 
-  /*
+  /**
    * How we're currently sorting alerts. This is not mere interface
    * state due to truncation; on re-sort, we want to read in the file
    * again, sort it, and only ship off a reasonable number of results
