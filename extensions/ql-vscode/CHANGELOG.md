@@ -4,6 +4,7 @@
 
 - Add an icon next to any failed query runs in the query history
   view.
+- Add the ability to sort alerts by alert message.
 
 ## 1.0.4 - 24 January 2020
 
