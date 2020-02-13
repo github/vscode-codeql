@@ -57,8 +57,8 @@ jobs:
           VSIX_PATH="$(ls dist/*.vsix)"
           echo "::set-output name=vsix_path::$VSIX_PATH"
           # Transform the GitHub ref so it can be used in a filename.
-          # This is mainly needed for testing branches that modify this workflow.
-          REF_NAME="$(echo ${{ github.ref }} | sed -e 's:/:-:g')"
+          # The last sed invocation is used for testing branches that modify this workflow.
+          REF_NAME="$(echo ${{ github.ref }} | sed -e 's:^refs/tags/::' | sed -e 's:/:-:g')"
           echo "::set-output name=ref_name::$REF_NAME"
 
       # Uploading artifacts is not necessary to create a release.
