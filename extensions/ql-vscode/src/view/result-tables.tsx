@@ -151,7 +151,7 @@ export class ResultTables
           resultsPath={this.props.resultsPath}
           sortState={this.props.sortStates.get(resultSet.schema.name)} />
       }
-    </div >;
+    </div>;
   }
 }
 

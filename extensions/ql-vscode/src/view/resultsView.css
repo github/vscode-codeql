@@ -119,6 +119,8 @@ td.vscode-codeql__path-index-cell {
   text-align: right;
 }
 
+/* Both of these are !important to override the
+   .vscode-codeql__result-table th { text-align: center } above */
 .vscode-codeql__alert-message-cell {
   text-align: left !important;
 }
