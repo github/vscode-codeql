@@ -161,6 +161,17 @@ export class InterfaceManager extends DisposableObject {
     return this._panel;
   }
 
+  private async changeSortState(update: (query: CompletedQuery) => Promise<void>): Promise<void> {
+    if (this._displayedQuery === undefined) {
+      showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
+      return;
+    }
+    // Notify the webview that it should expect new results.
+    await this.postMessage({ t: 'resultsUpdating' });
+    await update(this._displayedQuery);
+    await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
+  }
+
   private async handleMsgFromView(msg: FromResultsViewMsg): Promise<void> {
     switch (msg.t) {
       case 'viewSourceFile': {
@@ -202,28 +213,12 @@ export class InterfaceManager extends DisposableObject {
         this._panelLoadedCallBacks.forEach(cb => cb());
         this._panelLoadedCallBacks = [];
         break;
-      case 'changeSort': {
-        if (this._displayedQuery === undefined) {
-          showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
-          break;
-        }
-        // Notify the webview that it should expect new results.
-        await this.postMessage({ t: 'resultsUpdating' });
-        await this._displayedQuery.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
-        await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
+      case 'changeSort':
+        await this.changeSortState((query) => query.updateSortState(this.cliServer, msg.resultSetName, msg.sortState));
         break;
-      }
-      case 'changeInterpretedSort': {
-        if (this._displayedQuery === undefined) {
-          showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
-          break;
-        }
-        // Notify the webview that it should expect new results.
-        await this.postMessage({ t: 'resultsUpdating' });
-        await this._displayedQuery.updateInterpretedSortState(this.cliServer, msg.sortState);
-        await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
+      case 'changeInterpretedSort':
+        await this.changeSortState((query) => query.updateInterpretedSortState(this.cliServer, msg.sortState));
         break;
-      }
       default:
         assertNever(msg);
     }
