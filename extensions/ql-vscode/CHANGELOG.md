@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## 1.0.5
+## 1.0.5 - 13 February 2020
 
 - Add an icon next to any failed query runs in the query history
   view.
