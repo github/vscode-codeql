@@ -10,7 +10,7 @@ import { CodeQLCliServer } from './cli';
 import { DatabaseItem, DatabaseManager } from './databases';
 import { showAndLogErrorMessage } from './helpers';
 import { assertNever } from './helpers-pure';
-import { FromResultsViewMsg, Interpretation, INTERPRETED_RESULTS_PER_RUN_LIMIT, IntoResultsViewMsg, QueryMetadata, ResultsPaths, SortedResultSetInfo, SortedResultsMap } from './interface-types';
+import { FromResultsViewMsg, Interpretation, INTERPRETED_RESULTS_PER_RUN_LIMIT, IntoResultsViewMsg, QueryMetadata, ResultsPaths, SortedResultSetInfo, SortedResultsMap, InterpretedResultsSortState, SortDirection } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
 import { CompletedQuery, interpretResults } from './query-results';
@@ -86,6 +86,29 @@ export function webviewUriToFileUri(webviewUri: string): Uri {
   return Uri.file(path);
 }
 
+function sortMultiplier(sortDirection: SortDirection): number {
+  switch (sortDirection) {
+    case SortDirection.asc: return 1;
+    case SortDirection.desc: return -1;
+  }
+}
+
+function sortInterpretedResults(results: Sarif.Result[], sortState: InterpretedResultsSortState | undefined): void {
+  if (sortState !== undefined) {
+    const multiplier = sortMultiplier(sortState.sortDirection);
+    switch (sortState.sortBy) {
+      case 'alert-message':
+        results.sort((a, b) =>
+          a.message.text === undefined ? 0 :
+            b.message.text === undefined ? 0 :
+              multiplier * (a.message.text?.localeCompare(b.message.text)));
+        break;
+      default:
+        assertNever(sortState.sortBy);
+    }
+  }
+}
+
 export class InterfaceManager extends DisposableObject {
   private _displayedQuery?: CompletedQuery;
   private _panel: vscode.WebviewPanel | undefined;
@@ -138,6 +161,17 @@ export class InterfaceManager extends DisposableObject {
     return this._panel;
   }
 
+  private async changeSortState(update: (query: CompletedQuery) => Promise<void>): Promise<void> {
+    if (this._displayedQuery === undefined) {
+      showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
+      return;
+    }
+    // Notify the webview that it should expect new results.
+    await this.postMessage({ t: 'resultsUpdating' });
+    await update(this._displayedQuery);
+    await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
+  }
+
   private async handleMsgFromView(msg: FromResultsViewMsg): Promise<void> {
     switch (msg.t) {
       case 'viewSourceFile': {
@@ -179,17 +213,12 @@ export class InterfaceManager extends DisposableObject {
         this._panelLoadedCallBacks.forEach(cb => cb());
         this._panelLoadedCallBacks = [];
         break;
-      case 'changeSort': {
-        if (this._displayedQuery === undefined) {
-          showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
-          break;
-        }
-        // Notify the webview that it should expect new results.
-        await this.postMessage({ t: 'resultsUpdating' });
-        await this._displayedQuery.updateSortState(this.cliServer, msg.resultSetName, msg.sortState);
-        await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
+      case 'changeSort':
+        await this.changeSortState((query) => query.updateSortState(this.cliServer, msg.resultSetName, msg.sortState));
         break;
-      }
+      case 'changeInterpretedSort':
+        await this.changeSortState((query) => query.updateInterpretedSortState(this.cliServer, msg.sortState));
+        break;
       default:
         assertNever(msg);
     }
@@ -223,7 +252,7 @@ export class InterfaceManager extends DisposableObject {
       return;
     }
 
-    const interpretation = await this.interpretResultsInfo(results.query);
+    const interpretation = await this.interpretResultsInfo(results.query, results.interpretedResultsSortState);
 
     const sortedResultsMap: SortedResultsMap = {};
     results.sortedResultsInfo.forEach((v, k) =>
@@ -268,28 +297,29 @@ export class InterfaceManager extends DisposableObject {
     });
   }
 
-  private async getTruncatedResults(metadata: QueryMetadata | undefined, resultsPaths: ResultsPaths, sourceInfo: cli.SourceInfo | undefined, sourceLocationPrefix: string): Promise<Interpretation> {
-    const sarif = await interpretResults(this.cliServer, metadata, resultsPaths.interpretedResultsPath, sourceInfo);
+  private async getTruncatedResults(metadata: QueryMetadata | undefined, resultsPaths: ResultsPaths, sourceInfo: cli.SourceInfo | undefined, sourceLocationPrefix: string, sortState: InterpretedResultsSortState | undefined): Promise<Interpretation> {
+    const sarif = await interpretResults(this.cliServer, metadata, resultsPaths.resultsPath, sourceInfo);
     // For performance reasons, limit the number of results we try
     // to serialize and send to the webview. TODO: possibly also
     // limit number of paths per result, number of steps per path,
     // or throw an error if we are in aggregate trying to send
     // massively too much data, as it can make the extension
     // unresponsive.
+
     let numTruncatedResults = 0;
     sarif.runs.forEach(run => {
       if (run.results !== undefined) {
+        sortInterpretedResults(run.results, sortState);
         if (run.results.length > INTERPRETED_RESULTS_PER_RUN_LIMIT) {
           numTruncatedResults += run.results.length - INTERPRETED_RESULTS_PER_RUN_LIMIT;
           run.results = run.results.slice(0, INTERPRETED_RESULTS_PER_RUN_LIMIT);
         }
       }
     });
-    return { sarif, sourceLocationPrefix, numTruncatedResults };
-    ;
+    return { sarif, sourceLocationPrefix, numTruncatedResults, sortState };
   }
 
-  private async interpretResultsInfo(query: QueryInfo): Promise<Interpretation | undefined> {
+  private async interpretResultsInfo(query: QueryInfo, sortState: InterpretedResultsSortState | undefined): Promise<Interpretation | undefined> {
     let interpretation: Interpretation | undefined = undefined;
     if (await query.hasInterpretedResults()
       && query.quickEvalPosition === undefined // never do results interpretation if quickEval
@@ -300,7 +330,7 @@ export class InterfaceManager extends DisposableObject {
         const sourceInfo = sourceArchiveUri === undefined ?
           undefined :
           { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
-        interpretation = await this.getTruncatedResults(query.metadata, query.resultsPaths, sourceInfo, sourceLocationPrefix);
+        interpretation = await this.getTruncatedResults(query.metadata, query.resultsPaths, sourceInfo, sourceLocationPrefix, sortState);
       }
       catch (e) {
         // If interpretation fails, accept the error and continue
@@ -318,7 +348,13 @@ export class InterfaceManager extends DisposableObject {
     const sourceInfo = sourceArchiveUri === undefined ?
       undefined :
       { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
-    const interpretation = await this.getTruncatedResults(metadata, resultsInfo, sourceInfo, sourceLocationPrefix);
+    const interpretation = await this.getTruncatedResults(
+      metadata,
+      resultsInfo,
+      sourceInfo,
+      sourceLocationPrefix,
+      undefined,
+    );
 
     try {
       await this.showProblemResultsAsDiagnostics(interpretation, database);

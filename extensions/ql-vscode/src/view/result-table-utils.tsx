@@ -1,18 +1,20 @@
 import * as React from 'react';
 import { LocationValue, ResolvableLocationValue, tryGetResolvableLocation } from 'semmle-bqrs';
-import { SortState, QueryMetadata } from '../interface-types';
+import { RawResultsSortState, QueryMetadata, SortDirection } from '../interface-types';
 import { ResultSet, vscode } from './results';
+import { assertNever } from '../helpers-pure';
 
 export interface ResultTableProps {
   resultSet: ResultSet;
   databaseUri: string;
   metadata?: QueryMetadata
   resultsPath: string | undefined;
-  sortState?: SortState;
+  sortState?: RawResultsSortState;
 }
 
 export const className = 'vscode-codeql__result-table';
 export const tableSelectionHeaderClassName = 'vscode-codeql__table-selection-header';
+export const alertExtrasClassName = `${className}-alert-extras`;
 export const toggleDiagnosticsClassName = `${className}-toggle-diagnostics`;
 export const evenRowClassName = 'vscode-codeql__result-table-row--even';
 export const oddRowClassName = 'vscode-codeql__result-table-row--odd';
@@ -80,6 +82,23 @@ export function zebraStripe(index: number, ...otherClasses: string[]): { classNa
  */
 export function selectableZebraStripe(isSelected: boolean, index: number, ...otherClasses: string[]): { className: string } {
   return isSelected
-      ? { className: [selectedRowClassName, ...otherClasses].join(' ') }
-      : zebraStripe(index, ...otherClasses)
+    ? { className: [selectedRowClassName, ...otherClasses].join(' ') }
+    : zebraStripe(index, ...otherClasses)
+}
+
+/**
+ * Returns the next sort direction when cycling through sort directions while clicking.
+ * if `includeUndefined` is true, include `undefined` in the cycle.
+ */
+export function nextSortDirection(direction: SortDirection | undefined, includeUndefined?: boolean): SortDirection | undefined {
+  switch (direction) {
+    case SortDirection.asc:
+      return SortDirection.desc;
+    case SortDirection.desc:
+      return includeUndefined ? undefined : SortDirection.asc;
+    case undefined:
+      return SortDirection.asc;
+    default:
+      return assertNever(direction);
+  }
 }

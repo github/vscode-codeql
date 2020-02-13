@@ -17,11 +17,11 @@ export interface DatabaseInfo {
 }
 
 /** Arbitrary query metadata */
-export interface QueryMetadata {	
-  name?: string,	
-  description?: string,	
-  id?: string,	
-  kind?: string	
+export interface QueryMetadata {
+  name?: string,
+  description?: string,
+  id?: string,
+  kind?: string
 }
 
 export interface PreviousExecution {
@@ -34,6 +34,11 @@ export interface PreviousExecution {
 export interface Interpretation {
   sourceLocationPrefix: string;
   numTruncatedResults: number;
+  /**
+   * sortState being undefined means don't sort, just present results in the order
+   * they appear in the sarif file.
+   */
+  sortState?: InterpretedResultsSortState;
   sarif: sarif.Log;
 }
 
@@ -44,7 +49,7 @@ export interface ResultsPaths {
 
 export interface SortedResultSetInfo {
   resultsPath: string;
-  sortState: SortState;
+  sortState: RawResultsSortState;
 }
 
 export type SortedResultsMap = { [resultSet: string]: SortedResultSetInfo };
@@ -84,7 +89,12 @@ export interface NavigatePathMsg {
 
 export type IntoResultsViewMsg = ResultsUpdatingMsg | SetStateMsg | NavigatePathMsg;
 
-export type FromResultsViewMsg = ViewSourceFileMsg | ToggleDiagnostics | ChangeSortMsg | ResultViewLoaded;
+export type FromResultsViewMsg =
+  | ViewSourceFileMsg
+  | ToggleDiagnostics
+  | ChangeRawResultsSortMsg
+  | ChangeInterpretedResultsSortMsg
+  | ResultViewLoaded;
 
 interface ViewSourceFileMsg {
   t: 'viewSourceFile';
@@ -109,13 +119,34 @@ export enum SortDirection {
   asc, desc
 }
 
-export interface SortState {
+export interface RawResultsSortState {
   columnIndex: number;
-  direction: SortDirection;
+  sortDirection: SortDirection;
 }
 
-interface ChangeSortMsg {
+export type InterpretedResultsSortColumn =
+  'alert-message';
+
+export interface InterpretedResultsSortState {
+  sortBy: InterpretedResultsSortColumn;
+  sortDirection: SortDirection;
+}
+
+interface ChangeRawResultsSortMsg {
   t: 'changeSort';
   resultSetName: string;
-  sortState?: SortState;
+  /**
+   * sortState being undefined means don't sort, just present results in the order
+   * they appear in the sarif file.
+   */
+  sortState?: RawResultsSortState;
+}
+
+interface ChangeInterpretedResultsSortMsg {
+  t: 'changeInterpretedSort';
+  /**
+   * sortState being undefined means don't sort, just present results in the order
+   * they appear in the sarif file.
+   */
+  sortState?: InterpretedResultsSortState;
 }

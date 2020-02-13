@@ -10,7 +10,7 @@ describe('launching with a minimal workspace', async () => {
   it('should not activate the extension at first', () => {
     assert(ext!.isActive === false);
   });
-  it('should activate the extension when a .ql file is opened', async function () {
+  it('should activate the extension when a .ql file is opened', async function() {
     const folders = vscode.workspace.workspaceFolders;
     assert(folders && folders.length === 1);
     const folderPath = folders![0].uri.fsPath;

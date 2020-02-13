@@ -13,10 +13,14 @@
   border: 0;
 }
 
-.vscode-codeql__result-table-toggle-diagnostics {
+.vscode-codeql__result-table-alert-extras {
   display: inline-block;
   text-align: left;
   margin-left: auto;
+}
+
+.vscode-codeql__result-table-toggle-diagnostics  {
+  display: inline-block;
 }
 
 /* Keep the checkbox and its label in horizontal alignment. */
@@ -26,7 +30,7 @@
   vertical-align: middle;
 }
 .vscode-codeql__result-table-toggle-diagnostics input {
-  margin: 3px 3px 1px 3px;
+  margin: 3px 3px 1px 13px;
 }
 
 
@@ -39,6 +43,13 @@
   text-align: center;
   font-weight: normal;
   opacity: 0.6;
+}
+
+.vscode-codeql__result-table .sort-asc,
+.vscode-codeql__result-table .sort-desc,
+.vscode-codeql__result-table .sort-none {
+   cursor: pointer;
+   user-select: none;
 }
 
 .vscode-codeql__result-table .sort-none::after {
@@ -108,8 +119,14 @@ td.vscode-codeql__path-index-cell {
   text-align: right;
 }
 
-td.vscode-codeql__location-cell {
-  text-align: right;
+/* Both of these are !important to override the
+   .vscode-codeql__result-table th { text-align: center } above */
+.vscode-codeql__alert-message-cell {
+  text-align: left !important;
+}
+
+.vscode-codeql__location-cell {
+  text-align: right !important;
 }
 
 .vscode-codeql__vertical-rule {

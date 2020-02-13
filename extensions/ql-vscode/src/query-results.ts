@@ -5,7 +5,7 @@ import * as cli from './cli';
 import * as sarif from 'sarif';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { SortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata } from "./interface-types";
+import { RawResultsSortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata, InterpretedResultsSortState } from "./interface-types";
 import { QueryHistoryConfig } from "./config";
 import { QueryHistoryItemOptions } from "./query-history";
 
@@ -15,11 +15,20 @@ export class CompletedQuery implements QueryWithResults {
   readonly result: messages.EvaluationResult;
   readonly database: DatabaseInfo;
   options: QueryHistoryItemOptions;
+
   /**
    * Map from result set name to SortedResultSetInfo.
    */
   sortedResultsInfo: Map<string, SortedResultSetInfo>;
 
+  /**
+   * How we're currently sorting alerts. This is not mere interface
+   * state due to truncation; on re-sort, we want to read in the file
+   * again, sort it, and only ship off a reasonable number of results
+   * to the webview. Undefined means to use whatever order is in the
+   * sarif file.
+   */
+  interpretedResultsSortState: InterpretedResultsSortState | undefined;
 
   constructor(
     evalaution: QueryWithResults,
@@ -92,7 +101,8 @@ export class CompletedQuery implements QueryWithResults {
   toString(): string {
     return this.interpolate(this.getLabel());
   }
-  async updateSortState(server: cli.CodeQLCliServer, resultSetName: string, sortState: SortState | undefined): Promise<void> {
+
+  async updateSortState(server: cli.CodeQLCliServer, resultSetName: string, sortState: RawResultsSortState | undefined): Promise<void> {
     if (sortState === undefined) {
       this.sortedResultsInfo.delete(resultSetName);
       return;
@@ -103,10 +113,13 @@ export class CompletedQuery implements QueryWithResults {
       sortState
     };
 
-    await server.sortBqrs(this.query.resultsPaths.resultsPath, sortedResultSetInfo.resultsPath, resultSetName, [sortState.columnIndex], [sortState.direction]);
+    await server.sortBqrs(this.query.resultsPaths.resultsPath, sortedResultSetInfo.resultsPath, resultSetName, [sortState.columnIndex], [sortState.sortDirection]);
     this.sortedResultsInfo.set(resultSetName, sortedResultSetInfo);
   }
 
+  async updateInterpretedSortState(_server: cli.CodeQLCliServer, sortState: InterpretedResultsSortState | undefined): Promise<void> {
+    this.interpretedResultsSortState = sortState;
+  }
 }
 
 /**

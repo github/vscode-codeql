@@ -3,7 +3,7 @@ import * as Rdom from 'react-dom';
 import * as bqrs from 'semmle-bqrs';
 import { ElementBase, LocationValue, PrimitiveColumnValue, PrimitiveTypeKind, ResultSetSchema, tryGetResolvableLocation } from 'semmle-bqrs';
 import { assertNever } from '../helpers-pure';
-import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortedResultSetInfo, SortState, NavigatePathMsg, QueryMetadata, ResultsPaths } from '../interface-types';
+import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortedResultSetInfo, RawResultsSortState, NavigatePathMsg, QueryMetadata, ResultsPaths } from '../interface-types';
 import { ResultTables } from './result-tables';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 
@@ -140,7 +140,7 @@ interface ResultsInfo {
 
 interface Results {
   resultSets: readonly ResultSet[];
-  sortStates: Map<string, SortState>;
+  sortStates: Map<string, RawResultsSortState>;
   database: DatabaseInfo;
 }
 
@@ -298,7 +298,7 @@ class App extends React.Component<{}, ResultsViewState> {
     }));
   }
 
-  private getSortStates(resultsInfo: ResultsInfo): Map<string, SortState> {
+  private getSortStates(resultsInfo: ResultsInfo): Map<string, RawResultsSortState> {
     const entries = Array.from(resultsInfo.sortedResultsMap.entries());
     return new Map(entries.map(([key, sortedResultSetInfo]) =>
       [key, sortedResultSetInfo.sortState]));
@@ -314,6 +314,7 @@ class App extends React.Component<{}, ResultsViewState> {
         resultsPath={displayedResults.resultsInfo.resultsPath}
         metadata={displayedResults.resultsInfo ? displayedResults.resultsInfo.metadata : undefined}
         sortStates={displayedResults.results.sortStates}
+        interpretedSortState={displayedResults.resultsInfo.interpretation?.sortState}
         isLoadingNewResults={this.state.isExpectingResultsUpdate || this.state.nextResultsInfo !== null} />;
     }
     else {
