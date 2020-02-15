@@ -237,6 +237,11 @@ export interface DatabaseItem {
   getSourceLocationPrefix(server: cli.CodeQLCliServer): Promise<string>;
 
   /**
+   * Returns dataset folder of exported database.
+   */
+  getDatasetFolder(server: cli.CodeQLCliServer): Promise<string>;
+
+  /**
    * Returns the root uri of the virtual filesystem for this database's source archive,
    * as displayed in the filesystem explorer.
    */
@@ -383,6 +388,14 @@ class DatabaseItemImpl implements DatabaseItem {
   public async getSourceLocationPrefix(server: cli.CodeQLCliServer): Promise<string> {
     const dbInfo = await this.getDbInfo(server);
     return dbInfo.sourceLocationPrefix;
+  }
+
+  /**
+   * Returns path to dataset folder of database.
+   */
+  public async getDatasetFolder(server: cli.CodeQLCliServer): Promise<string> {
+    const dbInfo = await this.getDbInfo(server);
+    return dbInfo.datasetFolder;
   }
 
   /**

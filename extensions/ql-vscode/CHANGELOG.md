@@ -1,6 +1,16 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## 1.0.4
+## 1.0.5 - 13 February 2020
+
+- Add an icon next to any failed query runs in the query history
+  view.
+- Add the ability to sort alerts by alert message.
+
+## 1.0.4 - 24 January 2020
+
+- Disable word-based autocomplete by default.
+- Add command `CodeQL: Quick Query` for easy query creation without
+  having to choose a place in the filesystem to store the query file.
 
 ## 1.0.3 - 13 January 2020
 

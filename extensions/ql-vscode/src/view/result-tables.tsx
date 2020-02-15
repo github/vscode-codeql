@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { DatabaseInfo, Interpretation, SortState } from '../interface-types';
+import { DatabaseInfo, Interpretation, RawResultsSortState, QueryMetadata, ResultsPaths, InterpretedResultsSortState } from '../interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
-import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName } from './result-table-utils';
+import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName, alertExtrasClassName } from './result-table-utils';
 import { ResultSet, vscode } from './results';
 
 /**
@@ -12,9 +12,11 @@ export interface ResultTablesProps {
   rawResultSets: readonly ResultSet[];
   interpretation: Interpretation | undefined;
   database: DatabaseInfo;
-  resultsPath: string | undefined;
-  kind: string | undefined;
-  sortStates: Map<string, SortState>;
+  metadata?: QueryMetadata
+  resultsPath: string;
+  origResultsPaths: ResultsPaths;
+  sortStates: Map<string, RawResultsSortState>;
+  interpretedSortState?: InterpretedResultsSortState;
   isLoadingNewResults: boolean;
 }
 
@@ -88,38 +90,44 @@ export class ResultTables
     return [ALERTS_TABLE_NAME, SELECT_TABLE_NAME, resultSets[0].schema.name].filter(resultSetName => resultSetNames.includes(resultSetName))[0];
   }
 
-  private onChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+  private onTableSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
     this.setState({ selectedTable: event.target.value });
   }
 
-  render(): React.ReactNode {
-    const { selectedTable } = this.state;
-    const resultSets = this.getResultSets();
-    const { database, resultsPath, kind } = this.props;
+  private alertTableExtras(): JSX.Element | undefined {
+    const { database, resultsPath, metadata, origResultsPaths } = this.props;
 
-    // Only show the Problems view display checkbox for the alerts table.
-    const diagnosticsCheckBox = selectedTable === ALERTS_TABLE_NAME ?
+    const displayProblemsAsAlertsToggle =
       <div className={toggleDiagnosticsClassName}>
         <input type="checkbox" id="toggle-diagnostics" name="toggle-diagnostics" onChange={(e) => {
           if (resultsPath !== undefined) {
             vscode.postMessage({
               t: 'toggleDiagnostics',
-              resultsPath: resultsPath,
+              origResultsPaths: origResultsPaths,
               databaseUri: database.databaseUri,
               visible: e.target.checked,
-              kind: kind
+              metadata: metadata
             });
           }
         }} />
         <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
-      </div> : undefined;
+      </div>;
+
+    return <div className={alertExtrasClassName}>
+      {displayProblemsAsAlertsToggle}
+    </div>
+  }
+
+  render(): React.ReactNode {
+    const { selectedTable } = this.state;
+    const resultSets = this.getResultSets();
 
     const resultSet = resultSets.find(resultSet => resultSet.schema.name == selectedTable);
     const numberOfResults = resultSet && renderResultCountString(resultSet);
 
     return <div>
       <div className={tableSelectionHeaderClassName}>
-        <select value={selectedTable} onChange={this.onChange}>
+        <select value={selectedTable} onChange={this.onTableSelectionChange}>
           {
             resultSets.map(resultSet =>
               <option key={resultSet.schema.name} value={resultSet.schema.name}>
@@ -129,7 +137,7 @@ export class ResultTables
           }
         </select>
         {numberOfResults}
-        {diagnosticsCheckBox}
+        {selectedTable === ALERTS_TABLE_NAME ? this.alertTableExtras() : undefined}
         {
           this.props.isLoadingNewResults ?
             <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>Updating results…</span>
@@ -157,11 +165,9 @@ class ResultTable extends React.Component<ResultTableProps, {}> {
     const { resultSet } = this.props;
     switch (resultSet.t) {
       case 'RawResultSet': return <RawTable
-        resultSet={resultSet} databaseUri={this.props.databaseUri}
-        resultsPath={this.props.resultsPath} sortState={this.props.sortState} />;
+        {...this.props} resultSet={resultSet} />;
       case 'SarifResultSet': return <PathTable
-        resultSet={resultSet} databaseUri={this.props.databaseUri}
-        resultsPath={this.props.resultsPath} />;
+        {...this.props} resultSet={resultSet} />;
     }
   }
 }

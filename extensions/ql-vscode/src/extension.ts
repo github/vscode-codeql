@@ -12,11 +12,13 @@ import * as helpers from './helpers';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager, WebviewReveal } from './interface';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
-import { compileAndRunQueryAgainstDatabase, EvaluationInfo, tmpDirDisposal, UserCancellationException } from './queries';
+import { compileAndRunQueryAgainstDatabase, tmpDirDisposal, UserCancellationException } from './run-queries';
+import { CompletedQuery } from './query-results';
 import { QueryHistoryManager } from './query-history';
 import * as qsClient from './queryserver-client';
 import { CodeQLCliServer } from './cli';
 import { assertNever } from './helpers-pure';
+import { displayQuickQuery } from './quick-query';
 import { TestHub, testExplorerExtensionId } from 'vscode-test-adapter-api';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
@@ -256,14 +258,14 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   const qhm = new QueryHistoryManager(
     ctx,
     queryHistoryConfigurationListener,
-    async item => showResultsForInfo(item.info, WebviewReveal.Forced)
+    async item => showResultsForCompletedQuery(item, WebviewReveal.Forced)
   );
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
   ctx.subscriptions.push(intm);
   archiveFilesystemProvider.activate(ctx);
 
-  async function showResultsForInfo(info: EvaluationInfo, forceReveal: WebviewReveal): Promise<void> {
-    await intm.showResults(info, forceReveal, false);
+  async function showResultsForCompletedQuery(query: CompletedQuery, forceReveal: WebviewReveal): Promise<void> {
+    await intm.showResults(query, forceReveal, false);
   }
 
   async function compileAndRunQuery(quickEval: boolean, selectedQuery: Uri | undefined) {
@@ -274,8 +276,8 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
           throw new Error('Can\'t run query without a selected database');
         }
         const info = await compileAndRunQueryAgainstDatabase(cliServer, qs, dbItem, quickEval, selectedQuery);
-        await showResultsForInfo(info, WebviewReveal.NotForced);
-        qhm.push(info);
+        const item = qhm.addQuery(info);
+        await showResultsForCompletedQuery(item, WebviewReveal.NotForced);
       }
       catch (e) {
         if (e instanceof UserCancellationException) {
@@ -318,6 +320,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   ctx.subscriptions.push(commands.registerCommand('codeQL.runQuery', async (uri: Uri | undefined) => await compileAndRunQuery(false, uri)));
   ctx.subscriptions.push(commands.registerCommand('codeQL.quickEval', async (uri: Uri | undefined) => await compileAndRunQuery(true, uri)));
+  ctx.subscriptions.push(commands.registerCommand('codeQL.quickQuery', async () => displayQuickQuery(ctx, cliServer, databaseUI)));
 
   ctx.subscriptions.push(client.start());
 }

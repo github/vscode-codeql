@@ -14,7 +14,7 @@ describe("archive filesystem provider", () => {
   });
 });
 
-describe('source archive uri encoding', function () {
+describe('source archive uri encoding', function() {
   const testCases: { name: string, input: ZipFileReference }[] = [
     {
       name: 'mixed case and unicode',
@@ -30,7 +30,7 @@ describe('source archive uri encoding', function () {
     }
   ];
   for (const testCase of testCases) {
-    it(`should work round trip with ${testCase.name}`, function () {
+    it(`should work round trip with ${testCase.name}`, function() {
       const output = decodeSourceArchiveUri(encodeSourceArchiveUri(testCase.input));
       expect(output).to.eql(testCase.input);
     });

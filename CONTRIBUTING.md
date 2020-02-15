@@ -126,7 +126,7 @@ You can use VS Code to debug the extension without explicitly installing it. Jus
 1. Log into the [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage/publishers/github).
 1. Click the `...` menu in the CodeQL row and click **Update**.
 1. Drag the `.vsix` file you downloaded from the GitHub release into the Marketplace and click **Upload**.
-1. Publish the GitHub release.
+1. Publish the draft GitHub release and confirm the new release is marked as the latest release at https://github.com/github/vscode-codeql/releases.
 
 ## Resources
 

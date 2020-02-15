@@ -5,10 +5,10 @@ import * as path from 'path';
 import * as sarif from 'sarif';
 import * as tk from 'tree-kill';
 import * as util from 'util';
+import { SortDirection, QueryMetadata } from './interface-types';
 import { Logger, ProgressReporter } from './logging';
 import { Disposable, CancellationToken } from 'vscode';
 import { DistributionProvider } from './distribution';
-import { SortDirection } from './interface-types';
 import { assertNever } from './helpers-pure';
 import { Readable } from 'stream';
 import { StringDecoder } from 'string_decoder';
@@ -55,14 +55,9 @@ export interface UpgradesInfo {
 }
 
 /**
- * The expected output of `codeql resolve metadata`.
+ * The expected output of `codeql resolve qlpacks`.
  */
-export interface QueryMetadata {
-  name?: string,
-  description?: string,
-  id?: string,
-  kind?: string
-}
+export type QlpacksInfo = { [name: string]: string[] };
 
 // `codeql bqrs interpret` requires both of these to be present or
 // both absent.
@@ -198,7 +193,7 @@ export class CodeQLCliServer implements Disposable {
    */
   private async launchProcess(): Promise<child_process.ChildProcessWithoutNullStreams> {
     const config = await this.getCodeQlPath();
-    return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, _data => {})
+    return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, _data => { })
   }
 
   private async runCodeQlCliInternal(command: string[], commandArgs: string[], description: string): Promise<string> {
@@ -429,21 +424,6 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
-   * Finds all available QL packs.
-   * @param workspaces The current open workspaces
-   * @param searchPath Overrides the default QL pack search path
-   */
-  async resolveQLPacks(workspaces: string[], searchPath?: string[]): Promise<ResolvedQLPacks> {
-    const subcommandArgs = [
-      '--additional-packs', workspaces.join(path.delimiter)
-    ];
-    if (searchPath !== undefined) {
-      subcommandArgs.push('--search-path', searchPath.join(path.delimiter));
-    }
-    return await this.runJsonCodeQlCliCommand<ResolvedQLPacks>(['resolve', 'qlpacks'], subcommandArgs, 'Resolving QL packs');
-  }
-
-  /**
    * Finds all available QL tests in a given directory.
    * @param testPath Root of directory tree to search for tests.
    * @returns The list of tests that were found.
@@ -569,7 +549,6 @@ export class CodeQLCliServer implements Disposable {
       "Resolving database");
   }
 
-
   /**
    * Gets information necessary for upgrading a database.
    * @param dbScheme the path to the dbscheme of the database to be upgraded.
@@ -583,6 +562,26 @@ export class CodeQLCliServer implements Disposable {
       ['resolve', 'upgrades'],
       args,
       "Resolving database upgrade scripts",
+    );
+  }
+
+  /**
+   * Gets information about available qlpacks
+   * @param additionalPacks A list of directories to search for qlpacks before searching in `searchPath`.
+   * @param searchPath A list of directories to search for packs not found in `additionalPacks`. If undefined,
+   *   the default CLI search path is used.
+   * @returns A dictionary mapping qlpack name to the directory it comes from
+   */
+  resolveQlpacks(additionalPacks: string[], searchPath?: string[]): Promise<QlpacksInfo> {
+    const args = ['--additional-packs', additionalPacks.join(path.delimiter)];
+    if (searchPath !== undefined) {
+      args.push('--search-path', searchPath.join(path.delimiter));
+    }
+
+    return this.runJsonCodeQlCliCommand<QlpacksInfo>(
+      ['resolve', 'qlpacks'],
+      args,
+      "Resolving qlpack information",
     );
   }
 }

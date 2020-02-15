@@ -40,7 +40,7 @@ export class QLPackDiscovery extends Discovery<ResolvedQLPacks> {
 
   protected discover(): Promise<ResolvedQLPacks> {
     // Only look for QL packs in this workspace folder.
-    return this.cliServer.resolveQLPacks([this.workspaceFolder.uri.fsPath], []);
+    return this.cliServer.resolveQlpacks([this.workspaceFolder.uri.fsPath], []);
   }
 
   protected update(results: ResolvedQLPacks): void {

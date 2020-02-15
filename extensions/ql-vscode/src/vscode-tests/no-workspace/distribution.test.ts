@@ -151,8 +151,8 @@ describe("Release version ordering", () => {
       patchVersion,
       prereleaseVersion,
       rawString: `${majorVersion}.${minorVersion}.${patchVersion}` +
-      prereleaseVersion ? `-${prereleaseVersion}` : "" +
-      buildMetadata ? `+${buildMetadata}` : ""
+        prereleaseVersion ? `-${prereleaseVersion}` : "" +
+          buildMetadata ? `+${buildMetadata}` : ""
     };
   }
 
