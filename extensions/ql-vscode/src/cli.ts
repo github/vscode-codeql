@@ -67,13 +67,6 @@ export interface SourceInfo {
 }
 
 /**
- * The expected output of `codeql resolve qlpacks`.
- */
-export interface ResolvedQLPacks {
-  [index: string]: string[];
-}
-
-/**
  * The expected output of `codeql resolve tests`.
  */
 export type ResolvedTests = string[];
