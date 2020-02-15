@@ -6,7 +6,7 @@ import { MultiFileSystemWatcher } from 'semmle-vscode-utils';
 import { CodeQLCliServer } from './cli';
 
 /**
- * A node in the tree of tests. This will be either a `QLTestDirector` or a `QLTestFile`.
+ * A node in the tree of tests. This will be either a `QLTestDirectory` or a `QLTestFile`.
  */
 export abstract class QLTestNode {
   constructor(private _path: string, private _name: string) {
