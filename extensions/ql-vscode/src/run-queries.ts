@@ -54,6 +54,7 @@ export class QueryInfo {
     public readonly queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
     public readonly quickEvalPosition?: messages.Position,
     public readonly metadata?: QueryMetadata,
+    public readonly templates?: messages.TemplateDefinitions,
   ) {
     this.queryID = QueryInfo.nextQueryId++;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${this.queryID}.qlo`);
@@ -78,6 +79,7 @@ export class QueryInfo {
       resultsPath: this.resultsPaths.resultsPath,
       qlo: vscode.Uri.file(this.compiledQueryPath).toString(),
       allowUnknownTemplates: true,
+      templateValues: this.templates,
       id: callbackId,
       timeoutSecs: qs.config.timeoutSecs,
     }
@@ -355,7 +357,8 @@ export async function compileAndRunQueryAgainstDatabase(
   qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   quickEval: boolean,
-  selectedQueryUri: vscode.Uri | undefined
+  selectedQueryUri: vscode.Uri | undefined,
+  templates?: messages.TemplateDefinitions,
 ): Promise<QueryWithResults> {
 
   if (!db.contents || !db.contents.dbSchemeUri) {
@@ -408,7 +411,7 @@ export async function compileAndRunQueryAgainstDatabase(
     logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
   }
 
-  const query = new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata);
+  const query = new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata, templates);
   await checkDbschemeCompatibility(cliServer, qs, query);
 
   const errors = await query.compile(qs);
