@@ -1,6 +1,6 @@
 import { EventEmitter, Event, Uri, WorkspaceFolder, RelativePattern } from 'vscode';
 import { MultiFileSystemWatcher } from 'semmle-vscode-utils';
-import { CodeQLCliServer, ResolvedQLPacks } from './cli';
+import { CodeQLCliServer, QlpacksInfo } from './cli';
 import { Discovery } from './discovery';
 
 export interface QLPack {
@@ -11,7 +11,7 @@ export interface QLPack {
 /**
  * Service to discover all available QL packs in a workspace folder.
  */
-export class QLPackDiscovery extends Discovery<ResolvedQLPacks> {
+export class QLPackDiscovery extends Discovery<QlpacksInfo> {
   private readonly _onDidChangeQLPacks = this.push(new EventEmitter<void>());
   private readonly watcher = this.push(new MultiFileSystemWatcher());
   private _qlPacks: readonly QLPack[] = [];
@@ -38,12 +38,12 @@ export class QLPackDiscovery extends Discovery<ResolvedQLPacks> {
     this.refresh();
   }
 
-  protected discover(): Promise<ResolvedQLPacks> {
+  protected discover(): Promise<QlpacksInfo> {
     // Only look for QL packs in this workspace folder.
     return this.cliServer.resolveQlpacks([this.workspaceFolder.uri.fsPath], []);
   }
 
-  protected update(results: ResolvedQLPacks): void {
+  protected update(results: QlpacksInfo): void {
     const qlPacks: QLPack[] = [];
     for (const id in results) {
       qlPacks.push(...results[id].map(fsPath => {
