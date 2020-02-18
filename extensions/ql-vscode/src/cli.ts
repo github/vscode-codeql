@@ -10,10 +10,10 @@ import * as tk from 'tree-kill';
 import * as util from 'util';
 import { CancellationToken, Disposable } from 'vscode';
 import { BQRSInfo, DecodedBqrsChunk } from "./bqrs-cli-types";
-import { DistributionProvider } from './distribution';
-import { assertNever } from './helpers-pure';
-import { QueryMetadata, SortDirection } from './interface-types';
-import { Logger, ProgressReporter } from './logging';
+import { DistributionProvider } from "./distribution";
+import { assertNever } from "./helpers-pure";
+import { QueryMetadata, SortDirection } from "./interface-types";
+import { Logger, ProgressReporter } from "./logging";
 
 /**
  * The version of the SARIF format that we are using.
