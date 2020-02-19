@@ -10,7 +10,7 @@ import { CancellationTokenSource } from 'vscode-jsonrpc';
 import * as messages from '../../src/messages';
 import * as qsClient from '../../src/queryserver-client';
 import * as cli from '../../src/cli';
-import { ProgressReporter } from '../../src/logging';
+import { ProgressReporter, Logger } from '../../src/logging';
 
 
 declare module "url" {
@@ -75,8 +75,8 @@ const queryTestCases: QueryTestCase[] = [
   }
 ];
 
-describe('using the query server', function () {
-  before(function () {
+describe('using the query server', function() {
+  before(function() {
     if (process.env["CODEQL_PATH"] === undefined) {
       console.log('The environment variable CODEQL_PATH is not set. The query server tests, which require the CodeQL CLI, will be skipped.');
       this.skip();
@@ -100,13 +100,14 @@ describe('using the query server', function () {
     }
   });
 
-  it('should be able to start the query server', async function () {
+  it('should be able to start the query server', async function() {
     const consoleProgressReporter: ProgressReporter = {
-      report: (v: {message: string}) => console.log(`progress reporter says ${v.message}`)
+      report: (v: { message: string }) => console.log(`progress reporter says ${v.message}`)
     };
-    const logger = {
+    const logger: Logger = {
       log: (s: string) => console.log('logger says', s),
-      logWithoutTrailingNewline: (s: string) => console.log('logger says', s)
+      logWithoutTrailingNewline: (s: string) => console.log('logger says', s),
+      show: () => { },
     };
     cliServer = new cli.CodeQLCliServer({
       async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
@@ -137,7 +138,7 @@ describe('using the query server', function () {
     const evaluationSucceeded = new Checkpoint<void>();
     const parsedResults = new Checkpoint<void>();
 
-    it(`should be able to compile query ${queryName}`, async function () {
+    it(`should be able to compile query ${queryName}`, async function() {
       await queryServerStarted.done();
       expect(fs.existsSync(queryTestCase.queryPath)).to.be.true;
       try {
@@ -169,7 +170,7 @@ describe('using the query server', function () {
       }
     });
 
-    it(`should be able to run query ${queryName}`, async function () {
+    it(`should be able to run query ${queryName}`, async function() {
       try {
         await compilationSucceeded.done();
         const callbackId = qs.registerCallback(_res => {
@@ -201,7 +202,7 @@ describe('using the query server', function () {
     });
 
     const actualResultSets: ResultSets = {};
-    it(`should be able to parse results of query ${queryName}`, async function () {
+    it(`should be able to parse results of query ${queryName}`, async function() {
       let fileReader: FileReader | undefined;
       try {
         await evaluationSucceeded.done();
@@ -222,7 +223,7 @@ describe('using the query server', function () {
       }
     });
 
-    it(`should have correct results for query ${queryName}`, async function () {
+    it(`should have correct results for query ${queryName}`, async function() {
       await parsedResults.done();
       expect(actualResultSets!).not.to.be.empty;
       expect(Object.keys(actualResultSets!).sort()).to.eql(Object.keys(queryTestCase.expectedResultSets).sort());

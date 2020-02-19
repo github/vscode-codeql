@@ -206,6 +206,10 @@
       {
         "command": "codeQLQueryHistory.setLabel",
         "title": "Set Label"
+      },
+      {
+        "command": "codeQL.restartQueryServer",
+        "title": "CodeQL: Restart Query Server"
       }
     ],
     "menus": {

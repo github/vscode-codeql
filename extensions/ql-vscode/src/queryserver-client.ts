@@ -56,7 +56,10 @@ export class QueryServerClient extends DisposableObject {
     super();
     // When the query server configuration changes, restart the query server.
     if (config.onDidChangeQueryServerConfiguration !== undefined) {
-      this.push(config.onDidChangeQueryServerConfiguration(async () => await this.restartQueryServer(), this));
+      this.push(config.onDidChangeQueryServerConfiguration(async () => {
+        this.logger.log('Restarting query server due to configuration changes...');
+        await this.restartQueryServer();
+      }, this));
     }
     this.withProgressReporting = withProgressReporting;
     this.nextCallback = 0;
@@ -77,10 +80,13 @@ export class QueryServerClient extends DisposableObject {
   }
 
   /** Restarts the query server by disposing of the current server process and then starting a new one. */
-  private async restartQueryServer() {
-    this.logger.log('Restarting query server due to configuration changes...');
+  async restartQueryServer() {
     this.stopQueryServer();
     await this.startQueryServer();
+  }
+
+  async showLog() {
+    this.logger.show();
   }
 
   /** Starts a new query server process, sending progress messages to the status bar. */
