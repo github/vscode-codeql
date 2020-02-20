@@ -158,7 +158,7 @@ export class QueryInfo {
 
 export interface QueryWithResults {
   readonly query: QueryInfo;
-  readonly result: messages.EvaluationResult;
+  readonly result?: messages.EvaluationResult;
   readonly database: DatabaseInfo;
   readonly options: QueryHistoryItemOptions;
 }
@@ -350,26 +350,18 @@ async function determineSelectedQuery(selectedResourceUri: vscode.Uri | undefine
   return { queryPath, quickEvalPosition };
 }
 
-export async function compileAndRunQueryAgainstDatabase(
+export async function getQueryInfo(
   cliServer: cli.CodeQLCliServer,
-  qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   quickEval: boolean,
   selectedQueryUri: vscode.Uri | undefined
-): Promise<QueryWithResults> {
-
+): Promise<QueryInfo> {
   if (!db.contents || !db.contents.dbSchemeUri) {
     throw new Error(`Database ${db.databaseUri} does not have a CodeQL database scheme.`);
   }
 
   // Determine which query to run, based on the selection and the active editor.
   const { queryPath, quickEvalPosition } = await determineSelectedQuery(selectedQueryUri, quickEval);
-
-  // If this is quick query, store the query text
-  const historyItemOptions: QueryHistoryItemOptions = {};
-  if (isQuickQueryPath(queryPath)) {
-    historyItemOptions.queryText = await fs.readFile(queryPath, 'utf8');
-  }
 
   // Get the workspace folder paths.
   const diskWorkspaceFolders = helpers.getOnDiskWorkspaceFolders();
@@ -408,22 +400,31 @@ export async function compileAndRunQueryAgainstDatabase(
     logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
   }
 
-  const query = new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata);
+  return new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata);
+}
+
+export async function getQueryHistoryItemOptions(query: QueryInfo): Promise<QueryHistoryItemOptions> {
+  // If this is quick query, store the query text
+  if (isQuickQueryPath(query.program.queryPath)) {
+    return { queryText: await fs.readFile(query.program.queryPath, 'utf8') };
+  }
+  else {
+    return {};
+  }
+}
+
+export async function compileAndRunQueryAgainstDatabase(
+  cliServer: cli.CodeQLCliServer,
+  qs: qsClient.QueryServerClient,
+  query: QueryInfo,
+): Promise<messages.EvaluationResult> {
+
   await checkDbschemeCompatibility(cliServer, qs, query);
 
   const errors = await query.compile(qs);
 
   if (errors.length == 0) {
-    const result = await query.run(qs);
-    return {
-      query,
-      result,
-      database: {
-        name: db.name,
-        databaseUri: db.databaseUri.toString(true)
-      },
-      options: historyItemOptions
-    };
+    return await query.run(qs);
   } else {
     // Error dialogs are limited in size and scrollability,
     // so we include a general description of the problem,
@@ -439,29 +440,22 @@ export async function compileAndRunQueryAgainstDatabase(
       formattedMessages.push(formatted);
       qs.logger.log(formatted);
     }
-    if (quickEval && formattedMessages.length <= 3) {
+    const isQuickEval = query.quickEvalPosition !== undefined;
+    if (isQuickEval && formattedMessages.length <= 3) {
       helpers.showAndLogErrorMessage("Quick evaluation compilation failed: \n" + formattedMessages.join("\n"));
     } else {
-      helpers.showAndLogErrorMessage((quickEval ? "Quick evaluation" : "Query") +
+      helpers.showAndLogErrorMessage((isQuickEval ? "Quick evaluation" : "Query") +
         " compilation failed. Please make sure there are no errors in the query, the database is up to date," +
         " and the query and database use the same target language. For more details on the error, go to View > Output," +
         " and choose CodeQL Query Server from the dropdown.");
     }
 
     return {
-      query,
-      result: {
-        evaluationTime: 0,
-        resultType: messages.QueryResultType.OTHER_ERROR,
-        queryId: -1,
-        runId: -1,
-        message: "Query had compilation errors"
-      },
-      database: {
-        name: db.name,
-        databaseUri: db.databaseUri.toString(true)
-      },
-      options: historyItemOptions,
+      evaluationTime: 0,
+      resultType: messages.QueryResultType.OTHER_ERROR,
+      queryId: -1,
+      runId: -1,
+      message: "Query had compilation errors"
     };
   }
 }

@@ -13,7 +13,7 @@ import { assertNever } from './helpers-pure';
 import { FromResultsViewMsg, Interpretation, INTERPRETED_RESULTS_PER_RUN_LIMIT, IntoResultsViewMsg, QueryMetadata, ResultsPaths, SortedResultSetInfo, SortedResultsMap, InterpretedResultsSortState, SortDirection } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
-import { CompletedQuery, interpretResults } from './query-results';
+import { RunningOrCompletedQuery, interpretResults } from './query-results';
 import { QueryInfo, tmpDir } from './run-queries';
 import { parseSarifLocation, parseSarifPlainTextMessage } from './sarif-utils';
 
@@ -110,7 +110,7 @@ function sortInterpretedResults(results: Sarif.Result[], sortState: InterpretedR
 }
 
 export class InterfaceManager extends DisposableObject {
-  private _displayedQuery?: CompletedQuery;
+  private _displayedQuery?: RunningOrCompletedQuery;
   private _panel: vscode.WebviewPanel | undefined;
   private _panelLoaded = false;
   private _panelLoadedCallBacks: (() => void)[] = [];
@@ -161,7 +161,7 @@ export class InterfaceManager extends DisposableObject {
     return this._panel;
   }
 
-  private async changeSortState(update: (query: CompletedQuery) => Promise<void>): Promise<void> {
+  private async changeSortState(update: (query: RunningOrCompletedQuery) => Promise<void>): Promise<void> {
     if (this._displayedQuery === undefined) {
       showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
       return;
@@ -247,8 +247,8 @@ export class InterfaceManager extends DisposableObject {
    * UI interaction requesting results, e.g. clicking on a query
    * history entry.
    */
-  public async showResults(results: CompletedQuery, forceReveal: WebviewReveal, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
-    if (results.result.resultType !== messages.QueryResultType.SUCCESS) {
+  public async showResults(results: RunningOrCompletedQuery, forceReveal: WebviewReveal, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
+    if (results.result === undefined || results.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }
 

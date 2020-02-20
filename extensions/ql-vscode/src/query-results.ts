@@ -9,10 +9,15 @@ import { RawResultsSortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata, 
 import { QueryHistoryConfig } from "./config";
 import { QueryHistoryItemOptions } from "./query-history";
 
-export class CompletedQuery implements QueryWithResults {
+/**
+ * Keeps track of all information for a running or completed query for
+ * the purposes of the query history view. The query is still running
+ * if `result` is undefined, and completed if `result` exists.
+ */
+export class RunningOrCompletedQuery implements QueryWithResults {
   readonly time: string;
   readonly query: QueryInfo;
-  readonly result: messages.EvaluationResult;
+  result?: messages.EvaluationResult;
   readonly database: DatabaseInfo;
   options: QueryHistoryItemOptions;
 
@@ -57,6 +62,9 @@ export class CompletedQuery implements QueryWithResults {
   }
 
   get statusString(): string {
+    if (this.result === undefined) {
+      return 'running';
+    }
     switch (this.result.resultType) {
       case messages.QueryResultType.CANCELLATION:
         return `cancelled after ${this.result.evaluationTime / 1000} seconds`;
@@ -94,8 +102,8 @@ export class CompletedQuery implements QueryWithResults {
     return this.config.format;
   }
 
-  get didRunSuccessfully(): boolean {
-    return this.result.resultType === messages.QueryResultType.SUCCESS;
+  get hadErrors(): boolean {
+    return this.result !== undefined && this.result.resultType !== messages.QueryResultType.SUCCESS;
   }
 
   toString(): string {

@@ -1,9 +1,10 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ExtensionContext, window as Window } from 'vscode';
-import { CompletedQuery } from './query-results';
+import { RunningOrCompletedQuery } from './query-results';
 import { QueryHistoryConfig } from './config';
-import { QueryWithResults } from './run-queries';
+import { QueryInfo } from './run-queries';
+import * as messages from './messages';
 
 /**
  * query-history.ts
@@ -27,7 +28,7 @@ const FAILED_QUERY_HISTORY_ITEM_ICON: string = 'media/red-x.svg';
 /**
  * Tree data provider for the query history view.
  */
-class HistoryTreeDataProvider implements vscode.TreeDataProvider<CompletedQuery> {
+class HistoryTreeDataProvider implements vscode.TreeDataProvider<RunningOrCompletedQuery> {
 
   /**
    * XXX: This idiom for how to get a `.fire()`-able event emitter was
@@ -35,20 +36,20 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<CompletedQuery>
    * involved and I hope there's something better that can be done
    * instead.
    */
-  private _onDidChangeTreeData: vscode.EventEmitter<CompletedQuery | undefined> = new vscode.EventEmitter<CompletedQuery | undefined>();
-  readonly onDidChangeTreeData: vscode.Event<CompletedQuery | undefined> = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<RunningOrCompletedQuery | undefined> = new vscode.EventEmitter<RunningOrCompletedQuery | undefined>();
+  readonly onDidChangeTreeData: vscode.Event<RunningOrCompletedQuery | undefined> = this._onDidChangeTreeData.event;
 
-  private history: CompletedQuery[] = [];
+  private history: RunningOrCompletedQuery[] = [];
 
   /**
    * When not undefined, must be reference-equal to an item in `this.databases`.
    */
-  private current: CompletedQuery | undefined;
+  private current: RunningOrCompletedQuery | undefined;
 
   constructor(private ctx: ExtensionContext) {
   }
 
-  getTreeItem(element: CompletedQuery): vscode.TreeItem {
+  getTreeItem(element: RunningOrCompletedQuery): vscode.TreeItem {
     const it = new vscode.TreeItem(element.toString());
 
     it.command = {
@@ -57,14 +58,14 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<CompletedQuery>
       arguments: [element],
     };
 
-    if (!element.didRunSuccessfully) {
+    if (element.hadErrors) {
       it.iconPath = path.join(this.ctx.extensionPath, FAILED_QUERY_HISTORY_ITEM_ICON);
     }
 
     return it;
   }
 
-  getChildren(element?: CompletedQuery): vscode.ProviderResult<CompletedQuery[]> {
+  getChildren(element?: RunningOrCompletedQuery): vscode.ProviderResult<RunningOrCompletedQuery[]> {
     if (element == undefined) {
       return this.history;
     }
@@ -73,25 +74,25 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<CompletedQuery>
     }
   }
 
-  getParent(_element: CompletedQuery): vscode.ProviderResult<CompletedQuery> {
+  getParent(_element: RunningOrCompletedQuery): vscode.ProviderResult<RunningOrCompletedQuery> {
     return null;
   }
 
-  getCurrent(): CompletedQuery | undefined {
+  getCurrent(): RunningOrCompletedQuery | undefined {
     return this.current;
   }
 
-  push(item: CompletedQuery): void {
+  push(item: RunningOrCompletedQuery): void {
     this.current = item;
     this.history.push(item);
     this.refresh();
   }
 
-  setCurrentItem(item: CompletedQuery) {
+  setCurrentItem(item: RunningOrCompletedQuery) {
     this.current = item;
   }
 
-  remove(item: CompletedQuery) {
+  remove(item: RunningOrCompletedQuery) {
     if (this.current === item)
       this.current = undefined;
     const index = this.history.findIndex(i => i === item);
@@ -120,18 +121,18 @@ const DOUBLE_CLICK_TIME = 500;
 export class QueryHistoryManager {
   treeDataProvider: HistoryTreeDataProvider;
   ctx: ExtensionContext;
-  treeView: vscode.TreeView<CompletedQuery>;
-  selectedCallback: ((item: CompletedQuery) => void) | undefined;
-  lastItemClick: { time: Date, item: CompletedQuery } | undefined;
+  treeView: vscode.TreeView<RunningOrCompletedQuery>;
+  selectedCallback: ((item: RunningOrCompletedQuery) => void) | undefined;
+  lastItemClick: { time: Date, item: RunningOrCompletedQuery } | undefined;
 
-  async invokeCallbackOn(queryHistoryItem: CompletedQuery) {
+  async invokeCallbackOn(queryHistoryItem: RunningOrCompletedQuery) {
     if (this.selectedCallback !== undefined) {
       const sc = this.selectedCallback;
       await sc(queryHistoryItem);
     }
   }
 
-  async handleOpenQuery(queryHistoryItem: CompletedQuery): Promise<void> {
+  async handleOpenQuery(queryHistoryItem: RunningOrCompletedQuery): Promise<void> {
     const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.query.program.queryPath));
     const editor = await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
     const queryText = queryHistoryItem.options.queryText;
@@ -142,7 +143,7 @@ export class QueryHistoryManager {
     }
   }
 
-  async handleRemoveHistoryItem(queryHistoryItem: CompletedQuery) {
+  async handleRemoveHistoryItem(queryHistoryItem: RunningOrCompletedQuery) {
     this.treeDataProvider.remove(queryHistoryItem);
     const current = this.treeDataProvider.getCurrent();
     if (current !== undefined) {
@@ -151,7 +152,7 @@ export class QueryHistoryManager {
     }
   }
 
-  async handleSetLabel(queryHistoryItem: CompletedQuery) {
+  async handleSetLabel(queryHistoryItem: RunningOrCompletedQuery) {
     const response = await vscode.window.showInputBox({
       prompt: 'Label:',
       placeHolder: '(use default)',
@@ -168,7 +169,7 @@ export class QueryHistoryManager {
     }
   }
 
-  async handleItemClicked(queryHistoryItem: CompletedQuery) {
+  async handleItemClicked(queryHistoryItem: RunningOrCompletedQuery) {
     this.treeDataProvider.setCurrentItem(queryHistoryItem);
 
     const now = new Date();
@@ -190,7 +191,7 @@ export class QueryHistoryManager {
   constructor(
     ctx: ExtensionContext,
     private queryHistoryConfigListener: QueryHistoryConfig,
-    selectedCallback?: (item: CompletedQuery) => Promise<void>
+    selectedCallback?: (item: RunningOrCompletedQuery) => Promise<void>
   ) {
     this.ctx = ctx;
     this.selectedCallback = selectedCallback;
@@ -216,11 +217,24 @@ export class QueryHistoryManager {
     });
   }
 
-  addQuery(info: QueryWithResults): CompletedQuery {
-    const item = new CompletedQuery(info, this.queryHistoryConfigListener);
+  addQuery(query: QueryInfo, options: QueryHistoryItemOptions): RunningOrCompletedQuery {
+    const item = new RunningOrCompletedQuery(
+      {
+        query,
+        options,
+        database: { name: query.dbItem.name, databaseUri: query.dbItem.databaseUri.toString(true) },
+        result: undefined,
+      },
+      this.queryHistoryConfigListener
+    );
     this.treeDataProvider.push(item);
     this.updateTreeViewSelectionIfVisible();
     return item;
+  }
+
+  updateItemWithResult(item: RunningOrCompletedQuery, result: messages.EvaluationResult) {
+    item.result = result;
+    this.updateTreeViewSelectionIfVisible();
   }
 
   /**
