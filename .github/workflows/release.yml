@@ -27,7 +27,7 @@ jobs:
     # TODO Share steps with the main workflow.
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
 
       - uses: actions/setup-node@v1
         with:
