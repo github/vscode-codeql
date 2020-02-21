@@ -38,6 +38,7 @@ jobs:
       - name: Fetch master branch
         run: |
           git fetch --depth=1 origin master:master
+          git checkout master
 
       - name: Build
         run: |
@@ -110,7 +111,7 @@ jobs:
           echo "::set-output name=next_version::$NEXT_VERSION"
 
       - name: Create version bump PR
-        uses: peter-evans/create-pull-request@c202684c928d4c9f18394b2ad11df905c5d8b40c # v2.1.2
+        uses: peter-evans/create-pull-request@c7b64af0a489eae91f7890f2c1b63d13cc2d8ab7 # v2.4.2
         if: success()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
