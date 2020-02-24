@@ -33,13 +33,6 @@ jobs:
         with:
           node-version: '10.18.1'
 
-      # The checkout action does not fetch the master branch.
-      # Fetch the master branch so that we can base the version bump PR against master.
-      - name: Fetch master branch
-        run: |
-          git fetch --depth=1 origin master:master
-          git checkout master
-
       - name: Build
         run: |
           cd build
@@ -99,6 +92,13 @@ jobs:
           asset_path: ${{ steps.prepare-artifacts.outputs.vsix_path }}
           asset_name: ${{ format('vscode-codeql-{0}.vsix', steps.prepare-artifacts.outputs.ref_name) }}
           asset_content_type: application/zip
+
+      # The checkout action does not fetch the master branch.
+      # Fetch the master branch so that we can base the version bump PR against master.
+      - name: Fetch master branch
+        run: |
+          git fetch --depth=1 origin master:master
+          git checkout master
 
       - name: Bump patch version
         id: bump-patch-version
