@@ -28,6 +28,7 @@
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
     "onCommand:codeQL.quickQuery",
+    "onCommand:codeQL.restartQueryServer",
     "onWebviewPanel:resultsView",
     "onFileSystem:codeql-zip-archive"
   ],
