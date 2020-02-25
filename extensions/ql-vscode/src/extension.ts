@@ -310,7 +310,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   ctx.subscriptions.push(commands.registerCommand('codeQL.quickQuery', async () => displayQuickQuery(ctx, cliServer, databaseUI)));
   ctx.subscriptions.push(commands.registerCommand('codeQL.restartQueryServer', async () => {
     await qs.restartQueryServer();
-    const response = await Window.showInformationMessage('CodeQL Query Server restarted', 'Ok', 'Show Log');
+    const response = await Window.showInformationMessage('CodeQL Query Server restarted', 'Show Log');
     if (response === 'Show Log') {
       qs.showLog();
     }
