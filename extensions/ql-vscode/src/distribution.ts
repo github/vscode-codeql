@@ -39,9 +39,9 @@ const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
  * This applies to both extension-managed and CLI distributions.
  */
 export const DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT: VersionConstraint = {
-  description: "2.0.*",
+  description: "2.*.*",
   isVersionCompatible: (v: Version) => {
-    return v.majorVersion === 2 && v.minorVersion === 0
+    return v.majorVersion === 2 && v.minorVersion >= 0
   }
 }
 
