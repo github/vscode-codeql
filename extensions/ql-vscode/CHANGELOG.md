@@ -3,7 +3,7 @@
 ## 1.0.6 - 28 February 2020
 
 - Add command to restart query server.
-- Enables support for future minor upgrades to the CodeQL CLI.
+- Enable support for future minor upgrades to the CodeQL CLI.
 
 ## 1.0.5 - 13 February 2020
 
