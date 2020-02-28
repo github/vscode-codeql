@@ -1,8 +1,9 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## 1.0.6
+## 1.0.6 - 28 February 2020
 
 - Add command to restart query server.
+- Improve cli upgrade versioning.
 
 ## 1.0.5 - 13 February 2020
 
