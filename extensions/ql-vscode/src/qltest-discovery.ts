@@ -21,13 +21,17 @@ export abstract class QLTestNode {
   }
 
   public abstract get children(): readonly QLTestNode[];
+
+  public abstract finish(): void;
 }
 
 /**
  * A directory containing one or more QL tests or other test directories.
  */
 export class QLTestDirectory extends QLTestNode {
-  constructor(_path: string, _name: string, private _children: QLTestNode[]) {
+  private _children: QLTestNode[] = [];
+
+  constructor(_path: string, _name: string) {
     super(_path, _name);
   }
 
@@ -50,13 +54,20 @@ export class QLTestDirectory extends QLTestNode {
     }
   }
 
+  public finish(): void {
+    this._children.sort((a, b) => a.name.localeCompare(b.name));
+    for (const child of this._children) {
+      child.finish();
+    }
+  }
+
   private createChildDirectory(name: string): QLTestDirectory {
     const existingChild = this._children.find((child) => child.name === name);
     if (existingChild !== undefined) {
       return <QLTestDirectory>existingChild;
     }
     else {
-      const newChild = new QLTestDirectory(path.join(this.path, name), name, []);
+      const newChild = new QLTestDirectory(path.join(this.path, name), name);
       this.addChild(newChild);
       return newChild;
     }
@@ -73,6 +84,9 @@ export class QLTestFile extends QLTestNode {
 
   public get children(): readonly QLTestNode[] {
     return [];
+  }
+
+  public finish(): void {
   }
 }
 
@@ -177,13 +191,15 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
       return undefined;
     }
     else {
-      const rootDirectory = new QLTestDirectory(fullPath, name, []);
+      const rootDirectory = new QLTestDirectory(fullPath, name);
       for (const testPath of resolvedTests) {
         const relativePath = path.normalize(path.relative(fullPath, testPath));
         const dirName = path.dirname(relativePath);
         const parentDirectory = rootDirectory.createDirectory(dirName);
         parentDirectory.addChild(new QLTestFile(testPath, path.basename(testPath)));
       }
+
+      rootDirectory.finish();
 
       return rootDirectory;
     }
