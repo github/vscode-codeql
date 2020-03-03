@@ -6,6 +6,12 @@ export interface Logger {
   log(message: string): void;
   /** Writes the given log message, not followed by a newline. */
   logWithoutTrailingNewline(message: string): void;
+  /**
+   * Reveal this channel in the UI.
+   *
+   * @param preserveFocus When `true` the channel will not take focus.
+   */
+  show(preserveFocus?: boolean): void;
 }
 
 export type ProgressReporter = Progress<{ message: string }>;
@@ -26,6 +32,10 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
 
   logWithoutTrailingNewline(message: string) {
     this.outputChannel.append(message);
+  }
+
+  show(preserveFocus?: boolean) {
+    this.outputChannel.show(preserveFocus);
   }
 }
 

@@ -321,6 +321,13 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   ctx.subscriptions.push(commands.registerCommand('codeQL.runQuery', async (uri: Uri | undefined) => await compileAndRunQuery(false, uri)));
   ctx.subscriptions.push(commands.registerCommand('codeQL.quickEval', async (uri: Uri | undefined) => await compileAndRunQuery(true, uri)));
   ctx.subscriptions.push(commands.registerCommand('codeQL.quickQuery', async () => displayQuickQuery(ctx, cliServer, databaseUI)));
+  ctx.subscriptions.push(commands.registerCommand('codeQL.restartQueryServer', async () => {
+    await qs.restartQueryServer();
+    const response = await Window.showInformationMessage('CodeQL Query Server restarted.', 'Show Log');
+    if (response === 'Show Log') {
+      qs.showLog();
+    }
+  }));
 
   ctx.subscriptions.push(client.start());
 }
