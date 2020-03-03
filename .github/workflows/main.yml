@@ -89,9 +89,11 @@ jobs:
           cd extensions/ql-vscode
           sudo apt-get install xvfb
           /usr/bin/xvfb-run npm run integration
+          cat /home/runner/.npm/_logs/*/*-debug.log
 
       - name: Run integration tests (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           cd extensions/ql-vscode
           npm run integration
+          type C:\npm\cache\_logs\*-debug.log
