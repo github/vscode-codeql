@@ -29,7 +29,7 @@ async function runTestsWithRetry(suite: Suite, tries: number): Promise<void> {
     } catch (err) {
       console.error(`Exception raised while running tests: ${err}`);
       if (t < tries - 1)
-        console.error('Retrying...');
+        console.log('Retrying...');
     }
   }
   console.error(`Tried running suite ${tries} time(s), still failed, giving up.`);
@@ -67,10 +67,10 @@ async function main() {
     ];
 
     for (const integrationTestSuite of integrationTestSuites) {
-      await runTestsWithRetry(integrationTestSuite, 2);
+      await runTestsWithRetry(integrationTestSuite, 3);
     }
   } catch (err) {
-    console.error('Unexpected exception while running tests');
+    console.error(`Unexpected exception while running tests: ${err}`);
     process.exit(1);
   }
 }
