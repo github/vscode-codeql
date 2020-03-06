@@ -1,7 +1,5 @@
 import * as cp from 'child_process';
-// Import from the specific module within `semmle-vscode-utils`, rather than via `index.ts`, because
-// we avoid taking an accidental runtime dependency on `vscode` this way.
-import { DisposableObject } from 'semmle-vscode-utils/out/disposable-object';
+import { DisposableObject } from 'semmle-vscode-utils';
 import { Disposable } from 'vscode';
 import { CancellationToken, createMessageConnection, MessageConnection, RequestType } from 'vscode-jsonrpc';
 import * as cli from './cli';
