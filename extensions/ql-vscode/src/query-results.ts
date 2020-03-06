@@ -68,7 +68,7 @@ export class CompletedQuery implements QueryWithResults {
         return `timed out after ${this.result.evaluationTime / 1000} seconds`;
       case messages.QueryResultType.OTHER_ERROR:
       default:
-        return `failed`;
+        return `failed: ${this.result.message || ''}`;
     }
   }
 
