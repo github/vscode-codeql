@@ -415,6 +415,11 @@ export async function compileAndRunQueryAgainstDatabase(
 
   if (errors.length == 0) {
     const result = await query.run(qs);
+    if (result.resultType !== messages.QueryResultType.SUCCESS) {
+      const message = result.message || 'Failed to run query';
+      logger.log(message);
+      helpers.showAndLogErrorMessage(message);
+    }
     return {
       query,
       result,
