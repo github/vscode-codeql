@@ -3,7 +3,6 @@ import 'mocha';
 import { LocationStyle, StringLocation, tryGetWholeFileLocation } from 'semmle-bqrs';
 
 describe('processing string locations', function () {
-  
   it('should detect Windows whole-file locations', function () {
     const loc: StringLocation = {
       t: LocationStyle.String,

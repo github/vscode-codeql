@@ -1,4 +1,4 @@
-## Contributing
+# Contributing
 
 [fork]: https://github.com/github/vscode-codeql/fork
 [pr]: https://github.com/github/vscode-codeql/compare
@@ -13,19 +13,19 @@ Please note that this project is released with a [Contributor Code of Conduct][c
 
 ## Submitting a pull request
 
-0. [Fork][fork] and clone the repository
-0. Set up a local build
-0. Create a new branch: `git checkout -b my-branch-name`
-0. Make your change
-0. Push to your fork and [submit a pull request][pr]
-0. Pat yourself on the back and wait for your pull request to be reviewed and merged.
+1. [Fork][fork] and clone the repository
+1. Set up a local build
+1. Create a new branch: `git checkout -b my-branch-name`
+1. Make your change
+1. Push to your fork and [submit a pull request][pr]
+1. Pat yourself on the back and wait for your pull request to be reviewed and merged.
 
 Here are a few things you can do that will increase the likelihood of your pull request being accepted:
 
-- Follow the [style guide][style].
-- Write tests. Tests that don't require the VS Code API are located [here](extensions/ql-vscode/test). Integration tests that do require the VS Code API are located [here](extensions/ql-vscode/src/vscode-tests).
-- Keep your change as focused as possible. If there are multiple changes you would like to make that are not dependent upon each other, consider submitting them as separate pull requests.
-- Write a [good commit message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
+* Follow the [style guide][style].
+* Write tests. Tests that don't require the VS Code API are located [here](extensions/ql-vscode/test). Integration tests that do require the VS Code API are located [here](extensions/ql-vscode/src/vscode-tests).
+* Keep your change as focused as possible. If there are multiple changes you would like to make that are not dependent upon each other, consider submitting them as separate pull requests.
+* Write a [good commit message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
 
 ## Setting up a local build
 
@@ -42,12 +42,22 @@ If you plan on building from the command line, it's easiest if Rush is installed
 npm install -g @microsoft/rush
 ```
 
+To get started, run:
+
+```shell
+rush update && rush build
+```
+
 Note that when you run the `rush` command from the globally installed version, it will examine the
 `rushVersion` property in the repo's `rush.json`, and if it differs from the globally installed
 version, it will download, cache, and run the version of Rush specified in the `rushVersion`
 property.
 
-If you plan on only building via VS Code tasks, you don't need Rush installed at all, since those
+A few more things to know about using rush:
+
+* Avoid running `npm` for any commands that install/link dependencies
+* Instead use the *rush* equivalent: `rush add <package>`, `rush update`, etc.
+* If you plan on only building via VS Code tasks, you don't need Rush installed at all, since those
 tasks run `common/scripts/install-run-rush.js` to bootstrap a locally installed and cached copy of
 Rush.
 
@@ -66,7 +76,7 @@ a single-project repo. With Rush, you need to do an "update" instead:
 ##### From the command line
 
 ```shell
-$ rush update
+rush update
 ```
 
 #### Building all projects (instead of `gulp`)
@@ -100,6 +110,8 @@ force a full rebuild of all projects:
 rush rebuild --verbose
 ```
 
+Note that `rush rebuild` performs a complete rebuild, whereas `rush build` performs an incremental build and in many cases will not need to do anything at all.
+
 ### Installing
 
 You can install the `.vsix` file from within VS Code itself, from the Extensions container in the sidebar:
@@ -118,6 +130,18 @@ $ vscode/scripts/code-cli.sh --install-extension dist/vscode-codeql-*.vsix # if 
 
 You can use VS Code to debug the extension without explicitly installing it. Just open this directory as a workspace in VS Code, and hit `F5` to start a debugging session.
 
+### Running the unit/integration tests
+
+Ensure the `CODEQL_PATH` environment variable is set to point to the `codeql` cli executable.
+
+Outside of vscode, run:
+
+```shell
+npm run test && npm run integration
+```
+
+Alternatively, you can run the tests inside of vscode. There are several vscode launch configurations defined that run the unit and integration tests. They can all be found in the debug view.
+
 ## Releasing (write access required)
 
 1. Trigger a release build on Actions by adding a new tag on master of the format `vxx.xx.xx`
@@ -126,10 +150,10 @@ You can use VS Code to debug the extension without explicitly installing it. Jus
 1. Log into the [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage/publishers/github).
 1. Click the `...` menu in the CodeQL row and click **Update**.
 1. Drag the `.vsix` file you downloaded from the GitHub release into the Marketplace and click **Upload**.
-1. Publish the draft GitHub release and confirm the new release is marked as the latest release at https://github.com/github/vscode-codeql/releases.
+1. Publish the draft GitHub release and confirm the new release is marked as the latest release at <https://github.com/github/vscode-codeql/releases>.
 
 ## Resources
 
-- [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
-- [Using Pull Requests](https://help.github.com/articles/about-pull-requests/)
-- [GitHub Help](https://help.github.com)
+* [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
+* [Using Pull Requests](https://help.github.com/articles/about-pull-requests/)
+* [GitHub Help](https://help.github.com)

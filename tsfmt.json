@@ -1,4 +1,5 @@
 {
+  "newLineCharacter": "\n",
   "indentStyle": 2,
   "insertSpaceAfterCommaDelimiter": true,
   "insertSpaceAfterSemicolonInForStatements": true,
