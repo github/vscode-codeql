@@ -18,10 +18,14 @@
   "categories": [
     "Programming Languages"
   ],
+  "extensionDependencies": [
+    "hbenl.vscode-test-explorer"
+  ],
   "activationEvents": [
     "onLanguage:ql",
     "onView:codeQLDatabases",
     "onView:codeQLQueryHistory",
+    "onView:test-explorer",
     "onCommand:codeQL.checkForUpdatesToCLI",
     "onCommand:codeQL.chooseDatabase",
     "onCommand:codeQL.setCurrentDatabase",
@@ -132,6 +136,14 @@
           "type": "string",
           "default": "[%t] %q on %d - %s",
           "description": "Default string for how to label query history items. %t is the time of the query, %q is the query name, %d is the database name, and %s is a status string."
+        },
+        "codeQL.runningTests.numberOfThreads": {
+          "scope": "window",
+          "type": "integer",
+          "default": 1,
+          "minimum": 1,
+          "maximum": 1024,
+          "description": "Number of threads for running CodeQL tests."
         }
       }
     },
@@ -211,6 +223,14 @@
       {
         "command": "codeQL.restartQueryServer",
         "title": "CodeQL: Restart Query Server"
+      },
+      {
+        "command": "codeQLTests.showOutputDifferences",
+        "title": "CodeQL: Show Test Output Differences"
+      },
+      {
+        "command": "codeQLTests.acceptOutput",
+        "title": "CodeQL: Accept Test Output"
       }
     ],
     "menus": {
@@ -251,6 +271,16 @@
           "command": "codeQLQueryHistory.setLabel",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory"
+        },
+        {
+          "command": "codeQLTests.showOutputDifferences",
+          "group": "qltest@1",
+          "when": "view == test-explorer && viewItem == testWithSource"
+        },
+        {
+          "command": "codeQLTests.acceptOutput",
+          "group": "qltest@2",
+          "when": "view == test-explorer && viewItem == testWithSource"
         }
       ],
       "explorer/context": [
@@ -348,6 +378,7 @@
     "format": "tsfmt -r"
   },
   "dependencies": {
+    "child-process-promise": "^2.2.1",
     "classnames": "~2.2.6",
     "fs-extra": "^8.1.0",
     "glob-promise": "^3.4.0",
@@ -359,12 +390,16 @@
     "semmle-io-node": "^0.0.1",
     "semmle-vscode-utils": "^0.0.1",
     "tmp": "^0.1.0",
+    "tree-kill": "~1.2.2",
     "unzipper": "~0.10.5",
     "vscode-jsonrpc": "^4.0.0",
-    "vscode-languageclient": "^5.2.1"
+    "vscode-languageclient": "^5.2.1",
+    "vscode-test-adapter-api": "~1.7.0",
+    "vscode-test-adapter-util": "~0.7.0"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
+    "@types/child-process-promise": "^2.2.1",
     "@types/classnames": "~2.2.9",
     "@types/fs-extra": "^8.0.0",
     "@types/glob": "^7.1.1",
@@ -385,7 +420,6 @@
     "@types/xml2js": "~0.4.4",
     "build-tasks": "^0.0.1",
     "chai": "^4.2.0",
-    "child-process-promise": "^2.2.1",
     "css-loader": "~3.1.0",
     "glob": "^7.1.4",
     "gulp": "^4.0.2",

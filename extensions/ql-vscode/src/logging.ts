@@ -18,7 +18,7 @@ export type ProgressReporter = Progress<{ message: string }>;
 
 /** A logger that writes messages to an output channel in the Output tab. */
 export class OutputChannelLogger extends DisposableObject implements Logger {
-  outputChannel: OutputChannel;
+  public readonly outputChannel: OutputChannel;
 
   constructor(title: string) {
     super();
@@ -47,3 +47,6 @@ export const queryServerLogger = new OutputChannelLogger('CodeQL Query Server');
 
 /** The logger for messages from the language server. */
 export const ideServerLogger = new OutputChannelLogger('CodeQL Language Server');
+
+/** The logger for messages from tests. */
+export const testLogger = new OutputChannelLogger('CodeQL Tests');
