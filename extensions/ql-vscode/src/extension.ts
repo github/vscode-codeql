@@ -1,5 +1,5 @@
 import { commands, Disposable, ExtensionContext, extensions, ProgressLocation, ProgressOptions, window as Window, Uri } from 'vscode';
-import { ErrorCodes, LanguageClient, ResponseError } from 'vscode-languageclient';
+import { LanguageClient } from 'vscode-languageclient';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { DistributionConfigListener, QueryServerConfigListener, QueryHistoryConfigListener } from './config';
 import { DatabaseManager } from './databases';
@@ -278,18 +278,14 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
         const info = await compileAndRunQueryAgainstDatabase(cliServer, qs, dbItem, quickEval, selectedQuery);
         const item = qhm.addQuery(info);
         await showResultsForCompletedQuery(item, WebviewReveal.NotForced);
-      }
-      catch (e) {
+      } catch (e) {
         if (e instanceof UserCancellationException) {
-          logger.log(e.message);
-        }
-        else if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
-          logger.log(e.message);
-        }
-        else if (e instanceof Error)
+          helpers.showAndLogWarningMessage(e.message);
+        } else if (e instanceof Error) {
           helpers.showAndLogErrorMessage(e.message);
-        else
+        } else {
           throw e;
+        }
       }
     }
   }

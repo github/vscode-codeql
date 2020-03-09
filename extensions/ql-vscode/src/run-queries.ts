@@ -4,6 +4,8 @@ import * as path from 'path';
 import * as tmp from 'tmp';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
+import { ErrorCodes, ResponseError } from 'vscode-languageclient';
+
 import * as cli from './cli';
 import { DatabaseItem, getUpgradesDirectories } from './databases';
 import * as helpers from './helpers';
@@ -103,13 +105,19 @@ export class QueryInfo {
     } finally {
       qs.unRegisterCallback(callbackId);
     }
-    return result || { evaluationTime: 0, message: "No result from server", queryId: -1, runId: callbackId, resultType: messages.QueryResultType.OTHER_ERROR };
+    return result || {
+      evaluationTime: 0,
+      message: "No result from server",
+      queryId: -1,
+      runId: callbackId,
+      resultType: messages.QueryResultType.OTHER_ERROR
+    };
   }
 
   async compile(
     qs: qsClient.QueryServerClient,
   ): Promise<messages.CompilationMessage[]> {
-    let compiled: messages.CheckQueryResult;
+    let compiled: messages.CheckQueryResult | undefined;
     try {
       const params: messages.CompileQueryParams = {
         compilationOptions: {
@@ -140,8 +148,7 @@ export class QueryInfo {
     } finally {
       qs.logger.log(" - - - COMPILATION DONE - - - ");
     }
-
-    return (compiled.messages || []).filter(msg => msg.severity == 0);
+    return (compiled?.messages || []).filter(msg => msg.severity === messages.Severity.ERROR);
   }
 
   /**
@@ -411,10 +418,24 @@ export async function compileAndRunQueryAgainstDatabase(
   const query = new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata);
   await checkDbschemeCompatibility(cliServer, qs, query);
 
-  const errors = await query.compile(qs);
+  let errors;
+  try {
+    errors = await query.compile(qs);
+  } catch (e) {
+    if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
+      return createSyntheticResult(query, db, historyItemOptions, 'Query cancelled', messages.QueryResultType.CANCELLATION);
+    } else {
+      throw e;
+    }
+  }
 
   if (errors.length == 0) {
     const result = await query.run(qs);
+    if (result.resultType !== messages.QueryResultType.SUCCESS) {
+      const message = result.message || 'Failed to run query';
+      logger.log(message);
+      helpers.showAndLogErrorMessage(message);
+    }
     return {
       query,
       result,
@@ -448,20 +469,31 @@ export async function compileAndRunQueryAgainstDatabase(
         " and choose CodeQL Query Server from the dropdown.");
     }
 
-    return {
-      query,
-      result: {
-        evaluationTime: 0,
-        resultType: messages.QueryResultType.OTHER_ERROR,
-        queryId: -1,
-        runId: -1,
-        message: "Query had compilation errors"
-      },
-      database: {
-        name: db.name,
-        databaseUri: db.databaseUri.toString(true)
-      },
-      options: historyItemOptions,
-    };
+    return createSyntheticResult(query, db, historyItemOptions, 'Query had compilation errors', messages.QueryResultType.OTHER_ERROR);
   }
+}
+
+function createSyntheticResult(
+  query: QueryInfo,
+  db: DatabaseItem,
+  historyItemOptions: QueryHistoryItemOptions,
+  message: string,
+  resultType: number
+) {
+
+  return {
+    query,
+    result: {
+      evaluationTime: 0,
+      resultType: resultType,
+      queryId: -1,
+      runId: -1,
+      message
+    },
+    database: {
+      name: db.name,
+      databaseUri: db.databaseUri.toString(true)
+    },
+    options: historyItemOptions,
+  };
 }
