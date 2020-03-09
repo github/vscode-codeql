@@ -1,14 +1,26 @@
 // Place your settings in this file to overwrite default and user settings.
 {
   "files.exclude": {
-    "out": false // set this to true to hide the "out" folder with the compiled JS files
+    "**/out": true, // set this to true to hide the "out" folder with the compiled JS files
+    "**/dist": true,
+    "**/node_modules": true,
+    "common/temp": true,
+    "**/.vscode-test": true
   },
   "files.watcherExclude": {
     "**/.git/**": true,
-    "**/node_modules/*/**": true
+    "**/out": true,
+    "**/dist": true,
+    "**/node_modules": true,
+    "common/temp": true,
+    "**/.vscode-test": true
   },
   "search.exclude": {
-    "out": true // set this to false to include "out" folder in search results
+    "**/out": true, // set this to false to include "out" folder in search results
+    "**/dist": true,
+    "**/node_modules": true,
+    "common/temp": true,
+    "**/.vscode-test": true
   },
   "typescript.tsdk": "./common/temp/node_modules/typescript/lib" // we want to use the TS server from our node_modules folder to control its version
 }
