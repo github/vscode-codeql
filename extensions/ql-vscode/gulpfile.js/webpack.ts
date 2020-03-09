@@ -15,7 +15,8 @@ export function compileView(cb: (err?: Error) => void) {
       hash: false,
       entrypoints: false,
       timings: false,
-      modules: false
+      modules: false,
+      errors: true
     }));
     if (stats.hasErrors()) {
       cb(new Error('Compilation errors detected.'));

@@ -84,6 +84,8 @@ export class RushContext {
     }
     else {
       pkg = await this.getShrinkwrapPackage(name, version);
+      // Ensure a proper version number. pnpm uses syntax like 3.4.0_glob@7.1.6 for peer dependencies
+      version = version.split('_')[0];
       packagePath = path.join(this.packageRepository, name, version, 'package');
       if (!await fs.pathExists(packagePath)) {
         throw new Error(`Package '${name}:${version}' not found in package repository.`);

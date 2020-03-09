@@ -1,0 +1,18 @@
+{
+  "files": {
+    "tools/build-tasks/.rush/temp/package-deps_build.json": "108a8e8128e2de43a3998aade74658c68962db7a",
+    "tools/build-tasks/.rush/temp/shrinkwrap-deps.json": "da54ac929826885754c9db4db8b89bcc0c2aebbd",
+    "tools/build-tasks/gulpfile.js/index.js": "95cf8bcb100eecca1b4490d4cce753f6926e2371",
+    "tools/build-tasks/package.json": "52caf7f12189c6f9166a4c04d6c3215a7a48d05a",
+    "tools/build-tasks/src/deploy.ts": "3b8d93fdede3672c1a260d8974ee34a4cb73b534",
+    "tools/build-tasks/src/index.ts": "2ea9c3656302590328de608883d6e722f02cfa3e",
+    "tools/build-tasks/src/package.ts": "10fd9095b4626540a549a18d7d3e9e2fc5fa43c4",
+    "tools/build-tasks/src/pnpm.ts": "85cc2b6ca1a0dfb3dd9355daa49291ef5c5aeafa",
+    "tools/build-tasks/src/rush.ts": "720e7a5d4c95e6c5fcdac9e60c05262f1a44e494",
+    "tools/build-tasks/src/tests.ts": "a40d64e0791b4f9b6feb65e89b01b0f1d3b7868b",
+    "tools/build-tasks/src/textmate.ts": "cc393c0c87907a8b373127e14ac761008065c54e",
+    "tools/build-tasks/src/typescript.ts": "04b1724d6efbb6dae98caf9f1a426a699400dc7c",
+    "tools/build-tasks/tsconfig.json": "d2df609ec96013b8b05cec7edc86e73c3e473a55"
+  },
+  "arguments": "gulp "
+}

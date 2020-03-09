@@ -58,7 +58,7 @@ async function* getChunkIterator(response: Response): AsyncIterableIterator<Uint
     if (done) {
       return;
     }
-    yield value;
+    yield value!;
   }
 }
 
