@@ -423,7 +423,7 @@ export async function compileAndRunQueryAgainstDatabase(
     errors = await query.compile(qs);
   } catch (e) {
     if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
-      return createSyntheticResult(query, db, historyItemOptions, 'Query cancelled');
+      return createSyntheticResult(query, db, historyItemOptions, 'Query cancelled', messages.QueryResultType.CANCELLATION);
     } else {
       throw e;
     }
@@ -469,7 +469,7 @@ export async function compileAndRunQueryAgainstDatabase(
         " and choose CodeQL Query Server from the dropdown.");
     }
 
-    return createSyntheticResult(query, db, historyItemOptions, 'Query had compilation errors');
+    return createSyntheticResult(query, db, historyItemOptions, 'Query had compilation errors', messages.QueryResultType.OTHER_ERROR);
   }
 }
 
@@ -477,14 +477,15 @@ function createSyntheticResult(
   query: QueryInfo,
   db: DatabaseItem,
   historyItemOptions: QueryHistoryItemOptions,
-  message: string
+  message: string,
+  resultType: number
 ) {
 
   return {
     query,
     result: {
       evaluationTime: 0,
-      resultType: messages.QueryResultType.CANCELLATION,
+      resultType: resultType,
       queryId: -1,
       runId: -1,
       message
