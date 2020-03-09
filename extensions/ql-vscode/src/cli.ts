@@ -1,13 +1,17 @@
-import * as child_process from "child_process";
+import * as child_process from 'child_process';
+import * as cpp from 'child-process-promise';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sarif from 'sarif';
+import * as tk from 'tree-kill';
 import * as util from 'util';
-import { Logger, ProgressReporter } from "./logging";
-import { Disposable } from "vscode";
-import { DistributionProvider } from "./distribution";
-import { SortDirection, QueryMetadata } from "./interface-types";
-import { assertNever } from "./helpers-pure";
+import { SortDirection, QueryMetadata } from './interface-types';
+import { Logger, ProgressReporter } from './logging';
+import { Disposable, CancellationToken } from 'vscode';
+import { DistributionProvider } from './distribution';
+import { assertNever } from './helpers-pure';
+import { Readable } from 'stream';
+import { StringDecoder } from 'string_decoder';
 
 /**
  * The version of the SARIF format that we are using.
@@ -60,6 +64,31 @@ export type QlpacksInfo = { [name: string]: string[] };
 export interface SourceInfo {
   sourceArchive: string;
   sourceLocationPrefix: string;
+}
+
+/**
+ * The expected output of `codeql resolve tests`.
+ */
+export type ResolvedTests = string[];
+
+/**
+ * Options for `codeql test run`.
+ */
+export interface TestRunOptions {
+  cancellationToken?: CancellationToken;
+  logger?: Logger;
+}
+
+/**
+ * Event fired by `codeql test run`.
+ */
+export interface TestCompleted {
+  test: string;
+  pass: boolean;
+  messages: string[];
+  compilationMs: number;
+  evaluationMs: number;
+  expected: string;
 }
 
 /**
@@ -142,13 +171,21 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
+   * Get the path to the CodeQL CLI distribution, or throw an exception if not found.
+   */
+  private async getCodeQlPath(): Promise<string> {
+    const codeqlPath = await this.config.getCodeQlPathWithoutVersionCheck();
+    if (!codeqlPath) {
+      throw new Error('Failed to find CodeQL distribution.');
+    }
+    return codeqlPath;
+  }
+
+  /**
    * Launch the cli server
    */
   private async launchProcess(): Promise<child_process.ChildProcessWithoutNullStreams> {
-    const config = await this.config.getCodeQlPathWithoutVersionCheck();
-    if (!config) {
-      throw new Error("Failed to find codeql distribution")
-    }
+    const config = await this.getCodeQlPath();
     return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, _data => { })
   }
 
@@ -234,6 +271,87 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
+   * Runs an asynchronous CodeQL CLI command without invoking the CLI server, returning any events
+   * fired by the command as an asynchronous generator.
+   *
+   * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
+   * @param commandArgs The arguments to pass to the `codeql` command.
+   * @param cancellationToken CancellationToken to terminate the test process.
+   * @param logger Logger to write text output from the command.
+   * @returns The sequence of async events produced by the command.
+   */
+  private async* runAsyncCodeQlCliCommandInternal(
+    command: string[],
+    commandArgs: string[],
+    cancellationToken?: CancellationToken,
+    logger?: Logger
+  ): AsyncGenerator<string, void, unknown> {
+    // Add format argument first, in case commandArgs contains positional parameters.
+    const args = [
+      ...command,
+      '--format', 'jsonz',
+      ...commandArgs
+    ];
+
+    // Spawn the CodeQL process
+    const codeqlPath = await this.getCodeQlPath();
+    const childPromise = cpp.spawn(codeqlPath, args);
+    const child = childPromise.childProcess;
+
+    let cancellationRegistration: Disposable | undefined = undefined;
+    try {
+      if (cancellationToken !== undefined) {
+        cancellationRegistration = cancellationToken.onCancellationRequested(_e => {
+          tk(child.pid);
+        });
+      }
+      if (logger !== undefined) {
+        // The human-readable output goes to stderr.
+        logStream(child.stderr!, logger);
+      }
+
+      for await (const event of await splitStreamAtSeparators(child.stdout!, ['\0'])) {
+        yield event;
+      }
+
+      await childPromise;
+    }
+    finally {
+      if (cancellationRegistration !== undefined) {
+        cancellationRegistration.dispose();
+      }
+    }
+  }
+
+  /**
+   * Runs an asynchronous CodeQL CLI command without invoking the CLI server, returning any events
+   * fired by the command as an asynchronous generator.
+   *
+   * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
+   * @param commandArgs The arguments to pass to the `codeql` command.
+   * @param description Description of the action being run, to be shown in log and error messages.
+   * @param cancellationToken CancellationToken to terminate the test process.
+   * @param logger Logger to write text output from the command.
+   * @returns The sequence of async events produced by the command.
+   */
+  public async* runAsyncCodeQlCliCommand<EventType>(
+    command: string[],
+    commandArgs: string[],
+    description: string,
+    cancellationToken?: CancellationToken,
+    logger?: Logger
+  ): AsyncGenerator<EventType, void, unknown> {
+    for await (const event of await this.runAsyncCodeQlCliCommandInternal(command, commandArgs,
+      cancellationToken, logger)) {
+      try {
+        yield JSON.parse(event) as EventType;
+      } catch (err) {
+        throw new Error(`Parsing output of ${description} failed: ${err.stderr || err}`)
+      }
+    }
+  }
+
+  /**
    * Runs a CodeQL CLI command on the server, returning the output as a string.
    * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
    * @param commandArgs The arguments to pass to the `codeql` command.
@@ -296,6 +414,39 @@ export class CodeQLCliServer implements Disposable {
       workspaces.join(path.delimiter)
     ];
     return await this.runJsonCodeQlCliCommand<QuerySetup>(['resolve', 'library-path'], subcommandArgs, "Resolving library paths");
+  }
+
+  /**
+   * Finds all available QL tests in a given directory.
+   * @param testPath Root of directory tree to search for tests.
+   * @returns The list of tests that were found.
+   */
+  public async resolveTests(testPath: string): Promise<ResolvedTests> {
+    const subcommandArgs = [
+      testPath
+    ];
+    return await this.runJsonCodeQlCliCommand<ResolvedTests>(['resolve', 'tests'], subcommandArgs, 'Resolving tests');
+  }
+
+  /**
+   * Runs QL tests.
+   * @param testPaths Full paths of the tests to run.
+   * @param workspaces Workspace paths to use as search paths for QL packs.
+   * @param options Additional options.
+   */
+  public async* runTests(testPaths: string[], workspaces: string[], options: TestRunOptions):
+    AsyncGenerator<TestCompleted, void, unknown> {
+
+    const subcommandArgs = [
+      '--additional-packs', workspaces.join(path.delimiter),
+      '--threads', '8',
+      ...testPaths
+    ];
+
+    for await (const event of await this.runAsyncCodeQlCliCommand<TestCompleted>(['test', 'run'],
+      subcommandArgs, 'Run CodeQL Tests', options.cancellationToken, options.logger)) {
+      yield event;
+    }
   }
 
   /**
@@ -409,11 +560,16 @@ export class CodeQLCliServer implements Disposable {
 
   /**
    * Gets information about available qlpacks
-   * @param searchPath A list of directories to search for qlpacks
+   * @param additionalPacks A list of directories to search for qlpacks before searching in `searchPath`.
+   * @param searchPath A list of directories to search for packs not found in `additionalPacks`. If undefined,
+   *   the default CLI search path is used.
    * @returns A dictionary mapping qlpack name to the directory it comes from
    */
-  resolveQlpacks(searchPath: string[]): Promise<QlpacksInfo> {
-    const args = ['--additional-packs', searchPath.join(path.delimiter)];
+  resolveQlpacks(additionalPacks: string[], searchPath?: string[]): Promise<QlpacksInfo> {
+    const args = ['--additional-packs', additionalPacks.join(path.delimiter)];
+    if (searchPath !== undefined) {
+      args.push('--search-path', searchPath.join(path.delimiter));
+    }
 
     return this.runJsonCodeQlCliCommand<QlpacksInfo>(
       ['resolve', 'qlpacks'],
@@ -501,5 +657,102 @@ export async function runCodeQlCliCommand(codeQlPath: string, command: string[],
     return result.stdout;
   } catch (err) {
     throw new Error(`${description} failed: ${err.stderr || err}`)
+  }
+}
+
+/**
+ * Buffer to hold state used when splitting a text stream into lines.
+ */
+class SplitBuffer {
+  private readonly decoder = new StringDecoder('utf8');
+  private readonly maxSeparatorLength: number;
+  private buffer = '';
+  private searchIndex = 0;
+
+  constructor(private readonly separators: readonly string[]) {
+    this.maxSeparatorLength = separators.map(s => s.length).reduce((a, b) => Math.max(a, b), 0);
+  }
+
+  /**
+   * Append new text data to the buffer.
+   * @param chunk The chunk of data to append.
+   */
+  public addChunk(chunk: Buffer): void {
+    this.buffer += this.decoder.write(chunk);
+  }
+
+  /**
+   * Signal that the end of the input stream has been reached.
+   */
+  public end(): void {
+    this.buffer += this.decoder.end();
+    this.buffer += this.separators[0];  // Append a separator to the end to ensure the last line is returned.
+  }
+
+  /**
+   * Extract the next full line from the buffer, if one is available.
+   * @returns The text of the next available full line (without the separator), or `undefined` if no
+   * line is available.
+   */
+  public getNextLine(): string | undefined {
+    while (this.searchIndex <= (this.buffer.length - this.maxSeparatorLength)) {
+      for (const separator of this.separators) {
+        if (this.buffer.startsWith(separator, this.searchIndex)) {
+          const line = this.buffer.substr(0, this.searchIndex);
+          this.buffer = this.buffer.substr(this.searchIndex + separator.length);
+          this.searchIndex = 0;
+          return line;
+        }
+      }
+      this.searchIndex++;
+    }
+
+    return undefined;
+  }
+}
+
+/**
+ * Splits a text stream into lines based on a list of valid line separators.
+ * @param stream The text stream to split. This stream will be fully consumed.
+ * @param separators The list of strings that act as line separators.
+ * @returns A sequence of lines (not including separators).
+ */
+async function* splitStreamAtSeparators(stream: Readable, separators: string[]):
+  AsyncGenerator<string, void, unknown> {
+
+  const buffer = new SplitBuffer(separators);
+  for await (const chunk of stream) {
+    buffer.addChunk(chunk);
+    let line: string | undefined;
+    do {
+      line = buffer.getNextLine();
+      if (line !== undefined) {
+        yield line;
+      }
+    } while (line !== undefined);
+  }
+  buffer.end();
+  let line: string | undefined;
+  do {
+    line = buffer.getNextLine();
+    if (line !== undefined) {
+      yield line;
+    }
+  } while (line !== undefined);
+}
+
+/**
+ *  Standard line endings for splitting human-readable text.
+ */
+const lineEndings = ['\r\n', '\r', '\n'];
+
+/**
+ * Log a text stream to a `Logger` interface.
+ * @param stream The stream to log.
+ * @param logger The logger that will consume the stream output.
+ */
+async function logStream(stream: Readable, logger: Logger): Promise<void> {
+  for await (const line of await splitStreamAtSeparators(stream, lineEndings)) {
+    logger.log(line);
   }
 }

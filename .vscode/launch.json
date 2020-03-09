@@ -8,8 +8,7 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql",
-        "--disable-extensions"
+        "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
@@ -56,8 +55,7 @@
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql",
-        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index",
-        "--disable-extensions"
+        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
@@ -75,7 +73,7 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql",
         "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/minimal-workspace/index",
-        "${workspaceRoot}/extensions/ql-vscode/test/data",
+        "${workspaceRoot}/extensions/ql-vscode/test/data"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
