@@ -299,15 +299,15 @@ export interface CompilationMessage {
 /**
  * Severity of different messages
  */
-export namespace Severity {
+export enum Severity {
   /**
    * The message is a compilation error.
    */
-  export const ERROR = 0;
+  ERROR = 0,
   /**
    * The message is a compilation warning.
    */
-  export const WARNING = 1;
+  WARNING = 1,
 }
 
 /**
@@ -344,31 +344,31 @@ export interface ResultColumn {
 /**
  * The kind of a result column.
  */
-export namespace ResultColumnKind {
+export enum ResultColumnKind {
   /**
    * A column of type `float`
    */
-  export const FLOAT = 0;
+  FLOAT = 0,
   /**
    * A column of type `int`
    */
-  export const INTEGER = 1;
+  INTEGER = 1,
   /**
    * A column of type `string`
    */
-  export const STRING = 2;
+  STRING = 2,
   /**
    * A column of type `boolean`
    */
-  export const BOOLEAN = 3;
+  BOOLEAN = 3,
   /**
  * A column of type `date`
  */
-  export const DATE = 4;
+  DATE = 4,
   /**
    * A column of a non-primitive type
    */
-  export const ENTITY = 5;
+  ENTITY = 5,
 }
 
 /**
@@ -765,29 +765,29 @@ export interface EvaluationResult {
 /**
  * The result of running a query,
  */
-export namespace QueryResultType {
+export enum QueryResultType {
   /**
    * The query ran successfully
    */
-  export const SUCCESS = 0;
+  SUCCESS = 0,
   /**
    * The query failed due to an reason
    * that isn't listed
    */
-  export const OTHER_ERROR = 1;
+  OTHER_ERROR = 1,
   /**
     * The query failed due to running out of
     * memory
     */
-  export const OOM = 2;
+  OOM = 2,
   /**
    * The query failed due to exceeding the timeout
    */
-  export const TIMEOUT = 3;
+  TIMEOUT = 3,
   /**
    * The query failed because it was cancelled.
    */
-  export const CANCELLATION = 4;
+  CANCELLATION = 4,
 }
 
 /**
