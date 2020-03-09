@@ -571,7 +571,7 @@ export class DatabaseManager extends DisposableObject {
       }
     } catch (e) {
       // database list had an unexpected type - nothing to be done?
-      showAndLogErrorMessage('Database list loading failed: ${}', e.message);
+      showAndLogErrorMessage(`Database list loading failed: ${e.message}`);
     }
   }
 

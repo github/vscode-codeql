@@ -51,9 +51,8 @@ export function withProgress<R>(
  *
  * @return A thenable that resolves to the selected item or undefined when being dismissed.
  */
-export function showAndLogErrorMessage(message: string, ...items: string[]): Thenable<string | undefined> {
-  logger.log(message);
-  return Window.showErrorMessage(message, ...items);
+export async function showAndLogErrorMessage(message: string, ...items: string[]): Promise<string | undefined> {
+  return internalShowAndLog(message, Window.showErrorMessage, ...items);
 }
 /**
  * Show a warning message and log it to the console
@@ -63,9 +62,8 @@ export function showAndLogErrorMessage(message: string, ...items: string[]): The
  *
  * @return A thenable that resolves to the selected item or undefined when being dismissed.
  */
-export function showAndLogWarningMessage(message: string, ...items: string[]): Thenable<string | undefined> {
-  logger.log(message);
-  return Window.showWarningMessage(message, ...items);
+export async function showAndLogWarningMessage(message: string, ...items: string[]): Promise<string | undefined> {
+  return internalShowAndLog(message, Window.showWarningMessage, ...items);
 }
 /**
  * Show an information message and log it to the console
@@ -75,9 +73,18 @@ export function showAndLogWarningMessage(message: string, ...items: string[]): T
  *
  * @return A thenable that resolves to the selected item or undefined when being dismissed.
  */
-export function showAndLogInformationMessage(message: string, ...items: string[]): Thenable<string | undefined> {
+export async function showAndLogInformationMessage(message: string, ...items: string[]): Promise<string | undefined> {
+  return internalShowAndLog(message, Window.showInformationMessage, ...items);
+}
+
+async function internalShowAndLog(message: string, fn: Function, ...items: string[]): Promise<string | undefined> {
   logger.log(message);
-  return Window.showInformationMessage(message, ...items);
+  const label = 'Show log';
+  const result = await fn(message, label, ...items);
+  if (result === label) {
+    logger.show();
+  }
+  return result;
 }
 
 /**
