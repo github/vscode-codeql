@@ -4,6 +4,8 @@ import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
 import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName, alertExtrasClassName } from './result-table-utils';
 import { ResultSet, vscode } from './results';
+import Pagination from './Pagination';
+import { PAGE_SIZE } from '../bqrs-cli-types';
 
 /**
  * Properties for the `ResultTables` component.
@@ -31,19 +33,24 @@ const ALERTS_TABLE_NAME = 'alerts';
 const SELECT_TABLE_NAME = '#select';
 const UPDATING_RESULTS_TEXT_CLASS_NAME = "vscode-codeql__result-tables-updating-text";
 
-function getResultCount(resultSet: ResultSet): number {
+function getTotalResultCount(resultSet: ResultSet): number {
+  const truncatedCount = resultSet.t === 'SarifResultSet' ? resultSet.numTruncatedResults : 0;
+  return getDisplayedResultCount(resultSet) + truncatedCount;
+}
+
+function getDisplayedResultCount(resultSet: ResultSet): number {
   switch (resultSet.t) {
     case 'RawResultSet':
       return resultSet.schema.tupleCount;
     case 'SarifResultSet':
       if (resultSet.sarif.runs.length === 0) return 0;
       if (resultSet.sarif.runs[0].results === undefined) return 0;
-      return resultSet.sarif.runs[0].results.length + resultSet.numTruncatedResults;
+      return resultSet.sarif.runs[0].results.length;
   }
 }
 
 function renderResultCountString(resultSet: ResultSet): JSX.Element {
-  const resultCount = getResultCount(resultSet);
+  const resultCount = getTotalResultCount(resultSet);
   return <span className="number-of-results">
     {resultCount} {resultCount === 1 ? 'result' : 'results'}
   </span>;
@@ -55,6 +62,15 @@ function renderResultCountString(resultSet: ResultSet): JSX.Element {
  */
 export class ResultTables
   extends React.Component<ResultTablesProps, ResultTablesState> {
+
+  constructor(props: ResultTablesProps) {
+    super(props);
+
+    this.state = {
+      // Get the result set that should be displayed by default
+      selectedTable: ResultTables.getDefaultResultSet(this.getResultSets())
+    };
+  }
 
   private getResultSets(): ResultSet[] {
     const resultSets: ResultSet[] =
@@ -73,15 +89,6 @@ export class ResultTables
       });
     }
     return resultSets;
-  }
-
-  constructor(props: ResultTablesProps) {
-    super(props);
-
-    this.state = {
-      // Get the result set that should be displayed by default
-      selectedTable: ResultTables.getDefaultResultSet(this.getResultSets())
-    };
   }
 
   private static getDefaultResultSet(resultSets: readonly ResultSet[]): string {
@@ -146,13 +153,35 @@ export class ResultTables
       </div>
       {
         resultSet &&
-        <ResultTable key={resultSet.schema.name} resultSet={resultSet}
-          databaseUri={this.props.database.databaseUri}
-          resultsPath={this.props.resultsPath}
-          sortState={this.props.sortStates.get(resultSet.schema.name)} />
+        (<>
+          <ResultTable key={resultSet.schema.name} resultSet={resultSet}
+            databaseUri={this.props.database.databaseUri}
+            resultsPath={this.props.resultsPath}
+            sortState={this.props.sortStates.get(resultSet.schema.name)}
+          />
+          <Pagination
+            displayedResultsCount={getDisplayedResultCount(resultSet)}
+            totalResultsCount={getTotalResultCount(resultSet)}
+            pageSize={PAGE_SIZE}
+            requestMoreResults={async (from: number, count: number) => {
+              await requestMoreResults(this.props.resultsPath, resultSet.schema.name, from, count);
+            }}
+          />
+        </>)
       }
     </div>;
   }
+}
+
+
+async function requestMoreResults(path: string, name: string, from: number, count: number) {
+  vscode.postMessage({
+    t: 'requestMoreResults',
+    path,
+    name,
+    from,
+    count
+  });
 }
 
 class ResultTable extends React.Component<ResultTableProps, {}> {

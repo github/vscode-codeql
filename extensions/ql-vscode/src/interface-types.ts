@@ -94,7 +94,8 @@ export type FromResultsViewMsg =
   | ToggleDiagnostics
   | ChangeRawResultsSortMsg
   | ChangeInterpretedResultsSortMsg
-  | ResultViewLoaded;
+  | ResultViewLoadedMsg
+  | RequestMoreResultsMsg;
 
 interface ViewSourceFileMsg {
   t: 'viewSourceFile';
@@ -111,9 +112,17 @@ interface ToggleDiagnostics {
   kind?: string;
 };
 
-interface ResultViewLoaded {
+interface ResultViewLoadedMsg {
   t: 'resultViewLoaded';
 };
+
+interface RequestMoreResultsMsg {
+  t: 'requestMoreResults',
+  path: string;
+  name: string;
+  from: number;
+  count: number;
+}
 
 export enum SortDirection {
   asc, desc

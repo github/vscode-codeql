@@ -160,8 +160,9 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
     let expansionIndex = 0;
 
-    if (resultSet.sarif.runs.length === 0) return noResults;
-    if (resultSet.sarif.runs[0].results === undefined) return noResults;
+    if (!resultSet.sarif.runs?.[0]?.results) {
+      return noResults;
+    }
 
     resultSet.sarif.runs[0].results.forEach((result, resultIndex) => {
       const text = result.message.text || '[no text]';

@@ -11,7 +11,7 @@ import { DatabaseItem, DatabaseManager } from './databases';
 import { showAndLogErrorMessage } from './helpers';
 import { assertNever } from './helpers-pure';
 import { FromResultsViewMsg, Interpretation, INTERPRETED_RESULTS_PER_RUN_LIMIT, IntoResultsViewMsg, QueryMetadata, ResultsPaths, SortedResultSetInfo, SortedResultsMap, InterpretedResultsSortState, SortDirection } from './interface-types';
-import { Logger } from './logging';
+import { Logger, logger } from './logging';
 import * as messages from './messages';
 import { CompletedQuery, interpretResults } from './query-results';
 import { QueryInfo, tmpDir } from './run-queries';
@@ -218,6 +218,10 @@ export class InterfaceManager extends DisposableObject {
       true
     );
   }
+  private async requestMoreResults(path: string, name: string, from: number, count: number): Promise<void> {
+    // TODO: get the next `count` results and call this.postMessage(...) to display them
+    logger.log(`${path} ${name}, ${from}, ${count}`);
+  }
 
   private async handleMsgFromView(
     msg: FromResultsViewMsg
@@ -284,6 +288,9 @@ export class InterfaceManager extends DisposableObject {
         await this.changeSortState(query =>
           query.updateInterpretedSortState(this.cliServer, msg.sortState)
         );
+        break;
+      case 'requestMoreResults':
+        this.requestMoreResults(msg.path, msg.name, msg.from, msg.count);
         break;
       default:
         assertNever(msg);

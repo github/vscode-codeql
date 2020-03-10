@@ -8,7 +8,8 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql"
+        "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql",
+        "${workspaceRoot}/../vscode-codeql-starter/vscode-codeql-starter.code-workspace"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,

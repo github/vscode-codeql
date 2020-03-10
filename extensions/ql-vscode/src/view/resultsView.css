@@ -78,10 +78,12 @@
   font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
 }
 
-select {
+select,
+button {
   background-color: var(--vscode-dropdown-background);
   color: var(--vscode-dropdown-foreground);
   border-color: var(--vscode-dropdown-border);
+  border-radius: 3px;
   font-family: inherit;
   font-size: inherit;
 }
@@ -154,4 +156,15 @@ td.vscode-codeql__path-index-cell {
 
 .number-of-results {
   padding-left: 3em;
+}
+
+.vscode-codeql__pagination {
+  display: flex;
+  width: 100%;
+}
+
+.vscode-codeql__pagination > span,
+.vscode-codeql__pagination > button {
+  margin: 0.5em;
+  padding: 0.5em;
 }
