@@ -1,6 +1,17 @@
 /**
  * Types for messages exchanged during jsonrpc communication with the
  * the CodeQL query server.
+ *
+ * This file exists in the queryserver and in the vscode extension, and
+ * should be kept in sync between them.
+ *
+ * A note about the namespaces below, which look like they are
+ * essentially enums, namely Severity, ResultColumnKind, and
+ * QueryResultType. By design, for the sake of extensibility, clients
+ * receiving messages of this protocol are supposed to accept any
+ * number for any of these types. We commit to the given meaning of
+ * the numbers listed in constants in the namespaces, and we commit to
+ * the fact that any unknown QueryResultType value counts as an error.
  */
 
 import * as rpc from 'vscode-jsonrpc';
@@ -294,10 +305,13 @@ export interface CompilationMessage {
   /**
    * The severity of the message
    */
-  severity: number;
+  severity: Severity;
 }
+
+export type Severity = number;
 /**
- * Severity of different messages
+ * Severity of different messages. This namespace is intentionally not
+ * an enum, see "for the sake of extensibility" comment above.
  */
 export namespace Severity {
   /**
@@ -333,7 +347,7 @@ export interface ResultColumn {
    * The kind of the column. See `ResultColumnKind`
    * for the current possible meanings
    */
-  kind: number;
+  kind: ResultColumnKind;
   /**
    * The name of the column.
    * This may be compiler generated for complex select expressions.
@@ -341,8 +355,10 @@ export interface ResultColumn {
   name: string;
 }
 
+export type ResultColumnKind = number;
 /**
- * The kind of a result column.
+ * The kind of a result column. This namespace is intentionally not an enum, see "for the sake of
+ * extensibility" comment above.
  */
 export namespace ResultColumnKind {
   /**
@@ -748,7 +764,7 @@ export interface EvaluationResult {
    * The type of the result. See QueryResultType for
    * possible meanings. Any other result should be interpreted as an error.
    */
-  resultType: number;
+  resultType: QueryResultType;
   /**
    * The wall clock time it took to evaluate the query.
    * The time is from when we initially tried to evaluate the query
@@ -762,8 +778,10 @@ export interface EvaluationResult {
   message?: string;
 }
 
+export type QueryResultType = number;
 /**
- * The result of running a query,
+ * The result of running a query. This namespace is intentionally not
+ * an enum, see "for the sake of extensibility" comment above.
  */
 export namespace QueryResultType {
   /**
@@ -818,7 +836,7 @@ export interface RunUpgradeResult {
    * The type of the result. See QueryResultType for
    * possible meanings. Any other result should be interpreted as an error.
    */
-  resultType: number;
+  resultType: QueryResultType;
   /**
    * The error message if an error occurred
    */
