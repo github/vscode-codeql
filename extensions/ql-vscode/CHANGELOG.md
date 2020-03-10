@@ -1,5 +1,12 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.0.7
+
+- Add a "Show log" button to all information, error, and warning
+  popups that will display the CodeQL extension log.
+- Display a message when a query times out.
+- Show canceled queries in query history.
+
 ## 1.0.6 - 28 February 2020
 
 - Add command to restart query server.

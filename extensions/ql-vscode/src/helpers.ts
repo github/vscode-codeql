@@ -47,37 +47,59 @@ export function withProgress<R>(
  * Show an error message and log it to the console
  *
  * @param message The message to show.
- * @param items A set of items that will be rendered as actions in the message.
+ * @param options.outputLogger The output logger that will receive the message
+ * @param options.items A set of items that will be rendered as actions in the message.
  *
- * @return A thenable that resolves to the selected item or undefined when being dismissed.
+ * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
-export function showAndLogErrorMessage(message: string, ...items: string[]): Thenable<string | undefined> {
-  logger.log(message);
-  return Window.showErrorMessage(message, ...items);
+export async function showAndLogErrorMessage(message: string, {
+  outputLogger = logger,
+  items = [] as string[]
+} = {}): Promise<string | undefined> {
+  return internalShowAndLog(message, items, outputLogger, Window.showErrorMessage);
 }
 /**
  * Show a warning message and log it to the console
  *
  * @param message The message to show.
- * @param items A set of items that will be rendered as actions in the message.
+ * @param options.outputLogger The output logger that will receive the message
+ * @param options.items A set of items that will be rendered as actions in the message.
  *
- * @return A thenable that resolves to the selected item or undefined when being dismissed.
+ * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
-export function showAndLogWarningMessage(message: string, ...items: string[]): Thenable<string | undefined> {
-  logger.log(message);
-  return Window.showWarningMessage(message, ...items);
+export async function showAndLogWarningMessage(message: string, {
+  outputLogger = logger,
+  items = [] as string[]
+} = {}): Promise<string | undefined> {
+  return internalShowAndLog(message, items, outputLogger, Window.showWarningMessage);
 }
 /**
  * Show an information message and log it to the console
  *
  * @param message The message to show.
- * @param items A set of items that will be rendered as actions in the message.
+ * @param options.outputLogger The output logger that will receive the message
+ * @param options.items A set of items that will be rendered as actions in the message.
  *
- * @return A thenable that resolves to the selected item or undefined when being dismissed.
+ * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
-export function showAndLogInformationMessage(message: string, ...items: string[]): Thenable<string | undefined> {
-  logger.log(message);
-  return Window.showInformationMessage(message, ...items);
+export async function showAndLogInformationMessage(message: string, {
+  outputLogger = logger,
+  items = [] as string[]
+} = {}): Promise<string | undefined> {
+  return internalShowAndLog(message, items, outputLogger, Window.showInformationMessage);
+}
+
+type ShowMessageFn = (message: string, ...items: string[]) => Thenable<string | undefined>;
+
+async function internalShowAndLog(message: string, items: string[], outputLogger = logger,
+  fn: ShowMessageFn): Promise<string | undefined> {
+  const label = 'Show Log';
+  outputLogger.log(message);
+  const result = await fn(message, label, ...items);
+  if (result === label) {
+    outputLogger.show();
+  }
+  return result;
 }
 
 /**
