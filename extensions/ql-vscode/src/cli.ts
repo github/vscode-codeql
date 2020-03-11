@@ -462,6 +462,7 @@ export class CodeQLCliServer implements Disposable {
    * Gets the RAM setting for the query server.
    * @param queryMemoryMb The maximum amount of RAM to use, in MB.
    * Leave `undefined` for CodeQL to choose a limit based on the available system memory.
+   * @param progressReporter The progress reporter to send progress information to.
    * @returns String arguments that can be passed to the CodeQL query server,
    * indicating how to split the given RAM limit between heap and off-heap memory.
    */
@@ -474,8 +475,8 @@ export class CodeQLCliServer implements Disposable {
   }
   /**
    * Gets the headers (and optionally pagination info) of a bqrs.
-   * @param config The configuration containing the path to the CLI.
-   * @param bqrsPath The path to the vqrs.
+   * @param bqrsPath The path to the bqrs.
+   * @param pageSize The page size to precompute offsets into the binary file for.
    */
   async bqrsInfo(bqrsPath: string, pageSize?: number): Promise<BQRSInfo> {
     const subcommandArgs = (
@@ -488,8 +489,10 @@ export class CodeQLCliServer implements Disposable {
 
   /**
   * Gets the results from a bqrs.
-  * @param config The configuration containing the path to the CLI.
   * @param bqrsPath The path to the bqrs.
+  * @param resultSet The result set to get.
+  * @param pageSize How many results to get.
+  * @param offset The 0-based index of the first result to get.
   */
   async bqrsDecode(bqrsPath: string, resultSet: string, pageSize?: number, offset?: number): Promise<DecodedBqrsChunk> {
     const subcommandArgs = [
