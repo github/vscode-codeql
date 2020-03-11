@@ -635,6 +635,8 @@ export interface EvaluateQueriesParams {
   useSequenceHint: boolean;
 }
 
+export type TemplateDefinitions = { [key: string]: TemplateSource; }
+
 /**
  * A single query that should be run
  */
@@ -658,7 +660,7 @@ export interface QueryToRun {
   /**
    * Values to set for each template
    */
-  templateValues?: { [key: string]: TemplateSource; };
+  templateValues?: TemplateDefinitions;
   /**
    * Whether templates without values in the templateValues
    * map should be set to the empty set or give an error.

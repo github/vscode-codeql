@@ -1,17 +1,18 @@
-import * as child_process from 'child_process';
 import * as cpp from 'child-process-promise';
+import * as child_process from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sarif from 'sarif';
-import * as tk from 'tree-kill';
-import * as util from 'util';
-import { SortDirection, QueryMetadata } from './interface-types';
-import { Logger, ProgressReporter } from './logging';
-import { Disposable, CancellationToken } from 'vscode';
-import { DistributionProvider } from './distribution';
-import { assertNever } from './helpers-pure';
 import { Readable } from 'stream';
 import { StringDecoder } from 'string_decoder';
+import * as tk from 'tree-kill';
+import * as util from 'util';
+import { CancellationToken, Disposable } from 'vscode';
+import { BQRSInfo, DecodedBqrsChunk } from "./bqrs-cli-types";
+import { DistributionProvider } from './distribution';
+import { assertNever } from './helpers-pure';
+import { QueryMetadata, SortDirection } from './interface-types';
+import { Logger, ProgressReporter } from './logging';
 
 /**
  * The version of the SARIF format that we are using.
@@ -461,6 +462,7 @@ export class CodeQLCliServer implements Disposable {
    * Gets the RAM setting for the query server.
    * @param queryMemoryMb The maximum amount of RAM to use, in MB.
    * Leave `undefined` for CodeQL to choose a limit based on the available system memory.
+   * @param progressReporter The progress reporter to send progress information to.
    * @returns String arguments that can be passed to the CodeQL query server,
    * indicating how to split the given RAM limit between heap and off-heap memory.
    */
@@ -470,6 +472,38 @@ export class CodeQLCliServer implements Disposable {
       args.push('--ram', queryMemoryMb.toString());
     }
     return await this.runJsonCodeQlCliCommand<string[]>(['resolve', 'ram'], args, "Resolving RAM settings", progressReporter);
+  }
+  /**
+   * Gets the headers (and optionally pagination info) of a bqrs.
+   * @param bqrsPath The path to the bqrs.
+   * @param pageSize The page size to precompute offsets into the binary file for.
+   */
+  async bqrsInfo(bqrsPath: string, pageSize?: number): Promise<BQRSInfo> {
+    const subcommandArgs = (
+      pageSize ? ["--paginate-rows", pageSize.toString()] : []
+    ).concat(
+      bqrsPath
+    );
+    return await this.runJsonCodeQlCliCommand<BQRSInfo>(['bqrs', 'info'], subcommandArgs, "Reading bqrs header");
+  }
+
+  /**
+  * Gets the results from a bqrs.
+  * @param bqrsPath The path to the bqrs.
+  * @param resultSet The result set to get.
+  * @param pageSize How many results to get.
+  * @param offset The 0-based index of the first result to get.
+  */
+  async bqrsDecode(bqrsPath: string, resultSet: string, pageSize?: number, offset?: number): Promise<DecodedBqrsChunk> {
+    const subcommandArgs = [
+      "--entities=url,string",
+      "--result-set", resultSet,
+    ].concat(
+      pageSize ? ["--rows", pageSize.toString()] : []
+    ).concat(
+      offset ? ["--start-at", offset.toString()] : []
+    ).concat([bqrsPath]);
+    return await this.runJsonCodeQlCliCommand<DecodedBqrsChunk>(['bqrs', 'decode'], subcommandArgs, "Reading bqrs data");
   }
 
 
