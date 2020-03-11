@@ -168,15 +168,20 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     this._tests.fire(<TestLoadStartedEvent>{ type: 'started' });
 
     const testDirectories = this.qlTestDiscovery.testDirectories;
+    const children = testDirectories.map(
+      testDirectory => QLTestAdapter.createTestSuiteInfo(testDirectory, testDirectory.name)
+    );
     const testSuite: TestSuiteInfo = {
       type: 'suite',
       label: 'CodeQL',
       id: '.',
-      children: testDirectories.map(
-        testDirectory => QLTestAdapter.createTestSuiteInfo(testDirectory, testDirectory.name))
+      children
     };
 
-    this._tests.fire(<TestLoadFinishedEvent>{ type: 'finished', suite: testSuite });
+    this._tests.fire(<TestLoadFinishedEvent>{
+      type: 'finished',
+      suite: children.length > 0 ? testSuite : undefined
+    });
   }
 
   public async run(tests: string[]): Promise<void> {
