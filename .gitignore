@@ -18,3 +18,4 @@ artifacts/
 # Rush files
 /common/temp/**
 package-deps.json
+**/.rush/temp
