@@ -59,13 +59,13 @@ export interface OffsetLengthLocation {
 }
 
 export interface WholeFileLocation {
-    uri: string,
-    startLine: undefined,
-    startColumn: undefined,
-    endLine: undefined,
-    endColumn: undefined,
-    charOffset: undefined,
-    charLength: undefined,
+  uri: string,
+  startLine: never,
+  startColumn: never,
+  endLine: never,
+  endColumn: never,
+  charOffset: never,
+  charLength: never,
 }
 
 export type UrlValue = LineColumnLocation | OffsetLengthLocation | WholeFileLocation | string;
@@ -74,6 +74,6 @@ export type UrlValue = LineColumnLocation | OffsetLengthLocation | WholeFileLoca
 export type ColumnValue = EntityValue | number | string | boolean;
 
 export interface DecodedBqrsChunk {
-    tuples: ColumnValue[][],
-    next?: number
+  tuples: ColumnValue[][],
+  next?: number
 }
