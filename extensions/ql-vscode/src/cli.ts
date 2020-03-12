@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import * as cpp from 'child-process-promise';
 import * as child_process from 'child_process';
 import * as fs from 'fs-extra';
@@ -28,10 +29,10 @@ const LOGGING_FLAGS = ['-v', '--log-to-stderr'];
  * The expected output of `codeql resolve library-path`.
  */
 export interface QuerySetup {
-  libraryPath: string[],
-  dbscheme: string,
-  relativeName?: string,
-  compilationCache?: string
+  libraryPath: string[];
+  dbscheme: string;
+  relativeName?: string;
+  compilationCache?: string;
 }
 
 /**
@@ -121,11 +122,11 @@ export class CodeQLCliServer implements Disposable {
   }
 
 
-  dispose() {
+  dispose(): void {
     this.killProcessIfRunning();
   }
 
-  killProcessIfRunning() {
+  killProcessIfRunning(): void {
     if (this.process) {
       // Tell the Java CLI server process to shut down.
       this.logger.log('Sending shutdown request');
@@ -152,8 +153,8 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Restart the server when the current command terminates
    */
-  private restartCliServer() {
-    let callback = () => {
+  private restartCliServer(): void {
+    const callback = (): void => {
       try {
         this.killProcessIfRunning();
       } finally {
@@ -187,11 +188,11 @@ export class CodeQLCliServer implements Disposable {
    */
   private async launchProcess(): Promise<child_process.ChildProcessWithoutNullStreams> {
     const config = await this.getCodeQlPath();
-    return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, _data => { })
+    return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, _data => { /**/ })
   }
 
   private async runCodeQlCliInternal(command: string[], commandArgs: string[], description: string): Promise<string> {
-    let stderrBuffers: Buffer[] = [];
+    const stderrBuffers: Buffer[] = [];
     if (this.commandInProcess) {
       throw new Error("runCodeQlCliInternal called while cli was running")
     }
@@ -204,7 +205,7 @@ export class CodeQLCliServer implements Disposable {
       // Grab the process so that typescript know that it is always defined.
       const process = this.process;
       // The array of fragments of stdout
-      let stdoutBuffers: Buffer[] = [];
+      const stdoutBuffers: Buffer[] = [];
 
       // Compute the full args array
       const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
@@ -233,9 +234,9 @@ export class CodeQLCliServer implements Disposable {
           process.stdin.write(this.nullBuffer)
         });
         // Join all the data together
-        let fullBuffer = Buffer.concat(stdoutBuffers);
+        const fullBuffer = Buffer.concat(stdoutBuffers);
         // Make sure we remove the terminator;
-        let data = fullBuffer.toString("utf8", 0, fullBuffer.length - 1);
+        const data = fullBuffer.toString("utf8", 0, fullBuffer.length - 1);
         this.logger.log(`CLI command succeeded.`);
         return data;
       } catch (err) {
@@ -264,7 +265,7 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Run the next command in the queue
    */
-  private runNext() {
+  private runNext(): void {
     const callback = this.commandQueue.shift();
     if (callback) {
       callback();
@@ -367,7 +368,7 @@ export class CodeQLCliServer implements Disposable {
 
     return new Promise((resolve, reject) => {
       // Construct the command that actually does the work
-      const callback = () => {
+      const callback = (): void => {
         try {
           this.runCodeQlCliInternal(command, commandArgs, description).then(resolve, reject);
         } catch (err) {
@@ -507,7 +508,7 @@ export class CodeQLCliServer implements Disposable {
   }
 
 
-  async interpretBqrs(metadata: { kind: string, id: string }, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
+  async interpretBqrs(metadata: { kind: string; id: string }, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
     const args = [
       `-t=kind=${metadata.kind}`,
       `-t=id=${metadata.id}`,

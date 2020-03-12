@@ -28,7 +28,7 @@
             "file": 1,
             "location": 2,
             "message": 3
-          },
+          }
         },
         "$ts-webpack"
       ]
@@ -100,6 +100,15 @@
         "clear": true
       },
       "problemMatcher": []
+    },
+    {
+      "type": "npm",
+      "script": "watch",
+      "path": "extensions/ql-vscode/",
+      "problemMatcher": [
+        "$gulp-tsc"
+      ],
+      "group": "build"
     }
   ]
 }
