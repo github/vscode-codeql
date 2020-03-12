@@ -4,7 +4,7 @@ import { RawTableResultSet, ResultValue, vscode } from "./results";
 import { SortDirection, RAW_RESULTS_LIMIT, RawResultsSortState } from "../interface-types";
 
 export type RawTableProps = ResultTableProps & {
-  resultSet: RawTableResultSet,
+  resultSet: RawTableResultSet;
   sortState?: RawResultsSortState;
 };
 
@@ -67,7 +67,7 @@ export class RawTable extends React.Component<RawTableProps, {}> {
     </table>;
   }
 
-  private toggleSortStateForColumn(index: number) {
+  private toggleSortStateForColumn(index: number): void {
     const sortState = this.props.sortState;
     const prevDirection = sortState && sortState.columnIndex === index ? sortState.sortDirection : undefined;
     const nextDirection = nextSortDirection(prevDirection);

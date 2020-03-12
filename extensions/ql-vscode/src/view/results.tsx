@@ -4,8 +4,8 @@ import * as bqrs from 'semmle-bqrs';
 import { ElementBase, LocationValue, PrimitiveColumnValue, PrimitiveTypeKind, ResultSetSchema, tryGetResolvableLocation } from 'semmle-bqrs';
 import { assertNever } from '../helpers-pure';
 import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortedResultSetInfo, RawResultsSortState, NavigatePathMsg, QueryMetadata, ResultsPaths } from '../interface-types';
-import { ResultTables } from './result-tables';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
+import { ResultTables } from './result-tables';
 
 /**
  * results.tsx
@@ -24,8 +24,8 @@ declare const acquireVsCodeApi: () => VsCodeApi;
 export const vscode = acquireVsCodeApi();
 
 export interface ResultElement {
-  label: string,
-  location?: LocationValue
+  label: string;
+  location?: LocationValue;
 }
 
 export interface ResultUri {
@@ -37,7 +37,7 @@ export type ResultValue = ResultElement | ResultUri | string;
 export type ResultRow = ResultValue[];
 
 export type RawTableResultSet = { t: 'RawResultSet' } & RawResultSet;
-export type PathTableResultSet = { t: 'SarifResultSet', readonly schema: ResultSetSchema, name: string } & Interpretation;
+export type PathTableResultSet = { t: 'SarifResultSet'; readonly schema: ResultSetSchema; name: string } & Interpretation;
 
 export type ResultSet =
   | RawTableResultSet
@@ -135,7 +135,7 @@ interface ResultsInfo {
    * See {@link SetStateMsg.shouldKeepOldResultsWhileRendering}.
    */
   shouldKeepOldResultsWhileRendering: boolean;
-  metadata?: QueryMetadata
+  metadata?: QueryMetadata;
 }
 
 interface Results {
@@ -212,7 +212,7 @@ class App extends React.Component<{}, ResultsViewState> {
 
   private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
     this.setState(prevState => {
-      const stateWithDisplayedResults = (displayedResults: ResultsState) => ({
+      const stateWithDisplayedResults = (displayedResults: ResultsState): ResultsViewState => ({
         displayedResults,
         isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
         nextResultsInfo: resultsInfo
@@ -245,7 +245,7 @@ class App extends React.Component<{}, ResultsViewState> {
     }
 
     let results: Results | null = null;
-    let statusText: string = '';
+    let statusText = '';
     try {
       results = {
         resultSets: await this.getResultSets(resultsInfo),
@@ -304,7 +304,7 @@ class App extends React.Component<{}, ResultsViewState> {
       [key, sortedResultSetInfo.sortState]));
   }
 
-  render() {
+  render(): JSX.Element {
     const displayedResults = this.state.displayedResults;
     if (displayedResults.results !== null && displayedResults.resultsInfo !== null) {
       return <ResultTables rawResultSets={displayedResults.results.resultSets}
@@ -322,12 +322,12 @@ class App extends React.Component<{}, ResultsViewState> {
     }
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.vscodeMessageHandler = evt => this.handleMessage(evt.data as IntoResultsViewMsg);
     window.addEventListener('message', this.vscodeMessageHandler);
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     if (this.vscodeMessageHandler) {
       window.removeEventListener('message', this.vscodeMessageHandler);
     }
