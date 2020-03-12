@@ -56,7 +56,7 @@ let isInstallingOrUpdatingDistribution = false;
  *
  * @param excludedCommands List of commands for which we should not register error stubs.
  */
-function registerErrorStubs(excludedCommands: string[], stubGenerator: (command: string) => () => void) {
+function registerErrorStubs(excludedCommands: string[], stubGenerator: (command: string) => () => void): void {
   // Remove existing stubs
   errorStubs.forEach(stub => stub.dispose());
 
@@ -229,7 +229,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   });
 }
 
-async function activateWithInstalledDistribution(ctx: ExtensionContext, distributionManager: DistributionManager) {
+async function activateWithInstalledDistribution(ctx: ExtensionContext, distributionManager: DistributionManager): Promise<void> {
   beganMainExtensionActivation = true;
   // Remove any error stubs command handlers left over from first part
   // of activation.
@@ -270,7 +270,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     await intm.showResults(query, forceReveal, false);
   }
 
-  async function compileAndRunQuery(quickEval: boolean, selectedQuery: Uri | undefined) {
+  async function compileAndRunQuery(quickEval: boolean, selectedQuery: Uri | undefined): Promise<void> {
     if (qs !== undefined) {
       try {
         const dbItem = await databaseUI.getDatabaseItem();
@@ -294,7 +294,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   ctx.subscriptions.push(tmpDirDisposal);
 
-  let client = new LanguageClient('CodeQL Language Server', () => spawnIdeServer(qlConfigurationListener), {
+  const client = new LanguageClient('CodeQL Language Server', () => spawnIdeServer(qlConfigurationListener), {
     documentSelector: [
       { language: 'ql', scheme: 'file' },
       { language: 'yaml', scheme: 'file', pattern: '**/qlpack.yml' }
