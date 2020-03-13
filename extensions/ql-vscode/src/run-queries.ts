@@ -136,7 +136,11 @@ export class QueryInfo {
         },
         queryToCheck: this.program,
         resultPath: this.compiledQueryPath,
-        target: !!this.quickEvalPosition ? { quickEval: { quickEvalPos: this.quickEvalPosition } } : { query: {} }
+        target: this.quickEvalPosition ? {
+          quickEval: { quickEvalPos: this.quickEvalPosition }
+        } : {
+           query: {}
+        }
       };
 
 
@@ -253,7 +257,7 @@ async function checkDbschemeCompatibility(
 
   if (query.dbItem.contents !== undefined && query.dbItem.contents.dbSchemeUri !== undefined) {
     const { scripts, finalDbscheme } = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath);
-    async function hash(filename: string): Promise<string> {
+    const hash = async function (filename: string): Promise<string> {
       return crypto.createHash('sha256').update(await fs.readFile(filename)).digest('hex');
     }
 
@@ -289,7 +293,7 @@ async function checkDbschemeCompatibility(
 }
 
 /** Prompts the user to save `document` if it has unsaved changes. */
-async function promptUserToSaveChanges(document: vscode.TextDocument) {
+async function promptUserToSaveChanges(document: vscode.TextDocument): Promise<void> {
   if (document.isDirty) {
     // TODO: add 'always save' button which records preference in configuration
     if (await helpers.showBinaryChoiceDialog('Query file has unsaved changes. Save now?')) {
@@ -299,8 +303,8 @@ async function promptUserToSaveChanges(document: vscode.TextDocument) {
 }
 
 type SelectedQuery = {
-  queryPath: string,
-  quickEvalPosition?: messages.Position
+  queryPath: string;
+  quickEvalPosition?: messages.Position;
 };
 
 /**
@@ -466,7 +470,7 @@ export async function compileAndRunQueryAgainstDatabase(
     // However we don't show quick eval errors there so we need to display them anyway.
     qs.logger.log(`Failed to compile query ${query.program.queryPath} against database scheme ${query.program.dbschemePath}:`);
 
-    let formattedMessages: string[] = [];
+    const formattedMessages: string[] = [];
 
     for (const error of errors) {
       const message = error.message || "[no error message available]";
@@ -493,7 +497,7 @@ function createSyntheticResult(
   historyItemOptions: QueryHistoryItemOptions,
   message: string,
   resultType: number
-) {
+): QueryWithResults {
 
   return {
     query,

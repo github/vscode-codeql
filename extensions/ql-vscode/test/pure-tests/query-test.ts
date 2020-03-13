@@ -31,31 +31,31 @@ class Checkpoint<T> {
   private promise: Promise<T>;
 
   constructor() {
-    this.res = () => { };
-    this.rej = () => { };
+    this.res = () => { /**/ };
+    this.rej = () => { /**/ };
     this.promise = new Promise((res, rej) => { this.res = res; this.rej = rej; })
   }
 
-  async done() {
+  async done(): Promise<T> {
     return this.promise;
   }
 
-  async resolve() {
+  async resolve(): Promise<void> {
     (this.res)();
   }
 
-  async reject(e: Error) {
+  async reject(e: Error): Promise<void> {
     (this.rej)(e);
   }
 }
 
 type ResultSets = {
-  [name: string]: bqrs.ColumnValue[][]
+  [name: string]: bqrs.ColumnValue[][];
 }
 
 type QueryTestCase = {
-  queryPath: string,
-  expectedResultSets: ResultSets
+  queryPath: string;
+  expectedResultSets: ResultSets;
 }
 
 // Test cases: queries to run and their expected results.
@@ -105,9 +105,9 @@ describe('using the query server', function() {
       report: (v: { message: string }) => console.log(`progress reporter says ${v.message}`)
     };
     const logger: Logger = {
-      log: (s: string) => console.log('logger says', s),
-      logWithoutTrailingNewline: (s: string) => console.log('logger says', s),
-      show: () => { },
+      log: async (s: string) => console.log('logger says', s),
+      show: () => { /**/ },
+      removeAdditionalLogLocation: async () => { /**/ }
     };
     cliServer = new cli.CodeQLCliServer({
       async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
@@ -161,7 +161,7 @@ describe('using the query server', function() {
           resultPath: COMPILED_QUERY_PATH,
           target: { query: {} }
         };
-        const result = await qs.sendRequest(messages.compileQuery, params, token, () => { });
+        const result = await qs.sendRequest(messages.compileQuery, params, token, () => { /**/ });
         expect(result.messages!.length).to.equal(0);
         compilationSucceeded.resolve();
       }
@@ -194,7 +194,7 @@ describe('using the query server', function() {
           stopOnError: false,
           useSequenceHint: false
         };
-        await qs.sendRequest(messages.runQueries, params, token, () => { });
+        await qs.sendRequest(messages.runQueries, params, token, () => { /**/ });
       }
       catch (e) {
         evaluationSucceeded.reject(e);

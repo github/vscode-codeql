@@ -64,11 +64,11 @@ const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
 const QUERY_SERVER_RESTARTING_SETTINGS = [NUMBER_OF_THREADS_SETTING, MEMORY_SETTING, DEBUG_SETTING];
 
 export interface QueryServerConfig {
-  codeQlPath: string,
-  debug: boolean,
-  numThreads: number,
-  queryMemoryMb?: number,
-  timeoutSecs: number,
+  codeQlPath: string;
+  debug: boolean;
+  numThreads: number;
+  queryMemoryMb?: number;
+  timeoutSecs: number;
   onDidChangeQueryServerConfiguration?: Event<void>;
 }
 
@@ -76,7 +76,7 @@ export interface QueryServerConfig {
 const QUERY_HISTORY_SETTINGS = [QUERY_HISTORY_FORMAT_SETTING];
 
 export interface QueryHistoryConfig {
-  format: string,
+  format: string;
   onDidChangeQueryHistoryConfiguration: Event<void>;
 }
 

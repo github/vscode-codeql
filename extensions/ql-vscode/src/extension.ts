@@ -76,9 +76,9 @@ function registerErrorStubs(excludedCommands: string[], stubGenerator: (command:
 }
 
 export async function activate(ctx: ExtensionContext): Promise<void> {
-  // Initialise logging, and ensure all loggers are disposed upon exit.
-  ctx.subscriptions.push(logger);
   logger.log('Starting CodeQL extension');
+
+  initializeLogging(ctx);
 
   const distributionConfigListener = new DistributionConfigListener();
   ctx.subscriptions.push(distributionConfigListener);
@@ -238,10 +238,6 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   const qlConfigurationListener = await QueryServerConfigListener.createQueryServerConfigListener(distributionManager);
   ctx.subscriptions.push(qlConfigurationListener);
 
-  ctx.subscriptions.push(queryServerLogger);
-  ctx.subscriptions.push(ideServerLogger);
-
-
   const cliServer = new CodeQLCliServer(distributionManager, logger);
   ctx.subscriptions.push(cliServer);
 
@@ -325,6 +321,15 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   }));
 
   ctx.subscriptions.push(client.start());
+}
+
+function initializeLogging(ctx: ExtensionContext): void {
+  logger.init(ctx);
+  queryServerLogger.init(ctx);
+  ideServerLogger.init(ctx);
+  ctx.subscriptions.push(logger);
+  ctx.subscriptions.push(queryServerLogger);
+  ctx.subscriptions.push(ideServerLogger);
 }
 
 const checkForUpdatesCommand = 'codeQL.checkForUpdatesToCLI';

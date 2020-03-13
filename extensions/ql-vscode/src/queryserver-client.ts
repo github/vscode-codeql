@@ -1,4 +1,5 @@
 import * as cp from 'child_process';
+import * as path from 'path';
 // Import from the specific module within `semmle-vscode-utils`, rather than via `index.ts`, because
 // we avoid taking an accidental runtime dependency on `vscode` this way.
 import { DisposableObject } from 'semmle-vscode-utils/out/disposable-object';
@@ -8,9 +9,10 @@ import * as cli from './cli';
 import { QueryServerConfig } from './config';
 import { Logger, ProgressReporter } from './logging';
 import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './messages';
+import * as messages from './messages';
 
 type ServerOpts = {
-  logger: Logger
+  logger: Logger;
 }
 
 /** A running query server process and its associated message connection. */
@@ -25,7 +27,7 @@ class ServerProcess implements Disposable {
     this.logger = logger;
   }
 
-  dispose() {
+  dispose(): void {
     this.logger.log('Stopping query server...');
     this.connection.dispose();
     this.child.stdin!.end();
@@ -53,6 +55,7 @@ export class QueryServerClient extends DisposableObject {
   nextCallback: number;
   nextProgress: number;
   withProgressReporting: WithProgressReporting;
+  public activeQueryName: string | undefined;
 
   constructor(readonly config: QueryServerConfig, readonly cliServer: cli.CodeQLCliServer, readonly opts: ServerOpts, withProgressReporting: WithProgressReporting) {
     super();
@@ -70,10 +73,12 @@ export class QueryServerClient extends DisposableObject {
     this.evaluationResultCallbacks = {};
   }
 
-  get logger() { return this.opts.logger; }
+  get logger(): Logger {
+    return this.opts.logger;
+  }
 
   /** Stops the query server by disposing of the current server process. */
-  private stopQueryServer() {
+  private stopQueryServer(): void {
     if (this.serverProcess !== undefined) {
       this.disposeAndStopTracking(this.serverProcess);
     } else {
@@ -82,23 +87,23 @@ export class QueryServerClient extends DisposableObject {
   }
 
   /** Restarts the query server by disposing of the current server process and then starting a new one. */
-  async restartQueryServer() {
+  async restartQueryServer(): Promise<void> {
     this.stopQueryServer();
     await this.startQueryServer();
   }
 
-  async showLog() {
+  async showLog(): Promise<void> {
     this.logger.show();
   }
 
   /** Starts a new query server process, sending progress messages to the status bar. */
-  async startQueryServer() {
+  async startQueryServer(): Promise<void> {
     // Use an arrow function to preserve the value of `this`.
     return this.withProgressReporting((progress, _) => this.startQueryServerImpl(progress));
   }
 
   /** Starts a new query server process, sending progress messages to the given reporter. */
-  private async startQueryServerImpl(progressReporter: ProgressReporter) {
+  private async startQueryServerImpl(progressReporter: ProgressReporter): Promise<void> {
     const ramArgs = await this.cliServer.resolveRam(this.config.queryMemoryMb, progressReporter);
     const args = ['--threads', this.config.numThreads.toString()].concat(ramArgs);
     if (this.config.debug) {
@@ -110,7 +115,10 @@ export class QueryServerClient extends DisposableObject {
       ['execute', 'query-server'],
       args,
       this.logger,
-      data => this.logger.logWithoutTrailingNewline(data.toString()),
+      data => this.logger.log(data.toString(), {
+        trailingNewline: false,
+        additionalLogLocation: this.activeQueryName
+      }),
       undefined, // no listener for stdout
       progressReporter
     );
@@ -126,7 +134,7 @@ export class QueryServerClient extends DisposableObject {
       return {};
     })
     connection.onNotification(progress, res => {
-      let callback = this.progressCallbacks[res.id];
+      const callback = this.progressCallbacks[res.id];
       if (callback) {
         callback(res);
       }
@@ -148,7 +156,7 @@ export class QueryServerClient extends DisposableObject {
     return id;
   }
 
-  unRegisterCallback(id: number) {
+  unRegisterCallback(id: number): void {
     delete this.evaluationResultCallbacks[id];
   }
 
@@ -157,8 +165,10 @@ export class QueryServerClient extends DisposableObject {
   }
 
   async sendRequest<P, R, E, RO>(type: RequestType<WithProgressId<P>, R, E, RO>, parameter: P, token?: CancellationToken, progress?: (res: ProgressMessage) => void): Promise<R> {
-    let id = this.nextProgress++;
+    const id = this.nextProgress++;
     this.progressCallbacks[id] = progress;
+
+    this.updateActiveQuery(type.method, parameter);
     try {
       if (this.serverProcess === undefined) {
         throw new Error('No query server process found.');
@@ -166,6 +176,26 @@ export class QueryServerClient extends DisposableObject {
       return await this.serverProcess.connection.sendRequest(type, { body: parameter, progressId: id }, token);
     } finally {
       delete this.progressCallbacks[id];
+    }
+  }
+
+  /**
+   * Updates the active query every time there is a new request to compile.
+   * The active query is used to specify the side log.
+   *
+   * This isn't ideal because in situations where there are queries running
+   * in parallel, their output is interleaved, but because the activeQuery
+   * is fixed, the previous query will have results mixed in with the active
+   * query's side log.
+   *
+   * The ideal solution would be to extract the active query from the log
+   * text received by the query server. However, that change is not
+   * available yet.
+   */
+  private updateActiveQuery(method: string, parameter: any): void {
+    if (method === messages.compileQuery.method) {
+      const queryPath = parameter?.queryToCheck?.queryPath || 'unknown';
+      this.activeQueryName = `query-${path.basename(queryPath)}-${this.nextProgress}.log`;
     }
   }
 }

@@ -17,8 +17,8 @@ export async function spawnIdeServer(config: QueryServerConfig): Promise<StreamI
       ['execute', 'language-server'],
       ['--check-errors', 'ON_CHANGE'],
       ideServerLogger,
-      data => ideServerLogger.logWithoutTrailingNewline(data.toString()),
-      data => ideServerLogger.logWithoutTrailingNewline(data.toString()),
+      data => ideServerLogger.log(data.toString(), { trailingNewline: false }),
+      data => ideServerLogger.log(data.toString(), { trailingNewline: false }),
       progressReporter
     );
     return { writer: child.stdin!, reader: child.stdout! };
