@@ -22,9 +22,12 @@ dependencies:
   '@types/node': 12.12.30
   '@types/node-fetch': 2.5.5
   '@types/npm-packlist': 1.1.1
+  '@types/proxyquire': 1.3.28
   '@types/react': 16.9.23
   '@types/react-dom': 16.9.5
   '@types/sarif': 2.1.2
+  '@types/sinon': 7.5.2
+  '@types/sinon-chai': 3.2.3
   '@types/through2': 2.0.34
   '@types/tmp': 0.1.0
   '@types/unzipper': 0.10.2
@@ -57,10 +60,12 @@ dependencies:
   npm-packlist: 1.4.8
   npm-run-all: 4.1.5
   plugin-error: 1.0.1
+  proxyquire: 2.1.3
   react: 16.13.0
   react-dom: 16.13.0_react@16.13.0
   reflect-metadata: 0.1.13
   sinon: 9.0.1
+  sinon-chai: 3.5.0_chai@4.2.0+sinon@9.0.1
   style-loader: 0.23.1
   through2: 3.0.1
   tmp: 0.1.0
@@ -453,6 +458,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-KfRL3PuHmqQLOG+2tGpRO26Ctg+Cq1E01D2DMriKEATHgWLfeNDmq9e29Q9WIky0dQ3NPkd1mzYH8Lm936Z9qw==
+  /@types/proxyquire/1.3.28:
+    dev: false
+    resolution:
+      integrity: sha512-SQaNzWQ2YZSr7FqAyPPiA3FYpux2Lqh3HWMZQk47x3xbMCqgC/w0dY3dw9rGqlweDDkrySQBcaScXWeR+Yb11Q==
   /@types/react-dom/16.9.5:
     dependencies:
       '@types/react': 16.9.23
@@ -470,6 +479,17 @@ packages:
     dev: false
     resolution:
       integrity: sha512-TELZl5h48KaB6SFZqTuaMEw1hrGuusbBcH+yfMaaHdS2pwDr3RTH4CVN0LyY1kqSiDm9PPvAMx8FJ0LUZreOCQ==
+  /@types/sinon-chai/3.2.3:
+    dependencies:
+      '@types/chai': 4.2.11
+      '@types/sinon': 7.5.2
+    dev: false
+    resolution:
+      integrity: sha512-TOUFS6vqS0PVL1I8NGVSNcFaNJtFoyZPXZ5zur+qlhDfOmQECZZM4H4kKgca6O8L+QceX/ymODZASfUfn+y4yQ==
+  /@types/sinon/7.5.2:
+    dev: false
+    resolution:
+      integrity: sha512-T+m89VdXj/eidZyejvmoP9jivXgBDdkOSBVQjU9kF349NEx10QdPNGxHeZUaj1IlJ32/ewdyXJjnJxyxJroYwg==
   /@types/source-list-map/0.1.2:
     dev: false
     resolution:
@@ -2595,6 +2615,15 @@ packages:
     optional: true
     resolution:
       integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==
+  /fill-keys/1.0.2:
+    dependencies:
+      is-object: 1.0.1
+      merge-descriptors: 1.0.1
+    dev: false
+    engines:
+      node: '>=0.10.0'
+    resolution:
+      integrity: sha1-mo+jb06K1jTjv2tPPIiCVRRS6yA=
   /fill-range/4.0.0:
     dependencies:
       extend-shallow: 2.0.1
@@ -3557,6 +3586,10 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-rSklcAIlf1OmFdyAqbnWTLVelsQ58uvZ66S/ZyawjWqIviTWCjg2PzVGw8WUA+nNuPTqb4wgA+NszrJ+08LlgQ==
+  /is-object/1.0.1:
+    dev: false
+    resolution:
+      integrity: sha1-iVJojF7C/9awPsyF52ngKQMINHA=
   /is-plain-obj/2.1.0:
     dev: false
     engines:
@@ -4089,6 +4122,10 @@ packages:
       node: '>= 0.10.0'
     resolution:
       integrity: sha1-htcJCzDORV1j+64S3aUaR93K+bI=
+  /merge-descriptors/1.0.1:
+    dev: false
+    resolution:
+      integrity: sha1-sAqqVW3YtEVoFQ7J0blT8/kMu2E=
   /micromatch/3.1.10:
     dependencies:
       arr-diff: 4.0.0
@@ -4264,6 +4301,10 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-FgDS9Re79yU1xz5d+C4rv1G7QagNGHZ+iXF81hO8zY35YZZcLEsJVfFolfsqKFWunATEvNzMK0r/CwWd/szO9A==
+  /module-not-found-error/1.0.1:
+    dev: false
+    resolution:
+      integrity: sha1-z4tP9PKWQGdNbN0CsOO8UjwrvcA=
   /move-concurrently/1.0.1:
     dependencies:
       aproba: 1.2.0
@@ -5118,6 +5159,14 @@ packages:
     dev: false
     resolution:
       integrity: sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
+  /proxyquire/2.1.3:
+    dependencies:
+      fill-keys: 1.0.2
+      module-not-found-error: 1.0.1
+      resolve: 1.15.1
+    dev: false
+    resolution:
+      integrity: sha512-BQWfCqYM+QINd+yawJz23tbBM40VIGXOdDw3X344KcclI/gtBbdWF6SlQ4nK/bYhF9d27KYug9WzljHC6B9Ysg==
   /prr/1.0.1:
     dev: false
     resolution:
@@ -5674,6 +5723,16 @@ packages:
     dev: false
     resolution:
       integrity: sha1-tf3AjxKH6hF4Yo5BXiUTK3NkbG0=
+  /sinon-chai/3.5.0_chai@4.2.0+sinon@9.0.1:
+    dependencies:
+      chai: 4.2.0
+      sinon: 9.0.1
+    dev: false
+    peerDependencies:
+      chai: ^4.0.0
+      sinon: '>=4.0.0 <10.0.0'
+    resolution:
+      integrity: sha512-IifbusYiQBpUxxFJkR3wTU68xzBN0+bxCScEaKMjBvAQERg6FnTTc1F17rseLb1tjmkJ23730AXpFI0c47FgAg==
   /sinon/9.0.1:
     dependencies:
       '@sinonjs/commons': 1.7.1
@@ -7178,9 +7237,12 @@ packages:
       '@types/mocha': 5.2.7
       '@types/node': 12.12.30
       '@types/node-fetch': 2.5.5
+      '@types/proxyquire': 1.3.28
       '@types/react': 16.9.23
       '@types/react-dom': 16.9.5
       '@types/sarif': 2.1.2
+      '@types/sinon': 7.5.2
+      '@types/sinon-chai': 3.2.3
       '@types/tmp': 0.1.0
       '@types/unzipper': 0.10.2
       '@types/vscode': 1.43.0
@@ -7206,9 +7268,11 @@ packages:
       mocha-sinon: 2.1.0
       node-fetch: 2.6.0
       npm-run-all: 4.1.5
+      proxyquire: 2.1.3
       react: 16.13.0
       react-dom: 16.13.0_react@16.13.0
       sinon: 9.0.1
+      sinon-chai: 3.5.0_chai@4.2.0+sinon@9.0.1
       style-loader: 0.23.1
       through2: 3.0.1
       tmp: 0.1.0
@@ -7230,9 +7294,10 @@ packages:
     dev: false
     name: '@rush-temp/vscode-codeql'
     resolution:
-      integrity: sha512-XEQBLdsSWxofNXxh6Uwah2wvOUgMi/yGuU2afjauGOegrsH1G2DdKZ4kbbhfxKsEE7xxlQb4G8mu7SqjPt1Dag==
+      integrity: sha512-PvC3L2Tp+VYm+hMzTgXfdBJPLJopSQpVsT8Ym7kdIxZj/cyTWzO3A+n7HnrH5q/B4DJSRfiDwjp73GwjGhbteQ==
       tarball: 'file:projects/vscode-codeql.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@microsoft/node-core-library': ~3.13.0
   '@microsoft/rush-lib': ~5.20.0
@@ -7257,9 +7322,12 @@ specifiers:
   '@types/node': ^12.0.8
   '@types/node-fetch': ~2.5.2
   '@types/npm-packlist': ~1.1.1
+  '@types/proxyquire': ~1.3.28
   '@types/react': ^16.8.17
   '@types/react-dom': ^16.8.4
   '@types/sarif': ~2.1.2
+  '@types/sinon': ~7.5.2
+  '@types/sinon-chai': ~3.2.3
   '@types/through2': ~2.0.34
   '@types/tmp': ^0.1.0
   '@types/unzipper': ~0.10.1
@@ -7292,10 +7360,12 @@ specifiers:
   npm-packlist: ~1.4.4
   npm-run-all: ^4.1.5
   plugin-error: ^1.0.1
+  proxyquire: ~2.1.3
   react: ^16.8.6
   react-dom: ^16.8.6
   reflect-metadata: ~0.1.13
   sinon: ~9.0.0
+  sinon-chai: ~3.5.0
   style-loader: ~0.23.1
   through2: ^3.0.1
   tmp: ^0.1.0
