@@ -80,7 +80,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd extensions/ql-vscode
-          $env:CODEQL_PATH=$(Join-Path $env:GITHUB_WORKSPACE -ChildPath 'codeql-home/codeql/codeql.cmd')
+          $env:CODEQL_PATH=$(Join-Path $env:GITHUB_WORKSPACE -ChildPath 'codeql-home/codeql/codeql.exe')
           npm run test
 
       - name: Run integration tests (Linux)
