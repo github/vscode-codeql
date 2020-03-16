@@ -184,13 +184,8 @@ export class QueryServerClient extends DisposableObject {
    * The active query is used to specify the side log.
    *
    * This isn't ideal because in situations where there are queries running
-   * in parallel, their output is interleaved, but because the activeQuery
-   * is fixed, the previous query will have results mixed in with the active
-   * query's side log.
-   *
-   * The ideal solution would be to extract the active query from the log
-   * text received by the query server. However, that change is not
-   * available yet.
+   * in parallel, each query's log messages are interleaved. Fixing this
+   * properly will require a change in the query server.
    */
   private updateActiveQuery(method: string, parameter: any): void {
     if (method === messages.compileQuery.method) {
