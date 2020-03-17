@@ -12,7 +12,7 @@ export interface ResultTablesProps {
   rawResultSets: readonly ResultSet[];
   interpretation: Interpretation | undefined;
   database: DatabaseInfo;
-  metadata?: QueryMetadata
+  metadata?: QueryMetadata;
   resultsPath: string;
   origResultsPaths: ResultsPaths;
   sortStates: Map<string, RawResultsSortState>;

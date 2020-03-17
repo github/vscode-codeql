@@ -7,7 +7,7 @@ import { assertNever } from '../helpers-pure';
 export interface ResultTableProps {
   resultSet: ResultSet;
   databaseUri: string;
-  metadata?: QueryMetadata
+  metadata?: QueryMetadata;
   resultsPath: string | undefined;
   sortState?: RawResultsSortState;
 }
@@ -34,7 +34,7 @@ export function jumpToLocationHandler(
   };
 }
 
-export function jumpToLocation(loc: ResolvableLocationValue, databaseUri: string) {
+export function jumpToLocation(loc: ResolvableLocationValue, databaseUri: string): void {
   vscode.postMessage({
     t: 'viewSourceFile',
     loc,

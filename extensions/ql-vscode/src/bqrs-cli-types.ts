@@ -4,16 +4,16 @@ export const PAGE_SIZE = 1000;
 export type ColumnKind = "f" | "i" | "s" | "b" | "d" | "e";
 
 export interface Column {
-  name?: string,
-  kind: ColumnKind,
+  name?: string;
+  kind: ColumnKind;
 }
 
 
 export interface ResultSetSchema {
-  name: string,
-  rows: number,
-  columns: Column[],
-  pagination?: PaginationInfo,
+  name: string;
+  rows: number;
+  columns: Column[];
+  pagination?: PaginationInfo;
 }
 
 export function getResultSetSchema(resultSetName: string, resultSets: BQRSInfo): ResultSetSchema | undefined {
@@ -25,47 +25,47 @@ export function getResultSetSchema(resultSetName: string, resultSets: BQRSInfo):
   return undefined;
 }
 export interface PaginationInfo {
-  "step-size": number,
-  offsets: number[],
+  "step-size": number;
+  offsets: number[];
 }
 
 export interface BQRSInfo {
-  "result-sets": ResultSetSchema[]
+  "result-sets": ResultSetSchema[];
 }
 
 export interface EntityValue {
-  url?: UrlValue,
-  label?: string
+  url?: UrlValue;
+  label?: string;
 }
 
 export interface LineColumnLocation {
-  uri: string
-  startLine: number,
-  startColumn: number,
-  endLine: number,
-  endColumn: number,
-  charOffset: never
-  charLength: never
+  uri: string;
+  startLine: number;
+  startColumn: number;
+  endLine: number;
+  endColumn: number;
+  charOffset: never;
+  charLength: never;
 }
 
 export interface OffsetLengthLocation {
-  uri: string,
-  startLine: never,
-  startColumn: never,
-  endLine: never,
-  endColumn: never,
-  charOffset: number,
-  charLength: number,
+  uri: string;
+  startLine: never;
+  startColumn: never;
+  endLine: never;
+  endColumn: never;
+  charOffset: number;
+  charLength: number;
 }
 
 export interface WholeFileLocation {
-  uri: string,
-  startLine: never,
-  startColumn: never,
-  endLine: never,
-  endColumn: never,
-  charOffset: never,
-  charLength: never,
+  uri: string;
+  startLine: never;
+  startColumn: never;
+  endLine: never;
+  endColumn: never;
+  charOffset: never;
+  charLength: never;
 }
 
 export type UrlValue = LineColumnLocation | OffsetLengthLocation | WholeFileLocation | string;
@@ -74,6 +74,6 @@ export type UrlValue = LineColumnLocation | OffsetLengthLocation | WholeFileLoca
 export type ColumnValue = EntityValue | number | string | boolean;
 
 export interface DecodedBqrsChunk {
-  tuples: ColumnValue[][],
-  next?: number
+  tuples: ColumnValue[][];
+  next?: number;
 }

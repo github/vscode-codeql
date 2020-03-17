@@ -42,7 +42,11 @@ export enum WebviewReveal {
  * Returns HTML to populate the given webview.
  * Uses a content security policy that only loads the given script.
  */
-function getHtmlForWebview(webview: vscode.Webview, scriptUriOnDisk: vscode.Uri, stylesheetUriOnDisk: vscode.Uri) {
+function getHtmlForWebview(
+  webview: vscode.Webview,
+  scriptUriOnDisk: vscode.Uri,
+  stylesheetUriOnDisk: vscode.Uri
+): void {
   // Convert the on-disk URIs into webview URIs.
   const scriptWebviewUri = webview.asWebviewUri(scriptUriOnDisk);
   const stylesheetWebviewUri = webview.asWebviewUri(stylesheetUriOnDisk);
@@ -115,19 +119,38 @@ export class InterfaceManager extends DisposableObject {
   private _panelLoaded = false;
   private _panelLoadedCallBacks: (() => void)[] = [];
 
-  private readonly _diagnosticCollection = languages.createDiagnosticCollection(`codeql-query-results`);
+  private readonly _diagnosticCollection = languages.createDiagnosticCollection(
+    `codeql-query-results`
+  );
 
-  constructor(public ctx: vscode.ExtensionContext, private databaseManager: DatabaseManager,
-    public cliServer: CodeQLCliServer, public logger: Logger) {
-
+  constructor(
+    public ctx: vscode.ExtensionContext,
+    private databaseManager: DatabaseManager,
+    public cliServer: CodeQLCliServer,
+    public logger: Logger
+  ) {
     super();
     this.push(this._diagnosticCollection);
-    this.push(vscode.window.onDidChangeTextEditorSelection(this.handleSelectionChange.bind(this)));
-    this.push(vscode.commands.registerCommand('codeQLQueryResults.nextPathStep', this.navigatePathStep.bind(this, 1)));
-    this.push(vscode.commands.registerCommand('codeQLQueryResults.previousPathStep', this.navigatePathStep.bind(this, -1)));
+    this.push(
+      vscode.window.onDidChangeTextEditorSelection(
+        this.handleSelectionChange.bind(this)
+      )
+    );
+    this.push(
+      vscode.commands.registerCommand(
+        "codeQLQueryResults.nextPathStep",
+        this.navigatePathStep.bind(this, 1)
+      )
+    );
+    this.push(
+      vscode.commands.registerCommand(
+        "codeQLQueryResults.previousPathStep",
+        this.navigatePathStep.bind(this, -1)
+      )
+    );
   }
 
-  navigatePathStep(direction: number) {
+  navigatePathStep(direction: number): void {
     this.postMessage({ t: "navigatePath", direction });
   }
 
@@ -136,9 +159,9 @@ export class InterfaceManager extends DisposableObject {
   getPanel(): vscode.WebviewPanel {
     if (this._panel == undefined) {
       const { ctx } = this;
-      const panel = this._panel = Window.createWebviewPanel(
-        'resultsView', // internal name
-        'CodeQL Query Results', // user-visible name
+      const panel = (this._panel = Window.createWebviewPanel(
+        "resultsView", // internal name
+        "CodeQL Query Results", // user-visible name
         { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
         {
           enableScripts: true,
@@ -146,61 +169,96 @@ export class InterfaceManager extends DisposableObject {
           retainContextWhenHidden: true,
           localResourceRoots: [
             vscode.Uri.file(tmpDir.name),
-            vscode.Uri.file(path.join(this.ctx.extensionPath, 'out'))
+            vscode.Uri.file(path.join(this.ctx.extensionPath, "out"))
           ]
         }
+      ));
+      this._panel.onDidDispose(
+        () => {
+          this._panel = undefined;
+        },
+        null,
+        ctx.subscriptions
       );
-      this._panel.onDidDispose(() => { this._panel = undefined; }, null, ctx.subscriptions);
-      const scriptPathOnDisk = vscode.Uri
-        .file(ctx.asAbsolutePath('out/resultsView.js'));
-      const stylesheetPathOnDisk = vscode.Uri
-        .file(ctx.asAbsolutePath('out/resultsView.css'));
-      getHtmlForWebview(panel.webview, scriptPathOnDisk, stylesheetPathOnDisk);
-      panel.webview.onDidReceiveMessage(async (e) => this.handleMsgFromView(e), undefined, ctx.subscriptions);
+      const scriptPathOnDisk = vscode.Uri.file(
+        ctx.asAbsolutePath("out/resultsView.js")
+      );
+      const stylesheetPathOnDisk = vscode.Uri.file(
+        ctx.asAbsolutePath("out/resultsView.css")
+      );
+      getHtmlForWebview(
+        panel.webview,
+        scriptPathOnDisk,
+        stylesheetPathOnDisk
+      );
+      panel.webview.onDidReceiveMessage(
+        async e => this.handleMsgFromView(e),
+        undefined,
+        ctx.subscriptions
+      );
     }
     return this._panel;
   }
 
-  private async changeSortState(update: (query: CompletedQuery) => Promise<void>): Promise<void> {
+  private async changeSortState(
+    update: (query: CompletedQuery) => Promise<void>
+  ): Promise<void> {
     if (this._displayedQuery === undefined) {
-      showAndLogErrorMessage("Failed to sort results since evaluation info was unknown.");
+      showAndLogErrorMessage(
+        "Failed to sort results since evaluation info was unknown."
+      );
       return;
     }
     // Notify the webview that it should expect new results.
-    await this.postMessage({ t: 'resultsUpdating' });
+    await this.postMessage({ t: "resultsUpdating" });
     await update(this._displayedQuery);
-    await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
+    await this.showResults(
+      this._displayedQuery,
+      WebviewReveal.NotForced,
+      true
+    );
   }
 
-  private async handleMsgFromView(msg: FromResultsViewMsg): Promise<void> {
+  private async handleMsgFromView(
+    msg: FromResultsViewMsg
+  ): Promise<void> {
     switch (msg.t) {
-      case 'viewSourceFile': {
-        const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.databaseUri));
+      case "viewSourceFile": {
+        const databaseItem = this.databaseManager.findDatabaseItem(
+          Uri.parse(msg.databaseUri)
+        );
         if (databaseItem !== undefined) {
           try {
             await showLocation(msg.loc, databaseItem);
-          }
-          catch (e) {
+          } catch (e) {
             if (e instanceof Error) {
               if (e.message.match(/File not found/)) {
-                vscode.window.showErrorMessage(`Original file of this result is not in the database's source archive.`);
+                vscode.window.showErrorMessage(
+                  `Original file of this result is not in the database's source archive.`
+                );
+              } else {
+                this.logger.log(
+                  `Unable to handleMsgFromView: ${e.message}`
+                );
               }
-              else {
-                this.logger.log(`Unable to handleMsgFromView: ${e.message}`);
-              }
-            }
-            else {
+            } else {
               this.logger.log(`Unable to handleMsgFromView: ${e}`);
             }
           }
         }
         break;
       }
-      case 'toggleDiagnostics': {
+      case "toggleDiagnostics": {
         if (msg.visible) {
-          const databaseItem = this.databaseManager.findDatabaseItem(Uri.parse(msg.databaseUri));
+          const databaseItem = this.databaseManager.findDatabaseItem(
+            Uri.parse(msg.databaseUri)
+          );
           if (databaseItem !== undefined) {
-            await this.showResultsAsDiagnostics(msg.origResultsPaths, msg.metadata, databaseItem);
+            await this.showResultsAsDiagnostics(
+              msg.origResultsPaths,
+              msg.metadata,
+              databaseItem
+            );
           }
         } else {
           // TODO: Only clear diagnostics on the same database.
@@ -213,11 +271,19 @@ export class InterfaceManager extends DisposableObject {
         this._panelLoadedCallBacks.forEach(cb => cb());
         this._panelLoadedCallBacks = [];
         break;
-      case 'changeSort':
-        await this.changeSortState((query) => query.updateSortState(this.cliServer, msg.resultSetName, msg.sortState));
+      case "changeSort":
+        await this.changeSortState(query =>
+          query.updateSortState(
+            this.cliServer,
+            msg.resultSetName,
+            msg.sortState
+          )
+        );
         break;
-      case 'changeInterpretedSort':
-        await this.changeSortState((query) => query.updateInterpretedSortState(this.cliServer, msg.sortState));
+      case "changeInterpretedSort":
+        await this.changeSortState(query =>
+          query.updateInterpretedSortState(this.cliServer, msg.sortState)
+        );
         break;
       default:
         assertNever(msg);
@@ -229,34 +295,45 @@ export class InterfaceManager extends DisposableObject {
   }
 
   private waitForPanelLoaded(): Promise<void> {
-    return new Promise((resolve, _reject) => {
+    return new Promise(resolve => {
       if (this._panelLoaded) {
         resolve();
       } else {
-        this._panelLoadedCallBacks.push(resolve)
+        this._panelLoadedCallBacks.push(resolve);
       }
-    })
+    });
   }
 
   /**
-   * Show query results in webview panel.
-   * @param results Evaluation info for the executed query.
-   * @param shouldKeepOldResultsWhileRendering Should keep old results while rendering.
-   * @param forceReveal Force the webview panel to be visible and
-   * Appropriate when the user has just performed an explicit
-   * UI interaction requesting results, e.g. clicking on a query
-   * history entry.
-   */
-  public async showResults(results: CompletedQuery, forceReveal: WebviewReveal, shouldKeepOldResultsWhileRendering: boolean = false): Promise<void> {
+  * Show query results in webview panel.
+  * @param results Evaluation info for the executed query.
+  * @param shouldKeepOldResultsWhileRendering Should keep old results while rendering.
+  * @param forceReveal Force the webview panel to be visible and
+  * Appropriate when the user has just performed an explicit
+  * UI interaction requesting results, e.g. clicking on a query
+  * history entry.
+  */
+  public async showResults(
+    results: CompletedQuery,
+    forceReveal: WebviewReveal,
+    shouldKeepOldResultsWhileRendering = false
+  ): Promise<void> {
     if (results.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }
 
-    const interpretation = await this.interpretResultsInfo(results.query, results.interpretedResultsSortState);
+    const interpretation = await this.interpretResultsInfo(
+      results.query,
+      results.interpretedResultsSortState
+    );
 
     const sortedResultsMap: SortedResultsMap = {};
-    results.sortedResultsInfo.forEach((v, k) =>
-      sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v));
+    results.sortedResultsInfo.forEach(
+      (v, k) =>
+        (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(
+          v
+        ))
+    );
 
     this._displayedQuery = results;
 
@@ -264,16 +341,17 @@ export class InterfaceManager extends DisposableObject {
     await this.waitForPanelLoaded();
     if (forceReveal === WebviewReveal.Forced) {
       panel.reveal(undefined, true);
-    }
-    else if (!panel.visible) {
+    } else if (!panel.visible) {
       // The results panel exists, (`.getPanel()` guarantees it) but
       // is not visible; it's in a not-currently-viewed tab. Show a
       // more asynchronous message to not so abruptly interrupt
       // user's workflow by immediately revealing the panel.
-      const showButton = 'View Results';
+      const showButton = "View Results";
       const queryName = results.queryName;
       const resultPromise = vscode.window.showInformationMessage(
-        `Finished running query ${(queryName.length > 0) ? ` “${queryName}”` : ''}.`,
+        `Finished running query ${
+          queryName.length > 0 ? ` “${queryName}”` : ""
+        }.`,
         showButton
       );
       // Address this click asynchronously so we still update the
@@ -286,10 +364,12 @@ export class InterfaceManager extends DisposableObject {
     }
 
     await this.postMessage({
-      t: 'setState',
+      t: "setState",
       interpretation,
       origResultsPaths: results.query.resultsPaths,
-      resultsPath: this.convertPathToWebviewUri(results.query.resultsPaths.resultsPath),
+      resultsPath: this.convertPathToWebviewUri(
+        results.query.resultsPaths.resultsPath
+      ),
       sortedResultsMap,
       database: results.database,
       shouldKeepOldResultsWhileRendering,
@@ -297,8 +377,19 @@ export class InterfaceManager extends DisposableObject {
     });
   }
 
-  private async getTruncatedResults(metadata: QueryMetadata | undefined, resultsPaths: ResultsPaths, sourceInfo: cli.SourceInfo | undefined, sourceLocationPrefix: string, sortState: InterpretedResultsSortState | undefined): Promise<Interpretation> {
-    const sarif = await interpretResults(this.cliServer, metadata, resultsPaths.resultsPath, sourceInfo);
+  private async getTruncatedResults(
+    metadata: QueryMetadata | undefined,
+    resultsPaths: ResultsPaths,
+    sourceInfo: cli.SourceInfo | undefined,
+    sourceLocationPrefix: string,
+    sortState: InterpretedResultsSortState | undefined
+  ): Promise<Interpretation> {
+    const sarif = await interpretResults(
+      this.cliServer,
+      metadata,
+      resultsPaths.resultsPath,
+      sourceInfo
+    );
     // For performance reasons, limit the number of results we try
     // to serialize and send to the webview. TODO: possibly also
     // limit number of paths per result, number of steps per path,
@@ -311,68 +402,110 @@ export class InterfaceManager extends DisposableObject {
       if (run.results !== undefined) {
         sortInterpretedResults(run.results, sortState);
         if (run.results.length > INTERPRETED_RESULTS_PER_RUN_LIMIT) {
-          numTruncatedResults += run.results.length - INTERPRETED_RESULTS_PER_RUN_LIMIT;
-          run.results = run.results.slice(0, INTERPRETED_RESULTS_PER_RUN_LIMIT);
+          numTruncatedResults +=
+            run.results.length - INTERPRETED_RESULTS_PER_RUN_LIMIT;
+          run.results = run.results.slice(
+            0,
+            INTERPRETED_RESULTS_PER_RUN_LIMIT
+          );
         }
       }
     });
-    return { sarif, sourceLocationPrefix, numTruncatedResults, sortState };
+    return {
+      sarif,
+      sourceLocationPrefix,
+      numTruncatedResults,
+      sortState
+    };
   }
 
-  private async interpretResultsInfo(query: QueryInfo, sortState: InterpretedResultsSortState | undefined): Promise<Interpretation | undefined> {
+  private async interpretResultsInfo(
+    query: QueryInfo,
+    sortState: InterpretedResultsSortState | undefined
+  ): Promise<Interpretation | undefined> {
     let interpretation: Interpretation | undefined = undefined;
-    if (await query.hasInterpretedResults()
-      && query.quickEvalPosition === undefined // never do results interpretation if quickEval
+    if (
+      (await query.hasInterpretedResults()) &&
+      query.quickEvalPosition === undefined // never do results interpretation if quickEval
     ) {
       try {
-        const sourceLocationPrefix = await query.dbItem.getSourceLocationPrefix(this.cliServer);
+        const sourceLocationPrefix = await query.dbItem.getSourceLocationPrefix(
+          this.cliServer
+        );
         const sourceArchiveUri = query.dbItem.sourceArchive;
-        const sourceInfo = sourceArchiveUri === undefined ?
-          undefined :
-          { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
-        interpretation = await this.getTruncatedResults(query.metadata, query.resultsPaths, sourceInfo, sourceLocationPrefix, sortState);
-      }
-      catch (e) {
+        const sourceInfo =
+          sourceArchiveUri === undefined
+            ? undefined
+            : {
+                sourceArchive: sourceArchiveUri.fsPath,
+                sourceLocationPrefix
+              };
+        interpretation = await this.getTruncatedResults(
+          query.metadata,
+          query.resultsPaths,
+          sourceInfo,
+          sourceLocationPrefix,
+          sortState
+        );
+      } catch (e) {
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
-        this.logger.log(`Exception during results interpretation: ${e.message}. Will show raw results instead.`);
+        this.logger.log(
+          `Exception during results interpretation: ${e.message}. Will show raw results instead.`
+        );
       }
     }
     return interpretation;
   }
 
-
-  private async showResultsAsDiagnostics(resultsInfo: ResultsPaths, metadata: QueryMetadata | undefined, database: DatabaseItem) {
-    const sourceLocationPrefix = await database.getSourceLocationPrefix(this.cliServer);
+  private async showResultsAsDiagnostics(
+    resultsInfo: ResultsPaths,
+    metadata: QueryMetadata | undefined,
+    database: DatabaseItem
+  ): Promise<void> {
+    const sourceLocationPrefix = await database.getSourceLocationPrefix(
+      this.cliServer
+    );
     const sourceArchiveUri = database.sourceArchive;
-    const sourceInfo = sourceArchiveUri === undefined ?
-      undefined :
-      { sourceArchive: sourceArchiveUri.fsPath, sourceLocationPrefix };
+    const sourceInfo =
+      sourceArchiveUri === undefined
+        ? undefined
+        : {
+            sourceArchive: sourceArchiveUri.fsPath,
+            sourceLocationPrefix
+          };
     const interpretation = await this.getTruncatedResults(
       metadata,
       resultsInfo,
       sourceInfo,
       sourceLocationPrefix,
-      undefined,
+      undefined
     );
 
     try {
-      await this.showProblemResultsAsDiagnostics(interpretation, database);
-    }
-    catch (e) {
+      await this.showProblemResultsAsDiagnostics(
+        interpretation,
+        database
+      );
+    } catch (e) {
       const msg = e instanceof Error ? e.message : e.toString();
-      this.logger.log(`Exception while computing problem results as diagnostics: ${msg}`);
+      this.logger.log(
+        `Exception while computing problem results as diagnostics: ${msg}`
+      );
       this._diagnosticCollection.clear();
     }
-
   }
 
-  private async showProblemResultsAsDiagnostics(interpretation: Interpretation, databaseItem: DatabaseItem): Promise<void> {
+  private async showProblemResultsAsDiagnostics(
+    interpretation: Interpretation,
+    databaseItem: DatabaseItem
+  ): Promise<void> {
     const { sarif, sourceLocationPrefix } = interpretation;
 
-
     if (!sarif.runs || !sarif.runs[0].results) {
-      this.logger.log("Didn't find a run in the sarif results. Error processing sarif?")
+      this.logger.log(
+        "Didn't find a run in the sarif results. Error processing sarif?"
+      );
       return;
     }
 
@@ -381,59 +514,68 @@ export class InterfaceManager extends DisposableObject {
     for (const result of sarif.runs[0].results) {
       const message = result.message.text;
       if (message === undefined) {
-        this.logger.log("Sarif had result without plaintext message")
+        this.logger.log("Sarif had result without plaintext message");
         continue;
       }
       if (!result.locations) {
-        this.logger.log("Sarif had result without location")
+        this.logger.log("Sarif had result without location");
         continue;
       }
 
-      const sarifLoc = parseSarifLocation(result.locations[0], sourceLocationPrefix);
+      const sarifLoc = parseSarifLocation(
+        result.locations[0],
+        sourceLocationPrefix
+      );
       if (sarifLoc.t == "NoLocation") {
         continue;
       }
-      const resultLocation = tryResolveLocation(sarifLoc, databaseItem)
+      const resultLocation = tryResolveLocation(sarifLoc, databaseItem);
       if (!resultLocation) {
-        this.logger.log("Sarif location was not resolvable " + sarifLoc)
+        this.logger.log("Sarif location was not resolvable " + sarifLoc);
         continue;
       }
       const parsedMessage = parseSarifPlainTextMessage(message);
       const relatedInformation: DiagnosticRelatedInformation[] = [];
       const relatedLocationsById: { [k: number]: Sarif.Location } = {};
 
-
-      for (let loc of result.relatedLocations || []) {
+      for (const loc of result.relatedLocations || []) {
         relatedLocationsById[loc.id!] = loc;
       }
-      let resultMessageChunks: string[] = [];
+      const resultMessageChunks: string[] = [];
       for (const section of parsedMessage) {
         if (typeof section === "string") {
           resultMessageChunks.push(section);
         } else {
           resultMessageChunks.push(section.text);
-          const sarifChunkLoc = parseSarifLocation(relatedLocationsById[section.dest], sourceLocationPrefix);
+          const sarifChunkLoc = parseSarifLocation(
+            relatedLocationsById[section.dest],
+            sourceLocationPrefix
+          );
           if (sarifChunkLoc.t == "NoLocation") {
             continue;
           }
-          const referenceLocation = tryResolveLocation(sarifChunkLoc, databaseItem);
-
+          const referenceLocation = tryResolveLocation(
+            sarifChunkLoc,
+            databaseItem
+          );
 
           if (referenceLocation) {
-            const related = new DiagnosticRelatedInformation(referenceLocation,
-              section.text);
+            const related = new DiagnosticRelatedInformation(
+              referenceLocation,
+              section.text
+            );
             relatedInformation.push(related);
           }
         }
       }
-      const diagnostic = new Diagnostic(resultLocation.range, resultMessageChunks.join(""), DiagnosticSeverity.Warning);
+      const diagnostic = new Diagnostic(
+        resultLocation.range,
+        resultMessageChunks.join(""),
+        DiagnosticSeverity.Warning
+      );
       diagnostic.relatedInformation = relatedInformation;
 
-      diagnostics.push([
-        resultLocation.uri,
-        [diagnostic]
-      ]);
-
+      diagnostics.push([resultLocation.uri, [diagnostic]]);
     }
     this._diagnosticCollection.set(diagnostics);
   }
@@ -442,18 +584,22 @@ export class InterfaceManager extends DisposableObject {
     return fileUriToWebviewUri(this.getPanel(), Uri.file(path));
   }
 
-  private convertPathPropertiesToWebviewUris(info: SortedResultSetInfo): SortedResultSetInfo {
+  private convertPathPropertiesToWebviewUris(
+    info: SortedResultSetInfo
+  ): SortedResultSetInfo {
     return {
       resultsPath: this.convertPathToWebviewUri(info.resultsPath),
       sortState: info.sortState
     };
   }
 
-  private handleSelectionChange(event: vscode.TextEditorSelectionChangeEvent) {
+  private handleSelectionChange(
+    event: vscode.TextEditorSelectionChangeEvent
+  ): void {
     if (event.kind === vscode.TextEditorSelectionChangeKind.Command) {
       return; // Ignore selection events we caused ourselves.
     }
-    let editor = vscode.window.activeTextEditor;
+    const editor = vscode.window.activeTextEditor;
     if (editor !== undefined) {
       editor.setDecorations(shownLocationDecoration, []);
       editor.setDecorations(shownLocationLineDecoration, []);
@@ -481,7 +627,7 @@ async function showLocation(loc: ResolvableLocationValue, databaseItem: Database
     const editor = editorsWithDoc.length > 0
       ? editorsWithDoc[0]
       : await Window.showTextDocument(doc, vscode.ViewColumn.One);
-    let range = resolvedLocation.range;
+    const range = resolvedLocation.range;
     // When highlighting the range, vscode's occurrence-match and bracket-match highlighting will
     // trigger based on where we place the cursor/selection, and will compete for the user's attention.
     // For reference:
@@ -492,7 +638,7 @@ async function showLocation(loc: ResolvableLocationValue, databaseItem: Database
     // For single-line ranges, select the whole range, mainly to disable bracket highlighting.
     // For multi-line ranges, place the cursor at the beginning to avoid visual artifacts from selected line-breaks.
     // Multi-line ranges are usually large enough to overshadow the noise from bracket highlighting.
-    let selectionEnd = (range.start.line === range.end.line)
+    const selectionEnd = (range.start.line === range.end.line)
       ? range.end
       : range.start;
     editor.selection = new vscode.Selection(range.start, selectionEnd);
