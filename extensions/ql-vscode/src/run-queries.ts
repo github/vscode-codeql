@@ -334,7 +334,11 @@ async function determineSelectedQuery(selectedResourceUri: vscode.Uri | undefine
   if (queryUri.scheme !== 'file') {
     throw new Error('Can only run queries that are on disk.');
   }
-  const queryPath = queryUri.fsPath;
+  const queryPath = queryUri.fsPath || '';
+
+  if (!queryPath.endsWith('.ql')) {
+    throw new Error('The selected resource is not a CodeQL query file; It should have the extension ".ql".');
+  }
 
   // Whether we chose the file from the active editor or from a context menu,
   // if the same file is open with unsaved changes in the active editor,
