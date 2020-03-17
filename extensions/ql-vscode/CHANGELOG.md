@@ -1,11 +1,15 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## 1.0.7
+## 1.1.0 - 17 March 2020
 
+- Add functionality for testing custom CodeQL queries by using the VS
+  Code Test Explorer extension and `codeql test`. See the documentation for
+  more details.
 - Add a "Show log" button to all information, error, and warning
   popups that will display the CodeQL extension log.
 - Display a message when a query times out.
 - Show canceled queries in query history.
+- Improve error messages when attempting to run non-query files.
 
 ## 1.0.6 - 28 February 2020
 
