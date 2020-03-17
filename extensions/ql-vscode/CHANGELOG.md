@@ -2,8 +2,8 @@
 
 ## 1.1.0 - 17 March 2020
 
-- Added functionality for testing custom CodeQL queries by using VS
-  Code Test Explorer plugin and `codeql test`. See documentation for
+- Add functionality for testing custom CodeQL queries by using the VS
+  Code Test Explorer extension and `codeql test`. See the documentation for
   more details.
 - Add a "Show log" button to all information, error, and warning
   popups that will display the CodeQL extension log.
