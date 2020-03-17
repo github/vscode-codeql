@@ -20,7 +20,7 @@ export function isQuickQueryPath(queryPath: string): boolean {
 
 async function getQlPackFor(cliServer: CodeQLCliServer, dbschemePath: string): Promise<string> {
   const qlpacks = await cliServer.resolveQlpacks(helpers.getOnDiskWorkspaceFolders());
-  const packs: { packDir: string | undefined, packName: string }[] =
+  const packs: { packDir: string | undefined; packName: string }[] =
     Object.entries(qlpacks).map(([packName, dirs]) => {
       if (dirs.length < 1) {
         logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has no directories`);
@@ -60,7 +60,7 @@ function getBaseText(dbschemeBase: string) {
   return 'select ""';
 }
 
-async function getQuickQueriesDir(ctx: ExtensionContext): Promise<string> {
+function getQuickQueriesDir(ctx: ExtensionContext): string {
   const storagePath = ctx.storagePath;
   if (storagePath === undefined) {
     throw new Error('Workspace storage path is undefined');

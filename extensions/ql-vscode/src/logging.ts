@@ -25,7 +25,7 @@ export interface Logger {
    * Remove the log at the specified location
    * @param location log to remove
    */
-  removeAdditionalLogLocation(location: string): Promise<void>;
+  removeAdditionalLogLocation(location: string): void;
 }
 
 export type ProgressReporter = Progress<{ message: string }>;
@@ -88,7 +88,7 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
     this.outputChannel.show(preserveFocus);
   }
 
-  async removeAdditionalLogLocation(location: string): Promise<void> {
+  removeAdditionalLogLocation(location: string): void {
     if (this.additionalLogLocationPath) {
       const logPath = path.join(this.additionalLogLocationPath, location);
       const additional = this.additionalLocations.get(logPath);

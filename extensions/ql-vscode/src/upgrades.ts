@@ -19,8 +19,9 @@ const MAX_UPGRADE_MESSAGE_LINES = 10;
  * Reports errors to both the user and the console.
  * @returns the `UpgradeParams` needed to start the upgrade, if the upgrade is possible and was confirmed by the user, or `undefined` otherwise.
  */
-async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectories: vscode.Uri[]):
-  Promise<messages.UpgradeParams | undefined> {
+async function checkAndConfirmDatabaseUpgrade(
+  qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectories: vscode.Uri[]
+): Promise<messages.UpgradeParams | undefined> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
     helpers.showAndLogErrorMessage("Database is invalid, and cannot be upgraded.");
     return;
@@ -80,7 +81,7 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
   const showLogItem: vscode.MessageItem = { title: 'No, Show Changes', isCloseAffordance: true };
   const yesItem = { title: 'Yes', isCloseAffordance: false };
   const noItem = { title: 'No', isCloseAffordance: true }
-  let dialogOptions: vscode.MessageItem[] = [yesItem, noItem];
+  const dialogOptions: vscode.MessageItem[] = [yesItem, noItem];
 
   let messageLines = descriptionMessage.split('\n');
   if (messageLines.length > MAX_UPGRADE_MESSAGE_LINES) {
@@ -110,8 +111,9 @@ async function checkAndConfirmDatabaseUpgrade(qs: qsClient.QueryServerClient, db
  * First performs a dry-run and prompts the user to confirm the upgrade.
  * Reports errors during compilation and evaluation of upgrades to the user.
  */
-export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectories: vscode.Uri[]):
-  Promise<messages.RunUpgradeResult | undefined> {
+export async function upgradeDatabase(
+  qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectories: vscode.Uri[]
+): Promise<messages.RunUpgradeResult | undefined> {
   const upgradeParams = await checkAndConfirmDatabaseUpgrade(qs, db, targetDbScheme, upgradesDirectories);
 
   if (upgradeParams === undefined) {
@@ -150,8 +152,9 @@ export async function upgradeDatabase(qs: qsClient.QueryServerClient, db: Databa
   }
 }
 
-async function checkDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams):
-  Promise<messages.CheckUpgradeResult> {
+async function checkDatabaseUpgrade(
+  qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams
+): Promise<messages.CheckUpgradeResult> {
   return helpers.withProgress({
     location: vscode.ProgressLocation.Notification,
     title: "Checking for database upgrades",
@@ -159,8 +162,9 @@ async function checkDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradeParam
   }, (progress, token) => qs.sendRequest(messages.checkUpgrade, upgradeParams, token, progress));
 }
 
-async function compileDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams):
-  Promise<messages.CompileUpgradeResult> {
+async function compileDatabaseUpgrade(
+  qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams
+): Promise<messages.CompileUpgradeResult> {
   const params: messages.CompileUpgradeParams = {
     upgrade: upgradeParams,
     upgradeTempDir: upgradesTmpDir.name
@@ -173,8 +177,9 @@ async function compileDatabaseUpgrade(qs: qsClient.QueryServerClient, upgradePar
   }, (progress, token) => qs.sendRequest(messages.compileUpgrade, params, token, progress));
 }
 
-async function runDatabaseUpgrade(qs: qsClient.QueryServerClient, db: DatabaseItem, upgrades: messages.CompiledUpgrades):
-  Promise<messages.RunUpgradeResult> {
+async function runDatabaseUpgrade(
+  qs: qsClient.QueryServerClient, db: DatabaseItem, upgrades: messages.CompiledUpgrades
+): Promise<messages.RunUpgradeResult> {
 
   if (db.contents === undefined || db.contents.datasetUri === undefined) {
     throw new Error('Can\'t upgrade an invalid database.');

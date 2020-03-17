@@ -92,7 +92,7 @@ export class QueryServerClient extends DisposableObject {
     await this.startQueryServer();
   }
 
-  async showLog(): Promise<void> {
+  showLog(): void {
     this.logger.show();
   }
 
