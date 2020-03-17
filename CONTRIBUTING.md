@@ -144,13 +144,23 @@ Alternatively, you can run the tests inside of vscode. There are several vscode 
 
 ## Releasing (write access required)
 
+1. Double-check the `CHANGELOG.md` contains all desired change comments
+   and has the version to be released with date at the top.
+1. Double-check that the extension `package.json` has the version you intend to release.
+   If you are doing a patch release (as opposed to minor or major version) this should already
+   be correct.
 1. Trigger a release build on Actions by adding a new tag on master of the format `vxx.xx.xx`
 1. Monitor the status of the release build in the `Release` workflow in the Actions tab.
-1. Download the VSIX from the draft GitHub release that is created when the release build finishes.
+1. Download the VSIX from the draft GitHub release at the top of [the releases page](https://github.com/github/vscode-codeql/releases) that is created when the release build finishes.
+1. Optionally unzip the `.vsix` and inspect its `package.json` to make sure the version is what you expect,
+   or look at the source if there's any doubt the right code is being shipped.
 1. Log into the [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage/publishers/github).
 1. Click the `...` menu in the CodeQL row and click **Update**.
 1. Drag the `.vsix` file you downloaded from the GitHub release into the Marketplace and click **Upload**.
-1. Publish the draft GitHub release and confirm the new release is marked as the latest release at <https://github.com/github/vscode-codeql/releases>.
+1. Go to the draft GitHub release, click 'Edit', add some summary description, and publish it.
+1. Confirm the new release is marked as the latest release at <https://github.com/github/vscode-codeql/releases>.
+1. If documentation changes need to be published, notify documentation team that release has been made.
+1. Review and merge the version bump PR that is automatically created by Actions.
 
 ## Resources
 
