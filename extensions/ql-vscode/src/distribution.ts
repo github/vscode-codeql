@@ -99,7 +99,7 @@ export class DistributionManager implements DistributionProvider {
    */
   public async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
     // Check config setting, then extension specific distribution, then PATH.
-    if (this._config.customCodeQlPath !== undefined) {
+    if (this._config.customCodeQlPath) {
       if (!await fs.pathExists(this._config.customCodeQlPath)) {
         showAndLogErrorMessage(`The CodeQL executable path is specified as "${this._config.customCodeQlPath}" ` +
           "by a configuration setting, but a CodeQL executable could not be found at that path. Please check " +
@@ -520,8 +520,11 @@ export enum FindDistributionResultKind {
   NoDistribution
 }
 
-export type FindDistributionResult = CompatibleDistributionResult | UnknownCompatibilityDistributionResult |
-  IncompatibleDistributionResult | NoDistributionResult;
+export type FindDistributionResult =
+  | CompatibleDistributionResult
+  | UnknownCompatibilityDistributionResult
+  | IncompatibleDistributionResult
+  | NoDistributionResult;
 
 interface CompatibleDistributionResult {
   codeQlPath: string;
@@ -551,8 +554,11 @@ export enum DistributionUpdateCheckResultKind {
   UpdateAvailable
 }
 
-type DistributionUpdateCheckResult = AlreadyCheckedRecentlyResult | AlreadyUpToDateResult | InvalidLocationResult |
-  UpdateAvailableResult;
+type DistributionUpdateCheckResult =
+  | AlreadyCheckedRecentlyResult
+  | AlreadyUpToDateResult
+  | InvalidLocationResult
+  | UpdateAvailableResult;
 
 export interface AlreadyCheckedRecentlyResult {
   kind: DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult;

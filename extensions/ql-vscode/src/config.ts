@@ -111,7 +111,7 @@ abstract class ConfigListener extends DisposableObject {
 
 export class DistributionConfigListener extends ConfigListener implements DistributionConfig {
   public get customCodeQlPath(): string | undefined {
-    return CUSTOM_CODEQL_PATH_SETTING.getValue() ? CUSTOM_CODEQL_PATH_SETTING.getValue() : undefined;
+    return CUSTOM_CODEQL_PATH_SETTING.getValue() || undefined;
   }
 
   public get includePrerelease(): boolean {
@@ -119,7 +119,7 @@ export class DistributionConfigListener extends ConfigListener implements Distri
   }
 
   public get personalAccessToken(): string | undefined {
-    return PERSONAL_ACCESS_TOKEN_SETTING.getValue() ? PERSONAL_ACCESS_TOKEN_SETTING.getValue() : undefined;
+    return PERSONAL_ACCESS_TOKEN_SETTING.getValue() || undefined;
   }
 
   public get onDidChangeDistributionConfiguration(): Event<void> {
