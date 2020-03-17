@@ -160,6 +160,7 @@ Alternatively, you can run the tests inside of vscode. There are several vscode 
 1. Go to the draft GitHub release, click 'Edit', add some summary description, and publish it.
 1. Confirm the new release is marked as the latest release at <https://github.com/github/vscode-codeql/releases>.
 1. If documentation changes need to be published, notify documentation team that release has been made.
+1. Review and merge the version bump PR that is automatically created by Actions.
 
 ## Resources
 
