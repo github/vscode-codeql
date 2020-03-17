@@ -12,6 +12,7 @@ import { UserCancellationException } from './run-queries';
 
 const QUICK_QUERIES_DIR_NAME = 'quick-queries';
 const QUICK_QUERY_QUERY_NAME = 'quick-query.ql';
+const QUICK_QUERY_WORKSPACE_FOLDER_NAME = 'Quick Queries';
 
 export function isQuickQueryPath(queryPath: string): boolean {
   return path.basename(queryPath) === QUICK_QUERY_QUERY_NAME;
@@ -75,6 +76,17 @@ async function getQuickQueriesDir(ctx: ExtensionContext): Promise<string> {
 export async function displayQuickQuery(ctx: ExtensionContext, cliServer: CodeQLCliServer, databaseUI: DatabaseUI) {
   try {
 
+    const workspaceFolders = workspace.workspaceFolders || [];
+    const queriesDir = await getQuickQueriesDir(ctx);
+
+    function updateQuickQueryDir(index: number, len: number) {
+      workspace.updateWorkspaceFolders(
+        index,
+        len,
+        { uri: Uri.file(queriesDir), name: QUICK_QUERY_WORKSPACE_FOLDER_NAME }
+      );
+    }
+
     // If there is already a quick query open, don't clobber it, just
     // show it.
     const existing = workspace.textDocuments.find(doc => path.basename(doc.uri.fsPath) === QUICK_QUERY_QUERY_NAME);
@@ -83,18 +95,28 @@ export async function displayQuickQuery(ctx: ExtensionContext, cliServer: CodeQL
       return;
     }
 
-    const queriesDir = await getQuickQueriesDir(ctx);
-
-    // We need this folder in workspace folders so the language server
-    // knows how to find its qlpack.yml
-    if (workspace.workspaceFolders === undefined
-      || !workspace.workspaceFolders.some(folder => folder.uri.fsPath === queriesDir)) {
-      workspace.updateWorkspaceFolders(
-        (workspace.workspaceFolders || []).length,
-        0,
-        { uri: Uri.file(queriesDir), name: "Quick Queries" }
-      );
+    // We need to have a multi-root workspace to make quick query work
+    // at all. Changing the workspace from single-root to multi-root
+    // causes a restart of the whole extension host environment, so we
+    // basically can't do anything that survives that restart.
+    //
+    // So if we are currently in a single-root workspace (of which the
+    // only reliable signal appears to be `workspace.workspaceFile`
+    // being undefined) just let the user know that they're in for a
+    // restart.
+    if (workspace.workspaceFile === undefined) {
+      const makeMultiRoot = await helpers.showBinaryChoiceDialog('Quick query requires multiple folders in the workspace. Reload workspace as multi-folder workspace?');
+      if (makeMultiRoot) {
+        updateQuickQueryDir(workspaceFolders.length, 0);
+      }
+      return;
     }
+
+    const index = workspaceFolders.findIndex(folder => folder.name === QUICK_QUERY_WORKSPACE_FOLDER_NAME)
+    if (index === -1)
+      updateQuickQueryDir(workspaceFolders.length, 0);
+    else
+      updateQuickQueryDir(index, 1);
 
     // We're going to infer which qlpack to use from the current database
     const dbItem = await databaseUI.getDatabaseItem();
