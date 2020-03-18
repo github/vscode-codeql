@@ -16,20 +16,20 @@ export function run() {
   describe('Determining selected query', async () => {
     it('should allow ql files to be queried', async () => {
       const q = await determineSelectedQuery(Uri.parse('file:///tmp/queryname.ql'), false);
-      expect(q.queryPath).to.equal('/tmp/queryname.ql');
+      expect(q.queryPath).to.equal(path.join('/', 'tmp', 'queryname.ql'));
       expect(q.quickEvalPosition).to.equal(undefined);
     });
 
     it('should allow ql files to be quick-evaled', async () => {
       const doc = await showQlDocument('query.ql');
       const q = await determineSelectedQuery(doc.uri, true);
-      expect(q.queryPath).to.match(new RegExp('ql-vscode/test/data/query\.ql$'));
+      expect(q.queryPath).to.satisfy((p: string) => p.endsWith(path.join('ql-vscode', 'test', 'data', 'query.ql')));
     });
 
     it('should allow qll files to be quick-evaled', async () => {
       const doc = await showQlDocument('library.qll');
       const q = await determineSelectedQuery(doc.uri, true);
-      expect(q.queryPath).to.match(new RegExp('ql-vscode/test/data/library\.qll$'));
+      expect(q.queryPath).to.satisfy((p: string) => p.endsWith(path.join('ql-vscode', 'test', 'data', 'library.qll')));
     });
 
     it('should reject non-ql files when running a query', async () => {
