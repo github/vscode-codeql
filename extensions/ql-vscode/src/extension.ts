@@ -93,6 +93,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   interface DistributionUpdateConfig {
     isUserInitiated: boolean;
     shouldDisplayMessageWhenNoUpdates: boolean;
+    avoidAutoUpdating: boolean;
   }
 
   async function installOrUpdateDistributionWithProgressTitle(progressTitle: string, config: DistributionUpdateConfig): Promise<void> {
@@ -112,7 +113,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
         await noUpdatesLoggingFunc("CodeQL CLI is installed externally so could not be updated.");
         break;
       case DistributionUpdateCheckResultKind.UpdateAvailable:
-        if (beganMainExtensionActivation) {
+        if (beganMainExtensionActivation || config.avoidAutoUpdating) {
           const updateAvailableMessage = `Version "${result.updatedRelease.name}" of the CodeQL CLI is now available. ` +
             "The update will be installed after Visual Studio Code restarts. Restart now to upgrade?";
           await ctx.globalState.update(shouldUpdateOnNextActivationKey, true);
@@ -144,8 +145,12 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     isInstallingOrUpdatingDistribution = true;
     const codeQlInstalled = await distributionManager.getCodeQlPathWithoutVersionCheck() !== undefined;
     const willUpdateCodeQl = ctx.globalState.get(shouldUpdateOnNextActivationKey);
-    const messageText = willUpdateCodeQl ? "Updating CodeQL CLI" :
-      codeQlInstalled ? "Checking for updates to CodeQL CLI" : "Installing CodeQL CLI";
+    const messageText = willUpdateCodeQl
+      ? "Updating CodeQL CLI"
+      : codeQlInstalled
+      ? "Checking for updates to CodeQL CLI"
+      : "Installing CodeQL CLI";
+
     try {
       await installOrUpdateDistributionWithProgressTitle(messageText, config);
     } catch (e) {
@@ -207,7 +212,8 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
         if (chosenAction === installActionName) {
           installOrUpdateThenTryActivate({
             isUserInitiated: true,
-            shouldDisplayMessageWhenNoUpdates: false
+            shouldDisplayMessageWhenNoUpdates: false,
+            avoidAutoUpdating: false
           });
         }
       });
@@ -216,16 +222,22 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
   ctx.subscriptions.push(distributionConfigListener.onDidChangeDistributionConfiguration(() => installOrUpdateThenTryActivate({
     isUserInitiated: true,
-    shouldDisplayMessageWhenNoUpdates: false
+    shouldDisplayMessageWhenNoUpdates: false,
+
+    // only auto update on startup if the user has previously requested an update
+    // otherwise, ask user to accept the update
+    avoidAutoUpdating: !!ctx.globalState.get(shouldUpdateOnNextActivationKey)
   })));
   ctx.subscriptions.push(commands.registerCommand(checkForUpdatesCommand, () => installOrUpdateThenTryActivate({
     isUserInitiated: true,
-    shouldDisplayMessageWhenNoUpdates: true
+    shouldDisplayMessageWhenNoUpdates: true,
+    avoidAutoUpdating: false
   })));
 
   await installOrUpdateThenTryActivate({
     isUserInitiated: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
-    shouldDisplayMessageWhenNoUpdates: false
+    shouldDisplayMessageWhenNoUpdates: false,
+    avoidAutoUpdating: true
   });
 }
 
