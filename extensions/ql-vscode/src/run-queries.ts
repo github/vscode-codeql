@@ -313,7 +313,7 @@ type SelectedQuery = {
  * @param selectedResourceUri The selected resource when the command was run.
  * @param quickEval Whether the command being run is `Quick Evaluation`.
 */
-async function determineSelectedQuery(selectedResourceUri: vscode.Uri | undefined, quickEval: boolean): Promise<SelectedQuery> {
+export async function determineSelectedQuery(selectedResourceUri: vscode.Uri | undefined, quickEval: boolean): Promise<SelectedQuery> {
   const editor = vscode.window.activeTextEditor;
 
   // Choose which QL file to use.
@@ -336,8 +336,15 @@ async function determineSelectedQuery(selectedResourceUri: vscode.Uri | undefine
   }
   const queryPath = queryUri.fsPath || '';
 
-  if (!queryPath.endsWith('.ql')) {
-    throw new Error('The selected resource is not a CodeQL query file; It should have the extension ".ql".');
+  if (quickEval) {
+    if (!(queryPath.endsWith('.ql') || queryPath.endsWith('.qll'))) {
+      throw new Error('The selected resource is not a CodeQL file; It should have the extension ".ql" or ".qll".');
+    }
+  }
+  else {
+    if (!(queryPath.endsWith('.ql'))) {
+      throw new Error('The selected resource is not a CodeQL query file; It should have the extension ".ql".');
+    }
   }
 
   // Whether we chose the file from the active editor or from a context menu,
