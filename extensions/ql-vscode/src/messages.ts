@@ -778,6 +778,11 @@ export interface EvaluationResult {
    * An error message if an error happened
    */
   message?: string;
+
+  /**
+   * Full path to file with all log messages emitted while this query was active, if one exists
+   */
+  logFileLocation?: string;
 }
 
 export type QueryResultType = number;

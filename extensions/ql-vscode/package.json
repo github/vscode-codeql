@@ -209,6 +209,10 @@
         "title": "Query History Item"
       },
       {
+        "command": "codeQLQueryHistory.showQueryLog",
+        "title": "Show Query Log"
+      },
+      {
         "command": "codeQLQueryResults.nextPathStep",
         "title": "CodeQL: Show Next Step on Path"
       },
@@ -273,6 +277,11 @@
           "when": "view == codeQLQueryHistory"
         },
         {
+          "command": "codeQLQueryHistory.showQueryLog",
+          "group": "9_qlCommands",
+          "when": "view == codeQLQueryHistory"
+        },
+        {
           "command": "codeQLTests.showOutputDifferences",
           "group": "qltest@1",
           "when": "view == test-explorer && viewItem == testWithSource"
@@ -326,6 +335,10 @@
         },
         {
           "command": "codeQLQueryHistory.itemClicked",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.showQueryLog",
           "when": "false"
         },
         {

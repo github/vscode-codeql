@@ -107,7 +107,8 @@ describe('using the query server', function() {
     const logger: Logger = {
       log: async (s: string) => console.log('logger says', s),
       show: () => { /**/ },
-      removeAdditionalLogLocation: async () => { /**/ }
+      removeAdditionalLogLocation: async () => { /**/ },
+      getBaseLocation: () => ''
     };
     cliServer = new cli.CodeQLCliServer({
       async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {

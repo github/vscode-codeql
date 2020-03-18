@@ -129,6 +129,10 @@ export class QueryServerClient extends DisposableObject {
         this.logger.log(`No callback associated with run id ${res.runId}, continuing without executing any callback`);
       }
       else {
+        const baseLocation = this.logger.getBaseLocation();
+        if (baseLocation && this.activeQueryName) {
+          res.logFileLocation = path.join(baseLocation, this.activeQueryName);
+        }
         this.evaluationResultCallbacks[res.runId](res);
       }
       return {};

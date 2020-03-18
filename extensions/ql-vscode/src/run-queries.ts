@@ -174,6 +174,7 @@ export interface QueryWithResults {
   readonly result: messages.EvaluationResult;
   readonly database: DatabaseInfo;
   readonly options: QueryHistoryItemOptions;
+  readonly logFileLocation?: string;
 }
 
 export async function clearCacheInDatabase(
@@ -462,7 +463,8 @@ export async function compileAndRunQueryAgainstDatabase(
         name: db.name,
         databaseUri: db.databaseUri.toString(true)
       },
-      options: historyItemOptions
+      options: historyItemOptions,
+      logFileLocation: result.logFileLocation
     };
   } else {
     // Error dialogs are limited in size and scrollability,

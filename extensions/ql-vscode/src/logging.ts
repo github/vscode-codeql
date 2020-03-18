@@ -26,6 +26,11 @@ export interface Logger {
    * @param location log to remove
    */
   removeAdditionalLogLocation(location: string): void;
+
+  /**
+   * The base location location where all side log files are stored.
+   */
+  getBaseLocation(): string | undefined;
 }
 
 export type ProgressReporter = Progress<{ message: string }>;
@@ -97,6 +102,10 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
         this.additionalLocations.delete(logPath);
       }
     }
+  }
+
+  getBaseLocation() {
+    return this.additionalLogLocationPath;
   }
 }
 

@@ -14,6 +14,7 @@ export class CompletedQuery implements QueryWithResults {
   readonly query: QueryInfo;
   readonly result: messages.EvaluationResult;
   readonly database: DatabaseInfo;
+  readonly logFileLocation?: string
   options: QueryHistoryItemOptions;
 
   /**
@@ -37,6 +38,7 @@ export class CompletedQuery implements QueryWithResults {
     this.query = evalaution.query;
     this.result = evalaution.result;
     this.database = evalaution.database;
+    this.logFileLocation = evalaution.logFileLocation;
     this.time = new Date().toLocaleString();
     this.sortedResultsInfo = new Map();
     this.options = evalaution.options;
