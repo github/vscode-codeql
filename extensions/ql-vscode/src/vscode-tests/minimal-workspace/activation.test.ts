@@ -1,6 +1,12 @@
 import * as assert from 'assert';
+import * as chai from 'chai';
+import * as chaiAsPromised from 'chai-as-promised';
+import 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import * as determiningSelectedQueryTest from './determining-selected-query-test';
+
+chai.use(chaiAsPromised);
 
 describe('launching with a minimal workspace', async () => {
   const ext = vscode.extensions.getExtension('GitHub.vscode-codeql');
@@ -24,3 +30,5 @@ describe('launching with a minimal workspace', async () => {
     }, 1000);
   });
 });
+
+determiningSelectedQueryTest.run();
