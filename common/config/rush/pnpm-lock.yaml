@@ -9,6 +9,7 @@ dependencies:
   '@rush-temp/typescript-config': 'file:projects/typescript-config.tgz'
   '@rush-temp/vscode-codeql': 'file:projects/vscode-codeql.tgz'
   '@types/chai': 4.2.10
+  '@types/chai-as-promised': 7.1.2
   '@types/child-process-promise': 2.2.1
   '@types/classnames': 2.2.10
   '@types/fs-extra': 8.1.0
@@ -35,6 +36,7 @@ dependencies:
   '@typescript-eslint/parser': 2.23.0_eslint@6.8.0+typescript@3.8.3
   ansi-colors: 4.1.1
   chai: 4.2.0
+  chai-as-promised: 7.1.1_chai@4.2.0
   child-process-promise: 2.2.1
   classnames: 2.2.6
   css-loader: 3.1.0_webpack@4.42.0
@@ -322,6 +324,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-VQgHxyPMTj3hIlq9SY1mctqx+Jj8kpQfoLvDlVSDNOyuYs8JYfkuY3OW/4+dO657yPmNhHpePRx0/Tje5ImNVQ==
+  /@types/chai-as-promised/7.1.2:
+    dependencies:
+      '@types/chai': 4.2.10
+    dev: false
+    resolution:
+      integrity: sha512-PO2gcfR3Oxa+u0QvECLe1xKXOqYTzCmWf0FhLhjREoW3fPAVamjihL7v1MOVLJLsnAMdLcjkfrs01yvDMwVK4Q==
   /@types/chai/4.2.10:
     dev: false
     resolution:
@@ -1407,6 +1415,15 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
+  /chai-as-promised/7.1.1_chai@4.2.0:
+    dependencies:
+      chai: 4.2.0
+      check-error: 1.0.2
+    dev: false
+    peerDependencies:
+      chai: '>= 2.1.2 < 5'
+    resolution:
+      integrity: sha512-azL6xMoi+uxu6z4rhWQ1jbdUhOMhis2PvscD/xjLqNMkv3BPPp2JyyuTHOrf9BOosGpNQ11v6BKv/g57RXbiaA==
   /chai/4.2.0:
     dependencies:
       assertion-error: 1.1.0
@@ -7046,7 +7063,7 @@ packages:
     peerDependencies:
       glob: '*'
     resolution:
-      integrity: sha512-14DvfY6Fj3HXp2/CNJ2zNh9MA8zPw9mUcr8WqkSsYvJow7JMcIlJ//OOONwpoSWtfrk1bk6Cin7jj9H79ItHQQ==
+      integrity: sha512-NkoIMaJdASYX4NjcB+nsEk/8Ff/2RLvHwL0efNOny3no6aNuJ3EkpNK0ZdX7HQdmTdY3IJPmjoJ3Rn4pkbxgdA==
       tarball: 'file:projects/build-tasks.tgz'
     version: 0.0.0
   'file:projects/semmle-bqrs.tgz_typescript@3.8.3':
@@ -7061,7 +7078,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-24GdnvMbGfQIWMfgDhift+kYJDnG7dX03NrpX4ajZ2rckteysvq2/K7XI1OXGvUuqrt3m0/+GRDHpSI9XKDJJA==
+      integrity: sha512-lE3FBYrOVF1JH0ZqvF4YA+bed3JPWYucsnFe+XL140a/YR19XD+TTHIfov7VpR9qdyWfARgvmR+gf2qsguXTKQ==
       tarball: 'file:projects/semmle-bqrs.tgz'
     version: 0.0.0
   'file:projects/semmle-io-node.tgz_typescript@3.8.3':
@@ -7076,7 +7093,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-Bj0ax/bASrHV7tamOuXZZdd3UOB4NBKdjdszIRaDvDRTu8RlEst+TVoUhkfy30qb2/6ePp3/juOJyyiBJN7u8Q==
+      integrity: sha512-MD9edC5HjrCfPmhktw6XmWotUmperj27/hDZiuMbuSlJ4jRKyiBtJ8Vk2Y4U41TrzsBlJfAwZW8tetPw5ujiLg==
       tarball: 'file:projects/semmle-io-node.tgz'
     version: 0.0.0
   'file:projects/semmle-io.tgz_typescript@3.8.3':
@@ -7090,7 +7107,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-NtyviDSevxbd+hj4J66LucOzo8LU2hJ1Jh0eHw0Qu3tRZPUT8HcQlseyy29AvZR8n8eppfEZiAm/JdiHfmRPMA==
+      integrity: sha512-ta1lLi1COIeFwpwH523cWheWx6OE8GTqguQmOA7G6CwRF41RYbbREf/4KlOLKO/uG2akhhl+3gcWY2c5/VDC/A==
       tarball: 'file:projects/semmle-io.tgz'
     version: 0.0.0
   'file:projects/semmle-vscode-utils.tgz':
@@ -7102,19 +7119,20 @@ packages:
     dev: false
     name: '@rush-temp/semmle-vscode-utils'
     resolution:
-      integrity: sha512-5y5r8SDoN9Fp44naC9gUe8rOexeckXg2T0h9QCJAIcEgnFqOxzRc6Rv9gbMUStFKNh+rFlvmYmgPAdg5QkfgUg==
+      integrity: sha512-Dbwt0/Wd0VNKkRZRjFQv3hmGy/UDt36HDtEDsNgZIcQACoY1j2+mJavpQ+ZzCg4Ftj06eHDVk+ptzUEd+8Ybzw==
       tarball: 'file:projects/semmle-vscode-utils.tgz'
     version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
     name: '@rush-temp/typescript-config'
     resolution:
-      integrity: sha512-XuUIySaNoooIduvehnlKYaHqZJmmQoCqB1RtKhNszjCYZaSSJAnKVucViWBf5oNLKSNP7NchrD7gcoBlQ3xYvw==
+      integrity: sha512-qJbtY2jvt6LKkmUt/seiYyXSEB6Oip/rW+SxofQEnpyplgIQv7whTZb6g5pwlSLGl8goTaQFm4NfazKhFmxXvQ==
       tarball: 'file:projects/typescript-config.tgz'
     version: 0.0.0
   'file:projects/vscode-codeql.tgz':
     dependencies:
       '@types/chai': 4.2.10
+      '@types/chai-as-promised': 7.1.2
       '@types/child-process-promise': 2.2.1
       '@types/classnames': 2.2.10
       '@types/fs-extra': 8.1.0
@@ -7137,6 +7155,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 2.23.0_2510d86781fe783b47b58303c18a0d9b
       '@typescript-eslint/parser': 2.23.0_eslint@6.8.0+typescript@3.8.3
       chai: 4.2.0
+      chai-as-promised: 7.1.1_chai@4.2.0
       child-process-promise: 2.2.1
       classnames: 2.2.6
       css-loader: 3.1.0_webpack@4.42.0
@@ -7176,7 +7195,7 @@ packages:
     dev: false
     name: '@rush-temp/vscode-codeql'
     resolution:
-      integrity: sha512-S/tOZMV3yl8jqavEC2X5ly4pwsb8hcACsAfEggZ5x/l7HDplczVae+Xtc49JFeMueYF00KZN1dSM0cADeftzew==
+      integrity: sha512-k2FwvquGbFZ3IZb22wpYq220ijuGaG2oAgw5b/vnJ8ZnqBZGATYF6+0T5xZd/hQ7bRgRLDt0wKNni+7VK83ZAQ==
       tarball: 'file:projects/vscode-codeql.tgz'
     version: 0.0.0
 registry: ''
@@ -7191,6 +7210,7 @@ specifiers:
   '@rush-temp/typescript-config': 'file:./projects/typescript-config.tgz'
   '@rush-temp/vscode-codeql': 'file:./projects/vscode-codeql.tgz'
   '@types/chai': ^4.1.7
+  '@types/chai-as-promised': ~7.1.2
   '@types/child-process-promise': ^2.2.1
   '@types/classnames': ~2.2.9
   '@types/fs-extra': ^8.0.0
@@ -7217,6 +7237,7 @@ specifiers:
   '@typescript-eslint/parser': ~2.23.0
   ansi-colors: ^4.0.1
   chai: ^4.2.0
+  chai-as-promised: ~7.1.1
   child-process-promise: ^2.2.1
   classnames: ~2.2.6
   css-loader: ~3.1.0
