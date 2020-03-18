@@ -139,7 +139,7 @@ export class QueryInfo {
         target: this.quickEvalPosition ? {
           quickEval: { quickEvalPos: this.quickEvalPosition }
         } : {
-           query: {}
+          query: {}
         }
       };
 
@@ -176,8 +176,9 @@ export interface QueryWithResults {
   readonly options: QueryHistoryItemOptions;
 }
 
-export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbItem: DatabaseItem):
-  Promise<messages.ClearCacheResult> {
+export async function clearCacheInDatabase(
+  qs: qsClient.QueryServerClient, dbItem: DatabaseItem
+): Promise<messages.ClearCacheResult> {
   if (dbItem.contents === undefined) {
     throw new Error('Can\'t clear the cache in an invalid database.');
   }

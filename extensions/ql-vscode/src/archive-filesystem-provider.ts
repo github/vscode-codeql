@@ -51,7 +51,10 @@ export type Entry = File | Directory;
  */
 export type DirectoryHierarchyMap = Map<string, Map<string, vscode.FileType>>;
 
-export type ZipFileReference = { sourceArchiveZipPath: string, pathWithinSourceArchive: string };
+export type ZipFileReference = {
+  sourceArchiveZipPath: string;
+  pathWithinSourceArchive: string;
+};
 
 /** Encodes a reference to a source file within a zipped source archive into a single URI. */
 export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
@@ -239,7 +242,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   }
 
   private async _lookupAsFile(uri: vscode.Uri): Promise<File> {
-    let entry = await this._lookup(uri);
+    const entry = await this._lookup(uri);
     if (entry instanceof File) {
       return entry;
     }

@@ -15,14 +15,14 @@ import { QueryWithResults } from './run-queries';
  */
 
 export type QueryHistoryItemOptions = {
-  label?: string, // user-settable label
-  queryText?: string, // stored query for quick query
+  label?: string; // user-settable label
+  queryText?: string; // stored query for quick query
 }
 
 /**
  * Path to icon to display next to a failed query history item.
  */
-const FAILED_QUERY_HISTORY_ITEM_ICON: string = 'media/red-x.svg';
+const FAILED_QUERY_HISTORY_ITEM_ICON = 'media/red-x.svg';
 
 /**
  * Tree data provider for the query history view.
@@ -122,7 +122,7 @@ export class QueryHistoryManager {
   ctx: ExtensionContext;
   treeView: vscode.TreeView<CompletedQuery>;
   selectedCallback: ((item: CompletedQuery) => void) | undefined;
-  lastItemClick: { time: Date, item: CompletedQuery } | undefined;
+  lastItemClick: { time: Date; item: CompletedQuery } | undefined;
 
   async invokeCallbackOn(queryHistoryItem: CompletedQuery) {
     if (this.selectedCallback !== undefined) {
