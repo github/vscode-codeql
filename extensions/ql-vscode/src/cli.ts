@@ -414,7 +414,7 @@ export class CodeQLCliServer implements Disposable {
     const subcommandArgs = [
       '--query', queryPath,
       "--additional-packs",
-      path.join(...workspaces)
+      workspaces.join(path.delimiter)
     ];
     return await this.runJsonCodeQlCliCommand<QuerySetup>(['resolve', 'library-path'], subcommandArgs, "Resolving library paths");
   }
