@@ -38,12 +38,12 @@ export function getResult(sarif: sarif.Log, key: Result): sarif.Result | undefin
  * Looks up a specific path in a result set.
  */
 export function getPath(sarif: sarif.Log, key: Path): sarif.ThreadFlow | undefined {
-  let result = getResult(sarif, key);
+  const result = getResult(sarif, key);
   if (result === undefined) return undefined;
   let index = -1;
   if (result.codeFlows === undefined) return undefined;
-  for (let codeFlows of result.codeFlows) {
-    for (let threadFlow of codeFlows.threadFlows) {
+  for (const codeFlows of result.codeFlows) {
+    for (const threadFlow of codeFlows.threadFlows) {
       ++index;
       if (index == key.pathIndex)
         return threadFlow;
@@ -56,7 +56,7 @@ export function getPath(sarif: sarif.Log, key: Path): sarif.ThreadFlow | undefin
  * Looks up a specific path node in a result set.
  */
 export function getPathNode(sarif: sarif.Log, key: PathNode): sarif.Location | undefined {
-  let path = getPath(sarif, key);
+  const path = getPath(sarif, key);
   if (path === undefined) return undefined;
   return path.locations[key.pathNodeIndex];
 }
@@ -85,7 +85,7 @@ export function equalsNotUndefined(key1: PathNode | undefined, key2: PathNode | 
  */
 export function getAllPaths(result: sarif.Result): sarif.ThreadFlow[] {
   if (result.codeFlows === undefined) return [];
-  let paths = [];
+  const paths = [];
   for (const codeFlow of result.codeFlows) {
     for (const threadFlow of codeFlow.threadFlows) {
       paths.push(threadFlow);

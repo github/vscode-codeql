@@ -5,9 +5,9 @@ import { runTests } from 'vscode-test';
 // would simply use instead, but for the fact that it doesn't export
 // it.
 type Suite = {
-  extensionDevelopmentPath: string,
-  extensionTestsPath: string,
-  launchArgs: string[]
+  extensionDevelopmentPath: string;
+  extensionTestsPath: string;
+  launchArgs: string[];
 };
 
 /**

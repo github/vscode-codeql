@@ -63,7 +63,7 @@ async function* getChunkIterator(response: Response): AsyncIterableIterator<Uint
 }
 
 function translatePrimitiveValue(value: PrimitiveColumnValue, type: PrimitiveTypeKind):
-  ResultValue {
+ResultValue {
 
   switch (type) {
     case 'i':

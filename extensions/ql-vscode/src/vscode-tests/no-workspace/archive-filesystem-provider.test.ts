@@ -15,7 +15,7 @@ describe("archive filesystem provider", () => {
 });
 
 describe('source archive uri encoding', function() {
-  const testCases: { name: string, input: ZipFileReference }[] = [
+  const testCases: { name: string; input: ZipFileReference }[] = [
     {
       name: 'mixed case and unicode',
       input: { sourceArchiveZipPath: "/I-\u2665-codeql.zip", pathWithinSourceArchive: "/foo/bar" }

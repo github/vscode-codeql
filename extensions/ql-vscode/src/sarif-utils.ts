@@ -3,8 +3,8 @@ import * as path from "path"
 import { LocationStyle, ResolvableLocationValue } from "semmle-bqrs";
 
 export interface SarifLink {
-  dest: number
-  text: string
+  dest: number;
+  text: string;
 }
 
 
@@ -15,7 +15,7 @@ type ParsedSarifLocation =
   // doesn't really need to see. We ensure that `userVisibleFile` will not contain
   // that, and is appropriate for display in the UI.
   & { userVisibleFile: string }
-  | { t: 'NoLocation', hint: string };
+  | { t: 'NoLocation'; hint: string };
 
 export type SarifMessageComponent = string | SarifLink
 
@@ -27,7 +27,7 @@ export function unescapeSarifText(message: string): string {
 }
 
 export function parseSarifPlainTextMessage(message: string): SarifMessageComponent[] {
-  let results: SarifMessageComponent[] = [];
+  const results: SarifMessageComponent[] = [];
 
   // We want something like "[linkText](4)", except that "[" and "]" may be escaped. The lookbehind asserts
   // that the initial [ is not escaped. Then we parse a link text with "[" and "]" escaped. Then we parse the numerical target.
