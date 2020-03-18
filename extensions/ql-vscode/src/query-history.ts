@@ -145,6 +145,7 @@ export class QueryHistoryManager {
 
   async handleRemoveHistoryItem(queryHistoryItem: CompletedQuery) {
     this.treeDataProvider.remove(queryHistoryItem);
+    queryHistoryItem.dispose();
     const current = this.treeDataProvider.getCurrent();
     if (current !== undefined) {
       this.treeView.reveal(current);

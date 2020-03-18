@@ -16,6 +16,7 @@ export class CompletedQuery implements QueryWithResults {
   readonly database: DatabaseInfo;
   readonly logFileLocation?: string
   options: QueryHistoryItemOptions;
+  dispose: () => void;
 
   /**
    * Map from result set name to SortedResultSetInfo.
@@ -32,16 +33,18 @@ export class CompletedQuery implements QueryWithResults {
   interpretedResultsSortState: InterpretedResultsSortState | undefined;
 
   constructor(
-    evalaution: QueryWithResults,
+    evaluation: QueryWithResults,
     public config: QueryHistoryConfig,
   ) {
-    this.query = evalaution.query;
-    this.result = evalaution.result;
-    this.database = evalaution.database;
-    this.logFileLocation = evalaution.logFileLocation;
+    this.query = evaluation.query;
+    this.result = evaluation.result;
+    this.database = evaluation.database;
+    this.logFileLocation = evaluation.logFileLocation;
+    this.options = evaluation.options;
+    this.dispose = evaluation.dispose;
+
     this.time = new Date().toLocaleString();
     this.sortedResultsInfo = new Map();
-    this.options = evalaution.options;
   }
 
   get databaseName(): string {

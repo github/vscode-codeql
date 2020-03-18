@@ -143,7 +143,6 @@ export class QueryInfo {
         }
       };
 
-
       compiled = await helpers.withProgress({
         location: vscode.ProgressLocation.Notification,
         title: "Compiling Query",
@@ -175,6 +174,7 @@ export interface QueryWithResults {
   readonly database: DatabaseInfo;
   readonly options: QueryHistoryItemOptions;
   readonly logFileLocation?: string;
+  readonly dispose: () => void;
 }
 
 export async function clearCacheInDatabase(
@@ -464,7 +464,10 @@ export async function compileAndRunQueryAgainstDatabase(
         databaseUri: db.databaseUri.toString(true)
       },
       options: historyItemOptions,
-      logFileLocation: result.logFileLocation
+      logFileLocation: result.logFileLocation,
+      dispose: () => {
+        qs.logger.removeAdditionalLogLocation(result.logFileLocation);
+      }
     };
   } else {
     // Error dialogs are limited in size and scrollability,
@@ -516,5 +519,6 @@ function createSyntheticResult(
       databaseUri: db.databaseUri.toString(true)
     },
     options: historyItemOptions,
+    dispose: () => { /**/ },
   };
 }

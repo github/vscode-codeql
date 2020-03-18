@@ -25,7 +25,7 @@ export interface Logger {
    * Remove the log at the specified location
    * @param location log to remove
    */
-  removeAdditionalLogLocation(location: string): void;
+  removeAdditionalLogLocation(location: string | undefined): void;
 
   /**
    * The base location location where all side log files are stored.
@@ -93,9 +93,11 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
     this.outputChannel.show(preserveFocus);
   }
 
-  removeAdditionalLogLocation(location: string): void {
-    if (this.additionalLogLocationPath) {
-      const logPath = path.join(this.additionalLogLocationPath, location);
+  removeAdditionalLogLocation(location: string | undefined): void {
+    if (this.additionalLogLocationPath && location) {
+      const logPath = location.startsWith(this.additionalLogLocationPath)
+        ? location
+        : path.join(this.additionalLogLocationPath, location);
       const additional = this.additionalLocations.get(logPath);
       if (additional) {
         this.disposeAndStopTracking(additional);
