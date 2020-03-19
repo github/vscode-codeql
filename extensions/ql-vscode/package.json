@@ -396,7 +396,8 @@
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^5.2.1",
     "vscode-test-adapter-api": "~1.7.0",
-    "vscode-test-adapter-util": "~0.7.0"
+    "vscode-test-adapter-util": "~0.7.0",
+    "minimist": "~1.2.5"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
