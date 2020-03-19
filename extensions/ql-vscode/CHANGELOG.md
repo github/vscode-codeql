@@ -58,7 +58,6 @@ hour for unauthenticated IPs.
 - Fix the automatic upgrading of CodeQL databases when using upgrade scripts from the workspace.
 - Allow removal of items from the CodeQL Query History view.
 
-
 ## 1.0.0 - 14 November 2019
 
 Initial release of CodeQL for Visual Studio Code.
