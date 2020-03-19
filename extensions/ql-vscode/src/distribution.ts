@@ -19,7 +19,7 @@ import { getCodeQlCliVersion, tryParseVersionString, Version } from "./cli-versi
 
 /**
  * Default value for the owner name of the extension-managed distribution on GitHub.
- * 
+ *
  * We set the default here rather than as a default config value so that this default is invoked
  * upon blanking the setting.
  */
@@ -27,7 +27,7 @@ const DEFAULT_DISTRIBUTION_OWNER_NAME = "github";
 
 /**
  * Default value for the repository name of the extension-managed distribution on GitHub.
- * 
+ *
  * We set the default here rather than as a default config value so that this default is invoked
  * upon blanking the setting.
  */
@@ -35,7 +35,7 @@ const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
 
 /**
  * Version constraint for the CLI.
- * 
+ *
  * This applies to both extension-managed and CLI distributions.
  */
 export const DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT: VersionConstraint = {
@@ -46,8 +46,8 @@ export const DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT: VersionConstraint = {
 }
 
 export interface DistributionProvider {
-  getCodeQlPathWithoutVersionCheck(): Promise<string | undefined>,
-  onDidChangeDistribution?: Event<void>
+  getCodeQlPathWithoutVersionCheck(): Promise<string | undefined>;
+  onDidChangeDistribution?: Event<void>;
 }
 
 export class DistributionManager implements DistributionProvider {
@@ -99,7 +99,7 @@ export class DistributionManager implements DistributionProvider {
    */
   public async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
     // Check config setting, then extension specific distribution, then PATH.
-    if (this._config.customCodeQlPath !== undefined) {
+    if (this._config.customCodeQlPath) {
       if (!await fs.pathExists(this._config.customCodeQlPath)) {
         showAndLogErrorMessage(`The CodeQL executable path is specified as "${this._config.customCodeQlPath}" ` +
           "by a configuration setting, but a CodeQL executable could not be found at that path. Please check " +
@@ -130,7 +130,7 @@ export class DistributionManager implements DistributionProvider {
   /**
    * Check for updates to the extension-managed distribution.  If one has not already been installed,
    * this will return an update available result with the latest available release.
-   * 
+   *
    * Returns a failed promise if an unexpected error occurs during installation.
    */
   public async checkForUpdatesToExtensionManagedDistribution(
@@ -152,7 +152,7 @@ export class DistributionManager implements DistributionProvider {
 
   /**
    * Installs a release of the extension-managed distribution.
-   * 
+   *
    * Returns a failed promise if an unexpected error occurs during installation.
    */
   public installExtensionManagedDistributionRelease(release: Release,
@@ -200,7 +200,7 @@ class ExtensionSpecificDistributionManager {
   /**
    * Check for updates to the extension-managed distribution.  If one has not already been installed,
    * this will return an update available result with the latest available release.
-   * 
+   *
    * Returns a failed promise if an unexpected error occurs during installation.
    */
   public async checkForUpdatesToDistribution(): Promise<DistributionUpdateCheckResult> {
@@ -216,7 +216,7 @@ class ExtensionSpecificDistributionManager {
 
   /**
    * Installs a release of the extension-managed distribution.
-   * 
+   *
    * Returns a failed promise if an unexpected error occurs during installation.
    */
   public async installDistributionRelease(release: Release,
@@ -247,8 +247,8 @@ class ExtensionSpecificDistributionManager {
 
       if (progressCallback && contentLength !== null) {
         const totalNumBytes = parseInt(contentLength, 10);
-        const bytesToDisplayMB = (numBytes: number) => `${(numBytes / (1024 * 1024)).toFixed(1)} MB`;
-        const updateProgress = () => {
+        const bytesToDisplayMB = (numBytes: number): string => `${(numBytes / (1024 * 1024)).toFixed(1)} MB`;
+        const updateProgress = (): void => {
           progressCallback({
             step: numBytesDownloaded,
             maxStep: totalNumBytes,
@@ -282,7 +282,7 @@ class ExtensionSpecificDistributionManager {
 
   /**
    * Remove the extension-managed distribution.
-   * 
+   *
    * This should not be called for a distribution that is currently in use, as remove may fail.
    */
   private async removeDistribution(): Promise<void> {
@@ -357,7 +357,7 @@ export class ReleasesApiConsumer {
     this._repoName = repoName;
   }
 
-  public async getLatestRelease(versionConstraint: VersionConstraint, includePrerelease: boolean = false): Promise<Release> {
+  public async getLatestRelease(versionConstraint: VersionConstraint, includePrerelease = false): Promise<Release> {
     const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases`;
     const allReleases: GithubRelease[] = await (await this.makeApiCall(apiPath)).json();
     const compatibleReleases = allReleases.filter(release => {
@@ -428,7 +428,7 @@ export class ReleasesApiConsumer {
   private async makeRawRequest(
     requestUrl: string,
     headers: { [key: string]: string },
-    redirectCount: number = 0): Promise<fetch.Response> {
+    redirectCount = 0): Promise<fetch.Response> {
     const response = await fetch.default(requestUrl, {
       headers,
       redirect: "manual"
@@ -480,7 +480,7 @@ export async function extractZipArchive(archivePath: string, outPath: string): P
 
 /**
  * Comparison of semantic versions.
- * 
+ *
  * Returns a positive number if a is greater than b.
  * Returns 0 if a equals b.
  * Returns a negative number if a is less than b.
@@ -502,7 +502,7 @@ export function versionCompare(a: Version, b: Version): number {
 }
 
 function codeQlLauncherName(): string {
-  return (os.platform() === "win32") ? "codeql.cmd" : "codeql";
+  return (os.platform() === "win32") ? "codeql.exe" : "codeql";
 }
 
 function isRedirectStatusCode(statusCode: number): boolean {
@@ -520,13 +520,16 @@ export enum FindDistributionResultKind {
   NoDistribution
 }
 
-export type FindDistributionResult = CompatibleDistributionResult | UnknownCompatibilityDistributionResult |
-  IncompatibleDistributionResult | NoDistributionResult;
+export type FindDistributionResult =
+  | CompatibleDistributionResult
+  | UnknownCompatibilityDistributionResult
+  | IncompatibleDistributionResult
+  | NoDistributionResult;
 
 interface CompatibleDistributionResult {
   codeQlPath: string;
   kind: FindDistributionResultKind.CompatibleDistribution;
-  version: Version
+  version: Version;
 }
 
 interface UnknownCompatibilityDistributionResult {
@@ -551,11 +554,14 @@ export enum DistributionUpdateCheckResultKind {
   UpdateAvailable
 }
 
-type DistributionUpdateCheckResult = AlreadyCheckedRecentlyResult | AlreadyUpToDateResult | InvalidLocationResult |
-  UpdateAvailableResult;
+type DistributionUpdateCheckResult =
+  | AlreadyCheckedRecentlyResult
+  | AlreadyUpToDateResult
+  | InvalidLocationResult
+  | UpdateAvailableResult;
 
 export interface AlreadyCheckedRecentlyResult {
-  kind: DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult
+  kind: DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult;
 }
 
 export interface AlreadyUpToDateResult {

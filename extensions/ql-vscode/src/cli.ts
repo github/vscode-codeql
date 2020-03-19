@@ -243,11 +243,12 @@ export class CodeQLCliServer implements Disposable {
         // Kill the process if it isn't already dead.
         this.killProcessIfRunning();
         // Report the error (if there is a stderr then use that otherwise just report the error cod or nodejs error)
-        if (stderrBuffers.length == 0) {
-          throw new Error(`${description} failed: ${err}`)
-        } else {
-          throw new Error(`${description} failed: ${Buffer.concat(stderrBuffers).toString("utf8")}`);
-        }
+        const newError =
+          stderrBuffers.length == 0
+          ? new Error(`${description} failed: ${err}`)
+          : new Error(`${description} failed: ${Buffer.concat(stderrBuffers).toString("utf8")}`);
+        newError.stack += (err.stack || '');
+        throw newError;
       } finally {
         this.logger.log(Buffer.concat(stderrBuffers).toString("utf8"));
         // Remove the listeners we set up.
@@ -604,7 +605,7 @@ export class CodeQLCliServer implements Disposable {
   resolveQlpacks(additionalPacks: string[], searchPath?: string[]): Promise<QlpacksInfo> {
     const args = ['--additional-packs', additionalPacks.join(path.delimiter)];
     if (searchPath !== undefined) {
-      args.push('--search-path', searchPath.join(path.delimiter));
+      args.push('--search-path', path.join(...searchPath));
     }
 
     return this.runJsonCodeQlCliCommand<QlpacksInfo>(

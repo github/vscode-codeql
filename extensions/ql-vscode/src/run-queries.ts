@@ -136,9 +136,12 @@ export class QueryInfo {
         },
         queryToCheck: this.program,
         resultPath: this.compiledQueryPath,
-        target: !!this.quickEvalPosition ? { quickEval: { quickEvalPos: this.quickEvalPosition } } : { query: {} }
+        target: this.quickEvalPosition ? {
+          quickEval: { quickEvalPos: this.quickEvalPosition }
+        } : {
+          query: {}
+        }
       };
-
 
       compiled = await helpers.withProgress({
         location: vscode.ProgressLocation.Notification,
@@ -170,10 +173,13 @@ export interface QueryWithResults {
   readonly result: messages.EvaluationResult;
   readonly database: DatabaseInfo;
   readonly options: QueryHistoryItemOptions;
+  readonly logFileLocation?: string;
+  readonly dispose: () => void;
 }
 
-export async function clearCacheInDatabase(qs: qsClient.QueryServerClient, dbItem: DatabaseItem):
-  Promise<messages.ClearCacheResult> {
+export async function clearCacheInDatabase(
+  qs: qsClient.QueryServerClient, dbItem: DatabaseItem
+): Promise<messages.ClearCacheResult> {
   if (dbItem.contents === undefined) {
     throw new Error('Can\'t clear the cache in an invalid database.');
   }
@@ -253,7 +259,7 @@ async function checkDbschemeCompatibility(
 
   if (query.dbItem.contents !== undefined && query.dbItem.contents.dbSchemeUri !== undefined) {
     const { scripts, finalDbscheme } = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath);
-    async function hash(filename: string): Promise<string> {
+    const hash = async function (filename: string): Promise<string> {
       return crypto.createHash('sha256').update(await fs.readFile(filename)).digest('hex');
     }
 
@@ -289,7 +295,7 @@ async function checkDbschemeCompatibility(
 }
 
 /** Prompts the user to save `document` if it has unsaved changes. */
-async function promptUserToSaveChanges(document: vscode.TextDocument) {
+async function promptUserToSaveChanges(document: vscode.TextDocument): Promise<void> {
   if (document.isDirty) {
     // TODO: add 'always save' button which records preference in configuration
     if (await helpers.showBinaryChoiceDialog('Query file has unsaved changes. Save now?')) {
@@ -299,8 +305,8 @@ async function promptUserToSaveChanges(document: vscode.TextDocument) {
 }
 
 type SelectedQuery = {
-  queryPath: string,
-  quickEvalPosition?: messages.Position
+  queryPath: string;
+  quickEvalPosition?: messages.Position;
 };
 
 /**
@@ -457,7 +463,11 @@ export async function compileAndRunQueryAgainstDatabase(
         name: db.name,
         databaseUri: db.databaseUri.toString(true)
       },
-      options: historyItemOptions
+      options: historyItemOptions,
+      logFileLocation: result.logFileLocation,
+      dispose: () => {
+        qs.logger.removeAdditionalLogLocation(result.logFileLocation);
+      }
     };
   } else {
     // Error dialogs are limited in size and scrollability,
@@ -466,7 +476,7 @@ export async function compileAndRunQueryAgainstDatabase(
     // However we don't show quick eval errors there so we need to display them anyway.
     qs.logger.log(`Failed to compile query ${query.program.queryPath} against database scheme ${query.program.dbschemePath}:`);
 
-    let formattedMessages: string[] = [];
+    const formattedMessages: string[] = [];
 
     for (const error of errors) {
       const message = error.message || "[no error message available]";
@@ -493,7 +503,7 @@ function createSyntheticResult(
   historyItemOptions: QueryHistoryItemOptions,
   message: string,
   resultType: number
-) {
+): QueryWithResults {
 
   return {
     query,
@@ -509,5 +519,6 @@ function createSyntheticResult(
       databaseUri: db.databaseUri.toString(true)
     },
     options: historyItemOptions,
+    dispose: () => { /**/ },
   };
 }

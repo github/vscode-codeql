@@ -64,11 +64,11 @@ const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
 const QUERY_SERVER_RESTARTING_SETTINGS = [NUMBER_OF_THREADS_SETTING, MEMORY_SETTING, DEBUG_SETTING];
 
 export interface QueryServerConfig {
-  codeQlPath: string,
-  debug: boolean,
-  numThreads: number,
-  queryMemoryMb?: number,
-  timeoutSecs: number,
+  codeQlPath: string;
+  debug: boolean;
+  numThreads: number;
+  queryMemoryMb?: number;
+  timeoutSecs: number;
   onDidChangeQueryServerConfiguration?: Event<void>;
 }
 
@@ -76,7 +76,7 @@ export interface QueryServerConfig {
 const QUERY_HISTORY_SETTINGS = [QUERY_HISTORY_FORMAT_SETTING];
 
 export interface QueryHistoryConfig {
-  format: string,
+  format: string;
   onDidChangeQueryHistoryConfiguration: Event<void>;
 }
 
@@ -111,7 +111,7 @@ abstract class ConfigListener extends DisposableObject {
 
 export class DistributionConfigListener extends ConfigListener implements DistributionConfig {
   public get customCodeQlPath(): string | undefined {
-    return CUSTOM_CODEQL_PATH_SETTING.getValue() ? CUSTOM_CODEQL_PATH_SETTING.getValue() : undefined;
+    return CUSTOM_CODEQL_PATH_SETTING.getValue() || undefined;
   }
 
   public get includePrerelease(): boolean {
@@ -119,7 +119,7 @@ export class DistributionConfigListener extends ConfigListener implements Distri
   }
 
   public get personalAccessToken(): string | undefined {
-    return PERSONAL_ACCESS_TOKEN_SETTING.getValue() ? PERSONAL_ACCESS_TOKEN_SETTING.getValue() : undefined;
+    return PERSONAL_ACCESS_TOKEN_SETTING.getValue() || undefined;
   }
 
   public get onDidChangeDistributionConfiguration(): Event<void> {

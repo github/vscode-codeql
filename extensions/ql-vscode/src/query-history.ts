@@ -4,6 +4,7 @@ import { ExtensionContext, window as Window } from 'vscode';
 import { CompletedQuery } from './query-results';
 import { QueryHistoryConfig } from './config';
 import { QueryWithResults } from './run-queries';
+import * as helpers from './helpers';
 
 /**
  * query-history.ts
@@ -15,14 +16,14 @@ import { QueryWithResults } from './run-queries';
  */
 
 export type QueryHistoryItemOptions = {
-  label?: string, // user-settable label
-  queryText?: string, // stored query for quick query
+  label?: string; // user-settable label
+  queryText?: string; // stored query for quick query
 }
 
 /**
  * Path to icon to display next to a failed query history item.
  */
-const FAILED_QUERY_HISTORY_ITEM_ICON: string = 'media/red-x.svg';
+const FAILED_QUERY_HISTORY_ITEM_ICON = 'media/red-x.svg';
 
 /**
  * Tree data provider for the query history view.
@@ -122,7 +123,7 @@ export class QueryHistoryManager {
   ctx: ExtensionContext;
   treeView: vscode.TreeView<CompletedQuery>;
   selectedCallback: ((item: CompletedQuery) => void) | undefined;
-  lastItemClick: { time: Date, item: CompletedQuery } | undefined;
+  lastItemClick: { time: Date; item: CompletedQuery } | undefined;
 
   async invokeCallbackOn(queryHistoryItem: CompletedQuery) {
     if (this.selectedCallback !== undefined) {
@@ -144,6 +145,7 @@ export class QueryHistoryManager {
 
   async handleRemoveHistoryItem(queryHistoryItem: CompletedQuery) {
     this.treeDataProvider.remove(queryHistoryItem);
+    queryHistoryItem.dispose();
     const current = this.treeDataProvider.getCurrent();
     if (current !== undefined) {
       this.treeView.reveal(current);
@@ -187,6 +189,20 @@ export class QueryHistoryManager {
     }
   }
 
+  async handleShowQueryLog(queryHistoryItem: CompletedQuery) {
+    if (queryHistoryItem.logFileLocation) {
+      try {
+        await vscode.window.showTextDocument(vscode.Uri.parse(queryHistoryItem.logFileLocation), {
+          viewColumn: vscode.ViewColumn.Beside
+        });
+      } catch (e) {
+        helpers.showAndLogErrorMessage(`Could not open log file ${queryHistoryItem.logFileLocation}`);
+      }
+    } else {
+      helpers.showAndLogWarningMessage('No log file available');
+    }
+  }
+
   constructor(
     ctx: ExtensionContext,
     private queryHistoryConfigListener: QueryHistoryConfig,
@@ -208,6 +224,7 @@ export class QueryHistoryManager {
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.openQuery', this.handleOpenQuery));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.removeHistoryItem', this.handleRemoveHistoryItem.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.setLabel', this.handleSetLabel.bind(this)));
+    ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.showQueryLog', this.handleShowQueryLog.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.itemClicked', async (item) => {
       return this.handleItemClicked(item);
     }));
