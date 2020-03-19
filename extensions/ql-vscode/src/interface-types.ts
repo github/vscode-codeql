@@ -18,10 +18,10 @@ export interface DatabaseInfo {
 
 /** Arbitrary query metadata */
 export interface QueryMetadata {
-  name?: string,
-  description?: string,
-  id?: string,
-  kind?: string
+  name?: string;
+  description?: string;
+  id?: string;
+  kind?: string;
 }
 
 export interface PreviousExecution {
@@ -70,18 +70,18 @@ export interface SetStateMsg {
   sortedResultsMap: SortedResultsMap;
   interpretation: undefined | Interpretation;
   database: DatabaseInfo;
-  metadata?: QueryMetadata
+  metadata?: QueryMetadata;
   /**
    * Whether to keep displaying the old results while rendering the new results.
    *
    * This is useful to prevent properties like scroll state being lost when rendering the sorted results after sorting a column.
    */
   shouldKeepOldResultsWhileRendering: boolean;
-};
+}
 
 /** Advance to the next or previous path no in the path viewer */
 export interface NavigatePathMsg {
-  t: 'navigatePath',
+  t: 'navigatePath';
 
   /** 1 for next, -1 for previous */
   direction: number;
@@ -100,20 +100,20 @@ interface ViewSourceFileMsg {
   t: 'viewSourceFile';
   loc: ResolvableLocationValue;
   databaseUri: string;
-};
+}
 
 interface ToggleDiagnostics {
   t: 'toggleDiagnostics';
   databaseUri: string;
-  metadata?: QueryMetadata
+  metadata?: QueryMetadata;
   origResultsPaths: ResultsPaths;
   visible: boolean;
   kind?: string;
-};
+}
 
 interface ResultViewLoaded {
   t: 'resultViewLoaded';
-};
+}
 
 export enum SortDirection {
   asc, desc

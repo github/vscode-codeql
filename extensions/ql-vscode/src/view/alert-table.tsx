@@ -84,7 +84,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
     function renderRelatedLocations(msg: string, relatedLocations: Sarif.Location[]): JSX.Element[] {
       const relatedLocationsById: { [k: string]: Sarif.Location } = {};
-      for (let loc of relatedLocations) {
+      for (const loc of relatedLocations) {
         relatedLocationsById[loc.id!] = loc;
       }
 
@@ -239,7 +239,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
               const additionalMsg = step.location !== undefined ?
                 renderSarifLocation(step.location, pathNodeKey) :
                 '';
-              let isSelected = Keys.equalsNotUndefined(this.state.selectedPathNode, pathNodeKey);
+              const isSelected = Keys.equalsNotUndefined(this.state.selectedPathNode, pathNodeKey);
               const stepIndex = pathNodeIndex + 1; // Convert to 1-based
               const zebraIndex = resultIndex + stepIndex;
               rows.push(
@@ -271,23 +271,23 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
   private handleNavigationEvent(event: NavigationEvent) {
     this.setState(prevState => {
-      let { selectedPathNode } = prevState;
+      const { selectedPathNode } = prevState;
       if (selectedPathNode === undefined) return prevState;
 
-      let path = Keys.getPath(this.props.resultSet.sarif, selectedPathNode);
+      const path = Keys.getPath(this.props.resultSet.sarif, selectedPathNode);
       if (path === undefined) return prevState;
 
-      let nextIndex = selectedPathNode.pathNodeIndex + event.direction;
+      const nextIndex = selectedPathNode.pathNodeIndex + event.direction;
       if (nextIndex < 0 || nextIndex >= path.locations.length) return prevState;
 
-      let sarifLoc = path.locations[nextIndex].location;
+      const sarifLoc = path.locations[nextIndex].location;
       if (sarifLoc === undefined) return prevState;
 
-      let loc = parseSarifLocation(sarifLoc, this.props.resultSet.sourceLocationPrefix);
+      const loc = parseSarifLocation(sarifLoc, this.props.resultSet.sourceLocationPrefix);
       if (loc.t === 'NoLocation') return prevState;
 
       jumpToLocation(loc, this.props.databaseUri);
-      let newSelection = { ...selectedPathNode, pathNodeIndex: nextIndex };
+      const newSelection = { ...selectedPathNode, pathNodeIndex: nextIndex };
       return { ...prevState, selectedPathNode: newSelection };
     });
   }

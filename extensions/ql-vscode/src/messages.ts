@@ -216,19 +216,19 @@ export interface QlFileSet {
   /**
    * The files imported by the given file
    */
-  imports: { [key: string]: string[]; };
+  imports: { [key: string]: string[] };
   /**
    * An id of each file
    */
-  nodeNumbering: { [key: string]: number; };
+  nodeNumbering: { [key: string]: number };
   /**
    * The code for each file
    */
-  qlCode: { [key: string]: string; };
+  qlCode: { [key: string]: string };
   /**
    * The resolution of an import in each directory.
    */
-  resolvedDirImports: { [key: string]: { [key: string]: string; }; };
+  resolvedDirImports: { [key: string]: { [key: string]: string } };
 }
 
 /**
@@ -313,6 +313,7 @@ export type Severity = number;
  * Severity of different messages. This namespace is intentionally not
  * an enum, see "for the sake of extensibility" comment above.
  */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Severity {
   /**
    * The message is a compilation error.
@@ -360,6 +361,7 @@ export type ResultColumnKind = number;
  * The kind of a result column. This namespace is intentionally not an enum, see "for the sake of
  * extensibility" comment above.
  */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ResultColumnKind {
   /**
    * A column of type `float`
@@ -635,7 +637,7 @@ export interface EvaluateQueriesParams {
   useSequenceHint: boolean;
 }
 
-export type TemplateDefinitions = { [key: string]: TemplateSource; }
+export type TemplateDefinitions = { [key: string]: TemplateSource }
 
 /**
  * A single query that should be run
@@ -748,7 +750,7 @@ export interface ResultSet {
 /**
  * The type returned when the evaluation is complete
  */
-export interface EvaluationComplete { }
+export type EvaluationComplete = {};
 
 /**
  * The result of a single query
@@ -790,6 +792,7 @@ export type QueryResultType = number;
  * The result of running a query. This namespace is intentionally not
  * an enum, see "for the sake of extensibility" comment above.
  */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace QueryResultType {
   /**
    * The query ran successfully
@@ -862,11 +865,11 @@ export interface WithProgressId<T> {
   /**
    * The main body
    */
-  body: T,
+  body: T;
   /**
    * The id used to report progress updates
    */
-  progressId: number
+  progressId: number;
 }
 
 export interface ProgressMessage {
@@ -935,7 +938,7 @@ export const runUpgrade = new rpc.RequestType<WithProgressId<RunUpgradeParams>, 
  * Request returned to the client to notify completion of a query.
  * The full runQueries job is completed when all queries are acknowledged.
  */
-export const completeQuery = new rpc.RequestType<EvaluationResult, Object, void, void>('evaluation/queryCompleted');
+export const completeQuery = new rpc.RequestType<EvaluationResult, Record<string, any>, void, void>('evaluation/queryCompleted');
 
 /**
  * A notification that the progress has been changed.

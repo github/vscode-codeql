@@ -6,7 +6,7 @@ import { Discovery } from './discovery';
 export interface QLPack {
   name: string;
   uri: Uri;
-};
+}
 
 /**
  * Service to discover all available QL packs in a workspace folder.

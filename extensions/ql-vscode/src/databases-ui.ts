@@ -9,7 +9,7 @@ import { clearCacheInDatabase, UserCancellationException } from './run-queries';
 import * as qsClient from './queryserver-client';
 import { upgradeDatabase } from './upgrades';
 
-type ThemableIconPath = { light: string, dark: string } | string;
+type ThemableIconPath = { light: string; dark: string } | string;
 
 /**
  * Path to icons to display next to currently selected database.

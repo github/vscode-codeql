@@ -88,7 +88,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     new EventEmitter<TestLoadStartedEvent | TestLoadFinishedEvent>());
   private readonly _testStates = this.push(
     new EventEmitter<TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent |
-      TestEvent>());
+    TestEvent>());
   private readonly _autorun = this.push(new EventEmitter<void>());
   private runningTask?: vscode.CancellationTokenSource = undefined;
 
@@ -109,7 +109,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
   }
 
   public get testStates(): Event<TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent |
-    TestEvent> {
+  TestEvent> {
 
     return this._testStates.event;
   }
@@ -119,7 +119,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
   }
 
   private static createTestOrSuiteInfos(testNodes: readonly QLTestNode[]):
-    (TestSuiteInfo | TestInfo)[] {
+  (TestSuiteInfo | TestInfo)[] {
 
     return testNodes.map((childNode) => {
       return QLTestAdapter.createTestOrSuiteInfo(childNode);
@@ -149,7 +149,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
   }
 
   private static createTestSuiteInfo(testDirectory: QLTestDirectory, label: string):
-    TestSuiteInfo {
+  TestSuiteInfo {
 
     return {
       type: 'suite',

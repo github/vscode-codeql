@@ -131,7 +131,7 @@ export async function showInformationMessageWithAction(message: string, actionMe
 /** Gets all active workspace folders that are on the filesystem. */
 export function getOnDiskWorkspaceFolders() {
   const workspaceFolders = workspace.workspaceFolders || [];
-  let diskWorkspaceFolders: string[] = [];
+  const diskWorkspaceFolders: string[] = [];
   for (const workspaceFolder of workspaceFolders) {
     if (workspaceFolder.uri.scheme === "file")
       diskWorkspaceFolders.push(workspaceFolder.uri.fsPath)
@@ -215,15 +215,15 @@ export enum InvocationRateLimiterResultKind {
  * The function was invoked and returned the value `result`.
  */
 interface InvokedResult<T> {
-  kind: InvocationRateLimiterResultKind.Invoked,
-  result: T
+  kind: InvocationRateLimiterResultKind.Invoked;
+  result: T;
 }
 
 /**
  * The function was not invoked as the minimum interval since the last invocation had not elapsed.
  */
 interface RateLimitedResult {
-  kind: InvocationRateLimiterResultKind.RateLimited
+  kind: InvocationRateLimiterResultKind.RateLimited;
 }
 
 type InvocationRateLimiterResult<T> = InvokedResult<T> | RateLimitedResult;

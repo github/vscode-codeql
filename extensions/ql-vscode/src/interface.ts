@@ -437,9 +437,9 @@ export class InterfaceManager extends DisposableObject {
           sourceArchiveUri === undefined
             ? undefined
             : {
-                sourceArchive: sourceArchiveUri.fsPath,
-                sourceLocationPrefix
-              };
+              sourceArchive: sourceArchiveUri.fsPath,
+              sourceLocationPrefix
+            };
         interpretation = await this.getTruncatedResults(
           query.metadata,
           query.resultsPaths,
@@ -471,9 +471,9 @@ export class InterfaceManager extends DisposableObject {
       sourceArchiveUri === undefined
         ? undefined
         : {
-            sourceArchive: sourceArchiveUri.fsPath,
-            sourceLocationPrefix
-          };
+          sourceArchive: sourceArchiveUri.fsPath,
+          sourceLocationPrefix
+        };
     const interpretation = await this.getTruncatedResults(
       metadata,
       resultsInfo,

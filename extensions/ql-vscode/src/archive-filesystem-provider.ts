@@ -90,7 +90,7 @@ export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
   });
 }
 
-const sourceArchiveUriAuthorityPattern = /^(\d+)\-(\d+)$/;
+const sourceArchiveUriAuthorityPattern = /^(\d+)-(\d+)$/;
 
 class InvalidSourceArchiveUriError extends Error {
   constructor(uri: vscode.Uri) {
@@ -142,8 +142,8 @@ function ensureDir(map: DirectoryHierarchyMap, dir: string) {
 }
 
 type Archive = {
-  unzipped: unzipper.CentralDirectory,
-  dirMap: DirectoryHierarchyMap,
+  unzipped: unzipper.CentralDirectory;
+  dirMap: DirectoryHierarchyMap;
 };
 
 export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
@@ -192,7 +192,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
 
   // write operations, all disabled
 
-  writeFile(_uri: vscode.Uri, _content: Uint8Array, _options: { create: boolean, overwrite: boolean }): void {
+  writeFile(_uri: vscode.Uri, _content: Uint8Array, _options: { create: boolean; overwrite: boolean }): void {
     throw this.readOnlyError;
   }
 
@@ -257,7 +257,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
 
   watch(_resource: vscode.Uri): vscode.Disposable {
     // ignore, fires for all changes...
-    return new vscode.Disposable(() => { });
+    return new vscode.Disposable(() => { /**/ });
   }
 }
 

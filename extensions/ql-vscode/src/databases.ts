@@ -24,13 +24,13 @@ import { Logger, logger } from './logging';
  * The name of the key in the workspaceState dictionary in which we
  * persist the current database across sessions.
  */
-const CURRENT_DB: string = 'currentDatabase';
+const CURRENT_DB = 'currentDatabase';
 
 /**
  * The name of the key in the workspaceState dictionary in which we
  * persist the list of databases across sessions.
  */
-const DB_LIST: string = 'databaseList';
+const DB_LIST = 'databaseList';
 
 export interface DatabaseOptions {
   displayName?: string;
@@ -107,8 +107,8 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
   return vscode.Uri.file(dbAbsolutePath);
 }
 
-async function findSourceArchive(databasePath: string, silent: boolean = false):
-  Promise<vscode.Uri | undefined> {
+async function findSourceArchive(databasePath: string, silent = false):
+Promise<vscode.Uri | undefined> {
 
   const relativePaths = ['src', 'output/src_archive']
 
@@ -128,8 +128,9 @@ async function findSourceArchive(databasePath: string, silent: boolean = false):
   return undefined;
 }
 
-async function resolveDatabase(databasePath: string):
-  Promise<DatabaseContents | undefined> {
+async function resolveDatabase(
+  databasePath: string
+): Promise<DatabaseContents | undefined> {
 
   const name = path.basename(databasePath);
 
@@ -427,7 +428,7 @@ class DatabaseItemImpl implements DatabaseItem {
  * `event` fires. If waiting for the event takes too long (by default
  * >1000ms) log a warning, and resolve to undefined.
  */
-function eventFired<T>(event: vscode.Event<T>, timeoutMs: number = 1000): Promise<T | undefined> {
+function eventFired<T>(event: vscode.Event<T>, timeoutMs = 1000): Promise<T | undefined> {
   return new Promise((res, _rej) => {
     let timeout: NodeJS.Timeout | undefined;
     let disposable: vscode.Disposable | undefined;
@@ -436,22 +437,24 @@ function eventFired<T>(event: vscode.Event<T>, timeoutMs: number = 1000): Promis
       if (disposable !== undefined) disposable.dispose();
     }
     disposable = event(e => {
-      res(e); dispose();
+      res(e);
+      dispose();
     });
     timeout = setTimeout(() => {
       logger.log(`Waiting for event ${event} timed out after ${timeoutMs}ms`);
-      res(undefined); dispose();
+      res(undefined);
+      dispose();
     }, timeoutMs);
   });
 }
 
 export class DatabaseManager extends DisposableObject {
   private readonly _onDidChangeDatabaseItem =
-    this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
+  this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
   readonly onDidChangeDatabaseItem = this._onDidChangeDatabaseItem.event;
 
   private readonly _onDidChangeCurrentDatabaseItem =
-    this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
+  this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
   readonly onDidChangeCurrentDatabaseItem = this._onDidChangeCurrentDatabaseItem.event;
 
   private readonly _databaseItems: DatabaseItemImpl[] = [];
@@ -466,7 +469,7 @@ export class DatabaseManager extends DisposableObject {
   }
 
   public async openDatabase(uri: vscode.Uri, options?: DatabaseOptions):
-    Promise<DatabaseItem> {
+  Promise<DatabaseItem> {
 
     const contents = await resolveDatabaseContents(uri);
     const realOptions = options || {};
@@ -526,7 +529,7 @@ export class DatabaseManager extends DisposableObject {
   }
 
   private async createDatabaseItemFromPersistedState(state: PersistedDatabaseItem):
-    Promise<DatabaseItem> {
+  Promise<DatabaseItem> {
 
     let displayName: string | undefined = undefined;
     let ignoreSourceArchive = false;
@@ -584,7 +587,7 @@ export class DatabaseManager extends DisposableObject {
   }
 
   public async setCurrentDatabaseItem(item: DatabaseItem | undefined,
-    skipRefresh: boolean = false): Promise<void> {
+    skipRefresh = false): Promise<void> {
 
     if (!skipRefresh && (item !== undefined)) {
       await item.refresh();  // Will throw on invalid database.

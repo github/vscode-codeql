@@ -87,16 +87,16 @@ describe("Invocation rate limiter", () => {
 });
 
 class MockExtensionContext implements ExtensionContext {
-  subscriptions: { dispose(): unknown; }[] = [];
+  subscriptions: { dispose(): unknown }[] = [];
   workspaceState: Memento = new MockMemento();
   globalState: Memento = new MockMemento();
-  extensionPath: string = "";
+  extensionPath = "";
   asAbsolutePath(_relativePath: string): string {
     throw new Error("Method not implemented.");
   }
-  storagePath: string = "";
-  globalStoragePath: string = "";
-  logPath: string = "";
+  storagePath = "";
+  globalStoragePath = "";
+  logPath = "";
 }
 
 class MockMemento implements Memento {
