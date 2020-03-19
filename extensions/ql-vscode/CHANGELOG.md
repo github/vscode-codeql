@@ -1,5 +1,10 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.1.1
+
+- Add new command in query history view to view the log file of a
+  query.
+
 ## 1.1.0 - 17 March 2020
 
 - Add functionality for testing custom CodeQL queries by using the VS
