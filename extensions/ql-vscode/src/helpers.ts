@@ -179,8 +179,12 @@ export class InvocationRateLimiter<T> {
   public async invokeFunctionIfIntervalElapsed(minSecondsSinceLastInvocation: number): Promise<InvocationRateLimiterResult<T>> {
     const updateCheckStartDate = this._createDate();
     const lastInvocationDate = this.getLastInvocationDate();
-    if (minSecondsSinceLastInvocation && lastInvocationDate && lastInvocationDate <= updateCheckStartDate &&
-      lastInvocationDate.getTime() + minSecondsSinceLastInvocation * 1000 > updateCheckStartDate.getTime()) {
+    if (
+      minSecondsSinceLastInvocation &&
+      lastInvocationDate &&
+      lastInvocationDate <= updateCheckStartDate &&
+      lastInvocationDate.getTime() + minSecondsSinceLastInvocation * 1000 > updateCheckStartDate.getTime()
+    ) {
       return createRateLimitedResult();
     }
     const result = await this._func();

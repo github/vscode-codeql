@@ -4,7 +4,7 @@
 
 - Add new command in query history view to view the log file of a
   query.
-- Avoid updating the CodeQL binaries without user acknowledgment.
+- Request user acknowledgment before updating the CodeQL binaries.
 
 ## 1.1.0 - 17 March 2020
 
