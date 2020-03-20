@@ -1,8 +1,18 @@
-import { expect } from "chai";
+import * as chai from "chai";
+import * as path from "path";
 import * as fetch from "node-fetch";
+import 'chai/register-should';
+import * as sinonChai from 'sinon-chai';
+import * as sinon from 'sinon';
+import * as pq from "proxyquire";
 import "mocha";
+
 import { Version } from "../../cli-version";
-import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer, versionCompare } from "../../distribution"
+import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer, versionCompare } from "../../distribution";
+
+const proxyquire = pq.noPreserveCache();
+chai.use(sinonChai);
+const expect = chai.expect;
 
 describe("Releases API consumer", () => {
   const owner = "someowner";
@@ -175,4 +185,105 @@ describe("Release version ordering", () => {
   it("build metadata compares correctly", () => {
     expect(versionCompare(createVersion(2, 1, 0, "alpha.1", "abcdef0"), createVersion(2, 1, 0, "alpha.1", "bcdef01"))).to.equal(0);
   });
+});
+
+describe('Launcher path', () => {
+  let sandbox: sinon.SinonSandbox;
+  let warnSpy: sinon.SinonSpy;
+  let logSpy: sinon.SinonSpy;
+  let fsSpy: sinon.SinonSpy;
+  let platformSpy: sinon.SinonSpy;
+
+  let getExecutableFromDirectory: Function;
+
+  let launcherThatExists = '';
+
+  beforeEach(() => {
+    getExecutableFromDirectory = createModule().getExecutableFromDirectory;
+  });
+
+  beforeEach(() => {
+    sandbox.restore();
+  });
+
+  it('should not warn with proper launcher name', async () => {
+    launcherThatExists = 'codeql.exe';
+    const result = await getExecutableFromDirectory('abc');
+    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.exe`);
+
+    // correct launcher has been found, so alternate one not looked for
+    expect(fsSpy).not.to.have.been.calledWith(`abc${path.sep}codeql.cmd`);
+
+    // no warning message
+    expect(warnSpy).not.to.have.been.calledWith(sinon.match.string);
+    // No log message
+    expect(logSpy).not.to.have.been.calledWith(sinon.match.string);
+    expect(result).to.equal(`abc${path.sep}codeql.exe`);
+  });
+
+  it('should warn when using a hard-coded deprecated launcher name', async () => {
+    launcherThatExists = 'codeql.cmd';
+    path.sep;
+    const result = await getExecutableFromDirectory('abc');
+    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.exe`);
+    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.cmd`);
+
+    // Should have opened a warning message
+    expect(warnSpy).to.have.been.calledWith(sinon.match.string);
+    // No log message
+    expect(logSpy).not.to.have.been.calledWith(sinon.match.string);
+    expect(result).to.equal(`abc${path.sep}codeql.cmd`);
+  });
+
+  it('should avoid warn when no launcher is found', async () => {
+    launcherThatExists = 'xxx';
+    const result = await getExecutableFromDirectory('abc', false);
+    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.exe`);
+    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.cmd`);
+
+    // no warning message
+    expect(warnSpy).not.to.have.been.calledWith(sinon.match.string);
+    // log message sent out
+    expect(logSpy).not.to.have.been.calledWith(sinon.match.string);
+    expect(result).to.equal(undefined);
+  });
+
+  it('should warn when no launcher is found', async () => {
+    launcherThatExists = 'xxx';
+    const result = await getExecutableFromDirectory('abc', true);
+    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.exe`);
+    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.cmd`);
+
+    // no warning message
+    expect(warnSpy).not.to.have.been.calledWith(sinon.match.string);
+    // log message sent out
+    expect(logSpy).to.have.been.calledWith(sinon.match.string);
+    expect(result).to.equal(undefined);
+  });
+
+  function createModule() {
+    sandbox = sinon.createSandbox();
+    warnSpy = sandbox.spy();
+    logSpy = sandbox.spy();
+    // pretend that only the .cmd file exists
+    fsSpy = sandbox.stub().callsFake(arg => arg.endsWith(launcherThatExists) ? true : false);
+    platformSpy = sandbox.stub().returns('win32');
+
+    return proxyquire('../../distribution', {
+      './helpers': {
+        showAndLogWarningMessage: warnSpy
+      },
+      './logging': {
+        'logger': {
+          log: logSpy
+        }
+      },
+      'fs-extra': {
+        pathExists: fsSpy
+      },
+      os: {
+        platform: platformSpy
+      }
+    });
+  }
 });
