@@ -94,6 +94,11 @@ export class DistributionManager implements DistributionProvider {
     };
   }
 
+  public async hasDistribution(): Promise<boolean> {
+    const result = await this.getDistribution();
+    return result.kind !== FindDistributionResultKind.NoDistribution;
+  }
+
   /**
    * Returns the path to a possibly-compatible CodeQL launcher binary, or undefined if a binary not be found.
    */
@@ -208,7 +213,11 @@ class ExtensionSpecificDistributionManager {
     const extensionSpecificRelease = this.getInstalledRelease();
     const latestRelease = await this.getLatestRelease();
 
-    if (extensionSpecificRelease !== undefined && codeQlPath !== undefined && latestRelease.id === extensionSpecificRelease.id) {
+    if (
+      extensionSpecificRelease !== undefined &&
+      codeQlPath !== undefined &&
+      latestRelease.id === extensionSpecificRelease.id
+    ) {
       return createAlreadyUpToDateResult();
     }
     return createUpdateAvailableResult(latestRelease);

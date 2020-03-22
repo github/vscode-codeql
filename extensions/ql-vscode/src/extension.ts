@@ -93,6 +93,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   interface DistributionUpdateConfig {
     isUserInitiated: boolean;
     shouldDisplayMessageWhenNoUpdates: boolean;
+    allowAutoUpdating: boolean;
   }
 
   async function installOrUpdateDistributionWithProgressTitle(progressTitle: string, config: DistributionUpdateConfig): Promise<void> {
@@ -100,24 +101,28 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     const noUpdatesLoggingFunc = config.shouldDisplayMessageWhenNoUpdates ?
       helpers.showAndLogInformationMessage : async (message: string) => logger.log(message);
     const result = await distributionManager.checkForUpdatesToExtensionManagedDistribution(minSecondsSinceLastUpdateCheck);
+
+    // We do want to auto update if there is no distribution at all
+    const allowAutoUpdating = config.allowAutoUpdating || !await distributionManager.hasDistribution();
+
     switch (result.kind) {
       case DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult:
         logger.log("Didn't perform CodeQL CLI update check since a check was already performed within the previous " +
           `${minSecondsSinceLastUpdateCheck} seconds.`);
         break;
       case DistributionUpdateCheckResultKind.AlreadyUpToDate:
-        await noUpdatesLoggingFunc("CodeQL CLI already up to date.");
+        await noUpdatesLoggingFunc('CodeQL CLI already up to date.');
         break;
       case DistributionUpdateCheckResultKind.InvalidLocation:
-        await noUpdatesLoggingFunc("CodeQL CLI is installed externally so could not be updated.");
+        await noUpdatesLoggingFunc('CodeQL CLI is installed externally so could not be updated.');
         break;
       case DistributionUpdateCheckResultKind.UpdateAvailable:
-        if (beganMainExtensionActivation) {
+        if (beganMainExtensionActivation || !allowAutoUpdating) {
           const updateAvailableMessage = `Version "${result.updatedRelease.name}" of the CodeQL CLI is now available. ` +
-            "The update will be installed after Visual Studio Code restarts. Restart now to upgrade?";
+            'Do you wish to upgrade?';
           await ctx.globalState.update(shouldUpdateOnNextActivationKey, true);
-          if (await helpers.showInformationMessageWithAction(updateAvailableMessage, "Restart and Upgrade")) {
-            await commands.executeCommand("workbench.action.reloadWindow");
+          if (await helpers.showInformationMessageWithAction(updateAvailableMessage, 'Restart and Upgrade')) {
+            await commands.executeCommand('workbench.action.reloadWindow');
           }
         } else {
           const progressOptions: ProgressOptions = {
@@ -144,8 +149,12 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     isInstallingOrUpdatingDistribution = true;
     const codeQlInstalled = await distributionManager.getCodeQlPathWithoutVersionCheck() !== undefined;
     const willUpdateCodeQl = ctx.globalState.get(shouldUpdateOnNextActivationKey);
-    const messageText = willUpdateCodeQl ? "Updating CodeQL CLI" :
-      codeQlInstalled ? "Checking for updates to CodeQL CLI" : "Installing CodeQL CLI";
+    const messageText = willUpdateCodeQl
+      ? "Updating CodeQL CLI"
+      : codeQlInstalled
+        ? "Checking for updates to CodeQL CLI"
+        : "Installing CodeQL CLI";
+
     try {
       await installOrUpdateDistributionWithProgressTitle(messageText, config);
     } catch (e) {
@@ -207,7 +216,8 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
         if (chosenAction === installActionName) {
           installOrUpdateThenTryActivate({
             isUserInitiated: true,
-            shouldDisplayMessageWhenNoUpdates: false
+            shouldDisplayMessageWhenNoUpdates: false,
+            allowAutoUpdating: true
           });
         }
       });
@@ -216,16 +226,22 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
   ctx.subscriptions.push(distributionConfigListener.onDidChangeDistributionConfiguration(() => installOrUpdateThenTryActivate({
     isUserInitiated: true,
-    shouldDisplayMessageWhenNoUpdates: false
+    shouldDisplayMessageWhenNoUpdates: false,
+    allowAutoUpdating: true
   })));
   ctx.subscriptions.push(commands.registerCommand(checkForUpdatesCommand, () => installOrUpdateThenTryActivate({
     isUserInitiated: true,
-    shouldDisplayMessageWhenNoUpdates: true
+    shouldDisplayMessageWhenNoUpdates: true,
+    allowAutoUpdating: true
   })));
 
   await installOrUpdateThenTryActivate({
     isUserInitiated: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
-    shouldDisplayMessageWhenNoUpdates: false
+    shouldDisplayMessageWhenNoUpdates: false,
+
+    // only auto update on startup if the user has previously requested an update
+    // otherwise, ask user to accept the update
+    allowAutoUpdating: !!ctx.globalState.get(shouldUpdateOnNextActivationKey)
   });
 }
 
