@@ -27,12 +27,19 @@
 .vscode-codeql__result-table-toggle-diagnostics label,
 .vscode-codeql__result-table-toggle-diagnostics input {
   display: inline-block;
-  vertical-align: middle;
+  vertical-align: baseline;
 }
 .vscode-codeql__result-table-toggle-diagnostics input {
-  margin: 3px 3px 1px 13px;
+  margin: 0 3px 1px 13px;
+}
+.vscode-codeql__result-table-toggle-diagnostics label {
+  margin-top: 1px;
 }
 
+.number-of-results {
+  padding-left: 3em;
+  padding-top: 1px;
+}
 
 .vscode-codeql__result-table th {
   border-top: 1px solid rgba(88,96,105,0.25);
@@ -150,8 +157,4 @@ td.vscode-codeql__path-index-cell {
 
 .octicon-light {
   opacity: 0.6;
-}
-
-.number-of-results {
-  padding-left: 3em;
 }
