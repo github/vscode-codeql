@@ -5,6 +5,7 @@ import { CompletedQuery } from './query-results';
 import { QueryHistoryConfig } from './config';
 import { QueryWithResults } from './run-queries';
 import * as helpers from './helpers';
+import { logger } from './logging';
 
 /**
  * query-history.ts
@@ -191,12 +192,26 @@ export class QueryHistoryManager {
 
   async handleShowQueryLog(queryHistoryItem: CompletedQuery) {
     if (queryHistoryItem.logFileLocation) {
+      const uri = vscode.Uri.parse(queryHistoryItem.logFileLocation);
       try {
-        await vscode.window.showTextDocument(vscode.Uri.parse(queryHistoryItem.logFileLocation), {
-          viewColumn: vscode.ViewColumn.Beside
+        await vscode.window.showTextDocument(uri, {
         });
       } catch (e) {
-        helpers.showAndLogErrorMessage(`Could not open log file ${queryHistoryItem.logFileLocation}`);
+        if (e.message.includes('Files above 50MB cannot be synchronized with extensions')) {
+          const res = await helpers.showBinaryChoiceDialog('File is too large to open in the editor, do you want to open exterally?');
+          if (res) {
+            try {
+              await vscode.commands.executeCommand('revealFileInOS', uri);
+            } catch (e) {
+              helpers.showAndLogErrorMessage(e.message);
+            }
+          }
+        } else {
+          helpers.showAndLogErrorMessage(`Could not open log file ${queryHistoryItem.logFileLocation}`);
+          logger.log(e.message);
+          logger.log(e.stack);
+        }
+
       }
     } else {
       helpers.showAndLogWarningMessage('No log file available');
