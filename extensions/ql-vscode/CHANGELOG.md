@@ -1,5 +1,10 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.1.2
+
+- Add key binding `CTRL+K R` to run query on Mac and Windows
+- Add key binding `CTRL+Shift+Q` to open the query view on Mac and Windows
+
 ## 1.1.1 - 23 March 2020
 
 - Fix quick evaluation in `.qll` files.

@@ -377,7 +377,17 @@
           "name": "Query History"
         }
       ]
-    }
+    },
+    "keybindings": [
+      {
+        "command": "workbench.view.extension.ql-container",
+        "key": "ctrl+shift+q"
+      },
+      {
+        "key": "ctrl+k r",
+        "command": "codeQL.runQuery"
+      }
+    ]
   },
   "scripts": {
     "build": "gulp",
