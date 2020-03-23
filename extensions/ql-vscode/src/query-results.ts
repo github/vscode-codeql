@@ -14,7 +14,7 @@ export class CompletedQuery implements QueryWithResults {
   readonly query: QueryInfo;
   readonly result: messages.EvaluationResult;
   readonly database: DatabaseInfo;
-  readonly logFileLocation?: string
+  readonly logFileLocation?: string;
   options: QueryHistoryItemOptions;
   dispose: () => void;
 
