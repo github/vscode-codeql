@@ -227,6 +227,10 @@
         "title": "Show Query Log"
       },
       {
+        "command": "codeQLQueryHistory.showQueryText",
+        "title": "Show Query Text"
+      },
+      {
         "command": "codeQLQueryResults.nextPathStep",
         "title": "CodeQL: Show Next Step on Path"
       },
@@ -296,6 +300,11 @@
           "when": "view == codeQLQueryHistory"
         },
         {
+          "command": "codeQLQueryHistory.showQueryText",
+          "group": "9_qlCommands",
+          "when": "view == codeQLQueryHistory"
+        },
+        {
           "command": "codeQLTests.showOutputDifferences",
           "group": "qltest@1",
           "when": "view == test-explorer && viewItem == testWithSource"
@@ -353,6 +362,10 @@
         },
         {
           "command": "codeQLQueryHistory.showQueryLog",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.showQueryText",
           "when": "false"
         },
         {

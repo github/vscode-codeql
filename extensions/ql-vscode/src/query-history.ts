@@ -6,6 +6,7 @@ import { QueryHistoryConfig } from './config';
 import { QueryWithResults } from './run-queries';
 import * as helpers from './helpers';
 import { logger } from './logging';
+import { URLSearchParams } from 'url';
 
 /**
  * query-history.ts
@@ -18,8 +19,31 @@ import { logger } from './logging';
 
 export type QueryHistoryItemOptions = {
   label?: string; // user-settable label
-  queryText?: string; // stored query for quick query
+  queryText?: string; // text of the selected file
+  isQuickQuery?: boolean;
 }
+
+const SHOW_QUERY_TEXT_MSG = `\
+////////////////////////////////////////////////////////////////////////////////////
+// This is the text of the entire query file when it was executed for this query  //
+// run. The text or dependent libraries may have changed since then.              //
+//                                                                                //
+// This buffer is readonly. To re-execute this query, you must open the original  //
+// query file.                                                                    //
+////////////////////////////////////////////////////////////////////////////////////
+
+`;
+
+const SHOW_QUERY_TEXT_QUICK_EVAL_MSG = `\
+////////////////////////////////////////////////////////////////////////////////////
+// This is the Quick Eval selection of the query file when it was executed for    //
+// this query run. The text or dependent libraries may have changed since then.   //
+//                                                                                //
+// This buffer is readonly. To re-execute this query, you must open the original  //
+// query file.                                                                    //
+////////////////////////////////////////////////////////////////////////////////////
+
+`;
 
 /**
  * Path to icon to display next to a failed query history item.
@@ -137,7 +161,7 @@ export class QueryHistoryManager {
     const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.query.program.queryPath));
     const editor = await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
     const queryText = queryHistoryItem.options.queryText;
-    if (queryText !== undefined) {
+    if (queryText !== undefined && queryHistoryItem.options.isQuickQuery) {
       await editor.edit(edit => edit.replace(textDocument.validateRange(
         new vscode.Range(0, 0, textDocument.lineCount, 0)), queryText)
       );
@@ -218,6 +242,36 @@ export class QueryHistoryManager {
     }
   }
 
+  async handleShowQueryText(queryHistoryItem: CompletedQuery) {
+    try {
+      const queryName = queryHistoryItem.queryName.endsWith('.ql') ? queryHistoryItem.queryName : queryHistoryItem.queryName + '.ql';
+      const params = new URLSearchParams({
+        isQuickEval: String(!!queryHistoryItem.query.quickEvalPosition),
+        queryText: await this.getQueryText(queryHistoryItem)
+      });
+      const uri = vscode.Uri.parse(`codeql:${queryHistoryItem.query.queryID}-${queryName}?${params.toString()}`);
+      const doc = await vscode.workspace.openTextDocument(uri);
+      await vscode.window.showTextDocument(doc, { preview: false });
+    } catch (e) {
+      helpers.showAndLogErrorMessage(e.message);
+    }
+  }
+
+  async getQueryText(queryHistoryItem: CompletedQuery): Promise<string> {
+    if (queryHistoryItem.options.queryText) {
+      return queryHistoryItem.options.queryText;
+    } else if (queryHistoryItem.query.quickEvalPosition) {
+      // capture all selected lines
+      const startLine = queryHistoryItem.query.quickEvalPosition.line;
+      const endLine = queryHistoryItem.query.quickEvalPosition.endLine;
+      const textDocument =
+        await vscode.workspace.openTextDocument(queryHistoryItem.query.quickEvalPosition.fileName);
+      return textDocument.getText(new vscode.Range(startLine - 1, 0, endLine, 0));
+    } else {
+      return '';
+    }
+  }
+
   constructor(
     ctx: ExtensionContext,
     private queryHistoryConfigListener: QueryHistoryConfig,
@@ -240,11 +294,23 @@ export class QueryHistoryManager {
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.removeHistoryItem', this.handleRemoveHistoryItem.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.setLabel', this.handleSetLabel.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.showQueryLog', this.handleShowQueryLog.bind(this)));
+    ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.showQueryText', this.handleShowQueryText.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.itemClicked', async (item) => {
       return this.handleItemClicked(item);
     }));
     queryHistoryConfigListener.onDidChangeQueryHistoryConfiguration(() => {
       this.treeDataProvider.refresh();
+    });
+
+    // displays query text in a read-only document
+    vscode.workspace.registerTextDocumentContentProvider('codeql', {
+      provideTextDocumentContent(uri: vscode.Uri): vscode.ProviderResult<string> {
+        const params = new URLSearchParams(uri.query)
+
+        return (
+          JSON.parse(params.get('isQuickEval') || '') ? SHOW_QUERY_TEXT_QUICK_EVAL_MSG : SHOW_QUERY_TEXT_MSG
+        ) + params.get('queryText');
+      }
     });
   }
 
