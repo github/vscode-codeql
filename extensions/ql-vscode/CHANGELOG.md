@@ -6,7 +6,7 @@
 - Add new command in query history view to view the log file of a
   query.
 - Request user acknowledgment before updating the CodeQL binaries.
-- Warn when using the deprecated `codeql.cmd` launcher on windows.
+- Warn when using the deprecated `codeql.cmd` launcher on Windows.
 
 ## 1.1.0 - 17 March 2020
 
