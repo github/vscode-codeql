@@ -2,7 +2,7 @@
 
 ## 1.1.1 - 23 March 2020
 
-- Fix quick-query not working on `.qll` files.
+- Fix quick-evaluation not working on `.qll` files.
 - Add new command in query history view to view the log file of a
   query.
 - Request user acknowledgment before updating the CodeQL binaries.
