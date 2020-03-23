@@ -8,6 +8,7 @@ import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "./config";
 import { InvocationRateLimiter, InvocationRateLimiterResultKind, ProgressUpdate, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
+import * as helpers from "./helpers";
 import { getCodeQlCliVersion, tryParseVersionString, Version } from "./cli-version";
 
 /**
@@ -111,6 +112,9 @@ export class DistributionManager implements DistributionProvider {
           "that a CodeQL executable exists at the specified path or remove the setting.");
         return undefined;
       }
+      if (deprecatedCodeQlLauncherName() && this._config.customCodeQlPath.endsWith(deprecatedCodeQlLauncherName()!)) {
+        warnDeprecatedLauncher();
+      }
       return this._config.customCodeQlPath;
     }
 
@@ -121,8 +125,8 @@ export class DistributionManager implements DistributionProvider {
 
     if (process.env.PATH) {
       for (const searchDirectory of process.env.PATH.split(path.delimiter)) {
-        const expectedLauncherPath = path.join(searchDirectory, codeQlLauncherName());
-        if (await fs.pathExists(expectedLauncherPath)) {
+        const expectedLauncherPath = await getExecutableFromDirectory(searchDirectory);
+        if (expectedLauncherPath) {
           return expectedLauncherPath;
         }
       }
@@ -186,12 +190,11 @@ class ExtensionSpecificDistributionManager {
   public async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
     if (this.getInstalledRelease() !== undefined) {
       // An extension specific distribution has been installed.
-      const expectedLauncherPath = path.join(this.getDistributionRootPath(), codeQlLauncherName());
-      if (await fs.pathExists(expectedLauncherPath)) {
+      const expectedLauncherPath = await getExecutableFromDirectory(this.getDistributionRootPath(), true);
+      if (expectedLauncherPath) {
         return expectedLauncherPath;
       }
-      logger.log(`WARNING: Expected to find a CodeQL CLI executable at ${expectedLauncherPath} but one was not found. ` +
-        "Will try PATH.");
+
       try {
         await this.removeDistribution();
       } catch (e) {
@@ -514,6 +517,10 @@ function codeQlLauncherName(): string {
   return (os.platform() === "win32") ? "codeql.exe" : "codeql";
 }
 
+function deprecatedCodeQlLauncherName(): string | undefined {
+  return (os.platform() === "win32") ? "codeql.cmd" : undefined;
+}
+
 function isRedirectStatusCode(statusCode: number): boolean {
   return statusCode === 301 || statusCode === 302 || statusCode === 303 || statusCode === 307 || statusCode === 308;
 }
@@ -612,6 +619,31 @@ function createUpdateAvailableResult(updatedRelease: Release): UpdateAvailableRe
     kind: DistributionUpdateCheckResultKind.UpdateAvailable,
     updatedRelease
   };
+}
+
+// Exported for testing
+export async function getExecutableFromDirectory(directory: string, warnWhenNotFound = false): Promise<string | undefined> {
+  const expectedLauncherPath = path.join(directory, codeQlLauncherName());
+  const deprecatedLauncherName = deprecatedCodeQlLauncherName();
+  const alternateExpectedLauncherPath = deprecatedLauncherName ? path.join(directory, deprecatedLauncherName) : undefined;
+  if (await fs.pathExists(expectedLauncherPath)) {
+    return expectedLauncherPath;
+  } else if (alternateExpectedLauncherPath && (await fs.pathExists(alternateExpectedLauncherPath))) {
+    warnDeprecatedLauncher();
+    return alternateExpectedLauncherPath;
+  }
+  if (warnWhenNotFound) {
+    logger.log(`WARNING: Expected to find a CodeQL CLI executable at ${expectedLauncherPath} but one was not found. ` +
+      "Will try PATH.");
+  }
+  return undefined;
+}
+
+function warnDeprecatedLauncher() {
+  helpers.showAndLogWarningMessage(
+    `The "${deprecatedCodeQlLauncherName()!}" launcher has been deprecated and will be removed in a future version. ` +
+    `Please use "${codeQlLauncherName()}" instead. It is recommended to update to the latest CodeQL binaries.`
+  );
 }
 
 /**

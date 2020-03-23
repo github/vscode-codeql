@@ -1,3 +1,4 @@
+import 'chai/register-should';
 import * as chai from 'chai';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -8,7 +9,6 @@ import * as sinon from 'sinon';
 import * as pq from 'proxyquire';
 
 const proxyquire = pq.noPreserveCache().noCallThru();
-chai.should();
 chai.use(sinonChai);
 const expect = chai.expect;
 
