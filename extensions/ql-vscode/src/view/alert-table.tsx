@@ -167,7 +167,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       const text = result.message.text || '[no text]';
       const msg: JSX.Element[] =
         result.relatedLocations === undefined ?
-          [<span>{text}</span>] :
+          [<span key="0">{text}</span>] :
           renderRelatedLocations(text, result.relatedLocations);
 
       const currentResultExpanded = this.state.expanded[expansionIndex];

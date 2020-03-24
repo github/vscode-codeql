@@ -389,7 +389,7 @@
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "format": "tsfmt -r",
-    "lint": "eslint . --ext .ts,.tsx"
+    "lint": "eslint src test --ext .ts,.tsx"
   },
   "dependencies": {
     "child-process-promise": "^2.2.1",
@@ -465,6 +465,7 @@
     "sinon-chai": "~3.5.0",
     "@types/sinon-chai": "~3.2.3",
     "proxyquire": "~2.1.3",
-    "@types/proxyquire": "~1.3.28"
+    "@types/proxyquire": "~1.3.28",
+    "eslint-plugin-react": "~7.19.0"
   }
 }

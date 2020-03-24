@@ -70,6 +70,16 @@ function getQuickQueriesDir(ctx: ExtensionContext): string {
   return queriesPath;
 }
 
+
+function updateQuickQueryDir(queriesDir: string, index: number, len: number) {
+  workspace.updateWorkspaceFolders(
+    index,
+    len,
+    { uri: Uri.file(queriesDir), name: QUICK_QUERY_WORKSPACE_FOLDER_NAME }
+  );
+}
+
+
 /**
  * Show a buffer the user can enter a simple query into.
  */
@@ -78,14 +88,6 @@ export async function displayQuickQuery(ctx: ExtensionContext, cliServer: CodeQL
 
     const workspaceFolders = workspace.workspaceFolders || [];
     const queriesDir = await getQuickQueriesDir(ctx);
-
-    function updateQuickQueryDir(index: number, len: number) {
-      workspace.updateWorkspaceFolders(
-        index,
-        len,
-        { uri: Uri.file(queriesDir), name: QUICK_QUERY_WORKSPACE_FOLDER_NAME }
-      );
-    }
 
     // If there is already a quick query open, don't clobber it, just
     // show it.
@@ -107,16 +109,16 @@ export async function displayQuickQuery(ctx: ExtensionContext, cliServer: CodeQL
     if (workspace.workspaceFile === undefined) {
       const makeMultiRoot = await helpers.showBinaryChoiceDialog('Quick query requires multiple folders in the workspace. Reload workspace as multi-folder workspace?');
       if (makeMultiRoot) {
-        updateQuickQueryDir(workspaceFolders.length, 0);
+        updateQuickQueryDir(queriesDir, workspaceFolders.length, 0);
       }
       return;
     }
 
     const index = workspaceFolders.findIndex(folder => folder.name === QUICK_QUERY_WORKSPACE_FOLDER_NAME)
     if (index === -1)
-      updateQuickQueryDir(workspaceFolders.length, 0);
+      updateQuickQueryDir(queriesDir, workspaceFolders.length, 0);
     else
-      updateQuickQueryDir(index, 1);
+      updateQuickQueryDir(queriesDir, index, 1);
 
     // We're going to infer which qlpack to use from the current database
     const dbItem = await databaseUI.getDatabaseItem();

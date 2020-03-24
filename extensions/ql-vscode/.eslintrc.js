@@ -3,9 +3,6 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
-    ecmaFeatures: {
-      modules: true,
-    },
     project: ['tsconfig.json', './src/**/tsconfig.json'],
   },
   plugins: ['@typescript-eslint'],
@@ -33,6 +30,7 @@ module.exports = {
       "SwitchCase": 1,
       "FunctionDeclaration": { "body": 1, "parameters": 1 }
     }],
-    "@typescript-eslint/no-throw-literal": "error"
+    "@typescript-eslint/no-throw-literal": "error",
+    "no-useless-escape": 0
   },
 };

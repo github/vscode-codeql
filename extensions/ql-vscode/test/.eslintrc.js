@@ -3,6 +3,6 @@ module.exports = {
     mocha: true
   },
   parserOptions: {
-    project: 'tsconfig.json',
+    project: './test/tsconfig.json',
   },
 }
