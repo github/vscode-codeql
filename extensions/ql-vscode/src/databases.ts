@@ -440,12 +440,8 @@ function eventFired<T>(event: vscode.Event<T>, timeoutMs = 1000): Promise<T | un
       dispose();
     });
     function dispose() {
-      if (timeout !== undefined) {
-        clearTimeout(timeout);
-      }
-      if (disposable !== undefined) {
-        disposable.dispose();
-      }
+      clearTimeout(timeout);
+      disposable.dispose();
     }
   });
 }

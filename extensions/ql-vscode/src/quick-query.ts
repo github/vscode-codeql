@@ -71,21 +71,22 @@ function getQuickQueriesDir(ctx: ExtensionContext): string {
 }
 
 
-function updateQuickQueryDir(queriesDir: string, index: number, len: number) {
-  workspace.updateWorkspaceFolders(
-    index,
-    len,
-    { uri: Uri.file(queriesDir), name: QUICK_QUERY_WORKSPACE_FOLDER_NAME }
-  );
-}
 
 
 /**
  * Show a buffer the user can enter a simple query into.
  */
 export async function displayQuickQuery(ctx: ExtensionContext, cliServer: CodeQLCliServer, databaseUI: DatabaseUI) {
-  try {
 
+  function updateQuickQueryDir(queriesDir: string, index: number, len: number) {
+    workspace.updateWorkspaceFolders(
+      index,
+      len,
+      { uri: Uri.file(queriesDir), name: QUICK_QUERY_WORKSPACE_FOLDER_NAME }
+    );
+  }
+
+  try {
     const workspaceFolders = workspace.workspaceFolders || [];
     const queriesDir = await getQuickQueriesDir(ctx);
 
