@@ -6,6 +6,8 @@ import { DisposableObject, UIService } from 'semmle-vscode-utils';
 import { TestHub, TestController, TestAdapter, TestRunStartedEvent, TestRunFinishedEvent, TestEvent, TestSuiteEvent } from 'vscode-test-adapter-api';
 import { QLTestAdapter, getExpectedFile, getActualFile } from './test-adapter';
 
+type VSCodeTestEvent = TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent;
+
 /**
  * Test event listener. Currently unused, but left in to keep the plumbing hooked up for future use.
  */
@@ -16,7 +18,8 @@ class QLTestListener extends DisposableObject {
     this.push(adapter.testStates(this.onTestStatesEvent, this));
   }
 
-  private onTestStatesEvent(_e: TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent): void {
+  private onTestStatesEvent(_e: VSCodeTestEvent): void {
+    /**/
   }
 }
 

@@ -165,7 +165,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
   }
 
   private discoverTests(): void {
-    this._tests.fire(<TestLoadStartedEvent>{ type: 'started' });
+    this._tests.fire({ type: 'started' } as TestLoadStartedEvent);
 
     const testDirectories = this.qlTestDiscovery.testDirectories;
     const children = testDirectories.map(
@@ -178,10 +178,10 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
       children
     };
 
-    this._tests.fire(<TestLoadFinishedEvent>{
+    this._tests.fire({
       type: 'finished',
       suite: children.length > 0 ? testSuite : undefined
-    });
+    } as TestLoadFinishedEvent);
   }
 
   public async run(tests: string[]): Promise<void> {
@@ -194,17 +194,16 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
 
     this.runningTask = this.track(new CancellationTokenSource());
 
-    this._testStates.fire(<TestRunStartedEvent>{ type: 'started', tests: tests });
-
-    const testAdapter = this;
+    this._testStates.fire({ type: 'started', tests: tests } as TestRunStartedEvent);
 
     try {
       await this.runTests(tests, this.runningTask.token);
     }
     catch (e) {
+      /**/
     }
-    testAdapter._testStates.fire(<TestRunFinishedEvent>{ type: 'finished' });
-    testAdapter.clearTask();
+    this._testStates.fire({ type: 'finished' } as TestRunFinishedEvent);
+    this.clearTask();
   }
 
   private clearTask(): void {

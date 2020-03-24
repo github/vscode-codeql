@@ -64,7 +64,7 @@ export class QLTestDirectory extends QLTestNode {
   private createChildDirectory(name: string): QLTestDirectory {
     const existingChild = this._children.find((child) => child.name === name);
     if (existingChild !== undefined) {
-      return <QLTestDirectory>existingChild;
+      return existingChild as QLTestDirectory;
     }
     else {
       const newChild = new QLTestDirectory(path.join(this.path, name), name);
@@ -87,6 +87,7 @@ export class QLTestFile extends QLTestNode {
   }
 
   public finish(): void {
+    /**/
   }
 }
 
