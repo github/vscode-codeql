@@ -192,7 +192,7 @@ export class QueryHistoryManager {
 
   async handleShowQueryLog(queryHistoryItem: CompletedQuery) {
     if (queryHistoryItem.logFileLocation) {
-      const uri = vscode.Uri.parse(queryHistoryItem.logFileLocation);
+      const uri = vscode.Uri.file(queryHistoryItem.logFileLocation);
       try {
         await vscode.window.showTextDocument(uri, {
         });
