@@ -338,11 +338,11 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   languages.registerDefinitionProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    createDefinitionsHandler(cliServer, qs, dbm)
+    await createDefinitionsHandler(cliServer, qs, dbm)
   );
   languages.registerReferenceProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    createReferencesHander(cliServer, qs, dbm)
+    await createReferencesHander(cliServer, qs, dbm)
   );
 }
 

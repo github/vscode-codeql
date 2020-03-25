@@ -1,11 +1,15 @@
-import * as vscode from "vscode"
-import * as messages from "./messages"
-import { compileAndRunQueryAgainstDatabase, QueryWithResults } from "./run-queries";
-import { QueryServerClient } from "./queryserver-client";
-import { DatabaseManager, DatabaseItem } from "./databases";
-import { CodeQLCliServer } from "./cli";
-import { getResultSetSchema, UrlValue, LineColumnLocation, EntityValue } from "./bqrs-cli-types";
+import * as fs from 'fs-extra';
+import * as yaml from 'js-yaml';
+import * as tmp from 'tmp';
+import * as vscode from "vscode";
 import { decodeSourceArchiveUri, zipArchiveScheme } from "./archive-filesystem-provider";
+import { EntityValue, getResultSetSchema, LineColumnLocation, UrlValue } from "./bqrs-cli-types";
+import { CodeQLCliServer } from "./cli";
+import { DatabaseItem, DatabaseManager } from "./databases";
+import * as helpers from './helpers';
+import * as messages from "./messages";
+import { QueryServerClient } from "./queryserver-client";
+import { compileAndRunQueryAgainstDatabase, QueryWithResults } from "./run-queries";
 
 const TEMPLATE_NAME = "selectedSourceFile";
 const SELECT_QUERY_NAME = "#select";
@@ -14,22 +18,46 @@ enum KeyType {
   DefinitionQuery, ReferenceQuery
 }
 
-async function resolveQueries(keyType: KeyType): Promise<string[]> {
+function tagOfKeyType(keyType: KeyType): string {
   switch (keyType) {
-    case KeyType.DefinitionQuery: return ["/home/jcreed/semmle/code/ql/cpp/ql/src/localDefinitions.ql"]
-    case KeyType.ReferenceQuery: return ["/home/jcreed/semmle/code/ql/cpp/ql/src/localReferences.ql"]
+    case KeyType.DefinitionQuery: return "local-definitions";
+    case KeyType.ReferenceQuery: return "local-references";
   }
 }
 
-export function createDefinitionsHandler(cli: CodeQLCliServer, qs: QueryServerClient, dbm: DatabaseManager): vscode.DefinitionProvider {
+async function resolveQueries(cli: CodeQLCliServer, qlpack: string, keyType: KeyType): Promise<string[]> {
+  const suiteFile = tmp.fileSync({ postfix: '.qls' }).name;
+  const suiteYaml = { qlpack, include: { kind: 'definitions', 'tags contain': tagOfKeyType(keyType) } };
+  await fs.writeFile(suiteFile, yaml.safeDump(suiteYaml), 'utf8');
+
+  const queries = await cli.resolveQueriesInSuite(suiteFile, helpers.getOnDiskWorkspaceFolders());
+  if (queries.length === 0) {
+    throw new Error("Couldn't find any queries for qlpack");
+  }
+  return queries;
+}
+
+async function qlpackOfDatabase(cli: CodeQLCliServer, db: DatabaseItem): Promise<string | undefined> {
+  if (db.contents === undefined)
+    return undefined;
+  const datasetPath = db.contents.datasetUri.fsPath;
+  const { qlpack } = await helpers.resolveDatasetFolder(cli, datasetPath);
+  return qlpack;
+}
+
+export async function createDefinitionsHandler(cli: CodeQLCliServer, qs: QueryServerClient, dbm: DatabaseManager): Promise<vscode.DefinitionProvider> {
   let fileCache = new CachedOperation<vscode.LocationLink[]>(async (uriString: string) => {
     const uri = decodeSourceArchiveUri(vscode.Uri.parse(uriString));
     const sourceArchiveUri = vscode.Uri.file(uri.sourceArchiveZipPath).with({ scheme: zipArchiveScheme });
 
     const db = dbm.findDatabaseItemBySourceArchive(sourceArchiveUri);
     if (db) {
+      const qlpack = await qlpackOfDatabase(cli, db);
+      if (qlpack === undefined) {
+        throw new Error("Can't infer qlpack from database source archive");
+      }
       const links: vscode.DefinitionLink[] = []
-      for (const query of await resolveQueries(KeyType.DefinitionQuery)) {
+      for (const query of await resolveQueries(cli, qlpack, KeyType.DefinitionQuery)) {
         const templates: messages.TemplateDefinitions = {
           [TEMPLATE_NAME]: {
             values: {
@@ -69,15 +97,19 @@ interface FullLocationLink extends vscode.LocationLink {
   originUri: vscode.Uri;
 }
 
-export function createReferencesHander(cli: CodeQLCliServer, qs: QueryServerClient, dbm: DatabaseManager): vscode.ReferenceProvider {
+export async function createReferencesHander(cli: CodeQLCliServer, qs: QueryServerClient, dbm: DatabaseManager): Promise<vscode.ReferenceProvider> {
   let fileCache = new CachedOperation<FullLocationLink[]>(async (uriString: string) => {
     const uri = decodeSourceArchiveUri(vscode.Uri.parse(uriString));
     const sourceArchiveUri = vscode.Uri.file(uri.sourceArchiveZipPath).with({ scheme: zipArchiveScheme });
 
     const db = dbm.findDatabaseItemBySourceArchive(sourceArchiveUri);
     if (db) {
+      const qlpack = await qlpackOfDatabase(cli, db);
+      if (qlpack === undefined) {
+        throw new Error("Can't infer qlpack from database source archive");
+      }
       const links: FullLocationLink[] = []
-      for (const query of await resolveQueries(KeyType.ReferenceQuery)) {
+      for (const query of await resolveQueries(cli, qlpack, KeyType.ReferenceQuery)) {
         const templates: messages.TemplateDefinitions = {
           [TEMPLATE_NAME]: {
             values: {
