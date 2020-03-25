@@ -198,7 +198,7 @@ export class QueryHistoryManager {
         });
       } catch (e) {
         if (e.message.includes('Files above 50MB cannot be synchronized with extensions')) {
-          const res = await helpers.showBinaryChoiceDialog('File is too large to open in the editor, do you want to open exterally?');
+          const res = await helpers.showBinaryChoiceDialog('File is too large to open in the editor, do you want to open it externally?');
           if (res) {
             try {
               await vscode.commands.executeCommand('revealFileInOS', uri);
