@@ -112,7 +112,13 @@ export class DistributionManager implements DistributionProvider {
           "that a CodeQL executable exists at the specified path or remove the setting.");
         return undefined;
       }
-      if (deprecatedCodeQlLauncherName() && this._config.customCodeQlPath.endsWith(deprecatedCodeQlLauncherName()!)) {
+
+      // emit a warning if using a deprecated launcher and a non-deprecated launcher exists
+      if (
+        deprecatedCodeQlLauncherName() &&
+        this._config.customCodeQlPath.endsWith(deprecatedCodeQlLauncherName()!) &&
+        await this.hasNewLauncherName()
+      ) {
         warnDeprecatedLauncher();
       }
       return this._config.customCodeQlPath;
@@ -171,6 +177,21 @@ export class DistributionManager implements DistributionProvider {
 
   public get onDidChangeDistribution(): Event<void> | undefined {
     return this._onDidChangeDistribution;
+  }
+
+  /**
+   * @return true if the non-deprecated launcher name exists on the file system
+   * in the same directory as the specified launcher only if using an external
+   * installation. False otherwise.
+   */
+  private async hasNewLauncherName(): Promise<boolean> {
+    if (!this._config.customCodeQlPath) {
+      // not managed externally
+      return false;
+    }
+    const dir = path.dirname(this._config.customCodeQlPath);
+    const newLaunderPath = path.join(dir, codeQlLauncherName());
+    return await fs.pathExists(newLaunderPath);
   }
 
   private readonly _config: DistributionConfig;

@@ -188,8 +188,12 @@ describe("Release version ordering", () => {
 });
 
 describe('Launcher path', () => {
+  const pathToCmd = `abc${path.sep}codeql.cmd`;
+  const pathToExe = `abc${path.sep}codeql.exe`;
+
   let sandbox: sinon.SinonSandbox;
   let warnSpy: sinon.SinonSpy;
+  let errorSpy: sinon.SinonSpy;
   let logSpy: sinon.SinonSpy;
   let fsSpy: sinon.SinonSpy;
   let platformSpy: sinon.SinonSpy;
@@ -209,37 +213,37 @@ describe('Launcher path', () => {
   it('should not warn with proper launcher name', async () => {
     launcherThatExists = 'codeql.exe';
     const result = await getExecutableFromDirectory('abc');
-    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.exe`);
+    expect(fsSpy).to.have.been.calledWith(pathToExe);
 
     // correct launcher has been found, so alternate one not looked for
-    expect(fsSpy).not.to.have.been.calledWith(`abc${path.sep}codeql.cmd`);
+    expect(fsSpy).not.to.have.been.calledWith(pathToCmd);
 
     // no warning message
     expect(warnSpy).not.to.have.been.calledWith(sinon.match.string);
     // No log message
     expect(logSpy).not.to.have.been.calledWith(sinon.match.string);
-    expect(result).to.equal(`abc${path.sep}codeql.exe`);
+    expect(result).to.equal(pathToExe);
   });
 
   it('should warn when using a hard-coded deprecated launcher name', async () => {
     launcherThatExists = 'codeql.cmd';
     path.sep;
     const result = await getExecutableFromDirectory('abc');
-    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.exe`);
-    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.cmd`);
+    expect(fsSpy).to.have.been.calledWith(pathToExe);
+    expect(fsSpy).to.have.been.calledWith(pathToCmd);
 
     // Should have opened a warning message
     expect(warnSpy).to.have.been.calledWith(sinon.match.string);
     // No log message
     expect(logSpy).not.to.have.been.calledWith(sinon.match.string);
-    expect(result).to.equal(`abc${path.sep}codeql.cmd`);
+    expect(result).to.equal(pathToCmd);
   });
 
   it('should avoid warn when no launcher is found', async () => {
     launcherThatExists = 'xxx';
     const result = await getExecutableFromDirectory('abc', false);
-    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.exe`);
-    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.cmd`);
+    expect(fsSpy).to.have.been.calledWith(pathToExe);
+    expect(fsSpy).to.have.been.calledWith(pathToCmd);
 
     // no warning message
     expect(warnSpy).not.to.have.been.calledWith(sinon.match.string);
@@ -251,8 +255,8 @@ describe('Launcher path', () => {
   it('should warn when no launcher is found', async () => {
     launcherThatExists = 'xxx';
     const result = await getExecutableFromDirectory('abc', true);
-    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.exe`);
-    expect(fsSpy).to.have.been.calledWith(`abc${path.sep}codeql.cmd`);
+    expect(fsSpy).to.have.been.calledWith(pathToExe);
+    expect(fsSpy).to.have.been.calledWith(pathToCmd);
 
     // no warning message
     expect(warnSpy).not.to.have.been.calledWith(sinon.match.string);
@@ -261,9 +265,46 @@ describe('Launcher path', () => {
     expect(result).to.equal(undefined);
   });
 
+  it('should not warn when deprecated launcher is used, but no new launcher is available', async () => {
+    const manager = new (createModule().DistributionManager)(undefined as any, { customCodeQlPath: pathToCmd } as any, undefined as any);
+    launcherThatExists = 'codeql.cmd';
+
+    const result = await manager.getCodeQlPathWithoutVersionCheck();
+    expect(result).to.equal(pathToCmd);
+
+    // no warning or error message
+    expect(warnSpy).to.have.callCount(0);
+    expect(errorSpy).to.have.callCount(0);
+  });
+
+  it('should warn when deprecated launcher is used, and new launcher is available', async () => {
+    const manager = new (createModule().DistributionManager)(undefined as any, { customCodeQlPath: pathToCmd } as any, undefined as any);
+    launcherThatExists = ''; // pretend both launchers exist
+
+    const result = await manager.getCodeQlPathWithoutVersionCheck();
+    expect(result).to.equal(pathToCmd);
+
+    // has warning message
+    expect(warnSpy).to.have.callCount(1);
+    expect(errorSpy).to.have.callCount(0);
+  });
+
+  it('should warn when launcher path is incorrect', async () => {
+    const manager = new (createModule().DistributionManager)(undefined as any, { customCodeQlPath: pathToCmd } as any, undefined as any);
+    launcherThatExists = 'xxx'; // pretend neither launcher exists
+
+    const result = await manager.getCodeQlPathWithoutVersionCheck();
+    expect(result).to.equal(undefined);
+
+    // no error message
+    expect(warnSpy).to.have.callCount(0);
+    expect(errorSpy).to.have.callCount(1);
+  });
+
   function createModule() {
     sandbox = sinon.createSandbox();
     warnSpy = sandbox.spy();
+    errorSpy = sandbox.spy();
     logSpy = sandbox.spy();
     // pretend that only the .cmd file exists
     fsSpy = sandbox.stub().callsFake(arg => arg.endsWith(launcherThatExists) ? true : false);
@@ -271,7 +312,8 @@ describe('Launcher path', () => {
 
     return proxyquire('../../distribution', {
       './helpers': {
-        showAndLogWarningMessage: warnSpy
+        showAndLogWarningMessage: warnSpy,
+        showAndLogErrorMessage: errorSpy
       },
       './logging': {
         'logger': {
