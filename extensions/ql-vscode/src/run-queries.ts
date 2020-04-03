@@ -122,6 +122,9 @@ export class QueryInfo {
   ): Promise<messages.CompilationMessage[]> {
     let compiled: messages.CheckQueryResult | undefined;
     try {
+      const target = this.quickEvalPosition ? {
+        quickEval: { quickEvalPos: this.quickEvalPosition }
+      } : { query: {} };
       const params: messages.CompileQueryParams = {
         compilationOptions: {
           computeNoLocationUrls: true,
@@ -137,11 +140,7 @@ export class QueryInfo {
         },
         queryToCheck: this.program,
         resultPath: this.compiledQueryPath,
-        target: this.quickEvalPosition ? {
-          quickEval: { quickEvalPos: this.quickEvalPosition }
-        } : {
-            query: {}
-          }
+        target,
       };
 
       compiled = await helpers.withProgress({
