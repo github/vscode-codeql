@@ -77,6 +77,15 @@
           ".dbscheme"
         ],
         "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "xml",
+        "aliases": [
+          "qhelp"
+        ],
+        "extensions": [
+          ".qhelp"
+        ]
       }
     ],
     "grammars": [
