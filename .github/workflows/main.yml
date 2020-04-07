@@ -72,6 +72,7 @@ jobs:
           mkdir codeql-home
           curl -L --silent https://github.com/github/codeql-cli-binaries/releases/latest/download/codeql.zip -o codeql-home/codeql.zip
           unzip -q -o codeql-home/codeql.zip -d codeql-home
+          unzip -q -o codeql-home/codeql.zip codeql/codeql.exe -d codeql-home
           rm codeql-home/codeql.zip
         shell: bash
 
