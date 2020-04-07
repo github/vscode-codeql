@@ -7,6 +7,7 @@ import * as vscode from 'vscode';
 import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 
 import * as cli from './cli';
+import * as config from './config';
 import { DatabaseItem, getUpgradesDirectories } from './databases';
 import * as helpers from './helpers';
 import { DatabaseInfo, QueryMetadata, ResultsPaths } from './interface-types';
@@ -121,6 +122,9 @@ export class QueryInfo {
   ): Promise<messages.CompilationMessage[]> {
     let compiled: messages.CheckQueryResult | undefined;
     try {
+      const target = this.quickEvalPosition ? {
+        quickEval: { quickEvalPos: this.quickEvalPosition }
+      } : { query: {} };
       const params: messages.CompileQueryParams = {
         compilationOptions: {
           computeNoLocationUrls: true,
@@ -136,11 +140,7 @@ export class QueryInfo {
         },
         queryToCheck: this.program,
         resultPath: this.compiledQueryPath,
-        target: this.quickEvalPosition ? {
-          quickEval: { quickEvalPos: this.quickEvalPosition }
-        } : {
-          query: {}
-        }
+        target,
       };
 
       compiled = await helpers.withProgress({
@@ -259,7 +259,7 @@ async function checkDbschemeCompatibility(
 
   if (query.dbItem.contents !== undefined && query.dbItem.contents.dbSchemeUri !== undefined) {
     const { scripts, finalDbscheme } = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath);
-    const hash = async function (filename: string): Promise<string> {
+    const hash = async function(filename: string): Promise<string> {
       return crypto.createHash('sha256').update(await fs.readFile(filename)).digest('hex');
     }
 
@@ -294,14 +294,33 @@ async function checkDbschemeCompatibility(
   }
 }
 
-/** Prompts the user to save `document` if it has unsaved changes. */
-async function promptUserToSaveChanges(document: vscode.TextDocument): Promise<void> {
+/**
+ * Prompts the user to save `document` if it has unsaved changes.
+ * Returns true if we should save changes.
+ */
+async function promptUserToSaveChanges(document: vscode.TextDocument): Promise<boolean> {
   if (document.isDirty) {
-    // TODO: add 'always save' button which records preference in configuration
-    if (await helpers.showBinaryChoiceDialog('Query file has unsaved changes. Save now?')) {
-      await document.save();
+    if (config.AUTOSAVE_SETTING.getValue()) {
+      return true;
+    }
+    else {
+      const yesItem = { title: 'Yes', isCloseAffordance: false };
+      const alwaysItem = { title: 'Always Save', isCloseAffordance: false };
+      const noItem = { title: 'No', isCloseAffordance: true }
+      const message = 'Query file has unsaved changes. Save now?';
+      const chosenItem = await vscode.window.showInformationMessage(message, { modal: true }, yesItem, alwaysItem, noItem);
+
+      if (chosenItem === alwaysItem) {
+        await config.AUTOSAVE_SETTING.updateValue(true, vscode.ConfigurationTarget.Workspace);
+        return true;
+      }
+
+      if (chosenItem === yesItem) {
+        return true;
+      }
     }
   }
+  return false;
 }
 
 type SelectedQuery = {
@@ -357,7 +376,9 @@ export async function determineSelectedQuery(selectedResourceUri: vscode.Uri | u
   // if the same file is open with unsaved changes in the active editor,
   // then prompt the user to save it first.
   if (editor !== undefined && editor.document.uri.fsPath === queryPath) {
-    await promptUserToSaveChanges(editor.document);
+    if (await promptUserToSaveChanges(editor.document)) {
+      editor.document.save();
+    }
   }
 
   let quickEvalPosition: messages.Position | undefined = undefined;
