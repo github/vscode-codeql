@@ -11,25 +11,24 @@ type Suite = {
 };
 
 /**
- * Run an integration test suite `suite` at most `tries` times, or
- * until it succeeds, whichever comes first.
- *
- * TODO: Presently there is no way to distinguish a legitimately
- * failed test run from the test runner being terminated by a signal.
- * If in the future there arises a way to distinguish these cases
- * (e.g. https://github.com/microsoft/vscode-test/pull/56) only retry
- * in the terminated-by-signal case.
+ * Run an integration test suite `suite`, retrying if it segfaults, at
+ * most `tries` times.
  */
-async function runTestsWithRetry(suite: Suite, tries: number): Promise<void> {
+async function runTestsWithRetryOnSegfault(suite: Suite, tries: number): Promise<void> {
   for (let t = 0; t < tries; t++) {
     try {
       // Download and unzip VS Code if necessary, and run the integration test suite.
       await runTests(suite);
       return;
     } catch (err) {
-      console.error(`Exception raised while running tests: ${err}`);
-      if (t < tries - 1)
-        console.log('Retrying...');
+      if (err === 'SIGSEGV') {
+        console.error('Test runner segfaulted.');
+        if (t < tries - 1)
+          console.error('Retrying...');
+      }
+      else {
+        throw err;
+      }
     }
   }
   console.error(`Tried running suite ${tries} time(s), still failed, giving up.`);
@@ -67,7 +66,7 @@ async function main() {
     ];
 
     for (const integrationTestSuite of integrationTestSuites) {
-      await runTestsWithRetry(integrationTestSuite, 3);
+      await runTestsWithRetryOnSegfault(integrationTestSuite, 3);
     }
   } catch (err) {
     console.error(`Unexpected exception while running tests: ${err}`);
