@@ -422,6 +422,11 @@ repository:
       keyword: 'true'
     name: constant.language.boolean.true.ql
 
+  unique:
+    match:
+      keyword: 'unique'
+    name: keyword.aggregate.unique.ql
+
   where:
     match:
       keyword: 'where'
@@ -478,6 +483,8 @@ repository:
     - include: '#then'
     - include: '#this'
     - include: '#true'
+    # `unique` is not really a keyword, but we'll highlight it as if it is.
+    - include: '#unique'
     - include: '#where'
 
   # A keyword that can be the first token of a predicate declaration.
