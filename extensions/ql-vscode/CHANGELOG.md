@@ -1,5 +1,9 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.1.2
+
+- Implement syntax highlighting for the new `unique` aggregate.
+
 ## 1.1.1 - 23 March 2020
 
 - Fix quick evaluation in `.qll` files.
