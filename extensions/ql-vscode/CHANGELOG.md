@@ -3,6 +3,8 @@
 ## 1.1.2
 
 - Implement syntax highlighting for the new `unique` aggregate.
+- Implement XML syntax highlighting for `.qhelp` files.
+- Add option to auto save queries before running them.
 
 ## 1.1.1 - 23 March 2020
 
