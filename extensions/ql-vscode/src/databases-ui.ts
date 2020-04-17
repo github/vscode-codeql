@@ -34,11 +34,18 @@ function joinThemableIconPath(base: string, iconPath: ThemableIconPath): Themabl
     return path.join(base, iconPath);
 }
 
+enum SortOrder {
+  NameAsc = 'NameAsc',
+  NameDesc = 'NameDesc'
+}
+
 /**
  * Tree data provider for the databases view.
  */
 class DatabaseTreeDataProvider extends DisposableObject
   implements TreeDataProvider<DatabaseItem> {
+
+  private _sortOrder = SortOrder.NameAsc;
 
   private readonly _onDidChangeTreeData = new EventEmitter<DatabaseItem | undefined>();
   private currentDatabaseItem: DatabaseItem | undefined;
@@ -84,7 +91,14 @@ class DatabaseTreeDataProvider extends DisposableObject
 
   public getChildren(element?: DatabaseItem): ProviderResult<DatabaseItem[]> {
     if (element === undefined) {
-      return this.databaseManager.databaseItems.slice(0);
+      return this.databaseManager.databaseItems.slice(0).sort((db1, db2) => {
+        switch(this.sortOrder) {
+          case SortOrder.NameAsc:
+            return db1.name.localeCompare(db2.name);
+          case SortOrder.NameDesc:
+            return db2.name.localeCompare(db1.name);
+        }
+      });
     }
     else {
       return [];
@@ -97,6 +111,15 @@ class DatabaseTreeDataProvider extends DisposableObject
 
   public getCurrent(): DatabaseItem | undefined {
     return this.currentDatabaseItem;
+  }
+
+  public get sortOrder() {
+    return this._sortOrder;
+  }
+
+  public set sortOrder(newSortOrder: SortOrder) {
+    this._sortOrder = newSortOrder;
+    this._onDidChangeTreeData.fire();
   }
 }
 
@@ -129,19 +152,25 @@ async function chooseDatabaseDir(): Promise<Uri | undefined> {
 }
 
 export class DatabaseUI extends DisposableObject {
-  public constructor(ctx: ExtensionContext, private cliserver: cli.CodeQLCliServer, private databaseManager: DatabaseManager,
-    private readonly queryServer: qsClient.QueryServerClient | undefined) {
+  private treeDataProvider: DatabaseTreeDataProvider;
 
+  public constructor(
+    ctx: ExtensionContext,
+    private cliserver: cli.CodeQLCliServer,
+    private databaseManager: DatabaseManager,
+    private readonly queryServer: qsClient.QueryServerClient | undefined
+  ) {
     super();
 
-    const treeDataProvider = this.push(new DatabaseTreeDataProvider(ctx, databaseManager));
-    this.push(window.createTreeView('codeQLDatabases', { treeDataProvider }));
+    this.treeDataProvider = this.push(new DatabaseTreeDataProvider(ctx, databaseManager));
+    this.push(window.createTreeView('codeQLDatabases', { treeDataProvider: this.treeDataProvider }));
 
     ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabase', this.handleChooseDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.setCurrentDatabase', this.handleSetCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.upgradeCurrentDatabase', this.handleUpgradeCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.clearCache', this.handleClearCache));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.setCurrentDatabase', this.handleMakeCurrentDatabase));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.sortByName', this.handleSortByName));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.removeDatabase', this.handleRemoveDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.upgradeDatabase', this.handleUpgradeDatabase));
   }
@@ -152,6 +181,14 @@ export class DatabaseUI extends DisposableObject {
 
   private handleChooseDatabase = async (): Promise<DatabaseItem | undefined> => {
     return await this.chooseAndSetDatabase();
+  }
+
+  private handleSortByName = async () => {
+    if (this.treeDataProvider.sortOrder === SortOrder.NameAsc) {
+      this.treeDataProvider.sortOrder = SortOrder.NameDesc;
+    } else {
+      this.treeDataProvider.sortOrder = SortOrder.NameAsc;
+    }
   }
 
   private handleUpgradeCurrentDatabase = async (): Promise<void> => {
