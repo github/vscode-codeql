@@ -215,6 +215,14 @@
         }
       },
       {
+        "command": "codeQLDatabases.sortByDateAdded",
+        "title": "Sort by Date Added",
+        "icon": {
+          "light": "media/light/sort-date.svg",
+          "dark": "media/dark/sort-date.svg"
+        }
+      },
+      {
         "command": "codeQL.checkForUpdatesToCLI",
         "title": "CodeQL: Check for CLI Updates"
       },
@@ -267,6 +275,11 @@
       "view/title": [
         {
           "command": "codeQLDatabases.sortByName",
+          "when": "view == codeQLDatabases",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLDatabases.sortByDateAdded",
           "when": "view == codeQLDatabases",
           "group": "navigation"
         },
@@ -359,6 +372,10 @@
         },
         {
           "command": "codeQLDatabases.sortByName",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.sortByDateAdded",
           "when": "false"
         },
         {

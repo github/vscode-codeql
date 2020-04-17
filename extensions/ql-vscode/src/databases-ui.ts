@@ -36,7 +36,9 @@ function joinThemableIconPath(base: string, iconPath: ThemableIconPath): Themabl
 
 enum SortOrder {
   NameAsc = 'NameAsc',
-  NameDesc = 'NameDesc'
+  NameDesc = 'NameDesc',
+  DateAddedAsc = 'DateAddedAsc',
+  DateAddedDesc = 'DateAddedDesc'
 }
 
 /**
@@ -97,6 +99,10 @@ class DatabaseTreeDataProvider extends DisposableObject
             return db1.name.localeCompare(db2.name);
           case SortOrder.NameDesc:
             return db2.name.localeCompare(db1.name);
+          case SortOrder.DateAddedAsc:
+            return (db1.dateAdded || 0) - (db2.dateAdded || 0);
+          case SortOrder.DateAddedDesc:
+            return (db2.dateAdded || 0) - (db1.dateAdded || 0);
         }
       });
     }
@@ -171,6 +177,7 @@ export class DatabaseUI extends DisposableObject {
     ctx.subscriptions.push(commands.registerCommand('codeQL.clearCache', this.handleClearCache));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.setCurrentDatabase', this.handleMakeCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.sortByName', this.handleSortByName));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.sortByDateAdded', this.handleSortByDateAdded));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.removeDatabase', this.handleRemoveDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.upgradeDatabase', this.handleUpgradeDatabase));
   }
@@ -188,6 +195,14 @@ export class DatabaseUI extends DisposableObject {
       this.treeDataProvider.sortOrder = SortOrder.NameDesc;
     } else {
       this.treeDataProvider.sortOrder = SortOrder.NameAsc;
+    }
+  }
+
+  private handleSortByDateAdded = async () => {
+    if (this.treeDataProvider.sortOrder === SortOrder.DateAddedAsc) {
+      this.treeDataProvider.sortOrder = SortOrder.DateAddedDesc;
+    } else {
+      this.treeDataProvider.sortOrder = SortOrder.DateAddedAsc;
     }
   }
 
