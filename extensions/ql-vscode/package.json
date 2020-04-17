@@ -207,6 +207,14 @@
         "title": "Upgrade Database"
       },
       {
+        "command": "codeQLDatabases.sortByName",
+        "title": "Sort by Name",
+        "icon": {
+          "light": "media/light/sort-precedence.svg",
+          "dark": "media/dark/sort-precedence.svg"
+        }
+      },
+      {
         "command": "codeQL.checkForUpdatesToCLI",
         "title": "CodeQL: Check for CLI Updates"
       },
@@ -253,6 +261,11 @@
     ],
     "menus": {
       "view/title": [
+        {
+          "command": "codeQLDatabases.sortByName",
+          "when": "view == codeQLDatabases",
+          "group": "navigation"
+        },
         {
           "command": "codeQL.chooseDatabase",
           "when": "view == codeQLDatabases",
@@ -333,6 +346,10 @@
         },
         {
           "command": "codeQLDatabases.setCurrentDatabase",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.sortByName",
           "when": "false"
         },
         {
