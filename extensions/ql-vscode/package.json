@@ -210,8 +210,8 @@
         "command": "codeQLDatabases.sortByName",
         "title": "Sort by Name",
         "icon": {
-          "light": "media/light/sort-precedence.svg",
-          "dark": "media/dark/sort-precedence.svg"
+          "light": "media/light/sort-alpha.svg",
+          "dark": "media/dark/sort-alpha.svg"
         }
       },
       {
