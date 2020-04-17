@@ -554,8 +554,8 @@ export class DatabaseManager extends DisposableObject {
       if (typeof state.options.ignoreSourceArchive === 'boolean') {
         ignoreSourceArchive = state.options.ignoreSourceArchive;
       }
-      if (typeof state.dateAdded === 'number') {
-        dateAdded = state.dateAdded;
+      if (typeof state.options.dateAdded === 'number') {
+        dateAdded = state.options.dateAdded;
       }
     }
     const fullOptions: FullDatabaseOptions = {
