@@ -178,8 +178,8 @@
         "command": "codeQL.chooseDatabase",
         "title": "CodeQL: Choose Database",
         "icon": {
-          "light": "media/black-plus.svg",
-          "dark": "media/white-plus.svg"
+          "light": "media/light/plus.svg",
+          "dark": "media/dark/plus.svg"
         }
       },
       {
