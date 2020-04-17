@@ -5,6 +5,9 @@
 - Implement syntax highlighting for the new `unique` aggregate.
 - Implement XML syntax highlighting for `.qhelp` files.
 - Add option to auto save queries before running them.
+- Add new command in query history to view the query text of the
+  selected query (note that this may be different from the current
+  contents of the query file if the file has been edited).
 
 ## 1.1.1 - 23 March 2020
 
