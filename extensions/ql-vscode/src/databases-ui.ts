@@ -15,8 +15,8 @@ type ThemableIconPath = { light: string; dark: string } | string;
  * Path to icons to display next to currently selected database.
  */
 const SELECTED_DATABASE_ICON: ThemableIconPath = {
-  light: 'media/check-light-mode.svg',
-  dark: 'media/check-dark-mode.svg',
+  light: 'media/light/check.svg',
+  dark: 'media/dark/check.svg',
 };
 
 /**
