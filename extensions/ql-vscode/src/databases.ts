@@ -35,10 +35,12 @@ const DB_LIST = 'databaseList';
 export interface DatabaseOptions {
   displayName?: string;
   ignoreSourceArchive?: boolean;
+  dateAdded?: number | undefined;
 }
 
 interface FullDatabaseOptions extends DatabaseOptions {
   ignoreSourceArchive: boolean;
+  dateAdded: number | undefined;
 }
 
 interface PersistedDatabaseItem {
@@ -209,6 +211,12 @@ export interface DatabaseItem {
    * Will be `undefined` if the database is invalid. Can be updated by calling `refresh()`.
    */
   readonly contents: DatabaseContents | undefined;
+
+  /**
+   * The date this database was added as a unix timestamp. Or undefined if we don't know.
+   */
+  readonly dateAdded: number | undefined;
+
   /** If the database is invalid, describes why. */
   readonly error: Error | undefined;
   /**
@@ -290,6 +298,10 @@ class DatabaseItemImpl implements DatabaseItem {
 
   public get contents(): DatabaseContents | undefined {
     return this._contents;
+  }
+
+  public get dateAdded(): number | undefined {
+    return this.options.dateAdded;
   }
 
   public get error(): Error | undefined {
@@ -466,8 +478,9 @@ export class DatabaseManager extends DisposableObject {
     this.loadPersistedState();  // Let this run async.
   }
 
-  public async openDatabase(uri: vscode.Uri, options?: DatabaseOptions):
-  Promise<DatabaseItem> {
+  public async openDatabase(
+    uri: vscode.Uri, options?: DatabaseOptions
+  ): Promise<DatabaseItem> {
 
     const contents = await resolveDatabaseContents(uri);
     const realOptions = options || {};
@@ -476,7 +489,8 @@ export class DatabaseManager extends DisposableObject {
     const fullOptions: FullDatabaseOptions = {
       ignoreSourceArchive: (realOptions.ignoreSourceArchive !== undefined) ?
         realOptions.ignoreSourceArchive : isQLTestDatabase,
-      displayName: realOptions.displayName
+      displayName: realOptions.displayName,
+      dateAdded: realOptions.dateAdded || Date.now()
     };
     const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions, (item) => {
       this._onDidChangeDatabaseItem.fire(item);
@@ -526,11 +540,13 @@ export class DatabaseManager extends DisposableObject {
     }
   }
 
-  private async createDatabaseItemFromPersistedState(state: PersistedDatabaseItem):
-  Promise<DatabaseItem> {
+  private async createDatabaseItemFromPersistedState(
+    state: PersistedDatabaseItem
+  ): Promise<DatabaseItem> {
 
     let displayName: string | undefined = undefined;
     let ignoreSourceArchive = false;
+    let dateAdded = undefined;
     if (state.options) {
       if (typeof state.options.displayName === 'string') {
         displayName = state.options.displayName;
@@ -538,10 +554,14 @@ export class DatabaseManager extends DisposableObject {
       if (typeof state.options.ignoreSourceArchive === 'boolean') {
         ignoreSourceArchive = state.options.ignoreSourceArchive;
       }
+      if (typeof state.dateAdded === 'number') {
+        dateAdded = state.dateAdded;
+      }
     }
     const fullOptions: FullDatabaseOptions = {
-      ignoreSourceArchive: ignoreSourceArchive,
-      displayName: displayName
+      ignoreSourceArchive,
+      displayName,
+      dateAdded
     };
     const item = new DatabaseItemImpl(vscode.Uri.parse(state.uri), undefined, fullOptions,
       (item) => {
