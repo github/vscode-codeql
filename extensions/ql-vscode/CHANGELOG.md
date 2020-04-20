@@ -8,6 +8,7 @@
 - Add new command in query history to view the query text of the
   selected query (note that this may be different from the current
   contents of the query file if the file has been edited).
+- Add ability to sort CodeQL databases by name or by date added.
 
 ## 1.1.1 - 23 March 2020
 
@@ -16,7 +17,6 @@
   query.
 - Request user acknowledgment before updating the CodeQL binaries.
 - Warn when using the deprecated `codeql.cmd` launcher on Windows.
-- Add ability to sort QL databases by name or by date added.
 
 ## 1.1.0 - 17 March 2020
 
