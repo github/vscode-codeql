@@ -3,7 +3,7 @@ import * as yaml from 'js-yaml';
 import * as tmp from 'tmp';
 import * as vscode from "vscode";
 import { decodeSourceArchiveUri, zipArchiveScheme } from "./archive-filesystem-provider";
-import { EntityValue, getResultSetSchema, LineColumnLocation, UrlValue } from "./bqrs-cli-types";
+import { EntityValue, getResultSetSchema, LineColumnLocation, UrlValue, ColumnKindCode } from "./bqrs-cli-types";
 import { CodeQLCliServer } from "./cli";
 import { DatabaseItem, DatabaseManager } from "./databases";
 import * as helpers from './helpers';
@@ -156,9 +156,9 @@ async function getLinksFromResults(results: QueryWithResults, cli: CodeQLCliServ
   const info = await cli.bqrsInfo(bqrsPath);
   const selectInfo = getResultSetSchema(SELECT_QUERY_NAME, info);
   if (selectInfo && selectInfo.columns.length == 3
-    && selectInfo.columns[0].kind == "e"
-    && selectInfo.columns[1].kind == "e"
-    && selectInfo.columns[2].kind == "s") {
+    && selectInfo.columns[0].kind == ColumnKindCode.ENTITY
+    && selectInfo.columns[1].kind == ColumnKindCode.ENTITY
+    && selectInfo.columns[2].kind == ColumnKindCode.STRING) {
     // TODO: Page this
     const allTuples = await cli.bqrsDecode(bqrsPath, SELECT_QUERY_NAME);
     for (const tuple of allTuples.tuples) {
