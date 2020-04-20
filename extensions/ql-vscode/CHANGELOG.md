@@ -16,6 +16,7 @@
   query.
 - Request user acknowledgment before updating the CodeQL binaries.
 - Warn when using the deprecated `codeql.cmd` launcher on Windows.
+- Add ability to sort QL databases by name or by date added.
 
 ## 1.1.0 - 17 March 2020
 
