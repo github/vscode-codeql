@@ -28,8 +28,8 @@ enum KeyType {
 
 function tagOfKeyType(keyType: KeyType): string {
   switch (keyType) {
-    case KeyType.DefinitionQuery: return "local-definitions";
-    case KeyType.ReferenceQuery: return "local-references";
+    case KeyType.DefinitionQuery: return "ide-contextual-queries/local-definitions";
+    case KeyType.ReferenceQuery: return "ide-contextual-queries/local-references";
   }
 }
 
