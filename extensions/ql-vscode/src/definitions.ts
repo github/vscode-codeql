@@ -74,7 +74,7 @@ export class TemplateQueryDefinitionProvider implements vscode.DefinitionProvide
 
   async provideDefinition(document: vscode.TextDocument, position: vscode.Position, _token: vscode.CancellationToken): Promise<vscode.LocationLink[]> {
     const fileLinks = await this.cache.get(document.uri.toString());
-    let locLinks: vscode.LocationLink[] = [];
+    const locLinks: vscode.LocationLink[] = [];
     for (const link of fileLinks) {
       if (link.originSelectionRange!.contains(position)) {
         locLinks.push(link);
@@ -101,7 +101,7 @@ export class TemplateQueryReferenceProvider implements vscode.ReferenceProvider 
 
   async provideReferences(document: vscode.TextDocument, position: vscode.Position, _context: vscode.ReferenceContext, _token: vscode.CancellationToken): Promise<vscode.Location[]> {
     const fileLinks = await this.cache.get(document.uri.toString());
-    let locLinks: vscode.Location[] = [];
+    const locLinks: vscode.Location[] = [];
     for (const link of fileLinks) {
       if (link.targetRange!.contains(position)) {
         locLinks.push({ range: link.originSelectionRange!, uri: link.originUri });
@@ -112,8 +112,8 @@ export class TemplateQueryReferenceProvider implements vscode.ReferenceProvider 
 }
 
 interface FileRange {
-  file: vscode.Uri,
-  range: vscode.Range
+  file: vscode.Uri;
+  range: vscode.Range;
 }
 
 async function getLinksFromResults(results: QueryWithResults, cli: CodeQLCliServer, db: DatabaseItem, filter: (srcFile: string, destFile: string) => boolean): Promise<FullLocationLink[]> {

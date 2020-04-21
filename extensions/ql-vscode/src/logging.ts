@@ -60,7 +60,7 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
    * function if you don't need to guarantee that the log writing is complete before
    * continuing.
    */
-  async log(message: string, options = { } as LogOptions): Promise<void> {
+  async log(message: string, options = {} as LogOptions): Promise<void> {
     if (options.trailingNewline === undefined) {
       options.trailingNewline = true;
     }
@@ -116,7 +116,7 @@ class AdditionalLogLocation extends Disposable {
     super(() => { /**/ });
   }
 
-  async log(message: string, options = { } as LogOptions): Promise<void> {
+  async log(message: string, options = {} as LogOptions): Promise<void> {
     if (options.trailingNewline === undefined) {
       options.trailingNewline = true;
     }
