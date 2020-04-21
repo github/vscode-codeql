@@ -6,7 +6,7 @@ import { CodeQLCliServer } from './cli';
 import { DistributionConfigListener, QueryHistoryConfigListener, QueryServerConfigListener } from './config';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
-import { createDefinitionsHandler, createReferencesHander } from './definitions';
+import { TemplateQueryDefinitionProvider, TemplateQueryReferenceProvider } from './definitions';
 import { DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT, DistributionManager, DistributionUpdateCheckResultKind, FindDistributionResult, FindDistributionResultKind, GithubApiError, GithubRateLimitedError } from './distribution';
 import * as helpers from './helpers';
 import { assertNever } from './helpers-pure';
@@ -338,11 +338,11 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   languages.registerDefinitionProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    await createDefinitionsHandler(cliServer, qs, dbm)
+    new TemplateQueryDefinitionProvider(cliServer, qs, dbm)
   );
   languages.registerReferenceProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    await createReferencesHander(cliServer, qs, dbm)
+    new TemplateQueryReferenceProvider(cliServer, qs, dbm)
   );
 }
 
