@@ -617,10 +617,11 @@ export class CodeQLCliServer implements Disposable {
 
   /**
    * Gets information about queries in a query suite.
+   * @param suite The suite to resolve.
    * @param additionalPacks A list of directories to search for qlpacks before searching in `searchPath`.
    * @param searchPath A list of directories to search for packs not found in `additionalPacks`. If undefined,
    *   the default CLI search path is used.
-   * @returns A list of query files found
+   * @returns A list of query files found.
    */
   resolveQueriesInSuite(suite: string, additionalPacks: string[], searchPath?: string[]): Promise<string[]> {
     const args = ['--additional-packs', additionalPacks.join(path.delimiter)];

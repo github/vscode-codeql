@@ -3,7 +3,7 @@ import * as yaml from 'js-yaml';
 import * as tmp from 'tmp';
 import * as vscode from "vscode";
 import { decodeSourceArchiveUri, zipArchiveScheme } from "./archive-filesystem-provider";
-import { EntityValue, getResultSetSchema, LineColumnLocation, UrlValue, ColumnKindCode } from "./bqrs-cli-types";
+import { ColumnKindCode, EntityValue, getResultSetSchema, LineColumnLocation, UrlValue } from "./bqrs-cli-types";
 import { CodeQLCliServer } from "./cli";
 import { DatabaseItem, DatabaseManager } from "./databases";
 import * as helpers from './helpers';
@@ -23,7 +23,8 @@ const TEMPLATE_NAME = "selectedSourceFile";
 const SELECT_QUERY_NAME = "#select";
 
 enum KeyType {
-  DefinitionQuery, ReferenceQuery
+  DefinitionQuery = 'DefinitionQuery',
+  ReferenceQuery = 'ReferenceQuery',
 }
 
 function tagOfKeyType(keyType: KeyType): string {
