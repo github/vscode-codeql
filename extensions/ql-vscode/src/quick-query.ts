@@ -1,5 +1,4 @@
 import * as fs from 'fs-extra';
-import * as glob from 'glob-promise';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
 import { ExtensionContext, window as Window, workspace, Uri } from 'vscode';
@@ -16,33 +15,6 @@ const QUICK_QUERY_WORKSPACE_FOLDER_NAME = 'Quick Queries';
 
 export function isQuickQueryPath(queryPath: string): boolean {
   return path.basename(queryPath) === QUICK_QUERY_QUERY_NAME;
-}
-
-async function getQlPackFor(cliServer: CodeQLCliServer, dbschemePath: string): Promise<string> {
-  const qlpacks = await cliServer.resolveQlpacks(helpers.getOnDiskWorkspaceFolders());
-  const packs: { packDir: string | undefined; packName: string }[] =
-    Object.entries(qlpacks).map(([packName, dirs]) => {
-      if (dirs.length < 1) {
-        logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has no directories`);
-        return { packName, packDir: undefined };
-      }
-      if (dirs.length > 1) {
-        logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has more than one directory; arbitrarily choosing the first`);
-      }
-      return {
-        packName,
-        packDir: dirs[0]
-      }
-    });
-  for (const { packDir, packName } of packs) {
-    if (packDir !== undefined) {
-      const qlpack = yaml.safeLoad(await fs.readFile(path.join(packDir, 'qlpack.yml'), 'utf8'));
-      if (qlpack.dbscheme !== undefined && path.basename(qlpack.dbscheme) === path.basename(dbschemePath)) {
-        return packName;
-      }
-    }
-  }
-  throw new Error(`Could not find qlpack file for dbscheme ${dbschemePath}`);
 }
 
 /**
@@ -128,19 +100,7 @@ export async function displayQuickQuery(ctx: ExtensionContext, cliServer: CodeQL
     }
 
     const datasetFolder = await dbItem.getDatasetFolder(cliServer);
-    const dbschemes = await glob(path.join(datasetFolder, '*.dbscheme'))
-
-    if (dbschemes.length < 1) {
-      throw new Error(`Can't find dbscheme for current database in ${datasetFolder}`);
-    }
-
-    dbschemes.sort();
-    const dbscheme = dbschemes[0];
-    if (dbschemes.length > 1) {
-      Window.showErrorMessage(`Found multiple dbschemes in ${datasetFolder} during quick query; arbitrarily choosing the first, ${dbscheme}, to decide what library to use.`);
-    }
-
-    const qlpack = await getQlPackFor(cliServer, dbscheme);
+    const { qlpack, dbscheme } = await helpers.resolveDatasetFolder(cliServer, datasetFolder);
     const quickQueryQlpackYaml: any = {
       name: "quick-query",
       version: "1.0.0",

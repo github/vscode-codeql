@@ -39,6 +39,17 @@ class Setting {
 
 const ROOT_SETTING = new Setting('codeQL');
 
+// Enable experimental features
+
+/**
+ * This setting is deliberately not in package.json so that it does
+ * not appear in the settings ui in vscode itself. If users want to
+ * enable experimental features, they can add
+ * "codeQl.experimentalFeatures" directly in their vscode settings
+ * json file.
+ */
+export const EXPERIMENTAL_FEATURES_SETTING = new Setting('experimentalFeatures', ROOT_SETTING);
+
 // Distribution configuration
 
 const DISTRIBUTION_SETTING = new Setting('cli', ROOT_SETTING);

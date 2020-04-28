@@ -1,5 +1,9 @@
+import * as fs from 'fs-extra';
+import * as glob from 'glob-promise';
+import * as yaml from 'js-yaml';
 import * as path from 'path';
 import { CancellationToken, ExtensionContext, ProgressOptions, window as Window, workspace } from 'vscode';
+import { CodeQLCliServer } from './cli';
 import { logger } from './logging';
 import { QueryInfo } from './run-queries';
 
@@ -243,4 +247,111 @@ function createRateLimitedResult(): RateLimitedResult {
   return {
     kind: InvocationRateLimiterResultKind.RateLimited
   };
+}
+
+
+export type DatasetFolderInfo = {
+  dbscheme: string;
+  qlpack: string;
+}
+
+export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemePath: string): Promise<string> {
+  const qlpacks = await cliServer.resolveQlpacks(getOnDiskWorkspaceFolders());
+  const packs: { packDir: string | undefined; packName: string }[] =
+    Object.entries(qlpacks).map(([packName, dirs]) => {
+      if (dirs.length < 1) {
+        logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has no directories`);
+        return { packName, packDir: undefined };
+      }
+      if (dirs.length > 1) {
+        logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has more than one directory; arbitrarily choosing the first`);
+      }
+      return {
+        packName,
+        packDir: dirs[0]
+      }
+    });
+  for (const { packDir, packName } of packs) {
+    if (packDir !== undefined) {
+      const qlpack = yaml.safeLoad(await fs.readFile(path.join(packDir, 'qlpack.yml'), 'utf8'));
+      if (qlpack.dbscheme !== undefined && path.basename(qlpack.dbscheme) === path.basename(dbschemePath)) {
+        return packName;
+      }
+    }
+  }
+  throw new Error(`Could not find qlpack file for dbscheme ${dbschemePath}`);
+}
+
+export async function resolveDatasetFolder(cliServer: CodeQLCliServer, datasetFolder: string): Promise<DatasetFolderInfo> {
+  const dbschemes = await glob(path.join(datasetFolder, '*.dbscheme'))
+
+  if (dbschemes.length < 1) {
+    throw new Error(`Can't find dbscheme for current database in ${datasetFolder}`);
+  }
+
+  dbschemes.sort();
+  const dbscheme = dbschemes[0];
+  if (dbschemes.length > 1) {
+    Window.showErrorMessage(`Found multiple dbschemes in ${datasetFolder} during quick query; arbitrarily choosing the first, ${dbscheme}, to decide what library to use.`);
+  }
+
+  const qlpack = await getQlPackForDbscheme(cliServer, dbscheme);
+  return { dbscheme, qlpack };
+}
+
+/**
+ * A cached mapping from strings to value of type U.
+ */
+export class CachedOperation<U> {
+  private readonly operation: (t: string) => Promise<U>;
+  private readonly cached: Map<string, U>;
+  private readonly lru: string[];
+  private readonly inProgressCallbacks: Map<string, [(u: U) => void, (reason?: any) => void][]>;
+
+  constructor(operation: (t: string) => Promise<U>, private cacheSize = 100) {
+    this.operation = operation;
+    this.lru = [];
+    this.inProgressCallbacks = new Map<string, [(u: U) => void, (reason?: any) => void][]>();
+    this.cached = new Map<string, U>();
+  }
+
+  async get(t: string): Promise<U> {
+    // Try and retrieve from the cache
+    const fromCache = this.cached.get(t);
+    if (fromCache !== undefined) {
+      // Move to end of lru list
+      this.lru.push(this.lru.splice(this.lru.findIndex(v => v === t), 1)[0])
+      return fromCache;
+    }
+    // Otherwise check if in progress
+    const inProgressCallback = this.inProgressCallbacks.get(t);
+    if (inProgressCallback !== undefined) {
+      // If so wait for it to resolve
+      return await new Promise((resolve, reject) => {
+        inProgressCallback.push([resolve, reject]);
+      });
+    }
+
+    // Otherwise compute the new value, but leave a callback to allow sharing work
+    const callbacks: [(u: U) => void, (reason?: any) => void][] = [];
+    this.inProgressCallbacks.set(t, callbacks);
+    try {
+      const result = await this.operation(t);
+      callbacks.forEach(f => f[0](result));
+      this.inProgressCallbacks.delete(t);
+      if (this.lru.length > this.cacheSize) {
+        const toRemove = this.lru.shift()!;
+        this.cached.delete(toRemove);
+      }
+      this.lru.push(t);
+      this.cached.set(t, result);
+      return result;
+    } catch (e) {
+      // Rethrow error on all callbacks
+      callbacks.forEach(f => f[1](e));
+      throw e;
+    } finally {
+      this.inProgressCallbacks.delete(t);
+    }
+  }
 }

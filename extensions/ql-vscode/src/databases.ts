@@ -631,6 +631,11 @@ export class DatabaseManager extends DisposableObject {
     return this._databaseItems.find(item => item.databaseUri.toString(true) === uriString);
   }
 
+  public findDatabaseItemBySourceArchive(uri: vscode.Uri): DatabaseItem | undefined {
+    const uriString = uri.toString(true);
+    return this._databaseItems.find(item => item.sourceArchive && item.sourceArchive.toString(true) === uriString);
+  }
+
   private async addDatabaseItem(item: DatabaseItemImpl) {
     this._databaseItems.push(item);
     this.updatePersistedDatabaseList();

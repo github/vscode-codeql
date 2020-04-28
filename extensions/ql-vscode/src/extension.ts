@@ -1,25 +1,23 @@
-import { commands, Disposable, ExtensionContext, extensions, ProgressLocation, ProgressOptions, window as Window, Uri } from 'vscode';
+import { commands, Disposable, ExtensionContext, extensions, languages, ProgressLocation, ProgressOptions, Uri, window as Window } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
+import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
-import { DistributionConfigListener, QueryServerConfigListener, QueryHistoryConfigListener } from './config';
+import { CodeQLCliServer } from './cli';
+import { DistributionConfigListener, QueryHistoryConfigListener, QueryServerConfigListener, EXPERIMENTAL_FEATURES_SETTING } from './config';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
-import {
-  DistributionUpdateCheckResultKind, DistributionManager, FindDistributionResult, FindDistributionResultKind, GithubApiError,
-  DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT, GithubRateLimitedError
-} from './distribution';
+import { TemplateQueryDefinitionProvider, TemplateQueryReferenceProvider } from './definitions';
+import { DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT, DistributionManager, DistributionUpdateCheckResultKind, FindDistributionResult, FindDistributionResultKind, GithubApiError, GithubRateLimitedError } from './distribution';
 import * as helpers from './helpers';
+import { assertNever } from './helpers-pure';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager, WebviewReveal } from './interface';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
-import { compileAndRunQueryAgainstDatabase, tmpDirDisposal, UserCancellationException } from './run-queries';
-import { CompletedQuery } from './query-results';
 import { QueryHistoryManager } from './query-history';
+import { CompletedQuery } from './query-results';
 import * as qsClient from './queryserver-client';
-import { CodeQLCliServer } from './cli';
-import { assertNever } from './helpers-pure';
 import { displayQuickQuery } from './quick-query';
-import { TestHub, testExplorerExtensionId } from 'vscode-test-adapter-api';
+import { compileAndRunQueryAgainstDatabase, tmpDirDisposal, UserCancellationException } from './run-queries';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
 
@@ -337,6 +335,17 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   }));
 
   ctx.subscriptions.push(client.start());
+
+  if (EXPERIMENTAL_FEATURES_SETTING.getValue()) {
+    languages.registerDefinitionProvider(
+      { scheme: archiveFilesystemProvider.zipArchiveScheme },
+      new TemplateQueryDefinitionProvider(cliServer, qs, dbm)
+    );
+    languages.registerReferenceProvider(
+      { scheme: archiveFilesystemProvider.zipArchiveScheme },
+      new TemplateQueryReferenceProvider(cliServer, qs, dbm)
+    );
+  }
 }
 
 function initializeLogging(ctx: ExtensionContext): void {
