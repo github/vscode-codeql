@@ -10,6 +10,18 @@ export interface ResultTableProps {
   metadata?: QueryMetadata;
   resultsPath: string | undefined;
   sortState?: RawResultsSortState;
+
+  /**
+   * Holds if there are any raw results. When that is the case, we
+   * want to direct users to pay attention to raw results if
+   * interpreted results are empty.
+   */
+  nonemptyRawResults: boolean;
+
+  /**
+   * Callback to show raw results.
+   */
+  showRawResults: () => void;
 }
 
 export const className = 'vscode-codeql__result-table';

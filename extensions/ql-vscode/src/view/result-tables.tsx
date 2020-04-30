@@ -123,6 +123,7 @@ export class ResultTables
     const resultSets = this.getResultSets();
 
     const resultSet = resultSets.find(resultSet => resultSet.schema.name == selectedTable);
+    const nonemptyRawResults = resultSets.some(resultSet => resultSet.t == 'RawResultSet' && resultSet.rows.length > 0);
     const numberOfResults = resultSet && renderResultCountString(resultSet);
 
     return <div>
@@ -149,7 +150,9 @@ export class ResultTables
         <ResultTable key={resultSet.schema.name} resultSet={resultSet}
           databaseUri={this.props.database.databaseUri}
           resultsPath={this.props.resultsPath}
-          sortState={this.props.sortStates.get(resultSet.schema.name)} />
+          sortState={this.props.sortStates.get(resultSet.schema.name)}
+          nonemptyRawResults={nonemptyRawResults}
+          showRawResults={() => { this.setState({ selectedTable: SELECT_TABLE_NAME }) }} />
       }
     </div>;
   }

@@ -1,5 +1,10 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.1.3
+
+- Add a suggestion in alerts view to view raw results, when there are
+  raw results but no alerts.
+
 ## 1.1.2 - 28 April 2020
 
 - Implement syntax highlighting for the new `unique` aggregate.
