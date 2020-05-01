@@ -70,7 +70,7 @@ export class TemplateQueryDefinitionProvider implements vscode.DefinitionProvide
   }
 
   async getDefinitions(uriString: string): Promise<vscode.LocationLink[]> {
-    return getLinksForUriString(this.cli, this.qs, this.dbm, uriString, (src, _dest) => src === uriString);
+    return getLinksForUriString(this.cli, this.qs, this.dbm, uriString, KeyType.DefinitionQuery, (src, _dest) => src === uriString);
   }
 
   async provideDefinition(document: vscode.TextDocument, position: vscode.Position, _token: vscode.CancellationToken): Promise<vscode.LocationLink[]> {
@@ -97,7 +97,7 @@ export class TemplateQueryReferenceProvider implements vscode.ReferenceProvider 
   }
 
   async getReferences(uriString: string): Promise<FullLocationLink[]> {
-    return getLinksForUriString(this.cli, this.qs, this.dbm, uriString, (_src, dest) => dest === uriString);
+    return getLinksForUriString(this.cli, this.qs, this.dbm, uriString, KeyType.ReferenceQuery, (_src, dest) => dest === uriString);
   }
 
   async provideReferences(document: vscode.TextDocument, position: vscode.Position, _context: vscode.ReferenceContext, _token: vscode.CancellationToken): Promise<vscode.Location[]> {
@@ -146,6 +146,7 @@ async function getLinksForUriString(
   qs: QueryServerClient,
   dbm: DatabaseManager,
   uriString: string,
+  keyType: KeyType,
   filter: (src: string, dest: string) => boolean
 ) {
   const uri = decodeSourceArchiveUri(vscode.Uri.parse(uriString));
@@ -158,7 +159,7 @@ async function getLinksForUriString(
       throw new Error("Can't infer qlpack from database source archive");
     }
     const links: FullLocationLink[] = []
-    for (const query of await resolveQueries(cli, qlpack, KeyType.ReferenceQuery)) {
+    for (const query of await resolveQueries(cli, qlpack, keyType)) {
       const templates: messages.TemplateDefinitions = {
         [TEMPLATE_NAME]: {
           values: {
