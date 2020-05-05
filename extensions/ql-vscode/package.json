@@ -80,9 +80,6 @@
       },
       {
         "id": "xml",
-        "aliases": [
-          "qhelp"
-        ],
         "extensions": [
           ".qhelp"
         ]
