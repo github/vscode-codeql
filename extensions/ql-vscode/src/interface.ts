@@ -349,9 +349,7 @@ export class InterfaceManager extends DisposableObject {
       const showButton = "View Results";
       const queryName = results.queryName;
       const resultPromise = vscode.window.showInformationMessage(
-        `Finished running query ${
-          queryName.length > 0 ? ` “${queryName}”` : ""
-        }.`,
+        `Finished running query ${queryName.length > 0 ? ` "${queryName}"` : ""}.`,
         showButton
       );
       // Address this click asynchronously so we still update the
