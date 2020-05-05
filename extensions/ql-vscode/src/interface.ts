@@ -16,6 +16,8 @@ import * as messages from './messages';
 import { CompletedQuery, interpretResults } from './query-results';
 import { QueryInfo, tmpDir } from './run-queries';
 import { parseSarifLocation, parseSarifPlainTextMessage } from './sarif-utils';
+import { adaptSchema, adaptBqrs, RawResultSet } from './adapt';
+import { EXPERIMENTAL_BQRS_SETTING } from './config';
 
 /**
  * interface.ts
@@ -361,6 +363,20 @@ export class InterfaceManager extends DisposableObject {
       });
     }
 
+    let resultSets: RawResultSet[] | undefined;
+
+    if (EXPERIMENTAL_BQRS_SETTING.getValue()) {
+      resultSets = [];
+      const pageSize = 100;
+      const schemas = await this.cliServer.bqrsInfo(results.query.resultsPaths.resultsPath, pageSize);
+      for (const schema of schemas["result-sets"]) {
+        const chunk = await this.cliServer.bqrsDecode(results.query.resultsPaths.resultsPath, schema.name, pageSize, 0)
+        const adaptedSchema = adaptSchema(schema);
+        const resultSet = adaptBqrs(adaptedSchema, chunk);
+        resultSets.push(resultSet);
+      }
+    }
+
     await this.postMessage({
       t: "setState",
       interpretation,
@@ -368,6 +384,7 @@ export class InterfaceManager extends DisposableObject {
       resultsPath: this.convertPathToWebviewUri(
         results.query.resultsPaths.resultsPath
       ),
+      resultSets,
       sortedResultsMap,
       database: results.database,
       shouldKeepOldResultsWhileRendering,

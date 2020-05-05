@@ -1,11 +1,12 @@
 import * as React from 'react';
 import * as Rdom from 'react-dom';
 import * as bqrs from 'semmle-bqrs';
-import { ElementBase, LocationValue, PrimitiveColumnValue, PrimitiveTypeKind, ResultSetSchema, tryGetResolvableLocation } from 'semmle-bqrs';
+import { ElementBase, PrimitiveColumnValue, PrimitiveTypeKind, ResultSetSchema, tryGetResolvableLocation } from 'semmle-bqrs';
 import { assertNever } from '../helpers-pure';
 import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortedResultSetInfo, RawResultsSortState, NavigatePathMsg, QueryMetadata, ResultsPaths } from '../interface-types';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 import { ResultTables } from './result-tables';
+import { RawResultSet, ResultValue, ResultRow } from '../adapt';
 
 /**
  * results.tsx
@@ -23,30 +24,12 @@ interface VsCodeApi {
 declare const acquireVsCodeApi: () => VsCodeApi;
 export const vscode = acquireVsCodeApi();
 
-export interface ResultElement {
-  label: string;
-  location?: LocationValue;
-}
-
-export interface ResultUri {
-  uri: string;
-}
-
-export type ResultValue = ResultElement | ResultUri | string;
-
-export type ResultRow = ResultValue[];
-
 export type RawTableResultSet = { t: 'RawResultSet' } & RawResultSet;
 export type PathTableResultSet = { t: 'SarifResultSet'; readonly schema: ResultSetSchema; name: string } & Interpretation;
 
 export type ResultSet =
   | RawTableResultSet
   | PathTableResultSet;
-
-export interface RawResultSet {
-  readonly schema: ResultSetSchema;
-  readonly rows: readonly ResultRow[];
-}
 
 async function* getChunkIterator(response: Response): AsyncIterableIterator<Uint8Array> {
   if (!response.ok) {
@@ -63,7 +46,7 @@ async function* getChunkIterator(response: Response): AsyncIterableIterator<Uint
 }
 
 function translatePrimitiveValue(value: PrimitiveColumnValue, type: PrimitiveTypeKind):
-ResultValue {
+  ResultValue {
 
   switch (type) {
     case 'i':
@@ -127,6 +110,7 @@ async function parseResultSets(response: Response): Promise<readonly ResultSet[]
 
 interface ResultsInfo {
   resultsPath: string;
+  resultSets: ResultSet[] | undefined;
   origResultsPaths: ResultsPaths;
   database: DatabaseInfo;
   interpretation: Interpretation | undefined;
@@ -187,6 +171,7 @@ class App extends React.Component<{}, ResultsViewState> {
       case 'setState':
         this.updateStateWithNewResultsInfo({
           resultsPath: msg.resultsPath,
+          resultSets: msg.resultSets?.map(x => ({ t: 'RawResultSet', ...x })),
           origResultsPaths: msg.origResultsPaths,
           sortedResultsMap: new Map(Object.entries(msg.sortedResultsMap)),
           database: msg.database,
@@ -247,8 +232,9 @@ class App extends React.Component<{}, ResultsViewState> {
     let results: Results | null = null;
     let statusText = '';
     try {
+      const resultSets = resultsInfo.resultSets || await this.getResultSets(resultsInfo);
       results = {
-        resultSets: await this.getResultSets(resultsInfo),
+        resultSets,
         database: resultsInfo.database,
         sortStates: this.getSortStates(resultsInfo)
       };

@@ -50,6 +50,9 @@ const ROOT_SETTING = new Setting('codeQL');
  */
 export const EXPERIMENTAL_FEATURES_SETTING = new Setting('experimentalFeatures', ROOT_SETTING);
 
+/* Advanced setting: used to enable bqrs parsing in the cli instead of in the webview. */
+export const EXPERIMENTAL_BQRS_SETTING = new Setting('experimentalBqrsParsing', ROOT_SETTING);
+
 // Distribution configuration
 
 const DISTRIBUTION_SETTING = new Setting('cli', ROOT_SETTING);
