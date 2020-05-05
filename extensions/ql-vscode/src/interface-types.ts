@@ -1,5 +1,6 @@
 import * as sarif from 'sarif';
 import { ResolvableLocationValue } from 'semmle-bqrs';
+import { RawResultSet } from './decode';
 
 /**
  * Only ever show this many results per run in interpreted results.
@@ -65,7 +66,7 @@ export interface ResultsUpdatingMsg {
 
 export interface SetStateMsg {
   t: 'setState';
-  resultsPath: string;
+  resultSets: RawResultSet[];
   origResultsPaths: ResultsPaths;
   sortedResultsMap: SortedResultsMap;
   interpretation: undefined | Interpretation;

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { renderLocation, ResultTableProps, zebraStripe, className, nextSortDirection } from "./result-table-utils";
-import { RawTableResultSet, ResultValue, vscode } from "./results";
+import { RawTableResultSet, vscode } from "./results";
+import { ResultValue } from "../decode";
 import { SortDirection, RAW_RESULTS_LIMIT, RawResultsSortState } from "../interface-types";
 
 export type RawTableProps = ResultTableProps & {

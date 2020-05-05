@@ -8,7 +8,6 @@ export interface ResultTableProps {
   resultSet: ResultSet;
   databaseUri: string;
   metadata?: QueryMetadata;
-  resultsPath: string | undefined;
   sortState?: RawResultsSortState;
 
   /**

@@ -16,6 +16,7 @@ import * as messages from './messages';
 import { CompletedQuery, interpretResults } from './query-results';
 import { QueryInfo, tmpDir } from './run-queries';
 import { parseSarifLocation, parseSarifPlainTextMessage } from './sarif-utils';
+import { adaptSchema, adaptBqrs, RawResultSet } from './decode';
 
 /**
  * interface.ts
@@ -350,7 +351,7 @@ export class InterfaceManager extends DisposableObject {
       const queryName = results.queryName;
       const resultPromise = vscode.window.showInformationMessage(
         `Finished running query ${
-          queryName.length > 0 ? ` “${queryName}”` : ""
+        queryName.length > 0 ? ` “${queryName}”` : ""
         }.`,
         showButton
       );
@@ -363,13 +364,20 @@ export class InterfaceManager extends DisposableObject {
       });
     }
 
+    const schemas = await this.cliServer.bqrsInfo(results.query.resultsPaths.resultsPath, 100);
+    const resultSets: RawResultSet[] = [];
+    for (const schema of schemas["result-sets"]) {
+      const chunk = await this.cliServer.bqrsDecode(results.query.resultsPaths.resultsPath, schema.name, 100, 0)
+      const adaptedSchema = adaptSchema(schema);
+      const resultSet = adaptBqrs(adaptedSchema, chunk);
+      resultSets.push(resultSet);
+    }
+
     await this.postMessage({
       t: "setState",
       interpretation,
       origResultsPaths: results.query.resultsPaths,
-      resultsPath: this.convertPathToWebviewUri(
-        results.query.resultsPaths.resultsPath
-      ),
+      resultSets,
       sortedResultsMap,
       database: results.database,
       shouldKeepOldResultsWhileRendering,

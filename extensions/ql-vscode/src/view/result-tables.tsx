@@ -13,7 +13,6 @@ export interface ResultTablesProps {
   interpretation: Interpretation | undefined;
   database: DatabaseInfo;
   metadata?: QueryMetadata;
-  resultsPath: string;
   origResultsPaths: ResultsPaths;
   sortStates: Map<string, RawResultsSortState>;
   interpretedSortState?: InterpretedResultsSortState;
@@ -95,20 +94,19 @@ export class ResultTables
   }
 
   private alertTableExtras(): JSX.Element | undefined {
-    const { database, resultsPath, metadata, origResultsPaths } = this.props;
+    const { database, metadata, origResultsPaths } = this.props;
 
     const displayProblemsAsAlertsToggle =
       <div className={toggleDiagnosticsClassName}>
         <input type="checkbox" id="toggle-diagnostics" name="toggle-diagnostics" onChange={(e) => {
-          if (resultsPath !== undefined) {
-            vscode.postMessage({
-              t: 'toggleDiagnostics',
-              origResultsPaths: origResultsPaths,
-              databaseUri: database.databaseUri,
-              visible: e.target.checked,
-              metadata: metadata
-            });
-          }
+          // XXX what should the visibility of this be conditional on now?
+          vscode.postMessage({
+            t: 'toggleDiagnostics',
+            origResultsPaths: origResultsPaths,
+            databaseUri: database.databaseUri,
+            visible: e.target.checked,
+            metadata: metadata
+          });
         }} />
         <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
       </div>;
@@ -147,9 +145,9 @@ export class ResultTables
       </div>
       {
         resultSet &&
-        <ResultTable key={resultSet.schema.name} resultSet={resultSet}
+        <ResultTable key={resultSet.schema.name}
+          resultSet={resultSet}
           databaseUri={this.props.database.databaseUri}
-          resultsPath={this.props.resultsPath}
           sortState={this.props.sortStates.get(resultSet.schema.name)}
           nonemptyRawResults={nonemptyRawResults}
           showRawResults={() => { this.setState({ selectedTable: SELECT_TABLE_NAME }) }} />
