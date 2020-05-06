@@ -367,12 +367,9 @@ export class InterfaceManager extends DisposableObject {
 
     if (EXPERIMENTAL_BQRS_SETTING.getValue()) {
       resultSets = [];
-      // Setting pageSize very large for now for the sake of
-      // performance testing of vscode on containers.
-      const pageSize = 1e20;
-      const schemas = await this.cliServer.bqrsInfo(results.query.resultsPaths.resultsPath, pageSize);
+      const schemas = await this.cliServer.bqrsInfo(results.query.resultsPaths.resultsPath);
       for (const schema of schemas["result-sets"]) {
-        const chunk = await this.cliServer.bqrsDecode(results.query.resultsPaths.resultsPath, schema.name, pageSize, 0)
+        const chunk = await this.cliServer.bqrsDecode(results.query.resultsPaths.resultsPath, schema.name);
         const adaptedSchema = adaptSchema(schema);
         const resultSet = adaptBqrs(adaptedSchema, chunk);
         resultSets.push(resultSet);
