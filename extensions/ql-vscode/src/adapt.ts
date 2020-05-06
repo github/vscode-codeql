@@ -33,7 +33,7 @@ export interface RawResultSet {
 
 function adaptKind(kind: ColumnKind): ColumnType {
   // XXX what about 'u'?
-  if (kind == 'e') {
+  if (kind === 'e') {
     return { type: 'e', primitiveType: 's', locationStyle: LocationStyle.FivePart, hasLabel: true }
   }
   else {
@@ -57,21 +57,21 @@ export function adaptSchema(schema: ResultSetSchema): AdaptedSchema {
 export function adaptValue(val: ColumnValue): ResultValue {
   // XXX taking a lot of incorrect shortcuts here
 
-  if (typeof val == 'string') {
+  if (typeof val === 'string') {
     return val;
   }
 
-  if (typeof val == 'number' || typeof val == 'boolean') {
+  if (typeof val === 'number' || typeof val === 'boolean') {
     return val + '';
   }
 
   const url = val.url;
 
-  if (typeof url == 'string') {
+  if (typeof url === 'string') {
     return url;
   }
 
-  if (url == undefined) {
+  if (url === undefined) {
     return 'none';
   }
 
