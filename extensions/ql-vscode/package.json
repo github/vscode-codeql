@@ -211,6 +211,10 @@
         "title": "Rename Database"
       },
       {
+        "command": "codeQLDatabases.openDatabaseFolder",
+        "title": "Show Database Directory"
+      },
+      {
         "command": "codeQL.checkForUpdatesToCLI",
         "title": "CodeQL: Check for CLI Updates"
       },
@@ -281,6 +285,11 @@
         },
         {
           "command": "codeQLDatabases.renameDatabase",
+          "group": "9_qlCommands",
+          "when": "view == codeQLDatabases"
+        },
+        {
+          "command": "codeQLDatabases.openDatabaseFolder",
           "group": "9_qlCommands",
           "when": "view == codeQLDatabases"
         },
