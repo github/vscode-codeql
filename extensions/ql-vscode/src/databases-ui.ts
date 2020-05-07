@@ -144,6 +144,7 @@ export class DatabaseUI extends DisposableObject {
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.setCurrentDatabase', this.handleMakeCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.removeDatabase', this.handleRemoveDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.upgradeDatabase', this.handleUpgradeDatabase));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.renameDatabase', this.handleRenameDatabase));
   }
 
   private handleMakeCurrentDatabase = async (databaseItem: DatabaseItem): Promise<void> => {
@@ -218,6 +219,17 @@ export class DatabaseUI extends DisposableObject {
 
   private handleRemoveDatabase = (databaseItem: DatabaseItem): void => {
     this.databaseManager.removeDatabaseItem(databaseItem);
+  }
+
+  private handleRenameDatabase = async (databaseItem: DatabaseItem): Promise<void> => {
+    const newName = await window.showInputBox({
+      prompt: 'Choose new database name',
+      value: databaseItem.name
+    });
+
+    if (newName) {
+      this.databaseManager.renameDatabaseItem(databaseItem, newName);
+    }
   }
 
   /**

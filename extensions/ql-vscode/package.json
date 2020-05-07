@@ -207,6 +207,10 @@
         "title": "Upgrade Database"
       },
       {
+        "command": "codeQLDatabases.renameDatabase",
+        "title": "Rename Database"
+      },
+      {
         "command": "codeQL.checkForUpdatesToCLI",
         "title": "CodeQL: Check for CLI Updates"
       },
@@ -272,6 +276,11 @@
         },
         {
           "command": "codeQLDatabases.upgradeDatabase",
+          "group": "9_qlCommands",
+          "when": "view == codeQLDatabases"
+        },
+        {
+          "command": "codeQLDatabases.renameDatabase",
           "group": "9_qlCommands",
           "when": "view == codeQLDatabases"
         },
