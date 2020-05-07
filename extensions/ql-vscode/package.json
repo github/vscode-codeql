@@ -464,8 +464,8 @@
     "tmp": "^0.1.0",
     "tree-kill": "~1.2.2",
     "unzipper": "~0.10.5",
-    "vscode-jsonrpc": "~5.0",
-    "vscode-languageclient": "~6.1",
+    "vscode-jsonrpc": "^5.0.1",
+    "vscode-languageclient": "^6.1.3",
     "vscode-test-adapter-api": "~1.7.0",
     "vscode-test-adapter-util": "~0.7.0",
     "minimist": "~1.2.5"
