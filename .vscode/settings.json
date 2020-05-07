@@ -32,5 +32,7 @@
   "eslint.options": {
     // This is necessary so that eslint can properly resolve its plugins
     "resolvePluginsRelativeTo": "./extensions/ql-vscode"
-  }
+  },
+  // Force this to false since this will cause too many changes on each commit
+  "editor.formatOnSave": false
 }
