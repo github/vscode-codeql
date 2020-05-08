@@ -3,6 +3,9 @@
 ## 1.1.2
 
 - Implement syntax highlighting for the new `unique` aggregate.
+- Add the ability to rename databases in the database view.
+- Add the ability to open the directory in the filesystem
+  of a database.
 
 ## 1.1.1 - 23 March 2020
 
@@ -43,7 +46,7 @@
 ## 1.0.3 - 13 January 2020
 
 - Reduce the frequency of CodeQL CLI update checks to help avoid hitting GitHub API limits of 60 requests per
-hour for unauthenticated IPs.
+  hour for unauthenticated IPs.
 - Fix sorting of result sets with names containing special characters.
 
 ## 1.0.2 - 13 December 2019
@@ -52,8 +55,7 @@ hour for unauthenticated IPs.
 - Allow customization of query history labels from settings and from
   query history view context menu.
 - Show number of results in results view.
-- Add commands `CodeQL: Show Next Step on Path` and `CodeQL: Show
-  Previous Step on Path` for navigating the steps on the currently
+- Add commands `CodeQL: Show Next Step on Path` and `CodeQL: Show Previous Step on Path` for navigating the steps on the currently
   shown path result.
 
 ## 1.0.1 - 21 November 2019
