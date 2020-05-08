@@ -203,7 +203,7 @@ export interface DatabaseItem {
   /** The URI of the database */
   readonly databaseUri: vscode.Uri;
   /** The name of the database to be displayed in the UI */
-  readonly name: string;
+  name: string;
   /** The URI of the database's source archive, or `undefined` if no source archive is to be used. */
   readonly sourceArchive: vscode.Uri | undefined;
   /**
@@ -285,6 +285,10 @@ class DatabaseItemImpl implements DatabaseItem {
     else {
       return path.basename(this.databaseUri.fsPath);
     }
+  }
+
+  public set name(newName: string) {
+    this.options.displayName = newName;
   }
 
   public get sourceArchive(): vscode.Uri | undefined {
@@ -461,6 +465,7 @@ function eventFired<T>(event: vscode.Event<T>, timeoutMs = 1000): Promise<T | un
 export class DatabaseManager extends DisposableObject {
   private readonly _onDidChangeDatabaseItem =
   this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
+
   readonly onDidChangeDatabaseItem = this._onDidChangeDatabaseItem.event;
 
   private readonly _onDidChangeCurrentDatabaseItem =
@@ -640,6 +645,12 @@ export class DatabaseManager extends DisposableObject {
     this._databaseItems.push(item);
     this.updatePersistedDatabaseList();
     this._onDidChangeDatabaseItem.fire(undefined);
+  }
+
+  public async renameDatabaseItem(item: DatabaseItem, newName: string) {
+    item.name = newName;
+    this.updatePersistedDatabaseList();
+    this._onDidChangeDatabaseItem.fire(item);
   }
 
   public removeDatabaseItem(item: DatabaseItem) {

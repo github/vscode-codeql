@@ -1,9 +1,9 @@
 import * as path from 'path';
 import { DisposableObject } from 'semmle-vscode-utils';
-import { commands, Event, EventEmitter, ExtensionContext, ProviderResult, TreeDataProvider, TreeItem, Uri, window } from 'vscode';
+import { commands, Event, EventEmitter, ExtensionContext, ProviderResult, TreeDataProvider, TreeItem, Uri, window, env } from 'vscode';
 import * as cli from './cli';
 import { DatabaseItem, DatabaseManager, getUpgradesDirectories } from './databases';
-import { getOnDiskWorkspaceFolders } from './helpers';
+import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from './helpers';
 import { logger } from './logging';
 import { clearCacheInDatabase, UserCancellationException } from './run-queries';
 import * as qsClient from './queryserver-client';
@@ -180,6 +180,8 @@ export class DatabaseUI extends DisposableObject {
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.sortByDateAdded', this.handleSortByDateAdded));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.removeDatabase', this.handleRemoveDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.upgradeDatabase', this.handleUpgradeDatabase));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.renameDatabase', this.handleRenameDatabase));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.openDatabaseFolder', this.handleOpenFolder));
   }
 
   private handleMakeCurrentDatabase = async (databaseItem: DatabaseItem): Promise<void> => {
@@ -270,6 +272,29 @@ export class DatabaseUI extends DisposableObject {
 
   private handleRemoveDatabase = (databaseItem: DatabaseItem): void => {
     this.databaseManager.removeDatabaseItem(databaseItem);
+  }
+
+  private handleRenameDatabase = async (databaseItem: DatabaseItem): Promise<void> => {
+    try {
+      const newName = await window.showInputBox({
+        prompt: 'Choose new database name',
+        value: databaseItem.name
+      });
+
+      if (newName) {
+        this.databaseManager.renameDatabaseItem(databaseItem, newName);
+      }
+    } catch (e) {
+      showAndLogErrorMessage(e.message);
+    }
+  }
+
+  private handleOpenFolder = async (databaseItem: DatabaseItem): Promise<void> => {
+    try {
+      await env.openExternal(databaseItem.databaseUri);
+    } catch (e) {
+      showAndLogErrorMessage(e.message);
+    }
   }
 
   /**

@@ -204,6 +204,14 @@
         "title": "Upgrade Database"
       },
       {
+        "command": "codeQLDatabases.renameDatabase",
+        "title": "Rename Database"
+      },
+      {
+        "command": "codeQLDatabases.openDatabaseFolder",
+        "title": "Show Database Directory"
+      },
+      {
         "command": "codeQLDatabases.sortByName",
         "title": "Sort by Name",
         "icon": {
@@ -299,6 +307,16 @@
         },
         {
           "command": "codeQLDatabases.upgradeDatabase",
+          "group": "9_qlCommands",
+          "when": "view == codeQLDatabases"
+        },
+        {
+          "command": "codeQLDatabases.renameDatabase",
+          "group": "9_qlCommands",
+          "when": "view == codeQLDatabases"
+        },
+        {
+          "command": "codeQLDatabases.openDatabaseFolder",
           "group": "9_qlCommands",
           "when": "view == codeQLDatabases"
         },
