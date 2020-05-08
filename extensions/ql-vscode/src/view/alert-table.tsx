@@ -69,6 +69,14 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     });
   }
 
+  renderNoResults(): JSX.Element {
+    if (this.props.nonemptyRawResults) {
+      return <span>No Alerts. See <a href='#' onClick={this.props.showRawResults}>raw results</a>.</span>;
+    } else {
+      return <span>No Alerts</span>;
+    }
+  }
+
   render(): JSX.Element {
     const { databaseUri, resultSet } = this.props;
 
@@ -156,12 +164,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return (e) => this.toggle(e, indices);
     };
 
-    const noResults = <span>No Results</span>; // TODO: Maybe make this look nicer
+    if (resultSet.sarif.runs.length === 0 ||
+      resultSet.sarif.runs[0].results === undefined ||
+      resultSet.sarif.runs[0].results.length === 0) {
+      return this.renderNoResults();
+    }
 
     let expansionIndex = 0;
-
-    if (resultSet.sarif.runs.length === 0) return noResults;
-    if (resultSet.sarif.runs[0].results === undefined) return noResults;
 
     resultSet.sarif.runs[0].results.forEach((result, resultIndex) => {
       const text = result.message.text || '[no text]';

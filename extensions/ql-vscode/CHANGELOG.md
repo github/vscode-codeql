@@ -1,11 +1,22 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## 1.1.2
+## 1.1.3
 
-- Implement syntax highlighting for the new `unique` aggregate.
+- Add a suggestion in alerts view to view raw results, when there are
+  raw results but no alerts.
 - Add the ability to rename databases in the database view.
 - Add the ability to open the directory in the filesystem
   of a database.
+  
+## 1.1.2 - 28 April 2020
+
+- Implement syntax highlighting for the new `unique` aggregate.
+- Implement XML syntax highlighting for `.qhelp` files.
+- Add option to auto save queries before running them.
+- Add new command in query history to view the query text of the
+  selected query (note that this may be different from the current
+  contents of the query file if the file has been edited).
+- Add ability to sort CodeQL databases by name or by date added.
 
 ## 1.1.1 - 23 March 2020
 

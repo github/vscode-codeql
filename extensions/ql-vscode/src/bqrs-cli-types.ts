@@ -1,13 +1,33 @@
 
 export const PAGE_SIZE = 1000;
 
-export type ColumnKind = "f" | "i" | "s" | "b" | "d" | "e";
+/**
+ * The single-character codes used in the bqrs format for the the kind
+ * of a result column. This namespace is intentionally not an enum, see
+ * the "for the sake of extensibility" comment in messages.ts.
+ */
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace ColumnKindCode {
+  export const FLOAT = "f";
+  export const INTEGER = "i";
+  export const STRING = "s";
+  export const BOOLEAN = "b";
+  export const DATE = "d";
+  export const ENTITY = "e";
+}
+
+export type ColumnKind =
+  | typeof ColumnKindCode.FLOAT
+  | typeof ColumnKindCode.INTEGER
+  | typeof ColumnKindCode.STRING
+  | typeof ColumnKindCode.BOOLEAN
+  | typeof ColumnKindCode.DATE
+  | typeof ColumnKindCode.ENTITY;
 
 export interface Column {
   name?: string;
   kind: ColumnKind;
 }
-
 
 export interface ResultSetSchema {
   name: string;

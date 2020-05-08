@@ -10,10 +10,10 @@ import * as tk from 'tree-kill';
 import * as util from 'util';
 import { CancellationToken, Disposable } from 'vscode';
 import { BQRSInfo, DecodedBqrsChunk } from "./bqrs-cli-types";
-import { DistributionProvider } from './distribution';
-import { assertNever } from './helpers-pure';
-import { QueryMetadata, SortDirection } from './interface-types';
-import { Logger, ProgressReporter } from './logging';
+import { DistributionProvider } from "./distribution";
+import { assertNever } from "./helpers-pure";
+import { QueryMetadata, SortDirection } from "./interface-types";
+import { Logger, ProgressReporter } from "./logging";
 
 /**
  * The version of the SARIF format that we are using.
@@ -612,6 +612,27 @@ export class CodeQLCliServer implements Disposable {
       ['resolve', 'qlpacks'],
       args,
       "Resolving qlpack information",
+    );
+  }
+
+  /**
+   * Gets information about queries in a query suite.
+   * @param suite The suite to resolve.
+   * @param additionalPacks A list of directories to search for qlpacks before searching in `searchPath`.
+   * @param searchPath A list of directories to search for packs not found in `additionalPacks`. If undefined,
+   *   the default CLI search path is used.
+   * @returns A list of query files found.
+   */
+  resolveQueriesInSuite(suite: string, additionalPacks: string[], searchPath?: string[]): Promise<string[]> {
+    const args = ['--additional-packs', additionalPacks.join(path.delimiter)];
+    if (searchPath !== undefined) {
+      args.push('--search-path', path.join(...searchPath));
+    }
+    args.push(suite);
+    return this.runJsonCodeQlCliCommand<string[]>(
+      ['resolve', 'queries'],
+      args,
+      "Resolving queries",
     );
   }
 }

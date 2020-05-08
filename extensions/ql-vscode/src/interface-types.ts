@@ -1,5 +1,6 @@
 import * as sarif from 'sarif';
 import { ResolvableLocationValue } from 'semmle-bqrs';
+import { RawResultSet } from './adapt';
 
 /**
  * Only ever show this many results per run in interpreted results.
@@ -77,6 +78,12 @@ export interface SetStateMsg {
    * This is useful to prevent properties like scroll state being lost when rendering the sorted results after sorting a column.
    */
   shouldKeepOldResultsWhileRendering: boolean;
+
+  /**
+   * An experimental way of providing results from the extension.
+   * Should be undefined unless config.EXPERIMENTAL_BQRS_SETTING is set to true.
+   */
+  resultSets?: RawResultSet[];
 }
 
 /** Advance to the next or previous path no in the path viewer */

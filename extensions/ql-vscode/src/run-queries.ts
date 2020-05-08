@@ -239,8 +239,10 @@ async function getSelectedPosition(editor: vscode.TextEditor): Promise<messages.
   // Convert from 0-based to 1-based line and column numbers.
   return {
     fileName: await convertToQlPath(editor.document.fileName),
-    line: pos.line + 1, column: pos.character + 1,
-    endLine: posEnd.line + 1, endColumn: posEnd.character + 1
+    line: pos.line + 1,
+    column: pos.character + 1,
+    endLine: posEnd.line + 1,
+    endColumn: posEnd.character + 1
   };
 }
 
@@ -326,6 +328,7 @@ async function promptUserToSaveChanges(document: vscode.TextDocument): Promise<b
 type SelectedQuery = {
   queryPath: string;
   quickEvalPosition?: messages.Position;
+  quickEvalText?: string;
 };
 
 /**
@@ -382,6 +385,7 @@ export async function determineSelectedQuery(selectedResourceUri: vscode.Uri | u
   }
 
   let quickEvalPosition: messages.Position | undefined = undefined;
+  let quickEvalText: string | undefined = undefined;
   if (quickEval) {
     if (editor == undefined) {
       throw new Error('Can\'t run quick evaluation without an active editor.');
@@ -392,9 +396,10 @@ export async function determineSelectedQuery(selectedResourceUri: vscode.Uri | u
       throw new Error('The selected resource for quick evaluation should match the active editor.');
     }
     quickEvalPosition = await getSelectedPosition(editor);
+    quickEvalText = editor.document.getText(editor.selection);
   }
 
-  return { queryPath, quickEvalPosition };
+  return { queryPath, quickEvalPosition, quickEvalText };
 }
 
 export async function compileAndRunQueryAgainstDatabase(
@@ -411,12 +416,14 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 
   // Determine which query to run, based on the selection and the active editor.
-  const { queryPath, quickEvalPosition } = await determineSelectedQuery(selectedQueryUri, quickEval);
+  const { queryPath, quickEvalPosition, quickEvalText } = await determineSelectedQuery(selectedQueryUri, quickEval);
 
   // If this is quick query, store the query text
   const historyItemOptions: QueryHistoryItemOptions = {};
-  if (isQuickQueryPath(queryPath)) {
-    historyItemOptions.queryText = await fs.readFile(queryPath, 'utf8');
+  historyItemOptions.queryText = await fs.readFile(queryPath, 'utf8');
+  historyItemOptions.isQuickQuery === isQuickQueryPath(queryPath);
+  if (quickEval) {
+    historyItemOptions.queryText = quickEvalText;
   }
 
   // Get the workspace folder paths.
