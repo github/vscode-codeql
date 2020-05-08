@@ -1,13 +1,13 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## 1.1.3
+## 1.1.3 - 8 May 2020
 
 - Add a suggestion in alerts view to view raw results, when there are
   raw results but no alerts.
 - Add the ability to rename databases in the database view.
 - Add the ability to open the directory in the filesystem
   of a database.
-  
+
 ## 1.1.2 - 28 April 2020
 
 - Implement syntax highlighting for the new `unique` aggregate.
