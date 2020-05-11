@@ -6,7 +6,7 @@ import * as unzipper from "unzipper";
 import * as url from "url";
 import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "./config";
-import { InvocationRateLimiter, InvocationRateLimiterResultKind, ProgressUpdate, showAndLogErrorMessage } from "./helpers";
+import { InvocationRateLimiter, InvocationRateLimiterResultKind, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
 import * as helpers from "./helpers";
 import { getCodeQlCliVersion, tryParseVersionString, Version } from "./cli-version";
@@ -171,7 +171,7 @@ export class DistributionManager implements DistributionProvider {
    * Returns a failed promise if an unexpected error occurs during installation.
    */
   public installExtensionManagedDistributionRelease(release: Release,
-    progressCallback?: (p: ProgressUpdate) => void): Promise<void> {
+    progressCallback?: helpers.ProgressCallback): Promise<void> {
     return this._extensionSpecificDistributionManager.installDistributionRelease(release, progressCallback);
   }
 
@@ -253,14 +253,14 @@ class ExtensionSpecificDistributionManager {
    * Returns a failed promise if an unexpected error occurs during installation.
    */
   public async installDistributionRelease(release: Release,
-    progressCallback?: (p: ProgressUpdate) => void): Promise<void> {
+    progressCallback?: helpers.ProgressCallback): Promise<void> {
     await this.downloadDistribution(release, progressCallback);
     // Store the installed release within the global extension state.
     this.storeInstalledRelease(release);
   }
 
   private async downloadDistribution(release: Release,
-    progressCallback?: (p: ProgressUpdate) => void): Promise<void> {
+    progressCallback?: helpers.ProgressCallback): Promise<void> {
     try {
       await this.removeDistribution();
     } catch (e) {

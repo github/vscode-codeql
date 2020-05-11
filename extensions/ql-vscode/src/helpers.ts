@@ -22,6 +22,8 @@ export interface ProgressUpdate {
   message: string;
 }
 
+export type ProgressCallback = (p: ProgressUpdate) => void;
+
 /**
  * This mediates between the kind of progress callbacks we want to
  * write (where we *set* current progress position and give
