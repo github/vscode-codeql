@@ -669,6 +669,14 @@ export class DatabaseManager extends DisposableObject {
       vscode.workspace.updateWorkspaceFolders(folderIndex, 1);
     }
 
+    // Delete folder from file system only if it is controlled by the extension
+    if (this.isExtensionControlledLocation(item.databaseUri)) {
+      logger.log(`Deleting database from filesystem.`);
+      fs.remove(item.databaseUri.path).then(
+        () => logger.log(`Deleted '${item.databaseUri.path}'`),
+        e => logger.log(`Failed to delete '${item.databaseUri.path}'. Reason: ${e.message}`));
+    }
+
     this._onDidChangeDatabaseItem.fire(undefined);
   }
 
@@ -679,6 +687,11 @@ export class DatabaseManager extends DisposableObject {
 
   private updatePersistedDatabaseList(): void {
     this.ctx.workspaceState.update(DB_LIST, this._databaseItems.map(item => item.getPersistedState()));
+  }
+
+  private isExtensionControlledLocation(uri: vscode.Uri) {
+    const storagePath = this.ctx.storagePath || this.ctx.globalStoragePath;
+    return uri.path.startsWith(storagePath);
   }
 }
 

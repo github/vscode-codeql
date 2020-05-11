@@ -20,6 +20,7 @@ import { displayQuickQuery } from './quick-query';
 import { compileAndRunQueryAgainstDatabase, tmpDirDisposal, UserCancellationException } from './run-queries';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
+import promptFetchDatabase from './databaseFetcher';
 
 /**
  * extension.ts
@@ -60,8 +61,9 @@ function registerErrorStubs(excludedCommands: string[], stubGenerator: (command:
 
   const extensionId = 'GitHub.vscode-codeql'; // TODO: Is there a better way of obtaining this?
   const extension = extensions.getExtension(extensionId);
-  if (extension === undefined)
+  if (extension === undefined) {
     throw new Error(`Can't find extension ${extensionId}`);
+  }
 
   const stubbedCommands: string[]
     = extension.packageJSON.contributes.commands.map((entry: { command: string }) => entry.command);
@@ -333,6 +335,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     await qs.restartQueryServer();
     helpers.showAndLogInformationMessage('CodeQL Query Server restarted.', { outputLogger: queryServerLogger });
   }));
+  ctx.subscriptions.push(commands.registerCommand('codeQL.downloadDatabase', () => promptFetchDatabase(dbm, ctx)));
 
   ctx.subscriptions.push(client.start());
 

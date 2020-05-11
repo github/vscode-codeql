@@ -29,6 +29,7 @@
     "onCommand:codeQL.checkForUpdatesToCLI",
     "onCommand:codeQL.chooseDatabase",
     "onCommand:codeQL.setCurrentDatabase",
+    "onCommand:codeQL.downloadDatabase",
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
     "onCommand:codeQL.quickQuery",
@@ -212,6 +213,10 @@
         "title": "Show Database Directory"
       },
       {
+        "command": "codeQL.downloadDatabase",
+        "title": "CodeQL: Download database"
+      },
+      {
         "command": "codeQLDatabases.sortByName",
         "title": "Sort by Name",
         "icon": {
@@ -374,6 +379,10 @@
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
+          "command": "codeQL.downloadDatabase",
+          "when": "true"
+        },
+        {
           "command": "codeQL.quickEval",
           "when": "editorLangId == ql"
         },
@@ -383,6 +392,14 @@
         },
         {
           "command": "codeQLDatabases.setCurrentDatabase",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.renameDatabase",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.openDatabaseFolder",
           "when": "false"
         },
         {
