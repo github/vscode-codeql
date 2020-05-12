@@ -1,5 +1,6 @@
 {
   "newLineCharacter": "\n",
+  "convertTabsToSpaces": true,
   "indentStyle": 2,
   "insertSpaceAfterCommaDelimiter": true,
   "insertSpaceAfterSemicolonInForStatements": true,

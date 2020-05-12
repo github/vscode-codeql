@@ -465,7 +465,8 @@
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "format": "tsfmt -r",
-    "lint": "eslint src test --ext .ts,.tsx"
+    "lint": "eslint src test --ext .ts,.tsx",
+    "lint-staged": "lint-staged"
   },
   "dependencies": {
     "child-process-promise": "^2.2.1",
@@ -542,6 +543,23 @@
     "@types/sinon-chai": "~3.2.3",
     "proxyquire": "~2.1.3",
     "@types/proxyquire": "~1.3.28",
-    "eslint-plugin-react": "~7.19.0"
+    "eslint-plugin-react": "~7.19.0",
+    "husky": "~4.2.5",
+    "lint-staged": "~10.2.2",
+    "prettier": "~2.0.5"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint-staged"
+    }
+  },
+  "lint-staged": {
+    "./**/*.{json,css,scss,md}": [
+      "prettier --write"
+    ],
+    "./**/*.{ts,tsx}": [
+      "eslint --fix --debug",
+      "tsfmt -r"
+    ]
   }
 }
