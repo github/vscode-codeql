@@ -110,7 +110,7 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
 }
 
 async function findSourceArchive(databasePath: string, silent = false):
-Promise<vscode.Uri | undefined> {
+  Promise<vscode.Uri | undefined> {
 
   const relativePaths = ['src', 'output/src_archive']
 
@@ -464,12 +464,12 @@ function eventFired<T>(event: vscode.Event<T>, timeoutMs = 1000): Promise<T | un
 
 export class DatabaseManager extends DisposableObject {
   private readonly _onDidChangeDatabaseItem =
-  this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
+    this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
 
   readonly onDidChangeDatabaseItem = this._onDidChangeDatabaseItem.event;
 
   private readonly _onDidChangeCurrentDatabaseItem =
-  this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
+    this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
   readonly onDidChangeCurrentDatabaseItem = this._onDidChangeCurrentDatabaseItem.event;
 
   private readonly _databaseItems: DatabaseItemImpl[] = [];
