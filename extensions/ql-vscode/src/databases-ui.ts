@@ -94,7 +94,7 @@ class DatabaseTreeDataProvider extends DisposableObject
   public getChildren(element?: DatabaseItem): ProviderResult<DatabaseItem[]> {
     if (element === undefined) {
       return this.databaseManager.databaseItems.slice(0).sort((db1, db2) => {
-        switch(this.sortOrder) {
+        switch (this.sortOrder) {
           case SortOrder.NameAsc:
             return db1.name.localeCompare(db2.name);
           case SortOrder.NameDesc:
