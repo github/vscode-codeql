@@ -87,8 +87,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
   private readonly _tests = this.push(
     new EventEmitter<TestLoadStartedEvent | TestLoadFinishedEvent>());
   private readonly _testStates = this.push(
-    new EventEmitter<TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent |
-      TestEvent>());
+    new EventEmitter<TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent>());
   private readonly _autorun = this.push(new EventEmitter<void>());
   private runningTask?: vscode.CancellationTokenSource = undefined;
 
@@ -108,9 +107,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     return this._tests.event;
   }
 
-  public get testStates(): Event<TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent |
-    TestEvent> {
-
+  public get testStates(): Event<TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent> {
     return this._testStates.event;
   }
 
@@ -118,9 +115,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     return this._autorun.event;
   }
 
-  private static createTestOrSuiteInfos(testNodes: readonly QLTestNode[]):
-    (TestSuiteInfo | TestInfo)[] {
-
+  private static createTestOrSuiteInfos(testNodes: readonly QLTestNode[]): (TestSuiteInfo | TestInfo)[] {
     return testNodes.map((childNode) => {
       return QLTestAdapter.createTestOrSuiteInfo(childNode);
     });
@@ -129,11 +124,9 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
   private static createTestOrSuiteInfo(testNode: QLTestNode): TestSuiteInfo | TestInfo {
     if (testNode instanceof QLTestFile) {
       return QLTestAdapter.createTestInfo(testNode);
-    }
-    else if (testNode instanceof QLTestDirectory) {
+    } else if (testNode instanceof QLTestDirectory) {
       return QLTestAdapter.createTestSuiteInfo(testNode, testNode.name);
-    }
-    else {
+    } else {
       throw new Error('Unexpected test type.');
     }
   }
@@ -148,9 +141,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     };
   }
 
-  private static createTestSuiteInfo(testDirectory: QLTestDirectory, label: string):
-    TestSuiteInfo {
-
+  private static createTestSuiteInfo(testDirectory: QLTestDirectory, label: string): TestSuiteInfo {
     return {
       type: 'suite',
       id: testDirectory.path,

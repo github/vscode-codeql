@@ -464,13 +464,11 @@ function eventFired<T>(event: vscode.Event<T>, timeoutMs = 1000): Promise<T | un
 }
 
 export class DatabaseManager extends DisposableObject {
-  private readonly _onDidChangeDatabaseItem =
-    this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
+  private readonly _onDidChangeDatabaseItem = this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
 
   readonly onDidChangeDatabaseItem = this._onDidChangeDatabaseItem.event;
 
-  private readonly _onDidChangeCurrentDatabaseItem =
-    this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
+  private readonly _onDidChangeCurrentDatabaseItem = this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
   readonly onDidChangeCurrentDatabaseItem = this._onDidChangeCurrentDatabaseItem.event;
 
   private readonly _databaseItems: DatabaseItemImpl[] = [];
