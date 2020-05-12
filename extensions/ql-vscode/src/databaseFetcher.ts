@@ -1,12 +1,12 @@
 import * as fetch from "node-fetch";
 import * as unzipper from "unzipper";
-import { ExtensionContext, Uri, ProgressOptions, ProgressLocation, commands, window } from "vscode";
+import { Uri, ProgressOptions, ProgressLocation, commands, window } from "vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { DatabaseManager } from "./databases";
 import { ProgressCallback, showAndLogErrorMessage, withProgress } from "./helpers";
 
-export default async function promptFetchDatabase(dbm: DatabaseManager, ctx: ExtensionContext) {
+export default async function promptFetchDatabase(dbm: DatabaseManager, storagePath: string) {
   try {
     const databaseUrl = await window.showInputBox({
       prompt: 'Enter URL of zipfile of database to download'
@@ -20,7 +20,7 @@ export default async function promptFetchDatabase(dbm: DatabaseManager, ctx: Ext
         title: 'Adding database from URL',
         cancellable: false,
       };
-      await withProgress(progressOptions, async progress => await databaseFetcher(databaseUrl, dbm, ctx, progress));
+      await withProgress(progressOptions, async progress => await databaseFetcher(databaseUrl, dbm, storagePath, progress));
       commands.executeCommand('codeQLDatabases.focus');
     }
   } catch (e) {
@@ -31,7 +31,7 @@ export default async function promptFetchDatabase(dbm: DatabaseManager, ctx: Ext
 async function databaseFetcher(
   databaseUrl: string,
   databasesManager: DatabaseManager,
-  ctx: ExtensionContext,
+  storagePath: string,
   progressCallback: ProgressCallback
 ): Promise<void> {
   progressCallback({
@@ -39,7 +39,6 @@ async function databaseFetcher(
     message: 'Downloading database',
     step: 1
   });
-  const storagePath = ctx.storagePath || ctx.globalStoragePath;
   if (!storagePath) {
     throw new Error("No storage path specified.");
   }

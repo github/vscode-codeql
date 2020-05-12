@@ -109,8 +109,9 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
   return vscode.Uri.file(dbAbsolutePath);
 }
 
-async function findSourceArchive(databasePath: string, silent = false):
-  Promise<vscode.Uri | undefined> {
+async function findSourceArchive(
+  databasePath: string, silent = false
+): Promise<vscode.Uri | undefined> {
 
   const relativePaths = ['src', 'output/src_archive']
 

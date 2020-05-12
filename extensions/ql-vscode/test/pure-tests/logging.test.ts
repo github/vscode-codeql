@@ -48,18 +48,7 @@ describe('OutputChannelLogger tests', () => {
   });
 
   it('should create a side log in the workspace area', async () => {
-    await sideLogTest('storagePath', 'globalStoragePath');
-  });
-
-  it('should create a side log in the global area', async () => {
-    await sideLogTest('globalStoragePath', 'storagePath');
-  });
-
-  async function sideLogTest(expectedArea: string, otherArea: string): Promise<void> {
-    logger.init({
-      [expectedArea]: tempFolders[expectedArea].name,
-      [otherArea]: undefined
-    });
+    logger.init(tempFolders.storagePath.name);
 
     await logger.log('xxx', { additionalLogLocation: 'first' });
     await logger.log('yyy', { additionalLogLocation: 'second' });
@@ -67,19 +56,16 @@ describe('OutputChannelLogger tests', () => {
     await logger.log('aaa');
 
     // expect 2 side logs
-    const testLoggerFolder = path.join(tempFolders[expectedArea].name, 'test-logger');
+    const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
     expect(fs.readdirSync(testLoggerFolder).length).to.equal(2);
-    expect(fs.readdirSync(tempFolders[otherArea].name).length).to.equal(0);
 
     // contents
     expect(fs.readFileSync(path.join(testLoggerFolder, 'first'), 'utf8')).to.equal('xxx\nzzz');
     expect(fs.readFileSync(path.join(testLoggerFolder, 'second'), 'utf8')).to.equal('yyy\n');
-  }
+  });
 
   it('should delete side logs on dispose', async () => {
-    logger.init({
-      storagePath: tempFolders.storagePath.name
-    });
+    logger.init(tempFolders.storagePath.name);
     await logger.log('xxx', { additionalLogLocation: 'first' });
     await logger.log('yyy', { additionalLogLocation: 'second' });
 
@@ -94,9 +80,7 @@ describe('OutputChannelLogger tests', () => {
   });
 
   it('should remove an additional log location', async () => {
-    logger.init({
-      storagePath: tempFolders.storagePath.name
-    });
+    logger.init(tempFolders.storagePath.name);
     await logger.log('xxx', { additionalLogLocation: 'first' });
     await logger.log('yyy', { additionalLogLocation: 'second' });
 
@@ -112,9 +96,7 @@ describe('OutputChannelLogger tests', () => {
 
   it('should delete an existing folder on init', async () => {
     fs.createFileSync(path.join(tempFolders.storagePath.name, 'test-logger', 'xxx'));
-    logger.init({
-      storagePath: tempFolders.storagePath.name
-    });
+    logger.init(tempFolders.storagePath.name);
     // should be empty dir
 
     const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
