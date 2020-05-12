@@ -335,7 +335,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     await qs.restartQueryServer();
     helpers.showAndLogInformationMessage('CodeQL Query Server restarted.', { outputLogger: queryServerLogger });
   }));
-  ctx.subscriptions.push(commands.registerCommand('codeQL.downloadDatabase', () => promptFetchDatabase(dbm, ctx)));
+  ctx.subscriptions.push(commands.registerCommand('codeQL.downloadDatabase', () => promptFetchDatabase(dbm, getContextStoragePath(ctx))));
 
   ctx.subscriptions.push(client.start());
 
@@ -351,10 +351,15 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   }
 }
 
+function getContextStoragePath(ctx: ExtensionContext) {
+  return ctx.storagePath || ctx.globalStoragePath;
+}
+
 function initializeLogging(ctx: ExtensionContext): void {
-  logger.init(ctx);
-  queryServerLogger.init(ctx);
-  ideServerLogger.init(ctx);
+  const storagePath = getContextStoragePath(ctx);
+  logger.init(storagePath);
+  queryServerLogger.init(storagePath);
+  ideServerLogger.init(storagePath);
   ctx.subscriptions.push(logger);
   ctx.subscriptions.push(queryServerLogger);
   ctx.subscriptions.push(ideServerLogger);

@@ -1,4 +1,4 @@
-import { window as Window, OutputChannel, Progress, ExtensionContext, Disposable } from 'vscode';
+import { window as Window, OutputChannel, Progress, Disposable } from 'vscode';
 import { DisposableObject } from 'semmle-vscode-utils';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -47,8 +47,8 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
     this.push(this.outputChannel);
   }
 
-  init(ctx: ExtensionContext): void {
-    this.additionalLogLocationPath = path.join(ctx.storagePath || ctx.globalStoragePath, this.title);
+  init(storagePath: string): void {
+    this.additionalLogLocationPath = path.join(storagePath, this.title);
 
     // clear out any old state from previous runs
     fs.remove(this.additionalLogLocationPath);
