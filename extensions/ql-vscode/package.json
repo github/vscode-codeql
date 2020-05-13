@@ -480,7 +480,7 @@
     "preintegration": "rm -rf ./out/vscode-tests && gulp",
     "integration": "node ./out/vscode-tests/run-integration-tests.js",
     "update-vscode": "node ./node_modules/vscode/bin/install",
-    "postinstall": "node ./node_modules/vscode/bin/install",
+    "postinstall": "npm rebuild && node ./node_modules/vscode/bin/install",
     "format": "tsfmt -r",
     "lint": "eslint src test --ext .ts,.tsx",
     "lint-staged": "lint-staged"
@@ -567,7 +567,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint-staged"
+      "pre-commit": "npm run lint-staged",
+      "pre-push": "npm run lint"
     }
   },
   "lint-staged": {
@@ -575,7 +576,6 @@
       "prettier --write"
     ],
     "./**/*.{ts,tsx}": [
-      "eslint --fix --debug",
       "tsfmt -r"
     ]
   }
