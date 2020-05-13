@@ -265,7 +265,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   const dbm = new DatabaseManager(ctx, qlConfigurationListener, logger);
   ctx.subscriptions.push(dbm);
-  const databaseUI = new DatabaseUI(ctx, cliServer, dbm, qs);
+  const databaseUI = new DatabaseUI(ctx, cliServer, dbm, qs, getContextStoragePath(ctx));
   ctx.subscriptions.push(databaseUI);
 
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();

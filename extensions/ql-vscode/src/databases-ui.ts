@@ -8,6 +8,7 @@ import { logger } from './logging';
 import { clearCacheInDatabase, UserCancellationException } from './run-queries';
 import * as qsClient from './queryserver-client';
 import { upgradeDatabase } from './upgrades';
+import { databaseFetcher } from './databaseFetcher';
 
 type ThemableIconPath = { light: string; dark: string } | string;
 
@@ -149,10 +150,11 @@ function getFirst(list: Uri[] | undefined): Uri | undefined {
  */
 async function chooseDatabaseDir(): Promise<Uri | undefined> {
   const chosen = await window.showOpenDialog({
-    openLabel: 'Choose Database',
+    openLabel: 'Choose Database folder or archive',
     canSelectFiles: true,
     canSelectFolders: true,
-    canSelectMany: false
+    canSelectMany: false,
+
   });
   return getFirst(chosen);
 }
@@ -164,7 +166,8 @@ export class DatabaseUI extends DisposableObject {
     ctx: ExtensionContext,
     private cliserver: cli.CodeQLCliServer,
     private databaseManager: DatabaseManager,
-    private readonly queryServer: qsClient.QueryServerClient | undefined
+    private readonly queryServer: qsClient.QueryServerClient | undefined,
+    private readonly storagePath: string
   ) {
     super();
 
@@ -189,7 +192,12 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private handleChooseDatabase = async (): Promise<DatabaseItem | undefined> => {
-    return await this.chooseAndSetDatabase();
+    try {
+      return await this.chooseAndSetDatabase();
+    } catch (e) {
+      showAndLogErrorMessage(e.message);
+      return undefined;
+    }
   }
 
   private handleSortByName = async () => {
@@ -326,7 +334,11 @@ export class DatabaseUI extends DisposableObject {
    */
   private async chooseAndSetDatabase(): Promise<DatabaseItem | undefined> {
     const uri = await chooseDatabaseDir();
-    if (uri !== undefined) {
+
+    if (uri?.path.endsWith('.zip')) {
+      return await databaseFetcher(uri.toString(), this.databaseManager, this.storagePath);
+    }
+    else if (uri !== undefined) {
       return await this.setCurrentDatabase(uri);
     }
     else {

@@ -3,7 +3,7 @@ import * as unzipper from "unzipper";
 import { Uri, ProgressOptions, ProgressLocation, commands, window } from "vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { DatabaseManager } from "./databases";
+import { DatabaseManager, DatabaseItem } from "./databases";
 import { ProgressCallback, showAndLogErrorMessage, withProgress } from "./helpers";
 
 export default async function promptFetchDatabase(dbm: DatabaseManager, storagePath: string) {
@@ -28,13 +28,13 @@ export default async function promptFetchDatabase(dbm: DatabaseManager, storageP
   }
 }
 
-async function databaseFetcher(
+export async function databaseFetcher(
   databaseUrl: string,
   databasesManager: DatabaseManager,
   storagePath: string,
-  progressCallback: ProgressCallback
-): Promise<void> {
-  progressCallback({
+  progressCallback?: ProgressCallback
+): Promise<DatabaseItem> {
+  progressCallback?.({
     maxStep: 3,
     message: 'Downloading database',
     step: 1
@@ -45,36 +45,27 @@ async function databaseFetcher(
   await fs.ensureDir(storagePath);
   const unzipPath = await getStorageFolder(storagePath, databaseUrl);
 
-  const response = await fetch.default(databaseUrl);
-  const unzipStream = unzipper.Extract({
-    path: unzipPath
-  });
-  progressCallback({
-    maxStep: 3,
-    message: 'Unzipping database',
-    step: 2
-  });
-  await new Promise((resolve, reject) => {
-    response.body.on('error', reject);
-    unzipStream.on('error', reject);
-    unzipStream.on('close', resolve);
-    response.body.pipe(unzipStream);
-  });
-  progressCallback({
+  if (isFile(databaseUrl)) {
+    await readAndUnzip(databaseUrl, unzipPath);
+  } else {
+    await fetchAndUnzip(databaseUrl, unzipPath, progressCallback);
+  }
+
+  progressCallback?.({
     maxStep: 3,
     message: 'Opening database',
     step: 3
   });
 
-  // if there is a single directory inside, then assume that's what we want to import
-  const dirs = await fs.readdir(unzipPath);
-  const dbPath = dirs?.length === 1 && (await fs.stat(path.join(unzipPath, dirs[0]))).isDirectory
-    ? path.join(unzipPath, dirs[0])
-    : unzipPath;
-
-  // might need to upgrade before importing...
-  const item = await databasesManager.openDatabase(Uri.parse(dbPath));
-  databasesManager.setCurrentDatabaseItem(item);
+  const dbPath = await findDirWithFile(unzipPath, '.dbinfo');
+  if (dbPath) {
+    // might need to upgrade before importing...
+    const item = await databasesManager.openDatabase(Uri.parse(dbPath));
+    databasesManager.setCurrentDatabaseItem(item);
+    return item;
+  } else {
+    throw new Error('Database not found in archive.');
+  }
 }
 
 async function getStorageFolder(storagePath: string, urlStr: string) {
@@ -109,4 +100,69 @@ function validateUrl(databaseUrl: string) {
   if (uri.scheme !== 'https') {
     throw new Error('Must use https for downloading a database.');
   }
+}
+
+async function readAndUnzip(databaseUrl: string, unzipPath: string) {
+  const unzipStream = unzipper.Extract({
+    path: unzipPath,
+    verbose: true
+  });
+
+  await new Promise((resolve, reject) => {
+    // we already know this is a file scheme
+    const databaseFile = Uri.parse(databaseUrl).path;
+    const stream = fs.createReadStream(databaseFile);
+    stream.on('error', reject);
+    unzipStream.on('error', reject);
+    unzipStream.on('close', resolve);
+    stream.pipe(unzipStream);
+  });
+}
+
+async function fetchAndUnzip(databaseUrl: string, unzipPath: string, progressCallback?: ProgressCallback) {
+  const response = await fetch.default(databaseUrl);
+  const unzipStream = unzipper.Extract({
+    path: unzipPath
+  });
+  progressCallback?.({
+    maxStep: 3,
+    message: 'Unzipping database',
+    step: 2
+  });
+  await new Promise((resolve, reject) => {
+    response.body.on('error', reject);
+    unzipStream.on('error', reject);
+    unzipStream.on('close', resolve);
+    response.body.pipe(unzipStream);
+  });
+}
+
+function isFile(databaseUrl: string) {
+  return Uri.parse(databaseUrl).scheme === 'file';
+}
+
+/**
+ * Recursively looks for a file in a directory. If the file exists, then returns the directory containing the file.
+ *
+ * @param dir The directory to search
+ * @param toFind The file to recursively look for in this directory
+ *
+ * @returns the directory containing the file, or undefined if not found.
+ */
+async function findDirWithFile(dir: string, toFind: string): Promise<string | undefined> {
+  if (!(await fs.stat(dir)).isDirectory()) {
+    return;
+  }
+  const files = await fs.readdir(dir);
+  if (files.includes(toFind)) {
+    return dir;
+  }
+  for (const file of files) {
+    const newPath = path.join(dir, file);
+    const result = await findDirWithFile(newPath, toFind);
+    if (result) {
+      return result;
+    }
+  }
+  return;
 }
