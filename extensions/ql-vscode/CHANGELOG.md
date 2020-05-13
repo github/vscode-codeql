@@ -7,6 +7,7 @@
 - Add the ability to rename databases in the database view.
 - Add the ability to open the directory in the filesystem
   of a database.
+- Add the ability to download and install databases from the internet.
 
 ## 1.1.2 - 28 April 2020
 
