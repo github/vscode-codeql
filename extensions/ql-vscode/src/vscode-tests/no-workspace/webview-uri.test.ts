@@ -32,7 +32,7 @@ describe('webview uri conversion', function() {
     return {
       fileUriOnDisk,
       panel
-    }
+    };
   }
 
   it('should correctly round trip from filesystem to webview and back', function() {

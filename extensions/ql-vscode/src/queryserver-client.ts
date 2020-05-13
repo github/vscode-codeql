@@ -82,7 +82,7 @@ export class QueryServerClient extends DisposableObject {
     if (this.serverProcess !== undefined) {
       this.disposeAndStopTracking(this.serverProcess);
     } else {
-      this.logger.log('No server process to be stopped.')
+      this.logger.log('No server process to be stopped.');
     }
   }
 
@@ -136,13 +136,13 @@ export class QueryServerClient extends DisposableObject {
         this.evaluationResultCallbacks[res.runId](res);
       }
       return {};
-    })
+    });
     connection.onNotification(progress, res => {
       const callback = this.progressCallbacks[res.id];
       if (callback) {
         callback(res);
       }
-    })
+    });
     this.serverProcess = new ServerProcess(child, connection, this.opts.logger);
     // Ensure the server process is disposed together with this client.
     this.track(this.serverProcess);

@@ -76,7 +76,7 @@ export class QueryInfo {
   ): Promise<messages.EvaluationResult> {
     let result: messages.EvaluationResult | null = null;
 
-    const callbackId = qs.registerCallback(res => { result = res });
+    const callbackId = qs.registerCallback(res => { result = res; });
 
     const queryToRun: messages.QueryToRun = {
       resultsPath: this.resultsPaths.resultsPath,
@@ -85,25 +85,25 @@ export class QueryInfo {
       templateValues: this.templates,
       id: callbackId,
       timeoutSecs: qs.config.timeoutSecs,
-    }
+    };
     const dataset: messages.Dataset = {
       dbDir: this.dataset.fsPath,
       workingSet: 'default'
-    }
+    };
     const params: messages.EvaluateQueriesParams = {
       db: dataset,
       evaluateId: callbackId,
       queries: [queryToRun],
       stopOnError: false,
       useSequenceHint: false
-    }
+    };
     try {
       await helpers.withProgress({
         location: vscode.ProgressLocation.Notification,
         title: "Running Query",
         cancellable: true,
       }, (progress, token) => {
-        return qs.sendRequest(messages.runQueries, params, token, progress)
+        return qs.sendRequest(messages.runQueries, params, token, progress);
       });
     } finally {
       qs.unRegisterCallback(callbackId);
@@ -263,7 +263,7 @@ async function checkDbschemeCompatibility(
     const { scripts, finalDbscheme } = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath);
     const hash = async function(filename: string): Promise<string> {
       return crypto.createHash('sha256').update(await fs.readFile(filename)).digest('hex');
-    }
+    };
 
     // At this point, we have learned about three dbschemes:
 
@@ -308,7 +308,7 @@ async function promptUserToSaveChanges(document: vscode.TextDocument): Promise<b
     else {
       const yesItem = { title: 'Yes', isCloseAffordance: false };
       const alwaysItem = { title: 'Always Save', isCloseAffordance: false };
-      const noItem = { title: 'No', isCloseAffordance: true }
+      const noItem = { title: 'No', isCloseAffordance: true };
       const message = 'Query file has unsaved changes. Save now?';
       const chosenItem = await vscode.window.showInformationMessage(message, { modal: true }, yesItem, alwaysItem, noItem);
 

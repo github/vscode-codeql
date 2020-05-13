@@ -33,7 +33,7 @@ class Checkpoint<T> {
   constructor() {
     this.res = () => { /**/ };
     this.rej = () => { /**/ };
-    this.promise = new Promise((res, rej) => { this.res = res; this.rej = rej; })
+    this.promise = new Promise((res, rej) => { this.res = res; this.rej = rej; });
   }
 
   async done(): Promise<T> {
@@ -114,7 +114,7 @@ describe('using the query server', function() {
       async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
         return codeQlPath;
       },
-    }, logger)
+    }, logger);
     qs = new qsClient.QueryServerClient(
       {
         codeQlPath,
@@ -187,7 +187,7 @@ describe('using the query server', function() {
         const db: messages.Dataset = {
           dbDir: path.join(__dirname, '../test-db'),
           workingSet: 'default',
-        }
+        };
         const params: messages.EvaluateQueriesParams = {
           db,
           evaluateId: callbackId,

@@ -89,7 +89,7 @@ export class RawTable extends React.Component<RawTableProps, {}> {
  */
 function renderTupleValue(v: ResultValue, databaseUri: string): JSX.Element {
   if (typeof v === 'string') {
-    return <span>{v}</span>
+    return <span>{v}</span>;
   }
   else if ('uri' in v) {
     return <a href={v.uri}>{v.uri}</a>;

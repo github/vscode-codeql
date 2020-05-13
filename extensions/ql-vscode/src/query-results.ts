@@ -131,7 +131,7 @@ export class CompletedQuery implements QueryWithResults {
  * Call cli command to interpret results.
  */
 export async function interpretResults(server: cli.CodeQLCliServer, metadata: QueryMetadata | undefined, resultsPath: string, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
-  const interpretedResultsPath = resultsPath + ".interpreted.sarif"
+  const interpretedResultsPath = resultsPath + ".interpreted.sarif";
 
   if (await fs.pathExists(interpretedResultsPath)) {
     return JSON.parse(await fs.readFile(interpretedResultsPath, 'utf8'));

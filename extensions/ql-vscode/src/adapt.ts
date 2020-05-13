@@ -34,7 +34,7 @@ export interface RawResultSet {
 function adaptKind(kind: ColumnKind): ColumnType {
   // XXX what about 'u'?
   if (kind === 'e') {
-    return { type: 'e', primitiveType: 's', locationStyle: LocationStyle.FivePart, hasLabel: true }
+    return { type: 'e', primitiveType: 's', locationStyle: LocationStyle.FivePart, hasLabel: true };
   }
   else {
     return { type: kind };
@@ -51,7 +51,7 @@ export function adaptSchema(schema: ResultSetSchema): AdaptedSchema {
     name: schema.name,
     tupleCount: schema.rows,
     version: 0,
-  }
+  };
 }
 
 export function adaptValue(val: ColumnValue): ResultValue {
@@ -87,7 +87,7 @@ export function adaptValue(val: ColumnValue): ResultValue {
       // something like the code in sarif-utils.ts?
       file: url.uri.replace(/file:/, ''),
     }
-  }
+  };
 
 }
 
@@ -99,5 +99,5 @@ export function adaptBqrs(schema: AdaptedSchema, page: DecodedBqrsChunk): RawRes
   return {
     schema,
     rows: page.tuples.map(adaptRow),
-  }
+  };
 }

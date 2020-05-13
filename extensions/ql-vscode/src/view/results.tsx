@@ -261,7 +261,7 @@ class App extends React.Component<{}, ResultsViewState> {
         },
         nextResultsInfo: null,
         isExpectingResultsUpdate: false
-      }
+      };
     });
   }
 
@@ -325,4 +325,4 @@ Rdom.render(
   document.getElementById('root')
 );
 
-vscode.postMessage({ t: "resultViewLoaded" })
+vscode.postMessage({ t: "resultViewLoaded" });

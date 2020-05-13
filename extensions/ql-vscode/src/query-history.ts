@@ -305,7 +305,7 @@ export class QueryHistoryManager {
     // displays query text in a read-only document
     vscode.workspace.registerTextDocumentContentProvider('codeql', {
       provideTextDocumentContent(uri: vscode.Uri): vscode.ProviderResult<string> {
-        const params = new URLSearchParams(uri.query)
+        const params = new URLSearchParams(uri.query);
 
         return (
           JSON.parse(params.get('isQuickEval') || '') ? SHOW_QUERY_TEXT_QUICK_EVAL_MSG : SHOW_QUERY_TEXT_MSG

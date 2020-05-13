@@ -113,7 +113,7 @@ async function findSourceArchive(
   databasePath: string, silent = false
 ): Promise<vscode.Uri | undefined> {
 
-  const relativePaths = ['src', 'output/src_archive']
+  const relativePaths = ['src', 'output/src_archive'];
 
   for (const relativePath of relativePaths) {
     const basePath = path.join(databasePath, relativePath);
@@ -569,7 +569,7 @@ export class DatabaseManager extends DisposableObject {
     };
     const item = new DatabaseItemImpl(vscode.Uri.parse(state.uri), undefined, fullOptions,
       (item) => {
-        this._onDidChangeDatabaseItem.fire(item)
+        this._onDidChangeDatabaseItem.fire(item);
       });
     await this.addDatabaseItem(item);
 

@@ -78,7 +78,7 @@ export function renderLocation(loc: LocationValue | undefined, label: string | u
       return <span title={title}>{displayLabel}</span>;
     }
   }
-  return <span />
+  return <span />;
 }
 
 /**
@@ -95,7 +95,7 @@ export function zebraStripe(index: number, ...otherClasses: string[]): { classNa
 export function selectableZebraStripe(isSelected: boolean, index: number, ...otherClasses: string[]): { className: string } {
   return isSelected
     ? { className: [selectedRowClassName, ...otherClasses].join(' ') }
-    : zebraStripe(index, ...otherClasses)
+    : zebraStripe(index, ...otherClasses);
 }
 
 /**

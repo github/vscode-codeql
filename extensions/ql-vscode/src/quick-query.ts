@@ -87,7 +87,7 @@ export async function displayQuickQuery(ctx: ExtensionContext, cliServer: CodeQL
       return;
     }
 
-    const index = workspaceFolders.findIndex(folder => folder.name === QUICK_QUERY_WORKSPACE_FOLDER_NAME)
+    const index = workspaceFolders.findIndex(folder => folder.name === QUICK_QUERY_WORKSPACE_FOLDER_NAME);
     if (index === -1)
       updateQuickQueryDir(queriesDir, workspaceFolders.length, 0);
     else
