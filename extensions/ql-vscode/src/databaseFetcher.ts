@@ -42,6 +42,7 @@ async function databaseFetcher(
   if (!storagePath) {
     throw new Error("No storage path specified.");
   }
+  await fs.ensureDir(storagePath)
   const unzipPath = await getStorageFolder(storagePath, databaseUrl);
 
   const response = await fetch.default(databaseUrl);
