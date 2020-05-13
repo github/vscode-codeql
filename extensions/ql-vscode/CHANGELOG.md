@@ -3,6 +3,7 @@
 ## 1.1.5
 
 - Links in results are no longer underlined and monospaced.
+- Augment the open database command to also allow opening a zipped database.
 
 ## 1.1.4 - 13 May 2020
 
