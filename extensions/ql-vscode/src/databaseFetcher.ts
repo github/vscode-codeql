@@ -57,7 +57,7 @@ export async function databaseFetcher(
     step: 3
   });
 
-  const dbPath = await findDirWithFile(unzipPath, '.dbinfo');
+  const dbPath = await findDirWithFile(unzipPath, '.dbinfo', 'codeql-database.yml');
   if (dbPath) {
     // might need to upgrade before importing...
     const item = await databasesManager.openDatabase(Uri.parse(dbPath));
@@ -149,17 +149,17 @@ function isFile(databaseUrl: string) {
  *
  * @returns the directory containing the file, or undefined if not found.
  */
-async function findDirWithFile(dir: string, toFind: string): Promise<string | undefined> {
+async function findDirWithFile(dir: string, ...toFind: string[]): Promise<string | undefined> {
   if (!(await fs.stat(dir)).isDirectory()) {
     return;
   }
   const files = await fs.readdir(dir);
-  if (files.includes(toFind)) {
+  if (toFind.some(file => files.includes(file))) {
     return dir;
   }
   for (const file of files) {
     const newPath = path.join(dir, file);
-    const result = await findDirWithFile(newPath, toFind);
+    const result = await findDirWithFile(newPath, ...toFind);
     if (result) {
       return result;
     }
