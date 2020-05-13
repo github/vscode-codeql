@@ -483,7 +483,7 @@
     "postinstall": "npm rebuild && node ./node_modules/vscode/bin/install",
     "format": "tsfmt -r",
     "lint": "eslint src test --ext .ts,.tsx",
-    "lint-staged": "lint-staged"
+    "format-staged": "lint-staged"
   },
   "dependencies": {
     "child-process-promise": "^2.2.1",
@@ -567,7 +567,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint-staged",
+      "pre-commit": "npm run format-staged",
       "pre-push": "npm run lint"
     }
   },
