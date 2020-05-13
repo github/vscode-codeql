@@ -1,5 +1,9 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.1.4 - 13 May 2020
+
+- Add the ability to download and install databases archives from the internet.
+
 ## 1.1.3 - 8 May 2020
 
 - Add a suggestion in alerts view to view raw results, when there are
@@ -7,7 +11,6 @@
 - Add the ability to rename databases in the database view.
 - Add the ability to open the directory in the filesystem
   of a database.
-- Add the ability to download and install databases from the internet.
 
 ## 1.1.2 - 28 April 2020
 
