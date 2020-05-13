@@ -26,10 +26,7 @@ module.exports = {
     "@typescript-eslint/no-explicit-any": "off",
     "prefer-const": ["warn", {"destructuring": "all"}],
     "indent": "off",
-    "@typescript-eslint/indent": ["error", 2, {
-      "SwitchCase": 1,
-      "FunctionDeclaration": { "body": 1, "parameters": 1 }
-    }],
+    "@typescript-eslint/indent": "off",
     "@typescript-eslint/no-throw-literal": "error",
     "no-useless-escape": 0
   },
