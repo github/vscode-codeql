@@ -158,7 +158,7 @@ async function getLinksForUriString(
     if (qlpack === undefined) {
       throw new Error("Can't infer qlpack from database source archive");
     }
-    const links: FullLocationLink[] = []
+    const links: FullLocationLink[] = [];
     for (const query of await resolveQueries(cli, qlpack, keyType)) {
       const templates: messages.TemplateDefinitions = {
         [TEMPLATE_NAME]: {

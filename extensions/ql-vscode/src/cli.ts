@@ -165,7 +165,7 @@ export class CodeQLCliServer implements Disposable {
     // If the server is not running a command run this immediately
     // otherwise add to the front of the queue (as we want to run this after the next command()).
     if (this.commandInProcess) {
-      this.commandQueue.unshift(callback)
+      this.commandQueue.unshift(callback);
     } else {
       callback();
     }
@@ -188,19 +188,19 @@ export class CodeQLCliServer implements Disposable {
    */
   private async launchProcess(): Promise<child_process.ChildProcessWithoutNullStreams> {
     const config = await this.getCodeQlPath();
-    return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, _data => { /**/ })
+    return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, _data => { /**/ });
   }
 
   private async runCodeQlCliInternal(command: string[], commandArgs: string[], description: string): Promise<string> {
     const stderrBuffers: Buffer[] = [];
     if (this.commandInProcess) {
-      throw new Error("runCodeQlCliInternal called while cli was running")
+      throw new Error("runCodeQlCliInternal called while cli was running");
     }
     this.commandInProcess = true;
     try {
       //Launch the process if it doesn't exist
       if (!this.process) {
-        this.process = await this.launchProcess()
+        this.process = await this.launchProcess();
       }
       // Grab the process so that typescript know that it is always defined.
       const process = this.process;
@@ -230,8 +230,8 @@ export class CodeQLCliServer implements Disposable {
           // Listen for process exit.
           process.addListener("close", (code) => reject(code));
           // Write the command followed by a null terminator.
-          process.stdin.write(JSON.stringify(args), "utf8")
-          process.stdin.write(this.nullBuffer)
+          process.stdin.write(JSON.stringify(args), "utf8");
+          process.stdin.write(this.nullBuffer);
         });
         // Join all the data together
         const fullBuffer = Buffer.concat(stdoutBuffers);
@@ -252,8 +252,8 @@ export class CodeQLCliServer implements Disposable {
       } finally {
         this.logger.log(Buffer.concat(stderrBuffers).toString("utf8"));
         // Remove the listeners we set up.
-        process.stdout.removeAllListeners('data')
-        process.stderr.removeAllListeners('data')
+        process.stdout.removeAllListeners('data');
+        process.stderr.removeAllListeners('data');
         process.removeAllListeners("close");
       }
     } finally {
@@ -349,7 +349,7 @@ export class CodeQLCliServer implements Disposable {
       try {
         yield JSON.parse(event) as EventType;
       } catch (err) {
-        throw new Error(`Parsing output of ${description} failed: ${err.stderr || err}`)
+        throw new Error(`Parsing output of ${description} failed: ${err.stderr || err}`);
       }
     }
   }
@@ -375,11 +375,11 @@ export class CodeQLCliServer implements Disposable {
         } catch (err) {
           reject(err);
         }
-      }
+      };
       // If the server is not running a command, then run the given command immediately,
       // otherwise add to the queue
       if (this.commandInProcess) {
-        this.commandQueue.push(callback)
+        this.commandQueue.push(callback);
       } else {
         callback();
       }
@@ -401,7 +401,7 @@ export class CodeQLCliServer implements Disposable {
     try {
       return JSON.parse(result) as OutputType;
     } catch (err) {
-      throw new Error(`Parsing output of ${description} failed: ${err.stderr || err}`)
+      throw new Error(`Parsing output of ${description} failed: ${err.stderr || err}`);
     }
   }
 
@@ -535,12 +535,12 @@ export class CodeQLCliServer implements Disposable {
     try {
       output = await fs.readFile(interpretedResultsPath, 'utf8');
     } catch (err) {
-      throw new Error(`Reading output of interpretation failed: ${err.stderr || err}`)
+      throw new Error(`Reading output of interpretation failed: ${err.stderr || err}`);
     }
     try {
       return JSON.parse(output) as sarif.Log;
     } catch (err) {
-      throw new Error(`Parsing output of interpretation failed: ${err.stderr || err}`)
+      throw new Error(`Parsing output of interpretation failed: ${err.stderr || err}`);
     }
   }
 
@@ -714,7 +714,7 @@ export async function runCodeQlCliCommand(codeQlPath: string, command: string[],
     logger.log(`CLI command succeeded.`);
     return result.stdout;
   } catch (err) {
-    throw new Error(`${description} failed: ${err.stderr || err}`)
+    throw new Error(`${description} failed: ${err.stderr || err}`);
   }
 }
 

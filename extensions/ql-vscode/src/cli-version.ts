@@ -34,7 +34,7 @@ export function tryParseVersionString(versionString: string): Version | undefine
     patchVersion: Number.parseInt(match[3], 10),
     prereleaseVersion: match[4],
     rawString: versionString,
-  }
+  };
 }
 
 /**

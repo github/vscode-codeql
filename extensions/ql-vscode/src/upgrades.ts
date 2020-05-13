@@ -80,7 +80,7 @@ async function checkAndConfirmDatabaseUpgrade(
 
   const showLogItem: vscode.MessageItem = { title: 'No, Show Changes', isCloseAffordance: true };
   const yesItem = { title: 'Yes', isCloseAffordance: false };
-  const noItem = { title: 'No', isCloseAffordance: true }
+  const noItem = { title: 'No', isCloseAffordance: true };
   const dialogOptions: vscode.MessageItem[] = [yesItem, noItem];
 
   let messageLines = descriptionMessage.split('\n');
@@ -129,7 +129,7 @@ export async function upgradeDatabase(
     return;
   }
   finally {
-    qs.logger.log('Done compiling database upgrade.')
+    qs.logger.log('Done compiling database upgrade.');
   }
 
   if (compileUpgradeResult.compiledUpgrades === undefined) {
@@ -148,7 +148,7 @@ export async function upgradeDatabase(
     return;
   }
   finally {
-    qs.logger.log('Done running database upgrade.')
+    qs.logger.log('Done running database upgrade.');
   }
 }
 
@@ -168,7 +168,7 @@ async function compileDatabaseUpgrade(
   const params: messages.CompileUpgradeParams = {
     upgrade: upgradeParams,
     upgradeTempDir: upgradesTmpDir.name
-  }
+  };
 
   return helpers.withProgress({
     location: vscode.ProgressLocation.Notification,

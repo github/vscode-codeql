@@ -1,5 +1,5 @@
-import * as Sarif from "sarif"
-import * as path from "path"
+import * as Sarif from "sarif";
+import * as path from "path";
 import { LocationStyle, ResolvableLocationValue } from "semmle-bqrs";
 
 export interface SarifLink {

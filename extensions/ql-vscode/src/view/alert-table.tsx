@@ -124,7 +124,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           ...previousState,
           selectedPathNode: pathNodeKey
         }));
-      }
+      };
     };
 
     function renderSarifLocationWithText(text: string | undefined, loc: Sarif.Location, pathNodeKey: Keys.PathNode | undefined): JSX.Element | undefined {

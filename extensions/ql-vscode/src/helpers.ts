@@ -116,7 +116,7 @@ async function internalShowAndLog(message: string, items: string[], outputLogger
  */
 export async function showBinaryChoiceDialog(message: string): Promise<boolean> {
   const yesItem = { title: 'Yes', isCloseAffordance: false };
-  const noItem = { title: 'No', isCloseAffordance: true }
+  const noItem = { title: 'No', isCloseAffordance: true };
   const chosenItem = await Window.showInformationMessage(message, { modal: true }, yesItem, noItem);
   return chosenItem === yesItem;
 }
@@ -140,7 +140,7 @@ export function getOnDiskWorkspaceFolders() {
   const diskWorkspaceFolders: string[] = [];
   for (const workspaceFolder of workspaceFolders) {
     if (workspaceFolder.uri.scheme === "file")
-      diskWorkspaceFolders.push(workspaceFolder.uri.fsPath)
+      diskWorkspaceFolders.push(workspaceFolder.uri.fsPath);
   }
   return diskWorkspaceFolders;
 }
@@ -271,7 +271,7 @@ export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemeP
       return {
         packName,
         packDir: dirs[0]
-      }
+      };
     });
   for (const { packDir, packName } of packs) {
     if (packDir !== undefined) {
@@ -285,7 +285,7 @@ export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemeP
 }
 
 export async function resolveDatasetFolder(cliServer: CodeQLCliServer, datasetFolder: string): Promise<DatasetFolderInfo> {
-  const dbschemes = await glob(path.join(datasetFolder, '*.dbscheme'))
+  const dbschemes = await glob(path.join(datasetFolder, '*.dbscheme'));
 
   if (dbschemes.length < 1) {
     throw new Error(`Can't find dbscheme for current database in ${datasetFolder}`);
@@ -322,7 +322,7 @@ export class CachedOperation<U> {
     const fromCache = this.cached.get(t);
     if (fromCache !== undefined) {
       // Move to end of lru list
-      this.lru.push(this.lru.splice(this.lru.findIndex(v => v === t), 1)[0])
+      this.lru.push(this.lru.splice(this.lru.findIndex(v => v === t), 1)[0]);
       return fromCache;
     }
     // Otherwise check if in progress

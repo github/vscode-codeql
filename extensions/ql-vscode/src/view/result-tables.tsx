@@ -85,7 +85,7 @@ export class ResultTables
   }
 
   private static getDefaultResultSet(resultSets: readonly ResultSet[]): string {
-    const resultSetNames = resultSets.map(resultSet => resultSet.schema.name)
+    const resultSetNames = resultSets.map(resultSet => resultSet.schema.name);
     // Choose first available result set from the array
     return [ALERTS_TABLE_NAME, SELECT_TABLE_NAME, resultSets[0].schema.name].filter(resultSetName => resultSetNames.includes(resultSetName))[0];
   }
@@ -115,7 +115,7 @@ export class ResultTables
 
     return <div className={alertExtrasClassName}>
       {displayProblemsAsAlertsToggle}
-    </div>
+    </div>;
   }
 
   render(): React.ReactNode {
@@ -152,7 +152,7 @@ export class ResultTables
           resultsPath={this.props.resultsPath}
           sortState={this.props.sortStates.get(resultSet.schema.name)}
           nonemptyRawResults={nonemptyRawResults}
-          showRawResults={() => { this.setState({ selectedTable: SELECT_TABLE_NAME }) }} />
+          showRawResults={() => { this.setState({ selectedTable: SELECT_TABLE_NAME }); }} />
       }
     </div>;
   }

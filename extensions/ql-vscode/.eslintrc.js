@@ -28,6 +28,7 @@ module.exports = {
     "indent": "off",
     "@typescript-eslint/indent": "off",
     "@typescript-eslint/no-throw-literal": "error",
-    "no-useless-escape": 0
+    "no-useless-escape": 0,
+    "semi": 2
   },
 };

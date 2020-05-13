@@ -42,9 +42,9 @@ const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
 export const DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT: VersionConstraint = {
   description: "2.*.*",
   isVersionCompatible: (v: Version) => {
-    return v.majorVersion === 2 && v.minorVersion >= 0
+    return v.majorVersion === 2 && v.minorVersion >= 0;
   }
-}
+};
 
 export interface DistributionProvider {
   getCodeQlPathWithoutVersionCheck(): Promise<string | undefined>;
@@ -86,7 +86,7 @@ export class DistributionManager implements DistributionProvider {
       return {
         codeQlPath,
         kind: FindDistributionResultKind.UnknownCompatibilityDistribution,
-      }
+      };
     }
     return {
       codeQlPath,
@@ -480,7 +480,7 @@ export class ReleasesApiConsumer {
         // mechanism is provided.
         delete headers["authorization"];
       }
-      return await this.makeRawRequest(redirectUrl, headers, redirectCount + 1)
+      return await this.makeRawRequest(redirectUrl, headers, redirectCount + 1);
     }
 
     return response;
