@@ -75,7 +75,7 @@
 }
 
 .vscode-codeql__result-table-location-link {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  text-decoration: none;
 }
 
 select {
