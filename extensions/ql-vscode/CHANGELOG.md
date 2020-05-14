@@ -1,5 +1,9 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.1.5
+
+- Links in results are no longer underlined and monospaced.
+
 ## 1.1.4 - 13 May 2020
 
 - Add the ability to download and install databases archives from the internet.
