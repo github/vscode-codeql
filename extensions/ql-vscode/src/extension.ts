@@ -3,7 +3,7 @@ import { LanguageClient } from 'vscode-languageclient';
 import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { CodeQLCliServer } from './cli';
-import { DistributionConfigListener, QueryHistoryConfigListener, QueryServerConfigListener, EXPERIMENTAL_FEATURES_SETTING } from './config';
+import { DistributionConfigListener, QueryHistoryConfigListener, QueryServerConfigListener } from './config';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
 import { TemplateQueryDefinitionProvider, TemplateQueryReferenceProvider } from './definitions';
@@ -339,16 +339,16 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   ctx.subscriptions.push(client.start());
 
-  if (EXPERIMENTAL_FEATURES_SETTING.getValue()) {
-    languages.registerDefinitionProvider(
-      { scheme: archiveFilesystemProvider.zipArchiveScheme },
-      new TemplateQueryDefinitionProvider(cliServer, qs, dbm)
-    );
-    languages.registerReferenceProvider(
-      { scheme: archiveFilesystemProvider.zipArchiveScheme },
-      new TemplateQueryReferenceProvider(cliServer, qs, dbm)
-    );
-  }
+  // Jump-to-definition and find-references
+  languages.registerDefinitionProvider(
+    { scheme: archiveFilesystemProvider.zipArchiveScheme },
+    new TemplateQueryDefinitionProvider(cliServer, qs, dbm)
+  );
+  languages.registerReferenceProvider(
+    { scheme: archiveFilesystemProvider.zipArchiveScheme },
+    new TemplateQueryReferenceProvider(cliServer, qs, dbm)
+  );
+
 }
 
 function getContextStoragePath(ctx: ExtensionContext) {
