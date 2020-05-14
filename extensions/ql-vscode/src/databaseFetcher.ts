@@ -6,12 +6,19 @@ import * as path from "path";
 import { DatabaseManager, DatabaseItem } from "./databases";
 import { ProgressCallback, showAndLogErrorMessage, withProgress } from "./helpers";
 
-export default async function promptFetchDatabase(dbm: DatabaseManager, storagePath: string) {
+/**
+ * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
+ *
+ * @param databasesManager the DatabaseManager
+ * @param storagePath where to store the unzipped database.
+ */
+export default async function promptFetchDatabase(databasesManager: DatabaseManager, storagePath: string): Promise<DatabaseItem | undefined>  {
+  let item: DatabaseItem | undefined = undefined;
+
   try {
     const databaseUrl = await window.showInputBox({
       prompt: 'Enter URL of zipfile of database to download'
     });
-
     if (databaseUrl) {
       validateUrl(databaseUrl);
 
@@ -20,15 +27,26 @@ export default async function promptFetchDatabase(dbm: DatabaseManager, storageP
         title: 'Adding database from URL',
         cancellable: false,
       };
-      await withProgress(progressOptions, async progress => await databaseFetcher(databaseUrl, dbm, storagePath, progress));
+      await withProgress(progressOptions, async progress => (item = await databaseArchiveFetcher(databaseUrl, databasesManager, storagePath, progress)));
       commands.executeCommand('codeQLDatabases.focus');
     }
   } catch (e) {
     showAndLogErrorMessage(e.message);
   }
+
+  return item;
 }
 
-export async function databaseFetcher(
+/**
+ * Fetches an archive database. The database might be on the internet
+ * or in the local filesystem.
+ *
+ * @param databaseUrl URL from which to grab the database
+ * @param databasesManager the DatabaseManager
+ * @param storagePath where to store the unzipped database.
+ * @param progressCallback optional callback to send progress messages to
+ */
+export async function databaseArchiveFetcher(
   databaseUrl: string,
   databasesManager: DatabaseManager,
   storagePath: string,
@@ -59,7 +77,6 @@ export async function databaseFetcher(
 
   const dbPath = await findDirWithFile(unzipPath, '.dbinfo', 'codeql-database.yml');
   if (dbPath) {
-    // might need to upgrade before importing...
     const item = await databasesManager.openDatabase(Uri.parse(dbPath));
     databasesManager.setCurrentDatabaseItem(item);
     return item;
@@ -104,8 +121,7 @@ function validateUrl(databaseUrl: string) {
 
 async function readAndUnzip(databaseUrl: string, unzipPath: string) {
   const unzipStream = unzipper.Extract({
-    path: unzipPath,
-    verbose: true
+    path: unzipPath
   });
 
   await new Promise((resolve, reject) => {

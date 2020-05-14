@@ -8,7 +8,7 @@ import { logger } from './logging';
 import { clearCacheInDatabase, UserCancellationException } from './run-queries';
 import * as qsClient from './queryserver-client';
 import { upgradeDatabase } from './upgrades';
-import { databaseFetcher } from './databaseFetcher';
+import promptFetchDatabase, { databaseArchiveFetcher } from './databaseFetcher';
 
 type ThemableIconPath = { light: string; dark: string } | string;
 
@@ -148,13 +148,13 @@ function getFirst(list: Uri[] | undefined): Uri | undefined {
  * XXX: no validation is done other than checking the directory name
  * to make sure it really is a database directory.
  */
-async function chooseDatabaseDir(): Promise<Uri | undefined> {
+async function chooseDatabaseDir(byFolder: boolean): Promise<Uri | undefined> {
   const chosen = await window.showOpenDialog({
-    openLabel: 'Choose Database folder or archive',
-    canSelectFiles: true,
-    canSelectFolders: true,
+    openLabel: byFolder ? 'Choose Database folder' : 'Choose Database archive',
+    canSelectFiles: !byFolder,
+    canSelectFolders: byFolder,
     canSelectMany: false,
-
+    filters: byFolder ? {} : { Archives: ['zip'] }
   });
   return getFirst(chosen);
 }
@@ -174,7 +174,9 @@ export class DatabaseUI extends DisposableObject {
     this.treeDataProvider = this.push(new DatabaseTreeDataProvider(ctx, databaseManager));
     this.push(window.createTreeView('codeQLDatabases', { treeDataProvider: this.treeDataProvider }));
 
-    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabase', this.handleChooseDatabase));
+    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseFolder', this.handleChooseDatabaseFolder));
+    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseArchive', this.handleChooseDatabaseArchive));
+    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseInternet', this.handleChooseDatabaseInternet));
     ctx.subscriptions.push(commands.registerCommand('codeQL.setCurrentDatabase', this.handleSetCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.upgradeCurrentDatabase', this.handleUpgradeCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.clearCache', this.handleClearCache));
@@ -191,13 +193,26 @@ export class DatabaseUI extends DisposableObject {
     await this.databaseManager.setCurrentDatabaseItem(databaseItem);
   }
 
-  private handleChooseDatabase = async (): Promise<DatabaseItem | undefined> => {
+  private handleChooseDatabaseFolder = async (): Promise<DatabaseItem | undefined> => {
     try {
-      return await this.chooseAndSetDatabase();
+      return await this.chooseAndSetDatabase(true);
     } catch (e) {
       showAndLogErrorMessage(e.message);
       return undefined;
     }
+  }
+
+  private handleChooseDatabaseArchive = async (): Promise<DatabaseItem | undefined> => {
+    try {
+      return await this.chooseAndSetDatabase(false);
+    } catch (e) {
+      showAndLogErrorMessage(e.message);
+      return undefined;
+    }
+  }
+
+  private handleChooseDatabaseInternet = async (): Promise<DatabaseItem | undefined> => {
+    return await promptFetchDatabase(this.databaseManager, this.storagePath);
   }
 
   private handleSortByName = async () => {
@@ -275,6 +290,11 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private handleSetCurrentDatabase = async (uri: Uri): Promise<DatabaseItem | undefined> => {
+    // Assume user has selected an archive if the file has a .zip extension
+    if (uri.path.endsWith('.zip')) {
+      return await databaseArchiveFetcher(uri.toString(), this.databaseManager, this.storagePath);
+    }
+
     return await this.setCurrentDatabase(uri);
   }
 
@@ -312,7 +332,7 @@ export class DatabaseUI extends DisposableObject {
    */
   public async getDatabaseItem(): Promise<DatabaseItem | undefined> {
     if (this.databaseManager.currentDatabaseItem === undefined) {
-      await this.chooseAndSetDatabase();
+      await this.chooseAndSetDatabase(false);
     }
 
     return this.databaseManager.currentDatabaseItem;
@@ -332,17 +352,21 @@ export class DatabaseUI extends DisposableObject {
    * Ask the user for a database directory. Returns the chosen database, or `undefined` if the
    * operation was canceled.
    */
-  private async chooseAndSetDatabase(): Promise<DatabaseItem | undefined> {
-    const uri = await chooseDatabaseDir();
+  private async chooseAndSetDatabase(byFolder: boolean): Promise<DatabaseItem | undefined> {
+    const uri = await chooseDatabaseDir(byFolder);
 
-    if (uri?.path.endsWith('.zip')) {
-      return await databaseFetcher(uri.toString(), this.databaseManager, this.storagePath);
+    if (!uri) {
+      return undefined;
     }
-    else if (uri !== undefined) {
+
+    if (byFolder) {
+      // we are selecting a database folder
       return await this.setCurrentDatabase(uri);
     }
     else {
-      return undefined;
+      // we are selecting a database archive. Must unzip into a workspace-controlled area
+      // before importing.
+      return await databaseArchiveFetcher(uri.toString(), this.databaseManager, this.storagePath);
     }
   }
 }
