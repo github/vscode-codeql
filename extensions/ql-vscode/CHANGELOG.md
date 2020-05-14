@@ -3,7 +3,8 @@
 ## 1.1.5
 
 - Links in results are no longer underlined and monospaced.
-- Augment the open database command to also allow opening a zipped database.
+- Add the ability to choose a database either from an archive, a folder, or from the internet.
+- New icons for commands on the databases view.
 
 ## 1.1.4 - 13 May 2020
 
