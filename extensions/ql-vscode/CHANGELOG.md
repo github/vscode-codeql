@@ -2,8 +2,8 @@
 
 ## 1.2.0
 
-- Add CodeQL-query-powered handlers for 'Go to Definition' and 'Go To
-  References' on source archive files.
+- Enable 'Go to Definition' and 'Go to References' on source archive
+  files in CodeQL databases. This is handled by a CodeQL query.
 
 ## 1.1.5
 
