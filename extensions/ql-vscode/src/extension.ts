@@ -20,7 +20,7 @@ import { displayQuickQuery } from './quick-query';
 import { compileAndRunQueryAgainstDatabase, tmpDirDisposal, UserCancellationException } from './run-queries';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
-import promptFetchDatabase from './databaseFetcher';
+import { promptImportInternetDatabase } from './databaseFetcher';
 
 /**
  * extension.ts
@@ -335,7 +335,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     await qs.restartQueryServer();
     helpers.showAndLogInformationMessage('CodeQL Query Server restarted.', { outputLogger: queryServerLogger });
   }));
-  ctx.subscriptions.push(commands.registerCommand('codeQL.downloadDatabase', () => promptFetchDatabase(dbm, getContextStoragePath(ctx))));
+  ctx.subscriptions.push(commands.registerCommand('codeQL.downloadDatabase', () => promptImportInternetDatabase(dbm, getContextStoragePath(ctx))));
 
   ctx.subscriptions.push(client.start());
 
