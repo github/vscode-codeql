@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## 1.1.5
+## 1.1.5 - 15 May 2020
 
 - Links in results are no longer underlined and monospaced.
 - Add the ability to choose a database either from an archive, a folder, or from the internet.
