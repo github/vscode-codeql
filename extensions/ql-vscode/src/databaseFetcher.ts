@@ -12,7 +12,7 @@ import { ProgressCallback, showAndLogErrorMessage, withProgress, showAndLogInfor
  * @param databasesManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
  */
-export async function promptImportInternetDatabase(databasesManager: DatabaseManager, storagePath: string): Promise<DatabaseItem | undefined>  {
+export async function promptImportInternetDatabase(databasesManager: DatabaseManager, storagePath: string): Promise<DatabaseItem | undefined> {
   let item: DatabaseItem | undefined = undefined;
 
   try {
@@ -46,7 +46,7 @@ export async function promptImportInternetDatabase(databasesManager: DatabaseMan
  * @param databasesManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
  */
-export async function importArchiveDatabase(databaseUrl: string, databasesManager: DatabaseManager, storagePath: string): Promise<DatabaseItem | undefined>  {
+export async function importArchiveDatabase(databaseUrl: string, databasesManager: DatabaseManager, storagePath: string): Promise<DatabaseItem | undefined> {
   let item: DatabaseItem | undefined = undefined;
   try {
     const progressOptions: ProgressOptions = {
@@ -106,7 +106,7 @@ async function databaseArchiveFetcher(
   // find the path to the database. The actual database might be in a sub-folder
   const dbPath = await findDirWithFile(unzipPath, '.dbinfo', 'codeql-database.yml');
   if (dbPath) {
-    const item = await databasesManager.openDatabase(Uri.parse(dbPath));
+    const item = await databasesManager.openDatabase(Uri.parse(`file:${dbPath}`));
     databasesManager.setCurrentDatabaseItem(item);
     return item;
   } else {
@@ -115,14 +115,21 @@ async function databaseArchiveFetcher(
 }
 
 async function getStorageFolder(storagePath: string, urlStr: string) {
+  // we need to generate a folder name for the unzipped archive,
+  // this needs to be human readable since we may use this name as the initial
+  // name for the database
   const url = Uri.parse(urlStr);
-  let lastName = path.basename(url.path).substring(0, 255);
+  // MacOS has a max filename length of 255
+  // and remove a few extra chars in case we need to add a counter at the end.
+  let lastName = path.basename(url.path).substring(0, 250);
   if (lastName.endsWith(".zip")) {
     lastName = lastName.substring(0, lastName.length - 4);
   }
 
   const realpath = await fs.realpath(storagePath);
   let folderName = path.join(realpath, lastName);
+
+  // avoid overwriting existing folders
   let counter = 0;
   while (await fs.pathExists(folderName)) {
     counter++;
@@ -155,7 +162,7 @@ async function readAndUnzip(databaseUrl: string, unzipPath: string) {
 
   await new Promise((resolve, reject) => {
     // we already know this is a file scheme
-    const databaseFile = Uri.parse(databaseUrl).path;
+    const databaseFile = Uri.parse(databaseUrl).fsPath;
     const stream = fs.createReadStream(databaseFile);
     stream.on('error', reject);
     unzipStream.on('error', reject);
