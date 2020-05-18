@@ -251,31 +251,39 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   // of activation.
   errorStubs.forEach(stub => stub.dispose());
 
+  logger.log('Initializing configuration listener...');
   const qlConfigurationListener = await QueryServerConfigListener.createQueryServerConfigListener(distributionManager);
   ctx.subscriptions.push(qlConfigurationListener);
 
+  logger.log('Initializing CodeQL cli server...');
   const cliServer = new CodeQLCliServer(distributionManager, logger);
   ctx.subscriptions.push(cliServer);
 
+  logger.log('Initializing query server client.');
   const qs = new qsClient.QueryServerClient(qlConfigurationListener, cliServer, {
     logger: queryServerLogger,
   }, task => Window.withProgress({ title: 'CodeQL query server', location: ProgressLocation.Window }, task));
   ctx.subscriptions.push(qs);
   await qs.startQueryServer();
 
+  logger.log('Initializing database manager.');
   const dbm = new DatabaseManager(ctx, qlConfigurationListener, logger);
   ctx.subscriptions.push(dbm);
+  logger.log('Initializing database panel.');
   const databaseUI = new DatabaseUI(ctx, cliServer, dbm, qs, getContextStoragePath(ctx));
   ctx.subscriptions.push(databaseUI);
 
+  logger.log('Initializing query history manager.');
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
   const qhm = new QueryHistoryManager(
     ctx,
     queryHistoryConfigurationListener,
     async item => showResultsForCompletedQuery(item, WebviewReveal.Forced)
   );
+  logger.log('Initializing results panel interface.');
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
   ctx.subscriptions.push(intm);
+  logger.log('Initializing source archive filesystem provider.');
   archiveFilesystemProvider.activate(ctx);
 
   async function showResultsForCompletedQuery(query: CompletedQuery, forceReveal: WebviewReveal): Promise<void> {
@@ -306,6 +314,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   ctx.subscriptions.push(tmpDirDisposal);
 
+  logger.log('Initializing CodeQL language server.');
   const client = new LanguageClient('CodeQL Language Server', () => spawnIdeServer(qlConfigurationListener), {
     documentSelector: [
       { language: 'ql', scheme: 'file' },
@@ -318,6 +327,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     outputChannel: ideServerLogger.outputChannel
   }, true);
 
+  logger.log('Initializing QLTest interface.');
   const testExplorerExtension = extensions.getExtension<TestHub>(testExplorerExtensionId);
   if (testExplorerExtension) {
     const testHub = testExplorerExtension.exports;
@@ -328,6 +338,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     ctx.subscriptions.push(testUIService);
   }
 
+  logger.log('Registering top-level command palette commands.');
   ctx.subscriptions.push(commands.registerCommand('codeQL.runQuery', async (uri: Uri | undefined) => await compileAndRunQuery(false, uri)));
   ctx.subscriptions.push(commands.registerCommand('codeQL.quickEval', async (uri: Uri | undefined) => await compileAndRunQuery(true, uri)));
   ctx.subscriptions.push(commands.registerCommand('codeQL.quickQuery', async () => displayQuickQuery(ctx, cliServer, databaseUI)));
@@ -337,9 +348,11 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   }));
   ctx.subscriptions.push(commands.registerCommand('codeQL.downloadDatabase', () => promptImportInternetDatabase(dbm, getContextStoragePath(ctx))));
 
+  logger.log('Starting language server.');
   ctx.subscriptions.push(client.start());
 
   if (EXPERIMENTAL_FEATURES_SETTING.getValue()) {
+    logger.log('[EXPERIMENTAL] Registering jump-to-definition handlers.');
     languages.registerDefinitionProvider(
       { scheme: archiveFilesystemProvider.zipArchiveScheme },
       new TemplateQueryDefinitionProvider(cliServer, qs, dbm)
@@ -349,6 +362,8 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
       new TemplateQueryReferenceProvider(cliServer, qs, dbm)
     );
   }
+
+  logger.log('Successfully finished extension initialization.');
 }
 
 function getContextStoragePath(ctx: ExtensionContext) {
