@@ -192,7 +192,7 @@
       },
       {
         "command": "codeQLDatabases.chooseDatabaseInternet",
-        "title": "Download database",
+        "title": "Download Database",
         "icon": {
           "light": "media/light/cloud-download.svg",
           "dark": "media/dark/cloud-download.svg"
@@ -232,7 +232,7 @@
       },
       {
         "command": "codeQL.downloadDatabase",
-        "title": "CodeQL: Download database"
+        "title": "CodeQL: Download Database"
       },
       {
         "command": "codeQLDatabases.sortByName",
