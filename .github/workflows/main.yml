@@ -19,13 +19,11 @@ jobs:
           node-version: '10.18.1'
 
       - name: Install dependencies
-        run: |
-          node common/scripts/install-run-rush.js install
+        run: node common/scripts/install-run-rush.js install
         shell: bash
 
       - name: Build
-        run: |
-          node common/scripts/install-run-rush.js build
+        run: node common/scripts/install-run-rush.js build
         shell: bash
 
       - name: Prepare artifacts
@@ -59,13 +57,11 @@ jobs:
 
       # We have to build the dependencies in `lib` before running any tests.
       - name: Install dependencies
-        run: |
-          node common/scripts/install-run-rush.js install
+        run: node common/scripts/install-run-rush.js install
         shell: bash
 
       - name: Build
-        run: |
-          node common/scripts/install-run-rush.js build
+        run: node common/scripts/install-run-rush.js build
         shell: bash
 
       - name: Lint
