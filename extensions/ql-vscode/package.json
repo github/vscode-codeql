@@ -27,9 +27,9 @@
     "onView:codeQLQueryHistory",
     "onView:test-explorer",
     "onCommand:codeQL.checkForUpdatesToCLI",
-    "onCommand:codeQL.chooseDatabaseFolder",
-    "onCommand:codeQL.chooseDatabaseArchive",
-    "onCommand:codeQL.chooseDatabaseInternet",
+    "onCommand:codeQLDatabases.chooseDatabaseFolder",
+    "onCommand:codeQLDatabases.chooseDatabaseArchive",
+    "onCommand:codeQLDatabases.chooseDatabaseInternet",
     "onCommand:codeQL.setCurrentDatabase",
     "onCommand:codeQL.downloadDatabase",
     "onCommand:codeQLDatabases.chooseDatabase",
@@ -175,7 +175,7 @@
         "title": "CodeQL: Quick Query"
       },
       {
-        "command": "codeQL.chooseDatabaseFolder",
+        "command": "codeQLDatabases.chooseDatabaseFolder",
         "title": "Choose Database from Folder",
         "icon": {
           "light": "media/light/folder-opened-plus.svg",
@@ -183,7 +183,7 @@
         }
       },
       {
-        "command": "codeQL.chooseDatabaseArchive",
+        "command": "codeQLDatabases.chooseDatabaseArchive",
         "title": "Choose Database from Archive",
         "icon": {
           "light": "media/light/archive-plus.svg",
@@ -191,7 +191,7 @@
         }
       },
       {
-        "command": "codeQL.chooseDatabaseInternet",
+        "command": "codeQLDatabases.chooseDatabaseInternet",
         "title": "Download database",
         "icon": {
           "light": "media/light/cloud-download.svg",
@@ -312,17 +312,17 @@
           "group": "navigation"
         },
         {
-          "command": "codeQL.chooseDatabaseFolder",
+          "command": "codeQLDatabases.chooseDatabaseFolder",
           "when": "view == codeQLDatabases",
           "group": "navigation"
         },
         {
-          "command": "codeQL.chooseDatabaseArchive",
+          "command": "codeQLDatabases.chooseDatabaseArchive",
           "when": "view == codeQLDatabases",
           "group": "navigation"
         },
         {
-          "command": "codeQL.chooseDatabaseInternet",
+          "command": "codeQLDatabases.chooseDatabaseInternet",
           "when": "view == codeQLDatabases",
           "group": "navigation"
         }
@@ -440,6 +440,18 @@
         },
         {
           "command": "codeQLDatabases.removeDatabase",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.chooseDatabaseFolder",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.chooseDatabaseArchive",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.chooseDatabaseInternet",
           "when": "false"
         },
         {

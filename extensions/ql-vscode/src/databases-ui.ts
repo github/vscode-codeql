@@ -174,9 +174,9 @@ export class DatabaseUI extends DisposableObject {
     this.treeDataProvider = this.push(new DatabaseTreeDataProvider(ctx, databaseManager));
     this.push(window.createTreeView('codeQLDatabases', { treeDataProvider: this.treeDataProvider }));
 
-    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseFolder', this.handleChooseDatabaseFolder));
-    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseArchive', this.handleChooseDatabaseArchive));
-    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseInternet', this.handleChooseDatabaseInternet));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseFolder', this.handleChooseDatabaseFolder));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseArchive', this.handleChooseDatabaseArchive));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseInternet', this.handleChooseDatabaseInternet));
     ctx.subscriptions.push(commands.registerCommand('codeQL.setCurrentDatabase', this.handleSetCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.upgradeCurrentDatabase', this.handleUpgradeCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.clearCache', this.handleClearCache));
