@@ -1,9 +1,12 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## 1.2.0
+## 1.2.0 - 19 May 2020
 
 - Enable 'Go to Definition' and 'Go to References' on source archive
   files in CodeQL databases. This is handled by a CodeQL query.
+- Fix adding database archive files on Windows.
+- Enable adding remote and local database archive files from the
+  command palette.
 
 ## 1.1.5 - 15 May 2020
 
