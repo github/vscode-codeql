@@ -461,6 +461,10 @@
           "when": "false"
         },
         {
+          "command": "codeQLDatabases.upgradeDatabase",
+          "when": "false"
+        },
+        {
           "command": "codeQLQueryHistory.openQuery",
           "when": "false"
         },
