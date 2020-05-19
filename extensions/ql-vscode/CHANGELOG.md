@@ -5,7 +5,7 @@
 - Enable 'Go to Definition' and 'Go to References' on source archive
   files in CodeQL databases. This is handled by a CodeQL query.
 
-## 1.1.5
+## 1.1.5 - 15 May 2020
 
 - Links in results are no longer underlined and monospaced.
 - Add the ability to choose a database either from an archive, a folder, or from the internet.

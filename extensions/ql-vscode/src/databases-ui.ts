@@ -8,7 +8,7 @@ import { logger } from './logging';
 import { clearCacheInDatabase, UserCancellationException } from './run-queries';
 import * as qsClient from './queryserver-client';
 import { upgradeDatabase } from './upgrades';
-import promptFetchDatabase, { databaseArchiveFetcher } from './databaseFetcher';
+import { importArchiveDatabase, promptImportInternetDatabase } from './databaseFetcher';
 
 type ThemableIconPath = { light: string; dark: string } | string;
 
@@ -174,9 +174,9 @@ export class DatabaseUI extends DisposableObject {
     this.treeDataProvider = this.push(new DatabaseTreeDataProvider(ctx, databaseManager));
     this.push(window.createTreeView('codeQLDatabases', { treeDataProvider: this.treeDataProvider }));
 
-    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseFolder', this.handleChooseDatabaseFolder));
-    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseArchive', this.handleChooseDatabaseArchive));
-    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseInternet', this.handleChooseDatabaseInternet));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseFolder', this.handleChooseDatabaseFolder));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseArchive', this.handleChooseDatabaseArchive));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseInternet', this.handleChooseDatabaseInternet));
     ctx.subscriptions.push(commands.registerCommand('codeQL.setCurrentDatabase', this.handleSetCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.upgradeCurrentDatabase', this.handleUpgradeCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.clearCache', this.handleClearCache));
@@ -193,7 +193,7 @@ export class DatabaseUI extends DisposableObject {
     await this.databaseManager.setCurrentDatabaseItem(databaseItem);
   }
 
-  private handleChooseDatabaseFolder = async (): Promise<DatabaseItem | undefined> => {
+  handleChooseDatabaseFolder = async (): Promise<DatabaseItem | undefined> => {
     try {
       return await this.chooseAndSetDatabase(true);
     } catch (e) {
@@ -202,7 +202,7 @@ export class DatabaseUI extends DisposableObject {
     }
   }
 
-  private handleChooseDatabaseArchive = async (): Promise<DatabaseItem | undefined> => {
+  handleChooseDatabaseArchive = async (): Promise<DatabaseItem | undefined> => {
     try {
       return await this.chooseAndSetDatabase(false);
     } catch (e) {
@@ -211,8 +211,8 @@ export class DatabaseUI extends DisposableObject {
     }
   }
 
-  private handleChooseDatabaseInternet = async (): Promise<DatabaseItem | undefined> => {
-    return await promptFetchDatabase(this.databaseManager, this.storagePath);
+  handleChooseDatabaseInternet = async (): Promise<DatabaseItem | undefined> => {
+    return await promptImportInternetDatabase(this.databaseManager, this.storagePath);
   }
 
   private handleSortByName = async () => {
@@ -292,7 +292,7 @@ export class DatabaseUI extends DisposableObject {
   private handleSetCurrentDatabase = async (uri: Uri): Promise<DatabaseItem | undefined> => {
     // Assume user has selected an archive if the file has a .zip extension
     if (uri.path.endsWith('.zip')) {
-      return await databaseArchiveFetcher(uri.toString(), this.databaseManager, this.storagePath);
+      return await importArchiveDatabase(uri.toString(true), this.databaseManager, this.storagePath);
     }
 
     return await this.setCurrentDatabase(uri);
@@ -366,7 +366,7 @@ export class DatabaseUI extends DisposableObject {
     else {
       // we are selecting a database archive. Must unzip into a workspace-controlled area
       // before importing.
-      return await databaseArchiveFetcher(uri.toString(), this.databaseManager, this.storagePath);
+      return await importArchiveDatabase(uri.toString(true), this.databaseManager, this.storagePath);
     }
   }
 }

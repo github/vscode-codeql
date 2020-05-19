@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.1.5",
+  "version": "1.1.6",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -27,11 +27,13 @@
     "onView:codeQLQueryHistory",
     "onView:test-explorer",
     "onCommand:codeQL.checkForUpdatesToCLI",
+    "onCommand:codeQLDatabases.chooseDatabaseFolder",
+    "onCommand:codeQLDatabases.chooseDatabaseArchive",
+    "onCommand:codeQLDatabases.chooseDatabaseInternet",
+    "onCommand:codeQL.setCurrentDatabase",
     "onCommand:codeQL.chooseDatabaseFolder",
     "onCommand:codeQL.chooseDatabaseArchive",
     "onCommand:codeQL.chooseDatabaseInternet",
-    "onCommand:codeQL.setCurrentDatabase",
-    "onCommand:codeQL.downloadDatabase",
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
     "onCommand:codeQL.quickQuery",
@@ -175,7 +177,7 @@
         "title": "CodeQL: Quick Query"
       },
       {
-        "command": "codeQL.chooseDatabaseFolder",
+        "command": "codeQLDatabases.chooseDatabaseFolder",
         "title": "Choose Database from Folder",
         "icon": {
           "light": "media/light/folder-opened-plus.svg",
@@ -183,7 +185,7 @@
         }
       },
       {
-        "command": "codeQL.chooseDatabaseArchive",
+        "command": "codeQLDatabases.chooseDatabaseArchive",
         "title": "Choose Database from Archive",
         "icon": {
           "light": "media/light/archive-plus.svg",
@@ -191,8 +193,8 @@
         }
       },
       {
-        "command": "codeQL.chooseDatabaseInternet",
-        "title": "Download database",
+        "command": "codeQLDatabases.chooseDatabaseInternet",
+        "title": "Download Database",
         "icon": {
           "light": "media/light/cloud-download.svg",
           "dark": "media/dark/cloud-download.svg"
@@ -231,8 +233,16 @@
         "title": "Show Database Directory"
       },
       {
-        "command": "codeQL.downloadDatabase",
-        "title": "CodeQL: Download database"
+        "command": "codeQL.chooseDatabaseFolder",
+        "title": "CodeQL: Choose Database from Folder"
+      },
+      {
+        "command": "codeQL.chooseDatabaseArchive",
+        "title": "CodeQL: Choose Database from Archive"
+      },
+      {
+        "command": "codeQL.chooseDatabaseInternet",
+        "title": "CodeQL: Download Database"
       },
       {
         "command": "codeQLDatabases.sortByName",
@@ -312,17 +322,17 @@
           "group": "navigation"
         },
         {
-          "command": "codeQL.chooseDatabaseFolder",
+          "command": "codeQLDatabases.chooseDatabaseFolder",
           "when": "view == codeQLDatabases",
           "group": "navigation"
         },
         {
-          "command": "codeQL.chooseDatabaseArchive",
+          "command": "codeQLDatabases.chooseDatabaseArchive",
           "when": "view == codeQLDatabases",
           "group": "navigation"
         },
         {
-          "command": "codeQL.chooseDatabaseInternet",
+          "command": "codeQLDatabases.chooseDatabaseInternet",
           "when": "view == codeQLDatabases",
           "group": "navigation"
         }
@@ -407,10 +417,6 @@
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.downloadDatabase",
-          "when": "true"
-        },
-        {
           "command": "codeQL.quickEval",
           "when": "editorLangId == ql"
         },
@@ -440,6 +446,22 @@
         },
         {
           "command": "codeQLDatabases.removeDatabase",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.chooseDatabaseFolder",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.chooseDatabaseArchive",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.chooseDatabaseInternet",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.upgradeDatabase",
           "when": "false"
         },
         {
