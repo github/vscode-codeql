@@ -193,7 +193,7 @@ export class DatabaseUI extends DisposableObject {
     await this.databaseManager.setCurrentDatabaseItem(databaseItem);
   }
 
-  private handleChooseDatabaseFolder = async (): Promise<DatabaseItem | undefined> => {
+  handleChooseDatabaseFolder = async (): Promise<DatabaseItem | undefined> => {
     try {
       return await this.chooseAndSetDatabase(true);
     } catch (e) {
@@ -202,7 +202,7 @@ export class DatabaseUI extends DisposableObject {
     }
   }
 
-  private handleChooseDatabaseArchive = async (): Promise<DatabaseItem | undefined> => {
+  handleChooseDatabaseArchive = async (): Promise<DatabaseItem | undefined> => {
     try {
       return await this.chooseAndSetDatabase(false);
     } catch (e) {
@@ -211,7 +211,7 @@ export class DatabaseUI extends DisposableObject {
     }
   }
 
-  private handleChooseDatabaseInternet = async (): Promise<DatabaseItem | undefined> => {
+  handleChooseDatabaseInternet = async (): Promise<DatabaseItem | undefined> => {
     return await promptImportInternetDatabase(this.databaseManager, this.storagePath);
   }
 

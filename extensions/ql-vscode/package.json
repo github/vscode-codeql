@@ -31,7 +31,9 @@
     "onCommand:codeQLDatabases.chooseDatabaseArchive",
     "onCommand:codeQLDatabases.chooseDatabaseInternet",
     "onCommand:codeQL.setCurrentDatabase",
-    "onCommand:codeQL.downloadDatabase",
+    "onCommand:codeQL.chooseDatabaseFolder",
+    "onCommand:codeQL.chooseDatabaseArchive",
+    "onCommand:codeQL.chooseDatabaseInternet",
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
     "onCommand:codeQL.quickQuery",
@@ -231,7 +233,15 @@
         "title": "Show Database Directory"
       },
       {
-        "command": "codeQL.downloadDatabase",
+        "command": "codeQL.chooseDatabaseFolder",
+        "title": "CodeQL: Choose Database from Folder"
+      },
+      {
+        "command": "codeQL.chooseDatabaseArchive",
+        "title": "CodeQL: Choose Database from Archive"
+      },
+      {
+        "command": "codeQL.chooseDatabaseInternet",
         "title": "CodeQL: Download Database"
       },
       {
@@ -405,10 +415,6 @@
         {
           "command": "codeQL.runQuery",
           "when": "resourceLangId == ql && resourceExtname == .ql"
-        },
-        {
-          "command": "codeQL.downloadDatabase",
-          "when": "true"
         },
         {
           "command": "codeQL.quickEval",
