@@ -174,9 +174,9 @@ export class DatabaseUI extends DisposableObject {
     this.treeDataProvider = this.push(new DatabaseTreeDataProvider(ctx, databaseManager));
     this.push(window.createTreeView('codeQLDatabases', { treeDataProvider: this.treeDataProvider }));
 
-    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseFolder', this.handleChooseDatabaseFolder));
-    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseArchive', this.handleChooseDatabaseArchive));
-    ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseInternet', this.handleChooseDatabaseInternet));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseFolder', this.handleChooseDatabaseFolder));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseArchive', this.handleChooseDatabaseArchive));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseInternet', this.handleChooseDatabaseInternet));
     ctx.subscriptions.push(commands.registerCommand('codeQL.setCurrentDatabase', this.handleSetCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.upgradeCurrentDatabase', this.handleUpgradeCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.clearCache', this.handleClearCache));
@@ -193,7 +193,7 @@ export class DatabaseUI extends DisposableObject {
     await this.databaseManager.setCurrentDatabaseItem(databaseItem);
   }
 
-  private handleChooseDatabaseFolder = async (): Promise<DatabaseItem | undefined> => {
+  handleChooseDatabaseFolder = async (): Promise<DatabaseItem | undefined> => {
     try {
       return await this.chooseAndSetDatabase(true);
     } catch (e) {
@@ -202,7 +202,7 @@ export class DatabaseUI extends DisposableObject {
     }
   }
 
-  private handleChooseDatabaseArchive = async (): Promise<DatabaseItem | undefined> => {
+  handleChooseDatabaseArchive = async (): Promise<DatabaseItem | undefined> => {
     try {
       return await this.chooseAndSetDatabase(false);
     } catch (e) {
@@ -211,7 +211,7 @@ export class DatabaseUI extends DisposableObject {
     }
   }
 
-  private handleChooseDatabaseInternet = async (): Promise<DatabaseItem | undefined> => {
+  handleChooseDatabaseInternet = async (): Promise<DatabaseItem | undefined> => {
     return await promptImportInternetDatabase(this.databaseManager, this.storagePath);
   }
 
