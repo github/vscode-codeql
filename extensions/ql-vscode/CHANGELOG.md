@@ -1,5 +1,10 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.2.0
+
+- Enable 'Go to Definition' and 'Go to References' on source archive
+  files in CodeQL databases. This is handled by a CodeQL query.
+
 ## 1.1.5 - 15 May 2020
 
 - Links in results are no longer underlined and monospaced.
