@@ -5,6 +5,7 @@ import { TestTreeNode } from './test-tree-node';
 import { DisposableObject, UIService } from 'semmle-vscode-utils';
 import { TestHub, TestController, TestAdapter, TestRunStartedEvent, TestRunFinishedEvent, TestEvent, TestSuiteEvent } from 'vscode-test-adapter-api';
 import { QLTestAdapter, getExpectedFile, getActualFile } from './test-adapter';
+import { logger } from './logging';
 
 type VSCodeTestEvent = TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent;
 
@@ -32,6 +33,7 @@ export class TestUIService extends UIService implements TestController {
   constructor(private readonly testHub: TestHub) {
     super();
 
+    logger.log('Registering CodeQL test panel commands.');
     this.registerCommand('codeQLTests.showOutputDifferences', this.showOutputDifferences);
     this.registerCommand('codeQLTests.acceptOutput', this.acceptOutput);
 

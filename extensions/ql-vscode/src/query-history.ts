@@ -290,6 +290,7 @@ export class QueryHistoryManager {
         this.updateTreeViewSelectionIfVisible();
       }
     });
+    logger.log('Registering query history panel commands.');
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.openQuery', this.handleOpenQuery));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.removeHistoryItem', this.handleRemoveHistoryItem.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.setLabel', this.handleSetLabel.bind(this)));

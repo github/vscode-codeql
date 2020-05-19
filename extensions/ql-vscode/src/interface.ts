@@ -138,6 +138,7 @@ export class InterfaceManager extends DisposableObject {
         this.handleSelectionChange.bind(this)
       )
     );
+    logger.log('Registering path-step navigation commands.');
     this.push(
       vscode.commands.registerCommand(
         "codeQLQueryResults.nextPathStep",
