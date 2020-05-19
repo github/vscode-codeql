@@ -174,6 +174,7 @@ export class DatabaseUI extends DisposableObject {
     this.treeDataProvider = this.push(new DatabaseTreeDataProvider(ctx, databaseManager));
     this.push(window.createTreeView('codeQLDatabases', { treeDataProvider: this.treeDataProvider }));
 
+    logger.log('Registering database panel commands.');
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseFolder', this.handleChooseDatabaseFolder));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseArchive', this.handleChooseDatabaseArchive));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseInternet', this.handleChooseDatabaseInternet));
