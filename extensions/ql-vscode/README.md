@@ -66,12 +66,11 @@ While you can use the [CodeQL CLI to create your own databases](https://help.sem
 1. Find a project you're interested in and display the **Integrations** tab (for example, [Apache Kafka](https://lgtm.com/projects/g/apache/kafka/ci/)).
 1. Scroll to the **CodeQL databases for local analysis** section at the bottom of the page.
 1. Download databases for the languages that you want to explore.
-1. Unzip the databases.
 1. For each database that you want to import:
-    1. In the VS Code sidebar, go to **CodeQL** > **Databases** and click **+**.
-    1. Browse to the unzipped database folder (the parent folder that contains `db-<language>` and `src`) and select **Choose database** to add it.
+    1. Go to the CodeQL Databases view in the sidebar. Hover over the Databases title bar and click the icon to **Choose Database from Archive**.
+    1. Browse to the zipped database that you downloaded from LGTM.
 
-When the import is complete, each CodeQL database is displayed in the CodeQL sidebar under **Databases**.
+Once you've added a CodeQL database, it is displayed in the Databases view.
 
 ### Running a query
 
