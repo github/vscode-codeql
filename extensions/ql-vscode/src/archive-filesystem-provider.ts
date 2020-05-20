@@ -238,7 +238,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     if (archive.dirMap.has(reqPath)) {
       return new Directory(reqPath);
     }
-    throw vscode.FileSystemError.FileNotFound(uri);
+    throw vscode.FileSystemError.FileNotFound(`uri '${uri.toString()}', interpreted as '${reqPath}' in archive '${ref.sourceArchiveZipPath}'`);
   }
 
   private async _lookupAsFile(uri: vscode.Uri): Promise<File> {
