@@ -10,14 +10,15 @@ import { CodeQLCliServer } from './cli';
 import { DatabaseItem, DatabaseManager } from './databases';
 import { showAndLogErrorMessage } from './helpers';
 import { assertNever } from './helpers-pure';
-import { FromResultsViewMsg, Interpretation, INTERPRETED_RESULTS_PER_RUN_LIMIT, IntoResultsViewMsg, QueryMetadata, ResultsPaths, SortedResultSetInfo, SortedResultsMap, InterpretedResultsSortState, SortDirection } from './interface-types';
+import { FromResultsViewMsg, Interpretation, INTERPRETED_RESULTS_PER_RUN_LIMIT, IntoResultsViewMsg, QueryMetadata, ResultsPaths, SortedResultSetInfo, SortedResultsMap, InterpretedResultsSortState, SortDirection, RAW_RESULTS_PAGE_SIZE } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
 import { CompletedQuery, interpretResults } from './query-results';
 import { QueryInfo, tmpDir } from './run-queries';
 import { parseSarifLocation, parseSarifPlainTextMessage } from './sarif-utils';
-import { adaptSchema, adaptBqrs, RawResultSet } from './adapt';
+import { adaptSchema, adaptBqrs, RawResultSet, ParsedResultSets } from './adapt';
 import { EXPERIMENTAL_BQRS_SETTING } from './config';
+import { getDefaultResultSetName } from './interface-utils';
 
 /**
  * interface.ts
@@ -115,8 +116,13 @@ function sortInterpretedResults(results: Sarif.Result[], sortState: InterpretedR
   }
 }
 
+function numPagesOfResultSet(resultSet: RawResultSet): number {
+  return Math.ceil(resultSet.schema.tupleCount / RAW_RESULTS_PAGE_SIZE);
+}
+
 export class InterfaceManager extends DisposableObject {
   private _displayedQuery?: CompletedQuery;
+  private _interpretation?: Interpretation;
   private _panel: vscode.WebviewPanel | undefined;
   private _panelLoaded = false;
   private _panelLoadedCallBacks: (() => void)[] = [];
@@ -288,6 +294,9 @@ export class InterfaceManager extends DisposableObject {
           query.updateInterpretedSortState(this.cliServer, msg.sortState)
         );
         break;
+      case "changePage":
+        await this.showPageOfResults(msg.selectedTable, msg.pageNumber);
+        break;
       default:
         assertNever(msg);
     }
@@ -339,6 +348,7 @@ export class InterfaceManager extends DisposableObject {
     );
 
     this._displayedQuery = results;
+    this._interpretation = interpretation;
 
     const panel = this.getPanel();
     await this.waitForPanelLoaded();
@@ -364,18 +374,37 @@ export class InterfaceManager extends DisposableObject {
       });
     }
 
-    let resultSets: RawResultSet[] | undefined;
+    const getParsedResultSets = async (): Promise<ParsedResultSets> => {
+      if (EXPERIMENTAL_BQRS_SETTING.getValue()) {
+        const schemas = await this.cliServer.bqrsInfo(results.query.resultsPaths.resultsPath, RAW_RESULTS_PAGE_SIZE);
 
-    if (EXPERIMENTAL_BQRS_SETTING.getValue()) {
-      resultSets = [];
-      const schemas = await this.cliServer.bqrsInfo(results.query.resultsPaths.resultsPath);
-      for (const schema of schemas["result-sets"]) {
-        const chunk = await this.cliServer.bqrsDecode(results.query.resultsPaths.resultsPath, schema.name);
+        const resultSetNames = schemas["result-sets"].map(resultSet => resultSet.name);
+
+        // This may not wind up being the page we actually show, if there are interpreted results,
+        // but speculatively send it anyway.
+        const selectedTable = getDefaultResultSetName(resultSetNames);
+        const schema = schemas["result-sets"].find(resultSet => resultSet.name == selectedTable)!;
+        if (schema === undefined) {
+          return { t: 'WebviewParsed' };
+        }
+
+        const chunk = await this.cliServer.bqrsDecode(results.query.resultsPaths.resultsPath, schema.name, RAW_RESULTS_PAGE_SIZE, schema.pagination?.offsets[0]);
         const adaptedSchema = adaptSchema(schema);
         const resultSet = adaptBqrs(adaptedSchema, chunk);
-        resultSets.push(resultSet);
+
+        return {
+          t: 'ExtensionParsed',
+          pageNumber: 0,
+          numPages: numPagesOfResultSet(resultSet),
+          resultSet,
+          selectedTable: undefined,
+          resultSetNames
+        };
       }
-    }
+      else {
+        return { t: 'WebviewParsed' };
+      }
+    };
 
     await this.postMessage({
       t: "setState",
@@ -384,10 +413,68 @@ export class InterfaceManager extends DisposableObject {
       resultsPath: this.convertPathToWebviewUri(
         results.query.resultsPaths.resultsPath
       ),
-      resultSets,
+      parsedResultSets: await getParsedResultSets(),
       sortedResultsMap,
       database: results.database,
       shouldKeepOldResultsWhileRendering,
+      metadata: results.query.metadata
+    });
+  }
+
+  /**
+   * Show a page of raw results from the chosen table.
+   */
+  public async showPageOfResults(selectedTable: string, pageNumber: number): Promise<void> {
+    const results = this._displayedQuery;
+    if (results === undefined) {
+      throw new Error('trying to view a page of a query that is not loaded');
+    }
+
+    const sortedResultsMap: SortedResultsMap = {};
+    results.sortedResultsInfo.forEach(
+      (v, k) =>
+        (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(
+          v
+        ))
+    );
+
+    const schemas = await this.cliServer.bqrsInfo(results.query.resultsPaths.resultsPath, RAW_RESULTS_PAGE_SIZE);
+
+    const resultSetNames = schemas["result-sets"].map(resultSet => resultSet.name);
+
+    const schema = schemas["result-sets"].find(resultSet => resultSet.name == selectedTable)!;
+    if (schema === undefined)
+      throw new Error(`Query result set '${selectedTable}' not found.`);
+
+    const chunk = await this.cliServer.bqrsDecode(results.query.resultsPaths.resultsPath, schema.name, RAW_RESULTS_PAGE_SIZE, schema.pagination?.offsets[pageNumber]);
+    const adaptedSchema = adaptSchema(schema);
+    const resultSet = adaptBqrs(adaptedSchema, chunk);
+
+    let parsedResultSets: ParsedResultSets;
+    if (resultSet !== undefined) {
+      parsedResultSets = {
+        t: 'ExtensionParsed',
+        pageNumber,
+        resultSet,
+        numPages: numPagesOfResultSet(resultSet),
+        selectedTable: selectedTable,
+        resultSetNames
+      };
+    }
+    else
+      parsedResultSets = { t: 'WebviewParsed', selectedTable };
+
+    await this.postMessage({
+      t: "setState",
+      interpretation: this._interpretation,
+      origResultsPaths: results.query.resultsPaths,
+      resultsPath: this.convertPathToWebviewUri(
+        results.query.resultsPaths.resultsPath
+      ),
+      parsedResultSets,
+      sortedResultsMap,
+      database: results.database,
+      shouldKeepOldResultsWhileRendering: false,
       metadata: results.query.metadata
     });
   }

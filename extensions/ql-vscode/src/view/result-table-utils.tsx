@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { LocationValue, ResolvableLocationValue, tryGetResolvableLocation } from 'semmle-bqrs';
 import { RawResultsSortState, QueryMetadata, SortDirection } from '../interface-types';
-import { ResultSet, vscode } from './results';
+import { vscode } from './results';
 import { assertNever } from '../helpers-pure';
+import { ResultSet } from '../interface-utils';
 
 export interface ResultTableProps {
   resultSet: ResultSet;
@@ -10,6 +11,7 @@ export interface ResultTableProps {
   metadata?: QueryMetadata;
   resultsPath: string | undefined;
   sortState?: RawResultsSortState;
+  offset: number;
 
   /**
    * Holds if there are any raw results. When that is the case, we

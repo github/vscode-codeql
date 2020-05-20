@@ -1,6 +1,6 @@
 import * as sarif from 'sarif';
 import { ResolvableLocationValue } from 'semmle-bqrs';
-import { RawResultSet } from './adapt';
+import { ParsedResultSets } from './adapt';
 
 /**
  * Only ever show this many results per run in interpreted results.
@@ -11,6 +11,11 @@ export const INTERPRETED_RESULTS_PER_RUN_LIMIT = 100;
  * Only ever show this many rows in a raw result table.
  */
 export const RAW_RESULTS_LIMIT = 10000;
+
+/**
+ * Show this many rows in a raw result table at a time.
+ */
+export const RAW_RESULTS_PAGE_SIZE = 100;
 
 export interface DatabaseInfo {
   name: string;
@@ -81,9 +86,10 @@ export interface SetStateMsg {
 
   /**
    * An experimental way of providing results from the extension.
-   * Should be undefined unless config.EXPERIMENTAL_BQRS_SETTING is set to true.
+   * Should be in the WebviewParsedResultSets branch of the type
+   * unless config.EXPERIMENTAL_BQRS_SETTING is set to true.
    */
-  resultSets?: RawResultSet[];
+  parsedResultSets: ParsedResultSets;
 }
 
 /** Advance to the next or previous path no in the path viewer */
@@ -101,7 +107,8 @@ export type FromResultsViewMsg =
   | ToggleDiagnostics
   | ChangeRawResultsSortMsg
   | ChangeInterpretedResultsSortMsg
-  | ResultViewLoaded;
+  | ResultViewLoaded
+  | ChangePage;
 
 interface ViewSourceFileMsg {
   t: 'viewSourceFile';
@@ -120,6 +127,12 @@ interface ToggleDiagnostics {
 
 interface ResultViewLoaded {
   t: 'resultViewLoaded';
+}
+
+interface ChangePage {
+  t: 'changePage';
+  pageNumber: number; // 0-indexed, displayed to the user as 1-indexed
+  selectedTable: string;
 }
 
 export enum SortDirection {

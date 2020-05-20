@@ -101,3 +101,34 @@ export function adaptBqrs(schema: AdaptedSchema, page: DecodedBqrsChunk): RawRes
     rows: page.tuples.map(adaptRow),
   };
 }
+
+/**
+ * This type has two branches; we are in the process of changing from
+ * one to the other. The old way is to parse them inside the webview,
+ * the new way is to parse them in the extension. The main motivation
+ * for this transition is to make pagination possible in such a way
+ * that only one page needs to be sent from the extension to the webview.
+ */
+export type ParsedResultSets = ExtensionParsedResultSets | WebviewParsedResultSets;
+
+/**
+ * The old method doesn't require any nontrivial information to be included here,
+ * just a tag to indicate that it is being used.
+ */
+export interface WebviewParsedResultSets {
+  t: 'WebviewParsed';
+  selectedTable?: string; // when undefined, means 'show default table'
+}
+
+/**
+ * The new method includes which bqrs page is being sent, and the
+ * actual results parsed on the extension side.
+ */
+export interface ExtensionParsedResultSets {
+  t: 'ExtensionParsed';
+  pageNumber: number;
+  numPages: number;
+  selectedTable?: string; // when undefined, means 'show default table'
+  resultSetNames: string[];
+  resultSet: RawResultSet;
+}
