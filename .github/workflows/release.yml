@@ -33,12 +33,12 @@ jobs:
         with:
           node-version: '10.18.1'
 
+      - name: Install dependencies
+        run: node common/scripts/install-run-rush.js install
+        shell: bash
+
       - name: Build
-        run: |
-          cd build
-          npm install
-          # Release build instead of dev build.
-          npm run build-release
+        run: node common/scripts/install-run-rush.js build --release
         shell: bash
 
       - name: Prepare artifacts
