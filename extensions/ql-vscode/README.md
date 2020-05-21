@@ -58,7 +58,7 @@ For information about configuring an existing workspace for CodeQL, [see the doc
 
 You can easily keep up-to-date with the latest changes to the [CodeQL standard libraries](https://github.com/github/codeql).
 
-If you're using the (CodeQL starter workspace)[https://github.com/github/vscode-codeql-starter/], you can pull in the latest standard libraries by running: 
+If you're using the [CodeQL starter workspace](https://github.com/github/vscode-codeql-starter/), you can pull in the latest standard libraries by running: 
 ```shell
 $ git pull 
 $ git submodule update --recursive
