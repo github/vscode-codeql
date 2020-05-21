@@ -4,6 +4,7 @@ import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { CodeQLCliServer } from './cli';
 import { DistributionConfigListener, QueryHistoryConfigListener, QueryServerConfigListener } from './config';
+import * as languageSupport from './languageSupport';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
 import { TemplateQueryDefinitionProvider, TemplateQueryReferenceProvider } from './definitions';
@@ -78,6 +79,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   logger.log('Starting CodeQL extension');
 
   initializeLogging(ctx);
+  languageSupport.install();
 
   const distributionConfigListener = new DistributionConfigListener();
   ctx.subscriptions.push(distributionConfigListener);
