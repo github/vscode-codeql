@@ -54,11 +54,11 @@ This includes libraries and queries for the main supported languages, with folde
 
 For information about configuring an existing workspace for CodeQL, [see the documentation](https://help.semmle.com/codeql/codeql-for-vscode/procedures/setting-up.html#updating-an-existing-workspace-for-codeql).
 
-## Upgrading CodeQL Libraries
+## Upgrading CodeQL standard libraries
 
-You can easily keep up-to-date with the latest developments to the [CodeQL standard libraries](https://github.com/github/codeql).
+You can easily keep up-to-date with the latest changes to the [CodeQL standard libraries](https://github.com/github/codeql).
 
-If you're using the CodeQL starter workspace, you can do 
+If you're using the (CodeQL starter workspace)[https://github.com/github/vscode-codeql-starter/], you can pull in the latest standard libraries by running: 
 ```shell
 $ git pull 
 $ git submodule update --recursive
