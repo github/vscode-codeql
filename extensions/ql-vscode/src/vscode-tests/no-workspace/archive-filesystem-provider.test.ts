@@ -1,8 +1,10 @@
-import { expect } from "chai";
-import * as path from "path";
-import { ArchiveFileSystemProvider, decodeSourceArchiveUri, encodeSourceArchiveUri, ZipFileReference } from "../../archive-filesystem-provider";
+import { expect } from 'chai';
+import * as path from 'path';
 
-describe("archive filesystem provider", () => {
+import { encodeSourceArchiveUri, ArchiveFileSystemProvider, decodeSourceArchiveUri, ZipFileReference } from '../../archive-filesystem-provider';
+import { FileType, FileSystemError } from 'vscode';
+
+describe('archive-filesystem-provider', () => {
   it("reads empty file correctly", async () => {
     const archiveProvider = new ArchiveFileSystemProvider();
     const uri = encodeSourceArchiveUri({
@@ -11,6 +13,98 @@ describe("archive filesystem provider", () => {
     });
     const data = await archiveProvider.readFile(uri);
     expect(data.length).to.equal(0);
+  });
+
+  it("read non-empty file correctly", async () => {
+    const archiveProvider = new ArchiveFileSystemProvider();
+    const uri = encodeSourceArchiveUri({
+      sourceArchiveZipPath: path.resolve(__dirname, "data/archive-filesystem-provider-test/zip_with_folder.zip"),
+      pathWithinSourceArchive: "folder1/textFile.txt"
+    });
+    const data = await archiveProvider.readFile(uri);
+    expect(Buffer.from(data).toString('utf8')).to.be.equal('I am a text\n');
+  });
+
+  it("read a directory", async () => {
+    const archiveProvider = new ArchiveFileSystemProvider();
+    const uri = encodeSourceArchiveUri({
+      sourceArchiveZipPath: path.resolve(__dirname, "data/archive-filesystem-provider-test/zip_with_folder.zip"),
+      pathWithinSourceArchive: "folder1"
+    });
+    const files = await archiveProvider.readDirectory(uri);
+    expect(files).to.be.deep.equal([
+      ['folder2', FileType.Directory],
+      ['textFile.txt', FileType.File],
+      ['textFile2.txt', FileType.File],
+    ]);
+  });
+
+  it('should handle a missing directory', async () => {
+    const archiveProvider = new ArchiveFileSystemProvider();
+    const uri = encodeSourceArchiveUri({
+      sourceArchiveZipPath: path.resolve(__dirname, "data/archive-filesystem-provider-test/zip_with_folder.zip"),
+      pathWithinSourceArchive: "folder1/not-here"
+    });
+    try {
+      await archiveProvider.readDirectory(uri);
+      throw new Error('Failed');
+    } catch (e) {
+      expect(e).to.be.instanceOf(FileSystemError);
+    }
+  });
+
+  it('should handle a missing file', async () => {
+    const archiveProvider = new ArchiveFileSystemProvider();
+    const uri = encodeSourceArchiveUri({
+      sourceArchiveZipPath: path.resolve(__dirname, "data/archive-filesystem-provider-test/zip_with_folder.zip"),
+      pathWithinSourceArchive: "folder1/not-here"
+    });
+    try {
+      await archiveProvider.readFile(uri);
+      throw new Error('Failed');
+    } catch (e) {
+      expect(e).to.be.instanceOf(FileSystemError);
+    }
+  });
+
+  it('should handle reading a file as a directory', async () => {
+    const archiveProvider = new ArchiveFileSystemProvider();
+    const uri = encodeSourceArchiveUri({
+      sourceArchiveZipPath: path.resolve(__dirname, "data/archive-filesystem-provider-test/zip_with_folder.zip"),
+      pathWithinSourceArchive: "folder1/textFile.txt"
+    });
+    try {
+      await archiveProvider.readDirectory(uri);
+      throw new Error('Failed');
+    } catch (e) {
+      expect(e).to.be.instanceOf(FileSystemError);
+    }
+  });
+
+  it('should handle reading a directory as a file', async () => {
+    const archiveProvider = new ArchiveFileSystemProvider();
+    const uri = encodeSourceArchiveUri({
+      sourceArchiveZipPath: path.resolve(__dirname, "data/archive-filesystem-provider-test/zip_with_folder.zip"),
+      pathWithinSourceArchive: "folder1/folder2"
+    });
+    try {
+      await archiveProvider.readFile(uri);
+      throw new Error('Failed');
+    } catch (e) {
+      expect(e).to.be.instanceOf(FileSystemError);
+    }
+  });
+
+  it("read a nested directory", async () => {
+    const archiveProvider = new ArchiveFileSystemProvider();
+    const uri = encodeSourceArchiveUri({
+      sourceArchiveZipPath: path.resolve(__dirname, "data/archive-filesystem-provider-test/zip_with_folder.zip"),
+      pathWithinSourceArchive: "folder1/folder2"
+    });
+    const files = await archiveProvider.readDirectory(uri);
+    expect(files).to.be.deep.equal([
+      ['textFile3.txt', FileType.File],
+    ]);
   });
 });
 
