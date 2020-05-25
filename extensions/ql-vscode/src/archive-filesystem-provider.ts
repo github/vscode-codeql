@@ -173,7 +173,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     const ref = decodeSourceArchiveUri(uri);
     const archive = await this.getArchive(ref.sourceArchiveZipPath);
     const contents = archive.dirMap.get(ref.pathWithinSourceArchive);
-    const result = contents === undefined ? [] : Array.from(contents.entries());
+    const result = contents === undefined ? undefined : Array.from(contents.entries());
     if (result === undefined) {
       throw vscode.FileSystemError.FileNotFound(uri);
     }
