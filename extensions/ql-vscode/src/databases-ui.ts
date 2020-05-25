@@ -9,6 +9,7 @@ import { clearCacheInDatabase, UserCancellationException } from './run-queries';
 import * as qsClient from './queryserver-client';
 import { upgradeDatabase } from './upgrades';
 import { importArchiveDatabase, promptImportInternetDatabase } from './databaseFetcher';
+import * as fs from 'fs-extra';
 
 type ThemableIconPath = { light: string; dark: string } | string;
 
@@ -361,13 +362,36 @@ export class DatabaseUI extends DisposableObject {
     }
 
     if (byFolder) {
+      const fixedUri = await this.fixDbUri(uri);
       // we are selecting a database folder
-      return await this.setCurrentDatabase(uri);
+      return await this.setCurrentDatabase(fixedUri);
     }
     else {
       // we are selecting a database archive. Must unzip into a workspace-controlled area
       // before importing.
       return await importArchiveDatabase(uri.toString(true), this.databaseManager, this.storagePath);
     }
+  }
+
+  /**
+   * Perform some heuristics to ensure a proper database location is chosen.
+   *
+   * 1. If the selected URI to add is a file, choose the containing directory
+   * 2. If the selected URI is a directory matching db-*, choose the containing directory
+   * 3. choose the current directory
+   *
+   * @param uri a URI that is a datbase folder or inside it
+   *
+   * @return the actual database folder found by using the heuristics above.
+   */
+  private async fixDbUri(uri: Uri): Promise<Uri> {
+    let dbPath = uri.fsPath;
+    if ((await fs.stat(dbPath)).isFile()) {
+      dbPath = path.dirname(dbPath);
+    }
+    if (path.basename(dbPath).startsWith('db-')) {
+      dbPath = path.dirname(dbPath);
+    }
+    return Uri.file(dbPath);
   }
 }
