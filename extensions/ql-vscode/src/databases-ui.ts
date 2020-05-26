@@ -8,7 +8,7 @@ import { logger } from './logging';
 import { clearCacheInDatabase, UserCancellationException } from './run-queries';
 import * as qsClient from './queryserver-client';
 import { upgradeDatabase } from './upgrades';
-import { importArchiveDatabase, promptImportInternetDatabase } from './databaseFetcher';
+import { importArchiveDatabase, promptImportInternetDatabase, promptImportLgtmDatabase } from './databaseFetcher';
 import * as fs from 'fs-extra';
 
 type ThemableIconPath = { light: string; dark: string } | string;
@@ -179,6 +179,7 @@ export class DatabaseUI extends DisposableObject {
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseFolder', this.handleChooseDatabaseFolder));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseArchive', this.handleChooseDatabaseArchive));
     ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseInternet', this.handleChooseDatabaseInternet));
+    ctx.subscriptions.push(commands.registerCommand('codeQLDatabases.chooseDatabaseLgtm', this.handleChooseDatabaseLgtm));
     ctx.subscriptions.push(commands.registerCommand('codeQL.setCurrentDatabase', this.handleSetCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.upgradeCurrentDatabase', this.handleUpgradeCurrentDatabase));
     ctx.subscriptions.push(commands.registerCommand('codeQL.clearCache', this.handleClearCache));
@@ -215,6 +216,10 @@ export class DatabaseUI extends DisposableObject {
 
   handleChooseDatabaseInternet = async (): Promise<DatabaseItem | undefined> => {
     return await promptImportInternetDatabase(this.databaseManager, this.storagePath);
+  }
+
+  handleChooseDatabaseLgtm = async (): Promise<DatabaseItem | undefined> => {
+    return await promptImportLgtmDatabase(this.databaseManager, this.storagePath);
   }
 
   private handleSortByName = async () => {

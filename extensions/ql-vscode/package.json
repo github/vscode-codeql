@@ -30,10 +30,12 @@
     "onCommand:codeQLDatabases.chooseDatabaseFolder",
     "onCommand:codeQLDatabases.chooseDatabaseArchive",
     "onCommand:codeQLDatabases.chooseDatabaseInternet",
+    "onCommand:codeQLDatabases.chooseDatabaseLgtm",
     "onCommand:codeQL.setCurrentDatabase",
     "onCommand:codeQL.chooseDatabaseFolder",
     "onCommand:codeQL.chooseDatabaseArchive",
     "onCommand:codeQL.chooseDatabaseInternet",
+    "onCommand:codeQL.chooseDatabaseLgtm",
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
     "onCommand:codeQL.quickQuery",
@@ -201,6 +203,14 @@
         }
       },
       {
+        "command": "codeQLDatabases.chooseDatabaseLgtm",
+        "title": "Download from LGTM",
+        "icon": {
+          "light": "media/light/lgtm-plus.svg",
+          "dark": "media/dark/lgtm-plus.svg"
+        }
+      },
+      {
         "command": "codeQL.setCurrentDatabase",
         "title": "CodeQL: Set Current Database"
       },
@@ -243,6 +253,10 @@
       {
         "command": "codeQL.chooseDatabaseInternet",
         "title": "CodeQL: Download Database"
+      },
+      {
+        "command": "codeQL.chooseDatabaseLgtm",
+        "title": "CodeQL: Download Database from LGTM"
       },
       {
         "command": "codeQLDatabases.sortByName",
@@ -337,6 +351,11 @@
         },
         {
           "command": "codeQLDatabases.chooseDatabaseInternet",
+          "when": "view == codeQLDatabases",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLDatabases.chooseDatabaseLgtm",
           "when": "view == codeQLDatabases",
           "group": "navigation"
         }
@@ -467,6 +486,10 @@
         },
         {
           "command": "codeQLDatabases.chooseDatabaseInternet",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.chooseDatabaseLgtm",
           "when": "false"
         },
         {
