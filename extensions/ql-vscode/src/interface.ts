@@ -450,19 +450,14 @@ export class InterfaceManager extends DisposableObject {
     const adaptedSchema = adaptSchema(schema);
     const resultSet = adaptBqrs(adaptedSchema, chunk);
 
-    let parsedResultSets: ParsedResultSets;
-    if (resultSet !== undefined) {
-      parsedResultSets = {
-        t: 'ExtensionParsed',
-        pageNumber,
-        resultSet,
-        numPages: numPagesOfResultSet(resultSet),
-        selectedTable: selectedTable,
-        resultSetNames
-      };
-    }
-    else
-      parsedResultSets = { t: 'WebviewParsed', selectedTable };
+    const parsedResultSets: ParsedResultSets = {
+      t: 'ExtensionParsed',
+      pageNumber,
+      resultSet,
+      numPages: numPagesOfResultSet(resultSet),
+      selectedTable: selectedTable,
+      resultSetNames
+    };
 
     await this.postMessage({
       t: "setState",
