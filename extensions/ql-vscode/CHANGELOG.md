@@ -1,5 +1,9 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.2.1
+
+- Better formatting and autoindentation when adding qldoc comments to `.ql` and `.qll` files.
+
 ## 1.2.0 - 19 May 2020
 
 - Enable 'Go to Definition' and 'Go to References' on source archive
