@@ -3,6 +3,7 @@
 ## 1.2.1
 
 - Better formatting and autoindentation when adding qldoc comments to `.ql` and `.qll` files.
+- Allow for more flexibility when opening a database in the workspace. A user can now choose the actual database folder, or the nested `db-*` folder.
 
 ## 1.2.0 - 19 May 2020
 
