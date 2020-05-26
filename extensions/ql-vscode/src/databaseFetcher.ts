@@ -106,7 +106,7 @@ async function databaseArchiveFetcher(
   // find the path to the database. The actual database might be in a sub-folder
   const dbPath = await findDirWithFile(unzipPath, '.dbinfo', 'codeql-database.yml');
   if (dbPath) {
-    const item = await databasesManager.openDatabase(Uri.parse(`file:${dbPath}`));
+    const item = await databasesManager.openDatabase(Uri.file(dbPath));
     databasesManager.setCurrentDatabaseItem(item);
     return item;
   } else {
