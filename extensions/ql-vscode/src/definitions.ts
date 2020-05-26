@@ -34,6 +34,13 @@ function tagOfKeyType(keyType: KeyType): string {
   }
 }
 
+function nameOfKeyType(keyType: KeyType): string {
+  switch (keyType) {
+    case KeyType.DefinitionQuery: return "definitions";
+    case KeyType.ReferenceQuery: return "references";
+  }
+}
+
 async function resolveQueries(cli: CodeQLCliServer, qlpack: string, keyType: KeyType): Promise<string[]> {
   const suiteFile = tmp.fileSync({ postfix: '.qls' }).name;
   const suiteYaml = { qlpack, include: { kind: 'definitions', 'tags contain': tagOfKeyType(keyType) } };
@@ -41,7 +48,10 @@ async function resolveQueries(cli: CodeQLCliServer, qlpack: string, keyType: Key
 
   const queries = await cli.resolveQueriesInSuite(suiteFile, helpers.getOnDiskWorkspaceFolders());
   if (queries.length === 0) {
-    throw new Error("Couldn't find any queries for qlpack");
+    vscode.window.showErrorMessage(
+      `No ${nameOfKeyType(keyType)} queries (tagged "${tagOfKeyType(keyType)}") could be found in the current library path. It might be necessary to upgrade the CodeQL libraries.`
+    );
+    throw new Error(`Couldn't find any queries tagged ${tagOfKeyType(keyType)} for qlpack ${qlpack}`);
   }
   return queries;
 }
