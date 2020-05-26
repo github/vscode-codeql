@@ -349,6 +349,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   }));
   ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseFolder', () => databaseUI.handleChooseDatabaseFolder()));
   ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseArchive', () => databaseUI.handleChooseDatabaseArchive()));
+  ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseLgtm', () => databaseUI.handleChooseDatabaseLgtm()));
   ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseInternet', () => databaseUI.handleChooseDatabaseInternet()));
 
   logger.log('Starting language server.');
