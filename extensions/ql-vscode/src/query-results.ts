@@ -54,13 +54,6 @@ export class CompletedQuery implements QueryWithResults {
     return helpers.getQueryName(this.query);
   }
 
-  /**
-   * Holds if this query should produce interpreted results.
-   */
-  canInterpretedResults(): Promise<boolean> {
-    return this.query.dbItem.hasMetadataFile();
-  }
-
   get statusString(): string {
     switch (this.result.resultType) {
       case messages.QueryResultType.CANCELLATION:
