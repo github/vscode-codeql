@@ -257,6 +257,22 @@ export class QueryHistoryManager {
     }
   }
 
+  async handleViewSarif(queryHistoryItem: CompletedQuery) {
+    try {
+      const hasInterpretedResults = await queryHistoryItem.query.hasInterpretedResults();
+      if (hasInterpretedResults) {
+        const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.query.resultsPaths.interpretedResultsPath));
+        await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+      }
+      else {
+        const label = queryHistoryItem.getLabel();
+        helpers.showAndLogInformationMessage(`Query ${label} has no interpreted results.`);
+      }
+    } catch (e) {
+      helpers.showAndLogErrorMessage(e.message);
+    }
+  }
+
   async getQueryText(queryHistoryItem: CompletedQuery): Promise<string> {
     if (queryHistoryItem.options.queryText) {
       return queryHistoryItem.options.queryText;
@@ -296,6 +312,7 @@ export class QueryHistoryManager {
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.setLabel', this.handleSetLabel.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.showQueryLog', this.handleShowQueryLog.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.showQueryText', this.handleShowQueryText.bind(this)));
+    ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.viewSarif', this.handleViewSarif.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.itemClicked', async (item) => {
       return this.handleItemClicked(item);
     }));

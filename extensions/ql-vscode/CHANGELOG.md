@@ -4,6 +4,7 @@
 
 - Better formatting and autoindentation when adding QLDoc comments to `.ql` and `.qll` files.
 - Allow for more flexibility when opening a database in the workspace. A user can now choose the actual database folder, or the nested `db-*` folder.
+- Add query history menu command for viewing corresponding SARIF file.
 
 ## 1.2.0 - 19 May 2020
 

@@ -5,7 +5,7 @@ import * as cli from './cli';
 import * as sarif from 'sarif';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { RawResultsSortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata, InterpretedResultsSortState } from "./interface-types";
+import { RawResultsSortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata, InterpretedResultsSortState, ResultsPaths } from "./interface-types";
 import { QueryHistoryConfig } from "./config";
 import { QueryHistoryItemOptions } from "./query-history";
 
@@ -123,9 +123,8 @@ export class CompletedQuery implements QueryWithResults {
 /**
  * Call cli command to interpret results.
  */
-export async function interpretResults(server: cli.CodeQLCliServer, metadata: QueryMetadata | undefined, resultsPath: string, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
-  const interpretedResultsPath = resultsPath + ".interpreted.sarif";
-
+export async function interpretResults(server: cli.CodeQLCliServer, metadata: QueryMetadata | undefined, resultsPaths: ResultsPaths, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
+  const { resultsPath, interpretedResultsPath } = resultsPaths;
   if (await fs.pathExists(interpretedResultsPath)) {
     return JSON.parse(await fs.readFile(interpretedResultsPath, 'utf8'));
   }

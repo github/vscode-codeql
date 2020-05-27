@@ -402,7 +402,7 @@ export class InterfaceManager extends DisposableObject {
     const sarif = await interpretResults(
       this.cliServer,
       metadata,
-      resultsPaths.resultsPath,
+      resultsPaths,
       sourceInfo
     );
     // For performance reasons, limit the number of results we try
