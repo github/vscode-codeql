@@ -83,6 +83,11 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<CompletedQuery>
       arguments: [element],
     };
 
+    // Mark this query history item according to whether it has a
+    // SARIF file so that we can make context menu items conditionally
+    // available.
+    it.contextValue = element.query.hasInterpretedResults() ? 'interpretedResultsItem' : 'rawResultsItem';
+
     if (!element.didRunSuccessfully) {
       it.iconPath = path.join(this.ctx.extensionPath, FAILED_QUERY_HISTORY_ITEM_ICON);
     }
@@ -259,7 +264,7 @@ export class QueryHistoryManager {
 
   async handleViewSarif(queryHistoryItem: CompletedQuery) {
     try {
-      const hasInterpretedResults = await queryHistoryItem.query.hasInterpretedResults();
+      const hasInterpretedResults = await queryHistoryItem.query.canHaveInterpretedResults();
       if (hasInterpretedResults) {
         const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.query.resultsPaths.interpretedResultsPath));
         await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);

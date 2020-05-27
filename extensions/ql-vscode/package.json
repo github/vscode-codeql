@@ -395,7 +395,7 @@
         {
           "command": "codeQLQueryHistory.viewSarif",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory"
+          "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
         },
         {
           "command": "codeQLTests.showOutputDifferences",

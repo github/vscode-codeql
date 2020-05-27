@@ -157,14 +157,21 @@ export class QueryInfo {
   }
 
   /**
-   * Holds if this query should produce interpreted results.
+   * Holds if this query can in principle produce interpreted results.
    */
-  async hasInterpretedResults(): Promise<boolean> {
+  async canHaveInterpretedResults(): Promise<boolean> {
     const hasMetadataFile = await this.dbItem.hasMetadataFile();
     if (!hasMetadataFile) {
       logger.log("Cannot produce interpreted results since the database does not have a .dbinfo or codeql-database.yml file.");
     }
     return hasMetadataFile;
+  }
+
+  /**
+   * Holds if this query actually has produced interpreted results.
+   */
+  hasInterpretedResults(): boolean {
+    return fs.existsSync(this.resultsPaths.interpretedResultsPath);
   }
 }
 

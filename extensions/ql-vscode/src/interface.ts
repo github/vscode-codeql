@@ -440,7 +440,7 @@ export class InterfaceManager extends DisposableObject {
   ): Promise<Interpretation | undefined> {
     let interpretation: Interpretation | undefined = undefined;
     if (
-      (await query.hasInterpretedResults()) &&
+      (await query.canHaveInterpretedResults()) &&
       query.quickEvalPosition === undefined // never do results interpretation if quickEval
     ) {
       try {
