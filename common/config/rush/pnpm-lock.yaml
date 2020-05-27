@@ -84,7 +84,7 @@ dependencies:
   vsce: 1.74.0
   vscode-jsonrpc: 5.0.1
   vscode-languageclient: 6.1.3
-  vscode-test: 1.3.0
+  vscode-test: 1.4.0
   vscode-test-adapter-api: 1.7.0
   vscode-test-adapter-util: 0.7.0
   webpack: 4.42.0_webpack@4.42.0
@@ -7437,7 +7437,7 @@ packages:
       vscode: ^1.24.0
     resolution:
       integrity: sha512-eAsB8koXct5JytvUcV62wLEBCQfsoclauzMLEFT6H0qBr1h8LyRc+dGDcs48pO28yFOo6VV+5AwCRLxTKh7TzQ==
-  /vscode-test/1.3.0:
+  /vscode-test/1.4.0:
     dependencies:
       http-proxy-agent: 2.1.0
       https-proxy-agent: 2.2.4
@@ -7446,7 +7446,7 @@ packages:
     engines:
       node: '>=8.9.3'
     resolution:
-      integrity: sha512-LddukcBiSU2FVTDr3c1D8lwkiOvwlJdDL2hqVbn6gIz+rpTqUCkMZSKYm94Y1v0WXlHSDQBsXyY+tchWQgGVsw==
+      integrity: sha512-Jt7HNGvSE0+++Tvtq5wc4hiXLIr2OjDShz/gbAfM/mahQpy4rKBnmOK33D+MR67ATWviQhl+vpmU3p/qwSH/Pg==
   /watchpack/1.6.0:
     dependencies:
       chokidar: 2.1.8
@@ -7836,7 +7836,7 @@ packages:
     peerDependencies:
       glob: '*'
     resolution:
-      integrity: sha512-14DvfY6Fj3HXp2/CNJ2zNh9MA8zPw9mUcr8WqkSsYvJow7JMcIlJ//OOONwpoSWtfrk1bk6Cin7jj9H79ItHQQ==
+      integrity: sha512-NkoIMaJdASYX4NjcB+nsEk/8Ff/2RLvHwL0efNOny3no6aNuJ3EkpNK0ZdX7HQdmTdY3IJPmjoJ3Rn4pkbxgdA==
       tarball: 'file:projects/build-tasks.tgz'
     version: 0.0.0
   'file:projects/semmle-bqrs.tgz_typescript@3.8.3':
@@ -7851,7 +7851,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-24GdnvMbGfQIWMfgDhift+kYJDnG7dX03NrpX4ajZ2rckteysvq2/K7XI1OXGvUuqrt3m0/+GRDHpSI9XKDJJA==
+      integrity: sha512-lE3FBYrOVF1JH0ZqvF4YA+bed3JPWYucsnFe+XL140a/YR19XD+TTHIfov7VpR9qdyWfARgvmR+gf2qsguXTKQ==
       tarball: 'file:projects/semmle-bqrs.tgz'
     version: 0.0.0
   'file:projects/semmle-io-node.tgz_typescript@3.8.3':
@@ -7866,7 +7866,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-Bj0ax/bASrHV7tamOuXZZdd3UOB4NBKdjdszIRaDvDRTu8RlEst+TVoUhkfy30qb2/6ePp3/juOJyyiBJN7u8Q==
+      integrity: sha512-MD9edC5HjrCfPmhktw6XmWotUmperj27/hDZiuMbuSlJ4jRKyiBtJ8Vk2Y4U41TrzsBlJfAwZW8tetPw5ujiLg==
       tarball: 'file:projects/semmle-io-node.tgz'
     version: 0.0.0
   'file:projects/semmle-io.tgz_typescript@3.8.3':
@@ -7880,7 +7880,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-NtyviDSevxbd+hj4J66LucOzo8LU2hJ1Jh0eHw0Qu3tRZPUT8HcQlseyy29AvZR8n8eppfEZiAm/JdiHfmRPMA==
+      integrity: sha512-ta1lLi1COIeFwpwH523cWheWx6OE8GTqguQmOA7G6CwRF41RYbbREf/4KlOLKO/uG2akhhl+3gcWY2c5/VDC/A==
       tarball: 'file:projects/semmle-io.tgz'
     version: 0.0.0
   'file:projects/semmle-vscode-utils.tgz':
@@ -7892,14 +7892,14 @@ packages:
     dev: false
     name: '@rush-temp/semmle-vscode-utils'
     resolution:
-      integrity: sha512-5y5r8SDoN9Fp44naC9gUe8rOexeckXg2T0h9QCJAIcEgnFqOxzRc6Rv9gbMUStFKNh+rFlvmYmgPAdg5QkfgUg==
+      integrity: sha512-Dbwt0/Wd0VNKkRZRjFQv3hmGy/UDt36HDtEDsNgZIcQACoY1j2+mJavpQ+ZzCg4Ftj06eHDVk+ptzUEd+8Ybzw==
       tarball: 'file:projects/semmle-vscode-utils.tgz'
     version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
     name: '@rush-temp/typescript-config'
     resolution:
-      integrity: sha512-XuUIySaNoooIduvehnlKYaHqZJmmQoCqB1RtKhNszjCYZaSSJAnKVucViWBf5oNLKSNP7NchrD7gcoBlQ3xYvw==
+      integrity: sha512-qJbtY2jvt6LKkmUt/seiYyXSEB6Oip/rW+SxofQEnpyplgIQv7whTZb6g5pwlSLGl8goTaQFm4NfazKhFmxXvQ==
       tarball: 'file:projects/typescript-config.tgz'
     version: 0.0.0
   'file:projects/vscode-codeql.tgz':
@@ -7970,7 +7970,7 @@ packages:
       vsce: 1.74.0
       vscode-jsonrpc: 5.0.1
       vscode-languageclient: 6.1.3
-      vscode-test: 1.3.0
+      vscode-test: 1.4.0
       vscode-test-adapter-api: 1.7.0
       vscode-test-adapter-util: 0.7.0
       webpack: 4.42.0_webpack@4.42.0
@@ -7978,7 +7978,7 @@ packages:
     dev: false
     name: '@rush-temp/vscode-codeql'
     resolution:
-      integrity: sha512-YwJoYdN8GMZlZHiLXhC1jw2BfrBJOpoCDtKQ78HphTslH7S94cUbASmZCgXKPkb9aIijsOY3JHE4/Od6lqB65w==
+      integrity: sha512-ClyrIRqnMYMmVHtHvW8MvS4GrRSt/dXY3lxBpxSv3wSJ67pEvWKea+DJyeVN2zaHz1/7gAOWQHhwBz6O3lEq6w==
       tarball: 'file:projects/vscode-codeql.tgz'
     version: 0.0.0
 registry: ''
@@ -8068,7 +8068,7 @@ specifiers:
   vsce: ^1.65.0
   vscode-jsonrpc: ^5.0.1
   vscode-languageclient: ^6.1.3
-  vscode-test: ^1.0.0
+  vscode-test: ^1.4.0
   vscode-test-adapter-api: ~1.7.0
   vscode-test-adapter-util: ~0.7.0
   webpack: ^4.38.0
