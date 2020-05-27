@@ -74,7 +74,7 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<CompletedQuery>
   constructor(private ctx: ExtensionContext) {
   }
 
-  getTreeItem(element: CompletedQuery): vscode.TreeItem {
+  async getTreeItem(element: CompletedQuery): Promise<vscode.TreeItem> {
     const it = new vscode.TreeItem(element.toString());
 
     it.command = {
@@ -86,7 +86,7 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<CompletedQuery>
     // Mark this query history item according to whether it has a
     // SARIF file so that we can make context menu items conditionally
     // available.
-    it.contextValue = element.query.hasInterpretedResults() ? 'interpretedResultsItem' : 'rawResultsItem';
+    it.contextValue = await element.query.hasInterpretedResults() ? 'interpretedResultsItem' : 'rawResultsItem';
 
     if (!element.didRunSuccessfully) {
       it.iconPath = path.join(this.ctx.extensionPath, FAILED_QUERY_HISTORY_ITEM_ICON);

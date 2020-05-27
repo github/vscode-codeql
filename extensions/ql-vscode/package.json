@@ -494,6 +494,10 @@
           "when": "false"
         },
         {
+          "command": "codeQLQueryHistory.viewSarif",
+          "when": "false"
+        },
+        {
           "command": "codeQLQueryHistory.setLabel",
           "when": "false"
         }

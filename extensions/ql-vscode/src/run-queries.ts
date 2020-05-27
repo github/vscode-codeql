@@ -170,8 +170,8 @@ export class QueryInfo {
   /**
    * Holds if this query actually has produced interpreted results.
    */
-  hasInterpretedResults(): boolean {
-    return fs.existsSync(this.resultsPaths.interpretedResultsPath);
+  async hasInterpretedResults(): Promise<boolean> {
+    return fs.pathExists(this.resultsPaths.interpretedResultsPath);
   }
 }
 
