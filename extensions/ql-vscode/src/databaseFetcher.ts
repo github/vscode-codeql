@@ -82,6 +82,9 @@ export async function promptImportLgtmDatabase(
       prompt:
         "Enter the project URL on LGTM (e.g., https://lgtm.com/projects/g/github/codeql)",
     });
+    if (!lgtmUrl) {
+      return;
+    }
     if (looksLikeLgtmUrl(lgtmUrl)) {
       const databaseUrl = await convertToDatabaseUrl(lgtmUrl);
       if (databaseUrl) {
@@ -323,7 +326,20 @@ async function findDirWithFile(
   return;
 }
 
-function looksLikeLgtmUrl(lgtmUrl: string | undefined): lgtmUrl is string {
+/**
+ * The URL pattern is https://lgtm.com/projects/{provider}/{org}/{name}/{irrelevant-subpages}.
+ * There are several possibilities for the provider: in addition to GitHub.com(g),
+ * LGTM currently hosts projects from Bitbucket (b), GitLab (gl) and plain git (git).
+ *
+ * After the {provider}/{org}/{name} path components, there may be the components
+ * related to sub pages.
+ *
+ * This function accepts any url that matches the patter above
+ *
+ * @param lgtmUrl The URL to the lgtm project
+ *
+ * @return true if this looks like an LGTM project url
+ */
   if (!lgtmUrl) {
     return false;
   }
@@ -339,7 +355,7 @@ function looksLikeLgtmUrl(lgtmUrl: string | undefined): lgtmUrl is string {
     }
 
     const paths = uri.path.split("/").filter((segment) => segment);
-    return paths.length === 4 && paths[0] === "projects" && paths[1] === "g";
+    return paths.length >= 4 && paths[0] === "projects";
   } catch (e) {
     return false;
   }
@@ -350,7 +366,7 @@ async function convertToDatabaseUrl(lgtmUrl: string) {
     const uri = Uri.parse(lgtmUrl, true);
     const paths = ["api", "v1.0"].concat(
       uri.path.split("/").filter((segment) => segment)
-    );
+    ).slice(0, 6);
     const projectUrl = `https://lgtm.com/${paths.join("/")}`;
     const projectResponse = await fetch(projectUrl);
     const projectJson = await projectResponse.json();
@@ -371,6 +387,7 @@ async function convertToDatabaseUrl(lgtmUrl: string) {
       language,
     ].join("/")}`;
   } catch (e) {
+    logger.log(`Error: ${e.message}`);
     throw new Error(`Invalid LGTM URL: ${lgtmUrl}`);
   }
 }
