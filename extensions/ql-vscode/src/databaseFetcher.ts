@@ -84,29 +84,32 @@ export async function promptImportLgtmDatabase(
     });
     if (looksLikeLgtmUrl(lgtmUrl)) {
       const databaseUrl = await convertToDatabaseUrl(lgtmUrl);
-      if (!databaseUrl) {
-        return item;
+      if (databaseUrl) {
+        const progressOptions: ProgressOptions = {
+          location: ProgressLocation.Notification,
+          title: "Adding database from LGTM",
+          cancellable: false,
+        };
+        await withProgress(
+          progressOptions,
+          async (progress) =>
+            (item = await databaseArchiveFetcher(
+              databaseUrl,
+              databasesManager,
+              storagePath,
+              progress
+            ))
+        );
+        commands.executeCommand("codeQLDatabases.focus");
       }
-      const progressOptions: ProgressOptions = {
-        location: ProgressLocation.Notification,
-        title: "Adding database from LGTM",
-        cancellable: false,
-      };
-      await withProgress(
-        progressOptions,
-        async (progress) =>
-          (item = await databaseArchiveFetcher(
-            databaseUrl,
-            databasesManager,
-            storagePath,
-            progress
-          ))
-      );
-      commands.executeCommand("codeQLDatabases.focus");
+    } else {
+      throw new Error(`Invalid LGTM URL: ${lgtmUrl}`);
     }
-    showAndLogInformationMessage(
-      "Database downloaded and imported successfully."
-    );
+    if (item) {
+      showAndLogInformationMessage(
+        "Database downloaded and imported successfully."
+      );
+    }
   } catch (e) {
     showAndLogErrorMessage(e.message);
   }
@@ -145,9 +148,11 @@ export async function importArchiveDatabase(
     );
     commands.executeCommand("codeQLDatabases.focus");
 
-    showAndLogInformationMessage(
-      "Database unzipped and imported successfully."
-    );
+    if (item) {
+      showAndLogInformationMessage(
+        "Database unzipped and imported successfully."
+      );
+    }
   } catch (e) {
     showAndLogErrorMessage(e.message);
   }
@@ -323,39 +328,51 @@ function looksLikeLgtmUrl(lgtmUrl: string | undefined): lgtmUrl is string {
     return false;
   }
 
-  const uri = Uri.parse(lgtmUrl, true);
-  if (uri.scheme !== "https") {
+  try {
+    const uri = Uri.parse(lgtmUrl, true);
+    if (uri.scheme !== "https") {
+      return false;
+    }
+
+    if (uri.authority !== "lgtm.com" && uri.authority !== "www.lgtm.com") {
+      return false;
+    }
+
+    const paths = uri.path.split("/").filter((segment) => segment);
+    return paths.length === 4 && paths[0] === "projects" && paths[1] === "g";
+  } catch (e) {
     return false;
   }
-
-  if (uri.authority !== "lgtm.com" && uri.authority !== "www.lgtm.com") {
-    return false;
-  }
-
-  const paths = uri.path.split("/").filter((segment) => segment);
-  return paths.length === 4 && paths[0] === "projects" && paths[1] === "g";
 }
 
 async function convertToDatabaseUrl(lgtmUrl: string) {
-  const uri = Uri.parse(lgtmUrl, true);
-  const paths = ["api", "v1.0"].concat(
-    uri.path.split("/").filter((segment) => segment)
-  );
-  const projectUrl = `https://lgtm.com/${paths.join("/")}`;
-  const projectResponse = await fetch(projectUrl);
-  const projectJson = await projectResponse.json();
+  try {
+    const uri = Uri.parse(lgtmUrl, true);
+    const paths = ["api", "v1.0"].concat(
+      uri.path.split("/").filter((segment) => segment)
+    );
+    const projectUrl = `https://lgtm.com/${paths.join("/")}`;
+    const projectResponse = await fetch(projectUrl);
+    const projectJson = await projectResponse.json();
 
-  const language = await promptForLanguage(projectJson);
-  if (!language) {
-    return;
+    if (projectJson.code === 404) {
+      throw new Error();
+    }
+
+    const language = await promptForLanguage(projectJson);
+    if (!language) {
+      return;
+    }
+    return `https://lgtm.com/${[
+      "api",
+      "v1.0",
+      "snapshots",
+      projectJson.id,
+      language,
+    ].join("/")}`;
+  } catch (e) {
+    throw new Error(`Invalid LGTM URL: ${lgtmUrl}`);
   }
-  return `https://lgtm.com/${[
-    "api",
-    "v1.0",
-    "snapshots",
-    projectJson.id,
-    language,
-  ].join("/")}`;
 }
 
 async function promptForLanguage(
