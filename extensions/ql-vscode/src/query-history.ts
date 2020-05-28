@@ -74,7 +74,7 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<CompletedQuery>
   constructor(private ctx: ExtensionContext) {
   }
 
-  getTreeItem(element: CompletedQuery): vscode.TreeItem {
+  async getTreeItem(element: CompletedQuery): Promise<vscode.TreeItem> {
     const it = new vscode.TreeItem(element.toString());
 
     it.command = {
@@ -82,6 +82,11 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<CompletedQuery>
       command: 'codeQLQueryHistory.itemClicked',
       arguments: [element],
     };
+
+    // Mark this query history item according to whether it has a
+    // SARIF file so that we can make context menu items conditionally
+    // available.
+    it.contextValue = await element.query.hasInterpretedResults() ? 'interpretedResultsItem' : 'rawResultsItem';
 
     if (!element.didRunSuccessfully) {
       it.iconPath = path.join(this.ctx.extensionPath, FAILED_QUERY_HISTORY_ITEM_ICON);
@@ -257,6 +262,22 @@ export class QueryHistoryManager {
     }
   }
 
+  async handleViewSarif(queryHistoryItem: CompletedQuery) {
+    try {
+      const hasInterpretedResults = await queryHistoryItem.query.canHaveInterpretedResults();
+      if (hasInterpretedResults) {
+        const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.query.resultsPaths.interpretedResultsPath));
+        await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+      }
+      else {
+        const label = queryHistoryItem.getLabel();
+        helpers.showAndLogInformationMessage(`Query ${label} has no interpreted results.`);
+      }
+    } catch (e) {
+      helpers.showAndLogErrorMessage(e.message);
+    }
+  }
+
   async getQueryText(queryHistoryItem: CompletedQuery): Promise<string> {
     if (queryHistoryItem.options.queryText) {
       return queryHistoryItem.options.queryText;
@@ -296,6 +317,7 @@ export class QueryHistoryManager {
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.setLabel', this.handleSetLabel.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.showQueryLog', this.handleShowQueryLog.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.showQueryText', this.handleShowQueryText.bind(this)));
+    ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.viewSarif', this.handleViewSarif.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.itemClicked', async (item) => {
       return this.handleItemClicked(item);
     }));
