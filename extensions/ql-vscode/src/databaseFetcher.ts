@@ -1,4 +1,4 @@
-import fetch from "node-fetch";
+import fetch, { Response } from "node-fetch";
 import * as unzipper from "unzipper";
 import {
   Uri,
@@ -278,6 +278,9 @@ async function fetchAndUnzip(
   progressCallback?: ProgressCallback
 ) {
   const response = await fetch(databaseUrl);
+
+  await checkForFailingResponse(response);
+
   const unzipStream = unzipper.Extract({
     path: unzipPath,
   });
@@ -287,11 +290,35 @@ async function fetchAndUnzip(
     step: 2,
   });
   await new Promise((resolve, reject) => {
-    response.body.on("error", reject);
-    unzipStream.on("error", reject);
+    const handler = (err: Error) => {
+      if (err.message.startsWith('invalid signature')) {
+        reject(new Error('Not a valid archive.'));
+      } else {
+        reject(err);
+      }
+    };
+    response.body.on("error", handler);
+    unzipStream.on("error", handler);
     unzipStream.on("close", resolve);
     response.body.pipe(unzipStream);
   });
+}
+
+async function checkForFailingResponse(response: Response): Promise<void | never> {
+  if (response.ok) {
+    return;
+  }
+
+  // An error downloading the database. Attempt to extract the resaon behind it.
+  const text = await response.text();
+  let msg: string;
+  try {
+    const obj = JSON.parse(text);
+    msg = obj.error || obj.message || obj.reason || JSON.stringify(obj, null, 2);
+  } catch (e) {
+    msg = text;
+  }
+  throw new Error(`Error downloading database.\n\nReason: ${msg}`);
 }
 
 function isFile(databaseUrl: string) {
@@ -409,7 +436,7 @@ async function promptForLanguage(
 
   return await window.showQuickPick(
     projectJson.languages.map((lang: { language: string }) => lang.language), {
-      placeHolder: "Select the database language to download:"
-    }
+    placeHolder: "Select the database language to download:"
+  }
   );
 }
