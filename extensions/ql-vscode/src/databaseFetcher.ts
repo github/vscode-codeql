@@ -16,6 +16,7 @@ import {
   withProgress,
   showAndLogInformationMessage,
 } from "./helpers";
+import { logger } from "./logging";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -305,7 +306,8 @@ function isFile(databaseUrl: string) {
  *
  * @returns the directory containing the file, or undefined if not found.
  */
-async function findDirWithFile(
+// exported for testing
+export async function findDirWithFile(
   dir: string,
   ...toFind: string[]
 ): Promise<string | undefined> {
@@ -340,6 +342,8 @@ async function findDirWithFile(
  *
  * @return true if this looks like an LGTM project url
  */
+// exported for testing
+export function looksLikeLgtmUrl(lgtmUrl: string | undefined): lgtmUrl is string {
   if (!lgtmUrl) {
     return false;
   }
@@ -361,7 +365,8 @@ async function findDirWithFile(
   }
 }
 
-async function convertToDatabaseUrl(lgtmUrl: string) {
+// exported for testing
+export async function convertToDatabaseUrl(lgtmUrl: string) {
   try {
     const uri = Uri.parse(lgtmUrl, true);
     const paths = ["api", "v1.0"].concat(
