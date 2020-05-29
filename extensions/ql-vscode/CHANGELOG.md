@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## 1.2.1
+## 1.2.1 - 29 May 2020
 
 - Better formatting and autoindentation when adding QLDoc comments to `.ql` and `.qll` files.
 - Allow for more flexibility when opening a database in the workspace. A user can now choose the actual database folder, or the nested `db-*` folder.
