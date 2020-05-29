@@ -4,7 +4,8 @@ import * as webpack from 'webpack';
 export const config: webpack.Configuration = {
   mode: 'development',
   entry: {
-    resultsView: './src/view/results.tsx'
+    resultsView: './src/view/results.tsx',
+    compareView: './src/compare/view/compare.tsx',
   },
   output: {
     path: path.resolve(__dirname, '..', 'out'),
