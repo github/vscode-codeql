@@ -80,7 +80,7 @@ While you can use the [CodeQL CLI to create your own databases](https://help.sem
 1. Open [https://lgtm.com] in your browser.
 1. Search for a project you are interested in, for example [Apache Kafka](https://lgtm.com/projects/g/apache/kafka/ci/).
 1. Copy the link to that project, for example `https://lgtm.com/projects/g/apache/kafka`.
-1. In VS Code, open the command pallette and choose the _CodeQL: Download Database from LGTM_ command.
+1. In VS Code, open the Command Palette and choose the **CodeQL: Download Database from LGTM** command.
 1. Paste the link you copied earlier.
 1. Select the language for the database you want to download (only required if the project has databases for multiple languages).
 1. Once the CodeQL database has been imported, it is displayed in the Databases view.
