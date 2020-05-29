@@ -78,7 +78,7 @@ You can find all the commands contributed by the extension in the Command Palett
 While you can use the [CodeQL CLI to create your own databases](https://help.semmle.com/codeql/codeql-cli/procedures/create-codeql-database.html), the simplest way to start is by downloading a database from LGTM.com.
 
 1. Open [https://lgtm.com] in your browser.
-1. Search for a project you are interested in, for example [Apache Kafka](https://lgtm.com/projects/g/apache/kafka/ci/).
+1. Search for a project you're interested in, for example [Apache Kafka](https://lgtm.com/projects/g/apache/kafka).
 1. Copy the link to that project, for example `https://lgtm.com/projects/g/apache/kafka`.
 1. In VS Code, open the Command Palette and choose the **CodeQL: Download Database from LGTM** command.
 1. Paste the link you copied earlier.
