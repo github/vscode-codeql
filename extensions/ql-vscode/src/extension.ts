@@ -21,7 +21,8 @@ import {
 import * as helpers from './helpers';
 import { assertNever } from './helpers-pure';
 import { spawnIdeServer } from './ide-server';
-import { InterfaceManager, WebviewReveal } from './interface';
+import { InterfaceManager } from './interface';
+import { WebviewReveal } from './webview-utils';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
 import { QueryHistoryManager } from './query-history';
 import { CompletedQuery } from './query-results';
@@ -30,6 +31,7 @@ import { displayQuickQuery } from './quick-query';
 import { compileAndRunQueryAgainstDatabase, tmpDirDisposal, UserCancellationException } from './run-queries';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
+import { CompareInterfaceManager } from './compare/compare-interface';
 
 /**
  * extension.ts
@@ -303,13 +305,23 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   const qhm = new QueryHistoryManager(
     ctx,
     queryHistoryConfigurationListener,
-    async item => showResultsForCompletedQuery(item, WebviewReveal.Forced)
+    async item => showResultsForCompletedQuery(item, WebviewReveal.Forced),
+    async (from: CompletedQuery, to: CompletedQuery) => showResultsForComparison(from, to, WebviewReveal.Forced),
   );
   logger.log('Initializing results panel interface.');
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
   ctx.subscriptions.push(intm);
+
+  logger.log('Initializing compare panel interface.');
+  const cmpm = new CompareInterfaceManager(ctx, dbm, cliServer, queryServerLogger);
+  ctx.subscriptions.push(cmpm);
+
   logger.log('Initializing source archive filesystem provider.');
   archiveFilesystemProvider.activate(ctx);
+
+  async function showResultsForComparison(from: CompletedQuery, to: CompletedQuery, forceReveal: WebviewReveal): Promise<void> {
+    await cmpm.showResults(from, to, forceReveal);
+  }
 
   async function showResultsForCompletedQuery(query: CompletedQuery, forceReveal: WebviewReveal): Promise<void> {
     await intm.showResults(query, forceReveal, false);
