@@ -135,10 +135,15 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<CompletedQuery>
       }
       this.refresh();
     }
+
+  }
+
+  get allHistory(): CompletedQuery[] {
+    return this.history;
   }
 
   refresh() {
-    this._onDidChangeTreeData.fire();
+    this._onDidChangeTreeData.fire(undefined);
   }
 }
 
@@ -152,7 +157,6 @@ export class QueryHistoryManager {
   treeDataProvider: HistoryTreeDataProvider;
   ctx: ExtensionContext;
   treeView: vscode.TreeView<CompletedQuery>;
-  selectedCallback: ((item: CompletedQuery) => void) | undefined;
   lastItemClick: { time: Date; item: CompletedQuery } | undefined;
 
   async invokeCallbackOn(queryHistoryItem: CompletedQuery) {
@@ -197,6 +201,22 @@ export class QueryHistoryManager {
       else
         queryHistoryItem.options.label = response;
       this.treeDataProvider.refresh();
+    }
+  }
+
+  async handleCompareWith(query: CompletedQuery) {
+    const dbName = query.database.name;
+    const comparableQueryLabels = this.treeDataProvider.allHistory
+      .filter((otherQuery) => otherQuery !== query && otherQuery.didRunSuccessfully && otherQuery.database.name === dbName)
+      .map(otherQuery => ({
+        label: otherQuery.toString(),
+        description: otherQuery.databaseName,
+        detail: otherQuery.statusString,
+        query: otherQuery
+      }));
+    const choice = await vscode.window.showQuickPick(comparableQueryLabels);
+    if (choice) {
+      this.doCompareCallback(query, choice.query);
     }
   }
 
@@ -277,10 +297,10 @@ export class QueryHistoryManager {
   constructor(
     ctx: ExtensionContext,
     private queryHistoryConfigListener: QueryHistoryConfig,
-    selectedCallback?: (item: CompletedQuery) => Promise<void>
+    private selectedCallback: (item: CompletedQuery) => Promise<void>,
+    private doCompareCallback: (from: CompletedQuery, to: CompletedQuery) => Promise<void>,
   ) {
     this.ctx = ctx;
-    this.selectedCallback = selectedCallback;
     const treeDataProvider = this.treeDataProvider = new HistoryTreeDataProvider(ctx);
     this.treeView = Window.createTreeView('codeQLQueryHistory', { treeDataProvider });
     // Lazily update the tree view selection due to limitations of TreeView API (see
@@ -296,6 +316,7 @@ export class QueryHistoryManager {
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.openQuery', this.handleOpenQuery));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.removeHistoryItem', this.handleRemoveHistoryItem.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.setLabel', this.handleSetLabel.bind(this)));
+    ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.compareWith', this.handleCompareWith.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.showQueryLog', this.handleShowQueryLog.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.showQueryText', this.handleShowQueryText.bind(this)));
     ctx.subscriptions.push(vscode.commands.registerCommand('codeQLQueryHistory.viewSarif', this.handleViewSarif.bind(this)));

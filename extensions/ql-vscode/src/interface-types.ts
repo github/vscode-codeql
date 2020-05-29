@@ -170,3 +170,9 @@ interface ChangeInterpretedResultsSortMsg {
    */
   sortState?: InterpretedResultsSortState;
 }
+
+export interface CompareViewMessage {
+  t: 'change-compare';
+  newResultSetName: string;
+  // TODO do we need to include the ids of the queries
+}
