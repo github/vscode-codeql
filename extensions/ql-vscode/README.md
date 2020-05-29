@@ -4,7 +4,7 @@ This project is an extension for Visual Studio Code that adds rich language supp
 
 - Enables you to use CodeQL to query databases generated from source code.
 - Shows the flow of data through the results of path queries, which is essential for triaging security results.
-- Provides an easy way to run queries from the large, open source repository of [CodeQL security queries](https://github.com/Semmle/ql).
+- Provides an easy way to run queries from the large, open source repository of [CodeQL security queries](https://github.com/github/codeql).
 - Adds IntelliSense to support you writing and editing your own CodeQL query and library files.
 
 To see what has changed in the last few versions of the extension, see the [Changelog](https://github.com/github/vscode-codeql/blob/master/extensions/ql-vscode/CHANGELOG.md).
