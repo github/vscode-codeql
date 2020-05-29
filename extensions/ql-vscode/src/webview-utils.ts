@@ -1,5 +1,17 @@
 import * as crypto from "crypto";
-import { Uri, Location, Range, WebviewPanel, Webview, window as Window, workspace, ViewColumn, Selection, TextEditorRevealType, ThemeColor } from "vscode";
+import {
+  Uri,
+  Location,
+  Range,
+  WebviewPanel,
+  Webview,
+  workspace,
+  window as Window,
+  ViewColumn,
+  Selection,
+  TextEditorRevealType,
+  ThemeColor,
+} from "vscode";
 import {
   FivePartLocation,
   LocationStyle,
@@ -136,25 +148,6 @@ export function getHtmlForWebview(
 </html>`;
 }
 
-
-const findMatchBackground = new ThemeColor("editor.findMatchBackground");
-const findRangeHighlightBackground = new ThemeColor(
-  "editor.findRangeHighlightBackground"
-);
-
-export const shownLocationDecoration = Window.createTextEditorDecorationType(
-  {
-    backgroundColor: findMatchBackground,
-  }
-);
-
-export const shownLocationLineDecoration = Window.createTextEditorDecorationType(
-  {
-    backgroundColor: findRangeHighlightBackground,
-    isWholeLine: true,
-  }
-);
-
 export async function showLocation(
   loc: ResolvableLocationValue,
   databaseItem: DatabaseItem
@@ -188,3 +181,19 @@ export async function showLocation(
     editor.setDecorations(shownLocationLineDecoration, [range]);
   }
 }
+
+const findMatchBackground = new ThemeColor("editor.findMatchBackground");
+const findRangeHighlightBackground = new ThemeColor(
+  "editor.findRangeHighlightBackground"
+);
+
+export const shownLocationDecoration = Window.createTextEditorDecorationType({
+  backgroundColor: findMatchBackground,
+});
+
+export const shownLocationLineDecoration = Window.createTextEditorDecorationType(
+  {
+    backgroundColor: findRangeHighlightBackground,
+    isWholeLine: true,
+  }
+);

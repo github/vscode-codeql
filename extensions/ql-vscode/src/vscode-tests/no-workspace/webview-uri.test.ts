@@ -1,8 +1,8 @@
-import { expect } from 'chai';
-import * as path from 'path';
-import * as tmp from 'tmp';
-import { window, ViewColumn, Uri } from 'vscode';
-import { fileUriToWebviewUri, webviewUriToFileUri } from '../../interface';
+import { expect } from "chai";
+import * as path from "path";
+import * as tmp from "tmp";
+import { window, ViewColumn, Uri } from "vscode";
+import { fileUriToWebviewUri, webviewUriToFileUri } from '../../webview-utils';
 
 describe('webview uri conversion', function() {
   const fileSuffix = '.bqrs';
