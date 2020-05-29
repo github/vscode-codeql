@@ -49,7 +49,7 @@ If you have any difficulty with CodeQL CLI access, see the **CodeQL Extension Lo
 ### Cloning the CodeQL starter workspace
 
 When you're working with CodeQL, you need access to the standard CodeQL libraries and queries.
-Initially, we recommend that you clone and use the ready-to-use starter workspace, [https://github.com/github/vscode-codeql-starter/].
+Initially, we recommend that you clone and use the ready-to-use [starter workspace](https://github.com/github/vscode-codeql-starter/).
 This includes libraries and queries for the main supported languages, with folders set up ready for your custom queries. After cloning the workspace (use `git clone --recursive`), you can use it in the same way as any other VS Code workspace—with the added advantage that you can easily update the CodeQL libraries.
 
 For information about configuring an existing workspace for CodeQL, [see the documentation](https://help.semmle.com/codeql/codeql-for-vscode/procedures/setting-up.html#updating-an-existing-workspace-for-codeql).
