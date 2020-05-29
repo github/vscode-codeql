@@ -2,10 +2,10 @@
 
 This project is an extension for Visual Studio Code that adds rich language support for [CodeQL](https://help.semmle.com/codeql) and allows you to easily find problems in codebases. In particular, the extension:
 
-* Enables you to use CodeQL to query databases generated from source code.
-* Shows the flow of data through the results of path queries, which is essential for triaging security results.
-* Provides an easy way to run queries from the large, open source repository of [CodeQL security queries](https://github.com/Semmle/ql).
-* Adds IntelliSense to support you writing and editing your own CodeQL query and library files.
+- Enables you to use CodeQL to query databases generated from source code.
+- Shows the flow of data through the results of path queries, which is essential for triaging security results.
+- Provides an easy way to run queries from the large, open source repository of [CodeQL security queries](https://github.com/github/codeql).
+- Adds IntelliSense to support you writing and editing your own CodeQL query and library files.
 
 To see what has changed in the last few versions of the extension, see the [Changelog](https://github.com/github/vscode-codeql/blob/master/extensions/ql-vscode/CHANGELOG.md).
 
@@ -14,18 +14,18 @@ To see what has changed in the last few versions of the extension, see the [Chan
 The information in this `README` file describes the quickest way to start using CodeQL.
 For information about other configurations, see the separate [CodeQL help](https://help.semmle.com/codeql/codeql-for-vscode.html).
 
-**Quick start: Installing and configuring the extension**
+### Quick start: Installing and configuring the extension
 
 1. [Install the extension](#installing-the-extension).
 1. [Check access to the CodeQL CLI](#checking-access-to-the-codeql-cli).
 1. [Clone the CodeQL starter workspace](#cloning-the-codeql-starter-workspace).
 
-**Quick start: Using CodeQL**
+### Quick start: Using CodeQL
 
 1. [Import a database from LGTM](#importing-a-database-from-lgtm).
 1. [Run a query](#running-a-query).
 
------
+---
 
 ## Quick start: Installing and configuring the extension
 
@@ -49,7 +49,7 @@ If you have any difficulty with CodeQL CLI access, see the **CodeQL Extension Lo
 ### Cloning the CodeQL starter workspace
 
 When you're working with CodeQL, you need access to the standard CodeQL libraries and queries.
-Initially, we recommend that you clone and use the ready-to-use starter workspace, https://github.com/github/vscode-codeql-starter/.
+Initially, we recommend that you clone and use the ready-to-use [starter workspace](https://github.com/github/vscode-codeql-starter/).
 This includes libraries and queries for the main supported languages, with folders set up ready for your custom queries. After cloning the workspace (use `git clone --recursive`), you can use it in the same way as any other VS Code workspace—with the added advantage that you can easily update the CodeQL libraries.
 
 For information about configuring an existing workspace for CodeQL, [see the documentation](https://help.semmle.com/codeql/codeql-for-vscode/procedures/setting-up.html#updating-an-existing-workspace-for-codeql).
@@ -58,15 +58,17 @@ For information about configuring an existing workspace for CodeQL, [see the doc
 
 You can easily keep up-to-date with the latest changes to the [CodeQL standard libraries](https://github.com/github/codeql).
 
-If you're using the [CodeQL starter workspace](https://github.com/github/vscode-codeql-starter/), you can pull in the latest standard libraries by running: 
+If you're using the [CodeQL starter workspace](https://github.com/github/vscode-codeql-starter/), you can pull in the latest standard libraries by running:
+
 ```shell
-$ git pull 
-$ git submodule update --recursive
+git pull
+git submodule update --recursive
 ```
+
 in the starter workspace directory.
 
 If you're using your own clone of the CodeQL standard libraries, you can do a `git pull` from where you have the libraries checked out.
- 
+
 ## Quick start: Using CodeQL
 
 You can find all the commands contributed by the extension in the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**) by typing `CodeQL`, many of them are also accessible through the interface, and via keyboard shortcuts.
@@ -75,15 +77,13 @@ You can find all the commands contributed by the extension in the Command Palett
 
 While you can use the [CodeQL CLI to create your own databases](https://help.semmle.com/codeql/codeql-cli/procedures/create-codeql-database.html), the simplest way to start is by downloading a database from LGTM.com.
 
-1. Log in to LGTM.com.
-1. Find a project you're interested in and display the **Integrations** tab (for example, [Apache Kafka](https://lgtm.com/projects/g/apache/kafka/ci/)).
-1. Scroll to the **CodeQL databases for local analysis** section at the bottom of the page.
-1. Download databases for the languages that you want to explore.
-1. For each database that you want to import:
-    1. Go to the CodeQL Databases view in the sidebar. Hover over the Databases title bar and click the icon to **Choose Database from Archive**.
-    1. Browse to the zipped database that you downloaded from LGTM.
-
-Once you've added a CodeQL database, it is displayed in the Databases view.
+1. Open [LGTM.com](https://lgtm.com) in your browser.
+1. Search for a project you're interested in, for example [Apache Kafka](https://lgtm.com/projects/g/apache/kafka).
+1. Copy the link to that project, for example `https://lgtm.com/projects/g/apache/kafka`.
+1. In VS Code, open the Command Palette and choose the **CodeQL: Download Database from LGTM** command.
+1. Paste the link you copied earlier.
+1. Select the language for the database you want to download (only required if the project has databases for multiple languages).
+1. Once the CodeQL database has been imported, it is displayed in the Databases view.
 
 ### Running a query
 
@@ -91,7 +91,7 @@ The instructions below assume that you're using the CodeQL starter workspace, or
 
 1. Expand the `ql` folder and locate a query to run. The standard queries are grouped by target language and then type, for example: `ql/java/ql/src/Likely Bugs`.
 1. Open a query (`.ql`) file.
-3. Right-click in the query window and select **CodeQL: Run Query**. Alternatively, open the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**), type `Run Query`, then select **CodeQL: Run Query**.
+1. Right-click in the query window and select **CodeQL: Run Query**. Alternatively, open the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**), type `Run Query`, then select **CodeQL: Run Query**.
 
 The CodeQL extension runs the query on the current database using the CLI and reports progress in the bottom right corner of the application.
 When the results are ready, they're displayed in the CodeQL Query Results view. Use the dropdown menu to choose between different forms of result output.
@@ -102,10 +102,10 @@ If there are any problems running a query, a notification is displayed in the bo
 
 For more information about the CodeQL extension, [see the documentation](https://help.semmle.com/codeql/codeql-for-vscode.html). Otherwise, you could:
 
-* [Create a database for a different codebase](https://help.semmle.com/codeql/codeql-cli/procedures/create-codeql-database.html).
-* [Try out variant analysis](https://help.semmle.com/QL/learn-ql/ql-training.html).
-* [Learn more about CodeQL](https://help.semmle.com/QL/learn-ql/).
-* [Read how security researchers use CodeQL to find CVEs](https://securitylab.github.com/research).
+- [Create a database for a different codebase](https://help.semmle.com/codeql/codeql-cli/procedures/create-codeql-database.html).
+- [Try out variant analysis](https://help.semmle.com/QL/learn-ql/ql-training.html).
+- [Learn more about CodeQL](https://help.semmle.com/QL/learn-ql/).
+- [Read how security researchers use CodeQL to find CVEs](https://securitylab.github.com/research).
 
 ## License
 
