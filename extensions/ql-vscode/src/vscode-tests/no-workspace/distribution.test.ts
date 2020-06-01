@@ -51,10 +51,7 @@ describe("Releases API consumer", () => {
       "tag_name": "v3.1.2-pre"
     },
   ];
-  const unconstrainedVersionConstraint = {
-    description: "*",
-    isVersionCompatible: () => true
-  };
+  const unconstrainedVersionRange = new semver.Range("*");
 
   it("picking latest release: is based on version", async () => {
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
@@ -68,11 +65,11 @@ describe("Releases API consumer", () => {
 
     const consumer = new MockReleasesApiConsumer(owner, repo);
 
-    const latestRelease = await consumer.getLatestRelease(unconstrainedVersionConstraint);
+    const latestRelease = await consumer.getLatestRelease(unconstrainedVersionRange);
     expect(latestRelease.id).to.equal(2);
   });
 
-  it("picking latest release: obeys version constraints", async () => {
+  it("picking latest release: version satisfies version range", async () => {
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
       protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
         if (apiPath === `/repos/${owner}/${repo}/releases`) {
@@ -84,10 +81,7 @@ describe("Releases API consumer", () => {
 
     const consumer = new MockReleasesApiConsumer(owner, repo);
 
-    const latestRelease = await consumer.getLatestRelease({
-      description: "2.*.*",
-      isVersionCompatible: version => semver.satisfies(version, "2.x")
-    });
+    const latestRelease = await consumer.getLatestRelease(new semver.Range("2.*.*"));
     expect(latestRelease.id).to.equal(1);
   });
 
@@ -103,7 +97,7 @@ describe("Releases API consumer", () => {
 
     const consumer = new MockReleasesApiConsumer(owner, repo);
 
-    const latestRelease = await consumer.getLatestRelease(unconstrainedVersionConstraint, true);
+    const latestRelease = await consumer.getLatestRelease(unconstrainedVersionRange, true);
     expect(latestRelease.id).to.equal(4);
   });
 
@@ -141,7 +135,7 @@ describe("Releases API consumer", () => {
 
     const consumer = new MockReleasesApiConsumer(owner, repo);
 
-    const assets = (await consumer.getLatestRelease(unconstrainedVersionConstraint)).assets;
+    const assets = (await consumer.getLatestRelease(unconstrainedVersionRange)).assets;
 
     expect(assets.length).to.equal(expectedAssets.length);
     expectedAssets.map((expectedAsset, index) => {
