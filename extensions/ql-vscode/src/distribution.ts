@@ -322,16 +322,22 @@ class ExtensionSpecificDistributionManager {
   }
 
   private async getLatestRelease(): Promise<Release> {
-    const release = await this.createReleasesApiConsumer().getLatestRelease(this._versionRange, this._config.includePrerelease);
-    // FIXME: Look for platform-specific codeql distribution if available
-    release.assets = release.assets.filter(asset => asset.name === 'codeql.zip');
-    if (release.assets.length === 0) {
-      throw new Error("Release had no asset named codeql.zip");
-    }
-    else if (release.assets.length > 1) {
-      throw new Error("Release had more than one asset named codeql.zip");
-    }
-    return release;
+    return await this.createReleasesApiConsumer().getLatestRelease(
+      this._versionRange,
+      this._config.includePrerelease,
+      release => {
+        // FIXME: Look for platform-specific codeql distribution if available
+        // https://github.com/github/vscode-codeql/issues/417
+        const matchingAssets = release.assets.filter(asset => asset.name === 'codeql.zip');
+        if (matchingAssets.length !== 1) {
+          if (matchingAssets.length > 1) {
+            logger.log("WARNING: Ignoring a release with more than one asset named codeql.zip");
+          }
+          return false;
+        }
+        return true;
+      }
+    );
   }
 
   private createReleasesApiConsumer(): ReleasesApiConsumer {
@@ -391,7 +397,7 @@ export class ReleasesApiConsumer {
     this._repoName = repoName;
   }
 
-  public async getLatestRelease(versionRange: semver.Range, includePrerelease = false): Promise<Release> {
+  public async getLatestRelease(versionRange: semver.Range, includePrerelease = false, additionalCompatibilityCheck?: (release: GithubRelease) => boolean): Promise<Release> {
     const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases`;
     const allReleases: GithubRelease[] = await (await this.makeApiCall(apiPath)).json();
     const compatibleReleases = allReleases.filter(release => {
@@ -400,7 +406,11 @@ export class ReleasesApiConsumer {
       }
 
       const version = semver.parse(release.tag_name);
-      return version !== null && semver.satisfies(version, versionRange);
+      if (version === null || !semver.satisfies(version, versionRange)) {
+        return false;
+      }
+
+      return !additionalCompatibilityCheck || additionalCompatibilityCheck(release);
     });
     // Tag names must all be parsable to semvers due to the previous filtering step.
     const latestRelease = compatibleReleases.sort((a, b) => {
