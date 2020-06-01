@@ -26,6 +26,7 @@ dependencies:
   '@types/react': 16.9.23
   '@types/react-dom': 16.9.5
   '@types/sarif': 2.1.2
+  '@types/semver': 7.2.0
   '@types/sinon': 7.5.2
   '@types/sinon-chai': 3.2.3
   '@types/through2': 2.0.34
@@ -68,6 +69,7 @@ dependencies:
   react: 16.13.0
   react-dom: 16.13.0_react@16.13.0
   reflect-metadata: 0.1.13
+  semver: 7.3.2
   sinon: 9.0.1
   sinon-chai: 3.5.0_chai@4.2.0+sinon@9.0.1
   style-loader: 0.23.1
@@ -508,6 +510,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-TELZl5h48KaB6SFZqTuaMEw1hrGuusbBcH+yfMaaHdS2pwDr3RTH4CVN0LyY1kqSiDm9PPvAMx8FJ0LUZreOCQ==
+  /@types/semver/7.2.0:
+    dependencies:
+      '@types/node': 12.12.30
+    dev: false
+    resolution:
+      integrity: sha512-TbB0A8ACUWZt3Y6bQPstW9QNbhNeebdgLX4T/ZfkrswAfUzRiXrgd9seol+X379Wa589Pu4UEx9Uok0D4RjRCQ==
   /@types/sinon-chai/3.2.3:
     dependencies:
       '@types/chai': 4.2.11
@@ -6210,6 +6218,13 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==
+  /semver/7.3.2:
+    dev: false
+    engines:
+      node: '>=10'
+    hasBin: true
+    resolution:
+      integrity: sha512-OrOb32TeeambH6UrhtShmF7CRDqhL6/5XpPNp2DuRH6+9QLw/orhp72j87v8Qa1ScDkvrrBNpZcDejAirJmfXQ==
   /serialize-javascript/2.1.2:
     dev: false
     resolution:
@@ -7921,6 +7936,7 @@ packages:
       '@types/react': 16.9.23
       '@types/react-dom': 16.9.5
       '@types/sarif': 2.1.2
+      '@types/semver': 7.2.0
       '@types/sinon': 7.5.2
       '@types/sinon-chai': 3.2.3
       '@types/tmp': 0.1.0
@@ -7955,6 +7971,7 @@ packages:
       proxyquire: 2.1.3
       react: 16.13.0
       react-dom: 16.13.0_react@16.13.0
+      semver: 7.3.2
       sinon: 9.0.1
       sinon-chai: 3.5.0_chai@4.2.0+sinon@9.0.1
       style-loader: 0.23.1
@@ -7978,7 +7995,7 @@ packages:
     dev: false
     name: '@rush-temp/vscode-codeql'
     resolution:
-      integrity: sha512-ClyrIRqnMYMmVHtHvW8MvS4GrRSt/dXY3lxBpxSv3wSJ67pEvWKea+DJyeVN2zaHz1/7gAOWQHhwBz6O3lEq6w==
+      integrity: sha512-fFiBMYIWAoxYSQdmNOwJKO9IowYr66ZE3eX2ric645oK7mAPZQ+yX/jiOo71jzmtV0DvPMZAmFGAxmg7yHOHAQ==
       tarball: 'file:projects/vscode-codeql.tgz'
     version: 0.0.0
 registry: ''
@@ -8010,6 +8027,7 @@ specifiers:
   '@types/react': ^16.8.17
   '@types/react-dom': ^16.8.4
   '@types/sarif': ~2.1.2
+  '@types/semver': ~7.2.0
   '@types/sinon': ~7.5.2
   '@types/sinon-chai': ~3.2.3
   '@types/through2': ~2.0.34
@@ -8052,6 +8070,7 @@ specifiers:
   react: ^16.8.6
   react-dom: ^16.8.6
   reflect-metadata: ~0.1.13
+  semver: ~7.3.2
   sinon: ~9.0.0
   sinon-chai: ~3.5.0
   style-loader: ~0.23.1

@@ -182,7 +182,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     const result = await distributionManager.getDistribution();
     switch (result.kind) {
       case FindDistributionResultKind.CompatibleDistribution:
-        logger.log(`Found compatible version of CodeQL CLI (version ${result.version.rawString})`);
+        logger.log(`Found compatible version of CodeQL CLI (version ${result.version.raw})`);
         break;
       case FindDistributionResultKind.IncompatibleDistribution:
         helpers.showAndLogWarningMessage("The current version of the CodeQL CLI is incompatible with this extension.");

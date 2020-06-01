@@ -7,8 +7,8 @@ import * as sinon from 'sinon';
 import * as pq from "proxyquire";
 import "mocha";
 
-import { Version } from "../../cli-version";
-import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer, versionCompare } from "../../distribution";
+import { SemVer, compare } from "semver";
+import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer } from "../../distribution";
 
 const proxyquire = pq.noPreserveCache();
 chai.use(sinonChai);
@@ -86,7 +86,7 @@ describe("Releases API consumer", () => {
 
     const latestRelease = await consumer.getLatestRelease({
       description: "2.*.*",
-      isVersionCompatible: version => version.majorVersion === 2
+      isVersionCompatible: version => version.major === 2
     });
     expect(latestRelease.id).to.equal(1);
   });
@@ -153,37 +153,31 @@ describe("Releases API consumer", () => {
 });
 
 describe("Release version ordering", () => {
-  function createVersion(majorVersion: number, minorVersion: number, patchVersion: number, prereleaseVersion?: string, buildMetadata?: string): Version {
-    return {
-      buildMetadata,
-      majorVersion,
-      minorVersion,
-      patchVersion,
-      prereleaseVersion,
-      rawString: `${majorVersion}.${minorVersion}.${patchVersion}` +
-        prereleaseVersion ? `-${prereleaseVersion}` : "" +
-          buildMetadata ? `+${buildMetadata}` : ""
-    };
+  function createVersion(majorVersion: number, minorVersion: number, patchVersion: number, prereleaseVersion?: string, buildMetadata?: string): SemVer {
+    const versionString = `${majorVersion}.${minorVersion}.${patchVersion}` +
+      (prereleaseVersion ? `-${prereleaseVersion}` : "") +
+      (buildMetadata ? `+${buildMetadata}` : "");
+    return new SemVer(versionString);
   }
 
   it("major versions compare correctly", () => {
-    expect(versionCompare(createVersion(3, 0, 0), createVersion(2, 9, 9)) > 0).to.be.true;
+    expect(compare(createVersion(3, 0, 0), createVersion(2, 9, 9)) > 0).to.be.true;
   });
 
   it("minor versions compare correctly", () => {
-    expect(versionCompare(createVersion(2, 1, 0), createVersion(2, 0, 9)) > 0).to.be.true;
+    expect(compare(createVersion(2, 1, 0), createVersion(2, 0, 9)) > 0).to.be.true;
   });
 
   it("patch versions compare correctly", () => {
-    expect(versionCompare(createVersion(2, 1, 2), createVersion(2, 1, 1)) > 0).to.be.true;
+    expect(compare(createVersion(2, 1, 2), createVersion(2, 1, 1)) > 0).to.be.true;
   });
 
   it("prerelease versions compare correctly", () => {
-    expect(versionCompare(createVersion(2, 1, 0, "alpha.2"), createVersion(2, 1, 0, "alpha.1")) > 0).to.true;
+    expect(compare(createVersion(2, 1, 0, "alpha.2"), createVersion(2, 1, 0, "alpha.1")) > 0).to.true;
   });
 
   it("build metadata compares correctly", () => {
-    expect(versionCompare(createVersion(2, 1, 0, "alpha.1", "abcdef0"), createVersion(2, 1, 0, "alpha.1", "bcdef01"))).to.equal(0);
+    expect(compare(createVersion(2, 1, 0, "alpha.1", "abcdef0"), createVersion(2, 1, 0, "alpha.1", "bcdef01"))).to.equal(0);
   });
 });
 

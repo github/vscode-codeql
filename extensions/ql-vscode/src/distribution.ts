@@ -9,7 +9,8 @@ import { DistributionConfig } from "./config";
 import { InvocationRateLimiter, InvocationRateLimiterResultKind, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
 import * as helpers from "./helpers";
-import { getCodeQlCliVersion, tryParseVersionString, Version } from "./cli-version";
+import { getCodeQlCliVersion } from "./cli-version";
+import { SemVer, parse, compare } from 'semver';
 
 /**
  * distribution.ts
@@ -41,8 +42,8 @@ const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
  */
 export const DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT: VersionConstraint = {
   description: "2.*.*",
-  isVersionCompatible: (v: Version) => {
-    return v.majorVersion === 2 && v.minorVersion >= 0;
+  isVersionCompatible: (v: SemVer) => {
+    return v.major === 2 && v.minor >= 0;
   }
 };
 
@@ -75,14 +76,14 @@ export class DistributionManager implements DistributionProvider {
       };
     }
     const version = await getCodeQlCliVersion(codeQlPath, logger);
-    if (version !== undefined && !this._versionConstraint.isVersionCompatible(version)) {
+    if (version !== null && !this._versionConstraint.isVersionCompatible(version)) {
       return {
         codeQlPath,
         kind: FindDistributionResultKind.IncompatibleDistribution,
         version,
       };
     }
-    if (version === undefined) {
+    if (version === null) {
       return {
         codeQlPath,
         kind: FindDistributionResultKind.UnknownCompatibilityDistribution,
@@ -403,21 +404,18 @@ export class ReleasesApiConsumer {
         return false;
       }
 
-      const version = tryParseVersionString(release.tag_name);
-      if (version === undefined || !versionConstraint.isVersionCompatible(version)) {
+      const version = parse(release.tag_name);
+      if (version === null || !versionConstraint.isVersionCompatible(version)) {
         return false;
       }
 
       return true;
     });
-    // tryParseVersionString must succeed due to the previous filtering step
-    const latestRelease = compatibleReleases.sort((a, b) => {
-      const versionComparison = versionCompare(tryParseVersionString(b.tag_name)!, tryParseVersionString(a.tag_name)!);
-      if (versionComparison === 0) {
-        return b.created_at.localeCompare(a.created_at);
-      }
-      return versionComparison;
-    })[0];
+
+    const sortedReleases = compatibleReleases.sort((a, b) =>
+      compare(b.tag_name, a.tag_name)
+      || b.created_at.localeCompare(a.created_at));
+    const latestRelease = sortedReleases[0];
     if (latestRelease === undefined) {
       throw new Error("No compatible CodeQL CLI releases were found. " +
         "Please check that the CodeQL extension is up to date.");
@@ -516,29 +514,6 @@ export async function extractZipArchive(archivePath: string, outPath: string): P
   }));
 }
 
-/**
- * Comparison of semantic versions.
- *
- * Returns a positive number if a is greater than b.
- * Returns 0 if a equals b.
- * Returns a negative number if a is less than b.
- */
-export function versionCompare(a: Version, b: Version): number {
-  if (a.majorVersion !== b.majorVersion) {
-    return a.majorVersion - b.majorVersion;
-  }
-  if (a.minorVersion !== b.minorVersion) {
-    return a.minorVersion - b.minorVersion;
-  }
-  if (a.patchVersion !== b.patchVersion) {
-    return a.patchVersion - b.patchVersion;
-  }
-  if (a.prereleaseVersion !== undefined && b.prereleaseVersion !== undefined) {
-    return a.prereleaseVersion.localeCompare(b.prereleaseVersion);
-  }
-  return 0;
-}
-
 function codeQlLauncherName(): string {
   return (os.platform() === "win32") ? "codeql.exe" : "codeql";
 }
@@ -571,7 +546,7 @@ export type FindDistributionResult =
 interface CompatibleDistributionResult {
   codeQlPath: string;
   kind: FindDistributionResultKind.CompatibleDistribution;
-  version: Version;
+  version: SemVer;
 }
 
 interface UnknownCompatibilityDistributionResult {
@@ -582,7 +557,7 @@ interface UnknownCompatibilityDistributionResult {
 interface IncompatibleDistributionResult {
   codeQlPath: string;
   kind: FindDistributionResultKind.IncompatibleDistribution;
-  version: Version;
+  version: SemVer;
 }
 
 interface NoDistributionResult {
@@ -769,7 +744,7 @@ export interface GithubReleaseAsset {
 
 interface VersionConstraint {
   description: string;
-  isVersionCompatible(version: Version): boolean;
+  isVersionCompatible(version: SemVer): boolean;
 }
 
 export class GithubApiError extends Error {
