@@ -64,28 +64,47 @@ export class DistributionManager implements DistributionProvider {
    * Look up a CodeQL launcher binary.
    */
   public async getDistribution(): Promise<FindDistributionResult> {
-    const codeQlPath = await this.getCodeQlPathWithoutVersionCheck();
-    if (codeQlPath === undefined) {
+    const distribution = await this.getDistributionWithoutVersionCheck();
+    if (distribution === undefined) {
       return {
         kind: FindDistributionResultKind.NoDistribution,
       };
     }
-    const version = await getCodeQlCliVersion(codeQlPath, logger);
+    const version = await getCodeQlCliVersion(distribution.codeQlPath, logger);
     if (version === undefined) {
       return {
-        codeQlPath,
+        distribution,
         kind: FindDistributionResultKind.UnknownCompatibilityDistribution,
       };
     }
-    if (!semver.satisfies(version, this._versionRange)) {
+
+    /**
+     * Specifies whether prerelease versions of the CodeQL CLI should be accepted.
+     * 
+     * Suppose a user sets the includePrerelease config option, obtains a prerelease, then decides
+     * they no longer want a prerelease, so unsets the includePrerelease config option.
+     * Unsetting the includePrerelease config option should trigger an update check, and this
+     * update check should present them an update that returns them back to a non-prerelease
+     * version.
+     * 
+     * Therefore, we adopt the following:
+     * 
+     * - If the user is managing their own CLI, they can use a prerelease without specifying the
+     * includePrerelease option.
+     * - If the user is using an extension-managed CLI, then prereleases are only accepted when the
+     * includePrerelease config option is set.
+     */
+    const includePrerelease = distribution.kind !== DistributionKind.ExtensionManaged || this._config.includePrerelease;
+
+    if (!semver.satisfies(version, this._versionRange, { includePrerelease })) {
       return {
-        codeQlPath,
+        distribution,
         kind: FindDistributionResultKind.IncompatibleDistribution,
         version,
       };
     }
     return {
-      codeQlPath,
+      distribution,
       kind: FindDistributionResultKind.CompatibleDistribution,
       version
     };
@@ -96,10 +115,18 @@ export class DistributionManager implements DistributionProvider {
     return result.kind !== FindDistributionResultKind.NoDistribution;
   }
 
+  public async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
+    const distribution = await this.getDistributionWithoutVersionCheck();
+    if (distribution === undefined) {
+      return undefined;
+    }
+    return distribution.codeQlPath;
+  }
+
   /**
    * Returns the path to a possibly-compatible CodeQL launcher binary, or undefined if a binary not be found.
    */
-  public async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
+  async getDistributionWithoutVersionCheck(): Promise<Distribution | undefined> {
     // Check config setting, then extension specific distribution, then PATH.
     if (this._config.customCodeQlPath) {
       if (!await fs.pathExists(this._config.customCodeQlPath)) {
@@ -117,19 +144,28 @@ export class DistributionManager implements DistributionProvider {
       ) {
         warnDeprecatedLauncher();
       }
-      return this._config.customCodeQlPath;
+      return {
+        codeQlPath: this._config.customCodeQlPath,
+        kind: DistributionKind.CustomPathConfig
+      };
     }
 
     const extensionSpecificCodeQlPath = await this._extensionSpecificDistributionManager.getCodeQlPathWithoutVersionCheck();
     if (extensionSpecificCodeQlPath !== undefined) {
-      return extensionSpecificCodeQlPath;
+      return {
+        codeQlPath: extensionSpecificCodeQlPath,
+        kind: DistributionKind.ExtensionManaged
+      };
     }
 
     if (process.env.PATH) {
       for (const searchDirectory of process.env.PATH.split(path.delimiter)) {
         const expectedLauncherPath = await getExecutableFromDirectory(searchDirectory);
         if (expectedLauncherPath) {
-          return expectedLauncherPath;
+          return {
+            codeQlPath: expectedLauncherPath,
+            kind: DistributionKind.PathEnvironmentVariable
+          };
         }
       }
       logger.log("INFO: Could not find CodeQL on path.");
@@ -146,9 +182,9 @@ export class DistributionManager implements DistributionProvider {
    */
   public async checkForUpdatesToExtensionManagedDistribution(
     minSecondsSinceLastUpdateCheck: number): Promise<DistributionUpdateCheckResult> {
-    const codeQlPath = await this.getCodeQlPathWithoutVersionCheck();
+    const distribution = await this.getDistributionWithoutVersionCheck();
     const extensionManagedCodeQlPath = await this._extensionSpecificDistributionManager.getCodeQlPathWithoutVersionCheck();
-    if (codeQlPath !== undefined && codeQlPath !== extensionManagedCodeQlPath) {
+    if (distribution !== undefined && distribution.codeQlPath !== extensionManagedCodeQlPath) {
       // A distribution is present but it isn't managed by the extension.
       return createInvalidLocationResult();
     }
@@ -406,7 +442,7 @@ export class ReleasesApiConsumer {
       }
 
       const version = semver.parse(release.tag_name);
-      if (version === null || !semver.satisfies(version, versionRange)) {
+      if (version === null || !semver.satisfies(version, versionRange, { includePrerelease })) {
         return false;
       }
 
@@ -534,6 +570,17 @@ function isRedirectStatusCode(statusCode: number): boolean {
  * Types and helper functions relating to those types.
  */
 
+export enum DistributionKind {
+  CustomPathConfig,
+  ExtensionManaged,
+  PathEnvironmentVariable
+}
+
+export interface Distribution {
+  codeQlPath: string;
+  kind: DistributionKind;
+}
+
 export enum FindDistributionResultKind {
   CompatibleDistribution,
   UnknownCompatibilityDistribution,
@@ -548,18 +595,18 @@ export type FindDistributionResult =
   | NoDistributionResult;
 
 interface CompatibleDistributionResult {
-  codeQlPath: string;
+  distribution: Distribution;
   kind: FindDistributionResultKind.CompatibleDistribution;
   version: semver.SemVer;
 }
 
 interface UnknownCompatibilityDistributionResult {
-  codeQlPath: string;
+  distribution: Distribution;
   kind: FindDistributionResultKind.UnknownCompatibilityDistribution;
 }
 
 interface IncompatibleDistributionResult {
-  codeQlPath: string;
+  distribution: Distribution;
   kind: FindDistributionResultKind.IncompatibleDistribution;
   version: semver.SemVer;
 }
