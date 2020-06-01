@@ -2,6 +2,7 @@ import * as fetch from "node-fetch";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
+import * as semver from "semver";
 import * as unzipper from "unzipper";
 import * as url from "url";
 import { ExtensionContext, Event } from "vscode";
@@ -9,7 +10,7 @@ import { DistributionConfig } from "./config";
 import { InvocationRateLimiter, InvocationRateLimiterResultKind, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
 import * as helpers from "./helpers";
-import { getCodeQlCliVersion, tryParseVersionString, Version } from "./cli-version";
+import { getCodeQlCliVersion } from "./cli-version";
 
 /**
  * distribution.ts
@@ -35,16 +36,11 @@ const DEFAULT_DISTRIBUTION_OWNER_NAME = "github";
 const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
 
 /**
- * Version constraint for the CLI.
+ * Range of versions of the CLI that are compatible with the extension.
  *
  * This applies to both extension-managed and CLI distributions.
  */
-export const DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT: VersionConstraint = {
-  description: "2.*.*",
-  isVersionCompatible: (v: Version) => {
-    return v.majorVersion === 2 && v.minorVersion >= 0;
-  }
-};
+export const DEFAULT_DISTRIBUTION_VERSION_RANGE: semver.Range = new semver.Range("2.x");
 
 export interface DistributionProvider {
   getCodeQlPathWithoutVersionCheck(): Promise<string | undefined>;
@@ -52,16 +48,16 @@ export interface DistributionProvider {
 }
 
 export class DistributionManager implements DistributionProvider {
-  constructor(extensionContext: ExtensionContext, config: DistributionConfig, versionConstraint: VersionConstraint) {
+  constructor(extensionContext: ExtensionContext, config: DistributionConfig, versionRange: semver.Range) {
     this._config = config;
-    this._extensionSpecificDistributionManager = new ExtensionSpecificDistributionManager(extensionContext, config, versionConstraint);
+    this._extensionSpecificDistributionManager = new ExtensionSpecificDistributionManager(extensionContext, config, versionRange);
     this._onDidChangeDistribution = config.onDidChangeDistributionConfiguration;
     this._updateCheckRateLimiter = new InvocationRateLimiter(
       extensionContext,
       "extensionSpecificDistributionUpdateCheck",
       () => this._extensionSpecificDistributionManager.checkForUpdatesToDistribution()
     );
-    this._versionConstraint = versionConstraint;
+    this._versionRange = versionRange;
   }
 
   /**
@@ -75,17 +71,17 @@ export class DistributionManager implements DistributionProvider {
       };
     }
     const version = await getCodeQlCliVersion(codeQlPath, logger);
-    if (version !== undefined && !this._versionConstraint.isVersionCompatible(version)) {
-      return {
-        codeQlPath,
-        kind: FindDistributionResultKind.IncompatibleDistribution,
-        version,
-      };
-    }
     if (version === undefined) {
       return {
         codeQlPath,
         kind: FindDistributionResultKind.UnknownCompatibilityDistribution,
+      };
+    }
+    if (!semver.satisfies(version, this._versionRange)) {
+      return {
+        codeQlPath,
+        kind: FindDistributionResultKind.IncompatibleDistribution,
+        version,
       };
     }
     return {
@@ -198,14 +194,14 @@ export class DistributionManager implements DistributionProvider {
   private readonly _extensionSpecificDistributionManager: ExtensionSpecificDistributionManager;
   private readonly _updateCheckRateLimiter: InvocationRateLimiter<DistributionUpdateCheckResult>;
   private readonly _onDidChangeDistribution: Event<void> | undefined;
-  private readonly _versionConstraint: VersionConstraint;
+  private readonly _versionRange: semver.Range;
 }
 
 class ExtensionSpecificDistributionManager {
-  constructor(extensionContext: ExtensionContext, config: DistributionConfig, versionConstraint: VersionConstraint) {
+  constructor(extensionContext: ExtensionContext, config: DistributionConfig, versionRange: semver.Range) {
     this._extensionContext = extensionContext;
     this._config = config;
-    this._versionConstraint = versionConstraint;
+    this._versionRange = versionRange;
   }
 
   public async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
@@ -326,16 +322,22 @@ class ExtensionSpecificDistributionManager {
   }
 
   private async getLatestRelease(): Promise<Release> {
-    const release = await this.createReleasesApiConsumer().getLatestRelease(this._versionConstraint, this._config.includePrerelease);
-    // FIXME: Look for platform-specific codeql distribution if available
-    release.assets = release.assets.filter(asset => asset.name === 'codeql.zip');
-    if (release.assets.length === 0) {
-      throw new Error("Release had no asset named codeql.zip");
-    }
-    else if (release.assets.length > 1) {
-      throw new Error("Release had more than one asset named codeql.zip");
-    }
-    return release;
+    return await this.createReleasesApiConsumer().getLatestRelease(
+      this._versionRange,
+      this._config.includePrerelease,
+      release => {
+        // FIXME: Look for platform-specific codeql distribution if available
+        // https://github.com/github/vscode-codeql/issues/417
+        const matchingAssets = release.assets.filter(asset => asset.name === 'codeql.zip');
+        if (matchingAssets.length !== 1) {
+          if (matchingAssets.length > 1) {
+            logger.log("WARNING: Ignoring a release with more than one asset named codeql.zip");
+          }
+          return false;
+        }
+        return true;
+      }
+    );
   }
 
   private createReleasesApiConsumer(): ReleasesApiConsumer {
@@ -374,7 +376,7 @@ class ExtensionSpecificDistributionManager {
 
   private readonly _config: DistributionConfig;
   private readonly _extensionContext: ExtensionContext;
-  private readonly _versionConstraint: VersionConstraint;
+  private readonly _versionRange: semver.Range;
 
   private static readonly _currentDistributionFolderBaseName = "distribution";
   private static readonly _currentDistributionFolderIndexStateKey = "distributionFolderIndex";
@@ -395,7 +397,7 @@ export class ReleasesApiConsumer {
     this._repoName = repoName;
   }
 
-  public async getLatestRelease(versionConstraint: VersionConstraint, includePrerelease = false): Promise<Release> {
+  public async getLatestRelease(versionRange: semver.Range, includePrerelease = false, additionalCompatibilityCheck?: (release: GithubRelease) => boolean): Promise<Release> {
     const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases`;
     const allReleases: GithubRelease[] = await (await this.makeApiCall(apiPath)).json();
     const compatibleReleases = allReleases.filter(release => {
@@ -403,20 +405,20 @@ export class ReleasesApiConsumer {
         return false;
       }
 
-      const version = tryParseVersionString(release.tag_name);
-      if (version === undefined || !versionConstraint.isVersionCompatible(version)) {
+      const version = semver.parse(release.tag_name);
+      if (version === null || !semver.satisfies(version, versionRange)) {
         return false;
       }
 
-      return true;
+      return !additionalCompatibilityCheck || additionalCompatibilityCheck(release);
     });
-    // tryParseVersionString must succeed due to the previous filtering step
+    // Tag names must all be parsable to semvers due to the previous filtering step.
     const latestRelease = compatibleReleases.sort((a, b) => {
-      const versionComparison = versionCompare(tryParseVersionString(b.tag_name)!, tryParseVersionString(a.tag_name)!);
-      if (versionComparison === 0) {
-        return b.created_at.localeCompare(a.created_at);
+      const versionComparison = semver.compare(semver.parse(b.tag_name)!, semver.parse(a.tag_name)!);
+      if (versionComparison !== 0) {
+        return versionComparison;
       }
-      return versionComparison;
+      return b.created_at.localeCompare(a.created_at, "en-US");
     })[0];
     if (latestRelease === undefined) {
       throw new Error("No compatible CodeQL CLI releases were found. " +
@@ -516,29 +518,6 @@ export async function extractZipArchive(archivePath: string, outPath: string): P
   }));
 }
 
-/**
- * Comparison of semantic versions.
- *
- * Returns a positive number if a is greater than b.
- * Returns 0 if a equals b.
- * Returns a negative number if a is less than b.
- */
-export function versionCompare(a: Version, b: Version): number {
-  if (a.majorVersion !== b.majorVersion) {
-    return a.majorVersion - b.majorVersion;
-  }
-  if (a.minorVersion !== b.minorVersion) {
-    return a.minorVersion - b.minorVersion;
-  }
-  if (a.patchVersion !== b.patchVersion) {
-    return a.patchVersion - b.patchVersion;
-  }
-  if (a.prereleaseVersion !== undefined && b.prereleaseVersion !== undefined) {
-    return a.prereleaseVersion.localeCompare(b.prereleaseVersion);
-  }
-  return 0;
-}
-
 function codeQlLauncherName(): string {
   return (os.platform() === "win32") ? "codeql.exe" : "codeql";
 }
@@ -571,7 +550,7 @@ export type FindDistributionResult =
 interface CompatibleDistributionResult {
   codeQlPath: string;
   kind: FindDistributionResultKind.CompatibleDistribution;
-  version: Version;
+  version: semver.SemVer;
 }
 
 interface UnknownCompatibilityDistributionResult {
@@ -582,7 +561,7 @@ interface UnknownCompatibilityDistributionResult {
 interface IncompatibleDistributionResult {
   codeQlPath: string;
   kind: FindDistributionResultKind.IncompatibleDistribution;
-  version: Version;
+  version: semver.SemVer;
 }
 
 interface NoDistributionResult {
@@ -722,7 +701,7 @@ export interface GithubRelease {
   assets: GithubReleaseAsset[];
 
   /**
-   * The creation date of the release on GitHub.
+   * The creation date of the release on GitHub, in ISO 8601 format.
    */
   created_at: string;
 
@@ -765,11 +744,6 @@ export interface GithubReleaseAsset {
    * The size of the asset in bytes.
    */
   size: number;
-}
-
-interface VersionConstraint {
-  description: string;
-  isVersionCompatible(version: Version): boolean;
 }
 
 export class GithubApiError extends Error {

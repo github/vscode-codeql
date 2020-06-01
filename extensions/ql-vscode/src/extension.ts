@@ -8,7 +8,7 @@ import * as languageSupport from './languageSupport';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
 import { TemplateQueryDefinitionProvider, TemplateQueryReferenceProvider } from './definitions';
-import { DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT, DistributionManager, DistributionUpdateCheckResultKind, FindDistributionResult, FindDistributionResultKind, GithubApiError, GithubRateLimitedError } from './distribution';
+import { DEFAULT_DISTRIBUTION_VERSION_RANGE, DistributionManager, DistributionUpdateCheckResultKind, FindDistributionResult, FindDistributionResultKind, GithubApiError, GithubRateLimitedError } from './distribution';
 import * as helpers from './helpers';
 import { assertNever } from './helpers-pure';
 import { spawnIdeServer } from './ide-server';
@@ -83,7 +83,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
   const distributionConfigListener = new DistributionConfigListener();
   ctx.subscriptions.push(distributionConfigListener);
-  const distributionManager = new DistributionManager(ctx, distributionConfigListener, DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT);
+  const distributionManager = new DistributionManager(ctx, distributionConfigListener, DEFAULT_DISTRIBUTION_VERSION_RANGE);
 
   const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
 
@@ -182,7 +182,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     const result = await distributionManager.getDistribution();
     switch (result.kind) {
       case FindDistributionResultKind.CompatibleDistribution:
-        logger.log(`Found compatible version of CodeQL CLI (version ${result.version.rawString})`);
+        logger.log(`Found compatible version of CodeQL CLI (version ${result.version.raw})`);
         break;
       case FindDistributionResultKind.IncompatibleDistribution:
         helpers.showAndLogWarningMessage("The current version of the CodeQL CLI is incompatible with this extension.");
