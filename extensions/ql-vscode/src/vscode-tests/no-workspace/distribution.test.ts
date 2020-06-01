@@ -35,7 +35,11 @@ describe("Releases API consumer", () => {
       "tag_name": "v3.1.1"
     },
     {
-      "assets": [],
+      "assets": [{
+        id: 1,
+        name: "exampleAsset.txt",
+        size: 1
+      }],
       "created_at": "2019-09-05T00:00:00Z",
       "id": 3,
       "name": "",
@@ -83,6 +87,26 @@ describe("Releases API consumer", () => {
 
     const latestRelease = await consumer.getLatestRelease(new semver.Range("2.*.*"));
     expect(latestRelease.id).to.equal(1);
+  });
+
+  it("picking latest release: release passes additional compatibility test if additional compatibility test specified", async () => {
+    class MockReleasesApiConsumer extends ReleasesApiConsumer {
+      protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
+        if (apiPath === `/repos/${owner}/${repo}/releases`) {
+          return Promise.resolve(new fetch.Response(JSON.stringify(sampleReleaseResponse)));
+        }
+        return Promise.reject(new Error(`Unknown API path: ${apiPath}`));
+      }
+    }
+
+    const consumer = new MockReleasesApiConsumer(owner, repo);
+
+    const latestRelease = await consumer.getLatestRelease(
+      new semver.Range("2.*.*"),
+      true,
+      release => release.assets.some(asset => asset.name === "exampleAsset.txt")
+    );
+    expect(latestRelease.id).to.equal(3);
   });
 
   it("picking latest release: includes prereleases when option set", async () => {
