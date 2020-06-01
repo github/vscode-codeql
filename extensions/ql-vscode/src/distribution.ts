@@ -2,6 +2,7 @@ import * as fetch from "node-fetch";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
+import * as semver from "semver";
 import * as unzipper from "unzipper";
 import * as url from "url";
 import { ExtensionContext, Event } from "vscode";
@@ -9,7 +10,7 @@ import { DistributionConfig } from "./config";
 import { InvocationRateLimiter, InvocationRateLimiterResultKind, showAndLogErrorMessage } from "./helpers";
 import { logger } from "./logging";
 import * as helpers from "./helpers";
-import { getCodeQlCliVersion, tryParseVersionString, Version } from "./cli-version";
+import { getCodeQlCliVersion } from "./cli-version";
 
 /**
  * distribution.ts
@@ -41,9 +42,7 @@ const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
  */
 export const DEFAULT_DISTRIBUTION_VERSION_CONSTRAINT: VersionConstraint = {
   description: "2.*.*",
-  isVersionCompatible: (v: Version) => {
-    return v.majorVersion === 2 && v.minorVersion >= 0;
-  }
+  isVersionCompatible: (v: semver.SemVer) => semver.satisfies(v, "2.x")
 };
 
 export interface DistributionProvider {
@@ -403,20 +402,16 @@ export class ReleasesApiConsumer {
         return false;
       }
 
-      const version = tryParseVersionString(release.tag_name);
-      if (version === undefined || !versionConstraint.isVersionCompatible(version)) {
-        return false;
-      }
-
-      return true;
+      const version = semver.parse(release.tag_name);
+      return version !== null && versionConstraint.isVersionCompatible(version);
     });
-    // tryParseVersionString must succeed due to the previous filtering step
+    // Tag names must all be parsable to semvers due to the previous filtering step.
     const latestRelease = compatibleReleases.sort((a, b) => {
-      const versionComparison = versionCompare(tryParseVersionString(b.tag_name)!, tryParseVersionString(a.tag_name)!);
-      if (versionComparison === 0) {
-        return b.created_at.localeCompare(a.created_at);
+      const versionComparison = semver.compare(semver.parse(b.tag_name)!, semver.parse(a.tag_name)!);
+      if (versionComparison !== 0) {
+        return versionComparison;
       }
-      return versionComparison;
+      return b.created_at.localeCompare(a.created_at, "en-US");
     })[0];
     if (latestRelease === undefined) {
       throw new Error("No compatible CodeQL CLI releases were found. " +
@@ -516,29 +511,6 @@ export async function extractZipArchive(archivePath: string, outPath: string): P
   }));
 }
 
-/**
- * Comparison of semantic versions.
- *
- * Returns a positive number if a is greater than b.
- * Returns 0 if a equals b.
- * Returns a negative number if a is less than b.
- */
-export function versionCompare(a: Version, b: Version): number {
-  if (a.majorVersion !== b.majorVersion) {
-    return a.majorVersion - b.majorVersion;
-  }
-  if (a.minorVersion !== b.minorVersion) {
-    return a.minorVersion - b.minorVersion;
-  }
-  if (a.patchVersion !== b.patchVersion) {
-    return a.patchVersion - b.patchVersion;
-  }
-  if (a.prereleaseVersion !== undefined && b.prereleaseVersion !== undefined) {
-    return a.prereleaseVersion.localeCompare(b.prereleaseVersion);
-  }
-  return 0;
-}
-
 function codeQlLauncherName(): string {
   return (os.platform() === "win32") ? "codeql.exe" : "codeql";
 }
@@ -571,7 +543,7 @@ export type FindDistributionResult =
 interface CompatibleDistributionResult {
   codeQlPath: string;
   kind: FindDistributionResultKind.CompatibleDistribution;
-  version: Version;
+  version: semver.SemVer;
 }
 
 interface UnknownCompatibilityDistributionResult {
@@ -582,7 +554,7 @@ interface UnknownCompatibilityDistributionResult {
 interface IncompatibleDistributionResult {
   codeQlPath: string;
   kind: FindDistributionResultKind.IncompatibleDistribution;
-  version: Version;
+  version: semver.SemVer;
 }
 
 interface NoDistributionResult {
@@ -722,7 +694,7 @@ export interface GithubRelease {
   assets: GithubReleaseAsset[];
 
   /**
-   * The creation date of the release on GitHub.
+   * The creation date of the release on GitHub, in ISO 8601 format.
    */
   created_at: string;
 
@@ -769,7 +741,7 @@ export interface GithubReleaseAsset {
 
 interface VersionConstraint {
   description: string;
-  isVersionCompatible(version: Version): boolean;
+  isVersionCompatible(version: semver.SemVer): boolean;
 }
 
 export class GithubApiError extends Error {
