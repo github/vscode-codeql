@@ -26,7 +26,6 @@ dependencies:
   '@types/react': 16.9.23
   '@types/react-dom': 16.9.5
   '@types/sarif': 2.1.2
-  '@types/semver': 7.2.0
   '@types/sinon': 7.5.2
   '@types/sinon-chai': 3.2.3
   '@types/through2': 2.0.34
@@ -69,7 +68,6 @@ dependencies:
   react: 16.13.0
   react-dom: 16.13.0_react@16.13.0
   reflect-metadata: 0.1.13
-  semver: 7.3.2
   sinon: 9.0.1
   sinon-chai: 3.5.0_chai@4.2.0+sinon@9.0.1
   style-loader: 0.23.1
@@ -510,12 +508,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-TELZl5h48KaB6SFZqTuaMEw1hrGuusbBcH+yfMaaHdS2pwDr3RTH4CVN0LyY1kqSiDm9PPvAMx8FJ0LUZreOCQ==
-  /@types/semver/7.2.0:
-    dependencies:
-      '@types/node': 12.12.30
-    dev: false
-    resolution:
-      integrity: sha512-TbB0A8ACUWZt3Y6bQPstW9QNbhNeebdgLX4T/ZfkrswAfUzRiXrgd9seol+X379Wa589Pu4UEx9Uok0D4RjRCQ==
   /@types/sinon-chai/3.2.3:
     dependencies:
       '@types/chai': 4.2.11
@@ -6218,13 +6210,6 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==
-  /semver/7.3.2:
-    dev: false
-    engines:
-      node: '>=10'
-    hasBin: true
-    resolution:
-      integrity: sha512-OrOb32TeeambH6UrhtShmF7CRDqhL6/5XpPNp2DuRH6+9QLw/orhp72j87v8Qa1ScDkvrrBNpZcDejAirJmfXQ==
   /serialize-javascript/2.1.2:
     dev: false
     resolution:
@@ -7851,7 +7836,7 @@ packages:
     peerDependencies:
       glob: '*'
     resolution:
-      integrity: sha512-14DvfY6Fj3HXp2/CNJ2zNh9MA8zPw9mUcr8WqkSsYvJow7JMcIlJ//OOONwpoSWtfrk1bk6Cin7jj9H79ItHQQ==
+      integrity: sha512-NkoIMaJdASYX4NjcB+nsEk/8Ff/2RLvHwL0efNOny3no6aNuJ3EkpNK0ZdX7HQdmTdY3IJPmjoJ3Rn4pkbxgdA==
       tarball: 'file:projects/build-tasks.tgz'
     version: 0.0.0
   'file:projects/semmle-bqrs.tgz_typescript@3.8.3':
@@ -7866,7 +7851,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-24GdnvMbGfQIWMfgDhift+kYJDnG7dX03NrpX4ajZ2rckteysvq2/K7XI1OXGvUuqrt3m0/+GRDHpSI9XKDJJA==
+      integrity: sha512-lE3FBYrOVF1JH0ZqvF4YA+bed3JPWYucsnFe+XL140a/YR19XD+TTHIfov7VpR9qdyWfARgvmR+gf2qsguXTKQ==
       tarball: 'file:projects/semmle-bqrs.tgz'
     version: 0.0.0
   'file:projects/semmle-io-node.tgz_typescript@3.8.3':
@@ -7881,7 +7866,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-Bj0ax/bASrHV7tamOuXZZdd3UOB4NBKdjdszIRaDvDRTu8RlEst+TVoUhkfy30qb2/6ePp3/juOJyyiBJN7u8Q==
+      integrity: sha512-MD9edC5HjrCfPmhktw6XmWotUmperj27/hDZiuMbuSlJ4jRKyiBtJ8Vk2Y4U41TrzsBlJfAwZW8tetPw5ujiLg==
       tarball: 'file:projects/semmle-io-node.tgz'
     version: 0.0.0
   'file:projects/semmle-io.tgz_typescript@3.8.3':
@@ -7895,7 +7880,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-NtyviDSevxbd+hj4J66LucOzo8LU2hJ1Jh0eHw0Qu3tRZPUT8HcQlseyy29AvZR8n8eppfEZiAm/JdiHfmRPMA==
+      integrity: sha512-ta1lLi1COIeFwpwH523cWheWx6OE8GTqguQmOA7G6CwRF41RYbbREf/4KlOLKO/uG2akhhl+3gcWY2c5/VDC/A==
       tarball: 'file:projects/semmle-io.tgz'
     version: 0.0.0
   'file:projects/semmle-vscode-utils.tgz':
@@ -7907,14 +7892,14 @@ packages:
     dev: false
     name: '@rush-temp/semmle-vscode-utils'
     resolution:
-      integrity: sha512-5y5r8SDoN9Fp44naC9gUe8rOexeckXg2T0h9QCJAIcEgnFqOxzRc6Rv9gbMUStFKNh+rFlvmYmgPAdg5QkfgUg==
+      integrity: sha512-Dbwt0/Wd0VNKkRZRjFQv3hmGy/UDt36HDtEDsNgZIcQACoY1j2+mJavpQ+ZzCg4Ftj06eHDVk+ptzUEd+8Ybzw==
       tarball: 'file:projects/semmle-vscode-utils.tgz'
     version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
     name: '@rush-temp/typescript-config'
     resolution:
-      integrity: sha512-XuUIySaNoooIduvehnlKYaHqZJmmQoCqB1RtKhNszjCYZaSSJAnKVucViWBf5oNLKSNP7NchrD7gcoBlQ3xYvw==
+      integrity: sha512-qJbtY2jvt6LKkmUt/seiYyXSEB6Oip/rW+SxofQEnpyplgIQv7whTZb6g5pwlSLGl8goTaQFm4NfazKhFmxXvQ==
       tarball: 'file:projects/typescript-config.tgz'
     version: 0.0.0
   'file:projects/vscode-codeql.tgz':
@@ -7936,7 +7921,6 @@ packages:
       '@types/react': 16.9.23
       '@types/react-dom': 16.9.5
       '@types/sarif': 2.1.2
-      '@types/semver': 7.2.0
       '@types/sinon': 7.5.2
       '@types/sinon-chai': 3.2.3
       '@types/tmp': 0.1.0
@@ -7971,7 +7955,6 @@ packages:
       proxyquire: 2.1.3
       react: 16.13.0
       react-dom: 16.13.0_react@16.13.0
-      semver: 7.3.2
       sinon: 9.0.1
       sinon-chai: 3.5.0_chai@4.2.0+sinon@9.0.1
       style-loader: 0.23.1
@@ -7995,7 +7978,7 @@ packages:
     dev: false
     name: '@rush-temp/vscode-codeql'
     resolution:
-      integrity: sha512-bU6tGSUD6TzMa6XDiDymvfY28xtDKp6uYPVCwiy7zdsl5NYUxph5Yua0Snoam7oytdYMa2HieTn8Lh6Hkb5P/A==
+      integrity: sha512-ClyrIRqnMYMmVHtHvW8MvS4GrRSt/dXY3lxBpxSv3wSJ67pEvWKea+DJyeVN2zaHz1/7gAOWQHhwBz6O3lEq6w==
       tarball: 'file:projects/vscode-codeql.tgz'
     version: 0.0.0
 registry: ''
@@ -8027,7 +8010,6 @@ specifiers:
   '@types/react': ^16.8.17
   '@types/react-dom': ^16.8.4
   '@types/sarif': ~2.1.2
-  '@types/semver': ~7.2.0
   '@types/sinon': ~7.5.2
   '@types/sinon-chai': ~3.2.3
   '@types/through2': ~2.0.34
@@ -8070,7 +8052,6 @@ specifiers:
   react: ^16.8.6
   react-dom: ^16.8.6
   reflect-metadata: ~0.1.13
-  semver: ~7.3.2
   sinon: ~9.0.0
   sinon-chai: ~3.5.0
   style-loader: ~0.23.1

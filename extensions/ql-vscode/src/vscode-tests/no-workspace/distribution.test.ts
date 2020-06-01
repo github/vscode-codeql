@@ -1,14 +1,14 @@
 import * as chai from "chai";
 import * as path from "path";
 import * as fetch from "node-fetch";
-import "chai/register-should";
-import * as semver from "semver";
-import * as sinonChai from "sinon-chai";
-import * as sinon from "sinon";
+import 'chai/register-should';
+import * as sinonChai from 'sinon-chai';
+import * as sinon from 'sinon';
 import * as pq from "proxyquire";
 import "mocha";
 
-import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer } from "../../distribution";
+import { Version } from "../../cli-version";
+import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer, versionCompare } from "../../distribution";
 
 const proxyquire = pq.noPreserveCache();
 chai.use(sinonChai);
@@ -35,11 +35,7 @@ describe("Releases API consumer", () => {
       "tag_name": "v3.1.1"
     },
     {
-      "assets": [{
-        id: 1,
-        name: "exampleAsset.txt",
-        size: 1
-      }],
+      "assets": [],
       "created_at": "2019-09-05T00:00:00Z",
       "id": 3,
       "name": "",
@@ -55,7 +51,10 @@ describe("Releases API consumer", () => {
       "tag_name": "v3.1.2-pre"
     },
   ];
-  const unconstrainedVersionRange = new semver.Range("*");
+  const unconstrainedVersionConstraint = {
+    description: "*",
+    isVersionCompatible: () => true
+  };
 
   it("picking latest release: is based on version", async () => {
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
@@ -69,11 +68,11 @@ describe("Releases API consumer", () => {
 
     const consumer = new MockReleasesApiConsumer(owner, repo);
 
-    const latestRelease = await consumer.getLatestRelease(unconstrainedVersionRange);
+    const latestRelease = await consumer.getLatestRelease(unconstrainedVersionConstraint);
     expect(latestRelease.id).to.equal(2);
   });
 
-  it("picking latest release: version satisfies version range", async () => {
+  it("picking latest release: obeys version constraints", async () => {
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
       protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
         if (apiPath === `/repos/${owner}/${repo}/releases`) {
@@ -85,28 +84,11 @@ describe("Releases API consumer", () => {
 
     const consumer = new MockReleasesApiConsumer(owner, repo);
 
-    const latestRelease = await consumer.getLatestRelease(new semver.Range("2.*.*"));
+    const latestRelease = await consumer.getLatestRelease({
+      description: "2.*.*",
+      isVersionCompatible: version => version.majorVersion === 2
+    });
     expect(latestRelease.id).to.equal(1);
-  });
-
-  it("picking latest release: release passes additional compatibility test if additional compatibility test specified", async () => {
-    class MockReleasesApiConsumer extends ReleasesApiConsumer {
-      protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
-        if (apiPath === `/repos/${owner}/${repo}/releases`) {
-          return Promise.resolve(new fetch.Response(JSON.stringify(sampleReleaseResponse)));
-        }
-        return Promise.reject(new Error(`Unknown API path: ${apiPath}`));
-      }
-    }
-
-    const consumer = new MockReleasesApiConsumer(owner, repo);
-
-    const latestRelease = await consumer.getLatestRelease(
-      new semver.Range("2.*.*"),
-      true,
-      release => release.assets.some(asset => asset.name === "exampleAsset.txt")
-    );
-    expect(latestRelease.id).to.equal(3);
   });
 
   it("picking latest release: includes prereleases when option set", async () => {
@@ -121,7 +103,7 @@ describe("Releases API consumer", () => {
 
     const consumer = new MockReleasesApiConsumer(owner, repo);
 
-    const latestRelease = await consumer.getLatestRelease(unconstrainedVersionRange, true);
+    const latestRelease = await consumer.getLatestRelease(unconstrainedVersionConstraint, true);
     expect(latestRelease.id).to.equal(4);
   });
 
@@ -159,7 +141,7 @@ describe("Releases API consumer", () => {
 
     const consumer = new MockReleasesApiConsumer(owner, repo);
 
-    const assets = (await consumer.getLatestRelease(unconstrainedVersionRange)).assets;
+    const assets = (await consumer.getLatestRelease(unconstrainedVersionConstraint)).assets;
 
     expect(assets.length).to.equal(expectedAssets.length);
     expectedAssets.map((expectedAsset, index) => {
@@ -167,6 +149,41 @@ describe("Releases API consumer", () => {
       expect(assets[index].name).to.equal(expectedAsset.name);
       expect(assets[index].size).to.equal(expectedAsset.size);
     });
+  });
+});
+
+describe("Release version ordering", () => {
+  function createVersion(majorVersion: number, minorVersion: number, patchVersion: number, prereleaseVersion?: string, buildMetadata?: string): Version {
+    return {
+      buildMetadata,
+      majorVersion,
+      minorVersion,
+      patchVersion,
+      prereleaseVersion,
+      rawString: `${majorVersion}.${minorVersion}.${patchVersion}` +
+        prereleaseVersion ? `-${prereleaseVersion}` : "" +
+          buildMetadata ? `+${buildMetadata}` : ""
+    };
+  }
+
+  it("major versions compare correctly", () => {
+    expect(versionCompare(createVersion(3, 0, 0), createVersion(2, 9, 9)) > 0).to.be.true;
+  });
+
+  it("minor versions compare correctly", () => {
+    expect(versionCompare(createVersion(2, 1, 0), createVersion(2, 0, 9)) > 0).to.be.true;
+  });
+
+  it("patch versions compare correctly", () => {
+    expect(versionCompare(createVersion(2, 1, 2), createVersion(2, 1, 1)) > 0).to.be.true;
+  });
+
+  it("prerelease versions compare correctly", () => {
+    expect(versionCompare(createVersion(2, 1, 0, "alpha.2"), createVersion(2, 1, 0, "alpha.1")) > 0).to.true;
+  });
+
+  it("build metadata compares correctly", () => {
+    expect(versionCompare(createVersion(2, 1, 0, "alpha.1", "abcdef0"), createVersion(2, 1, 0, "alpha.1", "bcdef01"))).to.equal(0);
   });
 });
 
