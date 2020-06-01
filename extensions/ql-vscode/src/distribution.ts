@@ -327,8 +327,13 @@ class ExtensionSpecificDistributionManager {
 
   private async getLatestRelease(): Promise<Release> {
     const release = await this.createReleasesApiConsumer().getLatestRelease(this._versionConstraint, this._config.includePrerelease);
-    if (release.assets.length !== 1) {
-      throw new Error("Release had an unexpected number of assets");
+    // FIXME: Look for platform-specific codeql distribution if available
+    release.assets = release.assets.filter(asset => asset.name === 'codeql.zip');
+    if (release.assets.length === 0) {
+      throw new Error("Release had no asset named codeql.zip");
+    }
+    else if (release.assets.length > 1) {
+      throw new Error("Release had more than one asset named codeql.zip");
     }
     return release;
   }
