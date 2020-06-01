@@ -1,14 +1,14 @@
 import * as chai from "chai";
 import * as path from "path";
 import * as fetch from "node-fetch";
-import 'chai/register-should';
-import * as sinonChai from 'sinon-chai';
-import * as sinon from 'sinon';
+import "chai/register-should";
+import * as semver from "semver";
+import * as sinonChai from "sinon-chai";
+import * as sinon from "sinon";
 import * as pq from "proxyquire";
 import "mocha";
 
-import { Version } from "../../cli-version";
-import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer, versionCompare } from "../../distribution";
+import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer } from "../../distribution";
 
 const proxyquire = pq.noPreserveCache();
 chai.use(sinonChai);
@@ -86,7 +86,7 @@ describe("Releases API consumer", () => {
 
     const latestRelease = await consumer.getLatestRelease({
       description: "2.*.*",
-      isVersionCompatible: version => version.majorVersion === 2
+      isVersionCompatible: version => semver.satisfies(version, "2.x")
     });
     expect(latestRelease.id).to.equal(1);
   });
@@ -149,41 +149,6 @@ describe("Releases API consumer", () => {
       expect(assets[index].name).to.equal(expectedAsset.name);
       expect(assets[index].size).to.equal(expectedAsset.size);
     });
-  });
-});
-
-describe("Release version ordering", () => {
-  function createVersion(majorVersion: number, minorVersion: number, patchVersion: number, prereleaseVersion?: string, buildMetadata?: string): Version {
-    return {
-      buildMetadata,
-      majorVersion,
-      minorVersion,
-      patchVersion,
-      prereleaseVersion,
-      rawString: `${majorVersion}.${minorVersion}.${patchVersion}` +
-        prereleaseVersion ? `-${prereleaseVersion}` : "" +
-          buildMetadata ? `+${buildMetadata}` : ""
-    };
-  }
-
-  it("major versions compare correctly", () => {
-    expect(versionCompare(createVersion(3, 0, 0), createVersion(2, 9, 9)) > 0).to.be.true;
-  });
-
-  it("minor versions compare correctly", () => {
-    expect(versionCompare(createVersion(2, 1, 0), createVersion(2, 0, 9)) > 0).to.be.true;
-  });
-
-  it("patch versions compare correctly", () => {
-    expect(versionCompare(createVersion(2, 1, 2), createVersion(2, 1, 1)) > 0).to.be.true;
-  });
-
-  it("prerelease versions compare correctly", () => {
-    expect(versionCompare(createVersion(2, 1, 0, "alpha.2"), createVersion(2, 1, 0, "alpha.1")) > 0).to.true;
-  });
-
-  it("build metadata compares correctly", () => {
-    expect(versionCompare(createVersion(2, 1, 0, "alpha.1", "abcdef0"), createVersion(2, 1, 0, "alpha.1", "bcdef01"))).to.equal(0);
   });
 });
 
