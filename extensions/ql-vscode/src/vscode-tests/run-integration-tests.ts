@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as os from 'os';
 import { runTests } from 'vscode-test';
 
 // A subset of the fields in TestOptions from vscode-test, which we
@@ -23,6 +24,11 @@ async function runTestsWithRetryOnSegfault(suite: Suite, tries: number): Promise
     } catch (err) {
       if (err === 'SIGSEGV') {
         console.error('Test runner segfaulted.');
+        if (t < tries - 1)
+          console.error('Retrying...');
+      }
+      else if (os.platform() === 'win32') {
+        console.error(`Test runner caught exception (${err})`);
         if (t < tries - 1)
           console.error('Retrying...');
       }
