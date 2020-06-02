@@ -362,10 +362,13 @@ class ExtensionSpecificDistributionManager {
         // FIXME: Look for platform-specific codeql distribution if available
         // https://github.com/github/vscode-codeql/issues/417
         const matchingAssets = release.assets.filter(asset => asset.name === 'codeql.zip');
-        if (matchingAssets.length !== 1) {
-          if (matchingAssets.length > 1) {
-            logger.log("WARNING: Ignoring a release with more than one asset named codeql.zip");
-          }
+        if (matchingAssets.length === 0) {
+          // For example, this could be a release with only platform-specific assets.
+          logger.log("INFO: Ignoring a release with no assets named codeql.zip");
+          return false;
+        }
+        if (matchingAssets.length > 1) {
+          logger.log("WARNING: Ignoring a release with more than one asset named codeql.zip");
           return false;
         }
         return true;
@@ -591,19 +594,25 @@ export type FindDistributionResult =
   | IncompatibleDistributionResult
   | NoDistributionResult;
 
-interface CompatibleDistributionResult {
+/**
+ * A result representing a distribution of the CodeQL CLI that may or may not be compatible with
+ * the extension.
+ */
+interface DistributionResult {
   distribution: Distribution;
+  kind: FindDistributionResultKind;
+}
+
+interface CompatibleDistributionResult extends DistributionResult {
   kind: FindDistributionResultKind.CompatibleDistribution;
   version: semver.SemVer;
 }
 
-interface UnknownCompatibilityDistributionResult {
-  distribution: Distribution;
+interface UnknownCompatibilityDistributionResult extends DistributionResult {
   kind: FindDistributionResultKind.UnknownCompatibilityDistribution;
 }
 
-interface IncompatibleDistributionResult {
-  distribution: Distribution;
+interface IncompatibleDistributionResult extends DistributionResult {
   kind: FindDistributionResultKind.IncompatibleDistribution;
   version: semver.SemVer;
 }
