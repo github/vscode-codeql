@@ -117,10 +117,7 @@ export class DistributionManager implements DistributionProvider {
 
   public async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
     const distribution = await this.getDistributionWithoutVersionCheck();
-    if (distribution === undefined) {
-      return undefined;
-    }
-    return distribution.codeQlPath;
+    return distribution?.codeQlPath;
   }
 
   /**
@@ -184,7 +181,7 @@ export class DistributionManager implements DistributionProvider {
     minSecondsSinceLastUpdateCheck: number): Promise<DistributionUpdateCheckResult> {
     const distribution = await this.getDistributionWithoutVersionCheck();
     const extensionManagedCodeQlPath = await this._extensionSpecificDistributionManager.getCodeQlPathWithoutVersionCheck();
-    if (distribution !== undefined && distribution.codeQlPath !== extensionManagedCodeQlPath) {
+    if (distribution?.codeQlPath !== extensionManagedCodeQlPath) {
       // A distribution is present but it isn't managed by the extension.
       return createInvalidLocationResult();
     }

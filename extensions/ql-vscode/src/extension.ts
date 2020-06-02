@@ -202,8 +202,8 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
             case DistributionKind.CustomPathConfig:
               return `Please update the \"CodeQL CLI Executable Path\" setting to point to a CLI in the version range ${codeQlVersionRange}.`;
             case DistributionKind.PathEnvironmentVariable:
-              return `Please update the CodeQL CLI on your PATH to a version in the range ${codeQlVersionRange}, or ` +
-                `set the \"CodeQL CLI Executable Path\" setting to the path of a CLI in the version range ${codeQlVersionRange}.`;
+              return `Please update the CodeQL CLI on your PATH to a version compatible with ${codeQlVersionRange}, or ` +
+                `set the \"CodeQL CLI Executable Path\" setting to the path of a CLI version compatible with ${codeQlVersionRange}.`;
           }
         })();
 
