@@ -1,6 +1,6 @@
 import * as sarif from 'sarif';
-import { ResolvableLocationValue } from 'semmle-bqrs';
-import { ParsedResultSets } from './adapt';
+import { ResolvableLocationValue, ColumnSchema } from 'semmle-bqrs';
+import { ResultRow, ParsedResultSets } from './adapt';
 
 /**
  * Only ever show this many results per run in interpreted results.
@@ -110,7 +110,7 @@ export type FromResultsViewMsg =
   | ResultViewLoaded
   | ChangePage;
 
-interface ViewSourceFileMsg {
+export interface ViewSourceFileMsg {
   t: 'viewSourceFile';
   loc: ResolvableLocationValue;
   databaseUri: string;
@@ -171,8 +171,60 @@ interface ChangeInterpretedResultsSortMsg {
   sortState?: InterpretedResultsSortState;
 }
 
-export interface CompareViewMessage {
-  t: 'change-compare';
+export type FromCompareViewMessage =
+  | CompareViewLoadedMessage
+  | ChangeCompareMessage
+  | ViewSourceFileMsg;
+
+interface CompareViewLoadedMessage {
+  t: 'compareViewLoaded';
+}
+
+interface ChangeCompareMessage {
+  t: 'changeCompare';
   newResultSetName: string;
   // TODO do we need to include the ids of the queries
 }
+
+export type ToCompareViewMessage = SetComparisonsMessage;
+
+export interface SetComparisonsMessage {
+  readonly t: "setComparisons";
+  readonly stats: {
+    fromQuery?: {
+      name: string;
+      status: string;
+      time: string;
+    };
+    toQuery?: {
+      name: string;
+      status: string;
+      time: string;
+    };
+  };
+  readonly columns: readonly ColumnSchema[];
+  readonly commonResultSetNames: string[];
+  readonly currentResultSetName: string;
+  readonly rows: QueryCompareResult;
+  readonly datebaseUri: string;
+}
+
+export enum DiffKind {
+  Add = 'Add',
+  Remove = 'Remove',
+  Change = 'Change'
+}
+
+/**
+ * from is the set of rows that have changes in the "from" query.
+ * to is the set of rows that have changes in the "to" query.
+ * They are in the same order, so element 1 in "from" corresponds to
+ * element 1 in "to".
+ *
+ * If an array element is null, that means that the element was removed
+ * (or added) in the comparison.
+ */
+export type QueryCompareResult = {
+  from: ResultRow[];
+  to: ResultRow[];
+};

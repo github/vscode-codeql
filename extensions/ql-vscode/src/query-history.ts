@@ -145,6 +145,10 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<CompletedQuery>
   refresh() {
     this._onDidChangeTreeData.fire(undefined);
   }
+
+  find(queryId: number): CompletedQuery | undefined {
+    return this.allHistory.find(query => query.query.queryID === queryId);
+  }
 }
 
 /**
@@ -344,6 +348,10 @@ export class QueryHistoryManager {
     this.treeDataProvider.push(item);
     this.updateTreeViewSelectionIfVisible();
     return item;
+  }
+
+  find(queryId: number): CompletedQuery | undefined {
+    return this.treeDataProvider.find(queryId);
   }
 
   /**

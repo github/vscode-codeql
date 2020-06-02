@@ -306,7 +306,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     ctx,
     queryHistoryConfigurationListener,
     async item => showResultsForCompletedQuery(item, WebviewReveal.Forced),
-    async (from: CompletedQuery, to: CompletedQuery) => showResultsForComparison(from, to, WebviewReveal.Forced),
+    async (from: CompletedQuery, to: CompletedQuery) => showResultsForComparison(from, to),
   );
   logger.log('Initializing results panel interface.');
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
@@ -319,8 +319,12 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
   logger.log('Initializing source archive filesystem provider.');
   archiveFilesystemProvider.activate(ctx);
 
-  async function showResultsForComparison(from: CompletedQuery, to: CompletedQuery, forceReveal: WebviewReveal): Promise<void> {
-    await cmpm.showResults(from, to, forceReveal);
+  async function showResultsForComparison(from: CompletedQuery, to: CompletedQuery): Promise<void> {
+    try {
+      await cmpm.showResults(from, to);
+    } catch (e) {
+      helpers.showAndLogErrorMessage(e.message);
+    }
   }
 
   async function showResultsForCompletedQuery(query: CompletedQuery, forceReveal: WebviewReveal): Promise<void> {

@@ -1,15 +1,30 @@
 import { DisposableObject } from "semmle-vscode-utils";
-import { WebviewPanel, ExtensionContext, window as Window, ViewColumn, Uri } from "vscode";
-import * as path from 'path';
+import {
+  WebviewPanel,
+  ExtensionContext,
+  window as Window,
+  ViewColumn,
+  Uri,
+} from "vscode";
+import * as path from "path";
 
 import { tmpDir } from "../run-queries";
 import { CompletedQuery } from "../query-results";
-import { CompareViewMessage } from "../interface-types";
+import {
+  FromCompareViewMessage,
+  ToCompareViewMessage,
+  QueryCompareResult,
+} from "../interface-types";
 import { Logger } from "../logging";
 import { CodeQLCliServer } from "../cli";
 import { DatabaseManager } from "../databases";
-import { getHtmlForWebview, WebviewReveal } from "../webview-utils";
-import { showAndLogErrorMessage } from "../helpers";
+import {
+  getHtmlForWebview,
+  jumpToLocation,
+} from "../webview-utils";
+import { adaptSchema, adaptBqrs, RawResultSet } from "../adapt";
+import { BQRSInfo } from "../bqrs-cli-types";
+import resultsDiff from "./resultsDiff";
 
 interface ComparePair {
   from: CompletedQuery;
@@ -19,6 +34,8 @@ interface ComparePair {
 export class CompareInterfaceManager extends DisposableObject {
   private comparePair: ComparePair | undefined;
   private panel: WebviewPanel | undefined;
+  private panelLoaded = false;
+  private panelLoadedCallBacks: (() => void)[] = [];
 
   constructor(
     public ctx: ExtensionContext,
@@ -29,10 +46,49 @@ export class CompareInterfaceManager extends DisposableObject {
     super();
   }
 
-  showResults(from: CompletedQuery, to: CompletedQuery, forceReveal = WebviewReveal.NotForced) {
+  async showResults(
+    from: CompletedQuery,
+    to: CompletedQuery,
+    selectedResultSetName?: string
+  ) {
     this.comparePair = { from, to };
-    if (forceReveal === WebviewReveal.Forced) {
-      this.getPanel().reveal(undefined, true);
+    this.getPanel().reveal(undefined, true);
+
+    await this.waitForPanelLoaded();
+    const [
+      commonResultSetNames,
+      currentResultSetName,
+      fromResultSet,
+      toResultSet,
+    ] = await this.findCommonResultSetNames(from, to, selectedResultSetName);
+    if (currentResultSetName) {
+      await this.postMessage({
+        t: "setComparisons",
+        stats: {
+          fromQuery: {
+            // since we split the description into several rows
+            // only run interpolation if the label is user-defined
+            // otherwise we will wind up with duplicated rows
+            name: from.options.label
+              ? from.interpolate(from.getLabel())
+              : from.queryName,
+            status: from.statusString,
+            time: from.time,
+          },
+          toQuery: {
+            name: to.options.label
+              ? to.interpolate(from.getLabel())
+              : to.queryName,
+            status: to.statusString,
+            time: to.time,
+          },
+        },
+        columns: fromResultSet.schema.columns,
+        commonResultSetNames,
+        currentResultSetName: currentResultSetName,
+        rows: this.compareResults(fromResultSet, toResultSet),
+        datebaseUri: to.database.databaseUri,
+      });
     }
   }
 
@@ -40,9 +96,9 @@ export class CompareInterfaceManager extends DisposableObject {
     if (this.panel == undefined) {
       const { ctx } = this;
       const panel = (this.panel = Window.createWebviewPanel(
-        "compareView", // internal name
-        "Compare CodeQL Query Results", // user-visible name
-        { viewColumn: ViewColumn.Beside, preserveFocus: true },
+        "compareView",
+        "Compare CodeQL Query Results",
+        { viewColumn: ViewColumn.Active, preserveFocus: true },
         {
           enableScripts: true,
           enableFindWidget: true,
@@ -54,7 +110,10 @@ export class CompareInterfaceManager extends DisposableObject {
         }
       ));
       this.panel.onDidDispose(
-        () => this.panel = undefined,
+        () => {
+          this.panel = undefined;
+          this.comparePair = undefined;
+        },
         null,
         ctx.subscriptions
       );
@@ -64,10 +123,14 @@ export class CompareInterfaceManager extends DisposableObject {
       );
 
       const stylesheetPathOnDisk = Uri.file(
-        ctx.asAbsolutePath("out/compareView.css")
+        ctx.asAbsolutePath("out/resultsView.css")
       );
 
-      panel.webview.html = getHtmlForWebview(panel.webview, scriptPathOnDisk, stylesheetPathOnDisk);
+      panel.webview.html = getHtmlForWebview(
+        panel.webview,
+        scriptPathOnDisk,
+        stylesheetPathOnDisk
+      );
       panel.webview.onDidReceiveMessage(
         async (e) => this.handleMsgFromView(e),
         undefined,
@@ -77,9 +140,103 @@ export class CompareInterfaceManager extends DisposableObject {
     return this.panel;
   }
 
-  private async handleMsgFromView(msg: CompareViewMessage): Promise<void> {
-    /** TODO */
-    showAndLogErrorMessage(JSON.stringify(msg));
-    showAndLogErrorMessage(JSON.stringify(this.comparePair));
+  private waitForPanelLoaded(): Promise<void> {
+    return new Promise((resolve) => {
+      if (this.panelLoaded) {
+        resolve();
+      } else {
+        this.panelLoadedCallBacks.push(resolve);
+      }
+    });
+  }
+
+  private async handleMsgFromView(msg: FromCompareViewMessage): Promise<void> {
+    switch (msg.t) {
+      case "compareViewLoaded":
+        this.panelLoaded = true;
+        this.panelLoadedCallBacks.forEach((cb) => cb());
+        this.panelLoadedCallBacks = [];
+        break;
+
+      case "changeCompare":
+        this.changeTable(msg.newResultSetName);
+        break;
+
+      case "viewSourceFile":
+        await jumpToLocation(msg, this.databaseManager, this.logger);
+        break;
+    }
+  }
+
+  private postMessage(msg: ToCompareViewMessage): Thenable<boolean> {
+    return this.getPanel().webview.postMessage(msg);
+  }
+
+  private async findCommonResultSetNames(
+    from: CompletedQuery,
+    to: CompletedQuery,
+    selectedResultSetName: string | undefined
+  ): Promise<[string[], string, RawResultSet, RawResultSet]> {
+    const fromSchemas = await this.cliServer.bqrsInfo(
+      from.query.resultsPaths.resultsPath
+    );
+    const toSchemas = await this.cliServer.bqrsInfo(
+      to.query.resultsPaths.resultsPath
+    );
+    const fromSchemaNames = fromSchemas["result-sets"].map(
+      (schema) => schema.name
+    );
+    const toSchemaNames = toSchemas["result-sets"].map((schema) => schema.name);
+    const commonResultSetNames = fromSchemaNames.filter((name) =>
+      toSchemaNames.includes(name)
+    );
+    const currentResultSetName = selectedResultSetName || commonResultSetNames[0];
+    const fromResultSet = await this.getResultSet(
+      fromSchemas,
+      currentResultSetName,
+      from.query.resultsPaths.resultsPath
+    );
+    const toResultSet = await this.getResultSet(
+      toSchemas,
+      currentResultSetName,
+      to.query.resultsPaths.resultsPath
+    );
+    return [
+      commonResultSetNames,
+      currentResultSetName,
+      fromResultSet,
+      toResultSet,
+    ];
+  }
+
+  private async changeTable(newResultSetName: string) {
+    if (!this.comparePair?.from || !this.comparePair.to) {
+      return;
+    }
+    await this.showResults(this.comparePair.from, this.comparePair.to, newResultSetName);
+  }
+
+  private async getResultSet(
+    bqrsInfo: BQRSInfo,
+    resultSetName: string,
+    resultsPath: string
+  ): Promise<RawResultSet> {
+    const schema = bqrsInfo["result-sets"].find(
+      (schema) => schema.name === resultSetName
+    );
+    if (!schema) {
+      throw new Error(`Schema ${resultSetName} not found.`);
+    }
+    const chunk = await this.cliServer.bqrsDecode(resultsPath, resultSetName);
+    const adaptedSchema = adaptSchema(schema);
+    return adaptBqrs(adaptedSchema, chunk);
+  }
+
+  private compareResults(
+    fromResults: RawResultSet,
+    toResults: RawResultSet
+  ): QueryCompareResult {
+    // Only compare columns that have the same name
+    return resultsDiff(fromResults, toResults);
   }
 }

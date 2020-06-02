@@ -5,7 +5,7 @@ export const config: webpack.Configuration = {
   mode: 'development',
   entry: {
     resultsView: './src/view/results.tsx',
-    compareView: './src/compare/view/compare.tsx',
+    compareView: './src/compare/view/Compare.tsx',
   },
   output: {
     path: path.resolve(__dirname, '..', 'out'),

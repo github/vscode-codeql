@@ -19,7 +19,7 @@
   margin-left: auto;
 }
 
-.vscode-codeql__result-table-toggle-diagnostics  {
+.vscode-codeql__result-table-toggle-diagnostics {
   display: inline-block;
 }
 
@@ -29,16 +29,17 @@
   display: inline-block;
   vertical-align: middle;
 }
+
 .vscode-codeql__result-table-toggle-diagnostics input {
   margin: 3px 3px 1px 13px;
 }
 
 
 .vscode-codeql__result-table th {
-  border-top: 1px solid rgba(88,96,105,0.25);
-  border-bottom: 1px solid rgba(88,96,105,0.25);
-  font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
-  background: rgba(225,228,232, 0.25);
+  border-top: 1px solid rgba(88, 96, 105, 0.25);
+  border-bottom: 1px solid rgba(88, 96, 105, 0.25);
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  background: rgba(225, 228, 232, 0.25);
   padding: 0.25em 0.5em;
   text-align: center;
   font-weight: normal;
@@ -48,8 +49,8 @@
 .vscode-codeql__result-table .sort-asc,
 .vscode-codeql__result-table .sort-desc,
 .vscode-codeql__result-table .sort-none {
-   cursor: pointer;
-   user-select: none;
+  cursor: pointer;
+  user-select: none;
 }
 
 .vscode-codeql__result-table .sort-none::after {
@@ -154,4 +155,13 @@ td.vscode-codeql__path-index-cell {
 
 .number-of-results {
   padding-left: 3em;
+}
+
+.vscode-codeql__compare-header {
+  display: flex;
+}
+
+.vscode-codeql__compare-body {
+  margin: 20px 0;
+  width: 100%;
 }
