@@ -10,12 +10,13 @@
     ],
     "jsx": "react",
     "sourceMap": true,
-    "rootDir": "..",
+    "rootDir": "../..",
     "strict": true,
     "noUnusedLocals": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "typeRoots" : ["./typings"]
   },
   "exclude": [
     "node_modules"

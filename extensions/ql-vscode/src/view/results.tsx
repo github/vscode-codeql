@@ -1,13 +1,32 @@
-import * as React from 'react';
-import * as Rdom from 'react-dom';
-import * as bqrs from 'semmle-bqrs';
-import { ElementBase, PrimitiveColumnValue, PrimitiveTypeKind, tryGetResolvableLocation } from 'semmle-bqrs';
-import { assertNever } from '../helpers-pure';
-import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortedResultSetInfo, RawResultsSortState, NavigatePathMsg, QueryMetadata, ResultsPaths } from '../interface-types';
-import { EventHandlers as EventHandlerList } from './event-handler-list';
-import { ResultTables } from './result-tables';
-import { ResultValue, ResultRow, ParsedResultSets } from '../adapt';
-import { ResultSet } from '../interface-utils';
+import * as React from "react";
+import * as Rdom from "react-dom";
+import * as bqrs from "semmle-bqrs";
+import {
+  ElementBase,
+  PrimitiveColumnValue,
+  PrimitiveTypeKind,
+  tryGetResolvableLocation,
+} from "semmle-bqrs";
+import { assertNever } from "../helpers-pure";
+import {
+  DatabaseInfo,
+  Interpretation,
+  IntoResultsViewMsg,
+  SortedResultSetInfo,
+  RawResultsSortState,
+  NavigatePathMsg,
+  QueryMetadata,
+  ResultsPaths,
+} from "../interface-types";
+import { EventHandlers as EventHandlerList } from "./event-handler-list";
+import { ResultTables } from "./result-tables";
+import {
+  ResultValue,
+  ResultRow,
+  ParsedResultSets,
+} from "../adapt";
+import { ResultSet } from "../interface-utils";
+import { vscode } from "./vscode-api";
 
 /**
  * results.tsx
@@ -16,18 +35,13 @@ import { ResultSet } from '../interface-utils';
  * Displaying query results.
  */
 
-interface VsCodeApi {
-  /**
-   * Post message back to vscode extension.
-   */
-  postMessage(msg: FromResultsViewMsg): void;
-}
-declare const acquireVsCodeApi: () => VsCodeApi;
-export const vscode = acquireVsCodeApi();
-
-async function* getChunkIterator(response: Response): AsyncIterableIterator<Uint8Array> {
+async function* getChunkIterator(
+  response: Response
+): AsyncIterableIterator<Uint8Array> {
   if (!response.ok) {
-    throw new Error(`Failed to load results: (${response.status}) ${response.statusText}`);
+    throw new Error(
+      `Failed to load results: (${response.status}) ${response.statusText}`
+    );
   }
   const reader = response.body!.getReader();
   while (true) {
@@ -39,23 +53,28 @@ async function* getChunkIterator(response: Response): AsyncIterableIterator<Uint
   }
 }
 
-function translatePrimitiveValue(value: PrimitiveColumnValue, type: PrimitiveTypeKind): ResultValue {
+function translatePrimitiveValue(
+  value: PrimitiveColumnValue,
+  type: PrimitiveTypeKind
+): ResultValue {
   switch (type) {
-    case 'i':
-    case 'f':
-    case 's':
-    case 'd':
-    case 'b':
+    case "i":
+    case "f":
+    case "s":
+    case "d":
+    case "b":
       return value.toString();
 
-    case 'u':
+    case "u":
       return {
-        uri: value as string
+        uri: value as string,
       };
   }
 }
 
-async function parseResultSets(response: Response): Promise<readonly ResultSet[]> {
+async function parseResultSets(
+  response: Response
+): Promise<readonly ResultSet[]> {
   const chunks = getChunkIterator(response);
 
   const resultSets: ResultSet[] = [];
@@ -64,32 +83,33 @@ async function parseResultSets(response: Response): Promise<readonly ResultSet[]
     const columnTypes = resultSetSchema.columns.map((column) => column.type);
     const rows: ResultRow[] = [];
     resultSets.push({
-      t: 'RawResultSet',
+      t: "RawResultSet",
       schema: resultSetSchema,
-      rows: rows
+      rows: rows,
     });
 
     return (tuple) => {
       const row: ResultValue[] = [];
       tuple.forEach((value, index) => {
         const type = columnTypes[index];
-        if (type.type === 'e') {
+        if (type.type === "e") {
           const element: ElementBase = value as ElementBase;
-          const label = (element.label !== undefined) ? element.label : element.id.toString(); //REVIEW: URLs?
+          const label =
+            element.label !== undefined ? element.label : element.id.toString(); //REVIEW: URLs?
           const resolvableLocation = tryGetResolvableLocation(element.location);
           if (resolvableLocation !== undefined) {
             row.push({
               label: label,
-              location: resolvableLocation
+              location: resolvableLocation,
             });
-          }
-          else {
+          } else {
             // No location link.
             row.push(label);
           }
-        }
-        else {
-          row.push(translatePrimitiveValue(value as PrimitiveColumnValue, type.type));
+        } else {
+          row.push(
+            translatePrimitiveValue(value as PrimitiveColumnValue, type.type)
+          );
         }
       });
 
@@ -151,16 +171,16 @@ class App extends React.Component<{}, ResultsViewState> {
       displayedResults: {
         resultsInfo: null,
         results: null,
-        errorMessage: ''
+        errorMessage: "",
       },
       nextResultsInfo: null,
-      isExpectingResultsUpdate: true
+      isExpectingResultsUpdate: true,
     };
   }
 
   handleMessage(msg: IntoResultsViewMsg): void {
     switch (msg.t) {
-      case 'setState':
+      case "setState":
         this.updateStateWithNewResultsInfo({
           resultsPath: msg.resultsPath,
           parsedResultSets: msg.parsedResultSets,
@@ -168,18 +188,19 @@ class App extends React.Component<{}, ResultsViewState> {
           sortedResultsMap: new Map(Object.entries(msg.sortedResultsMap)),
           database: msg.database,
           interpretation: msg.interpretation,
-          shouldKeepOldResultsWhileRendering: msg.shouldKeepOldResultsWhileRendering,
-          metadata: msg.metadata
+          shouldKeepOldResultsWhileRendering:
+            msg.shouldKeepOldResultsWhileRendering,
+          metadata: msg.metadata,
         });
 
         this.loadResults();
         break;
-      case 'resultsUpdating':
+      case "resultsUpdating":
         this.setState({
-          isExpectingResultsUpdate: true
+          isExpectingResultsUpdate: true,
         });
         break;
-      case 'navigatePath':
+      case "navigatePath":
         onNavigation.fire(msg);
         break;
       default:
@@ -188,11 +209,13 @@ class App extends React.Component<{}, ResultsViewState> {
   }
 
   private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
-    this.setState(prevState => {
-      const stateWithDisplayedResults = (displayedResults: ResultsState): ResultsViewState => ({
+    this.setState((prevState) => {
+      const stateWithDisplayedResults = (
+        displayedResults: ResultsState
+      ): ResultsViewState => ({
         displayedResults,
         isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
-        nextResultsInfo: resultsInfo
+        nextResultsInfo: resultsInfo,
       });
 
       if (!prevState.isExpectingResultsUpdate && resultsInfo === null) {
@@ -200,7 +223,7 @@ class App extends React.Component<{}, ResultsViewState> {
         return stateWithDisplayedResults({
           resultsInfo: null,
           results: null,
-          errorMessage: 'No results to display'
+          errorMessage: "No results to display",
         });
       }
       if (!resultsInfo || !resultsInfo.shouldKeepOldResultsWhileRendering) {
@@ -208,19 +231,22 @@ class App extends React.Component<{}, ResultsViewState> {
         return stateWithDisplayedResults({
           resultsInfo: null,
           results: null,
-          errorMessage: 'Loading results…'
+          errorMessage: "Loading results…",
         });
       }
       return stateWithDisplayedResults(prevState.displayedResults);
     });
   }
 
-  private async getResultSets(resultsInfo: ResultsInfo): Promise<readonly ResultSet[]> {
+  private async getResultSets(
+    resultsInfo: ResultsInfo
+  ): Promise<readonly ResultSet[]> {
     const parsedResultSets = resultsInfo.parsedResultSets;
     switch (parsedResultSets.t) {
-      case 'WebviewParsed': return await this.fetchResultSets(resultsInfo);
-      case 'ExtensionParsed': {
-        return [{ t: 'RawResultSet', ...parsedResultSets.resultSet }];
+      case "WebviewParsed":
+        return await this.fetchResultSets(resultsInfo);
+      case "ExtensionParsed": {
+        return [{ t: "RawResultSet", ...parsedResultSets.resultSet }];
       }
     }
   }
@@ -232,27 +258,26 @@ class App extends React.Component<{}, ResultsViewState> {
     }
 
     let results: Results | null = null;
-    let statusText = '';
+    let statusText = "";
     try {
       const resultSets = await this.getResultSets(resultsInfo);
       results = {
         resultSets,
         database: resultsInfo.database,
-        sortStates: this.getSortStates(resultsInfo)
+        sortStates: this.getSortStates(resultsInfo),
       };
-    }
-    catch (e) {
+    } catch (e) {
       let errorMessage: string;
       if (e instanceof Error) {
         errorMessage = e.message;
       } else {
-        errorMessage = 'Unknown error';
+        errorMessage = "Unknown error";
       }
 
       statusText = `Error loading results: ${errorMessage}`;
     }
 
-    this.setState(prevState => {
+    this.setState((prevState) => {
       // Only set state if this results info is still current.
       if (resultsInfo !== prevState.nextResultsInfo) {
         return null;
@@ -261,10 +286,10 @@ class App extends React.Component<{}, ResultsViewState> {
         displayedResults: {
           resultsInfo,
           results,
-          errorMessage: statusText
+          errorMessage: statusText,
         },
         nextResultsInfo: null,
-        isExpectingResultsUpdate: false
+        isExpectingResultsUpdate: false,
       };
     });
   }
@@ -273,67 +298,99 @@ class App extends React.Component<{}, ResultsViewState> {
    * This is deprecated, because it calls `fetch`. We are moving
    * towards doing all bqrs parsing in the extension.
    */
-  private async fetchResultSets(resultsInfo: ResultsInfo): Promise<readonly ResultSet[]> {
+  private async fetchResultSets(
+    resultsInfo: ResultsInfo
+  ): Promise<readonly ResultSet[]> {
     const unsortedResponse = await fetch(resultsInfo.resultsPath);
     const unsortedResultSets = await parseResultSets(unsortedResponse);
-    return Promise.all(unsortedResultSets.map(async unsortedResultSet => {
-      const sortedResultSetInfo = resultsInfo.sortedResultsMap.get(unsortedResultSet.schema.name);
-      if (sortedResultSetInfo === undefined) {
-        return unsortedResultSet;
-      }
-      const response = await fetch(sortedResultSetInfo.resultsPath);
-      const resultSets = await parseResultSets(response);
-      if (resultSets.length != 1) {
-        throw new Error(`Expected sorted BQRS to contain a single result set, encountered ${resultSets.length} result sets.`);
-      }
-      return resultSets[0];
-    }));
+    return Promise.all(
+      unsortedResultSets.map(async (unsortedResultSet) => {
+        const sortedResultSetInfo = resultsInfo.sortedResultsMap.get(
+          unsortedResultSet.schema.name
+        );
+        if (sortedResultSetInfo === undefined) {
+          return unsortedResultSet;
+        }
+        const response = await fetch(sortedResultSetInfo.resultsPath);
+        const resultSets = await parseResultSets(response);
+        if (resultSets.length != 1) {
+          throw new Error(
+            `Expected sorted BQRS to contain a single result set, encountered ${resultSets.length} result sets.`
+          );
+        }
+        return resultSets[0];
+      })
+    );
   }
 
-  private getSortStates(resultsInfo: ResultsInfo): Map<string, RawResultsSortState> {
+  private getSortStates(
+    resultsInfo: ResultsInfo
+  ): Map<string, RawResultsSortState> {
     const entries = Array.from(resultsInfo.sortedResultsMap.entries());
-    return new Map(entries.map(([key, sortedResultSetInfo]) =>
-      [key, sortedResultSetInfo.sortState]));
+    return new Map(
+      entries.map(([key, sortedResultSetInfo]) => [
+        key,
+        sortedResultSetInfo.sortState,
+      ])
+    );
   }
 
   render(): JSX.Element {
     const displayedResults = this.state.displayedResults;
-    if (displayedResults.results !== null && displayedResults.resultsInfo !== null) {
+    if (
+      displayedResults.results !== null &&
+      displayedResults.resultsInfo !== null
+    ) {
       const parsedResultSets = displayedResults.resultsInfo.parsedResultSets;
-      return <ResultTables
-        parsedResultSets={parsedResultSets}
-        rawResultSets={displayedResults.results.resultSets}
-        interpretation={displayedResults.resultsInfo ? displayedResults.resultsInfo.interpretation : undefined}
-        database={displayedResults.results.database}
-        origResultsPaths={displayedResults.resultsInfo.origResultsPaths}
-        resultsPath={displayedResults.resultsInfo.resultsPath}
-        metadata={displayedResults.resultsInfo ? displayedResults.resultsInfo.metadata : undefined}
-        sortStates={displayedResults.results.sortStates}
-        interpretedSortState={displayedResults.resultsInfo.interpretation?.sortState}
-        isLoadingNewResults={this.state.isExpectingResultsUpdate || this.state.nextResultsInfo !== null} />;
-    }
-    else {
+      return (
+        <ResultTables
+          parsedResultSets={parsedResultSets}
+          rawResultSets={displayedResults.results.resultSets}
+          interpretation={
+            displayedResults.resultsInfo
+              ? displayedResults.resultsInfo.interpretation
+              : undefined
+          }
+          database={displayedResults.results.database}
+          origResultsPaths={displayedResults.resultsInfo.origResultsPaths}
+          resultsPath={displayedResults.resultsInfo.resultsPath}
+          metadata={
+            displayedResults.resultsInfo
+              ? displayedResults.resultsInfo.metadata
+              : undefined
+          }
+          sortStates={displayedResults.results.sortStates}
+          interpretedSortState={
+            displayedResults.resultsInfo.interpretation?.sortState
+          }
+          isLoadingNewResults={
+            this.state.isExpectingResultsUpdate ||
+            this.state.nextResultsInfo !== null
+          }
+        />
+      );
+    } else {
       return <span>{displayedResults.errorMessage}</span>;
     }
   }
 
   componentDidMount(): void {
-    this.vscodeMessageHandler = evt => this.handleMessage(evt.data as IntoResultsViewMsg);
-    window.addEventListener('message', this.vscodeMessageHandler);
+    this.vscodeMessageHandler = (evt) =>
+      this.handleMessage(evt.data as IntoResultsViewMsg);
+    window.addEventListener("message", this.vscodeMessageHandler);
   }
 
   componentWillUnmount(): void {
     if (this.vscodeMessageHandler) {
-      window.removeEventListener('message', this.vscodeMessageHandler);
+      window.removeEventListener("message", this.vscodeMessageHandler);
     }
   }
 
-  private vscodeMessageHandler: ((ev: MessageEvent) => void) | undefined = undefined;
+  private vscodeMessageHandler:
+    | ((ev: MessageEvent) => void)
+    | undefined = undefined;
 }
 
-Rdom.render(
-  <App />,
-  document.getElementById('root')
-);
+Rdom.render(<App />, document.getElementById("root"));
 
 vscode.postMessage({ t: 'resultViewLoaded' });

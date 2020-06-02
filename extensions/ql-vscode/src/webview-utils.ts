@@ -20,7 +20,9 @@ import {
   WholeFileLocation,
   ResolvableLocationValue,
 } from "semmle-bqrs";
-import { DatabaseItem } from "./databases";
+import { DatabaseItem, DatabaseManager } from "./databases";
+import { ViewSourceFileMsg } from "./interface-types";
+import { Logger } from "./logging";
 
 /** Gets a nonce string created with 128 bits of entropy. */
 export function getNonce(): string {
@@ -197,3 +199,30 @@ export const shownLocationLineDecoration = Window.createTextEditorDecorationType
     isWholeLine: true,
   }
 );
+
+export async function jumpToLocation(
+  msg: ViewSourceFileMsg,
+  databaseManager: DatabaseManager,
+  logger: Logger
+) {
+  const databaseItem = databaseManager.findDatabaseItem(
+    Uri.parse(msg.databaseUri)
+  );
+  if (databaseItem !== undefined) {
+    try {
+      await showLocation(msg.loc, databaseItem);
+    } catch (e) {
+      if (e instanceof Error) {
+        if (e.message.match(/File not found/)) {
+          Window.showErrorMessage(
+            `Original file of this result is not in the database's source archive.`
+          );
+        } else {
+          logger.log(`Unable to handleMsgFromView: ${e.message}`);
+        }
+      } else {
+        logger.log(`Unable to handleMsgFromView: ${e}`);
+      }
+    }
+  }
+}

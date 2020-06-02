@@ -5,10 +5,11 @@ import * as Keys from '../result-keys';
 import { LocationStyle } from 'semmle-bqrs';
 import * as octicons from './octicons';
 import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection } from './result-table-utils';
-import { onNavigation, NavigationEvent, vscode } from './results';
+import { onNavigation, NavigationEvent } from './results';
+import { PathTableResultSet } from '../interface-utils';
 import { parseSarifPlainTextMessage, parseSarifLocation } from '../sarif-utils';
 import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortState } from '../interface-types';
-import { PathTableResultSet } from '../interface-utils';
+import { vscode } from './vscode-api';
 
 export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
 export interface PathTableState {
@@ -188,11 +189,9 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
       if (result.codeFlows === undefined) {
         rows.push(
-          <tr {...zebraStripe(resultIndex)}>
+          <tr key={resultIndex} {...zebraStripe(resultIndex)}>
             <td className="vscode-codeql__icon-cell">{octicons.info}</td>
-            <td colSpan={3}>
-              {msg}
-            </td>
+            <td colSpan={3}>{msg}</td>
             {locationCells}
           </tr>
         );

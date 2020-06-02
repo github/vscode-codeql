@@ -48,7 +48,7 @@ import {
   getHtmlForWebview,
   shownLocationDecoration,
   shownLocationLineDecoration,
-  showLocation,
+  jumpToLocation,
 } from "./webview-utils";
 import { getDefaultResultSetName } from "./interface-utils";
 
@@ -158,7 +158,10 @@ export class InterfaceManager extends DisposableObject {
         }
       ));
       this._panel.onDidDispose(
-        () => (this._panel = undefined),
+        () => {
+          this._panel = undefined;
+          this._displayedQuery = undefined;
+        },
         null,
         ctx.subscriptions
       );
@@ -199,27 +202,8 @@ export class InterfaceManager extends DisposableObject {
 
   private async handleMsgFromView(msg: FromResultsViewMsg): Promise<void> {
     switch (msg.t) {
-      case 'viewSourceFile': {
-        const databaseItem = this.databaseManager.findDatabaseItem(
-          Uri.parse(msg.databaseUri)
-        );
-        if (databaseItem !== undefined) {
-          try {
-            await showLocation(msg.loc, databaseItem);
-          } catch (e) {
-            if (e instanceof Error) {
-              if (e.message.match(/File not found/)) {
-                vscode.window.showErrorMessage(
-                  'Original file of this result is not in the database\'s source archive.'
-                );
-              } else {
-                this.logger.log(`Unable to handleMsgFromView: ${e.message}`);
-              }
-            } else {
-              this.logger.log(`Unable to handleMsgFromView: ${e}`);
-            }
-          }
-        }
+      case "viewSourceFile": {
+        await jumpToLocation(msg, this.databaseManager, this.logger);
         break;
       }
       case 'toggleDiagnostics': {

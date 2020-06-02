@@ -3,9 +3,9 @@ import { DatabaseInfo, Interpretation, RawResultsSortState, QueryMetadata, Resul
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
 import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName, alertExtrasClassName } from './result-table-utils';
-import { vscode } from './results';
 import { ParsedResultSets, ExtensionParsedResultSets } from '../adapt';
 import { ResultSet, ALERTS_TABLE_NAME, SELECT_TABLE_NAME, getDefaultResultSet } from '../interface-utils';
+import { vscode } from './vscode-api';
 
 /**
  * Properties for the `ResultTables` component.

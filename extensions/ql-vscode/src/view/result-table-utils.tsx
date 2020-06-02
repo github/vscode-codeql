@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { LocationValue, ResolvableLocationValue, tryGetResolvableLocation } from 'semmle-bqrs';
 import { RawResultsSortState, QueryMetadata, SortDirection } from '../interface-types';
-import { vscode } from './results';
 import { assertNever } from '../helpers-pure';
 import { ResultSet } from '../interface-utils';
+import { vscode } from './vscode-api';
 
 export interface ResultTableProps {
   resultSet: ResultSet;

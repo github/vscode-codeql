@@ -1,4 +1,4 @@
-import { IndentAction, languages } from 'vscode';
+import { languages } from "vscode";
 
 
 /**
@@ -27,29 +27,29 @@ export function install() {
   languages.setLanguageConfiguration('dbscheme', langConfig);
 }
 
-const onEnterRules = [
-  {
-    // e.g. /** | */
-    beforeText: /^\s*\/\*\*(?!\/)([^\*]|\*(?!\/))*$/,
-    afterText: /^\s*\*\/$/,
-    action: { indentAction: IndentAction.IndentOutdent, appendText: ' * ' }
-  }, {
-    // e.g. /** ...|
-    beforeText: /^\s*\/\*\*(?!\/)([^\*]|\*(?!\/))*$/,
-    action: { indentAction: IndentAction.None, appendText: ' * ' }
-  }, {
-    // e.g.  * ...|
-    beforeText: /^(\t|[ ])*[ ]\*([ ]([^\*]|\*(?!\/))*)?$/,
-    oneLineAboveText: /^(\s*(\/\*\*|\*)).*/,
-    action: { indentAction: IndentAction.None, appendText: '* ' }
-  }, {
-    // e.g.  */|
-    beforeText: /^(\t|[ ])*[ ]\*\/\s*$/,
-    action: { indentAction: IndentAction.None, removeText: 1 }
-  },
-  {
-    // e.g.  *-----*/|
-    beforeText: /^(\t|[ ])*[ ]\*[^/]*\*\/\s*$/,
-    action: { indentAction: IndentAction.None, removeText: 1 }
-  }
+const onEnterRules: string[] = [
+  // {
+  //   // e.g. /** | */
+  //   beforeText: /^\s*\/\*\*(?!\/)([^\*]|\*(?!\/))*$/,
+  //   afterText: /^\s*\*\/$/,
+  //   action: { indentAction: IndentAction.IndentOutdent, appendText: ' * ' }
+  // }, {
+  //   // e.g. /** ...|
+  //   beforeText: /^\s*\/\*\*(?!\/)([^\*]|\*(?!\/))*$/,
+  //   action: { indentAction: IndentAction.None, appendText: ' * ' }
+  // }, {
+  //   // e.g.  * ...|
+  //   beforeText: /^(\t|[ ])*[ ]\*([ ]([^\*]|\*(?!\/))*)?$/,
+  //   oneLineAboveText: /^(\s*(\/\*\*|\*)).*/,
+  //   action: { indentAction: IndentAction.None, appendText: '* ' }
+  // }, {
+  //   // e.g.  */|
+  //   beforeText: /^(\t|[ ])*[ ]\*\/\s*$/,
+  //   action: { indentAction: IndentAction.None, removeText: 1 }
+  // },
+  // {
+  //   // e.g.  *-----*/|
+  //   beforeText: /^(\t|[ ])*[ ]\*[^/]*\*\/\s*$/,
+  //   action: { indentAction: IndentAction.None, removeText: 1 }
+  // }
 ];
