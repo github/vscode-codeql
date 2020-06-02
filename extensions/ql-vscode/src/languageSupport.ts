@@ -17,11 +17,14 @@ export function install() {
   // setLanguageConfiguration requires a regexp for the wordpattern, not a string
   langConfig.wordPattern = new RegExp(langConfig.wordPattern);
   langConfig.onEnterRules = onEnterRules;
+  langConfig.indentationRules = {
+		decreaseIndentPattern: /^((?!.*?\/\*).*\*\/)?\s*[\}\]].*$/,
+		increaseIndentPattern: /^((?!\/\/).)*(\{[^}"'`]*|\([^)"'`]*|\[[^\]"'`]*)$/
+	};
 
   languages.setLanguageConfiguration('ql', langConfig);
   languages.setLanguageConfiguration('qll', langConfig);
   languages.setLanguageConfiguration('dbscheme', langConfig);
-
 }
 
 const onEnterRules = [
