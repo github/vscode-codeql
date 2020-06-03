@@ -377,7 +377,7 @@ class ExtensionSpecificDistributionManager {
       release => {
         const matchingAssets = release.assets.filter(asset => asset.name === requiredAssetName);
         if (matchingAssets.length === 0) {
-          // For example, this could be a release with only platform-specific assets.
+          // For example, this could be a release with no platform-specific assets.
           logger.log(`INFO: Ignoring a release with no assets named ${requiredAssetName}`);
           return false;
         }
