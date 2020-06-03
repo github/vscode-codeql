@@ -297,6 +297,10 @@ class ExtensionSpecificDistributionManager {
         `but encountered an error: ${e}.`);
     }
 
+    // NOTE: We are tacitly assuming that at this point
+    // release.assets.length === 1. This is ensured by
+    // getLatestRelease for now. Reconsider this if a cli release ever
+    // has more than one asset.
     const assetStream = await this.createReleasesApiConsumer().streamBinaryContentOfAsset(release.assets[0]);
     const tmpDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "vscode-codeql"));
 
@@ -354,26 +358,46 @@ class ExtensionSpecificDistributionManager {
     }
   }
 
+  /**
+   * Get the name of the codeql cli installation we prefer to install, based on our current platform.
+   */
+  private getRequiredAssetName(): string {
+    if (os.platform() === 'linux') return 'codeql-linux64.zip';
+    if (os.platform() === 'darwin') return 'codeql-osx64.zip';
+    if (os.platform() === 'win32') return 'codeql-win64.zip';
+    return 'codeql.zip';
+  }
+
   private async getLatestRelease(): Promise<Release> {
-    return await this.createReleasesApiConsumer().getLatestRelease(
+    const requiredAssetName = this.getRequiredAssetName();
+    logger.log(`Searching for latest release including ${requiredAssetName}. `);
+    const release = await this.createReleasesApiConsumer().getLatestRelease(
       this._versionRange,
       this._config.includePrerelease,
       release => {
-        // FIXME: Look for platform-specific codeql distribution if available
-        // https://github.com/github/vscode-codeql/issues/417
-        const matchingAssets = release.assets.filter(asset => asset.name === 'codeql.zip');
+        const matchingAssets = release.assets.filter(asset => asset.name === requiredAssetName);
         if (matchingAssets.length === 0) {
           // For example, this could be a release with only platform-specific assets.
-          logger.log("INFO: Ignoring a release with no assets named codeql.zip");
+          logger.log(`INFO: Ignoring a release with no assets named ${requiredAssetName}`);
           return false;
         }
         if (matchingAssets.length > 1) {
-          logger.log("WARNING: Ignoring a release with more than one asset named codeql.zip");
+          logger.log(`WARNING: Ignoring a release with more than one asset named ${requiredAssetName}`);
           return false;
         }
         return true;
       }
     );
+    // Actually filter assets to the unique one that we require.
+    release.assets = release.assets.filter(asset => asset.name === requiredAssetName);
+    if (release.assets.length === 0) {
+      throw new Error(`Invariant violation: chose a release to install that didn't have ${requiredAssetName}`);
+    }
+    if (release.assets.length > 1) {
+      logger.log('WARNING: chose a release with more than one asset to install, found ' +
+        release.assets.map(asset => asset.name).join(', '));
+    }
+    return release;
   }
 
   private createReleasesApiConsumer(): ReleasesApiConsumer {
