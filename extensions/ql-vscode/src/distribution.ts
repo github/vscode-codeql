@@ -297,10 +297,17 @@ class ExtensionSpecificDistributionManager {
         `but encountered an error: ${e}.`);
     }
 
-    // NOTE: We are tacitly assuming that at this point
-    // release.assets.length === 1. This is ensured by
-    // getLatestRelease for now. Reconsider this if a cli release ever
-    // has more than one asset.
+    // Filter assets to the unique one that we require.
+    const requiredAssetName = this.getRequiredAssetName();
+    const assets = release.assets.filter(asset => asset.name === requiredAssetName);
+    if (assets.length === 0) {
+      throw new Error(`Invariant violation: chose a release to install that didn't have ${requiredAssetName}`);
+    }
+    if (assets.length > 1) {
+      logger.log('WARNING: chose a release with more than one asset to install, found ' +
+        assets.map(asset => asset.name).join(', '));
+    }
+
     const assetStream = await this.createReleasesApiConsumer().streamBinaryContentOfAsset(release.assets[0]);
     const tmpDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "vscode-codeql"));
 
@@ -388,15 +395,6 @@ class ExtensionSpecificDistributionManager {
         return true;
       }
     );
-    // Actually filter assets to the unique one that we require.
-    release.assets = release.assets.filter(asset => asset.name === requiredAssetName);
-    if (release.assets.length === 0) {
-      throw new Error(`Invariant violation: chose a release to install that didn't have ${requiredAssetName}`);
-    }
-    if (release.assets.length > 1) {
-      logger.log('WARNING: chose a release with more than one asset to install, found ' +
-        release.assets.map(asset => asset.name).join(', '));
-    }
     return release;
   }
 
