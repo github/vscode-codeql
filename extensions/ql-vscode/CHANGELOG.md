@@ -1,5 +1,9 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## 1.2.2
+
+- Fix auto-indentation rules.
+
 ## 1.2.1 - 29 May 2020
 
 - Better formatting and autoindentation when adding QLDoc comments to `.ql` and `.qll` files.
