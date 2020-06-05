@@ -223,11 +223,16 @@ export class QueryHistoryManager {
     if (queryHistoryItem.logFileLocation) {
       const uri = vscode.Uri.file(queryHistoryItem.logFileLocation);
       try {
-        await vscode.window.showTextDocument(uri, {
-        });
+        await vscode.window.showTextDocument(uri);
       } catch (e) {
         if (e.message.includes('Files above 50MB cannot be synchronized with extensions')) {
-          const res = await helpers.showBinaryChoiceDialog('File is too large to open in the editor, do you want to open it externally?');
+          const res = await helpers.showBinaryChoiceDialog(
+            `VS Code does not allow extensions to open files >50MB. This file
+exceeds that limit. Do you want to open it outside of VS Code?
+
+You can also try manually opening it inside VS Code by selecting
+the file in the file explorer and dragging it into the workspace.`
+          );
           if (res) {
             try {
               await vscode.commands.executeCommand('revealFileInOS', uri);
