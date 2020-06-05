@@ -227,9 +227,11 @@ export class QueryHistoryManager {
       } catch (e) {
         if (e.message.includes('Files above 50MB cannot be synchronized with extensions')) {
           const res = await helpers.showBinaryChoiceDialog(
-            `Due to limitations in VS Code, this file is too large to be opened by the extension directly, do you want to open it manually?
+            `VS Code does not allow extensions to open files >50MB. This file
+exceeds that limit. Do you want to open it outside of VS Code?
 
-            To do so, select the file in the file explorer and drag it into the workspace.`
+You can also try manually opening it inside VS Code by selecting
+the file in the file explorer and dragging it into the workspace.`
           );
           if (res) {
             try {
