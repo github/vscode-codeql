@@ -223,11 +223,14 @@ export class QueryHistoryManager {
     if (queryHistoryItem.logFileLocation) {
       const uri = vscode.Uri.file(queryHistoryItem.logFileLocation);
       try {
-        await vscode.window.showTextDocument(uri, {
-        });
+        await vscode.window.showTextDocument(uri);
       } catch (e) {
         if (e.message.includes('Files above 50MB cannot be synchronized with extensions')) {
-          const res = await helpers.showBinaryChoiceDialog('File is too large to open in the editor, do you want to open it externally?');
+          const res = await helpers.showBinaryChoiceDialog(
+            `Due to limitations in VS Code, this file is too large to be opened by the extension directly, do you want to open it manually?
+
+            To do so, select the file in the file explorer and drag it into the workspace.`
+          );
           if (res) {
             try {
               await vscode.commands.executeCommand('revealFileInOS', uri);
