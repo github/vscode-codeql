@@ -308,7 +308,7 @@ class ExtensionSpecificDistributionManager {
         assets.map(asset => asset.name).join(', '));
     }
 
-    const assetStream = await this.createReleasesApiConsumer().streamBinaryContentOfAsset(release.assets[0]);
+    const assetStream = await this.createReleasesApiConsumer().streamBinaryContentOfAsset(assets[0]);
     const tmpDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "vscode-codeql"));
 
     try {
