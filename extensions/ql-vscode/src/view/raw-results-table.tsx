@@ -1,12 +1,14 @@
 import * as React from "react";
 import { renderLocation, ResultTableProps, zebraStripe, className, nextSortDirection } from "./result-table-utils";
-import { RawTableResultSet, vscode } from "./results";
+import { vscode } from "./results";
 import { ResultValue } from "../adapt";
 import { SortDirection, RAW_RESULTS_LIMIT, RawResultsSortState } from "../interface-types";
+import { RawTableResultSet } from "../interface-utils";
 
 export type RawTableProps = ResultTableProps & {
   resultSet: RawTableResultSet;
   sortState?: RawResultsSortState;
+  offset: number;
 };
 
 export class RawTable extends React.Component<RawTableProps, {}> {
@@ -28,7 +30,7 @@ export class RawTable extends React.Component<RawTableProps, {}> {
       <tr key={rowIndex} {...zebraStripe(rowIndex)}>
         {
           [
-            <td key={-1}>{rowIndex + 1}</td>,
+            <td key={-1}>{rowIndex + 1 + this.props.offset}</td>,
             ...row.map((value, columnIndex) =>
               <td key={columnIndex}>
                 {

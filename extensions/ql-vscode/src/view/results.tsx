@@ -1,12 +1,13 @@
 import * as React from 'react';
 import * as Rdom from 'react-dom';
 import * as bqrs from 'semmle-bqrs';
-import { ElementBase, PrimitiveColumnValue, PrimitiveTypeKind, ResultSetSchema, tryGetResolvableLocation } from 'semmle-bqrs';
+import { ElementBase, PrimitiveColumnValue, PrimitiveTypeKind, tryGetResolvableLocation } from 'semmle-bqrs';
 import { assertNever } from '../helpers-pure';
 import { DatabaseInfo, FromResultsViewMsg, Interpretation, IntoResultsViewMsg, SortedResultSetInfo, RawResultsSortState, NavigatePathMsg, QueryMetadata, ResultsPaths } from '../interface-types';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 import { ResultTables } from './result-tables';
-import { RawResultSet, ResultValue, ResultRow } from '../adapt';
+import { ResultValue, ResultRow, ParsedResultSets } from '../adapt';
+import { ResultSet } from '../interface-utils';
 
 /**
  * results.tsx
@@ -23,13 +24,6 @@ interface VsCodeApi {
 }
 declare const acquireVsCodeApi: () => VsCodeApi;
 export const vscode = acquireVsCodeApi();
-
-export type RawTableResultSet = { t: 'RawResultSet' } & RawResultSet;
-export type PathTableResultSet = { t: 'SarifResultSet'; readonly schema: ResultSetSchema; name: string } & Interpretation;
-
-export type ResultSet =
-  | RawTableResultSet
-  | PathTableResultSet;
 
 async function* getChunkIterator(response: Response): AsyncIterableIterator<Uint8Array> {
   if (!response.ok) {
@@ -107,8 +101,8 @@ async function parseResultSets(response: Response): Promise<readonly ResultSet[]
 }
 
 interface ResultsInfo {
+  parsedResultSets: ParsedResultSets;
   resultsPath: string;
-  resultSets: ResultSet[] | undefined;
   origResultsPaths: ResultsPaths;
   database: DatabaseInfo;
   interpretation: Interpretation | undefined;
@@ -169,7 +163,7 @@ class App extends React.Component<{}, ResultsViewState> {
       case 'setState':
         this.updateStateWithNewResultsInfo({
           resultsPath: msg.resultsPath,
-          resultSets: msg.resultSets?.map(x => ({ t: 'RawResultSet', ...x })),
+          parsedResultSets: msg.parsedResultSets,
           origResultsPaths: msg.origResultsPaths,
           sortedResultsMap: new Map(Object.entries(msg.sortedResultsMap)),
           database: msg.database,
@@ -221,6 +215,16 @@ class App extends React.Component<{}, ResultsViewState> {
     });
   }
 
+  private async getResultSets(resultsInfo: ResultsInfo): Promise<readonly ResultSet[]> {
+    const parsedResultSets = resultsInfo.parsedResultSets;
+    switch (parsedResultSets.t) {
+      case 'WebviewParsed': return await this.fetchResultSets(resultsInfo);
+      case 'ExtensionParsed': {
+        return [{ t: 'RawResultSet', ...parsedResultSets.resultSet }];
+      }
+    }
+  }
+
   private async loadResults(): Promise<void> {
     const resultsInfo = this.state.nextResultsInfo;
     if (resultsInfo === null) {
@@ -230,7 +234,7 @@ class App extends React.Component<{}, ResultsViewState> {
     let results: Results | null = null;
     let statusText = '';
     try {
-      const resultSets = resultsInfo.resultSets || await this.getResultSets(resultsInfo);
+      const resultSets = await this.getResultSets(resultsInfo);
       results = {
         resultSets,
         database: resultsInfo.database,
@@ -265,7 +269,11 @@ class App extends React.Component<{}, ResultsViewState> {
     });
   }
 
-  private async getResultSets(resultsInfo: ResultsInfo): Promise<readonly ResultSet[]> {
+  /**
+   * This is deprecated, because it calls `fetch`. We are moving
+   * towards doing all bqrs parsing in the extension.
+   */
+  private async fetchResultSets(resultsInfo: ResultsInfo): Promise<readonly ResultSet[]> {
     const unsortedResponse = await fetch(resultsInfo.resultsPath);
     const unsortedResultSets = await parseResultSets(unsortedResponse);
     return Promise.all(unsortedResultSets.map(async unsortedResultSet => {
@@ -291,7 +299,10 @@ class App extends React.Component<{}, ResultsViewState> {
   render(): JSX.Element {
     const displayedResults = this.state.displayedResults;
     if (displayedResults.results !== null && displayedResults.resultsInfo !== null) {
-      return <ResultTables rawResultSets={displayedResults.results.resultSets}
+      const parsedResultSets = displayedResults.resultsInfo.parsedResultSets;
+      return <ResultTables
+        parsedResultSets={parsedResultSets}
+        rawResultSets={displayedResults.results.resultSets}
         interpretation={displayedResults.resultsInfo ? displayedResults.resultsInfo.interpretation : undefined}
         database={displayedResults.results.database}
         origResultsPaths={displayedResults.resultsInfo.origResultsPaths}

@@ -1,14 +1,17 @@
 import * as React from 'react';
-import { DatabaseInfo, Interpretation, RawResultsSortState, QueryMetadata, ResultsPaths, InterpretedResultsSortState } from '../interface-types';
+import { DatabaseInfo, Interpretation, RawResultsSortState, QueryMetadata, ResultsPaths, InterpretedResultsSortState, RAW_RESULTS_PAGE_SIZE } from '../interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
 import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName, alertExtrasClassName } from './result-table-utils';
-import { ResultSet, vscode } from './results';
+import { vscode } from './results';
+import { ParsedResultSets, ExtensionParsedResultSets } from '../adapt';
+import { ResultSet, ALERTS_TABLE_NAME, SELECT_TABLE_NAME, getDefaultResultSet } from '../interface-utils';
 
 /**
  * Properties for the `ResultTables` component.
  */
 export interface ResultTablesProps {
+  parsedResultSets: ParsedResultSets;
   rawResultSets: readonly ResultSet[];
   interpretation: Interpretation | undefined;
   database: DatabaseInfo;
@@ -25,10 +28,9 @@ export interface ResultTablesProps {
  */
 interface ResultTablesState {
   selectedTable: string; // name of selected result set
+  selectedPage: string; // stringified selected page
 }
 
-const ALERTS_TABLE_NAME = 'alerts';
-const SELECT_TABLE_NAME = '#select';
 const UPDATING_RESULTS_TEXT_CLASS_NAME = "vscode-codeql__result-tables-updating-text";
 
 function getResultCount(resultSet: ResultSet): number {
@@ -75,23 +77,66 @@ export class ResultTables
     return resultSets;
   }
 
+  private getResultSetNames(resultSets: ResultSet[]): string[] {
+    if (this.props.parsedResultSets.t === 'ExtensionParsed') {
+      return this.props.parsedResultSets.resultSetNames.concat([ALERTS_TABLE_NAME]);
+    }
+    else {
+      return resultSets.map(resultSet => resultSet.schema.name);
+    }
+  }
+
+  /**
+   * Holds if we have a result set obtained from the extension that came
+   * from the ExtensionParsed branch of ParsedResultSets. This is evidence
+   * that the user has the experimental flag turned on that allows extension-side
+   * bqrs parsing.
+   */
+  paginationAllowed(): boolean {
+    return this.props.parsedResultSets.t === 'ExtensionParsed';
+  }
+
+  /**
+   * Holds if we actually should show pagination interface right now. This is
+   * still false for the time being when we're viewing alerts.
+   */
+  paginationEnabled(): boolean {
+    return this.paginationAllowed() &&
+      this.props.parsedResultSets.selectedTable !== ALERTS_TABLE_NAME &&
+      this.state.selectedTable !== ALERTS_TABLE_NAME;
+  }
+
   constructor(props: ResultTablesProps) {
     super(props);
 
-    this.state = {
-      // Get the result set that should be displayed by default
-      selectedTable: ResultTables.getDefaultResultSet(this.getResultSets())
-    };
-  }
+    const selectedTable = props.parsedResultSets.selectedTable || getDefaultResultSet(this.getResultSets());
 
-  private static getDefaultResultSet(resultSets: readonly ResultSet[]): string {
-    const resultSetNames = resultSets.map(resultSet => resultSet.schema.name);
-    // Choose first available result set from the array
-    return [ALERTS_TABLE_NAME, SELECT_TABLE_NAME, resultSets[0].schema.name].filter(resultSetName => resultSetNames.includes(resultSetName))[0];
+    let selectedPage: string;
+    switch (props.parsedResultSets.t) {
+      case 'ExtensionParsed':
+        selectedPage = (props.parsedResultSets.pageNumber + 1) + '';
+        break;
+      case 'WebviewParsed':
+        selectedPage = '';
+        break;
+    }
+
+    this.state = { selectedTable, selectedPage };
   }
 
   private onTableSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    this.setState({ selectedTable: event.target.value });
+    const selectedTable = event.target.value;
+    const fetchPageFromExtension = this.paginationAllowed() && selectedTable !== ALERTS_TABLE_NAME;
+
+    if (fetchPageFromExtension) {
+      vscode.postMessage({
+        t: 'changePage',
+        pageNumber: 0,
+        selectedTable
+      });
+    }
+    else
+      this.setState({ selectedTable });
   }
 
   private alertTableExtras(): JSX.Element | undefined {
@@ -118,24 +163,81 @@ export class ResultTables
     </div>;
   }
 
+  getOffset(): number {
+    const { parsedResultSets } = this.props;
+    switch (parsedResultSets.t) {
+      case 'ExtensionParsed':
+        return parsedResultSets.pageNumber * RAW_RESULTS_PAGE_SIZE;
+      case 'WebviewParsed':
+        return 0;
+    }
+  }
+
+  renderPageButtons(resultSets: ExtensionParsedResultSets): JSX.Element {
+    const selectedTable = this.state.selectedTable;
+    const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      this.setState({ selectedPage: e.target.value });
+    };
+    const choosePage = (input: string) => {
+      const pageNumber = parseInt(input);
+      if (pageNumber !== undefined && !isNaN(pageNumber)) {
+        const actualPageNumber = Math.max(0, Math.min(pageNumber - 1, resultSets.numPages - 1));
+        vscode.postMessage({
+          t: 'changePage',
+          pageNumber: actualPageNumber,
+          selectedTable,
+        });
+      }
+    };
+
+    const prevPage = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      vscode.postMessage({
+        t: 'changePage',
+        pageNumber: Math.max(resultSets.pageNumber - 1, 0),
+        selectedTable,
+      });
+    };
+    const nextPage = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      vscode.postMessage({
+        t: 'changePage',
+        pageNumber: Math.min(resultSets.pageNumber + 1, resultSets.numPages - 1),
+        selectedTable,
+      });
+    };
+    return <span>
+      <button onClick={prevPage} >&lt;</button>
+      <input value={this.state.selectedPage} onChange={onChange}
+        onBlur={e => choosePage(e.target.value)}
+        onKeyDown={e => { if (e.keyCode === 13) choosePage((e.target as HTMLInputElement).value); }}
+      />
+      <button value=">" onClick={nextPage} >&gt;</button>
+    </span>;
+  }
+
+  renderButtons(): JSX.Element {
+    if (this.props.parsedResultSets.t === 'ExtensionParsed' && this.paginationEnabled())
+      return this.renderPageButtons(this.props.parsedResultSets);
+    else
+      return <span />;
+  }
+
   render(): React.ReactNode {
     const { selectedTable } = this.state;
     const resultSets = this.getResultSets();
+    const resultSetNames = this.getResultSetNames(resultSets);
 
     const resultSet = resultSets.find(resultSet => resultSet.schema.name == selectedTable);
     const nonemptyRawResults = resultSets.some(resultSet => resultSet.t == 'RawResultSet' && resultSet.rows.length > 0);
     const numberOfResults = resultSet && renderResultCountString(resultSet);
 
+    const resultSetOptions =
+      resultSetNames.map(name => <option key={name} value={name}>{name}</option>);
+
     return <div>
+      {this.renderButtons()}
       <div className={tableSelectionHeaderClassName}>
         <select value={selectedTable} onChange={this.onTableSelectionChange}>
-          {
-            resultSets.map(resultSet =>
-              <option key={resultSet.schema.name} value={resultSet.schema.name}>
-                {resultSet.schema.name}
-              </option>
-            )
-          }
+          {resultSetOptions}
         </select>
         {numberOfResults}
         {selectedTable === ALERTS_TABLE_NAME ? this.alertTableExtras() : undefined}
@@ -152,7 +254,8 @@ export class ResultTables
           resultsPath={this.props.resultsPath}
           sortState={this.props.sortStates.get(resultSet.schema.name)}
           nonemptyRawResults={nonemptyRawResults}
-          showRawResults={() => { this.setState({ selectedTable: SELECT_TABLE_NAME }); }} />
+          showRawResults={() => { this.setState({ selectedTable: SELECT_TABLE_NAME }); }}
+          offset={this.getOffset()} />
       }
     </div>;
   }

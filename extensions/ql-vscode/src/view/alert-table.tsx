@@ -5,9 +5,10 @@ import * as Keys from '../result-keys';
 import { LocationStyle } from 'semmle-bqrs';
 import * as octicons from './octicons';
 import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection } from './result-table-utils';
-import { PathTableResultSet, onNavigation, NavigationEvent, vscode } from './results';
+import { onNavigation, NavigationEvent, vscode } from './results';
 import { parseSarifPlainTextMessage, parseSarifLocation } from '../sarif-utils';
 import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortState } from '../interface-types';
+import { PathTableResultSet } from '../interface-utils';
 
 export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
 export interface PathTableState {
