@@ -1,4 +1,4 @@
-import { DisposableObject } from 'semmle-vscode-utils';
+import { DisposableObject } from '@github/codeql-vscode-utils';
 import { workspace, Event, EventEmitter, ConfigurationChangeEvent, ConfigurationTarget } from 'vscode';
 import { DistributionManager } from './distribution';
 import { logger } from './logging';

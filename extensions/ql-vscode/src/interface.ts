@@ -2,7 +2,7 @@ import * as crypto from 'crypto';
 import * as path from 'path';
 import * as Sarif from 'sarif';
 import { FivePartLocation, LocationStyle, LocationValue, ResolvableLocationValue, tryGetResolvableLocation, WholeFileLocation } from 'semmle-bqrs';
-import { DisposableObject } from 'semmle-vscode-utils';
+import { DisposableObject } from '@github/codeql-vscode-utils';
 import * as vscode from 'vscode';
 import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Range, Uri, window as Window, workspace } from 'vscode';
 import * as cli from './cli';

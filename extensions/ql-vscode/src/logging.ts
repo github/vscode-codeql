@@ -1,5 +1,5 @@
 import { window as Window, OutputChannel, Progress, Disposable } from 'vscode';
-import { DisposableObject } from 'semmle-vscode-utils';
+import { DisposableObject } from '@github/codeql-vscode-utils';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 

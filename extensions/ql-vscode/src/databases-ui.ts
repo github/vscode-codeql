@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { DisposableObject } from 'semmle-vscode-utils';
+import { DisposableObject } from '@github/codeql-vscode-utils';
 import { commands, Event, EventEmitter, ExtensionContext, ProviderResult, TreeDataProvider, TreeItem, Uri, window, env } from 'vscode';
 import * as cli from './cli';
 import { DatabaseItem, DatabaseManager, getUpgradesDirectories } from './databases';

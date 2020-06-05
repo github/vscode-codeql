@@ -16,7 +16,7 @@
   "projectFolderMaxDepth": 2,
   "gitPolicy": {},
   "repository": {
-    "url": "https://github.com/github/vscode-codeql"
+    "url": "https://github.com/github/vscode-codeql.git"
   },
   "eventHooks": {
     "preRushInstall": [],
@@ -47,13 +47,13 @@
       "projectFolder": "lib/semmle-io-node"
     },
     {
-      "packageName": "semmle-vscode-utils",
-      "projectFolder": "lib/semmle-vscode-utils"
+      "packageName": "@github/codeql-vscode-utils",
+      "projectFolder": "lib/semmle-vscode-utils",
+      "versionPolicyName": "utilities"
     },
     {
       "packageName": "vscode-codeql",
-      "projectFolder": "extensions/ql-vscode",
-      "shouldPublish": true
+      "projectFolder": "extensions/ql-vscode"
     }
   ]
 }
