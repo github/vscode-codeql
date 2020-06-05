@@ -377,7 +377,7 @@ class ExtensionSpecificDistributionManager {
 
   private async getLatestRelease(): Promise<Release> {
     const requiredAssetName = this.getRequiredAssetName();
-    logger.log(`Searching for latest release including ${requiredAssetName}. `);
+    logger.log(`Searching for latest release including ${requiredAssetName}.`);
     return this.createReleasesApiConsumer().getLatestRelease(
       this._versionRange,
       this._config.includePrerelease,
