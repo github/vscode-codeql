@@ -31,8 +31,9 @@
       "projectFolder": "configs/typescript-config"
     },
     {
-      "packageName": "build-tasks",
-      "projectFolder": "tools/build-tasks"
+      "packageName": "@github/codeql-build-tasks",
+      "projectFolder": "tools/build-tasks",
+      "versionPolicyName": "utilities"
     },
     {
       "packageName": "semmle-bqrs",

@@ -1,13 +1,16 @@
 {
-  "name": "build-tasks",
+  "name": "@github/codeql-build-tasks",
   "description": "Internal Gulp tasks",
   "author": "GitHub",
-  "private": true,
+  "private": false,
   "version": "0.0.1",
   "publisher": "GitHub",
   "repository": {
     "type": "git",
-    "url": "https://github.com/github/vscode-codeql"
+    "url": "https://github.com/github/codeql-coreql-team.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   },
   "main": "./out/index",
   "scripts": {
