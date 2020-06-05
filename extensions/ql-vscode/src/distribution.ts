@@ -395,7 +395,6 @@ class ExtensionSpecificDistributionManager {
         return true;
       }
     );
-    return release;
   }
 
   private createReleasesApiConsumer(): ReleasesApiConsumer {
