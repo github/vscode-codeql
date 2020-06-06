@@ -2,6 +2,23 @@
   "name": "@github/codeql-vscode-utils",
   "entries": [
     {
+      "version": "0.0.3",
+      "tag": "@github/codeql-vscode-utils_v0.0.3",
+      "date": "Sat, 06 Jun 2020 06:54:45 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Removed unnecessary dependency on `typescript`"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@github/codeql-build-tasks\" from `^0.0.2` to `^0.0.3`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.0.2",
       "tag": "@github/codeql-vscode-utils_v0.0.2",
       "date": "Fri, 05 Jun 2020 21:52:18 GMT",
