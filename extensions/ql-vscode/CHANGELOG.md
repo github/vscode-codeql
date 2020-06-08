@@ -3,8 +3,8 @@
 ## 1.2.2 - 8 June 2020
 
 - Fix auto-indentation rules.
-- Add ability to download platform-specific releases of the cli if they are available.
-- Fix handling of downloading prerelease versions of the cli.
+- Add ability to download platform-specific releases of the CodeQL CLI if they are available.
+- Fix handling of downloading prerelease versions of the CodeQL CLI.
 - Add pagination for displaying non-interpreted results.
 
 ## 1.2.1 - 29 May 2020
