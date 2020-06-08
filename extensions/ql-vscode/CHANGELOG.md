@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [Unreleased]
+
 ## 1.2.2 - 8 June 2020
 
 - Fix auto-indentation rules.
