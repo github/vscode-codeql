@@ -3,7 +3,7 @@
   "description": "Shared utilities for writing Visual Studio Code extensions",
   "author": "GitHub",
   "private": false,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "publisher": "GitHub",
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
     "format": "tsfmt -r"
   },
   "devDependencies": {
-    "@github/codeql-gulp-tasks": "^0.0.3",
+    "@github/codeql-gulp-tasks": "^0.0.4",
     "@types/node": "^12.0.8",
     "@types/vscode": "^1.39.0",
     "typescript-config": "^0.0.1",

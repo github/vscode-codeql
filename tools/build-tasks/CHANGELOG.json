@@ -1,6 +1,18 @@
 {
-  "name": "@github/codeql-build-tasks",
+  "name": "@github/codeql-gulp-tasks",
   "entries": [
+    {
+      "version": "0.0.4",
+      "tag": "@github/codeql-gulp-tasks_v0.0.4",
+      "date": "Tue, 09 Jun 2020 13:58:46 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Support packages from multiple registries when packaging an extension."
+          }
+        ]
+      }
+    },
     {
       "version": "0.0.3",
       "tag": "@github/codeql-build-tasks_v0.0.3",

@@ -1,6 +1,13 @@
 # Change Log - @github/codeql-vscode-utils
 
-This log was last generated on Sat, 06 Jun 2020 06:54:45 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Jun 2020 13:58:46 GMT and should not be manually modified.
+
+## 0.0.4
+Tue, 09 Jun 2020 13:58:46 GMT
+
+### Patches
+
+- Update dependencies.
 
 ## 0.0.3
 Sat, 06 Jun 2020 06:54:45 GMT
