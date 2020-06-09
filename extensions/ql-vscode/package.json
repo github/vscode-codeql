@@ -568,7 +568,7 @@
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "postinstall": "npm rebuild && node ./node_modules/vscode/bin/install",
     "format": "tsfmt -r",
-    "lint": "eslint src test --ext .ts,.tsx",
+    "lint": "eslint src test --ext .ts,.tsx --max-warnings=0",
     "format-staged": "lint-staged"
   },
   "dependencies": {
