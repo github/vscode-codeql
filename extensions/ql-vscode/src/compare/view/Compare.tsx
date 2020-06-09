@@ -60,8 +60,22 @@ export function Compare(props: {}): JSX.Element {
         <table className="vscode-codeql__compare-body">
           <thead>
             <tr>
-              <td>{comparison.stats.fromQuery?.name}</td>
-              <td>{comparison.stats.toQuery?.name}</td>
+              <td>
+                <a
+                  onClick={() => openQuery("from")}
+                  className="vscode-codeql__compare-open"
+                >
+                  {comparison.stats.fromQuery?.name}
+                </a>
+              </td>
+              <td>
+                <a
+                  onClick={() => openQuery("to")}
+                  className="vscode-codeql__compare-open"
+                >
+                  {comparison.stats.toQuery?.name}
+                </a>
+              </td>
             </tr>
             <tr>
               <td>{comparison.stats.fromQuery?.time}</td>
@@ -103,6 +117,13 @@ export function Compare(props: {}): JSX.Element {
     console.error(err);
     return <div>Error!</div>;
   }
+}
+
+async function openQuery(kind: "from" | "to") {
+  vscode.postMessage({
+    t: "openQuery",
+    kind,
+  });
 }
 
 function createRows(rows: ResultRow[], databaseUri: string) {

@@ -272,54 +272,87 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   });
 }
 
-async function activateWithInstalledDistribution(ctx: ExtensionContext, distributionManager: DistributionManager): Promise<void> {
+async function activateWithInstalledDistribution(
+  ctx: ExtensionContext,
+  distributionManager: DistributionManager
+): Promise<void> {
   beganMainExtensionActivation = true;
   // Remove any error stubs command handlers left over from first part
   // of activation.
-  errorStubs.forEach(stub => stub.dispose());
+  errorStubs.forEach((stub) => stub.dispose());
 
-  logger.log('Initializing configuration listener...');
-  const qlConfigurationListener = await QueryServerConfigListener.createQueryServerConfigListener(distributionManager);
+  logger.log("Initializing configuration listener...");
+  const qlConfigurationListener = await QueryServerConfigListener.createQueryServerConfigListener(
+    distributionManager
+  );
   ctx.subscriptions.push(qlConfigurationListener);
 
-  logger.log('Initializing CodeQL cli server...');
+  logger.log("Initializing CodeQL cli server...");
   const cliServer = new CodeQLCliServer(distributionManager, logger);
   ctx.subscriptions.push(cliServer);
 
-  logger.log('Initializing query server client.');
-  const qs = new qsClient.QueryServerClient(qlConfigurationListener, cliServer, {
-    logger: queryServerLogger,
-  }, task => Window.withProgress({ title: 'CodeQL query server', location: ProgressLocation.Window }, task));
+  logger.log("Initializing query server client.");
+  const qs = new qsClient.QueryServerClient(
+    qlConfigurationListener,
+    cliServer,
+    {
+      logger: queryServerLogger,
+    },
+    (task) =>
+      Window.withProgress(
+        { title: "CodeQL query server", location: ProgressLocation.Window },
+        task
+      )
+  );
   ctx.subscriptions.push(qs);
   await qs.startQueryServer();
 
-  logger.log('Initializing database manager.');
+  logger.log("Initializing database manager.");
   const dbm = new DatabaseManager(ctx, qlConfigurationListener, logger);
   ctx.subscriptions.push(dbm);
-  logger.log('Initializing database panel.');
-  const databaseUI = new DatabaseUI(ctx, cliServer, dbm, qs, getContextStoragePath(ctx));
+  logger.log("Initializing database panel.");
+  const databaseUI = new DatabaseUI(
+    ctx,
+    cliServer,
+    dbm,
+    qs,
+    getContextStoragePath(ctx)
+  );
   ctx.subscriptions.push(databaseUI);
 
-  logger.log('Initializing query history manager.');
+  logger.log("Initializing query history manager.");
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
+  const showResults = async (item: CompletedQuery) =>
+    showResultsForCompletedQuery(item, WebviewReveal.Forced);
+
   const qhm = new QueryHistoryManager(
     ctx,
     queryHistoryConfigurationListener,
-    async item => showResultsForCompletedQuery(item, WebviewReveal.Forced),
-    async (from: CompletedQuery, to: CompletedQuery) => showResultsForComparison(from, to),
+    showResults,
+    async (from: CompletedQuery, to: CompletedQuery) =>
+      showResultsForComparison(from, to),
   );
-  logger.log('Initializing results panel interface.');
+  logger.log("Initializing results panel interface.");
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
   ctx.subscriptions.push(intm);
 
-  logger.log('Initializing compare panel interface.');
-  const cmpm = new CompareInterfaceManager(ctx, dbm, cliServer, queryServerLogger);
+  logger.log("Initializing compare panel interface.");
+  const cmpm = new CompareInterfaceManager(
+    ctx,
+    dbm,
+    cliServer,
+    queryServerLogger,
+    showResults
+  );
   ctx.subscriptions.push(cmpm);
 
-  logger.log('Initializing source archive filesystem provider.');
+  logger.log("Initializing source archive filesystem provider.");
   archiveFilesystemProvider.activate(ctx);
 
-  async function showResultsForComparison(from: CompletedQuery, to: CompletedQuery): Promise<void> {
+  async function showResultsForComparison(
+    from: CompletedQuery,
+    to: CompletedQuery
+  ): Promise<void> {
     try {
       await cmpm.showResults(from, to);
     } catch (e) {
@@ -327,18 +360,30 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     }
   }
 
-  async function showResultsForCompletedQuery(query: CompletedQuery, forceReveal: WebviewReveal): Promise<void> {
+  async function showResultsForCompletedQuery(
+    query: CompletedQuery,
+    forceReveal: WebviewReveal
+  ): Promise<void> {
     await intm.showResults(query, forceReveal, false);
   }
 
-  async function compileAndRunQuery(quickEval: boolean, selectedQuery: Uri | undefined): Promise<void> {
+  async function compileAndRunQuery(
+    quickEval: boolean,
+    selectedQuery: Uri | undefined
+  ): Promise<void> {
     if (qs !== undefined) {
       try {
         const dbItem = await databaseUI.getDatabaseItem();
         if (dbItem === undefined) {
-          throw new Error('Can\'t run query without a selected database');
+          throw new Error("Can't run query without a selected database");
         }
-        const info = await compileAndRunQueryAgainstDatabase(cliServer, qs, dbItem, quickEval, selectedQuery);
+        const info = await compileAndRunQueryAgainstDatabase(
+          cliServer,
+          qs,
+          dbItem,
+          quickEval,
+          selectedQuery
+        );
         const item = qhm.addQuery(info);
         await showResultsForCompletedQuery(item, WebviewReveal.NotForced);
       } catch (e) {
@@ -355,21 +400,28 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
 
   ctx.subscriptions.push(tmpDirDisposal);
 
-  logger.log('Initializing CodeQL language server.');
-  const client = new LanguageClient('CodeQL Language Server', () => spawnIdeServer(qlConfigurationListener), {
-    documentSelector: [
-      { language: 'ql', scheme: 'file' },
-      { language: 'yaml', scheme: 'file', pattern: '**/qlpack.yml' }
-    ],
-    synchronize: {
-      configurationSection: 'codeQL'
+  logger.log("Initializing CodeQL language server.");
+  const client = new LanguageClient(
+    "CodeQL Language Server",
+    () => spawnIdeServer(qlConfigurationListener),
+    {
+      documentSelector: [
+        { language: "ql", scheme: "file" },
+        { language: "yaml", scheme: "file", pattern: "**/qlpack.yml" },
+      ],
+      synchronize: {
+        configurationSection: "codeQL",
+      },
+      // Ensure that language server exceptions are logged to the same channel as its output.
+      outputChannel: ideServerLogger.outputChannel,
     },
-    // Ensure that language server exceptions are logged to the same channel as its output.
-    outputChannel: ideServerLogger.outputChannel
-  }, true);
+    true
+  );
 
-  logger.log('Initializing QLTest interface.');
-  const testExplorerExtension = extensions.getExtension<TestHub>(testExplorerExtensionId);
+  logger.log("Initializing QLTest interface.");
+  const testExplorerExtension = extensions.getExtension<TestHub>(
+    testExplorerExtensionId
+  );
   if (testExplorerExtension) {
     const testHub = testExplorerExtension.exports;
     const testAdapterFactory = new QLTestAdapterFactory(testHub, cliServer);
@@ -379,24 +431,58 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     ctx.subscriptions.push(testUIService);
   }
 
-  logger.log('Registering top-level command palette commands.');
-  ctx.subscriptions.push(commands.registerCommand('codeQL.runQuery', async (uri: Uri | undefined) => await compileAndRunQuery(false, uri)));
-  ctx.subscriptions.push(commands.registerCommand('codeQL.quickEval', async (uri: Uri | undefined) => await compileAndRunQuery(true, uri)));
-  ctx.subscriptions.push(commands.registerCommand('codeQL.quickQuery', async () => displayQuickQuery(ctx, cliServer, databaseUI)));
-  ctx.subscriptions.push(commands.registerCommand('codeQL.restartQueryServer', async () => {
-    await qs.restartQueryServer();
-    helpers.showAndLogInformationMessage('CodeQL Query Server restarted.', { outputLogger: queryServerLogger });
-  }));
-  ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseFolder', () => databaseUI.handleChooseDatabaseFolder()));
-  ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseArchive', () => databaseUI.handleChooseDatabaseArchive()));
-  ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseLgtm', () => databaseUI.handleChooseDatabaseLgtm()));
-  ctx.subscriptions.push(commands.registerCommand('codeQL.chooseDatabaseInternet', () => databaseUI.handleChooseDatabaseInternet()));
+  logger.log("Registering top-level command palette commands.");
+  ctx.subscriptions.push(
+    commands.registerCommand(
+      "codeQL.runQuery",
+      async (uri: Uri | undefined) => await compileAndRunQuery(false, uri)
+    )
+  );
+  ctx.subscriptions.push(
+    commands.registerCommand(
+      "codeQL.quickEval",
+      async (uri: Uri | undefined) => await compileAndRunQuery(true, uri)
+    )
+  );
+  ctx.subscriptions.push(
+    commands.registerCommand("codeQL.quickQuery", async () =>
+      displayQuickQuery(ctx, cliServer, databaseUI)
+    )
+  );
+  ctx.subscriptions.push(
+    commands.registerCommand("codeQL.restartQueryServer", async () => {
+      await qs.restartQueryServer();
+      helpers.showAndLogInformationMessage("CodeQL Query Server restarted.", {
+        outputLogger: queryServerLogger,
+      });
+    })
+  );
+  ctx.subscriptions.push(
+    commands.registerCommand("codeQL.chooseDatabaseFolder", () =>
+      databaseUI.handleChooseDatabaseFolder()
+    )
+  );
+  ctx.subscriptions.push(
+    commands.registerCommand("codeQL.chooseDatabaseArchive", () =>
+      databaseUI.handleChooseDatabaseArchive()
+    )
+  );
+  ctx.subscriptions.push(
+    commands.registerCommand("codeQL.chooseDatabaseLgtm", () =>
+      databaseUI.handleChooseDatabaseLgtm()
+    )
+  );
+  ctx.subscriptions.push(
+    commands.registerCommand("codeQL.chooseDatabaseInternet", () =>
+      databaseUI.handleChooseDatabaseInternet()
+    )
+  );
 
-  logger.log('Starting language server.');
+  logger.log("Starting language server.");
   ctx.subscriptions.push(client.start());
 
   // Jump-to-definition and find-references
-  logger.log('Registering jump-to-definition handlers.');
+  logger.log("Registering jump-to-definition handlers.");
   languages.registerDefinitionProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
     new TemplateQueryDefinitionProvider(cliServer, qs, dbm)
@@ -406,7 +492,7 @@ async function activateWithInstalledDistribution(ctx: ExtensionContext, distribu
     new TemplateQueryReferenceProvider(cliServer, qs, dbm)
   );
 
-  logger.log('Successfully finished extension initialization.');
+  logger.log("Successfully finished extension initialization.");
 }
 
 function getContextStoragePath(ctx: ExtensionContext) {

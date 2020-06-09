@@ -35,10 +35,13 @@ export class CompareInterfaceManager extends DisposableObject {
   private panelLoadedCallBacks: (() => void)[] = [];
 
   constructor(
-    public ctx: ExtensionContext,
-    public databaseManager: DatabaseManager,
-    public cliServer: CodeQLCliServer,
-    public logger: Logger
+    private ctx: ExtensionContext,
+    private databaseManager: DatabaseManager,
+    private cliServer: CodeQLCliServer,
+    private logger: Logger,
+    private showQueryResultsCallback: (
+      item: CompletedQuery
+    ) => Promise<void>
   ) {
     super();
   }
@@ -57,7 +60,11 @@ export class CompareInterfaceManager extends DisposableObject {
       currentResultSetName,
       fromResultSet,
       toResultSet,
-    ] = await this.findCommonResultSetNames(from, to, selectedResultSetName);
+    ] = await this.findCommonResultSetNames(
+      from,
+      to,
+      selectedResultSetName
+    );
     if (currentResultSetName) {
       await this.postMessage({
         t: "setComparisons",
@@ -147,7 +154,9 @@ export class CompareInterfaceManager extends DisposableObject {
     });
   }
 
-  private async handleMsgFromView(msg: FromCompareViewMessage): Promise<void> {
+  private async handleMsgFromView(
+    msg: FromCompareViewMessage
+  ): Promise<void> {
     switch (msg.t) {
       case "compareViewLoaded":
         this.panelLoaded = true;
@@ -161,6 +170,10 @@ export class CompareInterfaceManager extends DisposableObject {
 
       case "viewSourceFile":
         await jumpToLocation(msg, this.databaseManager, this.logger);
+        break;
+
+      case "openQuery":
+        await this.openQuery(msg.kind);
         break;
     }
   }
@@ -183,7 +196,9 @@ export class CompareInterfaceManager extends DisposableObject {
     const fromSchemaNames = fromSchemas["result-sets"].map(
       (schema) => schema.name
     );
-    const toSchemaNames = toSchemas["result-sets"].map((schema) => schema.name);
+    const toSchemaNames = toSchemas["result-sets"].map(
+      (schema) => schema.name
+    );
     const commonResultSetNames = fromSchemaNames.filter((name) =>
       toSchemaNames.includes(name)
     );
@@ -229,7 +244,10 @@ export class CompareInterfaceManager extends DisposableObject {
     if (!schema) {
       throw new Error(`Schema ${resultSetName} not found.`);
     }
-    const chunk = await this.cliServer.bqrsDecode(resultsPath, resultSetName);
+    const chunk = await this.cliServer.bqrsDecode(
+      resultsPath,
+      resultSetName
+    );
     const adaptedSchema = adaptSchema(schema);
     return adaptBqrs(adaptedSchema, chunk);
   }
@@ -240,5 +258,13 @@ export class CompareInterfaceManager extends DisposableObject {
   ): QueryCompareResult {
     // Only compare columns that have the same name
     return resultsDiff(fromResults, toResults);
+  }
+
+  private openQuery(kind: "from" | "to") {
+    const toOpen =
+      kind === "from" ? this.comparePair?.from : this.comparePair?.to;
+    if (toOpen) {
+      this.showQueryResultsCallback(toOpen);
+    }
   }
 }
