@@ -25,7 +25,7 @@ import {
   ResultRow,
   ParsedResultSets,
 } from "../adapt";
-import { ResultSet } from "../interface-utils";
+import { ResultSet } from "../interface-types";
 import { vscode } from "./vscode-api";
 
 /**

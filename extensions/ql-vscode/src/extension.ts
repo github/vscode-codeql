@@ -22,7 +22,7 @@ import * as helpers from './helpers';
 import { assertNever } from './helpers-pure';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
-import { WebviewReveal } from './webview-utils';
+import { WebviewReveal } from './interface-utils';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
 import { QueryHistoryManager } from './query-history';
 import { CompletedQuery } from './query-results';

@@ -1,6 +1,27 @@
 import * as sarif from 'sarif';
-import { ResolvableLocationValue, ColumnSchema } from 'semmle-bqrs';
-import { ResultRow, ParsedResultSets } from './adapt';
+import {
+  ResolvableLocationValue,
+  ColumnSchema,
+  ResultSetSchema,
+} from "semmle-bqrs";
+import { ResultRow, ParsedResultSets, RawResultSet } from './adapt';
+
+/**
+ * This module contains types and code that are shared between
+ * the webview and the extension.
+ */
+
+export const SELECT_TABLE_NAME = "#select";
+export const ALERTS_TABLE_NAME = "alerts";
+
+export type RawTableResultSet = { t: "RawResultSet" } & RawResultSet;
+export type PathTableResultSet = {
+  t: "SarifResultSet";
+  readonly schema: ResultSetSchema;
+  name: string;
+} & Interpretation;
+
+export type ResultSet = RawTableResultSet | PathTableResultSet;
 
 /**
  * Only ever show this many results per run in interpreted results.
@@ -228,3 +249,26 @@ export type QueryCompareResult = {
   from: ResultRow[];
   to: ResultRow[];
 };
+
+/**
+ * Extract the name of the default result. Prefer returning
+ * 'alerts', or '#select'. Otherwise return the first in the list.
+ *
+ * Note that this is the only function in this module. It must be
+ * placed here since it is shared across the webview boundary.
+ *
+ * We should consider moving to a separate module to ensure this
+ * one is types only.
+ *
+ * @param resultSetNames
+ */
+export function getDefaultResultSetName(
+  resultSetNames: readonly string[]
+): string {
+  // Choose first available result set from the array
+  return [
+    ALERTS_TABLE_NAME,
+    SELECT_TABLE_NAME,
+    resultSetNames[0],
+  ].filter((resultSetName) => resultSetNames.includes(resultSetName))[0];
+}
