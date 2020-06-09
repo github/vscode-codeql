@@ -165,3 +165,8 @@ td.vscode-codeql__path-index-cell {
   margin: 20px 0;
   width: 100%;
 }
+
+.vscode-codeql__compare-open {
+  cursor: pointer;
+  text-decoration: underline;
+}
