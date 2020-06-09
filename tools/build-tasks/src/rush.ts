@@ -1,4 +1,5 @@
 import * as fs from 'fs-extra';
+import * as glob from 'glob-promise';
 import * as jsonc from 'jsonc-parser';
 import { Shrinkwrap, ShrinkwrapPackage } from './pnpm';
 import * as path from 'path';
@@ -22,10 +23,30 @@ const peerDependencyVersionPattern = /^\/((?:@(?:[^\/]+)\/)?[^\/]+)\/([^\/]+)\//
 export class RushContext {
   private shrinkwrap?: Shrinkwrap;
   private shrinkwrapPackages?: Map<string, ShrinkwrapPackage>;
-  private packageRepository: string;
+  private readonly packageStore: string;
 
   constructor(public readonly rushConfig: RushConfiguration) {
-    this.packageRepository = path.join(rushConfig.pnpmStoreFolder, '2/registry.npmjs.org');
+    this.packageStore = path.join(rushConfig.pnpmStoreFolder, '2');
+  }
+
+  private async findPackageInRepository(name: string, version: string): Promise<string> {
+    // Packages may be pulled from multiple registries, each of which has its own directory in the
+    // pnpm store. Search for the package name in any of these directories. We use `*.*` to match
+    // the directory name to avoid searching the `local` directory, which does not represent a
+    // package registry.
+    const results = await glob(`*.*/${name}/${version}/package`, {
+      absolute: true,
+      cwd: this.packageStore
+    });
+    if (results.length === 0) {
+      throw new Error(`Package '${name}:${version}' not found in package repository.`);
+    }
+    else if (results.length > 1) {
+      throw new Error(`Multiple copies of package '${name}:${version}' found in package repository.`);
+    }
+    else {
+      return results[0];
+    }
   }
 
   private getRushProjectPath(name: string): string | undefined {
@@ -86,10 +107,7 @@ export class RushContext {
       pkg = await this.getShrinkwrapPackage(name, version);
       // Ensure a proper version number. pnpm uses syntax like 3.4.0_glob@7.1.6 for peer dependencies
       version = version.split('_')[0];
-      packagePath = path.join(this.packageRepository, name, version, 'package');
-      if (!await fs.pathExists(packagePath)) {
-        throw new Error(`Package '${name}:${version}' not found in package repository.`);
-      }
+      packagePath = await this.findPackageInRepository(name, version);
       packagePath = await fs.realpath(packagePath);
       config = jsonc.parse(await fs.readFile(path.join(packagePath, 'package.json'), 'utf8'));
     }
