@@ -9,7 +9,7 @@ const {
   compileTextMateGrammar,
   copyTestData,
   copyViewCss
-} = require('@github/codeql-build-tasks');
+} = require('@github/codeql-gulp-tasks');
 const { compileView } = require('./webpack');
 
 exports.buildWithoutPackage = gulp.parallel(compileTypeScript, compileTextMateGrammar, compileView, copyTestData, copyViewCss);

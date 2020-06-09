@@ -31,7 +31,7 @@
       "projectFolder": "configs/typescript-config"
     },
     {
-      "packageName": "@github/codeql-build-tasks",
+      "packageName": "@github/codeql-gulp-tasks",
       "projectFolder": "tools/build-tasks",
       "versionPolicyName": "utilities"
     },

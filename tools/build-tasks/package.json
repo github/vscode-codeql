@@ -1,5 +1,5 @@
 {
-  "name": "@github/codeql-build-tasks",
+  "name": "@github/codeql-gulp-tasks",
   "description": "Internal Gulp tasks",
   "author": "GitHub",
   "private": false,
