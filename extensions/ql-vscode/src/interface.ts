@@ -49,8 +49,8 @@ import {
   shownLocationDecoration,
   shownLocationLineDecoration,
   jumpToLocation,
-} from "./webview-utils";
-import { getDefaultResultSetName } from "./interface-utils";
+} from "./interface-utils";
+import { getDefaultResultSetName } from "./interface-types";
 
 /**
  * interface.ts

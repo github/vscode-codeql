@@ -1,11 +1,23 @@
 import * as React from 'react';
-import { DatabaseInfo, Interpretation, RawResultsSortState, QueryMetadata, ResultsPaths, InterpretedResultsSortState, RAW_RESULTS_PAGE_SIZE } from '../interface-types';
+import {
+  DatabaseInfo,
+  Interpretation,
+  RawResultsSortState,
+  QueryMetadata,
+  ResultsPaths,
+  InterpretedResultsSortState,
+  RAW_RESULTS_PAGE_SIZE,
+  ResultSet,
+  ALERTS_TABLE_NAME,
+  SELECT_TABLE_NAME,
+  getDefaultResultSetName,
+} from "../interface-types";
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
 import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName, alertExtrasClassName } from './result-table-utils';
 import { ParsedResultSets, ExtensionParsedResultSets } from '../adapt';
-import { ResultSet, ALERTS_TABLE_NAME, SELECT_TABLE_NAME, getDefaultResultSet } from '../interface-utils';
 import { vscode } from './vscode-api';
+
 
 /**
  * Properties for the `ResultTables` component.
@@ -274,6 +286,14 @@ class ResultTable extends React.Component<ResultTableProps, {}> {
         {...this.props} resultSet={resultSet} />;
       case 'SarifResultSet': return <PathTable
         {...this.props} resultSet={resultSet} />;
+      default:
+        throw new Error('Invalid type');
     }
   }
+}
+
+function getDefaultResultSet(resultSets: readonly ResultSet[]): string {
+  return getDefaultResultSetName(
+    resultSets.map((resultSet) => resultSet.schema.name)
+  );
 }

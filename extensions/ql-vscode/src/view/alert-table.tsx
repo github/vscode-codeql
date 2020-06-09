@@ -6,7 +6,7 @@ import { LocationStyle } from 'semmle-bqrs';
 import * as octicons from './octicons';
 import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection } from './result-table-utils';
 import { onNavigation, NavigationEvent } from './results';
-import { PathTableResultSet } from '../interface-utils';
+import { PathTableResultSet } from '../interface-types';
 import { parseSarifPlainTextMessage, parseSarifLocation } from '../sarif-utils';
 import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortState } from '../interface-types';
 import { vscode } from './vscode-api';

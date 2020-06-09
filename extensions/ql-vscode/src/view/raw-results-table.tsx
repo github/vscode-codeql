@@ -1,9 +1,10 @@
 import * as React from "react";
 import { ResultTableProps, className } from "./result-table-utils";
 import { RAW_RESULTS_LIMIT, RawResultsSortState } from "../interface-types";
-import { RawTableResultSet } from "../interface-utils";
+import { RawTableResultSet } from "../interface-types";
 import RawTableHeader from "./RawTableHeader";
 import RawTableRow from "./RawTableRow";
+import { ResultRow } from "../adapt";
 
 export type RawTableProps = ResultTableProps & {
   resultSet: RawTableResultSet;
@@ -26,7 +27,7 @@ export class RawTable extends React.Component<RawTableProps, {}> {
       dataRows = dataRows.slice(0, RAW_RESULTS_LIMIT);
     }
 
-    const tableRows = dataRows.map((row, rowIndex) =>
+    const tableRows = dataRows.map((row: ResultRow, rowIndex: number) =>
       <RawTableRow
         key={rowIndex}
         rowIndex={rowIndex}

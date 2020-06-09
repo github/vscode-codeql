@@ -18,10 +18,7 @@ import {
 import { Logger } from "../logging";
 import { CodeQLCliServer } from "../cli";
 import { DatabaseManager } from "../databases";
-import {
-  getHtmlForWebview,
-  jumpToLocation,
-} from "../webview-utils";
+import { getHtmlForWebview, jumpToLocation } from "../interface-utils";
 import { adaptSchema, adaptBqrs, RawResultSet } from "../adapt";
 import { BQRSInfo } from "../bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
@@ -190,7 +187,8 @@ export class CompareInterfaceManager extends DisposableObject {
     const commonResultSetNames = fromSchemaNames.filter((name) =>
       toSchemaNames.includes(name)
     );
-    const currentResultSetName = selectedResultSetName || commonResultSetNames[0];
+    const currentResultSetName =
+      selectedResultSetName || commonResultSetNames[0];
     const fromResultSet = await this.getResultSet(
       fromSchemas,
       currentResultSetName,
@@ -213,7 +211,11 @@ export class CompareInterfaceManager extends DisposableObject {
     if (!this.comparePair?.from || !this.comparePair.to) {
       return;
     }
-    await this.showResults(this.comparePair.from, this.comparePair.to, newResultSetName);
+    await this.showResults(
+      this.comparePair.from,
+      this.comparePair.to,
+      newResultSetName
+    );
   }
 
   private async getResultSet(
