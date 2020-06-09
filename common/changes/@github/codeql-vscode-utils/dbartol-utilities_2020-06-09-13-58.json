@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@github/codeql-vscode-utils",
+      "comment": "Update dependencies.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@github/codeql-vscode-utils",
+  "email": "dbartol@github.com"
+}

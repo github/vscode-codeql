@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@github/codeql-gulp-tasks",
+      "comment": "Support packages from multiple registries when packaging an extension.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@github/codeql-gulp-tasks",
+  "email": "dbartol@github.com"
+}
