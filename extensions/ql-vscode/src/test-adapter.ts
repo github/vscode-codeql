@@ -15,7 +15,7 @@ import {
 import { TestAdapterRegistrar } from 'vscode-test-adapter-util';
 import { QLTestFile, QLTestNode, QLTestDirectory, QLTestDiscovery } from './qltest-discovery';
 import { Event, EventEmitter, CancellationTokenSource, CancellationToken } from 'vscode';
-import { DisposableObject } from 'semmle-vscode-utils';
+import { DisposableObject } from '@github/codeql-vscode-utils';
 import { QLPackDiscovery } from './qlpack-discovery';
 import { CodeQLCliServer } from './cli';
 import { getOnDiskWorkspaceFolders } from './helpers';

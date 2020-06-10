@@ -6,7 +6,7 @@ import * as cli from './cli';
 import { ExtensionContext } from 'vscode';
 import { showAndLogErrorMessage, showAndLogWarningMessage, showAndLogInformationMessage } from './helpers';
 import { zipArchiveScheme, encodeSourceArchiveUri, decodeSourceArchiveUri } from './archive-filesystem-provider';
-import { DisposableObject } from 'semmle-vscode-utils';
+import { DisposableObject } from '@github/codeql-vscode-utils';
 import { QueryServerConfig } from './config';
 import { Logger, logger } from './logging';
 

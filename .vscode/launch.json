@@ -17,7 +17,7 @@
         "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-bqrs/out/**/*.js",
         "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-io/out/**/*.js",
         "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-io-node/out/**/*.js",
-        "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-vscode-utils/out/**/*.js"
+        "${workspaceRoot}/dist/vscode-codeql/node_modules/@github/codeql-vscode-utils/out/**/*.js"
       ],
       "preLaunchTask": "Build"
     },

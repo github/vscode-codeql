@@ -1,4 +1,4 @@
-import { DisposableObject } from 'semmle-vscode-utils';
+import { DisposableObject } from '@github/codeql-vscode-utils';
 
 /**
  * Base class for "discovery" operations, which scan the file system to find specific kinds of

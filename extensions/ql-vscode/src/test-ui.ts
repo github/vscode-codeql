@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Uri, TextDocumentShowOptions, commands, window } from 'vscode';
 import { TestTreeNode } from './test-tree-node';
-import { DisposableObject, UIService } from 'semmle-vscode-utils';
+import { DisposableObject, UIService } from '@github/codeql-vscode-utils';
 import { TestHub, TestController, TestAdapter, TestRunStartedEvent, TestRunFinishedEvent, TestEvent, TestSuiteEvent } from 'vscode-test-adapter-api';
 import { QLTestAdapter, getExpectedFile, getActualFile } from './test-adapter';
 import { logger } from './logging';

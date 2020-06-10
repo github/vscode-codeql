@@ -1,13 +1,16 @@
 {
-  "name": "build-tasks",
+  "name": "@github/codeql-gulp-tasks",
   "description": "Internal Gulp tasks",
   "author": "GitHub",
-  "private": true,
-  "version": "0.0.1",
+  "private": false,
+  "version": "0.0.4",
   "publisher": "GitHub",
   "repository": {
     "type": "git",
-    "url": "https://github.com/github/vscode-codeql"
+    "url": "https://github.com/github/codeql-coreql-team.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   },
   "main": "./out/index",
   "scripts": {
@@ -20,6 +23,7 @@
     "ansi-colors": "^4.0.1",
     "child-process-promise": "^2.2.1",
     "fs-extra": "^8.1.0",
+    "glob": "^7.1.4",
     "glob-promise": "^3.4.0",
     "gulp": "^4.0.2",
     "gulp-sourcemaps": "^2.6.5",
