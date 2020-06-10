@@ -221,32 +221,7 @@ export class QueryHistoryManager {
 
   async handleShowQueryLog(queryHistoryItem: CompletedQuery) {
     if (queryHistoryItem.logFileLocation) {
-      const uri = vscode.Uri.file(queryHistoryItem.logFileLocation);
-      try {
-        await vscode.window.showTextDocument(uri);
-      } catch (e) {
-        if (e.message.includes('Files above 50MB cannot be synchronized with extensions')) {
-          const res = await helpers.showBinaryChoiceDialog(
-            `VS Code does not allow extensions to open files >50MB. This file
-exceeds that limit. Do you want to open it outside of VS Code?
-
-You can also try manually opening it inside VS Code by selecting
-the file in the file explorer and dragging it into the workspace.`
-          );
-          if (res) {
-            try {
-              await vscode.commands.executeCommand('revealFileInOS', uri);
-            } catch (e) {
-              helpers.showAndLogErrorMessage(e.message);
-            }
-          }
-        } else {
-          helpers.showAndLogErrorMessage(`Could not open log file ${queryHistoryItem.logFileLocation}`);
-          logger.log(e.message);
-          logger.log(e.stack);
-        }
-
-      }
+      await this.tryOpenExternalFile(queryHistoryItem.logFileLocation);
     } else {
       helpers.showAndLogWarningMessage('No log file available');
     }
@@ -271,8 +246,9 @@ the file in the file explorer and dragging it into the workspace.`
     try {
       const hasInterpretedResults = await queryHistoryItem.query.canHaveInterpretedResults();
       if (hasInterpretedResults) {
-        const textDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(queryHistoryItem.query.resultsPaths.interpretedResultsPath));
-        await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+        await this.tryOpenExternalFile(
+          queryHistoryItem.query.resultsPaths.interpretedResultsPath
+        );
       }
       else {
         const label = queryHistoryItem.getLabel();
@@ -365,6 +341,39 @@ the file in the file explorer and dragging it into the workspace.`
         // using `reveal` if the tree view was not visible when the current element was added.
         this.treeDataProvider.refresh();
         this.treeView.reveal(current);
+      }
+    }
+  }
+
+  private async tryOpenExternalFile(fileLocation: string) {
+    const uri = vscode.Uri.file(fileLocation);
+    try {
+      await vscode.window.showTextDocument(uri);
+    } catch (e) {
+      if (
+        e.message.includes(
+          "Files above 50MB cannot be synchronized with extensions"
+        ) ||
+        e.message.includes("too large to open")
+      ) {
+        const res = await helpers.showBinaryChoiceDialog(
+          `VS Code does not allow extensions to open files >50MB. This file
+exceeds that limit. Do you want to open it outside of VS Code?
+
+You can also try manually opening it inside VS Code by selecting
+the file in the file explorer and dragging it into the workspace.`
+        );
+        if (res) {
+          try {
+            await vscode.commands.executeCommand("revealFileInOS", uri);
+          } catch (e) {
+            helpers.showAndLogErrorMessage(e.message);
+          }
+        }
+      } else {
+        helpers.showAndLogErrorMessage(`Could not open file ${fileLocation}`);
+        logger.log(e.message);
+        logger.log(e.stack);
       }
     }
   }
