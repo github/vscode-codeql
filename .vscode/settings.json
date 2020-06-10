@@ -34,5 +34,7 @@
     "resolvePluginsRelativeTo": "./extensions/ql-vscode"
   },
   "editor.formatOnSave": false,
-  "prettier.singleQuote": true
+  "prettier.singleQuote": true,
+  "typescript.preferences.quoteStyle": "single",
+  "javascript.preferences.quoteStyle": "single"
 }
