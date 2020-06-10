@@ -4,10 +4,11 @@
  */
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.20.0",
-  "pnpmVersion": "4.8.0",
+  "rushVersion": "5.24.4",
+  "pnpmVersion": "5.1.6",
   "pnpmOptions": {
-    "strictPeerDependencies": true
+    "strictPeerDependencies": true,
+    "pnpmStore": "local"
   },
   "nodeSupportedVersionRange": ">=10.13.0 <15.0.0",
   "suppressNodeLtsWarning": true,

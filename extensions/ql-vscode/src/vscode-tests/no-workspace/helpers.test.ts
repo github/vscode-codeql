@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import "mocha";
-import { ExtensionContext, Memento } from "vscode";
+import { ExtensionContext, Memento, Uri } from "vscode";
 import { InvocationRateLimiter } from "../../helpers";
 
 describe("Invocation rate limiter", () => {
@@ -97,6 +97,8 @@ class MockExtensionContext implements ExtensionContext {
   storagePath = "";
   globalStoragePath = "";
   logPath = "";
+  extensionUri = Uri.parse("file://hucairz", true);
+  environmentVariableCollection: any = {};
 }
 
 class MockMemento implements Memento {

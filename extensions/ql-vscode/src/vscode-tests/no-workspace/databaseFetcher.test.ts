@@ -21,7 +21,7 @@ describe("databaseFetcher", () => {
   describe("convertToDatabaseUrl", () => {
     let quickPickSpy: sinon.SinonStub;
     beforeEach(() => {
-      quickPickSpy = sinon.stub(window, "showQuickPick");
+      quickPickSpy = sinon.stub(window as any, "showQuickPick");
     });
 
     afterEach(() => {

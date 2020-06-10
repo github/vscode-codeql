@@ -26,23 +26,32 @@ export class RushContext {
   private readonly packageStore: string;
 
   constructor(public readonly rushConfig: RushConfiguration) {
-    this.packageStore = path.join(rushConfig.pnpmStoreFolder, '2');
+    this.packageStore = path.normalize(path.join(
+      rushConfig.pnpmOptions.pnpmStorePath,
+      "..",
+      "node_modules",
+      ".pnpm"
+    ));
   }
 
   private async findPackageInRepository(name: string, version: string): Promise<string> {
-    // Packages may be pulled from multiple registries, each of which has its own directory in the
-    // pnpm store. Search for the package name in any of these directories. We use `*.*` to match
-    // the directory name to avoid searching the `local` directory, which does not represent a
-    // package registry.
-    const results = await glob(`*.*/${name}/${version}/package`, {
+    // See https://pnpm.js.org/en/symlinked-node-modules-structure for how packages are laid out
+    // note that this will fail if we ever get into a situation where we have multiple versions
+    // of the same package due to peer dependencies.
+    // For more information on that, see https://pnpm.js.org/en/how-peers-are-resolved
+    const results = await glob(`${name}@${version}*/node_modules/${name}`, {
       absolute: true,
       cwd: this.packageStore
     });
     if (results.length === 0) {
-      throw new Error(`Package '${name}:${version}' not found in package repository.`);
+      throw new Error(
+        `Package '${name}:${version}' not found in package repository located at ${this.packageStore}`
+      );
     }
     else if (results.length > 1) {
-      throw new Error(`Multiple copies of package '${name}:${version}' found in package repository.`);
+      throw new Error(
+        `Multiple copies of package '${name}:${version}' found in package repository at ${this.packageStore}: ${results}`
+      );
     }
     else {
       return results[0];

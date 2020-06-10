@@ -138,7 +138,7 @@ class HistoryTreeDataProvider implements vscode.TreeDataProvider<CompletedQuery>
   }
 
   refresh() {
-    this._onDidChangeTreeData.fire();
+    this._onDidChangeTreeData.fire(undefined);
   }
 }
 

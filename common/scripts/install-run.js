@@ -131,7 +131,7 @@ function getNpmPath() {
             }
             else {
                 // We aren't on Windows - assume we're on *NIX or Darwin
-                _npmPath = childProcess.execSync('which npm', { stdio: [] }).toString();
+                _npmPath = childProcess.execSync('command -v npm', { stdio: [] }).toString();
             }
         }
         catch (e) {
@@ -292,8 +292,8 @@ function _cleanInstallFolder(rushTempFolder, packageInstallFolder) {
         }
         const nodeModulesFolder = path.resolve(packageInstallFolder, NODE_MODULES_FOLDER_NAME);
         if (fs.existsSync(nodeModulesFolder)) {
-            const rushRecyclerFolder = _ensureAndJoinPath(rushTempFolder, 'rush-recycler', `install-run-${Date.now().toString()}`);
-            fs.renameSync(nodeModulesFolder, rushRecyclerFolder);
+            const rushRecyclerFolder = _ensureAndJoinPath(rushTempFolder, 'rush-recycler');
+            fs.renameSync(nodeModulesFolder, path.join(rushRecyclerFolder, `install-run-${Date.now().toString()}`));
         }
     }
     catch (e) {
@@ -378,10 +378,11 @@ function installAndRun(packageName, packageVersion, packageBinName, packageBinAr
     const statusMessageLine = new Array(statusMessage.length + 1).join('-');
     console.log(os.EOL + statusMessage + os.EOL + statusMessageLine + os.EOL);
     const binPath = _getBinPath(packageInstallFolder, packageBinName);
+    const binFolderPath = path.resolve(packageInstallFolder, NODE_MODULES_FOLDER_NAME, '.bin');
     const result = childProcess.spawnSync(binPath, packageBinArgs, {
         stdio: 'inherit',
         cwd: process.cwd(),
-        env: process.env
+        env: Object.assign({}, process.env, { PATH: [binFolderPath, process.env.PATH].join(path.delimiter) })
     });
     if (result.status !== null) {
         return result.status;
