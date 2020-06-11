@@ -297,12 +297,17 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private handleSetCurrentDatabase = async (uri: Uri): Promise<DatabaseItem | undefined> => {
-    // Assume user has selected an archive if the file has a .zip extension
-    if (uri.path.endsWith('.zip')) {
-      return await importArchiveDatabase(uri.toString(true), this.databaseManager, this.storagePath);
-    }
+    try {
+      // Assume user has selected an archive if the file has a .zip extension
+      if (uri.path.endsWith('.zip')) {
+        return await importArchiveDatabase(uri.toString(true), this.databaseManager, this.storagePath);
+      }
 
-    return await this.setCurrentDatabase(uri);
+      return await this.setCurrentDatabase(uri);
+    } catch (e) {
+      showAndLogErrorMessage(`Could not set database to ${path.basename(uri.fsPath)}. Reason: ${e.message}`);
+      return undefined;
+    }
   }
 
   private handleRemoveDatabase = (databaseItem: DatabaseItem): void => {
