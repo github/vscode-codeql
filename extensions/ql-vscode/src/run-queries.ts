@@ -226,6 +226,7 @@ async function convertToQlPath(filePath: string): Promise<string> {
       const fileName = path.basename(filePath);
       const fileNames = await promisify<string, string[]>(fs.readdir)(dir);
       for (const name of fileNames) {
+        // leave the locale argument empty so that the default OS locale is used.
         if (fileName.localeCompare(name, undefined, { sensitivity: 'accent' }) === 0) {
           return path.join(dir, name);
         }

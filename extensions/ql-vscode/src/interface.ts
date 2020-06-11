@@ -4,8 +4,9 @@ import * as Sarif from 'sarif';
 import { FivePartLocation, LocationStyle, LocationValue, ResolvableLocationValue, tryGetResolvableLocation, WholeFileLocation } from 'semmle-bqrs';
 import { DisposableObject } from '@github/codeql-vscode-utils';
 import * as vscode from 'vscode';
-import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Range, Uri, window as Window, workspace } from 'vscode';
+import { Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, languages, Location, Range, Uri, window as Window, workspace, env } from 'vscode';
 import * as cli from './cli';
+
 import { CodeQLCliServer } from './cli';
 import { DatabaseItem, DatabaseManager } from './databases';
 import { showAndLogErrorMessage } from './helpers';
@@ -108,7 +109,7 @@ function sortInterpretedResults(results: Sarif.Result[], sortState: InterpretedR
         results.sort((a, b) =>
           a.message.text === undefined ? 0 :
             b.message.text === undefined ? 0 :
-              multiplier * (a.message.text?.localeCompare(b.message.text)));
+              multiplier * (a.message.text?.localeCompare(b.message.text, env.language)));
         break;
       default:
         assertNever(sortState.sortBy);
