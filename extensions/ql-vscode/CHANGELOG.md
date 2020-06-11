@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Report error when selecting invalid database.
+
 ## 1.2.2 - 8 June 2020
 
 - Fix auto-indentation rules.
