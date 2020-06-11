@@ -80,15 +80,15 @@ export class DistributionManager implements DistributionProvider {
 
     /**
      * Specifies whether prerelease versions of the CodeQL CLI should be accepted.
-     * 
+     *
      * Suppose a user sets the includePrerelease config option, obtains a prerelease, then decides
      * they no longer want a prerelease, so unsets the includePrerelease config option.
      * Unsetting the includePrerelease config option should trigger an update check, and this
      * update check should present them an update that returns them back to a non-prerelease
      * version.
-     * 
+     *
      * Therefore, we adopt the following:
-     * 
+     *
      * - If the user is managing their own CLI, they can use a prerelease without specifying the
      * includePrerelease option.
      * - If the user is using an extension-managed CLI, then prereleases are only accepted when the
