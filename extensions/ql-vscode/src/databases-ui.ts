@@ -1,6 +1,8 @@
 import * as path from 'path';
 import { DisposableObject } from '@github/codeql-vscode-utils';
 import { commands, Event, EventEmitter, ExtensionContext, ProviderResult, TreeDataProvider, TreeItem, Uri, window, env } from 'vscode';
+import * as fs from 'fs-extra';
+
 import * as cli from './cli';
 import { DatabaseItem, DatabaseManager, getUpgradesDirectories } from './databases';
 import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from './helpers';
@@ -9,7 +11,6 @@ import { clearCacheInDatabase, UserCancellationException } from './run-queries';
 import * as qsClient from './queryserver-client';
 import { upgradeDatabase } from './upgrades';
 import { importArchiveDatabase, promptImportInternetDatabase, promptImportLgtmDatabase } from './databaseFetcher';
-import * as fs from 'fs-extra';
 
 type ThemableIconPath = { light: string; dark: string } | string;
 
@@ -98,9 +99,9 @@ class DatabaseTreeDataProvider extends DisposableObject
       return this.databaseManager.databaseItems.slice(0).sort((db1, db2) => {
         switch (this.sortOrder) {
           case SortOrder.NameAsc:
-            return db1.name.localeCompare(db2.name);
+            return db1.name.localeCompare(db2.name, env.language);
           case SortOrder.NameDesc:
-            return db2.name.localeCompare(db1.name);
+            return db2.name.localeCompare(db1.name, env.language);
           case SortOrder.DateAddedAsc:
             return (db1.dateAdded || 0) - (db2.dateAdded || 0);
           case SortOrder.DateAddedDesc:

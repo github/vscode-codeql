@@ -1,4 +1,4 @@
-import { commands, Disposable, ExtensionContext, extensions, languages, ProgressLocation, ProgressOptions, Uri, window as Window } from 'vscode';
+import { commands, Disposable, ExtensionContext, extensions, languages, ProgressLocation, ProgressOptions, Uri, window as Window, env } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
@@ -178,7 +178,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
       if (e instanceof GithubRateLimitedError) {
         alertFunction(`Rate limited while trying to ${taskDescription}. Please try again after ` +
-          `your rate limit window resets at ${e.rateLimitResetDate.toLocaleString()}.`);
+          `your rate limit window resets at ${e.rateLimitResetDate.toLocaleString(env.language)}.`);
       } else if (e instanceof GithubApiError) {
         alertFunction(`Encountered GitHub API error while trying to ${taskDescription}. ` + e);
       }

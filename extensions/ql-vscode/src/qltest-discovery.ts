@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { QLPackDiscovery } from './qlpack-discovery';
 import { Discovery } from './discovery';
-import { EventEmitter, Event, Uri, RelativePattern } from 'vscode';
+import { EventEmitter, Event, Uri, RelativePattern, env } from 'vscode';
 import { MultiFileSystemWatcher } from '@github/codeql-vscode-utils';
 import { CodeQLCliServer } from './cli';
 
@@ -55,7 +55,7 @@ export class QLTestDirectory extends QLTestNode {
   }
 
   public finish(): void {
-    this._children.sort((a, b) => a.name.localeCompare(b.name));
+    this._children.sort((a, b) => a.name.localeCompare(b.name, env.language));
     for (const child of this._children) {
       child.finish();
     }

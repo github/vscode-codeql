@@ -1,3 +1,5 @@
+import { env } from 'vscode';
+
 import { QueryWithResults, tmpDir, QueryInfo } from "./run-queries";
 import * as messages from './messages';
 import * as helpers from './helpers';
@@ -43,7 +45,7 @@ export class CompletedQuery implements QueryWithResults {
     this.options = evaluation.options;
     this.dispose = evaluation.dispose;
 
-    this.time = new Date().toLocaleString();
+    this.time = new Date().toLocaleString(env.language);
     this.sortedResultsInfo = new Map();
   }
 
