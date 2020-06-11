@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - Report error when selecting invalid database.
+- Add descriptive message for database archive import failure.
 
 ## 1.2.2 - 8 June 2020
 
