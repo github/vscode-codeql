@@ -158,7 +158,11 @@ export async function importArchiveDatabase(
       );
     }
   } catch (e) {
-    showAndLogErrorMessage(e.message);
+    if (e.message.includes("unexpected end of file")) {
+      showAndLogErrorMessage("Database is corrupt or too large. Try unzipping outside of VS Code and importing the unzipped folder instead.");
+    } else {
+      showAndLogErrorMessage(e.message);
+    }
   }
   return item;
 }
