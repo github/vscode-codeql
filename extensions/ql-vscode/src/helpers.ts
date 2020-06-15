@@ -139,7 +139,7 @@ export function getOnDiskWorkspaceFolders() {
   const workspaceFolders = workspace.workspaceFolders || [];
   const diskWorkspaceFolders: string[] = [];
   for (const workspaceFolder of workspaceFolders) {
-    if (workspaceFolder.uri.scheme === "file")
+    if (workspaceFolder.uri.scheme === 'file')
       diskWorkspaceFolders.push(workspaceFolder.uri.fsPath);
   }
   return diskWorkspaceFolders;
@@ -213,7 +213,7 @@ export class InvocationRateLimiter<T> {
   private readonly _func: () => Promise<T>;
   private readonly _funcIdentifier: string;
 
-  private static readonly _invocationRateLimiterPrefix = "invocationRateLimiter_lastInvocationDate_";
+  private static readonly _invocationRateLimiterPrefix = 'invocationRateLimiter_lastInvocationDate_';
 }
 
 export enum InvocationRateLimiterResultKind {

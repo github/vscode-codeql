@@ -1,9 +1,9 @@
-import { expect } from "chai";
-import "mocha";
-import { ExtensionContext, Memento } from "vscode";
-import { InvocationRateLimiter } from "../../helpers";
+import { expect } from 'chai';
+import 'mocha';
+import { ExtensionContext, Memento } from 'vscode';
+import { InvocationRateLimiter } from '../../helpers';
 
-describe("Invocation rate limiter", () => {
+describe('Invocation rate limiter', () => {
   // 1 January 2020
   let currentUnixTime = 1577836800;
 
@@ -19,18 +19,18 @@ describe("Invocation rate limiter", () => {
     return new InvocationRateLimiter(new MockExtensionContext(), funcIdentifier, func, s => createDate(s));
   }
 
-  it("initially invokes function", async () => {
+  it('initially invokes function', async () => {
     let numTimesFuncCalled = 0;
-    const invocationRateLimiter = createInvocationRateLimiter("funcid", async () => {
+    const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
       numTimesFuncCalled++;
     });
     await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
     expect(numTimesFuncCalled).to.equal(1);
   });
 
-  it("doesn't invoke function again if no time has passed", async () => {
+  it('doesn\'t invoke function again if no time has passed', async () => {
     let numTimesFuncCalled = 0;
-    const invocationRateLimiter = createInvocationRateLimiter("funcid", async () => {
+    const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
       numTimesFuncCalled++;
     });
     await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
@@ -38,9 +38,9 @@ describe("Invocation rate limiter", () => {
     expect(numTimesFuncCalled).to.equal(1);
   });
 
-  it("doesn't invoke function again if requested time since last invocation hasn't passed", async () => {
+  it('doesn\'t invoke function again if requested time since last invocation hasn\'t passed', async () => {
     let numTimesFuncCalled = 0;
-    const invocationRateLimiter = createInvocationRateLimiter("funcid", async () => {
+    const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
       numTimesFuncCalled++;
     });
     await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
@@ -49,9 +49,9 @@ describe("Invocation rate limiter", () => {
     expect(numTimesFuncCalled).to.equal(1);
   });
 
-  it("invokes function again immediately if requested time since last invocation is 0 seconds", async () => {
+  it('invokes function again immediately if requested time since last invocation is 0 seconds', async () => {
     let numTimesFuncCalled = 0;
-    const invocationRateLimiter = createInvocationRateLimiter("funcid", async () => {
+    const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
       numTimesFuncCalled++;
     });
     await invocationRateLimiter.invokeFunctionIfIntervalElapsed(0);
@@ -59,9 +59,9 @@ describe("Invocation rate limiter", () => {
     expect(numTimesFuncCalled).to.equal(2);
   });
 
-  it("invokes function again after requested time since last invocation has elapsed", async () => {
+  it('invokes function again after requested time since last invocation has elapsed', async () => {
     let numTimesFuncCalled = 0;
-    const invocationRateLimiter = createInvocationRateLimiter("funcid", async () => {
+    const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
       numTimesFuncCalled++;
     });
     await invocationRateLimiter.invokeFunctionIfIntervalElapsed(1);
@@ -70,13 +70,13 @@ describe("Invocation rate limiter", () => {
     expect(numTimesFuncCalled).to.equal(2);
   });
 
-  it("invokes functions with different rate limiters", async () => {
+  it('invokes functions with different rate limiters', async () => {
     let numTimesFuncACalled = 0;
-    const invocationRateLimiterA = createInvocationRateLimiter("funcid", async () => {
+    const invocationRateLimiterA = createInvocationRateLimiter('funcid', async () => {
       numTimesFuncACalled++;
     });
     let numTimesFuncBCalled = 0;
-    const invocationRateLimiterB = createInvocationRateLimiter("funcid", async () => {
+    const invocationRateLimiterB = createInvocationRateLimiter('funcid', async () => {
       numTimesFuncBCalled++;
     });
     await invocationRateLimiterA.invokeFunctionIfIntervalElapsed(100);
@@ -90,13 +90,13 @@ class MockExtensionContext implements ExtensionContext {
   subscriptions: { dispose(): unknown }[] = [];
   workspaceState: Memento = new MockMemento();
   globalState: Memento = new MockMemento();
-  extensionPath = "";
+  extensionPath = '';
   asAbsolutePath(_relativePath: string): string {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
-  storagePath = "";
-  globalStoragePath = "";
-  logPath = "";
+  storagePath = '';
+  globalStoragePath = '';
+  logPath = '';
 }
 
 class MockMemento implements Memento {

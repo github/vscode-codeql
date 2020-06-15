@@ -129,7 +129,7 @@ export class InterfaceManager extends DisposableObject {
   private _panelLoadedCallBacks: (() => void)[] = [];
 
   private readonly _diagnosticCollection = languages.createDiagnosticCollection(
-    `codeql-query-results`
+    'codeql-query-results'
   );
 
   constructor(
@@ -148,20 +148,20 @@ export class InterfaceManager extends DisposableObject {
     logger.log('Registering path-step navigation commands.');
     this.push(
       vscode.commands.registerCommand(
-        "codeQLQueryResults.nextPathStep",
+        'codeQLQueryResults.nextPathStep',
         this.navigatePathStep.bind(this, 1)
       )
     );
     this.push(
       vscode.commands.registerCommand(
-        "codeQLQueryResults.previousPathStep",
+        'codeQLQueryResults.previousPathStep',
         this.navigatePathStep.bind(this, -1)
       )
     );
   }
 
   navigatePathStep(direction: number): void {
-    this.postMessage({ t: "navigatePath", direction });
+    this.postMessage({ t: 'navigatePath', direction });
   }
 
   // Returns the webview panel, creating it if it doesn't already
@@ -170,8 +170,8 @@ export class InterfaceManager extends DisposableObject {
     if (this._panel == undefined) {
       const { ctx } = this;
       const panel = (this._panel = Window.createWebviewPanel(
-        "resultsView", // internal name
-        "CodeQL Query Results", // user-visible name
+        'resultsView', // internal name
+        'CodeQL Query Results', // user-visible name
         { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
         {
           enableScripts: true,
@@ -179,7 +179,7 @@ export class InterfaceManager extends DisposableObject {
           retainContextWhenHidden: true,
           localResourceRoots: [
             vscode.Uri.file(tmpDir.name),
-            vscode.Uri.file(path.join(this.ctx.extensionPath, "out"))
+            vscode.Uri.file(path.join(this.ctx.extensionPath, 'out'))
           ]
         }
       ));
@@ -191,10 +191,10 @@ export class InterfaceManager extends DisposableObject {
         ctx.subscriptions
       );
       const scriptPathOnDisk = vscode.Uri.file(
-        ctx.asAbsolutePath("out/resultsView.js")
+        ctx.asAbsolutePath('out/resultsView.js')
       );
       const stylesheetPathOnDisk = vscode.Uri.file(
-        ctx.asAbsolutePath("out/resultsView.css")
+        ctx.asAbsolutePath('out/resultsView.css')
       );
       getHtmlForWebview(
         panel.webview,
@@ -215,12 +215,12 @@ export class InterfaceManager extends DisposableObject {
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
       showAndLogErrorMessage(
-        "Failed to sort results since evaluation info was unknown."
+        'Failed to sort results since evaluation info was unknown.'
       );
       return;
     }
     // Notify the webview that it should expect new results.
-    await this.postMessage({ t: "resultsUpdating" });
+    await this.postMessage({ t: 'resultsUpdating' });
     await update(this._displayedQuery);
     await this.showResults(
       this._displayedQuery,
@@ -233,7 +233,7 @@ export class InterfaceManager extends DisposableObject {
     msg: FromResultsViewMsg
   ): Promise<void> {
     switch (msg.t) {
-      case "viewSourceFile": {
+      case 'viewSourceFile': {
         const databaseItem = this.databaseManager.findDatabaseItem(
           Uri.parse(msg.databaseUri)
         );
@@ -244,7 +244,7 @@ export class InterfaceManager extends DisposableObject {
             if (e instanceof Error) {
               if (e.message.match(/File not found/)) {
                 vscode.window.showErrorMessage(
-                  `Original file of this result is not in the database's source archive.`
+                  'Original file of this result is not in the database\'s source archive.'
                 );
               } else {
                 this.logger.log(
@@ -258,7 +258,7 @@ export class InterfaceManager extends DisposableObject {
         }
         break;
       }
-      case "toggleDiagnostics": {
+      case 'toggleDiagnostics': {
         if (msg.visible) {
           const databaseItem = this.databaseManager.findDatabaseItem(
             Uri.parse(msg.databaseUri)
@@ -276,12 +276,12 @@ export class InterfaceManager extends DisposableObject {
         }
         break;
       }
-      case "resultViewLoaded":
+      case 'resultViewLoaded':
         this._panelLoaded = true;
         this._panelLoadedCallBacks.forEach(cb => cb());
         this._panelLoadedCallBacks = [];
         break;
-      case "changeSort":
+      case 'changeSort':
         await this.changeSortState(query =>
           query.updateSortState(
             this.cliServer,
@@ -290,12 +290,12 @@ export class InterfaceManager extends DisposableObject {
           )
         );
         break;
-      case "changeInterpretedSort":
+      case 'changeInterpretedSort':
         await this.changeSortState(query =>
           query.updateInterpretedSortState(this.cliServer, msg.sortState)
         );
         break;
-      case "changePage":
+      case 'changePage':
         await this.showPageOfResults(msg.selectedTable, msg.pageNumber);
         break;
       default:
@@ -360,10 +360,10 @@ export class InterfaceManager extends DisposableObject {
       // is not visible; it's in a not-currently-viewed tab. Show a
       // more asynchronous message to not so abruptly interrupt
       // user's workflow by immediately revealing the panel.
-      const showButton = "View Results";
+      const showButton = 'View Results';
       const queryName = results.queryName;
       const resultPromise = vscode.window.showInformationMessage(
-        `Finished running query ${queryName.length > 0 ? ` "${queryName}"` : ""}.`,
+        `Finished running query ${queryName.length > 0 ? ` "${queryName}"` : ''}.`,
         showButton
       );
       // Address this click asynchronously so we still update the
@@ -379,12 +379,12 @@ export class InterfaceManager extends DisposableObject {
       if (EXPERIMENTAL_BQRS_SETTING.getValue()) {
         const schemas = await this.cliServer.bqrsInfo(results.query.resultsPaths.resultsPath, RAW_RESULTS_PAGE_SIZE);
 
-        const resultSetNames = schemas["result-sets"].map(resultSet => resultSet.name);
+        const resultSetNames = schemas['result-sets'].map(resultSet => resultSet.name);
 
         // This may not wind up being the page we actually show, if there are interpreted results,
         // but speculatively send it anyway.
         const selectedTable = getDefaultResultSetName(resultSetNames);
-        const schema = schemas["result-sets"].find(resultSet => resultSet.name == selectedTable)!;
+        const schema = schemas['result-sets'].find(resultSet => resultSet.name == selectedTable)!;
         if (schema === undefined) {
           return { t: 'WebviewParsed' };
         }
@@ -408,7 +408,7 @@ export class InterfaceManager extends DisposableObject {
     };
 
     await this.postMessage({
-      t: "setState",
+      t: 'setState',
       interpretation,
       origResultsPaths: results.query.resultsPaths,
       resultsPath: this.convertPathToWebviewUri(
@@ -441,9 +441,9 @@ export class InterfaceManager extends DisposableObject {
 
     const schemas = await this.cliServer.bqrsInfo(results.query.resultsPaths.resultsPath, RAW_RESULTS_PAGE_SIZE);
 
-    const resultSetNames = schemas["result-sets"].map(resultSet => resultSet.name);
+    const resultSetNames = schemas['result-sets'].map(resultSet => resultSet.name);
 
-    const schema = schemas["result-sets"].find(resultSet => resultSet.name == selectedTable)!;
+    const schema = schemas['result-sets'].find(resultSet => resultSet.name == selectedTable)!;
     if (schema === undefined)
       throw new Error(`Query result set '${selectedTable}' not found.`);
 
@@ -461,7 +461,7 @@ export class InterfaceManager extends DisposableObject {
     };
 
     await this.postMessage({
-      t: "setState",
+      t: 'setState',
       interpretation: this._interpretation,
       origResultsPaths: results.query.resultsPaths,
       resultsPath: this.convertPathToWebviewUri(
@@ -602,7 +602,7 @@ export class InterfaceManager extends DisposableObject {
 
     if (!sarif.runs || !sarif.runs[0].results) {
       this.logger.log(
-        "Didn't find a run in the sarif results. Error processing sarif?"
+        'Didn\'t find a run in the sarif results. Error processing sarif?'
       );
       return;
     }
@@ -612,11 +612,11 @@ export class InterfaceManager extends DisposableObject {
     for (const result of sarif.runs[0].results) {
       const message = result.message.text;
       if (message === undefined) {
-        this.logger.log("Sarif had result without plaintext message");
+        this.logger.log('Sarif had result without plaintext message');
         continue;
       }
       if (!result.locations) {
-        this.logger.log("Sarif had result without location");
+        this.logger.log('Sarif had result without location');
         continue;
       }
 
@@ -624,12 +624,12 @@ export class InterfaceManager extends DisposableObject {
         result.locations[0],
         sourceLocationPrefix
       );
-      if (sarifLoc.t == "NoLocation") {
+      if (sarifLoc.t == 'NoLocation') {
         continue;
       }
       const resultLocation = tryResolveLocation(sarifLoc, databaseItem);
       if (!resultLocation) {
-        this.logger.log("Sarif location was not resolvable " + sarifLoc);
+        this.logger.log('Sarif location was not resolvable ' + sarifLoc);
         continue;
       }
       const parsedMessage = parseSarifPlainTextMessage(message);
@@ -641,7 +641,7 @@ export class InterfaceManager extends DisposableObject {
       }
       const resultMessageChunks: string[] = [];
       for (const section of parsedMessage) {
-        if (typeof section === "string") {
+        if (typeof section === 'string') {
           resultMessageChunks.push(section);
         } else {
           resultMessageChunks.push(section.text);
@@ -649,7 +649,7 @@ export class InterfaceManager extends DisposableObject {
             relatedLocationsById[section.dest],
             sourceLocationPrefix
           );
-          if (sarifChunkLoc.t == "NoLocation") {
+          if (sarifChunkLoc.t == 'NoLocation') {
             continue;
           }
           const referenceLocation = tryResolveLocation(
@@ -668,7 +668,7 @@ export class InterfaceManager extends DisposableObject {
       }
       const diagnostic = new Diagnostic(
         resultLocation.range,
-        resultMessageChunks.join(""),
+        resultMessageChunks.join(''),
         DiagnosticSeverity.Warning
       );
       diagnostic.relatedInformation = relatedInformation;

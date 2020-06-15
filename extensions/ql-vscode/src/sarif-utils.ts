@@ -1,6 +1,6 @@
-import * as Sarif from "sarif";
-import * as path from "path";
-import { LocationStyle, ResolvableLocationValue } from "semmle-bqrs";
+import * as Sarif from 'sarif';
+import * as path from 'path';
+import { LocationStyle, ResolvableLocationValue } from 'semmle-bqrs';
 
 export interface SarifLink {
   dest: number;
@@ -23,7 +23,7 @@ export type SarifMessageComponent = string | SarifLink
  * Unescape "[", "]" and "\\" like in sarif plain text messages
  */
 export function unescapeSarifText(message: string): string {
-  return message.replace(/\\\[/g, "[").replace(/\\\]/g, "]").replace(/\\\\/, "\\");
+  return message.replace(/\\\[/g, '[').replace(/\\\]/g, ']').replace(/\\\\/, '\\');
 }
 
 export function parseSarifPlainTextMessage(message: string): SarifMessageComponent[] {
@@ -38,8 +38,8 @@ export function parseSarifPlainTextMessage(message: string): SarifMessageCompone
   let curIndex = 0;
   while ((result = linkRegex.exec(message)) !== null) {
     results.push(unescapeSarifText(message.substring(curIndex, result.index)));
-    const linkText = result.groups!["linkText"];
-    const linkTarget = +result.groups!["linkTarget"];
+    const linkText = result.groups!['linkText'];
+    const linkTarget = +result.groups!['linkTarget'];
     results.push({ dest: linkTarget, text: unescapeSarifText(linkText) });
     curIndex = result.index + result[0].length;
   }

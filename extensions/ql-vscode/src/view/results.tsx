@@ -336,4 +336,4 @@ Rdom.render(
   document.getElementById('root')
 );
 
-vscode.postMessage({ t: "resultViewLoaded" });
+vscode.postMessage({ t: 'resultViewLoaded' });

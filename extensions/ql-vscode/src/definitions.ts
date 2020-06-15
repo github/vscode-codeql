@@ -1,16 +1,16 @@
 import * as fs from 'fs-extra';
 import * as yaml from 'js-yaml';
 import * as tmp from 'tmp';
-import * as vscode from "vscode";
-import { decodeSourceArchiveUri, zipArchiveScheme } from "./archive-filesystem-provider";
-import { ColumnKindCode, EntityValue, getResultSetSchema, LineColumnLocation, UrlValue } from "./bqrs-cli-types";
-import { CodeQLCliServer } from "./cli";
-import { DatabaseItem, DatabaseManager } from "./databases";
+import * as vscode from 'vscode';
+import { decodeSourceArchiveUri, zipArchiveScheme } from './archive-filesystem-provider';
+import { ColumnKindCode, EntityValue, getResultSetSchema, LineColumnLocation, UrlValue } from './bqrs-cli-types';
+import { CodeQLCliServer } from './cli';
+import { DatabaseItem, DatabaseManager } from './databases';
 import * as helpers from './helpers';
 import { CachedOperation } from './helpers';
-import * as messages from "./messages";
-import { QueryServerClient } from "./queryserver-client";
-import { compileAndRunQueryAgainstDatabase, QueryWithResults } from "./run-queries";
+import * as messages from './messages';
+import { QueryServerClient } from './queryserver-client';
+import { compileAndRunQueryAgainstDatabase, QueryWithResults } from './run-queries';
 
 /**
  * Run templated CodeQL queries to find definitions and references in
@@ -19,8 +19,8 @@ import { compileAndRunQueryAgainstDatabase, QueryWithResults } from "./run-queri
  * or from a selected identifier.
  */
 
-const TEMPLATE_NAME = "selectedSourceFile";
-const SELECT_QUERY_NAME = "#select";
+const TEMPLATE_NAME = 'selectedSourceFile';
+const SELECT_QUERY_NAME = '#select';
 
 enum KeyType {
   DefinitionQuery = 'DefinitionQuery',
@@ -29,15 +29,15 @@ enum KeyType {
 
 function tagOfKeyType(keyType: KeyType): string {
   switch (keyType) {
-    case KeyType.DefinitionQuery: return "ide-contextual-queries/local-definitions";
-    case KeyType.ReferenceQuery: return "ide-contextual-queries/local-references";
+    case KeyType.DefinitionQuery: return 'ide-contextual-queries/local-definitions';
+    case KeyType.ReferenceQuery: return 'ide-contextual-queries/local-references';
   }
 }
 
 function nameOfKeyType(keyType: KeyType): string {
   switch (keyType) {
-    case KeyType.DefinitionQuery: return "definitions";
-    case KeyType.ReferenceQuery: return "references";
+    case KeyType.DefinitionQuery: return 'definitions';
+    case KeyType.ReferenceQuery: return 'references';
   }
 }
 
@@ -166,7 +166,7 @@ async function getLinksForUriString(
   if (db) {
     const qlpack = await qlpackOfDatabase(cli, db);
     if (qlpack === undefined) {
-      throw new Error("Can't infer qlpack from database source archive");
+      throw new Error('Can\'t infer qlpack from database source archive');
     }
     const links: FullLocationLink[] = [];
     for (const query of await resolveQueries(cli, qlpack, keyType)) {
@@ -191,7 +191,7 @@ async function getLinksForUriString(
 }
 
 function fileRangeFromURI(uri: UrlValue, db: DatabaseItem): FileRange | undefined {
-  if (typeof uri === "string") {
+  if (typeof uri === 'string') {
     return undefined;
   } else if ('startOffset' in uri) {
     return undefined;
@@ -203,7 +203,7 @@ function fileRangeFromURI(uri: UrlValue, db: DatabaseItem): FileRange | undefine
       Math.max(0, loc.endColumn));
     try {
       const parsed = vscode.Uri.parse(uri.uri, true);
-      if (parsed.scheme === "file") {
+      if (parsed.scheme === 'file') {
         return { file: db.resolveSourceFile(parsed.fsPath), range };
       }
       return undefined;

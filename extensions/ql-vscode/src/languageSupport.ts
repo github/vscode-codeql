@@ -1,4 +1,4 @@
-import { IndentAction, languages } from "vscode";
+import { IndentAction, languages } from 'vscode';
 
 
 /**
@@ -18,9 +18,9 @@ export function install() {
   langConfig.wordPattern = new RegExp(langConfig.wordPattern);
   langConfig.onEnterRules = onEnterRules;
   langConfig.indentationRules = {
-		decreaseIndentPattern: /^((?!.*?\/\*).*\*\/)?\s*[\}\]].*$/,
-		increaseIndentPattern: /^((?!\/\/).)*(\{[^}"'`]*|\([^)"'`]*|\[[^\]"'`]*)$/
-	};
+    decreaseIndentPattern: /^((?!.*?\/\*).*\*\/)?\s*[\}\]].*$/,
+    increaseIndentPattern: /^((?!\/\/).)*(\{[^}"'`]*|\([^)"'`]*|\[[^\]"'`]*)$/
+  };
 
   languages.setLanguageConfiguration('ql', langConfig);
   languages.setLanguageConfiguration('qll', langConfig);

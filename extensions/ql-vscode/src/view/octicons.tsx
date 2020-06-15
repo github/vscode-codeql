@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 
 /**
  * These icons come from https://github.com/microsoft/vscode-icons

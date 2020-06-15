@@ -95,7 +95,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
   const codeQlVersionRange = DEFAULT_DISTRIBUTION_VERSION_RANGE;
   const distributionManager = new DistributionManager(ctx, distributionConfigListener, codeQlVersionRange);
 
-  const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
+  const shouldUpdateOnNextActivationKey = 'shouldUpdateOnNextActivation';
 
   registerErrorStubs([checkForUpdatesCommand], command => () => {
     helpers.showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
@@ -118,7 +118,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
     switch (result.kind) {
       case DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult:
-        logger.log("Didn't perform CodeQL CLI update check since a check was already performed within the previous " +
+        logger.log('Didn\'t perform CodeQL CLI update check since a check was already performed within the previous ' +
           `${minSecondsSinceLastUpdateCheck} seconds.`);
         break;
       case DistributionUpdateCheckResultKind.AlreadyUpToDate:
@@ -155,16 +155,16 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 
   async function installOrUpdateDistribution(config: DistributionUpdateConfig): Promise<void> {
     if (isInstallingOrUpdatingDistribution) {
-      throw new Error("Already installing or updating CodeQL CLI");
+      throw new Error('Already installing or updating CodeQL CLI');
     }
     isInstallingOrUpdatingDistribution = true;
     const codeQlInstalled = await distributionManager.getCodeQlPathWithoutVersionCheck() !== undefined;
     const willUpdateCodeQl = ctx.globalState.get(shouldUpdateOnNextActivationKey);
     const messageText = willUpdateCodeQl
-      ? "Updating CodeQL CLI"
+      ? 'Updating CodeQL CLI'
       : codeQlInstalled
-        ? "Checking for updates to CodeQL CLI"
-        : "Installing CodeQL CLI";
+        ? 'Checking for updates to CodeQL CLI'
+        : 'Installing CodeQL CLI';
 
     try {
       await installOrUpdateDistributionWithProgressTitle(messageText, config);
@@ -173,8 +173,8 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
       // or updating the distribution.
       const alertFunction = (codeQlInstalled && !config.isUserInitiated) ?
         helpers.showAndLogWarningMessage : helpers.showAndLogErrorMessage;
-      const taskDescription = (willUpdateCodeQl ? "update" :
-        codeQlInstalled ? "check for updates to" : "install") + " CodeQL CLI";
+      const taskDescription = (willUpdateCodeQl ? 'update' :
+        codeQlInstalled ? 'check for updates to' : 'install') + ' CodeQL CLI';
 
       if (e instanceof GithubRateLimitedError) {
         alertFunction(`Rate limited while trying to ${taskDescription}. Please try again after ` +
@@ -198,7 +198,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
         const fixGuidanceMessage = (() => {
           switch (result.distribution.kind) {
             case DistributionKind.ExtensionManaged:
-              return "Please update the CodeQL CLI by running the \"CodeQL: Check for CLI Updates\" command.";
+              return 'Please update the CodeQL CLI by running the "CodeQL: Check for CLI Updates" command.';
             case DistributionKind.CustomPathConfig:
               return `Please update the \"CodeQL CLI Executable Path\" setting to point to a CLI in the version range ${codeQlVersionRange}.`;
             case DistributionKind.PathEnvironmentVariable:
@@ -208,15 +208,15 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
         })();
 
         helpers.showAndLogWarningMessage(`The current version of the CodeQL CLI (${result.version.raw}) ` +
-          "is incompatible with this extension. " + fixGuidanceMessage);
+          'is incompatible with this extension. ' + fixGuidanceMessage);
         break;
       }
       case FindDistributionResultKind.UnknownCompatibilityDistribution:
-        helpers.showAndLogWarningMessage("Compatibility with the configured CodeQL CLI could not be determined. " +
-          "You may experience problems using the extension.");
+        helpers.showAndLogWarningMessage('Compatibility with the configured CodeQL CLI could not be determined. ' +
+          'You may experience problems using the extension.');
         break;
       case FindDistributionResultKind.NoDistribution:
-        helpers.showAndLogErrorMessage("The CodeQL CLI could not be found.");
+        helpers.showAndLogErrorMessage('The CodeQL CLI could not be found.');
         break;
       default:
         assertNever(result);
@@ -234,7 +234,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
       await activateWithInstalledDistribution(ctx, distributionManager);
     } else if (distributionResult.kind === FindDistributionResultKind.NoDistribution) {
       registerErrorStubs([checkForUpdatesCommand], command => async () => {
-        const installActionName = "Install CodeQL CLI";
+        const installActionName = 'Install CodeQL CLI';
         const chosenAction = await helpers.showAndLogErrorMessage(`Can't execute ${command}: missing CodeQL CLI.`, {
           items: [installActionName]
         });

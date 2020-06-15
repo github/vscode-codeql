@@ -31,7 +31,7 @@ interface ResultTablesState {
   selectedPage: string; // stringified selected page
 }
 
-const UPDATING_RESULTS_TEXT_CLASS_NAME = "vscode-codeql__result-tables-updating-text";
+const UPDATING_RESULTS_TEXT_CLASS_NAME = 'vscode-codeql__result-tables-updating-text';
 
 function getResultCount(resultSet: ResultSet): number {
   switch (resultSet.t) {

@@ -1,7 +1,7 @@
-import { expect } from "chai";
-import * as path from "path";
-import * as tmp from "tmp";
-import { window, ViewColumn, Uri } from "vscode";
+import { expect } from 'chai';
+import * as path from 'path';
+import * as tmp from 'tmp';
+import { window, ViewColumn, Uri } from 'vscode';
 import { fileUriToWebviewUri, webviewUriToFileUri } from '../../interface';
 
 describe('webview uri conversion', function() {
@@ -27,7 +27,7 @@ describe('webview uri conversion', function() {
     });
 
     // CSP allowing nothing, to prevent warnings.
-    const html = `<html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none';"></head></html>`;
+    const html = '<html><head><meta http-equiv="Content-Security-Policy" content="default-src \'none\';"></head></html>';
     panel.webview.html = html;
     return {
       fileUriOnDisk,
@@ -42,7 +42,7 @@ describe('webview uri conversion', function() {
     expect(reconstructedFileUri.toString(true)).to.equal(fileUriOnDisk.toString(true));
   });
 
-  it("does not double-encode # in URIs", function() {
+  it('does not double-encode # in URIs', function() {
     const { fileUriOnDisk, panel } = setupWebview('#');
     const webviewUri = fileUriToWebviewUri(panel, fileUriOnDisk);
     const parsedUri = Uri.parse(webviewUri);

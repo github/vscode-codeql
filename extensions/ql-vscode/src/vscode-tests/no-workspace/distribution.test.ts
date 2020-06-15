@@ -1,71 +1,71 @@
-import * as chai from "chai";
-import * as path from "path";
-import * as fetch from "node-fetch";
-import "chai/register-should";
-import * as semver from "semver";
-import * as sinonChai from "sinon-chai";
-import * as sinon from "sinon";
-import * as pq from "proxyquire";
-import "mocha";
+import * as chai from 'chai';
+import * as path from 'path';
+import * as fetch from 'node-fetch';
+import 'chai/register-should';
+import * as semver from 'semver';
+import * as sinonChai from 'sinon-chai';
+import * as sinon from 'sinon';
+import * as pq from 'proxyquire';
+import 'mocha';
 
-import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer } from "../../distribution";
+import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer } from '../../distribution';
 
 const proxyquire = pq.noPreserveCache();
 chai.use(sinonChai);
 const expect = chai.expect;
 
-describe("Releases API consumer", () => {
-  const owner = "someowner";
-  const repo = "somerepo";
-  const unconstrainedVersionRange = new semver.Range("*");
+describe('Releases API consumer', () => {
+  const owner = 'someowner';
+  const repo = 'somerepo';
+  const unconstrainedVersionRange = new semver.Range('*');
 
-  describe("picking the latest release", () => {
+  describe('picking the latest release', () => {
     const sampleReleaseResponse: GithubRelease[] = [
       {
-        "assets": [],
-        "created_at": "2019-09-01T00:00:00Z",
-        "id": 1,
-        "name": "",
-        "prerelease": false,
-        "tag_name": "v2.1.0"
+        'assets': [],
+        'created_at': '2019-09-01T00:00:00Z',
+        'id': 1,
+        'name': '',
+        'prerelease': false,
+        'tag_name': 'v2.1.0'
       },
       {
-        "assets": [],
-        "created_at": "2019-08-10T00:00:00Z",
-        "id": 2,
-        "name": "",
-        "prerelease": false,
-        "tag_name": "v3.1.1"
+        'assets': [],
+        'created_at': '2019-08-10T00:00:00Z',
+        'id': 2,
+        'name': '',
+        'prerelease': false,
+        'tag_name': 'v3.1.1'
       },
       {
-        "assets": [{
+        'assets': [{
           id: 1,
-          name: "exampleAsset.txt",
+          name: 'exampleAsset.txt',
           size: 1
         }],
-        "created_at": "2019-09-05T00:00:00Z",
-        "id": 3,
-        "name": "",
-        "prerelease": false,
-        "tag_name": "v2.0.0"
+        'created_at': '2019-09-05T00:00:00Z',
+        'id': 3,
+        'name': '',
+        'prerelease': false,
+        'tag_name': 'v2.0.0'
       },
       {
-        "assets": [],
-        "created_at": "2019-08-11T00:00:00Z",
-        "id": 4,
-        "name": "",
-        "prerelease": true,
-        "tag_name": "v3.1.2-pre-1.1"
+        'assets': [],
+        'created_at': '2019-08-11T00:00:00Z',
+        'id': 4,
+        'name': '',
+        'prerelease': true,
+        'tag_name': 'v3.1.2-pre-1.1'
       },
       // Release ID 5 is older than release ID 4 but its version has a higher precedence, so release
       // ID 5 should be picked over release ID 4.
       {
-        "assets": [],
-        "created_at": "2019-08-09T00:00:00Z",
-        "id": 5,
-        "name": "",
-        "prerelease": true,
-        "tag_name": "v3.1.2-pre-2.0"
+        'assets': [],
+        'created_at': '2019-08-09T00:00:00Z',
+        'id': 5,
+        'name': '',
+        'prerelease': true,
+        'tag_name': 'v3.1.2-pre-2.0'
       },
     ];
 
@@ -78,50 +78,50 @@ describe("Releases API consumer", () => {
       }
     }
 
-    it("picked release has version with the highest precedence", async () => {
+    it('picked release has version with the highest precedence', async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       const latestRelease = await consumer.getLatestRelease(unconstrainedVersionRange);
       expect(latestRelease.id).to.equal(2);
     });
 
-    it("version of picked release is within the version range", async () => {
+    it('version of picked release is within the version range', async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
-      const latestRelease = await consumer.getLatestRelease(new semver.Range("2.*.*"));
+      const latestRelease = await consumer.getLatestRelease(new semver.Range('2.*.*'));
       expect(latestRelease.id).to.equal(1);
     });
 
-    it("fails if none of the releases are within the version range", async () => {
+    it('fails if none of the releases are within the version range', async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       await chai.expect(
-        consumer.getLatestRelease(new semver.Range("5.*.*"))
+        consumer.getLatestRelease(new semver.Range('5.*.*'))
       ).to.be.rejectedWith(Error);
     });
 
-    it("picked release passes additional compatibility test if an additional compatibility test is specified", async () => {
+    it('picked release passes additional compatibility test if an additional compatibility test is specified', async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       const latestRelease = await consumer.getLatestRelease(
-        new semver.Range("2.*.*"),
+        new semver.Range('2.*.*'),
         true,
-        release => release.assets.some(asset => asset.name === "exampleAsset.txt")
+        release => release.assets.some(asset => asset.name === 'exampleAsset.txt')
       );
       expect(latestRelease.id).to.equal(3);
     });
 
-    it("fails if none of the releases pass the additional compatibility test", async () => {
+    it('fails if none of the releases pass the additional compatibility test', async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       await chai.expect(consumer.getLatestRelease(
-        new semver.Range("2.*.*"),
+        new semver.Range('2.*.*'),
         true,
-        release => release.assets.some(asset => asset.name === "otherExampleAsset.txt")
+        release => release.assets.some(asset => asset.name === 'otherExampleAsset.txt')
       )).to.be.rejectedWith(Error);
     });
 
-    it("picked release is the most recent prerelease when includePrereleases is set", async () => {
+    it('picked release is the most recent prerelease when includePrereleases is set', async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       const latestRelease = await consumer.getLatestRelease(unconstrainedVersionRange, true);
@@ -129,17 +129,17 @@ describe("Releases API consumer", () => {
     });
   });
 
-  it("gets correct assets for a release", async () => {
+  it('gets correct assets for a release', async () => {
     const expectedAssets: GithubReleaseAsset[] = [
       {
-        "id": 1,
-        "name": "firstAsset",
-        "size": 11
+        'id': 1,
+        'name': 'firstAsset',
+        'size': 11
       },
       {
-        "id": 2,
-        "name": "secondAsset",
-        "size": 12
+        'id': 2,
+        'name': 'secondAsset',
+        'size': 12
       }
     ];
 
@@ -147,12 +147,12 @@ describe("Releases API consumer", () => {
       protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
         if (apiPath === `/repos/${owner}/${repo}/releases`) {
           const responseBody: GithubRelease[] = [{
-            "assets": expectedAssets,
-            "created_at": "2019-09-01T00:00:00Z",
-            "id": 1,
-            "name": "Release 1",
-            "prerelease": false,
-            "tag_name": "v2.0.0"
+            'assets': expectedAssets,
+            'created_at': '2019-09-01T00:00:00Z',
+            'id': 1,
+            'name': 'Release 1',
+            'prerelease': false,
+            'tag_name': 'v2.0.0'
           }];
 
           return Promise.resolve(new fetch.Response(JSON.stringify(responseBody)));

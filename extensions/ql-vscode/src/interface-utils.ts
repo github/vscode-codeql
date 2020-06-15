@@ -1,6 +1,6 @@
-import { RawResultSet } from "./adapt";
-import { ResultSetSchema } from "semmle-bqrs";
-import { Interpretation } from "./interface-types";
+import { RawResultSet } from './adapt';
+import { ResultSetSchema } from 'semmle-bqrs';
+import { Interpretation } from './interface-types';
 
 export const SELECT_TABLE_NAME = '#select';
 export const ALERTS_TABLE_NAME = 'alerts';

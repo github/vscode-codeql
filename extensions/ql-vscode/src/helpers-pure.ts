@@ -10,7 +10,7 @@
  */
 class ExhaustivityCheckingError extends Error {
   constructor(public expectedExhaustiveValue: never) {
-    super("Internal error: exhaustivity checking failure");
+    super('Internal error: exhaustivity checking failure');
   }
 }
 

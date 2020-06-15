@@ -8,12 +8,12 @@ export const PAGE_SIZE = 1000;
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ColumnKindCode {
-  export const FLOAT = "f";
-  export const INTEGER = "i";
-  export const STRING = "s";
-  export const BOOLEAN = "b";
-  export const DATE = "d";
-  export const ENTITY = "e";
+  export const FLOAT = 'f';
+  export const INTEGER = 'i';
+  export const STRING = 's';
+  export const BOOLEAN = 'b';
+  export const DATE = 'd';
+  export const ENTITY = 'e';
 }
 
 export type ColumnKind =
@@ -37,7 +37,7 @@ export interface ResultSetSchema {
 }
 
 export function getResultSetSchema(resultSetName: string, resultSets: BQRSInfo): ResultSetSchema | undefined {
-  for (const schema of resultSets["result-sets"]) {
+  for (const schema of resultSets['result-sets']) {
     if (schema.name === resultSetName) {
       return schema;
     }
@@ -45,12 +45,12 @@ export function getResultSetSchema(resultSetName: string, resultSets: BQRSInfo):
   return undefined;
 }
 export interface PaginationInfo {
-  "step-size": number;
+  'step-size': number;
   offsets: number[];
 }
 
 export interface BQRSInfo {
-  "result-sets": ResultSetSchema[];
+  'result-sets': ResultSetSchema[];
 }
 
 export interface EntityValue {
