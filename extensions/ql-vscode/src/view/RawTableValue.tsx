@@ -1,7 +1,7 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { ResultValue } from "../adapt";
-import { renderLocation } from "./result-table-utils";
+import { ResultValue } from '../adapt';
+import { renderLocation } from './result-table-utils';
 
 interface Props {
   value: ResultValue;

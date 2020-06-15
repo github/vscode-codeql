@@ -1,9 +1,9 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { vscode } from "./vscode-api";
-import { RawResultsSortState, SortDirection } from "../interface-types";
-import { nextSortDirection } from "./result-table-utils";
-import { ColumnSchema } from "semmle-bqrs";
+import { vscode } from './vscode-api';
+import { RawResultsSortState, SortDirection } from '../interface-types';
+import { nextSortDirection } from './result-table-utils';
+import { ColumnSchema } from 'semmle-bqrs';
 
 interface Props {
   readonly columns: readonly ColumnSchema[];
@@ -35,7 +35,7 @@ function toggleSortStateForColumn(
           sortDirection: nextDirection,
         };
   vscode.postMessage({
-    t: "changeSort",
+    t: 'changeSort',
     resultSetName: schemaName,
     sortState: nextSortState,
   });
@@ -60,10 +60,10 @@ export default function RawTableHeader(props: Props) {
             return (
               <th
                 className={
-                  "sort-" +
+                  'sort-' +
                   (sortDirection !== undefined
                     ? SortDirection[sortDirection]
-                    : "none")
+                    : 'none')
                 }
                 key={index}
                 onClick={() =>

@@ -1,7 +1,7 @@
-import * as path from "path";
-import * as Sarif from "sarif";
-import { DisposableObject } from "@github/codeql-vscode-utils";
-import * as vscode from "vscode";
+import * as path from 'path';
+import * as Sarif from 'sarif';
+import { DisposableObject } from '@github/codeql-vscode-utils';
+import * as vscode from 'vscode';
 import {
   Diagnostic,
   DiagnosticRelatedInformation,
@@ -10,12 +10,12 @@ import {
   Uri,
   window as Window,
   env
-} from "vscode";
-import * as cli from "./cli";
-import { CodeQLCliServer } from "./cli";
-import { DatabaseItem, DatabaseManager } from "./databases";
-import { showAndLogErrorMessage } from "./helpers";
-import { assertNever } from "./helpers-pure";
+} from 'vscode';
+import * as cli from './cli';
+import { CodeQLCliServer } from './cli';
+import { DatabaseItem, DatabaseManager } from './databases';
+import { showAndLogErrorMessage } from './helpers';
+import { assertNever } from './helpers-pure';
 import {
   FromResultsViewMsg,
   Interpretation,
@@ -28,19 +28,19 @@ import {
   InterpretedResultsSortState,
   SortDirection,
   RAW_RESULTS_PAGE_SIZE,
-} from "./interface-types";
-import { Logger } from "./logging";
-import * as messages from "./messages";
-import { CompletedQuery, interpretResults } from "./query-results";
-import { QueryInfo, tmpDir } from "./run-queries";
-import { parseSarifLocation, parseSarifPlainTextMessage } from "./sarif-utils";
+} from './interface-types';
+import { Logger } from './logging';
+import * as messages from './messages';
+import { CompletedQuery, interpretResults } from './query-results';
+import { QueryInfo, tmpDir } from './run-queries';
+import { parseSarifLocation, parseSarifPlainTextMessage } from './sarif-utils';
 import {
   adaptSchema,
   adaptBqrs,
   ParsedResultSets,
   RawResultSet,
-} from "./adapt";
-import { EXPERIMENTAL_BQRS_SETTING } from "./config";
+} from './adapt';
+import { EXPERIMENTAL_BQRS_SETTING } from './config';
 import {
   WebviewReveal,
   fileUriToWebviewUri,
@@ -49,8 +49,8 @@ import {
   shownLocationDecoration,
   shownLocationLineDecoration,
   jumpToLocation,
-} from "./interface-utils";
-import { getDefaultResultSetName } from "./interface-types";
+} from './interface-utils';
+import { getDefaultResultSetName } from './interface-types';
 
 /**
  * interface.ts
@@ -76,13 +76,13 @@ function sortInterpretedResults(
   if (sortState !== undefined) {
     const multiplier = sortMultiplier(sortState.sortDirection);
     switch (sortState.sortBy) {
-      case "alert-message":
+      case 'alert-message':
         results.sort((a, b) =>
           a.message.text === undefined
             ? 0
             : b.message.text === undefined
-            ? 0
-            : multiplier * a.message.text?.localeCompare(b.message.text, env.language)
+              ? 0
+              : multiplier * a.message.text?.localeCompare(b.message.text, env.language)
         );
         break;
       default:
@@ -119,7 +119,7 @@ export class InterfaceManager extends DisposableObject {
         this.handleSelectionChange.bind(this)
       )
     );
-    logger.log("Registering path-step navigation commands.");
+    logger.log('Registering path-step navigation commands.');
     this.push(
       vscode.commands.registerCommand(
         'codeQLQueryResults.nextPathStep',
@@ -202,7 +202,7 @@ export class InterfaceManager extends DisposableObject {
 
   private async handleMsgFromView(msg: FromResultsViewMsg): Promise<void> {
     switch (msg.t) {
-      case "viewSourceFile": {
+      case 'viewSourceFile': {
         await jumpToLocation(msg, this.databaseManager, this.logger);
         break;
       }
@@ -310,7 +310,7 @@ export class InterfaceManager extends DisposableObject {
       const queryName = results.queryName;
       const resultPromise = vscode.window.showInformationMessage(
         `Finished running query ${
-          queryName.length > 0 ? ` "${queryName}"` : ""
+        queryName.length > 0 ? ` "${queryName}"` : ''
         }.`,
         showButton
       );
@@ -330,18 +330,18 @@ export class InterfaceManager extends DisposableObject {
           RAW_RESULTS_PAGE_SIZE
         );
 
-        const resultSetNames = schemas["result-sets"].map(
+        const resultSetNames = schemas['result-sets'].map(
           (resultSet) => resultSet.name
         );
 
         // This may not wind up being the page we actually show, if there are interpreted results,
         // but speculatively send it anyway.
         const selectedTable = getDefaultResultSetName(resultSetNames);
-        const schema = schemas["result-sets"].find(
+        const schema = schemas['result-sets'].find(
           (resultSet) => resultSet.name == selectedTable
         )!;
         if (schema === undefined) {
-          return { t: "WebviewParsed" };
+          return { t: 'WebviewParsed' };
         }
 
         const chunk = await this.cliServer.bqrsDecode(
@@ -354,7 +354,7 @@ export class InterfaceManager extends DisposableObject {
         const resultSet = adaptBqrs(adaptedSchema, chunk);
 
         return {
-          t: "ExtensionParsed",
+          t: 'ExtensionParsed',
           pageNumber: 0,
           numPages: numPagesOfResultSet(resultSet),
           resultSet,
@@ -362,7 +362,7 @@ export class InterfaceManager extends DisposableObject {
           resultSetNames,
         };
       } else {
-        return { t: "WebviewParsed" };
+        return { t: 'WebviewParsed' };
       }
     };
 
@@ -390,7 +390,7 @@ export class InterfaceManager extends DisposableObject {
   ): Promise<void> {
     const results = this._displayedQuery;
     if (results === undefined) {
-      throw new Error("trying to view a page of a query that is not loaded");
+      throw new Error('trying to view a page of a query that is not loaded');
     }
 
     const sortedResultsMap: SortedResultsMap = {};
@@ -404,11 +404,11 @@ export class InterfaceManager extends DisposableObject {
       RAW_RESULTS_PAGE_SIZE
     );
 
-    const resultSetNames = schemas["result-sets"].map(
+    const resultSetNames = schemas['result-sets'].map(
       (resultSet) => resultSet.name
     );
 
-    const schema = schemas["result-sets"].find(
+    const schema = schemas['result-sets'].find(
       (resultSet) => resultSet.name == selectedTable
     )!;
     if (schema === undefined)
@@ -424,7 +424,7 @@ export class InterfaceManager extends DisposableObject {
     const resultSet = adaptBqrs(adaptedSchema, chunk);
 
     const parsedResultSets: ParsedResultSets = {
-      t: "ExtensionParsed",
+      t: 'ExtensionParsed',
       pageNumber,
       resultSet,
       numPages: numPagesOfResultSet(resultSet),
@@ -504,9 +504,9 @@ export class InterfaceManager extends DisposableObject {
           sourceArchiveUri === undefined
             ? undefined
             : {
-                sourceArchive: sourceArchiveUri.fsPath,
-                sourceLocationPrefix,
-              };
+              sourceArchive: sourceArchiveUri.fsPath,
+              sourceLocationPrefix,
+            };
         interpretation = await this.getTruncatedResults(
           query.metadata,
           query.resultsPaths,
@@ -538,9 +538,9 @@ export class InterfaceManager extends DisposableObject {
       sourceArchiveUri === undefined
         ? undefined
         : {
-            sourceArchive: sourceArchiveUri.fsPath,
-            sourceLocationPrefix,
-          };
+          sourceArchive: sourceArchiveUri.fsPath,
+          sourceLocationPrefix,
+        };
     const interpretation = await this.getTruncatedResults(
       metadata,
       resultsInfo,

@@ -1,4 +1,4 @@
-import { languages } from "vscode";
+import { languages } from 'vscode';
 
 
 /**

@@ -1,5 +1,5 @@
-import { RawResultSet } from "../adapt";
-import { QueryCompareResult } from "../interface-types";
+import { RawResultSet } from '../adapt';
+import { QueryCompareResult } from '../interface-types';
 
 /**
  * Compare the rows of two queries. Use deep equality to determine if
@@ -25,15 +25,15 @@ export default function resultsDiff(
 ): QueryCompareResult {
 
   if (fromResults.schema.columns.length !== toResults.schema.columns.length) {
-    throw new Error("CodeQL Compare: Columns do not match.");
+    throw new Error('CodeQL Compare: Columns do not match.');
   }
 
   if (!fromResults.rows.length) {
-    throw new Error("CodeQL Compare: Source query has no results.");
+    throw new Error('CodeQL Compare: Source query has no results.');
   }
 
   if (!toResults.rows.length) {
-    throw new Error("CodeQL Compare: Target query has no results.");
+    throw new Error('CodeQL Compare: Target query has no results.');
   }
 
   const results = {
@@ -45,7 +45,7 @@ export default function resultsDiff(
     fromResults.rows.length === results.from.length &&
     toResults.rows.length === results.to.length
   ) {
-    throw new Error("CodeQL Compare: No overlap between the selected queries.");
+    throw new Error('CodeQL Compare: No overlap between the selected queries.');
   }
 
   return results;

@@ -1,7 +1,7 @@
-import * as React from "react";
-import { ResultRow } from "../adapt";
-import { zebraStripe } from "./result-table-utils";
-import RawTableValue from "./RawTableValue";
+import * as React from 'react';
+import { ResultRow } from '../adapt';
+import { zebraStripe } from './result-table-utils';
+import RawTableValue from './RawTableValue';
 
 interface Props {
   rowIndex: number;

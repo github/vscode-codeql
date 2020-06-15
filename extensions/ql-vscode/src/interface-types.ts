@@ -1,22 +1,22 @@
-import * as sarif from "sarif";
+import * as sarif from 'sarif';
 import {
   ResolvableLocationValue,
   ColumnSchema,
   ResultSetSchema,
-} from "semmle-bqrs";
-import { ResultRow, ParsedResultSets, RawResultSet } from "./adapt";
+} from 'semmle-bqrs';
+import { ResultRow, ParsedResultSets, RawResultSet } from './adapt';
 
 /**
  * This module contains types and code that are shared between
  * the webview and the extension.
  */
 
-export const SELECT_TABLE_NAME = "#select";
-export const ALERTS_TABLE_NAME = "alerts";
+export const SELECT_TABLE_NAME = '#select';
+export const ALERTS_TABLE_NAME = 'alerts';
 
-export type RawTableResultSet = { t: "RawResultSet" } & RawResultSet;
+export type RawTableResultSet = { t: 'RawResultSet' } & RawResultSet;
 export type PathTableResultSet = {
-  t: "SarifResultSet";
+  t: 'SarifResultSet';
   readonly schema: ResultSetSchema;
   name: string;
 } & Interpretation;
@@ -87,11 +87,11 @@ export type SortedResultsMap = { [resultSet: string]: SortedResultSetInfo };
  * As a result of receiving this message, listeners might want to display a loading indicator.
  */
 export interface ResultsUpdatingMsg {
-  t: "resultsUpdating";
+  t: 'resultsUpdating';
 }
 
 export interface SetStateMsg {
-  t: "setState";
+  t: 'setState';
   resultsPath: string;
   origResultsPaths: ResultsPaths;
   sortedResultsMap: SortedResultsMap;
@@ -115,7 +115,7 @@ export interface SetStateMsg {
 
 /** Advance to the next or previous path no in the path viewer */
 export interface NavigatePathMsg {
-  t: "navigatePath";
+  t: 'navigatePath';
 
   /** 1 for next, -1 for previous */
   direction: number;
@@ -135,13 +135,13 @@ export type FromResultsViewMsg =
   | ChangePage;
 
 export interface ViewSourceFileMsg {
-  t: "viewSourceFile";
+  t: 'viewSourceFile';
   loc: ResolvableLocationValue;
   databaseUri: string;
 }
 
 interface ToggleDiagnostics {
-  t: "toggleDiagnostics";
+  t: 'toggleDiagnostics';
   databaseUri: string;
   metadata?: QueryMetadata;
   origResultsPaths: ResultsPaths;
@@ -150,11 +150,11 @@ interface ToggleDiagnostics {
 }
 
 interface ResultViewLoaded {
-  t: "resultViewLoaded";
+  t: 'resultViewLoaded';
 }
 
 interface ChangePage {
-  t: "changePage";
+  t: 'changePage';
   pageNumber: number; // 0-indexed, displayed to the user as 1-indexed
   selectedTable: string;
 }
@@ -169,7 +169,7 @@ export interface RawResultsSortState {
   sortDirection: SortDirection;
 }
 
-export type InterpretedResultsSortColumn = "alert-message";
+export type InterpretedResultsSortColumn = 'alert-message';
 
 export interface InterpretedResultsSortState {
   sortBy: InterpretedResultsSortColumn;
@@ -177,7 +177,7 @@ export interface InterpretedResultsSortState {
 }
 
 interface ChangeRawResultsSortMsg {
-  t: "changeSort";
+  t: 'changeSort';
   resultSetName: string;
   /**
    * sortState being undefined means don't sort, just present results in the order
@@ -187,7 +187,7 @@ interface ChangeRawResultsSortMsg {
 }
 
 interface ChangeInterpretedResultsSortMsg {
-  t: "changeInterpretedSort";
+  t: 'changeInterpretedSort';
   /**
    * sortState being undefined means don't sort, just present results in the order
    * they appear in the sarif file.
@@ -202,23 +202,23 @@ export type FromCompareViewMessage =
   | OpenQueryMessage;
 
 interface CompareViewLoadedMessage {
-  t: "compareViewLoaded";
+  t: 'compareViewLoaded';
 }
 
 export interface OpenQueryMessage {
-  readonly t: "openQuery";
-  readonly kind: "from" | "to";
+  readonly t: 'openQuery';
+  readonly kind: 'from' | 'to';
 }
 
 interface ChangeCompareMessage {
-  t: "changeCompare";
+  t: 'changeCompare';
   newResultSetName: string;
 }
 
 export type ToCompareViewMessage = SetComparisonsMessage;
 
-  export interface SetComparisonsMessage {
-  readonly t: "setComparisons";
+export interface SetComparisonsMessage {
+  readonly t: 'setComparisons';
   readonly stats: {
     fromQuery?: {
       name: string;
@@ -239,9 +239,9 @@ export type ToCompareViewMessage = SetComparisonsMessage;
 }
 
 export enum DiffKind {
-  Add = "Add",
-  Remove = "Remove",
-  Change = "Change",
+  Add = 'Add',
+  Remove = 'Remove',
+  Change = 'Change',
 }
 
 /**
