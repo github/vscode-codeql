@@ -226,7 +226,9 @@ async function convertToQlPath(filePath: string): Promise<string> {
       const fileName = path.basename(filePath);
       const fileNames = await promisify<string, string[]>(fs.readdir)(dir);
       for (const name of fileNames) {
-        // leave the locale argument empty so that the default OS locale is used.
+        // Leave the locale argument empty so that the default OS locale is used.
+        // We do this because this operation works on filesystem entities, which
+        // use the os locale, regardless of the locale of the running VS Code instance.
         if (fileName.localeCompare(name, undefined, { sensitivity: 'accent' }) === 0) {
           return path.join(dir, name);
         }
