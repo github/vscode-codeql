@@ -118,7 +118,7 @@ export async function showBinaryChoiceDialog(message: string): Promise<boolean> 
   const yesItem = { title: 'Yes', isCloseAffordance: false };
   const noItem = { title: 'No', isCloseAffordance: true };
   const chosenItem = await Window.showInformationMessage(message, { modal: true }, yesItem, noItem);
-  return chosenItem?.title === 'Yes';
+  return chosenItem?.title === yesItem.title;
 }
 
 /**
