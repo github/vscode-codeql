@@ -1,10 +1,10 @@
-import * as React from "react";
-import { ResultTableProps, className } from "./result-table-utils";
-import { RAW_RESULTS_LIMIT, RawResultsSortState } from "../interface-types";
-import { RawTableResultSet } from "../interface-types";
-import RawTableHeader from "./RawTableHeader";
-import RawTableRow from "./RawTableRow";
-import { ResultRow } from "../adapt";
+import * as React from 'react';
+import { ResultTableProps, className } from './result-table-utils';
+import { RAW_RESULTS_LIMIT, RawResultsSortState } from '../interface-types';
+import { RawTableResultSet } from '../interface-types';
+import RawTableHeader from './RawTableHeader';
+import RawTableRow from './RawTableRow';
+import { ResultRow } from '../adapt';
 
 export type RawTableProps = ResultTableProps & {
   resultSet: RawTableResultSet;

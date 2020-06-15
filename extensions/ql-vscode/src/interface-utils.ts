@@ -1,4 +1,4 @@
-import * as crypto from "crypto";
+import * as crypto from 'crypto';
 import {
   Uri,
   Location,
@@ -11,7 +11,7 @@ import {
   Selection,
   TextEditorRevealType,
   ThemeColor,
-} from "vscode";
+} from 'vscode';
 import {
   FivePartLocation,
   LocationStyle,
@@ -19,10 +19,10 @@ import {
   tryGetResolvableLocation,
   WholeFileLocation,
   ResolvableLocationValue,
-} from "semmle-bqrs";
-import { DatabaseItem, DatabaseManager } from "./databases";
-import { ViewSourceFileMsg } from "./interface-types";
-import { Logger } from "./logging";
+} from 'semmle-bqrs';
+import { DatabaseItem, DatabaseManager } from './databases';
+import { ViewSourceFileMsg } from './interface-types';
+import { Logger } from './logging';
 
 /**
  * This module contains functions and types that are sharedd between
@@ -31,7 +31,7 @@ import { Logger } from "./logging";
 
 /** Gets a nonce string created with 128 bits of entropy. */
 export function getNonce(): string {
-  return crypto.randomBytes(16).toString("base64");
+  return crypto.randomBytes(16).toString('base64');
 }
 
 /**
@@ -189,9 +189,9 @@ export async function showLocation(
   }
 }
 
-const findMatchBackground = new ThemeColor("editor.findMatchBackground");
+const findMatchBackground = new ThemeColor('editor.findMatchBackground');
 const findRangeHighlightBackground = new ThemeColor(
-  "editor.findRangeHighlightBackground"
+  'editor.findRangeHighlightBackground'
 );
 
 export const shownLocationDecoration = Window.createTextEditorDecorationType({
@@ -220,7 +220,7 @@ export async function jumpToLocation(
       if (e instanceof Error) {
         if (e.message.match(/File not found/)) {
           Window.showErrorMessage(
-            `Original file of this result is not in the database's source archive.`
+            'Original file of this result is not in the database\'s source archive.'
           );
         } else {
           logger.log(`Unable to handleMsgFromView: ${e.message}`);

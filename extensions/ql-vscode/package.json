@@ -580,7 +580,7 @@
     "integration": "node ./out/vscode-tests/run-integration-tests.js",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "postinstall": "npm rebuild && node ./node_modules/vscode/bin/install",
-    "format": "tsfmt -r",
+    "format": "tsfmt -r && eslint src test --ext .ts,.tsx --fix",
     "lint": "eslint src test --ext .ts,.tsx --max-warnings=0",
     "format-staged": "lint-staged"
   },

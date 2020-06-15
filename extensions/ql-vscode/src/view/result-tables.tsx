@@ -11,7 +11,7 @@ import {
   ALERTS_TABLE_NAME,
   SELECT_TABLE_NAME,
   getDefaultResultSetName,
-} from "../interface-types";
+} from '../interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
 import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName, alertExtrasClassName } from './result-table-utils';

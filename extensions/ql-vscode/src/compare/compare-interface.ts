@@ -1,27 +1,27 @@
-import { DisposableObject } from "semmle-vscode-utils";
+import { DisposableObject } from '@github/codeql-vscode-utils';
 import {
   WebviewPanel,
   ExtensionContext,
   window as Window,
   ViewColumn,
   Uri,
-} from "vscode";
-import * as path from "path";
+} from 'vscode';
+import * as path from 'path';
 
-import { tmpDir } from "../run-queries";
-import { CompletedQuery } from "../query-results";
+import { tmpDir } from '../run-queries';
+import { CompletedQuery } from '../query-results';
 import {
   FromCompareViewMessage,
   ToCompareViewMessage,
   QueryCompareResult,
-} from "../interface-types";
-import { Logger } from "../logging";
-import { CodeQLCliServer } from "../cli";
-import { DatabaseManager } from "../databases";
-import { getHtmlForWebview, jumpToLocation } from "../interface-utils";
-import { adaptSchema, adaptBqrs, RawResultSet } from "../adapt";
-import { BQRSInfo } from "../bqrs-cli-types";
-import resultsDiff from "./resultsDiff";
+} from '../interface-types';
+import { Logger } from '../logging';
+import { CodeQLCliServer } from '../cli';
+import { DatabaseManager } from '../databases';
+import { getHtmlForWebview, jumpToLocation } from '../interface-utils';
+import { adaptSchema, adaptBqrs, RawResultSet } from '../adapt';
+import { BQRSInfo } from '../bqrs-cli-types';
+import resultsDiff from './resultsDiff';
 
 interface ComparePair {
   from: CompletedQuery;
@@ -67,7 +67,7 @@ export class CompareInterfaceManager extends DisposableObject {
     );
     if (currentResultSetName) {
       await this.postMessage({
-        t: "setComparisons",
+        t: 'setComparisons',
         stats: {
           fromQuery: {
             // since we split the description into several rows
@@ -100,8 +100,8 @@ export class CompareInterfaceManager extends DisposableObject {
     if (this.panel == undefined) {
       const { ctx } = this;
       const panel = (this.panel = Window.createWebviewPanel(
-        "compareView",
-        "Compare CodeQL Query Results",
+        'compareView',
+        'Compare CodeQL Query Results',
         { viewColumn: ViewColumn.Active, preserveFocus: true },
         {
           enableScripts: true,
@@ -109,7 +109,7 @@ export class CompareInterfaceManager extends DisposableObject {
           retainContextWhenHidden: true,
           localResourceRoots: [
             Uri.file(tmpDir.name),
-            Uri.file(path.join(this.ctx.extensionPath, "out")),
+            Uri.file(path.join(this.ctx.extensionPath, 'out')),
           ],
         }
       ));
@@ -123,11 +123,11 @@ export class CompareInterfaceManager extends DisposableObject {
       );
 
       const scriptPathOnDisk = Uri.file(
-        ctx.asAbsolutePath("out/compareView.js")
+        ctx.asAbsolutePath('out/compareView.js')
       );
 
       const stylesheetPathOnDisk = Uri.file(
-        ctx.asAbsolutePath("out/resultsView.css")
+        ctx.asAbsolutePath('out/resultsView.css')
       );
 
       panel.webview.html = getHtmlForWebview(
@@ -158,21 +158,21 @@ export class CompareInterfaceManager extends DisposableObject {
     msg: FromCompareViewMessage
   ): Promise<void> {
     switch (msg.t) {
-      case "compareViewLoaded":
+      case 'compareViewLoaded':
         this.panelLoaded = true;
         this.panelLoadedCallBacks.forEach((cb) => cb());
         this.panelLoadedCallBacks = [];
         break;
 
-      case "changeCompare":
+      case 'changeCompare':
         this.changeTable(msg.newResultSetName);
         break;
 
-      case "viewSourceFile":
+      case 'viewSourceFile':
         await jumpToLocation(msg, this.databaseManager, this.logger);
         break;
 
-      case "openQuery":
+      case 'openQuery':
         await this.openQuery(msg.kind);
         break;
     }
@@ -193,10 +193,10 @@ export class CompareInterfaceManager extends DisposableObject {
     const toSchemas = await this.cliServer.bqrsInfo(
       to.query.resultsPaths.resultsPath
     );
-    const fromSchemaNames = fromSchemas["result-sets"].map(
+    const fromSchemaNames = fromSchemas['result-sets'].map(
       (schema) => schema.name
     );
-    const toSchemaNames = toSchemas["result-sets"].map(
+    const toSchemaNames = toSchemas['result-sets'].map(
       (schema) => schema.name
     );
     const commonResultSetNames = fromSchemaNames.filter((name) =>
@@ -238,7 +238,7 @@ export class CompareInterfaceManager extends DisposableObject {
     resultSetName: string,
     resultsPath: string
   ): Promise<RawResultSet> {
-    const schema = bqrsInfo["result-sets"].find(
+    const schema = bqrsInfo['result-sets'].find(
       (schema) => schema.name === resultSetName
     );
     if (!schema) {
@@ -260,9 +260,9 @@ export class CompareInterfaceManager extends DisposableObject {
     return resultsDiff(fromResults, toResults);
   }
 
-  private openQuery(kind: "from" | "to") {
+  private openQuery(kind: 'from' | 'to') {
     const toOpen =
-      kind === "from" ? this.comparePair?.from : this.comparePair?.to;
+      kind === 'from' ? this.comparePair?.from : this.comparePair?.to;
     if (toOpen) {
       this.showQueryResultsCallback(toOpen);
     }

@@ -1,20 +1,20 @@
-import * as React from "react";
-import { useState, useEffect } from "react";
-import * as Rdom from "react-dom";
+import * as React from 'react';
+import { useState, useEffect } from 'react';
+import * as Rdom from 'react-dom';
 
-import RawTableHeader from "../../view/RawTableHeader";
+import RawTableHeader from '../../view/RawTableHeader';
 import {
   ToCompareViewMessage,
   SetComparisonsMessage,
-} from "../../interface-types";
-import CompareSelector from "./CompareSelector";
-import { vscode } from "../../view/vscode-api";
-import RawTableRow from "../../view/RawTableRow";
-import { ResultRow } from "../../adapt";
-import { className } from "../../view/result-table-utils";
+} from '../../interface-types';
+import CompareSelector from './CompareSelector';
+import { vscode } from '../../view/vscode-api';
+import RawTableRow from '../../view/RawTableRow';
+import { ResultRow } from '../../adapt';
+import { className } from '../../view/result-table-utils';
 
 const emptyComparison: SetComparisonsMessage = {
-  t: "setComparisons",
+  t: 'setComparisons',
   stats: {},
   rows: {
     from: [],
@@ -22,8 +22,8 @@ const emptyComparison: SetComparisonsMessage = {
   },
   columns: [],
   commonResultSetNames: [],
-  currentResultSetName: "",
-  datebaseUri: "",
+  currentResultSetName: '',
+  datebaseUri: '',
 };
 
 export function Compare(props: {}): JSX.Element {
@@ -32,10 +32,10 @@ export function Compare(props: {}): JSX.Element {
   );
 
   useEffect(() => {
-    window.addEventListener("message", (evt: MessageEvent) => {
+    window.addEventListener('message', (evt: MessageEvent) => {
       const msg: ToCompareViewMessage = evt.data;
       switch (msg.t) {
-        case "setComparisons":
+        case 'setComparisons':
           setComparison(msg);
       }
     });
@@ -53,7 +53,7 @@ export function Compare(props: {}): JSX.Element {
             availableResultSets={comparison.commonResultSetNames}
             currentResultSetName={comparison.currentResultSetName}
             updateResultSet={(newResultSetName: string) =>
-              vscode.postMessage({ t: "changeCompare", newResultSetName })
+              vscode.postMessage({ t: 'changeCompare', newResultSetName })
             }
           />
         </div>
@@ -62,7 +62,7 @@ export function Compare(props: {}): JSX.Element {
             <tr>
               <td>
                 <a
-                  onClick={() => openQuery("from")}
+                  onClick={() => openQuery('from')}
                   className="vscode-codeql__compare-open"
                 >
                   {comparison.stats.fromQuery?.name}
@@ -70,7 +70,7 @@ export function Compare(props: {}): JSX.Element {
               </td>
               <td>
                 <a
-                  onClick={() => openQuery("to")}
+                  onClick={() => openQuery('to')}
                   className="vscode-codeql__compare-open"
                 >
                   {comparison.stats.toQuery?.name}
@@ -119,9 +119,9 @@ export function Compare(props: {}): JSX.Element {
   }
 }
 
-async function openQuery(kind: "from" | "to") {
+async function openQuery(kind: 'from' | 'to') {
   vscode.postMessage({
-    t: "openQuery",
+    t: 'openQuery',
     kind,
   });
 }
@@ -143,7 +143,7 @@ function createRows(rows: ResultRow[], databaseUri: string) {
 
 Rdom.render(
   <Compare />,
-  document.getElementById("root"),
+  document.getElementById('root'),
   // Post a message to the extension when fully loaded.
-  () => vscode.postMessage({ t: "compareViewLoaded" })
+  () => vscode.postMessage({ t: 'compareViewLoaded' })
 );

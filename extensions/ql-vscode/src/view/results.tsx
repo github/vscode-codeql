@@ -1,13 +1,13 @@
-import * as React from "react";
-import * as Rdom from "react-dom";
-import * as bqrs from "semmle-bqrs";
+import * as React from 'react';
+import * as Rdom from 'react-dom';
+import * as bqrs from 'semmle-bqrs';
 import {
   ElementBase,
   PrimitiveColumnValue,
   PrimitiveTypeKind,
   tryGetResolvableLocation,
-} from "semmle-bqrs";
-import { assertNever } from "../helpers-pure";
+} from 'semmle-bqrs';
+import { assertNever } from '../helpers-pure';
 import {
   DatabaseInfo,
   Interpretation,
@@ -17,16 +17,16 @@ import {
   NavigatePathMsg,
   QueryMetadata,
   ResultsPaths,
-} from "../interface-types";
-import { EventHandlers as EventHandlerList } from "./event-handler-list";
-import { ResultTables } from "./result-tables";
+} from '../interface-types';
+import { EventHandlers as EventHandlerList } from './event-handler-list';
+import { ResultTables } from './result-tables';
 import {
   ResultValue,
   ResultRow,
   ParsedResultSets,
-} from "../adapt";
-import { ResultSet } from "../interface-types";
-import { vscode } from "./vscode-api";
+} from '../adapt';
+import { ResultSet } from '../interface-types';
+import { vscode } from './vscode-api';
 
 /**
  * results.tsx
@@ -58,14 +58,14 @@ function translatePrimitiveValue(
   type: PrimitiveTypeKind
 ): ResultValue {
   switch (type) {
-    case "i":
-    case "f":
-    case "s":
-    case "d":
-    case "b":
+    case 'i':
+    case 'f':
+    case 's':
+    case 'd':
+    case 'b':
       return value.toString();
 
-    case "u":
+    case 'u':
       return {
         uri: value as string,
       };
@@ -83,7 +83,7 @@ async function parseResultSets(
     const columnTypes = resultSetSchema.columns.map((column) => column.type);
     const rows: ResultRow[] = [];
     resultSets.push({
-      t: "RawResultSet",
+      t: 'RawResultSet',
       schema: resultSetSchema,
       rows: rows,
     });
@@ -92,7 +92,7 @@ async function parseResultSets(
       const row: ResultValue[] = [];
       tuple.forEach((value, index) => {
         const type = columnTypes[index];
-        if (type.type === "e") {
+        if (type.type === 'e') {
           const element: ElementBase = value as ElementBase;
           const label =
             element.label !== undefined ? element.label : element.id.toString(); //REVIEW: URLs?
@@ -171,7 +171,7 @@ class App extends React.Component<{}, ResultsViewState> {
       displayedResults: {
         resultsInfo: null,
         results: null,
-        errorMessage: "",
+        errorMessage: '',
       },
       nextResultsInfo: null,
       isExpectingResultsUpdate: true,
@@ -180,7 +180,7 @@ class App extends React.Component<{}, ResultsViewState> {
 
   handleMessage(msg: IntoResultsViewMsg): void {
     switch (msg.t) {
-      case "setState":
+      case 'setState':
         this.updateStateWithNewResultsInfo({
           resultsPath: msg.resultsPath,
           parsedResultSets: msg.parsedResultSets,
@@ -195,12 +195,12 @@ class App extends React.Component<{}, ResultsViewState> {
 
         this.loadResults();
         break;
-      case "resultsUpdating":
+      case 'resultsUpdating':
         this.setState({
           isExpectingResultsUpdate: true,
         });
         break;
-      case "navigatePath":
+      case 'navigatePath':
         onNavigation.fire(msg);
         break;
       default:
@@ -223,7 +223,7 @@ class App extends React.Component<{}, ResultsViewState> {
         return stateWithDisplayedResults({
           resultsInfo: null,
           results: null,
-          errorMessage: "No results to display",
+          errorMessage: 'No results to display',
         });
       }
       if (!resultsInfo || !resultsInfo.shouldKeepOldResultsWhileRendering) {
@@ -231,7 +231,7 @@ class App extends React.Component<{}, ResultsViewState> {
         return stateWithDisplayedResults({
           resultsInfo: null,
           results: null,
-          errorMessage: "Loading results…",
+          errorMessage: 'Loading results…',
         });
       }
       return stateWithDisplayedResults(prevState.displayedResults);
@@ -243,10 +243,10 @@ class App extends React.Component<{}, ResultsViewState> {
   ): Promise<readonly ResultSet[]> {
     const parsedResultSets = resultsInfo.parsedResultSets;
     switch (parsedResultSets.t) {
-      case "WebviewParsed":
+      case 'WebviewParsed':
         return await this.fetchResultSets(resultsInfo);
-      case "ExtensionParsed": {
-        return [{ t: "RawResultSet", ...parsedResultSets.resultSet }];
+      case 'ExtensionParsed': {
+        return [{ t: 'RawResultSet', ...parsedResultSets.resultSet }];
       }
     }
   }
@@ -258,7 +258,7 @@ class App extends React.Component<{}, ResultsViewState> {
     }
 
     let results: Results | null = null;
-    let statusText = "";
+    let statusText = '';
     try {
       const resultSets = await this.getResultSets(resultsInfo);
       results = {
@@ -271,7 +271,7 @@ class App extends React.Component<{}, ResultsViewState> {
       if (e instanceof Error) {
         errorMessage = e.message;
       } else {
-        errorMessage = "Unknown error";
+        errorMessage = 'Unknown error';
       }
 
       statusText = `Error loading results: ${errorMessage}`;
@@ -377,12 +377,12 @@ class App extends React.Component<{}, ResultsViewState> {
   componentDidMount(): void {
     this.vscodeMessageHandler = (evt) =>
       this.handleMessage(evt.data as IntoResultsViewMsg);
-    window.addEventListener("message", this.vscodeMessageHandler);
+    window.addEventListener('message', this.vscodeMessageHandler);
   }
 
   componentWillUnmount(): void {
     if (this.vscodeMessageHandler) {
-      window.removeEventListener("message", this.vscodeMessageHandler);
+      window.removeEventListener('message', this.vscodeMessageHandler);
     }
   }
 
@@ -391,6 +391,6 @@ class App extends React.Component<{}, ResultsViewState> {
     | undefined = undefined;
 }
 
-Rdom.render(<App />, document.getElementById("root"));
+Rdom.render(<App />, document.getElementById('root'));
 
 vscode.postMessage({ t: 'resultViewLoaded' });
