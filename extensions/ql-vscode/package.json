@@ -664,7 +664,8 @@
       "prettier --write"
     ],
     "./**/*.{ts,tsx}": [
-      "tsfmt -r"
+      "tsfmt -r",
+      "eslint --fix"
     ]
   }
 }
