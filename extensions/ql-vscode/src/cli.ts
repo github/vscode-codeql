@@ -9,16 +9,16 @@ import { StringDecoder } from 'string_decoder';
 import * as tk from 'tree-kill';
 import * as util from 'util';
 import { CancellationToken, Disposable } from 'vscode';
-import { BQRSInfo, DecodedBqrsChunk } from "./bqrs-cli-types";
-import { DistributionProvider } from "./distribution";
-import { assertNever } from "./helpers-pure";
-import { QueryMetadata, SortDirection } from "./interface-types";
-import { Logger, ProgressReporter } from "./logging";
+import { BQRSInfo, DecodedBqrsChunk } from './bqrs-cli-types';
+import { DistributionProvider } from './distribution';
+import { assertNever } from './helpers-pure';
+import { QueryMetadata, SortDirection } from './interface-types';
+import { Logger, ProgressReporter } from './logging';
 
 /**
  * The version of the SARIF format that we are using.
  */
-const SARIF_FORMAT = "sarifv2.1.0";
+const SARIF_FORMAT = 'sarifv2.1.0';
 
 /**
  * Flags to pass to all cli commands.
@@ -131,7 +131,7 @@ export class CodeQLCliServer implements Disposable {
       // Tell the Java CLI server process to shut down.
       this.logger.log('Sending shutdown request');
       try {
-        this.process.stdin.write(JSON.stringify(["shutdown"]), "utf8");
+        this.process.stdin.write(JSON.stringify(['shutdown']), 'utf8');
         this.process.stdin.write(this.nullBuffer);
         this.logger.log('Sent shutdown request');
       } catch (e) {
@@ -188,13 +188,13 @@ export class CodeQLCliServer implements Disposable {
    */
   private async launchProcess(): Promise<child_process.ChildProcessWithoutNullStreams> {
     const config = await this.getCodeQlPath();
-    return spawnServer(config, "CodeQL CLI Server", ["execute", "cli-server"], [], this.logger, _data => { /**/ });
+    return spawnServer(config, 'CodeQL CLI Server', ['execute', 'cli-server'], [], this.logger, _data => { /**/ });
   }
 
   private async runCodeQlCliInternal(command: string[], commandArgs: string[], description: string): Promise<string> {
     const stderrBuffers: Buffer[] = [];
     if (this.commandInProcess) {
-      throw new Error("runCodeQlCliInternal called while cli was running");
+      throw new Error('runCodeQlCliInternal called while cli was running');
     }
     this.commandInProcess = true;
     try {
@@ -209,7 +209,7 @@ export class CodeQLCliServer implements Disposable {
 
       // Compute the full args array
       const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
-      const argsString = args.join(" ");
+      const argsString = args.join(' ');
       this.logger.log(`${description} using CodeQL CLI: ${argsString}...`);
       try {
         await new Promise((resolve, reject) => {
@@ -228,16 +228,16 @@ export class CodeQLCliServer implements Disposable {
             stderrBuffers.push(newData);
           });
           // Listen for process exit.
-          process.addListener("close", (code) => reject(code));
+          process.addListener('close', (code) => reject(code));
           // Write the command followed by a null terminator.
-          process.stdin.write(JSON.stringify(args), "utf8");
+          process.stdin.write(JSON.stringify(args), 'utf8');
           process.stdin.write(this.nullBuffer);
         });
         // Join all the data together
         const fullBuffer = Buffer.concat(stdoutBuffers);
         // Make sure we remove the terminator;
-        const data = fullBuffer.toString("utf8", 0, fullBuffer.length - 1);
-        this.logger.log(`CLI command succeeded.`);
+        const data = fullBuffer.toString('utf8', 0, fullBuffer.length - 1);
+        this.logger.log('CLI command succeeded.');
         return data;
       } catch (err) {
         // Kill the process if it isn't already dead.
@@ -246,15 +246,15 @@ export class CodeQLCliServer implements Disposable {
         const newError =
           stderrBuffers.length == 0
             ? new Error(`${description} failed: ${err}`)
-            : new Error(`${description} failed: ${Buffer.concat(stderrBuffers).toString("utf8")}`);
+            : new Error(`${description} failed: ${Buffer.concat(stderrBuffers).toString('utf8')}`);
         newError.stack += (err.stack || '');
         throw newError;
       } finally {
-        this.logger.log(Buffer.concat(stderrBuffers).toString("utf8"));
+        this.logger.log(Buffer.concat(stderrBuffers).toString('utf8'));
         // Remove the listeners we set up.
         process.stdout.removeAllListeners('data');
         process.stderr.removeAllListeners('data');
-        process.removeAllListeners("close");
+        process.removeAllListeners('close');
       }
     } finally {
       this.commandInProcess = false;
@@ -413,10 +413,10 @@ export class CodeQLCliServer implements Disposable {
   async resolveLibraryPath(workspaces: string[], queryPath: string): Promise<QuerySetup> {
     const subcommandArgs = [
       '--query', queryPath,
-      "--additional-packs",
+      '--additional-packs',
       workspaces.join(path.delimiter)
     ];
-    return await this.runJsonCodeQlCliCommand<QuerySetup>(['resolve', 'library-path'], subcommandArgs, "Resolving library paths");
+    return await this.runJsonCodeQlCliCommand<QuerySetup>(['resolve', 'library-path'], subcommandArgs, 'Resolving library paths');
   }
 
   /**
@@ -458,7 +458,7 @@ export class CodeQLCliServer implements Disposable {
    * @param queryPath The path to the query.
    */
   async resolveMetadata(queryPath: string): Promise<QueryMetadata> {
-    return await this.runJsonCodeQlCliCommand<QueryMetadata>(['resolve', 'metadata'], [queryPath], "Resolving query metadata");
+    return await this.runJsonCodeQlCliCommand<QueryMetadata>(['resolve', 'metadata'], [queryPath], 'Resolving query metadata');
   }
 
   /**
@@ -474,7 +474,7 @@ export class CodeQLCliServer implements Disposable {
     if (queryMemoryMb !== undefined) {
       args.push('--ram', queryMemoryMb.toString());
     }
-    return await this.runJsonCodeQlCliCommand<string[]>(['resolve', 'ram'], args, "Resolving RAM settings", progressReporter);
+    return await this.runJsonCodeQlCliCommand<string[]>(['resolve', 'ram'], args, 'Resolving RAM settings', progressReporter);
   }
   /**
    * Gets the headers (and optionally pagination info) of a bqrs.
@@ -483,11 +483,11 @@ export class CodeQLCliServer implements Disposable {
    */
   async bqrsInfo(bqrsPath: string, pageSize?: number): Promise<BQRSInfo> {
     const subcommandArgs = (
-      pageSize ? ["--paginate-rows", pageSize.toString()] : []
+      pageSize ? ['--paginate-rows', pageSize.toString()] : []
     ).concat(
       bqrsPath
     );
-    return await this.runJsonCodeQlCliCommand<BQRSInfo>(['bqrs', 'info'], subcommandArgs, "Reading bqrs header");
+    return await this.runJsonCodeQlCliCommand<BQRSInfo>(['bqrs', 'info'], subcommandArgs, 'Reading bqrs header');
   }
 
   /**
@@ -499,14 +499,14 @@ export class CodeQLCliServer implements Disposable {
   */
   async bqrsDecode(bqrsPath: string, resultSet: string, pageSize?: number, offset?: number): Promise<DecodedBqrsChunk> {
     const subcommandArgs = [
-      "--entities=url,string",
-      "--result-set", resultSet,
+      '--entities=url,string',
+      '--result-set', resultSet,
     ].concat(
-      pageSize ? ["--rows", pageSize.toString()] : []
+      pageSize ? ['--rows', pageSize.toString()] : []
     ).concat(
-      offset ? ["--start-at", offset.toString()] : []
+      offset ? ['--start-at', offset.toString()] : []
     ).concat([bqrsPath]);
-    return await this.runJsonCodeQlCliCommand<DecodedBqrsChunk>(['bqrs', 'decode'], subcommandArgs, "Reading bqrs data");
+    return await this.runJsonCodeQlCliCommand<DecodedBqrsChunk>(['bqrs', 'decode'], subcommandArgs, 'Reading bqrs data');
   }
 
 
@@ -514,22 +514,22 @@ export class CodeQLCliServer implements Disposable {
     const args = [
       `-t=kind=${metadata.kind}`,
       `-t=id=${metadata.id}`,
-      "--output", interpretedResultsPath,
-      "--format", SARIF_FORMAT,
+      '--output', interpretedResultsPath,
+      '--format', SARIF_FORMAT,
       // TODO: This flag means that we don't group interpreted results
       // by primary location. We may want to revisit whether we call
       // interpretation with and without this flag, or do some
       // grouping client-side.
-      "--no-group-results",
+      '--no-group-results',
     ];
     if (sourceInfo !== undefined) {
       args.push(
-        "--source-archive", sourceInfo.sourceArchive,
-        "--source-location-prefix", sourceInfo.sourceLocationPrefix
+        '--source-archive', sourceInfo.sourceArchive,
+        '--source-location-prefix', sourceInfo.sourceLocationPrefix
       );
     }
     args.push(resultsPath);
-    await this.runCodeQlCliCommand(['bqrs', 'interpret'], args, "Interpreting query results");
+    await this.runCodeQlCliCommand(['bqrs', 'interpret'], args, 'Interpreting query results');
 
     let output: string;
     try {
@@ -549,9 +549,9 @@ export class CodeQLCliServer implements Disposable {
     const sortDirectionStrings = sortDirections.map(direction => {
       switch (direction) {
         case SortDirection.asc:
-          return "asc";
+          return 'asc';
         case SortDirection.desc:
-          return "desc";
+          return 'desc';
         default:
           return assertNever(direction);
       }
@@ -559,14 +559,14 @@ export class CodeQLCliServer implements Disposable {
 
     await this.runCodeQlCliCommand(['bqrs', 'decode'],
       [
-        "--format=bqrs",
+        '--format=bqrs',
         `--result-set=${resultSet}`,
         `--output=${sortedResultsPath}`,
-        `--sort-key=${sortKeys.join(",")}`,
-        `--sort-direction=${sortDirectionStrings.join(",")}`,
+        `--sort-key=${sortKeys.join(',')}`,
+        `--sort-direction=${sortDirectionStrings.join(',')}`,
         resultsPath
       ],
-      "Sorting query results");
+      'Sorting query results');
   }
 
 
@@ -576,7 +576,7 @@ export class CodeQLCliServer implements Disposable {
    */
   resolveDatabase(databasePath: string): Promise<DbInfo> {
     return this.runJsonCodeQlCliCommand(['resolve', 'database'], [databasePath],
-      "Resolving database");
+      'Resolving database');
   }
 
   /**
@@ -591,7 +591,7 @@ export class CodeQLCliServer implements Disposable {
     return this.runJsonCodeQlCliCommand<UpgradesInfo>(
       ['resolve', 'upgrades'],
       args,
-      "Resolving database upgrade scripts",
+      'Resolving database upgrade scripts',
     );
   }
 
@@ -611,7 +611,7 @@ export class CodeQLCliServer implements Disposable {
     return this.runJsonCodeQlCliCommand<QlpacksInfo>(
       ['resolve', 'qlpacks'],
       args,
-      "Resolving qlpack information",
+      'Resolving qlpack information',
     );
   }
 
@@ -632,7 +632,7 @@ export class CodeQLCliServer implements Disposable {
     return this.runJsonCodeQlCliCommand<string[]>(
       ['resolve', 'queries'],
       args,
-      "Resolving queries",
+      'Resolving queries',
     );
   }
 }
@@ -666,7 +666,7 @@ export function spawnServer(
 
   // Start the server process.
   const base = codeqlPath;
-  const argsString = args.join(" ");
+  const argsString = args.join(' ');
   if (progressReporter !== undefined) {
     progressReporter.report({ message: `Starting ${name}` });
   }
@@ -703,7 +703,7 @@ export function spawnServer(
 export async function runCodeQlCliCommand(codeQlPath: string, command: string[], commandArgs: string[], description: string, logger: Logger, progressReporter?: ProgressReporter): Promise<string> {
   // Add logging arguments first, in case commandArgs contains positional parameters.
   const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
-  const argsString = args.join(" ");
+  const argsString = args.join(' ');
   try {
     if (progressReporter !== undefined) {
       progressReporter.report({ message: description });
@@ -711,7 +711,7 @@ export async function runCodeQlCliCommand(codeQlPath: string, command: string[],
     logger.log(`${description} using CodeQL CLI: ${codeQlPath} ${argsString}...`);
     const result = await util.promisify(child_process.execFile)(codeQlPath, args);
     logger.log(result.stderr);
-    logger.log(`CLI command succeeded.`);
+    logger.log('CLI command succeeded.');
     return result.stdout;
   } catch (err) {
     throw new Error(`${description} failed: ${err.stderr || err}`);

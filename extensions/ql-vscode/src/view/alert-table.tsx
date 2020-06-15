@@ -103,7 +103,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
 
       for (const part of parts) {
-        if (typeof part === "string") {
+        if (typeof part === 'string') {
           result.push(<span>{part} </span>);
         } else {
           const renderedLocation = renderSarifLocationWithText(part.text, relatedLocationsById[part.dest],
@@ -149,7 +149,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       let shortLocation, longLocation: string;
       switch (parsedLoc.t) {
         case 'NoLocation':
-          return renderNonLocation("[no location]", parsedLoc.hint);
+          return renderNonLocation('[no location]', parsedLoc.hint);
         case LocationStyle.WholeFile:
           shortLocation = `${path.basename(parsedLoc.userVisibleFile)}`;
           longLocation = `${parsedLoc.userVisibleFile}`;

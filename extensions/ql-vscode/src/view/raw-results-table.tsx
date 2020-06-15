@@ -1,9 +1,9 @@
-import * as React from "react";
-import { renderLocation, ResultTableProps, zebraStripe, className, nextSortDirection } from "./result-table-utils";
-import { vscode } from "./results";
-import { ResultValue } from "../adapt";
-import { SortDirection, RAW_RESULTS_LIMIT, RawResultsSortState } from "../interface-types";
-import { RawTableResultSet } from "../interface-utils";
+import * as React from 'react';
+import { renderLocation, ResultTableProps, zebraStripe, className, nextSortDirection } from './result-table-utils';
+import { vscode } from './results';
+import { ResultValue } from '../adapt';
+import { SortDirection, RAW_RESULTS_LIMIT, RawResultsSortState } from '../interface-types';
+import { RawTableResultSet } from '../interface-utils';
 
 export type RawTableProps = ResultTableProps & {
   resultSet: RawTableResultSet;
@@ -58,7 +58,7 @@ export class RawTable extends React.Component<RawTableProps, {}> {
               ...resultSet.schema.columns.map((col, index) => {
                 const displayName = col.name || `[${index}]`;
                 const sortDirection = this.props.sortState && index === this.props.sortState.columnIndex ? this.props.sortState.sortDirection : undefined;
-                return <th className={"sort-" + (sortDirection !== undefined ? SortDirection[sortDirection] : "none")} key={index} onClick={() => this.toggleSortStateForColumn(index)}><b>{displayName}</b></th>;
+                return <th className={'sort-' + (sortDirection !== undefined ? SortDirection[sortDirection] : 'none')} key={index} onClick={() => this.toggleSortStateForColumn(index)}><b>{displayName}</b></th>;
               })
             ]
           }

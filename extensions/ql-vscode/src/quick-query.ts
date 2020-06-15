@@ -102,8 +102,8 @@ export async function displayQuickQuery(ctx: ExtensionContext, cliServer: CodeQL
     const datasetFolder = await dbItem.getDatasetFolder(cliServer);
     const { qlpack, dbscheme } = await helpers.resolveDatasetFolder(cliServer, datasetFolder);
     const quickQueryQlpackYaml: any = {
-      name: "quick-query",
-      version: "1.0.0",
+      name: 'quick-query',
+      version: '1.0.0',
       libraryPathDependencies: [qlpack]
     };
 

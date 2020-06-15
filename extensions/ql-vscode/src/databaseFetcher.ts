@@ -1,22 +1,22 @@
-import fetch, { Response } from "node-fetch";
-import * as unzipper from "unzipper";
+import fetch, { Response } from 'node-fetch';
+import * as unzipper from 'unzipper';
 import {
   Uri,
   ProgressOptions,
   ProgressLocation,
   commands,
   window,
-} from "vscode";
-import * as fs from "fs-extra";
-import * as path from "path";
-import { DatabaseManager, DatabaseItem } from "./databases";
+} from 'vscode';
+import * as fs from 'fs-extra';
+import * as path from 'path';
+import { DatabaseManager, DatabaseItem } from './databases';
 import {
   ProgressCallback,
   showAndLogErrorMessage,
   withProgress,
   showAndLogInformationMessage,
-} from "./helpers";
-import { logger } from "./logging";
+} from './helpers';
+import { logger } from './logging';
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -32,14 +32,14 @@ export async function promptImportInternetDatabase(
 
   try {
     const databaseUrl = await window.showInputBox({
-      prompt: "Enter URL of zipfile of database to download",
+      prompt: 'Enter URL of zipfile of database to download',
     });
     if (databaseUrl) {
       validateHttpsUrl(databaseUrl);
 
       const progressOptions: ProgressOptions = {
         location: ProgressLocation.Notification,
-        title: "Adding database from URL",
+        title: 'Adding database from URL',
         cancellable: false,
       };
       await withProgress(
@@ -52,10 +52,10 @@ export async function promptImportInternetDatabase(
             progress
           ))
       );
-      commands.executeCommand("codeQLDatabases.focus");
+      commands.executeCommand('codeQLDatabases.focus');
     }
     showAndLogInformationMessage(
-      "Database downloaded and imported successfully."
+      'Database downloaded and imported successfully.'
     );
   } catch (e) {
     showAndLogErrorMessage(e.message);
@@ -81,7 +81,7 @@ export async function promptImportLgtmDatabase(
   try {
     const lgtmUrl = await window.showInputBox({
       prompt:
-        "Enter the project URL on LGTM (e.g., https://lgtm.com/projects/g/github/codeql)",
+        'Enter the project URL on LGTM (e.g., https://lgtm.com/projects/g/github/codeql)',
     });
     if (!lgtmUrl) {
       return;
@@ -91,7 +91,7 @@ export async function promptImportLgtmDatabase(
       if (databaseUrl) {
         const progressOptions: ProgressOptions = {
           location: ProgressLocation.Notification,
-          title: "Adding database from LGTM",
+          title: 'Adding database from LGTM',
           cancellable: false,
         };
         await withProgress(
@@ -104,14 +104,14 @@ export async function promptImportLgtmDatabase(
               progress
             ))
         );
-        commands.executeCommand("codeQLDatabases.focus");
+        commands.executeCommand('codeQLDatabases.focus');
       }
     } else {
       throw new Error(`Invalid LGTM URL: ${lgtmUrl}`);
     }
     if (item) {
       showAndLogInformationMessage(
-        "Database downloaded and imported successfully."
+        'Database downloaded and imported successfully.'
       );
     }
   } catch (e) {
@@ -137,7 +137,7 @@ export async function importArchiveDatabase(
   try {
     const progressOptions: ProgressOptions = {
       location: ProgressLocation.Notification,
-      title: "Importing database from archive",
+      title: 'Importing database from archive',
       cancellable: false,
     };
     await withProgress(
@@ -150,16 +150,16 @@ export async function importArchiveDatabase(
           progress
         ))
     );
-    commands.executeCommand("codeQLDatabases.focus");
+    commands.executeCommand('codeQLDatabases.focus');
 
     if (item) {
       showAndLogInformationMessage(
-        "Database unzipped and imported successfully."
+        'Database unzipped and imported successfully.'
       );
     }
   } catch (e) {
-    if (e.message.includes("unexpected end of file")) {
-      showAndLogErrorMessage("Database is corrupt or too large. Try unzipping outside of VS Code and importing the unzipped folder instead.");
+    if (e.message.includes('unexpected end of file')) {
+      showAndLogErrorMessage('Database is corrupt or too large. Try unzipping outside of VS Code and importing the unzipped folder instead.');
     } else {
       showAndLogErrorMessage(e.message);
     }
@@ -184,11 +184,11 @@ async function databaseArchiveFetcher(
 ): Promise<DatabaseItem> {
   progressCallback?.({
     maxStep: 3,
-    message: "Getting database",
+    message: 'Getting database',
     step: 1,
   });
   if (!storagePath) {
-    throw new Error("No storage path specified.");
+    throw new Error('No storage path specified.');
   }
   await fs.ensureDir(storagePath);
   const unzipPath = await getStorageFolder(storagePath, databaseUrl);
@@ -201,22 +201,22 @@ async function databaseArchiveFetcher(
 
   progressCallback?.({
     maxStep: 3,
-    message: "Opening database",
+    message: 'Opening database',
     step: 3,
   });
 
   // find the path to the database. The actual database might be in a sub-folder
   const dbPath = await findDirWithFile(
     unzipPath,
-    ".dbinfo",
-    "codeql-database.yml"
+    '.dbinfo',
+    'codeql-database.yml'
   );
   if (dbPath) {
     const item = await databasesManager.openDatabase(Uri.file(dbPath));
     databasesManager.setCurrentDatabaseItem(item);
     return item;
   } else {
-    throw new Error("Database not found in archive.");
+    throw new Error('Database not found in archive.');
   }
 }
 
@@ -228,7 +228,7 @@ async function getStorageFolder(storagePath: string, urlStr: string) {
   // MacOS has a max filename length of 255
   // and remove a few extra chars in case we need to add a counter at the end.
   let lastName = path.basename(url.path).substring(0, 250);
-  if (lastName.endsWith(".zip")) {
+  if (lastName.endsWith('.zip')) {
     lastName = lastName.substring(0, lastName.length - 4);
   }
 
@@ -241,7 +241,7 @@ async function getStorageFolder(storagePath: string, urlStr: string) {
     counter++;
     folderName = path.join(realpath, `${lastName}-${counter}`);
     if (counter > 100) {
-      throw new Error("Could not find a unique name for downloaded database.");
+      throw new Error('Could not find a unique name for downloaded database.');
     }
   }
   return folderName;
@@ -255,8 +255,8 @@ function validateHttpsUrl(databaseUrl: string) {
     throw new Error(`Invalid url: ${databaseUrl}`);
   }
 
-  if (uri.scheme !== "https") {
-    throw new Error("Must use https for downloading a database.");
+  if (uri.scheme !== 'https') {
+    throw new Error('Must use https for downloading a database.');
   }
 }
 
@@ -269,9 +269,9 @@ async function readAndUnzip(databaseUrl: string, unzipPath: string) {
     // we already know this is a file scheme
     const databaseFile = Uri.parse(databaseUrl).fsPath;
     const stream = fs.createReadStream(databaseFile);
-    stream.on("error", reject);
-    unzipStream.on("error", reject);
-    unzipStream.on("close", resolve);
+    stream.on('error', reject);
+    unzipStream.on('error', reject);
+    unzipStream.on('close', resolve);
     stream.pipe(unzipStream);
   });
 }
@@ -290,7 +290,7 @@ async function fetchAndUnzip(
   });
   progressCallback?.({
     maxStep: 3,
-    message: "Unzipping database",
+    message: 'Unzipping database',
     step: 2,
   });
   await new Promise((resolve, reject) => {
@@ -301,9 +301,9 @@ async function fetchAndUnzip(
         reject(err);
       }
     };
-    response.body.on("error", handler);
-    unzipStream.on("error", handler);
-    unzipStream.on("close", resolve);
+    response.body.on('error', handler);
+    unzipStream.on('error', handler);
+    unzipStream.on('close', resolve);
     response.body.pipe(unzipStream);
   });
 }
@@ -326,7 +326,7 @@ async function checkForFailingResponse(response: Response): Promise<void | never
 }
 
 function isFile(databaseUrl: string) {
-  return Uri.parse(databaseUrl).scheme === "file";
+  return Uri.parse(databaseUrl).scheme === 'file';
 }
 
 /**
@@ -381,16 +381,16 @@ export function looksLikeLgtmUrl(lgtmUrl: string | undefined): lgtmUrl is string
 
   try {
     const uri = Uri.parse(lgtmUrl, true);
-    if (uri.scheme !== "https") {
+    if (uri.scheme !== 'https') {
       return false;
     }
 
-    if (uri.authority !== "lgtm.com" && uri.authority !== "www.lgtm.com") {
+    if (uri.authority !== 'lgtm.com' && uri.authority !== 'www.lgtm.com') {
       return false;
     }
 
-    const paths = uri.path.split("/").filter((segment) => segment);
-    return paths.length >= 4 && paths[0] === "projects";
+    const paths = uri.path.split('/').filter((segment) => segment);
+    return paths.length >= 4 && paths[0] === 'projects';
   } catch (e) {
     return false;
   }
@@ -400,10 +400,10 @@ export function looksLikeLgtmUrl(lgtmUrl: string | undefined): lgtmUrl is string
 export async function convertToDatabaseUrl(lgtmUrl: string) {
   try {
     const uri = Uri.parse(lgtmUrl, true);
-    const paths = ["api", "v1.0"].concat(
-      uri.path.split("/").filter((segment) => segment)
+    const paths = ['api', 'v1.0'].concat(
+      uri.path.split('/').filter((segment) => segment)
     ).slice(0, 6);
-    const projectUrl = `https://lgtm.com/${paths.join("/")}`;
+    const projectUrl = `https://lgtm.com/${paths.join('/')}`;
     const projectResponse = await fetch(projectUrl);
     const projectJson = await projectResponse.json();
 
@@ -416,12 +416,12 @@ export async function convertToDatabaseUrl(lgtmUrl: string) {
       return;
     }
     return `https://lgtm.com/${[
-      "api",
-      "v1.0",
-      "snapshots",
+      'api',
+      'v1.0',
+      'snapshots',
       projectJson.id,
       language,
-    ].join("/")}`;
+    ].join('/')}`;
   } catch (e) {
     logger.log(`Error: ${e.message}`);
     throw new Error(`Invalid LGTM URL: ${lgtmUrl}`);
@@ -440,7 +440,7 @@ async function promptForLanguage(
 
   return await window.showQuickPick(
     projectJson.languages.map((lang: { language: string }) => lang.language), {
-    placeHolder: "Select the database language to download:"
+    placeHolder: 'Select the database language to download:'
   }
   );
 }

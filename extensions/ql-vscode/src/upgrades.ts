@@ -23,7 +23,7 @@ async function checkAndConfirmDatabaseUpgrade(
   qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectories: vscode.Uri[]
 ): Promise<messages.UpgradeParams | undefined> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
-    helpers.showAndLogErrorMessage("Database is invalid, and cannot be upgraded.");
+    helpers.showAndLogErrorMessage('Database is invalid, and cannot be upgraded.');
     return;
   }
   const params: messages.UpgradeParams = {
@@ -86,11 +86,11 @@ async function checkAndConfirmDatabaseUpgrade(
   let messageLines = descriptionMessage.split('\n');
   if (messageLines.length > MAX_UPGRADE_MESSAGE_LINES) {
     messageLines = messageLines.slice(0, MAX_UPGRADE_MESSAGE_LINES);
-    messageLines.push(`The list of upgrades was truncated, click "No, Show Changes" to see the full list.`);
+    messageLines.push('The list of upgrades was truncated, click "No, Show Changes" to see the full list.');
     dialogOptions.push(showLogItem);
   }
 
-  const message = `Should the database ${db.databaseUri.fsPath} be upgraded?\n\n${messageLines.join("\n")}`;
+  const message = `Should the database ${db.databaseUri.fsPath} be upgraded?\n\n${messageLines.join('\n')}`;
   const chosenItem = await vscode.window.showInformationMessage(message, { modal: true }, ...dialogOptions);
 
   if (chosenItem === showLogItem) {
@@ -157,7 +157,7 @@ async function checkDatabaseUpgrade(
 ): Promise<messages.CheckUpgradeResult> {
   return helpers.withProgress({
     location: vscode.ProgressLocation.Notification,
-    title: "Checking for database upgrades",
+    title: 'Checking for database upgrades',
     cancellable: true,
   }, (progress, token) => qs.sendRequest(messages.checkUpgrade, upgradeParams, token, progress));
 }
@@ -172,7 +172,7 @@ async function compileDatabaseUpgrade(
 
   return helpers.withProgress({
     location: vscode.ProgressLocation.Notification,
-    title: "Compiling database upgrades",
+    title: 'Compiling database upgrades',
     cancellable: true,
   }, (progress, token) => qs.sendRequest(messages.compileUpgrade, params, token, progress));
 }
@@ -197,7 +197,7 @@ async function runDatabaseUpgrade(
 
   return helpers.withProgress({
     location: vscode.ProgressLocation.Notification,
-    title: "Running database upgrades",
+    title: 'Running database upgrades',
     cancellable: true,
   }, (progress, token) => qs.sendRequest(messages.runUpgrade, params, token, progress));
 }

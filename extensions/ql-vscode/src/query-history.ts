@@ -352,9 +352,9 @@ export class QueryHistoryManager {
     } catch (e) {
       if (
         e.message.includes(
-          "Files above 50MB cannot be synchronized with extensions"
+          'Files above 50MB cannot be synchronized with extensions'
         ) ||
-        e.message.includes("too large to open")
+        e.message.includes('too large to open')
       ) {
         const res = await helpers.showBinaryChoiceDialog(
           `VS Code does not allow extensions to open files >50MB. This file
@@ -365,7 +365,7 @@ the file in the file explorer and dragging it into the workspace.`
         );
         if (res) {
           try {
-            await vscode.commands.executeCommand("revealFileInOS", uri);
+            await vscode.commands.executeCommand('revealFileInOS', uri);
           } catch (e) {
             helpers.showAndLogErrorMessage(e.message);
           }

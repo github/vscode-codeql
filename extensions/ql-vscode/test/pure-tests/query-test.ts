@@ -13,7 +13,7 @@ import * as cli from '../../src/cli';
 import { ProgressReporter, Logger } from '../../src/logging';
 
 
-declare module "url" {
+declare module 'url' {
   export function pathToFileURL(urlStr: string): Url;
 }
 
@@ -63,21 +63,21 @@ const queryTestCases: QueryTestCase[] = [
   {
     queryPath: path.join(__dirname, '../data/query.ql'),
     expectedResultSets: {
-      '#select': [[42, 3.14159, "hello world", true]]
+      '#select': [[42, 3.14159, 'hello world', true]]
     }
   },
   {
     queryPath: path.join(__dirname, '../data/multiple-result-sets.ql'),
     expectedResultSets: {
       'edges': [[1, 2], [2, 3]],
-      '#select': [["s"]]
+      '#select': [['s']]
     }
   }
 ];
 
 describe('using the query server', function() {
   before(function() {
-    if (process.env["CODEQL_PATH"] === undefined) {
+    if (process.env['CODEQL_PATH'] === undefined) {
       console.log('The environment variable CODEQL_PATH is not set. The query server tests, which require the CodeQL CLI, will be skipped.');
       this.skip();
     }
@@ -87,7 +87,7 @@ describe('using the query server', function() {
   // ensure they are all written with standard anonymous functions.
   this.timeout(10000);
 
-  const codeQlPath = process.env["CODEQL_PATH"]!;
+  const codeQlPath = process.env['CODEQL_PATH']!;
   let qs: qsClient.QueryServerClient;
   let cliServer: cli.CodeQLCliServer;
   const queryServerStarted = new Checkpoint<void>();

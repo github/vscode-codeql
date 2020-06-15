@@ -100,7 +100,7 @@ export class QueryInfo {
     try {
       await helpers.withProgress({
         location: vscode.ProgressLocation.Notification,
-        title: "Running Query",
+        title: 'Running Query',
         cancellable: true,
       }, (progress, token) => {
         return qs.sendRequest(messages.runQueries, params, token, progress);
@@ -110,7 +110,7 @@ export class QueryInfo {
     }
     return result || {
       evaluationTime: 0,
-      message: "No result from server",
+      message: 'No result from server',
       queryId: -1,
       runId: callbackId,
       resultType: messages.QueryResultType.OTHER_ERROR
@@ -145,13 +145,13 @@ export class QueryInfo {
 
       compiled = await helpers.withProgress({
         location: vscode.ProgressLocation.Notification,
-        title: "Compiling Query",
+        title: 'Compiling Query',
         cancellable: true,
       }, (progress, token) => {
         return qs.sendRequest(messages.compileQuery, params, token, progress);
       });
     } finally {
-      qs.logger.log(" - - - COMPILATION DONE - - - ");
+      qs.logger.log(' - - - COMPILATION DONE - - - ');
     }
     return (compiled?.messages || []).filter(msg => msg.severity === messages.Severity.ERROR);
   }
@@ -162,7 +162,7 @@ export class QueryInfo {
   async canHaveInterpretedResults(): Promise<boolean> {
     const hasMetadataFile = await this.dbItem.hasMetadataFile();
     if (!hasMetadataFile) {
-      logger.log("Cannot produce interpreted results since the database does not have a .dbinfo or codeql-database.yml file.");
+      logger.log('Cannot produce interpreted results since the database does not have a .dbinfo or codeql-database.yml file.');
     }
     return hasMetadataFile;
   }
@@ -203,7 +203,7 @@ export async function clearCacheInDatabase(
 
   return helpers.withProgress({
     location: vscode.ProgressLocation.Notification,
-    title: "Clearing Cache",
+    title: 'Clearing Cache',
     cancellable: false,
   }, (progress, token) =>
     qs.sendRequest(messages.clearCache, params, token, progress)
@@ -216,7 +216,7 @@ export async function clearCacheInDatabase(
  *
  */
 async function convertToQlPath(filePath: string): Promise<string> {
-  if (process.platform === "win32") {
+  if (process.platform === 'win32') {
 
     if (path.parse(filePath).root === filePath) {
       // Java assumes uppercase drive letters are canonical.
@@ -234,7 +234,7 @@ async function convertToQlPath(filePath: string): Promise<string> {
         }
       }
     }
-    throw new Error("Can't convert path to form suitable for QL:" + filePath);
+    throw new Error('Can\'t convert path to form suitable for QL:' + filePath);
   } else {
     return filePath;
   }
@@ -517,18 +517,18 @@ export async function compileAndRunQueryAgainstDatabase(
     const formattedMessages: string[] = [];
 
     for (const error of errors) {
-      const message = error.message || "[no error message available]";
+      const message = error.message || '[no error message available]';
       const formatted = `ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`;
       formattedMessages.push(formatted);
       qs.logger.log(formatted);
     }
     if (quickEval && formattedMessages.length <= 3) {
-      helpers.showAndLogErrorMessage("Quick evaluation compilation failed: \n" + formattedMessages.join("\n"));
+      helpers.showAndLogErrorMessage('Quick evaluation compilation failed: \n' + formattedMessages.join('\n'));
     } else {
-      helpers.showAndLogErrorMessage((quickEval ? "Quick evaluation" : "Query") +
-        " compilation failed. Please make sure there are no errors in the query, the database is up to date," +
-        " and the query and database use the same target language. For more details on the error, go to View > Output," +
-        " and choose CodeQL Query Server from the dropdown.");
+      helpers.showAndLogErrorMessage((quickEval ? 'Quick evaluation' : 'Query') +
+        ' compilation failed. Please make sure there are no errors in the query, the database is up to date,' +
+        ' and the query and database use the same target language. For more details on the error, go to View > Output,' +
+        ' and choose CodeQL Query Server from the dropdown.');
     }
 
     return createSyntheticResult(query, db, historyItemOptions, 'Query had compilation errors', messages.QueryResultType.OTHER_ERROR);

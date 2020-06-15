@@ -1,15 +1,15 @@
 import { env } from 'vscode';
 
-import { QueryWithResults, tmpDir, QueryInfo } from "./run-queries";
+import { QueryWithResults, tmpDir, QueryInfo } from './run-queries';
 import * as messages from './messages';
 import * as helpers from './helpers';
 import * as cli from './cli';
 import * as sarif from 'sarif';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { RawResultsSortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata, InterpretedResultsSortState, ResultsPaths } from "./interface-types";
-import { QueryHistoryConfig } from "./config";
-import { QueryHistoryItemOptions } from "./query-history";
+import { RawResultsSortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata, InterpretedResultsSortState, ResultsPaths } from './interface-types';
+import { QueryHistoryConfig } from './config';
+import { QueryHistoryItemOptions } from './query-history';
 
 export class CompletedQuery implements QueryWithResults {
   readonly time: string;
@@ -61,7 +61,7 @@ export class CompletedQuery implements QueryWithResults {
       case messages.QueryResultType.CANCELLATION:
         return `cancelled after ${this.result.evaluationTime / 1000} seconds`;
       case messages.QueryResultType.OOM:
-        return `out of memory`;
+        return 'out of memory';
       case messages.QueryResultType.SUCCESS:
         return `finished in ${this.result.evaluationTime / 1000} seconds`;
       case messages.QueryResultType.TIMEOUT:
@@ -140,7 +140,7 @@ export async function interpretResults(server: cli.CodeQLCliServer, metadata: Qu
   if (id === undefined) {
     // Interpretation per se doesn't really require an id, but the
     // SARIF format does, so in the absence of one, we use a dummy id.
-    id = "dummy-id";
+    id = 'dummy-id';
   }
   return await server.interpretBqrs({ kind, id }, resultsPath, interpretedResultsPath, sourceInfo);
 }

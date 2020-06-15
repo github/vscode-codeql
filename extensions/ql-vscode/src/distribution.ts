@@ -1,16 +1,16 @@
-import * as fetch from "node-fetch";
-import * as fs from "fs-extra";
-import * as os from "os";
-import * as path from "path";
-import * as semver from "semver";
-import * as unzipper from "unzipper";
-import * as url from "url";
-import { ExtensionContext, Event } from "vscode";
-import { DistributionConfig } from "./config";
-import { InvocationRateLimiter, InvocationRateLimiterResultKind, showAndLogErrorMessage } from "./helpers";
-import { logger } from "./logging";
-import * as helpers from "./helpers";
-import { getCodeQlCliVersion } from "./cli-version";
+import * as fetch from 'node-fetch';
+import * as fs from 'fs-extra';
+import * as os from 'os';
+import * as path from 'path';
+import * as semver from 'semver';
+import * as unzipper from 'unzipper';
+import * as url from 'url';
+import { ExtensionContext, Event } from 'vscode';
+import { DistributionConfig } from './config';
+import { InvocationRateLimiter, InvocationRateLimiterResultKind, showAndLogErrorMessage } from './helpers';
+import { logger } from './logging';
+import * as helpers from './helpers';
+import { getCodeQlCliVersion } from './cli-version';
 
 /**
  * distribution.ts
@@ -25,7 +25,7 @@ import { getCodeQlCliVersion } from "./cli-version";
  * We set the default here rather than as a default config value so that this default is invoked
  * upon blanking the setting.
  */
-const DEFAULT_DISTRIBUTION_OWNER_NAME = "github";
+const DEFAULT_DISTRIBUTION_OWNER_NAME = 'github';
 
 /**
  * Default value for the repository name of the extension-managed distribution on GitHub.
@@ -33,14 +33,14 @@ const DEFAULT_DISTRIBUTION_OWNER_NAME = "github";
  * We set the default here rather than as a default config value so that this default is invoked
  * upon blanking the setting.
  */
-const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
+const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = 'codeql-cli-binaries';
 
 /**
  * Range of versions of the CLI that are compatible with the extension.
  *
  * This applies to both extension-managed and CLI distributions.
  */
-export const DEFAULT_DISTRIBUTION_VERSION_RANGE: semver.Range = new semver.Range("2.x");
+export const DEFAULT_DISTRIBUTION_VERSION_RANGE: semver.Range = new semver.Range('2.x');
 
 export interface DistributionProvider {
   getCodeQlPathWithoutVersionCheck(): Promise<string | undefined>;
@@ -54,7 +54,7 @@ export class DistributionManager implements DistributionProvider {
     this._onDidChangeDistribution = config.onDidChangeDistributionConfiguration;
     this._updateCheckRateLimiter = new InvocationRateLimiter(
       extensionContext,
-      "extensionSpecificDistributionUpdateCheck",
+      'extensionSpecificDistributionUpdateCheck',
       () => this._extensionSpecificDistributionManager.checkForUpdatesToDistribution()
     );
     this._versionRange = versionRange;
@@ -128,8 +128,8 @@ export class DistributionManager implements DistributionProvider {
     if (this._config.customCodeQlPath) {
       if (!await fs.pathExists(this._config.customCodeQlPath)) {
         showAndLogErrorMessage(`The CodeQL executable path is specified as "${this._config.customCodeQlPath}" ` +
-          "by a configuration setting, but a CodeQL executable could not be found at that path. Please check " +
-          "that a CodeQL executable exists at the specified path or remove the setting.");
+          'by a configuration setting, but a CodeQL executable could not be found at that path. Please check ' +
+          'that a CodeQL executable exists at the specified path or remove the setting.');
         return undefined;
       }
 
@@ -165,7 +165,7 @@ export class DistributionManager implements DistributionProvider {
           };
         }
       }
-      logger.log("INFO: Could not find CodeQL on path.");
+      logger.log('INFO: Could not find CodeQL on path.');
     }
 
     return undefined;
@@ -248,7 +248,7 @@ class ExtensionSpecificDistributionManager {
       try {
         await this.removeDistribution();
       } catch (e) {
-        logger.log("WARNING: Tried to remove corrupted CodeQL CLI at " +
+        logger.log('WARNING: Tried to remove corrupted CodeQL CLI at ' +
           `${this.getDistributionStoragePath()} but encountered an error: ${e}.`);
       }
     }
@@ -309,13 +309,13 @@ class ExtensionSpecificDistributionManager {
     }
 
     const assetStream = await this.createReleasesApiConsumer().streamBinaryContentOfAsset(assets[0]);
-    const tmpDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "vscode-codeql"));
+    const tmpDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'vscode-codeql'));
 
     try {
-      const archivePath = path.join(tmpDirectory, "distributionDownload.zip");
+      const archivePath = path.join(tmpDirectory, 'distributionDownload.zip');
       const archiveFile = fs.createWriteStream(archivePath);
 
-      const contentLength = assetStream.headers.get("content-length");
+      const contentLength = assetStream.headers.get('content-length');
       let numBytesDownloaded = 0;
 
       if (progressCallback && contentLength !== null) {
@@ -332,7 +332,7 @@ class ExtensionSpecificDistributionManager {
         // Display the progress straight away rather than waiting for the first chunk.
         updateProgress();
 
-        assetStream.body.on("data", data => {
+        assetStream.body.on('data', data => {
           numBytesDownloaded += data.length;
           updateProgress();
         });
@@ -340,8 +340,8 @@ class ExtensionSpecificDistributionManager {
 
       await new Promise((resolve, reject) =>
         assetStream.body.pipe(archiveFile)
-          .on("finish", resolve)
-          .on("error", reject)
+          .on('finish', resolve)
+          .on('error', reject)
       );
 
       await this.bumpDistributionFolderIndex();
@@ -413,7 +413,7 @@ class ExtensionSpecificDistributionManager {
   private getDistributionStoragePath(): string {
     // Use an empty string for the initial distribution for backwards compatibility.
     const distributionFolderIndex = this._extensionContext.globalState.get(
-      ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey, 0) || "";
+      ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey, 0) || '';
     return path.join(this._extensionContext.globalStoragePath,
       ExtensionSpecificDistributionManager._currentDistributionFolderBaseName + distributionFolderIndex);
   }
@@ -435,19 +435,19 @@ class ExtensionSpecificDistributionManager {
   private readonly _extensionContext: ExtensionContext;
   private readonly _versionRange: semver.Range;
 
-  private static readonly _currentDistributionFolderBaseName = "distribution";
-  private static readonly _currentDistributionFolderIndexStateKey = "distributionFolderIndex";
-  private static readonly _installedReleaseStateKey = "distributionRelease";
-  private static readonly _codeQlExtractedFolderName = "codeql";
+  private static readonly _currentDistributionFolderBaseName = 'distribution';
+  private static readonly _currentDistributionFolderIndexStateKey = 'distributionFolderIndex';
+  private static readonly _installedReleaseStateKey = 'distributionRelease';
+  private static readonly _codeQlExtractedFolderName = 'codeql';
 }
 
 export class ReleasesApiConsumer {
   constructor(ownerName: string, repoName: string, personalAccessToken?: string) {
     // Specify version of the GitHub API
-    this._defaultHeaders["accept"] = "application/vnd.github.v3+json";
+    this._defaultHeaders['accept'] = 'application/vnd.github.v3+json';
 
     if (personalAccessToken) {
-      this._defaultHeaders["authorization"] = `token ${personalAccessToken}`;
+      this._defaultHeaders['authorization'] = `token ${personalAccessToken}`;
     }
 
     this._ownerName = ownerName;
@@ -475,11 +475,11 @@ export class ReleasesApiConsumer {
       if (versionComparison !== 0) {
         return versionComparison;
       }
-      return b.created_at.localeCompare(a.created_at, "en-US");
+      return b.created_at.localeCompare(a.created_at, 'en-US');
     })[0];
     if (latestRelease === undefined) {
-      throw new Error("No compatible CodeQL CLI releases were found. " +
-        "Please check that the CodeQL extension is up to date.");
+      throw new Error('No compatible CodeQL CLI releases were found. ' +
+        'Please check that the CodeQL extension is up to date.');
     }
     const assets: ReleaseAsset[] = latestRelease.assets.map(asset => {
       return {
@@ -501,7 +501,7 @@ export class ReleasesApiConsumer {
     const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases/assets/${asset.id}`;
 
     return await this.makeApiCall(apiPath, {
-      "accept": "application/octet-stream"
+      'accept': 'application/octet-stream'
     });
   }
 
@@ -511,7 +511,7 @@ export class ReleasesApiConsumer {
 
     if (!response.ok) {
       // Check for rate limiting
-      const rateLimitResetValue = response.headers.get("X-RateLimit-Reset");
+      const rateLimitResetValue = response.headers.get('X-RateLimit-Reset');
       if (response.status === 403 && rateLimitResetValue) {
         const secondsToMillisecondsFactor = 1000;
         const rateLimitResetDate = new Date(parseInt(rateLimitResetValue, 10) * secondsToMillisecondsFactor);
@@ -528,21 +528,21 @@ export class ReleasesApiConsumer {
     redirectCount = 0): Promise<fetch.Response> {
     const response = await fetch.default(requestUrl, {
       headers,
-      redirect: "manual"
+      redirect: 'manual'
     });
 
-    const redirectUrl = response.headers.get("location");
+    const redirectUrl = response.headers.get('location');
     if (isRedirectStatusCode(response.status) && redirectUrl && redirectCount < ReleasesApiConsumer._maxRedirects) {
       const parsedRedirectUrl = url.parse(redirectUrl);
-      if (parsedRedirectUrl.protocol != "https:") {
-        throw new Error("Encountered a non-https redirect, rejecting");
+      if (parsedRedirectUrl.protocol != 'https:') {
+        throw new Error('Encountered a non-https redirect, rejecting');
       }
-      if (parsedRedirectUrl.host != "api.github.com") {
+      if (parsedRedirectUrl.host != 'api.github.com') {
         // Remove authorization header if we are redirected outside of the GitHub API.
         //
         // This is necessary to stream release assets since AWS fails if more than one auth
         // mechanism is provided.
-        delete headers["authorization"];
+        delete headers['authorization'];
       }
       return await this.makeRawRequest(redirectUrl, headers, redirectCount + 1);
     }
@@ -554,7 +554,7 @@ export class ReleasesApiConsumer {
   private readonly _ownerName: string;
   private readonly _repoName: string;
 
-  private static readonly _apiBase = "https://api.github.com";
+  private static readonly _apiBase = 'https://api.github.com';
   private static readonly _maxRedirects = 20;
 }
 
@@ -576,11 +576,11 @@ export async function extractZipArchive(archivePath: string, outPath: string): P
 }
 
 function codeQlLauncherName(): string {
-  return (os.platform() === "win32") ? "codeql.exe" : "codeql";
+  return (os.platform() === 'win32') ? 'codeql.exe' : 'codeql';
 }
 
 function deprecatedCodeQlLauncherName(): string | undefined {
-  return (os.platform() === "win32") ? "codeql.cmd" : undefined;
+  return (os.platform() === 'win32') ? 'codeql.cmd' : undefined;
 }
 
 function isRedirectStatusCode(statusCode: number): boolean {
@@ -713,7 +713,7 @@ export async function getExecutableFromDirectory(directory: string, warnWhenNotF
   }
   if (warnWhenNotFound) {
     logger.log(`WARNING: Expected to find a CodeQL CLI executable at ${expectedLauncherPath} but one was not found. ` +
-      "Will try PATH.");
+      'Will try PATH.');
   }
   return undefined;
 }
