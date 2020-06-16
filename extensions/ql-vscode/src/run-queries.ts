@@ -2,7 +2,6 @@ import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp';
-import { promisify } from 'util';
 import * as vscode from 'vscode';
 import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 
@@ -224,7 +223,7 @@ async function convertToQlPath(filePath: string): Promise<string> {
     } else {
       const dir = await convertToQlPath(path.dirname(filePath));
       const fileName = path.basename(filePath);
-      const fileNames = await promisify<string, string[]>(fs.readdir)(dir);
+      const fileNames = await fs.readdir(dir);
       for (const name of fileNames) {
         // Leave the locale argument empty so that the default OS locale is used.
         // We do this because this operation works on filesystem entities, which
