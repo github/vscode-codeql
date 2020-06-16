@@ -178,3 +178,7 @@ td.vscode-codeql__path-index-cell {
   cursor: pointer;
   text-decoration: underline;
 }
+
+.vscode-codeql__compare-body > tbody {
+  vertical-align: top;
+}
