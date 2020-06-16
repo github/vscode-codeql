@@ -6,6 +6,7 @@
 - Add descriptive message for database archive import failure.
 - Respect VSCode's i18n locale setting when formatting dates and sorting strings.
 - Allow the opening of large Sarif files externally from VSCode.
+- Add new 'CodeQL: Compare Query' command that shows the differences between two queries.
 
 ## 1.2.2 - 8 June 2020
 
