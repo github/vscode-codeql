@@ -149,7 +149,7 @@ Alternatively, you can run the tests inside of vscode. There are several vscode 
 1. Double-check that the extension `package.json` has the version you intend to release.
    If you are doing a patch release (as opposed to minor or major version) this should already
    be correct.
-1. Trigger a release build on Actions by adding a new tag on master of the format `vxx.xx.xx`
+1. Trigger a release build on Actions by adding a new tag on branch `main` of the format `vxx.xx.xx`
 1. Monitor the status of the release build in the `Release` workflow in the Actions tab.
 1. Download the VSIX from the draft GitHub release at the top of [the releases page](https://github.com/github/vscode-codeql/releases) that is created when the release build finishes.
 1. Optionally unzip the `.vsix` and inspect its `package.json` to make sure the version is what you expect,
