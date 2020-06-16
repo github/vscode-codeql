@@ -1,7 +1,7 @@
 import { EventEmitter, Event, Uri, WorkspaceFolder, RelativePattern } from 'vscode';
 import { MultiFileSystemWatcher } from '@github/codeql-vscode-utils';
-import { CodeQLCliServer, QlpacksInfo } from './cli';
-import { Discovery } from './discovery';
+import { CodeQLCliServer, QlpacksInfo } from './cli/cli';
+import { Discovery } from './cli/discovery';
 
 export interface QLPack {
   name: string;

@@ -1,13 +1,13 @@
 import { commands, Disposable, ExtensionContext, extensions, languages, ProgressLocation, ProgressOptions, Uri, window as Window, env } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
-import * as archiveFilesystemProvider from './archive-filesystem-provider';
-import { CodeQLCliServer } from './cli';
-import { DistributionConfigListener, QueryHistoryConfigListener, QueryServerConfigListener } from './config';
+import * as archiveFilesystemProvider from './util/archive-filesystem-provider';
+import { CodeQLCliServer } from './cli/cli';
+import { DistributionConfigListener, QueryHistoryConfigListener, QueryServerConfigListener } from './util/config';
 import * as languageSupport from './languageSupport';
-import { DatabaseManager } from './databases';
-import { DatabaseUI } from './databases-ui';
-import { TemplateQueryDefinitionProvider, TemplateQueryReferenceProvider } from './definitions';
+import { DatabaseManager } from './databases/databases';
+import { DatabaseUI } from './databases/databases-ui';
+import { TemplateQueryDefinitionProvider, TemplateQueryReferenceProvider } from './util/definitions';
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
   DistributionKind,
@@ -17,20 +17,20 @@ import {
   FindDistributionResultKind,
   GithubApiError,
   GithubRateLimitedError
-} from './distribution';
-import * as helpers from './helpers';
-import { assertNever } from './helpers-pure';
+} from './cli/distribution';
+import * as helpers from './util/helpers';
+import { assertNever } from './util/helpers-pure';
 import { spawnIdeServer } from './ide-server';
-import { InterfaceManager } from './interface';
+import { InterfaceManager } from './results/interface';
 import { WebviewReveal } from './interface-utils';
-import { ideServerLogger, logger, queryServerLogger } from './logging';
-import { QueryHistoryManager } from './query-history';
-import { CompletedQuery } from './query-results';
-import * as qsClient from './queryserver-client';
-import { displayQuickQuery } from './quick-query';
-import { compileAndRunQueryAgainstDatabase, tmpDirDisposal, UserCancellationException } from './run-queries';
-import { QLTestAdapterFactory } from './test-adapter';
-import { TestUIService } from './test-ui';
+import { ideServerLogger, logger, queryServerLogger } from './util/logging';
+import { QueryHistoryManager } from './queries/query-history';
+import { CompletedQuery } from './queries/query-results';
+import * as qsClient from './queries/queryserver-client';
+import { displayQuickQuery } from './queries/quick-query';
+import { compileAndRunQueryAgainstDatabase, tmpDirDisposal, UserCancellationException } from './queries/run-queries';
+import { QLTestAdapterFactory } from './qltest/test-adapter';
+import { TestUIService } from './qltest/test-ui';
 import { CompareInterfaceManager } from './compare/compare-interface';
 
 /**

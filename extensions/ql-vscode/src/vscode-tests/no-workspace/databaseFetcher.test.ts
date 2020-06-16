@@ -2,7 +2,6 @@ import 'vscode-test';
 import 'mocha';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as sinon from 'sinon';
-// import * as sinonChai from 'sinon-chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as tmp from 'tmp';
@@ -13,7 +12,7 @@ import {
   convertToDatabaseUrl,
   looksLikeLgtmUrl,
   findDirWithFile,
-} from '../../databaseFetcher';
+} from '../../databases/databaseFetcher';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -21,7 +20,7 @@ describe('databaseFetcher', () => {
   describe('convertToDatabaseUrl', () => {
     let quickPickSpy: sinon.SinonStub;
     beforeEach(() => {
-      quickPickSpy = sinon.stub(window, 'showQuickPick');
+      quickPickSpy = sinon.stub(window, 'showQuickPick') as any;
     });
 
     afterEach(() => {

@@ -8,7 +8,7 @@ import * as sinon from 'sinon';
 import * as pq from 'proxyquire';
 import 'mocha';
 
-import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer } from '../../distribution';
+import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer } from '../../cli/distribution';
 
 const proxyquire = pq.noPreserveCache();
 chai.use(sinonChai);

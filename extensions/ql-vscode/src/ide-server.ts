@@ -1,8 +1,8 @@
 import { ProgressLocation, window } from 'vscode';
 import { StreamInfo } from 'vscode-languageclient';
-import * as cli from './cli';
-import { QueryServerConfig } from './config';
-import { ideServerLogger } from './logging';
+import * as cli from './cli/cli';
+import { QueryServerConfig } from './util/config';
+import { ideServerLogger } from './util/logging';
 
 /**
  * Managing the language server for CodeQL.

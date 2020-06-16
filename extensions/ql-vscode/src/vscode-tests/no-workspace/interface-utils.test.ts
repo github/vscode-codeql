@@ -11,7 +11,7 @@ import {
 } from '../../interface-utils';
 import { getDefaultResultSetName } from '../../interface-types';
 import { LocationStyle } from 'semmle-bqrs';
-import { DatabaseItem } from '../../databases';
+import { DatabaseItem } from '../../databases/databases';
 
 describe('interface-utils', () => {
   describe('webview uri conversion', function() {

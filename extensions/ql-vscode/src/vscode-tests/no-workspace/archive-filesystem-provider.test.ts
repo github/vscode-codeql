@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as path from 'path';
 
-import { encodeSourceArchiveUri, ArchiveFileSystemProvider, decodeSourceArchiveUri, ZipFileReference } from '../../archive-filesystem-provider';
+import { encodeSourceArchiveUri, ArchiveFileSystemProvider, decodeSourceArchiveUri, ZipFileReference } from '../../util/archive-filesystem-provider';
 import { FileType, FileSystemError } from 'vscode';
 
 describe('archive-filesystem-provider', () => {

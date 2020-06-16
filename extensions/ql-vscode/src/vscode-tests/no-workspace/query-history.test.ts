@@ -4,8 +4,8 @@ import 'sinon-chai';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
-import { logger } from '../../logging';
-import { QueryHistoryManager } from '../../query-history';
+import { logger } from '../../util/logging';
+import { QueryHistoryManager } from '../../queries/query-history';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -21,16 +21,16 @@ describe('query-history', () => {
   let tryOpenExternalFile: Function;
 
   beforeEach(() => {
-    showTextDocumentSpy = sinon.stub(vscode.window, 'showTextDocument');
+    showTextDocumentSpy = sinon.stub(vscode.window, 'showTextDocument') as any;
     showInformationMessageSpy = sinon.stub(
       vscode.window,
       'showInformationMessage'
-    );
+    ) as any;
     showQuickPickSpy = sinon.stub(
       vscode.window,
       'showQuickPick'
-    );
-    executeCommandSpy = sinon.stub(vscode.commands, 'executeCommand');
+    ) as any;
+    executeCommandSpy = sinon.stub(vscode.commands, 'executeCommand') as any;
     sinon.stub(logger, 'log');
     tryOpenExternalFile = (QueryHistoryManager.prototype as any).tryOpenExternalFile;
   });

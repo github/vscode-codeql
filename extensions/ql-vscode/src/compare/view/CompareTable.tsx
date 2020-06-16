@@ -1,11 +1,11 @@
 import * as React from 'react';
 
 import { SetComparisonsMessage } from '../../interface-types';
-import RawTableHeader from '../../view/RawTableHeader';
-import { className } from '../../view/result-table-utils';
+import RawTableHeader from '../../results/view/RawTableHeader';
+import { className } from '../../results/view/result-table-utils';
 import { ResultRow } from '../../adapt';
-import RawTableRow from '../../view/RawTableRow';
-import { vscode } from '../../view/vscode-api';
+import RawTableRow from '../../results/view/RawTableRow';
+import { vscode } from '../../results/view/vscode-api';
 
 interface Props {
   comparison: SetComparisonsMessage;

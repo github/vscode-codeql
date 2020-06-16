@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { Uri } from 'vscode';
-import { determineSelectedQuery } from '../../run-queries';
+import { determineSelectedQuery } from '../../queries/run-queries';
 
 async function showQlDocument(name: string): Promise<vscode.TextDocument> {
   const folderPath = vscode.workspace.workspaceFolders![0].uri.fsPath;

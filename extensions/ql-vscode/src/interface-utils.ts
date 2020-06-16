@@ -20,9 +20,9 @@ import {
   WholeFileLocation,
   ResolvableLocationValue,
 } from 'semmle-bqrs';
-import { DatabaseItem, DatabaseManager } from './databases';
+import { DatabaseItem, DatabaseManager } from './databases/databases';
 import { ViewSourceFileMsg } from './interface-types';
-import { Logger } from './logging';
+import { Logger } from './util/logging';
 
 /**
  * This module contains functions and types that are sharedd between

@@ -1,7 +1,7 @@
 import 'mocha';
 import { expect } from 'chai';
 
-import { parseSarifPlainTextMessage } from '../../sarif-utils';
+import { parseSarifPlainTextMessage } from '../../util/sarif-utils';
 
 
 describe('parsing sarif', () => {

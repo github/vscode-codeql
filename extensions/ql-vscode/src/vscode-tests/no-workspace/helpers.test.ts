@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import 'mocha';
 import { ExtensionContext, Memento } from 'vscode';
-import { InvocationRateLimiter } from '../../helpers';
+import { InvocationRateLimiter } from '../../util/helpers';
 
 describe('Invocation rate limiter', () => {
   // 1 January 2020

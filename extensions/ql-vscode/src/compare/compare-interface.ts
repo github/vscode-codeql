@@ -8,16 +8,16 @@ import {
 } from 'vscode';
 import * as path from 'path';
 
-import { tmpDir } from '../run-queries';
-import { CompletedQuery } from '../query-results';
+import { tmpDir } from '../queries/run-queries';
+import { CompletedQuery } from '../queries/query-results';
 import {
   FromCompareViewMessage,
   ToCompareViewMessage,
   QueryCompareResult,
 } from '../interface-types';
-import { Logger } from '../logging';
-import { CodeQLCliServer } from '../cli';
-import { DatabaseManager } from '../databases';
+import { Logger } from '../util/logging';
+import { CodeQLCliServer } from '../cli/cli';
+import { DatabaseManager } from '../databases/databases';
 import { getHtmlForWebview, jumpToLocation } from '../interface-utils';
 import { adaptSchema, adaptBqrs, RawResultSet } from '../adapt';
 import { BQRSInfo } from '../bqrs-cli-types';

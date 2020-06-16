@@ -7,7 +7,7 @@ import {
   SetComparisonsMessage,
 } from '../../interface-types';
 import CompareSelector from './CompareSelector';
-import { vscode } from '../../view/vscode-api';
+import { vscode } from '../../results/view/vscode-api';
 import CompareTable from './CompareTable';
 
 const emptyComparison: SetComparisonsMessage = {
@@ -60,8 +60,8 @@ export function Compare(_: {}): JSX.Element {
         {hasRows ? (
           <CompareTable comparison={comparison}></CompareTable>
         ) : (
-          <div className="vscode-codeql__compare-message">{message}</div>
-        )}
+            <div className="vscode-codeql__compare-message">{message}</div>
+          )}
       </>
     );
   } catch (err) {

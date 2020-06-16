@@ -6,7 +6,7 @@ import * as fs from 'fs-extra';
 import { expect } from 'chai';
 import { Uri } from 'vscode';
 
-import { DatabaseUI } from '../../databases-ui';
+import { DatabaseUI } from '../../databases/databases-ui';
 
 describe('databases-ui', () => {
   describe('fixDbUri', () => {
