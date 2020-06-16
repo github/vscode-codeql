@@ -2,34 +2,32 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import * as Rdom from 'react-dom';
 
-import RawTableHeader from '../../view/RawTableHeader';
 import {
   ToCompareViewMessage,
   SetComparisonsMessage,
 } from '../../interface-types';
 import CompareSelector from './CompareSelector';
 import { vscode } from '../../view/vscode-api';
-import RawTableRow from '../../view/RawTableRow';
-import { ResultRow } from '../../adapt';
-import { className } from '../../view/result-table-utils';
+import CompareTable from './CompareTable';
 
 const emptyComparison: SetComparisonsMessage = {
   t: 'setComparisons',
   stats: {},
-  rows: {
-    from: [],
-    to: [],
-  },
+  rows: undefined,
   columns: [],
   commonResultSetNames: [],
   currentResultSetName: '',
   datebaseUri: '',
+  message: 'Empty comparison'
 };
 
-export function Compare(props: {}): JSX.Element {
+export function Compare(_: {}): JSX.Element {
   const [comparison, setComparison] = useState<SetComparisonsMessage>(
     emptyComparison
   );
+
+  const message = comparison.message || 'Empty comparison';
+  const hasRows = comparison.rows && (comparison.rows.to.length || comparison.rows.from.length);
 
   useEffect(() => {
     window.addEventListener('message', (evt: MessageEvent) => {
@@ -48,7 +46,9 @@ export function Compare(props: {}): JSX.Element {
     return (
       <>
         <div className="vscode-codeql__compare-header">
-          <div>Table to compare:</div>
+          <div className="vscode-codeql__compare-header-item">
+            Table to compare:
+          </div>
           <CompareSelector
             availableResultSets={comparison.commonResultSetNames}
             currentResultSetName={comparison.currentResultSetName}
@@ -57,88 +57,17 @@ export function Compare(props: {}): JSX.Element {
             }
           />
         </div>
-        <table className="vscode-codeql__compare-body">
-          <thead>
-            <tr>
-              <td>
-                <a
-                  onClick={() => openQuery('from')}
-                  className="vscode-codeql__compare-open"
-                >
-                  {comparison.stats.fromQuery?.name}
-                </a>
-              </td>
-              <td>
-                <a
-                  onClick={() => openQuery('to')}
-                  className="vscode-codeql__compare-open"
-                >
-                  {comparison.stats.toQuery?.name}
-                </a>
-              </td>
-            </tr>
-            <tr>
-              <td>{comparison.stats.fromQuery?.time}</td>
-              <td>{comparison.stats.toQuery?.time}</td>
-            </tr>
-            <tr>
-              <th>{comparison.rows.from.length} rows removed</th>
-              <th>{comparison.rows.to.length} rows added</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <table className={className}>
-                  <RawTableHeader
-                    columns={comparison.columns}
-                    schemaName={comparison.currentResultSetName}
-                    preventSort={true}
-                  />
-                  {createRows(comparison.rows.from, comparison.datebaseUri)}
-                </table>
-              </td>
-              <td>
-                <table className={className}>
-                  <RawTableHeader
-                    columns={comparison.columns}
-                    schemaName={comparison.currentResultSetName}
-                    preventSort={true}
-                  />
-                  {createRows(comparison.rows.to, comparison.datebaseUri)}
-                </table>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        {hasRows ? (
+          <CompareTable comparison={comparison}></CompareTable>
+        ) : (
+          <div className="vscode-codeql__compare-message">{message}</div>
+        )}
       </>
     );
   } catch (err) {
     console.error(err);
     return <div>Error!</div>;
   }
-}
-
-async function openQuery(kind: 'from' | 'to') {
-  vscode.postMessage({
-    t: 'openQuery',
-    kind,
-  });
-}
-
-function createRows(rows: ResultRow[], databaseUri: string) {
-  return (
-    <tbody>
-      {rows.map((row, rowIndex) => (
-        <RawTableRow
-          key={rowIndex}
-          rowIndex={rowIndex}
-          row={row}
-          databaseUri={databaseUri}
-        />
-      ))}
-    </tbody>
-  );
 }
 
 Rdom.render(

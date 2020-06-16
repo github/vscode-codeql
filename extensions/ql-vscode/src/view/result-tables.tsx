@@ -72,7 +72,9 @@ export class ResultTables
 
   private getResultSets(): ResultSet[] {
     const resultSets: ResultSet[] =
-      this.props.rawResultSets.map(rs => ({ t: 'RawResultSet', ...rs }));
+      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+      // @ts-ignore 2783
+      this.props.rawResultSets.map((rs) => ({ t: 'RawResultSet', ...rs }));
 
     if (this.props.interpretation != undefined) {
       resultSets.push({
@@ -286,8 +288,6 @@ class ResultTable extends React.Component<ResultTableProps, {}> {
         {...this.props} resultSet={resultSet} />;
       case 'SarifResultSet': return <PathTable
         {...this.props} resultSet={resultSet} />;
-      default:
-        throw new Error('Invalid type');
     }
   }
 }

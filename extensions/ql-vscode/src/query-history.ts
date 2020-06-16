@@ -159,7 +159,6 @@ const DOUBLE_CLICK_TIME = 500;
 
 export class QueryHistoryManager {
   treeDataProvider: HistoryTreeDataProvider;
-  ctx: ExtensionContext;
   treeView: vscode.TreeView<CompletedQuery>;
   lastItemClick: { time: Date; item: CompletedQuery } | undefined;
 
@@ -304,7 +303,6 @@ export class QueryHistoryManager {
     private selectedCallback: (item: CompletedQuery) => Promise<void>,
     private doCompareCallback: (from: CompletedQuery, to: CompletedQuery) => Promise<void>,
   ) {
-    this.ctx = ctx;
     const treeDataProvider = this.treeDataProvider = new HistoryTreeDataProvider(ctx);
     this.treeView = Window.createTreeView('codeQLQueryHistory', { treeDataProvider });
     // Lazily update the tree view selection due to limitations of TreeView API (see

@@ -66,6 +66,14 @@ export class CompareInterfaceManager extends DisposableObject {
       selectedResultSetName
     );
     if (currentResultSetName) {
+      let rows: QueryCompareResult | undefined;
+      let message: string | undefined;
+      try {
+        rows = this.compareResults(fromResultSet, toResultSet);
+      } catch (e) {
+        message = e.message;
+      }
+
       await this.postMessage({
         t: 'setComparisons',
         stats: {
@@ -81,7 +89,7 @@ export class CompareInterfaceManager extends DisposableObject {
           },
           toQuery: {
             name: to.options.label
-              ? to.interpolate(from.getLabel())
+              ? to.interpolate(to.getLabel())
               : to.queryName,
             status: to.statusString,
             time: to.time,
@@ -90,7 +98,8 @@ export class CompareInterfaceManager extends DisposableObject {
         columns: fromResultSet.schema.columns,
         commonResultSetNames,
         currentResultSetName: currentResultSetName,
-        rows: this.compareResults(fromResultSet, toResultSet),
+        rows,
+        message,
         datebaseUri: to.database.databaseUri,
       });
     }

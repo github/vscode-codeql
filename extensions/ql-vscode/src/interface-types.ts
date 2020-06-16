@@ -234,7 +234,8 @@ export interface SetComparisonsMessage {
   readonly columns: readonly ColumnSchema[];
   readonly commonResultSetNames: string[];
   readonly currentResultSetName: string;
-  readonly rows: QueryCompareResult;
+  readonly rows: QueryCompareResult | undefined;
+  readonly message: string | undefined;
   readonly datebaseUri: string;
 }
 
