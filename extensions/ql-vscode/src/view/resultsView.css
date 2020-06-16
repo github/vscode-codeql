@@ -161,6 +161,14 @@ td.vscode-codeql__path-index-cell {
   display: flex;
 }
 
+.vscode-codeql__compare-header-item {
+  margin: 0 1.5rem;
+}
+
+.vscode-codeql__compare-message {
+  padding: 1.5rem;
+}
+
 .vscode-codeql__compare-body {
   margin: 20px 0;
   width: 100%;
