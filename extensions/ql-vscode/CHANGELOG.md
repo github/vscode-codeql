@@ -8,6 +8,9 @@
 - Allow the opening of large Sarif files externally from VSCode.
 - Add new 'CodeQL: Compare Query' command that shows the differences between two queries.
 - Allow multiple items in the query history view to be removed in one operation.
+- Allow multiple items in the databases view to be removed in one operation.
+- Allow multiple items in the databases view to be upgraded in one operation.
+- Allow multiple items in the databases view to have their external folders opened.
 
 ## 1.2.2 - 8 June 2020
 
