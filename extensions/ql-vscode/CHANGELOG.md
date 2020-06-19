@@ -11,6 +11,7 @@
 - Allow multiple items in the databases view to be removed in one operation.
 - Allow multiple items in the databases view to be upgraded in one operation.
 - Allow multiple items in the databases view to have their external folders opened.
+- Allow all selected queries to be run in one command from the file explorer.
 
 ## 1.2.2 - 8 June 2020
 
