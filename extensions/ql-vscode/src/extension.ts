@@ -1,5 +1,6 @@
 import { commands, Disposable, ExtensionContext, extensions, languages, ProgressLocation, ProgressOptions, Uri, window as Window, env } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
+import * as path from 'path';
 import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { CodeQLCliServer } from './cli';
@@ -32,6 +33,7 @@ import { compileAndRunQueryAgainstDatabase, tmpDirDisposal, UserCancellationExce
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
 import { CompareInterfaceManager } from './compare/compare-interface';
+import { gatherQlFiles } from './files';
 
 /**
  * extension.ts
@@ -436,6 +438,27 @@ async function activateWithInstalledDistribution(
     commands.registerCommand(
       'codeQL.runQuery',
       async (uri: Uri | undefined) => await compileAndRunQuery(false, uri)
+    )
+  );
+  ctx.subscriptions.push(
+    commands.registerCommand(
+      'codeQL.runQueries',
+      async (_: Uri | undefined, multi: Uri[]) => {
+        const [files, dirFound] = await gatherQlFiles(multi.map(uri => uri.fsPath));
+        // warn user and display selected files when a directory is selected because some ql
+        // files may be hidden from the user.
+        if (dirFound) {
+          const fileString = files.map(file => path.basename(file)).join(', ');
+          const res = await helpers.showBinaryChoiceDialog(
+            `You are about to run ${files.length} queries: ${fileString} Do you want to continue?`
+          );
+          if (!res) {
+            return;
+          }
+        }
+        const queryUris = files.map(path => Uri.parse(`file:${path}`, true));
+        await Promise.all(queryUris.map(uri => compileAndRunQuery(false, uri)));
+      }
     )
   );
   ctx.subscriptions.push(

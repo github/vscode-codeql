@@ -419,7 +419,6 @@ export async function compileAndRunQueryAgainstDatabase(
   selectedQueryUri: vscode.Uri | undefined,
   templates?: messages.TemplateDefinitions,
 ): Promise<QueryWithResults> {
-
   if (!db.contents || !db.contents.dbSchemeUri) {
     throw new Error(`Database ${db.databaseUri} does not have a CodeQL database scheme.`);
   }
@@ -427,12 +426,12 @@ export async function compileAndRunQueryAgainstDatabase(
   // Determine which query to run, based on the selection and the active editor.
   const { queryPath, quickEvalPosition, quickEvalText } = await determineSelectedQuery(selectedQueryUri, quickEval);
 
-  // If this is quick query, store the query text
   const historyItemOptions: QueryHistoryItemOptions = {};
-  historyItemOptions.queryText = await fs.readFile(queryPath, 'utf8');
   historyItemOptions.isQuickQuery === isQuickQueryPath(queryPath);
   if (quickEval) {
     historyItemOptions.queryText = quickEvalText;
+  } else {
+    historyItemOptions.queryText = await fs.readFile(queryPath, 'utf8');
   }
 
   // Get the workspace folder paths.

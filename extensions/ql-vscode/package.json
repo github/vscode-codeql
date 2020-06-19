@@ -171,6 +171,10 @@
         "title": "CodeQL: Run Query"
       },
       {
+        "command": "codeQL.runQueries",
+        "title": "CodeQL: Run Queries in Selected Files"
+      },
+      {
         "command": "codeQL.quickEval",
         "title": "CodeQL: Quick Evaluation"
       },
@@ -443,15 +447,18 @@
           "when": "resourceScheme == codeql-zip-archive || explorerResourceIsFolder || resourceExtname == .zip"
         },
         {
-          "command": "codeQL.runQuery",
-          "group": "9_qlCommands",
-          "when": "resourceLangId == ql && resourceExtname == .ql"
+          "command": "codeQL.runQueries",
+          "group": "9_qlCommands"
         }
       ],
       "commandPalette": [
         {
           "command": "codeQL.runQuery",
           "when": "resourceLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.runQueries",
+          "when": "false"
         },
         {
           "command": "codeQL.quickEval",
