@@ -444,20 +444,28 @@ async function activateWithInstalledDistribution(
     commands.registerCommand(
       'codeQL.runQueries',
       async (_: Uri | undefined, multi: Uri[]) => {
-        const [files, dirFound] = await gatherQlFiles(multi.map(uri => uri.fsPath));
-        // warn user and display selected files when a directory is selected because some ql
-        // files may be hidden from the user.
-        if (dirFound) {
-          const fileString = files.map(file => path.basename(file)).join(', ');
-          const res = await helpers.showBinaryChoiceDialog(
-            `You are about to run ${files.length} queries: ${fileString} Do you want to continue?`
-          );
-          if (!res) {
-            return;
+        const maxQueryCount = 20;
+        try {
+          const [files, dirFound] = await gatherQlFiles(multi.map(uri => uri.fsPath));
+          if (files.length > maxQueryCount) {
+            throw new Error(`You tried to run ${files.length} queries, but the maximum is ${maxQueryCount}. Try selecting fewer queries.`);
           }
+          // warn user and display selected files when a directory is selected because some ql
+          // files may be hidden from the user.
+          if (dirFound) {
+            const fileString = files.map(file => path.basename(file)).join(', ');
+            const res = await helpers.showBinaryChoiceDialog(
+              `You are about to run ${files.length} queries: ${fileString} Do you want to continue?`
+            );
+            if (!res) {
+              return;
+            }
+          }
+          const queryUris = files.map(path => Uri.parse(`file:${path}`, true));
+          await Promise.all(queryUris.map(uri => compileAndRunQuery(false, uri)));
+        } catch (e) {
+          helpers.showAndLogErrorMessage(e.message);
         }
-        const queryUris = files.map(path => Uri.parse(`file:${path}`, true));
-        await Promise.all(queryUris.map(uri => compileAndRunQuery(false, uri)));
       }
     )
   );
