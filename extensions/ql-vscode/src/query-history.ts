@@ -554,7 +554,7 @@ the file in the file explorer and dragging it into the workspace.`
       return otherQuery;
     }
 
-    if (multiSelect.length > 1) {
+    if (multiSelect?.length > 1) {
       throw new Error('Please select no more than 2 queries.');
     }
 
@@ -572,6 +572,9 @@ the file in the file explorer and dragging it into the workspace.`
         detail: otherQuery.statusString,
         query: otherQuery,
       }));
+    if (comparableQueryLabels.length < 1) {
+      throw new Error('No other queries available to compare with.');
+    }
     const choice = await vscode.window.showQuickPick(comparableQueryLabels);
     return choice?.query;
   }
