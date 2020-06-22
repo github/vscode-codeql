@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [Unreleased]
+## 1.3.0 - 22 June 2020
 
 - Report error when selecting invalid database.
 - Add descriptive message for database archive import failure.
