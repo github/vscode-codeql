@@ -9,6 +9,7 @@ import {
 } from 'vscode';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+
 import { DatabaseManager, DatabaseItem } from './databases';
 import {
   ProgressCallback,
@@ -261,19 +262,9 @@ function validateHttpsUrl(databaseUrl: string) {
 }
 
 async function readAndUnzip(databaseUrl: string, unzipPath: string) {
-  const unzipStream = unzipper.Extract({
-    path: unzipPath,
-  });
-
-  await new Promise((resolve, reject) => {
-    // we already know this is a file scheme
-    const databaseFile = Uri.parse(databaseUrl).fsPath;
-    const stream = fs.createReadStream(databaseFile);
-    stream.on('error', reject);
-    unzipStream.on('error', reject);
-    unzipStream.on('close', resolve);
-    stream.pipe(unzipStream);
-  });
+  const databaseFile = Uri.parse(databaseUrl).fsPath;
+  const directory = await unzipper.Open.file(databaseFile);
+  await directory.extract({ path: unzipPath });
 }
 
 async function fetchAndUnzip(
@@ -288,6 +279,7 @@ async function fetchAndUnzip(
   const unzipStream = unzipper.Extract({
     path: unzipPath,
   });
+
   progressCallback?.({
     maxStep: 3,
     message: 'Unzipping database',
