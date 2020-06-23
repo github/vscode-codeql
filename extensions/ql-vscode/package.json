@@ -312,7 +312,7 @@
       },
       {
         "command": "codeQLQueryHistory.compareWith",
-        "title": "Compare with..."
+        "title": "Compare Results"
       },
       {
         "command": "codeQLQueryResults.nextPathStep",
