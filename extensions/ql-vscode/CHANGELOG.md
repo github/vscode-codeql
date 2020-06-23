@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - Fix unzipping of large files.
+- Ensure compare order is consistent when selecting two queries to compare. The first query selected is always the _from_ query and the query selected later is always the _to_ query.
 
 ## 1.3.0 - 22 June 2020
 
