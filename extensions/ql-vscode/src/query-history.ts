@@ -167,7 +167,7 @@ export class QueryHistoryManager {
   treeDataProvider: HistoryTreeDataProvider;
   treeView: vscode.TreeView<CompletedQuery>;
   lastItemClick: { time: Date; item: CompletedQuery } | undefined;
-
+  compareWithItem: CompletedQuery | undefined;
 
   constructor(
     ctx: ExtensionContext,
@@ -185,6 +185,7 @@ export class QueryHistoryManager {
       treeDataProvider,
       canSelectMany: true,
     });
+
     // Lazily update the tree view selection due to limitations of TreeView API (see
     // `updateTreeViewSelectionIfVisible` doc for details)
     this.treeView.onDidChangeVisibility(async (_ev) =>
@@ -195,6 +196,7 @@ export class QueryHistoryManager {
       if (ev.selection.length == 0) {
         this.updateTreeViewSelectionIfVisible();
       }
+      this.updateCompareWith(ev.selection);
     });
     logger.log('Registering query history panel commands.');
     ctx.subscriptions.push(
@@ -349,8 +351,8 @@ export class QueryHistoryManager {
         throw new Error('Please select a successful query.');
       }
 
-      const from = singleItem;
-      const to = await this.findOtherQueryToCompare(singleItem, multiSelect);
+      const from = this.compareWithItem || singleItem;
+      const to = await this.findOtherQueryToCompare(from, multiSelect);
 
       if (from && to) {
         this.doCompareCallback(from, to);
@@ -587,5 +589,34 @@ the file in the file explorer and dragging it into the workspace.`
       return false;
     }
     return true;
+  }
+
+  /**
+   * Updates the compare with source query. This ensures that all compare command invocations
+   * when exactly 2 queries are selected always have the proper _from_ query. Always use
+   * compareWithItem as the _from_ query.
+   *
+   * The heuristic is this:
+   *
+   * 1. If selection is empty or has length > 2 delete compareWithItem.
+   * 2. If selection is length 1, then set that item to compareWithItem.
+   * 3. If selection is length 2, then make sure compareWithItem is one of the selected items
+   *    if not, then delete compareWithItem. If it is then, do nothing.
+   *
+   * This ensures that compareWithItem is always the first item selected if there are only
+   * two selected items.
+   *
+   * @param newSelection the new selection after the most recent selection change
+   */
+  private updateCompareWith(newSelection: CompletedQuery[]) {
+    if (newSelection.length === 1) {
+      this.compareWithItem = newSelection[0];
+    } else if (
+      newSelection.length !== 2 ||
+      !this.compareWithItem ||
+      !newSelection.includes(this.compareWithItem)
+    ) {
+      this.compareWithItem = undefined;
+    }
   }
 }

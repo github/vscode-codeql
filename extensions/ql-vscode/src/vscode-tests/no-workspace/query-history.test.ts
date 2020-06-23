@@ -169,6 +169,42 @@ describe('query-history', () => {
       }
     });
   });
+
+  describe('updateCompareWith', () => {
+    it('should update compareWithItem when there is a single item', () => {
+      const queryHistory = createMockQueryHistory([]);
+      queryHistory.updateCompareWith(['a']);
+      expect(queryHistory.compareWithItem).to.be.eq('a');
+    });
+
+    it('should delete compareWithItem when there are 0 items', () => {
+      const queryHistory = createMockQueryHistory([]);
+      queryHistory.compareWithItem = 'a';
+      queryHistory.updateCompareWith([]);
+      expect(queryHistory.compareWithItem).to.be.undefined;
+    });
+
+    it('should delete compareWithItem when there are more than 2 items', () => {
+      const queryHistory = createMockQueryHistory([]);
+      queryHistory.compareWithItem = 'a';
+      queryHistory.updateCompareWith(['a', 'b', 'c']);
+      expect(queryHistory.compareWithItem).to.be.undefined;
+    });
+
+    it('should delete compareWithItem when there are 2 items and disjoint from compareWithItem', () => {
+      const queryHistory = createMockQueryHistory([]);
+      queryHistory.compareWithItem = 'a';
+      queryHistory.updateCompareWith(['b', 'c']);
+      expect(queryHistory.compareWithItem).to.be.undefined;
+    });
+
+    it('should do nothing when compareWithItem exists and exactly 2 items', () => {
+      const queryHistory = createMockQueryHistory([]);
+      queryHistory.compareWithItem = 'a';
+      queryHistory.updateCompareWith(['a', 'b']);
+      expect(queryHistory.compareWithItem).to.be.eq('a');
+    });
+  });
 });
 
 function createMockQueryHistory(allHistory: {}[]) {
@@ -177,6 +213,8 @@ function createMockQueryHistory(allHistory: {}[]) {
     findOtherQueryToCompare: (QueryHistoryManager.prototype as any).findOtherQueryToCompare,
     treeDataProvider: {
       allHistory
-    }
+    },
+    updateCompareWith: (QueryHistoryManager.prototype as any).updateCompareWith,
+    compareWithItem: undefined as undefined | string,
   };
 }
