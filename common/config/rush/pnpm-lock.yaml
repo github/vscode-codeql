@@ -75,6 +75,7 @@ dependencies:
   style-loader: 0.23.1
   through2: 3.0.1
   tmp: 0.1.0
+  tmp-promise: 3.0.2
   tree-kill: 1.2.2
   ts-loader: 5.4.5_typescript@3.8.3
   ts-node: 8.6.2_typescript@3.8.3
@@ -6116,6 +6117,13 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-uWjbaKIK3T1OSVptzX7Nl6PvQ3qAGtKEtVRjRuazjfL3Bx5eI409VZSqgND+4UNnmzLVdPj9FqFJNPqBZFve4w==
+  /rimraf/3.0.2:
+    dependencies:
+      glob: 7.1.6
+    dev: false
+    hasBin: true
+    resolution:
+      integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==
   /ripemd160/2.0.2:
     dependencies:
       hash-base: 3.0.4
@@ -6917,6 +6925,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-QFQRqOfmM5/mTbmiNN4R3DHgK9Q=
+  /tmp-promise/3.0.2:
+    dependencies:
+      tmp: 0.2.1
+    dev: false
+    resolution:
+      integrity: sha512-OyCLAKU1HzBjL6Ev3gxUeraJNlbNingmi8IrHHEsYH8LTmEuhvYfqvhn2F/je+mjf4N58UmZ96OMEy1JanSCpA==
   /tmp/0.0.29:
     dependencies:
       os-tmpdir: 1.0.2
@@ -6941,6 +6955,14 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-J7Z2K08jbGcdA1kkQpJSqLF6T0tdQqpR2pnSUXsIchbPdTI9v3e85cLW0d6WDhwuAleOV71j2xWs8qMPfK7nKw==
+  /tmp/0.2.1:
+    dependencies:
+      rimraf: 3.0.2
+    dev: false
+    engines:
+      node: '>=8.17.0'
+    resolution:
+      integrity: sha512-76SUhtfqR2Ijn+xllcI5P1oyannHNHByD80W1q447gU3mp9G9PSpGdWmjUOHRDPiHYacIk66W7ubDTuPF3BEtQ==
   /to-absolute-glob/2.0.2:
     dependencies:
       is-absolute: 1.0.0
@@ -7853,7 +7875,7 @@ packages:
     dev: false
     name: '@rush-temp/codeql-gulp-tasks'
     resolution:
-      integrity: sha512-eWHB3hxiYH/b5wdcG0S1CqTBmqtNTu3VVvdEo/qrZxMoPVfXOT630ocQ8CxrqTfT1kyx1ZpKoqzzaR0hxgDqCg==
+      integrity: sha512-fqE1VOiN1SmB17tolFDAlApTd/oXFfl1wh+WkQfajdOsHLxDSMPYAcWnt7FdSaQSp/EgIIZ3lNnDBTXWlPkE/g==
       tarball: 'file:projects/codeql-gulp-tasks.tgz'
     version: 0.0.0
   'file:projects/codeql-vscode-utils.tgz_typescript@3.8.3':
@@ -7867,7 +7889,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-OC9Yx7t16ZzrGmGu1MIV8H4A2RZRFaNonIwQqlWEJ56LGVkNL+gX0RxAPwtT76AbEzhsyb4VUQ609QRt98rPlw==
+      integrity: sha512-UdaU/jwMCYYysISj/rwLWXxZKhSYo/uIkUBM5LpQhm4vy4z/0FPrEqqZWOKk+ldxUPMi8lx+8U7WkqXnTY5PFg==
       tarball: 'file:projects/codeql-vscode-utils.tgz'
     version: 0.0.0
   'file:projects/semmle-bqrs.tgz_typescript@3.8.3':
@@ -7883,7 +7905,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-l46HYR+5UlVb0XIQMNRBjADvVVzFolw3KrPPHuIRWEXhkdnFXLTOHEXBFcnijNZIduePBNqPrII+wqMmRcJVvg==
+      integrity: sha512-xXKv5YnDihfs9L8fWDfHY4IndM8A/cievN+teT/bStvPQ53P3RJikeF2R11+ovg/UNg8YaCQYAHovi4z5KEx4g==
       tarball: 'file:projects/semmle-bqrs.tgz'
     version: 0.0.0
   'file:projects/semmle-io-node.tgz_typescript@3.8.3':
@@ -7899,7 +7921,7 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-O034F8DYa59REsFjAeP4qxtoGBslO8RiGJK8bdMaxWqOX52IJyVqx6ybNgz3cWzX0Q+KI3UjZTCdk3vvF+Wsbg==
+      integrity: sha512-sB1AHo/3SHXobocIOTOOF4A6RFD7PPr8n8CSv6Qq4ZiOP/8ULNmwgoxEAksp6x4Uf6OSgJ9Puawk/v0DeeK1UQ==
       tarball: 'file:projects/semmle-io-node.tgz'
     version: 0.0.0
   'file:projects/semmle-io.tgz_typescript@3.8.3':
@@ -7914,14 +7936,14 @@ packages:
     peerDependencies:
       typescript: '*'
     resolution:
-      integrity: sha512-40cXVM0J2z7vTtvon31m8QAd/W7c3P4yLqpoGnbtLcmb2/1d881IdZbe/8dMsUOor/Qv/VsxcL9ndz+Av+eClw==
+      integrity: sha512-LmAIuLFIfrPg81Hv9UZ7VxfiM3jpXJ7HkH8w2L1t8jUZt6piibQbwMo3R8oz1v1F21QnL8DxBG4v7PCHgbf72w==
       tarball: 'file:projects/semmle-io.tgz'
     version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
     name: '@rush-temp/typescript-config'
     resolution:
-      integrity: sha512-kSFyvKy63jUHFVXQEzALiYfsTdn7J+Y7PcqtUVo9GndU5b5Xh3rBpVbZD1QN8+y8GfT0m/sdZZQVyH0h+On11Q==
+      integrity: sha512-XuUIySaNoooIduvehnlKYaHqZJmmQoCqB1RtKhNszjCYZaSSJAnKVucViWBf5oNLKSNP7NchrD7gcoBlQ3xYvw==
       tarball: 'file:projects/typescript-config.tgz'
     version: 0.0.0
   'file:projects/vscode-codeql.tgz':
@@ -7985,6 +8007,7 @@ packages:
       style-loader: 0.23.1
       through2: 3.0.1
       tmp: 0.1.0
+      tmp-promise: 3.0.2
       tree-kill: 1.2.2
       ts-loader: 5.4.5_typescript@3.8.3
       ts-node: 8.6.2_typescript@3.8.3
@@ -8003,7 +8026,7 @@ packages:
     dev: false
     name: '@rush-temp/vscode-codeql'
     resolution:
-      integrity: sha512-oGd4/XeaRctrSAFlpSZ3yhqnaTUQ6ZT2gi5iVuDWAB4FMiwJ2RCk/eFPlXrI6d+cl3l9wKHgCQeaLsbx2BfWjw==
+      integrity: sha512-yW9ABTN8ouVrgk/Vq1lsmP7gKMvf01kLbeDUvzq6o7mvLTxW6oROsfl584C7eebFHk8Sj3t/1L34rCbros5PIA==
       tarball: 'file:projects/vscode-codeql.tgz'
     version: 0.0.0
 registry: ''
@@ -8084,6 +8107,7 @@ specifiers:
   style-loader: ~0.23.1
   through2: ^3.0.1
   tmp: ^0.1.0
+  tmp-promise: ~3.0.2
   tree-kill: ~1.2.2
   ts-loader: ^5.4.5
   ts-node: ^8.3.0
