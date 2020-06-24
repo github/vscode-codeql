@@ -612,7 +612,8 @@
     "vscode-test-adapter-util": "~0.7.0",
     "minimist": "~1.2.5",
     "semver": "~7.3.2",
-    "@types/semver": "~7.2.0"
+    "@types/semver": "~7.2.0",
+    "tmp-promise": "~3.0.2"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",

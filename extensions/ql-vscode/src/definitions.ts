@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
 import * as yaml from 'js-yaml';
-import * as tmp from 'tmp';
+import * as tmp from 'tmp-promise';
 import * as vscode from 'vscode';
 import { decodeSourceArchiveUri, zipArchiveScheme } from './archive-filesystem-provider';
 import { ColumnKindCode, EntityValue, getResultSetSchema, LineColumnLocation, UrlValue } from './bqrs-cli-types';
@@ -42,7 +42,7 @@ function nameOfKeyType(keyType: KeyType): string {
 }
 
 async function resolveQueries(cli: CodeQLCliServer, qlpack: string, keyType: KeyType): Promise<string[]> {
-  const suiteFile = tmp.fileSync({ postfix: '.qls' }).name;
+  const suiteFile = (await tmp.file()).path;
   const suiteYaml = { qlpack, include: { kind: 'definitions', 'tags contain': tagOfKeyType(keyType) } };
   await fs.writeFile(suiteFile, yaml.safeDump(suiteYaml), 'utf8');
 
