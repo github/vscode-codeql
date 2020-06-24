@@ -9,8 +9,8 @@
 
 - Report error when selecting invalid database.
 - Add descriptive message for database archive import failure.
-- Respect VSCode's i18n locale setting when formatting dates and sorting strings.
-- Allow the opening of large Sarif files externally from VSCode.
+- Respect VS Code's i18n locale setting when formatting dates and sorting strings.
+- Allow the opening of large SARIF files externally from VS Code.
 - Add new 'CodeQL: Compare Query' command that shows the differences between two queries.
 - Allow multiple items in the query history view to be removed in one operation.
 - Allow multiple items in the databases view to be removed in one operation.
