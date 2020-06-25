@@ -133,7 +133,7 @@ async function findSourceArchive(
 
 async function resolveDatabase(
   databasePath: string
-): Promise<DatabaseContents | undefined> {
+): Promise<DatabaseContents> {
 
   const name = path.basename(databasePath);
 
@@ -155,20 +155,6 @@ async function getDbSchemeFiles(dbDirectory: string): Promise<string[]> {
   return await glob('*.dbscheme', { cwd: dbDirectory });
 }
 
-async function resolveRawDataset(datasetPath: string): Promise<DatabaseContents | undefined> {
-  if ((await getDbSchemeFiles(datasetPath)).length > 0) {
-    return {
-      kind: DatabaseKind.RawDataset,
-      name: path.basename(datasetPath),
-      datasetUri: vscode.Uri.file(datasetPath),
-      sourceArchiveUri: undefined
-    };
-  }
-  else {
-    return undefined;
-  }
-}
-
 async function resolveDatabaseContents(uri: vscode.Uri): Promise<DatabaseContents> {
   if (uri.scheme !== 'file') {
     throw new Error(`Database URI scheme '${uri.scheme}' not supported; only 'file' URIs are supported.`);
@@ -178,7 +164,7 @@ async function resolveDatabaseContents(uri: vscode.Uri): Promise<DatabaseContent
     throw new InvalidDatabaseError(`Database '${databasePath}' does not exist.`);
   }
 
-  const contents = await resolveDatabase(databasePath) || await resolveRawDataset(databasePath);
+  const contents = await resolveDatabase(databasePath);
 
   if (contents === undefined) {
     throw new InvalidDatabaseError(`'${databasePath}' is not a valid database.`);
