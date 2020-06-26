@@ -613,7 +613,8 @@
     "minimist": "~1.2.5",
     "semver": "~7.3.2",
     "@types/semver": "~7.2.0",
-    "tmp-promise": "~3.0.2"
+    "tmp-promise": "~3.0.2",
+    "zip-a-folder": "~0.0.12"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",

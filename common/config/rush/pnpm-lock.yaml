@@ -92,6 +92,7 @@ dependencies:
   vscode-test-adapter-util: 0.7.0
   webpack: 4.42.0_webpack@4.42.0
   webpack-cli: 3.3.11_webpack@4.42.0
+  zip-a-folder: 0.0.12
 lockfileVersion: 5.1
 packages:
   /@babel/code-frame/7.8.3:
@@ -1035,6 +1036,37 @@ packages:
     dev: false
     resolution:
       integrity: sha512-Y9J6ZjXtoYh8RnXVCMOU/ttDmk1aBjunq9vO0ta5x85WDQiQfUF9sIPBITdbiiIVcBo03Hi3jMxigBtsddlXRw==
+  /archiver-utils/2.1.0:
+    dependencies:
+      glob: 7.1.6
+      graceful-fs: 4.2.3
+      lazystream: 1.0.0
+      lodash.defaults: 4.2.0
+      lodash.difference: 4.5.0
+      lodash.flatten: 4.4.0
+      lodash.isplainobject: 4.0.6
+      lodash.union: 4.6.0
+      normalize-path: 3.0.0
+      readable-stream: 2.3.7
+    dev: false
+    engines:
+      node: '>= 6'
+    resolution:
+      integrity: sha512-bEL/yUb/fNNiNTuUz979Z0Yg5L+LzLxGJz8x79lYmR54fmTIb6ob/hNQgkQnIUDWIFjZVQwl9Xs356I6BAMHfw==
+  /archiver/3.1.1:
+    dependencies:
+      archiver-utils: 2.1.0
+      async: 2.6.3
+      buffer-crc32: 0.2.13
+      glob: 7.1.6
+      readable-stream: 3.6.0
+      tar-stream: 2.1.2
+      zip-stream: 2.1.3
+    dev: false
+    engines:
+      node: '>= 6'
+    resolution:
+      integrity: sha512-5Hxxcig7gw5Jod/8Gq0OneVgLYET+oNHcxgWItq4TbhOzRLKNAFUb9edAftiMKXvXfCB0vbGrJdZDNq0dWMsxg==
   /archy/1.0.0:
     dev: false
     resolution:
@@ -1202,6 +1234,12 @@ packages:
       node: '>= 0.10'
     resolution:
       integrity: sha1-HQqRS7Aldb7IqPOnTlCA9yssDGs=
+  /async/2.6.3:
+    dependencies:
+      lodash: 4.17.15
+    dev: false
+    resolution:
+      integrity: sha512-zflvls11DCy+dQWzTW2dzuilv8Z5X/pjfmZOWba6TNIVDm+2UDaJmXSOXlasHKfNBs8oo3M0aT50fDEWfKZjXg==
   /asynckit/0.4.0:
     dev: false
     resolution:
@@ -1298,6 +1336,14 @@ packages:
     optional: true
     resolution:
       integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==
+  /bl/4.0.2:
+    dependencies:
+      buffer: 5.6.0
+      inherits: 2.0.4
+      readable-stream: 3.6.0
+    dev: false
+    resolution:
+      integrity: sha512-j4OH8f6Qg2bGuWfRiltT2HYGx0e1QcBTrK9KAHNMwMZdQnDZFk0ZSYIpADjYCB3U12nicC5tVJwSIhwOWjb4RQ==
   /bluebird/3.4.7:
     dev: false
     resolution:
@@ -1439,6 +1485,13 @@ packages:
     dev: false
     resolution:
       integrity: sha512-xq+q3SRMOxGivLhBNaUdC64hDTQwejJ+H0T/NB1XMtTVEwNTrfFF3gAxiyW0Bu/xWEGhjVKgUcMhCrUy2+uCWg==
+  /buffer/5.6.0:
+    dependencies:
+      base64-js: 1.3.1
+      ieee754: 1.1.13
+    dev: false
+    resolution:
+      integrity: sha512-/gDYp/UtU0eA1ys8bOs9J6a+E/KWIY+DZ+Q2WESNUA0jFRsJOc0SNUO6xJ5SGA1xueg3NL65W6s+NY5l9cunuw==
   /buffers/0.1.1:
     dev: false
     engines:
@@ -1845,6 +1898,17 @@ packages:
     dev: false
     resolution:
       integrity: sha512-Rd3se6QB+sO1TwqZjscQrurpEPIfO0/yYnSin6Q/rD3mOutHvUrCAhJub3r90uNb+SESBuE0QYoB90YdfatsRg==
+  /compress-commons/2.1.1:
+    dependencies:
+      buffer-crc32: 0.2.13
+      crc32-stream: 3.0.1
+      normalize-path: 3.0.0
+      readable-stream: 2.3.7
+    dev: false
+    engines:
+      node: '>= 6'
+    resolution:
+      integrity: sha512-eVw6n7CnEMFzc3duyFVrQEuY1BlHR3rYsSztyG32ibGMW722i3C6IizEGMFmfMU+A+fALvBIwxN3czffTcdA+Q==
   /concat-map/0.0.1:
     dev: false
     resolution:
@@ -1919,6 +1983,21 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-xb3ZL6+L8b9JLLCx3ZdoZy4+2ECphCMo2PwqgP1tlfVq6M6YReyzBJtvWWtbDSpNr9hn96pkCiZqUcFEc+54Qg==
+  /crc/3.8.0:
+    dependencies:
+      buffer: 5.6.0
+    dev: false
+    resolution:
+      integrity: sha512-iX3mfgcTMIq3ZKLIsVFAbv7+Mc10kxabAGQb8HvjA1o3T1PIYprbakQ65d3I+2HGHt6nSKkM9PYjgoJO2KcFBQ==
+  /crc32-stream/3.0.1:
+    dependencies:
+      crc: 3.8.0
+      readable-stream: 3.6.0
+    dev: false
+    engines:
+      node: '>= 6.9.0'
+    resolution:
+      integrity: sha512-mctvpXlbzsvK+6z8kJwSJ5crm7yBwrQMTybJzMw1O4lLGJqjlDCXY2Zw7KheiA6XBEcBmfLx1D88mjRGVJtY9w==
   /create-ecdh/4.0.3:
     dependencies:
       bn.js: 4.11.8
@@ -3016,6 +3095,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-i/tVAr3kpNNs/e6gB/zKIdfjgq8=
+  /fs-constants/1.0.0:
+    dev: false
+    resolution:
+      integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==
   /fs-extra/7.0.1:
     dependencies:
       graceful-fs: 4.2.3
@@ -4329,6 +4412,18 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-t7hw9pI+WvuwNJXwk5zVHpyhIqzg2qTlklJOf0mVxGSbe3Fp2VieZcduNYjaLDoy6p9uGpQEGWG87WpMKlNq8g==
+  /lodash.defaults/4.2.0:
+    dev: false
+    resolution:
+      integrity: sha1-0JF4cW/+pN3p5ft7N/bwgCJ0WAw=
+  /lodash.difference/4.5.0:
+    dev: false
+    resolution:
+      integrity: sha1-nMtOUF1Ia5FlE0V3KIWi3yf9AXw=
+  /lodash.flatten/4.4.0:
+    dev: false
+    resolution:
+      integrity: sha1-8xwiIlqWMtK7+OSt2+8kCqdlph8=
   /lodash.get/4.4.2:
     dev: false
     resolution:
@@ -4337,6 +4432,14 @@ packages:
     dev: false
     resolution:
       integrity: sha1-QVxEePK8wwEgwizhDtMib30+GOA=
+  /lodash.isplainobject/4.0.6:
+    dev: false
+    resolution:
+      integrity: sha1-fFJqUtibRcRcxpC4gWO+BJf1UMs=
+  /lodash.union/4.6.0:
+    dev: false
+    resolution:
+      integrity: sha1-SLtQiECfFvGCFmZkHETdGqrjzYg=
   /lodash/4.17.15:
     dev: false
     resolution:
@@ -6814,6 +6917,16 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-4WK/bYZmj8xLr+HUCODHGF1ZFzsYffasLUgEiMBY4fgtltdO6B4WJtlSbPaDTLpYTcGVwM2qLnFTICEcNxs3kA==
+  /tar-stream/2.1.2:
+    dependencies:
+      bl: 4.0.2
+      end-of-stream: 1.4.4
+      fs-constants: 1.0.0
+      inherits: 2.0.4
+      readable-stream: 3.6.0
+    dev: false
+    resolution:
+      integrity: sha512-UaF6FoJ32WqALZGOIAApXx+OdxhekNMChu6axLJR85zMMjXKWFGjbIRe+J6P4UnRGg9rAwWvbTT0oI7hD/Un7Q==
   /tar/4.4.13:
     dependencies:
       chownr: 1.1.4
@@ -7844,6 +7957,22 @@ packages:
       commander: 2.20.3
     resolution:
       integrity: sha512-DUOKC/IhbkdLKKiV89gw9DUauTV8U/8yJl1sjf6MtDmzevLKOF2duNJ495S3MFVjqZarr+qNGCPbkg4mu4PpLw==
+  /zip-a-folder/0.0.12:
+    dependencies:
+      archiver: 3.1.1
+    dev: false
+    resolution:
+      integrity: sha512-wZGiWgp3z2TocBlzx3S5tsLgPbT39qG2uIZmn2MhYLVjhKIr2nMhg7i4iPDL4W3XvMDaOEEVU5ZB0Y/Pt6BLvA==
+  /zip-stream/2.1.3:
+    dependencies:
+      archiver-utils: 2.1.0
+      compress-commons: 2.1.1
+      readable-stream: 3.6.0
+    dev: false
+    engines:
+      node: '>= 6'
+    resolution:
+      integrity: sha512-EkXc2JGcKhO5N5aZ7TmuNo45budRaFGHOmz24wtJR7znbNqDPmdZtUauKX6et8KAVseAMBOyWJqEpXcHTBsh7Q==
   'file:projects/codeql-gulp-tasks.tgz':
     dependencies:
       '@microsoft/node-core-library': 3.13.0
@@ -8023,10 +8152,11 @@ packages:
       vscode-test-adapter-util: 0.7.0
       webpack: 4.42.0_webpack@4.42.0
       webpack-cli: 3.3.11_webpack@4.42.0
+      zip-a-folder: 0.0.12
     dev: false
     name: '@rush-temp/vscode-codeql'
     resolution:
-      integrity: sha512-yW9ABTN8ouVrgk/Vq1lsmP7gKMvf01kLbeDUvzq6o7mvLTxW6oROsfl584C7eebFHk8Sj3t/1L34rCbros5PIA==
+      integrity: sha512-0Y23lFB67k0+FFH/+TkoZDMBgeScx4E73Q/j+oDIsu7G+Dsx0SLp3Lzb/1nKJma9i2t/OFVYbTZiRYPUisIBmA==
       tarball: 'file:projects/vscode-codeql.tgz'
     version: 0.0.0
 registry: ''
@@ -8124,3 +8254,4 @@ specifiers:
   vscode-test-adapter-util: ~0.7.0
   webpack: ^4.38.0
   webpack-cli: ^3.3.2
+  zip-a-folder: ~0.0.12
