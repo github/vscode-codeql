@@ -42,7 +42,9 @@ function nameOfKeyType(keyType: KeyType): string {
 }
 
 async function resolveQueries(cli: CodeQLCliServer, qlpack: string, keyType: KeyType): Promise<string[]> {
-  const suiteFile = (await tmp.file()).path;
+  const suiteFile = (await tmp.file({
+    postfix: '.qls'
+  })).path;
   const suiteYaml = { qlpack, include: { kind: 'definitions', 'tags contain': tagOfKeyType(keyType) } };
   await fs.writeFile(suiteFile, yaml.safeDump(suiteYaml), 'utf8');
 
