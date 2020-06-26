@@ -1,5 +1,6 @@
 import fetch, { Response } from 'node-fetch';
 import * as unzipper from 'unzipper';
+import { zip } from 'zip-a-folder';
 import {
   Uri,
   ProgressOptions,
@@ -184,9 +185,9 @@ async function databaseArchiveFetcher(
   progressCallback?: ProgressCallback
 ): Promise<DatabaseItem> {
   progressCallback?.({
-    maxStep: 3,
     message: 'Getting database',
     step: 1,
+    maxStep: 4,
   });
   if (!storagePath) {
     throw new Error('No storage path specified.');
@@ -201,9 +202,9 @@ async function databaseArchiveFetcher(
   }
 
   progressCallback?.({
-    maxStep: 3,
     message: 'Opening database',
     step: 3,
+    maxStep: 4,
   });
 
   // find the path to the database. The actual database might be in a sub-folder
@@ -213,6 +214,13 @@ async function databaseArchiveFetcher(
     'codeql-database.yml'
   );
   if (dbPath) {
+    progressCallback?.({
+      message: 'Validating and fixing source location',
+      step: 4,
+      maxStep: 4,
+    });
+    await ensureZippedSourceLocation(dbPath);
+
     const item = await databasesManager.openDatabase(Uri.file(dbPath));
     databasesManager.setCurrentDatabaseItem(item);
     return item;
@@ -435,4 +443,25 @@ async function promptForLanguage(
     placeHolder: 'Select the database language to download:'
   }
   );
+}
+
+/**
+ * Databases created by the old odasa tool will not have a zipped
+ * source location. However, this extension works better if sources
+ * are zipped.
+ *
+ * This function ensures that the source location is zipped. If the
+ * `src` folder exists and the `src.zip` file does not, the `src`
+ * folder will be zipped and then deleted.
+ *
+ * @param databasePath The full path to the unzipped database
+ */
+async function ensureZippedSourceLocation(databasePath: string): Promise<void> {
+  const srcFolderPath = path.join(databasePath, 'src');
+  const srcZipPath = srcFolderPath + '.zip';
+
+  if ((await fs.pathExists(srcFolderPath)) && !(await fs.pathExists(srcZipPath))) {
+    await zip(srcFolderPath, srcZipPath);
+    await fs.remove(srcFolderPath);
+  }
 }
