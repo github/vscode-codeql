@@ -17,6 +17,7 @@ import {
   NavigatePathMsg,
   QueryMetadata,
   ResultsPaths,
+  ALERTS_TABLE_NAME,
 } from '../interface-types';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 import { ResultTables } from './result-tables';
@@ -196,7 +197,23 @@ class App extends React.Component<{}, ResultsViewState> {
         this.loadResults();
         break;
       case 'showInterpretedPage':
-        // TODO: show interpreted page
+        this.updateStateWithNewResultsInfo({
+          resultsPath: '...', // XXX
+          parsedResultSets: {
+            t: 'ExtensionParsed',
+            numPages: msg.numPages,
+            resultSetNames: ['alerts'], // XXX get the other result set names from the extension
+            pageNumber: msg.pageNumber,
+            resultSet: undefined as any, // XXX this is awkward
+            selectedTable: ALERTS_TABLE_NAME,
+          },
+          origResultsPaths: undefined as any,
+          sortedResultsMap: undefined as any,
+          database: msg.database,
+          interpretation: msg.interpretation,
+          shouldKeepOldResultsWhileRendering: false,
+          metadata: msg.metadata,
+        });
         break;
       case 'resultsUpdating':
         this.setState({

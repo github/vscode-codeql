@@ -116,8 +116,10 @@ export interface SetStateMsg {
 export interface ShowInterpretedPageMsg {
   t: 'showInterpretedPage';
   interpretation: Interpretation;
+  database: DatabaseInfo;
+  metadata?: QueryMetadata;
   pageNumber: number;
-  totalPages: number;
+  numPages: number;
 }
 
 /** Advance to the next or previous path no in the path viewer */

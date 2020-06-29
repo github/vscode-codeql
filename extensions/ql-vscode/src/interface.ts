@@ -392,6 +392,9 @@ export class InterfaceManager extends DisposableObject {
   public async showPageOfInterpretedResults(
     pageNumber: number
   ): Promise<void> {
+    if (this._displayedQuery === undefined) {
+      throw new Error(`Trying to show interpreted results but displayed query was undefined`);
+    }
     if (this._interpretation === undefined) {
       throw new Error(`Trying to show interpreted results but interpretation was undefined`);
     }
@@ -401,6 +404,8 @@ export class InterfaceManager extends DisposableObject {
     await this.postMessage({
       t: 'showInterpretedPage',
       interpretation: this.getPageOfInterpretedResults(pageNumber),
+      database: this._displayedQuery.database,
+      metadata: this._displayedQuery.query.metadata,
       pageNumber,
       totalPages: Math.ceil(this._interpretation.sarif.runs[0].results.length / INTERPRETED_RESULTS_PAGE_SIZE),
     });
