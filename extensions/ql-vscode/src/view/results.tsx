@@ -195,6 +195,9 @@ class App extends React.Component<{}, ResultsViewState> {
 
         this.loadResults();
         break;
+      case 'showInterpretedPage':
+        // TODO: show interpreted page
+        break;
       case 'resultsUpdating':
         this.setState({
           isExpectingResultsUpdate: true,

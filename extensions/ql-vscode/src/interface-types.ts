@@ -113,6 +113,13 @@ export interface SetStateMsg {
   parsedResultSets: ParsedResultSets;
 }
 
+export interface ShowInterpretedPageMsg {
+  t: 'showInterpretedPage';
+  interpretation: Interpretation;
+  pageNumber: number;
+  totalPages: number;
+}
+
 /** Advance to the next or previous path no in the path viewer */
 export interface NavigatePathMsg {
   t: 'navigatePath';
@@ -124,6 +131,7 @@ export interface NavigatePathMsg {
 export type IntoResultsViewMsg =
   | ResultsUpdatingMsg
   | SetStateMsg
+  | ShowInterpretedPageMsg
   | NavigatePathMsg;
 
 export type FromResultsViewMsg =

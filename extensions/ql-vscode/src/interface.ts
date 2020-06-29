@@ -28,6 +28,7 @@ import {
   SortDirection,
   RAW_RESULTS_PAGE_SIZE,
   INTERPRETED_RESULTS_PAGE_SIZE,
+  ALERTS_TABLE_NAME,
 } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
@@ -244,7 +245,12 @@ export class InterfaceManager extends DisposableObject {
         );
         break;
       case 'changePage':
-        await this.showPageOfResults(msg.selectedTable, msg.pageNumber);
+        if (msg.selectedTable === ALERTS_TABLE_NAME) {
+          await this.showPageOfInterpretedResults(msg.pageNumber);
+        }
+        else {
+          await this.showPageOfRawResults(msg.selectedTable, msg.pageNumber);
+        }
         break;
       default:
         assertNever(msg);
@@ -381,9 +387,29 @@ export class InterfaceManager extends DisposableObject {
   }
 
   /**
+   * Show a page of interpreted results
+   */
+  public async showPageOfInterpretedResults(
+    pageNumber: number
+  ): Promise<void> {
+    if (this._interpretation === undefined) {
+      throw new Error(`Trying to show interpreted results but interpretation was undefined`);
+    }
+    if (this._interpretation.sarif.runs[0].results === undefined) {
+      throw new Error(`Trying to show interpreted results but results were undefined`);
+    }
+    await this.postMessage({
+      t: 'showInterpretedPage',
+      interpretation: this.getPageOfInterpretedResults(pageNumber),
+      pageNumber,
+      totalPages: Math.ceil(this._interpretation.sarif.runs[0].results.length / INTERPRETED_RESULTS_PAGE_SIZE),
+    });
+  }
+
+  /**
    * Show a page of raw results from the chosen table.
    */
-  public async showPageOfResults(
+  public async showPageOfRawResults(
     selectedTable: string,
     pageNumber: number
   ): Promise<void> {
