@@ -224,6 +224,7 @@ export class ResultTables
         onBlur={e => choosePage(e.target.value)}
         onKeyDown={e => { if (e.keyCode === 13) choosePage((e.target as HTMLInputElement).value); }}
       />
+      / {resultSets.numPages}
       <button value=">" onClick={nextPage} >&gt;</button>
     </span>;
   }
