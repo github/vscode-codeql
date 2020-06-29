@@ -112,12 +112,10 @@ export class ResultTables
 
   /**
    * Holds if we actually should show pagination interface right now. This is
-   * still false for the time being when we're viewing alerts.
+   * true as long as the result sets we're given are marked to permit it.
    */
   paginationEnabled(): boolean {
-    return this.paginationAllowed() &&
-      this.props.parsedResultSets.selectedTable !== ALERTS_TABLE_NAME &&
-      this.state.selectedTable !== ALERTS_TABLE_NAME;
+    return this.paginationAllowed()
   }
 
   constructor(props: ResultTablesProps) {

@@ -407,7 +407,7 @@ export class InterfaceManager extends DisposableObject {
       database: this._displayedQuery.database,
       metadata: this._displayedQuery.query.metadata,
       pageNumber,
-      totalPages: Math.ceil(this._interpretation.sarif.runs[0].results.length / INTERPRETED_RESULTS_PAGE_SIZE),
+      numPages: Math.ceil(this._interpretation.sarif.runs[0].results.length / INTERPRETED_RESULTS_PAGE_SIZE),
     });
   }
 
