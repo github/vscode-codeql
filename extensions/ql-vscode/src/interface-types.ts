@@ -24,11 +24,6 @@ export type PathTableResultSet = {
 export type ResultSet = RawTableResultSet | PathTableResultSet;
 
 /**
- * Only ever show this many results per run in interpreted results.
- */
-export const INTERPRETED_RESULTS_PER_RUN_LIMIT = 100;
-
-/**
  * Only ever show this many rows in a raw result table.
  */
 export const RAW_RESULTS_LIMIT = 10000;

@@ -19,7 +19,6 @@ import { assertNever } from './helpers-pure';
 import {
   FromResultsViewMsg,
   Interpretation,
-  INTERPRETED_RESULTS_PER_RUN_LIMIT,
   IntoResultsViewMsg,
   QueryMetadata,
   ResultsPaths,
@@ -28,6 +27,7 @@ import {
   InterpretedResultsSortState,
   SortDirection,
   RAW_RESULTS_PAGE_SIZE,
+  INTERPRETED_RESULTS_PAGE_SIZE,
 } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
@@ -459,6 +459,10 @@ export class InterfaceManager extends DisposableObject {
       resultsPaths,
       sourceInfo
     );
+    sarif.runs.forEach(run => {
+      if (run.results !== undefined)
+        sortInterpretedResults(run.results, sortState);
+    });
     const interpretation: Interpretation = {
       sarif,
       sourceLocationPrefix,
@@ -469,38 +473,36 @@ export class InterfaceManager extends DisposableObject {
     return interpretation;
   }
 
-  private async getTruncatedResults(
-    metadata: QueryMetadata | undefined,
-    resultsPaths: ResultsPaths,
-    sourceInfo: cli.SourceInfo | undefined,
-    sourceLocationPrefix: string,
-    sortState: InterpretedResultsSortState | undefined
-  ): Promise<Interpretation> {
-    // For performance reasons, limit the number of results we try
-    // to serialize and send to the webview. TODO: possibly also
-    // limit number of paths per result, number of steps per path,
-    // or throw an error if we are in aggregate trying to send
-    // massively too much data, as it can make the extension
-    // unresponsive.
-    const interpretation = await this._getInterpretedResults(metadata, resultsPaths, sourceInfo, sourceLocationPrefix, sortState);
-    interpretation.sarif.runs.forEach((run) => {
-      if (run.results !== undefined) {
-        sortInterpretedResults(run.results, sortState);
-        if (run.results.length > INTERPRETED_RESULTS_PER_RUN_LIMIT) {
-          interpretation.numTruncatedResults +=
-            run.results.length - INTERPRETED_RESULTS_PER_RUN_LIMIT;
-          run.results = run.results.slice(0, INTERPRETED_RESULTS_PER_RUN_LIMIT);
-        }
+  private getPageOfInterpretedResults(
+    pageNumber: number
+  ): Interpretation {
+
+    function getPageOfRun(run: Sarif.Run): Sarif.Run {
+      return {
+        ...run, results: run.results?.slice(
+          INTERPRETED_RESULTS_PAGE_SIZE * pageNumber,
+          INTERPRETED_RESULTS_PAGE_SIZE * (pageNumber + 1)
+        )
       }
-    });
-    return interpretation;
+    }
+
+    if (this._interpretation === undefined) {
+      throw new Error('Tried to get interpreted results before interpretation finished');
+    }
+    if (this._interpretation.sarif.runs.length !== 1) {
+      this.logger.log(`Warning: SARIF file had ${this._interpretation.sarif.runs.length} runs, expected 1`);
+    }
+    const interp = this._interpretation;
+    return {
+      ...interp,
+      sarif: { ...interp.sarif, runs: [getPageOfRun(interp.sarif.runs[0])] },
+    }
   }
 
   private async interpretResultsInfo(
     query: QueryInfo,
     sortState: InterpretedResultsSortState | undefined
   ): Promise<Interpretation | undefined> {
-    let interpretation: Interpretation | undefined = undefined;
     if (
       (await query.canHaveInterpretedResults()) &&
       query.quickEvalPosition === undefined // never do results interpretation if quickEval
@@ -517,7 +519,7 @@ export class InterfaceManager extends DisposableObject {
               sourceArchive: sourceArchiveUri.fsPath,
               sourceLocationPrefix,
             };
-        interpretation = await this.getTruncatedResults(
+        await this._getInterpretedResults(
           query.metadata,
           query.resultsPaths,
           sourceInfo,
@@ -532,7 +534,7 @@ export class InterfaceManager extends DisposableObject {
         );
       }
     }
-    return interpretation;
+    return this.getPageOfInterpretedResults(0);
   }
 
   private async showResultsAsDiagnostics(
@@ -551,7 +553,8 @@ export class InterfaceManager extends DisposableObject {
           sourceArchive: sourceArchiveUri.fsPath,
           sourceLocationPrefix,
         };
-    const interpretation = await this.getTruncatedResults(
+    // TODO: Performance-testing to determine whether this truncation is necessary.
+    const interpretation = await this._getInterpretedResults(
       metadata,
       resultsInfo,
       sourceInfo,
