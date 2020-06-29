@@ -295,7 +295,6 @@ export class InterfaceManager extends DisposableObject {
     );
 
     this._displayedQuery = results;
-    this._interpretation = interpretation;
 
     const panel = this.getPanel();
     await this.waitForPanelLoaded();
@@ -447,7 +446,7 @@ export class InterfaceManager extends DisposableObject {
     });
   }
 
-  private async getTruncatedResults(
+  private async _getInterpretedResults(
     metadata: QueryMetadata | undefined,
     resultsPaths: ResultsPaths,
     sourceInfo: cli.SourceInfo | undefined,
@@ -460,30 +459,41 @@ export class InterfaceManager extends DisposableObject {
       resultsPaths,
       sourceInfo
     );
+    const interpretation: Interpretation = {
+      sarif,
+      sourceLocationPrefix,
+      numTruncatedResults: 0,
+      sortState,
+    };
+    this._interpretation = interpretation;
+    return interpretation;
+  }
+
+  private async getTruncatedResults(
+    metadata: QueryMetadata | undefined,
+    resultsPaths: ResultsPaths,
+    sourceInfo: cli.SourceInfo | undefined,
+    sourceLocationPrefix: string,
+    sortState: InterpretedResultsSortState | undefined
+  ): Promise<Interpretation> {
     // For performance reasons, limit the number of results we try
     // to serialize and send to the webview. TODO: possibly also
     // limit number of paths per result, number of steps per path,
     // or throw an error if we are in aggregate trying to send
     // massively too much data, as it can make the extension
     // unresponsive.
-
-    let numTruncatedResults = 0;
-    sarif.runs.forEach((run) => {
+    const interpretation = await this._getInterpretedResults(metadata, resultsPaths, sourceInfo, sourceLocationPrefix, sortState);
+    interpretation.sarif.runs.forEach((run) => {
       if (run.results !== undefined) {
         sortInterpretedResults(run.results, sortState);
         if (run.results.length > INTERPRETED_RESULTS_PER_RUN_LIMIT) {
-          numTruncatedResults +=
+          interpretation.numTruncatedResults +=
             run.results.length - INTERPRETED_RESULTS_PER_RUN_LIMIT;
           run.results = run.results.slice(0, INTERPRETED_RESULTS_PER_RUN_LIMIT);
         }
       }
     });
-    return {
-      sarif,
-      sourceLocationPrefix,
-      numTruncatedResults,
-      sortState,
-    };
+    return interpretation;
   }
 
   private async interpretResultsInfo(
