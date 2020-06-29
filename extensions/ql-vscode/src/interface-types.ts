@@ -38,6 +38,11 @@ export const RAW_RESULTS_LIMIT = 10000;
  */
 export const RAW_RESULTS_PAGE_SIZE = 100;
 
+/**
+ * Show this many rows in an interpreted results table at a time.
+ */
+export const INTERPRETED_RESULTS_PAGE_SIZE = 100;
+
 export interface DatabaseInfo {
   name: string;
   databaseUri: string;
