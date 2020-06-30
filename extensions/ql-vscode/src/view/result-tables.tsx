@@ -143,9 +143,8 @@ export class ResultTables
 
   private onTableSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
     const selectedTable = event.target.value;
-    const fetchPageFromExtension = this.paginationAllowed() && selectedTable !== ALERTS_TABLE_NAME;
 
-    if (fetchPageFromExtension) {
+    if (this.paginationAllowed()) {
       vscode.postMessage({
         t: 'changePage',
         pageNumber: 0,
