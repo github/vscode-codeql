@@ -494,10 +494,18 @@ export class InterfaceManager extends DisposableObject {
       if (run.results !== undefined)
         sortInterpretedResults(run.results, sortState);
     });
+
+    const numTotalResults = (() => {
+      if (sarif.runs.length === 0) return 0;
+      if (sarif.runs[0].results === undefined) return 0;
+      return sarif.runs[0].results.length;
+    })();
+
     const interpretation: Interpretation = {
       sarif,
       sourceLocationPrefix,
       numTruncatedResults: 0,
+      numTotalResults,
       sortState,
     };
     this._interpretation = interpretation;

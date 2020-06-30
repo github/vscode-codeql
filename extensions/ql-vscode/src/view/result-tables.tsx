@@ -50,9 +50,7 @@ function getResultCount(resultSet: ResultSet): number {
     case 'RawResultSet':
       return resultSet.schema.tupleCount;
     case 'SarifResultSet':
-      if (resultSet.sarif.runs.length === 0) return 0;
-      if (resultSet.sarif.runs[0].results === undefined) return 0;
-      return resultSet.sarif.runs[0].results.length + resultSet.numTruncatedResults;
+      return resultSet.numTotalResults;
   }
 }
 

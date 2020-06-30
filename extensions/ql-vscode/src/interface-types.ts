@@ -61,6 +61,7 @@ export interface PreviousExecution {
 export interface Interpretation {
   sourceLocationPrefix: string;
   numTruncatedResults: number;
+  numTotalResults: number;
   /**
    * sortState being undefined means don't sort, just present results in the order
    * they appear in the sarif file.
