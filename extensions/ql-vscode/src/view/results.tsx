@@ -197,7 +197,7 @@ class App extends React.Component<{}, ResultsViewState> {
         this.loadResults();
         break;
       case 'showInterpretedPage':
-        const resultsInfo: ResultsInfo = {
+        this.updateStateWithNewResultsInfo({
           resultsPath: '', // FIXME: Not used for interpreted, refactor so this is not needed
           parsedResultSets: {
             t: 'ExtensionParsed',
@@ -218,8 +218,7 @@ class App extends React.Component<{}, ResultsViewState> {
           interpretation: msg.interpretation,
           shouldKeepOldResultsWhileRendering: true,
           metadata: msg.metadata,
-        };
-        this.updateStateWithNewResultsInfo(resultsInfo);
+        });
         this.loadResults();
         break;
       case 'resultsUpdating':

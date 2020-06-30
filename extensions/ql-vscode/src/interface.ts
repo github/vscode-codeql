@@ -388,13 +388,13 @@ export class InterfaceManager extends DisposableObject {
     pageNumber: number
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
-      throw new Error(`Trying to show interpreted results but displayed query was undefined`);
+      throw new Error('Trying to show interpreted results but displayed query was undefined');
     }
     if (this._interpretation === undefined) {
-      throw new Error(`Trying to show interpreted results but interpretation was undefined`);
+      throw new Error('Trying to show interpreted results but interpretation was undefined');
     }
     if (this._interpretation.sarif.runs[0].results === undefined) {
-      throw new Error(`Trying to show interpreted results but results were undefined`);
+      throw new Error('Trying to show interpreted results but results were undefined');
     }
 
     const resultSetSchemas = await this.getResultSetSchemas(this._displayedQuery);
@@ -524,7 +524,7 @@ export class InterfaceManager extends DisposableObject {
           INTERPRETED_RESULTS_PAGE_SIZE * pageNumber,
           INTERPRETED_RESULTS_PAGE_SIZE * (pageNumber + 1)
         )
-      }
+      };
     }
 
     if (this._interpretation === undefined) {
@@ -537,7 +537,7 @@ export class InterfaceManager extends DisposableObject {
     return {
       ...interp,
       sarif: { ...interp.sarif, runs: [getPageOfRun(interp.sarif.runs[0])] },
-    }
+    };
   }
 
   private async interpretResultsInfo(

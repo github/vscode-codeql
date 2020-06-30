@@ -117,7 +117,7 @@ export class ResultTables
    * true as long as the result sets we're given are marked to permit it.
    */
   paginationEnabled(): boolean {
-    return this.paginationAllowed()
+    return this.paginationAllowed();
   }
 
   constructor(props: ResultTablesProps) {
