@@ -362,7 +362,7 @@ export class InterfaceManager extends DisposableObject {
           t: 'ExtensionParsed',
           pageNumber: 0,
           numPages: numPagesOfResultSet(resultSet),
-          resultSet,
+          resultSet: { t: 'RawResultSet', ...resultSet },
           selectedTable: undefined,
           resultSetNames,
         };
@@ -456,7 +456,7 @@ export class InterfaceManager extends DisposableObject {
     const parsedResultSets: ParsedResultSets = {
       t: 'ExtensionParsed',
       pageNumber,
-      resultSet,
+      resultSet: { t: 'RawResultSet', ...resultSet },
       numPages: numPagesOfResultSet(resultSet),
       selectedTable: selectedTable,
       resultSetNames,

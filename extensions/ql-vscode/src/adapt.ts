@@ -1,5 +1,6 @@
 import { DecodedBqrsChunk, ResultSetSchema, ColumnKind, Column, ColumnValue } from './bqrs-cli-types';
 import { LocationValue, ResultSetSchema as AdaptedSchema, ColumnSchema, ColumnType, LocationStyle } from 'semmle-bqrs';
+import { ResultSet } from './interface-types';
 
 // FIXME: This is a temporary bit of impedance matching to convert
 // from the types provided by ./bqrs-cli-types, to the types used by
@@ -130,5 +131,5 @@ export interface ExtensionParsedResultSets {
   numPages: number;
   selectedTable?: string; // when undefined, means 'show default table'
   resultSetNames: string[];
-  resultSet: RawResultSet;
+  resultSet: ResultSet;
 }

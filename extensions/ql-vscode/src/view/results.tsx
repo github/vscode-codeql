@@ -197,23 +197,30 @@ class App extends React.Component<{}, ResultsViewState> {
         this.loadResults();
         break;
       case 'showInterpretedPage':
-        this.updateStateWithNewResultsInfo({
+        const resultsInfo: ResultsInfo = {
           resultsPath: '...', // XXX
           parsedResultSets: {
             t: 'ExtensionParsed',
             numPages: msg.numPages,
             resultSetNames: ['alerts'], // XXX get the other result set names from the extension
             pageNumber: msg.pageNumber,
-            resultSet: undefined as any, // XXX this is awkward
+            resultSet: {
+              t: 'SarifResultSet',
+              name: ALERTS_TABLE_NAME,
+              schema: { name: ALERTS_TABLE_NAME, version: 0, columns: [], tupleCount: 1 },
+              ...msg.interpretation,
+            },
             selectedTable: ALERTS_TABLE_NAME,
           },
           origResultsPaths: undefined as any,
-          sortedResultsMap: undefined as any,
+          sortedResultsMap: new Map(), // XXX ?
           database: msg.database,
           interpretation: msg.interpretation,
-          shouldKeepOldResultsWhileRendering: false,
+          shouldKeepOldResultsWhileRendering: true,
           metadata: msg.metadata,
-        });
+        };
+        this.updateStateWithNewResultsInfo(resultsInfo);
+        this.loadResults();
         break;
       case 'resultsUpdating':
         this.setState({

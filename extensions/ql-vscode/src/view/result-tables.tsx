@@ -70,13 +70,13 @@ function renderResultCountString(resultSet: ResultSet): JSX.Element {
 export class ResultTables
   extends React.Component<ResultTablesProps, ResultTablesState> {
 
-  private getResultSets(): ResultSet[] {
+  private static _getResultSetsOfProps(props: ResultTablesProps): ResultSet[] {
     const resultSets: ResultSet[] =
       // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore 2783
-      this.props.rawResultSets.map((rs) => ({ t: 'RawResultSet', ...rs }));
+      props.rawResultSets.map((rs) => ({ t: 'RawResultSet', ...rs }));
 
-    if (this.props.interpretation != undefined) {
+    if (props.interpretation != undefined) {
       resultSets.push({
         t: 'SarifResultSet',
         // FIXME: The values of version, columns, tupleCount are
@@ -85,10 +85,14 @@ export class ResultTables
         // out.
         schema: { name: ALERTS_TABLE_NAME, version: 0, columns: [], tupleCount: 1 },
         name: ALERTS_TABLE_NAME,
-        ...this.props.interpretation,
+        ...props.interpretation,
       });
     }
     return resultSets;
+  }
+
+  private getResultSets(): ResultSet[] {
+    return ResultTables._getResultSetsOfProps(this.props);
   }
 
   private getResultSetNames(resultSets: ResultSet[]): string[] {
@@ -120,10 +124,14 @@ export class ResultTables
 
   constructor(props: ResultTablesProps) {
     super(props);
+    this.state = ResultTables.getDerivedStateFromProps(props);
+  }
 
-    const selectedTable = props.parsedResultSets.selectedTable || getDefaultResultSet(this.getResultSets());
-
+  // Static lifecycle method which is called by react when props change.
+  static getDerivedStateFromProps(props: Readonly<ResultTablesProps>, _prevState?: ResultTablesState): ResultTablesState {
+    const selectedTable = props.parsedResultSets.selectedTable || getDefaultResultSet(ResultTables._getResultSetsOfProps(props));
     let selectedPage: string;
+
     switch (props.parsedResultSets.t) {
       case 'ExtensionParsed':
         selectedPage = (props.parsedResultSets.pageNumber + 1) + '';
@@ -132,8 +140,7 @@ export class ResultTables
         selectedPage = '';
         break;
     }
-
-    this.state = { selectedTable, selectedPage };
+    return { selectedTable, selectedPage };
   }
 
   private onTableSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -218,7 +225,7 @@ export class ResultTables
     };
     return <span>
       <button onClick={prevPage} >&lt;</button>
-      <input value={this.state.selectedPage} onChange={onChange}
+      <input size={3} value={this.state.selectedPage} onChange={onChange}
         onBlur={e => choosePage(e.target.value)}
         onKeyDown={e => { if (e.keyCode === 13) choosePage((e.target as HTMLInputElement).value); }}
       />
