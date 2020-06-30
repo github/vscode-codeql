@@ -52,6 +52,7 @@ import {
   jumpToLocation,
 } from './interface-utils';
 import { getDefaultResultSetName } from './interface-types';
+import { ResultSetSchema } from './bqrs-cli-types';
 
 /**
  * interface.ts
@@ -330,19 +331,13 @@ export class InterfaceManager extends DisposableObject {
 
     const getParsedResultSets = async (): Promise<ParsedResultSets> => {
       if (EXPERIMENTAL_BQRS_SETTING.getValue()) {
-        const schemas = await this.cliServer.bqrsInfo(
-          results.query.resultsPaths.resultsPath,
-          RAW_RESULTS_PAGE_SIZE
-        );
-
-        const resultSetNames = schemas['result-sets'].map(
-          (resultSet) => resultSet.name
-        );
+        const resultSetSchemas = await this.getResultSetSchemas(results);
+        const resultSetNames = resultSetSchemas.map(schema => schema.name);
 
         // This may not wind up being the page we actually show, if there are interpreted results,
         // but speculatively send it anyway.
         const selectedTable = getDefaultResultSetName(resultSetNames);
-        const schema = schemas['result-sets'].find(
+        const schema = resultSetSchemas.find(
           (resultSet) => resultSet.name == selectedTable
         )!;
         if (schema === undefined) {
@@ -401,14 +396,27 @@ export class InterfaceManager extends DisposableObject {
     if (this._interpretation.sarif.runs[0].results === undefined) {
       throw new Error(`Trying to show interpreted results but results were undefined`);
     }
+
+    const resultSetSchemas = await this.getResultSetSchemas(this._displayedQuery);
+    const resultSetNames = resultSetSchemas.map(schema => schema.name);
+
     await this.postMessage({
       t: 'showInterpretedPage',
       interpretation: this.getPageOfInterpretedResults(pageNumber),
       database: this._displayedQuery.database,
       metadata: this._displayedQuery.query.metadata,
       pageNumber,
+      resultSetNames,
       numPages: Math.ceil(this._interpretation.sarif.runs[0].results.length / INTERPRETED_RESULTS_PAGE_SIZE),
     });
+  }
+
+  private async getResultSetSchemas(results: CompletedQuery): Promise<ResultSetSchema[]> {
+    const schemas = await this.cliServer.bqrsInfo(
+      results.query.resultsPaths.resultsPath,
+      RAW_RESULTS_PAGE_SIZE
+    );
+    return schemas['result-sets'];
   }
 
   /**
@@ -429,16 +437,10 @@ export class InterfaceManager extends DisposableObject {
         (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v))
     );
 
-    const schemas = await this.cliServer.bqrsInfo(
-      results.query.resultsPaths.resultsPath,
-      RAW_RESULTS_PAGE_SIZE
-    );
+    const resultSetSchemas = await this.getResultSetSchemas(results);
+    const resultSetNames = resultSetSchemas.map(schema => schema.name);
 
-    const resultSetNames = schemas['result-sets'].map(
-      (resultSet) => resultSet.name
-    );
-
-    const schema = schemas['result-sets'].find(
+    const schema = resultSetSchemas.find(
       (resultSet) => resultSet.name == selectedTable
     )!;
     if (schema === undefined)

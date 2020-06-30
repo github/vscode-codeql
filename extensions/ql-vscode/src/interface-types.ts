@@ -121,6 +121,7 @@ export interface ShowInterpretedPageMsg {
   metadata?: QueryMetadata;
   pageNumber: number;
   numPages: number;
+  resultSetNames: string[];
 }
 
 /** Advance to the next or previous path no in the path viewer */

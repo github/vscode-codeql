@@ -198,11 +198,11 @@ class App extends React.Component<{}, ResultsViewState> {
         break;
       case 'showInterpretedPage':
         const resultsInfo: ResultsInfo = {
-          resultsPath: '...', // XXX
+          resultsPath: '', // FIXME: Not used for interpreted, refactor so this is not needed
           parsedResultSets: {
             t: 'ExtensionParsed',
             numPages: msg.numPages,
-            resultSetNames: ['alerts'], // XXX get the other result set names from the extension
+            resultSetNames: msg.resultSetNames,
             pageNumber: msg.pageNumber,
             resultSet: {
               t: 'SarifResultSet',
@@ -212,8 +212,8 @@ class App extends React.Component<{}, ResultsViewState> {
             },
             selectedTable: ALERTS_TABLE_NAME,
           },
-          origResultsPaths: undefined as any,
-          sortedResultsMap: new Map(), // XXX ?
+          origResultsPaths: undefined as any, // FIXME: Not used for interpreted, refactor so this is not needed
+          sortedResultsMap: new Map(), // FIXME: Not used for interpreted, refactor so this is not needed
           database: msg.database,
           interpretation: msg.interpretation,
           shouldKeepOldResultsWhileRendering: true,
