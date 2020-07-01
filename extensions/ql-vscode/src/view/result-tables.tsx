@@ -112,14 +112,6 @@ export class ResultTables
     return this.props.parsedResultSets.t === 'ExtensionParsed';
   }
 
-  /**
-   * Holds if we actually should show pagination interface right now. This is
-   * true as long as the result sets we're given are marked to permit it.
-   */
-  paginationEnabled(): boolean {
-    return this.paginationAllowed();
-  }
-
   constructor(props: ResultTablesProps) {
     super(props);
     this.state = ResultTables.getDerivedStateFromProps(props);
@@ -232,7 +224,7 @@ export class ResultTables
   }
 
   renderButtons(): JSX.Element {
-    if (this.props.parsedResultSets.t === 'ExtensionParsed' && this.paginationEnabled())
+    if (this.props.parsedResultSets.t === 'ExtensionParsed' && this.paginationAllowed())
       return this.renderPageButtons(this.props.parsedResultSets);
     else
       return <span />;
