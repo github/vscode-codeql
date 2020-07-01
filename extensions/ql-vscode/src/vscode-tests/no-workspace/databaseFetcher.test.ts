@@ -2,7 +2,6 @@ import 'vscode-test';
 import 'mocha';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as sinon from 'sinon';
-// import * as sinonChai from 'sinon-chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as tmp from 'tmp';

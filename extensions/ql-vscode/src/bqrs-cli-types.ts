@@ -53,9 +53,12 @@ export interface BQRSInfo {
   'result-sets': ResultSetSchema[];
 }
 
+export type BqrsId = number;
+
 export interface EntityValue {
   url?: UrlValue;
   label?: string;
+  id?: BqrsId;
 }
 
 export interface LineColumnLocation {

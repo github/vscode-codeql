@@ -1,14 +1,32 @@
-import { commands, Disposable, ExtensionContext, extensions, languages, ProgressLocation, ProgressOptions, Uri, window as Window, env } from 'vscode';
+import {
+  commands,
+  Disposable,
+  ExtensionContext,
+  extensions,
+  languages,
+  ProgressLocation,
+  ProgressOptions,
+  Uri,
+  window as Window,
+  env,
+  window
+} from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import * as path from 'path';
 import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
+
+import { AstViewer } from './astViewer';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { CodeQLCliServer } from './cli';
 import { DistributionConfigListener, QueryHistoryConfigListener, QueryServerConfigListener } from './config';
 import * as languageSupport from './languageSupport';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
-import { TemplateQueryDefinitionProvider, TemplateQueryReferenceProvider } from './definitions';
+import {
+  TemplateQueryDefinitionProvider,
+  TemplateQueryReferenceProvider,
+  TemplatePrintAstProvider
+} from './contextual/definitions';
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
   DistributionKind,
@@ -522,6 +540,15 @@ async function activateWithInstalledDistribution(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
     new TemplateQueryReferenceProvider(cliServer, qs, dbm)
   );
+
+  const astViewer = new AstViewer();
+  ctx.subscriptions.push(commands.registerCommand('codeQL.viewAst', async () => {
+    const ast = await new TemplatePrintAstProvider(cliServer, qs, dbm)
+      .provideAst(window.activeTextEditor?.document);
+    if (ast) {
+      astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
+    }
+  }));
 
   logger.log('Successfully finished extension initialization.');
 }
