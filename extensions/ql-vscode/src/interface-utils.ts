@@ -149,13 +149,16 @@ export function getHtmlForWebview(
 </html>`;
 }
 
-export async function showLocation(
+export async function showResolvableLocation(
   loc: ResolvableLocationValue,
   databaseItem: DatabaseItem
 ): Promise<void> {
-  const resolvedLocation = tryResolveLocation(loc, databaseItem);
-  if (resolvedLocation) {
-    const doc = await workspace.openTextDocument(resolvedLocation.uri);
+  await showLocation(tryResolveLocation(loc, databaseItem));
+}
+
+export async function showLocation(location?: Location) {
+  if (location) {
+    const doc = await workspace.openTextDocument(location.uri);
     const editorsWithDoc = Window.visibleTextEditors.filter(
       (e) => e.document === doc
     );
@@ -163,7 +166,7 @@ export async function showLocation(
       editorsWithDoc.length > 0
         ? editorsWithDoc[0]
         : await Window.showTextDocument(doc, ViewColumn.One);
-    const range = resolvedLocation.range;
+    const range = location.range;
     // When highlighting the range, vscode's occurrence-match and bracket-match highlighting will
     // trigger based on where we place the cursor/selection, and will compete for the user's attention.
     // For reference:
@@ -188,6 +191,7 @@ const findRangeHighlightBackground = new ThemeColor(
   'editor.findRangeHighlightBackground'
 );
 
+
 export const shownLocationDecoration = Window.createTextEditorDecorationType({
   backgroundColor: findMatchBackground,
 });
@@ -209,7 +213,7 @@ export async function jumpToLocation(
   );
   if (databaseItem !== undefined) {
     try {
-      await showLocation(msg.loc, databaseItem);
+      await showResolvableLocation(msg.loc, databaseItem);
     } catch (e) {
       if (e instanceof Error) {
         if (e.message.match(/File not found/)) {

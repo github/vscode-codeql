@@ -25,6 +25,7 @@
     "onLanguage:ql",
     "onView:codeQLDatabases",
     "onView:codeQLQueryHistory",
+    "onView:codeQLAstViewer",
     "onView:test-explorer",
     "onCommand:codeQL.checkForUpdatesToCLI",
     "onCommand:codeQLDatabases.chooseDatabaseFolder",
@@ -32,6 +33,7 @@
     "onCommand:codeQLDatabases.chooseDatabaseInternet",
     "onCommand:codeQLDatabases.chooseDatabaseLgtm",
     "onCommand:codeQL.setCurrentDatabase",
+    "onCommand:codeQL.viewAst",
     "onCommand:codeQL.chooseDatabaseFolder",
     "onCommand:codeQL.chooseDatabaseArchive",
     "onCommand:codeQL.chooseDatabaseInternet",
@@ -219,6 +221,10 @@
         "title": "CodeQL: Set Current Database"
       },
       {
+        "command": "codeQL.viewAst",
+        "title": "CodeQL: View AST"
+      },
+      {
         "command": "codeQL.upgradeCurrentDatabase",
         "title": "CodeQL: Upgrade Current Database"
       },
@@ -333,6 +339,18 @@
       {
         "command": "codeQLTests.acceptOutput",
         "title": "CodeQL: Accept Test Output"
+      },
+      {
+        "command": "codeQLAstViewer.gotoCode",
+        "title": "Go To Code"
+      },
+      {
+        "command": "codeQLAstViewer.clear",
+        "title": "Clear AST",
+        "icon": {
+          "light": "media/light/clear-all.svg",
+          "dark": "media/dark/clear-all.svg"
+        }
       }
     ],
     "menus": {
@@ -365,6 +383,11 @@
         {
           "command": "codeQLDatabases.chooseDatabaseLgtm",
           "when": "view == codeQLDatabases",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLAstViewer.clear",
+          "when": "view == codeQLAstViewer",
           "group": "navigation"
         }
       ],
@@ -447,6 +470,11 @@
           "when": "resourceScheme == codeql-zip-archive || explorerResourceIsFolder || resourceExtname == .zip"
         },
         {
+          "command": "codeQL.viewAst",
+          "group": "9_qlCommands",
+          "when": "resourceScheme == codeql-zip-archive"
+        },
+        {
           "command": "codeQL.runQueries",
           "group": "9_qlCommands"
         }
@@ -467,6 +495,10 @@
         {
           "command": "codeQL.setCurrentDatabase",
           "when": "false"
+        },
+        {
+          "command": "codeQL.viewAst",
+          "when": "resourceScheme == codeql-zip-archive"
         },
         {
           "command": "codeQLDatabases.setCurrentDatabase",
@@ -543,6 +575,14 @@
         {
           "command": "codeQLQueryHistory.compareWith",
           "when": "false"
+        },
+        {
+          "command": "codeQLAstViewer.gotoCode",
+          "when": "false"
+        },
+        {
+          "command": "codeQLAstViewer.clear",
+          "when": "false"
         }
       ],
       "editor/context": [
@@ -574,9 +614,23 @@
         {
           "id": "codeQLQueryHistory",
           "name": "Query History"
+        },
+        {
+          "id": "codeQLAstViewer",
+          "name": "AST Viewer"
         }
       ]
-    }
+    },
+    "viewsWelcome": [
+      {
+        "view": "codeQLAstViewer",
+        "contents": "Run the 'CodeQL: View AST' command on an open source file from a Code QL database.\n[View AST](command:codeQL.viewAst)"
+      },
+      {
+        "view": "codeQLQueryHistory",
+        "contents": "Run the 'CodeQL: Run Query' command on QL query.\n[Run Query](command:codeQL.runQuery)"
+      }
+    ]
   },
   "scripts": {
     "build": "gulp",

@@ -499,7 +499,7 @@ export class CodeQLCliServer implements Disposable {
   */
   async bqrsDecode(bqrsPath: string, resultSet: string, pageSize?: number, offset?: number): Promise<DecodedBqrsChunk> {
     const subcommandArgs = [
-      '--entities=url,string',
+      '--entities=id,url,string',
       '--result-set', resultSet,
     ].concat(
       pageSize ? ['--rows', pageSize.toString()] : []
