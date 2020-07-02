@@ -213,14 +213,20 @@ export class ResultTables
       });
     };
 
-    return <span>
-      <button onClick={prevPage} >&lt;</button>
-      <input size={3} value={this.state.selectedPage} onChange={onChange}
+    return <span className="vscode-codeql__table-selection-header">
+      <button onClick={prevPage} >&#xab;</button>
+      <input
+        type="number"
+        size={3}
+        value={this.state.selectedPage}
+        onChange={onChange}
         onBlur={e => choosePage(e.target.value)}
         onKeyDown={e => { if (e.keyCode === 13) choosePage((e.target as HTMLInputElement).value); }}
       />
-      / {numPages}
-      <button value=">" onClick={nextPage} >&gt;</button>
+      <span>
+        / {numPages}
+      </span>
+      <button value=">" onClick={nextPage} >&#xbb;</button>
     </span>;
   }
 
