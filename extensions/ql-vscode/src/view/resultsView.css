@@ -7,16 +7,47 @@
 .vscode-codeql__table-selection-header {
   display: flex;
   padding: 0.5em 0;
+  align-items: center;
 }
 
 .vscode-codeql__table-selection-header select {
   border: 0;
 }
 
+.vscode-codeql__table-selection-header button {
+  padding: 0.3rem;
+  margin: 0.2rem;
+  border-radius: 5px;
+  color: var(--vscode-editor-foreground);
+  background-color: var(--vscode-editorGutter-background);
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.vscode-codeql__table-selection-header button:hover {
+  opacity: 1;
+}
+
+.vscode-codeql__table-selection-header input[type="number"] {
+  border-radius: 0;
+  padding: 0.3rem;
+  margin: 0.2rem;
+  width: 2rem;
+  border-radius: 0;
+  color: var(--vscode-editor-foreground);
+  border: 0;
+  border-bottom: 1px solid var(--vscode-editor-foreground);
+  background-color: var(--vscode-editorGutter-background);
+  border-radius: 0;
+  outline: none;
+}
+
 .vscode-codeql__result-table-alert-extras {
   display: inline-block;
   text-align: left;
   margin-left: auto;
+  background-color: transparent;
+  color: inherit;
 }
 
 .vscode-codeql__result-table-toggle-diagnostics {
@@ -34,11 +65,11 @@
   margin: 3px 3px 1px 13px;
 }
 
-
 .vscode-codeql__result-table th {
   border-top: 1px solid rgba(88, 96, 105, 0.25);
   border-bottom: 1px solid rgba(88, 96, 105, 0.25);
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial,
+    sans-serif, Apple Color Emoji, Segoe UI Emoji;
   background: rgba(225, 228, 232, 0.25);
   padding: 0.25em 0.5em;
   text-align: center;
@@ -146,7 +177,7 @@ td.vscode-codeql__path-index-cell {
 
 .octicon {
   fill: var(--vscode-editor-foreground);
-  margin-top: .25em;
+  margin-top: 0.25em;
 }
 
 .octicon-light {
