@@ -594,7 +594,8 @@ export class DatabaseUI extends DisposableObject {
     if ((await fs.stat(dbPath)).isFile()) {
       dbPath = path.dirname(dbPath);
     }
-    if (path.basename(dbPath).startsWith('db-')) {
+
+    if (isLikelyDbFolder(dbPath)) {
       dbPath = path.dirname(dbPath);
     }
     return Uri.file(dbPath);
@@ -608,4 +609,9 @@ export class DatabaseUI extends DisposableObject {
       throw new Error(message);
     }
   }
+}
+
+const dbRegeEx = /^db-(javascript|go|cpp|java|python)$/;
+function isLikelyDbFolder(dbPath: string) {
+  return path.basename(dbPath).match(dbRegeEx);
 }
