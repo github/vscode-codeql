@@ -5,6 +5,7 @@
 - Fix unzipping of large files.
 - Ensure compare order is consistent when selecting two queries to compare. The first query selected is always the _from_ query and the query selected later is always the _to_ query.
 - Ensure added databases have zipped source locations for databases added as archives or downloaded from the internet.
+- Fix bug where it is not possible to add databases starting with `db-*`.
 
 ## 1.3.0 - 22 June 2020
 
