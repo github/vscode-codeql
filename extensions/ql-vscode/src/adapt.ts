@@ -129,6 +129,7 @@ export interface ExtensionParsedResultSets {
   t: 'ExtensionParsed';
   pageNumber: number;
   numPages: number;
+  numInterpretedPages: number;
   selectedTable?: string; // when undefined, means 'show default table'
   resultSetNames: string[];
   resultSet: ResultSet;

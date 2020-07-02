@@ -202,6 +202,7 @@ class App extends React.Component<{}, ResultsViewState> {
           parsedResultSets: {
             t: 'ExtensionParsed',
             numPages: msg.numPages,
+            numInterpretedPages: msg.numPages,
             resultSetNames: msg.resultSetNames,
             pageNumber: msg.pageNumber,
             resultSet: {

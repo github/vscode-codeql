@@ -97,6 +97,10 @@ function numPagesOfResultSet(resultSet: RawResultSet): number {
   return Math.ceil(resultSet.schema.tupleCount / RAW_RESULTS_PAGE_SIZE);
 }
 
+function numInterpretedPages(interpretation: Interpretation | undefined): number {
+  return Math.ceil((interpretation?.sarif.runs[0].results?.length || 0) / INTERPRETED_RESULTS_PAGE_SIZE);
+}
+
 export class InterfaceManager extends DisposableObject {
   private _displayedQuery?: CompletedQuery;
   private _interpretation?: Interpretation;
@@ -352,11 +356,11 @@ export class InterfaceManager extends DisposableObject {
         );
         const adaptedSchema = adaptSchema(schema);
         const resultSet = adaptBqrs(adaptedSchema, chunk);
-
         return {
           t: 'ExtensionParsed',
           pageNumber: 0,
           numPages: numPagesOfResultSet(resultSet),
+          numInterpretedPages: numInterpretedPages(this._interpretation),
           resultSet: { t: 'RawResultSet', ...resultSet },
           selectedTable: undefined,
           resultSetNames,
@@ -407,7 +411,7 @@ export class InterfaceManager extends DisposableObject {
       metadata: this._displayedQuery.query.metadata,
       pageNumber,
       resultSetNames,
-      numPages: Math.ceil(this._interpretation.sarif.runs[0].results.length / INTERPRETED_RESULTS_PAGE_SIZE),
+      numPages: numInterpretedPages(this._interpretation),
     });
   }
 
@@ -460,6 +464,7 @@ export class InterfaceManager extends DisposableObject {
       pageNumber,
       resultSet: { t: 'RawResultSet', ...resultSet },
       numPages: numPagesOfResultSet(resultSet),
+      numInterpretedPages: numInterpretedPages(this._interpretation),
       selectedTable: selectedTable,
       resultSetNames,
     };

@@ -174,13 +174,22 @@ export class ResultTables
 
   renderPageButtons(resultSets: ExtensionParsedResultSets): JSX.Element {
     const selectedTable = this.state.selectedTable;
+
+    // FIXME: The extension, not the view, should be in charge of deciding whether to initially show
+    // a raw or alerts page. We have to conditionally recompute the number of pages here, because
+    // on initial load of query results, resultSets.numPages will have the number of *raw* pages available,
+    // not interpreted pages, because the extension doesn't know the view will default to showing alerts
+    // instead.
+    const numPages = selectedTable == ALERTS_TABLE_NAME ?
+      resultSets.numInterpretedPages : resultSets.numPages;
+
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       this.setState({ selectedPage: e.target.value });
     };
     const choosePage = (input: string) => {
       const pageNumber = parseInt(input);
       if (pageNumber !== undefined && !isNaN(pageNumber)) {
-        const actualPageNumber = Math.max(0, Math.min(pageNumber - 1, resultSets.numPages - 1));
+        const actualPageNumber = Math.max(0, Math.min(pageNumber - 1, numPages - 1));
         vscode.postMessage({
           t: 'changePage',
           pageNumber: actualPageNumber,
@@ -199,17 +208,18 @@ export class ResultTables
     const nextPage = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       vscode.postMessage({
         t: 'changePage',
-        pageNumber: Math.min(resultSets.pageNumber + 1, resultSets.numPages - 1),
+        pageNumber: Math.min(resultSets.pageNumber + 1, numPages - 1),
         selectedTable,
       });
     };
+
     return <span>
       <button onClick={prevPage} >&lt;</button>
       <input size={3} value={this.state.selectedPage} onChange={onChange}
         onBlur={e => choosePage(e.target.value)}
         onKeyDown={e => { if (e.keyCode === 13) choosePage((e.target as HTMLInputElement).value); }}
       />
-      / {resultSets.numPages}
+      / {numPages}
       <button value=">" onClick={nextPage} >&gt;</button>
     </span>;
   }
