@@ -25,7 +25,7 @@ describe('databases-ui', () => {
 
     it('should choose parent direcory when db-* is selected', async () => {
       const dir = tmp.dirSync().name;
-      const dbDir = path.join(dir, 'db-hucairz');
+      const dbDir = path.join(dir, 'db-javascript');
       await fs.mkdirs(dbDir);
 
       const uri = await fixDbUri(Uri.file(dbDir));
@@ -34,7 +34,7 @@ describe('databases-ui', () => {
 
     it('should choose parent\'s parent direcory when file selected is in db-*', async () => {
       const dir = tmp.dirSync().name;
-      const dbDir = path.join(dir, 'db-hucairz');
+      const dbDir = path.join(dir, 'db-javascript');
       const file = path.join(dbDir, 'nested');
       await fs.mkdirs(dbDir);
       await fs.createFile(file);
@@ -42,6 +42,18 @@ describe('databases-ui', () => {
       const uri = await fixDbUri(Uri.file(file));
       expect(uri.toString()).to.eq(Uri.file(dir).toString());
     });
-  });
 
+    it('should handle a parent whose name is db-*', async () => {
+      // fixes https://github.com/github/vscode-codeql/issues/482
+      const dir = tmp.dirSync().name;
+      const parentDir = path.join(dir, 'db-hucairz');
+      const dbDir = path.join(parentDir, 'db-javascript');
+      const file = path.join(dbDir, 'nested');
+      await fs.mkdirs(dbDir);
+      await fs.createFile(file);
+
+      const uri = await fixDbUri(Uri.file(file));
+      expect(uri.toString()).to.eq(Uri.file(parentDir).toString());
+    });
+  });
 });
