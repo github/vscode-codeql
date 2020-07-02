@@ -368,8 +368,10 @@ class App extends React.Component<{}, ResultsViewState> {
       displayedResults.resultsInfo !== null
     ) {
       const parsedResultSets = displayedResults.resultsInfo.parsedResultSets;
+      const key = (parsedResultSets.t === 'ExtensionParsed' ? (parsedResultSets.selectedTable || '') + parsedResultSets.pageNumber : '');
       return (
         <ResultTables
+          key={key}
           parsedResultSets={parsedResultSets}
           rawResultSets={displayedResults.results.resultSets}
           interpretation={

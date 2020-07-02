@@ -68,13 +68,13 @@ function renderResultCountString(resultSet: ResultSet): JSX.Element {
 export class ResultTables
   extends React.Component<ResultTablesProps, ResultTablesState> {
 
-  private static _getResultSetsOfProps(props: ResultTablesProps): ResultSet[] {
+  private getResultSets(): ResultSet[] {
     const resultSets: ResultSet[] =
       // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore 2783
-      props.rawResultSets.map((rs) => ({ t: 'RawResultSet', ...rs }));
+      this.props.rawResultSets.map((rs) => ({ t: 'RawResultSet', ...rs }));
 
-    if (props.interpretation != undefined) {
+    if (this.props.interpretation != undefined) {
       resultSets.push({
         t: 'SarifResultSet',
         // FIXME: The values of version, columns, tupleCount are
@@ -83,14 +83,10 @@ export class ResultTables
         // out.
         schema: { name: ALERTS_TABLE_NAME, version: 0, columns: [], tupleCount: 1 },
         name: ALERTS_TABLE_NAME,
-        ...props.interpretation,
+        ...this.props.interpretation,
       });
     }
     return resultSets;
-  }
-
-  private getResultSets(): ResultSet[] {
-    return ResultTables._getResultSetsOfProps(this.props);
   }
 
   private getResultSetNames(resultSets: ResultSet[]): string[] {
@@ -114,12 +110,7 @@ export class ResultTables
 
   constructor(props: ResultTablesProps) {
     super(props);
-    this.state = ResultTables.getDerivedStateFromProps(props);
-  }
-
-  // Static lifecycle method which is called by react when props change.
-  static getDerivedStateFromProps(props: Readonly<ResultTablesProps>, _prevState?: ResultTablesState): ResultTablesState {
-    const selectedTable = props.parsedResultSets.selectedTable || getDefaultResultSet(ResultTables._getResultSetsOfProps(props));
+    const selectedTable = props.parsedResultSets.selectedTable || getDefaultResultSet(this.getResultSets());
     let selectedPage: string;
 
     switch (props.parsedResultSets.t) {
@@ -130,7 +121,7 @@ export class ResultTables
         selectedPage = '';
         break;
     }
-    return { selectedTable, selectedPage };
+    this.state = { selectedTable, selectedPage };
   }
 
   private onTableSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
