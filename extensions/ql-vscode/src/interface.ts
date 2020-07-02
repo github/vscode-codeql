@@ -294,7 +294,8 @@ export class InterfaceManager extends DisposableObject {
       return;
     }
 
-    const interpretation = await this.interpretResultsInfo(
+    this._interpretation = undefined;
+    const interpretationPage = await this.interpretResultsInfo(
       results.query,
       results.interpretedResultsSortState
     );
@@ -372,7 +373,7 @@ export class InterfaceManager extends DisposableObject {
 
     await this.postMessage({
       t: 'setState',
-      interpretation,
+      interpretation: interpretationPage,
       origResultsPaths: results.query.resultsPaths,
       resultsPath: this.convertPathToWebviewUri(
         results.query.resultsPaths.resultsPath
@@ -580,7 +581,7 @@ export class InterfaceManager extends DisposableObject {
         );
       }
     }
-    return this.getPageOfInterpretedResults(0);
+    return this._interpretation && this.getPageOfInterpretedResults(0);
   }
 
   private async showResultsAsDiagnostics(
