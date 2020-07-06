@@ -19,7 +19,6 @@ import { assertNever } from './helpers-pure';
 import {
   FromResultsViewMsg,
   Interpretation,
-  INTERPRETED_RESULTS_PER_RUN_LIMIT,
   IntoResultsViewMsg,
   QueryMetadata,
   ResultsPaths,
@@ -28,6 +27,8 @@ import {
   InterpretedResultsSortState,
   SortDirection,
   RAW_RESULTS_PAGE_SIZE,
+  INTERPRETED_RESULTS_PAGE_SIZE,
+  ALERTS_TABLE_NAME,
 } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
@@ -51,6 +52,7 @@ import {
   jumpToLocation,
 } from './interface-utils';
 import { getDefaultResultSetName } from './interface-types';
+import { ResultSetSchema } from './bqrs-cli-types';
 
 /**
  * interface.ts
@@ -93,6 +95,10 @@ function sortInterpretedResults(
 
 function numPagesOfResultSet(resultSet: RawResultSet): number {
   return Math.ceil(resultSet.schema.tupleCount / RAW_RESULTS_PAGE_SIZE);
+}
+
+function numInterpretedPages(interpretation: Interpretation | undefined): number {
+  return Math.ceil((interpretation?.sarif.runs[0].results?.length || 0) / INTERPRETED_RESULTS_PAGE_SIZE);
 }
 
 export class InterfaceManager extends DisposableObject {
@@ -244,7 +250,12 @@ export class InterfaceManager extends DisposableObject {
         );
         break;
       case 'changePage':
-        await this.showPageOfResults(msg.selectedTable, msg.pageNumber);
+        if (msg.selectedTable === ALERTS_TABLE_NAME) {
+          await this.showPageOfInterpretedResults(msg.pageNumber);
+        }
+        else {
+          await this.showPageOfRawResults(msg.selectedTable, msg.pageNumber);
+        }
         break;
       default:
         assertNever(msg);
@@ -283,7 +294,8 @@ export class InterfaceManager extends DisposableObject {
       return;
     }
 
-    const interpretation = await this.interpretResultsInfo(
+    this._interpretation = undefined;
+    const interpretationPage = await this.interpretResultsInfo(
       results.query,
       results.interpretedResultsSortState
     );
@@ -295,7 +307,6 @@ export class InterfaceManager extends DisposableObject {
     );
 
     this._displayedQuery = results;
-    this._interpretation = interpretation;
 
     const panel = this.getPanel();
     await this.waitForPanelLoaded();
@@ -325,19 +336,13 @@ export class InterfaceManager extends DisposableObject {
 
     const getParsedResultSets = async (): Promise<ParsedResultSets> => {
       if (EXPERIMENTAL_BQRS_SETTING.getValue()) {
-        const schemas = await this.cliServer.bqrsInfo(
-          results.query.resultsPaths.resultsPath,
-          RAW_RESULTS_PAGE_SIZE
-        );
-
-        const resultSetNames = schemas['result-sets'].map(
-          (resultSet) => resultSet.name
-        );
+        const resultSetSchemas = await this.getResultSetSchemas(results);
+        const resultSetNames = resultSetSchemas.map(schema => schema.name);
 
         // This may not wind up being the page we actually show, if there are interpreted results,
         // but speculatively send it anyway.
         const selectedTable = getDefaultResultSetName(resultSetNames);
-        const schema = schemas['result-sets'].find(
+        const schema = resultSetSchemas.find(
           (resultSet) => resultSet.name == selectedTable
         )!;
         if (schema === undefined) {
@@ -352,12 +357,12 @@ export class InterfaceManager extends DisposableObject {
         );
         const adaptedSchema = adaptSchema(schema);
         const resultSet = adaptBqrs(adaptedSchema, chunk);
-
         return {
           t: 'ExtensionParsed',
           pageNumber: 0,
           numPages: numPagesOfResultSet(resultSet),
-          resultSet,
+          numInterpretedPages: numInterpretedPages(this._interpretation),
+          resultSet: { t: 'RawResultSet', ...resultSet },
           selectedTable: undefined,
           resultSetNames,
         };
@@ -368,7 +373,7 @@ export class InterfaceManager extends DisposableObject {
 
     await this.postMessage({
       t: 'setState',
-      interpretation,
+      interpretation: interpretationPage,
       origResultsPaths: results.query.resultsPaths,
       resultsPath: this.convertPathToWebviewUri(
         results.query.resultsPaths.resultsPath
@@ -382,9 +387,47 @@ export class InterfaceManager extends DisposableObject {
   }
 
   /**
+   * Show a page of interpreted results
+   */
+  public async showPageOfInterpretedResults(
+    pageNumber: number
+  ): Promise<void> {
+    if (this._displayedQuery === undefined) {
+      throw new Error('Trying to show interpreted results but displayed query was undefined');
+    }
+    if (this._interpretation === undefined) {
+      throw new Error('Trying to show interpreted results but interpretation was undefined');
+    }
+    if (this._interpretation.sarif.runs[0].results === undefined) {
+      throw new Error('Trying to show interpreted results but results were undefined');
+    }
+
+    const resultSetSchemas = await this.getResultSetSchemas(this._displayedQuery);
+    const resultSetNames = resultSetSchemas.map(schema => schema.name);
+
+    await this.postMessage({
+      t: 'showInterpretedPage',
+      interpretation: this.getPageOfInterpretedResults(pageNumber),
+      database: this._displayedQuery.database,
+      metadata: this._displayedQuery.query.metadata,
+      pageNumber,
+      resultSetNames,
+      numPages: numInterpretedPages(this._interpretation),
+    });
+  }
+
+  private async getResultSetSchemas(results: CompletedQuery): Promise<ResultSetSchema[]> {
+    const schemas = await this.cliServer.bqrsInfo(
+      results.query.resultsPaths.resultsPath,
+      RAW_RESULTS_PAGE_SIZE
+    );
+    return schemas['result-sets'];
+  }
+
+  /**
    * Show a page of raw results from the chosen table.
    */
-  public async showPageOfResults(
+  public async showPageOfRawResults(
     selectedTable: string,
     pageNumber: number
   ): Promise<void> {
@@ -399,16 +442,10 @@ export class InterfaceManager extends DisposableObject {
         (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v))
     );
 
-    const schemas = await this.cliServer.bqrsInfo(
-      results.query.resultsPaths.resultsPath,
-      RAW_RESULTS_PAGE_SIZE
-    );
+    const resultSetSchemas = await this.getResultSetSchemas(results);
+    const resultSetNames = resultSetSchemas.map(schema => schema.name);
 
-    const resultSetNames = schemas['result-sets'].map(
-      (resultSet) => resultSet.name
-    );
-
-    const schema = schemas['result-sets'].find(
+    const schema = resultSetSchemas.find(
       (resultSet) => resultSet.name == selectedTable
     )!;
     if (schema === undefined)
@@ -426,8 +463,9 @@ export class InterfaceManager extends DisposableObject {
     const parsedResultSets: ParsedResultSets = {
       t: 'ExtensionParsed',
       pageNumber,
-      resultSet,
+      resultSet: { t: 'RawResultSet', ...resultSet },
       numPages: numPagesOfResultSet(resultSet),
+      numInterpretedPages: numInterpretedPages(this._interpretation),
       selectedTable: selectedTable,
       resultSetNames,
     };
@@ -447,7 +485,7 @@ export class InterfaceManager extends DisposableObject {
     });
   }
 
-  private async getTruncatedResults(
+  private async _getInterpretedResults(
     metadata: QueryMetadata | undefined,
     resultsPaths: ResultsPaths,
     sourceInfo: cli.SourceInfo | undefined,
@@ -460,29 +498,51 @@ export class InterfaceManager extends DisposableObject {
       resultsPaths,
       sourceInfo
     );
-    // For performance reasons, limit the number of results we try
-    // to serialize and send to the webview. TODO: possibly also
-    // limit number of paths per result, number of steps per path,
-    // or throw an error if we are in aggregate trying to send
-    // massively too much data, as it can make the extension
-    // unresponsive.
-
-    let numTruncatedResults = 0;
-    sarif.runs.forEach((run) => {
-      if (run.results !== undefined) {
+    sarif.runs.forEach(run => {
+      if (run.results !== undefined)
         sortInterpretedResults(run.results, sortState);
-        if (run.results.length > INTERPRETED_RESULTS_PER_RUN_LIMIT) {
-          numTruncatedResults +=
-            run.results.length - INTERPRETED_RESULTS_PER_RUN_LIMIT;
-          run.results = run.results.slice(0, INTERPRETED_RESULTS_PER_RUN_LIMIT);
-        }
-      }
     });
-    return {
+
+    const numTotalResults = (() => {
+      if (sarif.runs.length === 0) return 0;
+      if (sarif.runs[0].results === undefined) return 0;
+      return sarif.runs[0].results.length;
+    })();
+
+    const interpretation: Interpretation = {
       sarif,
       sourceLocationPrefix,
-      numTruncatedResults,
+      numTruncatedResults: 0,
+      numTotalResults,
       sortState,
+    };
+    this._interpretation = interpretation;
+    return interpretation;
+  }
+
+  private getPageOfInterpretedResults(
+    pageNumber: number
+  ): Interpretation {
+
+    function getPageOfRun(run: Sarif.Run): Sarif.Run {
+      return {
+        ...run, results: run.results?.slice(
+          INTERPRETED_RESULTS_PAGE_SIZE * pageNumber,
+          INTERPRETED_RESULTS_PAGE_SIZE * (pageNumber + 1)
+        )
+      };
+    }
+
+    if (this._interpretation === undefined) {
+      throw new Error('Tried to get interpreted results before interpretation finished');
+    }
+    if (this._interpretation.sarif.runs.length !== 1) {
+      this.logger.log(`Warning: SARIF file had ${this._interpretation.sarif.runs.length} runs, expected 1`);
+    }
+    const interp = this._interpretation;
+    return {
+      ...interp,
+      sarif: { ...interp.sarif, runs: [getPageOfRun(interp.sarif.runs[0])] },
     };
   }
 
@@ -490,7 +550,6 @@ export class InterfaceManager extends DisposableObject {
     query: QueryInfo,
     sortState: InterpretedResultsSortState | undefined
   ): Promise<Interpretation | undefined> {
-    let interpretation: Interpretation | undefined = undefined;
     if (
       (await query.canHaveInterpretedResults()) &&
       query.quickEvalPosition === undefined // never do results interpretation if quickEval
@@ -507,7 +566,7 @@ export class InterfaceManager extends DisposableObject {
               sourceArchive: sourceArchiveUri.fsPath,
               sourceLocationPrefix,
             };
-        interpretation = await this.getTruncatedResults(
+        await this._getInterpretedResults(
           query.metadata,
           query.resultsPaths,
           sourceInfo,
@@ -522,7 +581,7 @@ export class InterfaceManager extends DisposableObject {
         );
       }
     }
-    return interpretation;
+    return this._interpretation && this.getPageOfInterpretedResults(0);
   }
 
   private async showResultsAsDiagnostics(
@@ -541,7 +600,8 @@ export class InterfaceManager extends DisposableObject {
           sourceArchive: sourceArchiveUri.fsPath,
           sourceLocationPrefix,
         };
-    const interpretation = await this.getTruncatedResults(
+    // TODO: Performance-testing to determine whether this truncation is necessary.
+    const interpretation = await this._getInterpretedResults(
       metadata,
       resultsInfo,
       sourceInfo,

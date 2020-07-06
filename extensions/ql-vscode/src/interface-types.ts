@@ -24,11 +24,6 @@ export type PathTableResultSet = {
 export type ResultSet = RawTableResultSet | PathTableResultSet;
 
 /**
- * Only ever show this many results per run in interpreted results.
- */
-export const INTERPRETED_RESULTS_PER_RUN_LIMIT = 100;
-
-/**
  * Only ever show this many rows in a raw result table.
  */
 export const RAW_RESULTS_LIMIT = 10000;
@@ -37,6 +32,11 @@ export const RAW_RESULTS_LIMIT = 10000;
  * Show this many rows in a raw result table at a time.
  */
 export const RAW_RESULTS_PAGE_SIZE = 100;
+
+/**
+ * Show this many rows in an interpreted results table at a time.
+ */
+export const INTERPRETED_RESULTS_PAGE_SIZE = 100;
 
 export interface DatabaseInfo {
   name: string;
@@ -61,6 +61,7 @@ export interface PreviousExecution {
 export interface Interpretation {
   sourceLocationPrefix: string;
   numTruncatedResults: number;
+  numTotalResults: number;
   /**
    * sortState being undefined means don't sort, just present results in the order
    * they appear in the sarif file.
@@ -113,6 +114,16 @@ export interface SetStateMsg {
   parsedResultSets: ParsedResultSets;
 }
 
+export interface ShowInterpretedPageMsg {
+  t: 'showInterpretedPage';
+  interpretation: Interpretation;
+  database: DatabaseInfo;
+  metadata?: QueryMetadata;
+  pageNumber: number;
+  numPages: number;
+  resultSetNames: string[];
+}
+
 /** Advance to the next or previous path no in the path viewer */
 export interface NavigatePathMsg {
   t: 'navigatePath';
@@ -124,6 +135,7 @@ export interface NavigatePathMsg {
 export type IntoResultsViewMsg =
   | ResultsUpdatingMsg
   | SetStateMsg
+  | ShowInterpretedPageMsg
   | NavigatePathMsg;
 
 export type FromResultsViewMsg =

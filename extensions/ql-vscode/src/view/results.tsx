@@ -17,6 +17,7 @@ import {
   NavigatePathMsg,
   QueryMetadata,
   ResultsPaths,
+  ALERTS_TABLE_NAME,
 } from '../interface-types';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 import { ResultTables } from './result-tables';
@@ -195,6 +196,32 @@ class App extends React.Component<{}, ResultsViewState> {
 
         this.loadResults();
         break;
+      case 'showInterpretedPage':
+        this.updateStateWithNewResultsInfo({
+          resultsPath: '', // FIXME: Not used for interpreted, refactor so this is not needed
+          parsedResultSets: {
+            t: 'ExtensionParsed',
+            numPages: msg.numPages,
+            numInterpretedPages: msg.numPages,
+            resultSetNames: msg.resultSetNames,
+            pageNumber: msg.pageNumber,
+            resultSet: {
+              t: 'SarifResultSet',
+              name: ALERTS_TABLE_NAME,
+              schema: { name: ALERTS_TABLE_NAME, version: 0, columns: [], tupleCount: 1 },
+              ...msg.interpretation,
+            },
+            selectedTable: ALERTS_TABLE_NAME,
+          },
+          origResultsPaths: undefined as any, // FIXME: Not used for interpreted, refactor so this is not needed
+          sortedResultsMap: new Map(), // FIXME: Not used for interpreted, refactor so this is not needed
+          database: msg.database,
+          interpretation: msg.interpretation,
+          shouldKeepOldResultsWhileRendering: true,
+          metadata: msg.metadata,
+        });
+        this.loadResults();
+        break;
       case 'resultsUpdating':
         this.setState({
           isExpectingResultsUpdate: true,
@@ -342,8 +369,10 @@ class App extends React.Component<{}, ResultsViewState> {
       displayedResults.resultsInfo !== null
     ) {
       const parsedResultSets = displayedResults.resultsInfo.parsedResultSets;
+      const key = (parsedResultSets.t === 'ExtensionParsed' ? (parsedResultSets.selectedTable || '') + parsedResultSets.pageNumber : '');
       return (
         <ResultTables
+          key={key}
           parsedResultSets={parsedResultSets}
           rawResultSets={displayedResults.results.resultSets}
           interpretation={

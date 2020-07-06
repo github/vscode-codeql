@@ -50,9 +50,7 @@ function getResultCount(resultSet: ResultSet): number {
     case 'RawResultSet':
       return resultSet.schema.tupleCount;
     case 'SarifResultSet':
-      if (resultSet.sarif.runs.length === 0) return 0;
-      if (resultSet.sarif.runs[0].results === undefined) return 0;
-      return resultSet.sarif.runs[0].results.length + resultSet.numTruncatedResults;
+      return resultSet.numTotalResults;
   }
 }
 
@@ -110,22 +108,11 @@ export class ResultTables
     return this.props.parsedResultSets.t === 'ExtensionParsed';
   }
 
-  /**
-   * Holds if we actually should show pagination interface right now. This is
-   * still false for the time being when we're viewing alerts.
-   */
-  paginationEnabled(): boolean {
-    return this.paginationAllowed() &&
-      this.props.parsedResultSets.selectedTable !== ALERTS_TABLE_NAME &&
-      this.state.selectedTable !== ALERTS_TABLE_NAME;
-  }
-
   constructor(props: ResultTablesProps) {
     super(props);
-
     const selectedTable = props.parsedResultSets.selectedTable || getDefaultResultSet(this.getResultSets());
-
     let selectedPage: string;
+
     switch (props.parsedResultSets.t) {
       case 'ExtensionParsed':
         selectedPage = (props.parsedResultSets.pageNumber + 1) + '';
@@ -134,15 +121,13 @@ export class ResultTables
         selectedPage = '';
         break;
     }
-
     this.state = { selectedTable, selectedPage };
   }
 
   private onTableSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
     const selectedTable = event.target.value;
-    const fetchPageFromExtension = this.paginationAllowed() && selectedTable !== ALERTS_TABLE_NAME;
 
-    if (fetchPageFromExtension) {
+    if (this.paginationAllowed()) {
       vscode.postMessage({
         t: 'changePage',
         pageNumber: 0,
@@ -189,13 +174,22 @@ export class ResultTables
 
   renderPageButtons(resultSets: ExtensionParsedResultSets): JSX.Element {
     const selectedTable = this.state.selectedTable;
+
+    // FIXME: The extension, not the view, should be in charge of deciding whether to initially show
+    // a raw or alerts page. We have to conditionally recompute the number of pages here, because
+    // on initial load of query results, resultSets.numPages will have the number of *raw* pages available,
+    // not interpreted pages, because the extension doesn't know the view will default to showing alerts
+    // instead.
+    const numPages = selectedTable == ALERTS_TABLE_NAME ?
+      resultSets.numInterpretedPages : resultSets.numPages;
+
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       this.setState({ selectedPage: e.target.value });
     };
     const choosePage = (input: string) => {
       const pageNumber = parseInt(input);
       if (pageNumber !== undefined && !isNaN(pageNumber)) {
-        const actualPageNumber = Math.max(0, Math.min(pageNumber - 1, resultSets.numPages - 1));
+        const actualPageNumber = Math.max(0, Math.min(pageNumber - 1, numPages - 1));
         vscode.postMessage({
           t: 'changePage',
           pageNumber: actualPageNumber,
@@ -214,22 +208,24 @@ export class ResultTables
     const nextPage = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       vscode.postMessage({
         t: 'changePage',
-        pageNumber: Math.min(resultSets.pageNumber + 1, resultSets.numPages - 1),
+        pageNumber: Math.min(resultSets.pageNumber + 1, numPages - 1),
         selectedTable,
       });
     };
+
     return <span>
       <button onClick={prevPage} >&lt;</button>
-      <input value={this.state.selectedPage} onChange={onChange}
+      <input size={3} value={this.state.selectedPage} onChange={onChange}
         onBlur={e => choosePage(e.target.value)}
         onKeyDown={e => { if (e.keyCode === 13) choosePage((e.target as HTMLInputElement).value); }}
       />
+      / {numPages}
       <button value=">" onClick={nextPage} >&gt;</button>
     </span>;
   }
 
   renderButtons(): JSX.Element {
-    if (this.props.parsedResultSets.t === 'ExtensionParsed' && this.paginationEnabled())
+    if (this.props.parsedResultSets.t === 'ExtensionParsed' && this.paginationAllowed())
       return this.renderPageButtons(this.props.parsedResultSets);
     else
       return <span />;
