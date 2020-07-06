@@ -30,7 +30,7 @@ export class RawTable extends React.Component<RawTableProps, {}> {
     const tableRows = dataRows.map((row: ResultRow, rowIndex: number) =>
       <RawTableRow
         key={rowIndex}
-        rowIndex={rowIndex}
+        rowIndex={rowIndex + this.props.offset}
         row={row}
         databaseUri={databaseUri}
       />
