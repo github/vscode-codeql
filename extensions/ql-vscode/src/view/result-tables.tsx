@@ -117,9 +117,6 @@ export class ResultTables
       case 'ExtensionParsed':
         selectedPage = (props.parsedResultSets.pageNumber + 1) + '';
         break;
-      case 'WebviewParsed':
-        selectedPage = '';
-        break;
     }
     this.state = { selectedTable, selectedPage };
   }
@@ -167,8 +164,6 @@ export class ResultTables
     switch (parsedResultSets.t) {
       case 'ExtensionParsed':
         return parsedResultSets.pageNumber * RAW_RESULTS_PAGE_SIZE;
-      case 'WebviewParsed':
-        return 0;
     }
   }
 

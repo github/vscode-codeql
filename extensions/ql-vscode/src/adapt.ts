@@ -110,7 +110,7 @@ export function adaptBqrs(schema: AdaptedSchema, page: DecodedBqrsChunk): RawRes
  * for this transition is to make pagination possible in such a way
  * that only one page needs to be sent from the extension to the webview.
  */
-export type ParsedResultSets = ExtensionParsedResultSets | WebviewParsedResultSets;
+export type ParsedResultSets = ExtensionParsedResultSets;
 
 /**
  * The old method doesn't require any nontrivial information to be included here,

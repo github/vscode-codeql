@@ -41,7 +41,6 @@ import {
   ParsedResultSets,
   RawResultSet,
 } from './adapt';
-import { EXPERIMENTAL_BQRS_SETTING } from './config';
 import {
   WebviewReveal,
   fileUriToWebviewUri,
@@ -335,40 +334,34 @@ export class InterfaceManager extends DisposableObject {
     }
 
     const getParsedResultSets = async (): Promise<ParsedResultSets> => {
-      if (EXPERIMENTAL_BQRS_SETTING.getValue()) {
-        const resultSetSchemas = await this.getResultSetSchemas(results);
-        const resultSetNames = resultSetSchemas.map(schema => schema.name);
 
-        // This may not wind up being the page we actually show, if there are interpreted results,
-        // but speculatively send it anyway.
-        const selectedTable = getDefaultResultSetName(resultSetNames);
-        const schema = resultSetSchemas.find(
-          (resultSet) => resultSet.name == selectedTable
-        )!;
-        if (schema === undefined) {
-          return { t: 'WebviewParsed' };
-        }
+      const resultSetSchemas = await this.getResultSetSchemas(results);
+      const resultSetNames = resultSetSchemas.map(schema => schema.name);
 
-        const chunk = await this.cliServer.bqrsDecode(
-          results.query.resultsPaths.resultsPath,
-          schema.name,
-          RAW_RESULTS_PAGE_SIZE,
-          schema.pagination?.offsets[0]
-        );
-        const adaptedSchema = adaptSchema(schema);
-        const resultSet = adaptBqrs(adaptedSchema, chunk);
-        return {
-          t: 'ExtensionParsed',
-          pageNumber: 0,
-          numPages: numPagesOfResultSet(resultSet),
-          numInterpretedPages: numInterpretedPages(this._interpretation),
-          resultSet: { t: 'RawResultSet', ...resultSet },
-          selectedTable: undefined,
-          resultSetNames,
-        };
-      } else {
-        return { t: 'WebviewParsed' };
-      }
+      // This may not wind up being the page we actually show, if there are interpreted results,
+      // but speculatively send it anyway.
+      const selectedTable = getDefaultResultSetName(resultSetNames);
+      const schema = resultSetSchemas.find(
+        (resultSet) => resultSet.name == selectedTable
+      )!;
+
+      const chunk = await this.cliServer.bqrsDecode(
+        results.query.resultsPaths.resultsPath,
+        schema.name,
+        RAW_RESULTS_PAGE_SIZE,
+        schema.pagination?.offsets[0]
+      );
+      const adaptedSchema = adaptSchema(schema);
+      const resultSet = adaptBqrs(adaptedSchema, chunk);
+      return {
+        t: 'ExtensionParsed',
+        pageNumber: 0,
+        numPages: numPagesOfResultSet(resultSet),
+        numInterpretedPages: numInterpretedPages(this._interpretation),
+        resultSet: { t: 'RawResultSet', ...resultSet },
+        selectedTable: undefined,
+        resultSetNames,
+      };
     };
 
     await this.postMessage({
