@@ -354,7 +354,6 @@ export class InterfaceManager extends DisposableObject {
       const adaptedSchema = adaptSchema(schema);
       const resultSet = adaptBqrs(adaptedSchema, chunk);
       return {
-        t: 'ExtensionParsed',
         pageNumber: 0,
         numPages: numPagesOfResultSet(resultSet),
         numInterpretedPages: numInterpretedPages(this._interpretation),
@@ -454,7 +453,6 @@ export class InterfaceManager extends DisposableObject {
     const resultSet = adaptBqrs(adaptedSchema, chunk);
 
     const parsedResultSets: ParsedResultSets = {
-      t: 'ExtensionParsed',
       pageNumber,
       resultSet: { t: 'RawResultSet', ...resultSet },
       numPages: numPagesOfResultSet(resultSet),

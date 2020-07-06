@@ -106,7 +106,6 @@ class App extends React.Component<{}, ResultsViewState> {
         this.updateStateWithNewResultsInfo({
           resultsPath: '', // FIXME: Not used for interpreted, refactor so this is not needed
           parsedResultSets: {
-            t: 'ExtensionParsed',
             numPages: msg.numPages,
             numInterpretedPages: msg.numPages,
             resultSetNames: msg.resultSetNames,
@@ -175,11 +174,7 @@ class App extends React.Component<{}, ResultsViewState> {
     resultsInfo: ResultsInfo
   ): Promise<readonly ResultSet[]> {
     const parsedResultSets = resultsInfo.parsedResultSets;
-    switch (parsedResultSets.t) {
-      case 'ExtensionParsed': {
-        return [{ t: 'RawResultSet', ...parsedResultSets.resultSet }];
-      }
-    }
+    return [{ t: 'RawResultSet', ...parsedResultSets.resultSet }];
   }
 
   private async loadResults(): Promise<void> {
@@ -244,7 +239,7 @@ class App extends React.Component<{}, ResultsViewState> {
       displayedResults.resultsInfo !== null
     ) {
       const parsedResultSets = displayedResults.resultsInfo.parsedResultSets;
-      const key = (parsedResultSets.t === 'ExtensionParsed' ? (parsedResultSets.selectedTable || '') + parsedResultSets.pageNumber : '');
+      const key = (parsedResultSets.selectedTable || '') + parsedResultSets.pageNumber;
       return (
         <ResultTables
           key={key}
