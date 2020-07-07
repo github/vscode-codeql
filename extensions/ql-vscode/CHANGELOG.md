@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [Unreleased]
+## 1.3.1 - 7 July 2020
 
 - Fix unzipping of large files.
 - Ensure compare order is consistent when selecting two queries to compare. The first query selected is always the _from_ query and the query selected later is always the _to_ query.
