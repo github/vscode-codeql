@@ -417,7 +417,7 @@ export class QueryHistoryManager {
         : singleItem.queryName + '.ql';
       const params = new URLSearchParams({
         isQuickEval: String(!!singleItem.query.quickEvalPosition),
-        queryText: await this.getQueryText(singleItem),
+        queryText: encodeURIComponent(await this.getQueryText(singleItem)),
       });
       const uri = vscode.Uri.parse(
         `codeql:${singleItem.query.queryID}-${queryName}?${params.toString()}`

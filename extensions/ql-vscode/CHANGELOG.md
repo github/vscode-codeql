@@ -7,6 +7,7 @@
 - Ensure added databases have zipped source locations for databases added as archives or downloaded from the internet.
 - Fix bug where it is not possible to add databases starting with `db-*`.
 - Change styling of pagination section of the results page.
+- Fix display of query text for stored quick queries.
 
 ## 1.3.0 - 22 June 2020
 
