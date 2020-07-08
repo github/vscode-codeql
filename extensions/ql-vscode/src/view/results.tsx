@@ -1,12 +1,5 @@
 import * as React from 'react';
 import * as Rdom from 'react-dom';
-import * as bqrs from 'semmle-bqrs';
-import {
-  ElementBase,
-  PrimitiveColumnValue,
-  PrimitiveTypeKind,
-  tryGetResolvableLocation,
-} from 'semmle-bqrs';
 import { assertNever } from '../helpers-pure';
 import {
   DatabaseInfo,
@@ -22,8 +15,6 @@ import {
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 import { ResultTables } from './result-tables';
 import {
-  ResultValue,
-  ResultRow,
   ParsedResultSets,
 } from '../adapt';
 import { ResultSet } from '../interface-types';
@@ -35,91 +26,6 @@ import { vscode } from './vscode-api';
  *
  * Displaying query results.
  */
-
-async function* getChunkIterator(
-  response: Response
-): AsyncIterableIterator<Uint8Array> {
-  if (!response.ok) {
-    throw new Error(
-      `Failed to load results: (${response.status}) ${response.statusText}`
-    );
-  }
-  const reader = response.body!.getReader();
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) {
-      return;
-    }
-    yield value!;
-  }
-}
-
-function translatePrimitiveValue(
-  value: PrimitiveColumnValue,
-  type: PrimitiveTypeKind
-): ResultValue {
-  switch (type) {
-    case 'i':
-    case 'f':
-    case 's':
-    case 'd':
-    case 'b':
-      return value.toString();
-
-    case 'u':
-      return {
-        uri: value as string,
-      };
-  }
-}
-
-async function parseResultSets(
-  response: Response
-): Promise<readonly ResultSet[]> {
-  const chunks = getChunkIterator(response);
-
-  const resultSets: ResultSet[] = [];
-
-  await bqrs.parse(chunks, (resultSetSchema) => {
-    const columnTypes = resultSetSchema.columns.map((column) => column.type);
-    const rows: ResultRow[] = [];
-    resultSets.push({
-      t: 'RawResultSet',
-      schema: resultSetSchema,
-      rows: rows,
-    });
-
-    return (tuple) => {
-      const row: ResultValue[] = [];
-      tuple.forEach((value, index) => {
-        const type = columnTypes[index];
-        if (type.type === 'e') {
-          const element: ElementBase = value as ElementBase;
-          const label =
-            element.label !== undefined ? element.label : element.id.toString(); //REVIEW: URLs?
-          const resolvableLocation = tryGetResolvableLocation(element.location);
-          if (resolvableLocation !== undefined) {
-            row.push({
-              label: label,
-              location: resolvableLocation,
-            });
-          } else {
-            // No location link.
-            row.push(label);
-          }
-        } else {
-          row.push(
-            translatePrimitiveValue(value as PrimitiveColumnValue, type.type)
-          );
-        }
-      });
-
-      rows.push(row);
-    };
-  });
-
-  return resultSets;
-}
 
 interface ResultsInfo {
   parsedResultSets: ParsedResultSets;
@@ -200,7 +106,6 @@ class App extends React.Component<{}, ResultsViewState> {
         this.updateStateWithNewResultsInfo({
           resultsPath: '', // FIXME: Not used for interpreted, refactor so this is not needed
           parsedResultSets: {
-            t: 'ExtensionParsed',
             numPages: msg.numPages,
             numInterpretedPages: msg.numPages,
             resultSetNames: msg.resultSetNames,
@@ -269,13 +174,7 @@ class App extends React.Component<{}, ResultsViewState> {
     resultsInfo: ResultsInfo
   ): Promise<readonly ResultSet[]> {
     const parsedResultSets = resultsInfo.parsedResultSets;
-    switch (parsedResultSets.t) {
-      case 'WebviewParsed':
-        return await this.fetchResultSets(resultsInfo);
-      case 'ExtensionParsed': {
-        return [{ t: 'RawResultSet', ...parsedResultSets.resultSet }];
-      }
-    }
+    return [{ t: 'RawResultSet', ...parsedResultSets.resultSet }];
   }
 
   private async loadResults(): Promise<void> {
@@ -321,35 +220,6 @@ class App extends React.Component<{}, ResultsViewState> {
     });
   }
 
-  /**
-   * This is deprecated, because it calls `fetch`. We are moving
-   * towards doing all bqrs parsing in the extension.
-   */
-  private async fetchResultSets(
-    resultsInfo: ResultsInfo
-  ): Promise<readonly ResultSet[]> {
-    const unsortedResponse = await fetch(resultsInfo.resultsPath);
-    const unsortedResultSets = await parseResultSets(unsortedResponse);
-    return Promise.all(
-      unsortedResultSets.map(async (unsortedResultSet) => {
-        const sortedResultSetInfo = resultsInfo.sortedResultsMap.get(
-          unsortedResultSet.schema.name
-        );
-        if (sortedResultSetInfo === undefined) {
-          return unsortedResultSet;
-        }
-        const response = await fetch(sortedResultSetInfo.resultsPath);
-        const resultSets = await parseResultSets(response);
-        if (resultSets.length != 1) {
-          throw new Error(
-            `Expected sorted BQRS to contain a single result set, encountered ${resultSets.length} result sets.`
-          );
-        }
-        return resultSets[0];
-      })
-    );
-  }
-
   private getSortStates(
     resultsInfo: ResultsInfo
   ): Map<string, RawResultsSortState> {
@@ -369,7 +239,7 @@ class App extends React.Component<{}, ResultsViewState> {
       displayedResults.resultsInfo !== null
     ) {
       const parsedResultSets = displayedResults.resultsInfo.parsedResultSets;
-      const key = (parsedResultSets.t === 'ExtensionParsed' ? (parsedResultSets.selectedTable || '') + parsedResultSets.pageNumber : '');
+      const key = (parsedResultSets.selectedTable || '') + parsedResultSets.pageNumber;
       return (
         <ResultTables
           key={key}

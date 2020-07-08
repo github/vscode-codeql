@@ -39,18 +39,6 @@ class Setting {
 
 const ROOT_SETTING = new Setting('codeQL');
 
-// Enable experimental features
-
-/**
- * Any settings below are deliberately not in package.json so that
- * they do not appear in the settings ui in vscode itself. If users
- * want to enable experimental features, they can add them directly in
- * their vscode settings json file.
- */
-
-/* Advanced setting: used to enable bqrs parsing in the cli instead of in the webview. */
-export const EXPERIMENTAL_BQRS_SETTING = new Setting('experimentalBqrsParsing', ROOT_SETTING);
-
 // Distribution configuration
 
 const DISTRIBUTION_SETTING = new Setting('cli', ROOT_SETTING);
