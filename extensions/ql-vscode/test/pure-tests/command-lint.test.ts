@@ -29,15 +29,20 @@ describe('commands declared in package.json', function() {
 
   commands.forEach((commandDecl: CmdDecl) => {
     const { command, title } = commandDecl;
-    if (command.match(/^codeQL\./)
+    if (
+      command.match(/^codeQL\./)
       || command.match(/^codeQLQueryResults\./)
-      || command.match(/^codeQLTests\./)) {
+      || command.match(/^codeQLTests\./)
+    ) {
       paletteCmds.add(command);
       expect(title).not.to.be.undefined;
       commandTitles[command] = title!;
     }
-    else if (command.match(/^codeQLDatabases\./)
-      || command.match(/^codeQLQueryHistory\./)) {
+    else if (
+      command.match(/^codeQLDatabases\./)
+      || command.match(/^codeQLQueryHistory\./)
+      || command.match(/^codeQLAstViewer\./)
+    ) {
       scopedCmds.add(command);
       expect(title).not.to.be.undefined;
       commandTitles[command] = title!;
@@ -97,5 +102,3 @@ describe('commands declared in package.json', function() {
 
 
 });
-
-
