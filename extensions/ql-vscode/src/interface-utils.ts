@@ -42,7 +42,10 @@ export enum WebviewReveal {
   NotForced,
 }
 
-/** Converts a filesystem URI into a webview URI string that the given panel can use to read the file. */
+/**
+ * Converts a filesystem URI into a webview URI string that the given panel
+ * can use to read the file.
+ */
 export function fileUriToWebviewUri(
   panel: WebviewPanel,
   fileUriOnDisk: Uri

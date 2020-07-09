@@ -32,6 +32,7 @@ describe('interface-utils', () => {
           localResourceRoots: [fileUriOnDisk],
         }
       );
+
       after(function() {
         panel.dispose();
         tmpFile.removeCallback();

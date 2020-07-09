@@ -36,7 +36,7 @@ describe('fileRangeFromURI', () => {
 
   function createMockDatabaseItem(): DatabaseItem {
     return {
-      resolveSourceFile: (uri: string) => Uri.parse('file://' + uri, true)
+      resolveSourceFile: (file: string) => Uri.file(file)
     } as DatabaseItem;
   }
 });
