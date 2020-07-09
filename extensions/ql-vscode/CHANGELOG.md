@@ -1,5 +1,9 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [Unreleased]
+
+- Add the AST Viewer to inspect the QL AST of a source file in a database. Currently, only available for C/C++ sources.
+
 ## 1.3.1 - 7 July 2020
 
 - Fix unzipping of large files.
