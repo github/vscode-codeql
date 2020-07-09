@@ -9,7 +9,12 @@ type Suite = {
   extensionDevelopmentPath: string;
   extensionTestsPath: string;
   launchArgs: string[];
+  version?: string;
 };
+
+// Which version of vscode to test against. Can set to 'stable' or
+// 'insiders'. See runTest.d.ts in vscode-test for more details.
+const VSCODE_VERSION = '1.46.0';
 
 /**
  * Run an integration test suite `suite`, retrying if it segfaults, at
@@ -53,15 +58,17 @@ async function main() {
 
     // List of integration test suites.
     // The path to the extension test runner script is passed to --extensionTestsPath.
-    const integrationTestSuites = [
+    const integrationTestSuites: Suite[] = [
       // Tests with no workspace selected upon launch.
       {
+        version: VSCODE_VERSION,
         extensionDevelopmentPath: extensionDevelopmentPath,
         extensionTestsPath: path.resolve(__dirname, 'no-workspace', 'index'),
         launchArgs: ['--disable-extensions'],
       },
       // Tests with a simple workspace selected upon launch.
       {
+        version: VSCODE_VERSION,
         extensionDevelopmentPath: extensionDevelopmentPath,
         extensionTestsPath: path.resolve(__dirname, 'minimal-workspace', 'index'),
         launchArgs: [
