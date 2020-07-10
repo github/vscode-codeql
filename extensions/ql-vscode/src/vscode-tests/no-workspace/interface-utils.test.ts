@@ -6,7 +6,6 @@ import * as tmp from 'tmp';
 import { window, ViewColumn, Uri } from 'vscode';
 import {
   fileUriToWebviewUri,
-  webviewUriToFileUri,
   tryResolveLocation,
 } from '../../interface-utils';
 import { getDefaultResultSetName } from '../../interface-types';
@@ -46,15 +45,6 @@ describe('interface-utils', () => {
         panel,
       };
     }
-
-    it('should correctly round trip from filesystem to webview and back', function() {
-      const { fileUriOnDisk, panel } = setupWebview('');
-      const webviewUri = fileUriToWebviewUri(panel, fileUriOnDisk);
-      const reconstructedFileUri = webviewUriToFileUri(webviewUri);
-      expect(reconstructedFileUri.toString(true)).to.equal(
-        fileUriOnDisk.toString(true)
-      );
-    });
 
     it('does not double-encode # in URIs', function() {
       const { fileUriOnDisk, panel } = setupWebview('#');

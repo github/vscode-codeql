@@ -50,14 +50,6 @@ export function fileUriToWebviewUri(
   return panel.webview.asWebviewUri(fileUriOnDisk).toString();
 }
 
-/** Converts a URI string received from a webview into a local filesystem URI for the same resource. */
-export function webviewUriToFileUri(webviewUri: string): Uri {
-  // Webview URIs used the vscode-resource scheme. The filesystem path of the resource can be obtained from the path component of the webview URI.
-  const path = Uri.parse(webviewUri).path;
-  // For this path to be interpreted on the filesystem, we need to parse it as a filesystem URI for the current platform.
-  return Uri.file(path);
-}
-
 /**
  * Resolves the specified CodeQL location to a URI into the source archive.
  * @param loc CodeQL location to resolve. Must have a non-empty value for `loc.file`.
