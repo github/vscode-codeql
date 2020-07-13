@@ -206,7 +206,7 @@ describe('using the query server', function() {
       await evaluationSucceeded.done();
       const info = await cliServer.bqrsInfo(RESULTS_PATH);
 
-      for (const resultSet of info["result-sets"]) {
+      for (const resultSet of info['result-sets']) {
         const decoded = await cliServer.bqrsDecode(RESULTS_PATH, resultSet.name);
         actualResultSets[resultSet.name] = decoded.tuples;
       }

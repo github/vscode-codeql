@@ -47,7 +47,7 @@ export function tryGetLocationFromString(
         colStart: Number(matches[3]),
         lineEnd: Number(matches[4]),
         colEnd: Number(matches[5]),
-      }
+      };
     }
   } else {
     return undefined;
@@ -56,9 +56,9 @@ export function tryGetLocationFromString(
 
 function isWholeFileMatch(matches: RegExpExecArray): boolean {
   return (
-    matches[2] === "0" &&
-    matches[3] === "0" &&
-    matches[4] === "0" &&
-    matches[5] === "0"
+    matches[2] === '0' &&
+    matches[3] === '0' &&
+    matches[4] === '0' &&
+    matches[5] === '0'
   );
 }

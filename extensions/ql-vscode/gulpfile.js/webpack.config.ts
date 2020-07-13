@@ -21,7 +21,7 @@ export const config: webpack.Configuration = {
         test: /\.(ts|tsx)$/,
         loader: 'ts-loader',
         options: {
-          configFile: 'view/tsconfig.json',
+          configFile: 'src/view/tsconfig.json',
         }
       },
       {

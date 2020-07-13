@@ -65,9 +65,9 @@ export interface ResultSetSchema {
  * The schema describing the contents of a BQRS file.
  */
 export interface ResultSetsSchema {
-  readonly version: number,
-  readonly stringPoolSize: number,
-  readonly resultSets: readonly ResultSetSchema[]
+  readonly version: number;
+  readonly stringPoolSize: number;
+  readonly resultSets: readonly ResultSetSchema[];
 }
 
 // See https://help.semmle.com/QL/learn-ql/ql/locations.html for how these are used.
