@@ -1,6 +1,6 @@
 import * as Sarif from 'sarif';
 import * as path from 'path';
-import { LocationStyle, ResolvableLocationValue } from 'semmle-bqrs';
+import { LocationStyle, ResolvableLocationValue } from './bqrs-types';
 
 export interface SarifLink {
   dest: number;

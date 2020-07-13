@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as fs from 'fs-extra';
 import 'mocha';
 import * as path from 'path';
-import * as bqrs from 'semmle-bqrs';
+import { open as bqrsOpen, ColumnValue } from 'semmle-bqrs';
 import { FileReader } from 'semmle-io-node';
 import * as tmp from 'tmp';
 import * as url from 'url';
@@ -50,7 +50,7 @@ class Checkpoint<T> {
 }
 
 type ResultSets = {
-  [name: string]: bqrs.ColumnValue[][];
+  [name: string]: ColumnValue[][];
 }
 
 type QueryTestCase = {
@@ -208,9 +208,9 @@ describe('using the query server', function() {
       try {
         await evaluationSucceeded.done();
         fileReader = await FileReader.open(RESULTS_PATH);
-        const resultSetsReader = await bqrs.open(fileReader);
+        const resultSetsReader = await bqrsOpen(fileReader);
         for (const reader of resultSetsReader.resultSets) {
-          const actualRows: bqrs.ColumnValue[][] = [];
+          const actualRows: ColumnValue[][] = [];
           for await (const row of reader.readTuples()) {
             actualRows.push(row);
           }
