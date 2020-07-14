@@ -36,18 +36,6 @@
       "versionPolicyName": "utilities"
     },
     {
-      "packageName": "semmle-bqrs",
-      "projectFolder": "lib/semmle-bqrs"
-    },
-    {
-      "packageName": "semmle-io",
-      "projectFolder": "lib/semmle-io"
-    },
-    {
-      "packageName": "semmle-io-node",
-      "projectFolder": "lib/semmle-io-node"
-    },
-    {
       "packageName": "@github/codeql-vscode-utils",
       "projectFolder": "lib/semmle-vscode-utils",
       "versionPolicyName": "utilities"
