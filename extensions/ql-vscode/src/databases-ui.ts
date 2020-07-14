@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { DisposableObject } from '@github/codeql-vscode-utils';
+import { DisposableObject } from './vscode-utils/disposable-object';
 import {
   commands,
   Event,
