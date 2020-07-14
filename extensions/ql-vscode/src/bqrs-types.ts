@@ -1,6 +1,6 @@
 /**
- * Types in this file are deprecated, and uses of them should be
- * migrated to the corresponding types in bqrs-cli-types.
+ * TODO: Types in this file are deprecated, and uses of them should be
+ * migrated to the analogous types in bqrs-cli-types.
  */
 
 export enum LocationStyle {
