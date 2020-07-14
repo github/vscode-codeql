@@ -2,7 +2,6 @@ dependencies:
   '@microsoft/node-core-library': 3.13.0
   '@microsoft/rush-lib': 5.20.0
   '@rush-temp/codeql-gulp-tasks': 'file:projects/codeql-gulp-tasks.tgz'
-  '@rush-temp/typescript-config': 'file:projects/typescript-config.tgz'
   '@rush-temp/vscode-codeql': 'file:projects/vscode-codeql.tgz'
   '@types/chai': 4.2.11
   '@types/chai-as-promised': 7.1.2
@@ -7990,15 +7989,8 @@ packages:
     dev: false
     name: '@rush-temp/codeql-gulp-tasks'
     resolution:
-      integrity: sha512-VdaBVV0JiXUYF9fe/mQ5WdbkIAjDfp1/cf35hhmNvfuSwplDtHwvx9bCrbZZ6yElnXSE3jJ04Q4HFEAzxxNYPw==
+      integrity: sha512-5vkeCb4kskIzpkWJf/NwBbyaCHROISAw/V7G4sTppMZjH5uuvcZeoiKa8QDD0n2cRg8bf0I7MAXow7+/aMBM5g==
       tarball: 'file:projects/codeql-gulp-tasks.tgz'
-    version: 0.0.0
-  'file:projects/typescript-config.tgz':
-    dev: false
-    name: '@rush-temp/typescript-config'
-    resolution:
-      integrity: sha512-qJbtY2jvt6LKkmUt/seiYyXSEB6Oip/rW+SxofQEnpyplgIQv7whTZb6g5pwlSLGl8goTaQFm4NfazKhFmxXvQ==
-      tarball: 'file:projects/typescript-config.tgz'
     version: 0.0.0
   'file:projects/vscode-codeql.tgz':
     dependencies:
@@ -8081,7 +8073,7 @@ packages:
     dev: false
     name: '@rush-temp/vscode-codeql'
     resolution:
-      integrity: sha512-OY56IxlQ6n13pIkGoNB1XKLRCNrXalmVhvdB+dHR46QgAAzquskFURs+ZVZjFptVSjtrlFqkFKZUtAdNdwD5xQ==
+      integrity: sha512-DkZNileOUCp6+Bc88A6H0i2+q0b3hEf0W5WK2pVqo3Rpq7DfVcb9LHchkKE5FFl9Ne9/UEe6IvsH2OAexPv5Lw==
       tarball: 'file:projects/vscode-codeql.tgz'
     version: 0.0.0
 registry: ''
@@ -8089,7 +8081,6 @@ specifiers:
   '@microsoft/node-core-library': ~3.13.0
   '@microsoft/rush-lib': ~5.20.0
   '@rush-temp/codeql-gulp-tasks': 'file:./projects/codeql-gulp-tasks.tgz'
-  '@rush-temp/typescript-config': 'file:./projects/typescript-config.tgz'
   '@rush-temp/vscode-codeql': 'file:./projects/vscode-codeql.tgz'
   '@types/chai': ^4.1.7
   '@types/chai-as-promised': ~7.1.2

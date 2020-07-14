@@ -45,7 +45,6 @@
     "@types/through2": "~2.0.34",
     "@types/vinyl": "~2.0.3",
     "typescript": "^3.7.2",
-    "typescript-config": "^0.0.1",
     "typescript-formatter": "^7.2.2"
   }
 }

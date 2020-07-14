@@ -27,10 +27,6 @@
   "variants": [],
   "projects": [
     {
-      "packageName": "typescript-config",
-      "projectFolder": "configs/typescript-config"
-    },
-    {
       "packageName": "@github/codeql-gulp-tasks",
       "projectFolder": "tools/build-tasks",
       "versionPolicyName": "utilities"
