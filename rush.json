@@ -36,11 +36,6 @@
       "versionPolicyName": "utilities"
     },
     {
-      "packageName": "@github/codeql-vscode-utils",
-      "projectFolder": "lib/semmle-vscode-utils",
-      "versionPolicyName": "utilities"
-    },
-    {
       "packageName": "vscode-codeql",
       "projectFolder": "extensions/ql-vscode"
     }

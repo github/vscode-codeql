@@ -600,7 +600,6 @@
     "node-fetch": "~2.6.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "@github/codeql-vscode-utils": "^0.0.4",
     "tmp": "^0.1.0",
     "tree-kill": "~1.2.2",
     "unzipper": "~0.10.5",

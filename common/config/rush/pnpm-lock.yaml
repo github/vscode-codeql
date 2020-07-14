@@ -2,7 +2,6 @@ dependencies:
   '@microsoft/node-core-library': 3.13.0
   '@microsoft/rush-lib': 5.20.0
   '@rush-temp/codeql-gulp-tasks': 'file:projects/codeql-gulp-tasks.tgz'
-  '@rush-temp/codeql-vscode-utils': 'file:projects/codeql-vscode-utils.tgz_typescript@3.8.3'
   '@rush-temp/typescript-config': 'file:projects/typescript-config.tgz'
   '@rush-temp/vscode-codeql': 'file:projects/vscode-codeql.tgz'
   '@types/chai': 4.2.11
@@ -7994,20 +7993,6 @@ packages:
       integrity: sha512-VdaBVV0JiXUYF9fe/mQ5WdbkIAjDfp1/cf35hhmNvfuSwplDtHwvx9bCrbZZ6yElnXSE3jJ04Q4HFEAzxxNYPw==
       tarball: 'file:projects/codeql-gulp-tasks.tgz'
     version: 0.0.0
-  'file:projects/codeql-vscode-utils.tgz_typescript@3.8.3':
-    dependencies:
-      '@types/node': 12.12.30
-      '@types/vscode': 1.43.0
-      typescript-formatter: 7.2.2_typescript@3.8.3
-    dev: false
-    id: 'file:projects/codeql-vscode-utils.tgz'
-    name: '@rush-temp/codeql-vscode-utils'
-    peerDependencies:
-      typescript: '*'
-    resolution:
-      integrity: sha512-BfGUKj2eXAnv7+rYYMRAJdj6MGNCD4a+wwemyf9tfE8kXO2ghWbey/fqA8dy6qT8KE8tAokEVkuN6WjPLdMHqg==
-      tarball: 'file:projects/codeql-vscode-utils.tgz'
-    version: 0.0.0
   'file:projects/typescript-config.tgz':
     dev: false
     name: '@rush-temp/typescript-config'
@@ -8096,7 +8081,7 @@ packages:
     dev: false
     name: '@rush-temp/vscode-codeql'
     resolution:
-      integrity: sha512-pzIN497d6Ht6VQHUdB90HFRVzzgFNQ71WLudM/L7P0QgsQtRuaLk9WVEcWMz/3124F7NiFa3SpC/THbN5Cc9aw==
+      integrity: sha512-OY56IxlQ6n13pIkGoNB1XKLRCNrXalmVhvdB+dHR46QgAAzquskFURs+ZVZjFptVSjtrlFqkFKZUtAdNdwD5xQ==
       tarball: 'file:projects/vscode-codeql.tgz'
     version: 0.0.0
 registry: ''
@@ -8104,7 +8089,6 @@ specifiers:
   '@microsoft/node-core-library': ~3.13.0
   '@microsoft/rush-lib': ~5.20.0
   '@rush-temp/codeql-gulp-tasks': 'file:./projects/codeql-gulp-tasks.tgz'
-  '@rush-temp/codeql-vscode-utils': 'file:./projects/codeql-vscode-utils.tgz'
   '@rush-temp/typescript-config': 'file:./projects/typescript-config.tgz'
   '@rush-temp/vscode-codeql': 'file:./projects/vscode-codeql.tgz'
   '@types/chai': ^4.1.7
