@@ -16,10 +16,12 @@ import {
   FivePartLocation,
   LocationStyle,
   LocationValue,
-  tryGetResolvableLocation,
   WholeFileLocation,
   ResolvableLocationValue,
-} from 'semmle-bqrs';
+} from './bqrs-types';
+import {
+  tryGetResolvableLocation,
+} from './bqrs-utils';
 import { DatabaseItem, DatabaseManager } from './databases';
 import { ViewSourceFileMsg } from './interface-types';
 import { Logger } from './logging';

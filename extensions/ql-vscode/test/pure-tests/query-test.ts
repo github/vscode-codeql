@@ -2,8 +2,6 @@ import { expect } from 'chai';
 import * as fs from 'fs-extra';
 import 'mocha';
 import * as path from 'path';
-import * as bqrs from 'semmle-bqrs';
-import { FileReader } from 'semmle-io-node';
 import * as tmp from 'tmp';
 import * as url from 'url';
 import { CancellationTokenSource } from 'vscode-jsonrpc';
@@ -11,6 +9,7 @@ import * as messages from '../../src/messages';
 import * as qsClient from '../../src/queryserver-client';
 import * as cli from '../../src/cli';
 import { ProgressReporter, Logger } from '../../src/logging';
+import { ColumnValue } from '../../src/bqrs-cli-types';
 
 
 declare module 'url' {
@@ -50,7 +49,7 @@ class Checkpoint<T> {
 }
 
 type ResultSets = {
-  [name: string]: bqrs.ColumnValue[][];
+  [name: string]: ColumnValue[][];
 }
 
 type QueryTestCase = {
@@ -204,24 +203,14 @@ describe('using the query server', function() {
 
     const actualResultSets: ResultSets = {};
     it(`should be able to parse results of query ${queryName}`, async function() {
-      let fileReader: FileReader | undefined;
-      try {
-        await evaluationSucceeded.done();
-        fileReader = await FileReader.open(RESULTS_PATH);
-        const resultSetsReader = await bqrs.open(fileReader);
-        for (const reader of resultSetsReader.resultSets) {
-          const actualRows: bqrs.ColumnValue[][] = [];
-          for await (const row of reader.readTuples()) {
-            actualRows.push(row);
-          }
-          actualResultSets[reader.schema.name] = actualRows;
-        }
-        parsedResults.resolve();
-      } finally {
-        if (fileReader) {
-          fileReader.dispose();
-        }
+      await evaluationSucceeded.done();
+      const info = await cliServer.bqrsInfo(RESULTS_PATH);
+
+      for (const resultSet of info['result-sets']) {
+        const decoded = await cliServer.bqrsDecode(RESULTS_PATH, resultSet.name);
+        actualResultSets[resultSet.name] = decoded.tuples;
       }
+      parsedResults.resolve();
     });
 
     it(`should have correct results for query ${queryName}`, async function() {
