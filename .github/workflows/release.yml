@@ -34,11 +34,15 @@ jobs:
           node-version: '10.18.1'
 
       - name: Install dependencies
-        run: node common/scripts/install-run-rush.js install
+        run: |
+          cd extensions/ql-vscode
+          npm install
         shell: bash
 
       - name: Build
-        run: node common/scripts/install-run-rush.js build --release
+        run: |
+          cd extensions/ql-vscode
+          gulp --release
         shell: bash
 
       - name: Prepare artifacts
