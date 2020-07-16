@@ -9,7 +9,7 @@ export async function packageExtension(): Promise<void> {
     'package',
     '--out', path.resolve(deployedPackage.distPath, '..', `${deployedPackage.name}-${deployedPackage.version}.vsix`)
   ];
-  const proc = childProcess.spawn('vsce', args, {
+  const proc = childProcess.spawn('npx', ['vsce'].concat(args), {
     cwd: deployedPackage.distPath
   });
   proc.childProcess.stdout!.on('data', (data) => {
