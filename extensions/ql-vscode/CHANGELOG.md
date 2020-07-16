@@ -1,5 +1,9 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [Unreleased]
+
+- Fix error with choosing qlpack search path.
+
 ## 1.3.1 - 7 July 2020
 
 - Fix unzipping of large files.
