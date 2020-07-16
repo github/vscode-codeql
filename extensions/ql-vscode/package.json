@@ -13,7 +13,7 @@
     "url": "https://github.com/github/vscode-codeql"
   },
   "engines": {
-    "vscode": "^1.39.0"
+    "vscode": "^1.43.0"
   },
   "categories": [
     "Programming Languages"
@@ -636,7 +636,7 @@
     "@types/through2": "^2.0.36",
     "@types/tmp": "^0.1.0",
     "@types/unzipper": "~0.10.1",
-    "@types/vscode": "=1.43.0",
+    "@types/vscode": "^1.43.0",
     "@types/webpack": "^4.32.1",
     "@types/xml2js": "~0.4.4",
     "@typescript-eslint/eslint-plugin": "~2.23.0",
