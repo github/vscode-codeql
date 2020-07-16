@@ -209,3 +209,15 @@ export class QueryHistoryConfigListener extends ConfigListener implements QueryH
     return QUERY_HISTORY_FORMAT_SETTING.getValue<string>();
   }
 }
+
+// Enable experimental features
+
+/**
+ * Any settings below are deliberately not in package.json so that
+ * they do not appear in the settings ui in vscode itself. If users
+ * want to enable experimental features, they can add them directly in
+ * their vscode settings json file.
+ */
+
+/* Advanced setting: used to enable the AST Viewer. */
+export const EXPERIMENTAL_AST_VIEWER = new Setting('experimentalAstViewer', ROOT_SETTING);
