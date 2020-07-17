@@ -17,7 +17,8 @@
 .vscode-codeql__table-selection-header button {
   padding: 0.3rem;
   margin: 0.2rem;
-  border-radius: 5px;
+  border: 0;
+  font-size: large;
   color: var(--vscode-editor-foreground);
   background-color: var(--vscode-editorGutter-background);
   cursor: pointer;

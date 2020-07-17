@@ -3,6 +3,8 @@
 ## [Unreleased]
 
 - Fix error with choosing qlpack search path.
+- Add the AST Viewer to inspect the QL AST of a source file in a database. Currently, only available for C/C++ sources.
+- Fix pagination when there are no results.
 
 ## 1.3.1 - 7 July 2020
 

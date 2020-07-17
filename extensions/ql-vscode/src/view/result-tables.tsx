@@ -147,8 +147,8 @@ export class ResultTables
     // on initial load of query results, resultSets.numPages will have the number of *raw* pages available,
     // not interpreted pages, because the extension doesn't know the view will default to showing alerts
     // instead.
-    const numPages = selectedTable == ALERTS_TABLE_NAME ?
-      parsedResultSets.numInterpretedPages : parsedResultSets.numPages;
+    const numPages = Math.max(selectedTable === ALERTS_TABLE_NAME ?
+      parsedResultSets.numInterpretedPages : parsedResultSets.numPages, 1);
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       this.setState({ selectedPage: e.target.value });
@@ -188,7 +188,12 @@ export class ResultTables
         value={this.state.selectedPage}
         onChange={onChange}
         onBlur={e => choosePage(e.target.value)}
-        onKeyDown={e => { if (e.keyCode === 13) choosePage((e.target as HTMLInputElement).value); }}
+        onKeyDown={e => {
+          if (e.keyCode === 13) {
+            choosePage((e.target as HTMLInputElement).value);
+          }
+        }
+        }
       />
       <span>
         / {numPages}
