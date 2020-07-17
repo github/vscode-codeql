@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { LocationValue, ResolvableLocationValue, tryGetResolvableLocation } from 'semmle-bqrs';
+import { LocationValue, ResolvableLocationValue } from '../bqrs-types';
+import { tryGetResolvableLocation } from '../bqrs-utils';
 import { RawResultsSortState, QueryMetadata, SortDirection } from '../interface-types';
 import { assertNever } from '../helpers-pure';
 import { ResultSet } from '../interface-types';

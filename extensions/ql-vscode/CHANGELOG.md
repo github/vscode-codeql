@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - Add the AST Viewer to inspect the QL AST of a source file in a database. Currently, only available for C/C++ sources.
+- Fix error with choosing qlpack search path.
 
 ## 1.3.1 - 7 July 2020
 

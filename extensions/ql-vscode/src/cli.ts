@@ -604,7 +604,7 @@ export class CodeQLCliServer implements Disposable {
    */
   resolveQlpacks(additionalPacks: string[], searchPath?: string[]): Promise<QlpacksInfo> {
     const args = ['--additional-packs', additionalPacks.join(path.delimiter)];
-    if (searchPath !== undefined) {
+    if (searchPath?.length) {
       args.push('--search-path', path.join(...searchPath));
     }
 

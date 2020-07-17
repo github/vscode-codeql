@@ -1,5 +1,5 @@
 import { DecodedBqrsChunk, ResultSetSchema, ColumnKind, Column, ColumnValue } from './bqrs-cli-types';
-import { LocationValue, ResultSetSchema as AdaptedSchema, ColumnSchema, ColumnType, LocationStyle } from 'semmle-bqrs';
+import { LocationValue, ResultSetSchema as AdaptedSchema, ColumnSchema, ColumnType, LocationStyle } from './bqrs-types';
 import { ResultSet } from './interface-types';
 
 // FIXME: This is a temporary bit of impedance matching to convert

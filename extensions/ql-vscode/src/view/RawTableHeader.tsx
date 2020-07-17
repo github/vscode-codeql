@@ -3,7 +3,7 @@ import * as React from 'react';
 import { vscode } from './vscode-api';
 import { RawResultsSortState, SortDirection } from '../interface-types';
 import { nextSortDirection } from './result-table-utils';
-import { ColumnSchema } from 'semmle-bqrs';
+import { ColumnSchema } from '../bqrs-types';
 
 interface Props {
   readonly columns: readonly ColumnSchema[];

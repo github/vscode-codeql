@@ -3,7 +3,7 @@ import {
   ResolvableLocationValue,
   ColumnSchema,
   ResultSetSchema,
-} from 'semmle-bqrs';
+} from './bqrs-types';
 import { ResultRow, ParsedResultSets, RawResultSet } from './adapt';
 
 /**

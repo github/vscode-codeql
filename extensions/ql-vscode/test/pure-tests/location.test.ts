@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import 'mocha';
-import { LocationStyle, StringLocation, tryGetResolvableLocation } from 'semmle-bqrs';
+import { LocationStyle, StringLocation } from '../../src/bqrs-types';
+import { tryGetResolvableLocation } from '../../src/bqrs-utils';
 
 describe('processing string locations', function () {
   it('should detect Windows whole-file locations', function () {

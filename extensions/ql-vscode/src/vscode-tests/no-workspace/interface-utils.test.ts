@@ -9,7 +9,7 @@ import {
   tryResolveLocation,
 } from '../../interface-utils';
 import { getDefaultResultSetName } from '../../interface-types';
-import { LocationStyle } from 'semmle-bqrs';
+import { LocationStyle } from '../../bqrs-types';
 import { DatabaseItem } from '../../databases';
 
 describe('interface-utils', () => {
