@@ -275,7 +275,10 @@ class App extends React.Component<{}, ResultsViewState> {
 
   componentDidMount(): void {
     this.vscodeMessageHandler = (evt) =>
-      this.handleMessage(evt.data as IntoResultsViewMsg);
+      evt.origin === window.origin
+        ? this.handleMessage(evt.data as IntoResultsViewMsg)
+        : console.error(`Invalid event origin ${evt.origin}`);
+
     window.addEventListener('message', this.vscodeMessageHandler);
   }
 

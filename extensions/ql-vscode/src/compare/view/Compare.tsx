@@ -31,10 +31,14 @@ export function Compare(_: {}): JSX.Element {
 
   useEffect(() => {
     window.addEventListener('message', (evt: MessageEvent) => {
-      const msg: ToCompareViewMessage = evt.data;
-      switch (msg.t) {
-        case 'setComparisons':
-          setComparison(msg);
+      if (evt.origin === window.origin) {
+        const msg: ToCompareViewMessage = evt.data;
+        switch (msg.t) {
+          case 'setComparisons':
+            setComparison(msg);
+        }
+      } else {
+        console.error(`Invalid event origin ${evt.origin}`);
       }
     });
   });
@@ -60,8 +64,8 @@ export function Compare(_: {}): JSX.Element {
         {hasRows ? (
           <CompareTable comparison={comparison}></CompareTable>
         ) : (
-          <div className="vscode-codeql__compare-message">{message}</div>
-        )}
+            <div className="vscode-codeql__compare-message">{message}</div>
+          )}
       </>
     );
   } catch (err) {
