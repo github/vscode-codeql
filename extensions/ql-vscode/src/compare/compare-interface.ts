@@ -1,4 +1,4 @@
-import { DisposableObject } from '@github/codeql-vscode-utils';
+import { DisposableObject } from '../vscode-utils/disposable-object';
 import {
   WebviewPanel,
   ExtensionContext,

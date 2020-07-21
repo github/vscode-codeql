@@ -10,7 +10,10 @@
         "kind": "build",
         "isDefault": true
       },
-      "command": "node common/scripts/install-run-rush.js build --verbose",
+      "command": "npx gulp buildWithoutPackage --verbose",
+      "options": {
+        "cwd": "extensions/ql-vscode/"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -34,63 +37,12 @@
       ]
     },
     {
-      "label": "Rebuild",
-      "type": "shell",
-      "group": "build",
-      "command": "node common/scripts/install-run-rush.js rebuild --verbose",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": true
-      },
-      "problemMatcher": [
-        {
-          "owner": "typescript",
-          "fileLocation": "absolute",
-          "pattern": {
-            "regexp": "^\\[gulp-typescript\\] ([^(]+)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\): error TS\\d+: (.*)$",
-            "file": 1,
-            "location": 2,
-            "message": 3
-          }
-        }
-      ]
-    },
-    {
-      "label": "Update",
-      "type": "shell",
-      "command": "node common/scripts/install-run-rush.js update",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Update (full)",
-      "type": "shell",
-      "command": "node common/scripts/install-run-rush.js update --full",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
       "label": "Format",
       "type": "shell",
-      "command": "node common/scripts/install-run-rush.js format",
+      "command": "npm run format",
+      "options": {
+        "cwd": "extensions/ql-vscode/"
+      },
       "presentation": {
         "echo": true,
         "reveal": "always",

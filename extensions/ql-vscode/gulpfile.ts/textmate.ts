@@ -1,5 +1,5 @@
 import * as gulp from 'gulp';
-import * as js_yaml from 'js-yaml';
+import * as jsYaml from 'js-yaml';
 import * as through from 'through2';
 import * as PluginError from 'plugin-error';
 import * as Vinyl from 'vinyl';
@@ -13,9 +13,10 @@ import * as Vinyl from 'vinyl';
  */
 function replaceReferencesWithStrings(value: string, replacements: Map<string, string>): string {
   let result = value;
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const original = result;
-    for (const key of replacements.keys()) {
+    for (const key of Array.from(replacements.keys())) {
       result = result.replace(`(?#${key})`, `(?:${replacements.get(key)})`);
     }
     if (result === original) {
@@ -32,7 +33,7 @@ function replaceReferencesWithStrings(value: string, replacements: Map<string, s
  */
 function gatherMacros(yaml: any): Map<string, string> {
   const macros = new Map<string, string>();
-  for (var key in yaml.macros) {
+  for (const key in yaml.macros) {
     macros.set(key, yaml.macros[key]);
   }
 
@@ -55,7 +56,7 @@ function getNodeMatchText(rule: any): string {
   else if (rule.patterns !== undefined) {
     const patterns: string[] = [];
     // For a list of patterns, use the disjunction of those patterns.
-    for (var patternIndex in rule.patterns) {
+    for (const patternIndex in rule.patterns) {
       const pattern = rule.patterns[patternIndex];
       if (pattern.include !== null) {
         patterns.push('(?' + pattern.include + ')');
@@ -65,7 +66,7 @@ function getNodeMatchText(rule: any): string {
     return '(?:' + patterns.join('|') + ')';
   }
   else {
-    return ''
+    return '';
   }
 }
 
@@ -78,7 +79,7 @@ function getNodeMatchText(rule: any): string {
  */
 function gatherMatchTextForRules(yaml: any): Map<string, string> {
   const replacements = new Map<string, string>();
-  for (var key in yaml.repository) {
+  for (const key in yaml.repository) {
     const node = yaml.repository[key];
     replacements.set(key, getNodeMatchText(node));
   }
@@ -106,7 +107,7 @@ function visitAllRulesInFile(yaml: any, action: (rule: any) => void) {
  * @param action Callback to invoke on each rule.
  */
 function visitAllRulesInRuleMap(ruleMap: any, action: (rule: any) => void) {
-  for (var key in ruleMap) {
+  for (const key in ruleMap) {
     const rule = ruleMap[key];
     if ((typeof rule) === 'object') {
       action(rule);
@@ -124,7 +125,7 @@ function visitAllRulesInRuleMap(ruleMap: any, action: (rule: any) => void) {
  * @param action The transformation to make on each match pattern.
  */
 function visitAllMatchesInRule(rule: any, action: (match: any) => any) {
-  for (var key in rule) {
+  for (const key in rule) {
     switch (key) {
       case 'begin':
       case 'end':
@@ -184,10 +185,10 @@ function transformFile(yaml: any) {
   visitAllRulesInFile(yaml, (rule) => {
     visitAllMatchesInRule(rule, (match) => {
       if ((typeof match) === 'object') {
-        for (var key in match) {
+        for (const key in match) {
           return macros.get(key)!.replace('(?#)', `(?:${match[key]})`);
         }
-        throw new Error("No key in macro map.")
+        throw new Error('No key in macro map.');
       }
       else {
         return match;
@@ -225,7 +226,7 @@ export function transpileTextMateGrammar() {
     else if (file.isBuffer()) {
       const buf: Buffer = file.contents;
       const yamlText: string = buf.toString('utf8');
-      const jsonData: any = js_yaml.safeLoad(yamlText);
+      const jsonData: any = jsYaml.safeLoad(yamlText);
       transformFile(jsonData);
 
       file.contents = Buffer.from(JSON.stringify(jsonData, null, 2), 'utf8');

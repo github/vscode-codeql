@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { deployPackage } from './deploy';
-import * as child_process from 'child-process-promise';
+import * as childProcess from 'child-process-promise';
 
 export async function packageExtension(): Promise<void> {
   const deployedPackage = await deployPackage(path.resolve('package.json'));
@@ -9,7 +9,7 @@ export async function packageExtension(): Promise<void> {
     'package',
     '--out', path.resolve(deployedPackage.distPath, '..', `${deployedPackage.name}-${deployedPackage.version}.vsix`)
   ];
-  const proc = child_process.spawn('vsce', args, {
+  const proc = childProcess.spawn('./node_modules/.bin/vsce', args, {
     cwd: deployedPackage.distPath
   });
   proc.childProcess.stdout!.on('data', (data) => {

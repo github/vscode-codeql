@@ -9,9 +9,9 @@ export const config: webpack.Configuration = {
   },
   output: {
     path: path.resolve(__dirname, '..', 'out'),
-    filename: "[name].js"
+    filename: '[name].js'
   },
-  devtool: "inline-source-map",
+  devtool: 'inline-source-map',
   resolve: {
     extensions: ['.js', '.ts', '.tsx', '.json']
   },

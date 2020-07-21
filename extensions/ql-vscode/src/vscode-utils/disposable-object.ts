@@ -1,4 +1,4 @@
-import { Disposable } from "vscode";
+import { Disposable } from 'vscode';
 
 /**
  * Base class to make it easier to implement a `Disposable` that owns other disposable object.
@@ -6,9 +6,6 @@ import { Disposable } from "vscode";
 export abstract class DisposableObject implements Disposable {
   private disposables: Disposable[] = [];
   private tracked?: Set<Disposable> = undefined;
-
-  constructor() {
-  }
 
   /**
    * Adds `obj` to a list of objects to dispose when `this` is disposed. Objects added by `push` are

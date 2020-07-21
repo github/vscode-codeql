@@ -19,11 +19,15 @@ jobs:
           node-version: '10.18.1'
 
       - name: Install dependencies
-        run: node common/scripts/install-run-rush.js install
+        run: |
+          cd extensions/ql-vscode
+          npm install
         shell: bash
 
       - name: Build
-        run: node common/scripts/install-run-rush.js build
+        run: |
+          cd extensions/ql-vscode
+          npm run build
         shell: bash
 
       - name: Prepare artifacts
@@ -57,11 +61,15 @@ jobs:
 
       # We have to build the dependencies in `lib` before running any tests.
       - name: Install dependencies
-        run: node common/scripts/install-run-rush.js install
+        run: |
+          cd extensions/ql-vscode
+          npm install
         shell: bash
 
       - name: Build
-        run: node common/scripts/install-run-rush.js build
+        run: |
+          cd extensions/ql-vscode
+          npm run build
         shell: bash
 
       - name: Lint

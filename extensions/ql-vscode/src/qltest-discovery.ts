@@ -2,7 +2,7 @@ import * as path from 'path';
 import { QLPackDiscovery } from './qlpack-discovery';
 import { Discovery } from './discovery';
 import { EventEmitter, Event, Uri, RelativePattern, env } from 'vscode';
-import { MultiFileSystemWatcher } from '@github/codeql-vscode-utils';
+import { MultiFileSystemWatcher } from './vscode-utils/multi-file-system-watcher';
 import { CodeQLCliServer } from './cli';
 
 /**
