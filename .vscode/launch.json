@@ -8,16 +8,12 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql"
+        "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/dist/vscode-codeql/out/**/*.js",
-        "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-bqrs/out/**/*.js",
-        "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-io/out/**/*.js",
-        "${workspaceRoot}/dist/vscode-codeql/node_modules/semmle-io-node/out/**/*.js",
-        "${workspaceRoot}/dist/vscode-codeql/node_modules/@github/codeql-vscode-utils/out/**/*.js"
+        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
       ],
       "preLaunchTask": "Build"
     },
@@ -54,13 +50,13 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql",
+        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
         "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/dist/vscode-codeql/out/**/*.js",
+        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
         "${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/**/*.js"
       ],
       "preLaunchTask": "Build"
@@ -71,14 +67,14 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/dist/vscode-codeql",
+        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
         "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/minimal-workspace/index",
         "${workspaceRoot}/extensions/ql-vscode/test/data"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/dist/vscode-codeql/out/**/*.js",
+        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
         "${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/**/*.js"
       ],
       "preLaunchTask": "Build"

@@ -1,6 +1,5 @@
 import * as colors from 'ansi-colors';
 import * as gulp from 'gulp';
-import * as path from 'path';
 import * as sourcemaps from 'gulp-sourcemaps';
 import * as ts from 'gulp-typescript';
 
@@ -25,16 +24,9 @@ export function compileTypeScript() {
   return tsProject.src()
     .pipe(sourcemaps.init())
     .pipe(tsProject(goodReporter()))
-    .pipe((sourcemaps as any).mapSources((sourcePath: string, _file: string) => {
-      // The source path is kind of odd, because it's relative to the `tsconfig.json` file in the
-      // `typescript-config` package, which lives in the `node_modules` directory of the package
-      // that is being built. It starts out as something like '../../../src/foo.ts', and we need to
-      // strip out the leading '../../../'.
-      return path.join('a/b/c', sourcePath);
-    }))
     .pipe(sourcemaps.write('.', {
       includeContent: false,
-      sourceRoot: '.', // XXX this is probably wrong
+      sourceRoot: '.',
     }))
     .pipe(gulp.dest('out'));
 }
