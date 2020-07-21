@@ -27,7 +27,7 @@ jobs:
       - name: Build
         run: |
           cd extensions/ql-vscode
-          gulp
+          npm run build
         shell: bash
 
       - name: Prepare artifacts
@@ -69,7 +69,7 @@ jobs:
       - name: Build
         run: |
           cd extensions/ql-vscode
-          gulp
+          npm run build
         shell: bash
 
       - name: Lint

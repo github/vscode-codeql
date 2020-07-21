@@ -42,7 +42,7 @@ jobs:
       - name: Build
         run: |
           cd extensions/ql-vscode
-          gulp --release
+          npm run build -- --release
         shell: bash
 
       - name: Prepare artifacts
