@@ -257,12 +257,16 @@ async function getLinksFromResults(
     // TODO: Page this
     const allTuples = await cli.bqrsDecode(bqrsPath, SELECT_QUERY_NAME);
     for (const tuple of allTuples.tuples) {
-      const src = tuple[0] as EntityValue;
-      const dest = tuple[1] as EntityValue;
+      const [src, dest] = tuple as [EntityValue, EntityValue];
       const srcFile = src.url && fileRangeFromURI(src.url, db);
       const destFile = dest.url && fileRangeFromURI(dest.url, db);
       if (srcFile && destFile && filter(srcFile.uri.toString(), destFile.uri.toString())) {
-        localLinks.push({ targetRange: destFile.range, targetUri: destFile.uri, originSelectionRange: srcFile.range, originUri: srcFile.uri });
+        localLinks.push({
+          targetRange: destFile.range,
+          targetUri: destFile.uri,
+          originSelectionRange: srcFile.range,
+          originUri: srcFile.uri
+        });
       }
     }
   }

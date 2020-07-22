@@ -1,8 +1,8 @@
 import * as fs from 'fs-extra';
-// import * as sinonChai from 'sinon-chai';
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as sinon from 'sinon';
+
 import AstBuilder from '../../../contextual/astBuilder';
 import { QueryWithResults } from '../../../run-queries';
 import { CodeQLCliServer } from '../../../cli';
@@ -55,9 +55,10 @@ describe('AstBuilder', () => {
     const astBuilder = createAstBuilder();
     const roots = await astBuilder.getRoots();
 
-    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'nodes');
-    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'edges');
-    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'graphProperties');
+    const options = { entities: ['id', 'url', 'string'] };
+    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'nodes', options);
+    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'edges', options);
+    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'graphProperties', options);
 
     expect(roots.map(
       r => ({ ...r, children: undefined })
