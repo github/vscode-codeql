@@ -32,29 +32,23 @@ Here are a few things you can do that will increase the likelihood of your pull 
 Make sure you have a fairly recent version of vscode (>1.32) and are using nodejs
 version >=v10.13.0. (Tested on v10.15.1 and v10.16.0).
 
-### Building
+### Installing all packages
 
-#### Installing all packages
-
-Run
-
-##### From the command line
+From the command line, go to the directory `extensions/ql-vscode` and run
 
 ```shell
 npm install
 ```
 
-from the directory `extensions/ql-vscode`.
+### Building the extension
 
-#### Building
+From the command line, go to the directory `extensions/ql-vscode` and run
 
 ```shell
-gulp
+npm run build
 ```
 
-##### From VS Code
-
-`Terminal > Run Build Task...` (or just `Ctrl+Shift+B` with the default key bindings)
+Alternatively, you can build the extension within VS Code via `Terminal > Run Build Task...` (or `Ctrl+Shift+B` with the default key bindings).
 
 ### Installing
 
