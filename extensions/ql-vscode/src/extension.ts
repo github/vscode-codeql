@@ -26,7 +26,7 @@ import {
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
   TemplatePrintAstProvider
-} from './contextual/definitions';
+} from './contextual/templateProvider';
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
   DistributionKind,
