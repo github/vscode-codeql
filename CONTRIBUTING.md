@@ -32,87 +32,25 @@ Here are a few things you can do that will increase the likelihood of your pull 
 Make sure you have a fairly recent version of vscode (>1.32) and are using nodejs
 version >=v10.13.0. (Tested on v10.15.1 and v10.16.0).
 
-This repo uses [Rush](https://rushjs.io) to handle package management, building, and other
-operations across multiple projects. See the Rush "[Getting started as a developer](https://rushjs.io/pages/developer/new_developer/)" docs
-for more details.
+### Installing all packages
 
-If you plan on building from the command line, it's easiest if Rush is installed globally:
+From the command line, go to the directory `extensions/ql-vscode` and run
 
 ```shell
-npm install -g @microsoft/rush
+npm install
 ```
 
-To get started, run:
+### Building the extension
+
+From the command line, go to the directory `extensions/ql-vscode` and run
 
 ```shell
-rush update && rush build
+npm run build
 ```
 
-Note that when you run the `rush` command from the globally installed version, it will examine the
-`rushVersion` property in the repo's `rush.json`, and if it differs from the globally installed
-version, it will download, cache, and run the version of Rush specified in the `rushVersion`
-property.
+Alternatively, you can build the extension within VS Code via `Terminal > Run Build Task...` (or `Ctrl+Shift+B` with the default key bindings).
 
-A few more things to know about using rush:
-
-* Avoid running `npm` for any commands that install/link dependencies
-* Instead use the *rush* equivalent: `rush add <package>`, `rush update`, etc.
-* If you plan on only building via VS Code tasks, you don't need Rush installed at all, since those
-tasks run `common/scripts/install-run-rush.js` to bootstrap a locally installed and cached copy of
-Rush.
-
-### Building
-
-#### Installing all packages (instead of `npm install`)
-
-After updating any `package.json` file, or after checking or pulling a new branch, you need to
-make sure all the right npm packages are installed, which you would normally do via `npm install` in
-a single-project repo. With Rush, you need to do an "update" instead:
-
-##### From VS Code
-
-`Terminal > Run Task... > Update`
-
-##### From the command line
-
-```shell
-rush update
-```
-
-#### Building all projects (instead of `gulp`)
-
-Rush builds all projects in the repo, in dependency order, building multiple projects in parallel
-where possible. By default, the build also packages the extension itself into a .vsix file in the
-`dist` directory. To build:
-
-##### From VS Code
-
-`Terminal > Run Build Task...` (or just `Ctrl+Shift+B` with the default key bindings)
-
-##### From the command line
-
-```shell
-rush build --verbose
-```
-
-#### Forcing a clean build
-
-Rush does a reasonable job of detecting on its own which projects need to be rebuilt, but if you need to
-force a full rebuild of all projects:
-
-##### From VS Code
-
-`Terminal > Run Task... > Rebuild`
-
-##### From the command line
-
-```shell
-rush rebuild --verbose
-```
-
-Note that `rush rebuild` performs a complete rebuild, whereas `rush build` performs an incremental build and in many cases will not need to do anything at all.
-
-### Installing
+### Installing the extension
 
 You can install the `.vsix` file from within VS Code itself, from the Extensions container in the sidebar:
 
