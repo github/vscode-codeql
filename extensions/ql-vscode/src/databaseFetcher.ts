@@ -54,12 +54,10 @@ export async function promptImportInternetDatabase(
             progress
           ))
       );
-      commands.executeCommand('codeQLDatabases.focus');
-    }
-    if (item) {
-      showAndLogInformationMessage(
-        'Database downloaded and imported successfully.'
-      );
+      if (item) {
+        commands.executeCommand('codeQLDatabases.focus');
+        showAndLogInformationMessage('Database downloaded and imported successfully.');
+      }
     }
   } catch (e) {
     showAndLogErrorMessage(e.message);
@@ -108,15 +106,13 @@ export async function promptImportLgtmDatabase(
               progress
             ))
         );
-        commands.executeCommand('codeQLDatabases.focus');
+        if (item) {
+          commands.executeCommand('codeQLDatabases.focus');
+          showAndLogInformationMessage('Database downloaded and imported successfully.');
+        }
       }
     } else {
       throw new Error(`Invalid LGTM URL: ${lgtmUrl}`);
-    }
-    if (item) {
-      showAndLogInformationMessage(
-        'Database downloaded and imported successfully.'
-      );
     }
   } catch (e) {
     showAndLogErrorMessage(e.message);
@@ -154,12 +150,9 @@ export async function importArchiveDatabase(
           progress
         ))
     );
-    commands.executeCommand('codeQLDatabases.focus');
-
     if (item) {
-      showAndLogInformationMessage(
-        'Database unzipped and imported successfully.'
-      );
+      commands.executeCommand('codeQLDatabases.focus');
+      showAndLogInformationMessage('Database unzipped and imported successfully.');
     }
   } catch (e) {
     if (e.message.includes('unexpected end of file')) {
