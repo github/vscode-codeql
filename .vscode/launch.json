@@ -50,14 +50,13 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
+        "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
         "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [
         "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
-        "${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/**/*.js"
       ],
       "preLaunchTask": "Build"
     },
@@ -67,7 +66,7 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
+        "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
         "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/minimal-workspace/index",
         "${workspaceRoot}/extensions/ql-vscode/test/data"
       ],
@@ -75,7 +74,6 @@
       "sourceMaps": true,
       "outFiles": [
         "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
-        "${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/**/*.js"
       ],
       "preLaunchTask": "Build"
     }
