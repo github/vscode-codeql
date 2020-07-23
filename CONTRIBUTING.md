@@ -50,7 +50,7 @@ npm run build
 
 Alternatively, you can build the extension within VS Code via `Terminal > Run Build Task...` (or `Ctrl+Shift+B` with the default key bindings).
 
-### Installing
+### Installing the extension
 
 You can install the `.vsix` file from within VS Code itself, from the Extensions container in the sidebar:
 
