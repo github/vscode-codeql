@@ -62,7 +62,7 @@
       ],
       [
         {
-          "id": 26362,
+          "id": 0,
           "label": "[TopLevelFunction] int disable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
@@ -77,7 +77,7 @@
       ],
       [
         {
-          "id": 26362,
+          "id": 0,
           "label": "[TopLevelFunction] int disable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
@@ -384,7 +384,7 @@
     "tuples": [
       [
         {
-          "id": 26362,
+          "id": 0,
           "label": "[TopLevelFunction] int disable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
@@ -410,7 +410,7 @@
       ],
       [
         {
-          "id": 26362,
+          "id": 0,
           "label": "[TopLevelFunction] int disable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
@@ -436,7 +436,7 @@
       ],
       [
         {
-          "id": 26362,
+          "id": 0,
           "label": "[TopLevelFunction] int disable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
@@ -462,7 +462,7 @@
       ],
       [
         {
-          "id": 26362,
+          "id": 0,
           "label": "[TopLevelFunction] int disable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
@@ -967,11 +967,6 @@
         "kind": "String"
       }
     ],
-    "tuples": [
-      [
-        "semmle.graphKind",
-        "tree"
-      ]
-    ]
+    "tuples": [["semmle.graphKind", "tree"]]
   }
 ]
