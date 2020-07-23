@@ -56,9 +56,11 @@ export async function promptImportInternetDatabase(
       );
       commands.executeCommand('codeQLDatabases.focus');
     }
-    showAndLogInformationMessage(
-      'Database downloaded and imported successfully.'
-    );
+    if (item) {
+      showAndLogInformationMessage(
+        'Database downloaded and imported successfully.'
+      );
+    }
   } catch (e) {
     showAndLogErrorMessage(e.message);
   }
