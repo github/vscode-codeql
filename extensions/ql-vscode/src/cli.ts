@@ -94,6 +94,18 @@ export interface TestCompleted {
 }
 
 /**
+ * Optional arguments for the `bqrsDecode` function
+ */
+interface BqrsDecodeOptions {
+  /** How many results to get. */
+  pageSize?: number;
+  /** The 0-based index of the first result to get. */
+  offset?: number;
+  /** The entity names to retrieve from the bqrs file. Default is url, string */
+  entities?: string[];
+}
+
+/**
  * This class manages a cli server started by `codeql execute cli-server` to
  * run commands without the overhead of starting a new java
  * virtual machine each time. This class also controls access to the server
@@ -494,12 +506,16 @@ export class CodeQLCliServer implements Disposable {
   * Gets the results from a bqrs.
   * @param bqrsPath The path to the bqrs.
   * @param resultSet The result set to get.
-  * @param pageSize How many results to get.
-  * @param offset The 0-based index of the first result to get.
+  * @param options Optional BqrsDecodeOptions arguments
   */
-  async bqrsDecode(bqrsPath: string, resultSet: string, pageSize?: number, offset?: number): Promise<DecodedBqrsChunk> {
+  async bqrsDecode(
+    bqrsPath: string,
+    resultSet: string,
+    { pageSize, offset, entities = ['url', 'string'] }: BqrsDecodeOptions = {}
+  ): Promise<DecodedBqrsChunk> {
+
     const subcommandArgs = [
-      '--entities=url,string',
+      `--entities=${entities.join(',')}`,
       '--result-set', resultSet,
     ].concat(
       pageSize ? ['--rows', pageSize.toString()] : []

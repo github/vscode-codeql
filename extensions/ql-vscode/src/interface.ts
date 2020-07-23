@@ -348,8 +348,10 @@ export class InterfaceManager extends DisposableObject {
       const chunk = await this.cliServer.bqrsDecode(
         results.query.resultsPaths.resultsPath,
         schema.name,
-        RAW_RESULTS_PAGE_SIZE,
-        schema.pagination?.offsets[0]
+        {
+          offset: schema.pagination?.offsets[0],
+          pageSize: RAW_RESULTS_PAGE_SIZE
+        }
       );
       const adaptedSchema = adaptSchema(schema);
       const resultSet = adaptBqrs(adaptedSchema, chunk);
@@ -446,8 +448,10 @@ export class InterfaceManager extends DisposableObject {
     const chunk = await this.cliServer.bqrsDecode(
       results.query.resultsPaths.resultsPath,
       schema.name,
-      RAW_RESULTS_PAGE_SIZE,
-      schema.pagination?.offsets[pageNumber]
+      {
+        offset: schema.pagination?.offsets[pageNumber],
+        pageSize: RAW_RESULTS_PAGE_SIZE
+      }
     );
     const adaptedSchema = adaptSchema(schema);
     const resultSet = adaptBqrs(adaptedSchema, chunk);

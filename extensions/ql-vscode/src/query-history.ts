@@ -105,11 +105,7 @@ class HistoryTreeDataProvider
   getChildren(
     element?: CompletedQuery
   ): vscode.ProviderResult<CompletedQuery[]> {
-    if (element == undefined) {
-      return this.history;
-    } else {
-      return [];
-    }
+    return element ? [] : this.history;
   }
 
   getParent(_element: CompletedQuery): vscode.ProviderResult<CompletedQuery> {

@@ -2,15 +2,19 @@ import * as fs from 'fs-extra';
 import * as yaml from 'js-yaml';
 import * as tmp from 'tmp-promise';
 import * as vscode from 'vscode';
-import { decodeSourceArchiveUri, zipArchiveScheme } from './archive-filesystem-provider';
-import { ColumnKindCode, EntityValue, getResultSetSchema, LineColumnLocation, UrlValue } from './bqrs-cli-types';
-import { CodeQLCliServer } from './cli';
-import { DatabaseItem, DatabaseManager } from './databases';
-import * as helpers from './helpers';
-import { CachedOperation } from './helpers';
-import * as messages from './messages';
-import { QueryServerClient } from './queryserver-client';
-import { compileAndRunQueryAgainstDatabase, QueryWithResults } from './run-queries';
+import * as path from 'path';
+
+import { decodeSourceArchiveUri, zipArchiveScheme } from '../archive-filesystem-provider';
+import { ColumnKindCode, EntityValue, getResultSetSchema } from '../bqrs-cli-types';
+import { CodeQLCliServer } from '../cli';
+import { DatabaseItem, DatabaseManager } from '../databases';
+import * as helpers from '../helpers';
+import { CachedOperation } from '../helpers';
+import * as messages from '../messages';
+import { QueryServerClient } from '../queryserver-client';
+import { compileAndRunQueryAgainstDatabase, QueryWithResults } from '../run-queries';
+import AstBuilder from './astBuilder';
+import fileRangeFromURI from './fileRangeFromURI';
 
 /**
  * Run templated CodeQL queries to find definitions and references in
@@ -25,19 +29,38 @@ const SELECT_QUERY_NAME = '#select';
 enum KeyType {
   DefinitionQuery = 'DefinitionQuery',
   ReferenceQuery = 'ReferenceQuery',
+  PrintAstQuery = 'PrintAstQuery',
 }
 
 function tagOfKeyType(keyType: KeyType): string {
   switch (keyType) {
-    case KeyType.DefinitionQuery: return 'ide-contextual-queries/local-definitions';
-    case KeyType.ReferenceQuery: return 'ide-contextual-queries/local-references';
+    case KeyType.DefinitionQuery:
+      return 'ide-contextual-queries/local-definitions';
+    case KeyType.ReferenceQuery:
+      return 'ide-contextual-queries/local-references';
+    case KeyType.PrintAstQuery:
+      return 'ide-contextual-queries/print-ast';
   }
 }
 
 function nameOfKeyType(keyType: KeyType): string {
   switch (keyType) {
-    case KeyType.DefinitionQuery: return 'definitions';
-    case KeyType.ReferenceQuery: return 'references';
+    case KeyType.DefinitionQuery:
+      return 'definitions';
+    case KeyType.ReferenceQuery:
+      return 'references';
+    case KeyType.PrintAstQuery:
+      return 'print AST';
+  }
+}
+
+function kindOfKeyType(keyType: KeyType): string {
+  switch (keyType) {
+    case KeyType.DefinitionQuery:
+    case KeyType.ReferenceQuery:
+      return 'definitions';
+    case KeyType.PrintAstQuery:
+      return 'graph';
   }
 }
 
@@ -45,7 +68,7 @@ async function resolveQueries(cli: CodeQLCliServer, qlpack: string, keyType: Key
   const suiteFile = (await tmp.file({
     postfix: '.qls'
   })).path;
-  const suiteYaml = { qlpack, include: { kind: 'definitions', 'tags contain': tagOfKeyType(keyType) } };
+  const suiteYaml = { qlpack, include: { kind: kindOfKeyType(keyType), 'tags contain': tagOfKeyType(keyType) } };
   await fs.writeFile(suiteFile, yaml.safeDump(suiteYaml), 'utf8');
 
   const queries = await cli.resolveQueriesInSuite(suiteFile, helpers.getOnDiskWorkspaceFolders());
@@ -81,10 +104,6 @@ export class TemplateQueryDefinitionProvider implements vscode.DefinitionProvide
     this.cache = new CachedOperation<vscode.LocationLink[]>(this.getDefinitions.bind(this));
   }
 
-  async getDefinitions(uriString: string): Promise<vscode.LocationLink[]> {
-    return getLinksForUriString(this.cli, this.qs, this.dbm, uriString, KeyType.DefinitionQuery, (src, _dest) => src === uriString);
-  }
-
   async provideDefinition(document: vscode.TextDocument, position: vscode.Position, _token: vscode.CancellationToken): Promise<vscode.LocationLink[]> {
     const fileLinks = await this.cache.get(document.uri.toString());
     const locLinks: vscode.LocationLink[] = [];
@@ -94,6 +113,17 @@ export class TemplateQueryDefinitionProvider implements vscode.DefinitionProvide
       }
     }
     return locLinks;
+  }
+
+  private async getDefinitions(uriString: string): Promise<vscode.LocationLink[]> {
+    return getLinksForUriString(
+      this.cli,
+      this.qs,
+      this.dbm,
+      uriString,
+      KeyType.DefinitionQuery,
+      (src, _dest) => src === uriString
+    );
   }
 }
 
@@ -108,11 +138,12 @@ export class TemplateQueryReferenceProvider implements vscode.ReferenceProvider 
     this.cache = new CachedOperation<FullLocationLink[]>(this.getReferences.bind(this));
   }
 
-  async getReferences(uriString: string): Promise<FullLocationLink[]> {
-    return getLinksForUriString(this.cli, this.qs, this.dbm, uriString, KeyType.ReferenceQuery, (_src, dest) => dest === uriString);
-  }
-
-  async provideReferences(document: vscode.TextDocument, position: vscode.Position, _context: vscode.ReferenceContext, _token: vscode.CancellationToken): Promise<vscode.Location[]> {
+  async provideReferences(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    _context: vscode.ReferenceContext,
+    _token: vscode.CancellationToken
+  ): Promise<vscode.Location[]> {
     const fileLinks = await this.cache.get(document.uri.toString());
     const locLinks: vscode.Location[] = [];
     for (const link of fileLinks) {
@@ -122,14 +153,99 @@ export class TemplateQueryReferenceProvider implements vscode.ReferenceProvider 
     }
     return locLinks;
   }
+
+  private async getReferences(uriString: string): Promise<FullLocationLink[]> {
+    return getLinksForUriString(
+      this.cli,
+      this.qs,
+      this.dbm,
+      uriString,
+      KeyType.ReferenceQuery,
+      (_src, dest) => dest === uriString
+    );
+  }
 }
 
-interface FileRange {
-  file: vscode.Uri;
-  range: vscode.Range;
+export class TemplatePrintAstProvider {
+  private cache: CachedOperation<QueryWithResults | undefined>;
+
+  constructor(
+    private cli: CodeQLCliServer,
+    private qs: QueryServerClient,
+    private dbm: DatabaseManager,
+  ) {
+    this.cache = new CachedOperation<QueryWithResults | undefined>(this.getAst.bind(this));
+  }
+
+  async provideAst(document?: vscode.TextDocument): Promise<AstBuilder | undefined> {
+    if (!document) {
+      return;
+    }
+    const queryResults = await this.cache.get(document.uri.toString());
+    if (!queryResults) {
+      return;
+    }
+
+    return new AstBuilder(
+      queryResults, this.cli,
+      this.dbm.findDatabaseItem(vscode.Uri.parse(queryResults.database.databaseUri!))!,
+      path.basename(document.fileName)
+    );
+  }
+
+  private async getAst(uriString: string): Promise<QueryWithResults> {
+    const uri = vscode.Uri.parse(uriString, true);
+    if (uri.scheme !== zipArchiveScheme) {
+      throw new Error('AST Viewing is only available for databases with zipped source archives.');
+    }
+
+    const zippedArchive = decodeSourceArchiveUri(uri);
+    const sourceArchiveUri = vscode.Uri.file(zippedArchive.sourceArchiveZipPath).with({ scheme: zipArchiveScheme });
+    const db = this.dbm.findDatabaseItemBySourceArchive(sourceArchiveUri);
+
+    if (!db) {
+      throw new Error('Can\'t infer database from the provided source.');
+    }
+
+    const qlpack = await qlpackOfDatabase(this.cli, db);
+    if (!qlpack) {
+      throw new Error('Can\'t infer qlpack from database source archive');
+    }
+    const queries = await resolveQueries(this.cli, qlpack, KeyType.PrintAstQuery);
+    if (queries.length > 1) {
+      throw new Error('Found multiple Print AST queries. Can\'t continue');
+    }
+    if (queries.length === 0) {
+      throw new Error('Did not find any Print AST queries. Can\'t continue');
+    }
+
+    const query = queries[0];
+    const templates: messages.TemplateDefinitions = {
+      [TEMPLATE_NAME]: {
+        values: {
+          tuples: [[{
+            stringValue: zippedArchive.pathWithinSourceArchive
+          }]]
+        }
+      }
+    };
+    return await compileAndRunQueryAgainstDatabase(
+      this.cli,
+      this.qs,
+      db,
+      false,
+      vscode.Uri.file(query),
+      templates
+    );
+  }
 }
 
-async function getLinksFromResults(results: QueryWithResults, cli: CodeQLCliServer, db: DatabaseItem, filter: (srcFile: string, destFile: string) => boolean): Promise<FullLocationLink[]> {
+async function getLinksFromResults(
+  results: QueryWithResults,
+  cli: CodeQLCliServer,
+  db: DatabaseItem,
+  filter: (srcFile: string, destFile: string) => boolean
+): Promise<FullLocationLink[]> {
   const localLinks: FullLocationLink[] = [];
   const bqrsPath = results.query.resultsPaths.resultsPath;
   const info = await cli.bqrsInfo(bqrsPath);
@@ -141,12 +257,16 @@ async function getLinksFromResults(results: QueryWithResults, cli: CodeQLCliServ
     // TODO: Page this
     const allTuples = await cli.bqrsDecode(bqrsPath, SELECT_QUERY_NAME);
     for (const tuple of allTuples.tuples) {
-      const src = tuple[0] as EntityValue;
-      const dest = tuple[1] as EntityValue;
+      const [src, dest] = tuple as [EntityValue, EntityValue];
       const srcFile = src.url && fileRangeFromURI(src.url, db);
       const destFile = dest.url && fileRangeFromURI(dest.url, db);
-      if (srcFile && destFile && filter(srcFile.file.toString(), destFile.file.toString())) {
-        localLinks.push({ targetRange: destFile.range, targetUri: destFile.file, originSelectionRange: srcFile.range, originUri: srcFile.file });
+      if (srcFile && destFile && filter(srcFile.uri.toString(), destFile.uri.toString())) {
+        localLinks.push({
+          targetRange: destFile.range,
+          targetUri: destFile.uri,
+          originSelectionRange: srcFile.range,
+          originUri: srcFile.uri
+        });
       }
     }
   }
@@ -189,28 +309,5 @@ async function getLinksForUriString(
     return links;
   } else {
     return [];
-  }
-}
-
-function fileRangeFromURI(uri: UrlValue, db: DatabaseItem): FileRange | undefined {
-  if (typeof uri === 'string') {
-    return undefined;
-  } else if ('startOffset' in uri) {
-    return undefined;
-  } else {
-    const loc = uri as LineColumnLocation;
-    const range = new vscode.Range(Math.max(0, loc.startLine - 1),
-      Math.max(0, loc.startColumn - 1),
-      Math.max(0, loc.endLine - 1),
-      Math.max(0, loc.endColumn));
-    try {
-      const parsed = vscode.Uri.parse(uri.uri, true);
-      if (parsed.scheme === 'file') {
-        return { file: db.resolveSourceFile(parsed.fsPath), range };
-      }
-      return undefined;
-    } catch (e) {
-      return undefined;
-    }
   }
 }
