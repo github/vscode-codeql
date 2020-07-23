@@ -10,7 +10,7 @@
         "kind": "build",
         "isDefault": true
       },
-      "command": "npx gulp buildWithoutPackage --verbose",
+      "command": "npm run build",
       "options": {
         "cwd": "extensions/ql-vscode/"
       },
