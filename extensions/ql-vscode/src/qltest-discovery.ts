@@ -1,7 +1,7 @@
 import * as path from 'path';
-import { QLPackDiscovery } from './qlpack-discovery';
+import { QLPackDiscovery, QLPack } from './qlpack-discovery';
 import { Discovery } from './discovery';
-import { EventEmitter, Event, Uri, RelativePattern, env } from 'vscode';
+import { EventEmitter, Event, Uri, RelativePattern, WorkspaceFolder, env } from 'vscode';
 import { MultiFileSystemWatcher } from './vscode-utils/multi-file-system-watcher';
 import { CodeQLCliServer } from './cli';
 
@@ -114,15 +114,15 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
   private readonly watcher: MultiFileSystemWatcher = this.push(new MultiFileSystemWatcher());
   private _testDirectories: QLTestDirectory[] = [];
 
-  constructor(private readonly qlPackDiscovery: QLPackDiscovery,
-    private readonly cliServer: CodeQLCliServer) {
-
+  constructor(
+    private readonly qlPackDiscovery: QLPackDiscovery,
+    private readonly workspaceFolder: WorkspaceFolder,
+    private readonly cliServer: CodeQLCliServer
+  ) {
     super();
 
     this.push(this.qlPackDiscovery.onDidChangeQLPacks(this.handleDidChangeQLPacks, this));
     this.push(this.watcher.onDidChange(this.handleDidChange, this));
-
-    this.refresh();
   }
 
   /**
@@ -151,7 +151,7 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
     const qlPacks = this.qlPackDiscovery.qlPacks;
     for (const qlPack of qlPacks) {
       //HACK: Assume that only QL packs whose name ends with '-tests' contain tests.
-      if (qlPack.name.endsWith('-tests')) {
+      if (this.isRelevantQlPack(qlPack)) {
         watchPaths.push(qlPack.uri.fsPath);
         const testPackage = await this.discoverTests(qlPack.uri.fsPath, qlPack.name);
         if (testPackage !== undefined) {
@@ -160,10 +160,7 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
       }
     }
 
-    return {
-      testDirectories: testDirectories,
-      watchPaths: watchPaths
-    };
+    return { testDirectories, watchPaths };
   }
 
   protected update(results: QLTestDiscoveryResults): void {
@@ -175,6 +172,15 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
       this.watcher.addWatch(new RelativePattern(watchPath, '**/*.{ql,qlref}'));
     });
     this._onDidChangeTests.fire();
+  }
+
+  /**
+   * Only include qlpacks suffixed with '-tests' that are contained
+   * within the provided workspace folder.
+   */
+  private isRelevantQlPack(qlPack: QLPack): boolean {
+    return qlPack.name.endsWith('-tests')
+      && qlPack.uri.fsPath.startsWith(this.workspaceFolder.uri.fsPath);
   }
 
   /**

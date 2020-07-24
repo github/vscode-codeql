@@ -98,7 +98,9 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     super();
 
     this.qlPackDiscovery = this.push(new QLPackDiscovery(workspaceFolder, cliServer));
-    this.qlTestDiscovery = this.push(new QLTestDiscovery(this.qlPackDiscovery, cliServer));
+    this.qlTestDiscovery = this.push(new QLTestDiscovery(this.qlPackDiscovery, workspaceFolder, cliServer));
+    this.qlPackDiscovery.refresh();
+    this.qlTestDiscovery.refresh();
 
     this.push(this.qlTestDiscovery.onDidChangeTests(this.discoverTests, this));
   }
