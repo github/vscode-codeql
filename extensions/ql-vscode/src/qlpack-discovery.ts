@@ -16,9 +16,10 @@ export class QLPackDiscovery extends Discovery<QlpacksInfo> {
   private readonly watcher = this.push(new MultiFileSystemWatcher());
   private _qlPacks: readonly QLPack[] = [];
 
-  constructor(private readonly workspaceFolder: WorkspaceFolder,
-    private readonly cliServer: CodeQLCliServer) {
-
+  constructor(
+    private readonly workspaceFolder: WorkspaceFolder,
+    private readonly cliServer: CodeQLCliServer
+  ) {
     super();
 
     // Watch for any changes to `qlpack.yml` files in this workspace folder.
@@ -26,8 +27,6 @@ export class QLPackDiscovery extends Discovery<QlpacksInfo> {
     this.watcher.addWatch(new RelativePattern(this.workspaceFolder, '**/qlpack.yml'));
     this.watcher.addWatch(new RelativePattern(this.workspaceFolder, '**/.codeqlmanifest.json'));
     this.push(this.watcher.onDidChange(this.handleQLPackFileChanged, this));
-
-    this.refresh();
   }
 
   public get onDidChangeQLPacks(): Event<void> { return this._onDidChangeQLPacks.event; }

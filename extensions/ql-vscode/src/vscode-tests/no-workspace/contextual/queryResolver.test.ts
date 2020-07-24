@@ -41,14 +41,20 @@ describe('queryResolver', () => {
       });
     });
 
-    it('should throw an error when there are no queries found', () => {
+    it('should throw an error when there are no queries found', async () => {
       mockCli.resolveQueriesInSuite.returns([]);
 
-      expect(module.resolveQueries(
-        mockCli, 'my-qlpack', KeyType.DefinitionQuery)
-      ).to.be.rejectedWith(
-        'Couldn\'t find any queries tagged ide-contextual-queries/local-definitions for qlpack my-qlpack'
-      );
+      // TODO: Figure out why chai-as-promised isn't failing the test on an
+      // unhandled rejection.
+      try {
+        await module.resolveQueries(mockCli, 'my-qlpack', KeyType.DefinitionQuery);
+        // should reject
+        expect(true).to.be.false;
+      } catch (e) {
+        expect(e.message).to.eq(
+          'Couldn\'t find any queries tagged ide-contextual-queries/local-definitions for qlpack my-qlpack'
+        );
+      }
     });
   });
 
@@ -78,7 +84,8 @@ describe('queryResolver', () => {
 
       '../helpers': {
         resolveDatasetFolder: resolveDatasetFolderSpy,
-        getOnDiskWorkspaceFolders: () => ({})
+        getOnDiskWorkspaceFolders: () => ({}),
+        showAndLogErrorMessage: () => ({})
       }
     });
   }
