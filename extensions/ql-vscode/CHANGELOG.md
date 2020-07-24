@@ -7,6 +7,7 @@
 - Add the AST Viewer to inspect the QL AST of a source file in a database. Currently, only available for C/C++ sources.
 - Fix pagination when there are no results.
 - Suppress database downloaded from URL message when action canceled.
+- Fix QL test discovery to avoid showing duplicate tests in the test explorer.
 
 ## 1.3.1 - 7 July 2020
 
