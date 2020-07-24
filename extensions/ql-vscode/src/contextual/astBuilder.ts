@@ -92,14 +92,14 @@ export default class AstBuilder {
           };
 
           idToItem.set(id, item as RootAstItem);
-          const parent = idToItem.get(childToParent.get(id) || -1);
+          const parent = idToItem.get(childToParent.has(id) ? childToParent.get(id)! : -1);
 
           if (parent) {
             const astItem = item as AstItem;
             astItem.parent = parent;
             parent.children.push(astItem);
           }
-          const children = parentToChildren.get(id) || [];
+          const children = parentToChildren.has(id) ? parentToChildren.get(id)! : [];
           children.forEach(childId => {
             const child = idToItem.get(childId) as AstItem | undefined;
             if (child) {

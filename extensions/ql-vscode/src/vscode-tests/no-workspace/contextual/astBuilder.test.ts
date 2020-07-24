@@ -110,7 +110,7 @@ describe('AstBuilder', () => {
 
 const expectedRoots = [
   {
-    id: 26362,
+    id: 0,
     label: '[TopLevelFunction] int disable_interrupts()',
     location: {
       uri: 'file:/opt/src/arch/sandbox/lib/interrupts.c',
