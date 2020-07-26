@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { QLPackDiscovery, QLPack } from './qlpack-discovery';
 import { Discovery } from './discovery';
-import { EventEmitter, Event, Uri, RelativePattern, WorkspaceFolder, env } from 'vscode';
+import { EventEmitter, Event, Uri, RelativePattern, WorkspaceFolder, env, workspace } from 'vscode';
 import { MultiFileSystemWatcher } from './vscode-utils/multi-file-system-watcher';
 import { CodeQLCliServer } from './cli';
 
@@ -180,7 +180,7 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
    */
   private isRelevantQlPack(qlPack: QLPack): boolean {
     return qlPack.name.endsWith('-tests')
-      && qlPack.uri.fsPath.startsWith(this.workspaceFolder.uri.fsPath);
+      && workspace.getWorkspaceFolder(qlPack.uri)?.index === this.workspaceFolder.index;
   }
 
   /**
