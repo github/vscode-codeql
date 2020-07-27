@@ -119,7 +119,7 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
     private readonly workspaceFolder: WorkspaceFolder,
     private readonly cliServer: CodeQLCliServer
   ) {
-    super();
+    super('QL Test Discovery');
 
     this.push(this.qlPackDiscovery.onDidChangeQLPacks(this.handleDidChangeQLPacks, this));
     this.push(this.watcher.onDidChange(this.handleDidChange, this));
