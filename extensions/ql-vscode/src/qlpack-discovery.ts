@@ -20,7 +20,7 @@ export class QLPackDiscovery extends Discovery<QlpacksInfo> {
     private readonly workspaceFolder: WorkspaceFolder,
     private readonly cliServer: CodeQLCliServer
   ) {
-    super();
+    super('QL Pack Discovery');
 
     // Watch for any changes to `qlpack.yml` files in this workspace folder.
     // TODO: The CLI server should tell us what paths to watch for.

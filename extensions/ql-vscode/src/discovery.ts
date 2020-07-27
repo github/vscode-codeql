@@ -1,4 +1,5 @@
 import { DisposableObject } from './vscode-utils/disposable-object';
+import { showAndLogErrorMessage } from './helpers';
 
 /**
  * Base class for "discovery" operations, which scan the file system to find specific kinds of
@@ -9,7 +10,7 @@ export abstract class Discovery<T> extends DisposableObject {
   private retry = false;
   private discoveryInProgress = false;
 
-  constructor() {
+  constructor(private readonly name: string) {
     super();
   }
 
@@ -59,6 +60,11 @@ export abstract class Discovery<T> extends DisposableObject {
         this.update(results);
       }
     });
+
+    discoveryPromise.catch(err => {
+      showAndLogErrorMessage(`${this.name} failed. Reason: ${err.message}`);
+    });
+
     discoveryPromise.finally(() => {
       if (this.retry) {
         // Another refresh request came in while we were still running a previous discovery
