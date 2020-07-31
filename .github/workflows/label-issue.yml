@@ -7,7 +7,6 @@ jobs:
   label:
     name: Label issue
     runs-on: ubuntu-latest
-    if: github.event.action == 'opened'
     steps:
       - name: Label issue
         env:
