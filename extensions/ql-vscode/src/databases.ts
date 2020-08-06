@@ -316,8 +316,10 @@ class DatabaseItemImpl implements DatabaseItem {
     }
   }
 
-  public resolveSourceFile(file: string | undefined): vscode.Uri {
+  public resolveSourceFile(uri: string | undefined): vscode.Uri {
     const sourceArchive = this.sourceArchive;
+    // FIXME: This is wrong. Should parse the uri properly first
+    const file = uri?.replace(/file:/, '');
     if (sourceArchive === undefined) {
       if (file !== undefined) {
         // Treat it as an absolute path.

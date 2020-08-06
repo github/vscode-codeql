@@ -11,11 +11,11 @@ import {
   ALERTS_TABLE_NAME,
   SELECT_TABLE_NAME,
   getDefaultResultSetName,
+  ParsedResultSets
 } from '../interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
 import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName, alertExtrasClassName } from './result-table-utils';
-import { ParsedResultSets } from '../adapt';
 import { vscode } from './vscode-api';
 
 
@@ -48,7 +48,7 @@ const UPDATING_RESULTS_TEXT_CLASS_NAME = 'vscode-codeql__result-tables-updating-
 function getResultCount(resultSet: ResultSet): number {
   switch (resultSet.t) {
     case 'RawResultSet':
-      return resultSet.schema.tupleCount;
+      return resultSet.schema.rows;
     case 'SarifResultSet':
       return resultSet.numTotalResults;
   }
@@ -81,7 +81,11 @@ export class ResultTables
         // unused stubs because a SarifResultSet schema isn't used the
         // same way as a RawResultSet. Probably should pull `name` field
         // out.
-        schema: { name: ALERTS_TABLE_NAME, version: 0, columns: [], tupleCount: 1 },
+        schema: {
+          name: ALERTS_TABLE_NAME,
+          rows: 1,
+          columns: []
+        },
         name: ALERTS_TABLE_NAME,
         ...this.props.interpretation,
       });

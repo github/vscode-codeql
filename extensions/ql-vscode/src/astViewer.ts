@@ -4,6 +4,7 @@ import { DatabaseItem } from './databases';
 import { UrlValue, BqrsId } from './bqrs-cli-types';
 import fileRangeFromURI from './contextual/fileRangeFromURI';
 import { showLocation } from './interface-utils';
+import { isStringLoc, isWholeFileLoc, isLineColumnLoc } from './bqrs-utils';
 
 export interface AstItem {
   id: BqrsId;
@@ -33,7 +34,7 @@ class AstViewerDataProvider implements vscode.TreeDataProvider<AstItem | RootAst
           await showLocation(fileRangeFromURI(location, db));
         }
       });
-    }
+  }
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
@@ -48,9 +49,7 @@ class AstViewerDataProvider implements vscode.TreeDataProvider<AstItem | RootAst
   }
 
   getTreeItem(item: AstItem): vscode.TreeItem {
-    const line = typeof item.location === 'string'
-      ? item.location
-      : item.location?.startLine;
+    const line = this.extractLineInfo(item?.location);
 
     const state = item.children.length
       ? vscode.TreeItemCollapsibleState.Collapsed
@@ -66,6 +65,20 @@ class AstViewerDataProvider implements vscode.TreeDataProvider<AstItem | RootAst
       arguments: [item.location, this.db]
     };
     return treeItem;
+  }
+
+  private extractLineInfo(loc?: UrlValue) {
+    if (!loc) {
+      return '';
+    } else if (isStringLoc(loc)) {
+      return loc;
+    } else if (isWholeFileLoc(loc)) {
+      return loc.uri;
+    } else if (isLineColumnLoc(loc)) {
+      return loc.startLine;
+    } else {
+      return '';
+    }
   }
 }
 

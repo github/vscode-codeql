@@ -37,12 +37,6 @@ import { CompletedQuery, interpretResults } from './query-results';
 import { QueryInfo, tmpDir } from './run-queries';
 import { parseSarifLocation, parseSarifPlainTextMessage } from './sarif-utils';
 import {
-  adaptSchema,
-  adaptBqrs,
-  ParsedResultSets,
-  RawResultSet,
-} from './adapt';
-import {
   WebviewReveal,
   fileUriToWebviewUri,
   tryResolveLocation,
@@ -51,8 +45,8 @@ import {
   shownLocationLineDecoration,
   jumpToLocation,
 } from './interface-utils';
-import { getDefaultResultSetName } from './interface-types';
-import { ResultSetSchema } from './bqrs-cli-types';
+import { getDefaultResultSetName, ParsedResultSets } from './interface-types';
+import { RawResultSet, adaptBqrs, ResultSetSchema } from './bqrs-cli-types';
 
 /**
  * interface.ts
@@ -94,7 +88,7 @@ function sortInterpretedResults(
 }
 
 function numPagesOfResultSet(resultSet: RawResultSet): number {
-  return Math.ceil(resultSet.schema.tupleCount / RAW_RESULTS_PAGE_SIZE);
+  return Math.ceil(resultSet.schema.rows / RAW_RESULTS_PAGE_SIZE);
 }
 
 function numInterpretedPages(interpretation: Interpretation | undefined): number {
@@ -378,8 +372,7 @@ export class InterfaceManager extends DisposableObject {
           pageSize: RAW_RESULTS_PAGE_SIZE
         }
       );
-      const adaptedSchema = adaptSchema(schema);
-      const resultSet = adaptBqrs(adaptedSchema, chunk);
+      const resultSet = adaptBqrs(schema, chunk);
       return {
         pageNumber: 0,
         numPages: numPagesOfResultSet(resultSet),
@@ -492,8 +485,7 @@ export class InterfaceManager extends DisposableObject {
         pageSize: RAW_RESULTS_PAGE_SIZE
       }
     );
-    const adaptedSchema = adaptSchema(schema);
-    const resultSet = adaptBqrs(adaptedSchema, chunk);
+    const resultSet = adaptBqrs(schema, chunk);
 
     const parsedResultSets: ParsedResultSets = {
       pageNumber,
@@ -684,7 +676,7 @@ export class InterfaceManager extends DisposableObject {
         result.locations[0],
         sourceLocationPrefix
       );
-      if (sarifLoc.t == 'NoLocation') {
+      if ('hint' in sarifLoc) {
         continue;
       }
       const resultLocation = tryResolveLocation(sarifLoc, databaseItem);
@@ -709,7 +701,7 @@ export class InterfaceManager extends DisposableObject {
             relatedLocationsById[section.dest],
             sourceLocationPrefix
           );
-          if (sarifChunkLoc.t == 'NoLocation') {
+          if ('hint' in sarifChunkLoc) {
             continue;
           }
           const referenceLocation = tryResolveLocation(
