@@ -15,7 +15,11 @@
       "outFiles": [
         "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
       ],
-      "preLaunchTask": "Build"
+      "preLaunchTask": "Build",
+      "env": {
+        // uncomment to allow debugging the language server Java process from a remote java debugger
+        // "DEBUG_LANGUAGE_SERVER": "true"
+      }
     },
     {
       "name": "Launch Unit Tests (vscode-codeql)",
