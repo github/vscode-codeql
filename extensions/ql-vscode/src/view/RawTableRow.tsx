@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ResultRow } from '../adapt';
+import { ResultRow } from '../bqrs-cli-types';
 import { zebraStripe } from './result-table-utils';
 import RawTableValue from './RawTableValue';
 
@@ -23,6 +23,6 @@ export default function RawTableRow(props: Props) {
           />
         </td>
       ))}
-  </tr>
+    </tr>
   );
 }

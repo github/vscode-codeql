@@ -11,12 +11,10 @@ import {
   QueryMetadata,
   ResultsPaths,
   ALERTS_TABLE_NAME,
+  ParsedResultSets,
 } from '../interface-types';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 import { ResultTables } from './result-tables';
-import {
-  ParsedResultSets,
-} from '../adapt';
 import { ResultSet } from '../interface-types';
 import { vscode } from './vscode-api';
 
@@ -113,7 +111,11 @@ class App extends React.Component<{}, ResultsViewState> {
             resultSet: {
               t: 'SarifResultSet',
               name: ALERTS_TABLE_NAME,
-              schema: { name: ALERTS_TABLE_NAME, version: 0, columns: [], tupleCount: 1 },
+              schema: {
+                name: ALERTS_TABLE_NAME,
+                rows: 1,
+                columns: []
+              },
               ...msg.interpretation,
             },
             selectedTable: ALERTS_TABLE_NAME,
@@ -174,7 +176,10 @@ class App extends React.Component<{}, ResultsViewState> {
     resultsInfo: ResultsInfo
   ): Promise<readonly ResultSet[]> {
     const parsedResultSets = resultsInfo.parsedResultSets;
-    return [{ t: 'RawResultSet', ...parsedResultSets.resultSet }];
+    return [{
+      ...parsedResultSets.resultSet,
+      t: (parsedResultSets.resultSet.t ?? 'RawResultSet') as any
+    }];
   }
 
   private async loadResults(): Promise<void> {

@@ -1,4 +1,4 @@
-import { StringLocation, LocationValue, LocationStyle, ResolvableLocationValue } from './bqrs-types';
+import { UrlValue, ResolvableLocationValue, LineColumnLocation, WholeFileLocation } from './bqrs-cli-types';
 
 /**
  * The CodeQL filesystem libraries use this pattern in `getURL()` predicates
@@ -14,22 +14,16 @@ const FILE_LOCATION_REGEX = /file:\/\/(.+):([0-9]+):([0-9]+):([0-9]+):([0-9]+)/;
  * @param loc The location to test.
  */
 export function tryGetResolvableLocation(
-  loc: LocationValue | undefined
+  loc: UrlValue | undefined
 ): ResolvableLocationValue | undefined {
   let resolvedLoc;
   if (loc === undefined) {
     resolvedLoc = undefined;
-  } else if (loc.t === LocationStyle.FivePart && loc.file) {
-    resolvedLoc = loc;
-  } else if (loc.t === LocationStyle.WholeFile && loc.file) {
-    resolvedLoc = loc;
-  } else if (loc.t === LocationStyle.String && loc.loc) {
+  } else if (isWholeFileLoc(loc) || isLineColumnLoc(loc)) {
+    resolvedLoc = loc as ResolvableLocationValue;
+  } else if (isStringLoc(loc)) {
     resolvedLoc = tryGetLocationFromString(loc);
   } else {
-    resolvedLoc = undefined;
-  }
-
-  if (resolvedLoc && isEmptyPath(resolvedLoc.file)) {
     resolvedLoc = undefined;
   }
 
@@ -37,23 +31,21 @@ export function tryGetResolvableLocation(
 }
 
 export function tryGetLocationFromString(
-  loc: StringLocation
+  loc: string
 ): ResolvableLocationValue | undefined {
-  const matches = FILE_LOCATION_REGEX.exec(loc.loc);
+  const matches = FILE_LOCATION_REGEX.exec(loc);
   if (matches && matches.length > 1 && matches[1]) {
     if (isWholeFileMatch(matches)) {
       return {
-        t: LocationStyle.WholeFile,
-        file: matches[1],
-      };
+        uri: matches[1],
+      } as WholeFileLocation;
     } else {
       return {
-        t: LocationStyle.FivePart,
-        file: matches[1],
-        lineStart: Number(matches[2]),
-        colStart: Number(matches[3]),
-        lineEnd: Number(matches[4]),
-        colEnd: Number(matches[5]),
+        uri: matches[1],
+        startLine: Number(matches[2]),
+        startColumn: Number(matches[3]),
+        endLine: Number(matches[4]),
+        endColumn: Number(matches[5]),
       };
     }
   } else {
@@ -75,8 +67,26 @@ function isWholeFileMatch(matches: RegExpExecArray): boolean {
  * the file path is empty. If so, we do not want to render this location
  * as a link.
  *
- * @param path A file path
+ * @param uri A file uri
  */
-function isEmptyPath(path: string) {
-  return !path || path === '/';
+function isEmptyPath(uriStr: string) {
+  return !uriStr || uriStr === 'file:/';
+}
+
+export function isLineColumnLoc(loc: UrlValue): loc is LineColumnLocation {
+  return typeof loc !== 'string'
+    && !isEmptyPath(loc.uri)
+    && 'startLine' in loc
+    && 'startColumn' in loc
+    && 'endLine' in loc
+    && 'endColumn' in loc
+    && loc.endColumn > 0;
+}
+
+export function isWholeFileLoc(loc: UrlValue): loc is WholeFileLocation {
+  return typeof loc !== 'string' && !isEmptyPath(loc.uri) && !isLineColumnLoc(loc);
+}
+
+export function isStringLoc(loc: UrlValue): loc is string {
+  return typeof loc === 'string';
 }

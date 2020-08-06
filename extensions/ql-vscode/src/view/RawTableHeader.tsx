@@ -3,10 +3,10 @@ import * as React from 'react';
 import { vscode } from './vscode-api';
 import { RawResultsSortState, SortDirection } from '../interface-types';
 import { nextSortDirection } from './result-table-utils';
-import { ColumnSchema } from '../bqrs-types';
+import { Column } from '../bqrs-cli-types';
 
 interface Props {
-  readonly columns: readonly ColumnSchema[];
+  readonly columns: readonly Column[];
   readonly schemaName: string;
   readonly sortState?: RawResultsSortState;
   readonly preventSort?: boolean;
@@ -31,9 +31,9 @@ function toggleSortStateForColumn(
     nextDirection === undefined
       ? undefined
       : {
-          columnIndex: index,
-          sortDirection: nextDirection,
-        };
+        columnIndex: index,
+        sortDirection: nextDirection,
+      };
   vscode.postMessage({
     t: 'changeSort',
     resultSetName: schemaName,
@@ -46,7 +46,7 @@ export default function RawTableHeader(props: Props) {
     <thead>
       <tr>
         {[
-           (
+          (
             <th key={-1}>
               <b>#</b>
             </th>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { LocationValue, ResolvableLocationValue } from '../bqrs-types';
+import { UrlValue, ResolvableLocationValue } from '../bqrs-cli-types';
 import { tryGetResolvableLocation } from '../bqrs-utils';
 import { RawResultsSortState, QueryMetadata, SortDirection } from '../interface-types';
 import { assertNever } from '../helpers-pure';
@@ -60,7 +60,7 @@ export function jumpToLocation(loc: ResolvableLocationValue, databaseUri: string
 /**
  * Render a location as a link which when clicked displays the original location.
  */
-export function renderLocation(loc: LocationValue | undefined, label: string | undefined,
+export function renderLocation(loc: UrlValue | undefined, label: string | undefined,
   databaseUri: string, title?: string, callback?: () => void): JSX.Element {
 
   // If the label was empty, use a placeholder instead, so the link is still clickable.

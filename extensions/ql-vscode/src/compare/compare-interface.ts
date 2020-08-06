@@ -19,8 +19,7 @@ import { Logger } from '../logging';
 import { CodeQLCliServer } from '../cli';
 import { DatabaseManager } from '../databases';
 import { getHtmlForWebview, jumpToLocation } from '../interface-utils';
-import { adaptSchema, adaptBqrs, RawResultSet } from '../adapt';
-import { BQRSInfo } from '../bqrs-cli-types';
+import { adaptBqrs, RawResultSet, BQRSInfo } from '../bqrs-cli-types';
 import resultsDiff from './resultsDiff';
 
 interface ComparePair {
@@ -257,8 +256,7 @@ export class CompareInterfaceManager extends DisposableObject {
       resultsPath,
       resultSetName
     );
-    const adaptedSchema = adaptSchema(schema);
-    return adaptBqrs(adaptedSchema, chunk);
+    return adaptBqrs(schema, chunk);
   }
 
   private compareResults(

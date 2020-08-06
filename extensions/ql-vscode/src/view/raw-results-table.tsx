@@ -4,7 +4,7 @@ import { RAW_RESULTS_LIMIT, RawResultsSortState } from '../interface-types';
 import { RawTableResultSet } from '../interface-types';
 import RawTableHeader from './RawTableHeader';
 import RawTableRow from './RawTableRow';
-import { ResultRow } from '../adapt';
+import { ResultRow } from '../bqrs-cli-types';
 
 export type RawTableProps = ResultTableProps & {
   resultSet: RawTableResultSet;

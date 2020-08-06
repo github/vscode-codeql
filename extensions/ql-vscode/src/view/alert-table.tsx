@@ -2,14 +2,14 @@ import * as path from 'path';
 import * as React from 'react';
 import * as Sarif from 'sarif';
 import * as Keys from '../result-keys';
-import { LocationStyle } from '../bqrs-types';
 import * as octicons from './octicons';
 import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection } from './result-table-utils';
 import { onNavigation, NavigationEvent } from './results';
 import { PathTableResultSet } from '../interface-types';
-import { parseSarifPlainTextMessage, parseSarifLocation } from '../sarif-utils';
+import { parseSarifPlainTextMessage, parseSarifLocation, isNoLocation } from '../sarif-utils';
 import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortState } from '../interface-types';
 import { vscode } from './vscode-api';
+import { isWholeFileLoc, isLineColumnLoc } from '../bqrs-utils';
 
 export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
 export interface PathTableState {
@@ -98,20 +98,18 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         relatedLocationsById[loc.id!] = loc;
       }
 
-      const result: JSX.Element[] = [];
       // match things like `[link-text](related-location-id)`
       const parts = parseSarifPlainTextMessage(msg);
 
-
-      for (const part of parts) {
+      return parts.map((part, i) => {
         if (typeof part === 'string') {
-          result.push(<span>{part} </span>);
+          return <span key={i}>{part}</span>;
         } else {
           const renderedLocation = renderSarifLocationWithText(part.text, relatedLocationsById[part.dest],
             undefined);
-          result.push(<span>{renderedLocation} </span>);
+          return <span key={i}>{renderedLocation}</span>;
         }
-      } return result;
+      });
     }
 
     function renderNonLocation(msg: string | undefined, locationHint: string): JSX.Element | undefined {
@@ -131,14 +129,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
     function renderSarifLocationWithText(text: string | undefined, loc: Sarif.Location, pathNodeKey: Keys.PathNode | undefined): JSX.Element | undefined {
       const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
-      switch (parsedLoc.t) {
-        case 'NoLocation':
-          return renderNonLocation(text, parsedLoc.hint);
-        case LocationStyle.FivePart:
-        case LocationStyle.WholeFile:
-          return renderLocation(parsedLoc, text, databaseUri, undefined, updateSelectionCallback(pathNodeKey));
+      if ('hint' in parsedLoc) {
+        return renderNonLocation(text, parsedLoc.hint);
+      } else if (isWholeFileLoc(parsedLoc) || isLineColumnLoc(parsedLoc)) {
+        return renderLocation(parsedLoc, text, databaseUri, undefined, updateSelectionCallback(pathNodeKey));
+      } else {
+        return undefined;
       }
-      return undefined;
     }
 
     /**
@@ -147,18 +144,18 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
      */
     function renderSarifLocation(loc: Sarif.Location, pathNodeKey: Keys.PathNode | undefined): JSX.Element | undefined {
       const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
-      let shortLocation, longLocation: string;
-      switch (parsedLoc.t) {
-        case 'NoLocation':
-          return renderNonLocation('[no location]', parsedLoc.hint);
-        case LocationStyle.WholeFile:
-          shortLocation = `${path.basename(parsedLoc.userVisibleFile)}`;
-          longLocation = `${parsedLoc.userVisibleFile}`;
-          return renderLocation(parsedLoc, shortLocation, databaseUri, longLocation, updateSelectionCallback(pathNodeKey));
-        case LocationStyle.FivePart:
-          shortLocation = `${path.basename(parsedLoc.userVisibleFile)}:${parsedLoc.lineStart}:${parsedLoc.colStart}`;
-          longLocation = `${parsedLoc.userVisibleFile}`;
-          return renderLocation(parsedLoc, shortLocation, databaseUri, longLocation, updateSelectionCallback(pathNodeKey));
+      if ('hint' in parsedLoc) {
+        return renderNonLocation('[no location]', parsedLoc.hint);
+      } else if (isWholeFileLoc(parsedLoc)) {
+        const shortLocation = `${path.basename(parsedLoc.userVisibleFile)}`;
+        const longLocation = `${parsedLoc.userVisibleFile}`;
+        return renderLocation(parsedLoc, shortLocation, databaseUri, longLocation, updateSelectionCallback(pathNodeKey));
+      } else if (isLineColumnLoc(parsedLoc)) {
+        const shortLocation = `${path.basename(parsedLoc.userVisibleFile)}:${parsedLoc.startLine}:${parsedLoc.startColumn}`;
+        const longLocation = `${parsedLoc.userVisibleFile}`;
+        return renderLocation(parsedLoc, shortLocation, databaseUri, longLocation, updateSelectionCallback(pathNodeKey));
+      } else {
+        return undefined;
       }
     }
 
@@ -290,10 +287,14 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       if (nextIndex < 0 || nextIndex >= path.locations.length) return prevState;
 
       const sarifLoc = path.locations[nextIndex].location;
-      if (sarifLoc === undefined) return prevState;
+      if (sarifLoc === undefined) {
+        return prevState;
+      }
 
       const loc = parseSarifLocation(sarifLoc, this.props.resultSet.sourceLocationPrefix);
-      if (loc.t === 'NoLocation') return prevState;
+      if (isNoLocation(loc)) {
+        return prevState;
+      }
 
       jumpToLocation(loc, this.props.databaseUri);
       const newSelection = { ...selectedPathNode, pathNodeIndex: nextIndex };

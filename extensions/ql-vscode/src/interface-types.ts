@@ -1,10 +1,5 @@
 import * as sarif from 'sarif';
-import {
-  ResolvableLocationValue,
-  ColumnSchema,
-  ResultSetSchema,
-} from './bqrs-types';
-import { ResultRow, ParsedResultSets, RawResultSet } from './adapt';
+import { RawResultSet, ResultRow, ResultSetSchema, Column, ResolvableLocationValue } from './bqrs-cli-types';
 
 /**
  * This module contains types and code that are shared between
@@ -243,7 +238,7 @@ export interface SetComparisonsMessage {
       time: string;
     };
   };
-  readonly columns: readonly ColumnSchema[];
+  readonly columns: readonly Column[];
   readonly commonResultSetNames: string[];
   readonly currentResultSetName: string;
   readonly rows: QueryCompareResult | undefined;
@@ -292,4 +287,13 @@ export function getDefaultResultSetName(
     SELECT_TABLE_NAME,
     resultSetNames[0],
   ].filter((resultSetName) => resultSetNames.includes(resultSetName))[0];
+}
+
+export interface ParsedResultSets {
+  pageNumber: number;
+  numPages: number;
+  numInterpretedPages: number;
+  selectedTable?: string; // when undefined, means 'show default table'
+  resultSetNames: string[];
+  resultSet: ResultSet;
 }
