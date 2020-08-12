@@ -6,6 +6,7 @@
 - Fix pagination when there are no results.
 - Suppress database downloaded from URL message when action canceled.
 - Fix QL test discovery to avoid showing duplicate tests in the test explorer.
+- Enable pagination of query results
 - Add experimental AST Viewer for Go and C++. To enable, add `"codeQL.experimentalAstViewer": true` to the user settings file.
 
 ## 1.3.1 - 7 July 2020
