@@ -207,7 +207,6 @@ export class InterfaceManager extends DisposableObject {
   }
 
   private async changeRawSortState(
-    server: cli.CodeQLCliServer,
     resultSetName: string,
     sortState: RawResultsSortState | undefined
   ): Promise<void> {
@@ -220,7 +219,7 @@ export class InterfaceManager extends DisposableObject {
     // Notify the webview that it should expect new results.
     await this.postMessage({ t: 'resultsUpdating' });
     await this._displayedQuery.updateSortState(
-      server,
+      this.cliServer,
       resultSetName,
       sortState
     );
@@ -261,7 +260,7 @@ export class InterfaceManager extends DisposableObject {
         this._panelLoadedCallBacks = [];
         break;
       case 'changeSort':
-        await this.changeRawSortState(this.cliServer, msg.resultSetName, msg.sortState);
+        await this.changeRawSortState(msg.resultSetName, msg.sortState);
         break;
       case 'changeInterpretedSort':
         await this.changeInterpretedSortState(msg.sortState);
