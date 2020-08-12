@@ -29,6 +29,7 @@ import {
   RAW_RESULTS_PAGE_SIZE,
   INTERPRETED_RESULTS_PAGE_SIZE,
   ALERTS_TABLE_NAME,
+  RawResultsSortState,
 } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
@@ -190,8 +191,8 @@ export class InterfaceManager extends DisposableObject {
     return this._panel;
   }
 
-  private async changeSortState(
-    update: (query: CompletedQuery) => Promise<void>
+  private async changeInterpretedSortState(
+    sortState: InterpretedResultsSortState | undefined
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
       showAndLogErrorMessage(
@@ -201,7 +202,28 @@ export class InterfaceManager extends DisposableObject {
     }
     // Notify the webview that it should expect new results.
     await this.postMessage({ t: 'resultsUpdating' });
-    await update(this._displayedQuery);
+    this._displayedQuery.updateInterpretedSortState(sortState);
+    await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
+  }
+
+  private async changeRawSortState(
+    server: cli.CodeQLCliServer,
+    resultSetName: string,
+    sortState: RawResultsSortState | undefined
+  ): Promise<void> {
+    if (this._displayedQuery === undefined) {
+      showAndLogErrorMessage(
+        'Failed to sort results since evaluation info was unknown.'
+      );
+      return;
+    }
+    // Notify the webview that it should expect new results.
+    await this.postMessage({ t: 'resultsUpdating' });
+    this._displayedQuery.updateSortState(
+      server,
+      resultSetName,
+      sortState
+    );
     await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
   }
 
@@ -235,18 +257,10 @@ export class InterfaceManager extends DisposableObject {
         this._panelLoadedCallBacks = [];
         break;
       case 'changeSort':
-        await this.changeSortState(query =>
-          query.updateSortState(
-            this.cliServer,
-            msg.resultSetName,
-            msg.sortState
-          )
-        );
+        await this.changeRawSortState(this.cliServer, msg.resultSetName, msg.sortState);
         break;
       case 'changeInterpretedSort':
-        await this.changeSortState(query =>
-          query.updateInterpretedSortState(this.cliServer, msg.sortState)
-        );
+        await this.changeInterpretedSortState(msg.sortState);
         break;
       case 'changePage':
         if (msg.selectedTable === ALERTS_TABLE_NAME) {
