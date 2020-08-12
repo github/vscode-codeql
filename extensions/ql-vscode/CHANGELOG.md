@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [Unreleased]
+## 1.3.2 - 12 August 2020
 
 - Fix error with choosing qlpack search path.
 - Fix pagination when there are no results.
