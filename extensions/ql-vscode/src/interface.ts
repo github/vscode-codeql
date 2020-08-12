@@ -219,12 +219,16 @@ export class InterfaceManager extends DisposableObject {
     }
     // Notify the webview that it should expect new results.
     await this.postMessage({ t: 'resultsUpdating' });
-    this._displayedQuery.updateSortState(
+    await this._displayedQuery.updateSortState(
       server,
       resultSetName,
       sortState
     );
-    await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
+    // Sorting resets to first page, as there is arguably no particular
+    // correlation between the results on the nth page that the user
+    // was previously viewing and the contents of the nth page in a
+    // new sorted order.
+    await this.showPageOfRawResults(resultSetName, 0, true);
   }
 
   private async handleMsgFromView(msg: FromResultsViewMsg): Promise<void> {
@@ -437,7 +441,8 @@ export class InterfaceManager extends DisposableObject {
    */
   public async showPageOfRawResults(
     selectedTable: string,
-    pageNumber: number
+    pageNumber: number,
+    sorted = false
   ): Promise<void> {
     const results = this._displayedQuery;
     if (results === undefined) {
@@ -459,8 +464,21 @@ export class InterfaceManager extends DisposableObject {
     if (schema === undefined)
       throw new Error(`Query result set '${selectedTable}' not found.`);
 
+    const getResultsPath = () => {
+      if (sorted) {
+        const resultsPath = results.sortedResultsInfo.get(selectedTable)?.resultsPath;
+        if (resultsPath === undefined) {
+          throw new Error(`Can't find sorted results for table ${selectedTable}`);
+        }
+        return resultsPath;
+      }
+      else {
+        return results.query.resultsPaths.resultsPath;
+      }
+    };
+
     const chunk = await this.cliServer.bqrsDecode(
-      results.query.resultsPaths.resultsPath,
+      getResultsPath(),
       schema.name,
       {
         offset: schema.pagination?.offsets[pageNumber],
