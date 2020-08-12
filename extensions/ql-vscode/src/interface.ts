@@ -29,6 +29,7 @@ import {
   RAW_RESULTS_PAGE_SIZE,
   INTERPRETED_RESULTS_PAGE_SIZE,
   ALERTS_TABLE_NAME,
+  RawResultsSortState,
 } from './interface-types';
 import { Logger } from './logging';
 import * as messages from './messages';
@@ -190,8 +191,8 @@ export class InterfaceManager extends DisposableObject {
     return this._panel;
   }
 
-  private async changeSortState(
-    update: (query: CompletedQuery) => Promise<void>
+  private async changeInterpretedSortState(
+    sortState: InterpretedResultsSortState | undefined
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
       showAndLogErrorMessage(
@@ -201,8 +202,32 @@ export class InterfaceManager extends DisposableObject {
     }
     // Notify the webview that it should expect new results.
     await this.postMessage({ t: 'resultsUpdating' });
-    await update(this._displayedQuery);
+    this._displayedQuery.updateInterpretedSortState(sortState);
     await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
+  }
+
+  private async changeRawSortState(
+    resultSetName: string,
+    sortState: RawResultsSortState | undefined
+  ): Promise<void> {
+    if (this._displayedQuery === undefined) {
+      showAndLogErrorMessage(
+        'Failed to sort results since evaluation info was unknown.'
+      );
+      return;
+    }
+    // Notify the webview that it should expect new results.
+    await this.postMessage({ t: 'resultsUpdating' });
+    await this._displayedQuery.updateSortState(
+      this.cliServer,
+      resultSetName,
+      sortState
+    );
+    // Sorting resets to first page, as there is arguably no particular
+    // correlation between the results on the nth page that the user
+    // was previously viewing and the contents of the nth page in a
+    // new sorted order.
+    await this.showPageOfRawResults(resultSetName, 0, true);
   }
 
   private async handleMsgFromView(msg: FromResultsViewMsg): Promise<void> {
@@ -235,18 +260,10 @@ export class InterfaceManager extends DisposableObject {
         this._panelLoadedCallBacks = [];
         break;
       case 'changeSort':
-        await this.changeSortState(query =>
-          query.updateSortState(
-            this.cliServer,
-            msg.resultSetName,
-            msg.sortState
-          )
-        );
+        await this.changeRawSortState(msg.resultSetName, msg.sortState);
         break;
       case 'changeInterpretedSort':
-        await this.changeSortState(query =>
-          query.updateInterpretedSortState(this.cliServer, msg.sortState)
-        );
+        await this.changeInterpretedSortState(msg.sortState);
         break;
       case 'changePage':
         if (msg.selectedTable === ALERTS_TABLE_NAME) {
@@ -423,7 +440,8 @@ export class InterfaceManager extends DisposableObject {
    */
   public async showPageOfRawResults(
     selectedTable: string,
-    pageNumber: number
+    pageNumber: number,
+    sorted = false
   ): Promise<void> {
     const results = this._displayedQuery;
     if (results === undefined) {
@@ -445,8 +463,21 @@ export class InterfaceManager extends DisposableObject {
     if (schema === undefined)
       throw new Error(`Query result set '${selectedTable}' not found.`);
 
+    const getResultsPath = () => {
+      if (sorted) {
+        const resultsPath = results.sortedResultsInfo.get(selectedTable)?.resultsPath;
+        if (resultsPath === undefined) {
+          throw new Error(`Can't find sorted results for table ${selectedTable}`);
+        }
+        return resultsPath;
+      }
+      else {
+        return results.query.resultsPaths.resultsPath;
+      }
+    };
+
     const chunk = await this.cliServer.bqrsDecode(
-      results.query.resultsPaths.resultsPath,
+      getResultsPath(),
       schema.name,
       {
         offset: schema.pagination?.offsets[pageNumber],

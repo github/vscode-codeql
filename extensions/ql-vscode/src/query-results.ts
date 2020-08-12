@@ -117,7 +117,7 @@ export class CompletedQuery implements QueryWithResults {
     this.sortedResultsInfo.set(resultSetName, sortedResultSetInfo);
   }
 
-  async updateInterpretedSortState(_server: cli.CodeQLCliServer, sortState: InterpretedResultsSortState | undefined): Promise<void> {
+  async updateInterpretedSortState(sortState: InterpretedResultsSortState | undefined): Promise<void> {
     this.interpretedResultsSortState = sortState;
   }
 }
