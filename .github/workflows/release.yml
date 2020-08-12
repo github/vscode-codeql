@@ -114,6 +114,12 @@ jobs:
           NEXT_VERSION="$(npm version patch)"
           echo "::set-output name=next_version::$NEXT_VERSION"
 
+      - name: Add changelog for next release
+        if: success()
+        run: |
+          cd extensions/ql-vscode
+          perl -i -pe 's/^/## \[UNRELEASED\]\n\n/ if($.==3)' CHANGELOG.md
+
       - name: Create version bump PR
         uses: peter-evans/create-pull-request@c7b64af0a489eae91f7890f2c1b63d13cc2d8ab7 # v2.4.2
         if: success()
