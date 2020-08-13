@@ -73,7 +73,7 @@ export function adaptValue(val: ColumnValue): ResultValue {
   }
 
   if (url === undefined) {
-    return val.label || 'no label';
+    return val.label || '';
   }
 
   return {
