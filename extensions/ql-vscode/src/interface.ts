@@ -270,7 +270,15 @@ export class InterfaceManager extends DisposableObject {
           await this.showPageOfInterpretedResults(msg.pageNumber);
         }
         else {
-          await this.showPageOfRawResults(msg.selectedTable, msg.pageNumber);
+          await this.showPageOfRawResults(
+            msg.selectedTable,
+            msg.pageNumber,
+            // When we are in an unsorted state, we guarantee that
+            // sortedResultsInfo doesn't have an entry for the current
+            // result set. Use this to determine whether or not we use
+            // the sorted bqrs file.
+            this._displayedQuery?.sortedResultsInfo.has(msg.selectedTable) || false
+          );
         }
         break;
       default:
