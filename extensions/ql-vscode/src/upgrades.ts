@@ -157,7 +157,11 @@ export async function upgradeDatabase(
 
   try {
     qs.logger.log('Running the following database upgrade:');
-    qs.logger.log(compileUpgradeResult.compiledUpgrades.scripts.map(s => s.description.description).join('\n'));
+    if (compileUpgradeResult.compiledUpgrades.compiledUpgradeFile === undefined) {
+      qs.logger.log(compileUpgradeResult.compiledUpgrades.scripts.map(s => s.description.description).join('\n'));
+    } else {
+      qs.logger.log(compileUpgradeResult.compiledUpgrades.descriptions.map(s => s.description).join('\n'));
+    }
     return await runDatabaseUpgrade(qs, db, compileUpgradeResult.compiledUpgrades, progress, token);
   }
   catch (e) {
@@ -192,7 +196,8 @@ async function compileDatabaseUpgrade(
 ): Promise<messages.CompileUpgradeResult> {
   const params: messages.CompileUpgradeParams = {
     upgrade: upgradeParams,
-    upgradeTempDir: upgradesTmpDir.name
+    upgradeTempDir: upgradesTmpDir.name,
+    singleFileUpgrades: true
   };
 
   progress({
