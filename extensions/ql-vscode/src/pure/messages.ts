@@ -401,6 +401,11 @@ export interface CompileUpgradeParams {
    * A directory to store parts of the compiled upgrade
    */
   upgradeTempDir: string;
+  /** 
+   * Enable single file upgrades, set to true to allow
+   * using single file upgrades.
+   */
+  singleFileUpgrades?: boolean;
 }
 
 /**
@@ -487,10 +492,42 @@ export interface UpgradeDescription {
   newSha: string;
 }
 
+
+export type CompiledUpgrades = MultiFileCompiledUpgrades | SingleFileCompiledUpgrade
+
 /**
- * A compiled upgrade.
+ * A compiled upgrade. 
+ * The upgrade is spread among multiple files.
  */
-export interface CompiledUpgrades {
+export interface MultiFileCompiledUpgrades {
+  /**
+  * The initial sha of the dbscheme to upgrade from
+  */
+  initialSha: string;
+  /**
+   * The path to the new dataset statistics
+   */
+  newStatsPath: string;
+  /**
+   * The path to the new dataset dbscheme
+   */
+  newDbscheme: string;
+  /**
+   * The steps in the upgrade path
+   */
+  scripts: CompiledUpgradeScript[];
+  /**
+   * Will never exist in an old result
+   */
+  compiledUpgradeFile?: never;
+  /**
+   * The sha of the target dataset.
+   */
+  targetSha: string;
+}
+
+
+export interface SingleFileCompiledUpgrade {
   /**
   * The initial sha of the dbscheme to upgrade from
   */
@@ -502,7 +539,11 @@ export interface CompiledUpgrades {
   /**
    * The steps in the upgrade path
    */
-  scripts: CompiledUpgradeScript[];
+  descriptions: UpgradeDescription[];
+  /**
+   * The file containing the upgrade
+   */
+  compiledUpgradeFile: string;
   /**
    * The sha of the target dataset.
    */
