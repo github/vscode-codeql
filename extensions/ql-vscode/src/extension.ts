@@ -408,7 +408,11 @@ async function activateWithInstalledDistribution(
         await showResultsForCompletedQuery(item, WebviewReveal.NotForced);
       } catch (e) {
         if (e instanceof UserCancellationException) {
-          helpers.showAndLogWarningMessage(e.message);
+          if (e.silent) {
+            logger.log(e.message);
+          } else {
+            helpers.showAndLogWarningMessage(e.message);
+          }
         } else if (e instanceof Error) {
           helpers.showAndLogErrorMessage(e.message);
         } else {

@@ -3,7 +3,7 @@
 ## 1.3.3 - [UNRELEASED]
 
 - Fix display of raw results entities with label but no url.
-- Fix bug where sort order is forgotten when changing raw results page
+- Fix bug where sort order is forgotten when changing raw results page.
 
 ## 1.3.2 - 12 August 2020
 
