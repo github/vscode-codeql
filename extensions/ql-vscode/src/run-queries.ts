@@ -34,7 +34,15 @@ export const tmpDirDisposal = {
   }
 };
 
-export class UserCancellationException extends Error { }
+export class UserCancellationException extends Error {
+  /**
+   * @param message The error message
+   * @param silent If silent is true, then this exception will avoid showing a warning message to the user.
+   */
+  constructor(message?: string, public readonly silent = false) {
+    super(message);
+  }
+}
 
 /**
  * A collection of evaluation-time information about a query,
@@ -307,7 +315,11 @@ async function checkDbschemeCompatibility(
 
 /**
  * Prompts the user to save `document` if it has unsaved changes.
- * Returns true if we should save changes.
+ *
+ * @param document The document to save.
+ *
+ * @returns true if we should save changes and false if we should continue without saving changes.
+ * @throws UserCancellationException if we should abort whatever operation triggered this prompt
  */
 async function promptUserToSaveChanges(document: vscode.TextDocument): Promise<boolean> {
   if (document.isDirty) {
@@ -317,9 +329,14 @@ async function promptUserToSaveChanges(document: vscode.TextDocument): Promise<b
     else {
       const yesItem = { title: 'Yes', isCloseAffordance: false };
       const alwaysItem = { title: 'Always Save', isCloseAffordance: false };
-      const noItem = { title: 'No', isCloseAffordance: true };
+      const noItem = { title: 'No (run anyway)', isCloseAffordance: false };
+      const cancelItem = { title: 'Cancel', isCloseAffordance: true };
       const message = 'Query file has unsaved changes. Save now?';
-      const chosenItem = await vscode.window.showInformationMessage(message, { modal: true }, yesItem, alwaysItem, noItem);
+      const chosenItem = await vscode.window.showInformationMessage(
+        message,
+        { modal: true },
+        yesItem, alwaysItem, noItem, cancelItem
+      );
 
       if (chosenItem === alwaysItem) {
         await config.AUTOSAVE_SETTING.updateValue(true, vscode.ConfigurationTarget.Workspace);
@@ -328,6 +345,10 @@ async function promptUserToSaveChanges(document: vscode.TextDocument): Promise<b
 
       if (chosenItem === yesItem) {
         return true;
+      }
+
+      if (chosenItem === cancelItem) {
+        throw new UserCancellationException('Query run cancelled.', true);
       }
     }
   }
