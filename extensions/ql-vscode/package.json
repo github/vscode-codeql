@@ -630,7 +630,7 @@
       },
       {
         "view": "codeQLQueryHistory",
-        "contents": "Run the 'CodeQL: Run Query' command on QL query.\n[Run Query](command:codeQL.runQuery)"
+        "contents": "Run the 'CodeQL: Run Query' command on a QL query.\n[Run Query](command:codeQL.runQuery)"
       }
     ]
   },
