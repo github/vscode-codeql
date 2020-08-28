@@ -99,6 +99,12 @@ repository:
   comment-start:
     match: '// | /\*'
 
+  # A pattern that can start a run of whitespace or a comment.
+  # Commonly used as a negative lookahead in the `end` regex of a nonterminal, when searching for
+  # tokens that can't start a child of that nonterminal.
+  whitespace-or-comment-start:
+    match: '\s | $ | (?#comment-start)'
+
   # All tokens that can appear in any context.
   non-context-sensitive:
     patterns:
@@ -113,7 +119,7 @@ repository:
     name: keyword.operator.relational.ql
   
   comparison-operator:
-    match: '=|\!-'
+    match: '=|\!\='
     name: keyword.operator.comparison.ql
   
   arithmetic-operator:
@@ -610,6 +616,12 @@ repository:
     - include: '#import-directive'
     - include: '#import-as-clause'
     - include: '#module-declaration'
+    - include: '#newtype-declaration'
+    # See the comment on newtype-declaration for why we include these next three nonterminals at the
+    # module-member level instead of as part of the newtype-declaration.
+    - include: '#newtype-branch-name-with-prefix'
+    - include: '#predicate-parameter-list'
+    - include: '#predicate-body'
     - include: '#class-declaration'
     - include: '#select-clause'
     - include: '#predicate-or-field-declaration'
@@ -781,7 +793,7 @@ repository:
   bindingset-annotation:
     beginPattern: '#bindingset'
     # Ends after the next `]`, or when we encounter something other than a `[`.
-    end: '(?! \s | (?#comment-start) | \[ ) |
+    end: '(?! (?#whitespace-or-comment-start) | \[ ) |
           (?<=\])'
     name: meta.block.bindingset-annotation.ql
     patterns:
@@ -802,7 +814,7 @@ repository:
   language-annotation:
     beginPattern: '#language'
     # Ends after the next `]`, or when we encounter something other than a `[`.
-    end: '(?! \s | (?#comment-start) | \[ ) |
+    end: '(?! (?#whitespace-or-comment-start) | \[ ) |
           (?<=\])'
     name: meta.block.language-annotation.ql
     patterns:
@@ -824,7 +836,7 @@ repository:
   pragma-annotation:
     beginPattern: '#pragma'
     # Ends after the next `]`, or when we encounter something other than a `[`.
-    end: '(?! \s | (?#comment-start) | \[ ) |
+    end: '(?! (?#whitespace-or-comment-start) | \[ ) |
           (?<=\])'
     name: meta.block.pragma-annotation.ql
     patterns:
@@ -841,34 +853,53 @@ repository:
       name: storage.modifier.ql
 
   # The declaration of an IPA type.
+  # This only includes the `newtype` keyword and the identifier for the IPA type itself. The
+  # branches of the IPA type are modeled as separate nonterminals contained directly in the module
+  # body. This is kind of hacky, but without it, we don't seem to have a way to get TextMate to
+  # handle this:
+  # ```ql
+  # newtype TRoot =
+  #   TBranch1(int x) {
+  #     x = 5
+  #   } or
+  #   TBranch2()  // No body
+  #
+  # TOther getOther() { any() }
+  # ```
+  # If the branches are within the newtype declaration node, it's very hard to get the upper-id for
+  # the name of the IPA type to be included in the newtype declaration node, without also including
+  # the `TOther` upper-id in the declaration node.
   newtype-declaration:
     beginPattern: '#newtype'
-    # Ends when we see something other than one of:
-    # - An upper-id (branch name)
-    # - A comment
-    # - Whitespace
-    # - `=`
-    # - `(`
-    end: '(?! \s | (?#upper-id) | (?#comment-start) | \= | \( )'
-    name: meta.block.newtype.ql
-    patterns:
-    - include: '#non-context-sensitive'
-    - include: '#newtype-branch'
-
-  # The branch of an IPA type.
-  newtype-branch:
-    begin: '(?#upper-id)'
-    beginCaptures:
+    # We're expecting a newtype-declaration-without-keyword immediately after the `newtype` keyword,
+    # so end if we see anything other than the upper-id that starts it, or whitespace, or a comment.
+    # An upper-id can't start anything else at module scope, so once we see the rest of this
+    # newtype-declaration, whatever comes next should end this block.
+    end: '(?#upper-id)'
+    endCaptures:
       '0':
         name: entity.name.type.ql
-    # Ends after a `}`, or when we encounter something other than a `{`.
-    end: '(?<=\}) | (?! \s | (?#comment-start) | \{ )'
-    name: meta.block.newtype-branch.ql
+    name: meta.block.newtype-declaration.ql
     patterns:
-    - include: '#predicate-body'
     - include: '#non-context-sensitive'
-    - match: '(?#upper-id)'
-      name: entity.name.type.ql
+
+  # A branch of an IPA type, including just the `=` or `or` prefix and the name of the branch.
+  # The parameter list and body are separate nonterminals contained directly within the module body.
+  # See the comment for newtype-declaration for why.
+  newtype-branch-name-with-prefix:
+    begin: '\= | (?#or)'
+    beginCaptures:
+      '0':
+        patterns:
+        - include: '#or'
+        - include: '#comparison-operator'
+    end: '(?#upper-id)'
+    endCaptures:
+      '0':
+        name: entity.name.type.ql
+    name: meta.block.newtype-branch-name-with-prefix.ql
+    patterns:
+    - include: '#non-context-sensitive'
 
   # The declaration of a class, include an alias.
   class-declaration:
