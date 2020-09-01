@@ -119,6 +119,26 @@ describe('interface-utils', () => {
       );
     });
 
+    it('should resolve a five-part location with an empty path', () => {
+      const mockDatabaseItem: DatabaseItem = ({
+        resolveSourceFile: sinon.stub().returns(vscode.Uri.parse('abc')),
+      } as unknown) as DatabaseItem;
+
+      expect(
+        tryResolveLocation(
+          {
+            t: LocationStyle.FivePart,
+            colStart: 1,
+            colEnd: 3,
+            lineStart: 4,
+            lineEnd: 5,
+            file: '',
+          },
+          mockDatabaseItem
+        )
+      ).to.be.undefined;
+    });
+
     it('should resolve a string location for whole file', () => {
       const mockDatabaseItem: DatabaseItem = ({
         resolveSourceFile: sinon.stub().returns(vscode.Uri.parse('abc')),

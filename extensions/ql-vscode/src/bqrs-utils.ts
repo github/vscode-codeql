@@ -16,17 +16,24 @@ const FILE_LOCATION_REGEX = /file:\/\/(.+):([0-9]+):([0-9]+):([0-9]+):([0-9]+)/;
 export function tryGetResolvableLocation(
   loc: LocationValue | undefined
 ): ResolvableLocationValue | undefined {
+  let resolvedLoc;
   if (loc === undefined) {
-    return undefined;
+    resolvedLoc = undefined;
   } else if (loc.t === LocationStyle.FivePart && loc.file) {
-    return loc;
+    resolvedLoc = loc;
   } else if (loc.t === LocationStyle.WholeFile && loc.file) {
-    return loc;
+    resolvedLoc = loc;
   } else if (loc.t === LocationStyle.String && loc.loc) {
-    return tryGetLocationFromString(loc);
+    resolvedLoc = tryGetLocationFromString(loc);
   } else {
-    return undefined;
+    resolvedLoc = undefined;
   }
+
+  if (resolvedLoc && isEmptyPath(resolvedLoc.file)) {
+    resolvedLoc = undefined;
+  }
+
+  return resolvedLoc;
 }
 
 export function tryGetLocationFromString(
@@ -61,4 +68,15 @@ function isWholeFileMatch(matches: RegExpExecArray): boolean {
     matches[4] === '0' &&
     matches[5] === '0'
   );
+}
+
+/**
+ * Checks whether the file path is empty. For now, just check whether
+ * the file path is empty. If so, we do not want to render this location
+ * as a link.
+ *
+ * @param path A file path
+ */
+function isEmptyPath(path: string) {
+  return !path || path === '/';
 }
