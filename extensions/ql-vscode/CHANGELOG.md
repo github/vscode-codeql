@@ -4,6 +4,7 @@
 
 - Fix display of raw results entities with label but no url.
 - Fix bug where sort order is forgotten when changing raw results page.
+- Avoid showing a location link in results view when a result item has an empty location.
 
 ## 1.3.2 - 12 August 2020
 
