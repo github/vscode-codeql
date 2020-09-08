@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.3.3 - [UNRELEASED]
 
 - Fix display of raw results entities with label but no url.
