@@ -7,6 +7,9 @@ export interface SarifLink {
   text: string;
 }
 
+// The type of a result that has no associated location.
+// hint is a string intended for display to the user
+// that explains why there is no location.
 interface NoLocation {
   hint: string;
 }
@@ -85,7 +88,6 @@ export function parseSarifLocation(
   // file uri or a relative uri.
   const uri = physicalLocation.artifactLocation.uri;
 
-  // FIXME: This is probably wrong
   const fileUriRegex = /^file:/;
   const effectiveLocation = uri.match(fileUriRegex)
     ? uri

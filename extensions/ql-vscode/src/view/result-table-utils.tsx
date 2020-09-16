@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { UrlValue, ResolvableLocationValue } from '../bqrs-cli-types';
-import { tryGetResolvableLocation } from '../bqrs-utils';
+import { isStringLoc, tryGetResolvableLocation } from '../bqrs-utils';
 import { RawResultsSortState, QueryMetadata, SortDirection } from '../interface-types';
 import { assertNever } from '../helpers-pure';
 import { ResultSet } from '../interface-types';
@@ -60,28 +60,41 @@ export function jumpToLocation(loc: ResolvableLocationValue, databaseUri: string
 /**
  * Render a location as a link which when clicked displays the original location.
  */
-export function renderLocation(loc: UrlValue | undefined, label: string | undefined,
-  databaseUri: string, title?: string, callback?: () => void): JSX.Element {
+export function renderLocation(
+  loc: UrlValue | undefined,
+  label: string | undefined,
+  databaseUri: string,
+  title?: string,
+  callback?: () => void
+): JSX.Element {
+
+  if (loc === undefined) {
+    return <span />;
+  } else if (isStringLoc(loc)) {
+    return <a href={loc}>{loc}</a>;
+  }
 
   // If the label was empty, use a placeholder instead, so the link is still clickable.
   let displayLabel = label;
-  if (label === undefined || label === '')
+  if (!label) {
     displayLabel = '[empty string]';
-  else if (label.match(/^\s+$/))
+  } else if (label.match(/^\s+$/)) {
     displayLabel = `[whitespace: "${label}"]`;
+  }
 
-  if (loc !== undefined) {
-    const resolvableLoc = tryGetResolvableLocation(loc);
-    if (resolvableLoc !== undefined) {
-      return <a href="#"
+  const resolvableLoc = tryGetResolvableLocation(loc);
+  if (resolvableLoc !== undefined) {
+    return (
+      <a href="#"
         className="vscode-codeql__result-table-location-link"
         title={title}
-        onClick={jumpToLocationHandler(resolvableLoc, databaseUri, callback)}>{displayLabel}</a>;
-    } else {
-      return <span title={title}>{displayLabel}</span>;
-    }
+        onClick={jumpToLocationHandler(resolvableLoc, databaseUri, callback)}>
+        {displayLabel}
+      </a>
+    );
+  } else {
+    return <span title={title}>{displayLabel}</span>;
   }
-  return <span />;
 }
 
 /**

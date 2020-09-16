@@ -132,7 +132,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       if ('hint' in parsedLoc) {
         return renderNonLocation(text, parsedLoc.hint);
       } else if (isWholeFileLoc(parsedLoc) || isLineColumnLoc(parsedLoc)) {
-        return renderLocation(parsedLoc, text, databaseUri, undefined, updateSelectionCallback(pathNodeKey));
+        return renderLocation(
+          parsedLoc,
+          text,
+          databaseUri,
+          undefined,
+          updateSelectionCallback(pathNodeKey)
+        );
       } else {
         return undefined;
       }
@@ -142,18 +148,33 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
      * Render sarif location as a link with the text being simply a
      * human-readable form of the location itself.
      */
-    function renderSarifLocation(loc: Sarif.Location, pathNodeKey: Keys.PathNode | undefined): JSX.Element | undefined {
+    function renderSarifLocation(
+      loc: Sarif.Location,
+      pathNodeKey: Keys.PathNode | undefined
+    ): JSX.Element | undefined {
       const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
       if ('hint' in parsedLoc) {
         return renderNonLocation('[no location]', parsedLoc.hint);
       } else if (isWholeFileLoc(parsedLoc)) {
         const shortLocation = `${path.basename(parsedLoc.userVisibleFile)}`;
         const longLocation = `${parsedLoc.userVisibleFile}`;
-        return renderLocation(parsedLoc, shortLocation, databaseUri, longLocation, updateSelectionCallback(pathNodeKey));
+        return renderLocation(
+          parsedLoc,
+          shortLocation,
+          databaseUri,
+          longLocation,
+          updateSelectionCallback(pathNodeKey)
+        );
       } else if (isLineColumnLoc(parsedLoc)) {
         const shortLocation = `${path.basename(parsedLoc.userVisibleFile)}:${parsedLoc.startLine}:${parsedLoc.startColumn}`;
         const longLocation = `${parsedLoc.userVisibleFile}`;
-        return renderLocation(parsedLoc, shortLocation, databaseUri, longLocation, updateSelectionCallback(pathNodeKey));
+        return renderLocation(
+          parsedLoc,
+          shortLocation,
+          databaseUri,
+          longLocation,
+          updateSelectionCallback(pathNodeKey)
+        );
       } else {
         return undefined;
       }
@@ -163,9 +184,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return (e) => this.toggle(e, indices);
     };
 
-    if (resultSet.sarif.runs.length === 0 ||
-      resultSet.sarif.runs[0].results === undefined ||
-      resultSet.sarif.runs[0].results.length === 0) {
+    if (!resultSet.sarif.runs?.[0]?.results?.length) {
       return this.renderNoResults();
     }
 
@@ -202,7 +221,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           [expansionIndex];
 
         rows.push(
-          <tr {...zebraStripe(resultIndex)}>
+          <tr {...zebraStripe(resultIndex)} key={resultIndex}>
             <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(indices)}>
               {indicator}
             </td>
@@ -223,7 +242,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           if (currentResultExpanded) {
             const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
             rows.push(
-              <tr {...zebraStripe(resultIndex)}>
+              <tr {...zebraStripe(resultIndex)} key={`${resultIndex}-${pathIndex}`}>
                 <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                 <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler([expansionIndex])}>{indicator}</td>
                 <td className="vscode-codeql__text-center" colSpan={3}>
@@ -249,7 +268,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
               const stepIndex = pathNodeIndex + 1; // Convert to 1-based
               const zebraIndex = resultIndex + stepIndex;
               rows.push(
-                <tr className={isSelected ? 'vscode-codeql__selected-path-node' : undefined}>
+                <tr className={isSelected ? 'vscode-codeql__selected-path-node' : undefined} key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}>
                   <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                   <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                   <td {...selectableZebraStripe(isSelected, zebraIndex, 'vscode-codeql__path-index-cell')}>{stepIndex}</td>
@@ -264,9 +283,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     });
 
     if (numTruncatedResults > 0) {
-      rows.push(<tr><td colSpan={5} style={{ textAlign: 'center', fontStyle: 'italic' }}>
-        Too many results to show at once. {numTruncatedResults} result(s) omitted.
-      </td></tr>);
+      rows.push(
+        <tr key="truncatd-message">
+          <td colSpan={5} style={{ textAlign: 'center', fontStyle: 'italic' }}>
+            Too many results to show at once. {numTruncatedResults} result(s) omitted.
+          </td>
+        </tr>
+      );
     }
 
     return <table className={className}>

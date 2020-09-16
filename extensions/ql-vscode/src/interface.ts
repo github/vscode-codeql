@@ -46,7 +46,7 @@ import {
   jumpToLocation,
 } from './interface-utils';
 import { getDefaultResultSetName, ParsedResultSets } from './interface-types';
-import { RawResultSet, adaptBqrs, ResultSetSchema } from './bqrs-cli-types';
+import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './bqrs-cli-types';
 
 /**
  * interface.ts
@@ -372,7 +372,7 @@ export class InterfaceManager extends DisposableObject {
           pageSize: RAW_RESULTS_PAGE_SIZE
         }
       );
-      const resultSet = adaptBqrs(schema, chunk);
+      const resultSet = transformBqrsResultSet(schema, chunk);
       return {
         pageNumber: 0,
         numPages: numPagesOfResultSet(resultSet),
@@ -485,7 +485,7 @@ export class InterfaceManager extends DisposableObject {
         pageSize: RAW_RESULTS_PAGE_SIZE
       }
     );
-    const resultSet = adaptBqrs(schema, chunk);
+    const resultSet = transformBqrsResultSet(schema, chunk);
 
     const parsedResultSets: ParsedResultSets = {
       pageNumber,

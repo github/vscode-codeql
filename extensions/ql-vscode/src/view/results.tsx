@@ -11,7 +11,7 @@ import {
   QueryMetadata,
   ResultsPaths,
   ALERTS_TABLE_NAME,
-  ParsedResultSets,
+  ParsedResultSets
 } from '../interface-types';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 import { ResultTables } from './result-tables';
@@ -172,14 +172,17 @@ class App extends React.Component<{}, ResultsViewState> {
     });
   }
 
-  private async getResultSets(
+  private getResultSets(
     resultsInfo: ResultsInfo
-  ): Promise<readonly ResultSet[]> {
+  ): readonly ResultSet[] {
     const parsedResultSets = resultsInfo.parsedResultSets;
-    return [{
-      ...parsedResultSets.resultSet,
-      t: (parsedResultSets.resultSet.t ?? 'RawResultSet') as any
-    }];
+    const resultSet = parsedResultSets.resultSet;
+    if (!resultSet.t) {
+      throw new Error(
+        'Missing result set type. Should be either "SarifResultSet" or "RawResultSet".'
+      );
+    }
+    return [resultSet];
   }
 
   private async loadResults(): Promise<void> {
@@ -191,7 +194,7 @@ class App extends React.Component<{}, ResultsViewState> {
     let results: Results | null = null;
     let statusText = '';
     try {
-      const resultSets = await this.getResultSets(resultsInfo);
+      const resultSets = this.getResultSets(resultsInfo);
       results = {
         resultSets,
         database: resultsInfo.database,
