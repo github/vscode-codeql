@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## 1.3.3 - [UNRELEASED]
+## 1.3.3 - 16 September 2020
 
 - Fix display of raw results entities with label but no url.
 - Fix bug where sort order is forgotten when changing raw results page.
