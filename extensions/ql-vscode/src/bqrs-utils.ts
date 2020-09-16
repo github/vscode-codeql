@@ -63,8 +63,7 @@ function isWholeFileMatch(matches: RegExpExecArray): boolean {
 }
 
 /**
- * Checks whether the file path is empty. For now, just check whether
- * the file path is empty. If so, we do not want to render this location
+ * Checks whether the file path is empty. If so, we do not want to render this location
  * as a link.
  *
  * @param uri A file uri

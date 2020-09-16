@@ -76,6 +76,23 @@ describe('interface-utils', () => {
       } as unknown) as DatabaseItem;
       expect(
         tryResolveLocation(
+          'file://hucairz:0:0:0:0',
+          mockDatabaseItem
+        )
+      ).to.deep.equal(
+        new vscode.Location(
+          vscode.Uri.file('abc'),
+          new vscode.Range(0, 0, 0, 0)
+        )
+      );
+    });
+
+    it('should resolve a five-part location edge case', () => {
+      const mockDatabaseItem: DatabaseItem = ({
+        resolveSourceFile: sinon.stub().returns(vscode.Uri.file('abc')),
+      } as unknown) as DatabaseItem;
+      expect(
+        tryResolveLocation(
           'file://hucairz:1:1:1:1',
           mockDatabaseItem
         )

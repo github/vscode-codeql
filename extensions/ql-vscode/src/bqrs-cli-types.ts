@@ -90,7 +90,13 @@ export interface RawResultSet {
   readonly rows: readonly ResultRow[];
 }
 
-export function adaptBqrs(schema: ResultSetSchema, page: DecodedBqrsChunk): RawResultSet {
+// TODO: This function is not necessary. It generates a tuple that is slightly easier
+// to handle than the ResultSetSchema and DecodedBqrsChunk. But perhaps it is unnecessary
+// boilerplate.
+export function transformBqrsResultSet(
+  schema: ResultSetSchema,
+  page: DecodedBqrsChunk
+): RawResultSet {
   return {
     schema,
     rows: Array.from(page.tuples),
