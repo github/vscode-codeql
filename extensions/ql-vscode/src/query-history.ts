@@ -209,51 +209,51 @@ export class QueryHistoryManager {
     });
     logger.log('Registering query history panel commands.');
     ctx.subscriptions.push(
-      vscode.commands.registerCommand(
+      helpers.commandRunner(
         'codeQLQueryHistory.openQuery',
         this.handleOpenQuery.bind(this)
       )
     );
     ctx.subscriptions.push(
-      vscode.commands.registerCommand(
+      helpers.commandRunner(
         'codeQLQueryHistory.removeHistoryItem',
         this.handleRemoveHistoryItem.bind(this)
       )
     );
     ctx.subscriptions.push(
-      vscode.commands.registerCommand(
+      helpers.commandRunner(
         'codeQLQueryHistory.setLabel',
         this.handleSetLabel.bind(this)
       )
     );
     ctx.subscriptions.push(
-      vscode.commands.registerCommand(
+      helpers.commandRunner(
         'codeQLQueryHistory.compareWith',
         this.handleCompareWith.bind(this)
       )
     );
     ctx.subscriptions.push(
-      vscode.commands.registerCommand(
+      helpers.commandRunner(
         'codeQLQueryHistory.showQueryLog',
         this.handleShowQueryLog.bind(this)
       )
     );
     ctx.subscriptions.push(
-      vscode.commands.registerCommand(
+      helpers.commandRunner(
         'codeQLQueryHistory.showQueryText',
         this.handleShowQueryText.bind(this)
       )
     );
     ctx.subscriptions.push(
-      vscode.commands.registerCommand(
+      helpers.commandRunner(
         'codeQLQueryHistory.viewSarif',
         this.handleViewSarif.bind(this)
       )
     );
     ctx.subscriptions.push(
-      vscode.commands.registerCommand(
+      helpers.commandRunner(
         'codeQLQueryHistory.itemClicked',
-        async (item) => {
+        async (item: CompletedQuery) => {
           return this.handleItemClicked(item, [item]);
         }
       )
@@ -424,22 +424,18 @@ export class QueryHistoryManager {
       return;
     }
 
-    try {
-      const queryName = singleItem.queryName.endsWith('.ql')
-        ? singleItem.queryName
-        : singleItem.queryName + '.ql';
-      const params = new URLSearchParams({
-        isQuickEval: String(!!singleItem.query.quickEvalPosition),
-        queryText: encodeURIComponent(await this.getQueryText(singleItem)),
-      });
-      const uri = vscode.Uri.parse(
-        `codeql:${singleItem.query.queryID}-${queryName}?${params.toString()}`
-      );
-      const doc = await vscode.workspace.openTextDocument(uri);
-      await vscode.window.showTextDocument(doc, { preview: false });
-    } catch (e) {
-      helpers.showAndLogErrorMessage(e.message);
-    }
+    const queryName = singleItem.queryName.endsWith('.ql')
+      ? singleItem.queryName
+      : singleItem.queryName + '.ql';
+    const params = new URLSearchParams({
+      isQuickEval: String(!!singleItem.query.quickEvalPosition),
+      queryText: encodeURIComponent(await this.getQueryText(singleItem)),
+    });
+    const uri = vscode.Uri.parse(
+      `codeql:${singleItem.query.queryID}-${queryName}?${params.toString()}`
+    );
+    const doc = await vscode.workspace.openTextDocument(uri);
+    await vscode.window.showTextDocument(doc, { preview: false });
   }
 
   async handleViewSarif(
@@ -450,20 +446,16 @@ export class QueryHistoryManager {
       return;
     }
 
-    try {
-      const hasInterpretedResults = await singleItem.query.canHaveInterpretedResults();
-      if (hasInterpretedResults) {
-        await this.tryOpenExternalFile(
-          singleItem.query.resultsPaths.interpretedResultsPath
-        );
-      } else {
-        const label = singleItem.getLabel();
-        helpers.showAndLogInformationMessage(
-          `Query ${label} has no interpreted results.`
-        );
-      }
-    } catch (e) {
-      helpers.showAndLogErrorMessage(e.message);
+    const hasInterpretedResults = await singleItem.query.canHaveInterpretedResults();
+    if (hasInterpretedResults) {
+      await this.tryOpenExternalFile(
+        singleItem.query.resultsPaths.interpretedResultsPath
+      );
+    } else {
+      const label = singleItem.getLabel();
+      helpers.showAndLogInformationMessage(
+        `Query ${label} has no interpreted results.`
+      );
     }
   }
 

@@ -1,13 +1,12 @@
 import * as fs from 'fs-extra';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
-import { ExtensionContext, window as Window, workspace, Uri } from 'vscode';
+import { CancellationToken, ExtensionContext, window as Window, workspace, Uri } from 'vscode';
 import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 import { CodeQLCliServer } from './cli';
 import { DatabaseUI } from './databases-ui';
 import * as helpers from './helpers';
 import { logger } from './logging';
-import { UserCancellationException } from './run-queries';
 
 const QUICK_QUERIES_DIR_NAME = 'quick-queries';
 const QUICK_QUERY_QUERY_NAME = 'quick-query.ql';
@@ -48,7 +47,13 @@ function getQuickQueriesDir(ctx: ExtensionContext): string {
 /**
  * Show a buffer the user can enter a simple query into.
  */
-export async function displayQuickQuery(ctx: ExtensionContext, cliServer: CodeQLCliServer, databaseUI: DatabaseUI) {
+export async function displayQuickQuery(
+  ctx: ExtensionContext,
+  cliServer: CodeQLCliServer,
+  databaseUI: DatabaseUI,
+  progress: helpers.ProgressCallback,
+  token: CancellationToken
+) {
 
   function updateQuickQueryDir(queriesDir: string, index: number, len: number) {
     workspace.updateWorkspaceFolders(
@@ -94,7 +99,7 @@ export async function displayQuickQuery(ctx: ExtensionContext, cliServer: CodeQL
       updateQuickQueryDir(queriesDir, index, 1);
 
     // We're going to infer which qlpack to use from the current database
-    const dbItem = await databaseUI.getDatabaseItem();
+    const dbItem = await databaseUI.getDatabaseItem(progress, token);
     if (dbItem === undefined) {
       throw new Error('Can\'t start quick query without a selected database');
     }
@@ -116,7 +121,7 @@ export async function displayQuickQuery(ctx: ExtensionContext, cliServer: CodeQL
 
   // TODO: clean up error handling for top-level commands like this
   catch (e) {
-    if (e instanceof UserCancellationException) {
+    if (e instanceof helpers.UserCancellationException) {
       logger.log(e.message);
     }
     else if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
