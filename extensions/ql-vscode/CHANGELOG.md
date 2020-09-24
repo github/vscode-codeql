@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Max number of simultaneous queries launchable by runQueries command is now configurable by changing the codeQL.runningQueries.maxQueries setting.
+
 ## 1.3.3 - 16 September 2020
 
 - Fix display of raw results entities with label but no url.

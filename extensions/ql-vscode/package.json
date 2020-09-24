@@ -152,6 +152,11 @@
           "default": false,
           "description": "Enable automatically saving a modified query file when running a query."
         },
+        "codeQL.runningQueries.maxQueries": {
+          "type": "integer",
+          "default": 20,
+          "description": "Max number of simultaneous queries to run using the 'CodeQL: Run Queries' command."
+        },
         "codeQL.queryHistory.format": {
           "type": "string",
           "default": "[%t] %q on %d - %s",

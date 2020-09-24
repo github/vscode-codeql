@@ -67,6 +67,7 @@ const NUMBER_OF_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_QUERIES
 const TIMEOUT_SETTING = new Setting('timeout', RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
 const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
+export const MAX_QUERIES = new Setting('maxQueries', RUNNING_QUERIES_SETTING);
 export const AUTOSAVE_SETTING = new Setting('autoSave', RUNNING_QUERIES_SETTING);
 
 /** When these settings change, the running query server should be restarted. */
