@@ -18,7 +18,7 @@ import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
 import { AstViewer } from './astViewer';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { CodeQLCliServer } from './cli';
-import { DistributionConfigListener, QueryHistoryConfigListener, QueryServerConfigListener } from './config';
+import { DistributionConfigListener, MAX_QUERIES, QueryHistoryConfigListener, QueryServerConfigListener } from './config';
 import * as languageSupport from './languageSupport';
 import { DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
@@ -466,11 +466,11 @@ async function activateWithInstalledDistribution(
     commands.registerCommand(
       'codeQL.runQueries',
       async (_: Uri | undefined, multi: Uri[]) => {
-        const maxQueryCount = 20;
+        const maxQueryCount = MAX_QUERIES.getValue() as number;
         try {
           const [files, dirFound] = await gatherQlFiles(multi.map(uri => uri.fsPath));
           if (files.length > maxQueryCount) {
-            throw new Error(`You tried to run ${files.length} queries, but the maximum is ${maxQueryCount}. Try selecting fewer queries.`);
+            throw new Error(`You tried to run ${files.length} queries, but the maximum is ${maxQueryCount}. Try selecting fewer queries or changing the 'codeQL.runningQueries.maxQueries' setting.`);
           }
           // warn user and display selected files when a directory is selected because some ql
           // files may be hidden from the user.
