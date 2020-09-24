@@ -3,7 +3,6 @@ import {
   ExtensionContext,
   TreeDataProvider,
   EventEmitter,
-  commands,
   Event,
   ProviderResult,
   TreeItemCollapsibleState,
@@ -19,6 +18,7 @@ import { DatabaseItem } from './databases';
 import { UrlValue, BqrsId } from './bqrs-cli-types';
 import { showLocation } from './interface-utils';
 import { isStringLoc, isWholeFileLoc, isLineColumnLoc } from './bqrs-utils';
+import { commandRunner } from './helpers';
 
 
 export interface AstItem {
@@ -45,10 +45,10 @@ class AstViewerDataProvider implements TreeDataProvider<AstItem> {
     this._onDidChangeTreeData.event;
 
   constructor() {
-    commands.registerCommand('codeQLAstViewer.gotoCode',
-      async (item: AstItem) => {
-        await showLocation(item.fileLocation);
-      });
+    commandRunner('codeQLAstViewer.gotoCode',
+    async (item: AstItem) => {
+      await showLocation(item.fileLocation);
+    });
   }
 
   refresh(): void {
@@ -109,7 +109,7 @@ export class AstViewer {
       showCollapseAll: true
     });
 
-    commands.registerCommand('codeQLAstViewer.clear', () => {
+    commandRunner('codeQLAstViewer.clear', async () => {
       this.clear();
     });
 

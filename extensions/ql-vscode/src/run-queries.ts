@@ -2,7 +2,14 @@ import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp';
-import * as vscode from 'vscode';
+import {
+  CancellationToken,
+  ConfigurationTarget,
+  TextDocument,
+  TextEditor,
+  Uri,
+  window
+} from 'vscode';
 import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 
 import * as cli from './cli';
@@ -34,16 +41,6 @@ export const tmpDirDisposal = {
   }
 };
 
-export class UserCancellationException extends Error {
-  /**
-   * @param message The error message
-   * @param silent If silent is true, then this exception will avoid showing a warning message to the user.
-   */
-  constructor(message?: string, public readonly silent = false) {
-    super(message);
-  }
-}
-
 /**
  * A collection of evaluation-time information about a query,
  * including the query itself, and where we have decided to put
@@ -55,7 +52,7 @@ export class QueryInfo {
 
   readonly compiledQueryPath: string;
   readonly resultsPaths: ResultsPaths;
-  readonly dataset: vscode.Uri; // guarantee the existence of a well-defined dataset dir at this point
+  readonly dataset: Uri; // guarantee the existence of a well-defined dataset dir at this point
   readonly queryID: number;
 
   constructor(
@@ -80,6 +77,8 @@ export class QueryInfo {
 
   async run(
     qs: qsClient.QueryServerClient,
+    progress: helpers.ProgressCallback,
+    token: CancellationToken,
   ): Promise<messages.EvaluationResult> {
     let result: messages.EvaluationResult | null = null;
 
@@ -87,7 +86,7 @@ export class QueryInfo {
 
     const queryToRun: messages.QueryToRun = {
       resultsPath: this.resultsPaths.resultsPath,
-      qlo: vscode.Uri.file(this.compiledQueryPath).toString(),
+      qlo: Uri.file(this.compiledQueryPath).toString(),
       allowUnknownTemplates: true,
       templateValues: this.templates,
       id: callbackId,
@@ -105,13 +104,7 @@ export class QueryInfo {
       useSequenceHint: false
     };
     try {
-      await helpers.withProgress({
-        location: vscode.ProgressLocation.Notification,
-        title: 'Running Query',
-        cancellable: true,
-      }, (progress, token) => {
-        return qs.sendRequest(messages.runQueries, params, token, progress);
-      });
+      await qs.sendRequest(messages.runQueries, params, token, progress);
     } finally {
       qs.unRegisterCallback(callbackId);
     }
@@ -126,6 +119,8 @@ export class QueryInfo {
 
   async compile(
     qs: qsClient.QueryServerClient,
+    progress: helpers.ProgressCallback,
+    token: CancellationToken,
   ): Promise<messages.CompilationMessage[]> {
     let compiled: messages.CheckQueryResult | undefined;
     try {
@@ -150,13 +145,7 @@ export class QueryInfo {
         target,
       };
 
-      compiled = await helpers.withProgress({
-        location: vscode.ProgressLocation.Notification,
-        title: 'Compiling Query',
-        cancellable: true,
-      }, (progress, token) => {
-        return qs.sendRequest(messages.compileQuery, params, token, progress);
-      });
+      compiled = await qs.sendRequest(messages.compileQuery, params, token, progress);
     } finally {
       qs.logger.log(' - - - COMPILATION DONE - - - ');
     }
@@ -192,7 +181,10 @@ export interface QueryWithResults {
 }
 
 export async function clearCacheInDatabase(
-  qs: qsClient.QueryServerClient, dbItem: DatabaseItem
+  qs: qsClient.QueryServerClient,
+  dbItem: DatabaseItem,
+  progress: helpers.ProgressCallback,
+  token: CancellationToken,
 ): Promise<messages.ClearCacheResult> {
   if (dbItem.contents === undefined) {
     throw new Error('Can\'t clear the cache in an invalid database.');
@@ -208,13 +200,7 @@ export async function clearCacheInDatabase(
     db,
   };
 
-  return helpers.withProgress({
-    location: vscode.ProgressLocation.Notification,
-    title: 'Clearing Cache',
-    cancellable: false,
-  }, (progress, token) =>
-    qs.sendRequest(messages.clearCache, params, token, progress)
-  );
+  return qs.sendRequest(messages.clearCache, params, token, progress);
 }
 
 /**
@@ -250,7 +236,7 @@ async function convertToQlPath(filePath: string): Promise<string> {
 
 
 /** Gets the selected position within the given editor. */
-async function getSelectedPosition(editor: vscode.TextEditor): Promise<messages.Position> {
+async function getSelectedPosition(editor: TextEditor): Promise<messages.Position> {
   const pos = editor.selection.start;
   const posEnd = editor.selection.end;
   // Convert from 0-based to 1-based line and column numbers.
@@ -306,7 +292,7 @@ async function checkDbschemeCompatibility(
       await upgradeDatabase(
         qs,
         query.dbItem,
-        vscode.Uri.file(finalDbscheme),
+        Uri.file(finalDbscheme),
         getUpgradesDirectories(scripts)
       );
     }
@@ -321,7 +307,7 @@ async function checkDbschemeCompatibility(
  * @returns true if we should save changes and false if we should continue without saving changes.
  * @throws UserCancellationException if we should abort whatever operation triggered this prompt
  */
-async function promptUserToSaveChanges(document: vscode.TextDocument): Promise<boolean> {
+async function promptUserToSaveChanges(document: TextDocument): Promise<boolean> {
   if (document.isDirty) {
     if (config.AUTOSAVE_SETTING.getValue()) {
       return true;
@@ -332,14 +318,14 @@ async function promptUserToSaveChanges(document: vscode.TextDocument): Promise<b
       const noItem = { title: 'No (run anyway)', isCloseAffordance: false };
       const cancelItem = { title: 'Cancel', isCloseAffordance: true };
       const message = 'Query file has unsaved changes. Save now?';
-      const chosenItem = await vscode.window.showInformationMessage(
+      const chosenItem = await window.showInformationMessage(
         message,
         { modal: true },
         yesItem, alwaysItem, noItem, cancelItem
       );
 
       if (chosenItem === alwaysItem) {
-        await config.AUTOSAVE_SETTING.updateValue(true, vscode.ConfigurationTarget.Workspace);
+        await config.AUTOSAVE_SETTING.updateValue(true, ConfigurationTarget.Workspace);
         return true;
       }
 
@@ -348,7 +334,7 @@ async function promptUserToSaveChanges(document: vscode.TextDocument): Promise<b
       }
 
       if (chosenItem === cancelItem) {
-        throw new UserCancellationException('Query run cancelled.', true);
+        throw new helpers.UserCancellationException('Query run cancelled.', true);
       }
     }
   }
@@ -371,11 +357,11 @@ type SelectedQuery = {
  * @param selectedResourceUri The selected resource when the command was run.
  * @param quickEval Whether the command being run is `Quick Evaluation`.
 */
-export async function determineSelectedQuery(selectedResourceUri: vscode.Uri | undefined, quickEval: boolean): Promise<SelectedQuery> {
-  const editor = vscode.window.activeTextEditor;
+export async function determineSelectedQuery(selectedResourceUri: Uri | undefined, quickEval: boolean): Promise<SelectedQuery> {
+  const editor = window.activeTextEditor;
 
   // Choose which QL file to use.
-  let queryUri: vscode.Uri;
+  let queryUri: Uri;
   if (selectedResourceUri === undefined) {
     // No resource was passed to the command handler, so obtain it from the active editor.
     // This usually happens when the command is called from the Command Palette.
@@ -437,7 +423,9 @@ export async function compileAndRunQueryAgainstDatabase(
   qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   quickEval: boolean,
-  selectedQueryUri: vscode.Uri | undefined,
+  selectedQueryUri: Uri | undefined,
+  progress: helpers.ProgressCallback,
+  token: CancellationToken,
   templates?: messages.TemplateDefinitions,
 ): Promise<QueryWithResults> {
   if (!db.contents || !db.contents.dbSchemeUri) {
@@ -497,7 +485,7 @@ export async function compileAndRunQueryAgainstDatabase(
 
   let errors;
   try {
-    errors = await query.compile(qs);
+    errors = await query.compile(qs, progress, token);
   } catch (e) {
     if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
       return createSyntheticResult(query, db, historyItemOptions, 'Query cancelled', messages.QueryResultType.CANCELLATION);
@@ -507,7 +495,7 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 
   if (errors.length == 0) {
-    const result = await query.run(qs);
+    const result = await query.run(qs, progress, token);
     if (result.resultType !== messages.QueryResultType.SUCCESS) {
       const message = result.message || 'Failed to run query';
       logger.log(message);

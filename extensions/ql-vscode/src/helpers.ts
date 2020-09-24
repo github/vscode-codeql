@@ -7,10 +7,22 @@ import {
   ExtensionContext,
   ProgressOptions,
   window as Window,
-  workspace
+  workspace,
+  commands,
+  Disposable
 } from 'vscode';
 import { CodeQLCliServer } from './cli';
 import { logger } from './logging';
+
+export class UserCancellationException extends Error {
+  /**
+   * @param message The error message
+   * @param silent If silent is true, then this exception will avoid showing a warning message to the user.
+   */
+  constructor(message?: string, public readonly silent = false) {
+    super(message);
+  }
+}
 
 export interface ProgressUpdate {
   /**
@@ -29,18 +41,34 @@ export interface ProgressUpdate {
 
 export type ProgressCallback = (p: ProgressUpdate) => void;
 
+export type ProgressTask<R> = (
+  progress: ProgressCallback,
+  token: CancellationToken,
+  ...args: any[]
+) => Thenable<R>;
+
+type NoProgressTask = ((...args: any[]) => Promise<any>);
+
 /**
  * This mediates between the kind of progress callbacks we want to
  * write (where we *set* current progress position and give
  * `maxSteps`) and the kind vscode progress api expects us to write
- * (which increment progress by a certain amount out of 100%)
+ * (which increment progress by a certain amount out of 100%).
+ *
+ * Where possible, the `commandRunner` function below should be used
+ * instead of this function. The commandRunner is meant for wrapping
+ * top-level commands and provides error handling and other support
+ * automatically.
+ *
+ * Only use this function if you need a progress monitor and the
+ * control flow does not always come from a command (eg- during
+ * extension activation, or from an internal language server
+ * request).
  */
 export function withProgress<R>(
   options: ProgressOptions,
-  task: (
-    progress: (p: ProgressUpdate) => void,
-    token: CancellationToken
-  ) => Thenable<R>
+  task: ProgressTask<R>,
+  ...args: any[]
 ): Thenable<R> {
   let progressAchieved = 0;
   return Window.withProgress(options,
@@ -50,8 +78,56 @@ export function withProgress<R>(
         const increment = 100 * (step - progressAchieved) / maxStep;
         progressAchieved = step;
         progress.report({ message, increment });
-      }, token);
+      }, token, ...args);
     });
+}
+
+/**
+ * A generic wrapper for commands. This wrapper adds error handling and progress monitoring
+ * for any command.
+ *
+ * There are two ways to invoke the command task: with or without a progress monitor
+ * If progressOptions are passed in, then the command task will run with a progress monitor
+ * Otherwise, no progress monitor will be used.
+ *
+ * If a task is run with a progress monitor, the first two arguments to the task are always
+ * the progress callback, and the cancellation token. And this is followed by any extra command arguments
+ * (eg- selection, multiselection, ...).
+ *
+ * If there is no progress monitor, then only extra command arguments are passed in.
+ *
+ * @param commandId The ID of the command to register.
+ * @param task The task to run. If passing taskOptions, then this task must be a `ProgressTask`.
+ * @param progressOptions Optional argument. If present, then the task is run with a progress monitor
+ *                    and cancellation token, otherwise it is run with no arguments.
+ */
+export function commandRunner<R>(
+  commandId: string,
+  task: ProgressTask<R> | NoProgressTask,
+  progressOptions?: ProgressOptions
+): Disposable {
+  return commands.registerCommand(commandId, async (...args: any[]) => {
+    try {
+      if (progressOptions) {
+        await withProgress(progressOptions, task as ProgressTask<R>, ...args);
+      } else {
+        await (task as ((...args: any[]) => Promise<any>))(...args);
+      }
+    } catch (e) {
+      if (e instanceof UserCancellationException) {
+        // User has cancelled this action manually
+        if (e.silent) {
+          logger.log(e.message);
+        } else {
+          showAndLogWarningMessage(e.message);
+        }
+      } else if (e instanceof Error) {
+        showAndLogErrorMessage(e.message);
+      } else {
+        throw e;
+      }
+    }
+  });
 }
 
 /**

@@ -1,7 +1,6 @@
 import * as path from 'path';
 import { DisposableObject } from './vscode-utils/disposable-object';
 import {
-  commands,
   Event,
   EventEmitter,
   ExtensionContext,
@@ -11,6 +10,7 @@ import {
   Uri,
   window,
   env,
+  ProgressLocation
 } from 'vscode';
 import * as fs from 'fs-extra';
 
@@ -21,9 +21,14 @@ import {
   DatabaseManager,
   getUpgradesDirectories,
 } from './databases';
-import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from './helpers';
+import {
+  commandRunner,
+  getOnDiskWorkspaceFolders,
+  ProgressCallback,
+  showAndLogErrorMessage
+} from './helpers';
 import { logger } from './logging';
-import { clearCacheInDatabase, UserCancellationException } from './run-queries';
+import { clearCacheInDatabase } from './run-queries';
 import * as qsClient from './queryserver-client';
 import { upgradeDatabase } from './upgrades';
 import {
@@ -31,6 +36,7 @@ import {
   promptImportInternetDatabase,
   promptImportLgtmDatabase,
 } from './databaseFetcher';
+import { CancellationToken } from 'vscode-jsonrpc';
 
 type ThemableIconPath = { light: string; dark: string } | string;
 
@@ -227,83 +233,104 @@ export class DatabaseUI extends DisposableObject {
 
     logger.log('Registering database panel commands.');
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQL.setCurrentDatabase',
-        this.handleSetCurrentDatabase
+        this.handleSetCurrentDatabase,
+        {
+          location: ProgressLocation.Notification,
+          title: 'Importing database from archive',
+          cancellable: false,
+        }
       )
     );
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQL.upgradeCurrentDatabase',
         this.handleUpgradeCurrentDatabase
       )
     );
     ctx.subscriptions.push(
-      commands.registerCommand('codeQL.clearCache', this.handleClearCache)
+      commandRunner(
+        'codeQL.clearCache',
+        this.handleClearCache,
+        {
+          location: ProgressLocation.Notification,
+          title: 'Clearing Cache',
+          cancellable: false,
+        })
     );
 
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQLDatabases.chooseDatabaseFolder',
         this.handleChooseDatabaseFolder
       )
     );
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQLDatabases.chooseDatabaseArchive',
         this.handleChooseDatabaseArchive
       )
     );
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQLDatabases.chooseDatabaseInternet',
-        this.handleChooseDatabaseInternet
+        this.handleChooseDatabaseInternet,
+        {
+          location: ProgressLocation.Notification,
+          title: 'Adding database from URL',
+          cancellable: false,
+        }
       )
     );
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQLDatabases.chooseDatabaseLgtm',
-        this.handleChooseDatabaseLgtm
-      )
+        this.handleChooseDatabaseLgtm,
+        {
+          location: ProgressLocation.Notification,
+          title: 'Adding database from LGTM',
+          cancellable: false,
+        })
     );
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQLDatabases.setCurrentDatabase',
         this.handleMakeCurrentDatabase
       )
     );
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQLDatabases.sortByName',
         this.handleSortByName
       )
     );
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQLDatabases.sortByDateAdded',
         this.handleSortByDateAdded
       )
     );
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQLDatabases.removeDatabase',
         this.handleRemoveDatabase
       )
     );
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQLDatabases.upgradeDatabase',
         this.handleUpgradeDatabase
       )
     );
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQLDatabases.renameDatabase',
         this.handleRenameDatabase
       )
     );
     ctx.subscriptions.push(
-      commands.registerCommand(
+      commandRunner(
         'codeQLDatabases.openDatabaseFolder',
         this.handleOpenFolder
       )
@@ -316,37 +343,53 @@ export class DatabaseUI extends DisposableObject {
     await this.databaseManager.setCurrentDatabaseItem(databaseItem);
   };
 
-  handleChooseDatabaseFolder = async (): Promise<DatabaseItem | undefined> => {
+  handleChooseDatabaseFolder = async (
+    progress: ProgressCallback,
+    token: CancellationToken
+  ): Promise<DatabaseItem | undefined> => {
     try {
-      return await this.chooseAndSetDatabase(true);
+      return await this.chooseAndSetDatabase(true, progress, token);
     } catch (e) {
       showAndLogErrorMessage(e.message);
       return undefined;
     }
   };
 
-  handleChooseDatabaseArchive = async (): Promise<DatabaseItem | undefined> => {
+  handleChooseDatabaseArchive = async (
+    progress: ProgressCallback,
+    token: CancellationToken
+  ): Promise<DatabaseItem | undefined> => {
     try {
-      return await this.chooseAndSetDatabase(false);
+      return await this.chooseAndSetDatabase(false, progress, token);
     } catch (e) {
       showAndLogErrorMessage(e.message);
       return undefined;
     }
   };
 
-  handleChooseDatabaseInternet = async (): Promise<
+  handleChooseDatabaseInternet = async (
+    progress: ProgressCallback,
+    token: CancellationToken
+  ): Promise<
     DatabaseItem | undefined
   > => {
     return await promptImportInternetDatabase(
       this.databaseManager,
-      this.storagePath
+      this.storagePath,
+      progress,
+      token
     );
   };
 
-  handleChooseDatabaseLgtm = async (): Promise<DatabaseItem | undefined> => {
+  handleChooseDatabaseLgtm = async (
+    progress: ProgressCallback,
+    token: CancellationToken
+  ): Promise<DatabaseItem | undefined> => {
     return await promptImportLgtmDatabase(
       this.databaseManager,
-      this.storagePath
+      this.storagePath,
+      progress,
+      token
     );
   };
 
@@ -377,116 +420,115 @@ export class DatabaseUI extends DisposableObject {
     databaseItem: DatabaseItem | undefined,
     multiSelect: DatabaseItem[] | undefined
   ): Promise<void> => {
-    try {
-      if (multiSelect?.length) {
-        await Promise.all(
-          multiSelect.map((dbItem) => this.handleUpgradeDatabase(dbItem, []))
-        );
-      }
-      if (this.queryServer === undefined) {
-        logger.log(
-          'Received request to upgrade database, but there is no running query server.'
-        );
-        return;
-      }
-      if (databaseItem === undefined) {
-        logger.log(
-          'Received request to upgrade database, but no database was provided.'
-        );
-        return;
-      }
-      if (databaseItem.contents === undefined) {
-        logger.log(
-          'Received request to upgrade database, but database contents could not be found.'
-        );
-        return;
-      }
-      if (databaseItem.contents.dbSchemeUri === undefined) {
-        logger.log(
-          'Received request to upgrade database, but database has no schema.'
-        );
-        return;
-      }
-
-      // Search for upgrade scripts in any workspace folders available
-      const searchPath: string[] = getOnDiskWorkspaceFolders();
-
-      const upgradeInfo = await this.cliserver.resolveUpgrades(
-        databaseItem.contents.dbSchemeUri.fsPath,
-        searchPath
+    if (multiSelect?.length) {
+      await Promise.all(
+        multiSelect.map((dbItem) => this.handleUpgradeDatabase(dbItem, []))
       );
-
-      const { scripts, finalDbscheme } = upgradeInfo;
-
-      if (finalDbscheme === undefined) {
-        logger.log('Could not determine target dbscheme to upgrade to.');
-        return;
-      }
-      const targetDbSchemeUri = Uri.file(finalDbscheme);
-
-      await upgradeDatabase(
-        this.queryServer,
-        databaseItem,
-        targetDbSchemeUri,
-        getUpgradesDirectories(scripts)
-      );
-    } catch (e) {
-      if (e instanceof UserCancellationException) {
-        logger.log(e.message);
-      } else throw e;
     }
+    if (this.queryServer === undefined) {
+      logger.log(
+        'Received request to upgrade database, but there is no running query server.'
+      );
+      return;
+    }
+    if (databaseItem === undefined) {
+      logger.log(
+        'Received request to upgrade database, but no database was provided.'
+      );
+      return;
+    }
+    if (databaseItem.contents === undefined) {
+      logger.log(
+        'Received request to upgrade database, but database contents could not be found.'
+      );
+      return;
+    }
+    if (databaseItem.contents.dbSchemeUri === undefined) {
+      logger.log(
+        'Received request to upgrade database, but database has no schema.'
+      );
+      return;
+    }
+
+    // Search for upgrade scripts in any workspace folders available
+    const searchPath: string[] = getOnDiskWorkspaceFolders();
+
+    const upgradeInfo = await this.cliserver.resolveUpgrades(
+      databaseItem.contents.dbSchemeUri.fsPath,
+      searchPath
+    );
+
+    const { scripts, finalDbscheme } = upgradeInfo;
+
+    if (finalDbscheme === undefined) {
+      logger.log('Could not determine target dbscheme to upgrade to.');
+      return;
+    }
+    const targetDbSchemeUri = Uri.file(finalDbscheme);
+
+    await upgradeDatabase(
+      this.queryServer,
+      databaseItem,
+      targetDbSchemeUri,
+      getUpgradesDirectories(scripts)
+    );
   };
 
-  private handleClearCache = async (): Promise<void> => {
+  private handleClearCache = async (
+    progress: ProgressCallback,
+    token: CancellationToken,
+  ): Promise<void> => {
     if (
       this.queryServer !== undefined &&
       this.databaseManager.currentDatabaseItem !== undefined
     ) {
       await clearCacheInDatabase(
         this.queryServer,
-        this.databaseManager.currentDatabaseItem
+        this.databaseManager.currentDatabaseItem,
+        progress,
+        token
       );
     }
   };
 
   private handleSetCurrentDatabase = async (
-    uri: Uri
-  ): Promise<DatabaseItem | undefined> => {
+    uri: Uri,
+    progress: ProgressCallback,
+    token: CancellationToken,
+  ): Promise<void> => {
     try {
       // Assume user has selected an archive if the file has a .zip extension
       if (uri.path.endsWith('.zip')) {
-        return await importArchiveDatabase(
+        await importArchiveDatabase(
           uri.toString(true),
           this.databaseManager,
-          this.storagePath
+          this.storagePath,
+          progress,
+          token
         );
+      } else {
+        await this.setCurrentDatabase(uri);
       }
-
-      return await this.setCurrentDatabase(uri);
     } catch (e) {
-      showAndLogErrorMessage(
+      // rethrow and let this be handled by default error handling.
+      throw new Error(
         `Could not set database to ${path.basename(uri.fsPath)}. Reason: ${
         e.message
         }`
       );
-      return undefined;
     }
   };
 
-  private handleRemoveDatabase = (
+  private handleRemoveDatabase = async (
     databaseItem: DatabaseItem,
     multiSelect: DatabaseItem[] | undefined
-  ): void => {
-    try {
-      if (multiSelect?.length) {
-        multiSelect.forEach((dbItem) =>
-          this.databaseManager.removeDatabaseItem(dbItem)
-        );
-      } else {
-        this.databaseManager.removeDatabaseItem(databaseItem);
-      }
-    } catch (e) {
-      showAndLogErrorMessage(e.message);
+  ): Promise<void> => {
+    if (multiSelect?.length) {
+      multiSelect.forEach((dbItem) =>
+        this.databaseManager.removeDatabaseItem(dbItem)
+      );
+    } else {
+      this.databaseManager.removeDatabaseItem(databaseItem);
     }
   };
 
@@ -494,19 +536,15 @@ export class DatabaseUI extends DisposableObject {
     databaseItem: DatabaseItem,
     multiSelect: DatabaseItem[] | undefined
   ): Promise<void> => {
-    try {
-      this.assertSingleDatabase(multiSelect);
+    this.assertSingleDatabase(multiSelect);
 
-      const newName = await window.showInputBox({
-        prompt: 'Choose new database name',
-        value: databaseItem.name,
-      });
+    const newName = await window.showInputBox({
+      prompt: 'Choose new database name',
+      value: databaseItem.name,
+    });
 
-      if (newName) {
-        this.databaseManager.renameDatabaseItem(databaseItem, newName);
-      }
-    } catch (e) {
-      showAndLogErrorMessage(e.message);
+    if (newName) {
+      this.databaseManager.renameDatabaseItem(databaseItem, newName);
     }
   };
 
@@ -514,16 +552,12 @@ export class DatabaseUI extends DisposableObject {
     databaseItem: DatabaseItem,
     multiSelect: DatabaseItem[] | undefined
   ): Promise<void> => {
-    try {
-      if (multiSelect?.length) {
-        await Promise.all(
-          multiSelect.map((dbItem) => env.openExternal(dbItem.databaseUri))
-        );
-      } else {
-        await env.openExternal(databaseItem.databaseUri);
-      }
-    } catch (e) {
-      showAndLogErrorMessage(e.message);
+    if (multiSelect?.length) {
+      await Promise.all(
+        multiSelect.map((dbItem) => env.openExternal(dbItem.databaseUri))
+      );
+    } else {
+      await env.openExternal(databaseItem.databaseUri);
     }
   };
 
@@ -532,9 +566,12 @@ export class DatabaseUI extends DisposableObject {
    * current database, ask the user for one, and return that, or
    * undefined if they cancel.
    */
-  public async getDatabaseItem(): Promise<DatabaseItem | undefined> {
+  public async getDatabaseItem(
+    progress: ProgressCallback,
+    token: CancellationToken
+  ): Promise<DatabaseItem | undefined> {
     if (this.databaseManager.currentDatabaseItem === undefined) {
-      await this.chooseAndSetDatabase(false);
+      await this.chooseAndSetDatabase(false, progress, token);
     }
 
     return this.databaseManager.currentDatabaseItem;
@@ -557,7 +594,9 @@ export class DatabaseUI extends DisposableObject {
    * operation was canceled.
    */
   private async chooseAndSetDatabase(
-    byFolder: boolean
+    byFolder: boolean,
+    progress: ProgressCallback,
+    token: CancellationToken,
   ): Promise<DatabaseItem | undefined> {
     const uri = await chooseDatabaseDir(byFolder);
 
@@ -575,7 +614,9 @@ export class DatabaseUI extends DisposableObject {
       return await importArchiveDatabase(
         uri.toString(true),
         this.databaseManager,
-        this.storagePath
+        this.storagePath,
+        progress,
+        token
       );
     }
   }

@@ -4,7 +4,7 @@ import * as helpers from './helpers';
 import { logger } from './logging';
 import * as messages from './messages';
 import * as qsClient from './queryserver-client';
-import { upgradesTmpDir, UserCancellationException } from './run-queries';
+import { upgradesTmpDir } from './run-queries';
 
 /**
  * Maximum number of lines to include from database upgrade message,
@@ -101,7 +101,7 @@ async function checkAndConfirmDatabaseUpgrade(
     return params;
   }
   else {
-    throw new UserCancellationException('User cancelled the database upgrade.');
+    throw new helpers.UserCancellationException('User cancelled the database upgrade.');
   }
 }
 
@@ -112,7 +112,9 @@ async function checkAndConfirmDatabaseUpgrade(
  * Reports errors during compilation and evaluation of upgrades to the user.
  */
 export async function upgradeDatabase(
-  qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectories: vscode.Uri[]
+  qs: qsClient.QueryServerClient,
+  db: DatabaseItem, targetDbScheme: vscode.Uri,
+  upgradesDirectories: vscode.Uri[]
 ): Promise<messages.RunUpgradeResult | undefined> {
   const upgradeParams = await checkAndConfirmDatabaseUpgrade(qs, db, targetDbScheme, upgradesDirectories);
 
@@ -155,6 +157,7 @@ export async function upgradeDatabase(
 async function checkDatabaseUpgrade(
   qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams
 ): Promise<messages.CheckUpgradeResult> {
+  // Avoid using commandRunner here because this function might be called upon extension activation
   return helpers.withProgress({
     location: vscode.ProgressLocation.Notification,
     title: 'Checking for database upgrades',
@@ -170,6 +173,7 @@ async function compileDatabaseUpgrade(
     upgradeTempDir: upgradesTmpDir.name
   };
 
+  // Avoid using commandRunner here because this function might be called upon extension activation
   return helpers.withProgress({
     location: vscode.ProgressLocation.Notification,
     title: 'Compiling database upgrades',
@@ -195,6 +199,7 @@ async function runDatabaseUpgrade(
     toRun: upgrades
   };
 
+  // Avoid using commandRunner here because this function might be called upon extension activation
   return helpers.withProgress({
     location: vscode.ProgressLocation.Notification,
     title: 'Running database upgrades',

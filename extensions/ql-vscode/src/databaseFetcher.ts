@@ -3,8 +3,7 @@ import * as unzipper from 'unzipper';
 import { zip } from 'zip-a-folder';
 import {
   Uri,
-  ProgressOptions,
-  ProgressLocation,
+  CancellationToken,
   commands,
   window,
 } from 'vscode';
@@ -14,8 +13,6 @@ import * as path from 'path';
 import { DatabaseManager, DatabaseItem } from './databases';
 import {
   ProgressCallback,
-  showAndLogErrorMessage,
-  withProgress,
   showAndLogInformationMessage,
 } from './helpers';
 import { logger } from './logging';
@@ -28,42 +25,32 @@ import { logger } from './logging';
  */
 export async function promptImportInternetDatabase(
   databasesManager: DatabaseManager,
-  storagePath: string
+  storagePath: string,
+  progress: ProgressCallback,
+  _: CancellationToken,
 ): Promise<DatabaseItem | undefined> {
-  let item: DatabaseItem | undefined = undefined;
-
-  try {
-    const databaseUrl = await window.showInputBox({
-      prompt: 'Enter URL of zipfile of database to download',
-    });
-    if (databaseUrl) {
-      validateHttpsUrl(databaseUrl);
-
-      const progressOptions: ProgressOptions = {
-        location: ProgressLocation.Notification,
-        title: 'Adding database from URL',
-        cancellable: false,
-      };
-      await withProgress(
-        progressOptions,
-        async (progress) =>
-          (item = await databaseArchiveFetcher(
-            databaseUrl,
-            databasesManager,
-            storagePath,
-            progress
-          ))
-      );
-      if (item) {
-        commands.executeCommand('codeQLDatabases.focus');
-        showAndLogInformationMessage('Database downloaded and imported successfully.');
-      }
-    }
-  } catch (e) {
-    showAndLogErrorMessage(e.message);
+  const databaseUrl = await window.showInputBox({
+    prompt: 'Enter URL of zipfile of database to download',
+  });
+  if (!databaseUrl) {
+    return;
   }
 
+  validateHttpsUrl(databaseUrl);
+
+  const item = await databaseArchiveFetcher(
+    databaseUrl,
+    databasesManager,
+    storagePath,
+    progress
+  );
+
+  if (item) {
+    commands.executeCommand('codeQLDatabases.focus');
+    showAndLogInformationMessage('Database downloaded and imported successfully.');
+  }
   return item;
+
 }
 
 /**
@@ -76,49 +63,37 @@ export async function promptImportInternetDatabase(
  */
 export async function promptImportLgtmDatabase(
   databasesManager: DatabaseManager,
-  storagePath: string
+  storagePath: string,
+  progress: ProgressCallback,
+  _: CancellationToken
 ): Promise<DatabaseItem | undefined> {
-  let item: DatabaseItem | undefined = undefined;
-
-  try {
-    const lgtmUrl = await window.showInputBox({
-      prompt:
-        'Enter the project URL on LGTM (e.g., https://lgtm.com/projects/g/github/codeql)',
-    });
-    if (!lgtmUrl) {
-      return;
-    }
-    if (looksLikeLgtmUrl(lgtmUrl)) {
-      const databaseUrl = await convertToDatabaseUrl(lgtmUrl);
-      if (databaseUrl) {
-        const progressOptions: ProgressOptions = {
-          location: ProgressLocation.Notification,
-          title: 'Adding database from LGTM',
-          cancellable: false,
-        };
-        await withProgress(
-          progressOptions,
-          async (progress) =>
-            (item = await databaseArchiveFetcher(
-              databaseUrl,
-              databasesManager,
-              storagePath,
-              progress
-            ))
-        );
-        if (item) {
-          commands.executeCommand('codeQLDatabases.focus');
-          showAndLogInformationMessage('Database downloaded and imported successfully.');
-        }
-      }
-    } else {
-      throw new Error(`Invalid LGTM URL: ${lgtmUrl}`);
-    }
-  } catch (e) {
-    showAndLogErrorMessage(e.message);
+  const lgtmUrl = await window.showInputBox({
+    prompt:
+      'Enter the project URL on LGTM (e.g., https://lgtm.com/projects/g/github/codeql)',
+  });
+  if (!lgtmUrl) {
+    return;
   }
 
-  return item;
+  if (looksLikeLgtmUrl(lgtmUrl)) {
+    const databaseUrl = await convertToDatabaseUrl(lgtmUrl);
+    if (databaseUrl) {
+      const item = await databaseArchiveFetcher(
+        databaseUrl,
+        databasesManager,
+        storagePath,
+        progress
+      );
+      if (item) {
+        commands.executeCommand('codeQLDatabases.focus');
+        showAndLogInformationMessage('Database downloaded and imported successfully.');
+      }
+      return item;
+    }
+  } else {
+    throw new Error(`Invalid LGTM URL: ${lgtmUrl}`);
+  }
+  return;
 }
 
 /**
@@ -131,37 +106,30 @@ export async function promptImportLgtmDatabase(
 export async function importArchiveDatabase(
   databaseUrl: string,
   databasesManager: DatabaseManager,
-  storagePath: string
+  storagePath: string,
+  progress: ProgressCallback,
+  _: CancellationToken,
 ): Promise<DatabaseItem | undefined> {
-  let item: DatabaseItem | undefined = undefined;
   try {
-    const progressOptions: ProgressOptions = {
-      location: ProgressLocation.Notification,
-      title: 'Importing database from archive',
-      cancellable: false,
-    };
-    await withProgress(
-      progressOptions,
-      async (progress) =>
-        (item = await databaseArchiveFetcher(
-          databaseUrl,
-          databasesManager,
-          storagePath,
-          progress
-        ))
+    const item = await databaseArchiveFetcher(
+      databaseUrl,
+      databasesManager,
+      storagePath,
+      progress
     );
     if (item) {
       commands.executeCommand('codeQLDatabases.focus');
       showAndLogInformationMessage('Database unzipped and imported successfully.');
     }
+    return item;
   } catch (e) {
     if (e.message.includes('unexpected end of file')) {
-      showAndLogErrorMessage('Database is corrupt or too large. Try unzipping outside of VS Code and importing the unzipped folder instead.');
+      throw new Error('Database is corrupt or too large. Try unzipping outside of VS Code and importing the unzipped folder instead.');
     } else {
-      showAndLogErrorMessage(e.message);
+      // delegate
+      throw e;
     }
   }
-  return item;
 }
 
 /**

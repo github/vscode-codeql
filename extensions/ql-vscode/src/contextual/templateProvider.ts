@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { decodeSourceArchiveUri, zipArchiveScheme } from '../archive-filesystem-provider';
 import { CodeQLCliServer } from '../cli';
 import { DatabaseManager } from '../databases';
-import { CachedOperation } from '../helpers';
+import { CachedOperation, ProgressCallback, withProgress } from '../helpers';
 import * as messages from '../messages';
 import { QueryServerClient } from '../queryserver-client';
 import { compileAndRunQueryAgainstDatabase, QueryWithResults } from '../run-queries';
@@ -44,14 +44,22 @@ export class TemplateQueryDefinitionProvider implements vscode.DefinitionProvide
   }
 
   private async getDefinitions(uriString: string): Promise<vscode.LocationLink[]> {
-    return getLocationsForUriString(
-      this.cli,
-      this.qs,
-      this.dbm,
-      uriString,
-      KeyType.DefinitionQuery,
-      (src, _dest) => src === uriString
-    );
+    return await withProgress({
+      location: vscode.ProgressLocation.Notification,
+      cancellable: true,
+      title: 'Finding definitions'
+    }, async (progress, token) => {
+      return getLocationsForUriString(
+        this.cli,
+        this.qs,
+        this.dbm,
+        uriString,
+        KeyType.DefinitionQuery,
+        progress,
+        token,
+        (src, _dest) => src === uriString
+      );
+    });
   }
 }
 
@@ -83,14 +91,22 @@ export class TemplateQueryReferenceProvider implements vscode.ReferenceProvider 
   }
 
   private async getReferences(uriString: string): Promise<FullLocationLink[]> {
-    return getLocationsForUriString(
-      this.cli,
-      this.qs,
-      this.dbm,
-      uriString,
-      KeyType.ReferenceQuery,
-      (_src, dest) => dest === uriString
-    );
+    return await withProgress({
+      location: vscode.ProgressLocation.Notification,
+      cancellable: true,
+      title: 'Finding references'
+    }, async (progress, token) => {
+      return getLocationsForUriString(
+        this.cli,
+        this.qs,
+        this.dbm,
+        uriString,
+        KeyType.DefinitionQuery,
+        progress,
+        token,
+        (src, _dest) => src === uriString
+      );
+    });
   }
 }
 
@@ -101,6 +117,10 @@ export class TemplatePrintAstProvider {
     private cli: CodeQLCliServer,
     private qs: QueryServerClient,
     private dbm: DatabaseManager,
+
+    // Note: progress and token are only used if a cached value is not available
+    private progress: ProgressCallback,
+    private token: vscode.CancellationToken
   ) {
     this.cache = new CachedOperation<QueryWithResults | undefined>(this.getAst.bind(this));
   }
@@ -157,12 +177,15 @@ export class TemplatePrintAstProvider {
         }
       }
     };
+
     return await compileAndRunQueryAgainstDatabase(
       this.cli,
       this.qs,
       db,
       false,
       vscode.Uri.file(query),
+      this.progress,
+      this.token,
       templates
     );
   }
