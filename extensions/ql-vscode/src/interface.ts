@@ -364,8 +364,13 @@ export class InterfaceManager extends DisposableObject {
         (resultSet) => resultSet.name == selectedTable
       )!;
 
+      // Use sorted results path if it exists. This may happen if we are
+      // reloading the results view after it has been sorted in the past.
+      const resultsPath = results.sortedResultsInfo.get(selectedTable)?.resultsPath
+        || results.query.resultsPaths.resultsPath;
+
       const chunk = await this.cliServer.bqrsDecode(
-        results.query.resultsPaths.resultsPath,
+        resultsPath,
         schema.name,
         {
           offset: schema.pagination?.offsets[0],
