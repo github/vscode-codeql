@@ -352,40 +352,39 @@ export class InterfaceManager extends DisposableObject {
       });
     }
 
-    const getParsedResultSets = async (): Promise<ParsedResultSets> => {
+    // Note that the resultSetSchemas will return offsets for the default (unsorted) page,
+    // which may not be correct. However, in this case, it doesn't matter since we only
+    // need the first offset, which will be the same no matter which sorting we use.
+    const resultSetSchemas = await this.getResultSetSchemas(results);
+    const resultSetNames = resultSetSchemas.map(schema => schema.name);
 
-      const resultSetSchemas = await this.getResultSetSchemas(results);
-      const resultSetNames = resultSetSchemas.map(schema => schema.name);
+    const selectedTable = getDefaultResultSetName(resultSetNames);
+    const schema = resultSetSchemas.find(
+      (resultSet) => resultSet.name == selectedTable
+    )!;
 
-      // This may not wind up being the page we actually show, if there are interpreted results,
-      // but speculatively send it anyway.
-      const selectedTable = getDefaultResultSetName(resultSetNames);
-      const schema = resultSetSchemas.find(
-        (resultSet) => resultSet.name == selectedTable
-      )!;
+    // Use sorted results path if it exists. This may happen if we are
+    // reloading the results view after it has been sorted in the past.
+    const resultsPath = results.sortedResultsInfo.get(selectedTable)?.resultsPath
+      || results.query.resultsPaths.resultsPath;
 
-      // Use sorted results path if it exists. This may happen if we are
-      // reloading the results view after it has been sorted in the past.
-      const resultsPath = results.sortedResultsInfo.get(selectedTable)?.resultsPath
-        || results.query.resultsPaths.resultsPath;
-
-      const chunk = await this.cliServer.bqrsDecode(
-        resultsPath,
-        schema.name,
-        {
-          offset: schema.pagination?.offsets[0],
-          pageSize: RAW_RESULTS_PAGE_SIZE
-        }
-      );
-      const resultSet = transformBqrsResultSet(schema, chunk);
-      return {
-        pageNumber: 0,
-        numPages: numPagesOfResultSet(resultSet),
-        numInterpretedPages: numInterpretedPages(this._interpretation),
-        resultSet: { t: 'RawResultSet', ...resultSet },
-        selectedTable: undefined,
-        resultSetNames,
-      };
+    const chunk = await this.cliServer.bqrsDecode(
+      resultsPath,
+      schema.name,
+      {
+        // always use the first page. –
+        offset: schema.pagination?.offsets[0],
+        pageSize: RAW_RESULTS_PAGE_SIZE
+      }
+    );
+    const resultSet = transformBqrsResultSet(schema, chunk);
+    const parsedResultSets: ParsedResultSets = {
+      pageNumber: 0,
+      numPages: numPagesOfResultSet(resultSet),
+      numInterpretedPages: numInterpretedPages(this._interpretation),
+      resultSet: { ...resultSet, t: 'RawResultSet' },
+      selectedTable: undefined,
+      resultSetNames,
     };
 
     await this.postMessage({
@@ -395,7 +394,7 @@ export class InterfaceManager extends DisposableObject {
       resultsPath: this.convertPathToWebviewUri(
         results.query.resultsPaths.resultsPath
       ),
-      parsedResultSets: await getParsedResultSets(),
+      parsedResultSets,
       sortedResultsMap,
       database: results.database,
       shouldKeepOldResultsWhileRendering,
@@ -433,9 +432,11 @@ export class InterfaceManager extends DisposableObject {
     });
   }
 
-  private async getResultSetSchemas(results: CompletedQuery): Promise<ResultSetSchema[]> {
+  private async getResultSetSchemas(results: CompletedQuery, selectedTable = ''): Promise<ResultSetSchema[]> {
+    const resultsPath = results.sortedResultsInfo.get(selectedTable)?.resultsPath
+        || results.query.resultsPaths.resultsPath;
     const schemas = await this.cliServer.bqrsInfo(
-      results.query.resultsPaths.resultsPath,
+      resultsPath,
       RAW_RESULTS_PAGE_SIZE
     );
     return schemas['result-sets'];
@@ -460,7 +461,7 @@ export class InterfaceManager extends DisposableObject {
         (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v))
     );
 
-    const resultSetSchemas = await this.getResultSetSchemas(results);
+    const resultSetSchemas = await this.getResultSetSchemas(results, sorted ? selectedTable : '');
     const resultSetNames = resultSetSchemas.map(schema => schema.name);
 
     const schema = resultSetSchemas.find(
