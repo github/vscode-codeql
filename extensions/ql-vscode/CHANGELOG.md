@@ -5,6 +5,7 @@
 - Max number of simultaneous queries launchable by runQueries command is now configurable by changing the codeQL.runningQueries.maxQueries setting.
 - Fix sorting of results. Some pages of results would have the wrong sort order and columns.
 - Remember previous sort order when reloading query results.
+- Fix proper escaping of backslashes in SARIF message strings.
 
 ## 1.3.3 - 16 September 2020
 
