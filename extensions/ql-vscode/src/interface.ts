@@ -365,14 +365,16 @@ export class InterfaceManager extends DisposableObject {
 
     // Use sorted results path if it exists. This may happen if we are
     // reloading the results view after it has been sorted in the past.
-    const resultsPath = results.sortedResultsInfo.get(selectedTable)?.resultsPath
-      || results.query.resultsPaths.resultsPath;
+    const resultsPath = results.getResultsPath(selectedTable);
 
     const chunk = await this.cliServer.bqrsDecode(
       resultsPath,
       schema.name,
       {
-        // always use the first page. –
+        // Always send the first page.
+        // It may not wind up being the page we actually show,
+        // if there are interpreted results, but speculatively
+        // send anyway.
         offset: schema.pagination?.offsets[0],
         pageSize: RAW_RESULTS_PAGE_SIZE
       }
@@ -433,8 +435,7 @@ export class InterfaceManager extends DisposableObject {
   }
 
   private async getResultSetSchemas(results: CompletedQuery, selectedTable = ''): Promise<ResultSetSchema[]> {
-    const resultsPath = results.sortedResultsInfo.get(selectedTable)?.resultsPath
-        || results.query.resultsPaths.resultsPath;
+    const resultsPath = results.getResultsPath(selectedTable);
     const schemas = await this.cliServer.bqrsInfo(
       resultsPath,
       RAW_RESULTS_PAGE_SIZE
@@ -470,21 +471,8 @@ export class InterfaceManager extends DisposableObject {
     if (schema === undefined)
       throw new Error(`Query result set '${selectedTable}' not found.`);
 
-    const getResultsPath = () => {
-      if (sorted) {
-        const resultsPath = results.sortedResultsInfo.get(selectedTable)?.resultsPath;
-        if (resultsPath === undefined) {
-          throw new Error(`Can't find sorted results for table ${selectedTable}`);
-        }
-        return resultsPath;
-      }
-      else {
-        return results.query.resultsPaths.resultsPath;
-      }
-    };
-
     const chunk = await this.cliServer.bqrsDecode(
-      getResultsPath(),
+      results.getResultsPath(selectedTable, sorted),
       schema.name,
       {
         offset: schema.pagination?.offsets[pageNumber],

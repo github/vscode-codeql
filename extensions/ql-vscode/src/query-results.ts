@@ -2,7 +2,6 @@ import { env } from 'vscode';
 
 import { QueryWithResults, tmpDir, QueryInfo } from './run-queries';
 import * as messages from './messages';
-import * as helpers from './helpers';
 import * as cli from './cli';
 import * as sarif from 'sarif';
 import * as fs from 'fs-extra';
@@ -53,7 +52,7 @@ export class CompletedQuery implements QueryWithResults {
     return this.database.name;
   }
   get queryName(): string {
-    return helpers.getQueryName(this.query);
+    return getQueryName(this.query);
   }
 
   get statusString(): string {
@@ -72,6 +71,13 @@ export class CompletedQuery implements QueryWithResults {
     }
   }
 
+  getResultsPath(selectedTable: string, useSorted = true): string {
+    if (!useSorted) {
+      return this.query.resultsPaths.resultsPath;
+    }
+    return this.sortedResultsInfo.get(selectedTable)?.resultsPath
+      || this.query.resultsPaths.resultsPath;
+  }
 
   interpolate(template: string): string {
     const { databaseName, queryName, time, statusString } = this;
@@ -89,9 +95,8 @@ export class CompletedQuery implements QueryWithResults {
   }
 
   getLabel(): string {
-    if (this.options.label !== undefined)
-      return this.options.label;
-    return this.config.format;
+      return this.options?.label
+        || this.config.format;
   }
 
   get didRunSuccessfully(): boolean {
@@ -102,7 +107,11 @@ export class CompletedQuery implements QueryWithResults {
     return this.interpolate(this.getLabel());
   }
 
-  async updateSortState(server: cli.CodeQLCliServer, resultSetName: string, sortState: RawResultsSortState | undefined): Promise<void> {
+  async updateSortState(
+    server: cli.CodeQLCliServer,
+    resultSetName: string,
+    sortState?: RawResultsSortState
+  ): Promise<void> {
     if (sortState === undefined) {
       this.sortedResultsInfo.delete(resultSetName);
       return;
@@ -113,19 +122,50 @@ export class CompletedQuery implements QueryWithResults {
       sortState
     };
 
-    await server.sortBqrs(this.query.resultsPaths.resultsPath, sortedResultSetInfo.resultsPath, resultSetName, [sortState.columnIndex], [sortState.sortDirection]);
+    await server.sortBqrs(
+      this.query.resultsPaths.resultsPath,
+      sortedResultSetInfo.resultsPath,
+      resultSetName,
+      [sortState.columnIndex],
+      [sortState.sortDirection]
+    );
     this.sortedResultsInfo.set(resultSetName, sortedResultSetInfo);
   }
 
-  async updateInterpretedSortState(sortState: InterpretedResultsSortState | undefined): Promise<void> {
+  async updateInterpretedSortState(sortState?: InterpretedResultsSortState): Promise<void> {
     this.interpretedResultsSortState = sortState;
   }
 }
 
+
+/**
+ * Gets a human-readable name for an evaluated query.
+ * Uses metadata if it exists, and defaults to the query file name.
+ */
+export function getQueryName(query: QueryInfo) {
+  // Queries run through quick evaluation are not usually the entire query file.
+  // Label them differently and include the line numbers.
+  if (query.quickEvalPosition !== undefined) {
+    const { line, endLine, fileName } = query.quickEvalPosition;
+    const lineInfo = line === endLine ? `${line}` : `${line}-${endLine}`;
+    return `Quick evaluation of ${path.basename(fileName)}:${lineInfo}`;
+  } else if (query.metadata?.name) {
+    return query.metadata.name;
+  } else {
+    return path.basename(query.program.queryPath);
+  }
+}
+
+
 /**
  * Call cli command to interpret results.
  */
-export async function interpretResults(server: cli.CodeQLCliServer, metadata: QueryMetadata | undefined, resultsPaths: ResultsPaths, sourceInfo?: cli.SourceInfo): Promise<sarif.Log> {
+export async function interpretResults(
+  server: cli.CodeQLCliServer,
+  metadata: QueryMetadata | undefined,
+  resultsPaths: ResultsPaths,
+  sourceInfo?: cli.SourceInfo
+): Promise<sarif.Log> {
   const { resultsPath, interpretedResultsPath } = resultsPaths;
   if (await fs.pathExists(interpretedResultsPath)) {
     return JSON.parse(await fs.readFile(interpretedResultsPath, 'utf8'));
