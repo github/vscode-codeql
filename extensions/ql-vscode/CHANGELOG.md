@@ -7,6 +7,7 @@
 - Max number of simultaneous queries launchable by runQueries command is now configurable by changing the `codeQL.runningQueries.maxQueries` setting.
 - Allow simultaneously run queries to be canceled in a single-click.
 - Prevent multiple upgrade dialogs from appearing when running simultaneous queries on upgradeable databases.
+- Allow simultaneously run queries to be canceled in a single-click.
 - Max number of simultaneous queries launchable by runQueries command is now configurable by changing the codeQL.runningQueries.maxQueries setting.
 - Fix sorting of results. Some pages of results would have the wrong sort order and columns.
 - Remember previous sort order when reloading query results.
