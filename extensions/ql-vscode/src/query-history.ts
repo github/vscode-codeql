@@ -50,6 +50,15 @@ const SHOW_QUERY_TEXT_QUICK_EVAL_MSG = `\
  */
 const FAILED_QUERY_HISTORY_ITEM_ICON = 'media/red-x.svg';
 
+export async function updateTreeItemContextValue(element: CompletedQuery): Promise<void> {
+  // Mark this query history item according to whether it has a
+  // SARIF file so that we can make context menu items conditionally
+  // available.
+  element.treeItem!.contextValue = (await element.query.hasInterpretedResults())
+    ? 'interpretedResultsItem'
+    : 'rawResultsItem';
+}
+
 /**
  * Tree data provider for the query history view.
  */
@@ -77,6 +86,9 @@ class HistoryTreeDataProvider
   constructor(private ctx: ExtensionContext) { }
 
   async getTreeItem(element: CompletedQuery): Promise<vscode.TreeItem> {
+    if (element.treeItem !== undefined)
+      return element.treeItem;
+
     const it = new vscode.TreeItem(element.toString());
 
     it.command = {
@@ -85,12 +97,8 @@ class HistoryTreeDataProvider
       arguments: [element],
     };
 
-    // Mark this query history item according to whether it has a
-    // SARIF file so that we can make context menu items conditionally
-    // available.
-    it.contextValue = (await element.query.hasInterpretedResults())
-      ? 'interpretedResultsItem'
-      : 'rawResultsItem';
+    element.treeItem = it;
+    updateTreeItemContextValue(element);
 
     if (!element.didRunSuccessfully) {
       it.iconPath = path.join(

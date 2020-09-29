@@ -43,7 +43,7 @@ import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
 import { WebviewReveal } from './interface-utils';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
-import { QueryHistoryManager } from './query-history';
+import { QueryHistoryManager, updateTreeItemContextValue } from './query-history';
 import { CompletedQuery } from './query-results';
 import * as qsClient from './queryserver-client';
 import { displayQuickQuery } from './quick-query';
@@ -406,6 +406,10 @@ async function activateWithInstalledDistribution(
         );
         const item = qhm.addQuery(info);
         await showResultsForCompletedQuery(item, WebviewReveal.NotForced);
+        // The call to showResults potentially creates SARIF file;
+        // Update the tree item context value to allow viewing that
+        // SARIF file from context menu.
+        await updateTreeItemContextValue(item);
       } catch (e) {
         if (e instanceof UserCancellationException) {
           if (e.silent) {
