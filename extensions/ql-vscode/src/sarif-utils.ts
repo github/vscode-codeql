@@ -1,5 +1,4 @@
 import * as Sarif from 'sarif';
-import * as path from 'path';
 import { ResolvableLocationValue } from './bqrs-cli-types';
 
 export interface SarifLink {
@@ -74,9 +73,7 @@ export function getPathRelativeToSourceLocationPrefix(
   sarifRelativeUri: string
 ) {
   const normalizedSourceLocationPrefix = sourceLocationPrefix.replace(/\\/g, '/');
-  return `file:${
-    path.join(normalizedSourceLocationPrefix, sarifRelativeUri)
-  }`;
+  return `file:${normalizedSourceLocationPrefix}/${sarifRelativeUri}`;
 }
 
 export function parseSarifLocation(
