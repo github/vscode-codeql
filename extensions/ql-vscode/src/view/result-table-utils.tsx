@@ -68,18 +68,18 @@ export function renderLocation(
   callback?: () => void
 ): JSX.Element {
 
-  if (loc === undefined) {
-    return <span />;
-  } else if (isStringLoc(loc)) {
-    return <a href={loc}>{loc}</a>;
-  }
-
   // If the label was empty, use a placeholder instead, so the link is still clickable.
   let displayLabel = label;
   if (!label) {
     displayLabel = '[empty string]';
   } else if (label.match(/^\s+$/)) {
     displayLabel = `[whitespace: "${label}"]`;
+  }
+
+  if (loc === undefined) {
+    return <span>{displayLabel}</span>;
+  } else if (isStringLoc(loc)) {
+    return <a href={loc}>{loc}</a>;
   }
 
   const resolvableLoc = tryGetResolvableLocation(loc);
