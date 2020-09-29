@@ -50,20 +50,14 @@ const SHOW_QUERY_TEXT_QUICK_EVAL_MSG = `\
  */
 const FAILED_QUERY_HISTORY_ITEM_ICON = 'media/red-x.svg';
 
-export async function updateTreeItemContextValue(element: CompletedQuery): Promise<void> {
-  // Mark this query history item according to whether it has a
-  // SARIF file so that we can make context menu items conditionally
-  // available.
-  element.treeItem!.contextValue = (await element.query.hasInterpretedResults())
-    ? 'interpretedResultsItem'
-    : 'rawResultsItem';
+interface QueryHistoryDataProvider extends vscode.TreeDataProvider<CompletedQuery> {
+  updateTreeItemContextValue(element: CompletedQuery): Promise<void>;
 }
 
 /**
  * Tree data provider for the query history view.
  */
-class HistoryTreeDataProvider
-  implements vscode.TreeDataProvider<CompletedQuery> {
+class HistoryTreeDataProvider implements QueryHistoryDataProvider {
   /**
    * XXX: This idiom for how to get a `.fire()`-able event emitter was
    * cargo culted from another vscode extension. It seems rather
@@ -85,6 +79,17 @@ class HistoryTreeDataProvider
 
   constructor(private ctx: ExtensionContext) { }
 
+  async updateTreeItemContextValue(element: CompletedQuery): Promise<void> {
+    // Mark this query history item according to whether it has a
+    // SARIF file so that we can make context menu items conditionally
+    // available.
+    const hasResults = await element.query.hasInterpretedResults();
+    element.treeItem!.contextValue = hasResults
+      ? 'interpretedResultsItem'
+      : 'rawResultsItem';
+    this.refresh();
+  }
+
   async getTreeItem(element: CompletedQuery): Promise<vscode.TreeItem> {
     if (element.treeItem !== undefined)
       return element.treeItem;
@@ -98,7 +103,7 @@ class HistoryTreeDataProvider
     };
 
     element.treeItem = it;
-    updateTreeItemContextValue(element);
+    this.updateTreeItemContextValue(element);
 
     if (!element.didRunSuccessfully) {
       it.iconPath = path.join(
@@ -622,5 +627,9 @@ the file in the file explorer and dragging it into the workspace.`
     ) {
       this.compareWithItem = undefined;
     }
+  }
+
+  async updateTreeItemContextValue(element: CompletedQuery): Promise<void> {
+    this.treeDataProvider.updateTreeItemContextValue(element);
   }
 }
