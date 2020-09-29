@@ -2,10 +2,15 @@ import * as fs from 'fs-extra';
 import * as glob from 'glob-promise';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
-import { CancellationToken, ExtensionContext, ProgressOptions, window as Window, workspace } from 'vscode';
+import {
+  CancellationToken,
+  ExtensionContext,
+  ProgressOptions,
+  window as Window,
+  workspace
+} from 'vscode';
 import { CodeQLCliServer } from './cli';
 import { logger } from './logging';
-import { QueryInfo } from './run-queries';
 
 export interface ProgressUpdate {
   /**
@@ -143,24 +148,6 @@ export function getOnDiskWorkspaceFolders() {
       diskWorkspaceFolders.push(workspaceFolder.uri.fsPath);
   }
   return diskWorkspaceFolders;
-}
-
-/**
- * Gets a human-readable name for an evaluated query.
- * Uses metadata if it exists, and defaults to the query file name.
- */
-export function getQueryName(query: QueryInfo) {
-  // Queries run through quick evaluation are not usually the entire query file.
-  // Label them differently and include the line numbers.
-  if (query.quickEvalPosition !== undefined) {
-    const { line, endLine, fileName } = query.quickEvalPosition;
-    const lineInfo = line === endLine ? `${line}` : `${line}-${endLine}`;
-    return `Quick evaluation of ${path.basename(fileName)}:${lineInfo}`;
-  } else if (query.metadata && query.metadata.name) {
-    return query.metadata.name;
-  } else {
-    return path.basename(query.program.queryPath);
-  }
 }
 
 /**
