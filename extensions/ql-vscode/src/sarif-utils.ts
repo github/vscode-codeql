@@ -15,7 +15,10 @@ interface NoLocation {
 }
 
 type ParsedSarifLocation =
-  | (ResolvableLocationValue & { userVisibleFile: string })
+  | (ResolvableLocationValue & {
+
+    userVisibleFile: string;
+  })
   // Resolvable locations have a `uri` field, but it will sometimes include
   // a source location prefix, which contains build-specific information the user
   // doesn't really need to see. We ensure that `userVisibleFile` will not contain
@@ -28,7 +31,10 @@ export type SarifMessageComponent = string | SarifLink
  * Unescape "[", "]" and "\\" like in sarif plain text messages
  */
 export function unescapeSarifText(message: string): string {
-  return message.replace(/\\\[/g, '[').replace(/\\\]/g, ']').replace(/\\\\/, '\\');
+  return message
+    .replace(/\\\[/g, '[')
+    .replace(/\\\]/g, ']')
+    .replace(/\\\\/g, '\\');
 }
 
 export function parseSarifPlainTextMessage(message: string): SarifMessageComponent[] {
@@ -59,17 +65,18 @@ export function parseSarifPlainTextMessage(message: string): SarifMessageCompone
  * @param sourceLocationPrefix The source location prefix of a database. May be
  * unix style `/foo/bar/baz` or windows-style `C:\foo\bar\baz`.
  * @param sarifRelativeUri A uri relative to sourceLocationPrefix.
- * @returns A string that is valid for the `.file` field of a `FivePartLocation`:
+ *
+ * @returns A URI string that is valid for the `.file` field of a `FivePartLocation`:
  * directory separators are normalized, but drive letters `C:` may appear.
  */
 export function getPathRelativeToSourceLocationPrefix(
   sourceLocationPrefix: string,
-  sarifRelativeUui: string
+  sarifRelativeUri: string
 ) {
   const normalizedSourceLocationPrefix = sourceLocationPrefix.replace(/\\/g, '/');
   return `file:${
-    path.join(normalizedSourceLocationPrefix, decodeURIComponent(sarifRelativeUui))
-    }`;
+    path.join(normalizedSourceLocationPrefix, sarifRelativeUri)
+  }`;
 }
 
 export function parseSarifLocation(
@@ -89,12 +96,13 @@ export function parseSarifLocation(
   const uri = physicalLocation.artifactLocation.uri;
 
   const fileUriRegex = /^file:/;
-  const effectiveLocation = uri.match(fileUriRegex)
+  const hasFilePrefix = uri.match(fileUriRegex);
+  const effectiveLocation = hasFilePrefix
     ? uri
     : getPathRelativeToSourceLocationPrefix(sourceLocationPrefix, uri);
-  const userVisibleFile = uri.match(fileUriRegex)
-    ? decodeURIComponent(uri.replace(fileUriRegex, ''))
-    : uri;
+  const userVisibleFile = decodeURIComponent(hasFilePrefix
+    ? uri.replace(fileUriRegex, '')
+    : uri);
 
   if (physicalLocation.region === undefined) {
     // If the region property is absent, the physicalLocation object refers to the entire file.
