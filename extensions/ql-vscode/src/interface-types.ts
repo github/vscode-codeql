@@ -127,11 +127,16 @@ export interface NavigatePathMsg {
   direction: number;
 }
 
+export interface UntoggleShowProblemsMsg {
+  t: 'untoggleShowProblems';
+}
+
 export type IntoResultsViewMsg =
   | ResultsUpdatingMsg
   | SetStateMsg
   | ShowInterpretedPageMsg
-  | NavigatePathMsg;
+  | NavigatePathMsg
+  | UntoggleShowProblemsMsg;
 
 export type FromResultsViewMsg =
   | ViewSourceFileMsg
