@@ -246,7 +246,12 @@ export class DatabaseUI extends DisposableObject {
     ctx.subscriptions.push(
       commandRunner(
         'codeQL.upgradeCurrentDatabase',
-        this.handleUpgradeCurrentDatabase
+        this.handleUpgradeCurrentDatabase,
+        {
+          location: ProgressLocation.Notification,
+          title: 'Upgrading current database',
+          cancellable: true,
+        }
       )
     );
     ctx.subscriptions.push(
@@ -263,13 +268,23 @@ export class DatabaseUI extends DisposableObject {
     ctx.subscriptions.push(
       commandRunner(
         'codeQLDatabases.chooseDatabaseFolder',
-        this.handleChooseDatabaseFolder
+        this.handleChooseDatabaseFolder,
+        {
+          location: ProgressLocation.Notification,
+          title: 'Adding database from folder',
+          cancellable: false,
+        }
       )
     );
     ctx.subscriptions.push(
       commandRunner(
         'codeQLDatabases.chooseDatabaseArchive',
-        this.handleChooseDatabaseArchive
+        this.handleChooseDatabaseArchive,
+        {
+          location: ProgressLocation.Notification,
+          title: 'Adding database from archive',
+          cancellable: false,
+        }
       )
     );
     ctx.subscriptions.push(
@@ -320,7 +335,12 @@ export class DatabaseUI extends DisposableObject {
     ctx.subscriptions.push(
       commandRunner(
         'codeQLDatabases.upgradeDatabase',
-        this.handleUpgradeDatabase
+        this.handleUpgradeDatabase,
+        {
+          location: ProgressLocation.Notification,
+          title: 'Upgrading database',
+          cancellable: true,
+        }
       )
     );
     ctx.subscriptions.push(
@@ -393,6 +413,13 @@ export class DatabaseUI extends DisposableObject {
     );
   };
 
+  async tryUpgradeCurrentDatabase(
+    progress: ProgressCallback,
+    token: CancellationToken
+  ) {
+    await this.handleUpgradeCurrentDatabase(progress, token);
+  }
+
   private handleSortByName = async () => {
     if (this.treeDataProvider.sortOrder === SortOrder.NameAsc) {
       this.treeDataProvider.sortOrder = SortOrder.NameDesc;
@@ -409,45 +436,47 @@ export class DatabaseUI extends DisposableObject {
     }
   };
 
-  private handleUpgradeCurrentDatabase = async (): Promise<void> => {
+  private handleUpgradeCurrentDatabase = async (
+    progress: ProgressCallback,
+    token: CancellationToken,
+  ): Promise<void> => {
     await this.handleUpgradeDatabase(
+      progress, token,
       this.databaseManager.currentDatabaseItem,
       []
     );
   };
 
   private handleUpgradeDatabase = async (
+    progress: ProgressCallback,
+    token: CancellationToken,
     databaseItem: DatabaseItem | undefined,
-    multiSelect: DatabaseItem[] | undefined
+    multiSelect: DatabaseItem[] | undefined,
   ): Promise<void> => {
     if (multiSelect?.length) {
       await Promise.all(
-        multiSelect.map((dbItem) => this.handleUpgradeDatabase(dbItem, []))
+        multiSelect.map((dbItem) => this.handleUpgradeDatabase(progress, token, dbItem, []))
       );
     }
     if (this.queryServer === undefined) {
-      logger.log(
+      throw new Error(
         'Received request to upgrade database, but there is no running query server.'
       );
-      return;
     }
     if (databaseItem === undefined) {
-      logger.log(
+      throw new Error(
         'Received request to upgrade database, but no database was provided.'
       );
-      return;
     }
     if (databaseItem.contents === undefined) {
-      logger.log(
+      throw new Error(
         'Received request to upgrade database, but database contents could not be found.'
       );
-      return;
     }
     if (databaseItem.contents.dbSchemeUri === undefined) {
-      logger.log(
+      throw new Error(
         'Received request to upgrade database, but database has no schema.'
       );
-      return;
     }
 
     // Search for upgrade scripts in any workspace folders available
@@ -461,8 +490,7 @@ export class DatabaseUI extends DisposableObject {
     const { scripts, finalDbscheme } = upgradeInfo;
 
     if (finalDbscheme === undefined) {
-      logger.log('Could not determine target dbscheme to upgrade to.');
-      return;
+      throw new Error('Could not determine target dbscheme to upgrade to.');
     }
     const targetDbSchemeUri = Uri.file(finalDbscheme);
 
@@ -470,7 +498,9 @@ export class DatabaseUI extends DisposableObject {
       this.queryServer,
       databaseItem,
       targetDbSchemeUri,
-      getUpgradesDirectories(scripts)
+      getUpgradesDirectories(scripts),
+      progress,
+      token
     );
   };
 
