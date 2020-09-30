@@ -11,7 +11,8 @@ import {
   ALERTS_TABLE_NAME,
   SELECT_TABLE_NAME,
   getDefaultResultSetName,
-  ParsedResultSets
+  ParsedResultSets,
+  IntoResultsViewMsg
 } from '../interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
@@ -41,6 +42,7 @@ export interface ResultTablesProps {
 interface ResultTablesState {
   selectedTable: string; // name of selected result set
   selectedPage: string; // stringified selected page
+  problemsViewSelected: boolean;
 }
 
 const UPDATING_RESULTS_TEXT_CLASS_NAME = 'vscode-codeql__result-tables-updating-text';
@@ -101,7 +103,17 @@ export class ResultTables
     super(props);
     const selectedTable = props.parsedResultSets.selectedTable || getDefaultResultSet(this.getResultSets());
     const selectedPage = (props.parsedResultSets.pageNumber + 1) + '';
-    this.state = { selectedTable, selectedPage };
+    this.state = {
+      selectedTable,
+      selectedPage,
+      problemsViewSelected: false
+    };
+  }
+
+  untoggleProbemsView() {
+    this.setState({
+      problemsViewSelected: false
+    });
   }
 
   private onTableSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -115,26 +127,39 @@ export class ResultTables
 
   private alertTableExtras(): JSX.Element | undefined {
     const { database, resultsPath, metadata, origResultsPaths } = this.props;
+    const handleCheckboxChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.checked === this.state.problemsViewSelected) {
+        // no change
+        return;
+      }
+      this.setState({
+        problemsViewSelected: e.target.checked
+      });
+      if (resultsPath !== undefined) {
+        vscode.postMessage({
+          t: 'toggleDiagnostics',
+          origResultsPaths: origResultsPaths,
+          databaseUri: database.databaseUri,
+          visible: e.target.checked,
+          metadata: metadata
+        });
+      }
+    };
 
-    const displayProblemsAsAlertsToggle =
-      <div className={toggleDiagnosticsClassName}>
-        <input type="checkbox" id="toggle-diagnostics" name="toggle-diagnostics" onChange={(e) => {
-          if (resultsPath !== undefined) {
-            vscode.postMessage({
-              t: 'toggleDiagnostics',
-              origResultsPaths: origResultsPaths,
-              databaseUri: database.databaseUri,
-              visible: e.target.checked,
-              metadata: metadata
-            });
-          }
-        }} />
-        <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
-      </div>;
-
-    return <div className={alertExtrasClassName}>
-      {displayProblemsAsAlertsToggle}
-    </div>;
+    return (
+      <div className={alertExtrasClassName}>
+        <div className={toggleDiagnosticsClassName}>
+          <input
+            type="checkbox"
+            id="toggle-diagnostics"
+            name="toggle-diagnostics"
+            onChange={handleCheckboxChanged}
+            checked={this.state.problemsViewSelected}
+          />
+          <label htmlFor="toggle-diagnostics">Show results in Problems view</label>
+        </div>
+      </div>
+    );
   }
 
   getOffset(): number {
@@ -244,6 +269,40 @@ export class ResultTables
       }
     </div>;
   }
+
+  handleMessage(msg: IntoResultsViewMsg): void {
+    switch (msg.t) {
+      case 'untoggleShowProblems':
+        this.setState({
+          problemsViewSelected: false
+        });
+        break;
+
+      default:
+        // noop
+    }
+  }
+
+  // TODO: Duplicated from results.tsx consider a way to
+  // avoid this duplication
+  componentDidMount(): void {
+    this.vscodeMessageHandler = (evt) =>
+      evt.origin === window.origin
+        ? this.handleMessage(evt.data as IntoResultsViewMsg)
+        : console.error(`Invalid event origin ${evt.origin}`);
+
+    window.addEventListener('message', this.vscodeMessageHandler);
+  }
+
+  componentWillUnmount(): void {
+    if (this.vscodeMessageHandler) {
+      window.removeEventListener('message', this.vscodeMessageHandler);
+    }
+  }
+
+  private vscodeMessageHandler:
+    | ((ev: MessageEvent) => void)
+    | undefined = undefined;
 }
 
 class ResultTable extends React.Component<ResultTableProps, {}> {

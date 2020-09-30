@@ -132,6 +132,17 @@ export class InterfaceManager extends DisposableObject {
         this.navigatePathStep.bind(this, -1)
       )
     );
+
+    this.push(
+      this.databaseManager.onDidChangeDatabaseItem(() => {
+        // Consider only clearing database items when a database
+        // is removed and only clearing items from that database.
+        this._diagnosticCollection.clear();
+        this.postMessage({
+          t: 'untoggleShowProblems'
+        });
+      })
+    );
   }
 
   navigatePathStep(direction: number): void {

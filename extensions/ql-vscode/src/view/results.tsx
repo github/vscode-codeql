@@ -137,6 +137,11 @@ class App extends React.Component<{}, ResultsViewState> {
       case 'navigatePath':
         onNavigation.fire(msg);
         break;
+
+      case 'untoggleShowProblems':
+        // noop
+        break;
+
       default:
         assertNever(msg);
     }
