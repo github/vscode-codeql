@@ -258,7 +258,9 @@ async function getSelectedPosition(editor: TextEditor): Promise<messages.Positio
 async function checkDbschemeCompatibility(
   cliServer: cli.CodeQLCliServer,
   qs: qsClient.QueryServerClient,
-  query: QueryInfo
+  query: QueryInfo,
+  progress: helpers.ProgressCallback,
+  token: CancellationToken,
 ): Promise<void> {
   const searchPath = helpers.getOnDiskWorkspaceFolders();
 
@@ -293,7 +295,9 @@ async function checkDbschemeCompatibility(
         qs,
         query.dbItem,
         Uri.file(finalDbscheme),
-        getUpgradesDirectories(scripts)
+        getUpgradesDirectories(scripts),
+        progress,
+        token
       );
     }
   }
@@ -481,7 +485,7 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 
   const query = new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata, templates);
-  await checkDbschemeCompatibility(cliServer, qs, query);
+  await checkDbschemeCompatibility(cliServer, qs, query, progress, token);
 
   let errors;
   try {

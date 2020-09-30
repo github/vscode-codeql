@@ -170,7 +170,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
             cancellable: false,
           };
 
-          // Avoid using commandRunner here because this function might be called upon extension activation
+          // Avoid using commandRunner here because this function is called upon extension activation
           await helpers.withProgress(progressOptions, progress =>
             distributionManager.installExtensionManagedDistributionRelease(result.updatedRelease, progress));
 
@@ -512,11 +512,21 @@ async function activateWithInstalledDistribution(
           });
         }
 
+        if (queryUris.length > 1) {
+          // Try to upgrade the current database before running any queries
+          // so that the user isn't confronted with multiple upgrade
+          // requests for each query to run.
+          // Only do it if running multiple queries since this check is
+          // performed on each query run anyway.
+          await databaseUI.tryUpgradeCurrentDatabase(progress, token);
+        }
+
         wrappedProgress({
           maxStep: queryUris.length,
           step: queryUris.length - queriesRemaining,
           message: ''
         });
+
         await Promise.all(queryUris.map(async uri =>
           compileAndRunQuery(false, uri, wrappedProgress, token)
             .then(() => queriesRemaining--)
@@ -550,6 +560,7 @@ async function activateWithInstalledDistribution(
       displayQuickQuery(ctx, cliServer, databaseUI, progress, token)
     )
   );
+
   ctx.subscriptions.push(
     helpers.commandRunner('codeQL.restartQueryServer', async () => {
       await qs.restartQueryServer();

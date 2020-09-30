@@ -20,11 +20,15 @@ const MAX_UPGRADE_MESSAGE_LINES = 10;
  * @returns the `UpgradeParams` needed to start the upgrade, if the upgrade is possible and was confirmed by the user, or `undefined` otherwise.
  */
 async function checkAndConfirmDatabaseUpgrade(
-  qs: qsClient.QueryServerClient, db: DatabaseItem, targetDbScheme: vscode.Uri, upgradesDirectories: vscode.Uri[]
+  qs: qsClient.QueryServerClient,
+  db: DatabaseItem,
+  targetDbScheme: vscode.Uri,
+  upgradesDirectories: vscode.Uri[],
+  progress: helpers.ProgressCallback,
+  token: vscode.CancellationToken,
 ): Promise<messages.UpgradeParams | undefined> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
-    helpers.showAndLogErrorMessage('Database is invalid, and cannot be upgraded.');
-    return;
+    throw new Error('Database is invalid, and cannot be upgraded.');
   }
   const params: messages.UpgradeParams = {
     fromDbscheme: db.contents.dbSchemeUri.fsPath,
@@ -35,11 +39,10 @@ async function checkAndConfirmDatabaseUpgrade(
   let checkUpgradeResult: messages.CheckUpgradeResult;
   try {
     qs.logger.log('Checking database upgrade...');
-    checkUpgradeResult = await checkDatabaseUpgrade(qs, params);
+    checkUpgradeResult = await checkDatabaseUpgrade(qs, params, progress, token);
   }
   catch (e) {
-    helpers.showAndLogErrorMessage(`Database cannot be upgraded: ${e}`);
-    return;
+    throw new Error(`Database cannot be upgraded: ${e}`);
   }
   finally {
     qs.logger.log('Done checking database upgrade.');
@@ -48,12 +51,15 @@ async function checkAndConfirmDatabaseUpgrade(
   const checkedUpgrades = checkUpgradeResult.checkedUpgrades;
   if (checkedUpgrades === undefined) {
     const error = checkUpgradeResult.upgradeError || '[no error message available]';
-    await helpers.showAndLogErrorMessage(`Database cannot be upgraded: ${error}`);
-    return;
+    throw new Error(`Database cannot be upgraded: ${error}`);
   }
 
   if (checkedUpgrades.scripts.length === 0) {
-    await helpers.showAndLogInformationMessage('Database is already up to date; nothing to do.');
+    progress({
+      step: 3,
+      maxStep: 3,
+      message: 'Database is already up to date; nothing to do.'
+    });
     return;
   }
 
@@ -114,9 +120,11 @@ async function checkAndConfirmDatabaseUpgrade(
 export async function upgradeDatabase(
   qs: qsClient.QueryServerClient,
   db: DatabaseItem, targetDbScheme: vscode.Uri,
-  upgradesDirectories: vscode.Uri[]
+  upgradesDirectories: vscode.Uri[],
+  progress: helpers.ProgressCallback,
+  token: vscode.CancellationToken,
 ): Promise<messages.RunUpgradeResult | undefined> {
-  const upgradeParams = await checkAndConfirmDatabaseUpgrade(qs, db, targetDbScheme, upgradesDirectories);
+  const upgradeParams = await checkAndConfirmDatabaseUpgrade(qs, db, targetDbScheme, upgradesDirectories, progress, token);
 
   if (upgradeParams === undefined) {
     return;
@@ -124,7 +132,7 @@ export async function upgradeDatabase(
 
   let compileUpgradeResult: messages.CompileUpgradeResult;
   try {
-    compileUpgradeResult = await compileDatabaseUpgrade(qs, upgradeParams);
+    compileUpgradeResult = await compileDatabaseUpgrade(qs, upgradeParams, progress, token);
   }
   catch (e) {
     helpers.showAndLogErrorMessage(`Compilation of database upgrades failed: ${e}`);
@@ -143,7 +151,7 @@ export async function upgradeDatabase(
   try {
     qs.logger.log('Running the following database upgrade:');
     qs.logger.log(compileUpgradeResult.compiledUpgrades.scripts.map(s => s.description.description).join('\n'));
-    return await runDatabaseUpgrade(qs, db, compileUpgradeResult.compiledUpgrades);
+    return await runDatabaseUpgrade(qs, db, compileUpgradeResult.compiledUpgrades, progress, token);
   }
   catch (e) {
     helpers.showAndLogErrorMessage(`Database upgrade failed: ${e}`);
@@ -155,34 +163,46 @@ export async function upgradeDatabase(
 }
 
 async function checkDatabaseUpgrade(
-  qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams
+  qs: qsClient.QueryServerClient,
+  upgradeParams: messages.UpgradeParams,
+  progress: helpers.ProgressCallback,
+  token: vscode.CancellationToken,
 ): Promise<messages.CheckUpgradeResult> {
-  // Avoid using commandRunner here because this function might be called upon extension activation
-  return helpers.withProgress({
-    location: vscode.ProgressLocation.Notification,
-    title: 'Checking for database upgrades',
-    cancellable: true,
-  }, (progress, token) => qs.sendRequest(messages.checkUpgrade, upgradeParams, token, progress));
+  progress({
+    step: 1,
+    maxStep: 3,
+    message: 'Checking for database upgrades'
+  });
+
+  return qs.sendRequest(messages.checkUpgrade, upgradeParams, token, progress);
 }
 
 async function compileDatabaseUpgrade(
-  qs: qsClient.QueryServerClient, upgradeParams: messages.UpgradeParams
+  qs: qsClient.QueryServerClient,
+  upgradeParams: messages.UpgradeParams,
+  progress: helpers.ProgressCallback,
+  token: vscode.CancellationToken,
 ): Promise<messages.CompileUpgradeResult> {
   const params: messages.CompileUpgradeParams = {
     upgrade: upgradeParams,
     upgradeTempDir: upgradesTmpDir.name
   };
 
-  // Avoid using commandRunner here because this function might be called upon extension activation
-  return helpers.withProgress({
-    location: vscode.ProgressLocation.Notification,
-    title: 'Compiling database upgrades',
-    cancellable: true,
-  }, (progress, token) => qs.sendRequest(messages.compileUpgrade, params, token, progress));
+  progress({
+    step: 2,
+    maxStep: 3,
+    message: 'Compiling database upgrades'
+  });
+
+  return qs.sendRequest(messages.compileUpgrade, params, token, progress);
 }
 
 async function runDatabaseUpgrade(
-  qs: qsClient.QueryServerClient, db: DatabaseItem, upgrades: messages.CompiledUpgrades
+  qs: qsClient.QueryServerClient,
+  db: DatabaseItem,
+  upgrades: messages.CompiledUpgrades,
+  progress: helpers.ProgressCallback,
+  token: vscode.CancellationToken,
 ): Promise<messages.RunUpgradeResult> {
 
   if (db.contents === undefined || db.contents.datasetUri === undefined) {
@@ -199,10 +219,5 @@ async function runDatabaseUpgrade(
     toRun: upgrades
   };
 
-  // Avoid using commandRunner here because this function might be called upon extension activation
-  return helpers.withProgress({
-    location: vscode.ProgressLocation.Notification,
-    title: 'Running database upgrades',
-    cancellable: true,
-  }, (progress, token) => qs.sendRequest(messages.runUpgrade, params, token, progress));
+  return qs.sendRequest(messages.runUpgrade, params, token, progress);
 }
