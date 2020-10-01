@@ -611,7 +611,8 @@ export class DatabaseUI extends DisposableObject {
   }
 }
 
-const dbRegeEx = /^db-(javascript|go|cpp|java|python)$/;
+// TODO: Get the list of supported languages from a list that will be auto-updated.
+const dbRegeEx = /^db-(javascript|go|cpp|java|python|csharp)$/;
 function isLikelyDbFolder(dbPath: string) {
   return path.basename(dbPath).match(dbRegeEx);
 }

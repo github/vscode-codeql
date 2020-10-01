@@ -636,6 +636,10 @@
       {
         "view": "codeQLQueryHistory",
         "contents": "Run the 'CodeQL: Run Query' command on a QL query.\n[Run Query](command:codeQL.runQuery)"
+      },
+      {
+        "view": "codeQLDatabases",
+        "contents": "Add a Code QL database:\n[From a folder](command:codeQLDatabases.chooseDatabaseFolder)\n[From an archive](command:codeQLDatabases.chooseDatabaseArchive)\n[From a URL (as a zip file)](command:codeQLDatabases.chooseDatabaseInternet)\n[From LGTM](command:codeQLDatabases.chooseDatabaseLgtm)"
       }
     ]
   },
