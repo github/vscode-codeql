@@ -249,6 +249,24 @@ export interface DatabaseItem {
   belongsToSourceArchiveExplorerUri(uri: vscode.Uri): boolean;
 }
 
+export enum DatabaseEventKind {
+  Add = 'Add',
+  Remove = 'Remove',
+
+  // Fired when databases are refreshed from persisted state
+  Refresh = 'Refresh',
+
+  // Fired when the current database changes
+  Change = 'Change',
+
+  Rename = 'Rename'
+}
+
+export interface DatabaseChangedEvent {
+  kind: DatabaseEventKind;
+  item: DatabaseItem | undefined;
+}
+
 class DatabaseItemImpl implements DatabaseItem {
   private _error: Error | undefined = undefined;
   private _contents: DatabaseContents | undefined;
@@ -257,7 +275,7 @@ class DatabaseItemImpl implements DatabaseItem {
 
   public constructor(public readonly databaseUri: vscode.Uri,
     contents: DatabaseContents | undefined, private options: FullDatabaseOptions,
-    private readonly onChanged: (item: DatabaseItemImpl) => void) {
+    private readonly onChanged: (event: DatabaseChangedEvent) => void) {
 
     this._contents = contents;
   }
@@ -312,7 +330,10 @@ class DatabaseItemImpl implements DatabaseItem {
       }
     }
     finally {
-      this.onChanged(this);
+      this.onChanged({
+        kind: DatabaseEventKind.Refresh,
+        item: this
+      });
     }
   }
 
@@ -452,11 +473,11 @@ function eventFired<T>(event: vscode.Event<T>, timeoutMs = 1000): Promise<T | un
 }
 
 export class DatabaseManager extends DisposableObject {
-  private readonly _onDidChangeDatabaseItem = this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
+  private readonly _onDidChangeDatabaseItem = this.push(new vscode.EventEmitter<DatabaseChangedEvent>());
 
   readonly onDidChangeDatabaseItem = this._onDidChangeDatabaseItem.event;
 
-  private readonly _onDidChangeCurrentDatabaseItem = this.push(new vscode.EventEmitter<DatabaseItem | undefined>());
+  private readonly _onDidChangeCurrentDatabaseItem = this.push(new vscode.EventEmitter<DatabaseChangedEvent>());
   readonly onDidChangeCurrentDatabaseItem = this._onDidChangeCurrentDatabaseItem.event;
 
   private readonly _databaseItems: DatabaseItemImpl[] = [];
@@ -484,8 +505,8 @@ export class DatabaseManager extends DisposableObject {
       displayName: realOptions.displayName,
       dateAdded: realOptions.dateAdded || Date.now()
     };
-    const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions, (item) => {
-      this._onDidChangeDatabaseItem.fire(item);
+    const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions, (event) => {
+      this._onDidChangeDatabaseItem.fire(event);
     });
     await this.addDatabaseItem(databaseItem);
     await this.addDatabaseSourceArchiveFolder(databaseItem);
@@ -556,8 +577,8 @@ export class DatabaseManager extends DisposableObject {
       dateAdded
     };
     const item = new DatabaseItemImpl(vscode.Uri.parse(state.uri), undefined, fullOptions,
-      (item) => {
-        this._onDidChangeDatabaseItem.fire(item);
+      (event) => {
+        this._onDidChangeDatabaseItem.fire(event);
       });
     await this.addDatabaseItem(item);
 
@@ -605,7 +626,10 @@ export class DatabaseManager extends DisposableObject {
     if (this._currentDatabaseItem !== item) {
       this._currentDatabaseItem = item;
       this.updatePersistedCurrentDatabaseItem();
-      this._onDidChangeCurrentDatabaseItem.fire(item);
+      this._onDidChangeCurrentDatabaseItem.fire({
+        item,
+        kind: DatabaseEventKind.Change
+      });
     }
   }
 
@@ -631,13 +655,19 @@ export class DatabaseManager extends DisposableObject {
   private async addDatabaseItem(item: DatabaseItemImpl) {
     this._databaseItems.push(item);
     this.updatePersistedDatabaseList();
-    this._onDidChangeDatabaseItem.fire(undefined);
+    this._onDidChangeDatabaseItem.fire({
+      item: undefined,
+      kind: DatabaseEventKind.Add
+    });
   }
 
   public async renameDatabaseItem(item: DatabaseItem, newName: string) {
     item.name = newName;
     this.updatePersistedDatabaseList();
-    this._onDidChangeDatabaseItem.fire(item);
+    this._onDidChangeDatabaseItem.fire({
+      item,
+      kind: DatabaseEventKind.Rename
+    });
   }
 
   public removeDatabaseItem(item: DatabaseItem) {
@@ -664,7 +694,10 @@ export class DatabaseManager extends DisposableObject {
         e => logger.log(`Failed to delete '${item.databaseUri.path}'. Reason: ${e.message}`));
     }
 
-    this._onDidChangeDatabaseItem.fire(undefined);
+    this._onDidChangeDatabaseItem.fire({
+      item: undefined,
+      kind: DatabaseEventKind.Remove
+    });
   }
 
   private updatePersistedCurrentDatabaseItem(): void {

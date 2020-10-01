@@ -13,7 +13,7 @@ import {
 } from 'vscode';
 import * as cli from './cli';
 import { CodeQLCliServer } from './cli';
-import { DatabaseItem, DatabaseManager } from './databases';
+import { DatabaseEventKind, DatabaseItem, DatabaseManager } from './databases';
 import { showAndLogErrorMessage } from './helpers';
 import { assertNever } from './helpers-pure';
 import {
@@ -134,13 +134,13 @@ export class InterfaceManager extends DisposableObject {
     );
 
     this.push(
-      this.databaseManager.onDidChangeDatabaseItem(() => {
-        // Consider only clearing database items when a database
-        // is removed and only clearing items from that database.
-        this._diagnosticCollection.clear();
-        this.postMessage({
-          t: 'untoggleShowProblems'
-        });
+      this.databaseManager.onDidChangeDatabaseItem(({ kind }) => {
+        if (kind === DatabaseEventKind.Remove) {
+          this._diagnosticCollection.clear();
+          this.postMessage({
+            t: 'untoggleShowProblems'
+          });
+        }
       })
     );
   }
