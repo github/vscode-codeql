@@ -295,15 +295,27 @@
       },
       {
         "command": "codeQLQueryHistory.openQuery",
-        "title": "Open Query"
-      },
-      {
-        "command": "codeQLQueryHistory.removeHistoryItem",
-        "title": "Remove History Item"
+        "title": "Open Query",
+        "icon": {
+          "light": "media/light/edit.svg",
+          "dark": "media/dark/edit.svg"
+        }
       },
       {
         "command": "codeQLQueryHistory.itemClicked",
-        "title": "Query History Item"
+        "title": "Open Query Results",
+        "icon": {
+          "light": "media/light/preview.svg",
+          "dark": "media/dark/preview.svg"
+        }
+      },
+      {
+        "command": "codeQLQueryHistory.removeHistoryItem",
+        "title": "Remove History Item(s)",
+        "icon": {
+          "light": "media/light/trash.svg",
+          "dark": "media/dark/trash.svg"
+        }
       },
       {
         "command": "codeQLQueryHistory.showQueryLog",
@@ -388,6 +400,21 @@
         {
           "command": "codeQLDatabases.chooseDatabaseLgtm",
           "when": "view == codeQLDatabases",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLQueryHistory.openQuery",
+          "when": "view == codeQLQueryHistory",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLQueryHistory.itemClicked",
+          "when": "view == codeQLQueryHistory",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLQueryHistory.removeHistoryItem",
+          "when": "view == codeQLQueryHistory",
           "group": "navigation"
         },
         {

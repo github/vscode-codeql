@@ -289,19 +289,20 @@ export class QueryHistoryManager {
     singleItem: CompletedQuery,
     multiSelect: CompletedQuery[]
   ): Promise<void> {
-    if (!this.assertSingleQuery(multiSelect)) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+    if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
 
     const textDocument = await vscode.workspace.openTextDocument(
-      vscode.Uri.file(singleItem.query.program.queryPath)
+      vscode.Uri.file(finalSingleItem.query.program.queryPath)
     );
     const editor = await vscode.window.showTextDocument(
       textDocument,
       vscode.ViewColumn.One
     );
-    const queryText = singleItem.options.queryText;
-    if (queryText !== undefined && singleItem.options.isQuickQuery) {
+    const queryText = finalSingleItem.options.queryText;
+    if (queryText !== undefined && finalSingleItem.options.isQuickQuery) {
       await editor.edit((edit) =>
         edit.replace(
           textDocument.validateRange(
@@ -317,7 +318,9 @@ export class QueryHistoryManager {
     singleItem: CompletedQuery,
     multiSelect: CompletedQuery[]
   ) {
-    (multiSelect || [singleItem]).forEach((item) => {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    (finalMultiSelect || [finalSingleItem]).forEach((item) => {
       this.treeDataProvider.remove(item);
       item.dispose();
     });
@@ -375,14 +378,15 @@ export class QueryHistoryManager {
     singleItem: CompletedQuery,
     multiSelect: CompletedQuery[]
   ) {
-    if (!this.assertSingleQuery(multiSelect)) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+    if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
-    this.treeDataProvider.setCurrentItem(singleItem);
+    this.treeDataProvider.setCurrentItem(finalSingleItem);
 
     const now = new Date();
     const prevItemClick = this.lastItemClick;
-    this.lastItemClick = { time: now, item: singleItem };
+    this.lastItemClick = { time: now, item: finalSingleItem };
 
     if (
       prevItemClick !== undefined &&
@@ -627,6 +631,33 @@ the file in the file explorer and dragging it into the workspace.`
     ) {
       this.compareWithItem = undefined;
     }
+  }
+
+  /**
+   * If no items are selected, attempt to grab the selection from the treeview.
+   * We need to use this method because when clicking on commands from the view title
+   * bar, the selections are not passed in.
+   *
+   * @param singleItem the single item selected, or undefined if no item is selected
+   * @param multiSelect a multi-select or undefined if no items are selected
+   */
+  private determineSelection(
+    singleItem: CompletedQuery,
+    multiSelect: CompletedQuery[]
+  ): { finalSingleItem: CompletedQuery; finalMultiSelect: CompletedQuery[] } {
+    if (singleItem === undefined && (multiSelect === undefined || multiSelect.length === 0 || multiSelect[0] === undefined)) {
+      const selection = this.treeView.selection;
+      if (selection) {
+        return {
+          finalSingleItem: selection[0],
+          finalMultiSelect: selection
+        };
+      }
+    }
+    return {
+      finalSingleItem: singleItem,
+      finalMultiSelect: multiSelect
+    };
   }
 
   async updateTreeItemContextValue(element: CompletedQuery): Promise<void> {
