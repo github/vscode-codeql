@@ -16,6 +16,7 @@ import * as fs from 'fs-extra';
 
 import * as cli from './cli';
 import {
+  DatabaseChangedEvent,
   DatabaseItem,
   DatabaseManager,
   getUpgradesDirectories,
@@ -72,9 +73,7 @@ class DatabaseTreeDataProvider extends DisposableObject
   implements TreeDataProvider<DatabaseItem> {
   private _sortOrder = SortOrder.NameAsc;
 
-  private readonly _onDidChangeTreeData = new EventEmitter<
-    DatabaseItem | undefined
-  >();
+  private readonly _onDidChangeTreeData = new EventEmitter<DatabaseItem | undefined>();
   private currentDatabaseItem: DatabaseItem | undefined;
 
   constructor(
@@ -101,19 +100,19 @@ class DatabaseTreeDataProvider extends DisposableObject
     return this._onDidChangeTreeData.event;
   }
 
-  private handleDidChangeDatabaseItem = (
-    databaseItem: DatabaseItem | undefined
-  ): void => {
-    this._onDidChangeTreeData.fire(databaseItem);
+  private handleDidChangeDatabaseItem = (event: DatabaseChangedEvent): void => {
+    // Note that events from the databse manager are instances of DatabaseChangedEvent
+    // and events fired by the UI are instances of DatabaseItem
+    this._onDidChangeTreeData.fire(event.item);
   };
 
   private handleDidChangeCurrentDatabaseItem = (
-    databaseItem: DatabaseItem | undefined
+    event: DatabaseChangedEvent
   ): void => {
     if (this.currentDatabaseItem) {
       this._onDidChangeTreeData.fire(this.currentDatabaseItem);
     }
-    this.currentDatabaseItem = databaseItem;
+    this.currentDatabaseItem = event.item;
     if (this.currentDatabaseItem) {
       this._onDidChangeTreeData.fire(this.currentDatabaseItem);
     }
