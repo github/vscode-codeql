@@ -119,7 +119,7 @@
         "codeQL.runningQueries.numberOfThreads": {
           "type": "integer",
           "default": 1,
-          "minimum": 1,
+          "minimum": 0,
           "maximum": 1024,
           "description": "Number of threads for running queries."
         },
@@ -166,7 +166,7 @@
           "scope": "window",
           "type": "integer",
           "default": 1,
-          "minimum": 1,
+          "minimum": 0,
           "maximum": 1024,
           "description": "Number of threads for running CodeQL tests."
         }

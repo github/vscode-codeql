@@ -6,6 +6,7 @@
 - Fix sorting of results. Some pages of results would have the wrong sort order and columns.
 - Remember previous sort order when reloading query results.
 - Fix proper escaping of backslashes in SARIF message strings.
+- Allow setting `codeQL.runningQueries.numberOfThreads` and `codeQL.runningTests.numberOfThreads` to 0, (which is interpreted as 'use one thread per core on the machine').
 
 ## 1.3.3 - 16 September 2020
 
