@@ -353,6 +353,7 @@ async function activateWithInstalledDistribution(
 
   const qhm = new QueryHistoryManager(
     ctx,
+    qs,
     queryHistoryConfigurationListener,
     showResults,
     async (from: CompletedQuery, to: CompletedQuery) =>

@@ -7,6 +7,7 @@ import { QueryWithResults } from './run-queries';
 import * as helpers from './helpers';
 import { logger } from './logging';
 import { URLSearchParams } from 'url';
+import { QueryServerClient } from './queryserver-client';
 
 /**
  * query-history.ts
@@ -180,6 +181,7 @@ export class QueryHistoryManager {
 
   constructor(
     ctx: ExtensionContext,
+    private qs: QueryServerClient,
     private queryHistoryConfigListener: QueryHistoryConfig,
     private selectedCallback: (item: CompletedQuery) => Promise<void>,
     private doCompareCallback: (
@@ -248,6 +250,12 @@ export class QueryHistoryManager {
       helpers.commandRunner(
         'codeQLQueryHistory.viewSarif',
         this.handleViewSarif.bind(this)
+      )
+    );
+    ctx.subscriptions.push(
+      helpers.commandRunner(
+        'codeQLQueryHistory.viewDil',
+        this.handleViewDil.bind(this)
       )
     );
     ctx.subscriptions.push(
@@ -459,6 +467,19 @@ export class QueryHistoryManager {
     }
   }
 
+  async handleViewDil(
+    singleItem: CompletedQuery,
+    multiSelect: CompletedQuery[],
+  ) {
+    if (!this.assertSingleQuery(multiSelect)) {
+      return;
+    }
+
+    await this.tryOpenExternalFile(
+      await singleItem.query.ensureDilPath(this.qs)
+    );
+  }
+
   async getQueryText(queryHistoryItem: CompletedQuery): Promise<string> {
     if (queryHistoryItem.options.queryText) {
       return queryHistoryItem.options.queryText;
@@ -511,7 +532,9 @@ export class QueryHistoryManager {
   private async tryOpenExternalFile(fileLocation: string) {
     const uri = vscode.Uri.file(fileLocation);
     try {
-      await vscode.window.showTextDocument(uri);
+      await vscode.window.showTextDocument(uri, {
+        preview: false
+      });
     } catch (e) {
       if (
         e.message.includes(

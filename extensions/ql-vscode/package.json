@@ -330,6 +330,10 @@
         "title": "View SARIF"
       },
       {
+        "command": "codeQLQueryHistory.viewDil",
+        "title": "View DIL"
+      },
+      {
         "command": "codeQLQueryHistory.setLabel",
         "title": "Set Label"
       },
@@ -485,6 +489,11 @@
           "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
         },
         {
+          "command": "codeQLQueryHistory.viewDil",
+          "group": "9_qlCommands",
+          "when": "view == codeQLQueryHistory"
+        },
+        {
           "command": "codeQLTests.showOutputDifferences",
           "group": "qltest@1",
           "when": "view == test-explorer && viewItem == testWithSource"
@@ -598,6 +607,10 @@
         },
         {
           "command": "codeQLQueryHistory.viewSarif",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.viewDil",
           "when": "false"
         },
         {

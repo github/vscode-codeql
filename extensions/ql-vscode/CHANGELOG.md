@@ -12,6 +12,7 @@
 - Fix proper escaping of backslashes in SARIF message strings.
 - Allow setting `codeQL.runningQueries.numberOfThreads` and `codeQL.runningTests.numberOfThreads` to 0, (which is interpreted as 'use one thread per core on the machine').
 - Clear the problems view of all CodeQL query results when a database is removed.
+- Add a `View DIL` command on query history items. This opens a text editor containing the Datalog Intermediary Language representation of the compiled query.
 
 ## 1.3.3 - 16 September 2020
 
