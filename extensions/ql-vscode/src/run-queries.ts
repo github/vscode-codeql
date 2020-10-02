@@ -51,6 +51,7 @@ export class QueryInfo {
   private static nextQueryId = 0;
 
   readonly compiledQueryPath: string;
+  readonly dilPath: string;
   readonly resultsPaths: ResultsPaths;
   readonly dataset: Uri; // guarantee the existence of a well-defined dataset dir at this point
   readonly queryID: number;
@@ -65,9 +66,10 @@ export class QueryInfo {
   ) {
     this.queryID = QueryInfo.nextQueryId++;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${this.queryID}.qlo`);
+    this.dilPath = path.join(tmpDir.name, `results${this.queryID}.dil`);
     this.resultsPaths = {
       resultsPath: path.join(tmpDir.name, `results${this.queryID}.bqrs`),
-      interpretedResultsPath: path.join(tmpDir.name, `interpretedResults${this.queryID}.sarif`),
+      interpretedResultsPath: path.join(tmpDir.name, `interpretedResults${this.queryID}.sarif`)
     };
     if (dbItem.contents === undefined) {
       throw new Error('Can\'t run query on invalid database.');
@@ -169,6 +171,29 @@ export class QueryInfo {
   async hasInterpretedResults(): Promise<boolean> {
     return fs.pathExists(this.resultsPaths.interpretedResultsPath);
   }
+
+  /**
+   * Holds if this query already has DIL produced
+   */
+  async hasDil(): Promise<boolean> {
+    return fs.pathExists(this.dilPath);
+  }
+
+  async ensureDilPath(qs: qsClient.QueryServerClient): Promise<string> {
+    if (await this.hasDil()) {
+      return this.dilPath;
+    }
+
+    if (!(await fs.pathExists(this.compiledQueryPath))) {
+      throw new Error(
+        `Cannot create DIL because compiled query is missing. ${this.compiledQueryPath}`
+      );
+    }
+
+    await qs.cliServer.generateDil(this.compiledQueryPath, this.dilPath);
+    return this.dilPath;
+  }
+
 }
 
 export interface QueryWithResults {

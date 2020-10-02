@@ -650,6 +650,14 @@ export class CodeQLCliServer implements Disposable {
       'Resolving queries',
     );
   }
+
+  async generateDil(qloFile: string, outFile: string): Promise<void> {
+    await this.runCodeQlCliCommand(
+      ['query', 'decompile'],
+      ['--kind', 'dil', '-o', outFile, qloFile],
+      'Generating DIL',
+    );
+  }
 }
 
 /**
