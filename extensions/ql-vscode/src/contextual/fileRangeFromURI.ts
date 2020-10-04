@@ -4,8 +4,8 @@ import { UrlValue, LineColumnLocation } from '../bqrs-cli-types';
 import { DatabaseItem } from '../databases';
 
 
-export default function fileRangeFromURI(uri: UrlValue, db: DatabaseItem): vscode.Location | undefined {
-  if (typeof uri === 'string') {
+export default function fileRangeFromURI(uri: UrlValue | undefined, db: DatabaseItem): vscode.Location | undefined {
+  if (!uri || typeof uri === 'string') {
     return undefined;
   } else if ('startOffset' in uri) {
     return undefined;

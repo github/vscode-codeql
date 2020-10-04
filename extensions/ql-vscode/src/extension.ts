@@ -549,7 +549,7 @@ async function activateWithInstalledDistribution(
     new TemplateQueryReferenceProvider(cliServer, qs, dbm)
   );
 
-  const astViewer = new AstViewer();
+  const astViewer = new AstViewer(ctx);
   ctx.subscriptions.push(commands.registerCommand('codeQL.viewAst', async () => {
     const ast = await new TemplatePrintAstProvider(cliServer, qs, dbm)
       .provideAst(window.activeTextEditor?.document);

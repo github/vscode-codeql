@@ -262,7 +262,7 @@ export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemeP
     });
   for (const { packDir, packName } of packs) {
     if (packDir !== undefined) {
-      const qlpack = yaml.safeLoad(await fs.readFile(path.join(packDir, 'qlpack.yml'), 'utf8'));
+      const qlpack = yaml.safeLoad(await fs.readFile(path.join(packDir, 'qlpack.yml'), 'utf8')) as { dbscheme: string };
       if (qlpack.dbscheme !== undefined && path.basename(qlpack.dbscheme) === path.basename(dbschemePath)) {
         return packName;
       }

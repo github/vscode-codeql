@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 
 import { decodeSourceArchiveUri, zipArchiveScheme } from '../archive-filesystem-provider';
 import { CodeQLCliServer } from '../cli';
@@ -118,7 +117,7 @@ export class TemplatePrintAstProvider {
     return new AstBuilder(
       queryResults, this.cli,
       this.dbm.findDatabaseItem(vscode.Uri.parse(queryResults.database.databaseUri!))!,
-      path.basename(document.fileName)
+      document.fileName
     );
   }
 

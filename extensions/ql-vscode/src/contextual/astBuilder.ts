@@ -3,6 +3,7 @@ import { CodeQLCliServer } from '../cli';
 import { DecodedBqrsChunk, BqrsId, EntityValue } from '../bqrs-cli-types';
 import { DatabaseItem } from '../databases';
 import { AstItem, RootAstItem } from '../astViewer';
+import fileRangeFromURI from './fileRangeFromURI';
 
 /**
  * A class that wraps a tree of QL results from a query that
@@ -87,6 +88,7 @@ export default class AstBuilder {
             id,
             label: entity.label,
             location: entity.url,
+            fileLocation: fileRangeFromURI(entity.url, this.db),
             children: [] as AstItem[],
             order: Number.MAX_SAFE_INTEGER
           };
@@ -95,8 +97,8 @@ export default class AstBuilder {
           const parent = idToItem.get(childToParent.has(id) ? childToParent.get(id)! : -1);
 
           if (parent) {
-            const astItem = item as AstItem;
-            astItem.parent = parent;
+            const astItem = item as unknown as AstItem;
+            (astItem).parent = parent;
             parent.children.push(astItem);
           }
           const children = parentToChildren.has(id) ? parentToChildren.get(id)! : [];

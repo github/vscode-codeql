@@ -673,7 +673,6 @@
     "zip-a-folder": "~0.0.12"
   },
   "devDependencies": {
-    "@types/semver": "~7.2.0",
     "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "~7.1.2",
     "@types/child-process-promise": "^2.2.1",
@@ -683,7 +682,7 @@
     "@types/google-protobuf": "^3.2.7",
     "@types/gulp": "^4.0.6",
     "@types/gulp-sourcemaps": "0.0.32",
-    "@types/js-yaml": "~3.12.2",
+    "@types/js-yaml": "^3.12.5",
     "@types/jszip": "~3.1.6",
     "@types/mocha": "~8.0.3",
     "@types/node": "^12.0.8",
@@ -692,6 +691,7 @@
     "@types/react": "^16.8.17",
     "@types/react-dom": "^16.8.4",
     "@types/sarif": "~2.1.2",
+    "@types/semver": "~7.2.0",
     "@types/sinon": "~7.5.2",
     "@types/sinon-chai": "~3.2.3",
     "@types/through2": "^2.0.36",

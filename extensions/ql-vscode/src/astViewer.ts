@@ -1,8 +1,22 @@
-import * as vscode from 'vscode';
+import {
+  window,
+  ExtensionContext,
+  TreeDataProvider,
+  EventEmitter,
+  commands,
+  Event,
+  ProviderResult,
+  TreeItemCollapsibleState,
+  TreeItem,
+  TreeView,
+  TextEditorSelectionChangeEvent,
+  Location,
+  Range
+} from 'vscode';
+import * as path from 'path';
 
 import { DatabaseItem } from './databases';
 import { UrlValue, BqrsId } from './bqrs-cli-types';
-import fileRangeFromURI from './contextual/fileRangeFromURI';
 import { showLocation } from './interface-utils';
 import { isStringLoc, isWholeFileLoc, isLineColumnLoc } from './bqrs-utils';
 
@@ -10,6 +24,7 @@ export interface AstItem {
   id: BqrsId;
   label?: string;
   location?: UrlValue;
+  fileLocation?: Location;
   parent: AstItem | RootAstItem;
   children: AstItem[];
   order: number;
@@ -17,44 +32,42 @@ export interface AstItem {
 
 export type RootAstItem = Omit<AstItem, 'parent'>;
 
-class AstViewerDataProvider implements vscode.TreeDataProvider<AstItem | RootAstItem> {
+class AstViewerDataProvider implements TreeDataProvider<AstItem | RootAstItem> {
 
   public roots: RootAstItem[] = [];
   public db: DatabaseItem | undefined;
 
   private _onDidChangeTreeData =
-    new vscode.EventEmitter<AstItem | undefined>();
-  readonly onDidChangeTreeData: vscode.Event<AstItem | undefined> =
+    new EventEmitter<AstItem | undefined>();
+  readonly onDidChangeTreeData: Event<AstItem | undefined> =
     this._onDidChangeTreeData.event;
 
   constructor() {
-    vscode.commands.registerCommand('codeQLAstViewer.gotoCode',
-      async (location: UrlValue, db: DatabaseItem) => {
-        if (location) {
-          await showLocation(fileRangeFromURI(location, db));
-        }
+    commands.registerCommand('codeQLAstViewer.gotoCode',
+      async (item: AstItem) => {
+        await showLocation(item.fileLocation);
       });
   }
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
   }
-  getChildren(item?: AstItem): vscode.ProviderResult<(AstItem | RootAstItem)[]> {
+  getChildren(item?: AstItem): ProviderResult<(AstItem | RootAstItem)[]> {
     const children = item ? item.children : this.roots;
     return children.sort((c1, c2) => (c1.order - c2.order));
   }
 
-  getParent(item: AstItem): vscode.ProviderResult<AstItem> {
+  getParent(item: AstItem): ProviderResult<AstItem> {
     return item.parent as AstItem;
   }
 
-  getTreeItem(item: AstItem): vscode.TreeItem {
+  getTreeItem(item: AstItem): TreeItem {
     const line = this.extractLineInfo(item?.location);
 
     const state = item.children.length
-      ? vscode.TreeItemCollapsibleState.Collapsed
-      : vscode.TreeItemCollapsibleState.None;
-    const treeItem = new vscode.TreeItem(item.label || '', state);
+      ? TreeItemCollapsibleState.Collapsed
+      : TreeItemCollapsibleState.None;
+    const treeItem = new TreeItem(item.label || '', state);
     treeItem.description = line ? `Line ${line}` : '';
     treeItem.id = String(item.id);
     treeItem.tooltip = `${treeItem.description} ${treeItem.label}`;
@@ -62,7 +75,7 @@ class AstViewerDataProvider implements vscode.TreeDataProvider<AstItem | RootAst
       command: 'codeQLAstViewer.gotoCode',
       title: 'Go To Code',
       tooltip: `Go To ${item.location}`,
-      arguments: [item.location, this.db]
+      arguments: [item]
     };
     return treeItem;
   }
@@ -83,27 +96,76 @@ class AstViewerDataProvider implements vscode.TreeDataProvider<AstItem | RootAst
 }
 
 export class AstViewer {
-  private treeView: vscode.TreeView<AstItem | RootAstItem>;
+  private treeView: TreeView<AstItem | RootAstItem>;
   private treeDataProvider: AstViewerDataProvider;
+  private currentFile: string | undefined;
 
-  constructor() {
+  constructor(ctx: ExtensionContext) {
     this.treeDataProvider = new AstViewerDataProvider();
-    this.treeView = vscode.window.createTreeView('codeQLAstViewer', {
+    this.treeView = window.createTreeView('codeQLAstViewer', {
       treeDataProvider: this.treeDataProvider,
       showCollapseAll: true
     });
 
-    vscode.commands.registerCommand('codeQLAstViewer.clear', () => {
+    commands.registerCommand('codeQLAstViewer.clear', () => {
       this.clear();
     });
+
+    ctx.subscriptions.push(window.onDidChangeTextEditorSelection(this.updateTreeSelection, this));
   }
 
   updateRoots(roots: RootAstItem[], db: DatabaseItem, fileName: string) {
     this.treeDataProvider.roots = roots;
     this.treeDataProvider.db = db;
     this.treeDataProvider.refresh();
-    this.treeView.message = `AST for ${fileName}`;
-    this.treeView.reveal(roots[0], { focus: true });
+    this.treeView.message = `AST for ${path.basename(fileName)}`;
+    this.treeView.reveal(roots[0], { focus: false });
+    this.currentFile = fileName;
+  }
+
+  private updateTreeSelection(e: TextEditorSelectionChangeEvent) {
+    function isInside(selectedRange: Range, astRange?: Range): boolean {
+      return !!astRange?.contains(selectedRange);
+    }
+
+    // Recursively iterate all children until we find the node with the smallest
+    // range that contains the selection.
+    // Some nodes do not have a location, but their children might, so must
+    // recurse though location-less AST nodes to see if children are correct.
+    function findBest(selectedRange: Range, items?: RootAstItem[]): RootAstItem | undefined {
+      if (!items || !items.length) {
+        return;
+      }
+      for (const item of items) {
+        let candidate: RootAstItem | undefined = undefined;
+        if (isInside(selectedRange, item.fileLocation?.range)) {
+          candidate = item;
+        }
+        // always iterate through children since the location of an AST node in code QL does not
+        // always cover the complete text of the node.
+        candidate = findBest(selectedRange, item.children) || candidate;
+        if (candidate) {
+          return candidate;
+        }
+      }
+      return;
+    }
+
+    if (
+      this.treeView.visible &&
+      e.textEditor.document.uri.fsPath === this.currentFile &&
+      e.selections.length === 1
+    ) {
+      const selection = e.selections[0];
+      const range = selection.anchor.isBefore(selection.active)
+        ? new Range(selection.anchor, selection.active)
+        : new Range(selection.active, selection.anchor);
+
+      const targetItem = findBest(range, this.treeDataProvider.roots);
+      if (targetItem) {
+        this.treeView.reveal(targetItem);
+      }
+    }
   }
 
   private clear() {
@@ -111,5 +173,6 @@ export class AstViewer {
     this.treeDataProvider.db = undefined;
     this.treeDataProvider.refresh();
     this.treeView.message = undefined;
+    this.currentFile = undefined;
   }
 }
