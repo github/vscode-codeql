@@ -112,6 +112,7 @@ const expectedRoots = [
   {
     id: 0,
     label: '[TopLevelFunction] int disable_interrupts()',
+    fileLocation: undefined,
     location: {
       uri: 'file:/opt/src/arch/sandbox/lib/interrupts.c',
       startLine: 19,
@@ -125,6 +126,7 @@ const expectedRoots = [
   {
     id: 26363,
     label: '[TopLevelFunction] void enable_interrupts()',
+    fileLocation: undefined,
     location: {
       uri: 'file:/opt/src/arch/sandbox/lib/interrupts.c',
       startLine: 15,
@@ -138,6 +140,7 @@ const expectedRoots = [
   {
     id: 26364,
     label: '[TopLevelFunction] int interrupt_init()',
+    fileLocation: undefined,
     location: {
       uri: 'file:/opt/src/arch/sandbox/lib/interrupts.c',
       startLine: 10,
