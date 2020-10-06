@@ -14,6 +14,7 @@ import {
 } from 'vscode';
 import { CodeQLCliServer } from './cli';
 import { logger } from './logging';
+import { sendCommandUsage } from './telemetry';
 
 export class UserCancellationException extends Error {
   /**
@@ -120,9 +121,13 @@ export function commandRunner(
   task: NoProgressTask,
 ): Disposable {
   return commands.registerCommand(commandId, async (...args: any[]) => {
+    const startTIme = Date.now();
+    let error: Error | undefined;
+
     try {
       await task(...args);
     } catch (e) {
+      error = e;
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
@@ -133,6 +138,9 @@ export function commandRunner(
       } else {
         showAndLogErrorMessage(e.message || e);
       }
+    } finally {
+      const executionTime = Date.now() - startTIme;
+      sendCommandUsage(commandId, executionTime, error);
     }
   });
 }
@@ -153,6 +161,8 @@ export function commandRunnerWithProgress<R>(
   progressOptions: Partial<ProgressOptions>
 ): Disposable {
   return commands.registerCommand(commandId, async (...args: any[]) => {
+    const startTIme = Date.now();
+    let error: Error | undefined;
     const progressOptionsWithDefaults = {
       location: ProgressLocation.Notification,
       ...progressOptions
@@ -160,6 +170,7 @@ export function commandRunnerWithProgress<R>(
     try {
       await withProgress(progressOptionsWithDefaults, task, ...args);
     } catch (e) {
+      error = e;
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
@@ -170,6 +181,9 @@ export function commandRunnerWithProgress<R>(
       } else {
         showAndLogErrorMessage(e.message || e);
       }
+    } finally {
+      const executionTime = Date.now() - startTIme;
+      sendCommandUsage(commandId, executionTime, error);
     }
   });
 }
