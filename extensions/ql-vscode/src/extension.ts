@@ -45,7 +45,6 @@ import {
   GithubRateLimitedError
 } from './distribution';
 import * as helpers from './helpers';
-import { commandRunner, commandRunnerWithProgress, ProgressCallback, ProgressUpdate, withProgress } from './commandRunner';
 import { assertNever } from './pure/helpers-pure';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
@@ -60,6 +59,14 @@ import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
 import { CompareInterfaceManager } from './compare/compare-interface';
 import { gatherQlFiles } from './pure/files';
+import { initializeTelemetry } from './telemetry';
+import {
+  commandRunner,
+  commandRunnerWithProgress,
+  ProgressCallback,
+  withProgress,
+  ProgressUpdate
+} from './commandRunner';
 
 /**
  * extension.ts
@@ -88,6 +95,9 @@ const errorStubs: Disposable[] = [];
  */
 let isInstallingOrUpdatingDistribution = false;
 
+const extensionId = 'GitHub.vscode-codeql';
+const extension = extensions.getExtension(extensionId);
+
 /**
  * If the user tries to execute vscode commands after extension activation is failed, give
  * a sensible error message.
@@ -98,8 +108,6 @@ function registerErrorStubs(excludedCommands: string[], stubGenerator: (command:
   // Remove existing stubs
   errorStubs.forEach(stub => stub.dispose());
 
-  const extensionId = 'GitHub.vscode-codeql'; // TODO: Is there a better way of obtaining this?
-  const extension = extensions.getExtension(extensionId);
   if (extension === undefined) {
     throw new Error(`Can't find extension ${extensionId}`);
   }
@@ -139,10 +147,14 @@ export interface CodeQLExtensionInterface {
  * @returns CodeQLExtensionInterface
  */
 export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionInterface | {}> {
-  logger.log('Starting CodeQL extension');
+  logger.log(`Starting ${extensionId} extension`);
+  if (extension === undefined) {
+    throw new Error(`Can't find extension ${extensionId}`);
+  }
 
   const distributionConfigListener = new DistributionConfigListener();
   initializeLogging(ctx);
+  await initializeTelemetry(extension, ctx);
   languageSupport.install();
 
   ctx.subscriptions.push(distributionConfigListener);

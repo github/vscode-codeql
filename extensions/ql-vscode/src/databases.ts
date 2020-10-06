@@ -8,7 +8,7 @@ import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
   showAndLogInformationMessage,
-  isLikelyDatabaseRoot,
+  isLikelyDatabaseRoot
 } from './helpers';
 import {
   ProgressCallback,

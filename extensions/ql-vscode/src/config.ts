@@ -4,7 +4,7 @@ import { DistributionManager } from './distribution';
 import { logger } from './logging';
 
 /** Helper class to look up a labelled (and possibly nested) setting. */
-class Setting {
+export class Setting {
   name: string;
   parent?: Setting;
 
@@ -39,8 +39,16 @@ class Setting {
 
 const ROOT_SETTING = new Setting('codeQL');
 
-// Distribution configuration
+// Global configuration
+const TELEMETRY_SETTING = new Setting('telemetry', ROOT_SETTING);
+const GLOBAL_TELEMETRY_SETTING = new Setting('telemetry');
 
+export const LOG_TELEMETRY = new Setting('logTelemetry', TELEMETRY_SETTING);
+export const ENABLE_TELEMETRY = new Setting('enableTelemetry', TELEMETRY_SETTING);
+
+export const GLOBAL_ENABLE_TELEMETRY = new Setting('enableTelemetry', GLOBAL_TELEMETRY_SETTING);
+
+// Distribution configuration
 const DISTRIBUTION_SETTING = new Setting('cli', ROOT_SETTING);
 const CUSTOM_CODEQL_PATH_SETTING = new Setting('executablePath', DISTRIBUTION_SETTING);
 const INCLUDE_PRERELEASE_SETTING = new Setting('includePrerelease', DISTRIBUTION_SETTING);
@@ -104,7 +112,7 @@ export interface CliConfig {
 }
 
 
-abstract class ConfigListener extends DisposableObject {
+export abstract class ConfigListener extends DisposableObject {
   protected readonly _onDidChangeConfiguration = this.push(new EventEmitter<void>());
 
   constructor() {
@@ -244,7 +252,7 @@ export class CliConfigListener extends ConfigListener implements CliConfig {
 /**
  * Enables canary features of this extension. Recommended for all internal users.
  */
-const CANARY_FEATURES = new Setting('canary', ROOT_SETTING);
+export const CANARY_FEATURES = new Setting('canary', ROOT_SETTING);
 
 export function isCanary() {
   return !!CANARY_FEATURES.getValue<boolean>();

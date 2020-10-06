@@ -23,9 +23,9 @@ import {
   ProgressCallback,
 } from './commandRunner';
 import {
-  showAndLogErrorMessage,
   isLikelyDatabaseRoot,
-  isLikelyDbLanguageFolder
+  isLikelyDbLanguageFolder,
+  showAndLogErrorMessage
 } from './helpers';
 import { logger } from './logging';
 import { clearCacheInDatabase } from './run-queries';

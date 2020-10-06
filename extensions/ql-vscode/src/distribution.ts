@@ -225,9 +225,11 @@ export class DistributionManager implements DistributionProvider {
    *
    * Returns a failed promise if an unexpected error occurs during installation.
    */
-  public installExtensionManagedDistributionRelease(release: Release,
-    progressCallback?: ProgressCallback): Promise<void> {
-    return this.extensionSpecificDistributionManager!.installDistributionRelease(release, progressCallback);
+  public installExtensionManagedDistributionRelease(
+    release: Release,
+    progressCallback?: ProgressCallback
+  ): Promise<void> {
+    return this.extensionSpecificDistributionManager.installDistributionRelease(release, progressCallback);
   }
 
   public get onDidChangeDistribution(): Event<void> | undefined {
