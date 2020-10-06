@@ -8,6 +8,7 @@ import {
 } from 'vscode';
 import { showAndLogErrorMessage, showAndLogWarningMessage } from './helpers';
 import { logger } from './logging';
+import { telemetryListener } from './telemetry';
 
 export class UserCancellationException extends Error {
   /**
@@ -114,9 +115,13 @@ export function commandRunner(
   task: NoProgressTask,
 ): Disposable {
   return commands.registerCommand(commandId, async (...args: any[]) => {
+    const startTime = Date.now();
+    let error: Error | undefined;
+
     try {
       return await task(...args);
     } catch (e) {
+      error = e;
       const errorMessage = `${e.message || e} (${commandId})`;
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
@@ -135,6 +140,9 @@ export function commandRunner(
         });
       }
       return undefined;
+    } finally {
+      const executionTime = Date.now() - startTime;
+      telemetryListener.sendCommandUsage(commandId, executionTime, error);
     }
   });
 }
@@ -155,6 +163,8 @@ export function commandRunnerWithProgress<R>(
   progressOptions: Partial<ProgressOptions>
 ): Disposable {
   return commands.registerCommand(commandId, async (...args: any[]) => {
+    const startTime = Date.now();
+    let error: Error | undefined;
     const progressOptionsWithDefaults = {
       location: ProgressLocation.Notification,
       ...progressOptions
@@ -162,6 +172,7 @@ export function commandRunnerWithProgress<R>(
     try {
       return await withProgress(progressOptionsWithDefaults, task, ...args);
     } catch (e) {
+      error = e;
       const errorMessage = `${e.message || e} (${commandId})`;
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
@@ -180,6 +191,9 @@ export function commandRunnerWithProgress<R>(
         });
       }
       return undefined;
+    } finally {
+      const executionTime = Date.now() - startTime;
+      telemetryListener.sendCommandUsage(commandId, executionTime, error);
     }
   });
 }

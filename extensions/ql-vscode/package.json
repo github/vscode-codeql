@@ -174,6 +174,19 @@
           "minimum": 0,
           "maximum": 1024,
           "description": "Number of threads for running CodeQL tests."
+        },
+        "codeQL.telemetry.enableTelemetry": {
+          "type": "boolean",
+          "default": false,
+          "scope": "application",
+          "markdownDescription": "Specifies whether to send CodeQL usage telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent to GitHub. For more information, see [TELEMETRY.md](https://github.com/github/vscode-codeql/blob/main/TELEMETRY.md)",
+          "description": "Specifies whether to send CodeQL usage telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent to GitHub."
+        },
+        "codeQL.telemetry.logTelemetry": {
+          "type": "boolean",
+          "default": false,
+          "scope": "application",
+          "description": "Specifies whether or not to write telemetry events to the extension log."
         }
       }
     },
@@ -735,6 +748,7 @@
     "tmp-promise": "~3.0.2",
     "tree-kill": "~1.2.2",
     "unzipper": "~0.10.5",
+    "vscode-extension-telemetry": "^0.1.6",
     "vscode-jsonrpc": "^5.0.1",
     "vscode-languageclient": "^6.1.3",
     "vscode-test-adapter-api": "~1.7.0",
@@ -750,6 +764,7 @@
     "@types/glob": "^7.1.1",
     "@types/google-protobuf": "^3.2.7",
     "@types/gulp": "^4.0.6",
+    "@types/gulp-replace": "0.0.31",
     "@types/gulp-sourcemaps": "0.0.32",
     "@types/js-yaml": "^3.12.5",
     "@types/jszip": "~3.1.6",
@@ -772,6 +787,7 @@
     "@typescript-eslint/eslint-plugin": "~2.23.0",
     "@typescript-eslint/parser": "~2.23.0",
     "ansi-colors": "^4.1.1",
+    "applicationinsights": "^1.8.7",
     "chai": "^4.2.0",
     "chai-as-promised": "~7.1.1",
     "css-loader": "~3.1.0",
@@ -779,6 +795,7 @@
     "eslint-plugin-react": "~7.19.0",
     "glob": "^7.1.4",
     "gulp": "^4.0.2",
+    "gulp-replace": "^1.0.0",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-typescript": "^5.0.1",
     "husky": "~4.2.5",

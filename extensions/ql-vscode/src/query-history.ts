@@ -10,13 +10,11 @@ import {
   showAndLogWarningMessage,
   showBinaryChoiceDialog
 } from './helpers';
-import {
-  commandRunner
-} from './commandRunner';
 import { logger } from './logging';
 import { URLSearchParams } from 'url';
 import { QueryServerClient } from './queryserver-client';
 import { DisposableObject } from './vscode-utils/disposable-object';
+import { commandRunner } from './commandRunner';
 
 /**
  * query-history.ts

@@ -30,8 +30,8 @@ import {
   RawResultsSortState,
 } from './pure/interface-types';
 import { Logger } from './logging';
-import { commandRunner } from './commandRunner';
 import * as messages from './pure/messages';
+import { commandRunner } from './commandRunner';
 import { CompletedQuery, interpretResults } from './query-results';
 import { QueryInfo, tmpDir } from './run-queries';
 import { parseSarifLocation, parseSarifPlainTextMessage } from './pure/sarif-utils';

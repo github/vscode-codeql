@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
-import { DatabaseItem } from './databases';
-import { showAndLogErrorMessage } from './helpers';
+import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from './helpers';
 import { ProgressCallback, UserCancellationException } from './commandRunner';
 import { logger } from './logging';
 import * as messages from './pure/messages';
@@ -9,7 +8,6 @@ import { upgradesTmpDir } from './run-queries';
 import * as tmp from 'tmp-promise';
 import * as path from 'path';
 import * as semver from 'semver';
-import { getOnDiskWorkspaceFolders } from './helpers';
 
 /**
  * Maximum number of lines to include from database upgrade message,
