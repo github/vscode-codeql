@@ -69,6 +69,7 @@ const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
 const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
 const RUNNING_TESTS_SETTING = new Setting('runningTests', ROOT_SETTING);
 
+export const ENABLE_TELEMETRY = new Setting('telemetry.enableTelemetry', ROOT_SETTING);
 export const NUMBER_OF_TEST_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_TESTS_SETTING);
 export const MAX_QUERIES = new Setting('maxQueries', RUNNING_QUERIES_SETTING);
 export const AUTOSAVE_SETTING = new Setting('autoSave', RUNNING_QUERIES_SETTING);

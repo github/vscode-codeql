@@ -59,6 +59,7 @@ import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
 import { CompareInterfaceManager } from './compare/compare-interface';
 import { gatherQlFiles } from './pure/files';
+import { initializeTelemetry } from './telemetry';
 
 /**
  * extension.ts
@@ -87,6 +88,9 @@ const errorStubs: Disposable[] = [];
  */
 let isInstallingOrUpdatingDistribution = false;
 
+const extensionId = 'GitHub.vscode-codeql';
+const extension = extensions.getExtension(extensionId);
+
 /**
  * If the user tries to execute vscode commands after extension activation is failed, give
  * a sensible error message.
@@ -97,8 +101,6 @@ function registerErrorStubs(excludedCommands: string[], stubGenerator: (command:
   // Remove existing stubs
   errorStubs.forEach(stub => stub.dispose());
 
-  const extensionId = 'GitHub.vscode-codeql'; // TODO: Is there a better way of obtaining this?
-  const extension = extensions.getExtension(extensionId);
   if (extension === undefined) {
     throw new Error(`Can't find extension ${extensionId}`);
   }
@@ -114,9 +116,13 @@ function registerErrorStubs(excludedCommands: string[], stubGenerator: (command:
 }
 
 export async function activate(ctx: ExtensionContext): Promise<void> {
-  logger.log('Starting CodeQL extension');
+  logger.log(`Starting ${extensionId} extension`);
+  if (extension === undefined) {
+    throw new Error(`Can't find extension ${extensionId}`);
+  }
 
   initializeLogging(ctx);
+  initializeTelemetry(extension, ctx);
   languageSupport.install();
 
   const distributionConfigListener = new DistributionConfigListener();

@@ -169,6 +169,11 @@
           "minimum": 0,
           "maximum": 1024,
           "description": "Number of threads for running CodeQL tests."
+        },
+        "codeQL.telemetry.enableTelemetry": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Specifies whether to enable Code QL telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent."
         }
       }
     },
@@ -716,6 +721,7 @@
     "tmp-promise": "~3.0.2",
     "tree-kill": "~1.2.2",
     "unzipper": "~0.10.5",
+    "vscode-extension-telemetry": "^0.1.6",
     "vscode-jsonrpc": "^5.0.1",
     "vscode-languageclient": "^6.1.3",
     "vscode-test-adapter-api": "~1.7.0",
