@@ -103,6 +103,9 @@ class DatabaseTreeDataProvider extends DisposableObject
   private handleDidChangeDatabaseItem = (event: DatabaseChangedEvent): void => {
     // Note that events from the databse manager are instances of DatabaseChangedEvent
     // and events fired by the UI are instances of DatabaseItem
+
+    // When event.item is undefined, then the entire tree is refreshed.
+    // When event.item is a db item, then only that item is refreshed.
     this._onDidChangeTreeData.fire(event.item);
   };
 

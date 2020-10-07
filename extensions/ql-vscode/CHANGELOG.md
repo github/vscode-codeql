@@ -4,12 +4,11 @@
 
 - Add friendly welcome message when the databases view is empty.
 - Add open query, open results, and remove query commands in the query history view title bar.
-- Max number of simultaneous queries launchable by runQueries command is now configurable by changing the codeQL.runningQueries.maxQueries setting.
+- Max number of simultaneous queries launchable by runQueries command is now configurable by changing the `codeQL.runningQueries.maxQueries` setting.
 - Fix sorting of results. Some pages of results would have the wrong sort order and columns.
 - Remember previous sort order when reloading query results.
 - Fix proper escaping of backslashes in SARIF message strings.
 - Allow setting `codeQL.runningQueries.numberOfThreads` and `codeQL.runningTests.numberOfThreads` to 0, (which is interpreted as 'use one thread per core on the machine').
-- Clear the problems view of all Code QL problems when a database is removed.
 - Clear the problems view of all CodeQL query results when a database is removed.
 
 ## 1.3.3 - 16 September 2020

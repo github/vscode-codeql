@@ -110,7 +110,7 @@ export class ResultTables
     };
   }
 
-  untoggleProbemsView() {
+  untoggleProblemsView() {
     this.setState({
       problemsViewSelected: false
     });
@@ -286,11 +286,7 @@ export class ResultTables
   // TODO: Duplicated from results.tsx consider a way to
   // avoid this duplication
   componentDidMount(): void {
-    this.vscodeMessageHandler = (evt) =>
-      evt.origin === window.origin
-        ? this.handleMessage(evt.data as IntoResultsViewMsg)
-        : console.error(`Invalid event origin ${evt.origin}`);
-
+    this.vscodeMessageHandler = this.vscodeMessageHandler.bind(this);
     window.addEventListener('message', this.vscodeMessageHandler);
   }
 
@@ -300,9 +296,11 @@ export class ResultTables
     }
   }
 
-  private vscodeMessageHandler:
-    | ((ev: MessageEvent) => void)
-    | undefined = undefined;
+  private vscodeMessageHandler(evt: MessageEvent) {
+    evt.origin === window.origin
+      ? this.handleMessage(evt.data as IntoResultsViewMsg)
+      : console.error(`Invalid event origin ${evt.origin}`);
+  }
 }
 
 class ResultTable extends React.Component<ResultTableProps, {}> {

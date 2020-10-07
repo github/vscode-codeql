@@ -287,11 +287,7 @@ class App extends React.Component<{}, ResultsViewState> {
   }
 
   componentDidMount(): void {
-    this.vscodeMessageHandler = (evt) =>
-      evt.origin === window.origin
-        ? this.handleMessage(evt.data as IntoResultsViewMsg)
-        : console.error(`Invalid event origin ${evt.origin}`);
-
+    this.vscodeMessageHandler = this.vscodeMessageHandler.bind(this);
     window.addEventListener('message', this.vscodeMessageHandler);
   }
 
@@ -301,9 +297,11 @@ class App extends React.Component<{}, ResultsViewState> {
     }
   }
 
-  private vscodeMessageHandler:
-    | ((ev: MessageEvent) => void)
-    | undefined = undefined;
+  private vscodeMessageHandler(evt: MessageEvent) {
+    evt.origin === window.origin
+      ? this.handleMessage(evt.data as IntoResultsViewMsg)
+      : console.error(`Invalid event origin ${evt.origin}`);
+  }
 }
 
 Rdom.render(<App />, document.getElementById('root'));
