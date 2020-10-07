@@ -27,9 +27,10 @@ describe('databases', () => {
 
   it('should fire events when adding and removing a db item', () => {
     const mockDbItem = {
-      databaseUri: 'file:/abc',
+      databaseUri: { path: 'file:/abc' },
+      name: 'abc',
       getPersistedState() {
-        return this.databaseUri;
+        return this.name;
       }
     };
     const spy = sinon.spy();
@@ -37,7 +38,7 @@ describe('databases', () => {
     (databaseManager as any).addDatabaseItem(mockDbItem);
 
     expect((databaseManager as any)._databaseItems).to.deep.eq([mockDbItem]);
-    expect(updateSpy).to.have.been.calledWith('databaseList', ['file:/abc']);
+    expect(updateSpy).to.have.been.calledWith('databaseList', ['abc']);
     expect(spy).to.have.been.calledWith({
       item: undefined,
       kind: DatabaseEventKind.Add
@@ -66,13 +67,14 @@ describe('databases', () => {
     const spy = sinon.spy();
     databaseManager.onDidChangeDatabaseItem(spy);
     (databaseManager as any).addDatabaseItem(mockDbItem);
+    sinon.restore();
 
     databaseManager.renameDatabaseItem(mockDbItem as unknown as DatabaseItem, 'new name');
 
     expect(mockDbItem.name).to.eq('new name');
     expect(updateSpy).to.have.been.calledWith('databaseList', ['new name']);
     expect(spy).to.have.been.calledWith({
-      item: undefined,
+      item: mockDbItem,
       kind: DatabaseEventKind.Rename
     });
   });
