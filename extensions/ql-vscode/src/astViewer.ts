@@ -20,21 +20,23 @@ import { UrlValue, BqrsId } from './bqrs-cli-types';
 import { showLocation } from './interface-utils';
 import { isStringLoc, isWholeFileLoc, isLineColumnLoc } from './bqrs-utils';
 
+
 export interface AstItem {
   id: BqrsId;
   label?: string;
   location?: UrlValue;
   fileLocation?: Location;
-  parent: AstItem | RootAstItem;
-  children: AstItem[];
+  children: ChildAstItem[];
   order: number;
 }
 
-export type RootAstItem = Omit<AstItem, 'parent'>;
+export interface ChildAstItem extends AstItem {
+  parent: ChildAstItem | AstItem;
+}
 
-class AstViewerDataProvider implements TreeDataProvider<AstItem | RootAstItem> {
+class AstViewerDataProvider implements TreeDataProvider<AstItem> {
 
-  public roots: RootAstItem[] = [];
+  public roots: AstItem[] = [];
   public db: DatabaseItem | undefined;
 
   private _onDidChangeTreeData =
@@ -52,13 +54,13 @@ class AstViewerDataProvider implements TreeDataProvider<AstItem | RootAstItem> {
   refresh(): void {
     this._onDidChangeTreeData.fire();
   }
-  getChildren(item?: AstItem): ProviderResult<(AstItem | RootAstItem)[]> {
+  getChildren(item?: AstItem): ProviderResult<AstItem[]> {
     const children = item ? item.children : this.roots;
     return children.sort((c1, c2) => (c1.order - c2.order));
   }
 
-  getParent(item: AstItem): ProviderResult<AstItem> {
-    return item.parent as AstItem;
+  getParent(item: ChildAstItem): ProviderResult<AstItem> {
+    return item.parent;
   }
 
   getTreeItem(item: AstItem): TreeItem {
@@ -96,7 +98,7 @@ class AstViewerDataProvider implements TreeDataProvider<AstItem | RootAstItem> {
 }
 
 export class AstViewer {
-  private treeView: TreeView<AstItem | RootAstItem>;
+  private treeView: TreeView<AstItem>;
   private treeDataProvider: AstViewerDataProvider;
   private currentFile: string | undefined;
 
@@ -114,7 +116,7 @@ export class AstViewer {
     ctx.subscriptions.push(window.onDidChangeTextEditorSelection(this.updateTreeSelection, this));
   }
 
-  updateRoots(roots: RootAstItem[], db: DatabaseItem, fileName: string) {
+  updateRoots(roots: AstItem[], db: DatabaseItem, fileName: string) {
     this.treeDataProvider.roots = roots;
     this.treeDataProvider.db = db;
     this.treeDataProvider.refresh();
@@ -132,12 +134,12 @@ export class AstViewer {
     // range that contains the selection.
     // Some nodes do not have a location, but their children might, so must
     // recurse though location-less AST nodes to see if children are correct.
-    function findBest(selectedRange: Range, items?: RootAstItem[]): RootAstItem | undefined {
+    function findBest(selectedRange: Range, items?: AstItem[]): AstItem | undefined {
       if (!items || !items.length) {
         return;
       }
       for (const item of items) {
-        let candidate: RootAstItem | undefined = undefined;
+        let candidate: AstItem | undefined = undefined;
         if (isInside(selectedRange, item.fileLocation?.range)) {
           candidate = item;
         }
