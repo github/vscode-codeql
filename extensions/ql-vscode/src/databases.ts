@@ -273,10 +273,12 @@ class DatabaseItemImpl implements DatabaseItem {
   /** A cache of database info */
   private _dbinfo: cli.DbInfo | undefined;
 
-  public constructor(public readonly databaseUri: vscode.Uri,
-    contents: DatabaseContents | undefined, private options: FullDatabaseOptions,
-    private readonly onChanged: (event: DatabaseChangedEvent) => void) {
-
+  public constructor(
+    public readonly databaseUri: vscode.Uri,
+    contents: DatabaseContents | undefined,
+    private options: FullDatabaseOptions,
+    private readonly onChanged: (event: DatabaseChangedEvent) => void
+  ) {
     this._contents = contents;
   }
 
@@ -483,9 +485,11 @@ export class DatabaseManager extends DisposableObject {
   private readonly _databaseItems: DatabaseItemImpl[] = [];
   private _currentDatabaseItem: DatabaseItem | undefined = undefined;
 
-  constructor(private ctx: ExtensionContext,
+  constructor(
+    private ctx: ExtensionContext,
     public config: QueryServerConfig,
-    public logger: Logger) {
+    public logger: Logger
+  ) {
     super();
 
     this.loadPersistedState();  // Let this run async.
@@ -655,6 +659,7 @@ export class DatabaseManager extends DisposableObject {
   private async addDatabaseItem(item: DatabaseItemImpl) {
     this._databaseItems.push(item);
     this.updatePersistedDatabaseList();
+    // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
       item: undefined,
       kind: DatabaseEventKind.Add
@@ -694,6 +699,7 @@ export class DatabaseManager extends DisposableObject {
         e => logger.log(`Failed to delete '${item.databaseUri.path}'. Reason: ${e.message}`));
     }
 
+    // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
       item: undefined,
       kind: DatabaseEventKind.Remove
