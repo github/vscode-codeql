@@ -4,7 +4,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 import * as sinon from 'sinon';
 import * as yaml from 'js-yaml';
 
-import { AstViewer, RootAstItem } from '../../astViewer';
+import { AstViewer, AstItem } from '../../astViewer';
 import { ExtensionContext, commands, Range } from 'vscode';
 import { DatabaseItem } from '../../databases';
 
@@ -14,7 +14,7 @@ const expect = chai.expect;
 
 
 describe('AstViewer', () => {
-  let astRoots: RootAstItem[];
+  let astRoots: AstItem[];
   let viewer: AstViewer;
   beforeEach(async () => {
     // the ast is stored in yaml because there are back pointers
@@ -125,7 +125,7 @@ describe('AstViewer', () => {
   }
 
   async function buildAst() {
-    const astRoots = yaml.safeLoad(await fs.readFile(`${__dirname}/../../../src/vscode-tests/no-workspace/data/astViewer.yml`, 'utf8')) as RootAstItem[];
+    const astRoots = yaml.safeLoad(await fs.readFile(`${__dirname}/data/astViewer.yml`, 'utf8')) as AstItem[];
 
     // convert range properties into vscode.Range instances
     function convertToRangeInstances(obj: any) {
