@@ -44,7 +44,7 @@ export class TemplateQueryDefinitionProvider implements vscode.DefinitionProvide
   }
 
   private async getDefinitions(uriString: string): Promise<vscode.LocationLink[]> {
-    return await withProgress({
+    return withProgress({
       location: vscode.ProgressLocation.Notification,
       cancellable: true,
       title: 'Finding definitions'
@@ -91,7 +91,7 @@ export class TemplateQueryReferenceProvider implements vscode.ReferenceProvider 
   }
 
   private async getReferences(uriString: string): Promise<FullLocationLink[]> {
-    return await withProgress({
+    return withProgress({
       location: vscode.ProgressLocation.Notification,
       cancellable: true,
       title: 'Finding references'

@@ -9,8 +9,7 @@ import {
   TreeItem,
   Uri,
   window,
-  env,
-  ProgressLocation
+  env
 } from 'vscode';
 import * as fs from 'fs-extra';
 
@@ -23,6 +22,7 @@ import {
 } from './databases';
 import {
   commandRunner,
+  commandRunnerWithProgress,
   getOnDiskWorkspaceFolders,
   ProgressCallback,
   showAndLogErrorMessage
@@ -233,79 +233,66 @@ export class DatabaseUI extends DisposableObject {
 
     logger.log('Registering database panel commands.');
     ctx.subscriptions.push(
-      commandRunner(
+      commandRunnerWithProgress(
         'codeQL.setCurrentDatabase',
         this.handleSetCurrentDatabase,
         {
-          location: ProgressLocation.Notification,
           title: 'Importing database from archive',
-          cancellable: false,
         }
       )
     );
     ctx.subscriptions.push(
-      commandRunner(
+      commandRunnerWithProgress(
         'codeQL.upgradeCurrentDatabase',
         this.handleUpgradeCurrentDatabase,
         {
-          location: ProgressLocation.Notification,
           title: 'Upgrading current database',
           cancellable: true,
         }
       )
     );
     ctx.subscriptions.push(
-      commandRunner(
+      commandRunnerWithProgress(
         'codeQL.clearCache',
         this.handleClearCache,
         {
-          location: ProgressLocation.Notification,
           title: 'Clearing Cache',
-          cancellable: false,
         })
     );
 
     ctx.subscriptions.push(
-      commandRunner(
+      commandRunnerWithProgress(
         'codeQLDatabases.chooseDatabaseFolder',
         this.handleChooseDatabaseFolder,
         {
-          location: ProgressLocation.Notification,
           title: 'Adding database from folder',
-          cancellable: false,
         }
       )
     );
     ctx.subscriptions.push(
-      commandRunner(
+      commandRunnerWithProgress(
         'codeQLDatabases.chooseDatabaseArchive',
         this.handleChooseDatabaseArchive,
         {
-          location: ProgressLocation.Notification,
           title: 'Adding database from archive',
-          cancellable: false,
         }
       )
     );
     ctx.subscriptions.push(
-      commandRunner(
+      commandRunnerWithProgress(
         'codeQLDatabases.chooseDatabaseInternet',
         this.handleChooseDatabaseInternet,
         {
-          location: ProgressLocation.Notification,
           title: 'Adding database from URL',
-          cancellable: false,
         }
       )
     );
     ctx.subscriptions.push(
-      commandRunner(
+      commandRunnerWithProgress(
         'codeQLDatabases.chooseDatabaseLgtm',
         this.handleChooseDatabaseLgtm,
         {
-          location: ProgressLocation.Notification,
           title: 'Adding database from LGTM',
-          cancellable: false,
         })
     );
     ctx.subscriptions.push(
@@ -333,11 +320,10 @@ export class DatabaseUI extends DisposableObject {
       )
     );
     ctx.subscriptions.push(
-      commandRunner(
+      commandRunnerWithProgress(
         'codeQLDatabases.upgradeDatabase',
         this.handleUpgradeDatabase,
         {
-          location: ProgressLocation.Notification,
           title: 'Upgrading database',
           cancellable: true,
         }
@@ -522,9 +508,9 @@ export class DatabaseUI extends DisposableObject {
   };
 
   private handleSetCurrentDatabase = async (
-    uri: Uri,
     progress: ProgressCallback,
     token: CancellationToken,
+    uri: Uri,
   ): Promise<void> => {
     try {
       // Assume user has selected an archive if the file has a .zip extension
