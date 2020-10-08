@@ -151,33 +151,35 @@ export async function showResolvableLocation(
 }
 
 export async function showLocation(location?: Location) {
-  if (location) {
-    const doc = await workspace.openTextDocument(location.uri);
-    const editorsWithDoc = Window.visibleTextEditors.filter(
-      (e) => e.document === doc
-    );
-    const editor =
-      editorsWithDoc.length > 0
-        ? editorsWithDoc[0]
-        : await Window.showTextDocument(doc, ViewColumn.One);
-    const range = location.range;
-    // When highlighting the range, vscode's occurrence-match and bracket-match highlighting will
-    // trigger based on where we place the cursor/selection, and will compete for the user's attention.
-    // For reference:
-    // - Occurences are highlighted when the cursor is next to or inside a word or a whole word is selected.
-    // - Brackets are highlighted when the cursor is next to a bracket and there is an empty selection.
-    // - Multi-line selections explicitly highlight line-break characters, but multi-line decorators do not.
-    //
-    // For single-line ranges, select the whole range, mainly to disable bracket highlighting.
-    // For multi-line ranges, place the cursor at the beginning to avoid visual artifacts from selected line-breaks.
-    // Multi-line ranges are usually large enough to overshadow the noise from bracket highlighting.
-    const selectionEnd =
-      range.start.line === range.end.line ? range.end : range.start;
-    editor.selection = new Selection(range.start, selectionEnd);
-    editor.revealRange(range, TextEditorRevealType.InCenter);
-    editor.setDecorations(shownLocationDecoration, [range]);
-    editor.setDecorations(shownLocationLineDecoration, [range]);
+  if (!location) {
+    return;
   }
+
+  const doc = await workspace.openTextDocument(location.uri);
+  const editorsWithDoc = Window.visibleTextEditors.filter(
+    (e) => e.document === doc
+  );
+  const editor =
+    editorsWithDoc.length > 0
+      ? editorsWithDoc[0]
+      : await Window.showTextDocument(doc, ViewColumn.One);
+  const range = location.range;
+  // When highlighting the range, vscode's occurrence-match and bracket-match highlighting will
+  // trigger based on where we place the cursor/selection, and will compete for the user's attention.
+  // For reference:
+  // - Occurences are highlighted when the cursor is next to or inside a word or a whole word is selected.
+  // - Brackets are highlighted when the cursor is next to a bracket and there is an empty selection.
+  // - Multi-line selections explicitly highlight line-break characters, but multi-line decorators do not.
+  //
+  // For single-line ranges, select the whole range, mainly to disable bracket highlighting.
+  // For multi-line ranges, place the cursor at the beginning to avoid visual artifacts from selected line-breaks.
+  // Multi-line ranges are usually large enough to overshadow the noise from bracket highlighting.
+  const selectionEnd =
+    range.start.line === range.end.line ? range.end : range.start;
+  editor.selection = new Selection(range.start, selectionEnd);
+  editor.revealRange(range, TextEditorRevealType.InCenter);
+  editor.setDecorations(shownLocationDecoration, [range]);
+  editor.setDecorations(shownLocationLineDecoration, [range]);
 }
 
 const findMatchBackground = new ThemeColor('editor.findMatchBackground');

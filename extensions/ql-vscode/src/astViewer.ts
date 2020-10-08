@@ -20,7 +20,6 @@ import { showLocation } from './interface-utils';
 import { isStringLoc, isWholeFileLoc, isLineColumnLoc } from './bqrs-utils';
 import { commandRunner } from './helpers';
 
-
 export interface AstItem {
   id: BqrsId;
   label?: string;

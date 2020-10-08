@@ -165,12 +165,10 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
           }
         } else {
           const progressOptions: ProgressOptions = {
-            location: ProgressLocation.Notification,
             title: progressTitle,
-            cancellable: false,
+            location: ProgressLocation.Notification,
           };
 
-          // Avoid using commandRunner here because this function is called upon extension activation
           await helpers.withProgress(progressOptions, progress =>
             distributionManager.installExtensionManagedDistributionRelease(result.updatedRelease, progress));
 
@@ -459,7 +457,7 @@ async function activateWithInstalledDistribution(
 
   logger.log('Registering top-level command palette commands.');
   ctx.subscriptions.push(
-    helpers.commandRunner(
+    helpers.commandRunnerWithProgress(
       'codeQL.runQuery',
       async (
         progress: helpers.ProgressCallback,
@@ -467,14 +465,13 @@ async function activateWithInstalledDistribution(
         uri: Uri | undefined
       ) => await compileAndRunQuery(false, uri, progress, token),
       {
-        location: ProgressLocation.Notification,
         title: 'Running query',
         cancellable: true
       }
     )
   );
   ctx.subscriptions.push(
-    helpers.commandRunner(
+    helpers.commandRunnerWithProgress(
       'codeQL.runQueries',
       async (
         progress: helpers.ProgressCallback,
@@ -533,13 +530,12 @@ async function activateWithInstalledDistribution(
         ));
       },
       {
-        location: ProgressLocation.Notification,
         title: 'Running queries',
         cancellable: true
       })
   );
   ctx.subscriptions.push(
-    helpers.commandRunner(
+    helpers.commandRunnerWithProgress(
       'codeQL.quickEval',
       async (
         progress: helpers.ProgressCallback,
@@ -547,17 +543,19 @@ async function activateWithInstalledDistribution(
         uri: Uri | undefined
       ) => await compileAndRunQuery(true, uri, progress, token),
       {
-        location: ProgressLocation.Notification,
         title: 'Running query',
         cancellable: true
       })
   );
   ctx.subscriptions.push(
-    helpers.commandRunner('codeQL.quickQuery', async (
+    helpers.commandRunnerWithProgress('codeQL.quickQuery', async (
       progress: helpers.ProgressCallback,
       token: CancellationToken
     ) =>
-      displayQuickQuery(ctx, cliServer, databaseUI, progress, token)
+      displayQuickQuery(ctx, cliServer, databaseUI, progress, token),
+      {
+        title: 'Run Quick Query'
+      }
     )
   );
 
@@ -586,28 +584,24 @@ async function activateWithInstalledDistribution(
     )
   );
   ctx.subscriptions.push(
-    helpers.commandRunner('codeQL.chooseDatabaseLgtm', (
+    helpers.commandRunnerWithProgress('codeQL.chooseDatabaseLgtm', (
       progress: helpers.ProgressCallback,
       token: CancellationToken
     ) =>
       databaseUI.handleChooseDatabaseLgtm(progress, token),
       {
-        location: ProgressLocation.Notification,
         title: 'Adding database from LGTM',
-        cancellable: false,
       })
   );
   ctx.subscriptions.push(
-    helpers.commandRunner('codeQL.chooseDatabaseInternet', (
+    helpers.commandRunnerWithProgress('codeQL.chooseDatabaseInternet', (
       progress: helpers.ProgressCallback,
       token: CancellationToken
     ) =>
       databaseUI.handleChooseDatabaseInternet(progress, token),
 
       {
-        location: ProgressLocation.Notification,
         title: 'Adding database from URL',
-        cancellable: false,
       })
   );
 
@@ -627,7 +621,7 @@ async function activateWithInstalledDistribution(
   );
 
   const astViewer = new AstViewer(ctx);
-  ctx.subscriptions.push(helpers.commandRunner('codeQL.viewAst', async (
+  ctx.subscriptions.push(helpers.commandRunnerWithProgress('codeQL.viewAst', async (
     progress: helpers.ProgressCallback,
     token: CancellationToken
   ) => {
@@ -637,7 +631,6 @@ async function activateWithInstalledDistribution(
       astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
     }
   }, {
-    location: ProgressLocation.Notification,
     cancellable: true,
     title: 'Calculate AST'
   }));
