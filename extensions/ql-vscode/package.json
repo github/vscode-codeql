@@ -366,6 +366,10 @@
         "title": "Go To Code"
       },
       {
+        "command": "codeQLAstViewer.openType",
+        "title": "Find AST Type"
+      },
+      {
         "command": "codeQLAstViewer.clear",
         "title": "Clear AST",
         "icon": {
@@ -502,6 +506,11 @@
           "command": "codeQLTests.acceptOutput",
           "group": "qltest@2",
           "when": "view == test-explorer && viewItem == testWithSource"
+        },
+        {
+          "command": "codeQLAstViewer.openType",
+          "group": "navigation",
+          "when": "view == codeQLAstViewer"
         }
       ],
       "explorer/context": [
@@ -623,6 +632,10 @@
         },
         {
           "command": "codeQLAstViewer.gotoCode",
+          "when": "false"
+        },
+        {
+          "command": "codeQLAstViewer.openType",
           "when": "false"
         },
         {

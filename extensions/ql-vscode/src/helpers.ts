@@ -12,6 +12,7 @@ import {
   Disposable,
   ProgressLocation
 } from 'vscode';
+import { ErrorCodes, ResponseError } from 'vscode-jsonrpc';
 import { CodeQLCliServer } from './cli';
 import { logger } from './logging';
 
@@ -123,9 +124,12 @@ export function commandRunner(
     try {
       await task(...args);
     } catch (e) {
-      if (e instanceof UserCancellationException) {
+      if (
+        e instanceof UserCancellationException ||
+        (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled)
+      ) {
         // User has cancelled this action manually
-        if (e.silent) {
+        if (e instanceof ResponseError || e.silent) {
           logger.log(e.message);
         } else {
           showAndLogWarningMessage(e.message);
@@ -160,9 +164,12 @@ export function commandRunnerWithProgress<R>(
     try {
       await withProgress(progressOptionsWithDefaults, task, ...args);
     } catch (e) {
-      if (e instanceof UserCancellationException) {
+      if (
+        e instanceof UserCancellationException ||
+        (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled)
+      ) {
         // User has cancelled this action manually
-        if (e.silent) {
+        if (e instanceof ResponseError || e.silent) {
           logger.log(e.message);
         } else {
           showAndLogWarningMessage(e.message);
@@ -362,6 +369,7 @@ function createRateLimitedResult(): RateLimitedResult {
 export type DatasetFolderInfo = {
   dbscheme: string;
   qlpack: string;
+  language: string;
 }
 
 export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemePath: string): Promise<string> {
@@ -391,6 +399,25 @@ export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemeP
   throw new Error(`Could not find qlpack file for dbscheme ${dbschemePath}`);
 }
 
+function getLanguage(dbschemeBase: string) {
+  switch (dbschemeBase) {
+    case 'semmlecode.javascript.dbscheme':
+      return 'javascript';
+    case 'semmlecode.cpp.dbscheme':
+      return 'cpp';
+    case 'semmlecode.dbscheme':
+      return 'java';
+    case 'semmlecode.python.dbscheme':
+      return 'python';
+    case 'semmlecode.csharp.dbscheme':
+      return 'csharp';
+    case 'go.dbscheme':
+      return 'go';
+    default:
+      return '';
+  }
+}
+
 export async function resolveDatasetFolder(cliServer: CodeQLCliServer, datasetFolder: string): Promise<DatasetFolderInfo> {
   const dbschemes = await glob(path.join(datasetFolder, '*.dbscheme'));
 
@@ -403,9 +430,9 @@ export async function resolveDatasetFolder(cliServer: CodeQLCliServer, datasetFo
   if (dbschemes.length > 1) {
     Window.showErrorMessage(`Found multiple dbschemes in ${datasetFolder} during quick query; arbitrarily choosing the first, ${dbscheme}, to decide what library to use.`);
   }
-
+  const language = getLanguage(path.basename(dbscheme));
   const qlpack = await getQlPackForDbscheme(cliServer, dbscheme);
-  return { dbscheme, qlpack };
+  return { dbscheme, qlpack, language };
 }
 
 /**

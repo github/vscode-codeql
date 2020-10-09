@@ -9,7 +9,8 @@ import {
   TreeView,
   TextEditorSelectionChangeEvent,
   Location,
-  Range
+  Range,
+  commands,
 } from 'vscode';
 import * as path from 'path';
 
@@ -17,8 +18,9 @@ import { DatabaseItem } from './databases';
 import { UrlValue, BqrsId } from './bqrs-cli-types';
 import { showLocation } from './interface-utils';
 import { isStringLoc, isWholeFileLoc, isLineColumnLoc } from './bqrs-utils';
-import { commandRunner } from './helpers';
+import { commandRunner, resolveDatasetFolder } from './helpers';
 import { DisposableObject } from './vscode-utils/disposable-object';
+import { CodeQLCliServer } from './cli';
 
 export interface AstItem {
   id: BqrsId;
@@ -33,6 +35,8 @@ export interface ChildAstItem extends AstItem {
   parent: ChildAstItem | AstItem;
 }
 
+const TYPE_NAME_REGEX = /^\[(\w*)\]/;
+
 class AstViewerDataProvider  extends DisposableObject implements TreeDataProvider<AstItem> {
 
   public roots: AstItem[] = [];
@@ -43,8 +47,15 @@ class AstViewerDataProvider  extends DisposableObject implements TreeDataProvide
   readonly onDidChangeTreeData: Event<AstItem | undefined> =
     this._onDidChangeTreeData.event;
 
-  constructor() {
+  constructor(private cli: CodeQLCliServer) {
     super();
+
+    this.push(
+      commandRunner('codeQLAstViewer.openType',
+      async (item: AstItem) => {
+        await this.handleOpenType(item);
+      })
+    );
     this.push(
       commandRunner('codeQLAstViewer.gotoCode',
       async (item: AstItem) => {
@@ -56,6 +67,7 @@ class AstViewerDataProvider  extends DisposableObject implements TreeDataProvide
   refresh(): void {
     this._onDidChangeTreeData.fire();
   }
+
   getChildren(item?: AstItem): ProviderResult<AstItem[]> {
     const children = item ? item.children : this.roots;
     return children.sort((c1, c2) => (c1.order - c2.order));
@@ -84,6 +96,39 @@ class AstViewerDataProvider  extends DisposableObject implements TreeDataProvide
     return treeItem;
   }
 
+  /**
+   * We make the assumption that ast items whose label start with a bracketed name
+   * refer to a Code QL AST type.
+   *
+   * We would like to use the language server's open type command, but that requires
+   * a file URI and a text location in that file.
+   *
+   * Instead, we use a file search. This is an experimental feature. Let's see
+   * if it is useful.
+   *
+   * @param item The ast item whose type we are looking for.
+   */
+  private async handleOpenType(item: AstItem) {
+    const label = item.label;
+    if (label) {
+      const typeName = (TYPE_NAME_REGEX.exec(label) || [])[1];
+      if (typeName) {
+        const databaseFolder = await this.db?.getDatasetFolder(this.cli);
+        if (databaseFolder) {
+          const { language } = await resolveDatasetFolder(this.cli, databaseFolder);
+
+          commands.executeCommand('workbench.action.findInFiles', {
+            query: `class ${typeName}`,
+            triggerSearch: true,
+            matchWholeWord: true,
+            isCaseSensitive: true,
+            filesToInclude: `**/${language}/**/*.qll`
+          });
+        }
+      }
+    }
+  }
+
   private extractLineInfo(loc?: UrlValue) {
     if (!loc) {
       return '';
@@ -104,10 +149,9 @@ export class AstViewer extends DisposableObject {
   private treeDataProvider: AstViewerDataProvider;
   private currentFile: string | undefined;
 
-  constructor() {
+  constructor(cli: CodeQLCliServer) {
     super();
-
-    this.treeDataProvider = new AstViewerDataProvider();
+    this.treeDataProvider = new AstViewerDataProvider(cli);
     this.treeView = window.createTreeView('codeQLAstViewer', {
       treeDataProvider: this.treeDataProvider,
       showCollapseAll: true

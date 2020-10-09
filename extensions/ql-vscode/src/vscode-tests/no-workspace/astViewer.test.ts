@@ -7,6 +7,7 @@ import * as yaml from 'js-yaml';
 import { AstViewer, AstItem } from '../../astViewer';
 import { commands, Range } from 'vscode';
 import { DatabaseItem } from '../../databases';
+import { CodeQLCliServer } from '../../cli';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -32,7 +33,7 @@ describe('AstViewer', () => {
 
   it('should update the viewer roots', () => {
     const item = {} as DatabaseItem;
-    viewer = new AstViewer();
+    viewer = new AstViewer({} as CodeQLCliServer);
     viewer.updateRoots(astRoots, item, 'def/abc');
 
     expect((viewer as any).treeDataProvider.roots).to.eq(astRoots);
@@ -63,7 +64,7 @@ describe('AstViewer', () => {
     fsPath = 'def/abc',
   ) {
     const item = {} as DatabaseItem;
-    viewer = new AstViewer();
+    viewer = new AstViewer({} as CodeQLCliServer);
     viewer.updateRoots(astRoots, item, fsPath);
     const spy = sinon.spy();
     (viewer as any).treeView.reveal = spy;

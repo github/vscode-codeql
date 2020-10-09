@@ -622,7 +622,7 @@ async function activateWithInstalledDistribution(
     new TemplateQueryReferenceProvider(cliServer, qs, dbm)
   );
 
-  const astViewer = new AstViewer();
+  const astViewer = new AstViewer(cliServer);
   ctx.subscriptions.push(astViewer);
   ctx.subscriptions.push(helpers.commandRunnerWithProgress('codeQL.viewAst', async (
     progress: helpers.ProgressCallback,

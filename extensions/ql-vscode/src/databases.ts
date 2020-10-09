@@ -496,16 +496,18 @@ export class DatabaseManager extends DisposableObject {
   }
 
   public async openDatabase(
-    uri: vscode.Uri, options?: DatabaseOptions
+    uri: vscode.Uri,
+    options?: DatabaseOptions
   ): Promise<DatabaseItem> {
-
     const contents = await resolveDatabaseContents(uri);
     const realOptions = options || {};
     // Ignore the source archive for QLTest databases by default.
     const isQLTestDatabase = path.extname(uri.fsPath) === '.testproj';
+    const ignoreSourceArchive = (realOptions.ignoreSourceArchive !== undefined)
+        ? realOptions.ignoreSourceArchive
+        : isQLTestDatabase;
     const fullOptions: FullDatabaseOptions = {
-      ignoreSourceArchive: (realOptions.ignoreSourceArchive !== undefined) ?
-        realOptions.ignoreSourceArchive : isQLTestDatabase,
+      ignoreSourceArchive,
       displayName: realOptions.displayName,
       dateAdded: realOptions.dateAdded || Date.now()
     };

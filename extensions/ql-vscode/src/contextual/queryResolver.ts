@@ -1,4 +1,5 @@
 import * as fs from 'fs-extra';
+import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as tmp from 'tmp-promise';
 
@@ -20,20 +21,25 @@ export async function qlpackOfDatabase(cli: CodeQLCliServer, db: DatabaseItem): 
   return qlpack;
 }
 
-
-export async function resolveQueries(cli: CodeQLCliServer, qlpack: string, keyType: KeyType): Promise<string[]> {
+async function createSuiteFile(qlpack: string, keyType?: KeyType): Promise<string> {
   const suiteFile = (await tmp.file({
     postfix: '.qls'
   })).path;
-  const suiteYaml = {
+  const suiteYaml: Record<string, string | object> = {
     qlpack,
-    include: {
+  };
+  if (keyType) {
+    suiteYaml.include = {
       kind: kindOfKeyType(keyType),
       'tags contain': tagOfKeyType(keyType)
-    }
-  };
+    };
+  }
   await fs.writeFile(suiteFile, yaml.safeDump(suiteYaml), 'utf8');
+  return suiteFile;
+}
 
+export async function resolveQueries(cli: CodeQLCliServer, qlpack: string, keyType: KeyType): Promise<string[]> {
+  const suiteFile = await createSuiteFile(qlpack, keyType);
   const queries = await cli.resolveQueriesInSuite(suiteFile, helpers.getOnDiskWorkspaceFolders());
   if (queries.length === 0) {
     helpers.showAndLogErrorMessage(
