@@ -3,7 +3,6 @@ import { DisposableObject } from './vscode-utils/disposable-object';
 import {
   Event,
   EventEmitter,
-  ExtensionContext,
   ProviderResult,
   TreeDataProvider,
   TreeItem,
@@ -83,8 +82,8 @@ class DatabaseTreeDataProvider extends DisposableObject
   private currentDatabaseItem: DatabaseItem | undefined;
 
   constructor(
-    private ctx: ExtensionContext,
-    private databaseManager: DatabaseManager
+    private databaseManager: DatabaseManager,
+    private readonly extensionPath: string
   ) {
     super();
 
@@ -131,12 +130,12 @@ class DatabaseTreeDataProvider extends DisposableObject
     const item = new TreeItem(element.name);
     if (element === this.currentDatabaseItem) {
       item.iconPath = joinThemableIconPath(
-        this.ctx.extensionPath,
+        this.extensionPath,
         SELECTED_DATABASE_ICON
       );
     } else if (element.error !== undefined) {
       item.iconPath = joinThemableIconPath(
-        this.ctx.extensionPath,
+        this.extensionPath,
         INVALID_DATABASE_ICON
       );
     }
@@ -213,16 +212,16 @@ export class DatabaseUI extends DisposableObject {
   private treeDataProvider: DatabaseTreeDataProvider;
 
   public constructor(
-    ctx: ExtensionContext,
     private cliserver: cli.CodeQLCliServer,
     private databaseManager: DatabaseManager,
     private readonly queryServer: qsClient.QueryServerClient | undefined,
-    private readonly storagePath: string
+    private readonly storagePath: string,
+    readonly extensionPath: string
   ) {
     super();
 
     this.treeDataProvider = this.push(
-      new DatabaseTreeDataProvider(ctx, databaseManager)
+      new DatabaseTreeDataProvider(databaseManager, extensionPath)
     );
     this.push(
       window.createTreeView('codeQLDatabases', {
@@ -232,7 +231,7 @@ export class DatabaseUI extends DisposableObject {
     );
 
     logger.log('Registering database panel commands.');
-    ctx.subscriptions.push(
+    this.push(
       commandRunnerWithProgress(
         'codeQL.setCurrentDatabase',
         this.handleSetCurrentDatabase,
@@ -241,7 +240,7 @@ export class DatabaseUI extends DisposableObject {
         }
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       commandRunnerWithProgress(
         'codeQL.upgradeCurrentDatabase',
         this.handleUpgradeCurrentDatabase,
@@ -251,7 +250,7 @@ export class DatabaseUI extends DisposableObject {
         }
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       commandRunnerWithProgress(
         'codeQL.clearCache',
         this.handleClearCache,
@@ -260,7 +259,7 @@ export class DatabaseUI extends DisposableObject {
         })
     );
 
-    ctx.subscriptions.push(
+    this.push(
       commandRunnerWithProgress(
         'codeQLDatabases.chooseDatabaseFolder',
         this.handleChooseDatabaseFolder,
@@ -269,7 +268,7 @@ export class DatabaseUI extends DisposableObject {
         }
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       commandRunnerWithProgress(
         'codeQLDatabases.chooseDatabaseArchive',
         this.handleChooseDatabaseArchive,
@@ -278,7 +277,7 @@ export class DatabaseUI extends DisposableObject {
         }
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       commandRunnerWithProgress(
         'codeQLDatabases.chooseDatabaseInternet',
         this.handleChooseDatabaseInternet,
@@ -287,7 +286,7 @@ export class DatabaseUI extends DisposableObject {
         }
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       commandRunnerWithProgress(
         'codeQLDatabases.chooseDatabaseLgtm',
         this.handleChooseDatabaseLgtm,
@@ -295,31 +294,31 @@ export class DatabaseUI extends DisposableObject {
           title: 'Adding database from LGTM',
         })
     );
-    ctx.subscriptions.push(
+    this.push(
       commandRunner(
         'codeQLDatabases.setCurrentDatabase',
         this.handleMakeCurrentDatabase
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       commandRunner(
         'codeQLDatabases.sortByName',
         this.handleSortByName
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       commandRunner(
         'codeQLDatabases.sortByDateAdded',
         this.handleSortByDateAdded
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       commandRunner(
         'codeQLDatabases.removeDatabase',
         this.handleRemoveDatabase
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       commandRunnerWithProgress(
         'codeQLDatabases.upgradeDatabase',
         this.handleUpgradeDatabase,
@@ -329,13 +328,13 @@ export class DatabaseUI extends DisposableObject {
         }
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       commandRunner(
         'codeQLDatabases.renameDatabase',
         this.handleRenameDatabase
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       commandRunner(
         'codeQLDatabases.openDatabaseFolder',
         this.handleOpenFolder

@@ -5,7 +5,7 @@ import * as sinon from 'sinon';
 import * as yaml from 'js-yaml';
 
 import { AstViewer, AstItem } from '../../astViewer';
-import { ExtensionContext, commands, Range } from 'vscode';
+import { commands, Range } from 'vscode';
 import { DatabaseItem } from '../../databases';
 
 chai.use(chaiAsPromised);
@@ -32,7 +32,7 @@ describe('AstViewer', () => {
 
   it('should update the viewer roots', () => {
     const item = {} as DatabaseItem;
-    viewer = new AstViewer({ subscriptions: [] as any[] } as ExtensionContext);
+    viewer = new AstViewer();
     viewer.updateRoots(astRoots, item, 'def/abc');
 
     expect((viewer as any).treeDataProvider.roots).to.eq(astRoots);
@@ -63,7 +63,7 @@ describe('AstViewer', () => {
     fsPath = 'def/abc',
   ) {
     const item = {} as DatabaseItem;
-    viewer = new AstViewer({ subscriptions: [] as any[] } as ExtensionContext);
+    viewer = new AstViewer();
     viewer.updateRoots(astRoots, item, fsPath);
     const spy = sinon.spy();
     (viewer as any).treeView.reveal = spy;

@@ -338,11 +338,11 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(dbm);
   logger.log('Initializing database panel.');
   const databaseUI = new DatabaseUI(
-    ctx,
     cliServer,
     dbm,
     qs,
-    getContextStoragePath(ctx)
+    getContextStoragePath(ctx),
+    ctx.extensionPath
   );
   ctx.subscriptions.push(databaseUI);
 
@@ -352,13 +352,14 @@ async function activateWithInstalledDistribution(
     showResultsForCompletedQuery(item, WebviewReveal.Forced);
 
   const qhm = new QueryHistoryManager(
-    ctx,
     qs,
+    ctx.extensionPath,
     queryHistoryConfigurationListener,
     showResults,
     async (from: CompletedQuery, to: CompletedQuery) =>
       showResultsForComparison(from, to),
   );
+  ctx.subscriptions.push(qhm);
   logger.log('Initializing results panel interface.');
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
   ctx.subscriptions.push(intm);
@@ -621,7 +622,8 @@ async function activateWithInstalledDistribution(
     new TemplateQueryReferenceProvider(cliServer, qs, dbm)
   );
 
-  const astViewer = new AstViewer(ctx);
+  const astViewer = new AstViewer();
+  ctx.subscriptions.push(astViewer);
   ctx.subscriptions.push(helpers.commandRunnerWithProgress('codeQL.viewAst', async (
     progress: helpers.ProgressCallback,
     token: CancellationToken
