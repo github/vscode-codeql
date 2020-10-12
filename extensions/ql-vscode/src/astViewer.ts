@@ -1,6 +1,5 @@
 import {
   window,
-  ExtensionContext,
   TreeDataProvider,
   EventEmitter,
   Event,
@@ -19,6 +18,7 @@ import { UrlValue, BqrsId } from './bqrs-cli-types';
 import { showLocation } from './interface-utils';
 import { isStringLoc, isWholeFileLoc, isLineColumnLoc } from './bqrs-utils';
 import { commandRunner } from './helpers';
+import { DisposableObject } from './vscode-utils/disposable-object';
 
 export interface AstItem {
   id: BqrsId;
@@ -33,7 +33,7 @@ export interface ChildAstItem extends AstItem {
   parent: ChildAstItem | AstItem;
 }
 
-class AstViewerDataProvider implements TreeDataProvider<AstItem> {
+class AstViewerDataProvider  extends DisposableObject implements TreeDataProvider<AstItem> {
 
   public roots: AstItem[] = [];
   public db: DatabaseItem | undefined;
@@ -44,10 +44,13 @@ class AstViewerDataProvider implements TreeDataProvider<AstItem> {
     this._onDidChangeTreeData.event;
 
   constructor() {
-    commandRunner('codeQLAstViewer.gotoCode',
-    async (item: AstItem) => {
-      await showLocation(item.fileLocation);
-    });
+    super();
+    this.push(
+      commandRunner('codeQLAstViewer.gotoCode',
+      async (item: AstItem) => {
+        await showLocation(item.fileLocation);
+      })
+    );
   }
 
   refresh(): void {
@@ -96,23 +99,28 @@ class AstViewerDataProvider implements TreeDataProvider<AstItem> {
   }
 }
 
-export class AstViewer {
+export class AstViewer extends DisposableObject {
   private treeView: TreeView<AstItem>;
   private treeDataProvider: AstViewerDataProvider;
   private currentFile: string | undefined;
 
-  constructor(ctx: ExtensionContext) {
+  constructor() {
+    super();
+
     this.treeDataProvider = new AstViewerDataProvider();
     this.treeView = window.createTreeView('codeQLAstViewer', {
       treeDataProvider: this.treeDataProvider,
       showCollapseAll: true
     });
 
-    commandRunner('codeQLAstViewer.clear', async () => {
-      this.clear();
-    });
-
-    ctx.subscriptions.push(window.onDidChangeTextEditorSelection(this.updateTreeSelection, this));
+    this.push(this.treeView);
+    this.push(this.treeDataProvider);
+    this.push(
+      commandRunner('codeQLAstViewer.clear', async () => {
+        this.clear();
+      })
+    );
+    this.push(window.onDidChangeTextEditorSelection(this.updateTreeSelection, this));
   }
 
   updateRoots(roots: AstItem[], db: DatabaseItem, fileName: string) {

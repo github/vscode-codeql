@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { ExtensionContext, window as Window } from 'vscode';
+import { window as Window } from 'vscode';
 import { CompletedQuery } from './query-results';
 import { QueryHistoryConfig } from './config';
 import { QueryWithResults } from './run-queries';
@@ -8,6 +8,7 @@ import * as helpers from './helpers';
 import { logger } from './logging';
 import { URLSearchParams } from 'url';
 import { QueryServerClient } from './queryserver-client';
+import { DisposableObject } from './vscode-utils/disposable-object';
 
 /**
  * query-history.ts
@@ -73,12 +74,19 @@ class HistoryTreeDataProvider implements QueryHistoryDataProvider {
 
   private history: CompletedQuery[] = [];
 
+  private failedIconPath: string;
+
   /**
    * When not undefined, must be reference-equal to an item in `this.databases`.
    */
   private current: CompletedQuery | undefined;
 
-  constructor(private ctx: ExtensionContext) { }
+  constructor(extensionPath: string) {
+    this.failedIconPath = path.join(
+      extensionPath,
+      FAILED_QUERY_HISTORY_ITEM_ICON
+    );
+  }
 
   async updateTreeItemContextValue(element: CompletedQuery): Promise<void> {
     // Mark this query history item according to whether it has a
@@ -107,10 +115,7 @@ class HistoryTreeDataProvider implements QueryHistoryDataProvider {
     this.updateTreeItemContextValue(element);
 
     if (!element.didRunSuccessfully) {
-      it.iconPath = path.join(
-        this.ctx.extensionPath,
-        FAILED_QUERY_HISTORY_ITEM_ICON
-      );
+      it.iconPath = this.failedIconPath;
     }
 
     return it;
@@ -173,15 +178,15 @@ class HistoryTreeDataProvider implements QueryHistoryDataProvider {
  */
 const DOUBLE_CLICK_TIME = 500;
 
-export class QueryHistoryManager {
+export class QueryHistoryManager extends DisposableObject {
   treeDataProvider: HistoryTreeDataProvider;
   treeView: vscode.TreeView<CompletedQuery>;
   lastItemClick: { time: Date; item: CompletedQuery } | undefined;
   compareWithItem: CompletedQuery | undefined;
 
   constructor(
-    ctx: ExtensionContext,
     private qs: QueryServerClient,
+    extensionPath: string,
     private queryHistoryConfigListener: QueryHistoryConfig,
     private selectedCallback: (item: CompletedQuery) => Promise<void>,
     private doCompareCallback: (
@@ -189,76 +194,84 @@ export class QueryHistoryManager {
       to: CompletedQuery
     ) => Promise<void>
   ) {
+    super();
+
     const treeDataProvider = (this.treeDataProvider = new HistoryTreeDataProvider(
-      ctx
+      extensionPath
     ));
     this.treeView = Window.createTreeView('codeQLQueryHistory', {
       treeDataProvider,
       canSelectMany: true,
     });
+    this.push(this.treeView);
 
     // Lazily update the tree view selection due to limitations of TreeView API (see
     // `updateTreeViewSelectionIfVisible` doc for details)
-    this.treeView.onDidChangeVisibility(async (_ev) =>
-      this.updateTreeViewSelectionIfVisible()
+    this.push(
+      this.treeView.onDidChangeVisibility(async (_ev) =>
+        this.updateTreeViewSelectionIfVisible()
+      )
     );
     // Don't allow the selection to become empty
-    this.treeView.onDidChangeSelection(async (ev) => {
-      if (ev.selection.length == 0) {
-        this.updateTreeViewSelectionIfVisible();
-      }
-      this.updateCompareWith(ev.selection);
-    });
+    this.push(
+      this.treeView.onDidChangeSelection(async (ev) => {
+        if (ev.selection.length == 0) {
+          this.updateTreeViewSelectionIfVisible();
+        }
+        this.updateCompareWith(ev.selection);
+      })
+    );
+
     logger.log('Registering query history panel commands.');
-    ctx.subscriptions.push(
+    this.push(
       helpers.commandRunner(
         'codeQLQueryHistory.openQuery',
         this.handleOpenQuery.bind(this)
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       helpers.commandRunner(
         'codeQLQueryHistory.removeHistoryItem',
         this.handleRemoveHistoryItem.bind(this)
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       helpers.commandRunner(
         'codeQLQueryHistory.setLabel',
         this.handleSetLabel.bind(this)
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       helpers.commandRunner(
         'codeQLQueryHistory.compareWith',
         this.handleCompareWith.bind(this)
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       helpers.commandRunner(
         'codeQLQueryHistory.showQueryLog',
         this.handleShowQueryLog.bind(this)
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       helpers.commandRunner(
         'codeQLQueryHistory.showQueryText',
         this.handleShowQueryText.bind(this)
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       helpers.commandRunner(
         'codeQLQueryHistory.viewSarif',
         this.handleViewSarif.bind(this)
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       helpers.commandRunner(
         'codeQLQueryHistory.viewDil',
         this.handleViewDil.bind(this)
       )
     );
-    ctx.subscriptions.push(
+    this.push(
       helpers.commandRunner(
         'codeQLQueryHistory.itemClicked',
         async (item: CompletedQuery) => {
