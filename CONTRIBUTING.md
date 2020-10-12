@@ -53,7 +53,7 @@ Alternatively, you can build the extension within VS Code via `Terminal > Run Bu
 
 Before running any of the launch commands, be sure to have run the `build` command to ensure that the JavaScript is compiled and the resources are copied to the proper location.
 
-We recommend that you keep`npm run watch` running in the backgound and you only need to re-run  `npm run build` in the following situations:
+We recommend that you keep `npm run watch` running in the backgound and you only need to re-run `npm run build` in the following situations:
 
 1. on first checkout
 2. whenever any of the non-TypeScript resources have changed
