@@ -9,6 +9,7 @@ import { logger } from './logging';
 import { URLSearchParams } from 'url';
 import { QueryServerClient } from './queryserver-client';
 import { DisposableObject } from './vscode-utils/disposable-object';
+import { commandRunner } from './commandRunner';
 
 /**
  * query-history.ts
@@ -224,55 +225,55 @@ export class QueryHistoryManager extends DisposableObject {
 
     logger.log('Registering query history panel commands.');
     this.push(
-      helpers.commandRunner(
+      commandRunner(
         'codeQLQueryHistory.openQuery',
         this.handleOpenQuery.bind(this)
       )
     );
     this.push(
-      helpers.commandRunner(
+      commandRunner(
         'codeQLQueryHistory.removeHistoryItem',
         this.handleRemoveHistoryItem.bind(this)
       )
     );
     this.push(
-      helpers.commandRunner(
+      commandRunner(
         'codeQLQueryHistory.setLabel',
         this.handleSetLabel.bind(this)
       )
     );
     this.push(
-      helpers.commandRunner(
+      commandRunner(
         'codeQLQueryHistory.compareWith',
         this.handleCompareWith.bind(this)
       )
     );
     this.push(
-      helpers.commandRunner(
+      commandRunner(
         'codeQLQueryHistory.showQueryLog',
         this.handleShowQueryLog.bind(this)
       )
     );
     this.push(
-      helpers.commandRunner(
+      commandRunner(
         'codeQLQueryHistory.showQueryText',
         this.handleShowQueryText.bind(this)
       )
     );
     this.push(
-      helpers.commandRunner(
+      commandRunner(
         'codeQLQueryHistory.viewSarif',
         this.handleViewSarif.bind(this)
       )
     );
     this.push(
-      helpers.commandRunner(
+      commandRunner(
         'codeQLQueryHistory.viewDil',
         this.handleViewDil.bind(this)
       )
     );
     this.push(
-      helpers.commandRunner(
+      commandRunner(
         'codeQLQueryHistory.itemClicked',
         async (item: CompletedQuery) => {
           return this.handleItemClicked(item, [item]);

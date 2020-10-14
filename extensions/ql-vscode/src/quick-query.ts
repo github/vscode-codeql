@@ -4,6 +4,7 @@ import * as path from 'path';
 import { CancellationToken, ExtensionContext, window as Window, workspace, Uri } from 'vscode';
 import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 import { CodeQLCliServer } from './cli';
+import { ProgressCallback, UserCancellationException } from './commandRunner';
 import { DatabaseUI } from './databases-ui';
 import * as helpers from './helpers';
 import { logger } from './logging';
@@ -51,7 +52,7 @@ export async function displayQuickQuery(
   ctx: ExtensionContext,
   cliServer: CodeQLCliServer,
   databaseUI: DatabaseUI,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: CancellationToken
 ) {
 
@@ -121,7 +122,7 @@ export async function displayQuickQuery(
 
   // TODO: clean up error handling for top-level commands like this
   catch (e) {
-    if (e instanceof helpers.UserCancellationException) {
+    if (e instanceof UserCancellationException) {
       logger.log(e.message);
     }
     else if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {

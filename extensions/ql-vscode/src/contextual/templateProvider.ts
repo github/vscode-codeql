@@ -2,8 +2,9 @@ import * as vscode from 'vscode';
 
 import { decodeSourceArchiveUri, encodeArchiveBasePath, zipArchiveScheme } from '../archive-filesystem-provider';
 import { CodeQLCliServer } from '../cli';
+import { ProgressCallback, withProgress } from '../commandRunner';
 import { DatabaseManager } from '../databases';
-import { CachedOperation, ProgressCallback, withProgress } from '../helpers';
+import { CachedOperation } from '../helpers';
 import * as messages from '../pure/messages';
 import { QueryServerClient } from '../queryserver-client';
 import { compileAndRunQueryAgainstDatabase, QueryWithResults } from '../run-queries';

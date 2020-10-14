@@ -24,8 +24,10 @@ import {
 import {
   commandRunner,
   commandRunnerWithProgress,
-  getOnDiskWorkspaceFolders,
   ProgressCallback,
+} from './commandRunner';
+import {
+  getOnDiskWorkspaceFolders,
   showAndLogErrorMessage
 } from './helpers';
 import { logger } from './logging';

@@ -11,6 +11,7 @@ import { InvocationRateLimiter, InvocationRateLimiterResultKind, showAndLogError
 import { logger } from './logging';
 import * as helpers from './helpers';
 import { getCodeQlCliVersion } from './cli-version';
+import { ProgressCallback } from './commandRunner';
 
 /**
  * distribution.ts
@@ -201,7 +202,7 @@ export class DistributionManager implements DistributionProvider {
    * Returns a failed promise if an unexpected error occurs during installation.
    */
   public installExtensionManagedDistributionRelease(release: Release,
-    progressCallback?: helpers.ProgressCallback): Promise<void> {
+    progressCallback?: ProgressCallback): Promise<void> {
     return this._extensionSpecificDistributionManager.installDistributionRelease(release, progressCallback);
   }
 
@@ -283,14 +284,14 @@ class ExtensionSpecificDistributionManager {
    * Returns a failed promise if an unexpected error occurs during installation.
    */
   public async installDistributionRelease(release: Release,
-    progressCallback?: helpers.ProgressCallback): Promise<void> {
+    progressCallback?: ProgressCallback): Promise<void> {
     await this.downloadDistribution(release, progressCallback);
     // Store the installed release within the global extension state.
     this.storeInstalledRelease(release);
   }
 
   private async downloadDistribution(release: Release,
-    progressCallback?: helpers.ProgressCallback): Promise<void> {
+    progressCallback?: ProgressCallback): Promise<void> {
     try {
       await this.removeDistribution();
     } catch (e) {

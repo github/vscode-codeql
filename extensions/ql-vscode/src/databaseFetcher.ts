@@ -12,10 +12,10 @@ import * as path from 'path';
 
 import { DatabaseManager, DatabaseItem } from './databases';
 import {
-  ProgressCallback,
   showAndLogInformationMessage,
 } from './helpers';
 import { logger } from './logging';
+import { ProgressCallback } from './commandRunner';
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.

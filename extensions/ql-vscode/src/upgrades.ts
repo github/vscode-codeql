@@ -5,6 +5,7 @@ import { logger } from './logging';
 import * as messages from './pure/messages';
 import * as qsClient from './queryserver-client';
 import { upgradesTmpDir } from './run-queries';
+import { ProgressCallback, UserCancellationException } from './commandRunner';
 
 /**
  * Maximum number of lines to include from database upgrade message,
@@ -24,7 +25,7 @@ async function checkAndConfirmDatabaseUpgrade(
   db: DatabaseItem,
   targetDbScheme: vscode.Uri,
   upgradesDirectories: vscode.Uri[],
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: vscode.CancellationToken,
 ): Promise<messages.UpgradeParams | undefined> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
@@ -107,7 +108,7 @@ async function checkAndConfirmDatabaseUpgrade(
     return params;
   }
   else {
-    throw new helpers.UserCancellationException('User cancelled the database upgrade.');
+    throw new UserCancellationException('User cancelled the database upgrade.');
   }
 }
 
@@ -121,7 +122,7 @@ export async function upgradeDatabase(
   qs: qsClient.QueryServerClient,
   db: DatabaseItem, targetDbScheme: vscode.Uri,
   upgradesDirectories: vscode.Uri[],
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: vscode.CancellationToken,
 ): Promise<messages.RunUpgradeResult | undefined> {
   const upgradeParams = await checkAndConfirmDatabaseUpgrade(qs, db, targetDbScheme, upgradesDirectories, progress, token);
@@ -165,7 +166,7 @@ export async function upgradeDatabase(
 async function checkDatabaseUpgrade(
   qs: qsClient.QueryServerClient,
   upgradeParams: messages.UpgradeParams,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: vscode.CancellationToken,
 ): Promise<messages.CheckUpgradeResult> {
   progress({
@@ -180,7 +181,7 @@ async function checkDatabaseUpgrade(
 async function compileDatabaseUpgrade(
   qs: qsClient.QueryServerClient,
   upgradeParams: messages.UpgradeParams,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: vscode.CancellationToken,
 ): Promise<messages.CompileUpgradeResult> {
   const params: messages.CompileUpgradeParams = {
@@ -201,7 +202,7 @@ async function runDatabaseUpgrade(
   qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   upgrades: messages.CompiledUpgrades,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: vscode.CancellationToken,
 ): Promise<messages.RunUpgradeResult> {
 
