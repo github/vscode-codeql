@@ -190,10 +190,11 @@ describe('Launcher path', () => {
   let launcherThatExists = '';
 
   beforeEach(() => {
+    sandbox = sinon.createSandbox();
     getExecutableFromDirectory = createModule().getExecutableFromDirectory;
   });
 
-  beforeEach(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 
@@ -289,7 +290,6 @@ describe('Launcher path', () => {
   });
 
   function createModule() {
-    sandbox = sinon.createSandbox();
     warnSpy = sandbox.spy();
     errorSpy = sandbox.spy();
     logSpy = sandbox.spy();

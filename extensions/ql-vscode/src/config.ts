@@ -69,6 +69,7 @@ const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
 const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
 const RUNNING_TESTS_SETTING = new Setting('runningTests', ROOT_SETTING);
 
+export const LOG_TELEMETRY = new Setting('telemetry.logTelemetry', ROOT_SETTING);
 export const ENABLE_TELEMETRY = new Setting('telemetry.enableTelemetry', ROOT_SETTING);
 export const NUMBER_OF_TEST_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_TESTS_SETTING);
 export const MAX_QUERIES = new Setting('maxQueries', RUNNING_QUERIES_SETTING);
@@ -234,3 +235,8 @@ export class CliConfigListener extends ConfigListener implements CliConfig {
  * want to enable experimental features, they can add them directly in
  * their vscode settings json file.
  */
+
+/**
+ * Enables canary features of this extension. Recommended for all internal users.
+ */
+export const CANARY_FEATURES = new Setting('canary', ROOT_SETTING);

@@ -21,17 +21,19 @@ describe('databaseFetcher', function() {
   this.timeout(10000);
 
   describe('convertToDatabaseUrl', () => {
+    let sandbox: sinon.SinonSandbox;
     let quickPickSpy: sinon.SinonStub;
     beforeEach(() => {
-      quickPickSpy = sinon.stub(window, 'showQuickPick');
+      sandbox = sinon.createSandbox();
+      quickPickSpy = sandbox.stub(window, 'showQuickPick');
     });
 
     afterEach(() => {
-      (window.showQuickPick as sinon.SinonStub).restore();
+      sandbox.restore();
     });
 
     it('should convert a project url to a database url', async () => {
-      quickPickSpy.returns('javascript' as any);
+      quickPickSpy.resolves('javascript');
       const lgtmUrl = 'https://lgtm.com/projects/g/github/codeql';
       const dbUrl = await convertToDatabaseUrl(lgtmUrl);
 
@@ -43,7 +45,7 @@ describe('databaseFetcher', function() {
     });
 
     it('should convert a project url to a database url with extra path segments', async () => {
-      quickPickSpy.returns('python' as any);
+      quickPickSpy.resolves('python');
       const lgtmUrl =
         'https://lgtm.com/projects/g/github/codeql/subpage/subpage2?query=xxx';
       const dbUrl = await convertToDatabaseUrl(lgtmUrl);
@@ -54,7 +56,7 @@ describe('databaseFetcher', function() {
     });
 
     it('should fail on a nonexistant prohect', async () => {
-      quickPickSpy.returns('javascript' as any);
+      quickPickSpy.resolves('javascript');
       const lgtmUrl = 'https://lgtm.com/projects/g/github/hucairz';
       expect(convertToDatabaseUrl(lgtmUrl)).to.rejectedWith(/Invalid LGTM URL/);
     });

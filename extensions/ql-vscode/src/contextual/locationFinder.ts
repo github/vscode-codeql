@@ -8,7 +8,7 @@ import fileRangeFromURI from './fileRangeFromURI';
 import * as messages from '../pure/messages';
 import { QueryServerClient } from '../queryserver-client';
 import { QueryWithResults, compileAndRunQueryAgainstDatabase } from '../run-queries';
-import { ProgressCallback } from '../helpers';
+import { ProgressCallback } from '../commandRunner';
 import { KeyType } from './keyType';
 import { qlpackOfDatabase, resolveQueries } from './queryResolver';
 

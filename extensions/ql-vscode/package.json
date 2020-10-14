@@ -172,8 +172,15 @@
         },
         "codeQL.telemetry.enableTelemetry": {
           "type": "boolean",
-          "default": true,
+          "default": false,
+          "scope": "application",
           "markdownDescription": "Specifies whether to enable Code QL telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent."
+        },
+        "codeQL.telemetry.logTelemetry": {
+          "type": "boolean",
+          "default": false,
+          "scope": "application",
+          "markdownDescription": "Specifies whether or not to write telemetry events to the extension log."
         }
       }
     },
@@ -759,6 +766,7 @@
     "@typescript-eslint/eslint-plugin": "~2.23.0",
     "@typescript-eslint/parser": "~2.23.0",
     "ansi-colors": "^4.1.1",
+    "applicationinsights": "^1.8.7",
     "chai": "^4.2.0",
     "chai-as-promised": "~7.1.1",
     "css-loader": "~3.1.0",

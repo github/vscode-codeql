@@ -25,8 +25,8 @@ describe('databases', () => {
       {
         workspaceState: {
           update: updateSpy,
-          get: sinon.stub()
-        },
+          get: sinon.stub().returns([])
+        }
       } as unknown as ExtensionContext,
       {} as QueryServerConfig,
       {} as Logger,
@@ -39,6 +39,9 @@ describe('databases', () => {
       name: 'abc',
       getPersistedState() {
         return this.name;
+      },
+      belongsToSourceArchiveExplorerUri() {
+        return true;
       }
     };
     const spy = sinon.spy();
@@ -70,6 +73,9 @@ describe('databases', () => {
       name: 'abc',
       getPersistedState() {
         return this.name;
+      },
+      belongsToSourceArchiveExplorerUri() {
+        return true;
       }
     };
     const spy = sinon.spy();

@@ -13,6 +13,7 @@ import {
 import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 
 import * as cli from './cli';
+import { ProgressCallback, UserCancellationException } from './commandRunner';
 import * as config from './config';
 import { DatabaseItem, getUpgradesDirectories } from './databases';
 import * as helpers from './helpers';
@@ -79,7 +80,7 @@ export class QueryInfo {
 
   async run(
     qs: qsClient.QueryServerClient,
-    progress: helpers.ProgressCallback,
+    progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<messages.EvaluationResult> {
     let result: messages.EvaluationResult | null = null;
@@ -121,7 +122,7 @@ export class QueryInfo {
 
   async compile(
     qs: qsClient.QueryServerClient,
-    progress: helpers.ProgressCallback,
+    progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<messages.CompilationMessage[]> {
     let compiled: messages.CheckQueryResult | undefined;
@@ -208,7 +209,7 @@ export interface QueryWithResults {
 export async function clearCacheInDatabase(
   qs: qsClient.QueryServerClient,
   dbItem: DatabaseItem,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<messages.ClearCacheResult> {
   if (dbItem.contents === undefined) {
@@ -284,7 +285,7 @@ async function checkDbschemeCompatibility(
   cliServer: cli.CodeQLCliServer,
   qs: qsClient.QueryServerClient,
   query: QueryInfo,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<void> {
   const searchPath = helpers.getOnDiskWorkspaceFolders();
@@ -363,7 +364,7 @@ async function promptUserToSaveChanges(document: TextDocument): Promise<boolean>
       }
 
       if (chosenItem === cancelItem) {
-        throw new helpers.UserCancellationException('Query run cancelled.', true);
+        throw new UserCancellationException('Query run cancelled.', true);
       }
     }
   }
@@ -453,7 +454,7 @@ export async function compileAndRunQueryAgainstDatabase(
   db: DatabaseItem,
   quickEval: boolean,
   selectedQueryUri: Uri | undefined,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: CancellationToken,
   templates?: messages.TemplateDefinitions,
 ): Promise<QueryWithResults> {
