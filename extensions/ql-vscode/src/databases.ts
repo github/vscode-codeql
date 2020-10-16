@@ -267,7 +267,8 @@ export interface DatabaseChangedEvent {
   item: DatabaseItem | undefined;
 }
 
-class DatabaseItemImpl implements DatabaseItem {
+// Exported for testing
+export class DatabaseItemImpl implements DatabaseItem {
   private _error: Error | undefined = undefined;
   private _contents: DatabaseContents | undefined;
   /** A cache of database info */
@@ -301,8 +302,7 @@ class DatabaseItemImpl implements DatabaseItem {
   public get sourceArchive(): vscode.Uri | undefined {
     if (this.options.ignoreSourceArchive || (this._contents === undefined)) {
       return undefined;
-    }
-    else {
+    } else {
       return this._contents.sourceArchiveUri;
     }
   }
@@ -341,42 +341,42 @@ class DatabaseItemImpl implements DatabaseItem {
 
   public resolveSourceFile(uri: string | undefined): vscode.Uri {
     const sourceArchive = this.sourceArchive;
-    // FIXME: This is wrong. Should parse the uri properly first
+    // Sometimes, we are passed a path, sometimes a file URI.
+    // We need to convert this to a file path that is probably inside of a zip file.
     const file = uri?.replace(/file:/, '');
-    if (sourceArchive === undefined) {
-      if (file !== undefined) {
+    if (!sourceArchive) {
+      if (file) {
         // Treat it as an absolute path.
         return vscode.Uri.file(file);
-      }
-      else {
+      } else {
         return this.databaseUri;
       }
     }
-    else {
-      if (file !== undefined) {
-        const absoluteFilePath = file.replace(':', '_');
-        // Strip any leading slashes from the file path, and replace `:` with `_`.
-        const relativeFilePath = absoluteFilePath.replace(/^\/*/, '').replace(':', '_');
-        if (sourceArchive.scheme == zipArchiveScheme) {
-          return encodeSourceArchiveUri({
-            pathWithinSourceArchive: absoluteFilePath,
-            sourceArchiveZipPath: sourceArchive.fsPath,
-          });
-        }
-        else {
-          let newPath = sourceArchive.path;
-          if (!newPath.endsWith('/')) {
-            // Ensure a trailing slash.
-            newPath += '/';
-          }
-          newPath += relativeFilePath;
 
-          return sourceArchive.with({ path: newPath });
+    if (file) {
+      const absoluteFilePath = file.replace(':', '_');
+      // Strip any leading slashes from the file path, and replace `:` with `_`.
+      const relativeFilePath = absoluteFilePath.replace(/^\/*/, '').replace(':', '_');
+      if (sourceArchive.scheme === zipArchiveScheme) {
+        const zipRef = decodeSourceArchiveUri(sourceArchive);
+        return encodeSourceArchiveUri({
+          pathWithinSourceArchive: zipRef.pathWithinSourceArchive + '/' + absoluteFilePath,
+          sourceArchiveZipPath: zipRef.sourceArchiveZipPath,
+        });
+
+      } else {
+        let newPath = sourceArchive.path;
+        if (!newPath.endsWith('/')) {
+          // Ensure a trailing slash.
+          newPath += '/';
         }
+        newPath += relativeFilePath;
+
+        return sourceArchive.with({ path: newPath });
       }
-      else {
-        return sourceArchive;
-      }
+
+    } else {
+      return sourceArchive;
     }
   }
 
