@@ -68,7 +68,7 @@ function isWholeFileMatch(matches: RegExpExecArray): boolean {
  *
  * @param uri A file uri
  */
-function isEmptyPath(uriStr: string) {
+export function isEmptyPath(uriStr: string) {
   return !uriStr || uriStr === 'file:/';
 }
 

@@ -12,6 +12,16 @@ describe('fileRangeFromURI', () => {
     expect(fileRangeFromURI('hucairz', createMockDatabaseItem())).to.be.undefined;
   });
 
+  it('should return undefined when value is an empty uri', () => {
+    expect(fileRangeFromURI({
+      uri: 'file:/',
+      startLine: 1,
+      startColumn: 2,
+      endLine: 3,
+      endColumn: 4,
+    } as LineColumnLocation, createMockDatabaseItem())).to.be.undefined;
+  });
+
   it('should return a range for a WholeFileLocation', () => {
     expect(fileRangeFromURI({
       uri: 'file:///hucairz',
