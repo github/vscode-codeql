@@ -470,7 +470,11 @@ export class CodeQLCliServer implements Disposable {
     const subcommandArgs = [
       testPath
     ];
-    return await this.runJsonCodeQlCliCommand<ResolvedTests>(['resolve', 'tests'], subcommandArgs, 'Resolving tests');
+    return await this.runJsonCodeQlCliCommand<ResolvedTests>(
+      ['resolve', 'tests', '--strict-test-discovery'],
+      subcommandArgs,
+      'Resolving tests'
+    );
   }
 
   /**

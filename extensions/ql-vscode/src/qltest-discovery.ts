@@ -1,7 +1,7 @@
 import * as path from 'path';
-import { QLPackDiscovery, QLPack } from './qlpack-discovery';
+import { QLPackDiscovery } from './qlpack-discovery';
 import { Discovery } from './discovery';
-import { EventEmitter, Event, Uri, RelativePattern, WorkspaceFolder, env, workspace } from 'vscode';
+import { EventEmitter, Event, Uri, RelativePattern, WorkspaceFolder, env } from 'vscode';
 import { MultiFileSystemWatcher } from './vscode-utils/multi-file-system-watcher';
 import { CodeQLCliServer } from './cli';
 
@@ -29,9 +29,8 @@ export abstract class QLTestNode {
  * A directory containing one or more QL tests or other test directories.
  */
 export class QLTestDirectory extends QLTestNode {
-  private _children: QLTestNode[] = [];
 
-  constructor(_path: string, _name: string) {
+  constructor(_path: string, _name: string, private _children: QLTestNode[] = []) {
     super(_path, _name);
   }
 
@@ -55,10 +54,23 @@ export class QLTestDirectory extends QLTestNode {
   }
 
   public finish(): void {
+    // remove empty directories
+    this._children.filter(child =>
+      child instanceof QLTestFile || child.children.length > 0
+    );
     this._children.sort((a, b) => a.name.localeCompare(b.name, env.language));
-    for (const child of this._children) {
+    this._children.forEach((child, i) => {
       child.finish();
-    }
+      if (child.children?.length === 1 && child.children[0] instanceof QLTestDirectory) {
+        // collapse children
+        const replacement = new QLTestDirectory(
+          child.children[0].path,
+          child.name + ' / ' + child.children[0].name,
+          Array.from(child.children[0].children)
+        );
+        this._children[i] = replacement;
+      }
+    });
   }
 
   private createChildDirectory(name: string): QLTestDirectory {
@@ -96,14 +108,15 @@ export class QLTestFile extends QLTestNode {
  */
 interface QLTestDiscoveryResults {
   /**
-   * The root test directory for each QL pack that contains tests.
+   * A directory that contains one or more QL Tests, or other QLTestDirectories.
    */
-  testDirectories: QLTestDirectory[];
+  testDirectory: QLTestDirectory | undefined;
+
   /**
-   * The list of file system paths to watch. If any of these paths changes, the discovery results
-   * may be out of date.
+   * The file system path to a directory to watch. If any ql or qlref file changes in
+   * this directory, then this signifies a change in tests.
    */
-  watchPaths: string[];
+  watchPath: string;
 }
 
 /**
@@ -112,7 +125,7 @@ interface QLTestDiscoveryResults {
 export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
   private readonly _onDidChangeTests = this.push(new EventEmitter<void>());
   private readonly watcher: MultiFileSystemWatcher = this.push(new MultiFileSystemWatcher());
-  private _testDirectories: QLTestDirectory[] = [];
+  private _testDirectory: QLTestDirectory | undefined;
 
   constructor(
     private readonly qlPackDiscovery: QLPackDiscovery,
@@ -128,12 +141,17 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
   /**
    * Event to be fired when the set of discovered tests may have changed.
    */
-  public get onDidChangeTests(): Event<void> { return this._onDidChangeTests.event; }
+  public get onDidChangeTests(): Event<void> {
+    return this._onDidChangeTests.event;
+  }
 
   /**
-   * The root test directory for each QL pack that contains tests.
+   * The root directory. There is at least one test in this directory, or
+   * in a subdirectory of this.
    */
-  public get testDirectories(): QLTestDirectory[] { return this._testDirectories; }
+  public get testDirectory(): QLTestDirectory | undefined {
+    return this._testDirectory;
+  }
 
   private handleDidChangeQLPacks(): void {
     this.refresh();
@@ -144,72 +162,49 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
       this.refresh();
     }
   }
-
+  static cnt = 0;
   protected async discover(): Promise<QLTestDiscoveryResults> {
-    const testDirectories: QLTestDirectory[] = [];
-    const watchPaths: string[] = [];
-    const qlPacks = this.qlPackDiscovery.qlPacks;
-    for (const qlPack of qlPacks) {
-      //HACK: Assume that only QL packs whose name ends with '-tests' contain tests.
-      if (this.isRelevantQlPack(qlPack)) {
-        watchPaths.push(qlPack.uri.fsPath);
-        const testPackage = await this.discoverTests(qlPack.uri.fsPath, qlPack.name);
-        if (testPackage !== undefined) {
-          testDirectories.push(testPackage);
-        }
-      }
-    }
-
-    return { testDirectories, watchPaths };
+    const timer = 'testDirectory-' + this.workspaceFolder.uri.fsPath + '-' + QLTestDiscovery.cnt++;
+    console.time(timer);
+    const testDirectory = await this.discoverTests();
+    console.timeEnd(timer);
+    return {
+      testDirectory,
+      watchPath: this.workspaceFolder.uri.fsPath
+    };
   }
 
   protected update(results: QLTestDiscoveryResults): void {
-    this._testDirectories = results.testDirectories;
+    this._testDirectory = results.testDirectory;
 
     // Watch for changes to any `.ql` or `.qlref` file in any of the QL packs that contain tests.
     this.watcher.clear();
-    results.watchPaths.forEach(watchPath => {
-      this.watcher.addWatch(new RelativePattern(watchPath, '**/*.{ql,qlref}'));
-    });
+    this.watcher.addWatch(new RelativePattern(results.watchPath, '**/*.{ql,qlref}'));
     this._onDidChangeTests.fire();
   }
 
   /**
-   * Only include qlpacks suffixed with '-tests' that are contained
-   * within the provided workspace folder.
-   */
-  private isRelevantQlPack(qlPack: QLPack): boolean {
-    return qlPack.name.endsWith('-tests')
-      && workspace.getWorkspaceFolder(qlPack.uri)?.index === this.workspaceFolder.index;
-  }
-
-  /**
    * Discover all QL tests in the specified directory and its subdirectories.
-   * @param fullPath The full path of the test directory.
-   * @param name The display name to use for the returned `TestDirectory` object.
    * @returns A `QLTestDirectory` object describing the contents of the directory, or `undefined` if
    *   no tests were found.
    */
-  private async discoverTests(fullPath: string, name: string): Promise<QLTestDirectory | undefined> {
+  private async discoverTests(): Promise<QLTestDirectory> {
+    const fullPath = this.workspaceFolder.uri.fsPath;
+    const name = this.workspaceFolder.name;
     const resolvedTests = (await this.cliServer.resolveTests(fullPath))
       .filter((testPath) => !QLTestDiscovery.ignoreTestPath(testPath));
 
-    if (resolvedTests.length === 0) {
-      return undefined;
+    const rootDirectory = new QLTestDirectory(fullPath, name);
+    for (const testPath of resolvedTests) {
+      const relativePath = path.normalize(path.relative(fullPath, testPath));
+      const dirName = path.dirname(relativePath);
+      const parentDirectory = rootDirectory.createDirectory(dirName);
+      parentDirectory.addChild(new QLTestFile(testPath, path.basename(testPath)));
     }
-    else {
-      const rootDirectory = new QLTestDirectory(fullPath, name);
-      for (const testPath of resolvedTests) {
-        const relativePath = path.normalize(path.relative(fullPath, testPath));
-        const dirName = path.dirname(relativePath);
-        const parentDirectory = rootDirectory.createDirectory(dirName);
-        parentDirectory.addChild(new QLTestFile(testPath, path.basename(testPath)));
-      }
 
-      rootDirectory.finish();
+    rootDirectory.finish();
 
-      return rootDirectory;
-    }
+    return rootDirectory;
   }
 
   /**
