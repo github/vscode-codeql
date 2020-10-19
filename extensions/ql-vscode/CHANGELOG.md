@@ -13,6 +13,7 @@
 - Allow setting `codeQL.runningQueries.numberOfThreads` and `codeQL.runningTests.numberOfThreads` to 0, (which is interpreted as 'use one thread per core on the machine').
 - Clear the problems view of all CodeQL query results when a database is removed.
 - Add a `View DIL` command on query history items. This opens a text editor containing the Datalog Intermediary Language representation of the compiled query.
+- Remove feature flag for the AST Viewer. For more information on how to use the AST Viewer, [see the documentation](https://help.semmle.com/codeql/codeql-for-vscode/procedures/exploring-the-structure-of-your-source-code.html).
 
 ## 1.3.3 - 16 September 2020
 
