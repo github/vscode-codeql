@@ -99,6 +99,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
 
     this.qlPackDiscovery = this.push(new QLPackDiscovery(workspaceFolder, cliServer));
     this.qlTestDiscovery = this.push(new QLTestDiscovery(this.qlPackDiscovery, workspaceFolder, cliServer));
+    // TODO: Don't run test discovery until pack discovery finishes
     this.qlPackDiscovery.refresh();
     this.qlTestDiscovery.refresh();
 
@@ -160,22 +161,22 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
   private discoverTests(): void {
     this._tests.fire({ type: 'started' } as TestLoadStartedEvent);
 
-    const testDirectories = this.qlTestDiscovery.testDirectories;
-    const children = testDirectories.map(
-      testDirectory => QLTestAdapter.createTestSuiteInfo(testDirectory, testDirectory.name)
-    );
-    const testSuite: TestSuiteInfo = {
-      type: 'suite',
-      label: 'CodeQL',
-      id: '.',
-      children
-    };
-
+    const testDirectory = this.qlTestDiscovery.testDirectory;
+    let testSuite: TestSuiteInfo | undefined;
+    if (testDirectory?.children.length) {
+      const children = QLTestAdapter.createTestOrSuiteInfos(testDirectory.children);
+      testSuite = {
+        type: 'suite',
+        label: 'CodeQL',
+        id: testDirectory.path,
+        children
+      };
+    }
     this._tests.fire({
       type: 'finished',
-      suite: children.length > 0 ? testSuite : undefined
+      suite: testSuite
     } as TestLoadFinishedEvent);
-  }
+}
 
   public async run(tests: string[]): Promise<void> {
     if (this.runningTask !== undefined) {
