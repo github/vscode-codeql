@@ -423,7 +423,7 @@
         },
         {
           "command": "codeQLAstViewer.clear",
-          "when": "view == codeQLAstViewer && config.codeQL.experimentalAstViewer == true",
+          "when": "view == codeQLAstViewer",
           "group": "navigation"
         }
       ],
@@ -513,7 +513,7 @@
         {
           "command": "codeQL.viewAst",
           "group": "9_qlCommands",
-          "when": "resourceScheme == codeql-zip-archive && config.codeQL.experimentalAstViewer == true"
+          "when": "resourceScheme == codeql-zip-archive"
         },
         {
           "command": "codeQL.runQueries",
@@ -662,16 +662,14 @@
         },
         {
           "id": "codeQLAstViewer",
-          "name": "AST Viewer",
-          "when": "config.codeQL.experimentalAstViewer == true"
+          "name": "AST Viewer"
         }
       ]
     },
     "viewsWelcome": [
       {
         "view": "codeQLAstViewer",
-        "contents": "Run the 'CodeQL: View AST' command on an open source file from a Code QL database.\n[View AST](command:codeQL.viewAst)",
-        "when": "config.codeQL.experimentalAstViewer == true"
+        "contents": "Run the 'CodeQL: View AST' command on an open source file from a Code QL database.\n[View AST](command:codeQL.viewAst)"
       },
       {
         "view": "codeQLQueryHistory",
