@@ -121,13 +121,18 @@ async function findSourceArchive(
 
     if (await fs.pathExists(basePath)) {
       return vscode.Uri.file(basePath);
-    }
-    else if (await fs.pathExists(zipPath)) {
-      return vscode.Uri.file(zipPath).with({ scheme: zipArchiveScheme });
+    } else if (await fs.pathExists(zipPath)) {
+      return encodeSourceArchiveUri({
+        pathWithinSourceArchive: '',
+        sourceArchiveZipPath: zipPath
+      });
     }
   }
-  if (!silent)
-    showAndLogInformationMessage(`Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`);
+  if (!silent) {
+    showAndLogInformationMessage(
+      `Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`
+    );
+  }
   return undefined;
 }
 

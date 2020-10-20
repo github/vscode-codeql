@@ -100,6 +100,14 @@ class InvalidSourceArchiveUriError extends Error {
 
 /** Decodes an encoded source archive URI into its corresponding paths. Inverse of `encodeSourceArchiveUri`. */
 export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
+  if (!uri.authority) {
+    // Uri is malformed, but this is recoverable
+    logger.log(`Warning: ${new InvalidSourceArchiveUriError(uri).message}`);
+    return {
+      pathWithinSourceArchive: '',
+      sourceArchiveZipPath: uri.path
+    };
+  }
   const match = sourceArchiveUriAuthorityPattern.exec(uri.authority);
   if (match === null)
     throw new InvalidSourceArchiveUriError(uri);
