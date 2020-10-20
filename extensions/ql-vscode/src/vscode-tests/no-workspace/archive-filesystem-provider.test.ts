@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import * as path from 'path';
 
-import { encodeSourceArchiveUri, ArchiveFileSystemProvider, decodeSourceArchiveUri, ZipFileReference } from '../../archive-filesystem-provider';
-import { FileType, FileSystemError } from 'vscode';
+import { encodeSourceArchiveUri, ArchiveFileSystemProvider, decodeSourceArchiveUri, ZipFileReference, zipArchiveScheme } from '../../archive-filesystem-provider';
+import { FileType, FileSystemError, Uri } from 'vscode';
 
 describe('archive-filesystem-provider', () => {
   it('reads empty file correctly', async () => {
@@ -112,15 +112,31 @@ describe('source archive uri encoding', function() {
   const testCases: { name: string; input: ZipFileReference }[] = [
     {
       name: 'mixed case and unicode',
-      input: { sourceArchiveZipPath: '/I-\u2665-codeql.zip', pathWithinSourceArchive: '/foo/bar' }
+      input: {
+        sourceArchiveZipPath: '/I-\u2665-codeql.zip',
+        pathWithinSourceArchive: '/foo/bar'
+      }
     },
     {
       name: 'Windows path',
-      input: { sourceArchiveZipPath: 'C:/Users/My Name/folder/src.zip', pathWithinSourceArchive: '/foo/bar.ext' }
+      input: {
+        sourceArchiveZipPath: 'C:/Users/My Name/folder/src.zip',
+        pathWithinSourceArchive: '/foo/bar.ext'
+      }
     },
     {
       name: 'Unix path',
-      input: { sourceArchiveZipPath: '/home/folder/src.zip', pathWithinSourceArchive: '/foo/bar.ext' }
+      input: {
+        sourceArchiveZipPath: '/home/folder/src.zip',
+        pathWithinSourceArchive: '/foo/bar.ext'
+      }
+    },
+    {
+      name: 'Empty path',
+      input: {
+        sourceArchiveZipPath: '/home/folder/src.zip',
+        pathWithinSourceArchive: ''
+      }
     }
   ];
   for (const testCase of testCases) {
@@ -129,4 +145,14 @@ describe('source archive uri encoding', function() {
       expect(output).to.eql(testCase.input);
     });
   }
+
+  it('should handle malformed uri with no authority', () => {
+    // This handles codeql-zip-archive uris generated using the `with` method
+    const uri = Uri.parse('file:/a/b/c/src.zip').with({ scheme: zipArchiveScheme });
+    expect(uri.authority).to.eq('');
+    expect(decodeSourceArchiveUri(uri)).to.deep.eq({
+      sourceArchiveZipPath: '/a/b/c/src.zip',
+      pathWithinSourceArchive: ''
+    });
+  });
 });
