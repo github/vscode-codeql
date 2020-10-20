@@ -24,8 +24,9 @@ describe('databases', () => {
     databaseManager = new DatabaseManager(
       {
         workspaceState: {
-          update: updateSpy
-        }
+          update: updateSpy,
+          get: sinon.stub()
+        },
       } as unknown as ExtensionContext,
       {} as QueryServerConfig,
       {} as Logger,

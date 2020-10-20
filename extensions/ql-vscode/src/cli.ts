@@ -17,6 +17,7 @@ import { DistributionProvider, FindDistributionResultKind } from './distribution
 import { assertNever } from './pure/helpers-pure';
 import { QueryMetadata, SortDirection } from './pure/interface-types';
 import { Logger, ProgressReporter } from './logging';
+import { CompilationMessage } from './pure/messages';
 
 /**
  * The version of the SARIF format that we are using.
@@ -90,10 +91,11 @@ export interface TestRunOptions {
 export interface TestCompleted {
   test: string;
   pass: boolean;
-  messages: string[];
+  messages: CompilationMessage[];
   compilationMs: number;
   evaluationMs: number;
   expected: string;
+  diff: string[] | undefined;
 }
 
 /**
