@@ -4,6 +4,9 @@
 
 - Editors opened by navigating from the results view are no longer opened in _preview mode_. Now they are opened as a persistent editor. [#630](https://github.com/github/vscode-codeql/pull/630)
 - When comparing the results of a failed QL test run and the `.expected` file does not exist, an empty `.expected` file is created and compared against the `.actual` file. [#669](https://github.com/github/vscode-codeql/pull/669)
+- Alter structure of the _Test Explorer_ tree. It now follows the structure of the filesystem instead of the QL Packs. [#624](https://github.com/github/vscode-codeql/pull/624)
+- Alter structure of the _Test Explorer_ tree. It now follows the structure of the filesystem instead of the QL Packs. [#624](https://github.com/github/vscode-codeql/pull/624)
+- Add more structured output for tests. [#626](https://github.com/github/vscode-codeql/pull/626)
 
 ## 1.3.6 - 4 November 2020
 
@@ -33,6 +36,7 @@
 - Remove feature flag for the AST Viewer. For more information on how to use the AST Viewer, [see the documentation](https://help.semmle.com/codeql/codeql-for-vscode/procedures/exploring-the-structure-of-your-source-code.html).
 - The `codeQL.runningTests.numberOfThreads` setting is now used correctly when running tests.
 - Alter structure of the _Test Explorer_ tree. It now follows the structure of the filesystem instead of the qlpacks.
+- Ensure output of CodeQL test runs includes compilation error messages and test failure messages.
 
 ## 1.3.3 - 16 September 2020
 
