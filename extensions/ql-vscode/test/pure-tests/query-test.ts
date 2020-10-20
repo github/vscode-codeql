@@ -109,11 +109,18 @@ describe('using the query server', function() {
       removeAdditionalLogLocation: async () => { /**/ },
       getBaseLocation: () => ''
     };
-    cliServer = new cli.CodeQLCliServer({
-      async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
-        return codeQlPath;
+    cliServer = new cli.CodeQLCliServer(
+      {
+        async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
+          return codeQlPath;
+        },
       },
-    }, logger);
+      {
+        numberTestThreads: 2,
+        onDidChangeCliConfiguration: (() => {}) as any
+      },
+      logger
+    );
     qs = new qsClient.QueryServerClient(
       {
         codeQlPath,

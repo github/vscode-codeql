@@ -9,7 +9,9 @@ import { StringDecoder } from 'string_decoder';
 import * as tk from 'tree-kill';
 import * as util from 'util';
 import { CancellationToken, Disposable } from 'vscode';
+
 import { BQRSInfo, DecodedBqrsChunk } from './bqrs-cli-types';
+import { CliConfig } from './config';
 import { DistributionProvider } from './distribution';
 import { assertNever } from './helpers-pure';
 import { QueryMetadata, SortDirection } from './interface-types';
@@ -122,12 +124,21 @@ export class CodeQLCliServer implements Disposable {
   /**  A buffer with a single null byte. */
   nullBuffer: Buffer;
 
-  constructor(private config: DistributionProvider, private logger: Logger) {
+  constructor(
+    private distributionProvider: DistributionProvider,
+    private cliConfig: CliConfig,
+    private logger: Logger,
+  ) {
     this.commandQueue = [];
     this.commandInProcess = false;
     this.nullBuffer = Buffer.alloc(1);
-    if (this.config.onDidChangeDistribution) {
-      this.config.onDidChangeDistribution(() => {
+    if (this.distributionProvider.onDidChangeDistribution) {
+      this.distributionProvider.onDidChangeDistribution(() => {
+        this.restartCliServer();
+      });
+    }
+    if (this.cliConfig.onDidChangeCliConfiguration) {
+      this.cliConfig.onDidChangeCliConfiguration(() => {
         this.restartCliServer();
       });
     }
@@ -188,7 +199,7 @@ export class CodeQLCliServer implements Disposable {
    * Get the path to the CodeQL CLI distribution, or throw an exception if not found.
    */
   private async getCodeQlPath(): Promise<string> {
-    const codeqlPath = await this.config.getCodeQlPathWithoutVersionCheck();
+    const codeqlPath = await this.distributionProvider.getCodeQlPathWithoutVersionCheck();
     if (!codeqlPath) {
       throw new Error('Failed to find CodeQL distribution.');
     }
@@ -200,7 +211,14 @@ export class CodeQLCliServer implements Disposable {
    */
   private async launchProcess(): Promise<child_process.ChildProcessWithoutNullStreams> {
     const config = await this.getCodeQlPath();
-    return spawnServer(config, 'CodeQL CLI Server', ['execute', 'cli-server'], [], this.logger, _data => { /**/ });
+    return spawnServer(
+      config,
+      'CodeQL CLI Server',
+      ['execute', 'cli-server'],
+      [],
+      this.logger,
+      _data => { /**/ }
+    );
   }
 
   private async runCodeQlCliInternal(command: string[], commandArgs: string[], description: string): Promise<string> {
@@ -455,7 +473,8 @@ export class CodeQLCliServer implements Disposable {
 
     const subcommandArgs = [
       '--additional-packs', workspaces.join(path.delimiter),
-      '--threads', '8',
+      '--threads',
+      this.cliConfig.numberTestThreads.toString(),
       ...testPaths
     ];
 
