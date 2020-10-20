@@ -20,6 +20,7 @@ import { AstViewer } from './astViewer';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
 import { CodeQLCliServer } from './cli';
 import {
+  CliConfigListener,
   DistributionConfigListener,
   MAX_QUERIES,
   QueryHistoryConfigListener,
@@ -314,7 +315,11 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(qlConfigurationListener);
 
   logger.log('Initializing CodeQL cli server...');
-  const cliServer = new CodeQLCliServer(distributionManager, logger);
+  const cliServer = new CodeQLCliServer(
+    distributionManager,
+    new CliConfigListener(),
+    logger
+  );
   ctx.subscriptions.push(cliServer);
 
   logger.log('Initializing query server client.');

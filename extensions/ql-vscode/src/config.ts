@@ -67,6 +67,9 @@ const NUMBER_OF_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_QUERIES
 const TIMEOUT_SETTING = new Setting('timeout', RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
 const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
+const RUNNING_TESTS_SETTING = new Setting('runningTests', ROOT_SETTING);
+
+export const NUMBER_OF_TEST_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_TESTS_SETTING);
 export const MAX_QUERIES = new Setting('maxQueries', RUNNING_QUERIES_SETTING);
 export const AUTOSAVE_SETTING = new Setting('autoSave', RUNNING_QUERIES_SETTING);
 
@@ -89,6 +92,14 @@ export interface QueryHistoryConfig {
   format: string;
   onDidChangeQueryHistoryConfiguration: Event<void>;
 }
+
+const CLI_SETTINGS = [NUMBER_OF_TEST_THREADS_SETTING];
+
+export interface CliConfig {
+  numberTestThreads: number;
+  onDidChangeCliConfiguration?: Event<void>;
+}
+
 
 abstract class ConfigListener extends DisposableObject {
   protected readonly _onDidChangeConfiguration = this.push(new EventEmitter<void>());
@@ -208,6 +219,21 @@ export class QueryHistoryConfigListener extends ConfigListener implements QueryH
 
   public get format(): string {
     return QUERY_HISTORY_FORMAT_SETTING.getValue<string>();
+  }
+}
+
+export class CliConfigListener extends ConfigListener implements CliConfig {
+
+  public get numberTestThreads(): number {
+    return NUMBER_OF_TEST_THREADS_SETTING.getValue();
+  }
+
+  public get onDidChangeCliConfiguration(): Event<void> {
+    return this._onDidChangeConfiguration.event;
+  }
+
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+    this.handleDidChangeConfigurationForRelevantSettings(CLI_SETTINGS, e);
   }
 }
 
