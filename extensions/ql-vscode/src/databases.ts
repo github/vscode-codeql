@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as cli from './cli';
 import { ExtensionContext } from 'vscode';
 import { showAndLogErrorMessage, showAndLogWarningMessage, showAndLogInformationMessage } from './helpers';
-import { zipArchiveScheme, encodeSourceArchiveUri, decodeSourceArchiveUri } from './archive-filesystem-provider';
+import { zipArchiveScheme, encodeArchiveBasePath, decodeSourceArchiveUri, encodeSourceArchiveUri } from './archive-filesystem-provider';
 import { DisposableObject } from './vscode-utils/disposable-object';
 import { QueryServerConfig } from './config';
 import { Logger, logger } from './logging';
@@ -122,10 +122,7 @@ async function findSourceArchive(
     if (await fs.pathExists(basePath)) {
       return vscode.Uri.file(basePath);
     } else if (await fs.pathExists(zipPath)) {
-      return encodeSourceArchiveUri({
-        pathWithinSourceArchive: '',
-        sourceArchiveZipPath: zipPath
-      });
+      return encodeArchiveBasePath(zipPath);
     }
   }
   if (!silent) {
@@ -439,10 +436,7 @@ export class DatabaseItemImpl implements DatabaseItem {
     const sourceArchive = this.sourceArchive;
     if (sourceArchive === undefined || !sourceArchive.fsPath.endsWith('.zip'))
       return undefined;
-    return encodeSourceArchiveUri({
-      pathWithinSourceArchive: '/',
-      sourceArchiveZipPath: sourceArchive.fsPath,
-    });
+    return encodeArchiveBasePath(sourceArchive.fsPath);
   }
 
   /**

@@ -90,6 +90,19 @@ export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
   });
 }
 
+/**
+ * Convenience method to create a codeql-zip-archive with a path to the root
+ * archive
+ *
+ * @param pathToArchive the filesystem path to the root of the archive
+ */
+export function encodeArchiveBasePath(sourceArchiveZipPath: string) {
+  return encodeSourceArchiveUri({
+    sourceArchiveZipPath,
+    pathWithinSourceArchive: ''
+  });
+}
+
 const sourceArchiveUriAuthorityPattern = /^(\d+)-(\d+)$/;
 
 class InvalidSourceArchiveUriError extends Error {

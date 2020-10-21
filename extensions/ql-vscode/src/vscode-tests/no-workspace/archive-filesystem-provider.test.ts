@@ -1,7 +1,14 @@
 import { expect } from 'chai';
 import * as path from 'path';
 
-import { encodeSourceArchiveUri, ArchiveFileSystemProvider, decodeSourceArchiveUri, ZipFileReference, zipArchiveScheme } from '../../archive-filesystem-provider';
+import {
+  encodeSourceArchiveUri,
+  encodeArchiveBasePath,
+  ArchiveFileSystemProvider,
+  decodeSourceArchiveUri,
+  ZipFileReference,
+  zipArchiveScheme
+} from '../../archive-filesystem-provider';
 import { FileType, FileSystemError, Uri } from 'vscode';
 
 describe('archive-filesystem-provider', () => {
@@ -145,6 +152,15 @@ describe('source archive uri encoding', function() {
       expect(output).to.eql(testCase.input);
     });
   }
+
+  it('should encode a uri at the root of the archive', () => {
+    const path = '/a/b/c/src.zip';
+    const uri = encodeArchiveBasePath(path);
+    expect(uri.path).to.eq(path);
+    expect(decodeSourceArchiveUri(uri).pathWithinSourceArchive).to.eq('');
+    expect(decodeSourceArchiveUri(uri).sourceArchiveZipPath).to.eq(path);
+    expect(uri.authority).to.eq('0-14');
+  });
 
   it('should handle malformed uri with no authority', () => {
     // This handles codeql-zip-archive uris generated using the `with` method
