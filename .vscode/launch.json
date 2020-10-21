@@ -43,7 +43,6 @@
       "port": 9229,
       "stopOnEntry": false,
       "sourceMaps": true,
-      "preLaunchTask": "Build",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     },
