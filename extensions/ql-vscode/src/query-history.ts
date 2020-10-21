@@ -279,7 +279,7 @@ export class QueryHistoryManager extends DisposableObject {
         }
       )
     );
-    queryHistoryConfigListener.onDidChangeQueryHistoryConfiguration(() => {
+    queryHistoryConfigListener.onDidChangeConfiguration(() => {
       this.treeDataProvider.refresh();
     });
 

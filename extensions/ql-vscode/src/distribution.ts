@@ -51,7 +51,7 @@ export class DistributionManager implements DistributionProvider {
   constructor(extensionContext: ExtensionContext, config: DistributionConfig, versionRange: semver.Range) {
     this._config = config;
     this._extensionSpecificDistributionManager = new ExtensionSpecificDistributionManager(extensionContext, config, versionRange);
-    this._onDidChangeDistribution = config.onDidChangeDistributionConfiguration;
+    this._onDidChangeDistribution = config.onDidChangeConfiguration;
     this._updateCheckRateLimiter = new InvocationRateLimiter(
       extensionContext,
       'extensionSpecificDistributionUpdateCheck',

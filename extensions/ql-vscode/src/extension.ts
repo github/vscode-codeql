@@ -278,7 +278,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     }
   }
 
-  ctx.subscriptions.push(distributionConfigListener.onDidChangeDistributionConfiguration(() => installOrUpdateThenTryActivate({
+  ctx.subscriptions.push(distributionConfigListener.onDidChangeConfiguration(() => installOrUpdateThenTryActivate({
     isUserInitiated: true,
     shouldDisplayMessageWhenNoUpdates: false,
     allowAutoUpdating: true

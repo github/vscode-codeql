@@ -238,7 +238,7 @@ describe('CompletedQuery', () => {
 
   function mockQueryHistoryConfig(): QueryHistoryConfig {
     return {
-      onDidChangeQueryHistoryConfiguration: onDidChangeQueryHistoryConfigurationSpy,
+      onDidChangeConfiguration: onDidChangeQueryHistoryConfigurationSpy,
       format: 'pqr'
     };
   }

@@ -57,7 +57,7 @@ export interface DistributionConfig {
   personalAccessToken?: string;
   ownerName?: string;
   repositoryName?: string;
-  onDidChangeDistributionConfiguration?: Event<void>;
+  onDidChangeConfiguration?: Event<void>;
 }
 
 // Query server configuration
@@ -82,7 +82,7 @@ export interface QueryServerConfig {
   numThreads: number;
   queryMemoryMb?: number;
   timeoutSecs: number;
-  onDidChangeQueryServerConfiguration?: Event<void>;
+  onDidChangeConfiguration?: Event<void>;
 }
 
 /** When these settings change, the query history should be refreshed. */
@@ -90,14 +90,14 @@ const QUERY_HISTORY_SETTINGS = [QUERY_HISTORY_FORMAT_SETTING];
 
 export interface QueryHistoryConfig {
   format: string;
-  onDidChangeQueryHistoryConfiguration: Event<void>;
+  onDidChangeConfiguration: Event<void>;
 }
 
 const CLI_SETTINGS = [NUMBER_OF_TEST_THREADS_SETTING];
 
 export interface CliConfig {
   numberTestThreads: number;
-  onDidChangeCliConfiguration?: Event<void>;
+  onDidChangeConfiguration?: Event<void>;
 }
 
 
@@ -128,6 +128,10 @@ abstract class ConfigListener extends DisposableObject {
   private updateConfiguration(): void {
     this._onDidChangeConfiguration.fire();
   }
+
+  public get onDidChangeConfiguration(): Event<void> {
+    return this._onDidChangeConfiguration.event;
+  }
 }
 
 export class DistributionConfigListener extends ConfigListener implements DistributionConfig {
@@ -143,17 +147,13 @@ export class DistributionConfigListener extends ConfigListener implements Distri
     return PERSONAL_ACCESS_TOKEN_SETTING.getValue() || undefined;
   }
 
-  public get onDidChangeDistributionConfiguration(): Event<void> {
-    return this._onDidChangeConfiguration.event;
-  }
-
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     this.handleDidChangeConfigurationForRelevantSettings(DISTRIBUTION_CHANGE_SETTINGS, e);
   }
 }
 
 export class QueryServerConfigListener extends ConfigListener implements QueryServerConfig {
-  private constructor(private _codeQlPath: string) {
+  public constructor(private _codeQlPath = '') {
     super();
   }
 
@@ -199,10 +199,6 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
     return DEBUG_SETTING.getValue<boolean>();
   }
 
-  public get onDidChangeQueryServerConfiguration(): Event<void> {
-    return this._onDidChangeConfiguration.event;
-  }
-
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     this.handleDidChangeConfigurationForRelevantSettings(QUERY_SERVER_RESTARTING_SETTINGS, e);
   }
@@ -211,10 +207,6 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
 export class QueryHistoryConfigListener extends ConfigListener implements QueryHistoryConfig {
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     this.handleDidChangeConfigurationForRelevantSettings(QUERY_HISTORY_SETTINGS, e);
-  }
-
-  public get onDidChangeQueryHistoryConfiguration(): Event<void> {
-    return this._onDidChangeConfiguration.event;
   }
 
   public get format(): string {
@@ -226,10 +218,6 @@ export class CliConfigListener extends ConfigListener implements CliConfig {
 
   public get numberTestThreads(): number {
     return NUMBER_OF_TEST_THREADS_SETTING.getValue();
-  }
-
-  public get onDidChangeCliConfiguration(): Event<void> {
-    return this._onDidChangeConfiguration.event;
   }
 
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
