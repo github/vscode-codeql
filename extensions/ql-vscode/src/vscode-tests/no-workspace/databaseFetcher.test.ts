@@ -16,7 +16,10 @@ import {
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe('databaseFetcher', () => {
+describe('databaseFetcher', function() {
+  // These tests make API calls and may need extra time to complete.
+  this.timeout(10000);
+
   describe('convertToDatabaseUrl', () => {
     let quickPickSpy: sinon.SinonStub;
     beforeEach(() => {
