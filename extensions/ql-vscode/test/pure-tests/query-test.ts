@@ -116,8 +116,7 @@ describe('using the query server', function() {
         },
       },
       {
-        numberTestThreads: 2,
-        onDidChangeCliConfiguration: (() => {}) as any
+        numberTestThreads: 2
       },
       logger
     );

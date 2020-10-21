@@ -58,8 +58,8 @@ export class QueryServerClient extends DisposableObject {
   constructor(readonly config: QueryServerConfig, readonly cliServer: cli.CodeQLCliServer, readonly opts: ServerOpts, withProgressReporting: WithProgressReporting) {
     super();
     // When the query server configuration changes, restart the query server.
-    if (config.onDidChangeQueryServerConfiguration !== undefined) {
-      this.push(config.onDidChangeQueryServerConfiguration(async () => {
+    if (config.onDidChangeConfiguration !== undefined) {
+      this.push(config.onDidChangeConfiguration(async () => {
         this.logger.log('Restarting query server due to configuration changes...');
         await this.restartQueryServer();
       }, this));

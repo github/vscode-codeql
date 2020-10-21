@@ -137,8 +137,8 @@ export class CodeQLCliServer implements Disposable {
         this.restartCliServer();
       });
     }
-    if (this.cliConfig.onDidChangeCliConfiguration) {
-      this.cliConfig.onDidChangeCliConfiguration(() => {
+    if (this.cliConfig.onDidChangeConfiguration) {
+      this.cliConfig.onDidChangeConfiguration(() => {
         this.restartCliServer();
       });
     }

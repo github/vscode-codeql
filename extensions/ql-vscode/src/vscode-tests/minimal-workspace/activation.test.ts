@@ -13,9 +13,11 @@ describe('launching with a minimal workspace', async () => {
   it('should install the extension', () => {
     assert(ext);
   });
+
   it('should not activate the extension at first', () => {
     assert(ext!.isActive === false);
   });
+
   it('should activate the extension when a .ql file is opened', async function() {
     const folders = vscode.workspace.workspaceFolders;
     assert(folders && folders.length === 1);
@@ -24,10 +26,9 @@ describe('launching with a minimal workspace', async () => {
     const document = await vscode.workspace.openTextDocument(documentPath);
     assert(document.languageId === 'ql');
     // Delay slightly so that the extension has time to activate.
-    this.timeout(3000);
-    setTimeout(() => {
-      assert(ext!.isActive);
-    }, 1000);
+    this.timeout(4000);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    assert(ext!.isActive);
   });
 });
 
