@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { decodeSourceArchiveUri, zipArchiveScheme } from '../archive-filesystem-provider';
+import { decodeSourceArchiveUri, encodeArchiveBasePath } from '../archive-filesystem-provider';
 import { ColumnKindCode, EntityValue, getResultSetSchema, ResultSetSchema } from '../bqrs-cli-types';
 import { CodeQLCliServer } from '../cli';
 import { DatabaseManager, DatabaseItem } from '../databases';
@@ -44,7 +44,7 @@ export async function getLocationsForUriString(
   filter: (src: string, dest: string) => boolean
 ): Promise<FullLocationLink[]> {
   const uri = decodeSourceArchiveUri(vscode.Uri.parse(uriString));
-  const sourceArchiveUri = vscode.Uri.file(uri.sourceArchiveZipPath).with({ scheme: zipArchiveScheme });
+  const sourceArchiveUri = encodeArchiveBasePath(uri.sourceArchiveZipPath);
 
   const db = dbm.findDatabaseItemBySourceArchive(sourceArchiveUri);
   if (!db) {

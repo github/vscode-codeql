@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { decodeSourceArchiveUri, zipArchiveScheme } from '../archive-filesystem-provider';
+import { decodeSourceArchiveUri, encodeArchiveBasePath, zipArchiveScheme } from '../archive-filesystem-provider';
 import { CodeQLCliServer } from '../cli';
 import { DatabaseManager } from '../databases';
 import { CachedOperation, ProgressCallback, withProgress } from '../helpers';
@@ -148,7 +148,7 @@ export class TemplatePrintAstProvider {
     }
 
     const zippedArchive = decodeSourceArchiveUri(uri);
-    const sourceArchiveUri = vscode.Uri.file(zippedArchive.sourceArchiveZipPath).with({ scheme: zipArchiveScheme });
+    const sourceArchiveUri = encodeArchiveBasePath(zippedArchive.sourceArchiveZipPath);
     const db = this.dbm.findDatabaseItemBySourceArchive(sourceArchiveUri);
 
     if (!db) {
