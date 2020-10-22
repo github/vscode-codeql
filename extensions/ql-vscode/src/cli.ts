@@ -673,7 +673,7 @@ export class CodeQLCliServer implements Disposable {
   async generateDil(qloFile: string, outFile: string): Promise<void> {
     await this.runCodeQlCliCommand(
       ['query', 'decompile'],
-      ['--kind', 'dil', '-o', outFile, qloFile],
+      ['-o', outFile, qloFile],
       'Generating DIL',
     );
   }
