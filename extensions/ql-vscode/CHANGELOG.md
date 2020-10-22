@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.3.4 - 22 October 2020
 
 - Add friendly welcome message when the databases view is empty.
 - Add open query, open results, and remove query commands in the query history view title bar.
