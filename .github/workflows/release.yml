@@ -121,7 +121,7 @@ jobs:
           perl -i -pe 's/^/## \[UNRELEASED\]\n\n/ if($.==3)' CHANGELOG.md
 
       - name: Create version bump PR
-        uses: peter-evans/create-pull-request@c7b64af0a489eae91f7890f2c1b63d13cc2d8ab7 # v2.4.2
+        uses: peter-evans/create-pull-request@c7f493a8000b8aeb17a1332e326ba76b57cb83eb # v3.4.1
         if: success()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
