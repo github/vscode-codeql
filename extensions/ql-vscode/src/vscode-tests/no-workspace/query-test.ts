@@ -5,11 +5,12 @@ import * as path from 'path';
 import * as tmp from 'tmp';
 import * as url from 'url';
 import { CancellationTokenSource } from 'vscode-jsonrpc';
-import * as messages from '../../src/messages';
-import * as qsClient from '../../src/queryserver-client';
-import * as cli from '../../src/cli';
-import { ProgressReporter, Logger } from '../../src/logging';
-import { ColumnValue } from '../../src/bqrs-cli-types';
+import * as messages from '../../messages';
+import * as qsClient from '../../queryserver-client';
+import * as cli from '../../cli';
+import { ProgressReporter, Logger } from '../../logging';
+import { ColumnValue } from '../../bqrs-cli-types';
+import { FindDistributionResultKind } from '../../distribution';
 
 
 declare module 'url' {
@@ -114,6 +115,11 @@ describe('using the query server', function() {
         async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
           return codeQlPath;
         },
+        getDistribution: async () => {
+          return {
+            kind: FindDistributionResultKind.NoDistribution
+          };
+        }
       },
       {
         numberTestThreads: 2
