@@ -45,6 +45,7 @@ export const DEFAULT_DISTRIBUTION_VERSION_RANGE: semver.Range = new semver.Range
 export interface DistributionProvider {
   getCodeQlPathWithoutVersionCheck(): Promise<string | undefined>;
   onDidChangeDistribution?: Event<void>;
+  getDistribution(): Promise<FindDistributionResult>;
 }
 
 export class DistributionManager implements DistributionProvider {

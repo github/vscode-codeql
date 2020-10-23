@@ -4,15 +4,16 @@ import * as child_process from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sarif from 'sarif';
+import { SemVer } from 'semver';
 import { Readable } from 'stream';
 import { StringDecoder } from 'string_decoder';
 import * as tk from 'tree-kill';
-import * as util from 'util';
+import { promisify } from 'util';
 import { CancellationToken, Disposable } from 'vscode';
 
 import { BQRSInfo, DecodedBqrsChunk } from './bqrs-cli-types';
 import { CliConfig } from './config';
-import { DistributionProvider } from './distribution';
+import { DistributionProvider, FindDistributionResultKind } from './distribution';
 import { assertNever } from './helpers-pure';
 import { QueryMetadata, SortDirection } from './interface-types';
 import { Logger, ProgressReporter } from './logging';
@@ -115,6 +116,11 @@ interface BqrsDecodeOptions {
  */
 export class CodeQLCliServer implements Disposable {
 
+  /**
+   * CLI version where --kind=DIL was introduced
+   */
+  private static CLI_VERSION_WITH_DECOMPILE_KIND_DIL = new SemVer('2.3.0');
+
   /** The process for the cli server, or undefined if one doesn't exist yet */
   process?: child_process.ChildProcessWithoutNullStreams;
   /** Queue of future commands*/
@@ -123,6 +129,12 @@ export class CodeQLCliServer implements Disposable {
   commandInProcess: boolean;
   /**  A buffer with a single null byte. */
   nullBuffer: Buffer;
+
+  /** Version of current cli, lazily computed by the `getVersion()` method */
+  _version: SemVer | undefined;
+
+  /** Path to current codeQL executable, or undefined if not running yet. */
+  codeQlPath: string | undefined;
 
   constructor(
     private distributionProvider: DistributionProvider,
@@ -140,10 +152,10 @@ export class CodeQLCliServer implements Disposable {
     if (this.cliConfig.onDidChangeConfiguration) {
       this.cliConfig.onDidChangeConfiguration(() => {
         this.restartCliServer();
+        this._version = undefined;
       });
     }
   }
-
 
   dispose(): void {
     this.killProcessIfRunning();
@@ -210,9 +222,9 @@ export class CodeQLCliServer implements Disposable {
    * Launch the cli server
    */
   private async launchProcess(): Promise<child_process.ChildProcessWithoutNullStreams> {
-    const config = await this.getCodeQlPath();
-    return spawnServer(
-      config,
+    const codeQlPath = await this.getCodeQlPath();
+    return await spawnServer(
+      codeQlPath,
       'CodeQL CLI Server',
       ['execute', 'cli-server'],
       [],
@@ -671,11 +683,36 @@ export class CodeQLCliServer implements Disposable {
   }
 
   async generateDil(qloFile: string, outFile: string): Promise<void> {
+    const extraArgs = (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_DECOMPILE_KIND_DIL) >= 0
+      ? ['--kind', 'dil', '-o', outFile, qloFile]
+      : ['-o', outFile, qloFile];
     await this.runCodeQlCliCommand(
       ['query', 'decompile'],
-      ['-o', outFile, qloFile],
+      extraArgs,
       'Generating DIL',
     );
+  }
+
+  private async getVersion() {
+    if (!this._version) {
+      this._version = await this.refreshVersion();
+    }
+    return this._version;
+  }
+
+  private async refreshVersion() {
+    const distribution = await this.distributionProvider.getDistribution();
+    switch(distribution.kind) {
+      case FindDistributionResultKind.CompatibleDistribution:
+      // eslint-disable-next-line no-fallthrough
+      case FindDistributionResultKind.IncompatibleDistribution:
+        return distribution.version;
+
+      default:
+        // We should not get here because if no distributions are available, then
+        // the cli class is never instantiated.
+        throw new Error('No distribution found');
+    }
   }
 }
 
@@ -734,7 +771,7 @@ export function spawnServer(
 
 /**
  * Runs a CodeQL CLI command without invoking the CLI server, returning the output as a string.
- * @param config The configuration containing the path to the CLI.
+ * @param codeQlPath The path to the CLI.
  * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
  * @param commandArgs The arguments to pass to the `codeql` command.
  * @param description Description of the action being run, to be shown in log and error messages.
@@ -742,7 +779,14 @@ export function spawnServer(
  * @param progressReporter Used to output progress messages, e.g. to the status bar.
  * @returns The contents of the command's stdout, if the command succeeded.
  */
-export async function runCodeQlCliCommand(codeQlPath: string, command: string[], commandArgs: string[], description: string, logger: Logger, progressReporter?: ProgressReporter): Promise<string> {
+export async function runCodeQlCliCommand(
+  codeQlPath: string,
+  command: string[],
+  commandArgs: string[],
+  description: string,
+  logger: Logger,
+  progressReporter?: ProgressReporter
+): Promise<string> {
   // Add logging arguments first, in case commandArgs contains positional parameters.
   const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
   const argsString = args.join(' ');
@@ -751,7 +795,7 @@ export async function runCodeQlCliCommand(codeQlPath: string, command: string[],
       progressReporter.report({ message: description });
     }
     logger.log(`${description} using CodeQL CLI: ${codeQlPath} ${argsString}...`);
-    const result = await util.promisify(child_process.execFile)(codeQlPath, args);
+    const result = await promisify(child_process.execFile)(codeQlPath, args);
     logger.log(result.stderr);
     logger.log('CLI command succeeded.');
     return result.stdout;
