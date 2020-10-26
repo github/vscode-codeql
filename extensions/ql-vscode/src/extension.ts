@@ -113,16 +113,37 @@ function registerErrorStubs(excludedCommands: string[], stubGenerator: (command:
   });
 }
 
-export async function activate(ctx: ExtensionContext): Promise<void> {
+/**
+ * The publicly available interface for this extension. This is to
+ * be used in our tests.
+ */
+export interface CodeQLExtensionInterface {
+  readonly ctx: ExtensionContext;
+  readonly cliServer: CodeQLCliServer;
+  readonly qs: qsClient.QueryServerClient;
+  readonly distributionManager: DistributionManager;
+}
+
+/**
+ * Returns the CodeQLExtensionInterface, or an empty object if the interface is not
+ * available afer activation is complete. This will happen if there is no cli
+ * installed when the extension starts. Downloading and installing the cli
+ * will happen at a later time.
+ *
+ * @param ctx The extension context
+ *
+ * @returns CodeQLExtensionInterface
+ */
+export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionInterface | {}> {
   logger.log('Starting CodeQL extension');
 
+  const distributionConfigListener = new DistributionConfigListener();
   initializeLogging(ctx);
   languageSupport.install();
 
-  const distributionConfigListener = new DistributionConfigListener();
   ctx.subscriptions.push(distributionConfigListener);
   const codeQlVersionRange = DEFAULT_DISTRIBUTION_VERSION_RANGE;
-  const distributionManager = new DistributionManager(ctx, distributionConfigListener, codeQlVersionRange);
+  const distributionManager = new DistributionManager(distributionConfigListener, codeQlVersionRange, ctx);
 
   const shouldUpdateOnNextActivationKey = 'shouldUpdateOnNextActivation';
 
@@ -253,14 +274,14 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     return result;
   }
 
-  async function installOrUpdateThenTryActivate(config: DistributionUpdateConfig): Promise<void> {
+  async function installOrUpdateThenTryActivate(config: DistributionUpdateConfig): Promise<CodeQLExtensionInterface | {}> {
     await installOrUpdateDistribution(config);
 
     // Display the warnings even if the extension has already activated.
     const distributionResult = await getDistributionDisplayingDistributionWarnings();
-
+    let extensionInterface: CodeQLExtensionInterface | {} = {};
     if (!beganMainExtensionActivation && distributionResult.kind !== FindDistributionResultKind.NoDistribution) {
-      await activateWithInstalledDistribution(ctx, distributionManager);
+      extensionInterface = await activateWithInstalledDistribution(ctx, distributionManager);
     } else if (distributionResult.kind === FindDistributionResultKind.NoDistribution) {
       registerErrorStubs([checkForUpdatesCommand], command => async () => {
         const installActionName = 'Install CodeQL CLI';
@@ -268,7 +289,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
           items: [installActionName]
         });
         if (chosenAction === installActionName) {
-          installOrUpdateThenTryActivate({
+          await installOrUpdateThenTryActivate({
             isUserInitiated: true,
             shouldDisplayMessageWhenNoUpdates: false,
             allowAutoUpdating: true
@@ -276,6 +297,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
         }
       });
     }
+    return extensionInterface;
   }
 
   ctx.subscriptions.push(distributionConfigListener.onDidChangeConfiguration(() => installOrUpdateThenTryActivate({
@@ -289,7 +311,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
     allowAutoUpdating: true
   })));
 
-  await installOrUpdateThenTryActivate({
+  return await installOrUpdateThenTryActivate({
     isUserInitiated: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
     shouldDisplayMessageWhenNoUpdates: false,
 
@@ -302,7 +324,7 @@ export async function activate(ctx: ExtensionContext): Promise<void> {
 async function activateWithInstalledDistribution(
   ctx: ExtensionContext,
   distributionManager: DistributionManager
-): Promise<void> {
+): Promise<CodeQLExtensionInterface> {
   beganMainExtensionActivation = true;
   // Remove any error stubs command handlers left over from first part
   // of activation.
@@ -354,6 +376,7 @@ async function activateWithInstalledDistribution(
 
   logger.log('Initializing query history manager.');
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
+  ctx.subscriptions.push(queryHistoryConfigurationListener);
   const showResults = async (item: CompletedQuery) =>
     showResultsForCompletedQuery(item, WebviewReveal.Forced);
 
@@ -647,6 +670,13 @@ async function activateWithInstalledDistribution(
   commands.executeCommand('codeQLDatabases.removeOrphanedDatabases');
 
   logger.log('Successfully finished extension initialization.');
+
+  return {
+    ctx,
+    cliServer,
+    qs,
+    distributionManager
+  };
 }
 
 function getContextStoragePath(ctx: ExtensionContext) {

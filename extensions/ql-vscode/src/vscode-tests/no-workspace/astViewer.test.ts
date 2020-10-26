@@ -15,19 +15,25 @@ const expect = chai.expect;
 
 describe('AstViewer', () => {
   let astRoots: AstItem[];
-  let viewer: AstViewer;
+  let viewer: AstViewer | undefined;
+  let sandbox: sinon.SinonSandbox;
   beforeEach(async () => {
+    sandbox = sinon.createSandbox();
     // the ast is stored in yaml because there are back pointers
     // making a json representation impossible.
     // The complication here is that yaml files are not copied into the 'out' directory by tsc.
     astRoots = await buildAst();
 
-    sinon.stub(commands, 'registerCommand');
-    sinon.stub(commands, 'executeCommand');
+    sandbox.stub(commands, 'registerCommand');
+    sandbox.stub(commands, 'executeCommand');
   });
 
   afterEach(() => {
-    sinon.restore();
+    sandbox.restore();
+    if (viewer) {
+      viewer.dispose();
+      viewer = undefined;
+    }
   });
 
   it('should update the viewer roots', () => {
@@ -56,7 +62,6 @@ describe('AstViewer', () => {
     doSelectionTest(undefined, new Range(2, 3, 4, 5));
   });
 
-
   function doSelectionTest(
     expectedSelection: any,
     selectionRange: Range | undefined,
@@ -65,7 +70,7 @@ describe('AstViewer', () => {
     const item = {} as DatabaseItem;
     viewer = new AstViewer();
     viewer.updateRoots(astRoots, item, fsPath);
-    const spy = sinon.spy();
+    const spy = sandbox.spy();
     (viewer as any).treeView.reveal = spy;
     Object.defineProperty((viewer as any).treeView, 'visible', {
       value: true

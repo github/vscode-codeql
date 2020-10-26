@@ -1,6 +1,18 @@
 import * as path from 'path';
 import * as Mocha from 'mocha';
 import * as glob from 'glob';
+import { ensureCli } from './ensureCli';
+
+
+// Use this handler to avoid swallowing unhandled rejections.
+process.on('unhandledRejection', e => {
+  console.error('Unhandled rejection.');
+  console.error(e);
+  // Must use a setTimeout in order to ensure the log is fully flushed before exiting
+  setTimeout(() => {
+    process.exit(-1);
+  }, 2000);
+});
 
 /**
  * Helper function that runs all Mocha tests found in the
@@ -26,12 +38,14 @@ import * as glob from 'glob';
  * After https://github.com/microsoft/TypeScript/issues/420 is implemented,
  * this pattern can be expressed more neatly using a module interface.
  */
-export function runTestsInDirectory(testsRoot: string): Promise<void> {
+export async function runTestsInDirectory(testsRoot: string, useCli = false): Promise<void> {
   // Create the mocha test
   const mocha = new Mocha({
     ui: 'bdd',
     color: true
   });
+
+  await ensureCli(useCli);
 
   return new Promise((c, e) => {
     console.log(`Adding test cases from ${testsRoot}`);

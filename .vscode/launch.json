@@ -77,6 +77,22 @@
       "outFiles": [
         "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
       ],
+    },
+    {
+      "name": "Launch Integration Tests - With CLI",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
+        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/cli-integration/index",
+        "${workspaceRoot}/extensions/ql-vscode/test/data"
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
+      ],
     }
   ]
 }

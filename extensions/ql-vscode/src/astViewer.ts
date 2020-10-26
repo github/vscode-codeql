@@ -40,7 +40,7 @@ class AstViewerDataProvider extends DisposableObject implements TreeDataProvider
   public db: DatabaseItem | undefined;
 
   private _onDidChangeTreeData =
-    new EventEmitter<AstItem | undefined>();
+    this.push(new EventEmitter<AstItem | undefined>());
   readonly onDidChangeTreeData: Event<AstItem | undefined> =
     this._onDidChangeTreeData.event;
 

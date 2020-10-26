@@ -49,16 +49,36 @@ export interface DistributionProvider {
 }
 
 export class DistributionManager implements DistributionProvider {
-  constructor(extensionContext: ExtensionContext, config: DistributionConfig, versionRange: semver.Range) {
-    this._config = config;
-    this._extensionSpecificDistributionManager = new ExtensionSpecificDistributionManager(extensionContext, config, versionRange);
+
+  /**
+   * Get the name of the codeql cli installation we prefer to install, based on our current platform.
+   */
+  public static getRequiredAssetName(): string {
+    switch (os.platform()) {
+      case 'linux':
+        return 'codeql-linux64.zip';
+      case 'darwin':
+        return 'codeql-osx64.zip';
+      case 'win32':
+        return 'codeql-win64.zip';
+      default:
+        return 'codeql.zip';
+    }
+  }
+
+  constructor(
+    public readonly config: DistributionConfig,
+    private readonly versionRange: semver.Range,
+    extensionContext: ExtensionContext
+  ) {
     this._onDidChangeDistribution = config.onDidChangeConfiguration;
-    this._updateCheckRateLimiter = new InvocationRateLimiter(
+    this.extensionSpecificDistributionManager =
+      new ExtensionSpecificDistributionManager(config, versionRange, extensionContext);
+    this.updateCheckRateLimiter = new InvocationRateLimiter(
       extensionContext,
       'extensionSpecificDistributionUpdateCheck',
-      () => this._extensionSpecificDistributionManager.checkForUpdatesToDistribution()
+      () => this.extensionSpecificDistributionManager.checkForUpdatesToDistribution()
     );
-    this._versionRange = versionRange;
   }
 
   /**
@@ -95,9 +115,9 @@ export class DistributionManager implements DistributionProvider {
      * - If the user is using an extension-managed CLI, then prereleases are only accepted when the
      * includePrerelease config option is set.
      */
-    const includePrerelease = distribution.kind !== DistributionKind.ExtensionManaged || this._config.includePrerelease;
+    const includePrerelease = distribution.kind !== DistributionKind.ExtensionManaged || this.config.includePrerelease;
 
-    if (!semver.satisfies(version, this._versionRange, { includePrerelease })) {
+    if (!semver.satisfies(version, this.versionRange, { includePrerelease })) {
       return {
         distribution,
         kind: FindDistributionResultKind.IncompatibleDistribution,
@@ -126,9 +146,9 @@ export class DistributionManager implements DistributionProvider {
    */
   async getDistributionWithoutVersionCheck(): Promise<Distribution | undefined> {
     // Check config setting, then extension specific distribution, then PATH.
-    if (this._config.customCodeQlPath) {
-      if (!await fs.pathExists(this._config.customCodeQlPath)) {
-        showAndLogErrorMessage(`The CodeQL executable path is specified as "${this._config.customCodeQlPath}" ` +
+    if (this.config.customCodeQlPath) {
+      if (!await fs.pathExists(this.config.customCodeQlPath)) {
+        showAndLogErrorMessage(`The CodeQL executable path is specified as "${this.config.customCodeQlPath}" ` +
           'by a configuration setting, but a CodeQL executable could not be found at that path. Please check ' +
           'that a CodeQL executable exists at the specified path or remove the setting.');
         return undefined;
@@ -137,18 +157,18 @@ export class DistributionManager implements DistributionProvider {
       // emit a warning if using a deprecated launcher and a non-deprecated launcher exists
       if (
         deprecatedCodeQlLauncherName() &&
-        this._config.customCodeQlPath.endsWith(deprecatedCodeQlLauncherName()!) &&
+        this.config.customCodeQlPath.endsWith(deprecatedCodeQlLauncherName()!) &&
         await this.hasNewLauncherName()
       ) {
         warnDeprecatedLauncher();
       }
       return {
-        codeQlPath: this._config.customCodeQlPath,
+        codeQlPath: this.config.customCodeQlPath,
         kind: DistributionKind.CustomPathConfig
       };
     }
 
-    const extensionSpecificCodeQlPath = await this._extensionSpecificDistributionManager.getCodeQlPathWithoutVersionCheck();
+    const extensionSpecificCodeQlPath = await this.extensionSpecificDistributionManager.getCodeQlPathWithoutVersionCheck();
     if (extensionSpecificCodeQlPath !== undefined) {
       return {
         codeQlPath: extensionSpecificCodeQlPath,
@@ -181,12 +201,12 @@ export class DistributionManager implements DistributionProvider {
   public async checkForUpdatesToExtensionManagedDistribution(
     minSecondsSinceLastUpdateCheck: number): Promise<DistributionUpdateCheckResult> {
     const distribution = await this.getDistributionWithoutVersionCheck();
-    const extensionManagedCodeQlPath = await this._extensionSpecificDistributionManager.getCodeQlPathWithoutVersionCheck();
+    const extensionManagedCodeQlPath = await this.extensionSpecificDistributionManager.getCodeQlPathWithoutVersionCheck();
     if (distribution?.codeQlPath !== extensionManagedCodeQlPath) {
       // A distribution is present but it isn't managed by the extension.
       return createInvalidLocationResult();
     }
-    const updateCheckResult = await this._updateCheckRateLimiter.invokeFunctionIfIntervalElapsed(minSecondsSinceLastUpdateCheck);
+    const updateCheckResult = await this.updateCheckRateLimiter.invokeFunctionIfIntervalElapsed(minSecondsSinceLastUpdateCheck);
     switch (updateCheckResult.kind) {
       case InvocationRateLimiterResultKind.Invoked:
         return updateCheckResult.result;
@@ -202,7 +222,7 @@ export class DistributionManager implements DistributionProvider {
    */
   public installExtensionManagedDistributionRelease(release: Release,
     progressCallback?: helpers.ProgressCallback): Promise<void> {
-    return this._extensionSpecificDistributionManager.installDistributionRelease(release, progressCallback);
+    return this.extensionSpecificDistributionManager!.installDistributionRelease(release, progressCallback);
   }
 
   public get onDidChangeDistribution(): Event<void> | undefined {
@@ -215,27 +235,27 @@ export class DistributionManager implements DistributionProvider {
    * installation. False otherwise.
    */
   private async hasNewLauncherName(): Promise<boolean> {
-    if (!this._config.customCodeQlPath) {
+    if (!this.config.customCodeQlPath) {
       // not managed externally
       return false;
     }
-    const dir = path.dirname(this._config.customCodeQlPath);
+    const dir = path.dirname(this.config.customCodeQlPath);
     const newLaunderPath = path.join(dir, codeQlLauncherName());
     return await fs.pathExists(newLaunderPath);
   }
 
-  private readonly _config: DistributionConfig;
-  private readonly _extensionSpecificDistributionManager: ExtensionSpecificDistributionManager;
-  private readonly _updateCheckRateLimiter: InvocationRateLimiter<DistributionUpdateCheckResult>;
+  private readonly extensionSpecificDistributionManager: ExtensionSpecificDistributionManager;
+  private readonly updateCheckRateLimiter: InvocationRateLimiter<DistributionUpdateCheckResult>;
   private readonly _onDidChangeDistribution: Event<void> | undefined;
-  private readonly _versionRange: semver.Range;
 }
 
 class ExtensionSpecificDistributionManager {
-  constructor(extensionContext: ExtensionContext, config: DistributionConfig, versionRange: semver.Range) {
-    this._extensionContext = extensionContext;
-    this._config = config;
-    this._versionRange = versionRange;
+  constructor(
+    private readonly config: DistributionConfig,
+    private readonly versionRange: semver.Range,
+    private readonly extensionContext: ExtensionContext
+  ) {
+    /**/
   }
 
   public async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
@@ -299,7 +319,7 @@ class ExtensionSpecificDistributionManager {
     }
 
     // Filter assets to the unique one that we require.
-    const requiredAssetName = this.getRequiredAssetName();
+    const requiredAssetName = DistributionManager.getRequiredAssetName();
     const assets = release.assets.filter(asset => asset.name === requiredAssetName);
     if (assets.length === 0) {
       throw new Error(`Invariant violation: chose a release to install that didn't have ${requiredAssetName}`);
@@ -366,22 +386,12 @@ class ExtensionSpecificDistributionManager {
     }
   }
 
-  /**
-   * Get the name of the codeql cli installation we prefer to install, based on our current platform.
-   */
-  private getRequiredAssetName(): string {
-    if (os.platform() === 'linux') return 'codeql-linux64.zip';
-    if (os.platform() === 'darwin') return 'codeql-osx64.zip';
-    if (os.platform() === 'win32') return 'codeql-win64.zip';
-    return 'codeql.zip';
-  }
-
   private async getLatestRelease(): Promise<Release> {
-    const requiredAssetName = this.getRequiredAssetName();
+    const requiredAssetName = DistributionManager.getRequiredAssetName();
     logger.log(`Searching for latest release including ${requiredAssetName}.`);
     return this.createReleasesApiConsumer().getLatestRelease(
-      this._versionRange,
-      this._config.includePrerelease,
+      this.versionRange,
+      this.config.includePrerelease,
       release => {
         const matchingAssets = release.assets.filter(asset => asset.name === requiredAssetName);
         if (matchingAssets.length === 0) {
@@ -399,23 +409,23 @@ class ExtensionSpecificDistributionManager {
   }
 
   private createReleasesApiConsumer(): ReleasesApiConsumer {
-    const ownerName = this._config.ownerName ? this._config.ownerName : DEFAULT_DISTRIBUTION_OWNER_NAME;
-    const repositoryName = this._config.repositoryName ? this._config.repositoryName : DEFAULT_DISTRIBUTION_REPOSITORY_NAME;
-    return new ReleasesApiConsumer(ownerName, repositoryName, this._config.personalAccessToken);
+    const ownerName = this.config.ownerName ? this.config.ownerName : DEFAULT_DISTRIBUTION_OWNER_NAME;
+    const repositoryName = this.config.repositoryName ? this.config.repositoryName : DEFAULT_DISTRIBUTION_REPOSITORY_NAME;
+    return new ReleasesApiConsumer(ownerName, repositoryName, this.config.personalAccessToken);
   }
 
   private async bumpDistributionFolderIndex(): Promise<void> {
-    const index = this._extensionContext.globalState.get(
+    const index = this.extensionContext.globalState.get(
       ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey, 0);
-    await this._extensionContext.globalState.update(
+    await this.extensionContext.globalState.update(
       ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey, index + 1);
   }
 
   private getDistributionStoragePath(): string {
     // Use an empty string for the initial distribution for backwards compatibility.
-    const distributionFolderIndex = this._extensionContext.globalState.get(
+    const distributionFolderIndex = this.extensionContext.globalState.get(
       ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey, 0) || '';
-    return path.join(this._extensionContext.globalStoragePath,
+    return path.join(this.extensionContext.globalStoragePath,
       ExtensionSpecificDistributionManager._currentDistributionFolderBaseName + distributionFolderIndex);
   }
 
@@ -425,16 +435,12 @@ class ExtensionSpecificDistributionManager {
   }
 
   private getInstalledRelease(): Release | undefined {
-    return this._extensionContext.globalState.get(ExtensionSpecificDistributionManager._installedReleaseStateKey);
+    return this.extensionContext.globalState.get(ExtensionSpecificDistributionManager._installedReleaseStateKey);
   }
 
   private async storeInstalledRelease(release: Release | undefined): Promise<void> {
-    await this._extensionContext.globalState.update(ExtensionSpecificDistributionManager._installedReleaseStateKey, release);
+    await this.extensionContext.globalState.update(ExtensionSpecificDistributionManager._installedReleaseStateKey, release);
   }
-
-  private readonly _config: DistributionConfig;
-  private readonly _extensionContext: ExtensionContext;
-  private readonly _versionRange: semver.Range;
 
   private static readonly _currentDistributionFolderBaseName = 'distribution';
   private static readonly _currentDistributionFolderIndexStateKey = 'distributionFolderIndex';
@@ -576,7 +582,7 @@ export async function extractZipArchive(archivePath: string, outPath: string): P
   }));
 }
 
-function codeQlLauncherName(): string {
+export function codeQlLauncherName(): string {
   return (os.platform() === 'win32') ? 'codeql.exe' : 'codeql';
 }
 

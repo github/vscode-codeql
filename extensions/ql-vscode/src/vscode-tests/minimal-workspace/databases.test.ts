@@ -38,8 +38,6 @@ describe('databases', () => {
   let sandbox: sinon.SinonSandbox;
   let dir: tmp.DirResult;
 
-
-
   beforeEach(() => {
     dir = tmp.dirSync();
 
@@ -77,6 +75,7 @@ describe('databases', () => {
 
   afterEach(async () => {
     dir.removeCallback();
+    databaseManager.dispose();
     sandbox.restore();
   });
 
@@ -396,7 +395,7 @@ describe('databases', () => {
         datasetUri: databaseUri
       } as DatabaseContents,
       MOCK_DB_OPTIONS,
-      dbChangedHandler
+      dbChangedHandler,
     );
   }
 
