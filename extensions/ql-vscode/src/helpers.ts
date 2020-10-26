@@ -121,7 +121,7 @@ export function commandRunner(
 ): Disposable {
   return commands.registerCommand(commandId, async (...args: any[]) => {
     try {
-      await task(...args);
+      return await task(...args);
     } catch (e) {
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
@@ -133,6 +133,7 @@ export function commandRunner(
       } else {
         showAndLogErrorMessage(e.message || e);
       }
+      return undefined;
     }
   });
 }
@@ -158,7 +159,7 @@ export function commandRunnerWithProgress<R>(
       ...progressOptions
     };
     try {
-      await withProgress(progressOptionsWithDefaults, task, ...args);
+      return await withProgress(progressOptionsWithDefaults, task, ...args);
     } catch (e) {
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
@@ -170,6 +171,7 @@ export function commandRunnerWithProgress<R>(
       } else {
         showAndLogErrorMessage(e.message || e);
       }
+      return undefined;
     }
   });
 }

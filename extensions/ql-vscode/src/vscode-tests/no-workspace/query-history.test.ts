@@ -23,6 +23,7 @@ describe('query-history', () => {
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+
     showTextDocumentSpy = sandbox.stub(vscode.window, 'showTextDocument');
     showInformationMessageSpy = sandbox.stub(
       vscode.window,

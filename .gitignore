@@ -4,6 +4,7 @@
 # Generated files
 /dist/
 out/
+build/
 server/
 node_modules/
 gen/

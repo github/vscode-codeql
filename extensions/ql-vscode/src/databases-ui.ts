@@ -81,7 +81,7 @@ class DatabaseTreeDataProvider extends DisposableObject
   implements TreeDataProvider<DatabaseItem> {
   private _sortOrder = SortOrder.NameAsc;
 
-  private readonly _onDidChangeTreeData = new EventEmitter<DatabaseItem | undefined>();
+  private readonly _onDidChangeTreeData = this.push(new EventEmitter<DatabaseItem | undefined>());
   private currentDatabaseItem: DatabaseItem | undefined;
 
   constructor(

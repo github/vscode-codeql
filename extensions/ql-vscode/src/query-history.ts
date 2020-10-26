@@ -59,16 +59,15 @@ interface QueryHistoryDataProvider extends vscode.TreeDataProvider<CompletedQuer
 /**
  * Tree data provider for the query history view.
  */
-class HistoryTreeDataProvider implements QueryHistoryDataProvider {
+class HistoryTreeDataProvider extends DisposableObject implements QueryHistoryDataProvider {
   /**
    * XXX: This idiom for how to get a `.fire()`-able event emitter was
    * cargo culted from another vscode extension. It seems rather
    * involved and I hope there's something better that can be done
    * instead.
    */
-  private _onDidChangeTreeData: vscode.EventEmitter<
-    CompletedQuery | undefined
-  > = new vscode.EventEmitter<CompletedQuery | undefined>();
+  private _onDidChangeTreeData = super.push(new vscode.EventEmitter<CompletedQuery | undefined>());
+
   readonly onDidChangeTreeData: vscode.Event<CompletedQuery | undefined> = this
     ._onDidChangeTreeData.event;
 
@@ -82,6 +81,7 @@ class HistoryTreeDataProvider implements QueryHistoryDataProvider {
   private current: CompletedQuery | undefined;
 
   constructor(extensionPath: string) {
+    super();
     this.failedIconPath = path.join(
       extensionPath,
       FAILED_QUERY_HISTORY_ITEM_ICON
@@ -135,7 +135,7 @@ class HistoryTreeDataProvider implements QueryHistoryDataProvider {
     return this.current;
   }
 
-  push(item: CompletedQuery): void {
+  pushQuery(item: CompletedQuery): void {
     this.current = item;
     this.history.push(item);
     this.refresh();
@@ -204,6 +204,7 @@ export class QueryHistoryManager extends DisposableObject {
       canSelectMany: true,
     });
     this.push(this.treeView);
+    this.push(treeDataProvider);
 
     // Lazily update the tree view selection due to limitations of TreeView API (see
     // `updateTreeViewSelectionIfVisible` doc for details)
@@ -513,7 +514,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   addQuery(info: QueryWithResults): CompletedQuery {
     const item = new CompletedQuery(info, this.queryHistoryConfigListener);
-    this.treeDataProvider.push(item);
+    this.treeDataProvider.pushQuery(item);
     this.updateTreeViewSelectionIfVisible();
     return item;
   }

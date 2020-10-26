@@ -52,7 +52,8 @@ const QUERY_HISTORY_FORMAT_SETTING = new Setting('format', QUERY_HISTORY_SETTING
 const DISTRIBUTION_CHANGE_SETTINGS = [CUSTOM_CODEQL_PATH_SETTING, INCLUDE_PRERELEASE_SETTING, PERSONAL_ACCESS_TOKEN_SETTING];
 
 export interface DistributionConfig {
-  customCodeQlPath?: string;
+  readonly customCodeQlPath?: string;
+  updateCustomCodeQlPath: (newPath: string | undefined) => Promise<void>;
   includePrerelease: boolean;
   personalAccessToken?: string;
   ownerName?: string;
@@ -147,6 +148,10 @@ export class DistributionConfigListener extends ConfigListener implements Distri
 
   public get personalAccessToken(): string | undefined {
     return PERSONAL_ACCESS_TOKEN_SETTING.getValue() || undefined;
+  }
+
+  public async updateCustomCodeQlPath(newPath: string | undefined) {
+    await CUSTOM_CODEQL_PATH_SETTING.updateValue(newPath, ConfigurationTarget.Global);
   }
 
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
