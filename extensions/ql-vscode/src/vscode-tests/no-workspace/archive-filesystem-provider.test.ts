@@ -142,7 +142,7 @@ describe('source archive uri encoding', function() {
       name: 'Empty path',
       input: {
         sourceArchiveZipPath: '/home/folder/src.zip',
-        pathWithinSourceArchive: ''
+        pathWithinSourceArchive: '/'
       }
     }
   ];
@@ -153,11 +153,22 @@ describe('source archive uri encoding', function() {
     });
   }
 
+  it('should decode an empty path as a "/"', () => {
+    const uri = encodeSourceArchiveUri({
+      pathWithinSourceArchive: '',
+      sourceArchiveZipPath: 'a/b/c'
+    });
+    expect(decodeSourceArchiveUri(uri)).to.deep.eq({
+      pathWithinSourceArchive: '/',
+      sourceArchiveZipPath: 'a/b/c'
+    });
+  });
+
   it('should encode a uri at the root of the archive', () => {
     const path = '/a/b/c/src.zip';
     const uri = encodeArchiveBasePath(path);
     expect(uri.path).to.eq(path);
-    expect(decodeSourceArchiveUri(uri).pathWithinSourceArchive).to.eq('');
+    expect(decodeSourceArchiveUri(uri).pathWithinSourceArchive).to.eq('/');
     expect(decodeSourceArchiveUri(uri).sourceArchiveZipPath).to.eq(path);
     expect(uri.authority).to.eq('0-14');
   });
@@ -168,7 +179,7 @@ describe('source archive uri encoding', function() {
     expect(uri.authority).to.eq('');
     expect(decodeSourceArchiveUri(uri)).to.deep.eq({
       sourceArchiveZipPath: '/a/b/c/src.zip',
-      pathWithinSourceArchive: ''
+      pathWithinSourceArchive: '/'
     });
   });
 });

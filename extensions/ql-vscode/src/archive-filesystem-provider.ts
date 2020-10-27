@@ -117,7 +117,7 @@ export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
     // Uri is malformed, but this is recoverable
     logger.log(`Warning: ${new InvalidSourceArchiveUriError(uri).message}`);
     return {
-      pathWithinSourceArchive: '',
+      pathWithinSourceArchive: '/',
       sourceArchiveZipPath: uri.path
     };
   }
@@ -129,7 +129,7 @@ export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
   if (isNaN(zipPathStartIndex) || isNaN(zipPathEndIndex))
     throw new InvalidSourceArchiveUriError(uri);
   return {
-    pathWithinSourceArchive: uri.path.substring(zipPathEndIndex),
+    pathWithinSourceArchive: uri.path.substring(zipPathEndIndex) || '/',
     sourceArchiveZipPath: uri.path.substring(zipPathStartIndex, zipPathEndIndex),
   };
 }
