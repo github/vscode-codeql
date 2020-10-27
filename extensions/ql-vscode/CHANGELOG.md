@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.3.5 - 27 October 2020
 
 - Fix a bug where archived source folders for databases were not showing any contents.
