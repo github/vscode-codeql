@@ -77,9 +77,9 @@ export interface WholeFileLocation {
   endColumn: never;
 }
 
-export type UrlValue = LineColumnLocation | WholeFileLocation | string;
-
 export type ResolvableLocationValue = WholeFileLocation | LineColumnLocation;
+
+export type UrlValue = ResolvableLocationValue  | string;
 
 export type ColumnValue = EntityValue | number | string | boolean;
 

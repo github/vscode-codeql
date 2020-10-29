@@ -51,20 +51,24 @@ describe('parsing sarif', () => {
 
   it('should normalize source locations', () => {
     expect(getPathRelativeToSourceLocationPrefix('C:\\a\\b', '?x=test'))
-      .to.eq('file:C:/a/b/?x=test');
+      .to.eq('file:/C:/a/b/?x=test');
     expect(getPathRelativeToSourceLocationPrefix('C:\\a\\b', '%3Fx%3Dtest'))
-      .to.eq('file:C:/a/b/%3Fx%3Dtest');
+      .to.eq('file:/C:/a/b/%3Fx%3Dtest');
+    expect(getPathRelativeToSourceLocationPrefix('C:\\a =\\b c?', '?x=test'))
+      .to.eq('file:/C:/a%20%3D/b%20c%3F/?x=test');
+    expect(getPathRelativeToSourceLocationPrefix('/a/b/c', '?x=test'))
+      .to.eq('file:/a/b/c/?x=test');
   });
 
   describe('parseSarifLocation', () => {
     it('should parse a sarif location with "no location"', () => {
-      expect(parseSarifLocation({ }, '')).to.deep.equal({
+      expect(parseSarifLocation({}, '')).to.deep.equal({
         hint: 'no physical location'
       });
       expect(parseSarifLocation({ physicalLocation: {} }, '')).to.deep.equal({
         hint: 'no artifact location'
       });
-      expect(parseSarifLocation({ physicalLocation: { artifactLocation: { } } }, '')).to.deep.equal({
+      expect(parseSarifLocation({ physicalLocation: { artifactLocation: {} } }, '')).to.deep.equal({
         hint: 'artifact location has no uri'
       });
     });
@@ -78,7 +82,7 @@ describe('parsing sarif', () => {
         }
       };
       expect(parseSarifLocation(location, 'prefix')).to.deep.equal({
-        uri: 'file:prefix/abc?x=test',
+        uri: 'file:/prefix/abc?x=test',
         userVisibleFile: 'abc?x=test'
       });
     });
@@ -87,13 +91,13 @@ describe('parsing sarif', () => {
       const location: Sarif.Location = {
         physicalLocation: {
           artifactLocation: {
-            uri: 'file:abc%3Fx%3Dtest'
+            uri: 'file:/abc%3Fx%3Dtest'
           }
         }
       };
       expect(parseSarifLocation(location, 'prefix')).to.deep.equal({
-        uri: 'file:abc%3Fx%3Dtest',
-        userVisibleFile: 'abc?x=test'
+        uri: 'file:/abc%3Fx%3Dtest',
+        userVisibleFile: '/abc?x=test'
       });
     });
 

@@ -72,10 +72,28 @@ export function getPathRelativeToSourceLocationPrefix(
   sourceLocationPrefix: string,
   sarifRelativeUri: string
 ) {
-  const normalizedSourceLocationPrefix = sourceLocationPrefix.replace(/\\/g, '/');
-  return `file:${normalizedSourceLocationPrefix}/${sarifRelativeUri}`;
+  // convert a platform specific path into encoded path uri segments
+  // need to be careful about drive letters and ensure that there
+  // is a starting '/'
+  let prefix = '';
+  if (sourceLocationPrefix[1] === ':') {
+    // assume this is a windows drive separator
+    prefix = sourceLocationPrefix.substring(0, 2);
+    sourceLocationPrefix = sourceLocationPrefix.substring(2);
+  }
+  const normalizedSourceLocationPrefix = prefix + sourceLocationPrefix.replace(/\\/g, '/')
+    .split('/')
+    .map(encodeURIComponent)
+    .join('/');
+  const slashPrefix = normalizedSourceLocationPrefix.startsWith('/') ? '' : '/';
+  return `file:${slashPrefix + normalizedSourceLocationPrefix}/${sarifRelativeUri}`;
 }
 
+/**
+ *
+ * @param loc specifies the database-relative location of the source location
+ * @param sourceLocationPrefix a file path (usually a full path) to the database containing the source location.
+ */
 export function parseSarifLocation(
   loc: Sarif.Location,
   sourceLocationPrefix: string

@@ -341,28 +341,29 @@ export class DatabaseItemImpl implements DatabaseItem {
     }
   }
 
-  public resolveSourceFile(uri: string | undefined): vscode.Uri {
+  public resolveSourceFile(uriStr: string | undefined): vscode.Uri {
     const sourceArchive = this.sourceArchive;
-    // Sometimes, we are passed a path, sometimes a file URI.
-    // We need to convert this to a file path that is probably inside of a zip file.
-    const file = uri?.replace(/file:/, '');
+    const uri = uriStr ? vscode.Uri.parse(uriStr, true) : undefined;
+    if (uri && uri.scheme !== 'file') {
+      throw new Error(`Invalid uri scheme in ${uriStr}. Only 'file' is allowed.`);
+    }
     if (!sourceArchive) {
-      if (file) {
-        // Treat it as an absolute path.
-        return vscode.Uri.file(file);
+      if (uri) {
+        return uri;
       } else {
         return this.databaseUri;
       }
     }
 
-    if (file) {
-      const absoluteFilePath = file.replace(':', '_');
-      // Strip any leading slashes from the file path, and replace `:` with `_`.
-      const relativeFilePath = absoluteFilePath.replace(/^\/*/, '').replace(':', '_');
+    if (uri) {
+      const relativeFilePath = decodeURI(uri.path).replace(':', '_').replace(/^\/*/, '');
       if (sourceArchive.scheme === zipArchiveScheme) {
         const zipRef = decodeSourceArchiveUri(sourceArchive);
+        const pathWithinSourceArchive = zipRef.pathWithinSourceArchive === '/'
+          ? relativeFilePath
+          : zipRef.pathWithinSourceArchive + '/' + relativeFilePath;
         return encodeSourceArchiveUri({
-          pathWithinSourceArchive: zipRef.pathWithinSourceArchive + '/' + absoluteFilePath,
+          pathWithinSourceArchive,
           sourceArchiveZipPath: zipRef.sourceArchiveZipPath,
         });
 
@@ -579,7 +580,7 @@ export class DatabaseManager extends DisposableObject {
       displayName,
       dateAdded
     };
-    const item = new DatabaseItemImpl(vscode.Uri.parse(state.uri), undefined, fullOptions,
+    const item = new DatabaseItemImpl(vscode.Uri.parse(state.uri, true), undefined, fullOptions,
       (event) => {
         this._onDidChangeDatabaseItem.fire(event);
       });

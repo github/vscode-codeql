@@ -20,9 +20,8 @@ export default function fileRangeFromURI(uri: UrlValue | undefined, db: Database
       Math.max(0, (loc.endLine || 0) - 1),
       Math.max(0, (loc.endColumn || 0)));
     try {
-      const parsed = vscode.Uri.parse(uri.uri, true);
-      if (parsed.scheme === 'file') {
-        return new vscode.Location(db.resolveSourceFile(parsed.fsPath), range);
+      if (uri.uri.startsWith('file:')) {
+        return new vscode.Location(db.resolveSourceFile(uri.uri), range);
       }
       return undefined;
     } catch (e) {

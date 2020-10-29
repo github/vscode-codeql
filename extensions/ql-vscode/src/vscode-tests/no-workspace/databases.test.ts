@@ -87,39 +87,31 @@ describe('databases', () => {
   });
 
   describe('resolveSourceFile', () => {
-    describe('unzipped source archive', () => {
-      it('should resolve a source file in an unzipped database', () => {
-        const db = createMockDB();
-        const resolved = db.resolveSourceFile('abc');
-        expect(resolved.toString()).to.eq('file:///sourceArchive-uri/abc');
-      });
+    it('should fail to resolve when not a uri', () => {
+      const db = createMockDB(Uri.parse('file:/sourceArchive-uri/'));
+      (db as any)._contents.sourceArchiveUri = undefined;
+      expect(() => db.resolveSourceFile('abc')).to.throw('Scheme is missing');
+    });
 
-      it('should resolve a source file in an unzipped database with trailing slash', () => {
-        const db = createMockDB(Uri.parse('file:/sourceArchive-uri/'));
-        const resolved = db.resolveSourceFile('abc');
-        expect(resolved.toString()).to.eq('file:///sourceArchive-uri/abc');
-      });
-
-      it('should resolve a source uri in an unzipped database with trailing slash', () => {
-        const db = createMockDB(Uri.parse('file:/sourceArchive-uri/'));
-        const resolved = db.resolveSourceFile('file:/abc');
-        expect(resolved.toString()).to.eq('file:///sourceArchive-uri/abc');
-      });
+    it('should fail to resolve when not a file uri', () => {
+      const db = createMockDB(Uri.parse('file:/sourceArchive-uri/'));
+      (db as any)._contents.sourceArchiveUri = undefined;
+      expect(() => db.resolveSourceFile('http://abc')).to.throw('Invalid uri scheme');
     });
 
     describe('no source archive', () => {
-      it('should resolve a file', () => {
+      it('should resolve undefined', () => {
         const db = createMockDB(Uri.parse('file:/sourceArchive-uri/'));
         (db as any)._contents.sourceArchiveUri = undefined;
-        const resolved = db.resolveSourceFile('abc');
-        expect(resolved.toString()).to.eq('file:///abc');
+        const resolved = db.resolveSourceFile(undefined);
+        expect(resolved.toString()).to.eq('file:///database-uri');
       });
 
       it('should resolve an empty file', () => {
         const db = createMockDB(Uri.parse('file:/sourceArchive-uri/'));
         (db as any)._contents.sourceArchiveUri = undefined;
         const resolved = db.resolveSourceFile('file:');
-        expect(resolved.toString()).to.eq('file:///database-uri');
+        expect(resolved.toString()).to.eq('file:///');
       });
     });
 
@@ -160,7 +152,7 @@ describe('databases', () => {
           pathWithinSourceArchive: 'def'
         }));
         const resolved = db.resolveSourceFile('file:');
-        expect(resolved.toString()).to.eq('codeql-zip-archive://1-18/sourceArchive-uri/def');
+        expect(resolved.toString()).to.eq('codeql-zip-archive://1-18/sourceArchive-uri/def/');
       });
     });
 
