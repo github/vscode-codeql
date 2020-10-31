@@ -5,11 +5,11 @@ import * as path from 'path';
 import * as tmp from 'tmp';
 import * as url from 'url';
 import { CancellationTokenSource } from 'vscode-jsonrpc';
-import * as messages from '../../messages';
+import * as messages from '../../pure/messages';
 import * as qsClient from '../../queryserver-client';
 import * as cli from '../../cli';
 import { ProgressReporter, Logger } from '../../logging';
-import { ColumnValue } from '../../bqrs-cli-types';
+import { ColumnValue } from '../../pure/bqrs-cli-types';
 import { FindDistributionResultKind } from '../../distribution';
 
 

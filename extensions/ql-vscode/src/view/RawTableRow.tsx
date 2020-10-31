@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ResultRow } from '../bqrs-cli-types';
+import { ResultRow } from '../pure/bqrs-cli-types';
 import { zebraStripe } from './result-table-utils';
 import RawTableValue from './RawTableValue';
 

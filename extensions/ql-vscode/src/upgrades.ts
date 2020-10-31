@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { DatabaseItem } from './databases';
 import * as helpers from './helpers';
 import { logger } from './logging';
-import * as messages from './messages';
+import * as messages from './pure/messages';
 import * as qsClient from './queryserver-client';
 import { upgradesTmpDir } from './run-queries';
 

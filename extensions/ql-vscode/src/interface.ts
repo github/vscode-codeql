@@ -15,7 +15,7 @@ import * as cli from './cli';
 import { CodeQLCliServer } from './cli';
 import { DatabaseEventKind, DatabaseItem, DatabaseManager } from './databases';
 import { showAndLogErrorMessage } from './helpers';
-import { assertNever } from './helpers-pure';
+import { assertNever } from './pure/helpers-pure';
 import {
   FromResultsViewMsg,
   Interpretation,
@@ -33,10 +33,10 @@ import {
 } from './interface-types';
 import { Logger } from './logging';
 import { commandRunner } from './helpers';
-import * as messages from './messages';
+import * as messages from './pure/messages';
 import { CompletedQuery, interpretResults } from './query-results';
 import { QueryInfo, tmpDir } from './run-queries';
-import { parseSarifLocation, parseSarifPlainTextMessage } from './sarif-utils';
+import { parseSarifLocation, parseSarifPlainTextMessage } from './pure/sarif-utils';
 import {
   WebviewReveal,
   fileUriToWebviewUri,
@@ -47,7 +47,7 @@ import {
   jumpToLocation,
 } from './interface-utils';
 import { getDefaultResultSetName, ParsedResultSets } from './interface-types';
-import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './bqrs-cli-types';
+import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './pure/bqrs-cli-types';
 
 /**
  * interface.ts

@@ -2,7 +2,12 @@ import 'mocha';
 import { expect } from 'chai';
 import * as Sarif from 'sarif';
 
-import { getPathRelativeToSourceLocationPrefix, parseSarifLocation, parseSarifPlainTextMessage, unescapeSarifText } from '../../src/sarif-utils';
+import {
+  getPathRelativeToSourceLocationPrefix,
+  parseSarifLocation,
+  parseSarifPlainTextMessage,
+  unescapeSarifText
+} from '../../src/pure/sarif-utils';
 
 
 describe('parsing sarif', () => {

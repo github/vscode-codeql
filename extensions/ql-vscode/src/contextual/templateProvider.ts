@@ -4,7 +4,7 @@ import { decodeSourceArchiveUri, encodeArchiveBasePath, zipArchiveScheme } from 
 import { CodeQLCliServer } from '../cli';
 import { DatabaseManager } from '../databases';
 import { CachedOperation, ProgressCallback, withProgress } from '../helpers';
-import * as messages from '../messages';
+import * as messages from '../pure/messages';
 import { QueryServerClient } from '../queryserver-client';
 import { compileAndRunQueryAgainstDatabase, QueryWithResults } from '../run-queries';
 import AstBuilder from './astBuilder';

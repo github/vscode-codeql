@@ -6,7 +6,7 @@ import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 
 import { QueryInfo } from '../../run-queries';
-import { QlProgram, Severity, compileQuery } from '../../messages';
+import { QlProgram, Severity, compileQuery } from '../../pure/messages';
 import { DatabaseItem } from '../../databases';
 
 chai.use(chaiAsPromised);

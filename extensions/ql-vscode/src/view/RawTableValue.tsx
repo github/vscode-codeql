@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { renderLocation } from './result-table-utils';
-import { ColumnValue } from '../bqrs-cli-types';
+import { ColumnValue } from '../pure/bqrs-cli-types';
 
 interface Props {
   value: ColumnValue;

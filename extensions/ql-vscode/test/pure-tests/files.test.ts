@@ -4,7 +4,7 @@ import * as sinonChai from 'sinon-chai';
 import 'mocha';
 import * as path from 'path';
 
-import { gatherQlFiles } from '../../src/files';
+import { gatherQlFiles } from '../../src/pure/files';
 
 chai.use(sinonChai);
 const expect = chai.expect;
@@ -13,9 +13,6 @@ describe('files', () => {
   const dataDir = path.join(path.dirname(__dirname), 'data');
   const data2Dir = path.join(path.dirname(__dirname), 'data2');
 
-  it('should pass', () => {
-    expect(true).to.be.eq(true);
-  });
   it('should find one file', async () => {
     const singleFile = path.join(dataDir, 'query.ql');
     const result = await gatherQlFiles([singleFile]);

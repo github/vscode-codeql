@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as Rdom from 'react-dom';
-import { assertNever } from '../helpers-pure';
+import { assertNever } from '../pure/helpers-pure';
 import {
   DatabaseInfo,
   Interpretation,

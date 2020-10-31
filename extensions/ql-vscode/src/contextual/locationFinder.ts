@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 
 import { decodeSourceArchiveUri, encodeArchiveBasePath } from '../archive-filesystem-provider';
-import { ColumnKindCode, EntityValue, getResultSetSchema, ResultSetSchema } from '../bqrs-cli-types';
+import { ColumnKindCode, EntityValue, getResultSetSchema, ResultSetSchema } from '../pure/bqrs-cli-types';
 import { CodeQLCliServer } from '../cli';
 import { DatabaseManager, DatabaseItem } from '../databases';
 import fileRangeFromURI from './fileRangeFromURI';
-import * as messages from '../messages';
+import * as messages from '../pure/messages';
 import { QueryServerClient } from '../queryserver-client';
 import { QueryWithResults, compileAndRunQueryAgainstDatabase } from '../run-queries';
 import { ProgressCallback } from '../helpers';

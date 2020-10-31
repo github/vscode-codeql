@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
-import { UrlValue, LineColumnLocation } from '../bqrs-cli-types';
-import { isEmptyPath } from '../bqrs-utils';
+import { UrlValue, LineColumnLocation } from '../pure/bqrs-cli-types';
+import { isEmptyPath } from '../pure/bqrs-utils';
 import { DatabaseItem } from '../databases';
 
 

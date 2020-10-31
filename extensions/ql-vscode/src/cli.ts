@@ -11,10 +11,10 @@ import * as tk from 'tree-kill';
 import { promisify } from 'util';
 import { CancellationToken, Disposable } from 'vscode';
 
-import { BQRSInfo, DecodedBqrsChunk } from './bqrs-cli-types';
+import { BQRSInfo, DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { CliConfig } from './config';
 import { DistributionProvider, FindDistributionResultKind } from './distribution';
-import { assertNever } from './helpers-pure';
+import { assertNever } from './pure/helpers-pure';
 import { QueryMetadata, SortDirection } from './interface-types';
 import { Logger, ProgressReporter } from './logging';
 
