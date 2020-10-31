@@ -6,8 +6,8 @@ import { CancellationToken, createMessageConnection, MessageConnection, RequestT
 import * as cli from './cli';
 import { QueryServerConfig } from './config';
 import { Logger, ProgressReporter } from './logging';
-import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './messages';
-import * as messages from './messages';
+import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './pure/messages';
+import * as messages from './pure/messages';
 
 type ServerOpts = {
   logger: Logger;

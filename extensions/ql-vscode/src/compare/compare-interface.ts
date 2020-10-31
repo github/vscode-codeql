@@ -19,7 +19,7 @@ import { Logger } from '../logging';
 import { CodeQLCliServer } from '../cli';
 import { DatabaseManager } from '../databases';
 import { getHtmlForWebview, jumpToLocation } from '../interface-utils';
-import { transformBqrsResultSet, RawResultSet, BQRSInfo } from '../bqrs-cli-types';
+import { transformBqrsResultSet, RawResultSet, BQRSInfo } from '../pure/bqrs-cli-types';
 import resultsDiff from './resultsDiff';
 
 interface ComparePair {

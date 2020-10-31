@@ -18,7 +18,7 @@ import { DatabaseItem, getUpgradesDirectories } from './databases';
 import * as helpers from './helpers';
 import { DatabaseInfo, QueryMetadata, ResultsPaths } from './interface-types';
 import { logger } from './logging';
-import * as messages from './messages';
+import * as messages from './pure/messages';
 import { QueryHistoryItemOptions } from './query-history';
 import * as qsClient from './queryserver-client';
 import { isQuickQueryPath } from './quick-query';

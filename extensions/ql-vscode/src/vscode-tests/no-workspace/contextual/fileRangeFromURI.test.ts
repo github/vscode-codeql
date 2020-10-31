@@ -5,7 +5,7 @@ import { Uri, Range } from 'vscode';
 
 import fileRangeFromURI from '../../../contextual/fileRangeFromURI';
 import { DatabaseItem } from '../../../databases';
-import { WholeFileLocation, LineColumnLocation } from '../../../bqrs-cli-types';
+import { WholeFileLocation, LineColumnLocation } from '../../../pure/bqrs-cli-types';
 
 describe('fileRangeFromURI', () => {
   it('should return undefined when value is a string', () => {

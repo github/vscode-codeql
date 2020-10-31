@@ -1,0 +1,12 @@
+name: "CodeQL config"
+queries:
+  - name: Run standard queries
+    uses: security-and-quality
+  - name: Run custom javascript queries
+    uses: ./.github/codeql/queries
+paths:
+  - ./extensions/ql-vscode
+paths-ignore:
+  - '**/node_modules'
+  - '**/build'
+  - '**/out'

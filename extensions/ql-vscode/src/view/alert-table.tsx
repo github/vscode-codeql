@@ -6,10 +6,14 @@ import * as octicons from './octicons';
 import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection } from './result-table-utils';
 import { onNavigation, NavigationEvent } from './results';
 import { PathTableResultSet } from '../interface-types';
-import { parseSarifPlainTextMessage, parseSarifLocation, isNoLocation } from '../sarif-utils';
+import {
+  parseSarifPlainTextMessage,
+  parseSarifLocation,
+  isNoLocation
+} from '../pure/sarif-utils';
 import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortState } from '../interface-types';
 import { vscode } from './vscode-api';
-import { isWholeFileLoc, isLineColumnLoc } from '../bqrs-utils';
+import { isWholeFileLoc, isLineColumnLoc } from '../pure/bqrs-utils';
 
 export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
 export interface PathTableState {

@@ -1,6 +1,6 @@
 import { QueryWithResults } from '../run-queries';
 import { CodeQLCliServer } from '../cli';
-import { DecodedBqrsChunk, BqrsId, EntityValue } from '../bqrs-cli-types';
+import { DecodedBqrsChunk, BqrsId, EntityValue } from '../pure/bqrs-cli-types';
 import { DatabaseItem } from '../databases';
 import { ChildAstItem, AstItem } from '../astViewer';
 import fileRangeFromURI from './fileRangeFromURI';

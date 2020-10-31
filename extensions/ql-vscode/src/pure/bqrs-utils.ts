@@ -1,4 +1,9 @@
-import { UrlValue, ResolvableLocationValue, LineColumnLocation, WholeFileLocation } from './bqrs-cli-types';
+import {
+  UrlValue,
+  ResolvableLocationValue,
+  LineColumnLocation,
+  WholeFileLocation
+} from './bqrs-cli-types';
 
 /**
  * The CodeQL filesystem libraries use this pattern in `getURL()` predicates

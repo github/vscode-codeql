@@ -15,11 +15,16 @@ import {
 import {
   tryGetResolvableLocation,
   isLineColumnLoc
-} from './bqrs-utils';
+} from './pure/bqrs-utils';
 import { DatabaseItem, DatabaseManager } from './databases';
 import { ViewSourceFileMsg } from './interface-types';
 import { Logger } from './logging';
-import { LineColumnLocation, WholeFileLocation, UrlValue, ResolvableLocationValue } from './bqrs-cli-types';
+import {
+  LineColumnLocation,
+  WholeFileLocation,
+  UrlValue,
+  ResolvableLocationValue
+} from './pure/bqrs-cli-types';
 
 /**
  * This module contains functions and types that are sharedd between

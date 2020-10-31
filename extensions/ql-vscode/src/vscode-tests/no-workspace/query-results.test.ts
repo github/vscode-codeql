@@ -8,7 +8,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 import { CompletedQuery, interpretResults } from '../../query-results';
 import { QueryInfo, QueryWithResults, tmpDir } from '../../run-queries';
 import { QueryHistoryConfig } from '../../config';
-import { EvaluationResult, QueryResultType } from '../../messages';
+import { EvaluationResult, QueryResultType } from '../../pure/messages';
 import { SortDirection, SortedResultSetInfo } from '../../interface-types';
 import { CodeQLCliServer, SourceInfo } from '../../cli';
 

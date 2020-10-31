@@ -14,9 +14,9 @@ import {
 import * as path from 'path';
 
 import { DatabaseItem } from './databases';
-import { UrlValue, BqrsId } from './bqrs-cli-types';
+import { UrlValue, BqrsId } from './pure/bqrs-cli-types';
 import { showLocation } from './interface-utils';
-import { isStringLoc, isWholeFileLoc, isLineColumnLoc } from './bqrs-utils';
+import { isStringLoc, isWholeFileLoc, isLineColumnLoc } from './pure/bqrs-utils';
 import { commandRunner } from './helpers';
 import { DisposableObject } from './vscode-utils/disposable-object';
 

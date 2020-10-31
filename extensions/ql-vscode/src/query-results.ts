@@ -1,7 +1,7 @@
 import { env, TreeItem } from 'vscode';
 
 import { QueryWithResults, tmpDir, QueryInfo } from './run-queries';
-import * as messages from './messages';
+import * as messages from './pure/messages';
 import * as cli from './cli';
 import * as sarif from 'sarif';
 import * as fs from 'fs-extra';

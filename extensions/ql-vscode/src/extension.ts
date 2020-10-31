@@ -45,7 +45,7 @@ import {
   GithubRateLimitedError
 } from './distribution';
 import * as helpers from './helpers';
-import { assertNever } from './helpers-pure';
+import { assertNever } from './pure/helpers-pure';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
 import { WebviewReveal } from './interface-utils';
@@ -58,7 +58,7 @@ import { compileAndRunQueryAgainstDatabase, tmpDirDisposal } from './run-queries
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
 import { CompareInterfaceManager } from './compare/compare-interface';
-import { gatherQlFiles } from './files';
+import { gatherQlFiles } from './pure/files';
 
 /**
  * extension.ts
