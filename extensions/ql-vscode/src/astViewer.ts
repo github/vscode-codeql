@@ -8,6 +8,7 @@ import {
   TreeItem,
   TreeView,
   TextEditorSelectionChangeEvent,
+  TextEditorSelectionChangeKind,
   Location,
   Range
 } from 'vscode';
@@ -33,7 +34,7 @@ export interface ChildAstItem extends AstItem {
   parent: ChildAstItem | AstItem;
 }
 
-class AstViewerDataProvider  extends DisposableObject implements TreeDataProvider<AstItem> {
+class AstViewerDataProvider extends DisposableObject implements TreeDataProvider<AstItem> {
 
   public roots: AstItem[] = [];
   public db: DatabaseItem | undefined;
@@ -47,9 +48,9 @@ class AstViewerDataProvider  extends DisposableObject implements TreeDataProvide
     super();
     this.push(
       commandRunner('codeQLAstViewer.gotoCode',
-      async (item: AstItem) => {
-        await showLocation(item.fileLocation);
-      })
+        async (item: AstItem) => {
+          await showLocation(item.fileLocation);
+        })
     );
   }
 
@@ -157,6 +158,11 @@ export class AstViewer extends DisposableObject {
           return candidate;
         }
       }
+      return;
+    }
+
+    // Avoid recursive tree-source code updates.
+    if (e.kind === TextEditorSelectionChangeKind.Command) {
       return;
     }
 
