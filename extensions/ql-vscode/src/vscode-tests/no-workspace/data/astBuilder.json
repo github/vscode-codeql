@@ -18,7 +18,7 @@
       [
         {
           "id": 26359,
-          "label": "",
+          "label": "SHOULD NOT USE ",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 19,
@@ -33,7 +33,7 @@
       [
         {
           "id": 26360,
-          "label": "",
+          "label": "SHOULD NOT USE ",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 15,
@@ -48,7 +48,7 @@
       [
         {
           "id": 26361,
-          "label": "",
+          "label": "SHOULD NOT USE ",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 10,
@@ -63,7 +63,7 @@
       [
         {
           "id": 0,
-          "label": "[TopLevelFunction] int disable_interrupts()",
+          "label": "SHOULD NOT USE [TopLevelFunction] int disable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 19,
@@ -78,7 +78,7 @@
       [
         {
           "id": 0,
-          "label": "[TopLevelFunction] int disable_interrupts()",
+          "label": "SHOULD NOT USE [TopLevelFunction] int disable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 19,
@@ -93,7 +93,7 @@
       [
         {
           "id": 26363,
-          "label": "[TopLevelFunction] void enable_interrupts()",
+          "label": "SHOULD NOT USE [TopLevelFunction] void enable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 15,
@@ -108,7 +108,7 @@
       [
         {
           "id": 26363,
-          "label": "[TopLevelFunction] void enable_interrupts()",
+          "label": "SHOULD NOT USE [TopLevelFunction] void enable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 15,
@@ -123,7 +123,7 @@
       [
         {
           "id": 26364,
-          "label": "[TopLevelFunction] int interrupt_init()",
+          "label": "SHOULD NOT USE [TopLevelFunction] int interrupt_init()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 10,
@@ -138,7 +138,7 @@
       [
         {
           "id": 26364,
-          "label": "[TopLevelFunction] int interrupt_init()",
+          "label": "SHOULD NOT USE [TopLevelFunction] int interrupt_init()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 10,
@@ -153,7 +153,7 @@
       [
         {
           "id": 26365,
-          "label": "[Literal] 0",
+          "label": "SHOULD NOT USE [Literal] 0",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 21,
@@ -168,7 +168,7 @@
       [
         {
           "id": 26365,
-          "label": "[Literal] 0",
+          "label": "SHOULD NOT USE [Literal] 0",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 21,
@@ -183,7 +183,7 @@
       [
         {
           "id": 26365,
-          "label": "[Literal] 0",
+          "label": "SHOULD NOT USE [Literal] 0",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 21,
@@ -198,7 +198,7 @@
       [
         {
           "id": 26365,
-          "label": "[Literal] 0",
+          "label": "SHOULD NOT USE [Literal] 0",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 21,
@@ -213,7 +213,7 @@
       [
         {
           "id": 26366,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 21,
@@ -228,7 +228,7 @@
       [
         {
           "id": 26367,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 20,
@@ -243,7 +243,7 @@
       [
         {
           "id": 26368,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 17,
@@ -258,7 +258,7 @@
       [
         {
           "id": 26369,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 16,
@@ -273,7 +273,7 @@
       [
         {
           "id": 26370,
-          "label": "[Literal] 0",
+          "label": "SHOULD NOT USE [Literal] 0",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 12,
@@ -288,7 +288,7 @@
       [
         {
           "id": 26370,
-          "label": "[Literal] 0",
+          "label": "SHOULD NOT USE [Literal] 0",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 12,
@@ -303,7 +303,7 @@
       [
         {
           "id": 26370,
-          "label": "[Literal] 0",
+          "label": "SHOULD NOT USE [Literal] 0",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 12,
@@ -318,7 +318,7 @@
       [
         {
           "id": 26370,
-          "label": "[Literal] 0",
+          "label": "SHOULD NOT USE [Literal] 0",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 12,
@@ -333,7 +333,7 @@
       [
         {
           "id": 26371,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 12,
@@ -348,7 +348,7 @@
       [
         {
           "id": 26372,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 11,
@@ -385,7 +385,7 @@
       [
         {
           "id": 0,
-          "label": "[TopLevelFunction] int disable_interrupts()",
+          "label": "SHOULD NOT USE [TopLevelFunction] int disable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 19,
@@ -396,7 +396,7 @@
         },
         {
           "id": 26359,
-          "label": "",
+          "label": "SHOULD NOT USE ",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 19,
@@ -411,7 +411,7 @@
       [
         {
           "id": 0,
-          "label": "[TopLevelFunction] int disable_interrupts()",
+          "label": "SHOULD NOT USE [TopLevelFunction] int disable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 19,
@@ -422,7 +422,7 @@
         },
         {
           "id": 26359,
-          "label": "",
+          "label": "SHOULD NOT USE ",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 19,
@@ -437,7 +437,7 @@
       [
         {
           "id": 0,
-          "label": "[TopLevelFunction] int disable_interrupts()",
+          "label": "SHOULD NOT USE [TopLevelFunction] int disable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 19,
@@ -448,7 +448,7 @@
         },
         {
           "id": 26367,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 20,
@@ -463,7 +463,7 @@
       [
         {
           "id": 0,
-          "label": "[TopLevelFunction] int disable_interrupts()",
+          "label": "SHOULD NOT USE [TopLevelFunction] int disable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 19,
@@ -474,7 +474,7 @@
         },
         {
           "id": 26367,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 20,
@@ -489,7 +489,7 @@
       [
         {
           "id": 26363,
-          "label": "[TopLevelFunction] void enable_interrupts()",
+          "label": "SHOULD NOT USE [TopLevelFunction] void enable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 15,
@@ -500,7 +500,7 @@
         },
         {
           "id": 26360,
-          "label": "",
+          "label": "SHOULD NOT USE ",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 15,
@@ -515,7 +515,7 @@
       [
         {
           "id": 26363,
-          "label": "[TopLevelFunction] void enable_interrupts()",
+          "label": "SHOULD NOT USE [TopLevelFunction] void enable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 15,
@@ -526,7 +526,7 @@
         },
         {
           "id": 26360,
-          "label": "",
+          "label": "SHOULD NOT USE ",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 15,
@@ -541,7 +541,7 @@
       [
         {
           "id": 26363,
-          "label": "[TopLevelFunction] void enable_interrupts()",
+          "label": "SHOULD NOT USE [TopLevelFunction] void enable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 15,
@@ -552,7 +552,7 @@
         },
         {
           "id": 26369,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 16,
@@ -567,7 +567,7 @@
       [
         {
           "id": 26363,
-          "label": "[TopLevelFunction] void enable_interrupts()",
+          "label": "SHOULD NOT USE [TopLevelFunction] void enable_interrupts()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 15,
@@ -578,7 +578,7 @@
         },
         {
           "id": 26369,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 16,
@@ -593,7 +593,7 @@
       [
         {
           "id": 26364,
-          "label": "[TopLevelFunction] int interrupt_init()",
+          "label": "SHOULD NOT USE [TopLevelFunction] int interrupt_init()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 10,
@@ -604,7 +604,7 @@
         },
         {
           "id": 26361,
-          "label": "",
+          "label": "SHOULD NOT USE ",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 10,
@@ -619,7 +619,7 @@
       [
         {
           "id": 26364,
-          "label": "[TopLevelFunction] int interrupt_init()",
+          "label": "SHOULD NOT USE [TopLevelFunction] int interrupt_init()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 10,
@@ -630,7 +630,7 @@
         },
         {
           "id": 26361,
-          "label": "",
+          "label": "SHOULD NOT USE ",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 10,
@@ -645,7 +645,7 @@
       [
         {
           "id": 26364,
-          "label": "[TopLevelFunction] int interrupt_init()",
+          "label": "SHOULD NOT USE [TopLevelFunction] int interrupt_init()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 10,
@@ -656,7 +656,7 @@
         },
         {
           "id": 26372,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 11,
@@ -671,7 +671,7 @@
       [
         {
           "id": 26364,
-          "label": "[TopLevelFunction] int interrupt_init()",
+          "label": "SHOULD NOT USE [TopLevelFunction] int interrupt_init()",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 10,
@@ -682,7 +682,7 @@
         },
         {
           "id": 26372,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 11,
@@ -697,7 +697,7 @@
       [
         {
           "id": 26366,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 21,
@@ -708,7 +708,7 @@
         },
         {
           "id": 26365,
-          "label": "[Literal] 0",
+          "label": "SHOULD NOT USE [Literal] 0",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 21,
@@ -723,7 +723,7 @@
       [
         {
           "id": 26366,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 21,
@@ -734,7 +734,7 @@
         },
         {
           "id": 26365,
-          "label": "[Literal] 0",
+          "label": "SHOULD NOT USE [Literal] 0",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 21,
@@ -749,7 +749,7 @@
       [
         {
           "id": 26367,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 20,
@@ -760,7 +760,7 @@
         },
         {
           "id": 26366,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 21,
@@ -775,7 +775,7 @@
       [
         {
           "id": 26367,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 20,
@@ -786,7 +786,7 @@
         },
         {
           "id": 26366,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 21,
@@ -801,7 +801,7 @@
       [
         {
           "id": 26369,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 16,
@@ -812,7 +812,7 @@
         },
         {
           "id": 26368,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 17,
@@ -827,7 +827,7 @@
       [
         {
           "id": 26369,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 16,
@@ -838,7 +838,7 @@
         },
         {
           "id": 26368,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 17,
@@ -853,7 +853,7 @@
       [
         {
           "id": 26371,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 12,
@@ -864,7 +864,7 @@
         },
         {
           "id": 26370,
-          "label": "[Literal] 0",
+          "label": "SHOULD NOT USE [Literal] 0",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 12,
@@ -879,7 +879,7 @@
       [
         {
           "id": 26371,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 12,
@@ -890,7 +890,7 @@
         },
         {
           "id": 26370,
-          "label": "[Literal] 0",
+          "label": "SHOULD NOT USE [Literal] 0",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 12,
@@ -905,7 +905,7 @@
       [
         {
           "id": 26372,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 11,
@@ -916,7 +916,7 @@
         },
         {
           "id": 26371,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 12,
@@ -931,7 +931,7 @@
       [
         {
           "id": 26372,
-          "label": "[Block] { ... }",
+          "label": "SHOULD NOT USE [Block] { ... }",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 11,
@@ -942,7 +942,7 @@
         },
         {
           "id": 26371,
-          "label": "[ReturnStmt] return ...",
+          "label": "SHOULD NOT USE [ReturnStmt] return ...",
           "url": {
             "uri": "file:/opt/src/arch/sandbox/lib/interrupts.c",
             "startLine": 12,
