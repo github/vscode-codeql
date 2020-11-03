@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ResultTableProps, className } from './result-table-utils';
-import { RAW_RESULTS_LIMIT, RawResultsSortState } from '../interface-types';
-import { RawTableResultSet } from '../interface-types';
+import { RAW_RESULTS_LIMIT, RawResultsSortState } from '../pure/interface-types';
+import { RawTableResultSet } from '../pure/interface-types';
 import RawTableHeader from './RawTableHeader';
 import RawTableRow from './RawTableRow';
 import { ResultRow } from '../pure/bqrs-cli-types';

@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { UrlValue, ResolvableLocationValue } from '../pure/bqrs-cli-types';
 import { isStringLoc, tryGetResolvableLocation } from '../pure/bqrs-utils';
-import { RawResultsSortState, QueryMetadata, SortDirection } from '../interface-types';
+import { RawResultsSortState, QueryMetadata, SortDirection } from '../pure/interface-types';
 import { assertNever } from '../pure/helpers-pure';
-import { ResultSet } from '../interface-types';
+import { ResultSet } from '../pure/interface-types';
 import { vscode } from './vscode-api';
 
 export interface ResultTableProps {

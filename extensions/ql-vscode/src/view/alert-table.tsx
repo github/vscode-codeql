@@ -1,17 +1,17 @@
 import * as path from 'path';
 import * as React from 'react';
 import * as Sarif from 'sarif';
-import * as Keys from '../result-keys';
+import * as Keys from '../pure/result-keys';
 import * as octicons from './octicons';
 import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection } from './result-table-utils';
 import { onNavigation, NavigationEvent } from './results';
-import { PathTableResultSet } from '../interface-types';
+import { PathTableResultSet } from '../pure/interface-types';
 import {
   parseSarifPlainTextMessage,
   parseSarifLocation,
   isNoLocation
 } from '../pure/sarif-utils';
-import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortState } from '../interface-types';
+import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortState } from '../pure/interface-types';
 import { vscode } from './vscode-api';
 import { isWholeFileLoc, isLineColumnLoc } from '../pure/bqrs-utils';
 

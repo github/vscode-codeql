@@ -14,7 +14,7 @@ import {
   FromCompareViewMessage,
   ToCompareViewMessage,
   QueryCompareResult,
-} from '../interface-types';
+} from '../pure/interface-types';
 import { Logger } from '../logging';
 import { CodeQLCliServer } from '../cli';
 import { DatabaseManager } from '../databases';

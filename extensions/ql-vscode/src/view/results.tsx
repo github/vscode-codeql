@@ -12,10 +12,10 @@ import {
   ResultsPaths,
   ALERTS_TABLE_NAME,
   ParsedResultSets
-} from '../interface-types';
+} from '../pure/interface-types';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 import { ResultTables } from './result-tables';
-import { ResultSet } from '../interface-types';
+import { ResultSet } from '../pure/interface-types';
 import { vscode } from './vscode-api';
 
 /**

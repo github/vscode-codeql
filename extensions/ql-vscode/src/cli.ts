@@ -15,7 +15,7 @@ import { BQRSInfo, DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { CliConfig } from './config';
 import { DistributionProvider, FindDistributionResultKind } from './distribution';
 import { assertNever } from './pure/helpers-pure';
-import { QueryMetadata, SortDirection } from './interface-types';
+import { QueryMetadata, SortDirection } from './pure/interface-types';
 import { Logger, ProgressReporter } from './logging';
 
 /**
@@ -702,7 +702,7 @@ export class CodeQLCliServer implements Disposable {
 
   private async refreshVersion() {
     const distribution = await this.distributionProvider.getDistribution();
-    switch(distribution.kind) {
+    switch (distribution.kind) {
       case FindDistributionResultKind.CompatibleDistribution:
       // eslint-disable-next-line no-fallthrough
       case FindDistributionResultKind.IncompatibleDistribution:

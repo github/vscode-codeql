@@ -13,10 +13,15 @@ import {
   getDefaultResultSetName,
   ParsedResultSets,
   IntoResultsViewMsg
-} from '../interface-types';
+} from '../pure/interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
-import { ResultTableProps, tableSelectionHeaderClassName, toggleDiagnosticsClassName, alertExtrasClassName } from './result-table-utils';
+import {
+  ResultTableProps,
+  tableSelectionHeaderClassName,
+  toggleDiagnosticsClassName,
+  alertExtrasClassName
+} from './result-table-utils';
 import { vscode } from './vscode-api';
 
 
@@ -279,7 +284,7 @@ export class ResultTables
         break;
 
       default:
-        // noop
+      // noop
     }
   }
 
