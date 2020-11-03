@@ -75,18 +75,18 @@ export default class AstBuilder {
 
     // populate parents and children
     nodeTuples.tuples.forEach(tuple => {
-      const [entity, tupleType, orderValue] = tuple as [EntityValue, string, string];
+      const [entity, tupleType, value] = tuple as [EntityValue, string, string];
       const id = entity.id!;
 
       switch (tupleType) {
         case 'semmle.order':
-          astOrder.set(id, Number(orderValue));
+          astOrder.set(id, Number(value));
           break;
 
         case 'semmle.label': {
           const item = {
             id,
-            label: entity.label,
+            label: value ?? entity.label,
             location: entity.url,
             fileLocation: fileRangeFromURI(entity.url, this.db),
             children: [] as ChildAstItem[],
