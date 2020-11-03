@@ -1,10 +1,20 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Uri, TextDocumentShowOptions, commands, window } from 'vscode';
+import {
+  TestHub,
+  TestController,
+  TestAdapter,
+  TestRunStartedEvent,
+  TestRunFinishedEvent,
+  TestEvent,
+  TestSuiteEvent
+} from 'vscode-test-adapter-api';
+
+import { showAndLogWarningMessage } from './helpers';
 import { TestTreeNode } from './test-tree-node';
 import { DisposableObject } from './vscode-utils/disposable-object';
 import { UIService } from './vscode-utils/ui-service';
-import { TestHub, TestController, TestAdapter, TestRunStartedEvent, TestRunFinishedEvent, TestEvent, TestSuiteEvent } from 'vscode-test-adapter-api';
 import { QLTestAdapter, getExpectedFile, getActualFile } from './test-adapter';
 import { logger } from './logging';
 
@@ -78,12 +88,17 @@ export class TestUIService extends UIService implements TestController {
         preserveFocus: true,
         preview: true
       };
+
+      if (!await fs.pathExists(expectedPath)) {
+        showAndLogWarningMessage(`'${path.basename(expectedPath)}' does not exist. Creating an empty file.`);
+        await fs.createFile(expectedPath);
+      }
+
       if (await fs.pathExists(actualPath)) {
         const actualUri = Uri.file(actualPath);
         await commands.executeCommand<void>('vscode.diff', expectedUri, actualUri,
           `Expected vs. Actual for ${path.basename(testId)}`, options);
-      }
-      else {
+      } else {
         await window.showTextDocument(expectedUri, options);
       }
     }
