@@ -84,7 +84,7 @@ export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
   // This lets us separate the paths, ignoring the leading slash if we added one.
   const sourceArchiveZipPathEndIndex = sourceArchiveZipPathStartIndex + sourceArchiveZipPath.length;
   const authority = `${sourceArchiveZipPathStartIndex}-${sourceArchiveZipPathEndIndex}`;
-  return vscode.Uri.parse(zipArchiveScheme + ':/').with({
+  return vscode.Uri.parse(zipArchiveScheme + ':/', true).with({
     path: encodedPath,
     authority,
   });

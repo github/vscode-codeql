@@ -136,7 +136,7 @@ export class TemplatePrintAstProvider {
 
     return new AstBuilder(
       queryResults, this.cli,
-      this.dbm.findDatabaseItem(vscode.Uri.parse(queryResults.database.databaseUri!))!,
+      this.dbm.findDatabaseItem(vscode.Uri.parse(queryResults.database.databaseUri!, true))!,
       document.fileName
     );
   }

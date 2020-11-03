@@ -43,7 +43,7 @@ export async function getLocationsForUriString(
   token: vscode.CancellationToken,
   filter: (src: string, dest: string) => boolean
 ): Promise<FullLocationLink[]> {
-  const uri = decodeSourceArchiveUri(vscode.Uri.parse(uriString));
+  const uri = decodeSourceArchiveUri(vscode.Uri.parse(uriString, true));
   const sourceArchiveUri = encodeArchiveBasePath(uri.sourceArchiveZipPath);
 
   const db = dbm.findDatabaseItemBySourceArchive(sourceArchiveUri);

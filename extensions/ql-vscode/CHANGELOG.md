@@ -5,6 +5,7 @@
 ## 1.3.5 - 27 October 2020
 
 - Fix a bug where archived source folders for databases were not showing any contents.
+- Fix URI encoding for databases that were created with special characters in their paths.
 
 ## 1.3.4 - 22 October 2020
 

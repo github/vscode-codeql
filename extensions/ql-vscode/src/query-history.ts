@@ -453,7 +453,7 @@ export class QueryHistoryManager extends DisposableObject {
       queryText: encodeURIComponent(await this.getQueryText(singleItem)),
     });
     const uri = vscode.Uri.parse(
-      `codeql:${singleItem.query.queryID}-${queryName}?${params.toString()}`
+      `codeql:${singleItem.query.queryID}-${queryName}?${params.toString()}`, true
     );
     const doc = await vscode.workspace.openTextDocument(uri);
     await vscode.window.showTextDocument(doc, { preview: false });
