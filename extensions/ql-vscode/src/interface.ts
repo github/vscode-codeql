@@ -30,7 +30,7 @@ import {
   INTERPRETED_RESULTS_PAGE_SIZE,
   ALERTS_TABLE_NAME,
   RawResultsSortState,
-} from './interface-types';
+} from './pure/interface-types';
 import { Logger } from './logging';
 import { commandRunner } from './helpers';
 import * as messages from './pure/messages';
@@ -46,7 +46,7 @@ import {
   shownLocationLineDecoration,
   jumpToLocation,
 } from './interface-utils';
-import { getDefaultResultSetName, ParsedResultSets } from './interface-types';
+import { getDefaultResultSetName, ParsedResultSets } from './pure/interface-types';
 import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './pure/bqrs-cli-types';
 
 /**

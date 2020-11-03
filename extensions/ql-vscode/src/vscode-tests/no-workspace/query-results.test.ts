@@ -9,7 +9,7 @@ import { CompletedQuery, interpretResults } from '../../query-results';
 import { QueryInfo, QueryWithResults, tmpDir } from '../../run-queries';
 import { QueryHistoryConfig } from '../../config';
 import { EvaluationResult, QueryResultType } from '../../pure/messages';
-import { SortDirection, SortedResultSetInfo } from '../../interface-types';
+import { SortDirection, SortedResultSetInfo } from '../../pure/interface-types';
 import { CodeQLCliServer, SourceInfo } from '../../cli';
 
 chai.use(chaiAsPromised);
@@ -204,7 +204,7 @@ describe('CompletedQuery', () => {
   });
 
   function mockCompletedQuery() {
-    return  new CompletedQuery(
+    return new CompletedQuery(
       mockQueryWithResults(),
       mockQueryHistoryConfig()
     );

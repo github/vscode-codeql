@@ -1,4 +1,4 @@
-import { FromCompareViewMessage, FromResultsViewMsg } from '../interface-types';
+import { FromCompareViewMessage, FromResultsViewMsg } from '../pure/interface-types';
 
 export interface VsCodeApi {
   /**

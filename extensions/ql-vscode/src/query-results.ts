@@ -6,7 +6,7 @@ import * as cli from './cli';
 import * as sarif from 'sarif';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { RawResultsSortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata, InterpretedResultsSortState, ResultsPaths } from './interface-types';
+import { RawResultsSortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata, InterpretedResultsSortState, ResultsPaths } from './pure/interface-types';
 import { QueryHistoryConfig } from './config';
 import { QueryHistoryItemOptions } from './query-history';
 
@@ -96,8 +96,8 @@ export class CompletedQuery implements QueryWithResults {
   }
 
   getLabel(): string {
-      return this.options?.label
-        || this.config.format;
+    return this.options?.label
+      || this.config.format;
   }
 
   get didRunSuccessfully(): boolean {

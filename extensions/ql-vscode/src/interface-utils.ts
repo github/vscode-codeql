@@ -17,7 +17,7 @@ import {
   isLineColumnLoc
 } from './pure/bqrs-utils';
 import { DatabaseItem, DatabaseManager } from './databases';
-import { ViewSourceFileMsg } from './interface-types';
+import { ViewSourceFileMsg } from './pure/interface-types';
 import { Logger } from './logging';
 import {
   LineColumnLocation,

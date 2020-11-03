@@ -8,7 +8,7 @@ import {
   fileUriToWebviewUri,
   tryResolveLocation,
 } from '../../interface-utils';
-import { getDefaultResultSetName } from '../../interface-types';
+import { getDefaultResultSetName } from '../../pure/interface-types';
 import { DatabaseItem } from '../../databases';
 
 describe('interface-utils', () => {

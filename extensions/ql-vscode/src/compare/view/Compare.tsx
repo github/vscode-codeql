@@ -5,7 +5,7 @@ import * as Rdom from 'react-dom';
 import {
   ToCompareViewMessage,
   SetComparisonsMessage,
-} from '../../interface-types';
+} from '../../pure/interface-types';
 import CompareSelector from './CompareSelector';
 import { vscode } from '../../view/vscode-api';
 import CompareTable from './CompareTable';

@@ -16,7 +16,7 @@ import * as cli from './cli';
 import * as config from './config';
 import { DatabaseItem, getUpgradesDirectories } from './databases';
 import * as helpers from './helpers';
-import { DatabaseInfo, QueryMetadata, ResultsPaths } from './interface-types';
+import { DatabaseInfo, QueryMetadata, ResultsPaths } from './pure/interface-types';
 import { logger } from './logging';
 import * as messages from './pure/messages';
 import { QueryHistoryItemOptions } from './query-history';

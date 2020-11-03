@@ -1,5 +1,5 @@
 import * as sarif from 'sarif';
-import { RawResultSet, ResultRow, ResultSetSchema, Column, ResolvableLocationValue } from './pure/bqrs-cli-types';
+import { RawResultSet, ResultRow, ResultSetSchema, Column, ResolvableLocationValue } from './bqrs-cli-types';
 
 /**
  * This module contains types and code that are shared between
