@@ -1,3 +1,0 @@
-{
-  "extends": "./extensions/ql-vscode/tsconfig.json"
-}
