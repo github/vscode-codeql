@@ -355,11 +355,11 @@
       },
       {
         "command": "codeQLTests.showOutputDifferences",
-        "title": "CodeQL: Show Test Output Differences"
+        "title": "Show Test Output Differences"
       },
       {
         "command": "codeQLTests.acceptOutput",
-        "title": "CodeQL: Accept Test Output"
+        "title": "Accept Test Output"
       },
       {
         "command": "codeQLAstViewer.gotoCode",
@@ -627,6 +627,14 @@
         },
         {
           "command": "codeQLAstViewer.clear",
+          "when": "false"
+        },
+        {
+          "command": "codeQLTests.acceptOutput",
+          "when": "false"
+        },
+        {
+          "command": "codeQLTests.showOutputDifferences",
           "when": "false"
         }
       ],

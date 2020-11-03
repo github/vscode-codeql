@@ -32,7 +32,6 @@ describe('commands declared in package.json', function() {
     if (
       command.match(/^codeQL\./)
       || command.match(/^codeQLQueryResults\./)
-      || command.match(/^codeQLTests\./)
     ) {
       paletteCmds.add(command);
       expect(title).not.to.be.undefined;
@@ -42,6 +41,7 @@ describe('commands declared in package.json', function() {
       command.match(/^codeQLDatabases\./)
       || command.match(/^codeQLQueryHistory\./)
       || command.match(/^codeQLAstViewer\./)
+      || command.match(/^codeQLTests\./)
     ) {
       scopedCmds.add(command);
       expect(title).not.to.be.undefined;
@@ -68,8 +68,6 @@ describe('commands declared in package.json', function() {
     if (commandDecl.when === 'false')
       disabledInPalette.add(commandDecl.command);
   });
-
-
 
   it('should have commands appropriately prefixed', function() {
     paletteCmds.forEach(command => {
