@@ -15,7 +15,7 @@ export default function RawTableValue(props: Props): JSX.Element {
     || typeof v === 'number'
     || typeof v === 'boolean'
   ) {
-    return <span>{v}</span>;
+    return <span>{v.toString()}</span>;
   }
 
   return renderLocation(v.url, v.label, props.databaseUri);
