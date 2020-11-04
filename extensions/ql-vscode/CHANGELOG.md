@@ -1,11 +1,15 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.3.6 - 4 November 2020
+
+- Fix URI encoding for databases that were created with special characters in their paths. [#648](https://github.com/github/vscode-codeql/pull/648)
+- Disable CodeQL Test commands from the command palette [#667](https://github.com/github/vscode-codeql/pull/667)
+- Fix display of booleans in results view. [#657](https://github.com/github/vscode-codeql/pull/657)
+- Avoid recursive selection changes in AST Viewer. [#668](https://github.com/github/vscode-codeql/pull/668)
 
 ## 1.3.5 - 27 October 2020
 
 - Fix a bug where archived source folders for databases were not showing any contents.
-- Fix URI encoding for databases that were created with special characters in their paths.
 
 ## 1.3.4 - 22 October 2020
 
