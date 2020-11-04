@@ -91,15 +91,28 @@ Alternatively, you can run the tests inside of vscode. There are several vscode 
 
 ## Releasing (write access required)
 
-1. Double-check the `CHANGELOG.md` contains all desired change comments
-   and has the version to be released with date at the top.
-1. Double-check that the extension `package.json` has the version you intend to release.
-   If you are doing a patch release (as opposed to minor or major version) this should already
-   be correct.
-1. Trigger a release build on Actions by adding a new tag on branch `main` of the format `vxx.xx.xx`
+1. Double-check the `CHANGELOG.md` contains all desired change comments and has the version to be released with date at the top.
+    * Go through all recent PRs and make sure they are properly accounted for.
+    * Make sure all changelog entries have links back to their PR(s) if appropriate.
+1. Double-check that the extension `package.json` has the version you intend to release. If you are doing a patch release (as opposed to minor or major version) this should already be correct.
+1. Create a PR for this release:
+    * This PR will contain any missing bits from steps 1 and 2. Most of the time, this will just be updating `CHANGELOG.md` with today's date.
+    * Create a new branch for the release named after the new version. For example: `v1.3.6`
+    * Create a new commit with a message the same as the branch name.
+    * Create a PR for this branch.
+    * Wait for the PR to be merged into `main`
+1. Trigger a release build on Actions by adding a new tag on branch `main` named after the release, as above. Note that when you push to upstream, you will need to fully qualify the ref. A command like this will work:
+
+    ```bash
+    git push upstream refs/tags/v1.3.6
+    ```
+
+    * **IMPORTANT** Make sure you are on the `main` branch and your local checkout is fully updated when you add the tag.
+    * If you accidentally add the tag to the wrong ref, you can just force push it to the right one later.
+
 1. Monitor the status of the release build in the `Release` workflow in the Actions tab.
 1. Download the VSIX from the draft GitHub release at the top of [the releases page](https://github.com/github/vscode-codeql/releases) that is created when the release build finishes.
-1. Optionally unzip the `.vsix` and inspect its `package.json` to make sure the version is what you expect,
+1. Unzip the `.vsix` and inspect its `package.json` to make sure the version is what you expect,
    or look at the source if there's any doubt the right code is being shipped.
 1. Log into the [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage/publishers/github).
 1. Click the `...` menu in the CodeQL row and click **Update**.
