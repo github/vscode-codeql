@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.3.6 - 4 November 2020
 
 - Fix URI encoding for databases that were created with special characters in their paths. [#648](https://github.com/github/vscode-codeql/pull/648)
