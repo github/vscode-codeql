@@ -167,7 +167,13 @@ export async function showLocation(location?: Location) {
   const editor =
     editorsWithDoc.length > 0
       ? editorsWithDoc[0]
-      : await Window.showTextDocument(doc, ViewColumn.One);
+      : await Window.showTextDocument(
+        doc, {
+        // avoid preview mode so editor is sticky and will be added to navigation and search histories.
+        preview: false,
+        viewColumn: ViewColumn.One,
+      });
+
   const range = location.range;
   // When highlighting the range, vscode's occurrence-match and bracket-match highlighting will
   // trigger based on where we place the cursor/selection, and will compete for the user's attention.

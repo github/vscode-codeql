@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Editors opened by navigating from the results view are no longer opened in _preview mode_. Now they are opened as a persistent editor. [#630](https://github.com/github/vscode-codeql/pull/630)
+
 ## 1.3.6 - 4 November 2020
 
 - Fix URI encoding for databases that were created with special characters in their paths. [#648](https://github.com/github/vscode-codeql/pull/648)
