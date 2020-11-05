@@ -16,7 +16,6 @@ import { TestAdapterRegistrar } from 'vscode-test-adapter-util';
 import { QLTestFile, QLTestNode, QLTestDirectory, QLTestDiscovery } from './qltest-discovery';
 import { Event, EventEmitter, CancellationTokenSource, CancellationToken } from 'vscode';
 import { DisposableObject } from './vscode-utils/disposable-object';
-import { QLPackDiscovery } from './qlpack-discovery';
 import { CodeQLCliServer } from './cli';
 import { getOnDiskWorkspaceFolders } from './helpers';
 import { testLogger } from './logging';
@@ -82,7 +81,6 @@ function changeExtension(p: string, ext: string): string {
  * Test adapter for QL tests.
  */
 export class QLTestAdapter extends DisposableObject implements TestAdapter {
-  private readonly qlPackDiscovery: QLPackDiscovery;
   private readonly qlTestDiscovery: QLTestDiscovery;
   private readonly _tests = this.push(
     new EventEmitter<TestLoadStartedEvent | TestLoadFinishedEvent>());
@@ -97,10 +95,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
   ) {
     super();
 
-    this.qlPackDiscovery = this.push(new QLPackDiscovery(workspaceFolder, cliServer));
-    this.qlTestDiscovery = this.push(new QLTestDiscovery(this.qlPackDiscovery, workspaceFolder, cliServer));
-    // TODO: Don't run test discovery until pack discovery finishes
-    this.qlPackDiscovery.refresh();
+    this.qlTestDiscovery = this.push(new QLTestDiscovery(workspaceFolder, cliServer));
     this.qlTestDiscovery.refresh();
 
     this.push(this.qlTestDiscovery.onDidChangeTests(this.discoverTests, this));
@@ -176,7 +171,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
       type: 'finished',
       suite: testSuite
     } as TestLoadFinishedEvent);
-}
+  }
 
   public async run(tests: string[]): Promise<void> {
     if (this.runningTask !== undefined) {

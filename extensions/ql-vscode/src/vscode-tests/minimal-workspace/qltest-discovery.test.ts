@@ -16,7 +16,6 @@ describe('qltest-discovery', () => {
       const hDir = Uri.parse('file:/a/b/c/f/g/h').fsPath;
       const iFile = Uri.parse('file:/a/b/c/f/g/h/i.ql').fsPath;
       const qlTestDiscover = new QLTestDiscovery(
-        { onDidChangeQLPacks: () => ({}) } as any,
         {
           uri: baseUri,
           name: 'My tests'

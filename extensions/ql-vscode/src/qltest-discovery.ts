@@ -1,5 +1,4 @@
 import * as path from 'path';
-import { QLPackDiscovery } from './qlpack-discovery';
 import { Discovery } from './discovery';
 import { EventEmitter, Event, Uri, RelativePattern, WorkspaceFolder, env } from 'vscode';
 import { MultiFileSystemWatcher } from './vscode-utils/multi-file-system-watcher';
@@ -128,13 +127,11 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
   private _testDirectory: QLTestDirectory | undefined;
 
   constructor(
-    private readonly qlPackDiscovery: QLPackDiscovery,
     private readonly workspaceFolder: WorkspaceFolder,
     private readonly cliServer: CodeQLCliServer
   ) {
     super('QL Test Discovery');
 
-    this.push(this.qlPackDiscovery.onDidChangeQLPacks(this.handleDidChangeQLPacks, this));
     this.push(this.watcher.onDidChange(this.handleDidChange, this));
   }
 
@@ -153,21 +150,13 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
     return this._testDirectory;
   }
 
-  private handleDidChangeQLPacks(): void {
-    this.refresh();
-  }
-
   private handleDidChange(uri: Uri): void {
     if (!QLTestDiscovery.ignoreTestPath(uri.fsPath)) {
       this.refresh();
     }
   }
-  static cnt = 0;
   protected async discover(): Promise<QLTestDiscoveryResults> {
-    const timer = 'testDirectory-' + this.workspaceFolder.uri.fsPath + '-' + QLTestDiscovery.cnt++;
-    console.time(timer);
     const testDirectory = await this.discoverTests();
-    console.timeEnd(timer);
     return {
       testDirectory,
       watchPath: this.workspaceFolder.uri.fsPath

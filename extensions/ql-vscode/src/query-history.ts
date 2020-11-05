@@ -545,9 +545,7 @@ export class QueryHistoryManager extends DisposableObject {
   private async tryOpenExternalFile(fileLocation: string) {
     const uri = vscode.Uri.file(fileLocation);
     try {
-      await vscode.window.showTextDocument(uri, {
-        preview: false
-      });
+      await vscode.window.showTextDocument(uri, { preview: false });
     } catch (e) {
       if (
         e.message.includes(
