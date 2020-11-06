@@ -349,6 +349,7 @@ async function activateWithInstalledDistribution(
     getContextStoragePath(ctx),
     ctx.extensionPath
   );
+  databaseUI.init();
   ctx.subscriptions.push(databaseUI);
 
   logger.log('Initializing query history manager.');
@@ -642,6 +643,8 @@ async function activateWithInstalledDistribution(
     cancellable: true,
     title: 'Calculate AST'
   }));
+
+  commands.executeCommand('codeQLDatabases.removeOrphanedDatabases');
 
   logger.log('Successfully finished extension initialization.');
 }

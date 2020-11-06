@@ -8,7 +8,7 @@ import {
   TreeItem,
   Uri,
   window,
-  env
+  env,
 } from 'vscode';
 import * as fs from 'fs-extra';
 
@@ -18,6 +18,8 @@ import {
   DatabaseItem,
   DatabaseManager,
   getUpgradesDirectories,
+  isLikelyDatabaseRoot,
+  isLikelyDbLanguageFolder,
 } from './databases';
 import {
   commandRunner,
@@ -36,6 +38,7 @@ import {
   promptImportLgtmDatabase,
 } from './databaseFetcher';
 import { CancellationToken } from 'vscode-jsonrpc';
+import { asyncFilter } from './pure/helpers-pure';
 
 type ThemableIconPath = { light: string; dark: string } | string;
 
@@ -229,7 +232,9 @@ export class DatabaseUI extends DisposableObject {
         canSelectMany: true,
       })
     );
+  }
 
+  init() {
     logger.log('Registering database panel commands.');
     this.push(
       commandRunnerWithProgress(
@@ -340,6 +345,12 @@ export class DatabaseUI extends DisposableObject {
         this.handleOpenFolder
       )
     );
+    this.push(
+      commandRunner(
+        'codeQLDatabases.removeOrphanedDatabases',
+        this.handleRemoveOrphanedDatabases
+      )
+    );
   }
 
   private handleMakeCurrentDatabase = async (
@@ -359,6 +370,53 @@ export class DatabaseUI extends DisposableObject {
       return undefined;
     }
   };
+
+  handleRemoveOrphanedDatabases = async (): Promise<void> => {
+    logger.log('Removing orphaned databases from workspace storage.');
+    let dbDirs =
+      // read directory
+      (await fs.readdir(this.storagePath, { withFileTypes: true }))
+        // remove non-directories
+        .filter(dirent => dirent.isDirectory())
+        // get the full path
+        .map(dirent => path.join(this.storagePath, dirent.name))
+        // remove databases still in workspace
+        .filter(dbDir => {
+          const dbUri = Uri.file(dbDir);
+          return this.databaseManager.databaseItems.every(item => item.databaseUri.fsPath !== dbUri.fsPath);
+        });
+
+    // remove non-databases
+    dbDirs = await asyncFilter(dbDirs, isLikelyDatabaseRoot);
+
+    if (!dbDirs.length) {
+      logger.log('No orphaned databases found.');
+      return;
+    }
+
+    // delete
+    const failures = [] as string[];
+    await Promise.all(
+      dbDirs.map(async dbDir => {
+        try {
+          logger.log(`Deleting orphaned database '${dbDir}'.`);
+          await fs.rmdir(dbDir, { recursive: true } as any);  // typings doesn't recognize the options argument
+        } catch (e) {
+          failures.push(`${path.basename(dbDir)}`);
+        }
+      })
+    );
+
+    if (failures.length) {
+      const dirname = path.dirname(failures[0]);
+      showAndLogErrorMessage(
+        `Failed to delete unused databases:\n  ${
+        failures.join('\n  ')
+        }\n. To delete unused databases, please remove them manually from the storage folder ${dirname}.`
+      );
+    }
+  };
+
 
   handleChooseDatabaseArchive = async (
     progress: ProgressCallback,
@@ -653,7 +711,7 @@ export class DatabaseUI extends DisposableObject {
       dbPath = path.dirname(dbPath);
     }
 
-    if (isLikelyDbFolder(dbPath)) {
+    if (isLikelyDbLanguageFolder(dbPath)) {
       dbPath = path.dirname(dbPath);
     }
     return Uri.file(dbPath);
@@ -667,10 +725,4 @@ export class DatabaseUI extends DisposableObject {
       throw new Error(message);
     }
   }
-}
-
-// TODO: Get the list of supported languages from a list that will be auto-updated.
-const dbRegeEx = /^db-(javascript|go|cpp|java|python|csharp)$/;
-function isLikelyDbFolder(dbPath: string) {
-  return path.basename(dbPath).match(dbRegeEx);
 }

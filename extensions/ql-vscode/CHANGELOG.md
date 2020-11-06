@@ -7,6 +7,7 @@
 - Alter structure of the _Test Explorer_ tree. It now follows the structure of the filesystem instead of the QL Packs. [#624](https://github.com/github/vscode-codeql/pull/624)
 - Alter structure of the _Test Explorer_ tree. It now follows the structure of the filesystem instead of the QL Packs. [#624](https://github.com/github/vscode-codeql/pull/624)
 - Add more structured output for tests. [#626](https://github.com/github/vscode-codeql/pull/626)
+- Whenever the extension restarts, orphaned databases will be cleaned up. These are databases whose files are located inside of the extension's storage area, but are not imported into the workspace.
 
 ## 1.3.6 - 4 November 2020
 

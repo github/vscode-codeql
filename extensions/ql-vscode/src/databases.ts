@@ -397,10 +397,7 @@ export class DatabaseItemImpl implements DatabaseItem {
    * Holds if the database item refers to an exported snapshot
    */
   public async hasMetadataFile(): Promise<boolean> {
-    return (await Promise.all([
-      fs.pathExists(path.join(this.databaseUri.fsPath, '.dbinfo')),
-      fs.pathExists(path.join(this.databaseUri.fsPath, 'codeql-database.yml'))
-    ])).some(x => x);
+    return await isLikelyDatabaseRoot(this.databaseUri.fsPath);
   }
 
   /**
@@ -729,4 +726,24 @@ export function getUpgradesDirectories(scripts: string[]): vscode.Uri[] {
   const parentDirs = scripts.map(dir => path.dirname(dir));
   const uniqueParentDirs = new Set(parentDirs);
   return Array.from(uniqueParentDirs).map(filePath => vscode.Uri.file(filePath));
+}
+
+
+// TODO: Get the list of supported languages from a list that will be auto-updated.
+
+export async function isLikelyDatabaseRoot(fsPath: string) {
+  const [a, b, c] = (await Promise.all([
+    // databases can have either .dbinfo or codeql-database.yml.
+    fs.pathExists(path.join(fsPath, '.dbinfo')),
+    fs.pathExists(path.join(fsPath, 'codeql-database.yml')),
+
+    // they *must* have a db-language folder
+    (await fs.readdir(fsPath)).some(isLikelyDbLanguageFolder)
+  ]));
+
+  return (a || b) && c;
+}
+
+export function isLikelyDbLanguageFolder(dbPath: string) {
+  return !!path.basename(dbPath).startsWith('db-');
 }
