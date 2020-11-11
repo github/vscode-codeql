@@ -501,10 +501,9 @@ export interface UpgradeDescription {
 export type CompiledUpgrades = MultiFileCompiledUpgrades | SingleFileCompiledUpgrade
 
 /**
- * A compiled upgrade. 
- * The upgrade is spread among multiple files.
+ * The parts shared by all compiled upgrades
  */
-export interface MultiFileCompiledUpgrades {
+interface CompiledUpgradesBase {
   /**
   * The initial sha of the dbscheme to upgrade from
   */
@@ -513,6 +512,18 @@ export interface MultiFileCompiledUpgrades {
    * The path to the new dataset statistics
    */
   newStatsPath: string;
+  /**
+   * The sha of the target dataset.
+   */
+  targetSha: string;
+}
+
+
+/**
+ * A compiled upgrade. 
+ * The upgrade is spread among multiple files.
+ */
+interface MultiFileCompiledUpgrades extends CompiledUpgradesBase {
   /**
    * The path to the new dataset dbscheme
    */
@@ -525,34 +536,22 @@ export interface MultiFileCompiledUpgrades {
    * Will never exist in an old result
    */
   compiledUpgradeFile?: never;
-  /**
-   * The sha of the target dataset.
-   */
-  targetSha: string;
 }
 
 
-export interface SingleFileCompiledUpgrade {
-  /**
-  * The initial sha of the dbscheme to upgrade from
-  */
-  initialSha: string;
-  /**
-   * The path to the new dataset statistics
-   */
-  newStatsPath: string;
+/**
+ * A compiled upgrade. 
+ * The upgrade is in a single file.
+ */
+export interface SingleFileCompiledUpgrade extends CompiledUpgradesBase {
   /**
    * The steps in the upgrade path
    */
   descriptions: UpgradeDescription[];
   /**
-   * The file containing the upgrade
+   * A path to a file containing the upgrade
    */
   compiledUpgradeFile: string;
-  /**
-   * The sha of the target dataset.
-   */
-  targetSha: string;
 }
 
 /**

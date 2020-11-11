@@ -157,6 +157,9 @@ export async function upgradeDatabase(
 
   try {
     qs.logger.log('Running the following database upgrade:');
+    // We use the presence of compiledUpgradeFile to check
+    // if it is multifile or not. We need to explicitly check undefined
+    // as the types claim the empty string is a valid value
     if (compileUpgradeResult.compiledUpgrades.compiledUpgradeFile === undefined) {
       qs.logger.log(compileUpgradeResult.compiledUpgrades.scripts.map(s => s.description.description).join('\n'));
     } else {
