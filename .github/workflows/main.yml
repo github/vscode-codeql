@@ -29,6 +29,8 @@ jobs:
         shell: bash
 
       - name: Build
+        env:
+          APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
         run: |
           cd extensions/ql-vscode
           npm run build
@@ -71,6 +73,8 @@ jobs:
         shell: bash
 
       - name: Build
+        env:
+          APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
         run: |
           cd extensions/ql-vscode
           npm run build

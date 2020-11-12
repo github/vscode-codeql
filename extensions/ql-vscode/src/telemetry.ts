@@ -6,7 +6,8 @@ import { logger } from './logging';
 import { UserCancellationException } from './commandRunner';
 import { showBinaryChoiceDialog } from './helpers';
 
-const key = '6f88c20e-2879-41ed-af73-218b82e1ff44';
+// Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
+const key = 'REPLACE-APP-INSIGHTS-KEY';
 
 let reporter: TelemetryReporter | undefined;
 let listener: Disposable | undefined;
