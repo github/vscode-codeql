@@ -24,7 +24,8 @@ jobs:
   build:
     name: Release
     runs-on: ubuntu-latest
-    # TODO Share steps with the main workflow.
+    env:
+      APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
