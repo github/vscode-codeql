@@ -60,6 +60,7 @@ export interface DbInfo {
 export interface UpgradesInfo {
   scripts: string[];
   finalDbscheme: string;
+  matchesTarget?: boolean;
 }
 
 /**
@@ -652,9 +653,11 @@ export class CodeQLCliServer implements Disposable {
    * @param searchPath A list of directories to search for upgrade scripts.
    * @returns A list of database upgrade script directories
    */
-  resolveUpgrades(dbScheme: string, searchPath: string[]): Promise<UpgradesInfo> {
+  resolveUpgrades(dbScheme: string, searchPath: string[], targetDbScheme?: string): Promise<UpgradesInfo> {
     const args = ['--additional-packs', searchPath.join(path.delimiter), '--dbscheme', dbScheme];
-
+    if (targetDbScheme) {
+      args.push('--target-dbscheme', targetDbScheme);
+    }
     return this.runJsonCodeQlCliCommand<UpgradesInfo>(
       ['resolve', 'upgrades'],
       args,
