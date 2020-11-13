@@ -414,6 +414,28 @@ export interface CompileUpgradeParams {
 }
 
 /**
+ * Parameters for compiling an upgrade.
+ */
+export interface CompileUpgradeSequenceParams {
+  /**
+   * The sequence of upogrades to compile
+   */
+  upgradePaths: string[];
+  /**
+   * A directory to store parts of the compiled upgrade
+   */
+  upgradeTempDir: string;
+  /** 
+   * The first dbscheme in the sequence.
+   */
+  initialDbscheme: string;
+  /** 
+   * The last dbscheme in the sequence.
+   */
+  finalDbscheme: string;
+}
+
+/**
  * Parameters describing an upgrade
  */
 export interface UpgradeParams {
@@ -460,6 +482,14 @@ export interface CompileUpgradeResult {
    */
   error?: string;
 }
+
+export interface SingleFileCompiledUpgradeResult extends CompileUpgradeResult {
+  /**
+   * The compiled upgrade.
+   */
+  compiledUpgrades?: SingleFileCompiledUpgrade;
+}
+
 /**
  * A description of a upgrade process
  */
@@ -696,6 +726,10 @@ export interface QueryToRun {
    * A uri pointing to the qlo to run.
    */
   qlo: string;
+  /**
+   * A uri pointing to the compiled upgrade file.
+   */
+  compiledUpgrade?: string;
   /**
    * The path where we should save this queries results
    */
@@ -972,6 +1006,10 @@ export const checkUpgrade = new rpc.RequestType<WithProgressId<UpgradeParams>, C
  * Compile an upgrade script to upgrade a dataset.
  */
 export const compileUpgrade = new rpc.RequestType<WithProgressId<CompileUpgradeParams>, CompileUpgradeResult, void, void>('compilation/compileUpgrade');
+/**
+ * Compile an upgrade script to upgrade a dataset.
+ */
+export const compileUpgradeSequence = new rpc.RequestType<WithProgressId<CompileUpgradeSequenceParams>, SingleFileCompiledUpgradeResult, void, void>('compilation/compileUpgradeSequence');
 
 
 /**
