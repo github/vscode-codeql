@@ -12,12 +12,10 @@ import {
 } from 'vscode';
 import * as fs from 'fs-extra';
 
-import * as cli from './cli';
 import {
   DatabaseChangedEvent,
   DatabaseItem,
   DatabaseManager,
-  getUpgradesDirectories,
 } from './databases';
 import {
   commandRunner,
@@ -33,7 +31,7 @@ import {
 import { logger } from './logging';
 import { clearCacheInDatabase } from './run-queries';
 import * as qsClient from './queryserver-client';
-import { upgradeDatabase } from './upgrades';
+import { upgradeDatabaseExplicit } from './upgrades';
 import {
   importArchiveDatabase,
   promptImportInternetDatabase,
@@ -218,7 +216,6 @@ export class DatabaseUI extends DisposableObject {
   private treeDataProvider: DatabaseTreeDataProvider;
 
   public constructor(
-    private cliserver: cli.CodeQLCliServer,
     private databaseManager: DatabaseManager,
     private readonly queryServer: qsClient.QueryServerClient | undefined,
     private readonly storagePath: string,
@@ -540,25 +537,10 @@ export class DatabaseUI extends DisposableObject {
     }
 
     // Search for upgrade scripts in any workspace folders available
-    const searchPath: string[] = getOnDiskWorkspaceFolders();
 
-    const upgradeInfo = await this.cliserver.resolveUpgrades(
-      databaseItem.contents.dbSchemeUri.fsPath,
-      searchPath
-    );
-
-    const { scripts, finalDbscheme } = upgradeInfo;
-
-    if (finalDbscheme === undefined) {
-      throw new Error('Could not determine target dbscheme to upgrade to.');
-    }
-    const targetDbSchemeUri = Uri.file(finalDbscheme);
-
-    await upgradeDatabase(
+    await upgradeDatabaseExplicit(
       this.queryServer,
       databaseItem,
-      targetDbSchemeUri,
-      getUpgradesDirectories(scripts),
       progress,
       token
     );
