@@ -14,16 +14,17 @@ import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 
 import * as cli from './cli';
 import * as config from './config';
-import { DatabaseItem, getUpgradesDirectories } from './databases';
+import { DatabaseItem } from './databases';
 import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from './helpers';
 import { ProgressCallback, UserCancellationException } from './commandRunner';
+import * as helpers from './helpers';
 import { DatabaseInfo, QueryMetadata, ResultsPaths } from './pure/interface-types';
 import { logger } from './logging';
 import * as messages from './pure/messages';
 import { QueryHistoryItemOptions } from './query-history';
 import * as qsClient from './queryserver-client';
 import { isQuickQueryPath } from './quick-query';
-import { upgradeDatabase } from './upgrades';
+import { compileDatabaseUpgradeSequence, hasNondestructiveUpgradeCapabilities, upgradeDatabaseExplicit } from './upgrades';
 
 /**
  * run-queries.ts
@@ -80,6 +81,7 @@ export class QueryInfo {
 
   async run(
     qs: qsClient.QueryServerClient,
+    upgradeQlo: string | undefined,
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<messages.EvaluationResult> {
@@ -90,6 +92,7 @@ export class QueryInfo {
     const queryToRun: messages.QueryToRun = {
       resultsPath: this.resultsPaths.resultsPath,
       qlo: Uri.file(this.compiledQueryPath).toString(),
+      compiledUpgrade: upgradeQlo && Uri.file(upgradeQlo).toString(),
       allowUnknownTemplates: true,
       templateValues: this.templates,
       id: callbackId,
@@ -292,7 +295,7 @@ async function checkDbschemeCompatibility(
   const searchPath = getOnDiskWorkspaceFolders();
 
   if (query.dbItem.contents !== undefined && query.dbItem.contents.dbSchemeUri !== undefined) {
-    const { scripts, finalDbscheme } = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath);
+    const { finalDbscheme } = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath);
     const hash = async function(filename: string): Promise<string> {
       return crypto.createHash('sha256').update(await fs.readFile(filename)).digest('hex');
     };
@@ -311,23 +314,58 @@ async function checkDbschemeCompatibility(
     const upgradableTo = await hash(finalDbscheme);
 
     if (upgradableTo != dbschemeOfLib) {
-      logger.log(`Query ${query.program.queryPath} expects database scheme ${query.queryDbscheme}, but database has scheme ${query.program.dbschemePath}, and no upgrade path found`);
-      throw new Error(`Query ${query.program.queryPath} expects database scheme ${query.queryDbscheme}, but the current database has a different scheme, and no database upgrades are available. The current database scheme may be newer than the CodeQL query libraries in your workspace. Please try using a newer version of the query libraries.`);
+      reportNoUpgradePath(query);
     }
 
     if (upgradableTo == dbschemeOfLib &&
       dbschemeOfDb != dbschemeOfLib) {
       // Try to upgrade the database
-      await upgradeDatabase(
+      await upgradeDatabaseExplicit(
         qs,
         query.dbItem,
-        Uri.file(finalDbscheme),
-        getUpgradesDirectories(scripts),
         progress,
         token
       );
     }
   }
+}
+
+
+function reportNoUpgradePath(query: QueryInfo) {
+  logger.log(`Query ${query.program.queryPath} expects database scheme ${query.queryDbscheme}, but database has scheme ${query.program.dbschemePath}, and no upgrade path found`);
+  throw new Error(`Query ${query.program.queryPath} expects database scheme ${query.queryDbscheme}, but the current database has a different scheme, and no database upgrades are available. The current database scheme may be newer than the CodeQL query libraries in your workspace. Please try using a newer version of the query libraries.`);
+}
+
+/**
+ * Compile a non-destructive upgrade.
+ */
+async function compileNonDestructiveUpgrade(
+  qs: qsClient.QueryServerClient,
+  upgradeTemp: tmp.DirResult,
+  query: QueryInfo,
+  progress: ProgressCallback,
+  token: CancellationToken,
+): Promise<string> {
+  const searchPath = helpers.getOnDiskWorkspaceFolders();
+
+  if (query.dbItem.contents === undefined || query.dbItem.contents.dbSchemeUri === undefined) {
+    throw new Error('Database is invalid, and cannot be upgraded.');
+  }
+  const { scripts, matchesTarget } = await qs.cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath, query.queryDbscheme);
+
+  if (!matchesTarget) {
+    reportNoUpgradePath(query);
+  }
+  const result = await compileDatabaseUpgradeSequence(qs, query.dbItem, query.queryDbscheme, scripts, upgradeTemp, progress, token);
+  if (result.compiledUpgrades === undefined) {
+    const error = result.error || '[no error message available]';
+    throw new Error(error);
+  }
+  // We can upgrade to the actual target
+  query.program.dbschemePath = query.queryDbscheme;
+  // We are new enough that we will always support single file upgrades.
+  return result.compiledUpgrades.compiledUpgradeFile!;
+
 }
 
 /**
@@ -516,64 +554,73 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 
   const query = new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata, templates);
-  await checkDbschemeCompatibility(cliServer, qs, query, progress, token);
 
-  let errors;
+  const upgradeDir = tmp.dirSync({ dir: upgradesTmpDir.name });
   try {
-    errors = await query.compile(qs, progress, token);
-  } catch (e) {
-    if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
-      return createSyntheticResult(query, db, historyItemOptions, 'Query cancelled', messages.QueryResultType.CANCELLATION);
+    let upgradeQlo;
+    if (await hasNondestructiveUpgradeCapabilities(qs)) {
+      upgradeQlo = await compileNonDestructiveUpgrade(qs, upgradeDir, query, progress, token);
     } else {
-      throw e;
+      await checkDbschemeCompatibility(cliServer, qs, query, progress, token);
     }
-  }
-
-  if (errors.length == 0) {
-    const result = await query.run(qs, progress, token);
-    if (result.resultType !== messages.QueryResultType.SUCCESS) {
-      const message = result.message || 'Failed to run query';
-      logger.log(message);
-      showAndLogErrorMessage(message);
-    }
-    return {
-      query,
-      result,
-      database: {
-        name: db.name,
-        databaseUri: db.databaseUri.toString(true)
-      },
-      options: historyItemOptions,
-      logFileLocation: result.logFileLocation,
-      dispose: () => {
-        qs.logger.removeAdditionalLogLocation(result.logFileLocation);
+    let errors;
+    try {
+      errors = await query.compile(qs, progress, token);
+    } catch (e) {
+      if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
+        return createSyntheticResult(query, db, historyItemOptions, 'Query cancelled', messages.QueryResultType.CANCELLATION);
+      } else {
+        throw e;
       }
-    };
-  } else {
-    // Error dialogs are limited in size and scrollability,
-    // so we include a general description of the problem,
-    // and direct the user to the output window for the detailed compilation messages.
-    // However we don't show quick eval errors there so we need to display them anyway.
-    qs.logger.log(`Failed to compile query ${query.program.queryPath} against database scheme ${query.program.dbschemePath}:`);
-
-    const formattedMessages: string[] = [];
-
-    for (const error of errors) {
-      const message = error.message || '[no error message available]';
-      const formatted = `ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`;
-      formattedMessages.push(formatted);
-      qs.logger.log(formatted);
     }
-    if (quickEval && formattedMessages.length <= 3) {
-      showAndLogErrorMessage('Quick evaluation compilation failed: \n' + formattedMessages.join('\n'));
+    if (errors.length == 0) {
+      const result = await query.run(qs, upgradeQlo, progress, token);
+      if (result.resultType !== messages.QueryResultType.SUCCESS) {
+        const message = result.message || 'Failed to run query';
+        logger.log(message);
+        helpers.showAndLogErrorMessage(message);
+      }
+      return {
+        query,
+        result,
+        database: {
+          name: db.name,
+          databaseUri: db.databaseUri.toString(true)
+        },
+        options: historyItemOptions,
+        logFileLocation: result.logFileLocation,
+        dispose: () => {
+          qs.logger.removeAdditionalLogLocation(result.logFileLocation);
+        }
+      };
     } else {
-      showAndLogErrorMessage((quickEval ? 'Quick evaluation' : 'Query') +
-        ' compilation failed. Please make sure there are no errors in the query, the database is up to date,' +
-        ' and the query and database use the same target language. For more details on the error, go to View > Output,' +
-        ' and choose CodeQL Query Server from the dropdown.');
-    }
+      // Error dialogs are limited in size and scrollability,
+      // so we include a general description of the problem,
+      // and direct the user to the output window for the detailed compilation messages.
+      // However we don't show quick eval errors there so we need to display them anyway.
+      qs.logger.log(`Failed to compile query ${query.program.queryPath} against database scheme ${query.program.dbschemePath}:`);
 
-    return createSyntheticResult(query, db, historyItemOptions, 'Query had compilation errors', messages.QueryResultType.OTHER_ERROR);
+      const formattedMessages: string[] = [];
+
+      for (const error of errors) {
+        const message = error.message || '[no error message available]';
+        const formatted = `ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`;
+        formattedMessages.push(formatted);
+        qs.logger.log(formatted);
+      }
+      if (quickEval && formattedMessages.length <= 3) {
+        showAndLogErrorMessage('Quick evaluation compilation failed: \n' + formattedMessages.join('\n'));
+      } else {
+        showAndLogErrorMessage((quickEval ? 'Quick evaluation' : 'Query') +
+          ' compilation failed. Please make sure there are no errors in the query, the database is up to date,' +
+          ' and the query and database use the same target language. For more details on the error, go to View > Output,' +
+          ' and choose CodeQL Query Server from the dropdown.');
+      }
+
+      return createSyntheticResult(query, db, historyItemOptions, 'Query had compilation errors', messages.QueryResultType.OTHER_ERROR);
+    }
+  } finally {
+    upgradeDir.removeCallback();
   }
 }
 

@@ -369,7 +369,6 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(dbm);
   logger.log('Initializing database panel.');
   const databaseUI = new DatabaseUI(
-    cliServer,
     dbm,
     qs,
     getContextStoragePath(ctx),
