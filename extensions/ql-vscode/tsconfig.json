@@ -6,9 +6,7 @@
     "module": "commonjs",
     "target": "es2017",
     "outDir": "out",
-    "lib": [
-      "es6"
-    ],
+    "lib": ["ES2020"],
     "moduleResolution": "node",
     "sourceMap": true,
     "rootDir": "src",
@@ -21,12 +19,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "test",
-    "**/view"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "test", "**/view"]
 }

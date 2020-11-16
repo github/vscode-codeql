@@ -198,6 +198,10 @@
         }
       },
       {
+        "command": "codeQLDatabases.removeOrphanedDatabases",
+        "title": "Delete unused databases"
+      },
+      {
         "command": "codeQLDatabases.chooseDatabaseArchive",
         "title": "Choose Database from Archive",
         "icon": {
@@ -574,6 +578,10 @@
           "when": "false"
         },
         {
+          "command": "codeQLDatabases.removeOrphanedDatabases",
+          "when": "false"
+        },
+        {
           "command": "codeQLDatabases.chooseDatabaseInternet",
           "when": "false"
         },
@@ -704,7 +712,7 @@
   "dependencies": {
     "child-process-promise": "^2.2.1",
     "classnames": "~2.2.6",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "^9.0.1",
     "glob-promise": "^3.4.0",
     "js-yaml": "^3.14.0",
     "minimist": "~1.2.5",
@@ -727,7 +735,7 @@
     "@types/chai-as-promised": "~7.1.2",
     "@types/child-process-promise": "^2.2.1",
     "@types/classnames": "~2.2.9",
-    "@types/fs-extra": "^8.0.0",
+    "@types/fs-extra": "^9.0.3",
     "@types/glob": "^7.1.1",
     "@types/google-protobuf": "^3.2.7",
     "@types/gulp": "^4.0.6",
@@ -735,7 +743,7 @@
     "@types/js-yaml": "^3.12.5",
     "@types/jszip": "~3.1.6",
     "@types/mocha": "~8.0.3",
-    "@types/node": "^12.0.8",
+    "@types/node": "^12.14.1",
     "@types/node-fetch": "~2.5.2",
     "@types/proxyquire": "~1.3.28",
     "@types/react": "^16.8.17",

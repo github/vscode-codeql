@@ -9,7 +9,8 @@ import {
   DatabaseItem,
   DatabaseManager,
   DatabaseItemImpl,
-  DatabaseContents
+  DatabaseContents,
+  isLikelyDbLanguageFolder
 } from '../../databases';
 import { QueryServerConfig } from '../../config';
 import { Logger } from '../../logging';
@@ -178,5 +179,10 @@ describe('databases', () => {
         () => { /**/ }
       );
     }
+  });
+
+  it('should find likely db language folders', () => {
+    expect(isLikelyDbLanguageFolder('db-javascript')).to.be.true;
+    expect(isLikelyDbLanguageFolder('dbnot-a-db')).to.be.false;
   });
 });

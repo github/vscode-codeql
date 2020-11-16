@@ -49,11 +49,59 @@ describe('databases-ui', () => {
       const parentDir = path.join(dir, 'db-hucairz');
       const dbDir = path.join(parentDir, 'db-javascript');
       const file = path.join(dbDir, 'nested');
-      await fs.mkdirs(dbDir);
-      await fs.createFile(file);
+      fs.mkdirsSync(dbDir);
+      fs.createFileSync(file);
 
       const uri = await fixDbUri(Uri.file(file));
       expect(uri.toString()).to.eq(Uri.file(parentDir).toString());
     });
   });
+
+  it('should delete orphaned databases', async () => {
+    const storageDir = tmp.dirSync().name;
+    const db1 = createDatabase(storageDir, 'db1-imported', 'cpp');
+    const db2 = createDatabase(storageDir, 'db2-notimported', 'cpp');
+    const db3 = createDatabase(storageDir, 'db3-invalidlanguage', 'hucairz');
+
+    // these two should be deleted
+    const db4 = createDatabase(storageDir, 'db2-notimported-with-db-info', 'cpp', '.dbinfo');
+    const db5 = createDatabase(storageDir, 'db2-notimported-with-codeql-database.yml', 'cpp', 'codeql-database.yml');
+
+    const databaseUI = new DatabaseUI(
+      {} as any,
+      {
+        databaseItems: [
+          { databaseUri: Uri.file(db1) }
+        ],
+        onDidChangeDatabaseItem: () => { /**/ },
+        onDidChangeCurrentDatabaseItem: () => { /**/ },
+      } as any,
+      {} as any,
+      storageDir,
+      storageDir
+    );
+
+    await databaseUI.handleRemoveOrphanedDatabases();
+
+    expect(fs.pathExistsSync(db1)).to.be.true;
+    expect(fs.pathExistsSync(db2)).to.be.true;
+    expect(fs.pathExistsSync(db3)).to.be.true;
+
+    expect(fs.pathExistsSync(db4)).to.be.false;
+    expect(fs.pathExistsSync(db5)).to.be.false;
+
+    databaseUI.dispose();
+  });
+
+  function createDatabase(storageDir: string, dbName: string, language: string, extraFile?: string) {
+    const parentDir = path.join(storageDir, dbName);
+    const dbDir = path.join(parentDir, `db-${language}`);
+    fs.mkdirsSync(dbDir);
+
+    if (extraFile) {
+      fs.createFileSync(path.join(parentDir, extraFile));
+    }
+
+    return parentDir;
+  }
 });
