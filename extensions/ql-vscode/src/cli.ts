@@ -907,3 +907,16 @@ async function logStream(stream: Readable, logger: Logger): Promise<void> {
     logger.log(line);
   }
 }
+
+
+export function shouldDebugIdeServer() {
+  return 'IDE_SERVER_JAVA_DEBUG' in process.env
+    && process.env.IDE_SERVER_JAVA_DEBUG !== '0'
+    && process.env.IDE_SERVER_JAVA_DEBUG?.toLocaleLowerCase() !== 'false';
+}
+
+export function shouldDebugQueryServer() {
+  return 'QUERY_SERVER_JAVA_DEBUG' in process.env
+    && process.env.QUERY_SERVER_JAVA_DEBUG !== '0'
+    && process.env.QUERY_SERVER_JAVA_DEBUG?.toLocaleLowerCase() !== 'false';
+}
