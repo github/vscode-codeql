@@ -107,6 +107,11 @@ export class QueryServerClient extends DisposableObject {
     if (this.config.debug) {
       args.push('--debug', '--tuple-counting');
     }
+
+    if (cli.shouldDebugQueryServer()) {
+      args.push('-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9010,server=y,suspend=n,quiet=y');
+    }
+
     const child = cli.spawnServer(
       this.config.codeQlPath,
       'CodeQL query server',

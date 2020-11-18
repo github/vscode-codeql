@@ -12,7 +12,7 @@ import { ideServerLogger } from './logging';
 export async function spawnIdeServer(config: QueryServerConfig): Promise<StreamInfo> {
   return window.withProgress({ title: 'CodeQL language server', location: ProgressLocation.Window }, async (progressReporter, _) => {
     const args = ['--check-errors', 'ON_CHANGE'];
-    if (shouldDebug()) {
+    if (cli.shouldDebugIdeServer()) {
       args.push('-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=n,quiet=y');
     }
     const child = cli.spawnServer(
@@ -27,10 +27,4 @@ export async function spawnIdeServer(config: QueryServerConfig): Promise<StreamI
     );
     return { writer: child.stdin!, reader: child.stdout! };
   });
-}
-
-function shouldDebug() {
-  return 'DEBUG_LANGUAGE_SERVER' in process.env
-    && process.env.DEBUG_LANGUAGE_SERVER !== '0'
-    && process.env.DEBUG_LANGUAGE_SERVER?.toLocaleLowerCase() !== 'false';
 }

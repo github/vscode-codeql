@@ -16,8 +16,9 @@
         "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
       ],
       "env": {
-        // uncomment to allow debugging the language server Java process from a remote java debugger
-        // "DEBUG_LANGUAGE_SERVER": "true"
+        // change to 'true' debug the IDE or Query servers
+        "IDE_SERVER_JAVA_DEBUG": "false",
+        "QUERY_SERVER_JAVA_DEBUG": "false",
       }
     },
     {
