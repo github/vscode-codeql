@@ -174,7 +174,7 @@
           "type": "boolean",
           "default": false,
           "scope": "application",
-          "markdownDescription": "Specifies whether to enable Code QL telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent."
+          "markdownDescription": "Specifies whether to enable Code QL telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent. For more information, see [TELEMETRY.md](https://github.com/github/vscode-codeql/blob/93831e28597bb08567db9844737efd9ff188fc3a/.github/TELEMETRY.md)"
         },
         "codeQL.telemetry.logTelemetry": {
           "type": "boolean",

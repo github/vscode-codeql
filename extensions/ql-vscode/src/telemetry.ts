@@ -127,10 +127,15 @@ async function requestTelemetryPermission(ctx: ExtensionContext) {
     // if global telemetry is disabled, avoid showing the dialog or making any changes
     let result = undefined;
     if (workspace.getConfiguration().get<boolean>('telemetry.enableTelemetry')) {
-      result = await showBinaryChoiceDialog(
-        'Do we have your permission to collect anonymous usage statistics and sanitized error reports to help us improve CodeQL for VSCode?',
-        { modal: false }
-      );
+      // Extension won't start until this completes. So, set a timeout here in order
+      // to ensure the extension continues even if the user doesn't make a choice.
+      result = await Promise.race([
+        showBinaryChoiceDialog(
+          'Do we have your permission to collect anonymous usage statistics help us improve CodeQL for VSCode? See [TELEMETRY.md](https://github.com/github/vscode-codeql/blob/93831e28597bb08567db9844737efd9ff188fc3a/.github/TELEMETRY.md)',
+          { modal: false }
+        ),
+        new Promise(resolve => setTimeout(resolve, 10000))
+      ]) as boolean | undefined;
     }
     if (result !== undefined) {
       await Promise.all([
