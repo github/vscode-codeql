@@ -68,10 +68,12 @@ const TIMEOUT_SETTING = new Setting('timeout', RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
 const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
 const RUNNING_TESTS_SETTING = new Setting('runningTests', ROOT_SETTING);
+const RESULTS_DISPLAY_SETTING = new Setting('resultsDisplay', ROOT_SETTING);
 
 export const NUMBER_OF_TEST_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_TESTS_SETTING);
 export const MAX_QUERIES = new Setting('maxQueries', RUNNING_QUERIES_SETTING);
 export const AUTOSAVE_SETTING = new Setting('autoSave', RUNNING_QUERIES_SETTING);
+export const PAGE_SIZE = new Setting('pageSize', RESULTS_DISPLAY_SETTING);
 
 /** When these settings change, the running query server should be restarted. */
 const QUERY_SERVER_RESTARTING_SETTINGS = [NUMBER_OF_THREADS_SETTING, MEMORY_SETTING, DEBUG_SETTING];

@@ -23,16 +23,6 @@ export type ResultSet = RawTableResultSet | PathTableResultSet;
  */
 export const RAW_RESULTS_LIMIT = 10000;
 
-/**
- * Show this many rows in a raw result table at a time.
- */
-export const RAW_RESULTS_PAGE_SIZE = 100;
-
-/**
- * Show this many rows in an interpreted results table at a time.
- */
-export const INTERPRETED_RESULTS_PAGE_SIZE = 100;
-
 export interface DatabaseInfo {
   name: string;
   databaseUri: string;
@@ -124,6 +114,7 @@ export interface ShowInterpretedPageMsg {
   metadata?: QueryMetadata;
   pageNumber: number;
   numPages: number;
+  pageSize: number;
   resultSetNames: string[];
 }
 
@@ -352,6 +343,7 @@ export function getDefaultResultSetName(
 
 export interface ParsedResultSets {
   pageNumber: number;
+  pageSize: number;
   numPages: number;
   numInterpretedPages: number;
   selectedTable?: string; // when undefined, means 'show default table'

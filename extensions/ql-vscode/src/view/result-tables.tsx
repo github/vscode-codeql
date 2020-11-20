@@ -6,7 +6,6 @@ import {
   QueryMetadata,
   ResultsPaths,
   InterpretedResultsSortState,
-  RAW_RESULTS_PAGE_SIZE,
   ResultSet,
   ALERTS_TABLE_NAME,
   SELECT_TABLE_NAME,
@@ -100,7 +99,7 @@ export class ResultTables
     return resultSets;
   }
 
-  private getResultSetNames(resultSets: ResultSet[]): string[] {
+  private getResultSetNames(): string[] {
     return this.props.parsedResultSets.resultSetNames.concat([ALERTS_TABLE_NAME]);
   }
 
@@ -169,7 +168,7 @@ export class ResultTables
 
   getOffset(): number {
     const { parsedResultSets } = this.props;
-    return parsedResultSets.pageNumber * RAW_RESULTS_PAGE_SIZE;
+    return parsedResultSets.pageNumber * parsedResultSets.pageSize;
   }
 
   renderPageButtons(): JSX.Element {
@@ -220,6 +219,8 @@ export class ResultTables
         type="number"
         size={3}
         value={this.state.selectedPage}
+        min="1"
+        max={numPages}
         onChange={onChange}
         onBlur={e => choosePage(e.target.value)}
         onKeyDown={e => {
@@ -239,7 +240,7 @@ export class ResultTables
   render(): React.ReactNode {
     const { selectedTable } = this.state;
     const resultSets = this.getResultSets();
-    const resultSetNames = this.getResultSetNames(resultSets);
+    const resultSetNames = this.getResultSetNames();
 
     const resultSet = resultSets.find(resultSet => resultSet.schema.name == selectedTable);
     const nonemptyRawResults = resultSets.some(resultSet => resultSet.t == 'RawResultSet' && resultSet.rows.length > 0);
