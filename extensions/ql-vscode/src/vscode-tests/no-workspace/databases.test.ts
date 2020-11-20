@@ -83,7 +83,7 @@ describe('databases', () => {
     expect(mockDbItem.name).to.eq('new name');
     expect(updateSpy).to.have.been.calledWith('databaseList', ['new name']);
     expect(spy).to.have.been.calledWith({
-      item: mockDbItem,
+      item: undefined,
       kind: DatabaseEventKind.Rename
     });
   });

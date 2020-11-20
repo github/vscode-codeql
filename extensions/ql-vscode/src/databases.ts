@@ -667,7 +667,8 @@ export class DatabaseManager extends DisposableObject {
     item.name = newName;
     this.updatePersistedDatabaseList();
     this._onDidChangeDatabaseItem.fire({
-      item,
+      // pass undefined so that the entire tree is rebuilt in order to re-sort
+      item: undefined,
       kind: DatabaseEventKind.Rename
     });
   }
