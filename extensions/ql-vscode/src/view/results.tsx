@@ -105,6 +105,7 @@ class App extends React.Component<{}, ResultsViewState> {
           resultsPath: '', // FIXME: Not used for interpreted, refactor so this is not needed
           parsedResultSets: {
             numPages: msg.numPages,
+            pageSize: msg.pageSize,
             numInterpretedPages: msg.numPages,
             resultSetNames: msg.resultSetNames,
             pageNumber: msg.pageNumber,

@@ -26,8 +26,6 @@ import {
   SortedResultsMap,
   InterpretedResultsSortState,
   SortDirection,
-  RAW_RESULTS_PAGE_SIZE,
-  INTERPRETED_RESULTS_PAGE_SIZE,
   ALERTS_TABLE_NAME,
   RawResultsSortState,
 } from './pure/interface-types';
@@ -48,6 +46,7 @@ import {
 } from './interface-utils';
 import { getDefaultResultSetName, ParsedResultSets } from './pure/interface-types';
 import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './pure/bqrs-cli-types';
+import { PAGE_SIZE } from './config';
 
 /**
  * interface.ts
@@ -89,11 +88,11 @@ function sortInterpretedResults(
 }
 
 function numPagesOfResultSet(resultSet: RawResultSet): number {
-  return Math.ceil(resultSet.schema.rows / RAW_RESULTS_PAGE_SIZE);
+  return Math.ceil(resultSet.schema.rows / PAGE_SIZE.getValue<number>());
 }
 
 function numInterpretedPages(interpretation: Interpretation | undefined): number {
-  return Math.ceil((interpretation?.sarif.runs[0].results?.length || 0) / INTERPRETED_RESULTS_PAGE_SIZE);
+  return Math.ceil((interpretation?.sarif.runs[0].results?.length || 0) / PAGE_SIZE.getValue<number>());
 }
 
 export class InterfaceManager extends DisposableObject {
@@ -378,7 +377,7 @@ export class InterfaceManager extends DisposableObject {
     // Use sorted results path if it exists. This may happen if we are
     // reloading the results view after it has been sorted in the past.
     const resultsPath = results.getResultsPath(selectedTable);
-
+    const pageSize = PAGE_SIZE.getValue<number>();
     const chunk = await this.cliServer.bqrsDecode(
       resultsPath,
       schema.name,
@@ -388,12 +387,13 @@ export class InterfaceManager extends DisposableObject {
         // if there are interpreted results, but speculatively
         // send anyway.
         offset: schema.pagination?.offsets[0],
-        pageSize: RAW_RESULTS_PAGE_SIZE
+        pageSize
       }
     );
     const resultSet = transformBqrsResultSet(schema, chunk);
     const parsedResultSets: ParsedResultSets = {
       pageNumber: 0,
+      pageSize,
       numPages: numPagesOfResultSet(resultSet),
       numInterpretedPages: numInterpretedPages(this._interpretation),
       resultSet: { ...resultSet, t: 'RawResultSet' },
@@ -442,6 +442,7 @@ export class InterfaceManager extends DisposableObject {
       metadata: this._displayedQuery.query.metadata,
       pageNumber,
       resultSetNames,
+      pageSize: PAGE_SIZE.getValue(),
       numPages: numInterpretedPages(this._interpretation),
     });
   }
@@ -450,7 +451,7 @@ export class InterfaceManager extends DisposableObject {
     const resultsPath = results.getResultsPath(selectedTable);
     const schemas = await this.cliServer.bqrsInfo(
       resultsPath,
-      RAW_RESULTS_PAGE_SIZE
+      PAGE_SIZE.getValue()
     );
     return schemas['result-sets'];
   }
@@ -483,18 +484,20 @@ export class InterfaceManager extends DisposableObject {
     if (schema === undefined)
       throw new Error(`Query result set '${selectedTable}' not found.`);
 
+    const pageSize = PAGE_SIZE.getValue<number>();
     const chunk = await this.cliServer.bqrsDecode(
       results.getResultsPath(selectedTable, sorted),
       schema.name,
       {
         offset: schema.pagination?.offsets[pageNumber],
-        pageSize: RAW_RESULTS_PAGE_SIZE
+        pageSize
       }
     );
     const resultSet = transformBqrsResultSet(schema, chunk);
 
     const parsedResultSets: ParsedResultSets = {
       pageNumber,
+      pageSize,
       resultSet: { t: 'RawResultSet', ...resultSet },
       numPages: numPagesOfResultSet(resultSet),
       numInterpretedPages: numInterpretedPages(this._interpretation),
@@ -559,8 +562,8 @@ export class InterfaceManager extends DisposableObject {
     function getPageOfRun(run: Sarif.Run): Sarif.Run {
       return {
         ...run, results: run.results?.slice(
-          INTERPRETED_RESULTS_PAGE_SIZE * pageNumber,
-          INTERPRETED_RESULTS_PAGE_SIZE * (pageNumber + 1)
+          PAGE_SIZE.getValue<number>() * pageNumber,
+          PAGE_SIZE.getValue<number>() * (pageNumber + 1)
         )
       };
     }
