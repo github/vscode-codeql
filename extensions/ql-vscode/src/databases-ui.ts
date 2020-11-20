@@ -37,7 +37,7 @@ import {
   promptImportInternetDatabase,
   promptImportLgtmDatabase,
 } from './databaseFetcher';
-import { CancellationToken } from 'vscode-jsonrpc';
+import { CancellationToken } from 'vscode';
 import { asyncFilter } from './pure/helpers-pure';
 
 type ThemableIconPath = { light: string; dark: string } | string;
