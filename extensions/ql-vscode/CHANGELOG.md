@@ -10,6 +10,7 @@
 - Whenever the extension restarts, orphaned databases will be cleaned up. These are databases whose files are located inside of the extension's storage area, but are not imported into the workspace.
 - After renaming a database, the database list is re-sorted. [#685](https://github.com/github/vscode-codeql/pull/685)
 - Add a `codeQl.resultsDisplay.pageSize` setting to configure the number of results displayed in a single results view page. Increase the default page size from 100 to 200. [#686](https://github.com/github/vscode-codeql/pull/686)
+- Update the AST Viewer to include edge labels (if available) in addition to the target node labels. So far, only C/C++ databases take advantage of this change. [#688](https://github.com/github/vscode-codeql/pull/688)
 
 ## 1.3.6 - 4 November 2020
 
