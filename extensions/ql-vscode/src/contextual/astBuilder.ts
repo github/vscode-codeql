@@ -45,17 +45,18 @@ export default class AstBuilder {
     const parentToChildren = new Map<BqrsId, BqrsId[]>();
     const childToParent = new Map<BqrsId, BqrsId>();
     const astOrder = new Map<BqrsId, number>();
+    const edgeLabels = new Map<BqrsId, string>();
     const roots = [];
 
     // Build up the parent-child relationships
     edgeTuples.tuples.forEach(tuple => {
-      const [source, target, tupleType, orderValue] = tuple as [EntityValue, EntityValue, string, string];
+      const [source, target, tupleType, value] = tuple as [EntityValue, EntityValue, string, string];
       const sourceId = source.id!;
       const targetId = target.id!;
 
       switch (tupleType) {
         case 'semmle.order':
-          astOrder.set(targetId, Number(orderValue));
+          astOrder.set(targetId, Number(value));
           break;
 
         case 'semmle.label': {
@@ -65,6 +66,11 @@ export default class AstBuilder {
             parentToChildren.set(sourceId, children = []);
           }
           children.push(targetId);
+
+          // ignore values that indicate a numeric order.
+          if (!Number.isFinite(Number(value))) {
+            edgeLabels.set(targetId, value);
+          }
           break;
         }
 
@@ -84,9 +90,13 @@ export default class AstBuilder {
           break;
 
         case 'semmle.label': {
+          // If an edge label exists, include it and separate from the node label using ':'
+          const nodeLabel = value ?? entity.label;
+          const edgeLabel = edgeLabels.get(id);
+          const label = [edgeLabel, nodeLabel].filter(e => e).join(': ');
           const item = {
             id,
-            label: value ?? entity.label,
+            label,
             location: entity.url,
             fileLocation: fileRangeFromURI(entity.url, this.db),
             children: [] as ChildAstItem[],
