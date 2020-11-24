@@ -20,11 +20,11 @@ import { logger } from './logging';
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
  *
- * @param databasesManager the DatabaseManager
+ * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
  */
 export async function promptImportInternetDatabase(
-  databasesManager: DatabaseManager,
+  databaseManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
   token: CancellationToken,
@@ -40,7 +40,7 @@ export async function promptImportInternetDatabase(
 
   const item = await databaseArchiveFetcher(
     databaseUrl,
-    databasesManager,
+    databaseManager,
     storagePath,
     progress,
     token
@@ -59,11 +59,11 @@ export async function promptImportInternetDatabase(
  * User enters a project url and then the user is asked which language
  * to download (if there is more than one)
  *
- * @param databasesManager the DatabaseManager
+ * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
  */
 export async function promptImportLgtmDatabase(
-  databasesManager: DatabaseManager,
+  databaseManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
   token: CancellationToken
@@ -81,7 +81,7 @@ export async function promptImportLgtmDatabase(
     if (databaseUrl) {
       const item = await databaseArchiveFetcher(
         databaseUrl,
-        databasesManager,
+        databaseManager,
         storagePath,
         progress,
         token
@@ -102,12 +102,12 @@ export async function promptImportLgtmDatabase(
  * Imports a database from a local archive.
  *
  * @param databaseUrl the file url of the archive to import
- * @param databasesManager the DatabaseManager
+ * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
  */
 export async function importArchiveDatabase(
   databaseUrl: string,
-  databasesManager: DatabaseManager,
+  databaseManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
   token: CancellationToken,
@@ -115,7 +115,7 @@ export async function importArchiveDatabase(
   try {
     const item = await databaseArchiveFetcher(
       databaseUrl,
-      databasesManager,
+      databaseManager,
       storagePath,
       progress,
       token
@@ -140,14 +140,14 @@ export async function importArchiveDatabase(
  * or in the local filesystem.
  *
  * @param databaseUrl URL from which to grab the database
- * @param databasesManager the DatabaseManager
+ * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
  * @param progress callback to send progress messages to
  * @param token cancellation token
  */
 async function databaseArchiveFetcher(
   databaseUrl: string,
-  databasesManager: DatabaseManager,
+  databaseManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
   token: CancellationToken
@@ -189,8 +189,8 @@ async function databaseArchiveFetcher(
     });
     await ensureZippedSourceLocation(dbPath);
 
-    const item = await databasesManager.openDatabase(progress, token, Uri.file(dbPath));
-    databasesManager.setCurrentDatabaseItem(item);
+    const item = await databaseManager.openDatabase(progress, token, Uri.file(dbPath));
+    await databaseManager.setCurrentDatabaseItem(item);
     return item;
   } else {
     throw new Error('Database not found in archive.');

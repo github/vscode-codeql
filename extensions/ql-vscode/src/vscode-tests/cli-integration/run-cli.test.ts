@@ -1,7 +1,6 @@
 import 'mocha';
 import 'sinon-chai';
 
-
 import { expect } from 'chai';
 import { ConfigurationTarget, workspace, extensions } from 'vscode';
 import { SemVer } from 'semver';

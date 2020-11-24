@@ -6,7 +6,7 @@ import {
   downloadAndUnzipVSCode,
   resolveCliPathFromVSCodeExecutablePath
 } from 'vscode-test';
-import { assertNever } from '../helpers-pure';
+import { assertNever } from '../pure/helpers-pure';
 
 // For some reason, `TestOptions` is not exported directly from `vscode-test`,
 // but we can be tricky and import directly from the out file.
@@ -120,9 +120,10 @@ function getLaunchArgs(dir: TestDir) {
       ];
 
     case TestDir.CliIntegration:
-      return undefined;
+      break;
 
     default:
       assertNever(dir);
   }
+  return undefined;
 }
