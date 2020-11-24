@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.3.7 - 24 November 2020
 
 - Editors opened by navigating from the results view are no longer opened in _preview mode_. Now they are opened as a persistent editor. [#630](https://github.com/github/vscode-codeql/pull/630)
 - When comparing the results of a failed QL test run and the `.expected` file does not exist, an empty `.expected` file is created and compared against the `.actual` file. [#669](https://github.com/github/vscode-codeql/pull/669)
