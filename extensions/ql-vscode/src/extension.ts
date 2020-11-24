@@ -122,6 +122,8 @@ export interface CodeQLExtensionInterface {
   readonly cliServer: CodeQLCliServer;
   readonly qs: qsClient.QueryServerClient;
   readonly distributionManager: DistributionManager;
+  readonly databaseManager: DatabaseManager;
+  readonly databaseUI: DatabaseUI;
 }
 
 /**
@@ -675,7 +677,9 @@ async function activateWithInstalledDistribution(
     ctx,
     cliServer,
     qs,
-    distributionManager
+    distributionManager,
+    databaseManager: dbm,
+    databaseUI
   };
 }
 
