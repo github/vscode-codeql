@@ -1,8 +1,8 @@
-# Telemetry in the CodeQL for VS Code
+# Telemetry in the CodeQL extension for VS Code
 
 ## Why do you collect data?
 
-GitHub collects usage data and metrics to help us improve Salesforce Extensions for VS Code.
+GitHub collects usage data and metrics to help us improve CodeQL for VS Code.
 
 ## What data is collected
 
@@ -16,6 +16,6 @@ GitHub collects anonymous information related to the usage of the extensions. Th
 
 ## How do I disable telemetry reporting?
 
-You can disable telemetry reporting by setting `codeQL.telemetry.enableTelemetry` to `false` in your settings.
+You can disable telemetry reporting by setting `codeQL.telemetry.enableTelemetry` to `false` in [your settings](https://code.visualstudio.com/docs/getstarted/settings#_settings-editor).
 
-Additionally, telemetry will be disabled if the global `telemetry.enableTelemetry` is set to `false`. For more information see [Microsoft’s documentation](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
+Additionally, telemetry will be disabled if the global `telemetry.enableTelemetry` setting is set to `false`. For more information on global telemetry collection, see [Microsoft’s documentation](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).

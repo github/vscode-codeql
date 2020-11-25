@@ -71,11 +71,15 @@ async function internalShowAndLog(message: string, items: string[], outputLogger
 
 /**
  * Opens a modal dialog for the user to make a yes/no choice.
+ *
  * @param message The message to show.
+ * @param modal If true (the default), show a modal dialog box, otherwise dialog is non-modal and can
+ *        be closed even if the user does not make a choice.
  *
  * @return `true` if the user clicks 'Yes', `false` if the user clicks 'No' or cancels the dialog.
+ *        Return `undefined` if the user avoids a choice on a non-modal dialog.
  */
-export async function showBinaryChoiceDialog(message: string, { modal = true } = {}): Promise<boolean | undefined> {
+export async function showBinaryChoiceDialog(message: string, modal = true): Promise<boolean | undefined> {
   const yesItem = { title: 'Yes', isCloseAffordance: false };
   const noItem = { title: 'No', isCloseAffordance: true };
   const chosenItem = await Window.showInformationMessage(message, { modal }, yesItem, noItem);

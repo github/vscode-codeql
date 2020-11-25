@@ -8,7 +8,7 @@ import {
 } from 'vscode';
 import { showAndLogErrorMessage, showAndLogWarningMessage } from './helpers';
 import { logger } from './logging';
-import { sendCommandUsage } from './telemetry';
+import { telemetryListener } from './telemetry';
 
 export class UserCancellationException extends Error {
   /**
@@ -134,7 +134,7 @@ export function commandRunner(
       }
     } finally {
       const executionTime = Date.now() - startTIme;
-      sendCommandUsage(commandId, executionTime, error);
+      telemetryListener.sendCommandUsage(commandId, executionTime, error);
     }
   });
 }
@@ -177,7 +177,7 @@ export function commandRunnerWithProgress<R>(
       }
     } finally {
       const executionTime = Date.now() - startTIme;
-      sendCommandUsage(commandId, executionTime, error);
+      telemetryListener.sendCommandUsage(commandId, executionTime, error);
     }
   });
 }

@@ -4,8 +4,8 @@ import 'sinon-chai';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 import TelemetryReporter from 'vscode-extension-telemetry';
-import { Extension, ExtensionContext, workspace, ConfigurationTarget, window } from 'vscode';
-import { initializeTelemetry, sendCommandUsage, _dispose } from '../../telemetry';
+import { ExtensionContext, workspace, ConfigurationTarget, window } from 'vscode';
+import { TelemetryListener, telemetryListener as globalTelemetryListener } from '../../telemetry';
 import { UserCancellationException } from '../../commandRunner';
 import { fail } from 'assert';
 import { ENABLE_TELEMETRY } from '../../config';
@@ -19,19 +19,24 @@ describe('telemetry reporting', function() {
   // setting preferences can trigger lots of background activity
   // so need to bump up the timeout of this test.
   this.timeout(10000);
+  this.timeout(1000000000);
 
   let originalTelemetryExtension: boolean | undefined;
   let originalTelemetryGlobal: boolean | undefined;
   let isCanary: string;
   let ctx: ExtensionContext;
-  let ext: Extension<any>;
+  let telemetryListener: TelemetryListener;
 
   beforeEach(async () => {
     try {
-      ctx = createMockExtensionContext();
-      ext = createMockExtension();
+      // in case a previous test has accidentally activated this extension,
+      // need to disable it first.
+      // Accidentaly activation may happen asynchronously due to activationEvents
+      // specified in the package.json.
+      globalTelemetryListener?.dispose();
 
-      _dispose();
+      ctx = createMockExtensionContext();
+
       sandbox.stub(TelemetryReporter.prototype, 'sendTelemetryEvent');
       sandbox.stub(TelemetryReporter.prototype, 'sendTelemetryException');
       sandbox.stub(TelemetryReporter.prototype, 'dispose');
@@ -43,12 +48,17 @@ describe('telemetry reporting', function() {
       // each test will default to telemetry being enabled
       await enableTelemetry('telemetry', true);
       await enableTelemetry('codeQL.telemetry', true);
+
+      telemetryListener = new TelemetryListener('my-id', '1.2.3', 'fake-key', ctx);
+      await wait(100);
     } catch (e) {
       console.error(e);
     }
   });
 
   afterEach(async () => {
+    telemetryListener?.dispose();
+    // await wait(100);
     try {
       sandbox.restore();
       await enableTelemetry('telemetry', originalTelemetryGlobal);
@@ -56,17 +66,14 @@ describe('telemetry reporting', function() {
     } catch (e) {
       console.error(e);
     }
-    _dispose();
   });
 
   it('should initialize telemetry when both options are enabled', async () => {
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
 
-    expect(ctx.subscriptions[0]).not.to.be.instanceOf(TelemetryReporter); // workspace config listener
-    expect(ctx.subscriptions[1]).to.be.instanceOf(TelemetryReporter);
-    expect(ctx.subscriptions.length).to.eq(2);
+    expect(telemetryListener._reporter).not.to.be.undefined;
 
-    const reporter: any = ctx.subscriptions[1];
+    const reporter: any = telemetryListener._reporter;
     expect(reporter.extensionId).to.eq('my-id');
     expect(reporter.extensionVersion).to.eq('1.2.3');
     expect(reporter.userOptIn).to.eq(true); // enabled
@@ -75,13 +82,10 @@ describe('telemetry reporting', function() {
   it('should initialize telemetry when global option disabled', async () => {
     try {
       await enableTelemetry('telemetry', false);
-      await initializeTelemetry(ext, ctx);
+      await telemetryListener.initialize();
+      expect(telemetryListener._reporter).not.to.be.undefined;
 
-      expect(ctx.subscriptions[0]).not.to.be.instanceOf(TelemetryReporter); // workspace config listener
-      expect(ctx.subscriptions[1]).to.be.instanceOf(TelemetryReporter);
-      expect(ctx.subscriptions.length).to.eq(2);
-
-      const reporter: any = ctx.subscriptions[1];
+      const reporter: any = telemetryListener._reporter;
       expect(reporter.userOptIn).to.eq(false); // disabled
     } catch (e) {
       fail(e);
@@ -91,10 +95,9 @@ describe('telemetry reporting', function() {
   it('should not initialize telemetry when extension option disabled', async () => {
     try {
       await enableTelemetry('codeQL.telemetry', false);
-      await initializeTelemetry(ext, ctx);
+      await telemetryListener.initialize();
 
-      expect(ctx.subscriptions[0]).not.to.be.instanceOf(TelemetryReporter); // workspace config listener
-      expect(ctx.subscriptions.length).to.eq(1);
+      expect(telemetryListener._reporter).to.be.undefined;
     } catch (e) {
       fail(e);
     }
@@ -103,56 +106,49 @@ describe('telemetry reporting', function() {
   it('should not initialize telemetry when both options disabled', async () => {
     await enableTelemetry('codeQL.telemetry', false);
     await enableTelemetry('telemetry', false);
-    await initializeTelemetry(ext, ctx);
-
-    expect(ctx.subscriptions[0]).not.to.be.instanceOf(TelemetryReporter); // workspace config listener
-    expect(ctx.subscriptions.length).to.eq(1);
+    await telemetryListener.initialize();
+    expect(telemetryListener._reporter).to.be.undefined;
   });
 
   it('should dispose telemetry object when re-initializing and should not add multiple', async () => {
-    await initializeTelemetry(ext, ctx);
-    await initializeTelemetry(ext, ctx);
-
-    expect(ctx.subscriptions[0]).not.to.be.instanceOf(TelemetryReporter); // workspace config listener
-    expect(ctx.subscriptions[1]).to.be.instanceOf(TelemetryReporter);
-    expect(ctx.subscriptions[2]).to.be.instanceOf(TelemetryReporter);
-    expect(ctx.subscriptions.length).to.eq(3);
+    await telemetryListener.initialize();
+    expect(telemetryListener._reporter).not.to.be.undefined;
+    const firstReporter = telemetryListener._reporter;
+    await telemetryListener.initialize();
+    expect(telemetryListener._reporter).not.to.be.undefined;
+    expect(telemetryListener._reporter).not.to.eq(firstReporter);
 
     expect(TelemetryReporter.prototype.dispose).to.have.been.calledOnce;
 
-    // initializing a third time continues to work
-    await initializeTelemetry(ext, ctx);
-
-    expect(ctx.subscriptions[3]).to.be.instanceOf(TelemetryReporter);
-    expect(ctx.subscriptions.length).to.eq(4);
+    // initializing a third time continues to dispose
+    await telemetryListener.initialize();
     expect(TelemetryReporter.prototype.dispose).to.have.been.calledTwice;
   });
 
   it('should reinitialize reporter when extension setting changes', async () => {
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
 
     expect(TelemetryReporter.prototype.dispose).not.to.have.been.called;
+    expect(telemetryListener._reporter).not.to.be.undefined;
 
     // this disables the reporter
     await enableTelemetry('codeQL.telemetry', false);
 
-    expect(ctx.subscriptions[0]).not.to.be.instanceOf(TelemetryReporter); // workspace config listener
-    expect(ctx.subscriptions[1]).to.be.instanceOf(TelemetryReporter);
-    expect(ctx.subscriptions.length).to.eq(2);
+    expect(telemetryListener._reporter).to.be.undefined;
+
     expect(TelemetryReporter.prototype.dispose).to.have.been.calledOnce;
 
-    // creates a new reporter
+    // creates a new reporter, but does not dispose again
     await enableTelemetry('codeQL.telemetry', true);
 
-    expect(ctx.subscriptions[2]).to.be.instanceOf(TelemetryReporter);
-    expect(ctx.subscriptions.length).to.eq(3);
+    expect(telemetryListener._reporter).not.to.be.undefined;
+    expect(TelemetryReporter.prototype.dispose).to.have.been.calledOnce;
   });
 
-
   it('should set userOprIn to false when global setting changes', async () => {
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
 
-    const reporter: any = ctx.subscriptions[1];
+    const reporter: any = telemetryListener._reporter;
     expect(reporter.userOptIn).to.eq(true); // enabled
 
     await enableTelemetry('telemetry', false);
@@ -160,9 +156,9 @@ describe('telemetry reporting', function() {
   });
 
   it('should send an event', async () => {
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
 
-    sendCommandUsage('command-id', 1234, undefined);
+    telemetryListener.sendCommandUsage('command-id', 1234, undefined);
 
     expect(TelemetryReporter.prototype.sendTelemetryEvent).to.have.been.calledOnceWith('command-usage',
       {
@@ -176,10 +172,10 @@ describe('telemetry reporting', function() {
   });
 
   it('should send a command usage event with a error', async () => {
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
     const err = new Error('my-error');
 
-    sendCommandUsage('command-id', 1234, err);
+    telemetryListener.sendCommandUsage('command-id', 1234, err);
 
     expect(TelemetryReporter.prototype.sendTelemetryEvent).to.have.been.calledOnceWith('command-usage',
       {
@@ -204,9 +200,9 @@ describe('telemetry reporting', function() {
   });
 
   it('should send a command usage event with an error', async () => {
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
 
-    sendCommandUsage('command-id', 1234, new UserCancellationException());
+    telemetryListener.sendCommandUsage('command-id', 1234, new UserCancellationException());
 
     expect(TelemetryReporter.prototype.sendTelemetryEvent).to.have.been.calledOnceWith('command-usage',
       {
@@ -220,22 +216,22 @@ describe('telemetry reporting', function() {
   });
 
   it('should avoid sending an event when telemetry is disabled', async () => {
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
     await enableTelemetry('codeQL.telemetry', false);
 
-    sendCommandUsage('command-id', 1234, undefined);
-    sendCommandUsage('command-id', 1234, new Error());
+    telemetryListener.sendCommandUsage('command-id', 1234, undefined);
+    telemetryListener.sendCommandUsage('command-id', 1234, new Error());
 
     expect(TelemetryReporter.prototype.sendTelemetryEvent).not.to.have.been.called;
     expect(TelemetryReporter.prototype.sendTelemetryException).not.to.have.been.called;
   });
 
   it('should send an event when telemetry is re-enabled', async () => {
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
     await enableTelemetry('codeQL.telemetry', false);
     await enableTelemetry('codeQL.telemetry', true);
 
-    sendCommandUsage('command-id', 1234, undefined);
+    telemetryListener.sendCommandUsage('command-id', 1234, undefined);
 
     expect(TelemetryReporter.prototype.sendTelemetryEvent).to.have.been.calledOnceWith('command-usage',
       {
@@ -247,10 +243,10 @@ describe('telemetry reporting', function() {
   });
 
   it('should filter undesired properties from telemetry payload', async () => {
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
     // Reach into the internal appInsights client to grab our telemetry processor.
     const telemetryProcessor: Function =
-      ((ctx.subscriptions[1] as any).appInsightsClient._telemetryProcessors)[0];
+      ((telemetryListener._reporter as any).appInsightsClient._telemetryProcessors)[0];
     const envelop = {
       tags: {
         'ai.cloud.roleInstance': true,
@@ -286,7 +282,7 @@ describe('telemetry reporting', function() {
     await ctx.globalState.update('telemetry-request-viewed', false);
     await enableTelemetry('codeQL.telemetry', false);
 
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
 
     // Dialog opened, user clicks "yes" and telemetry enabled
     expect(window.showInformationMessage).to.have.been.calledOnce;
@@ -299,7 +295,7 @@ describe('telemetry reporting', function() {
     await ctx.globalState.update('telemetry-request-viewed', false);
     await enableTelemetry('codeQL.telemetry', true);
 
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
 
     // Dialog opened, user clicks "no" and telemetry disabled
     expect(window.showInformationMessage).to.have.been.calledOnce;
@@ -307,14 +303,14 @@ describe('telemetry reporting', function() {
     expect(ctx.globalState.get('telemetry-request-viewed')).to.be.true;
   });
 
-  it('should unchange telemetry if permission dialog is cancelled', async () => {
+  it('should unchange telemetry if permission dialog is dismissed', async () => {
     sandbox.stub(window, 'showInformationMessage').resolves(undefined /* cancelled */);
     await ctx.globalState.update('telemetry-request-viewed', false);
+
+    // this causes requestTelemetryPermission to be called
     await enableTelemetry('codeQL.telemetry', false);
 
-    await initializeTelemetry(ext, ctx);
-
-    // Dialog opened, user clicks "no" and telemetry disabled
+    // Dialog opened, and user closes without interacting with it
     expect(window.showInformationMessage).to.have.been.calledOnce;
     expect(ENABLE_TELEMETRY.getValue()).to.eq(false);
     // dialog was canceled, so should not have marked as viewed
@@ -322,15 +318,18 @@ describe('telemetry reporting', function() {
   });
 
   it('should unchange telemetry if permission dialog is cancelled if starting as true', async () => {
+    await enableTelemetry('codeQL.telemetry', false);
+
     // as before, except start with telemetry enabled. It should _stay_ enabled if the
     // dialog is canceled.
     sandbox.stub(window, 'showInformationMessage').resolves(undefined /* cancelled */);
     await ctx.globalState.update('telemetry-request-viewed', false);
+
+    // this causes requestTelemetryPermission to be called
     await enableTelemetry('codeQL.telemetry', true);
 
-    await initializeTelemetry(ext, ctx);
-
-    // Dialog opened, user clicks "no" and telemetry disabled
+    // Dialog opened, and user closes without interacting with it
+    // Telemetry state should not have changed
     expect(window.showInformationMessage).to.have.been.calledOnce;
     expect(ENABLE_TELEMETRY.getValue()).to.eq(true);
     // dialog was canceled, so should not have marked as viewed
@@ -348,7 +347,7 @@ describe('telemetry reporting', function() {
     await ctx.globalState.update('telemetry-request-viewed', false);
     sandbox.stub(window, 'showInformationMessage');
 
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
 
     // popup should not be shown even though we have initialized telemetry
     expect(window.showInformationMessage).not.to.have.been.called;
@@ -364,7 +363,7 @@ describe('telemetry reporting', function() {
     await workspace.getConfiguration().update('codeQL.canary', false);
     await enableTelemetry('codeQL.telemetry', false);
     await ctx.globalState.update('telemetry-request-viewed', true);
-    await initializeTelemetry(ext, ctx);
+    await telemetryListener.initialize();
     sandbox.stub(window, 'showInformationMessage').resolves(undefined /* cancelled */);
 
     // set canary to true
@@ -377,7 +376,6 @@ describe('telemetry reporting', function() {
 
   function createMockExtensionContext(): ExtensionContext {
     return {
-      subscriptions: [] as any[],
       globalState: {
         _state: {
           'telemetry-request-viewed': true
@@ -392,15 +390,6 @@ describe('telemetry reporting', function() {
     } as any;
   }
 
-  function createMockExtension(): Extension<any> {
-    return {
-      id: 'my-id',
-      packageJSON: {
-        version: '1.2.3'
-      }
-    } as any;
-  }
-
   async function enableTelemetry(section: string, value: boolean | undefined) {
     await workspace.getConfiguration(section).update(
       'enableTelemetry', value, ConfigurationTarget.Global
@@ -409,7 +398,7 @@ describe('telemetry reporting', function() {
     // Need to wait some time since the onDidChangeConfiguration listeners fire
     // asynchronously and we sometimes need to wait for them to complete in
     // order to have as successful test.
-    await wait(5);
+    await wait(50);
   }
 
   async function wait(ms = 0) {
