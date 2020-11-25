@@ -19,7 +19,6 @@ describe('telemetry reporting', function() {
   // setting preferences can trigger lots of background activity
   // so need to bump up the timeout of this test.
   this.timeout(10000);
-  this.timeout(1000000000);
 
   let originalTelemetryExtension: boolean | undefined;
   let originalTelemetryGlobal: boolean | undefined;
@@ -169,34 +168,6 @@ describe('telemetry reporting', function() {
       { executionTime: 1234 });
 
     expect(TelemetryReporter.prototype.sendTelemetryException).not.to.have.been.called;
-  });
-
-  it('should send a command usage event with a error', async () => {
-    await telemetryListener.initialize();
-    const err = new Error('my-error');
-
-    telemetryListener.sendCommandUsage('command-id', 1234, err);
-
-    expect(TelemetryReporter.prototype.sendTelemetryEvent).to.have.been.calledOnceWith('command-usage',
-      {
-        name: 'command-id',
-        status: 'Failed',
-        isCanary
-      },
-      { executionTime: 1234 });
-
-    expect(TelemetryReporter.prototype.sendTelemetryException).to.have.been.calledOnceWith({
-      name: err.name,
-      message: '<MESSAGE REDACTED>',
-      stack: err.stack
-    },
-      {
-        name: 'command-id',
-        status: 'Failed',
-        type: 'command-usage',
-        isCanary
-      },
-      { executionTime: 1234 });
   });
 
   it('should send a command usage event with an error', async () => {

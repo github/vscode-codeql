@@ -130,25 +130,6 @@ export class TelemetryListener extends ConfigListener {
       },
       { executionTime }
     );
-
-    // if this is a true error, also report it
-    if (status === CommandCompletion.Failed && error) {
-      const redactedError = {
-        name: error.name,
-        stack: error.stack,
-        message: '<MESSAGE REDACTED>'
-      };
-      this.reporter.sendTelemetryException(
-        redactedError,
-        {
-          type: 'command-usage',
-          name,
-          status,
-          isCanary
-        },
-        { executionTime }
-      );
-    }
   }
 
   /**
