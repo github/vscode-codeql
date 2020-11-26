@@ -684,7 +684,7 @@ export class DatabaseManager extends DisposableObject {
 
     // Delete folder from workspace, if it is still there
     const folderIndex = (vscode.workspace.workspaceFolders || []).findIndex(folder => item.belongsToSourceArchiveExplorerUri(folder.uri));
-    if (index >= 0) {
+    if (folderIndex >= 0) {
       logger.log(`Removing workspace folder at index ${folderIndex}`);
       vscode.workspace.updateWorkspaceFolders(folderIndex, 1);
     }
