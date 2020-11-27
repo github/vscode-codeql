@@ -104,6 +104,10 @@ export class QueryServerClient extends DisposableObject {
   private async startQueryServerImpl(progressReporter: ProgressReporter): Promise<void> {
     const ramArgs = await this.cliServer.resolveRam(this.config.queryMemoryMb, progressReporter);
     const args = ['--threads', this.config.numThreads.toString()].concat(ramArgs);
+
+    // TODO: This should only be added after an appropriate version check
+    args.push('--require-db-registration');
+
     if (this.config.debug) {
       args.push('--debug', '--tuple-counting');
     }

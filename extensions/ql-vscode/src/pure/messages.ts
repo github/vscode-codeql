@@ -837,7 +837,6 @@ export interface RunUpgradeParams {
   toRun: CompiledUpgrades;
 }
 
-
 /**
  * The result of running an upgrade
  */
@@ -857,6 +856,21 @@ export interface RunUpgradeResult {
   finalSha: string;
 }
 
+export interface RegisterDatabaseParams {
+  databases: Dataset[];
+}
+
+export interface DeregisterDatabaseParams {
+  databases: Dataset[];
+}
+
+export type RegisterDatabaseResult = {
+  registeredDatabases: Dataset[];
+};
+
+export type DeregisterDatabaseResult = {
+  registeredDatabases: Dataset[];
+};
 
 /**
  * Type for any action that could have progress messages.
@@ -933,6 +947,20 @@ export const runQueries = new rpc.RequestType<WithProgressId<EvaluateQueriesPara
  * Run upgrades on a dataset
  */
 export const runUpgrade = new rpc.RequestType<WithProgressId<RunUpgradeParams>, RunUpgradeResult, void, void>('evaluation/runUpgrade');
+
+export const registerDatabases = new rpc.RequestType<
+  WithProgressId<RegisterDatabaseParams>,
+  RegisterDatabaseResult,
+  void,
+  void
+>('evaluation/registerDatabases');
+
+export const deregisterDatabases = new rpc.RequestType<
+  WithProgressId<DeregisterDatabaseParams>,
+  DeregisterDatabaseResult,
+  void,
+  void
+>('evaluation/deregisterDatabases');
 
 /**
  * Request returned to the client to notify completion of a query.

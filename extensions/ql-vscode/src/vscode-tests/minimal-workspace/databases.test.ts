@@ -5,7 +5,7 @@ import * as tmp from 'tmp';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { expect } from 'chai';
-import { ExtensionContext, Uri, workspace } from 'vscode';
+import { CancellationToken, ExtensionContext, Uri, workspace } from 'vscode';
 
 import {
   DatabaseEventKind,
@@ -15,9 +15,11 @@ import {
   isLikelyDbLanguageFolder,
   FullDatabaseOptions
 } from '../../databases';
-import { QueryServerConfig } from '../../config';
 import { Logger } from '../../logging';
 import { encodeArchiveBasePath, encodeSourceArchiveUri } from '../../archive-filesystem-provider';
+import { QueryServerClient } from '../../queryserver-client';
+import { ProgressCallback } from '../../helpers';
+import { registerDatabases } from '../../pure/messages';
 
 describe('databases', () => {
 
@@ -30,6 +32,7 @@ describe('databases', () => {
   let updateSpy: sinon.SinonSpy;
   let getSpy: sinon.SinonStub;
   let dbChangedHandler: sinon.SinonSpy;
+  let sendRequestSpy: sinon.SinonSpy;
 
   let sandbox: sinon.SinonSandbox;
   let dir: tmp.DirResult;
@@ -42,6 +45,8 @@ describe('databases', () => {
     sandbox = sinon.createSandbox();
     updateSpy = sandbox.spy();
     getSpy = sandbox.stub();
+    getSpy.returns([]);
+    sendRequestSpy = sandbox.stub();
     dbChangedHandler = sandbox.spy();
     databaseManager = new DatabaseManager(
       {
@@ -53,7 +58,9 @@ describe('databases', () => {
         // so that they are deleted upon removal
         storagePath: dir.name
       } as unknown as ExtensionContext,
-      {} as QueryServerConfig,
+      {
+        sendRequest: sendRequestSpy
+      } as unknown as QueryServerClient,
       {} as Logger,
     );
 
@@ -69,11 +76,15 @@ describe('databases', () => {
     sandbox.restore();
   });
 
-  it('should fire events when adding and removing a db item', () => {
+  it('should fire events when adding and removing a db item', async () => {
     const mockDbItem = createMockDB();
     const spy = sinon.spy();
     databaseManager.onDidChangeDatabaseItem(spy);
-    (databaseManager as any).addDatabaseItem(mockDbItem);
+    await (databaseManager as any).addDatabaseItem(
+      {} as ProgressCallback,
+      {} as CancellationToken,
+      mockDbItem
+    );
 
     expect((databaseManager as any)._databaseItems).to.deep.eq([mockDbItem]);
     expect(updateSpy).to.have.been.calledWith('databaseList', [{
@@ -88,7 +99,11 @@ describe('databases', () => {
     sinon.reset();
 
     // now remove the item
-    databaseManager.removeDatabaseItem(mockDbItem);
+    await databaseManager.removeDatabaseItem(
+      {} as ProgressCallback,
+      {} as CancellationToken,
+      mockDbItem,
+    );
     expect((databaseManager as any)._databaseItems).to.deep.eq([]);
     expect(updateSpy).to.have.been.calledWith('databaseList', []);
     expect(spy).to.have.been.calledWith({
@@ -97,14 +112,19 @@ describe('databases', () => {
     });
   });
 
-  it('should rename a db item and emit an event', () => {
+  it('should rename a db item and emit an event', async () => {
     const mockDbItem = createMockDB();
     const spy = sinon.spy();
     databaseManager.onDidChangeDatabaseItem(spy);
-    (databaseManager as any).addDatabaseItem(mockDbItem);
+    await (databaseManager as any).addDatabaseItem(
+      {} as ProgressCallback,
+      {} as CancellationToken,
+      mockDbItem
+    );
+
     sinon.restore();
 
-    databaseManager.renameDatabaseItem(mockDbItem, 'new name');
+    await databaseManager.renameDatabaseItem(mockDbItem, 'new name');
 
     expect(mockDbItem.name).to.eq('new name');
     expect(updateSpy).to.have.been.calledWith('databaseList', [{
@@ -124,7 +144,11 @@ describe('databases', () => {
       databaseManager.onDidChangeDatabaseItem(spy);
       const mockDbItem = createMockDB();
 
-      await (databaseManager as any).addDatabaseItem(mockDbItem);
+      await (databaseManager as any).addDatabaseItem(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem
+      );
 
       expect(databaseManager.databaseItems).to.deep.eq([mockDbItem]);
       expect(updateSpy).to.have.been.calledWith('databaseList', [{
@@ -161,10 +185,19 @@ describe('databases', () => {
       // pretend that this item is the first workspace folder in the list
       sandbox.stub(mockDbItem, 'belongsToSourceArchiveExplorerUri').returns(true);
 
-      await (databaseManager as any).addDatabaseItem(mockDbItem);
+      await (databaseManager as any).addDatabaseItem(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem
+      );
+
       updateSpy.resetHistory();
 
-      await databaseManager.removeDatabaseItem(mockDbItem);
+      await databaseManager.removeDatabaseItem(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem
+      );
 
       expect(databaseManager.databaseItems).to.deep.eq([]);
       expect(updateSpy).to.have.been.calledWith('databaseList', []);
@@ -182,13 +215,21 @@ describe('databases', () => {
       // pretend that this item is the first workspace folder in the list
       sandbox.stub(mockDbItem, 'belongsToSourceArchiveExplorerUri').returns(true);
 
-      await (databaseManager as any).addDatabaseItem(mockDbItem);
+      await (databaseManager as any).addDatabaseItem(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem
+      );
       updateSpy.resetHistory();
 
       // pretend that the database location is not controlled by the extension
       (databaseManager as any).ctx.storagePath = 'hucairz';
 
-      await databaseManager.removeDatabaseItem(mockDbItem);
+      await databaseManager.removeDatabaseItem(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem
+      );
 
       expect(databaseManager.databaseItems).to.deep.eq([]);
       expect(updateSpy).to.have.been.calledWith('databaseList', []);
@@ -197,6 +238,37 @@ describe('databases', () => {
 
       // should NOT delete the db contents
       expect(fs.remove).not.to.have.been.called;
+    });
+
+    it('should register and deregister a database when adding and removing it', async () => {
+      // similar test as above, but also check the call to sendRequestSpy to make sure they send the
+      // registration messages.
+      const mockDbItem = createMockDB();
+      const registration = {
+        databases: [{
+          dbDir: mockDbItem.contents!.datasetUri.fsPath,
+          workingSet: 'default'
+        }]
+      };
+
+      sandbox.stub(fs, 'remove').resolves();
+
+      await (databaseManager as any).addDatabaseItem(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem
+      );
+      // Should have registered this database
+      expect(sendRequestSpy).to.have.been.calledWith(registerDatabases, registration, {}, {});
+
+      await databaseManager.removeDatabaseItem(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem
+      );
+
+      // Should have deregistered this database
+      expect(sendRequestSpy).to.have.been.calledWith(registerDatabases, registration, {}, {});
     });
   });
 
@@ -292,7 +364,8 @@ describe('databases', () => {
     return new DatabaseItemImpl(
       databaseUri,
       {
-        sourceArchiveUri
+        sourceArchiveUri,
+        datasetUri: databaseUri
       } as DatabaseContents,
       MOCK_DB_OPTIONS,
       dbChangedHandler
