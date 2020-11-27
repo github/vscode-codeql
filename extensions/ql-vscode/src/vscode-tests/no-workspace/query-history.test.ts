@@ -19,28 +19,26 @@ describe('query-history', () => {
   let showQuickPickSpy: sinon.SinonStub;
 
   let tryOpenExternalFile: Function;
+  let sandbox: sinon.SinonSandbox;
 
   beforeEach(() => {
-    showTextDocumentSpy = sinon.stub(vscode.window, 'showTextDocument');
-    showInformationMessageSpy = sinon.stub(
+    sandbox = sinon.createSandbox();
+    showTextDocumentSpy = sandbox.stub(vscode.window, 'showTextDocument');
+    showInformationMessageSpy = sandbox.stub(
       vscode.window,
       'showInformationMessage'
     );
-    showQuickPickSpy = sinon.stub(
+    showQuickPickSpy = sandbox.stub(
       vscode.window,
       'showQuickPick'
     );
-    executeCommandSpy = sinon.stub(vscode.commands, 'executeCommand');
-    sinon.stub(logger, 'log');
+    executeCommandSpy = sandbox.stub(vscode.commands, 'executeCommand');
+    sandbox.stub(logger, 'log');
     tryOpenExternalFile = (QueryHistoryManager.prototype as any).tryOpenExternalFile;
   });
 
   afterEach(() => {
-    (vscode.window.showTextDocument as sinon.SinonStub).restore();
-    (vscode.commands.executeCommand as sinon.SinonStub).restore();
-    (logger.log as sinon.SinonStub).restore();
-    (vscode.window.showInformationMessage as sinon.SinonStub).restore();
-    (vscode.window.showQuickPick as sinon.SinonStub).restore();
+    sandbox.restore();
   });
 
   describe('tryOpenExternalFile', () => {
