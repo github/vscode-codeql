@@ -27,7 +27,7 @@ export async function promptImportInternetDatabase(
   databasesManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
-  _: CancellationToken,
+  token: CancellationToken,
 ): Promise<DatabaseItem | undefined> {
   const databaseUrl = await window.showInputBox({
     prompt: 'Enter URL of zipfile of database to download',
@@ -42,7 +42,8 @@ export async function promptImportInternetDatabase(
     databaseUrl,
     databasesManager,
     storagePath,
-    progress
+    progress,
+    token
   );
 
   if (item) {
@@ -65,7 +66,7 @@ export async function promptImportLgtmDatabase(
   databasesManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
-  _: CancellationToken
+  token: CancellationToken
 ): Promise<DatabaseItem | undefined> {
   const lgtmUrl = await window.showInputBox({
     prompt:
@@ -82,7 +83,8 @@ export async function promptImportLgtmDatabase(
         databaseUrl,
         databasesManager,
         storagePath,
-        progress
+        progress,
+        token
       );
       if (item) {
         commands.executeCommand('codeQLDatabases.focus');
@@ -108,14 +110,15 @@ export async function importArchiveDatabase(
   databasesManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
-  _: CancellationToken,
+  token: CancellationToken,
 ): Promise<DatabaseItem | undefined> {
   try {
     const item = await databaseArchiveFetcher(
       databaseUrl,
       databasesManager,
       storagePath,
-      progress
+      progress,
+      token
     );
     if (item) {
       commands.executeCommand('codeQLDatabases.focus');
@@ -139,15 +142,17 @@ export async function importArchiveDatabase(
  * @param databaseUrl URL from which to grab the database
  * @param databasesManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
- * @param progressCallback optional callback to send progress messages to
+ * @param progress callback to send progress messages to
+ * @param token cancellation token
  */
 async function databaseArchiveFetcher(
   databaseUrl: string,
   databasesManager: DatabaseManager,
   storagePath: string,
-  progressCallback?: ProgressCallback
+  progress: ProgressCallback,
+  token: CancellationToken
 ): Promise<DatabaseItem> {
-  progressCallback?.({
+  progress({
     message: 'Getting database',
     step: 1,
     maxStep: 4,
@@ -161,10 +166,10 @@ async function databaseArchiveFetcher(
   if (isFile(databaseUrl)) {
     await readAndUnzip(databaseUrl, unzipPath);
   } else {
-    await fetchAndUnzip(databaseUrl, unzipPath, progressCallback);
+    await fetchAndUnzip(databaseUrl, unzipPath, progress);
   }
 
-  progressCallback?.({
+  progress({
     message: 'Opening database',
     step: 3,
     maxStep: 4,
@@ -177,14 +182,14 @@ async function databaseArchiveFetcher(
     'codeql-database.yml'
   );
   if (dbPath) {
-    progressCallback?.({
+    progress({
       message: 'Validating and fixing source location',
       step: 4,
       maxStep: 4,
     });
     await ensureZippedSourceLocation(dbPath);
 
-    const item = await databasesManager.openDatabase(Uri.file(dbPath));
+    const item = await databasesManager.openDatabase(progress, token, Uri.file(dbPath));
     databasesManager.setCurrentDatabaseItem(item);
     return item;
   } else {

@@ -4,11 +4,12 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as cli from './cli';
 import { ExtensionContext } from 'vscode';
-import { showAndLogErrorMessage, showAndLogWarningMessage, showAndLogInformationMessage } from './helpers';
+import { showAndLogErrorMessage, showAndLogWarningMessage, showAndLogInformationMessage, ProgressCallback, withProgress } from './helpers';
 import { zipArchiveScheme, encodeArchiveBasePath, decodeSourceArchiveUri, encodeSourceArchiveUri } from './archive-filesystem-provider';
 import { DisposableObject } from './vscode-utils/disposable-object';
-import { QueryServerConfig } from './config';
 import { Logger, logger } from './logging';
+import { registerDatabases, Dataset, deregisterDatabases } from './pure/messages';
+import { QueryServerClient } from './queryserver-client';
 
 /**
  * databases.ts
@@ -249,6 +250,11 @@ export interface DatabaseItem {
    * Holds if `uri` belongs to this database's source archive.
    */
   belongsToSourceArchiveExplorerUri(uri: vscode.Uri): boolean;
+
+  /**
+   * Gets the state of this database, to be persisted in the workspace state.
+   */
+  getPersistedState(): PersistedDatabaseItem;
 }
 
 export enum DatabaseEventKind {
@@ -479,13 +485,13 @@ export class DatabaseManager extends DisposableObject {
   private readonly _onDidChangeCurrentDatabaseItem = this.push(new vscode.EventEmitter<DatabaseChangedEvent>());
   readonly onDidChangeCurrentDatabaseItem = this._onDidChangeCurrentDatabaseItem.event;
 
-  private readonly _databaseItems: DatabaseItemImpl[] = [];
+  private readonly _databaseItems: DatabaseItem[] = [];
   private _currentDatabaseItem: DatabaseItem | undefined = undefined;
 
   constructor(
-    private ctx: ExtensionContext,
-    public config: QueryServerConfig,
-    public logger: Logger
+    private readonly ctx: ExtensionContext,
+    private readonly qs: QueryServerClient,
+    public readonly logger: Logger
   ) {
     super();
 
@@ -493,7 +499,10 @@ export class DatabaseManager extends DisposableObject {
   }
 
   public async openDatabase(
-    uri: vscode.Uri, options?: DatabaseOptions
+    progress: ProgressCallback,
+    token: vscode.CancellationToken,
+    uri: vscode.Uri,
+    options?: DatabaseOptions
   ): Promise<DatabaseItem> {
 
     const contents = await resolveDatabaseContents(uri);
@@ -509,7 +518,8 @@ export class DatabaseManager extends DisposableObject {
     const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions, (event) => {
       this._onDidChangeDatabaseItem.fire(event);
     });
-    await this.addDatabaseItem(databaseItem);
+
+    await this.addDatabaseItem(progress, token, databaseItem);
     await this.addDatabaseSourceArchiveFolder(databaseItem);
 
     return databaseItem;
@@ -555,6 +565,8 @@ export class DatabaseManager extends DisposableObject {
   }
 
   private async createDatabaseItemFromPersistedState(
+    progress: ProgressCallback,
+    token: vscode.CancellationToken,
     state: PersistedDatabaseItem
   ): Promise<DatabaseItem> {
 
@@ -581,33 +593,50 @@ export class DatabaseManager extends DisposableObject {
       (event) => {
         this._onDidChangeDatabaseItem.fire(event);
       });
-    await this.addDatabaseItem(item);
 
+    await this.addDatabaseItem(progress, token, item);
     return item;
   }
 
   private async loadPersistedState(): Promise<void> {
-    const currentDatabaseUri = this.ctx.workspaceState.get<string>(CURRENT_DB);
-    const databases = this.ctx.workspaceState.get<PersistedDatabaseItem[]>(DB_LIST, []);
-
-    try {
-      for (const database of databases) {
-        const databaseItem = await this.createDatabaseItemFromPersistedState(database);
+    return withProgress({
+      location: vscode.ProgressLocation.Notification
+    },
+      async (progress, token) => {
+        const currentDatabaseUri = this.ctx.workspaceState.get<string>(CURRENT_DB);
+        const databases = this.ctx.workspaceState.get<PersistedDatabaseItem[]>(DB_LIST, []);
+        let step = 0;
+        progress({
+          maxStep: databases.length,
+          message: 'Loading persisted databases',
+          step
+        });
         try {
-          await databaseItem.refresh();
-          if (currentDatabaseUri === database.uri) {
-            this.setCurrentDatabaseItem(databaseItem, true);
+          for (const database of databases) {
+            progress({
+              maxStep: databases.length,
+              message: `Loading ${database.options?.displayName || 'databases'}`,
+              step: ++step
+            });
+
+            const databaseItem = await this.createDatabaseItemFromPersistedState(progress, token, database);
+            try {
+              await databaseItem.refresh();
+              await this.registerDatabases(progress, token, databaseItem);
+              if (currentDatabaseUri === database.uri) {
+                this.setCurrentDatabaseItem(databaseItem, true);
+              }
+            }
+            catch (e) {
+              // When loading from persisted state, leave invalid databases in the list. They will be
+              // marked as invalid, and cannot be set as the current database.
+            }
           }
+        } catch (e) {
+          // database list had an unexpected type - nothing to be done?
+          showAndLogErrorMessage(`Database list loading failed: ${e.message}`);
         }
-        catch (e) {
-          // When loading from persisted state, leave invalid databases in the list. They will be
-          // marked as invalid, and cannot be set as the current database.
-        }
-      }
-    } catch (e) {
-      // database list had an unexpected type - nothing to be done?
-      showAndLogErrorMessage(`Database list loading failed: ${e.message}`);
-    }
+      });
   }
 
   public get databaseItems(): readonly DatabaseItem[] {
@@ -618,8 +647,10 @@ export class DatabaseManager extends DisposableObject {
     return this._currentDatabaseItem;
   }
 
-  public async setCurrentDatabaseItem(item: DatabaseItem | undefined,
-    skipRefresh = false): Promise<void> {
+  public async setCurrentDatabaseItem(
+    item: DatabaseItem | undefined,
+    skipRefresh = false
+  ): Promise<void> {
 
     if (!skipRefresh && (item !== undefined)) {
       await item.refresh();  // Will throw on invalid database.
@@ -627,6 +658,7 @@ export class DatabaseManager extends DisposableObject {
     if (this._currentDatabaseItem !== item) {
       this._currentDatabaseItem = item;
       this.updatePersistedCurrentDatabaseItem();
+
       this._onDidChangeCurrentDatabaseItem.fire({
         item,
         kind: DatabaseEventKind.Change
@@ -653,9 +685,20 @@ export class DatabaseManager extends DisposableObject {
     return this._databaseItems.find(item => item.sourceArchive && item.sourceArchive.toString(true) === uriString);
   }
 
-  private async addDatabaseItem(item: DatabaseItemImpl) {
+  private async addDatabaseItem(
+    progress: ProgressCallback,
+    token: vscode.CancellationToken,
+    item: DatabaseItem
+  ) {
     this._databaseItems.push(item);
     this.updatePersistedDatabaseList();
+
+    // Add this database item to the allow-list
+    // Database items reconstituted from persisted state
+    // will not have their contents yet.
+    if (item.contents?.datasetUri) {
+      await this.registerDatabases(progress, token, item);
+    }
     // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
       item: undefined,
@@ -673,7 +716,11 @@ export class DatabaseManager extends DisposableObject {
     });
   }
 
-  public removeDatabaseItem(item: DatabaseItem) {
+  public async removeDatabaseItem(
+    progress: ProgressCallback,
+    token: vscode.CancellationToken,
+    item: DatabaseItem
+  ) {
     if (this._currentDatabaseItem == item) {
       this._currentDatabaseItem = undefined;
     }
@@ -700,11 +747,42 @@ export class DatabaseManager extends DisposableObject {
         e => logger.log(`Failed to delete '${item.databaseUri.fsPath}'. Reason: ${e.message}`));
     }
 
+    // Remove this database item from the allow-list
+    await this.deregisterDatabases(progress, token, item);
+
     // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
       item: undefined,
       kind: DatabaseEventKind.Remove
     });
+  }
+
+  private async deregisterDatabases(
+    progress: ProgressCallback,
+    token: vscode.CancellationToken,
+    dbItem: DatabaseItem,
+  ) {
+    if (dbItem.contents) {
+      const databases: Dataset[] = [{
+        dbDir: dbItem.contents.datasetUri.fsPath,
+        workingSet: 'default'
+      }];
+      await this.qs.sendRequest(deregisterDatabases, { databases }, token, progress);
+    }
+  }
+
+  private async registerDatabases(
+    progress: ProgressCallback,
+    token: vscode.CancellationToken,
+    dbItem: DatabaseItem,
+  ) {
+    if (dbItem.contents) {
+      const databases: Dataset[] = [{
+        dbDir: dbItem.contents.datasetUri.fsPath,
+        workingSet: 'default'
+      }];
+      await this.qs.sendRequest(registerDatabases, { databases }, token, progress);
+    }
   }
 
   private updatePersistedCurrentDatabaseItem(): void {

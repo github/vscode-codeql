@@ -318,9 +318,13 @@ export class DatabaseUI extends DisposableObject {
       )
     );
     this.push(
-      commandRunner(
+      commandRunnerWithProgress(
         'codeQLDatabases.removeDatabase',
-        this.handleRemoveDatabase
+        this.handleRemoveDatabase,
+        {
+          title: 'Removing database',
+          cancellable: false
+        }
       )
     );
     this.push(
@@ -580,7 +584,7 @@ export class DatabaseUI extends DisposableObject {
           token
         );
       } else {
-        await this.setCurrentDatabase(uri);
+        await this.setCurrentDatabase(progress, token, uri);
       }
     } catch (e) {
       // rethrow and let this be handled by default error handling.
@@ -593,15 +597,17 @@ export class DatabaseUI extends DisposableObject {
   };
 
   private handleRemoveDatabase = async (
+    progress: ProgressCallback,
+    token: CancellationToken,
     databaseItem: DatabaseItem,
     multiSelect: DatabaseItem[] | undefined
   ): Promise<void> => {
     if (multiSelect?.length) {
-      multiSelect.forEach((dbItem) =>
-        this.databaseManager.removeDatabaseItem(dbItem)
-      );
+      Promise.all(multiSelect.map((dbItem) =>
+        this.databaseManager.removeDatabaseItem(progress, token, dbItem)
+      ));
     } else {
-      this.databaseManager.removeDatabaseItem(databaseItem);
+      await this.databaseManager.removeDatabaseItem(progress, token, databaseItem);
     }
   };
 
@@ -651,11 +657,13 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private async setCurrentDatabase(
+    progress: ProgressCallback,
+    token: CancellationToken,
     uri: Uri
   ): Promise<DatabaseItem | undefined> {
     let databaseItem = this.databaseManager.findDatabaseItem(uri);
     if (databaseItem === undefined) {
-      databaseItem = await this.databaseManager.openDatabase(uri);
+      databaseItem = await this.databaseManager.openDatabase(progress, token, uri);
     }
     await this.databaseManager.setCurrentDatabaseItem(databaseItem);
 
@@ -680,7 +688,7 @@ export class DatabaseUI extends DisposableObject {
     if (byFolder) {
       const fixedUri = await this.fixDbUri(uri);
       // we are selecting a database folder
-      return await this.setCurrentDatabase(fixedUri);
+      return await this.setCurrentDatabase(progress, token, fixedUri);
     } else {
       // we are selecting a database archive. Must unzip into a workspace-controlled area
       // before importing.
