@@ -138,6 +138,7 @@ export class QueryInfo {
           localChecking: false,
           noComputeGetUrl: false,
           noComputeToString: false,
+          computeDefaultStrings: true
         },
         extraOptions: {
           timeoutSecs: qs.config.timeoutSecs

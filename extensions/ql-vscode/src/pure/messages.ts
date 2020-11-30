@@ -150,6 +150,11 @@ export interface CompilationOptions {
    * Whether to disable toString values in the results.
    */
   noComputeToString: boolean;
+  /**
+   * Whether to ensure that elements that do not have a displayString
+   * get reported anyway. Useful for universal compilation options.
+   */
+  computeDefaultStrings: boolean;
 }
 
 /**

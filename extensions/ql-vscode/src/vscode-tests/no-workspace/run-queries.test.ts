@@ -52,6 +52,7 @@ describe('run-queries', () => {
             localChecking: false,
             noComputeGetUrl: false,
             noComputeToString: false,
+            computeDefaultStrings: true
           },
           extraOptions: {
             timeoutSecs: 5
