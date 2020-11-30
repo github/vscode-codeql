@@ -168,6 +168,7 @@ describe('using the query server', function() {
             localChecking: false,
             noComputeGetUrl: false,
             noComputeToString: false,
+            computeDefaultStrings: true
           },
           queryToCheck: qlProgram,
           resultPath: COMPILED_QUERY_PATH,
