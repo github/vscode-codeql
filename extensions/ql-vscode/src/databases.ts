@@ -38,7 +38,7 @@ export interface DatabaseOptions {
   dateAdded?: number | undefined;
 }
 
-interface FullDatabaseOptions extends DatabaseOptions {
+export interface FullDatabaseOptions extends DatabaseOptions {
   ignoreSourceArchive: boolean;
   dateAdded: number | undefined;
 }
@@ -674,8 +674,9 @@ export class DatabaseManager extends DisposableObject {
   }
 
   public removeDatabaseItem(item: DatabaseItem) {
-    if (this._currentDatabaseItem == item)
+    if (this._currentDatabaseItem == item) {
       this._currentDatabaseItem = undefined;
+    }
     const index = this.databaseItems.findIndex(searchItem => searchItem === item);
     if (index >= 0) {
       this._databaseItems.splice(index, 1);
@@ -683,8 +684,10 @@ export class DatabaseManager extends DisposableObject {
     this.updatePersistedDatabaseList();
 
     // Delete folder from workspace, if it is still there
-    const folderIndex = (vscode.workspace.workspaceFolders || []).findIndex(folder => item.belongsToSourceArchiveExplorerUri(folder.uri));
-    if (index >= 0) {
+    const folderIndex = (vscode.workspace.workspaceFolders || []).findIndex(
+      folder => item.belongsToSourceArchiveExplorerUri(folder.uri)
+    );
+    if (folderIndex >= 0) {
       logger.log(`Removing workspace folder at index ${folderIndex}`);
       vscode.workspace.updateWorkspaceFolders(folderIndex, 1);
     }
@@ -692,9 +695,9 @@ export class DatabaseManager extends DisposableObject {
     // Delete folder from file system only if it is controlled by the extension
     if (this.isExtensionControlledLocation(item.databaseUri)) {
       logger.log('Deleting database from filesystem.');
-      fs.remove(item.databaseUri.path).then(
-        () => logger.log(`Deleted '${item.databaseUri.path}'`),
-        e => logger.log(`Failed to delete '${item.databaseUri.path}'. Reason: ${e.message}`));
+      fs.remove(item.databaseUri.fsPath).then(
+        () => logger.log(`Deleted '${item.databaseUri.fsPath}'`),
+        e => logger.log(`Failed to delete '${item.databaseUri.fsPath}'. Reason: ${e.message}`));
     }
 
     // note that we use undefined as the item in order to reset the entire tree
@@ -715,7 +718,13 @@ export class DatabaseManager extends DisposableObject {
 
   private isExtensionControlledLocation(uri: vscode.Uri) {
     const storagePath = this.ctx.storagePath || this.ctx.globalStoragePath;
-    return uri.path.startsWith(storagePath);
+    // the uri.fsPath function on windows returns a lowercase drive letter,
+    // but storagePath will have an uppercase drive letter. Be sure to compare
+    // URIs to URIs only
+    if (storagePath) {
+      return uri.fsPath.startsWith(vscode.Uri.file(storagePath).fsPath);
+    }
+    return false;
   }
 }
 

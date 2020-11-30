@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix bug when removing databases where sometimes the source folder would not be removed from the workspace or the database files would not be removed from the workspace storage location. [#692](https://github.com/github/vscode-codeql/pull/692)
+
 ## 1.3.7 - 24 November 2020
 
 - Editors opened by navigating from the results view are no longer opened in _preview mode_. Now they are opened as a persistent editor. [#630](https://github.com/github/vscode-codeql/pull/630)
