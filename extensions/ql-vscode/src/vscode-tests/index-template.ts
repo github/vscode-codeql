@@ -47,28 +47,42 @@ export async function runTestsInDirectory(testsRoot: string, useCli = false): Pr
 
   await ensureCli(useCli);
 
-  return new Promise((c, e) => {
-    console.log(`Adding test cases from ${testsRoot}`);
-    glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
+  return new Promise((resolve, reject) => {
+    console.log(`Adding test cases and helpers from ${testsRoot}`);
+    glob('**/**.js', { cwd: testsRoot }, (err, files) => {
       if (err) {
-        return e(err);
+        return reject(err);
       }
 
-
-      // Add files to the test suite
-      files.forEach(f => mocha.addFile(path.resolve(testsRoot, f)));
-
       try {
+        // Add test files to the test suite
+        files
+          .filter(f => f.endsWith('.test.js'))
+          .forEach(f => {
+            console.log(`Adding test file ${f}`);
+            mocha.addFile(path.resolve(testsRoot, f));
+          });
+
+        // Add helpers. Helper files add global setup and teardown blocks
+        // for a test run.
+        files
+          .filter(f => f.endsWith('.helper.js'))
+          .forEach(f => {
+            console.log(`Executing helper ${f}`);
+            const helper = require(path.resolve(testsRoot, f)).default;
+            helper(mocha);
+          });
+
         // Run the mocha test
         mocha.run(failures => {
           if (failures > 0) {
-            e(new Error(`${failures} tests failed.`));
+            reject(new Error(`${failures} tests failed.`));
           } else {
-            c();
+            resolve();
           }
         });
       } catch (err) {
-        e(err);
+        reject(err);
       }
     });
   });

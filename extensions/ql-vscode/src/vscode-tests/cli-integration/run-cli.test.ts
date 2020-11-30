@@ -1,8 +1,5 @@
-import 'mocha';
-import 'sinon-chai';
-
 import { expect } from 'chai';
-import { ConfigurationTarget, workspace, extensions } from 'vscode';
+import { extensions } from 'vscode';
 import { SemVer } from 'semver';
 
 import { CodeQLCliServer } from '../../cli';
@@ -18,8 +15,6 @@ describe('Use cli', function() {
   let cli: CodeQLCliServer;
 
   beforeEach(async () => {
-    // Set it here before activation to ensure we don't accidentally try to download a cli
-    await workspace.getConfiguration().update('codeQL.cli.executablePath', process.env.CLI_PATH, ConfigurationTarget.Global);
     const extension = await extensions.getExtension<CodeQLExtensionInterface | {}>('GitHub.vscode-codeql')!.activate();
     if ('cliServer' in extension) {
       cli = extension.cliServer;

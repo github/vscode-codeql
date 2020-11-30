@@ -6,5 +6,5 @@ import { compileView } from './webpack';
 import { packageExtension } from './package';
 
 export const buildWithoutPackage = gulp.parallel(compileTypeScript, compileTextMateGrammar, compileView, copyTestData, copyViewCss);
-export { compileTextMateGrammar, watchTypeScript, compileTypeScript };
+export { compileTextMateGrammar, watchTypeScript, compileTypeScript, copyTestData };
 exports.default = gulp.series(exports.buildWithoutPackage, packageExtension);
