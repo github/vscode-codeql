@@ -33,6 +33,7 @@ describe('databases', () => {
   let getSpy: sinon.SinonStub;
   let dbChangedHandler: sinon.SinonSpy;
   let sendRequestSpy: sinon.SinonSpy;
+  let supportsDatabaseRegistrationSpy: sinon.SinonStub;
 
   let sandbox: sinon.SinonSandbox;
   let dir: tmp.DirResult;
@@ -48,6 +49,8 @@ describe('databases', () => {
     getSpy.returns([]);
     sendRequestSpy = sandbox.stub();
     dbChangedHandler = sandbox.spy();
+    supportsDatabaseRegistrationSpy = sandbox.stub();
+    supportsDatabaseRegistrationSpy.resolves(true);
     databaseManager = new DatabaseManager(
       {
         workspaceState: {
@@ -59,7 +62,8 @@ describe('databases', () => {
         storagePath: dir.name
       } as unknown as ExtensionContext,
       {
-        sendRequest: sendRequestSpy
+        sendRequest: sendRequestSpy,
+        supportsDatabaseRegistration: supportsDatabaseRegistrationSpy
       } as unknown as QueryServerClient,
       {} as Logger,
     );
@@ -269,6 +273,30 @@ describe('databases', () => {
 
       // Should have deregistered this database
       expect(sendRequestSpy).to.have.been.calledWith(registerDatabases, registration, {}, {});
+    });
+
+    it('should avoid registration when query server does not support it', async () => {
+      // similar test as above, but now pretend query server doesn't support registration
+      supportsDatabaseRegistrationSpy.resolves(false);
+      const mockDbItem = createMockDB();
+      sandbox.stub(fs, 'remove').resolves();
+
+      await (databaseManager as any).addDatabaseItem(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem
+      );
+      // Should NOT have registered this database
+      expect(sendRequestSpy).not.to.have.been.called;
+
+      await databaseManager.removeDatabaseItem(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem
+      );
+
+      // Should NOT have deregistered this database
+      expect(sendRequestSpy).not.to.have.been.called;
     });
   });
 

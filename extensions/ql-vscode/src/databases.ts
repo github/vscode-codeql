@@ -622,7 +622,7 @@ export class DatabaseManager extends DisposableObject {
             const databaseItem = await this.createDatabaseItemFromPersistedState(progress, token, database);
             try {
               await databaseItem.refresh();
-              await this.registerDatabases(progress, token, databaseItem);
+              await this.registerDatabase(progress, token, databaseItem);
               if (currentDatabaseUri === database.uri) {
                 this.setCurrentDatabaseItem(databaseItem, true);
               }
@@ -697,7 +697,7 @@ export class DatabaseManager extends DisposableObject {
     // Database items reconstituted from persisted state
     // will not have their contents yet.
     if (item.contents?.datasetUri) {
-      await this.registerDatabases(progress, token, item);
+      await this.registerDatabase(progress, token, item);
     }
     // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
@@ -748,7 +748,7 @@ export class DatabaseManager extends DisposableObject {
     }
 
     // Remove this database item from the allow-list
-    await this.deregisterDatabases(progress, token, item);
+    await this.deregisterDatabase(progress, token, item);
 
     // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
@@ -757,12 +757,12 @@ export class DatabaseManager extends DisposableObject {
     });
   }
 
-  private async deregisterDatabases(
+  private async deregisterDatabase(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     dbItem: DatabaseItem,
   ) {
-    if (dbItem.contents) {
+    if (dbItem.contents && (await this.qs.supportsDatabaseRegistration())) {
       const databases: Dataset[] = [{
         dbDir: dbItem.contents.datasetUri.fsPath,
         workingSet: 'default'
@@ -771,12 +771,12 @@ export class DatabaseManager extends DisposableObject {
     }
   }
 
-  private async registerDatabases(
+  private async registerDatabase(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     dbItem: DatabaseItem,
   ) {
-    if (dbItem.contents) {
+    if (dbItem.contents && (await this.qs.supportsDatabaseRegistration())) {
       const databases: Dataset[] = [{
         dbDir: dbItem.contents.datasetUri.fsPath,
         workingSet: 'default'
