@@ -861,19 +861,19 @@ export interface RunUpgradeResult {
   finalSha: string;
 }
 
-export interface RegisterDatabaseParams {
+export interface RegisterDatabasesParams {
   databases: Dataset[];
 }
 
-export interface DeregisterDatabaseParams {
+export interface DeregisterDatabasesParams {
   databases: Dataset[];
 }
 
-export type RegisterDatabaseResult = {
+export type RegisterDatabasesResult = {
   registeredDatabases: Dataset[];
 };
 
-export type DeregisterDatabaseResult = {
+export type DeregisterDatabasesResult = {
   registeredDatabases: Dataset[];
 };
 
@@ -954,15 +954,15 @@ export const runQueries = new rpc.RequestType<WithProgressId<EvaluateQueriesPara
 export const runUpgrade = new rpc.RequestType<WithProgressId<RunUpgradeParams>, RunUpgradeResult, void, void>('evaluation/runUpgrade');
 
 export const registerDatabases = new rpc.RequestType<
-  WithProgressId<RegisterDatabaseParams>,
-  RegisterDatabaseResult,
+  WithProgressId<RegisterDatabasesParams>,
+  RegisterDatabasesResult,
   void,
   void
 >('evaluation/registerDatabases');
 
 export const deregisterDatabases = new rpc.RequestType<
-  WithProgressId<DeregisterDatabaseParams>,
-  DeregisterDatabaseResult,
+  WithProgressId<DeregisterDatabasesParams>,
+  DeregisterDatabasesResult,
   void,
   void
 >('evaluation/deregisterDatabases');

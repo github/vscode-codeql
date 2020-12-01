@@ -603,7 +603,7 @@ export class DatabaseUI extends DisposableObject {
     multiSelect: DatabaseItem[] | undefined
   ): Promise<void> => {
     if (multiSelect?.length) {
-      Promise.all(multiSelect.map((dbItem) =>
+      await Promise.all(multiSelect.map((dbItem) =>
         this.databaseManager.removeDatabaseItem(progress, token, dbItem)
       ));
     } else {
