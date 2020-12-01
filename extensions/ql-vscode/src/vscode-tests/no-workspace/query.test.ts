@@ -13,9 +13,7 @@ import { ColumnValue } from '../../pure/bqrs-cli-types';
 import { FindDistributionResultKind } from '../../distribution';
 
 
-declare module 'url' {
-  export function pathToFileURL(urlStr: string): Url;
-}
+const baseDir = path.join(__dirname, '../../../test/data');
 
 const tmpDir = tmp.dirSync({ prefix: 'query_test_', keep: false, unsafeCleanup: true });
 
@@ -61,13 +59,19 @@ type QueryTestCase = {
 // Test cases: queries to run and their expected results.
 const queryTestCases: QueryTestCase[] = [
   {
-    queryPath: path.join(__dirname, '../data/query.ql'),
+    queryPath: path.join(baseDir, 'query.ql'),
     expectedResultSets: {
       '#select': [[42, 3.14159, 'hello world', true]]
     }
   },
   {
-    queryPath: path.join(__dirname, '../data/multiple-result-sets.ql'),
+    queryPath: path.join(baseDir, 'compute-default-strings.ql'),
+    expectedResultSets: {
+      '#select': [[{ label: '(no string representation)' }]]
+    }
+  },
+  {
+    queryPath: path.join(baseDir, 'multiple-result-sets.ql'),
     expectedResultSets: {
       'edges': [[1, 2], [2, 3]],
       '#select': [['s']]
@@ -75,7 +79,7 @@ const queryTestCases: QueryTestCase[] = [
   }
 ];
 
-describe('using the query server', function() {
+describe.only('using the query server', function() {
   before(function() {
     if (process.env['CODEQL_PATH'] === undefined) {
       console.log('The environment variable CODEQL_PATH is not set. The query server tests, which require the CodeQL CLI, will be skipped.');
@@ -92,12 +96,8 @@ describe('using the query server', function() {
   let cliServer: cli.CodeQLCliServer;
   const queryServerStarted = new Checkpoint<void>();
   after(() => {
-    if (qs) {
-      qs.dispose();
-    }
-    if (cliServer) {
-      cliServer.dispose();
-    }
+    qs?.dispose();
+    cliServer?.dispose();
   });
 
   it('should be able to start the query server', async function() {
@@ -156,7 +156,7 @@ describe('using the query server', function() {
       try {
         const qlProgram: messages.QlProgram = {
           libraryPath: [],
-          dbschemePath: path.join(__dirname, '../data/test.dbscheme'),
+          dbschemePath: path.join(baseDir, 'test.dbscheme'),
           queryPath: queryTestCase.queryPath
         };
         const params: messages.CompileQueryParams = {
