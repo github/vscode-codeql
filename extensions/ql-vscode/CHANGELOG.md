@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Ensure databases are unlocked when removing them from the workspace. This will ensure that queries can be run on a database from the command line after being removed. Requires CodeQL CLI 2.4.1 or later. [#681](https://github.com/github/vscode-codeql/pull/681)
 - Fix bug when removing databases where sometimes the source folder would not be removed from the workspace or the database files would not be removed from the workspace storage location. [#692](https://github.com/github/vscode-codeql/pull/692)
 - Query results with no string representation will now be displayed with placeholder text in query results. Previously, they were omitted. [#694](https://github.com/github/vscode-codeql/pull/694)
 
