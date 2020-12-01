@@ -133,7 +133,7 @@ export class CodeQLCliServer implements Disposable {
   nullBuffer: Buffer;
 
   /** Version of current cli, lazily computed by the `getVersion()` method */
-  _version: SemVer | undefined;
+  private _version: SemVer | undefined;
 
   /** Path to current codeQL executable, or undefined if not running yet. */
   codeQlPath: string | undefined;
@@ -699,7 +699,7 @@ export class CodeQLCliServer implements Disposable {
     );
   }
 
-  private async getVersion() {
+  public async getVersion() {
     if (!this._version) {
       this._version = await this.refreshVersion();
     }
