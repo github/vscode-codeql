@@ -3,6 +3,7 @@
 ## [UNRELEASED]
 
 - Fix bug when removing databases where sometimes the source folder would not be removed from the workspace or the database files would not be removed from the workspace storage location. [#692](https://github.com/github/vscode-codeql/pull/692)
+- Always pass the `computeDefaultStrings` flag to query compilation commands. This will change the output of some queries. [#694](https://github.com/github/vscode-codeql/pull/694)
 
 ## 1.3.7 - 24 November 2020
 
