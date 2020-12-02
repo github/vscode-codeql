@@ -79,7 +79,7 @@ const queryTestCases: QueryTestCase[] = [
   }
 ];
 
-describe.only('using the query server', function() {
+describe('using the query server', function() {
   before(function() {
     if (process.env['CODEQL_PATH'] === undefined) {
       console.log('The environment variable CODEQL_PATH is not set. The query server tests, which require the CodeQL CLI, will be skipped.');
