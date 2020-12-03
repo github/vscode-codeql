@@ -28,8 +28,8 @@ const VSCODE_VERSION = 'stable';
 //   - minimal-workspace - Tests with a simple workspace selected upon launch.
 //   - cli-integration - Tests that require a cli to invoke actual commands
 enum TestDir {
-  NoWorskspace = 'no-workspace',
-  MinimalWorskspace = 'minimal-workspace',
+  NoWorksspace = 'no-workspace',
+  MinimalWorksspace = 'minimal-workspace',
   CliIntegration = 'cli-integration'
 }
 
@@ -108,12 +108,12 @@ main();
 
 function getLaunchArgs(dir: TestDir) {
   switch (dir) {
-    case TestDir.NoWorskspace:
+    case TestDir.NoWorksspace:
       return [
         '--disable-extensions'
       ];
 
-    case TestDir.MinimalWorskspace:
+    case TestDir.MinimalWorksspace:
       return [
         '--disable-extensions',
         path.resolve(__dirname, '../../test/data')

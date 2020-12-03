@@ -60,12 +60,6 @@ interface QueryHistoryDataProvider extends vscode.TreeDataProvider<CompletedQuer
  * Tree data provider for the query history view.
  */
 class HistoryTreeDataProvider extends DisposableObject implements QueryHistoryDataProvider {
-  /**
-   * XXX: This idiom for how to get a `.fire()`-able event emitter was
-   * cargo culted from another vscode extension. It seems rather
-   * involved and I hope there's something better that can be done
-   * instead.
-   */
   private _onDidChangeTreeData = super.push(new vscode.EventEmitter<CompletedQuery | undefined>());
 
   readonly onDidChangeTreeData: vscode.Event<CompletedQuery | undefined> = this
