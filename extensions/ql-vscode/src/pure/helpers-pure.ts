@@ -2,7 +2,7 @@
  * helpers-pure.ts
  * ------------
  *
- * Helper functions that don't depend on vscode and therefore can be used by the front-end and pure unit tests.
+ * Helper functions that don't depend on vscode or the CLI and therefore can be used by the front-end and pure unit tests.
  */
 
 /**

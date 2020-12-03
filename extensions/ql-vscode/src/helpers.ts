@@ -358,12 +358,6 @@ function createRateLimitedResult(): RateLimitedResult {
   };
 }
 
-
-export type DatasetFolderInfo = {
-  dbscheme: string;
-  qlpack: string;
-}
-
 export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemePath: string): Promise<string> {
   const qlpacks = await cliServer.resolveQlpacks(getOnDiskWorkspaceFolders());
   const packs: { packDir: string | undefined; packName: string }[] =
@@ -391,7 +385,7 @@ export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemeP
   throw new Error(`Could not find qlpack file for dbscheme ${dbschemePath}`);
 }
 
-export async function resolveDatasetFolder(cliServer: CodeQLCliServer, datasetFolder: string): Promise<DatasetFolderInfo> {
+export async function getPrimaryDbscheme(datasetFolder: string): Promise<string> {
   const dbschemes = await glob(path.join(datasetFolder, '*.dbscheme'));
 
   if (dbschemes.length < 1) {
@@ -400,12 +394,11 @@ export async function resolveDatasetFolder(cliServer: CodeQLCliServer, datasetFo
 
   dbschemes.sort();
   const dbscheme = dbschemes[0];
+
   if (dbschemes.length > 1) {
     Window.showErrorMessage(`Found multiple dbschemes in ${datasetFolder} during quick query; arbitrarily choosing the first, ${dbscheme}, to decide what library to use.`);
   }
-
-  const qlpack = await getQlPackForDbscheme(cliServer, dbscheme);
-  return { dbscheme, qlpack };
+  return dbscheme;
 }
 
 /**
@@ -463,4 +456,72 @@ export class CachedOperation<U> {
       this.inProgressCallbacks.delete(t);
     }
   }
+}
+
+
+
+/**
+ * The following functions al heuristically determine metadata about databases.
+ */
+
+const dbSchemeToLanguage = {
+  'semmlecode.javascript.dbscheme': 'javascript',
+  'semmlecode.cpp.dbscheme': 'cpp',
+  'semmlecode.dbscheme': 'java',
+  'semmlecode.python.dbscheme': 'python',
+  'semmlecode.csharp.dbscheme': 'csharp',
+  'go.dbscheme': 'go'
+};
+
+/**
+ * Returns the initial contents for an empty query, based on the language of the selected
+ * databse.
+ *
+ * First try to get the contents text based on language. if that fails, try to get based on
+ * dbscheme. Otherwise return no import statement.
+ *
+ * @param language the database language or empty string if unknown
+ * @param dbscheme path to the dbscheme file
+ *
+ * @returns an import and empty select statement appropriate for the selected language
+ */
+export function getInitialQueryContents(language: string, dbscheme: string) {
+  if (!language) {
+    const dbschemeBase = path.basename(dbscheme) as keyof typeof dbSchemeToLanguage;
+    language = dbSchemeToLanguage[dbschemeBase];
+  }
+
+  return language
+    ? `import ${language}\n\nselect ""`
+    : 'select ""';
+}
+
+export async function isLikelyDatabaseRoot(maybeRoot: string) {
+  const [a, b, c] = (await Promise.all([
+    // databases can have either .dbinfo or codeql-database.yml.
+    fs.pathExists(path.join(maybeRoot, '.dbinfo')),
+    fs.pathExists(path.join(maybeRoot, 'codeql-database.yml')),
+
+    // they *must* have a db-{language} folder
+    glob('db-*/', { cwd: maybeRoot })
+  ]));
+
+  return !!((a || b) && c);
+}
+
+export function isLikelyDbLanguageFolder(dbPath: string) {
+  return !!path.basename(dbPath).startsWith('db-');
+}
+
+export async function getPrimaryLanguage(root: string) {
+  try {
+    const metadataFile = path.join(root, 'codeql-database.yml');
+    if (await fs.pathExists(metadataFile)) {
+      const metadata = yaml.safeLoad(await fs.readFile(metadataFile, 'utf8')) as { primaryLanguage: string | undefined };
+      return metadata.primaryLanguage || '';
+    }
+  } catch (e) {
+    // could not determine language
+  }
+  return '';
 }

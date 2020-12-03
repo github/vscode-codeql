@@ -5,8 +5,16 @@ import { CancellationToken, ExtensionContext, window as Window, workspace, Uri }
 import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 import { CodeQLCliServer } from './cli';
 import { DatabaseUI } from './databases-ui';
-import * as helpers from './helpers';
 import { logger } from './logging';
+import {
+  getInitialQueryContents,
+  getPrimaryDbscheme,
+  getQlPackForDbscheme,
+  ProgressCallback,
+  showAndLogErrorMessage,
+  showBinaryChoiceDialog,
+  UserCancellationException
+} from './helpers';
 
 const QUICK_QUERIES_DIR_NAME = 'quick-queries';
 const QUICK_QUERY_QUERY_NAME = 'quick-query.ql';
@@ -14,21 +22,6 @@ const QUICK_QUERY_WORKSPACE_FOLDER_NAME = 'Quick Queries';
 
 export function isQuickQueryPath(queryPath: string): boolean {
   return path.basename(queryPath) === QUICK_QUERY_QUERY_NAME;
-}
-
-/**
- * `getBaseText` heuristically returns an appropriate import statement
- * prelude based on the filename of the dbscheme file given. TODO: add
- * a 'default import' field to the qlpack itself, and use that.
- */
-function getBaseText(dbschemeBase: string) {
-  if (dbschemeBase == 'semmlecode.javascript.dbscheme') return 'import javascript\n\nselect ""';
-  if (dbschemeBase == 'semmlecode.cpp.dbscheme') return 'import cpp\n\nselect ""';
-  if (dbschemeBase == 'semmlecode.dbscheme') return 'import java\n\nselect ""';
-  if (dbschemeBase == 'semmlecode.python.dbscheme') return 'import python\n\nselect ""';
-  if (dbschemeBase == 'semmlecode.csharp.dbscheme') return 'import csharp\n\nselect ""';
-  if (dbschemeBase == 'go.dbscheme') return 'import go\n\nselect ""';
-  return 'select ""';
 }
 
 function getQuickQueriesDir(ctx: ExtensionContext): string {
@@ -51,7 +44,7 @@ export async function displayQuickQuery(
   ctx: ExtensionContext,
   cliServer: CodeQLCliServer,
   databaseUI: DatabaseUI,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: CancellationToken
 ) {
 
@@ -85,7 +78,7 @@ export async function displayQuickQuery(
     // being undefined) just let the user know that they're in for a
     // restart.
     if (workspace.workspaceFile === undefined) {
-      const makeMultiRoot = await helpers.showBinaryChoiceDialog('Quick query requires multiple folders in the workspace. Reload workspace as multi-folder workspace?');
+      const makeMultiRoot = await showBinaryChoiceDialog('Quick query requires multiple folders in the workspace. Reload workspace as multi-folder workspace?');
       if (makeMultiRoot) {
         updateQuickQueryDir(queriesDir, workspaceFolders.length, 0);
       }
@@ -105,7 +98,9 @@ export async function displayQuickQuery(
     }
 
     const datasetFolder = await dbItem.getDatasetFolder(cliServer);
-    const { qlpack, dbscheme } = await helpers.resolveDatasetFolder(cliServer, datasetFolder);
+    const dbscheme = await getPrimaryDbscheme(datasetFolder);
+    const qlpack = await getQlPackForDbscheme(cliServer, dbscheme);
+
     const quickQueryQlpackYaml: any = {
       name: 'quick-query',
       version: '1.0.0',
@@ -114,21 +109,21 @@ export async function displayQuickQuery(
 
     const qlFile = path.join(queriesDir, QUICK_QUERY_QUERY_NAME);
     const qlPackFile = path.join(queriesDir, 'qlpack.yml');
-    await fs.writeFile(qlFile, getBaseText(path.basename(dbscheme)), 'utf8');
+    await fs.writeFile(qlFile, getInitialQueryContents(dbItem.language, dbscheme), 'utf8');
     await fs.writeFile(qlPackFile, yaml.safeDump(quickQueryQlpackYaml), 'utf8');
     Window.showTextDocument(await workspace.openTextDocument(qlFile));
   }
 
   // TODO: clean up error handling for top-level commands like this
   catch (e) {
-    if (e instanceof helpers.UserCancellationException) {
+    if (e instanceof UserCancellationException) {
       logger.log(e.message);
     }
     else if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
       logger.log(e.message);
     }
     else if (e instanceof Error)
-      helpers.showAndLogErrorMessage(e.message);
+      showAndLogErrorMessage(e.message);
     else
       throw e;
   }

@@ -4,7 +4,15 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as cli from './cli';
 import { ExtensionContext } from 'vscode';
-import { showAndLogErrorMessage, showAndLogWarningMessage, showAndLogInformationMessage, ProgressCallback, withProgress } from './helpers';
+import {
+  showAndLogErrorMessage,
+  showAndLogWarningMessage,
+  showAndLogInformationMessage,
+  getPrimaryLanguage,
+  isLikelyDatabaseRoot,
+  ProgressCallback,
+  withProgress
+} from './helpers';
 import { zipArchiveScheme, encodeArchiveBasePath, decodeSourceArchiveUri, encodeSourceArchiveUri } from './archive-filesystem-provider';
 import { DisposableObject } from './vscode-utils/disposable-object';
 import { Logger, logger } from './logging';
@@ -37,11 +45,13 @@ export interface DatabaseOptions {
   displayName?: string;
   ignoreSourceArchive?: boolean;
   dateAdded?: number | undefined;
+  language?: string;
 }
 
 export interface FullDatabaseOptions extends DatabaseOptions {
   ignoreSourceArchive: boolean;
   dateAdded: number | undefined;
+  language: string;
 }
 
 interface PersistedDatabaseItem {
@@ -194,6 +204,9 @@ export interface DatabaseItem {
   readonly databaseUri: vscode.Uri;
   /** The name of the database to be displayed in the UI */
   name: string;
+
+  /** The primary language of the database or empty string if unknown */
+  readonly language: string;
   /** The URI of the database's source archive, or `undefined` if no source archive is to be used. */
   readonly sourceArchive: vscode.Uri | undefined;
   /**
@@ -433,6 +446,10 @@ export class DatabaseItemImpl implements DatabaseItem {
     return dbInfo.datasetFolder;
   }
 
+  public get language() {
+    return this.options.language || '';
+  }
+
   /**
    * Returns the root uri of the virtual filesystem for this database's source archive.
    */
@@ -502,18 +519,16 @@ export class DatabaseManager extends DisposableObject {
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     uri: vscode.Uri,
-    options?: DatabaseOptions
   ): Promise<DatabaseItem> {
-
     const contents = await resolveDatabaseContents(uri);
-    const realOptions = options || {};
     // Ignore the source archive for QLTest databases by default.
     const isQLTestDatabase = path.extname(uri.fsPath) === '.testproj';
     const fullOptions: FullDatabaseOptions = {
-      ignoreSourceArchive: (realOptions.ignoreSourceArchive !== undefined) ?
-        realOptions.ignoreSourceArchive : isQLTestDatabase,
-      displayName: realOptions.displayName,
-      dateAdded: realOptions.dateAdded || Date.now()
+      ignoreSourceArchive: isQLTestDatabase,
+      // displayName is only set if a user explicitly renames a database
+      displayName: undefined,
+      dateAdded: Date.now(),
+      language: await getPrimaryLanguage(uri.fsPath)
     };
     const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions, (event) => {
       this._onDidChangeDatabaseItem.fire(event);
@@ -573,6 +588,7 @@ export class DatabaseManager extends DisposableObject {
     let displayName: string | undefined = undefined;
     let ignoreSourceArchive = false;
     let dateAdded = undefined;
+    let language = '';
     if (state.options) {
       if (typeof state.options.displayName === 'string') {
         displayName = state.options.displayName;
@@ -583,11 +599,16 @@ export class DatabaseManager extends DisposableObject {
       if (typeof state.options.dateAdded === 'number') {
         dateAdded = state.options.dateAdded;
       }
+      if (state.options.language) {
+        language = state.options.language;
+      }
     }
+
     const fullOptions: FullDatabaseOptions = {
       ignoreSourceArchive,
       displayName,
-      dateAdded
+      dateAdded,
+      language
     };
     const item = new DatabaseItemImpl(vscode.Uri.parse(state.uri, true), undefined, fullOptions,
       (event) => {
@@ -814,24 +835,4 @@ export function getUpgradesDirectories(scripts: string[]): vscode.Uri[] {
   const parentDirs = scripts.map(dir => path.dirname(dir));
   const uniqueParentDirs = new Set(parentDirs);
   return Array.from(uniqueParentDirs).map(filePath => vscode.Uri.file(filePath));
-}
-
-
-// TODO: Get the list of supported languages from a list that will be auto-updated.
-
-export async function isLikelyDatabaseRoot(fsPath: string) {
-  const [a, b, c] = (await Promise.all([
-    // databases can have either .dbinfo or codeql-database.yml.
-    fs.pathExists(path.join(fsPath, '.dbinfo')),
-    fs.pathExists(path.join(fsPath, 'codeql-database.yml')),
-
-    // they *must* have a db-language folder
-    (await fs.readdir(fsPath)).some(isLikelyDbLanguageFolder)
-  ]));
-
-  return (a || b) && c;
-}
-
-export function isLikelyDbLanguageFolder(dbPath: string) {
-  return !!path.basename(dbPath).startsWith('db-');
 }

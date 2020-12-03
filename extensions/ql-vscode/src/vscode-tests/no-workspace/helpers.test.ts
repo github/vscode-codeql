@@ -1,7 +1,12 @@
 import { expect } from 'chai';
 import 'mocha';
 import { ExtensionContext, Memento } from 'vscode';
-import { InvocationRateLimiter } from '../../helpers';
+import * as yaml from 'js-yaml';
+import * as tmp from 'tmp';
+import * as path from 'path';
+import * as fs from 'fs-extra';
+
+import { getInitialQueryContents, getPrimaryLanguage, InvocationRateLimiter } from '../../helpers';
 
 describe('Invocation rate limiter', () => {
   // 1 January 2020
@@ -83,6 +88,41 @@ describe('Invocation rate limiter', () => {
     await invocationRateLimiterB.invokeFunctionIfIntervalElapsed(100);
     expect(numTimesFuncACalled).to.equal(1);
     expect(numTimesFuncBCalled).to.equal(1);
+  });
+});
+
+describe('codeql-database.yml tests', () => {
+  let dir: tmp.DirResult;
+  beforeEach(() => {
+    dir = tmp.dirSync();
+    const contents = yaml.safeDump({
+      primaryLanguage: 'cpp'
+    });
+    fs.writeFileSync(path.join(dir.name, 'codeql-database.yml'), contents, 'utf8');
+  });
+
+  afterEach(() => {
+    dir.removeCallback();
+  });
+
+  it('should get the language of a database', async () => {
+    expect(await getPrimaryLanguage(dir.name)).to.eq('cpp');
+  });
+
+  it('should get the language of a database when langauge is not known', async () => {
+    expect(await getPrimaryLanguage('xxx')).to.eq('');
+  });
+
+  it('should get initial query contents when language is known', () => {
+    expect(getInitialQueryContents('cpp', 'hucairz')).to.eq('import cpp\n\nselect ""');
+  });
+
+  it('should get initial query contents when dbscheme is known', () => {
+    expect(getInitialQueryContents('', 'semmlecode.cpp.dbscheme')).to.eq('import cpp\n\nselect ""');
+  });
+
+  it('should get initial query contents when nothing is known', () => {
+    expect(getInitialQueryContents('', 'hucairz')).to.eq('select ""');
   });
 });
 

@@ -12,20 +12,20 @@ import {
   DatabaseManager,
   DatabaseItemImpl,
   DatabaseContents,
-  isLikelyDbLanguageFolder,
   FullDatabaseOptions
 } from '../../databases';
 import { Logger } from '../../logging';
 import { encodeArchiveBasePath, encodeSourceArchiveUri } from '../../archive-filesystem-provider';
 import { QueryServerClient } from '../../queryserver-client';
-import { ProgressCallback } from '../../helpers';
 import { registerDatabases } from '../../pure/messages';
+import { isLikelyDbLanguageFolder, ProgressCallback } from '../../helpers';
 
 describe('databases', () => {
 
   const MOCK_DB_OPTIONS: FullDatabaseOptions = {
     dateAdded: 123,
-    ignoreSourceArchive: false
+    ignoreSourceArchive: false,
+    language: ''
   };
 
   let databaseManager: DatabaseManager;
