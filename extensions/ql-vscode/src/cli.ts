@@ -50,6 +50,7 @@ export interface DbInfo {
   sourceArchiveRoot: string;
   datasetFolder: string;
   logsFolder: string;
+  primaryLanguage: string;
 }
 
 /**
