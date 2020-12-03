@@ -339,7 +339,7 @@ async function activateWithInstalledDistribution(
   await qs.startQueryServer();
 
   logger.log('Initializing database manager.');
-  const dbm = new DatabaseManager(ctx, qs, logger);
+  const dbm = new DatabaseManager(ctx, qs, cliServer, logger);
   ctx.subscriptions.push(dbm);
   logger.log('Initializing database panel.');
   const databaseUI = new DatabaseUI(

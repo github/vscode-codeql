@@ -6,7 +6,7 @@ import * as tmp from 'tmp';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 
-import { getInitialQueryContents, getPrimaryLanguage, InvocationRateLimiter } from '../../helpers';
+import { getInitialQueryContents, InvocationRateLimiter, isLikelyDbLanguageFolder } from '../../helpers';
 
 describe('Invocation rate limiter', () => {
   // 1 January 2020
@@ -105,14 +105,6 @@ describe('codeql-database.yml tests', () => {
     dir.removeCallback();
   });
 
-  it('should get the language of a database', async () => {
-    expect(await getPrimaryLanguage(dir.name)).to.eq('cpp');
-  });
-
-  it('should get the language of a database when langauge is not known', async () => {
-    expect(await getPrimaryLanguage('xxx')).to.eq('');
-  });
-
   it('should get initial query contents when language is known', () => {
     expect(getInitialQueryContents('cpp', 'hucairz')).to.eq('import cpp\n\nselect ""');
   });
@@ -124,6 +116,11 @@ describe('codeql-database.yml tests', () => {
   it('should get initial query contents when nothing is known', () => {
     expect(getInitialQueryContents('', 'hucairz')).to.eq('select ""');
   });
+});
+
+it('should find likely db language folders', () => {
+  expect(isLikelyDbLanguageFolder('db-javascript')).to.be.true;
+  expect(isLikelyDbLanguageFolder('dbnot-a-db')).to.be.false;
 });
 
 class MockExtensionContext implements ExtensionContext {

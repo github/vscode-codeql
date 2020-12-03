@@ -8,7 +8,6 @@ import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
   showAndLogInformationMessage,
-  getPrimaryLanguage,
   isLikelyDatabaseRoot,
   ProgressCallback,
   withProgress
@@ -51,7 +50,7 @@ export interface DatabaseOptions {
 export interface FullDatabaseOptions extends DatabaseOptions {
   ignoreSourceArchive: boolean;
   dateAdded: number | undefined;
-  language: string;
+  language: string | undefined;
 }
 
 interface PersistedDatabaseItem {
@@ -508,7 +507,8 @@ export class DatabaseManager extends DisposableObject {
   constructor(
     private readonly ctx: ExtensionContext,
     private readonly qs: QueryServerClient,
-    public readonly logger: Logger
+    private readonly cli: cli.CodeQLCliServer,
+    public logger: Logger
   ) {
     super();
 
@@ -528,7 +528,7 @@ export class DatabaseManager extends DisposableObject {
       // displayName is only set if a user explicitly renames a database
       displayName: undefined,
       dateAdded: Date.now(),
-      language: await getPrimaryLanguage(uri.fsPath)
+      language: await this.getPrimaryLanguage(uri.fsPath)
     };
     const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions, (event) => {
       this._onDidChangeDatabaseItem.fire(event);
@@ -588,7 +588,7 @@ export class DatabaseManager extends DisposableObject {
     let displayName: string | undefined = undefined;
     let ignoreSourceArchive = false;
     let dateAdded = undefined;
-    let language = '';
+    let language = undefined;
     if (state.options) {
       if (typeof state.options.displayName === 'string') {
         displayName = state.options.displayName;
@@ -599,9 +599,13 @@ export class DatabaseManager extends DisposableObject {
       if (typeof state.options.dateAdded === 'number') {
         dateAdded = state.options.dateAdded;
       }
-      if (state.options.language) {
-        language = state.options.language;
-      }
+      language = state.options.language;
+    }
+
+    const dbBaseUri = vscode.Uri.parse(state.uri, true);
+    if (language === undefined) {
+      // we haven't been successful yet at getting the language. try again
+      language = await this.getPrimaryLanguage(dbBaseUri.fsPath);
     }
 
     const fullOptions: FullDatabaseOptions = {
@@ -610,7 +614,7 @@ export class DatabaseManager extends DisposableObject {
       dateAdded,
       language
     };
-    const item = new DatabaseItemImpl(vscode.Uri.parse(state.uri, true), undefined, fullOptions,
+    const item = new DatabaseItemImpl(dbBaseUri, undefined, fullOptions,
       (event) => {
         this._onDidChangeDatabaseItem.fire(event);
       });
@@ -824,6 +828,15 @@ export class DatabaseManager extends DisposableObject {
       return uri.fsPath.startsWith(vscode.Uri.file(storagePath).fsPath);
     }
     return false;
+  }
+
+  private async getPrimaryLanguage(dbPath: string) {
+    if (!(await this.cli.supportsLangaugeName())) {
+      // return undefined so that we continually recalculate until the cli version is bumped
+      return undefined;
+    }
+    const dbInfo = await this.cli.resolveDatabase(dbPath);
+    return dbInfo.languages?.[0] || '';
   }
 }
 
