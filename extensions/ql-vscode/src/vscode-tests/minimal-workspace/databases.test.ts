@@ -15,10 +15,11 @@ import {
   FullDatabaseOptions
 } from '../../databases';
 import { Logger } from '../../logging';
-import { encodeArchiveBasePath, encodeSourceArchiveUri } from '../../archive-filesystem-provider';
 import { QueryServerClient } from '../../queryserver-client';
 import { registerDatabases } from '../../pure/messages';
-import { isLikelyDbLanguageFolder, ProgressCallback } from '../../helpers';
+import { ProgressCallback } from '../../helpers';
+import { CodeQLCliServer } from '../../cli';
+import { encodeArchiveBasePath, encodeSourceArchiveUri } from '../../archive-filesystem-provider';
 
 describe('databases', () => {
 
@@ -34,6 +35,8 @@ describe('databases', () => {
   let dbChangedHandler: sinon.SinonSpy;
   let sendRequestSpy: sinon.SinonSpy;
   let supportsDatabaseRegistrationSpy: sinon.SinonStub;
+  let supportsLanguageNameSpy: sinon.SinonStub;
+  let resolveDatabaseSpy: sinon.SinonStub;
 
   let sandbox: sinon.SinonSandbox;
   let dir: tmp.DirResult;
@@ -51,6 +54,8 @@ describe('databases', () => {
     dbChangedHandler = sandbox.spy();
     supportsDatabaseRegistrationSpy = sandbox.stub();
     supportsDatabaseRegistrationSpy.resolves(true);
+    supportsLanguageNameSpy = sandbox.stub();
+    resolveDatabaseSpy = sandbox.stub();
     databaseManager = new DatabaseManager(
       {
         workspaceState: {
@@ -65,6 +70,10 @@ describe('databases', () => {
         sendRequest: sendRequestSpy,
         supportsDatabaseRegistration: supportsDatabaseRegistrationSpy
       } as unknown as QueryServerClient,
+      {
+        supportsLangaugeName: supportsLanguageNameSpy,
+        resolveDatabase: resolveDatabaseSpy
+      } as unknown as CodeQLCliServer,
       {} as Logger,
     );
 
@@ -377,9 +386,29 @@ describe('databases', () => {
     });
   });
 
-  it('should find likely db language folders', () => {
-    expect(isLikelyDbLanguageFolder('db-javascript')).to.be.true;
-    expect(isLikelyDbLanguageFolder('dbnot-a-db')).to.be.false;
+  it('should not support the primary language', async () => {
+    supportsLanguageNameSpy.resolves(false);
+
+    const result = (await (databaseManager as any).getPrimaryLanguage('hucairz'));
+    expect(result).to.be.undefined;
+  });
+
+  it('should get the primary language', async () => {
+    supportsLanguageNameSpy.resolves(true);
+    resolveDatabaseSpy.resolves({
+      languages: ['python']
+    });
+    const result = (await (databaseManager as any).getPrimaryLanguage('hucairz'));
+    expect(result).to.eq('python');
+  });
+
+  it('should handle missing the primary language', async () => {
+    supportsLanguageNameSpy.resolves(true);
+    resolveDatabaseSpy.resolves({
+      languages: []
+    });
+    const result = (await (databaseManager as any).getPrimaryLanguage('hucairz'));
+    expect(result).to.eq('');
   });
 
   function createMockDB(

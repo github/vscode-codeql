@@ -464,6 +464,16 @@ export class CachedOperation<U> {
  * The following functions al heuristically determine metadata about databases.
  */
 
+/**
+ * Note that this heuristic is only being used for backwards compatibility with
+ * CLI versions before the langauge name was introduced to dbInfo. Implementations
+ * that do not require backwards compatibility should call
+ * `cli.CodeQLCliServer.resolveDatabase` and use the first entry in the
+ * `languages` property.
+ *
+ * @see cli.CodeQLCliServer.supportsLangaugeName
+ * @see cli.CodeQLCliServer.resolveDatabase
+ */
 const dbSchemeToLanguage = {
   'semmlecode.javascript.dbscheme': 'javascript',
   'semmlecode.cpp.dbscheme': 'cpp',
@@ -496,6 +506,12 @@ export function getInitialQueryContents(language: string, dbscheme: string) {
     : 'select ""';
 }
 
+/**
+ * Heuristically determines if the directory passed in corresponds
+ * to a database root.
+ *
+ * @param maybeRoot
+ */
 export async function isLikelyDatabaseRoot(maybeRoot: string) {
   const [a, b, c] = (await Promise.all([
     // databases can have either .dbinfo or codeql-database.yml.
@@ -511,17 +527,4 @@ export async function isLikelyDatabaseRoot(maybeRoot: string) {
 
 export function isLikelyDbLanguageFolder(dbPath: string) {
   return !!path.basename(dbPath).startsWith('db-');
-}
-
-export async function getPrimaryLanguage(root: string) {
-  try {
-    const metadataFile = path.join(root, 'codeql-database.yml');
-    if (await fs.pathExists(metadataFile)) {
-      const metadata = yaml.safeLoad(await fs.readFile(metadataFile, 'utf8')) as { primaryLanguage: string | undefined };
-      return metadata.primaryLanguage || '';
-    }
-  } catch (e) {
-    // could not determine language
-  }
-  return '';
 }

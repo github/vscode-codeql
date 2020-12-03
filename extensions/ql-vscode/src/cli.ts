@@ -50,7 +50,7 @@ export interface DbInfo {
   sourceArchiveRoot: string;
   datasetFolder: string;
   logsFolder: string;
-  primaryLanguage: string;
+  languages: string[];
 }
 
 /**
@@ -123,6 +123,11 @@ export class CodeQLCliServer implements Disposable {
    * CLI version where --kind=DIL was introduced
    */
   private static CLI_VERSION_WITH_DECOMPILE_KIND_DIL = new SemVer('2.3.0');
+
+  /**
+   * CLI version where --kind=DIL was introduced
+   */
+  private static CLI_VERSION_WITH_LANGUAGE = new SemVer('2.4.1');
 
   /** The process for the cli server, or undefined if one doesn't exist yet */
   process?: child_process.ChildProcessWithoutNullStreams;
@@ -690,7 +695,7 @@ export class CodeQLCliServer implements Disposable {
   }
 
   async generateDil(qloFile: string, outFile: string): Promise<void> {
-    const extraArgs = (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_DECOMPILE_KIND_DIL) >= 0
+    const extraArgs = await this.supportsDecompileDil()
       ? ['--kind', 'dil', '-o', outFile, qloFile]
       : ['-o', outFile, qloFile];
     await this.runCodeQlCliCommand(
@@ -705,6 +710,14 @@ export class CodeQLCliServer implements Disposable {
       this._version = await this.refreshVersion();
     }
     return this._version;
+  }
+
+  private async supportsDecompileDil() {
+    return (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_DECOMPILE_KIND_DIL) >= 0;
+  }
+
+  public async supportsLangaugeName() {
+    return (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_LANGUAGE) >= 0;
   }
 
   private async refreshVersion() {
