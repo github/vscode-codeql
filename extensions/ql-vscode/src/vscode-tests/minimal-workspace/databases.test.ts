@@ -71,7 +71,7 @@ describe('databases', () => {
         supportsDatabaseRegistration: supportsDatabaseRegistrationSpy
       } as unknown as QueryServerClient,
       {
-        supportsLangaugeName: supportsLanguageNameSpy,
+        supportsLanguageName: supportsLanguageNameSpy,
         resolveDatabase: resolveDatabaseSpy
       } as unknown as CodeQLCliServer,
       {} as Logger,

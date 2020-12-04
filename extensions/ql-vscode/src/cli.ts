@@ -125,7 +125,7 @@ export class CodeQLCliServer implements Disposable {
   private static CLI_VERSION_WITH_DECOMPILE_KIND_DIL = new SemVer('2.3.0');
 
   /**
-   * CLI version where --kind=DIL was introduced
+   * CLI version where languages are exposed during a `codeql resolve database` command.
    */
   private static CLI_VERSION_WITH_LANGUAGE = new SemVer('2.4.1');
 
@@ -716,7 +716,7 @@ export class CodeQLCliServer implements Disposable {
     return (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_DECOMPILE_KIND_DIL) >= 0;
   }
 
-  public async supportsLangaugeName() {
+  public async supportsLanguageName() {
     return (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_LANGUAGE) >= 0;
   }
 
