@@ -466,12 +466,12 @@ export class CachedOperation<U> {
 
 /**
  * Note that this heuristic is only being used for backwards compatibility with
- * CLI versions before the langauge name was introduced to dbInfo. Implementations
+ * CLI versions before the langauge name was introduced to dbInfo. Features
  * that do not require backwards compatibility should call
  * `cli.CodeQLCliServer.resolveDatabase` and use the first entry in the
  * `languages` property.
  *
- * @see cli.CodeQLCliServer.supportsLangaugeName
+ * @see cli.CodeQLCliServer.supportsLanguageName
  * @see cli.CodeQLCliServer.resolveDatabase
  */
 const dbSchemeToLanguage = {
@@ -487,7 +487,7 @@ const dbSchemeToLanguage = {
  * Returns the initial contents for an empty query, based on the language of the selected
  * databse.
  *
- * First try to get the contents text based on language. if that fails, try to get based on
+ * First try to use the given language name. If that doesn't exist, try to infer it based on
  * dbscheme. Otherwise return no import statement.
  *
  * @param language the database language or empty string if unknown
