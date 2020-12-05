@@ -18,9 +18,7 @@ import { QueryServerClient } from '../../queryserver-client';
 /**
  * Integration tests for queries
  */
-// TODO: Not currently able to run this because we do not have access to the javascript qlpack.
-// Need to download ql libraries separately.
-xdescribe('Queries', function() {
+describe.only('Queries', function() {
   this.timeout(20000);
 
   let dbItem: DatabaseItem;
@@ -40,6 +38,7 @@ xdescribe('Queries', function() {
         databaseManager = extension.databaseManager;
         cli = extension.cliServer;
         qs = extension.qs;
+        cli.quiet = true;
       } else {
         throw new Error('Extension not initialized. Make sure cli is downloaded and installed properly.');
       }

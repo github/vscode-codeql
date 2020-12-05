@@ -82,6 +82,13 @@ async function checkAndConfirmDatabaseUpgrade(
   }
 
   logger.log(descriptionMessage);
+
+
+  // If the quiet flag is set, do the upgrade without a popup.
+  if (qs.cliServer.quiet) {
+    return params;
+  }
+
   // Ask the user to confirm the upgrade.
 
   const showLogItem: vscode.MessageItem = { title: 'No, Show Changes', isCloseAffordance: true };
