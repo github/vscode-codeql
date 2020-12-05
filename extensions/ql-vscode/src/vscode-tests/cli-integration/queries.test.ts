@@ -13,13 +13,18 @@ import { importArchiveDatabase } from '../../databaseFetcher';
 import { compileAndRunQueryAgainstDatabase } from '../../run-queries';
 import { CodeQLCliServer } from '../../cli';
 import { QueryServerClient } from '../../queryserver-client';
+import { skipIfNoCodeQL } from '../ensureCli';
 
 
 /**
  * Integration tests for queries
  */
-describe.only('Queries', function() {
+describe('Queries', function() {
   this.timeout(20000);
+
+  before(function() {
+    skipIfNoCodeQL(this);
+  });
 
   let dbItem: DatabaseItem;
   let databaseManager: DatabaseManager;
@@ -67,8 +72,6 @@ describe.only('Queries', function() {
 
   afterEach(() => {
     try {
-      databaseManager?.dispose();
-      qs?.dispose();
       sandbox.restore();
     } catch (e) {
       fail(e);

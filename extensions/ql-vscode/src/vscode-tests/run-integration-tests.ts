@@ -122,9 +122,10 @@ function getLaunchArgs(dir: TestDir) {
       ];
 
     case TestDir.CliIntegration:
+      // CLI integration tests requires a multi-root workspace so that the data and the QL sources are accessible.
       return [
         path.resolve(__dirname, '../../test/data'),
-        process.env.QL_PATH!
+        process.env.TEST_CODEQL_PATH!
       ];
 
     default:
