@@ -86,7 +86,7 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
         "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/cli-integration/index",
-        "${workspaceRoot}/extensions/ql-vscode/test/data"
+        "${workspaceRoot}/extensions/ql-vscode/src/vscode-tests/cli-integration/data",
       ],
       "stopOnEntry": false,
       "sourceMaps": true,

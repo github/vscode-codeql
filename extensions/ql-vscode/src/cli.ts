@@ -144,10 +144,15 @@ export class CodeQLCliServer implements Disposable {
   /** Path to current codeQL executable, or undefined if not running yet. */
   codeQlPath: string | undefined;
 
+  /**
+   * When set to true, ignore some modal popups and assume user has clicked "yes".
+   */
+  public quiet = false;
+
   constructor(
     private distributionProvider: DistributionProvider,
     private cliConfig: CliConfig,
-    private logger: Logger,
+    private logger: Logger
   ) {
     this.commandQueue = [];
     this.commandInProcess = false;

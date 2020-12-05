@@ -1,2 +1,3 @@
 name: integration-test-queries-javascript
 version: 0.0.0
+libraryPathDependencies: codeql-javascript

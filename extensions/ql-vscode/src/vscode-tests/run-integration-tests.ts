@@ -88,13 +88,15 @@ async function main() {
 
     console.log(`Running integration tests in these directories: ${dirs}`);
     for (const dir of dirs) {
+      const launchArgs = getLaunchArgs(dir as TestDir);
       console.log(`Next integration test dir: ${dir}`);
+      console.log(`Launch args: ${launchArgs}`);
       await runTestsWithRetryOnSegfault({
         version: VSCODE_VERSION,
         vscodeExecutablePath,
         extensionDevelopmentPath,
         extensionTestsPath: path.resolve(__dirname, dir, 'index'),
-        launchArgs: getLaunchArgs(dir as TestDir)
+        launchArgs
       }, 3);
     }
   } catch (err) {
@@ -120,7 +122,10 @@ function getLaunchArgs(dir: TestDir) {
       ];
 
     case TestDir.CliIntegration:
-      break;
+      return [
+        path.resolve(__dirname, '../../test/data'),
+        process.env.QL_PATH!
+      ];
 
     default:
       assertNever(dir);

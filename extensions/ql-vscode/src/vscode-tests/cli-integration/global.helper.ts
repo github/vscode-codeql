@@ -44,11 +44,12 @@ export default function(mocha: /*Mocha*/ any) {
     }
   },
 
+  // Set the CLI version here before activation to ensure we don't accidentally try to download a cli
   async () => {
-    // Set the CLI version here before activation to ensure we don't accidentally try to download a cli
     await workspace.getConfiguration().update('codeQL.cli.executablePath', process.env.CLI_PATH, ConfigurationTarget.Global);
   },
 
+  // Create the temp directory to be used as extension local storage.
   () => {
     const dir = tmp.dirSync();
     storagePath = fs.realpathSync(dir.name);
@@ -61,7 +62,10 @@ export default function(mocha: /*Mocha*/ any) {
 
 
 
-  mocha.globalTeardown(() => {
-    removeStorage?.();
-  });
+  mocha.globalTeardown([
+    // ensure temp directory is cleaned up.
+    () => {
+      removeStorage?.();
+    }
+  ]);
 }

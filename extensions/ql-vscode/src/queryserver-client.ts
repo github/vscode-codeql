@@ -62,7 +62,12 @@ export class QueryServerClient extends DisposableObject {
   withProgressReporting: WithProgressReporting;
   public activeQueryName: string | undefined;
 
-  constructor(readonly config: QueryServerConfig, readonly cliServer: cli.CodeQLCliServer, readonly opts: ServerOpts, withProgressReporting: WithProgressReporting) {
+  constructor(
+    readonly config: QueryServerConfig,
+    readonly cliServer: cli.CodeQLCliServer,
+    readonly opts: ServerOpts,
+    withProgressReporting: WithProgressReporting
+  ) {
     super();
     // When the query server configuration changes, restart the query server.
     if (config.onDidChangeConfiguration !== undefined) {

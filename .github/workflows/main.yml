@@ -124,12 +124,11 @@ jobs:
         version: ['v2.2.6', 'v2.3.3', 'v2.4.0']
     env:
       CLI_VERSION: ${{ matrix.version }}
+      QL_PATH: '${{ github.workspace }}/codeql'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
 
       - uses: actions/setup-node@v1
         with:
@@ -146,6 +145,12 @@ jobs:
         run: |
           npm run build
         shell: bash
+
+      - name: Checkout QL
+        uses: actions/checkout@v2
+        with:
+          repository: github/codeql
+          path: codeql
 
       - name: Run CLI tests (Linux)
         working-directory: extensions/ql-vscode
