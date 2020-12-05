@@ -124,7 +124,7 @@ jobs:
         version: ['v2.2.6', 'v2.3.3', 'v2.4.0']
     env:
       CLI_VERSION: ${{ matrix.version }}
-      QL_PATH: '${{ github.workspace }}/codeql'
+      TEST_CODEQL_PATH: '${{ github.workspace }}/codeql'
 
     steps:
       - name: Checkout

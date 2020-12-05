@@ -124,6 +124,7 @@ export interface CodeQLExtensionInterface {
   readonly distributionManager: DistributionManager;
   readonly databaseManager: DatabaseManager;
   readonly databaseUI: DatabaseUI;
+  readonly dispose: () => void;
 }
 
 /**
@@ -679,7 +680,10 @@ async function activateWithInstalledDistribution(
     qs,
     distributionManager,
     databaseManager: dbm,
-    databaseUI
+    databaseUI,
+    dispose: () => {
+      ctx.subscriptions.forEach(d => d.dispose());
+    }
   };
 }
 

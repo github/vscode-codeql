@@ -2,6 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { DistributionManager, extractZipArchive, codeQlLauncherName } from '../distribution';
 import fetch from 'node-fetch';
+import { workspace } from 'vscode';
 
 /**
  * This module ensures that the proper CLI is available for tests of the extension.
@@ -106,6 +107,22 @@ export async function ensureCli(useCli: boolean) {
 }
 
 /**
+ * Heuristically determines if the codeql libraries are installed in this
+ * workspace. Looks for the existance of a folder whose path ends in `/codeql`
+ */
+function hasCodeQL() {
+  const folders = workspace.workspaceFolders;
+  return !!folders?.some(folder => folder.uri.path.endsWith('/codeql'));
+}
+
+export function skipIfNoCodeQL(context: Mocha.Context) {
+  if (!hasCodeQL()) {
+    console.log('The CodeQL libraries are not available as a folder in this workspace. To fix: checkout the github/codeql repository and set the TEST_CODEQL_PATH environment variable to the checked out directory.');
+    context.skip();
+  }
+}
+
+/**
  * Url to download from
  */
 function getCliDownloadUrl(assetName: string) {
@@ -116,7 +133,7 @@ function getCliDownloadUrl(assetName: string) {
  * Directory to place the downloaded cli into
  */
 function getDownloadFilePath(assetName: string) {
-  const dir = path.join(CLI_BASE_DIR, 'assets');
+  const dir = path.join(CLI_BASE_DIR, 'assets', CLI_VERSION);
   fs.mkdirpSync(dir);
   return path.join(dir, assetName);
 }

@@ -2,8 +2,7 @@ import * as sinon from 'sinon';
 import * as path from 'path';
 import { fail } from 'assert';
 import { expect } from 'chai';
-import { extensions, CancellationToken, Uri } from 'vscode';
-import * as vscode from 'vscode';
+import { extensions, CancellationToken, Uri, window } from 'vscode';
 
 import { CodeQLExtensionInterface } from '../../extension';
 import { DatabaseManager } from '../../databases';
@@ -37,7 +36,7 @@ describe('Databases', function() {
       // the uri.fsPath function on windows returns a lowercase drive letter
       // so, force the storage path string to be lowercase, too.
       progressCallback = sandbox.spy();
-      inputBoxStub = sandbox.stub(vscode.window, 'showInputBox');
+      inputBoxStub = sandbox.stub(window, 'showInputBox');
     } catch (e) {
       fail(e);
     }
@@ -45,7 +44,7 @@ describe('Databases', function() {
 
   afterEach(() => {
     try {
-      databaseManager.dispose();
+      // dispose();
       sandbox.restore();
     } catch (e) {
       fail(e);
