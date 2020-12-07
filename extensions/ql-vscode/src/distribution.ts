@@ -337,27 +337,8 @@ class ExtensionSpecificDistributionManager {
       const archiveFile = fs.createWriteStream(archivePath);
 
       const contentLength = assetStream.headers.get('content-length');
-      let numBytesDownloaded = 0;
-
-      if (progressCallback && contentLength !== null) {
-        const totalNumBytes = parseInt(contentLength, 10);
-        const bytesToDisplayMB = (numBytes: number): string => `${(numBytes / (1024 * 1024)).toFixed(1)} MB`;
-        const updateProgress = (): void => {
-          progressCallback({
-            step: numBytesDownloaded,
-            maxStep: totalNumBytes,
-            message: `Downloading CodeQL CLI… [${bytesToDisplayMB(numBytesDownloaded)} of ${bytesToDisplayMB(totalNumBytes)}]`,
-          });
-        };
-
-        // Display the progress straight away rather than waiting for the first chunk.
-        updateProgress();
-
-        assetStream.body.on('data', data => {
-          numBytesDownloaded += data.length;
-          updateProgress();
-        });
-      }
+      const totalNumBytes = contentLength ? parseInt(contentLength, 10) : undefined;
+      helpers.reportStreamProgress(assetStream.body, 'Downloading CodeQL CLI…', totalNumBytes, progressCallback);
 
       await new Promise((resolve, reject) =>
         assetStream.body.pipe(archiveFile)

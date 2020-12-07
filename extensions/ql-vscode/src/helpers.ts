@@ -530,3 +530,46 @@ export async function isLikelyDatabaseRoot(maybeRoot: string) {
 export function isLikelyDbLanguageFolder(dbPath: string) {
   return !!path.basename(dbPath).startsWith('db-');
 }
+
+
+/**
+ * Displays a progress monitor that indicates how much progess has been made
+ * reading from a stream.
+ *
+ * @param readable The stream to read progress from
+ * @param messagePrefix A prefix for displaying the message
+ * @param totalNumBytes Total number of bytes in this stream
+ * @param progress The progress callback used to set messages
+ */
+export function reportStreamProgress(
+  readable: NodeJS.ReadableStream,
+  messagePrefix: string,
+  totalNumBytes?: number,
+  progress?: ProgressCallback
+) {
+  if (progress && totalNumBytes) {
+    let numBytesDownloaded = 0;
+    const bytesToDisplayMB = (numBytes: number): string => `${(numBytes / (1024 * 1024)).toFixed(1)} MB`;
+    const updateProgress = () => {
+      progress({
+        step: numBytesDownloaded,
+        maxStep: totalNumBytes,
+        message: `${messagePrefix} [${bytesToDisplayMB(numBytesDownloaded)} of ${bytesToDisplayMB(totalNumBytes)}]`,
+      });
+    };
+
+    // Display the progress straight away rather than waiting for the first chunk.
+    updateProgress();
+
+    readable.on('data', data => {
+      numBytesDownloaded += data.length;
+      updateProgress();
+    });
+  } else if (progress) {
+    progress({
+      step: 1,
+      maxStep: 2,
+      message: `${messagePrefix} (Size unknown)`,
+    });
+  }
+}
