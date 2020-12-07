@@ -8,6 +8,7 @@ import * as qsClient from './queryserver-client';
 import { upgradesTmpDir } from './run-queries';
 import * as tmp from 'tmp';
 import * as path from 'path';
+import * as semver from 'semver';
 import { getOnDiskWorkspaceFolders } from './helpers';
 
 /**
@@ -27,7 +28,7 @@ const MAX_UPGRADE_MESSAGE_LINES = 10;
 export async function hasNondestructiveUpgradeCapabilities(qs: qsClient.QueryServerClient): Promise<boolean> {
   // TODO change to actual version when known
   // Note it is probably something 2.4.something
-  return (await qs.cliServer.getVersion()).compare('2.3.2') >= 0;
+  return semver.gte(await qs.cliServer.getVersion(), '2.3.2');
 }
 
 
@@ -66,7 +67,7 @@ async function compileDatabaseUpgrade(
   if (await hasNondestructiveUpgradeCapabilities(qs)) {
     return await compileDatabaseUpgradeSequence(qs, db, targetDbScheme, resolvedSequence, currentUpgradeTmp, progress, token);
   } else {
-    if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
+    if (!db.contents?.dbSchemeUri) {
       throw new Error('Database is invalid, and cannot be upgraded.');
     }
     // We have the upgrades we want but compileUpgrade
@@ -123,7 +124,7 @@ async function checkAndConfirmDatabaseUpgrade(
     dialogOptions.push(showLogItem);
   }
 
-  const message = `Should the database ${db} be upgraded?\n\n${messageLines.join('\n')}`;
+  const message = `Should the database ${db.databaseUri.fsPath} be upgraded?\n\n${messageLines.join('\n')}`;
   const chosenItem = await vscode.window.showInformationMessage(message, { modal: true }, ...dialogOptions);
 
   if (chosenItem === showLogItem) {
@@ -164,7 +165,7 @@ export async function upgradeDatabaseExplicit(
 
   const searchPath: string[] = getOnDiskWorkspaceFolders();
 
-  if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
+  if (!db?.contents?.dbSchemeUri) {
     throw new Error('Database is invalid, and cannot be upgraded.');
   }
   const upgradeInfo = await qs.cliServer.resolveUpgrades(
