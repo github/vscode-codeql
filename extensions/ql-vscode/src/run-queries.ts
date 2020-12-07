@@ -330,9 +330,7 @@ async function checkDbschemeCompatibility(
   }
 }
 
-
 function reportNoUpgradePath(query: QueryInfo) {
-  logger.log(`Query ${query.program.queryPath} expects database scheme ${query.queryDbscheme}, but database has scheme ${query.program.dbschemePath}, and no upgrade path found`);
   throw new Error(`Query ${query.program.queryPath} expects database scheme ${query.queryDbscheme}, but the current database has a different scheme, and no database upgrades are available. The current database scheme may be newer than the CodeQL query libraries in your workspace. Please try using a newer version of the query libraries.`);
 }
 
@@ -348,7 +346,7 @@ async function compileNonDestructiveUpgrade(
 ): Promise<string> {
   const searchPath = helpers.getOnDiskWorkspaceFolders();
 
-  if (query.dbItem.contents === undefined || query.dbItem.contents.dbSchemeUri === undefined) {
+  if (!query.dbItem?.contents?.dbSchemeUri) {
     throw new Error('Database is invalid, and cannot be upgraded.');
   }
   const { scripts, matchesTarget } = await qs.cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath, query.queryDbscheme);
@@ -573,7 +571,8 @@ export async function compileAndRunQueryAgainstDatabase(
         throw e;
       }
     }
-    if (errors.length == 0) {
+
+    if (errors.length === 0) {
       const result = await query.run(qs, upgradeQlo, progress, token);
       if (result.resultType !== messages.QueryResultType.SUCCESS) {
         const message = result.message || 'Failed to run query';
@@ -611,10 +610,7 @@ export async function compileAndRunQueryAgainstDatabase(
       if (quickEval && formattedMessages.length <= 3) {
         showAndLogErrorMessage('Quick evaluation compilation failed: \n' + formattedMessages.join('\n'));
       } else {
-        showAndLogErrorMessage((quickEval ? 'Quick evaluation' : 'Query') +
-          ' compilation failed. Please make sure there are no errors in the query, the database is up to date,' +
-          ' and the query and database use the same target language. For more details on the error, go to View > Output,' +
-          ' and choose CodeQL Query Server from the dropdown.');
+        showAndLogErrorMessage((quickEval ? 'Quick evaluation' : 'Query') + compilationFailedErrorTail);
       }
 
       return createSyntheticResult(query, db, historyItemOptions, 'Query had compilation errors', messages.QueryResultType.OTHER_ERROR);
@@ -623,6 +619,10 @@ export async function compileAndRunQueryAgainstDatabase(
     upgradeDir.removeCallback();
   }
 }
+
+const compilationFailedErrorTail = ' compilation failed. Please make sure there are no errors in the query, the database is up to date,' +
+  ' and the query and database use the same target language. For more details on the error, go to View > Output,' +
+  ' and choose CodeQL Query Server from the dropdown.';
 
 function createSyntheticResult(
   query: QueryInfo,
