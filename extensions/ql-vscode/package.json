@@ -304,7 +304,7 @@
       },
       {
         "command": "codeQLQueryHistory.openQuery",
-        "title": "Open Query",
+        "title": "Open the query that produced these results",
         "icon": {
           "light": "media/light/edit.svg",
           "dark": "media/dark/edit.svg"
