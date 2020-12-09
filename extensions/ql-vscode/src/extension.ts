@@ -59,6 +59,7 @@ import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
 import { CompareInterfaceManager } from './compare/compare-interface';
 import { gatherQlFiles } from './pure/files';
+import runMultiQuery from './runMultiQuery';
 
 /**
  * extension.ts
@@ -592,6 +593,13 @@ async function activateWithInstalledDistribution(
     )
   );
 
+  ctx.subscriptions.push(
+    helpers.commandRunner('codeQL.scheduleMultiQuery', async (
+      uri: Uri | undefined
+    ) => {
+      runMultiQuery(uri || window.activeTextEditor?.document.uri);
+    })
+  );
   ctx.subscriptions.push(
     helpers.commandRunner('codeQL.restartQueryServer', async () => {
       await qs.restartQueryServer();
