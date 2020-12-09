@@ -345,7 +345,7 @@ async function promptUserToSaveChanges(document: TextDocument): Promise<boolean>
     else {
       const yesItem = { title: 'Yes', isCloseAffordance: false };
       const alwaysItem = { title: 'Always Save', isCloseAffordance: false };
-      const noItem = { title: 'No (run anyway)', isCloseAffordance: false };
+      const noItem = { title: 'No (run version on disk)', isCloseAffordance: false };
       const cancelItem = { title: 'Cancel', isCloseAffordance: true };
       const message = 'Query file has unsaved changes. Save now?';
       const chosenItem = await window.showInformationMessage(
@@ -477,6 +477,10 @@ export async function compileAndRunQueryAgainstDatabase(
   const diskWorkspaceFolders = helpers.getOnDiskWorkspaceFolders();
   // Figure out the library path for the query.
   const packConfig = await cliServer.resolveLibraryPath(diskWorkspaceFolders, queryPath);
+
+  if (!packConfig.dbscheme) {
+    throw new Error('Could not find a database scheme for this query. Please check that you have a valid qlpack.yml file for this query, which refers to a database scheme either in the `dbscheme` field or through one of its dependencies.');
+  }
 
   // Check whether the query has an entirely different schema from the
   // database. (Queries that merely need the database to be upgraded

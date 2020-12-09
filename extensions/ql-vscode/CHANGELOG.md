@@ -6,6 +6,8 @@
 - Fix bug when removing databases where sometimes the source folder would not be removed from the workspace or the database files would not be removed from the workspace storage location. [#692](https://github.com/github/vscode-codeql/pull/692)
 - Query results with no string representation will now be displayed with placeholder text in query results. Previously, they were omitted. [#694](https://github.com/github/vscode-codeql/pull/694)
 - Add a label for the language of a database in the databases view. This will only take effect for new databases created with the CodeQL CLI v2.4.1 or later. [#697](https://github.com/github/vscode-codeql/pull/697)
+- Add clearer error message when running a query using a missing or invalid qlpack. [#702](https://github.com/github/vscode-codeql/pull/702)
+- Add clearer error message when trying to run a command from the query history view if no item in the history is selected. [#702](https://github.com/github/vscode-codeql/pull/702)
 
 ## 1.3.7 - 24 November 2020
 
