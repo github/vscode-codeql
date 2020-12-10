@@ -15,6 +15,7 @@ interface Config {
   repositories: string[];
   ref?: string;
   language: string;
+  bundle: boolean;
 }
 
 export default async function runMultiQuery(uri?: Uri) {
@@ -41,6 +42,7 @@ export default async function runMultiQuery(uri?: Uri) {
 
   const ref = config.ref || 'main';
   const language = config.language;
+  const bundleDatabase = config.bundle || false;
   const repositories = JSON.stringify(config.repositories);
   const queryRunGuid = `${path.basename(queryFile)}-${Date.now()}`;
 
@@ -59,7 +61,13 @@ export default async function runMultiQuery(uri?: Uri) {
         language,
         repositories,
         query,
-        'query_run_guid': queryRunGuid
+        'query_run_guid': queryRunGuid,
+        ...(
+          // Avoid sending this key if it is false since the server may not support this input
+          bundleDatabase
+           ? { 'bundle_database': String(bundleDatabase) }
+           : {}
+        )
       }
     })
   });
