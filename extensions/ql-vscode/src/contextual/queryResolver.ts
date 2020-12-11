@@ -16,7 +16,8 @@ export async function qlpackOfDatabase(cli: CodeQLCliServer, db: DatabaseItem): 
   if (db.contents === undefined)
     return undefined;
   const datasetPath = db.contents.datasetUri.fsPath;
-  return await helpers.getQlPackForDbscheme(cli, datasetPath);
+  const dbscheme = await helpers.getPrimaryDbscheme(datasetPath);
+  return await helpers.getQlPackForDbscheme(cli, dbscheme);
 }
 
 
