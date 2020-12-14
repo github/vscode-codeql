@@ -1,5 +1,5 @@
 import { DisposableObject } from './vscode-utils/disposable-object';
-import { showAndLogErrorMessage } from './helpers';
+import { logger } from './logging';
 
 /**
  * Base class for "discovery" operations, which scan the file system to find specific kinds of
@@ -62,7 +62,7 @@ export abstract class Discovery<T> extends DisposableObject {
     });
 
     discoveryPromise.catch(err => {
-      showAndLogErrorMessage(`${this.name} failed. Reason: ${err.message}`);
+      logger.log(`${this.name} failed. Reason: ${err.message}`);
     });
 
     discoveryPromise.finally(() => {
