@@ -2,20 +2,27 @@ import 'vscode-test';
 import 'mocha';
 import { Uri, WorkspaceFolder } from 'vscode';
 import { expect } from 'chai';
+import * as fs from 'fs-extra';
+import * as sinon from 'sinon';
 
 import { QLTestDiscovery } from '../../qltest-discovery';
 
 describe('qltest-discovery', () => {
   describe('discoverTests', () => {
-    it('should run discovery', async () => {
-      const baseUri = Uri.parse('file:/a/b');
-      const baseDir = baseUri.fsPath;
-      const cDir = Uri.parse('file:/a/b/c').fsPath;
-      const dFile = Uri.parse('file:/a/b/c/d.ql').fsPath;
-      const eFile = Uri.parse('file:/a/b/c/e.ql').fsPath;
-      const hDir = Uri.parse('file:/a/b/c/f/g/h').fsPath;
-      const iFile = Uri.parse('file:/a/b/c/f/g/h/i.ql').fsPath;
-      const qlTestDiscover = new QLTestDiscovery(
+    let sandbox: sinon.SinonSandbox;
+
+    const baseUri = Uri.parse('file:/a/b');
+    const baseDir = baseUri.fsPath;
+    const cDir = Uri.parse('file:/a/b/c').fsPath;
+    const dFile = Uri.parse('file:/a/b/c/d.ql').fsPath;
+    const eFile = Uri.parse('file:/a/b/c/e.ql').fsPath;
+    const hDir = Uri.parse('file:/a/b/c/f/g/h').fsPath;
+    const iFile = Uri.parse('file:/a/b/c/f/g/h/i.ql').fsPath;
+    let qlTestDiscover: QLTestDiscovery;
+
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+      qlTestDiscover = new QLTestDiscovery(
         {
           uri: baseUri,
           name: 'My tests'
@@ -30,6 +37,15 @@ describe('qltest-discovery', () => {
           }
         } as any
       );
+
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it('should run discovery', async () => {
+      sandbox.stub(fs, 'pathExists').resolves(true);
 
       const result = await (qlTestDiscover as any).discover();
       expect(result.watchPath).to.eq(baseDir);
@@ -55,6 +71,16 @@ describe('qltest-discovery', () => {
       children = children[2].children;
       expect(children[0].path).to.eq(iFile);
       expect(children[0].name).to.eq('i.ql');
+    });
+
+    it('should avoid discovery if a folder does not exist', async () => {
+      sandbox.stub(fs, 'pathExists').resolves(false);
+      const result = await (qlTestDiscover as any).discover();
+      expect(result.watchPath).to.eq(baseDir);
+      expect(result.testDirectory.path).to.eq(baseDir);
+      expect(result.testDirectory.name).to.eq('My tests');
+
+      expect(result.testDirectory.children.length).to.eq(0);
     });
   });
 });
