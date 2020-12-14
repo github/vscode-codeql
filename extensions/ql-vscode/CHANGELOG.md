@@ -8,6 +8,7 @@
 - Add a label for the language of a database in the databases view. This will only take effect for new databases created with the CodeQL CLI v2.4.1 or later. [#697](https://github.com/github/vscode-codeql/pull/697)
 - Add clearer error message when running a query using a missing or invalid qlpack. [#702](https://github.com/github/vscode-codeql/pull/702)
 - Add clearer error message when trying to run a command from the query history view if no item in the history is selected. [#702](https://github.com/github/vscode-codeql/pull/702)
+- Fix a bug where it is not possible to download some database archives. This fix specifically addresses large archives and archives whose central directories do not align with file headers. [#700](https://github.com/github/vscode-codeql/pull/700)
 
 ## 1.3.7 - 24 November 2020
 

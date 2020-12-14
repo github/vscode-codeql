@@ -12,10 +12,12 @@ import * as path from 'path';
 
 import { DatabaseManager, DatabaseItem } from './databases';
 import {
+  reportStreamProgress,
   ProgressCallback,
   showAndLogInformationMessage,
 } from './helpers';
 import { logger } from './logging';
+import { tmpDir } from './run-queries';
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -164,7 +166,7 @@ async function databaseArchiveFetcher(
   const unzipPath = await getStorageFolder(storagePath, databaseUrl);
 
   if (isFile(databaseUrl)) {
-    await readAndUnzip(databaseUrl, unzipPath);
+    await readAndUnzip(databaseUrl, unzipPath, progress);
   } else {
     await fetchAndUnzip(databaseUrl, unzipPath, progress);
   }
@@ -237,48 +239,67 @@ function validateHttpsUrl(databaseUrl: string) {
   }
 }
 
-async function readAndUnzip(databaseUrl: string, unzipPath: string) {
-  const databaseFile = Uri.parse(databaseUrl).fsPath;
-  const directory = await unzipper.Open.file(databaseFile);
+async function readAndUnzip(
+  zipUrl: string,
+  unzipPath: string,
+  progress?: ProgressCallback
+) {
+  // TODO: Providing progress as the file is unzipped is currently blocked
+  // on https://github.com/ZJONSSON/node-unzipper/issues/222
+  const zipFile = Uri.parse(zipUrl).fsPath;
+  progress?.({
+    maxStep: 10,
+    step: 9,
+    message: `Unzipping into ${path.basename(unzipPath)}`
+  });
+  // Must get the zip central directory since streaming the
+  // zip contents may not have correct local file headers.
+  // Instead, we can only rely on the central directory.
+  const directory = await unzipper.Open.file(zipFile);
   await directory.extract({ path: unzipPath });
 }
 
 async function fetchAndUnzip(
   databaseUrl: string,
   unzipPath: string,
-  progressCallback?: ProgressCallback
+  progress?: ProgressCallback
 ) {
-  const response = await fetch(databaseUrl);
+  // Although it is possible to download and stream directly to an unzipped directory,
+  // we need to avoid this for two reasons. The central directory is located at the
+  // end of the zip file. It is the source of truth of the content locations. Individual
+  // file headers may be incorrect. Additionally, saving to file first will reduce memory
+  // pressure compared with unzipping while downloading the archive.
 
-  await checkForFailingResponse(response);
+  const archivePath = path.join(tmpDir.name, `archive-${Date.now()}.zip`);
 
-  const unzipStream = unzipper.Extract({
-    path: unzipPath,
-  });
-
-  progressCallback?.({
+  progress?.({
     maxStep: 3,
-    message: 'Unzipping database',
-    step: 2,
+    message: 'Downloading database',
+    step: 1,
   });
-  await new Promise((resolve, reject) => {
-    const handler = (err: Error) => {
-      if (err.message.startsWith('invalid signature')) {
-        reject(new Error('Not a valid archive.'));
-      } else {
-        reject(err);
-      }
-    };
-    response.body.on('error', handler);
-    unzipStream.on('error', handler);
-    unzipStream.on('close', resolve);
-    response.body.pipe(unzipStream);
-  });
+
+  const response = await checkForFailingResponse(await fetch(databaseUrl));
+  const archiveFileStream = fs.createWriteStream(archivePath);
+
+  const contentLength = response.headers.get('content-length');
+  const totalNumBytes = contentLength ? parseInt(contentLength, 10) : undefined;
+  reportStreamProgress(response.body, 'Downloading database', totalNumBytes, progress);
+
+  await new Promise((resolve, reject) =>
+    response.body.pipe(archiveFileStream)
+      .on('finish', resolve)
+      .on('error', reject)
+  );
+
+  await readAndUnzip(Uri.file(archivePath).toString(true), unzipPath, progress);
+
+  // remove archivePath eagerly since these archives can be large.
+  await fs.remove(archivePath);
 }
 
-async function checkForFailingResponse(response: Response): Promise<void | never> {
+async function checkForFailingResponse(response: Response): Promise<Response | never> {
   if (response.ok) {
-    return;
+    return response;
   }
 
   // An error downloading the database. Attempt to extract the resaon behind it.
