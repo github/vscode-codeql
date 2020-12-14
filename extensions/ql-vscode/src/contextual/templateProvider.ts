@@ -156,9 +156,6 @@ export class TemplatePrintAstProvider {
     }
 
     const qlpack = await qlpackOfDatabase(this.cli, db);
-    if (!qlpack) {
-      throw new Error('Can\'t infer qlpack from database source archive');
-    }
     const queries = await resolveQueries(this.cli, qlpack, KeyType.PrintAstQuery);
     if (queries.length > 1) {
       throw new Error('Found multiple Print AST queries. Can\'t continue');

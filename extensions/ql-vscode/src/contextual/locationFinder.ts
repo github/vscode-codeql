@@ -52,9 +52,6 @@ export async function getLocationsForUriString(
   }
 
   const qlpack = await qlpackOfDatabase(cli, db);
-  if (qlpack === undefined) {
-    throw new Error('Can\'t infer qlpack from database source archive');
-  }
   const templates = createTemplates(uri.pathWithinSourceArchive);
 
   const links: FullLocationLink[] = [];

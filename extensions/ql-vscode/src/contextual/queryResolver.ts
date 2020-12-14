@@ -12,9 +12,10 @@ import {
 import { CodeQLCliServer } from '../cli';
 import { DatabaseItem } from '../databases';
 
-export async function qlpackOfDatabase(cli: CodeQLCliServer, db: DatabaseItem): Promise<string | undefined> {
-  if (db.contents === undefined)
-    return undefined;
+export async function qlpackOfDatabase(cli: CodeQLCliServer, db: DatabaseItem): Promise<string> {
+  if (db.contents === undefined) {
+    throw new Error('Database is invalid and cannot infer QLPack.');
+  }
   const datasetPath = db.contents.datasetUri.fsPath;
   const dbscheme = await helpers.getPrimaryDbscheme(datasetPath);
   return await helpers.getQlPackForDbscheme(cli, dbscheme);

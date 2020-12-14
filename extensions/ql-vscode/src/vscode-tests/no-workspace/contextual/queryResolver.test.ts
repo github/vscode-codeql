@@ -17,6 +17,7 @@ describe('queryResolver', () => {
   let module: Record<string, Function>;
   let writeFileSpy: sinon.SinonSpy;
   let getQlPackForDbschemeSpy: sinon.SinonStub;
+  let getPrimaryDbschemeSpy: sinon.SinonStub;
   let mockCli: Record<string, sinon.SinonStub>;
   beforeEach(() => {
     mockCli = {
@@ -70,13 +71,14 @@ describe('queryResolver', () => {
       };
       const result = await module.qlpackOfDatabase(mockCli, db);
       expect(result).to.eq('my-qlpack');
-      expect(getQlPackForDbschemeSpy).to.have.been.calledWith(mockCli, '/path/to/database');
+      expect(getPrimaryDbschemeSpy).to.have.been.calledWith('/path/to/database');
     });
   });
 
   function createModule() {
     writeFileSpy = sinon.spy();
     getQlPackForDbschemeSpy = sinon.stub();
+    getPrimaryDbschemeSpy = sinon.stub();
     return proxyquire('../../../contextual/queryResolver', {
       'fs-extra': {
         writeFile: writeFileSpy
@@ -84,6 +86,7 @@ describe('queryResolver', () => {
 
       '../helpers': {
         getQlPackForDbscheme: getQlPackForDbschemeSpy,
+        getPrimaryDbscheme: getPrimaryDbschemeSpy,
         getOnDiskWorkspaceFolders: () => ({}),
         showAndLogErrorMessage: () => ({})
       }
