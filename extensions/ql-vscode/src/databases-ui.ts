@@ -384,7 +384,7 @@ export class DatabaseUI extends DisposableObject {
       !(await fs.pathExists(this.storagePath) ||
         !(await fs.stat(this.storagePath)).isDirectory())
     ) {
-      // ignore a missing or invalid storage directory.
+      logger.log('Missing or invalid storage directory. Not trying to remove orphaned databases.');
       return;
     }
 
