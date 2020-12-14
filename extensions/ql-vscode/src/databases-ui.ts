@@ -378,7 +378,17 @@ export class DatabaseUI extends DisposableObject {
 
   handleRemoveOrphanedDatabases = async (): Promise<void> => {
     logger.log('Removing orphaned databases from workspace storage.');
-    let dbDirs =
+    let dbDirs = undefined;
+
+    if (
+      !(await fs.pathExists(this.storagePath) ||
+        !(await fs.stat(this.storagePath)).isDirectory())
+    ) {
+      // ignore a missing or invalid storage directory.
+      return;
+    }
+
+    dbDirs =
       // read directory
       (await fs.readdir(this.storagePath, { withFileTypes: true }))
         // remove non-directories

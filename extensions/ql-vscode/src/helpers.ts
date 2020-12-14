@@ -123,15 +123,16 @@ export function commandRunner(
     try {
       return await task(...args);
     } catch (e) {
+      const errorMessage = `${e.message || e} (${commandId})`;
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
-          logger.log(e.message);
+          logger.log(errorMessage);
         } else {
-          showAndLogWarningMessage(e.message);
+          showAndLogWarningMessage(errorMessage);
         }
       } else {
-        showAndLogErrorMessage(e.message || e);
+        showAndLogErrorMessage(errorMessage);
       }
       return undefined;
     }
@@ -161,15 +162,16 @@ export function commandRunnerWithProgress<R>(
     try {
       return await withProgress(progressOptionsWithDefaults, task, ...args);
     } catch (e) {
+      const errorMessage = `${e.message || e} (${commandId})`;
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
-          logger.log(e.message);
+          logger.log(errorMessage);
         } else {
-          showAndLogWarningMessage(e.message);
+          showAndLogWarningMessage(errorMessage);
         }
       } else {
-        showAndLogErrorMessage(e.message || e);
+        showAndLogErrorMessage(errorMessage);
       }
       return undefined;
     }

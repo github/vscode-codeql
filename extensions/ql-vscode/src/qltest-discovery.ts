@@ -3,6 +3,7 @@ import { Discovery } from './discovery';
 import { EventEmitter, Event, Uri, RelativePattern, WorkspaceFolder, env } from 'vscode';
 import { MultiFileSystemWatcher } from './vscode-utils/multi-file-system-watcher';
 import { CodeQLCliServer } from './cli';
+import * as fs from 'fs-extra';
 
 /**
  * A node in the tree of tests. This will be either a `QLTestDirectory` or a `QLTestFile`.
@@ -180,19 +181,21 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
   private async discoverTests(): Promise<QLTestDirectory> {
     const fullPath = this.workspaceFolder.uri.fsPath;
     const name = this.workspaceFolder.name;
-    const resolvedTests = (await this.cliServer.resolveTests(fullPath))
-      .filter((testPath) => !QLTestDiscovery.ignoreTestPath(testPath));
-
     const rootDirectory = new QLTestDirectory(fullPath, name);
-    for (const testPath of resolvedTests) {
-      const relativePath = path.normalize(path.relative(fullPath, testPath));
-      const dirName = path.dirname(relativePath);
-      const parentDirectory = rootDirectory.createDirectory(dirName);
-      parentDirectory.addChild(new QLTestFile(testPath, path.basename(testPath)));
+
+    // Don't try discovery on workspace folders that don't exist on the filesystem
+    if ((await fs.pathExists(fullPath))) {
+      const resolvedTests = (await this.cliServer.resolveTests(fullPath))
+        .filter((testPath) => !QLTestDiscovery.ignoreTestPath(testPath));
+      for (const testPath of resolvedTests) {
+        const relativePath = path.normalize(path.relative(fullPath, testPath));
+        const dirName = path.dirname(relativePath);
+        const parentDirectory = rootDirectory.createDirectory(dirName);
+        parentDirectory.addChild(new QLTestFile(testPath, path.basename(testPath)));
+      }
+
+      rootDirectory.finish();
     }
-
-    rootDirectory.finish();
-
     return rootDirectory;
   }
 
