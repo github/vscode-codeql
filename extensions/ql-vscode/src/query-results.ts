@@ -1,4 +1,4 @@
-import { env, TreeItem } from 'vscode';
+import { env } from 'vscode';
 
 import { QueryWithResults, tmpDir, QueryInfo } from './run-queries';
 import * as messages from './pure/messages';
@@ -17,7 +17,6 @@ export class CompletedQuery implements QueryWithResults {
   readonly database: DatabaseInfo;
   readonly logFileLocation?: string;
   options: QueryHistoryItemOptions;
-  treeItem?: TreeItem;
   dispose: () => void;
 
   /**
