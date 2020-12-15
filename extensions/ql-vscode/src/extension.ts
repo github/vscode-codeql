@@ -452,7 +452,7 @@ async function activateWithInstalledDistribution(
       // The call to showResults potentially creates SARIF file;
       // Update the tree item context value to allow viewing that
       // SARIF file from context menu.
-      await qhm.updateTreeItemContextValue(item);
+      await qhm.refreshTreeView(item);
     }
   }
 
