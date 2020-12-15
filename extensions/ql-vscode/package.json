@@ -196,7 +196,7 @@
       },
       {
         "command": "codeQLDatabases.chooseDatabaseFolder",
-        "title": "Choose Database from Folder",
+        "title": "Add Database from Folder",
         "icon": {
           "light": "media/light/folder-opened-plus.svg",
           "dark": "media/dark/folder-opened-plus.svg"
@@ -208,7 +208,7 @@
       },
       {
         "command": "codeQLDatabases.chooseDatabaseArchive",
-        "title": "Choose Database from Archive",
+        "title": "Add Database from Archive",
         "icon": {
           "light": "media/light/archive-plus.svg",
           "dark": "media/dark/archive-plus.svg"
@@ -216,7 +216,7 @@
       },
       {
         "command": "codeQLDatabases.chooseDatabaseInternet",
-        "title": "Download Database",
+        "title": "Add Database from Internet",
         "icon": {
           "light": "media/light/cloud-download.svg",
           "dark": "media/dark/cloud-download.svg"
@@ -224,7 +224,7 @@
       },
       {
         "command": "codeQLDatabases.chooseDatabaseLgtm",
-        "title": "Download from LGTM",
+        "title": "Add Database from LGTM",
         "icon": {
           "light": "media/light/lgtm-plus.svg",
           "dark": "media/dark/lgtm-plus.svg"
@@ -398,22 +398,22 @@
         {
           "command": "codeQLDatabases.chooseDatabaseFolder",
           "when": "view == codeQLDatabases",
-          "group": "navigation"
+          "group": "1_open@1"
         },
         {
           "command": "codeQLDatabases.chooseDatabaseArchive",
           "when": "view == codeQLDatabases",
-          "group": "navigation"
+          "group": "1_open@2"
         },
         {
           "command": "codeQLDatabases.chooseDatabaseInternet",
           "when": "view == codeQLDatabases",
-          "group": "navigation"
+          "group": "1_open@3"
         },
         {
           "command": "codeQLDatabases.chooseDatabaseLgtm",
           "when": "view == codeQLDatabases",
-          "group": "navigation"
+          "group": "1_open@4"
         },
         {
           "command": "codeQLQueryHistory.openQuery",

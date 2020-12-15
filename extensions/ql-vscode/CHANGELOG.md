@@ -10,6 +10,7 @@
 - Add clearer error message when trying to run a command from the query history view if no item in the history is selected. [#702](https://github.com/github/vscode-codeql/pull/702)
 - Fix a bug where it is not possible to download some database archives. This fix specifically addresses large archives and archives whose central directories do not align with file headers. [#700](https://github.com/github/vscode-codeql/pull/700)
 - Avoid error dialogs when QL test discovery or database cleanup encounters a missing directory. [#706](https://github.com/github/vscode-codeql/pull/706)
+- Move _Add Database_ commands from the navigation bar at the top of the Databases view and into the overflow menu. [#708](https://github.com/github/vscode-codeql/pull/708)
 
 ## 1.3.7 - 24 November 2020
 
