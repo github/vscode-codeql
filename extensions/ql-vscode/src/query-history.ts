@@ -55,7 +55,7 @@ const FAILED_QUERY_HISTORY_ITEM_ICON = 'media/red-x.svg';
 /**
  * Tree data provider for the query history view.
  */
-class HistoryTreeDataProvider extends DisposableObject {
+export class HistoryTreeDataProvider extends DisposableObject {
   private _onDidChangeTreeData = super.push(new vscode.EventEmitter<CompletedQuery | undefined>());
 
   readonly onDidChangeTreeData: vscode.Event<CompletedQuery | undefined> = this
@@ -144,8 +144,8 @@ class HistoryTreeDataProvider extends DisposableObject {
     return this.history;
   }
 
-  refresh(CompletedQuery?: CompletedQuery) {
-    this._onDidChangeTreeData.fire(CompletedQuery);
+  refresh(completedQuery?: CompletedQuery) {
+    this._onDidChangeTreeData.fire(completedQuery);
   }
 
   find(queryId: number): CompletedQuery | undefined {
@@ -356,7 +356,7 @@ export class QueryHistoryManager extends DisposableObject {
     if (response !== undefined) {
       // Interpret empty string response as 'go back to using default'
       singleItem.options.label = response === '' ? undefined : response;
-      this.treeDataProvider.refresh();
+      this.treeDataProvider.refresh(singleItem);
     }
   }
 
