@@ -88,6 +88,8 @@ export interface SetStateMsg {
   interpretation: undefined | Interpretation;
   database: DatabaseInfo;
   metadata?: QueryMetadata;
+  queryName: string;
+  queryPath: string;
   /**
    * Whether to keep displaying the old results while rendering the new results.
    *
@@ -116,6 +118,8 @@ export interface ShowInterpretedPageMsg {
   numPages: number;
   pageSize: number;
   resultSetNames: string[];
+  queryName: string;
+  queryPath: string;
 }
 
 /** Advance to the next or previous path no in the path viewer */
@@ -153,7 +157,8 @@ export type FromResultsViewMsg =
   | ChangeRawResultsSortMsg
   | ChangeInterpretedResultsSortMsg
   | ResultViewLoaded
-  | ChangePage;
+  | ChangePage
+  | OpenFileMsg;
 
 /**
  * Message from the results view to open a database source
@@ -165,6 +170,14 @@ export interface ViewSourceFileMsg {
   databaseUri: string;
 }
 
+/**
+ * Message from the results view to open a file in an editor.
+ */
+export interface OpenFileMsg {
+  t: 'openFile';
+  /* Full path to the file to open. */
+  filePath: string;
+}
 
 /**
  * Message from the results view to toggle the display of

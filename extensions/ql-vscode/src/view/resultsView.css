@@ -8,13 +8,24 @@
   display: flex;
   padding: 0.5em 0;
   align-items: center;
+  justify-content: space-between;
+}
+
+.vscode-codeql__table-selection-pagination {
+  display: flex;
+  padding: 0.5em 0;
+  align-items: center;
+}
+
+.vscode-codeql__table-selection-header-item {
+  padding-left: 2em;
 }
 
 .vscode-codeql__table-selection-header select {
   border: 0;
 }
 
-.vscode-codeql__table-selection-header button {
+.vscode-codeql__table-selection-pagination button {
   padding: 0.3rem;
   margin: 0.2rem;
   border: 0;
@@ -25,11 +36,11 @@
   opacity: 0.8;
 }
 
-.vscode-codeql__table-selection-header button:hover {
+.vscode-codeql__table-selection-pagination button:hover {
   opacity: 1;
 }
 
-.vscode-codeql__table-selection-header input[type="number"] {
+.vscode-codeql__table-selection-pagination input[type="number"] {
   border-radius: 0;
   padding: 0.3rem;
   margin: 0.2rem;
@@ -183,10 +194,6 @@ td.vscode-codeql__path-index-cell {
 
 .octicon-light {
   opacity: 0.6;
-}
-
-.number-of-results {
-  padding-left: 3em;
 }
 
 .vscode-codeql__compare-header {

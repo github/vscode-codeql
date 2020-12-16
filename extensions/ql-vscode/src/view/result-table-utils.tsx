@@ -28,7 +28,8 @@ export interface ResultTableProps {
 }
 
 export const className = 'vscode-codeql__result-table';
-export const tableSelectionHeaderClassName = 'vscode-codeql__table-selection-header';
+export const tableHeaderClassName = 'vscode-codeql__table-selection-header';
+export const tableHeaderItemClassName = 'vscode-codeql__table-selection-header-item';
 export const alertExtrasClassName = `${className}-alert-extras`;
 export const toggleDiagnosticsClassName = `${className}-toggle-diagnostics`;
 export const evenRowClassName = 'vscode-codeql__result-table-row--even';
@@ -45,7 +46,9 @@ export function jumpToLocationHandler(
     jumpToLocation(loc, databaseUri);
     e.preventDefault();
     e.stopPropagation();
-    if (callback) callback();
+    if (callback) {
+      callback();
+    }
   };
 }
 
@@ -54,6 +57,13 @@ export function jumpToLocation(loc: ResolvableLocationValue, databaseUri: string
     t: 'viewSourceFile',
     loc,
     databaseUri
+  });
+}
+
+export function openFile(filePath: string): void {
+  vscode.postMessage({
+    t: 'openFile',
+    filePath
   });
 }
 
