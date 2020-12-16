@@ -99,6 +99,7 @@ async function compileDatabaseUpgrade(
 async function checkAndConfirmDatabaseUpgrade(
   compiled: messages.CompiledUpgrades,
   db: DatabaseItem,
+  quiet: boolean
 ): Promise<void> {
 
   let descriptionMessage = '';
@@ -109,6 +110,11 @@ async function checkAndConfirmDatabaseUpgrade(
   }
   logger.log(descriptionMessage);
 
+
+  // If the quiet flag is set, do the upgrade without a popup.
+  if (quiet) {
+    return;
+  }
 
   // Ask the user to confirm the upgrade.
 
@@ -198,11 +204,7 @@ export async function upgradeDatabaseExplicit(
       return;
     }
 
-
-    // If the quiet flag is set, do the upgrade without a popup.
-    if (!qs.cliServer.quiet) {
-      await checkAndConfirmDatabaseUpgrade(compileUpgradeResult.compiledUpgrades, db);
-    }
+    await checkAndConfirmDatabaseUpgrade(compileUpgradeResult.compiledUpgrades, db, qs.cliServer.quiet);
 
     try {
       qs.logger.log('Running the following database upgrade:');
