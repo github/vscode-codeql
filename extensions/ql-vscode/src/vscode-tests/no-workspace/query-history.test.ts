@@ -5,7 +5,9 @@ import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 import { logger } from '../../logging';
-import { QueryHistoryManager } from '../../query-history';
+import { QueryHistoryManager, HistoryTreeDataProvider } from '../../query-history';
+import { CompletedQuery } from '../../query-results';
+import { QueryInfo } from '../../run-queries';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -43,7 +45,6 @@ describe('query-history', () => {
   });
 
   describe('tryOpenExternalFile', () => {
-
     it('should open an external file', async () => {
       await tryOpenExternalFile('xxx');
       expect(showTextDocumentSpy).to.have.been.calledOnceWith(
@@ -202,6 +203,67 @@ describe('query-history', () => {
       queryHistory.compareWithItem = 'a';
       queryHistory.updateCompareWith(['a', 'b']);
       expect(queryHistory.compareWithItem).to.be.eq('a');
+    });
+  });
+
+  describe('HistoryTreeDataProvider', () => {
+    let historyTreeDataProvider: HistoryTreeDataProvider;
+    beforeEach(() => {
+      historyTreeDataProvider = new HistoryTreeDataProvider(vscode.Uri.file('/a/b/c').fsPath);
+    });
+
+    it('should get a tree item with raw results', async () => {
+      const mockQuery = {
+        query: {
+          hasInterpretedResults: () => Promise.resolve(false)
+        } as QueryInfo,
+        didRunSuccessfully: true,
+        toString: () => 'mock label'
+      } as CompletedQuery;
+      const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
+      expect(treeItem.command).to.deep.eq({
+        title: 'Query History Item',
+        command: 'codeQLQueryHistory.itemClicked',
+        arguments: [mockQuery],
+      });
+      expect(treeItem.label).to.eq('mock label');
+      expect(treeItem.contextValue).to.eq('rawResultsItem');
+      expect(treeItem.iconPath).to.be.undefined;
+    });
+
+    it('should get a tree item with interpreted results', async () => {
+      const mockQuery = {
+        query: {
+          // as above, except for this line
+          hasInterpretedResults: () => Promise.resolve(true)
+        } as QueryInfo,
+        didRunSuccessfully: true,
+        toString: () => 'mock label'
+      } as CompletedQuery;
+      const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
+      expect(treeItem.contextValue).to.eq('interpretedResultsItem');
+    });
+
+    it('should get a tree item that did not complete successfully', async () => {
+      const mockQuery = {
+        query: {
+          hasInterpretedResults: () => Promise.resolve(true)
+        } as QueryInfo,
+        // as above, except for this line
+        didRunSuccessfully: false,
+        toString: () => 'mock label'
+      } as CompletedQuery;
+      const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
+      expect(treeItem.iconPath).to.eq(vscode.Uri.file('/a/b/c/media/red-x.svg').fsPath);
+    });
+
+    it('should get children', () => {
+      const mockQuery = {
+        databaseName: 'abc'
+      } as CompletedQuery;
+      historyTreeDataProvider.allHistory.push(mockQuery);
+      expect(historyTreeDataProvider.getChildren()).to.deep.eq([mockQuery]);
+      expect(historyTreeDataProvider.getChildren(mockQuery)).to.deep.eq([]);
     });
   });
 });
