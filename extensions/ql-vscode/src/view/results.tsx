@@ -11,7 +11,7 @@ import {
   QueryMetadata,
   ResultsPaths,
   ALERTS_TABLE_NAME,
-  ParsedResultSets
+  ParsedResultSets,
 } from '../pure/interface-types';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 import { ResultTables } from './result-tables';
@@ -37,6 +37,8 @@ interface ResultsInfo {
    */
   shouldKeepOldResultsWhileRendering: boolean;
   metadata?: QueryMetadata;
+  queryName: string;
+  queryPath: string;
 }
 
 interface Results {
@@ -96,6 +98,8 @@ class App extends React.Component<{}, ResultsViewState> {
           shouldKeepOldResultsWhileRendering:
             msg.shouldKeepOldResultsWhileRendering,
           metadata: msg.metadata,
+          queryName: msg.queryName,
+          queryPath: msg.queryPath,
         });
 
         this.loadResults();
@@ -127,6 +131,8 @@ class App extends React.Component<{}, ResultsViewState> {
           interpretation: msg.interpretation,
           shouldKeepOldResultsWhileRendering: true,
           metadata: msg.metadata,
+          queryName: msg.queryName,
+          queryPath: msg.queryPath,
         });
         this.loadResults();
         break;
@@ -280,6 +286,8 @@ class App extends React.Component<{}, ResultsViewState> {
             this.state.isExpectingResultsUpdate ||
             this.state.nextResultsInfo !== null
           }
+          queryName={displayedResults.resultsInfo.queryName}
+          queryPath={displayedResults.resultsInfo.queryPath}
         />
       );
     } else {

@@ -286,6 +286,9 @@ export class InterfaceManager extends DisposableObject {
           );
         }
         break;
+      case 'openFile':
+        await this.openFile(msg.filePath);
+        break;
       default:
         assertNever(msg);
     }
@@ -413,6 +416,8 @@ export class InterfaceManager extends DisposableObject {
       database: results.database,
       shouldKeepOldResultsWhileRendering,
       metadata: results.query.metadata,
+      queryName: results.toString(),
+      queryPath: results.query.program.queryPath
     });
   }
 
@@ -444,6 +449,8 @@ export class InterfaceManager extends DisposableObject {
       resultSetNames,
       pageSize: PAGE_SIZE.getValue(),
       numPages: numInterpretedPages(this._interpretation),
+      queryName: this._displayedQuery.toString(),
+      queryPath: this._displayedQuery.query.program.queryPath
     });
   }
 
@@ -454,6 +461,11 @@ export class InterfaceManager extends DisposableObject {
       PAGE_SIZE.getValue()
     );
     return schemas['result-sets'];
+  }
+
+  public async openFile(filePath: string) {
+    const textDocument = await vscode.workspace.openTextDocument(filePath);
+    await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
   }
 
   /**
@@ -517,6 +529,8 @@ export class InterfaceManager extends DisposableObject {
       database: results.database,
       shouldKeepOldResultsWhileRendering: false,
       metadata: results.query.metadata,
+      queryName: results.toString(),
+      queryPath: results.query.program.queryPath
     });
   }
 
@@ -534,8 +548,9 @@ export class InterfaceManager extends DisposableObject {
       sourceInfo
     );
     sarif.runs.forEach(run => {
-      if (run.results !== undefined)
+      if (run.results !== undefined) {
         sortInterpretedResults(run.results, sortState);
+      }
     });
 
     const numTotalResults = (() => {

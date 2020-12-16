@@ -11,18 +11,22 @@ import {
   SELECT_TABLE_NAME,
   getDefaultResultSetName,
   ParsedResultSets,
-  IntoResultsViewMsg
+  IntoResultsViewMsg,
 } from '../pure/interface-types';
 import { PathTable } from './alert-table';
 import { RawTable } from './raw-results-table';
 import {
   ResultTableProps,
-  tableSelectionHeaderClassName,
+  tableHeaderClassName,
+  tableHeaderItemClassName,
   toggleDiagnosticsClassName,
-  alertExtrasClassName
+  alertExtrasClassName,
+  openFile
 } from './result-table-utils';
 import { vscode } from './vscode-api';
 
+
+const FILE_PATH_REGEX = /^(?:.+[\\/])*(.+)$/;
 
 /**
  * Properties for the `ResultTables` component.
@@ -38,6 +42,8 @@ export interface ResultTablesProps {
   sortStates: Map<string, RawResultsSortState>;
   interpretedSortState?: InterpretedResultsSortState;
   isLoadingNewResults: boolean;
+  queryName: string;
+  queryPath: string;
 }
 
 /**
@@ -62,7 +68,7 @@ function getResultCount(resultSet: ResultSet): number {
 
 function renderResultCountString(resultSet: ResultSet): JSX.Element {
   const resultCount = getResultCount(resultSet);
-  return <span className="number-of-results">
+  return <span className={tableHeaderItemClassName}>
     {resultCount} {resultCount === 1 ? 'result' : 'results'}
   </span>;
 }
@@ -213,28 +219,44 @@ export class ResultTables
       });
     };
 
-    return <span className="vscode-codeql__table-selection-header">
-      <button onClick={prevPage} >&#xab;</button>
-      <input
-        type="number"
-        size={3}
-        value={this.state.selectedPage}
-        min="1"
-        max={numPages}
-        onChange={onChange}
-        onBlur={e => choosePage(e.target.value)}
-        onKeyDown={e => {
-          if (e.keyCode === 13) {
-            choosePage((e.target as HTMLInputElement).value);
-          }
-        }
-        }
-      />
-      <span>
-        / {numPages}
+    const openQuery = () => {
+      openFile(this.props.queryPath);
+    };
+    const fileName = FILE_PATH_REGEX.exec(this.props.queryPath)?.[1] || 'query';
+
+    return (
+      <span className="vscode-codeql__table-selection-pagination">
+        <button onClick={prevPage} >&#xab;</button>
+        <input
+          type="number"
+          size={3}
+          value={this.state.selectedPage}
+          min="1"
+          max={numPages}
+          onChange={onChange}
+          onBlur={e => choosePage(e.target.value)}
+          onKeyDown={e => {
+            if (e.keyCode === 13) {
+              choosePage((e.target as HTMLInputElement).value);
+            }
+          }}
+        />
+        <span>
+          /&nbsp;{numPages}
+        </span>
+        <button value=">" onClick={nextPage} >&#xbb;</button>
+        <div className={tableHeaderItemClassName}>
+          {this.props.queryName}
+        </div>
+        <div className={tableHeaderItemClassName}>
+          <a
+            href="#"
+            onClick={openQuery}
+            className="vscode-codeql__result-table-location-link"
+          >Open {fileName}</a>
+        </div>
       </span>
-      <button value=">" onClick={nextPage} >&#xbb;</button>
-    </span>;
+    );
   }
 
   render(): React.ReactNode {
@@ -248,32 +270,35 @@ export class ResultTables
 
     const resultSetOptions =
       resultSetNames.map(name => <option key={name} value={name}>{name}</option>);
-
-    return <div>
-      {this.renderPageButtons()}
-      <div className={tableSelectionHeaderClassName}>
-        <select value={selectedTable} onChange={this.onTableSelectionChange}>
-          {resultSetOptions}
-        </select>
-        {numberOfResults}
-        {selectedTable === ALERTS_TABLE_NAME ? this.alertTableExtras() : undefined}
+    return (
+      <div>
+        {this.renderPageButtons()}
+        <div className={tableHeaderClassName}>
+        </div>
+        <div className={tableHeaderClassName}>
+          <select value={selectedTable} onChange={this.onTableSelectionChange}>
+            {resultSetOptions}
+          </select>
+          {numberOfResults}
+          {selectedTable === ALERTS_TABLE_NAME ? this.alertTableExtras() : undefined}
+          {
+            this.props.isLoadingNewResults ?
+              <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>Updating results…</span>
+              : null
+          }
+        </div>
         {
-          this.props.isLoadingNewResults ?
-            <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>Updating results…</span>
-            : null
+          resultSet &&
+          <ResultTable key={resultSet.schema.name} resultSet={resultSet}
+            databaseUri={this.props.database.databaseUri}
+            resultsPath={this.props.resultsPath}
+            sortState={this.props.sortStates.get(resultSet.schema.name)}
+            nonemptyRawResults={nonemptyRawResults}
+            showRawResults={() => { this.setState({ selectedTable: SELECT_TABLE_NAME }); }}
+            offset={this.getOffset()} />
         }
       </div>
-      {
-        resultSet &&
-        <ResultTable key={resultSet.schema.name} resultSet={resultSet}
-          databaseUri={this.props.database.databaseUri}
-          resultsPath={this.props.resultsPath}
-          sortState={this.props.sortStates.get(resultSet.schema.name)}
-          nonemptyRawResults={nonemptyRawResults}
-          showRawResults={() => { this.setState({ selectedTable: SELECT_TABLE_NAME }); }}
-          offset={this.getOffset()} />
-      }
-    </div>;
+    );
   }
 
   handleMessage(msg: IntoResultsViewMsg): void {
