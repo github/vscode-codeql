@@ -22,13 +22,13 @@ const MAX_UPGRADE_MESSAGE_LINES = 10;
  * Check that we support non-destructive upgrades.
  * 
  * This requires 3 features. The ability to compile an upgrade sequence; The ability to 
- * run a non-desturcitve upgrades as a query; the ability to specify a target when 
+ * run a non-destructive upgrades as a query; the ability to specify a target when 
  * resolving upgrades.
  */
 export async function hasNondestructiveUpgradeCapabilities(qs: qsClient.QueryServerClient): Promise<boolean> {
   // TODO change to actual version when known
   // Note it is probably something 2.4.something
-  return semver.gte(await qs.cliServer.getVersion(), '2.3.2');
+  return semver.gte(await qs.cliServer.getVersion(), '2.4.1');
 }
 
 
