@@ -12,6 +12,7 @@
 - Avoid error dialogs when QL test discovery or database cleanup encounters a missing directory. [#706](https://github.com/github/vscode-codeql/pull/706)
 - Add descriptive text and a link in the results view. [#711](https://github.com/github/vscode-codeql/pull/711)
 - Fix the _Set Label_ command in the query history view. [#710](https://github.com/github/vscode-codeql/pull/710)
+- Add the _CodeQL: View AST_ directly to text editors of files in database archives. [#712](https://github.com/github/vscode-codeql/pull/712)
 
 ## 1.3.7 - 24 November 2020
 

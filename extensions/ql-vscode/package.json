@@ -526,7 +526,8 @@
         },
         {
           "command": "codeQL.runQueries",
-          "group": "9_qlCommands"
+          "group": "9_qlCommands",
+          "when": "resourceScheme != codeql-zip-archive"
         }
       ],
       "commandPalette": [
@@ -655,6 +656,10 @@
         {
           "command": "codeQL.runQuery",
           "when": "editorLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.viewAst",
+          "when": "resourceScheme == codeql-zip-archive"
         },
         {
           "command": "codeQL.quickEval",
