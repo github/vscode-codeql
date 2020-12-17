@@ -2,8 +2,8 @@
 
 ## [UNRELEASED]
 
-- Ensure databases are unlocked when removing them from the workspace. This will ensure that after a database is removed from VS Code, queries can be run on it from the command line without restarting VS Code. Requires CodeQL CLI 2.4.1 or later. [#681](https://github.com/github/vscode-codeql/pull/681)
-- Fix bug when removing databases where sometimes the source folder would not be removed from the workspace or the database files would not be removed from the workspace storage location. [#692](https://github.com/github/vscode-codeql/pull/692)
+- Ensure databases are unlocked when removing them from the workspace. This will ensure that after a database is removed from VS Code, queries can be run on it from the command line without restarting the IDE. Requires CodeQL CLI 2.4.1 or later. [#681](https://github.com/github/vscode-codeql/pull/681)
+- Fix bug when removing databases where sometimes the source folder would not also be removed from the workspace or the database files would not be deleted from the workspace storage location. [#692](https://github.com/github/vscode-codeql/pull/692)
 - Query results with no string representation will now be displayed with placeholder text in query results. Previously, they were omitted. [#694](https://github.com/github/vscode-codeql/pull/694)
 - Add a label for the language of a database in the databases view. This will only take effect for new databases created with the CodeQL CLI v2.4.1 or later. [#697](https://github.com/github/vscode-codeql/pull/697)
 - Add clearer error message when running a query using a missing or invalid qlpack. [#702](https://github.com/github/vscode-codeql/pull/702)
@@ -12,7 +12,7 @@
 - Avoid error dialogs when QL test discovery or database cleanup encounters a missing directory. [#706](https://github.com/github/vscode-codeql/pull/706)
 - Add descriptive text and a link in the results view. [#711](https://github.com/github/vscode-codeql/pull/711)
 - Fix the _Set Label_ command in the query history view. [#710](https://github.com/github/vscode-codeql/pull/710)
-- Add the _CodeQL: View AST_ directly to text editors of files in database archives. [#712](https://github.com/github/vscode-codeql/pull/712)
+- Add the _CodeQL: View AST_ command to the right-click context menu when a source file in a database source archive is open in the editor. [#712](https://github.com/github/vscode-codeql/pull/712)
 
 ## 1.3.7 - 24 November 2020
 
