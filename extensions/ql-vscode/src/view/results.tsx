@@ -11,6 +11,7 @@ import {
   QueryMetadata,
   ResultsPaths,
   ALERTS_TABLE_NAME,
+  GRAPH_TABLE_NAME,
   ParsedResultSets,
 } from '../pure/interface-types';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
@@ -105,7 +106,7 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
         void this.loadResults();
         break;
       case 'showInterpretedPage': {
-        const tableName = ALERTS_TABLE_NAME;
+        const tableName = msg.interpretation.data.t === 'GraphInterpretationData' ? GRAPH_TABLE_NAME : ALERTS_TABLE_NAME;
 
         this.updateStateWithNewResultsInfo({
           resultsPath: '', // FIXME: Not used for interpreted, refactor so this is not needed
@@ -263,6 +264,8 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
     ) {
       const parsedResultSets = displayedResults.resultsInfo.parsedResultSets;
       const key = (parsedResultSets.selectedTable || '') + parsedResultSets.pageNumber;
+      const data = displayedResults.resultsInfo.interpretation?.data;
+
       return (
         <ResultTables
           key={key}
@@ -282,9 +285,7 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
               : undefined
           }
           sortStates={displayedResults.results.sortStates}
-          interpretedSortState={
-            displayedResults.resultsInfo.interpretation?.data.sortState
-          }
+          interpretedSortState={data?.t == 'SarifInterpretationData' ? data.sortState : undefined}
           isLoadingNewResults={
             this.state.isExpectingResultsUpdate ||
             this.state.nextResultsInfo !== null

@@ -130,6 +130,14 @@ select {
   font-size: inherit;
 }
 
+.vscode-codeql__result-tables-graph {
+  background-color: transparent;
+  border-color: var(--vscode-dropdown-border);
+  color: var(--vscode-editor-foreground);
+  text-align: center;
+  width: 100%;
+}
+
 .vscode-codeql__result-tables-updating-text {
   margin-left: 1em;
 }
