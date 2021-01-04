@@ -380,8 +380,8 @@ export namespace ResultColumnKind {
    */
   export const BOOLEAN = 3;
   /**
- * A column of type `date`
- */
+   * A column of type `date`
+   */
   export const DATE = 4;
   /**
    * A column of a non-primitive type
@@ -401,11 +401,11 @@ export interface CompileUpgradeParams {
    * A directory to store parts of the compiled upgrade
    */
   upgradeTempDir: string;
-  /** 
+  /**
    * Enable single file upgrades, set to true to allow
    * using single file upgrades.
    */
-  singleFileUpgrades?: boolean;
+  singleFileUpgrades: true;
 }
 
 /**
@@ -515,7 +515,7 @@ interface CompiledUpgradesBase {
 
 
 /**
- * A compiled upgrade. 
+ * A compiled upgrade.
  * The upgrade is spread among multiple files.
  */
 interface MultiFileCompiledUpgrades extends CompiledUpgradesBase {
@@ -535,7 +535,7 @@ interface MultiFileCompiledUpgrades extends CompiledUpgradesBase {
 
 
 /**
- * A compiled upgrade. 
+ * A compiled upgrade.
  * The upgrade is in a single file.
  */
 export interface SingleFileCompiledUpgrade extends CompiledUpgradesBase {
