@@ -114,10 +114,9 @@ Alternatively, you can run the tests inside of vscode. There are several vscode 
 1. Download the VSIX from the draft GitHub release at the top of [the releases page](https://github.com/github/vscode-codeql/releases) that is created when the release build finishes.
 1. Unzip the `.vsix` and inspect its `package.json` to make sure the version is what you expect,
    or look at the source if there's any doubt the right code is being shipped.
-1. Log into the [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage/publishers/github).
-1. Click the `...` menu in the CodeQL row and click **Update**.
-1. Drag the `.vsix` file you downloaded from the GitHub release into the Marketplace and click **Upload**.
-1. Go to the draft GitHub release, click 'Edit', add some summary description, and publish it.
+1. Go to the actions tab of the vscode-codeql repository and select the [Release workflow](https://github.com/github/vscode-codeql/actions?query=workflow%3ARelease).
+1. Approve the deployments of the correct Release workflow. This will automatically publish to Open VSX and VS Code Marketplace.
+1. Go to the draft GitHub release in [the releases tab of the repository](https://github.com/github/vscode-codeql/releases), click 'Edit', add some summary description, and publish it.
 1. Confirm the new release is marked as the latest release at <https://github.com/github/vscode-codeql/releases>.
 1. If documentation changes need to be published, notify documentation team that release has been made.
 1. Review and merge the version bump PR that is automatically created by Actions.

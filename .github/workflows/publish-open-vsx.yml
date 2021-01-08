@@ -1,0 +1,45 @@
+# Publish the extension to the open-vsx registry at https://open-vsx.org
+
+name: Publish Open VSX
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10.18.1'
+
+      - name: Install dependencies
+        run: |
+          cd extensions/ql-vscode
+          npm install
+        shell: bash
+
+      - name: Build
+        run: |
+          cd extensions/ql-vscode
+          npm run build -- --release
+        shell: bash
+
+      - name: Prepare artifacts
+        id: prepare-artifacts
+        run: |
+          mkdir artifacts
+          cp dist/*.vsix artifacts
+          VSIX_PATH="$(ls artifacts/*.vsix)"
+          echo "::set-output name=vsix_path::$VSIX_PATH"
+
+      - name: Publish to Registry
+        env:
+          VSIX_PATH: ${{ steps.prepare-artifacts.outputs.vsix_path }}
+          OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
+        run: |
+          cd extensions/ql-vscode
+          npx ovsx publish $VSIX_PATH -p $OPEN_VSX_TOKEN
