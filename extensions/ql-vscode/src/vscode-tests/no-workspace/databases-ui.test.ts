@@ -68,7 +68,6 @@ describe('databases-ui', () => {
     const db5 = createDatabase(storageDir, 'db2-notimported-with-codeql-database.yml', 'cpp', 'codeql-database.yml');
 
     const databaseUI = new DatabaseUI(
-      {} as any,
       {
         databaseItems: [
           { databaseUri: Uri.file(db1) }
