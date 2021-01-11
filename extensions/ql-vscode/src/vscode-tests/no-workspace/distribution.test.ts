@@ -214,7 +214,6 @@ describe('Launcher path', () => {
 
   it('should warn when using a hard-coded deprecated launcher name', async () => {
     launcherThatExists = 'codeql.cmd';
-    path.sep;
     const result = await getExecutableFromDirectory('abc');
     expect(fsSpy).to.have.been.calledWith(pathToExe);
     expect(fsSpy).to.have.been.calledWith(pathToCmd);

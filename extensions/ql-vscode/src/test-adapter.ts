@@ -220,14 +220,13 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
       const state = event.pass
         ? 'passed'
         : event.messages?.length
-        ? 'errored'
-        : 'failed';
+          ? 'errored'
+          : 'failed';
       let message: string | undefined;
       if (event.diff?.length) {
         message = ['', `${state}: ${event.test}`, ...event.diff, ''].join('\n');
         testLogger.log(message);
       }
-      (event.diff || []).join('\n');
       this._testStates.fire({
         type: 'test',
         state,
