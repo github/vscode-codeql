@@ -36,11 +36,10 @@ export async function hasNondestructiveUpgradeCapabilities(qs: qsClient.QuerySer
  */
 export async function compileDatabaseUpgradeSequence(qs: qsClient.QueryServerClient,
   db: DatabaseItem,
-  targetDbScheme: string,
   resolvedSequence: string[],
   currentUpgradeTmp: tmp.DirResult,
   progress: ProgressCallback,
-  token: vscode.CancellationToken): Promise<messages.SingleFileCompiledUpgradeResult> {
+  token: vscode.CancellationToken): Promise<messages.CompiledUpgradeSequence> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
     throw new Error('Database is invalid, and cannot be upgraded.');
   }
@@ -50,8 +49,6 @@ export async function compileDatabaseUpgradeSequence(qs: qsClient.QueryServerCli
   // If possible just compile the upgrade sequence
   return await qs.sendRequest(messages.compileUpgradeSequence, {
     upgradeTempDir: currentUpgradeTmp.name,
-    finalDbscheme: targetDbScheme,
-    initialDbscheme: db.contents.dbSchemeUri.fsPath,
     upgradePaths: resolvedSequence
   }, token, progress);
 }
@@ -65,32 +62,28 @@ async function compileDatabaseUpgrade(
   progress: ProgressCallback,
   token: vscode.CancellationToken
 ): Promise<messages.CompileUpgradeResult> {
-  if (await hasNondestructiveUpgradeCapabilities(qs)) {
-    return await compileDatabaseUpgradeSequence(qs, db, targetDbScheme, resolvedSequence, currentUpgradeTmp, progress, token);
-  } else {
-    if (!db.contents?.dbSchemeUri) {
-      throw new Error('Database is invalid, and cannot be upgraded.');
-    }
-    // We have the upgrades we want but compileUpgrade
-    // requires searching for them.  So we use the parent directories of the upgrades
-    // as the upgrade path.
-    const parentDirs = resolvedSequence.map(dir => path.dirname(dir));
-    const uniqueParentDirs = new Set(parentDirs);
-    progress({
-      step: 1,
-      maxStep: 3,
-      message: 'Checking for database upgrades'
-    });
-    return qs.sendRequest(messages.compileUpgrade, {
-      upgrade: {
-        fromDbscheme: db.contents.dbSchemeUri.fsPath,
-        toDbscheme: targetDbScheme,
-        additionalUpgrades: Array.from(uniqueParentDirs)
-      },
-      upgradeTempDir: currentUpgradeTmp.name,
-      singleFileUpgrades: true,
-    }, token, progress);
+  if (!db.contents?.dbSchemeUri) {
+    throw new Error('Database is invalid, and cannot be upgraded.');
   }
+  // We have the upgrades we want but compileUpgrade
+  // requires searching for them.  So we use the parent directories of the upgrades
+  // as the upgrade path.
+  const parentDirs = resolvedSequence.map(dir => path.dirname(dir));
+  const uniqueParentDirs = new Set(parentDirs);
+  progress({
+    step: 1,
+    maxStep: 3,
+    message: 'Checking for database upgrades'
+  });
+  return qs.sendRequest(messages.compileUpgrade, {
+    upgrade: {
+      fromDbscheme: db.contents.dbSchemeUri.fsPath,
+      toDbscheme: targetDbScheme,
+      additionalUpgrades: Array.from(uniqueParentDirs)
+    },
+    upgradeTempDir: currentUpgradeTmp.name,
+    singleFileUpgrades: true,
+  }, token, progress);
 }
 
 /**

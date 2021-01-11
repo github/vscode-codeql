@@ -425,14 +425,6 @@ export interface CompileUpgradeSequenceParams {
    * A directory to store parts of the compiled upgrade
    */
   upgradeTempDir: string;
-  /** 
-   * The first dbscheme in the sequence.
-   */
-  initialDbscheme: string;
-  /** 
-   * The last dbscheme in the sequence.
-   */
-  finalDbscheme: string;
 }
 
 /**
@@ -483,12 +475,17 @@ export interface CompileUpgradeResult {
   error?: string;
 }
 
-export interface SingleFileCompiledUpgradeResult extends CompileUpgradeResult {
+export interface CompiledUpgradeSequence {
   /**
-   * The compiled upgrade.
+   * The compiled upgrades as a single file.
    */
-  compiledUpgrades?: SingleFileCompiledUpgrade;
+  compiledUpgrades?: string;
+  /**
+   * Any errors that occurred when checking the scripts.
+   */
+  error?: string;
 }
+
 
 /**
  * A description of a upgrade process
@@ -528,7 +525,7 @@ export interface UpgradeDescription {
 }
 
 
-export type CompiledUpgrades = MultiFileCompiledUpgrades | SingleFileCompiledUpgrade
+export type CompiledUpgrades = MultiFileCompiledUpgrades | SingleFileCompiledUpgrades
 
 /**
  * The parts shared by all compiled upgrades
@@ -573,7 +570,7 @@ interface MultiFileCompiledUpgrades extends CompiledUpgradesBase {
  * A compiled upgrade.
  * The upgrade is in a single file.
  */
-export interface SingleFileCompiledUpgrade extends CompiledUpgradesBase {
+export interface SingleFileCompiledUpgrades extends CompiledUpgradesBase {
   /**
    * The steps in the upgrade path
    */
@@ -1009,8 +1006,7 @@ export const compileUpgrade = new rpc.RequestType<WithProgressId<CompileUpgradeP
 /**
  * Compile an upgrade script to upgrade a dataset.
  */
-export const compileUpgradeSequence = new rpc.RequestType<WithProgressId<CompileUpgradeSequenceParams>, SingleFileCompiledUpgradeResult, void, void>('compilation/compileUpgradeSequence');
-
+export const compileUpgradeSequence = new rpc.RequestType<WithProgressId<CompileUpgradeSequenceParams>, CompiledUpgradeSequence, void, void>('compilation/compileUpgradeSequence');
 
 /**
  * Clear the cache of a dataset
