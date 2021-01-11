@@ -115,11 +115,30 @@ Alternatively, you can run the tests inside of vscode. There are several vscode 
 1. Unzip the `.vsix` and inspect its `package.json` to make sure the version is what you expect,
    or look at the source if there's any doubt the right code is being shipped.
 1. Go to the actions tab of the vscode-codeql repository and select the [Release workflow](https://github.com/github/vscode-codeql/actions?query=workflow%3ARelease).
+    - If there is an authentication failure when publishing, be sure to check that the authentication keys haven't expired. See below.
 1. Approve the deployments of the correct Release workflow. This will automatically publish to Open VSX and VS Code Marketplace.
 1. Go to the draft GitHub release in [the releases tab of the repository](https://github.com/github/vscode-codeql/releases), click 'Edit', add some summary description, and publish it.
 1. Confirm the new release is marked as the latest release at <https://github.com/github/vscode-codeql/releases>.
 1. If documentation changes need to be published, notify documentation team that release has been made.
 1. Review and merge the version bump PR that is automatically created by Actions.
+
+## Secrets and authentication for publishing
+
+Repository administrators, will need to manage the authentication keys for publishing to the VS Code marketplace and Open VSX. Each requires an authentication token. The VS Code marketplace token expires yearly.
+
+To regenerate the Open VSX token:
+
+1. Log in to the [user settings page on Open VSX](https://open-vsx.org/user-settings/namespaces).
+1. Make sure you are a member of the GitHub namespace.
+1. Go to the [Access Tokens](https://open-vsx.org/user-settings/tokens) page and generate a new token.
+1. Update the secret in the `publish-open-vsx` environment in the project settings.
+
+To regenerate the VSCode Marketplace token:
+
+1. Follow the instructions on [getting a PAT for Azure DevOps](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#get-a-personal-access-token).
+1. Update the secret in the `publish-vscode-marketplace` environment in the project settings.
+
+Not that Azure DevOps PATs expire yearly and must be regenerated.
 
 ## Resources
 
