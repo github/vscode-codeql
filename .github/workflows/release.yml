@@ -127,7 +127,7 @@ jobs:
   vscode-publish:
     name: Publish to VS Code Marketplace
     needs: build
-    environment: publish
+    environment: publish-vscode-marketplace
     runs-on: ubuntu-latest
     env:
       VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
@@ -139,12 +139,15 @@ jobs:
 
       - name: Publish to Registry
         run: |
-          npx vsce publish -p $VSCE_TOKEN --packagePath *.vsix
+          npx vsce publish -p $VSCE_TOKEN --packagePath *.vsix || \
+            echo "Failed to publish to VS Code Marketplace. \
+                  If this was an authentication problem, please make sure the \
+                  auth token hasn't expired."
 
   open-vsx-publish:
     name: Publish to Open VSX Registry
     needs: build
-    environment: publish
+    environment: publish-open-vsx
     runs-on: ubuntu-latest
     env:
       OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
