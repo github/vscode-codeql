@@ -23,11 +23,9 @@ const MAX_UPGRADE_MESSAGE_LINES = 10;
  * 
  * This requires 3 features. The ability to compile an upgrade sequence; The ability to 
  * run a non-destructive upgrades as a query; the ability to specify a target when 
- * resolving upgrades.
+ * resolving upgrades. We check for a version of codeql that has all three features.
  */
 export async function hasNondestructiveUpgradeCapabilities(qs: qsClient.QueryServerClient): Promise<boolean> {
-  // TODO change to actual version when known
-  // Note it is probably something 2.4.something
   return semver.gte(await qs.cliServer.getVersion(), '2.4.1');
 }
 
@@ -45,6 +43,9 @@ export async function compileDatabaseUpgradeSequence(qs: qsClient.QueryServerCli
   token: vscode.CancellationToken): Promise<messages.SingleFileCompiledUpgradeResult> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
     throw new Error('Database is invalid, and cannot be upgraded.');
+  }
+  if (!hasNondestructiveUpgradeCapabilities(qs)) {
+    throw new Error('The version of codeql is to old to run non-destructive upgrades.');
   }
   // If possible just compile the upgrade sequence
   return await qs.sendRequest(messages.compileUpgradeSequence, {
@@ -72,7 +73,7 @@ async function compileDatabaseUpgrade(
     }
     // We have the upgrades we want but compileUpgrade
     // requires searching for them.  So we use the parent directories of the upgrades
-    // as the uograde path.
+    // as the upgrade path.
     const parentDirs = resolvedSequence.map(dir => path.dirname(dir));
     const uniqueParentDirs = new Set(parentDirs);
     progress({

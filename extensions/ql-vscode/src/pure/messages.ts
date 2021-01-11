@@ -418,7 +418,7 @@ export interface CompileUpgradeParams {
  */
 export interface CompileUpgradeSequenceParams {
   /**
-   * The sequence of upogrades to compile
+   * The sequence of upgrades to compile
    */
   upgradePaths: string[];
   /**

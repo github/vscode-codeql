@@ -651,6 +651,7 @@ export class CodeQLCliServer implements Disposable {
    * Gets information necessary for upgrading a database.
    * @param dbScheme the path to the dbscheme of the database to be upgraded.
    * @param searchPath A list of directories to search for upgrade scripts.
+   * @param targetDbScheme The dbscheme to try to upgrade to.
    * @returns A list of database upgrade script directories
    */
   resolveUpgrades(dbScheme: string, searchPath: string[], targetDbScheme?: string): Promise<UpgradesInfo> {
