@@ -45,6 +45,7 @@ import {
   GithubRateLimitedError
 } from './distribution';
 import * as helpers from './helpers';
+import { commandRunner, commandRunnerWithProgress, ProgressCallback, ProgressUpdate, withProgress } from './commandRunner';
 import { assertNever } from './pure/helpers-pure';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
@@ -108,7 +109,7 @@ function registerErrorStubs(excludedCommands: string[], stubGenerator: (command:
 
   stubbedCommands.forEach(command => {
     if (excludedCommands.indexOf(command) === -1) {
-      errorStubs.push(helpers.commandRunner(command, stubGenerator(command)));
+      errorStubs.push(commandRunner(command, stubGenerator(command)));
     }
   });
 }
@@ -194,7 +195,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
             location: ProgressLocation.Notification,
           };
 
-          await helpers.withProgress(progressOptions, progress =>
+          await withProgress(progressOptions, progress =>
             distributionManager.installExtensionManagedDistributionRelease(result.updatedRelease, progress));
 
           await ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
@@ -308,7 +309,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     shouldDisplayMessageWhenNoUpdates: false,
     allowAutoUpdating: true
   })));
-  ctx.subscriptions.push(helpers.commandRunner(checkForUpdatesCommand, () => installOrUpdateThenTryActivate({
+  ctx.subscriptions.push(commandRunner(checkForUpdatesCommand, () => installOrUpdateThenTryActivate({
     isUserInitiated: true,
     shouldDisplayMessageWhenNoUpdates: true,
     allowAutoUpdating: true
@@ -430,7 +431,7 @@ async function activateWithInstalledDistribution(
   async function compileAndRunQuery(
     quickEval: boolean,
     selectedQuery: Uri | undefined,
-    progress: helpers.ProgressCallback,
+    progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
     if (qs !== undefined) {
@@ -491,10 +492,10 @@ async function activateWithInstalledDistribution(
 
   logger.log('Registering top-level command palette commands.');
   ctx.subscriptions.push(
-    helpers.commandRunnerWithProgress(
+    commandRunnerWithProgress(
       'codeQL.runQuery',
       async (
-        progress: helpers.ProgressCallback,
+        progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined
       ) => await compileAndRunQuery(false, uri, progress, token),
@@ -505,10 +506,10 @@ async function activateWithInstalledDistribution(
     )
   );
   ctx.subscriptions.push(
-    helpers.commandRunnerWithProgress(
+    commandRunnerWithProgress(
       'codeQL.runQueries',
       async (
-        progress: helpers.ProgressCallback,
+        progress: ProgressCallback,
         token: CancellationToken,
         _: Uri | undefined,
         multi: Uri[]
@@ -533,7 +534,7 @@ async function activateWithInstalledDistribution(
 
         // Use a wrapped progress so that messages appear with the queries remaining in it.
         let queriesRemaining = queryUris.length;
-        function wrappedProgress(update: helpers.ProgressUpdate) {
+        function wrappedProgress(update: ProgressUpdate) {
           const message = queriesRemaining > 1
             ? `${queriesRemaining} remaining. ${update.message}`
             : update.message;
@@ -569,10 +570,10 @@ async function activateWithInstalledDistribution(
       })
   );
   ctx.subscriptions.push(
-    helpers.commandRunnerWithProgress(
+    commandRunnerWithProgress(
       'codeQL.quickEval',
       async (
-        progress: helpers.ProgressCallback,
+        progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined
       ) => await compileAndRunQuery(true, uri, progress, token),
@@ -582,8 +583,8 @@ async function activateWithInstalledDistribution(
       })
   );
   ctx.subscriptions.push(
-    helpers.commandRunnerWithProgress('codeQL.quickQuery', async (
-      progress: helpers.ProgressCallback,
+    commandRunnerWithProgress('codeQL.quickQuery', async (
+      progress: ProgressCallback,
       token: CancellationToken
     ) =>
       displayQuickQuery(ctx, cliServer, databaseUI, progress, token),
@@ -594,7 +595,7 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    helpers.commandRunner('codeQL.restartQueryServer', async () => {
+    commandRunner('codeQL.restartQueryServer', async () => {
       await qs.restartQueryServer();
       helpers.showAndLogInformationMessage('CodeQL Query Server restarted.', {
         outputLogger: queryServerLogger,
@@ -602,24 +603,24 @@ async function activateWithInstalledDistribution(
     })
   );
   ctx.subscriptions.push(
-    helpers.commandRunner('codeQL.chooseDatabaseFolder', (
-      progress: helpers.ProgressCallback,
+    commandRunner('codeQL.chooseDatabaseFolder', (
+      progress: ProgressCallback,
       token: CancellationToken
     ) =>
       databaseUI.handleChooseDatabaseFolder(progress, token)
     )
   );
   ctx.subscriptions.push(
-    helpers.commandRunner('codeQL.chooseDatabaseArchive', (
-      progress: helpers.ProgressCallback,
+    commandRunner('codeQL.chooseDatabaseArchive', (
+      progress: ProgressCallback,
       token: CancellationToken
     ) =>
       databaseUI.handleChooseDatabaseArchive(progress, token)
     )
   );
   ctx.subscriptions.push(
-    helpers.commandRunnerWithProgress('codeQL.chooseDatabaseLgtm', (
-      progress: helpers.ProgressCallback,
+    commandRunnerWithProgress('codeQL.chooseDatabaseLgtm', (
+      progress: ProgressCallback,
       token: CancellationToken
     ) =>
       databaseUI.handleChooseDatabaseLgtm(progress, token),
@@ -628,8 +629,8 @@ async function activateWithInstalledDistribution(
       })
   );
   ctx.subscriptions.push(
-    helpers.commandRunnerWithProgress('codeQL.chooseDatabaseInternet', (
-      progress: helpers.ProgressCallback,
+    commandRunnerWithProgress('codeQL.chooseDatabaseInternet', (
+      progress: ProgressCallback,
       token: CancellationToken
     ) =>
       databaseUI.handleChooseDatabaseInternet(progress, token),
@@ -656,8 +657,8 @@ async function activateWithInstalledDistribution(
 
   const astViewer = new AstViewer();
   ctx.subscriptions.push(astViewer);
-  ctx.subscriptions.push(helpers.commandRunnerWithProgress('codeQL.viewAst', async (
-    progress: helpers.ProgressCallback,
+  ctx.subscriptions.push(commandRunnerWithProgress('codeQL.viewAst', async (
+    progress: ProgressCallback,
     token: CancellationToken
   ) => {
     const ast = await new TemplatePrintAstProvider(cliServer, qs, dbm, progress, token)

@@ -15,7 +15,8 @@ import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 import * as cli from './cli';
 import * as config from './config';
 import { DatabaseItem, getUpgradesDirectories } from './databases';
-import * as helpers from './helpers';
+import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from './helpers';
+import { ProgressCallback, UserCancellationException } from './commandRunner';
 import { DatabaseInfo, QueryMetadata, ResultsPaths } from './pure/interface-types';
 import { logger } from './logging';
 import * as messages from './pure/messages';
@@ -79,7 +80,7 @@ export class QueryInfo {
 
   async run(
     qs: qsClient.QueryServerClient,
-    progress: helpers.ProgressCallback,
+    progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<messages.EvaluationResult> {
     let result: messages.EvaluationResult | null = null;
@@ -121,7 +122,7 @@ export class QueryInfo {
 
   async compile(
     qs: qsClient.QueryServerClient,
-    progress: helpers.ProgressCallback,
+    progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<messages.CompilationMessage[]> {
     let compiled: messages.CheckQueryResult | undefined;
@@ -209,7 +210,7 @@ export interface QueryWithResults {
 export async function clearCacheInDatabase(
   qs: qsClient.QueryServerClient,
   dbItem: DatabaseItem,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<messages.ClearCacheResult> {
   if (dbItem.contents === undefined) {
@@ -285,10 +286,10 @@ async function checkDbschemeCompatibility(
   cliServer: cli.CodeQLCliServer,
   qs: qsClient.QueryServerClient,
   query: QueryInfo,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<void> {
-  const searchPath = helpers.getOnDiskWorkspaceFolders();
+  const searchPath = getOnDiskWorkspaceFolders();
 
   if (query.dbItem.contents !== undefined && query.dbItem.contents.dbSchemeUri !== undefined) {
     const { scripts, finalDbscheme } = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath);
@@ -364,7 +365,7 @@ async function promptUserToSaveChanges(document: TextDocument): Promise<boolean>
       }
 
       if (chosenItem === cancelItem) {
-        throw new helpers.UserCancellationException('Query run cancelled.', true);
+        throw new UserCancellationException('Query run cancelled.', true);
       }
     }
   }
@@ -454,7 +455,7 @@ export async function compileAndRunQueryAgainstDatabase(
   db: DatabaseItem,
   quickEval: boolean,
   selectedQueryUri: Uri | undefined,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: CancellationToken,
   templates?: messages.TemplateDefinitions,
 ): Promise<QueryWithResults> {
@@ -474,7 +475,7 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 
   // Get the workspace folder paths.
-  const diskWorkspaceFolders = helpers.getOnDiskWorkspaceFolders();
+  const diskWorkspaceFolders = getOnDiskWorkspaceFolders();
   // Figure out the library path for the query.
   const packConfig = await cliServer.resolveLibraryPath(diskWorkspaceFolders, queryPath);
 
@@ -533,7 +534,7 @@ export async function compileAndRunQueryAgainstDatabase(
     if (result.resultType !== messages.QueryResultType.SUCCESS) {
       const message = result.message || 'Failed to run query';
       logger.log(message);
-      helpers.showAndLogErrorMessage(message);
+      showAndLogErrorMessage(message);
     }
     return {
       query,
@@ -564,9 +565,9 @@ export async function compileAndRunQueryAgainstDatabase(
       qs.logger.log(formatted);
     }
     if (quickEval && formattedMessages.length <= 3) {
-      helpers.showAndLogErrorMessage('Quick evaluation compilation failed: \n' + formattedMessages.join('\n'));
+      showAndLogErrorMessage('Quick evaluation compilation failed: \n' + formattedMessages.join('\n'));
     } else {
-      helpers.showAndLogErrorMessage((quickEval ? 'Quick evaluation' : 'Query') +
+      showAndLogErrorMessage((quickEval ? 'Quick evaluation' : 'Query') +
         ' compilation failed. Please make sure there are no errors in the query, the database is up to date,' +
         ' and the query and database use the same target language. For more details on the error, go to View > Output,' +
         ' and choose CodeQL Query Server from the dropdown.');

@@ -10,11 +10,13 @@ import {
   getInitialQueryContents,
   getPrimaryDbscheme,
   getQlPackForDbscheme,
-  ProgressCallback,
   showAndLogErrorMessage,
   showBinaryChoiceDialog,
-  UserCancellationException
 } from './helpers';
+import {
+  ProgressCallback,
+  UserCancellationException
+} from './commandRunner';
 
 const QUICK_QUERIES_DIR_NAME = 'quick-queries';
 const QUICK_QUERY_QUERY_NAME = 'quick-query.ql';

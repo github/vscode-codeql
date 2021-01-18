@@ -12,10 +12,12 @@ import * as path from 'path';
 
 import { DatabaseManager, DatabaseItem } from './databases';
 import {
-  reportStreamProgress,
-  ProgressCallback,
   showAndLogInformationMessage,
 } from './helpers';
+import {
+  reportStreamProgress,
+  ProgressCallback,
+} from './commandRunner';
 import { logger } from './logging';
 import { tmpDir } from './run-queries';
 

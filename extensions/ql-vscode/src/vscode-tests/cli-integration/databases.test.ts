@@ -7,7 +7,7 @@ import { extensions, CancellationToken, Uri, window } from 'vscode';
 import { CodeQLExtensionInterface } from '../../extension';
 import { DatabaseManager } from '../../databases';
 import { promptImportLgtmDatabase, importArchiveDatabase, promptImportInternetDatabase } from '../../databaseFetcher';
-import { ProgressCallback } from '../../helpers';
+import { ProgressCallback } from '../../commandRunner';
 import { dbLoc, DB_URL, storagePath } from './global.helper';
 
 /**

@@ -18,7 +18,7 @@ import { DatabaseItem } from './databases';
 import { UrlValue, BqrsId } from './pure/bqrs-cli-types';
 import { showLocation } from './interface-utils';
 import { isStringLoc, isWholeFileLoc, isLineColumnLoc } from './pure/bqrs-utils';
-import { commandRunner } from './helpers';
+import { commandRunner } from './commandRunner';
 import { DisposableObject } from './vscode-utils/disposable-object';
 
 export interface AstItem {

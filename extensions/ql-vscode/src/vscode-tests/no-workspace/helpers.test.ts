@@ -7,7 +7,8 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as sinon from 'sinon';
 
-import { getInitialQueryContents, InvocationRateLimiter, isLikelyDbLanguageFolder, reportStreamProgress } from '../../helpers';
+import { getInitialQueryContents, InvocationRateLimiter, isLikelyDbLanguageFolder } from '../../helpers';
+import { reportStreamProgress } from '../../commandRunner';
 
 describe('helpers', () => {
   let sandbox: sinon.SinonSandbox;
