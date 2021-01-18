@@ -17,7 +17,7 @@ import {
 import { Logger } from '../../logging';
 import { QueryServerClient } from '../../queryserver-client';
 import { registerDatabases } from '../../pure/messages';
-import { ProgressCallback } from '../../helpers';
+import { ProgressCallback } from '../../commandRunner';
 import { CodeQLCliServer } from '../../cli';
 import { encodeArchiveBasePath, encodeSourceArchiveUri } from '../../archive-filesystem-provider';
 

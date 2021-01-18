@@ -9,9 +9,11 @@ import {
   showAndLogWarningMessage,
   showAndLogInformationMessage,
   isLikelyDatabaseRoot,
+} from './helpers';
+import {
   ProgressCallback,
   withProgress
-} from './helpers';
+} from './commandRunner';
 import { zipArchiveScheme, encodeArchiveBasePath, decodeSourceArchiveUri, encodeSourceArchiveUri } from './archive-filesystem-provider';
 import { DisposableObject } from './vscode-utils/disposable-object';
 import { Logger, logger } from './logging';

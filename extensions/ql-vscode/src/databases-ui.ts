@@ -22,8 +22,10 @@ import {
 import {
   commandRunner,
   commandRunnerWithProgress,
-  getOnDiskWorkspaceFolders,
   ProgressCallback,
+} from './commandRunner';
+import {
+  getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder

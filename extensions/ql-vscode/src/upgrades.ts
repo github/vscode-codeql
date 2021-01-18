@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { DatabaseItem } from './databases';
-import * as helpers from './helpers';
+import { showAndLogErrorMessage } from './helpers';
+import { ProgressCallback, UserCancellationException } from './commandRunner';
 import { logger } from './logging';
 import * as messages from './pure/messages';
 import * as qsClient from './queryserver-client';
@@ -24,7 +25,7 @@ async function checkAndConfirmDatabaseUpgrade(
   db: DatabaseItem,
   targetDbScheme: vscode.Uri,
   upgradesDirectories: vscode.Uri[],
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: vscode.CancellationToken,
 ): Promise<messages.UpgradeParams | undefined> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
@@ -75,7 +76,7 @@ async function checkAndConfirmDatabaseUpgrade(
   if (curSha != targetSha) {
     // Newlines aren't rendered in notifications: https://github.com/microsoft/vscode/issues/48900
     // A modal dialog would be rendered better, but is more intrusive.
-    await helpers.showAndLogErrorMessage(`Database cannot be upgraded to the target database scheme.
+    await showAndLogErrorMessage(`Database cannot be upgraded to the target database scheme.
     Can upgrade from ${checkedUpgrades.initialSha} (current) to ${curSha}, but cannot reach ${targetSha} (target).`);
     // TODO: give a more informative message if we think the DB is ahead of the target DB scheme
     return;
@@ -114,7 +115,7 @@ async function checkAndConfirmDatabaseUpgrade(
     return params;
   }
   else {
-    throw new helpers.UserCancellationException('User cancelled the database upgrade.');
+    throw new UserCancellationException('User cancelled the database upgrade.');
   }
 }
 
@@ -128,7 +129,7 @@ export async function upgradeDatabase(
   qs: qsClient.QueryServerClient,
   db: DatabaseItem, targetDbScheme: vscode.Uri,
   upgradesDirectories: vscode.Uri[],
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: vscode.CancellationToken,
 ): Promise<messages.RunUpgradeResult | undefined> {
   const upgradeParams = await checkAndConfirmDatabaseUpgrade(qs, db, targetDbScheme, upgradesDirectories, progress, token);
@@ -142,7 +143,7 @@ export async function upgradeDatabase(
     compileUpgradeResult = await compileDatabaseUpgrade(qs, upgradeParams, progress, token);
   }
   catch (e) {
-    helpers.showAndLogErrorMessage(`Compilation of database upgrades failed: ${e}`);
+    showAndLogErrorMessage(`Compilation of database upgrades failed: ${e}`);
     return;
   }
   finally {
@@ -151,7 +152,7 @@ export async function upgradeDatabase(
 
   if (compileUpgradeResult.compiledUpgrades === undefined) {
     const error = compileUpgradeResult.error || '[no error message available]';
-    helpers.showAndLogErrorMessage(`Compilation of database upgrades failed: ${error}`);
+    (`Compilation of database upgrades failed: ${error}`);
     return;
   }
 
@@ -168,7 +169,7 @@ export async function upgradeDatabase(
     return await runDatabaseUpgrade(qs, db, compileUpgradeResult.compiledUpgrades, progress, token);
   }
   catch (e) {
-    helpers.showAndLogErrorMessage(`Database upgrade failed: ${e}`);
+    showAndLogErrorMessage(`Database upgrade failed: ${e}`);
     return;
   }
   finally {
@@ -179,7 +180,7 @@ export async function upgradeDatabase(
 async function checkDatabaseUpgrade(
   qs: qsClient.QueryServerClient,
   upgradeParams: messages.UpgradeParams,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: vscode.CancellationToken,
 ): Promise<messages.CheckUpgradeResult> {
   progress({
@@ -194,7 +195,7 @@ async function checkDatabaseUpgrade(
 async function compileDatabaseUpgrade(
   qs: qsClient.QueryServerClient,
   upgradeParams: messages.UpgradeParams,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: vscode.CancellationToken,
 ): Promise<messages.CompileUpgradeResult> {
   const params: messages.CompileUpgradeParams = {
@@ -216,7 +217,7 @@ async function runDatabaseUpgrade(
   qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   upgrades: messages.CompiledUpgrades,
-  progress: helpers.ProgressCallback,
+  progress: ProgressCallback,
   token: vscode.CancellationToken,
 ): Promise<messages.RunUpgradeResult> {
 

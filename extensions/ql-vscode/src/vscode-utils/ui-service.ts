@@ -1,6 +1,6 @@
 import { TreeDataProvider, window } from 'vscode';
 import { DisposableObject } from './disposable-object';
-import { commandRunner } from '../helpers';
+import { commandRunner } from '../commandRunner';
 
 /**
  * A VS Code service that interacts with the UI, including handling commands.

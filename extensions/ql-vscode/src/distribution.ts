@@ -7,10 +7,15 @@ import * as unzipper from 'unzipper';
 import * as url from 'url';
 import { ExtensionContext, Event } from 'vscode';
 import { DistributionConfig } from './config';
-import { InvocationRateLimiter, InvocationRateLimiterResultKind, showAndLogErrorMessage } from './helpers';
+import {
+  InvocationRateLimiter,
+  InvocationRateLimiterResultKind,
+  showAndLogErrorMessage,
+  showAndLogWarningMessage
+} from './helpers';
 import { logger } from './logging';
-import * as helpers from './helpers';
 import { getCodeQlCliVersion } from './cli-version';
+import { ProgressCallback, reportStreamProgress } from './commandRunner';
 
 /**
  * distribution.ts
@@ -221,7 +226,7 @@ export class DistributionManager implements DistributionProvider {
    * Returns a failed promise if an unexpected error occurs during installation.
    */
   public installExtensionManagedDistributionRelease(release: Release,
-    progressCallback?: helpers.ProgressCallback): Promise<void> {
+    progressCallback?: ProgressCallback): Promise<void> {
     return this.extensionSpecificDistributionManager!.installDistributionRelease(release, progressCallback);
   }
 
@@ -303,14 +308,14 @@ class ExtensionSpecificDistributionManager {
    * Returns a failed promise if an unexpected error occurs during installation.
    */
   public async installDistributionRelease(release: Release,
-    progressCallback?: helpers.ProgressCallback): Promise<void> {
+    progressCallback?: ProgressCallback): Promise<void> {
     await this.downloadDistribution(release, progressCallback);
     // Store the installed release within the global extension state.
     this.storeInstalledRelease(release);
   }
 
   private async downloadDistribution(release: Release,
-    progressCallback?: helpers.ProgressCallback): Promise<void> {
+    progressCallback?: ProgressCallback): Promise<void> {
     try {
       await this.removeDistribution();
     } catch (e) {
@@ -338,7 +343,7 @@ class ExtensionSpecificDistributionManager {
 
       const contentLength = assetStream.headers.get('content-length');
       const totalNumBytes = contentLength ? parseInt(contentLength, 10) : undefined;
-      helpers.reportStreamProgress(assetStream.body, 'Downloading CodeQL CLI…', totalNumBytes, progressCallback);
+      reportStreamProgress(assetStream.body, 'Downloading CodeQL CLI…', totalNumBytes, progressCallback);
 
       await new Promise((resolve, reject) =>
         assetStream.body.pipe(archiveFile)
@@ -707,7 +712,9 @@ export async function getExecutableFromDirectory(directory: string, warnWhenNotF
 }
 
 function warnDeprecatedLauncher() {
-  helpers.showAndLogWarningMessage(
+
+  showAndLogWarningMessage(
+
     `The "${deprecatedCodeQlLauncherName()!}" launcher has been deprecated and will be removed in a future version. ` +
     `Please use "${codeQlLauncherName()}" instead. It is recommended to update to the latest CodeQL binaries.`
   );
