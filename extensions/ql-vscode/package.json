@@ -695,7 +695,7 @@
     "viewsWelcome": [
       {
         "view": "codeQLAstViewer",
-        "contents": "Run the 'CodeQL: View AST' command on an open source file from a Code QL database.\n[View AST](command:codeQL.viewAst)"
+        "contents": "Run the 'CodeQL: View AST' command on an open source file from a CodeQL database.\n[View AST](command:codeQL.viewAst)"
       },
       {
         "view": "codeQLQueryHistory",
@@ -703,7 +703,7 @@
       },
       {
         "view": "codeQLDatabases",
-        "contents": "Add a Code QL database:\n[From a folder](command:codeQLDatabases.chooseDatabaseFolder)\n[From an archive](command:codeQLDatabases.chooseDatabaseArchive)\n[From a URL (as a zip file)](command:codeQLDatabases.chooseDatabaseInternet)\n[From LGTM](command:codeQLDatabases.chooseDatabaseLgtm)"
+        "contents": "Add a CodeQL database:\n[From a folder](command:codeQLDatabases.chooseDatabaseFolder)\n[From an archive](command:codeQLDatabases.chooseDatabaseArchive)\n[From a URL (as a zip file)](command:codeQLDatabases.chooseDatabaseInternet)\n[From LGTM](command:codeQLDatabases.chooseDatabaseLgtm)"
       }
     ]
   },
