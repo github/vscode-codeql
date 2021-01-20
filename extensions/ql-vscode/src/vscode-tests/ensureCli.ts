@@ -72,7 +72,7 @@ export async function ensureCli(useCli: boolean) {
       console.log('Total content size', Math.round(contentLength / _1MB), 'MB');
       const archiveFile = fs.createWriteStream(downloadedFilePath);
       const body = assetStream.body;
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         let numBytesDownloaded = 0;
         let lastMessage = 0;
         body.on('data', (data) => {
@@ -117,7 +117,11 @@ function hasCodeQL() {
 
 export function skipIfNoCodeQL(context: Mocha.Context) {
   if (!hasCodeQL()) {
-    console.log('The CodeQL libraries are not available as a folder in this workspace. To fix: checkout the github/codeql repository and set the TEST_CODEQL_PATH environment variable to the checked out directory.');
+    console.log([
+      'The CodeQL libraries are not available as a folder in this workspace.',
+      'To fix in CI: checkout the github/codeql repository and set the \'TEST_CODEQL_PATH\' environment variable to the checked out directory.',
+      'To fix when running from vs code, see the comment in the launch.json file in the \'Launch Integration Tests - With CLI\' section.'
+    ].join('\n\n'));
     context.skip();
   }
 }

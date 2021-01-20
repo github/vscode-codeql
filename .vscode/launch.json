@@ -89,6 +89,9 @@
         "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
         "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/cli-integration/index",
         "${workspaceRoot}/extensions/ql-vscode/src/vscode-tests/cli-integration/data",
+        // Add a path to a checked out instance of the codeql repository so the libraries are
+        // available in the workspace for the tests.
+        // "${workspaceRoot}/../codeql"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,

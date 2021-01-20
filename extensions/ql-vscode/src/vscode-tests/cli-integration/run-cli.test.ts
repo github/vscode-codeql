@@ -40,7 +40,7 @@ describe('Use cli', function() {
     ]);
   });
 
-  it.only('should resolve query packs', async function() {
+  it('should resolve query packs', async function() {
     skipIfNoCodeQL(this);
     const qlpacks = await cli.resolveQlpacks(getOnDiskWorkspaceFolders());
     // should have a bunch of qlpacks. just check that a few known ones exist
