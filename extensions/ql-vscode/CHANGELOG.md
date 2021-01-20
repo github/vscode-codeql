@@ -1,8 +1,12 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.3.10 - 20 January 2021
 
 - Include the full stack in error log messages to help with debugging. [#726](https://github.com/github/vscode-codeql/pull/726)
+
+## 1.3.9 - 12 January 2021
+
+- No changes visible to end users.
 
 ## 1.3.8 - 17 December 2020
 
