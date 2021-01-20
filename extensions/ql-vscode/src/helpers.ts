@@ -16,14 +16,18 @@ import { logger } from './logging';
  * @param message The message to show.
  * @param options.outputLogger The output logger that will receive the message
  * @param options.items A set of items that will be rendered as actions in the message.
+ * @param options.fullMessage An alternate message that is added to the log, but not displayed
+ *                           in the popup. This is useful for adding extra detail to the logs
+ *                           that would be too noisy for the popup.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
 export async function showAndLogErrorMessage(message: string, {
   outputLogger = logger,
-  items = [] as string[]
+  items = [] as string[],
+  fullMessage = undefined as (string | undefined)
 } = {}): Promise<string | undefined> {
-  return internalShowAndLog(message, items, outputLogger, Window.showErrorMessage);
+  return internalShowAndLog(message, items, outputLogger, Window.showErrorMessage, fullMessage);
 }
 /**
  * Show a warning message and log it to the console
@@ -58,10 +62,15 @@ export async function showAndLogInformationMessage(message: string, {
 
 type ShowMessageFn = (message: string, ...items: string[]) => Thenable<string | undefined>;
 
-async function internalShowAndLog(message: string, items: string[], outputLogger = logger,
-  fn: ShowMessageFn): Promise<string | undefined> {
+async function internalShowAndLog(
+  message: string,
+  items: string[],
+  outputLogger = logger,
+  fn: ShowMessageFn,
+  fullMessage?: string
+): Promise<string | undefined> {
   const label = 'Show Log';
-  outputLogger.log(message);
+  outputLogger.log(fullMessage || message);
   const result = await fn(message, label, ...items);
   if (result === label) {
     outputLogger.show();

@@ -126,7 +126,13 @@ export function commandRunner(
           showAndLogWarningMessage(errorMessage);
         }
       } else {
-        showAndLogErrorMessage(errorMessage);
+        // Include the full stack in the error log only.
+        const fullMessage = e.stack
+          ? `${errorMessage}\n${e.stack}`
+          : errorMessage;
+        showAndLogErrorMessage(errorMessage, {
+          fullMessage
+        });
       }
       return undefined;
     }
@@ -165,7 +171,13 @@ export function commandRunnerWithProgress<R>(
           showAndLogWarningMessage(errorMessage);
         }
       } else {
-        showAndLogErrorMessage(errorMessage);
+        // Include the full stack in the error log only.
+        const fullMessage = e.stack
+          ? `${errorMessage}\n${e.stack}`
+          : errorMessage;
+        showAndLogErrorMessage(errorMessage, {
+          fullMessage
+        });
       }
       return undefined;
     }
