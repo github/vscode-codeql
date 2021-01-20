@@ -267,7 +267,7 @@ export class CodeQLCliServer implements Disposable {
       const argsString = args.join(' ');
       this.logger.log(`${description} using CodeQL CLI: ${argsString}...`);
       try {
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
           // Start listening to stdout
           process.stdout.addListener('data', (newData: Buffer) => {
             stdoutBuffers.push(newData);

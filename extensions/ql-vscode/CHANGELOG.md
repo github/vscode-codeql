@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Include the full stack in error log messages to help with debugging. [#726](https://github.com/github/vscode-codeql/pull/726)
+
 ## 1.3.8 - 17 December 2020
 
 - Ensure databases are unlocked when removing them from the workspace. This will ensure that after a database is removed from VS Code, queries can be run on it from the command line without restarting the IDE. Requires CodeQL CLI 2.4.1 or later. [#681](https://github.com/github/vscode-codeql/pull/681)
