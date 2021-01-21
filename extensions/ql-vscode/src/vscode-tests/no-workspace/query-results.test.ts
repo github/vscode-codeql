@@ -152,7 +152,8 @@ describe('CompletedQuery', () => {
     const sourceInfo = {};
     const metadata = {
       kind: 'my-kind',
-      id: 'my-id' as string | undefined
+      id: 'my-id' as string | undefined,
+      scored: undefined
     };
     const results1 = await interpretResults(
       mockServer,
@@ -183,7 +184,7 @@ describe('CompletedQuery', () => {
     );
     expect(results2).to.eq('1234');
     expect(spy).to.have.been.calledWith(
-      { kind: 'my-kind', id: 'dummy-id' },
+      { kind: 'my-kind', id: 'dummy-id', scored: undefined },
       resultsPath, interpretedResultsPath, sourceInfo
     );
 

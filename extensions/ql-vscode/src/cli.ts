@@ -12,6 +12,7 @@ import { promisify } from 'util';
 import { CancellationToken, Disposable } from 'vscode';
 
 import { BQRSInfo, DecodedBqrsChunk } from './pure/bqrs-cli-types';
+import * as config from './config';
 import { CliConfig } from './config';
 import { DistributionProvider, FindDistributionResultKind } from './distribution';
 import { assertNever } from './pure/helpers-pure';
@@ -573,7 +574,7 @@ export class CodeQLCliServer implements Disposable {
     return await this.runJsonCodeQlCliCommand<DecodedBqrsChunk>(['bqrs', 'decode'], subcommandArgs, 'Reading bqrs data');
   }
 
-  async interpretBqrs(metadata: { kind: string; id: string }, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
+  async interpretBqrs(metadata: { kind: string; id: string; scored?: string }, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
     const args = [
       `-t=kind=${metadata.kind}`,
       `-t=id=${metadata.id}`,
@@ -585,6 +586,9 @@ export class CodeQLCliServer implements Disposable {
       // grouping client-side.
       '--no-group-results',
     ];
+    if (config.isCanary() && metadata.scored !== undefined) {
+      args.push(`-t=scored=${metadata.scored}`);
+    }
     if (sourceInfo !== undefined) {
       args.push(
         '--source-archive', sourceInfo.sourceArchive,
