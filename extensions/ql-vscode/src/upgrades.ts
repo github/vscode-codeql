@@ -152,7 +152,7 @@ export async function upgradeDatabase(
 
   if (compileUpgradeResult.compiledUpgrades === undefined) {
     const error = compileUpgradeResult.error || '[no error message available]';
-    (`Compilation of database upgrades failed: ${error}`);
+    showAndLogErrorMessage(`Compilation of database upgrades failed: ${error}`);
     return;
   }
 
