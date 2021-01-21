@@ -34,6 +34,7 @@ export interface QueryMetadata {
   description?: string;
   id?: string;
   kind?: string;
+  scored?: string;
 }
 
 export interface PreviousExecution {

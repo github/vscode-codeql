@@ -173,7 +173,7 @@ export async function interpretResults(
   if (metadata === undefined) {
     throw new Error('Can\'t interpret results without query metadata');
   }
-  let { kind, id } = metadata;
+  let { kind, id, scored } = metadata;
   if (kind === undefined) {
     throw new Error('Can\'t interpret results without query metadata including kind');
   }
@@ -182,5 +182,5 @@ export async function interpretResults(
     // SARIF format does, so in the absence of one, we use a dummy id.
     id = 'dummy-id';
   }
-  return await server.interpretBqrs({ kind, id }, resultsPath, interpretedResultsPath, sourceInfo);
+  return await server.interpretBqrs({ kind, id, scored }, resultsPath, interpretedResultsPath, sourceInfo);
 }
