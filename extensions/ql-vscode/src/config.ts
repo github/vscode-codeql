@@ -240,3 +240,12 @@ export class CliConfigListener extends ConfigListener implements CliConfig {
  * want to enable experimental features, they can add them directly in
  * their vscode settings json file.
  */
+
+/**
+ * Enables canary features of this extension. Recommended for all internal users.
+ */
+const CANARY_FEATURES = new Setting('canary', ROOT_SETTING);
+
+export function isCanary() {
+  return !!CANARY_FEATURES.getValue<boolean>();
+}
