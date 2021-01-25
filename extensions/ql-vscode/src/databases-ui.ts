@@ -23,7 +23,6 @@ import {
   ProgressCallback,
 } from './commandRunner';
 import {
-  getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder
