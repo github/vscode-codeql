@@ -475,7 +475,7 @@ export interface CompileUpgradeResult {
   error?: string;
 }
 
-export interface CompiledUpgradeSequence {
+export interface CompileUpgradeSequenceResult {
   /**
    * The compiled upgrades as a single file.
    */
@@ -1006,7 +1006,7 @@ export const compileUpgrade = new rpc.RequestType<WithProgressId<CompileUpgradeP
 /**
  * Compile an upgrade script to upgrade a dataset.
  */
-export const compileUpgradeSequence = new rpc.RequestType<WithProgressId<CompileUpgradeSequenceParams>, CompiledUpgradeSequence, void, void>('compilation/compileUpgradeSequence');
+export const compileUpgradeSequence = new rpc.RequestType<WithProgressId<CompileUpgradeSequenceParams>, CompileUpgradeSequenceResult, void, void>('compilation/compileUpgradeSequence');
 
 /**
  * Clear the cache of a dataset
