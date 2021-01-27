@@ -67,7 +67,10 @@ export class TelemetryListener extends ConfigListener {
    * @param e the configuration change event
    */
   async handleDidChangeConfiguration(e: ConfigurationChangeEvent): Promise<void> {
-    if (e.affectsConfiguration('codeQL.telemetry.enableTelemetry')) {
+    if (
+      e.affectsConfiguration('codeQL.telemetry.enableTelemetry') ||
+      e.affectsConfiguration('telemetry.enableTelemetry')
+    ) {
       await this.initialize();
     }
 
@@ -115,11 +118,6 @@ export class TelemetryListener extends ConfigListener {
           baseDataPropertiesToRemove.forEach(prop => delete baseDataProperties[prop]);
         }
 
-        return true;
-      });
-
-      // add a telemetry processor to log if requested
-      client.addTelemetryProcessor((envelope) => {
         if (LOG_TELEMETRY.getValue<boolean>()) {
           logger.log(`Telemetry: ${JSON.stringify(envelope)}`);
         }
