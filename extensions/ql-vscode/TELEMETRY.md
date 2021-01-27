@@ -8,7 +8,7 @@ GitHub collects aggregated, anonymous usage data and metrics to help us improve 
 
 ## What data is collected
 
-GitHub collects the following information related to the usage of the extension. The data collected are:
+If you opt in, GitHub collects the following information related to the usage of the extension. The data collected are:
 
 - The identifiers of any CodeQL-related [VS Code commands](https://code.visualstudio.com/docs/getstarted/tips-and-tricks#_command-palette) that are run
 - For each command: the timestamp, time taken, and whether or not the command completed successfully
@@ -36,7 +36,9 @@ We only collect the minimal amount of data we need to answer the questions about
 
 ## How do I disable telemetry reporting?
 
-You can disable telemetry collection by setting `codeQL.telemetry.enableTelemetry` to `false` in [your settings](https://code.visualstudio.com/docs/getstarted/settings#_settings-editor). Telemetry collection is disabled by default.
+When telemetry collection is disabled, no data will be sent to GitHub servers.
+
+You can disable telemetry collection by setting `codeQL.telemetry.enableTelemetry` to `false` in [your settings](https://code.visualstudio.com/docs/getstarted/settings#_settings-editor). Telemetry collection is _disabled_ by default.
 
 Additionally, telemetry collection will be disabled if the global `telemetry.enableTelemetry` setting is set to `false`. For more information on global telemetry collection, see [Microsoft’s documentation](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
