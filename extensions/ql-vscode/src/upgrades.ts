@@ -39,12 +39,12 @@ export async function compileDatabaseUpgradeSequence(qs: qsClient.QueryServerCli
   resolvedSequence: string[],
   currentUpgradeTmp: tmp.DirResult,
   progress: ProgressCallback,
-  token: vscode.CancellationToken): Promise<messages.CompiledUpgradeSequence> {
+  token: vscode.CancellationToken): Promise<messages.CompileUpgradeSequenceResult> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
     throw new Error('Database is invalid, and cannot be upgraded.');
   }
-  if (!hasNondestructiveUpgradeCapabilities(qs)) {
-    throw new Error('The version of codeql is to old to run non-destructive upgrades.');
+  if (!await hasNondestructiveUpgradeCapabilities(qs)) {
+    throw new Error('The version of codeql is too old to run non-destructive upgrades.');
   }
   // If possible just compile the upgrade sequence
   return await qs.sendRequest(messages.compileUpgradeSequence, {
