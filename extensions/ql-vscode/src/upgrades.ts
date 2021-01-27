@@ -6,7 +6,7 @@ import { logger } from './logging';
 import * as messages from './pure/messages';
 import * as qsClient from './queryserver-client';
 import { upgradesTmpDir } from './run-queries';
-import * as tmp from 'tmp';
+import * as tmp from 'tmp-promise';
 import * as path from 'path';
 import * as semver from 'semver';
 import { getOnDiskWorkspaceFolders } from './helpers';
@@ -37,7 +37,7 @@ export async function hasNondestructiveUpgradeCapabilities(qs: qsClient.QuerySer
 export async function compileDatabaseUpgradeSequence(qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   resolvedSequence: string[],
-  currentUpgradeTmp: tmp.DirResult,
+  currentUpgradeTmp: tmp.DirectoryResult,
   progress: ProgressCallback,
   token: vscode.CancellationToken): Promise<messages.CompileUpgradeSequenceResult> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
@@ -48,7 +48,7 @@ export async function compileDatabaseUpgradeSequence(qs: qsClient.QueryServerCli
   }
   // If possible just compile the upgrade sequence
   return await qs.sendRequest(messages.compileUpgradeSequence, {
-    upgradeTempDir: currentUpgradeTmp.name,
+    upgradeTempDir: currentUpgradeTmp.path,
     upgradePaths: resolvedSequence
   }, token, progress);
 }
@@ -58,7 +58,7 @@ async function compileDatabaseUpgrade(
   db: DatabaseItem,
   targetDbScheme: string,
   resolvedSequence: string[],
-  currentUpgradeTmp: tmp.DirResult,
+  currentUpgradeTmp: tmp.DirectoryResult,
   progress: ProgressCallback,
   token: vscode.CancellationToken
 ): Promise<messages.CompileUpgradeResult> {
@@ -81,7 +81,7 @@ async function compileDatabaseUpgrade(
       toDbscheme: targetDbScheme,
       additionalUpgrades: Array.from(uniqueParentDirs)
     },
-    upgradeTempDir: currentUpgradeTmp.name,
+    upgradeTempDir: currentUpgradeTmp.path,
     singleFileUpgrades: true,
   }, token, progress);
 }
@@ -178,7 +178,7 @@ export async function upgradeDatabaseExplicit(
   if (finalDbscheme === undefined) {
     throw new Error('Could not determine target dbscheme to upgrade to.');
   }
-  const currentUpgradeTmp = tmp.dirSync({ dir: upgradesTmpDir.name, prefix: 'upgrade_', keep: false, unsafeCleanup: true });
+  const currentUpgradeTmp = await tmp.dir({ dir: upgradesTmpDir.name, prefix: 'upgrade_', keep: false, unsafeCleanup: true });
   try {
     let compileUpgradeResult: messages.CompileUpgradeResult;
     try {
@@ -213,7 +213,7 @@ export async function upgradeDatabaseExplicit(
       qs.logger.log('Done running database upgrade.');
     }
   } finally {
-    currentUpgradeTmp.removeCallback();
+    currentUpgradeTmp.cleanup();
   }
 }
 
