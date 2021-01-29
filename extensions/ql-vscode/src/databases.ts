@@ -514,7 +514,10 @@ export class DatabaseManager extends DisposableObject {
   ) {
     super();
 
-    this.loadPersistedState();  // Let this run async.
+    qs.onDidStartQueryServer(this.reregisterDatabases.bind(this));
+
+    // Let this run async.
+    this.loadPersistedState();
   }
 
   public async openDatabase(
@@ -540,6 +543,22 @@ export class DatabaseManager extends DisposableObject {
     await this.addDatabaseSourceArchiveFolder(databaseItem);
 
     return databaseItem;
+  }
+
+  private async reregisterDatabases(
+    progress: ProgressCallback,
+    token: vscode.CancellationToken
+  ) {
+    let completed = 0;
+    await Promise.all(this._databaseItems.map(async (databaseItem) => {
+      await this.registerDatabase(progress, token, databaseItem);
+      completed++;
+      progress({
+        maxStep: this._databaseItems.length,
+        step: completed,
+        message: 'Re-registering databases'
+      });
+    }));
   }
 
   private async addDatabaseSourceArchiveFolder(item: DatabaseItem) {

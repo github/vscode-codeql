@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix bug where databases are not reregistered when the query server restarts. [#734](https://github.com/github/vscode-codeql/pull/734)
+
 ## 1.3.10 - 20 January 2021
 
 - Include the full stack in error log messages to help with debugging. [#726](https://github.com/github/vscode-codeql/pull/726)

@@ -594,28 +594,36 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner('codeQL.restartQueryServer', async () => {
-      await qs.restartQueryServer();
+    commandRunnerWithProgress('codeQL.restartQueryServer', async (
+      progress: ProgressCallback,
+      token: CancellationToken
+    ) => {
+      await qs.restartQueryServer(progress, token);
       helpers.showAndLogInformationMessage('CodeQL Query Server restarted.', {
         outputLogger: queryServerLogger,
       });
+    }, {
+      title: 'Restarting Query Server'
+    })
+  );
+
+  ctx.subscriptions.push(
+    commandRunnerWithProgress('codeQL.chooseDatabaseFolder', (
+      progress: ProgressCallback,
+      token: CancellationToken
+    ) =>
+      databaseUI.handleChooseDatabaseFolder(progress, token), {
+      title: 'Choose a Database from a Folder'
     })
   );
   ctx.subscriptions.push(
-    commandRunner('codeQL.chooseDatabaseFolder', (
+    commandRunnerWithProgress('codeQL.chooseDatabaseArchive', (
       progress: ProgressCallback,
       token: CancellationToken
     ) =>
-      databaseUI.handleChooseDatabaseFolder(progress, token)
-    )
-  );
-  ctx.subscriptions.push(
-    commandRunner('codeQL.chooseDatabaseArchive', (
-      progress: ProgressCallback,
-      token: CancellationToken
-    ) =>
-      databaseUI.handleChooseDatabaseArchive(progress, token)
-    )
+      databaseUI.handleChooseDatabaseArchive(progress, token), {
+      title: 'Choose a Database from an Archive'
+    })
   );
   ctx.subscriptions.push(
     commandRunnerWithProgress('codeQL.chooseDatabaseLgtm', (

@@ -28,7 +28,10 @@ import { workspace } from 'vscode';
 process.on('unhandledRejection', e => {
   console.error('Unhandled rejection.');
   console.error(e);
-  process.exit(-1);
+  // Must use a setTimeout in order to ensure the log is fully flushed before exiting
+  setTimeout(() => {
+    process.exit(-1);
+  }, 2000);
 });
 
 const _1MB = 1024 * 1024;
@@ -36,7 +39,7 @@ const _10MB = _1MB * 10;
 
 // CLI version to test. Hard code the latest as default. And be sure
 // to update the env if it is not otherwise set.
-const CLI_VERSION = process.env.CLI_VERSION || 'v2.4.0';
+const CLI_VERSION = process.env.CLI_VERSION || 'v2.4.2';
 process.env.CLI_VERSION = CLI_VERSION;
 
 // Base dir where CLIs will be downloaded into
