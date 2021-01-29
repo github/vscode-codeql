@@ -1,10 +1,9 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.4.0 - 29 January 2021
 
 - Fix bug where databases are not reregistered when the query server restarts. [#734](https://github.com/github/vscode-codeql/pull/734)
 - Fix bug where upgrade requests were erroneously being marked as failed. [#734](https://github.com/github/vscode-codeql/pull/734)
-- Capture usage data from users. See [TELEMETRY.md](https://github.com/github/vscode-codeql/blob/main/TELEMETRY.md) for more information. [#611](https://github.com/github/vscode-codeql/pull/611)
 - On a strictly opt-in basis, collect anonymized usage data from the VS Code extension, helping improve CodeQL's usability and performance. See [TELEMETRY.md](https://github.com/github/vscode-codeql/blob/main/TELEMETRY.md) for more information on exactly what data is collected and what it is used for. [#611](https://github.com/github/vscode-codeql/pull/611)
 
 ## 1.3.10 - 20 January 2021
