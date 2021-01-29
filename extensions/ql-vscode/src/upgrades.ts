@@ -20,9 +20,9 @@ const MAX_UPGRADE_MESSAGE_LINES = 10;
 
 /**
  * Check that we support non-destructive upgrades.
- * 
- * This requires 3 features. The ability to compile an upgrade sequence; The ability to 
- * run a non-destructive upgrades as a query; the ability to specify a target when 
+ *
+ * This requires 3 features. The ability to compile an upgrade sequence; The ability to
+ * run a non-destructive upgrades as a query; the ability to specify a target when
  * resolving upgrades. We check for a version of codeql that has all three features.
  */
 export async function hasNondestructiveUpgradeCapabilities(qs: qsClient.QueryServerClient): Promise<boolean> {
@@ -34,12 +34,14 @@ export async function hasNondestructiveUpgradeCapabilities(qs: qsClient.QuerySer
  * Compile a database upgrade sequence.
  * Callers must check that this is valid with the current queryserver first.
  */
-export async function compileDatabaseUpgradeSequence(qs: qsClient.QueryServerClient,
+export async function compileDatabaseUpgradeSequence(
+  qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   resolvedSequence: string[],
   currentUpgradeTmp: tmp.DirectoryResult,
   progress: ProgressCallback,
-  token: vscode.CancellationToken): Promise<messages.CompileUpgradeSequenceResult> {
+  token: vscode.CancellationToken
+): Promise<messages.CompileUpgradeSequenceResult> {
   if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
     throw new Error('Database is invalid, and cannot be upgraded.');
   }

@@ -479,7 +479,7 @@ export interface CompileUpgradeSequenceResult {
   /**
    * The compiled upgrades as a single file.
    */
-  compiledUpgrades?: string;
+  compiledUpgrade?: string;
   /**
    * Any errors that occurred when checking the scripts.
    */
