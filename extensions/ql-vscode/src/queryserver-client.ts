@@ -1,14 +1,15 @@
 import * as cp from 'child_process';
 import * as path from 'path';
 import { DisposableObject } from './vscode-utils/disposable-object';
-import { Disposable } from 'vscode';
-import { CancellationToken, createMessageConnection, MessageConnection, RequestType } from 'vscode-jsonrpc';
+import { Disposable, CancellationToken, commands } from 'vscode';
+import { createMessageConnection, MessageConnection, RequestType } from 'vscode-jsonrpc';
 import * as cli from './cli';
 import { QueryServerConfig } from './config';
 import { Logger, ProgressReporter } from './logging';
 import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './pure/messages';
 import * as messages from './pure/messages';
 import { SemVer } from 'semver';
+import { ProgressCallback, ProgressTask } from './commandRunner';
 
 type ServerOpts = {
   logger: Logger;
@@ -60,6 +61,16 @@ export class QueryServerClient extends DisposableObject {
   nextCallback: number;
   nextProgress: number;
   withProgressReporting: WithProgressReporting;
+
+  private readonly queryServerStartListeners = [] as ProgressTask<void>[];
+
+  // Can't use standard vscode EventEmitter here since they do not cause the calling
+  // function to fail if one of the event handlers fail. This is something that
+  // we need here.
+  readonly onDidStartQueryServer = (e: ProgressTask<void>) => {
+    this.queryServerStartListeners.push(e);
+  }
+
   public activeQueryName: string | undefined;
 
   constructor(
@@ -71,10 +82,8 @@ export class QueryServerClient extends DisposableObject {
     super();
     // When the query server configuration changes, restart the query server.
     if (config.onDidChangeConfiguration !== undefined) {
-      this.push(config.onDidChangeConfiguration(async () => {
-        this.logger.log('Restarting query server due to configuration changes...');
-        await this.restartQueryServer();
-      }, this));
+      this.push(config.onDidChangeConfiguration(() =>
+        commands.executeCommand('codeQL.restartQueryServer')));
     }
     this.withProgressReporting = withProgressReporting;
     this.nextCallback = 0;
@@ -97,9 +106,19 @@ export class QueryServerClient extends DisposableObject {
   }
 
   /** Restarts the query server by disposing of the current server process and then starting a new one. */
-  async restartQueryServer(): Promise<void> {
+  async restartQueryServer(
+    progress: ProgressCallback,
+    token: CancellationToken
+  ): Promise<void> {
     this.stopQueryServer();
     await this.startQueryServer();
+
+    // Ensure we await all responses from event handlers so that
+    // errors can be properly reported to the user.
+    await Promise.all(this.queryServerStartListeners.map(handler => handler(
+      progress,
+      token
+    )));
   }
 
   showLog(): void {

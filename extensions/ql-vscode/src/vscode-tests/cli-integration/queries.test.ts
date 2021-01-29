@@ -1,5 +1,5 @@
 import { fail } from 'assert';
-import { CancellationToken, extensions, Uri } from 'vscode';
+import { CancellationToken, commands, extensions, Uri } from 'vscode';
 import * as sinon from 'sinon';
 import * as path from 'path';
 import * as fs from 'fs-extra';
@@ -14,6 +14,7 @@ import { compileAndRunQueryAgainstDatabase } from '../../run-queries';
 import { CodeQLCliServer } from '../../cli';
 import { QueryServerClient } from '../../queryserver-client';
 import { skipIfNoCodeQL } from '../ensureCli';
+import { QueryResultType } from '../../pure/messages';
 
 
 /**
@@ -94,10 +95,35 @@ describe('Queries', function() {
       // just check that the query was successful
       expect(result.database.name).to.eq('db');
       expect(result.options.queryText).to.eq(fs.readFileSync(queryPath, 'utf8'));
+      expect(result.result.resultType).to.eq(QueryResultType.SUCCESS);
     } catch (e) {
       console.error('Test Failed');
       fail(e);
     }
   });
 
+  // Asserts a fix for bug https://github.com/github/vscode-codeql/issues/733
+  it('should restart the database and run a query', async () => {
+    try {
+      await commands.executeCommand('codeQL.restartQueryServer');
+      const queryPath = path.join(__dirname, 'data', 'simple-query.ql');
+      const result = await compileAndRunQueryAgainstDatabase(
+        cli,
+        qs,
+        dbItem,
+        false,
+        Uri.file(queryPath),
+        progress,
+        token
+      );
+
+      // this message would indicate that the databases were not properly reregistered
+      expect(result.result.message).not.to.eq('No result from server');
+      expect(result.options.queryText).to.eq(fs.readFileSync(queryPath, 'utf8'));
+      expect(result.result.resultType).to.eq(QueryResultType.SUCCESS);
+    } catch (e) {
+      console.error('Test Failed');
+      fail(e);
+    }
+  });
 });

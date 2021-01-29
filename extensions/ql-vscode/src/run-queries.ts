@@ -552,7 +552,7 @@ export async function compileAndRunQueryAgainstDatabase(
 
   const query = new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata, templates);
 
-  const upgradeDir = await tmp.dir({ dir: upgradesTmpDir.name });
+  const upgradeDir = await tmp.dir({ dir: upgradesTmpDir.name, unsafeCleanup: true });
   try {
     let upgradeQlo;
     if (await hasNondestructiveUpgradeCapabilities(qs)) {
@@ -615,7 +615,11 @@ export async function compileAndRunQueryAgainstDatabase(
       return createSyntheticResult(query, db, historyItemOptions, 'Query had compilation errors', messages.QueryResultType.OTHER_ERROR);
     }
   } finally {
-    upgradeDir.cleanup();
+    try {
+      upgradeDir.cleanup();
+    } catch (e) {
+      qs.logger.log(`Could not clean up the upgrades dir. Reason: ${e.message || e}`);
+    }
   }
 }
 

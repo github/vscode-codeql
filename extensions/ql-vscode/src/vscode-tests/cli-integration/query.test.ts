@@ -33,7 +33,10 @@ class Checkpoint<T> {
   constructor() {
     this.res = () => { /**/ };
     this.rej = () => { /**/ };
-    this.promise = new Promise((res, rej) => { this.res = res; this.rej = rej; });
+    this.promise = new Promise((res, rej) => {
+      this.res = res as () => {};
+      this.rej = rej;
+    });
   }
 
   async done(): Promise<T> {
@@ -81,6 +84,11 @@ const queryTestCases: QueryTestCase[] = [
   }
 ];
 
+const db: messages.Dataset = {
+  dbDir: path.join(__dirname, '../test-db'),
+  workingSet: 'default',
+};
+
 describe('using the query server', function() {
   before(function() {
     skipIfNoCodeQL(this);
@@ -119,6 +127,12 @@ describe('using the query server', function() {
     const compilationSucceeded = new Checkpoint<void>();
     const evaluationSucceeded = new Checkpoint<void>();
     const parsedResults = new Checkpoint<void>();
+
+    it('should register the database if necessary', async () => {
+      if (await qs.supportsDatabaseRegistration()) {
+        await qs.sendRequest(messages.registerDatabases, { databases: [db] }, token, (() => { /**/ }) as any);
+      }
+    });
 
     it(`should be able to compile query ${queryName}`, async function() {
       await queryServerStarted.done();
@@ -166,15 +180,11 @@ describe('using the query server', function() {
           id: callbackId,
           timeoutSecs: 1000,
         };
-        const db: messages.Dataset = {
-          dbDir: path.join(__dirname, '../test-db'),
-          workingSet: 'default',
-        };
         const params: messages.EvaluateQueriesParams = {
           db,
           evaluateId: callbackId,
           queries: [queryToRun],
-          stopOnError: false,
+          stopOnError: true,
           useSequenceHint: false
         };
         await qs.sendRequest(messages.runQueries, params, token, () => { /**/ });
