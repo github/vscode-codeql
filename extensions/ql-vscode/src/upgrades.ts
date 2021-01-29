@@ -8,6 +8,7 @@ import { upgradesTmpDir } from './run-queries';
 import * as tmp from 'tmp-promise';
 import * as path from 'path';
 import * as semver from 'semver';
+import { DatabaseItem } from './databases';
 
 /**
  * Maximum number of lines to include from database upgrade message,

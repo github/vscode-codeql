@@ -67,7 +67,6 @@ jobs:
 
       - name: Create release
         id: create-release
-        if: github.event_name == 'pull_request'
         uses: actions/create-release@v1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -82,7 +81,7 @@ jobs:
 
       - name: Upload release asset
         uses: actions/upload-release-asset@v1.0.1
-        if: success() && github.event_name == 'pull_request'
+        if: success()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -93,12 +92,6 @@ jobs:
           asset_name: ${{ format('vscode-codeql-{0}.vsix', steps.prepare-artifacts.outputs.ref_name) }}
           asset_content_type: application/zip
 
-
-      - name: No Release
-        if: github.event_name != 'pull_request'
-        run: |
-          echo "Not making a release because this is not a pull request"
-
       ###
       # Do Post release work: version bump and changelog PR
       # Only do this if we are running from a PR (ie- this is part of the release process)
@@ -106,14 +99,13 @@ jobs:
       # The checkout action does not fetch the main branch.
       # Fetch the main branch so that we can base the version bump PR against main.
       - name: Fetch main branch
-        if: github.event_name == 'pull_request'
         run: |
           git fetch --depth=1 origin main:main
           git checkout main
 
       - name: Bump patch version
         id: bump-patch-version
-        if: success() && github.event_name == 'pull_request'
+        if: success()
         run: |
           cd extensions/ql-vscode
           # Bump to the next patch version. Major or minor version bumps will have to be done manually.
@@ -122,14 +114,14 @@ jobs:
           echo "::set-output name=next_version::$NEXT_VERSION"
 
       - name: Add changelog for next release
-        if: success() && github.event_name == 'pull_request'
+        if: success()
         run: |
           cd extensions/ql-vscode
           perl -i -pe 's/^/## \[UNRELEASED\]\n\n/ if($.==3)' CHANGELOG.md
 
       - name: Create version bump PR
         uses: peter-evans/create-pull-request@c7f493a8000b8aeb17a1332e326ba76b57cb83eb # v3.4.1
-        if: success() && github.event_name == 'pull_request'
+        if: success()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Bump version to ${{ steps.bump-patch-version.outputs.next_version }}
