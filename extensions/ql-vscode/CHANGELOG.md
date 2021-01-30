@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.4.1 - 29 January 2021
 
 - Reword the telemetry modal dialog box. [#738](https://github.com/github/vscode-codeql/pull/738)
