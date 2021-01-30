@@ -165,8 +165,9 @@ export class TelemetryListener extends ConfigListener {
       if (GLOBAL_ENABLE_TELEMETRY.getValue()) {
         // Extension won't start until this completes.
         result = await showBinaryChoiceDialog(
-          'Do we have your permission to collect usage data and metrics to help us improve CodeQL for VSCode? See [TELEMETRY.md](https://github.com/github/vscode-codeql/blob/main/TELEMETRY.md) for details of what we collect and how we use it.',
+          'Does the CodeQL Extension by GitHub have your permission to collect usage data and metrics to help us improve CodeQL for VSCode?\n\nFor details of what we collect and how we use it, see https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/TELEMETRY.md.',
           // We make this dialog modal for now.
+          // Note that  non-modal dialogs allow for markdown in their text, but modal dialogs do not.
           // If we do decide to keep this dialog as modal, then this implementation can change and
           // we no longer need to call Promise.race. Before committing this PR, we need to make
           // this decision.

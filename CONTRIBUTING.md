@@ -94,7 +94,7 @@ Alternatively, you can run the tests inside of vscode. There are several vscode 
 1. Double-check the `CHANGELOG.md` contains all desired change comments and has the version to be released with date at the top.
     * Go through all recent PRs and make sure they are properly accounted for.
     * Make sure all changelog entries have links back to their PR(s) if appropriate.
-1. Double-check that the extension `package.json` has the version you intend to release. If you are doing a patch release (as opposed to minor or major version) this should already be correct.
+1. Double-check that the extension `package.json` and `package-lock.json` have the version you intend to release. If you are doing a patch release (as opposed to minor or major version) this should already be correct.
 1. Create a PR for this release:
     * This PR will contain any missing bits from steps 1 and 2. Most of the time, this will just be updating `CHANGELOG.md` with today's date.
     * Create a new branch for the release named after the new version. For example: `v1.3.6`

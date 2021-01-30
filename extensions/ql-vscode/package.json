@@ -179,7 +179,7 @@
           "type": "boolean",
           "default": false,
           "scope": "application",
-          "markdownDescription": "Specifies whether to send CodeQL usage telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent to GitHub. For more information, see [TELEMETRY.md](https://github.com/github/vscode-codeql/blob/main/TELEMETRY.md)",
+          "markdownDescription": "Specifies whether to send CodeQL usage telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent to GitHub. For more information, see [TELEMETRY.md](https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/TELEMETRY.md)",
           "description": "Specifies whether to send CodeQL usage telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent to GitHub."
         },
         "codeQL.telemetry.logTelemetry": {
