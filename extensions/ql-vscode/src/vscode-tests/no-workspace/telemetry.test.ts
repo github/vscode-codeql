@@ -249,7 +249,7 @@ describe('telemetry reporting', function() {
   });
 
   it('should request permission if popup has never been seen before', async () => {
-    sandbox.stub(window, 'showInformationMessage').resolvesArg(2 /* "yes" item */);
+    sandbox.stub(window, 'showInformationMessage').resolvesArg(3 /* "yes" item */);
     await ctx.globalState.update('telemetry-request-viewed', false);
     await enableTelemetry('codeQL.telemetry', false);
 
@@ -262,7 +262,7 @@ describe('telemetry reporting', function() {
   });
 
   it('should prevent telemetry if permission is denied', async () => {
-    sandbox.stub(window, 'showInformationMessage').resolvesArg(3 /* "no" item */);
+    sandbox.stub(window, 'showInformationMessage').resolvesArg(4 /* "no" item */);
     await ctx.globalState.update('telemetry-request-viewed', false);
     await enableTelemetry('codeQL.telemetry', true);
 
