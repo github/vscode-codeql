@@ -1,14 +1,16 @@
 import { expect } from 'chai';
 import 'mocha';
-import { ExtensionContext, Memento } from 'vscode';
+import { ExtensionContext, Memento, window } from 'vscode';
 import * as yaml from 'js-yaml';
 import * as tmp from 'tmp';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as sinon from 'sinon';
 
-import { getInitialQueryContents, InvocationRateLimiter, isLikelyDbLanguageFolder } from '../../helpers';
+import { getInitialQueryContents, InvocationRateLimiter, isLikelyDbLanguageFolder, showBinaryChoiceDialog, showBinaryChoiceWithUrlDialog, showInformationMessageWithAction } from '../../helpers';
 import { reportStreamProgress } from '../../commandRunner';
+import Sinon = require('sinon');
+import { fail } from 'assert';
 
 describe('helpers', () => {
   let sandbox: sinon.SinonSandbox;
@@ -223,6 +225,93 @@ describe('helpers', () => {
       step: 1,
       maxStep: 2,
       message: 'My prefix (Size unknown)',
+    });
+  });
+
+  describe('open dialog', () => {
+    let showInformationMessageSpy: Sinon.SinonStub;
+    beforeEach(() => {
+      showInformationMessageSpy = sandbox.stub(window, 'showInformationMessage');
+    });
+
+    it('should show a binary choice dialog and return `yes`', (done) => {
+      // pretend user chooses 'yes'
+      showInformationMessageSpy.onCall(0).resolvesArg(2);
+      const res = showBinaryChoiceDialog('xxx');
+      res.then((val) => {
+        expect(val).to.eq(true);
+        done();
+      }).catch(e => fail(e));
+    });
+
+    it('should show a binary choice dialog and return `no`', (done) => {
+      // pretend user chooses 'no'
+      showInformationMessageSpy.onCall(0).resolvesArg(3);
+      const res = showBinaryChoiceDialog('xxx');
+      res.then((val) => {
+        expect(val).to.eq(false);
+        done();
+      }).catch(e => fail(e));
+    });
+
+    it('should show an info dialog and confirm the action', (done) => {
+      // pretend user chooses to run action
+      showInformationMessageSpy.onCall(0).resolvesArg(1);
+      const res = showInformationMessageWithAction('xxx', 'yyy');
+      res.then((val) => {
+        expect(val).to.eq(true);
+        done();
+      }).catch(e => fail(e));
+    });
+
+    it('should show an action dialog and avoid choosing the action', (done) => {
+      // pretend user does not choose to run action
+      showInformationMessageSpy.onCall(0).resolves(undefined);
+      const res = showInformationMessageWithAction('xxx', 'yyy');
+      res.then((val) => {
+        expect(val).to.eq(false);
+        done();
+      }).catch(e => fail(e));
+    });
+
+    it('should show a binary choice dialog with a url and return `yes`', (done) => {
+      // pretend user clicks on the url twice and then clicks 'yes'
+      showInformationMessageSpy.onCall(0).resolvesArg(2);
+      showInformationMessageSpy.onCall(1).resolvesArg(2);
+      showInformationMessageSpy.onCall(2).resolvesArg(3);
+      const res = showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
+      res.then((val) => {
+        expect(val).to.eq(true);
+        done();
+      }).catch(e => fail(e));
+    });
+
+    it('should show a binary choice dialog with a url and return `no`', (done) => {
+      // pretend user clicks on the url twice and then clicks 'no'
+      showInformationMessageSpy.onCall(0).resolvesArg(2);
+      showInformationMessageSpy.onCall(1).resolvesArg(2);
+      showInformationMessageSpy.onCall(2).resolvesArg(4);
+      const res = showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
+      res.then((val) => {
+        expect(val).to.eq(false);
+        done();
+      }).catch(e => fail(e));
+    });
+
+    it('should show a binary choice dialog and exit after clcking `more info` 5 times', (done) => {
+      // pretend user clicks on the url twice and then clicks 'no'
+      showInformationMessageSpy.onCall(0).resolvesArg(2);
+      showInformationMessageSpy.onCall(1).resolvesArg(2);
+      showInformationMessageSpy.onCall(2).resolvesArg(2);
+      showInformationMessageSpy.onCall(3).resolvesArg(2);
+      showInformationMessageSpy.onCall(4).resolvesArg(2);
+      const res = showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
+      res.then((val) => {
+        // No choie was made
+        expect(val).to.eq(undefined);
+        expect(showInformationMessageSpy.getCalls().length).to.eq(5);
+        done();
+      }).catch(e => fail(e));
     });
   });
 });

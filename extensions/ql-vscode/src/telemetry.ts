@@ -4,7 +4,7 @@ import { ConfigListener, CANARY_FEATURES, ENABLE_TELEMETRY, GLOBAL_ENABLE_TELEME
 import * as appInsights from 'applicationinsights';
 import { logger } from './logging';
 import { UserCancellationException } from './commandRunner';
-import { showBinaryChoiceDialog } from './helpers';
+import { showBinaryChoiceWithUrlDialog } from './helpers';
 
 // Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
 const key = 'REPLACE-APP-INSIGHTS-KEY';
@@ -164,14 +164,9 @@ export class TelemetryListener extends ConfigListener {
       let result = undefined;
       if (GLOBAL_ENABLE_TELEMETRY.getValue()) {
         // Extension won't start until this completes.
-        result = await showBinaryChoiceDialog(
-          'Does the CodeQL Extension by GitHub have your permission to collect usage data and metrics to help us improve CodeQL for VSCode?\n\nFor details of what we collect and how we use it, see https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/TELEMETRY.md.',
-          // We make this dialog modal for now.
-          // Note that  non-modal dialogs allow for markdown in their text, but modal dialogs do not.
-          // If we do decide to keep this dialog as modal, then this implementation can change and
-          // we no longer need to call Promise.race. Before committing this PR, we need to make
-          // this decision.
-          true
+        result = await showBinaryChoiceWithUrlDialog(
+          'Does the CodeQL Extension by GitHub have your permission to collect usage data and metrics to help us improve CodeQL for VSCode?',
+          'https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/TELEMETRY.md'
         );
       }
       if (result !== undefined) {
