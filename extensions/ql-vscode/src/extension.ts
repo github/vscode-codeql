@@ -67,6 +67,7 @@ import {
   withProgress,
   ProgressUpdate
 } from './commandRunner';
+import { CodeQlStatusBarHandler } from './status-bar';
 
 /**
  * extension.ts
@@ -290,14 +291,22 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     return result;
   }
 
-  async function installOrUpdateThenTryActivate(config: DistributionUpdateConfig): Promise<CodeQLExtensionInterface | {}> {
+  async function installOrUpdateThenTryActivate(
+    config: DistributionUpdateConfig
+  ): Promise<CodeQLExtensionInterface | {}> {
+
     await installOrUpdateDistribution(config);
 
     // Display the warnings even if the extension has already activated.
     const distributionResult = await getDistributionDisplayingDistributionWarnings();
     let extensionInterface: CodeQLExtensionInterface | {} = {};
     if (!beganMainExtensionActivation && distributionResult.kind !== FindDistributionResultKind.NoDistribution) {
-      extensionInterface = await activateWithInstalledDistribution(ctx, distributionManager);
+      extensionInterface = await activateWithInstalledDistribution(
+        ctx,
+        distributionManager,
+        distributionConfigListener
+      );
+
     } else if (distributionResult.kind === FindDistributionResultKind.NoDistribution) {
       registerErrorStubs([checkForUpdatesCommand], command => async () => {
         const installActionName = 'Install CodeQL CLI';
@@ -339,7 +348,8 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
 
 async function activateWithInstalledDistribution(
   ctx: ExtensionContext,
-  distributionManager: DistributionManager
+  distributionManager: DistributionManager,
+  distributionConfigListener: DistributionConfigListener
 ): Promise<CodeQLExtensionInterface> {
   beganMainExtensionActivation = true;
   // Remove any error stubs command handlers left over from first part
@@ -359,6 +369,9 @@ async function activateWithInstalledDistribution(
     logger
   );
   ctx.subscriptions.push(cliServer);
+
+  const statusBar = new CodeQlStatusBarHandler(cliServer, distributionConfigListener);
+  ctx.subscriptions.push(statusBar);
 
   logger.log('Initializing query server client.');
   const qs = new qsClient.QueryServerClient(
@@ -658,6 +671,10 @@ async function activateWithInstalledDistribution(
         title: 'Adding database from URL',
       })
   );
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.openDocumentation', async () =>
+      env.openExternal(Uri.parse('https://codeql.github.com/docs/'))));
 
   logger.log('Starting language server.');
   ctx.subscriptions.push(client.start());

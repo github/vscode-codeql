@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Add a status bar item for the CodeQL CLI to show the current version. [#741](https://github.com/github/vscode-codeql/pull/741)
 - Fix version constraint for flagging CLI support of non-destructive updates [#744](https://github.com/github/vscode-codeql/pull/744)
 
 ## 1.4.1 - 29 January 2021
