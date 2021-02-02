@@ -1,10 +1,10 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.4.2 - 2 February 2021
 
 - Add a status bar item for the CodeQL CLI to show the current version. [#741](https://github.com/github/vscode-codeql/pull/741)
-- Fix version constraint for flagging CLI support of non-destructive updates [#744](https://github.com/github/vscode-codeql/pull/744)
-- Add a _More Information_ button in the telemetry popup. [#742](https://github.com/github/vscode-codeql/pull/742)
+- Fix version constraint for flagging CLI support of non-destructive updates. [#744](https://github.com/github/vscode-codeql/pull/744)
+- Add a _More Information_ button in the telemetry popup that opens [TELEMETRY.md](https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/TELEMETRY.md) in a browser tab. [#742](https://github.com/github/vscode-codeql/pull/742)
 
 ## 1.4.1 - 29 January 2021
 
