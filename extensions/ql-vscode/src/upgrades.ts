@@ -25,7 +25,7 @@ const MAX_UPGRADE_MESSAGE_LINES = 10;
  * resolving upgrades. We check for a version of codeql that has all three features.
  */
 export async function hasNondestructiveUpgradeCapabilities(qs: qsClient.QueryServerClient): Promise<boolean> {
-  return semver.gte(await qs.cliServer.getVersion(), '2.4.1');
+  return semver.gte(await qs.cliServer.getVersion(), '2.4.2');
 }
 
 
