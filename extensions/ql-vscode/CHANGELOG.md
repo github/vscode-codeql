@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix version constraint for flagging CLI support of non-destructive updates [#744](https://github.com/github/vscode-codeql/pull/744)
+
 ## 1.4.1 - 29 January 2021
 
 - Reword the telemetry modal dialog box. [#738](https://github.com/github/vscode-codeql/pull/738)
