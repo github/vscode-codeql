@@ -6,6 +6,7 @@
 - Add better error messages when AST Viewer is unable to create an AST. [#753](https://github.com/github/vscode-codeql/pull/753)
 - Cache AST viewing operations so that subsequent calls to view the AST of a single file will be extremely fast. [#753](https://github.com/github/vscode-codeql/pull/753)
 - Ensure CodeQL version in status bar updates correctly when version changes. [#754](https://github.com/github/vscode-codeql/pull/754)
+- Avoid deleting the quick query file when it is re-opened. [#747](https://github.com/github/vscode-codeql/pull/747)
 
 ## 1.4.2 - 2 February 2021
 
