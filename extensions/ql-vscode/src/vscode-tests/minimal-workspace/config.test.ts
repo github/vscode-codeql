@@ -26,7 +26,7 @@ describe('config listeners', () => {
   });
 
   interface TestConfig<T> {
-    clazz: new() => {};
+    clazz: new () => {};
     settings: {
       name: string;
       property: string;
@@ -84,19 +84,31 @@ describe('config listeners', () => {
         beforeEach(async () => {
           origValue = workspace.getConfiguration().get(setting.name);
           await workspace.getConfiguration().update(setting.name, setting.values[0]);
+          await wait();
           spy.resetHistory();
         });
 
         afterEach(async () => {
           await workspace.getConfiguration().update(setting.name, origValue);
+          await wait();
         });
 
         it(`should listen for changes to '${setting.name}'`, async () => {
           await workspace.getConfiguration().update(setting.name, setting.values[1]);
-          expect(spy.calledOnce).to.be.true;
+          await wait();
           expect(listener[setting.property]).to.eq(setting.values[1]);
+          expect(spy).to.have.been.calledOnce;
         });
       });
     });
   });
+
+  // Need to wait some time since the onDidChangeConfiguration listeners fire
+  // asynchronously and we sometimes need to wait for them to complete in
+  // order to have as successful test.
+  async function wait(ms = 50) {
+    return new Promise(resolve =>
+      setTimeout(resolve, ms)
+    );
+  }
 });
