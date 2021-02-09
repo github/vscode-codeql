@@ -379,8 +379,8 @@ export class DatabaseUI extends DisposableObject {
     let dbDirs = undefined;
 
     if (
-      !(await fs.pathExists(this.storagePath) ||
-        !(await fs.stat(this.storagePath)).isDirectory())
+      !(await fs.pathExists(this.storagePath)) ||
+      !(await fs.stat(this.storagePath)).isDirectory()
     ) {
       logger.log('Missing or invalid storage directory. Not trying to remove orphaned databases.');
       return;
