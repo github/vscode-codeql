@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Avoid displaying an error when removing orphaned databases and the storage folder does not exist. [#748](https://github.com/github/vscode-codeql/pull/748)
+
 ## 1.4.2 - 2 February 2021
 
 - Add a status bar item for the CodeQL CLI to show the current version. [#741](https://github.com/github/vscode-codeql/pull/741)
