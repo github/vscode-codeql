@@ -21,7 +21,7 @@ import { TestOptions } from 'vscode-test/out/runTest';
 // that might show up with new vscode versions released, even though
 // this makes testing not-quite-pure, but it can be changed for local
 // testing against old versions if necessary.
-const VSCODE_VERSION = 'stable';
+const VSCODE_VERSION = '1.52.1';
 
 // List if test dirs
 //   - no-workspace - Tests with no workspace selected upon launch.
@@ -131,5 +131,4 @@ function getLaunchArgs(dir: TestDir) {
     default:
       assertNever(dir);
   }
-  return undefined;
 }
