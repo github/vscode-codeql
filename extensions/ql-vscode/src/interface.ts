@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as Sarif from 'sarif';
-import { DisposableObject } from './vscode-utils/disposable-object';
+import { DisposableObject } from './pure/disposable-object';
 import * as vscode from 'vscode';
 import {
   Diagnostic,

@@ -1,4 +1,4 @@
-import { DisposableObject } from './disposable-object';
+import { DisposableObject } from '../pure/disposable-object';
 import { EventEmitter, Event, Uri, GlobPattern, workspace } from 'vscode';
 
 /**
@@ -62,4 +62,3 @@ export class MultiFileSystemWatcher extends DisposableObject {
     this._onDidChange.fire(uri);
   }
 }
-

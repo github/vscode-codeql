@@ -13,7 +13,7 @@ import {
 
 import { showAndLogWarningMessage } from './helpers';
 import { TestTreeNode } from './test-tree-node';
-import { DisposableObject } from './vscode-utils/disposable-object';
+import { DisposableObject } from './pure/disposable-object';
 import { UIService } from './vscode-utils/ui-service';
 import { QLTestAdapter, getExpectedFile, getActualFile } from './test-adapter';
 import { logger } from './logging';

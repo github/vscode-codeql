@@ -1,4 +1,4 @@
-import { DisposableObject } from './vscode-utils/disposable-object';
+import { DisposableObject } from './pure/disposable-object';
 import { workspace, Event, EventEmitter, ConfigurationChangeEvent, ConfigurationTarget } from 'vscode';
 import { DistributionManager } from './distribution';
 import { logger } from './logging';

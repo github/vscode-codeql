@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { DisposableObject } from './vscode-utils/disposable-object';
+import { DisposableObject } from './pure/disposable-object';
 import {
   Event,
   EventEmitter,

@@ -20,6 +20,7 @@ import { registerDatabases } from '../../pure/messages';
 import { ProgressCallback } from '../../commandRunner';
 import { CodeQLCliServer } from '../../cli';
 import { encodeArchiveBasePath, encodeSourceArchiveUri } from '../../archive-filesystem-provider';
+import { testDisposeHandler } from '../test-dispose-handler';
 
 describe('databases', () => {
 
@@ -85,7 +86,7 @@ describe('databases', () => {
 
   afterEach(async () => {
     dir.removeCallback();
-    databaseManager.dispose();
+    databaseManager.dispose(testDisposeHandler);
     sandbox.restore();
   });
 

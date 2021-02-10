@@ -112,18 +112,21 @@ function getLaunchArgs(dir: TestDir) {
   switch (dir) {
     case TestDir.NoWorksspace:
       return [
-        '--disable-extensions'
+        '--disable-extensions',
+        '--disable-gpu'
       ];
 
     case TestDir.MinimalWorksspace:
       return [
         '--disable-extensions',
+        '--disable-gpu',
         path.resolve(__dirname, '../../test/data')
       ];
 
     case TestDir.CliIntegration:
       // CLI integration tests requires a multi-root workspace so that the data and the QL sources are accessible.
       return [
+        '--disable-gpu',
         path.resolve(__dirname, '../../test/data'),
         process.env.TEST_CODEQL_PATH!
       ];
