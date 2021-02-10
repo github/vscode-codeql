@@ -1,5 +1,7 @@
 import { Disposable } from 'vscode';
 
+export type DisposeHandler = (disposable: Disposable) => void;
+
 /**
  * Base class to make it easier to implement a `Disposable` that owns other disposable object.
  */
@@ -46,15 +48,33 @@ export abstract class DisposableObject implements Disposable {
     }
   }
 
-  public dispose() {
+  /**
+   * Dispose this object and all contained objects
+   *
+   * @param disposeHandler An optional dispose handler that gets
+   *      passed each element to dispose. The dispose handler
+   *      can choose how (and if) to dispose the object. The
+   *      primary usage is for tests that should not dispose
+   *      all items of a disposable.
+   */
+  public dispose(disposeHandler?: DisposeHandler) {
     if (this.tracked !== undefined) {
       for (const trackedObject of this.tracked.values()) {
-        trackedObject.dispose();
+        if (disposeHandler) {
+          disposeHandler(trackedObject);
+        } else {
+          trackedObject.dispose();
+        }
       }
       this.tracked = undefined;
     }
     while (this.disposables.length > 0) {
-      this.disposables.pop()!.dispose();
+      const disposable = this.disposables.pop()!;
+      if (disposeHandler) {
+        disposeHandler(disposable);
+      } else {
+        disposable.dispose();
+      }
     }
   }
 }

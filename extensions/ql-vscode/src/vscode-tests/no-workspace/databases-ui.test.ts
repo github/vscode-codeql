@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import { Uri } from 'vscode';
 
 import { DatabaseUI } from '../../databases-ui';
+import { testDisposeHandler } from '../test-dispose-handler';
 
 describe('databases-ui', () => {
   describe('fixDbUri', () => {
@@ -89,7 +90,7 @@ describe('databases-ui', () => {
     expect(fs.pathExistsSync(db4)).to.be.false;
     expect(fs.pathExistsSync(db5)).to.be.false;
 
-    databaseUI.dispose();
+    databaseUI.dispose(testDisposeHandler);
   });
 
   function createDatabase(storageDir: string, dbName: string, language: string, extraFile?: string) {

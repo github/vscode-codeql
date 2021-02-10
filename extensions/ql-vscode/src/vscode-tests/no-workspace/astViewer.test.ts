@@ -7,6 +7,7 @@ import * as yaml from 'js-yaml';
 import { AstViewer, AstItem } from '../../astViewer';
 import { commands, Range } from 'vscode';
 import { DatabaseItem } from '../../databases';
+import { testDisposeHandler } from '../test-dispose-handler';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -31,7 +32,7 @@ describe('AstViewer', () => {
   afterEach(() => {
     sandbox.restore();
     if (viewer) {
-      viewer.dispose();
+      viewer.dispose(testDisposeHandler);
       viewer = undefined;
     }
   });
