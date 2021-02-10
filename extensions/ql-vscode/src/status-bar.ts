@@ -1,7 +1,7 @@
 import { ConfigurationChangeEvent, StatusBarAlignment, StatusBarItem, window, workspace } from 'vscode';
 import { CodeQLCliServer } from './cli';
 import { CANARY_FEATURES, DistributionConfigListener } from './config';
-import { DisposableObject } from './vscode-utils/disposable-object';
+import { DisposableObject } from './pure/disposable-object';
 
 /**
  * Creates and manages a status bar item for codeql. THis item contains

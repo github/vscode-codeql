@@ -19,7 +19,8 @@ import { UrlValue, BqrsId } from './pure/bqrs-cli-types';
 import { showLocation } from './interface-utils';
 import { isStringLoc, isWholeFileLoc, isLineColumnLoc } from './pure/bqrs-utils';
 import { commandRunner } from './commandRunner';
-import { DisposableObject } from './vscode-utils/disposable-object';
+import { DisposableObject } from './pure/disposable-object';
+import { showAndLogErrorMessage } from './helpers';
 
 export interface AstItem {
   id: BqrsId;
@@ -129,8 +130,13 @@ export class AstViewer extends DisposableObject {
     this.treeDataProvider.db = db;
     this.treeDataProvider.refresh();
     this.treeView.message = `AST for ${path.basename(fileName)}`;
-    this.treeView.reveal(roots[0], { focus: false });
     this.currentFile = fileName;
+    // Handle error on reveal. This could happen if
+    // the tree view is disposed during the reveal.
+    this.treeView.reveal(roots[0], { focus: false })?.then(
+      () => { /**/ },
+      err => showAndLogErrorMessage(err)
+    );
   }
 
   private updateTreeSelection(e: TextEditorSelectionChangeEvent) {
@@ -178,7 +184,12 @@ export class AstViewer extends DisposableObject {
 
       const targetItem = findBest(range, this.treeDataProvider.roots);
       if (targetItem) {
-        this.treeView.reveal(targetItem);
+        // Handle error on reveal. This could happen if
+        // the tree view is disposed during the reveal.
+        this.treeView.reveal(targetItem)?.then(
+          () => { /**/ },
+          err => showAndLogErrorMessage(err)
+        );
       }
     }
   }

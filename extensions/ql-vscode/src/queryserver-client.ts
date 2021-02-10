@@ -1,6 +1,6 @@
 import * as cp from 'child_process';
 import * as path from 'path';
-import { DisposableObject } from './vscode-utils/disposable-object';
+import { DisposableObject } from './pure/disposable-object';
 import { Disposable, CancellationToken, commands } from 'vscode';
 import { createMessageConnection, MessageConnection, RequestType } from 'vscode-jsonrpc';
 import * as cli from './cli';

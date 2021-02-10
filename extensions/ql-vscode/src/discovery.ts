@@ -1,4 +1,4 @@
-import { DisposableObject } from './vscode-utils/disposable-object';
+import { DisposableObject } from './pure/disposable-object';
 import { logger } from './logging';
 
 /**

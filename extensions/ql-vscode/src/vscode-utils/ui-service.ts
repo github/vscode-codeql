@@ -1,5 +1,5 @@
 import { TreeDataProvider, window } from 'vscode';
-import { DisposableObject } from './disposable-object';
+import { DisposableObject } from '../pure/disposable-object';
 import { commandRunner } from '../commandRunner';
 
 /**

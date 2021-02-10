@@ -44,7 +44,6 @@ describe('Databases', function() {
 
   afterEach(() => {
     try {
-      // dispose();
       sandbox.restore();
     } catch (e) {
       fail(e);

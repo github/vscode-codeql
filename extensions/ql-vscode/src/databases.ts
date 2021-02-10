@@ -15,7 +15,7 @@ import {
   withProgress
 } from './commandRunner';
 import { zipArchiveScheme, encodeArchiveBasePath, decodeSourceArchiveUri, encodeSourceArchiveUri } from './archive-filesystem-provider';
-import { DisposableObject } from './vscode-utils/disposable-object';
+import { DisposableObject } from './pure/disposable-object';
 import { Logger, logger } from './logging';
 import { registerDatabases, Dataset, deregisterDatabases } from './pure/messages';
 import { QueryServerClient } from './queryserver-client';

@@ -1,5 +1,5 @@
 import { window as Window, OutputChannel, Progress, Disposable } from 'vscode';
-import { DisposableObject } from './vscode-utils/disposable-object';
+import { DisposableObject } from './pure/disposable-object';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 

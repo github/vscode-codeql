@@ -7,7 +7,14 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as sinon from 'sinon';
 
-import { getInitialQueryContents, InvocationRateLimiter, isLikelyDbLanguageFolder, showBinaryChoiceDialog, showBinaryChoiceWithUrlDialog, showInformationMessageWithAction } from '../../helpers';
+import {
+  getInitialQueryContents,
+  InvocationRateLimiter,
+  isLikelyDbLanguageFolder,
+  showBinaryChoiceDialog,
+  showBinaryChoiceWithUrlDialog,
+  showInformationMessageWithAction
+} from '../../helpers';
 import { reportStreamProgress } from '../../commandRunner';
 import Sinon = require('sinon');
 import { fail } from 'assert';

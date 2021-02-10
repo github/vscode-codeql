@@ -37,7 +37,6 @@ describe('AstBuilder', () => {
   let mockCli: CodeQLCliServer;
   let overrides: Record<string, object | undefined>;
 
-
   beforeEach(() => {
     mockCli = {
       bqrsDecode: sinon.stub().callsFake((_: string, resultSet: 'nodes' | 'edges' | 'graphProperties') => {
