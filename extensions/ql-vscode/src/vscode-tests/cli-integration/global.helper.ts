@@ -16,14 +16,12 @@ export const DB_URL = 'https://github.com/github/vscode-codeql/files/5586722/sim
 export const dbLoc = path.join(fs.realpathSync(path.join(__dirname, '../../../')), 'build/tests/db.zip');
 export let storagePath: string;
 
-// See https://github.com/DefinitelyTyped/DefinitelyTyped/pull/49860
-// Should be of type Mocha
-export default function(mocha: /*Mocha*/ any) {
+export default function(mocha: Mocha) {
   // create an extension storage location
   let removeStorage: tmp.DirResult['removeCallback'] | undefined;
 
-  mocha.globalSetup([
-    // ensure the test database is downloaded
+  // ensure the test database is downloaded
+  (mocha.options as any).globalSetup.push(
     async () => {
       fs.mkdirpSync(path.dirname(dbLoc));
       if (!fs.existsSync(dbLoc)) {
@@ -44,14 +42,18 @@ export default function(mocha: /*Mocha*/ any) {
           fail('Failed to download test database: ' + e);
         }
       }
-    },
+    }
+  );
 
-    // Set the CLI version here before activation to ensure we don't accidentally try to download a cli
+  // Set the CLI version here before activation to ensure we don't accidentally try to download a cli
+  (mocha.options as any).globalSetup.push(
     async () => {
       await workspace.getConfiguration().update('codeQL.cli.executablePath', process.env.CLI_PATH, ConfigurationTarget.Global);
-    },
+    }
+  );
 
-    // Create the temp directory to be used as extension local storage.
+  // Create the temp directory to be used as extension local storage.
+  (mocha.options as any).globalSetup.push(
     () => {
       const dir = tmp.dirSync();
       storagePath = fs.realpathSync(dir.name);
@@ -61,10 +63,10 @@ export default function(mocha: /*Mocha*/ any) {
 
       removeStorage = dir.removeCallback;
     }
-  ]);
+  );
 
-  mocha.globalTeardown([
-    // ensure etension is cleaned up.
+  // ensure etension is cleaned up.
+  (mocha.options as any).globalTeardown.push(
     async () => {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | {}>('GitHub.vscode-codeql')!.activate();
       // This shuts down the extension and can only be run after all tests have completed.
@@ -72,10 +74,13 @@ export default function(mocha: /*Mocha*/ any) {
       if ('dispose' in extension) {
         extension.dispose();
       }
-    },
-    // ensure temp directory is cleaned up.
+    }
+  );
+
+  // ensure temp directory is cleaned up.
+  (mocha.options as any).globalTeardown.push(
     () => {
       removeStorage?.();
     }
-  ]);
+  );
 }

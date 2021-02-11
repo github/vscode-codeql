@@ -43,17 +43,17 @@ export async function runTestsInDirectory(testsRoot: string, useCli = false): Pr
   // Create the mocha test
   const mocha = new Mocha({
     ui: 'bdd',
-    color: true
-  });
+    color: true,
+    globalSetup: [],
+    globalTeardown: [],
+  } as any);
 
-  // See https://github.com/DefinitelyTyped/DefinitelyTyped/pull/49860
-  // Need to update to 8.2.0 of the typings.
-  (mocha as any).globalSetup(() => {
+  (mocha.options as any).globalSetup.push(
     // convert this function into an noop since it should not run during tests.
     // If it does run during tests, then it can cause some testing environments
     // to hang.
-    (env as any).openExternal = () => { /**/ };
-  });
+    (env as any).openExternal = () => { /**/ }
+  );
 
   await ensureCli(useCli);
 
