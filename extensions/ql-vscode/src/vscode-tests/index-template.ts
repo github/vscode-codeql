@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as Mocha from 'mocha';
 import * as glob from 'glob';
 import { ensureCli } from './ensureCli';
+import { env } from 'vscode';
 
 
 // Use this handler to avoid swallowing unhandled rejections.
@@ -43,6 +44,15 @@ export async function runTestsInDirectory(testsRoot: string, useCli = false): Pr
   const mocha = new Mocha({
     ui: 'bdd',
     color: true
+  });
+
+  // See https://github.com/DefinitelyTyped/DefinitelyTyped/pull/49860
+  // Need to update to 8.2.0 of the typings.
+  (mocha as any).globalSetup(() => {
+    // convert this function into an noop since it should not run during tests.
+    // If it does run during tests, then it can cause some testing environments
+    // to hang.
+    (env as any).openExternal = () => { /**/ };
   });
 
   await ensureCli(useCli);
