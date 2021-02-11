@@ -50,7 +50,7 @@ export const GLOBAL_ENABLE_TELEMETRY = new Setting('enableTelemetry', GLOBAL_TEL
 
 // Distribution configuration
 const DISTRIBUTION_SETTING = new Setting('cli', ROOT_SETTING);
-const CUSTOM_CODEQL_PATH_SETTING = new Setting('executablePath', DISTRIBUTION_SETTING);
+export const CUSTOM_CODEQL_PATH_SETTING = new Setting('executablePath', DISTRIBUTION_SETTING);
 const INCLUDE_PRERELEASE_SETTING = new Setting('includePrerelease', DISTRIBUTION_SETTING);
 const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIBUTION_SETTING);
 const QUERY_HISTORY_SETTING = new Setting('queryHistory', ROOT_SETTING);

@@ -1,6 +1,6 @@
 import { ConfigurationChangeEvent, StatusBarAlignment, StatusBarItem, window, workspace } from 'vscode';
 import { CodeQLCliServer } from './cli';
-import { CANARY_FEATURES, DistributionConfigListener } from './config';
+import { CANARY_FEATURES, CUSTOM_CODEQL_PATH_SETTING, DistributionConfigListener } from './config';
 import { DisposableObject } from './pure/disposable-object';
 
 /**
@@ -24,8 +24,14 @@ export class CodeQlStatusBarHandler extends DisposableObject {
   }
 
   private handleDidChangeConfiguration(e: ConfigurationChangeEvent) {
-    if (e.affectsConfiguration(CANARY_FEATURES.qualifiedName)) {
-      this.updateStatusItem();
+    if (
+      e.affectsConfiguration(CANARY_FEATURES.qualifiedName) ||
+      e.affectsConfiguration(CUSTOM_CODEQL_PATH_SETTING.qualifiedName)
+    ) {
+      // Wait a few seconds before updating the status item.
+      // This avoids a race condition where the cli's version
+      // is not updated before the status bar is refreshed.
+      setTimeout(() => this.updateStatusItem(), 3000);
     }
   }
 

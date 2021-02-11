@@ -162,6 +162,7 @@ export class CodeQLCliServer implements Disposable {
     if (this.distributionProvider.onDidChangeDistribution) {
       this.distributionProvider.onDidChangeDistribution(() => {
         this.restartCliServer();
+        this._version = undefined;
       });
     }
     if (this.cliConfig.onDidChangeConfiguration) {
