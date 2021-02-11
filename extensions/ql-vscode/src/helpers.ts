@@ -296,19 +296,19 @@ export async function getPrimaryDbscheme(datasetFolder: string): Promise<string>
  * A cached mapping from strings to value of type U.
  */
 export class CachedOperation<U> {
-  private readonly operation: (t: string) => Promise<U>;
+  private readonly operation: (t: string, ...args: any[]) => Promise<U>;
   private readonly cached: Map<string, U>;
   private readonly lru: string[];
   private readonly inProgressCallbacks: Map<string, [(u: U) => void, (reason?: any) => void][]>;
 
-  constructor(operation: (t: string) => Promise<U>, private cacheSize = 100) {
+  constructor(operation: (t: string, ...args: any[]) => Promise<U>, private cacheSize = 100) {
     this.operation = operation;
     this.lru = [];
     this.inProgressCallbacks = new Map<string, [(u: U) => void, (reason?: any) => void][]>();
     this.cached = new Map<string, U>();
   }
 
-  async get(t: string): Promise<U> {
+  async get(t: string, ...args: any[]): Promise<U> {
     // Try and retrieve from the cache
     const fromCache = this.cached.get(t);
     if (fromCache !== undefined) {
@@ -329,7 +329,7 @@ export class CachedOperation<U> {
     const callbacks: [(u: U) => void, (reason?: any) => void][] = [];
     this.inProgressCallbacks.set(t, callbacks);
     try {
-      const result = await this.operation(t);
+      const result = await this.operation(t, ...args);
       callbacks.forEach(f => f[0](result));
       this.inProgressCallbacks.delete(t);
       if (this.lru.length > this.cacheSize) {

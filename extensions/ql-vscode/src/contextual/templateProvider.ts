@@ -1,4 +1,15 @@
-import * as vscode from 'vscode';
+import {
+  CancellationToken,
+  DefinitionProvider,
+  Location,
+  LocationLink,
+  Position,
+  ProgressLocation,
+  ReferenceContext,
+  ReferenceProvider,
+  TextDocument,
+  Uri
+} from 'vscode';
 
 import { decodeSourceArchiveUri, encodeArchiveBasePath, zipArchiveScheme } from '../archive-filesystem-provider';
 import { CodeQLCliServer } from '../cli';
@@ -22,20 +33,20 @@ import { qlpackOfDatabase, resolveQueries } from './queryResolver';
  * or from a selected identifier.
  */
 
-export class TemplateQueryDefinitionProvider implements vscode.DefinitionProvider {
-  private cache: CachedOperation<vscode.LocationLink[]>;
+export class TemplateQueryDefinitionProvider implements DefinitionProvider {
+  private cache: CachedOperation<LocationLink[]>;
 
   constructor(
     private cli: CodeQLCliServer,
     private qs: QueryServerClient,
     private dbm: DatabaseManager,
   ) {
-    this.cache = new CachedOperation<vscode.LocationLink[]>(this.getDefinitions.bind(this));
+    this.cache = new CachedOperation<LocationLink[]>(this.getDefinitions.bind(this));
   }
 
-  async provideDefinition(document: vscode.TextDocument, position: vscode.Position, _token: vscode.CancellationToken): Promise<vscode.LocationLink[]> {
+  async provideDefinition(document: TextDocument, position: Position, _token: CancellationToken): Promise<LocationLink[]> {
     const fileLinks = await this.cache.get(document.uri.toString());
-    const locLinks: vscode.LocationLink[] = [];
+    const locLinks: LocationLink[] = [];
     for (const link of fileLinks) {
       if (link.originSelectionRange!.contains(position)) {
         locLinks.push(link);
@@ -44,9 +55,9 @@ export class TemplateQueryDefinitionProvider implements vscode.DefinitionProvide
     return locLinks;
   }
 
-  private async getDefinitions(uriString: string): Promise<vscode.LocationLink[]> {
+  private async getDefinitions(uriString: string): Promise<LocationLink[]> {
     return withProgress({
-      location: vscode.ProgressLocation.Notification,
+      location: ProgressLocation.Notification,
       cancellable: true,
       title: 'Finding definitions'
     }, async (progress, token) => {
@@ -64,7 +75,7 @@ export class TemplateQueryDefinitionProvider implements vscode.DefinitionProvide
   }
 }
 
-export class TemplateQueryReferenceProvider implements vscode.ReferenceProvider {
+export class TemplateQueryReferenceProvider implements ReferenceProvider {
   private cache: CachedOperation<FullLocationLink[]>;
 
   constructor(
@@ -76,13 +87,13 @@ export class TemplateQueryReferenceProvider implements vscode.ReferenceProvider 
   }
 
   async provideReferences(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    _context: vscode.ReferenceContext,
-    _token: vscode.CancellationToken
-  ): Promise<vscode.Location[]> {
+    document: TextDocument,
+    position: Position,
+    _context: ReferenceContext,
+    _token: CancellationToken
+  ): Promise<Location[]> {
     const fileLinks = await this.cache.get(document.uri.toString());
-    const locLinks: vscode.Location[] = [];
+    const locLinks: Location[] = [];
     for (const link of fileLinks) {
       if (link.targetRange!.contains(position)) {
         locLinks.push({ range: link.originSelectionRange!, uri: link.originUri });
@@ -93,7 +104,7 @@ export class TemplateQueryReferenceProvider implements vscode.ReferenceProvider 
 
   private async getReferences(uriString: string): Promise<FullLocationLink[]> {
     return withProgress({
-      location: vscode.ProgressLocation.Notification,
+      location: ProgressLocation.Notification,
       cancellable: true,
       title: 'Finding references'
     }, async (progress, token) => {
@@ -112,40 +123,41 @@ export class TemplateQueryReferenceProvider implements vscode.ReferenceProvider 
 }
 
 export class TemplatePrintAstProvider {
-  private cache: CachedOperation<QueryWithResults | undefined>;
+  private cache: CachedOperation<QueryWithResults>;
 
   constructor(
     private cli: CodeQLCliServer,
     private qs: QueryServerClient,
     private dbm: DatabaseManager,
-
-    // Note: progress and token are only used if a cached value is not available
-    private progress: ProgressCallback,
-    private token: vscode.CancellationToken
   ) {
-    this.cache = new CachedOperation<QueryWithResults | undefined>(this.getAst.bind(this));
+    this.cache = new CachedOperation<QueryWithResults>(this.getAst.bind(this));
   }
 
-  async provideAst(document?: vscode.TextDocument): Promise<AstBuilder | undefined> {
+  async provideAst(
+    progress: ProgressCallback,
+    token: CancellationToken,
+    document?: TextDocument
+  ): Promise<AstBuilder | undefined> {
     if (!document) {
-      return;
+      throw new Error('Cannot view the AST. Please select a valid source file inside a CodeQL database.');
     }
-    const queryResults = await this.cache.get(document.uri.toString());
-    if (!queryResults) {
-      return;
-    }
+    const queryResults = await this.cache.get(document.uri.toString(), progress, token);
 
     return new AstBuilder(
       queryResults, this.cli,
-      this.dbm.findDatabaseItem(vscode.Uri.parse(queryResults.database.databaseUri!, true))!,
+      this.dbm.findDatabaseItem(Uri.parse(queryResults.database.databaseUri!, true))!,
       document.fileName
     );
   }
 
-  private async getAst(uriString: string): Promise<QueryWithResults> {
-    const uri = vscode.Uri.parse(uriString, true);
+  private async getAst(
+    uriString: string,
+    progress: ProgressCallback,
+    token: CancellationToken
+  ): Promise<QueryWithResults> {
+    const uri = Uri.parse(uriString, true);
     if (uri.scheme !== zipArchiveScheme) {
-      throw new Error('AST Viewing is only available for databases with zipped source archives.');
+      throw new Error('Cannot view the AST. Please select a valid source file inside a CodeQL database.');
     }
 
     const zippedArchive = decodeSourceArchiveUri(uri);
@@ -181,9 +193,9 @@ export class TemplatePrintAstProvider {
       this.qs,
       db,
       false,
-      vscode.Uri.file(query),
-      this.progress,
-      this.token,
+      Uri.file(query),
+      progress,
+      token,
       templates
     );
   }

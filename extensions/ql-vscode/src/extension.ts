@@ -692,13 +692,18 @@ async function activateWithInstalledDistribution(
   );
 
   const astViewer = new AstViewer();
+  const templateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm);
+
   ctx.subscriptions.push(astViewer);
   ctx.subscriptions.push(commandRunnerWithProgress('codeQL.viewAst', async (
     progress: ProgressCallback,
     token: CancellationToken
   ) => {
-    const ast = await new TemplatePrintAstProvider(cliServer, qs, dbm, progress, token)
-      .provideAst(window.activeTextEditor?.document);
+    const ast = await templateProvider.provideAst(
+      progress,
+      token,
+      window.activeTextEditor?.document,
+    );
     if (ast) {
       astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
     }
