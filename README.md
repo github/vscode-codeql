@@ -16,7 +16,6 @@ To see what has changed in the last few versions of the extension, see the [Chan
 * Provides an easy way to run queries from the large, open source repository of [CodeQL security queries](https://github.com/github/codeql).
 * Adds IntelliSense to support you writing and editing your own CodeQL query and library files.
 
-
 ## Project goals and scope
 
 This project will track new feature development in CodeQL and, whenever appropriate, bring that functionality to the Visual Studio Code experience.

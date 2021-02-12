@@ -29,8 +29,7 @@ Here are a few things you can do that will increase the likelihood of your pull 
 
 ## Setting up a local build
 
-Make sure you have a fairly recent version of vscode (>1.32) and are using nodejs
-version >=v10.13.0. (Tested on v10.15.1 and v10.16.0).
+Make sure you have installed recent versions of vscode (>= v1.52), node (>=12.16), and npm (>= 7.5.2). Earlier versions will probably work, but we no longer test against them.
 
 ### Installing all packages
 
