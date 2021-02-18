@@ -113,4 +113,4 @@ The CodeQL extension for Visual Studio Code is [licensed](LICENSE.md) under the 
 
 ## Data and Telemetry
 
-If you specifically opt-in to permit GitHub to do so, GitHub will collect usage data and metrics for the purposes of helping the core developers to improve the CodeQL extension for VS Code. This data will not be shared with any parties outside of GitHub. IP addresses and installation IDs will be retained for a maximum of 30 days. Anonymous data will be retained for a maximum of 180 days. Please see [telemetry](TELEMETRY.md) for more information.
+If you specifically opt-in to permit GitHub to do so, GitHub will collect usage data and metrics for the purposes of helping the core developers to improve the CodeQL extension for VS Code. This data will not be shared with any parties outside of GitHub. IP addresses and installation IDs will be retained for a maximum of 30 days. Anonymous data will be retained for a maximum of 180 days. For more information about telemetry, [see the documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/about-telemetry-in-codeql-for-visual-studio-code).
