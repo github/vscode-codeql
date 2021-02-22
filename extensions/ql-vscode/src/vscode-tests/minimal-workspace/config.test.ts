@@ -15,7 +15,10 @@ import {
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe('config listeners', () => {
+describe('config listeners', function() {
+  // Because we are adding some extra waiting, need to bump the test timeouts.
+  this.timeout(5000);
+
   let sandbox: Sinon.SinonSandbox;
   beforeEach(() => {
     sandbox = Sinon.createSandbox();
