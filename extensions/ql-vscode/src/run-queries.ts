@@ -294,7 +294,7 @@ async function checkDbschemeCompatibility(
   const searchPath = getOnDiskWorkspaceFolders();
 
   if (query.dbItem.contents !== undefined && query.dbItem.contents.dbSchemeUri !== undefined) {
-    const { finalDbscheme } = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath);
+    const { finalDbscheme } = await cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath, false);
     const hash = async function(filename: string): Promise<string> {
       return crypto.createHash('sha256').update(await fs.readFile(filename)).digest('hex');
     };
@@ -348,7 +348,7 @@ async function compileNonDestructiveUpgrade(
   if (!query.dbItem?.contents?.dbSchemeUri) {
     throw new Error('Database is invalid, and cannot be upgraded.');
   }
-  const { scripts, matchesTarget } = await qs.cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath, query.queryDbscheme);
+  const { scripts, matchesTarget } = await qs.cliServer.resolveUpgrades(query.dbItem.contents.dbSchemeUri.fsPath, searchPath, true, query.queryDbscheme);
 
   if (!matchesTarget) {
     reportNoUpgradePath(query);

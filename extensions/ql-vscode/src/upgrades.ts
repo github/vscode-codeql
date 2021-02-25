@@ -171,7 +171,8 @@ export async function upgradeDatabaseExplicit(
   }
   const upgradeInfo = await qs.cliServer.resolveUpgrades(
     db.contents.dbSchemeUri.fsPath,
-    searchPath
+    searchPath,
+    false
   );
 
   const { scripts, finalDbscheme } = upgradeInfo;
