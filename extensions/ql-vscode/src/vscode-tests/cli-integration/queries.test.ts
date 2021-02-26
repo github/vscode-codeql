@@ -1,10 +1,11 @@
 import { fail } from 'assert';
-import { CancellationToken, commands, extensions, Uri } from 'vscode';
+import { CancellationToken, commands, ExtensionContext, extensions, Uri } from 'vscode';
 import * as sinon from 'sinon';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import 'mocha';
 import { expect } from 'chai';
+import * as yaml from 'js-yaml';
 
 import { DatabaseItem, DatabaseManager } from '../../databases';
 import { CodeQLExtensionInterface } from '../../extension';
@@ -34,6 +35,11 @@ describe('Queries', function() {
   let sandbox: sinon.SinonSandbox;
   let progress: sinon.SinonSpy;
   let token: CancellationToken;
+  let ctx: ExtensionContext;
+
+  let qlpackFile: string;
+  let qlFile: string;
+
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
@@ -45,6 +51,9 @@ describe('Queries', function() {
         cli = extension.cliServer;
         qs = extension.qs;
         cli.quiet = true;
+        ctx = extension.ctx;
+        qlpackFile = `${ctx.storagePath}/quick-queries/qlpack.yml`;
+        qlFile = `${ctx.storagePath}/quick-queries/quick-query.ql`;
       } else {
         throw new Error('Extension not initialized. Make sure cli is downloaded and installed properly.');
       }
@@ -126,4 +135,42 @@ describe('Queries', function() {
       fail(e);
     }
   });
+
+  it('should create a quick query', async () => {
+    safeDel(qlFile);
+    safeDel(qlpackFile);
+
+    await commands.executeCommand('codeQL.quickQuery');
+
+    // should have created the quick query file and query pack file
+    expect(fs.pathExistsSync(qlFile)).to.be.true;
+    expect(fs.pathExistsSync(qlpackFile)).to.be.true;
+
+    const qlpackContents: any = await yaml.safeLoad(
+      fs.readFileSync(qlpackFile, 'utf8')
+    );
+    // Should have chosen the js libraries
+    expect(qlpackContents.libraryPathDependencies[0]).to.eq('codeql-javascript');
+  });
+
+  it('should avoid creating a quick query', async () => {
+    fs.writeFileSync(qlpackFile, yaml.safeDump({
+      name: 'quick-query',
+      version: '1.0.0',
+      libraryPathDependencies: ['codeql-javascript']
+    }));
+    fs.writeFileSync(qlFile, 'xxx');
+    await commands.executeCommand('codeQL.quickQuery');
+
+    // should not have created the quick query file because database schema hasn't changed
+    expect(fs.readFileSync(qlFile, 'utf8')).to.eq('xxx');
+  });
+
+  function safeDel(file: string) {
+    try {
+      fs.unlinkSync(file);
+    } catch (e) {
+      // ignore
+    }
+  }
 });
