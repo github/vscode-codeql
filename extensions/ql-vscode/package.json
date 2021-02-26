@@ -160,7 +160,7 @@
         "codeQL.resultsDisplay.pageSize": {
           "type": "integer",
           "default": 200,
-          "description": "Number of queries displayed per page of the results view."
+          "description": "Max number of query results to display per page in the results view."
         },
         "codeQL.queryHistory.format": {
           "type": "string",
