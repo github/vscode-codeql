@@ -41,6 +41,10 @@ describe('config listeners', function() {
     {
       clazz: CliConfigListener,
       settings: [{
+        name: 'codeQL.runningQueries.numberOfThreads',
+        property: 'numberThreads',
+        values: [0, 1]
+      }, {
         name: 'codeQL.runningTests.numberOfThreads',
         property: 'numberTestThreads',
         values: [1, 0]

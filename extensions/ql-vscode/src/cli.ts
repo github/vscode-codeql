@@ -597,6 +597,12 @@ export class CodeQLCliServer implements Disposable {
         '--source-location-prefix', sourceInfo.sourceLocationPrefix
       );
     }
+
+    args.push(
+      '--threads',
+      this.cliConfig.numberThreads.toString(),
+    );
+
     args.push(resultsPath);
     await this.runCodeQlCliCommand(['bqrs', 'interpret'], args, 'Interpreting query results');
 

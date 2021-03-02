@@ -104,10 +104,11 @@ export interface QueryHistoryConfig {
   onDidChangeConfiguration: Event<void>;
 }
 
-const CLI_SETTINGS = [NUMBER_OF_TEST_THREADS_SETTING];
+const CLI_SETTINGS = [NUMBER_OF_TEST_THREADS_SETTING, NUMBER_OF_THREADS_SETTING];
 
 export interface CliConfig {
   numberTestThreads: number;
+  numberThreads: number;
   onDidChangeConfiguration?: Event<void>;
 }
 
@@ -233,6 +234,11 @@ export class CliConfigListener extends ConfigListener implements CliConfig {
 
   public get numberTestThreads(): number {
     return NUMBER_OF_TEST_THREADS_SETTING.getValue();
+  }
+
+
+  public get numberThreads(): number {
+    return NUMBER_OF_THREADS_SETTING.getValue<number>();
   }
 
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
