@@ -609,8 +609,12 @@ export class CodeQLCliServer implements Disposable {
     let output: string;
     try {
       output = await fs.readFile(interpretedResultsPath, 'utf8');
-    } catch (err) {
-      throw new Error(`Reading output of interpretation failed: ${err.stderr || err}`);
+    } catch (e) {
+      const rawMessage = e.stderr || e.message;
+      const errorMessage = rawMessage.startsWith('Cannot create a string')
+        ? `SARIF too large. ${rawMessage}`
+        : rawMessage;
+      throw new Error(`Reading output of interpretation failed: ${errorMessage}`);
     }
     try {
       return JSON.parse(output) as sarif.Log;

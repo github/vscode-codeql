@@ -236,61 +236,67 @@ export class InterfaceManager extends DisposableObject {
   }
 
   private async handleMsgFromView(msg: FromResultsViewMsg): Promise<void> {
-    switch (msg.t) {
-      case 'viewSourceFile': {
-        await jumpToLocation(msg, this.databaseManager, this.logger);
-        break;
-      }
-      case 'toggleDiagnostics': {
-        if (msg.visible) {
-          const databaseItem = this.databaseManager.findDatabaseItem(
-            Uri.parse(msg.databaseUri)
-          );
-          if (databaseItem !== undefined) {
-            await this.showResultsAsDiagnostics(
-              msg.origResultsPaths,
-              msg.metadata,
-              databaseItem
+    try {
+      switch (msg.t) {
+        case 'viewSourceFile': {
+          await jumpToLocation(msg, this.databaseManager, this.logger);
+          break;
+        }
+        case 'toggleDiagnostics': {
+          if (msg.visible) {
+            const databaseItem = this.databaseManager.findDatabaseItem(
+              Uri.parse(msg.databaseUri)
+            );
+            if (databaseItem !== undefined) {
+              await this.showResultsAsDiagnostics(
+                msg.origResultsPaths,
+                msg.metadata,
+                databaseItem
+              );
+            }
+          } else {
+            // TODO: Only clear diagnostics on the same database.
+            this._diagnosticCollection.clear();
+          }
+          break;
+        }
+        case 'resultViewLoaded':
+          this._panelLoaded = true;
+          this._panelLoadedCallBacks.forEach((cb) => cb());
+          this._panelLoadedCallBacks = [];
+          break;
+        case 'changeSort':
+          await this.changeRawSortState(msg.resultSetName, msg.sortState);
+          break;
+        case 'changeInterpretedSort':
+          await this.changeInterpretedSortState(msg.sortState);
+          break;
+        case 'changePage':
+          if (msg.selectedTable === ALERTS_TABLE_NAME) {
+            await this.showPageOfInterpretedResults(msg.pageNumber);
+          }
+          else {
+            await this.showPageOfRawResults(
+              msg.selectedTable,
+              msg.pageNumber,
+              // When we are in an unsorted state, we guarantee that
+              // sortedResultsInfo doesn't have an entry for the current
+              // result set. Use this to determine whether or not we use
+              // the sorted bqrs file.
+              this._displayedQuery?.sortedResultsInfo.has(msg.selectedTable) || false
             );
           }
-        } else {
-          // TODO: Only clear diagnostics on the same database.
-          this._diagnosticCollection.clear();
-        }
-        break;
+          break;
+        case 'openFile':
+          await this.openFile(msg.filePath);
+          break;
+        default:
+          assertNever(msg);
       }
-      case 'resultViewLoaded':
-        this._panelLoaded = true;
-        this._panelLoadedCallBacks.forEach((cb) => cb());
-        this._panelLoadedCallBacks = [];
-        break;
-      case 'changeSort':
-        await this.changeRawSortState(msg.resultSetName, msg.sortState);
-        break;
-      case 'changeInterpretedSort':
-        await this.changeInterpretedSortState(msg.sortState);
-        break;
-      case 'changePage':
-        if (msg.selectedTable === ALERTS_TABLE_NAME) {
-          await this.showPageOfInterpretedResults(msg.pageNumber);
-        }
-        else {
-          await this.showPageOfRawResults(
-            msg.selectedTable,
-            msg.pageNumber,
-            // When we are in an unsorted state, we guarantee that
-            // sortedResultsInfo doesn't have an entry for the current
-            // result set. Use this to determine whether or not we use
-            // the sorted bqrs file.
-            this._displayedQuery?.sortedResultsInfo.has(msg.selectedTable) || false
-          );
-        }
-        break;
-      case 'openFile':
-        await this.openFile(msg.filePath);
-        break;
-      default:
-        assertNever(msg);
+    } catch (e) {
+      showAndLogErrorMessage(e.message, {
+        fullMessage: e.stack
+      });
     }
   }
 
@@ -626,7 +632,7 @@ export class InterfaceManager extends DisposableObject {
       } catch (e) {
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
-        this.logger.log(
+        showAndLogErrorMessage(
           `Exception during results interpretation: ${e.message}. Will show raw results instead.`
         );
       }
