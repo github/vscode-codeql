@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Allow using raw LGTM project slugs for fetching LGTM databases. [#769](https://github.com/github/vscode-codeql/pull/769)
+
 ## 1.4.3 - 22 February 2021
 
 - Avoid displaying an error when removing orphaned databases and the storage folder does not exist. [#748](https://github.com/github/vscode-codeql/pull/748)
