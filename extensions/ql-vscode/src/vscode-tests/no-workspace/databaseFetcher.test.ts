@@ -55,6 +55,17 @@ describe('databaseFetcher', function() {
       );
     });
 
+    it('should convert a raw slug to a database url with extra path segments', async () => {
+      quickPickSpy.resolves('python');
+      const lgtmUrl =
+        'g/github/codeql';
+      const dbUrl = await convertToDatabaseUrl(lgtmUrl);
+
+      expect(dbUrl).to.equal(
+        'https://lgtm.com/api/v1.0/snapshots/1506465042581/python'
+      );
+    });
+
     it('should fail on a nonexistant prohect', async () => {
       quickPickSpy.resolves('javascript');
       const lgtmUrl = 'https://lgtm.com/projects/g/github/hucairz';
@@ -71,6 +82,10 @@ describe('databaseFetcher', function() {
         .to.be.false;
       expect(looksLikeLgtmUrl('https://ww.lgtm.com/projects/g/github')).to.be
         .false;
+      expect(looksLikeLgtmUrl('g/github')).to.be
+        .false;
+      expect(looksLikeLgtmUrl('ggg/github/myproj')).to.be
+        .false;
     });
 
     it('should handle valid urls', () => {
@@ -86,6 +101,10 @@ describe('databaseFetcher', function() {
           'https://lgtm.com/projects/g/github/codeql/sub/pages?query=string'
         )
       ).to.be.true;
+      expect(looksLikeLgtmUrl('g/github/myproj')).to.be
+        .true;
+      expect(looksLikeLgtmUrl('git/github/myproj')).to.be
+        .true;
     });
   });
 

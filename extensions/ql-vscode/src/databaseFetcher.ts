@@ -74,7 +74,7 @@ export async function promptImportLgtmDatabase(
 ): Promise<DatabaseItem | undefined> {
   const lgtmUrl = await window.showInputBox({
     prompt:
-      'Enter the project URL on LGTM (e.g., https://lgtm.com/projects/g/github/codeql)',
+      'Enter the project slug or URL on LGTM (e.g., g/github/codeql or https://lgtm.com/projects/g/github/codeql)',
   });
   if (!lgtmUrl) {
     return;
@@ -352,13 +352,14 @@ export async function findDirWithFile(
 
 /**
  * The URL pattern is https://lgtm.com/projects/{provider}/{org}/{name}/{irrelevant-subpages}.
- * There are several possibilities for the provider: in addition to GitHub.com(g),
+ * There are several possibilities for the provider: in addition to GitHub.com (g),
  * LGTM currently hosts projects from Bitbucket (b), GitLab (gl) and plain git (git).
  *
- * After the {provider}/{org}/{name} path components, there may be the components
- * related to sub pages.
+ * This function accepts any url that matches the pattern above. It also accepts the
+ * raw project slug, e.g., `g/myorg/myproject`
  *
- * This function accepts any url that matches the patter above
+ * After the `{provider}/{org}/{name}` path components, there may be the components
+ * related to sub pages.
  *
  * @param lgtmUrl The URL to the lgtm project
  *
@@ -368,6 +369,10 @@ export async function findDirWithFile(
 export function looksLikeLgtmUrl(lgtmUrl: string | undefined): lgtmUrl is string {
   if (!lgtmUrl) {
     return false;
+  }
+
+  if (convertRawLgtmSlug(lgtmUrl)) {
+    return true;
   }
 
   try {
@@ -387,9 +392,23 @@ export function looksLikeLgtmUrl(lgtmUrl: string | undefined): lgtmUrl is string
   }
 }
 
+function convertRawLgtmSlug(maybeSlug: string): string | undefined {
+  if (!maybeSlug) {
+    return;
+  }
+  const segments = maybeSlug.split('/');
+  const providers = ['g', 'gl', 'b', 'git'];
+  if (segments.length === 3 && providers.includes(segments[0])) {
+    return `https://lgtm.com/projects/${maybeSlug}`;
+  }
+  return;
+}
+
 // exported for testing
 export async function convertToDatabaseUrl(lgtmUrl: string) {
   try {
+    lgtmUrl = convertRawLgtmSlug(lgtmUrl) || lgtmUrl;
+
     const uri = Uri.parse(lgtmUrl, true);
     const paths = ['api', 'v1.0'].concat(
       uri.path.split('/').filter((segment) => segment)
