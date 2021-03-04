@@ -131,6 +131,12 @@ export class CodeQLCliServer implements Disposable {
    */
   private static CLI_VERSION_WITH_LANGUAGE = new SemVer('2.4.1');
 
+  /**
+   * CLI version where `codeql resolve upgrades` supports
+   * the `--allow-downgrades` flag
+   */
+  private static CLI_VERSION_WITH_DOWNGRADES = new SemVer('2.4.4');
+
   /** The process for the cli server, or undefined if one doesn't exist yet */
   process?: child_process.ChildProcessWithoutNullStreams;
   /** Queue of future commands*/
@@ -662,15 +668,19 @@ export class CodeQLCliServer implements Disposable {
    * Gets information necessary for upgrading a database.
    * @param dbScheme the path to the dbscheme of the database to be upgraded.
    * @param searchPath A list of directories to search for upgrade scripts.
+   * @param allowDowngradesIfPossible Whether we should try and include downgrades of we can.
    * @param targetDbScheme The dbscheme to try to upgrade to.
    * @returns A list of database upgrade script directories
    */
-  resolveUpgrades(dbScheme: string, searchPath: string[], targetDbScheme?: string): Promise<UpgradesInfo> {
+  async resolveUpgrades(dbScheme: string, searchPath: string[], allowDowngradesIfPossible: boolean, targetDbScheme?: string): Promise<UpgradesInfo> {
     const args = ['--additional-packs', searchPath.join(path.delimiter), '--dbscheme', dbScheme];
     if (targetDbScheme) {
       args.push('--target-dbscheme', targetDbScheme);
+      if (allowDowngradesIfPossible && await this.supportsDowngrades()) {
+        args.push('--allow-downgrades');
+      }
     }
-    return this.runJsonCodeQlCliCommand<UpgradesInfo>(
+    return await this.runJsonCodeQlCliCommand<UpgradesInfo>(
       ['resolve', 'upgrades'],
       args,
       'Resolving database upgrade scripts',
@@ -742,6 +752,10 @@ export class CodeQLCliServer implements Disposable {
 
   public async supportsLanguageName() {
     return (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_LANGUAGE) >= 0;
+  }
+
+  public async supportsDowngrades() {
+    return (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_DOWNGRADES) >= 0;
   }
 
   private async refreshVersion() {
