@@ -136,6 +136,15 @@ export class QueryServerClient extends DisposableObject {
     const ramArgs = await this.cliServer.resolveRam(this.config.queryMemoryMb, progressReporter);
     const args = ['--threads', this.config.numThreads.toString()].concat(ramArgs);
 
+    if (this.config.saveCache) {
+      args.push('--save-cache');
+    }
+
+    if (this.config.cacheSize > 0) {
+      args.push('--max-disk-cache');
+      args.push(this.config.cacheSize.toString());
+    }
+
     if (await this.supportsDatabaseRegistration()) {
       args.push('--require-db-registration');
     }

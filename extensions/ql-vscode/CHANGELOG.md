@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Introduce evaluator options for saving intermediate results to the disk cache, and for limiting the size of this cache. [#593](https://github.com/github/vscode-codeql/pull/593)
 - Respect the `codeQL.runningQueries.numberOfThreads` setting when creating SARIF files during result interpretation. [#771](https://github.com/github/vscode-codeql/pull/771)
 - Allow using raw LGTM project slugs for fetching LGTM databases. [#769](https://github.com/github/vscode-codeql/pull/769)
 - Better error messages when BQRS interpretation fails to produce SARIF. [#770](https://github.com/github/vscode-codeql/pull/770)

@@ -123,6 +123,20 @@
           "maximum": 1024,
           "description": "Number of threads for running queries."
         },
+        "codeQL.runningQueries.saveCache": {
+          "type": "boolean",
+          "default": false,
+          "description": "Aggressively save intermediate results to the disk cache. This advanced option is not recommended as it will greatly increase disk usage and evaluation time, but it may speed up subsequent queries if they are similar."
+        },
+        "codeQL.runningQueries.cacheSize": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "default": null,
+          "minimum": 1024,
+          "description": "Maximum size of the disk cache (in MB). Leave blank to allow the evaluator to automatically adjust the size of the disk cache based on the size of the codebase and the complexity of the queries being executed."
+        },
         "codeQL.runningQueries.timeout": {
           "type": [
             "integer",
