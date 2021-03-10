@@ -11,12 +11,14 @@ import { QueryHistoryConfig } from './config';
 import { QueryHistoryItemOptions } from './query-history';
 
 export class CompletedQuery implements QueryWithResults {
+  readonly date: Date;
   readonly time: string;
   readonly query: QueryInfo;
   readonly result: messages.EvaluationResult;
   readonly database: DatabaseInfo;
   readonly logFileLocation?: string;
   options: QueryHistoryItemOptions;
+  resultCount: number;
   dispose: () => void;
 
   /**
@@ -44,8 +46,14 @@ export class CompletedQuery implements QueryWithResults {
     this.options = evaluation.options;
     this.dispose = evaluation.dispose;
 
-    this.time = new Date().toLocaleString(env.language);
+    this.date = new Date();
+    this.time = this.date.toLocaleString(env.language);
     this.sortedResultsInfo = new Map();
+    this.resultCount = 0;
+  }
+
+  setResultCount(value: number) {
+    this.resultCount = value;
   }
 
   get databaseName(): string {
@@ -80,11 +88,12 @@ export class CompletedQuery implements QueryWithResults {
   }
 
   interpolate(template: string): string {
-    const { databaseName, queryName, time, statusString } = this;
+    const { databaseName, queryName, time, resultCount, statusString } = this;
     const replacements: { [k: string]: string } = {
       t: time,
       q: queryName,
       d: databaseName,
+      r: resultCount.toString(),
       s: statusString,
       '%': '%',
     };

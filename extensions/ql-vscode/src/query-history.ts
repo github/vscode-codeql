@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { window as Window } from 'vscode';
+import { window as Window, env } from 'vscode';
 import { CompletedQuery } from './query-results';
 import { QueryHistoryConfig } from './config';
 import { QueryWithResults } from './run-queries';
@@ -15,6 +15,7 @@ import { URLSearchParams } from 'url';
 import { QueryServerClient } from './queryserver-client';
 import { DisposableObject } from './pure/disposable-object';
 import { commandRunner } from './commandRunner';
+import { assertNever } from './pure/helpers-pure';
 
 /**
  * query-history.ts
@@ -58,10 +59,21 @@ const SHOW_QUERY_TEXT_QUICK_EVAL_MSG = `\
  */
 const FAILED_QUERY_HISTORY_ITEM_ICON = 'media/red-x.svg';
 
+enum SortOrder {
+  NameAsc = 'NameAsc',
+  NameDesc = 'NameDesc',
+  DateAsc = 'DateAsc',
+  DateDesc = 'DateDesc',
+  CountAsc = 'CountAsc',
+  CountDesc = 'CountDesc',
+}
+
 /**
  * Tree data provider for the query history view.
  */
 export class HistoryTreeDataProvider extends DisposableObject {
+  private _sortOrder = SortOrder.DateAsc;
+
   private _onDidChangeTreeData = super.push(new vscode.EventEmitter<CompletedQuery | undefined>());
 
   readonly onDidChangeTreeData: vscode.Event<CompletedQuery | undefined> = this
@@ -111,7 +123,24 @@ export class HistoryTreeDataProvider extends DisposableObject {
   getChildren(
     element?: CompletedQuery
   ): vscode.ProviderResult<CompletedQuery[]> {
-    return element ? [] : this.history;
+    return element ? [] : this.history.sort((q1, q2) => {
+      switch (this.sortOrder) {
+        case SortOrder.NameAsc:
+          return q1.toString().localeCompare(q2.toString(), env.language);
+        case SortOrder.NameDesc:
+          return q2.toString().localeCompare(q1.toString(), env.language);
+        case SortOrder.DateAsc:
+          return q1.date.getTime() - q2.date.getTime();
+        case SortOrder.DateDesc:
+          return q2.date.getTime() - q1.date.getTime();
+        case SortOrder.CountAsc:
+          return q1.resultCount - q2.resultCount;
+        case SortOrder.CountDesc:
+          return q2.resultCount - q1.resultCount;
+        default:
+          assertNever(this.sortOrder);
+      }
+    });
   }
 
   getParent(_element: CompletedQuery): vscode.ProviderResult<CompletedQuery> {
@@ -156,6 +185,15 @@ export class HistoryTreeDataProvider extends DisposableObject {
 
   find(queryId: number): CompletedQuery | undefined {
     return this.allHistory.find((query) => query.query.queryID === queryId);
+  }
+
+  public get sortOrder() {
+    return this._sortOrder;
+  }
+
+  public set sortOrder(newSortOrder: SortOrder) {
+    this._sortOrder = newSortOrder;
+    this._onDidChangeTreeData.fire();
   }
 }
 
@@ -222,6 +260,24 @@ export class QueryHistoryManager extends DisposableObject {
       commandRunner(
         'codeQLQueryHistory.removeHistoryItem',
         this.handleRemoveHistoryItem.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.sortByName',
+        this.handleSortByName.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.sortByDate',
+        this.handleSortByDate.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.sortByCount',
+        this.handleSortByCount.bind(this)
       )
     );
     this.push(
@@ -345,6 +401,30 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
+  async handleSortByName() {
+    if (this.treeDataProvider.sortOrder === SortOrder.NameAsc) {
+      this.treeDataProvider.sortOrder = SortOrder.NameDesc;
+    } else {
+      this.treeDataProvider.sortOrder = SortOrder.NameAsc;
+    }
+  }
+
+  async handleSortByDate() {
+    if (this.treeDataProvider.sortOrder === SortOrder.DateAsc) {
+      this.treeDataProvider.sortOrder = SortOrder.DateDesc;
+    } else {
+      this.treeDataProvider.sortOrder = SortOrder.DateAsc;
+    }
+  }
+
+  async handleSortByCount() {
+    if (this.treeDataProvider.sortOrder === SortOrder.CountAsc) {
+      this.treeDataProvider.sortOrder = SortOrder.CountDesc;
+    } else {
+      this.treeDataProvider.sortOrder = SortOrder.CountAsc;
+    }
+  }
+
   async handleSetLabel(
     singleItem: CompletedQuery,
     multiSelect: CompletedQuery[]
@@ -362,7 +442,12 @@ export class QueryHistoryManager extends DisposableObject {
     if (response !== undefined) {
       // Interpret empty string response as 'go back to using default'
       singleItem.options.label = response === '' ? undefined : response;
-      this.treeDataProvider.refresh(singleItem);
+      if (this.treeDataProvider.sortOrder === SortOrder.NameAsc ||
+        this.treeDataProvider.sortOrder === SortOrder.NameDesc) {
+        this.treeDataProvider.refresh();
+      } else {
+        this.treeDataProvider.refresh(singleItem);
+      }
     }
   }
 
@@ -511,11 +596,14 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  addQuery(info: QueryWithResults): CompletedQuery {
+  buildCompletedQuery(info: QueryWithResults): CompletedQuery {
     const item = new CompletedQuery(info, this.queryHistoryConfigListener);
+    return item;
+  }
+
+  addCompletedQuery(item: CompletedQuery) {
     this.treeDataProvider.pushQuery(item);
     this.updateTreeViewSelectionIfVisible();
-    return item;
   }
 
   find(queryId: number): CompletedQuery | undefined {

@@ -400,6 +400,7 @@ export class InterfaceManager extends DisposableObject {
       }
     );
     const resultSet = transformBqrsResultSet(schema, chunk);
+    results.setResultCount(interpretationPage?.numTotalResults || resultSet.schema.rows);
     const parsedResultSets: ParsedResultSets = {
       pageNumber: 0,
       pageSize,

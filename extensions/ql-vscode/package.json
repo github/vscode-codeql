@@ -179,8 +179,8 @@
         },
         "codeQL.queryHistory.format": {
           "type": "string",
-          "default": "[%t] %q on %d - %s",
-          "description": "Default string for how to label query history items. %t is the time of the query, %q is the query name, %d is the database name, and %s is a status string."
+          "default": "%q on %d - %s, %r result count [%t]",
+          "description": "Default string for how to label query history items. %t is the time of the query, %q is the query name, %d is the database name, %r is the number of results, and %s is a status string."
         },
         "codeQL.runningTests.numberOfThreads": {
           "scope": "window",
@@ -358,6 +358,30 @@
         }
       },
       {
+        "command": "codeQLQueryHistory.sortByName",
+        "title": "Sort by Name",
+        "icon": {
+          "light": "media/light/sort-alpha.svg",
+          "dark": "media/dark/sort-alpha.svg"
+        }
+      },
+      {
+        "command": "codeQLQueryHistory.sortByDate",
+        "title": "Sort by Query Date",
+        "icon": {
+          "light": "media/light/sort-date.svg",
+          "dark": "media/dark/sort-date.svg"
+        }
+      },
+      {
+        "command": "codeQLQueryHistory.sortByCount",
+        "title": "Sort by Results Count",
+        "icon": {
+          "light": "media/light/sort-num.svg",
+          "dark": "media/dark/sort-num.svg"
+        }
+      },
+      {
         "command": "codeQLQueryHistory.showQueryLog",
         "title": "Show Query Log"
       },
@@ -458,6 +482,21 @@
         },
         {
           "command": "codeQLQueryHistory.removeHistoryItem",
+          "when": "view == codeQLQueryHistory",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLQueryHistory.sortByName",
+          "when": "view == codeQLQueryHistory",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLQueryHistory.sortByDate",
+          "when": "view == codeQLQueryHistory",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLQueryHistory.sortByCount",
           "when": "view == codeQLQueryHistory",
           "group": "navigation"
         },
@@ -664,6 +703,18 @@
         },
         {
           "command": "codeQLQueryHistory.compareWith",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.sortByName",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.sortByDate",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.sortByCount",
           "when": "false"
         },
         {

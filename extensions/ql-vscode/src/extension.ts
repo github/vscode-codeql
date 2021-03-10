@@ -472,12 +472,11 @@ async function activateWithInstalledDistribution(
         progress,
         token
       );
-      const item = qhm.addQuery(info);
+      const item = qhm.buildCompletedQuery(info);
       await showResultsForCompletedQuery(item, WebviewReveal.NotForced);
-      // The call to showResults potentially creates SARIF file;
-      // Update the tree item context value to allow viewing that
-      // SARIF file from context menu.
-      await qhm.refreshTreeView(item);
+      // Note we must update the query history view after showing results as the
+      // display and sorting might depend on the number of results
+      await qhm.addCompletedQuery(item);
     }
   }
 
