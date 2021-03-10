@@ -73,6 +73,8 @@ export interface DistributionConfig {
 
 const RUNNING_QUERIES_SETTING = new Setting('runningQueries', ROOT_SETTING);
 const NUMBER_OF_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_QUERIES_SETTING);
+const SAVE_CACHE_SETTING = new Setting('saveCache', RUNNING_QUERIES_SETTING);
+const CACHE_SIZE_SETTING = new Setting('cacheSize', RUNNING_QUERIES_SETTING);
 const TIMEOUT_SETTING = new Setting('timeout', RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
 const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
@@ -85,12 +87,14 @@ export const AUTOSAVE_SETTING = new Setting('autoSave', RUNNING_QUERIES_SETTING)
 export const PAGE_SIZE = new Setting('pageSize', RESULTS_DISPLAY_SETTING);
 
 /** When these settings change, the running query server should be restarted. */
-const QUERY_SERVER_RESTARTING_SETTINGS = [NUMBER_OF_THREADS_SETTING, MEMORY_SETTING, DEBUG_SETTING];
+const QUERY_SERVER_RESTARTING_SETTINGS = [NUMBER_OF_THREADS_SETTING, SAVE_CACHE_SETTING, CACHE_SIZE_SETTING, MEMORY_SETTING, DEBUG_SETTING];
 
 export interface QueryServerConfig {
   codeQlPath: string;
   debug: boolean;
   numThreads: number;
+  saveCache: boolean;
+  cacheSize: number;
   queryMemoryMb?: number;
   timeoutSecs: number;
   onDidChangeConfiguration?: Event<void>;
@@ -194,6 +198,14 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
     return NUMBER_OF_THREADS_SETTING.getValue<number>();
   }
 
+  public get saveCache(): boolean {
+    return SAVE_CACHE_SETTING.getValue<boolean>();
+  }
+
+  public get cacheSize(): number {
+    return CACHE_SIZE_SETTING.getValue<number | null>() || 0;
+  }
+
   /** Gets the configured query timeout, in seconds. This looks up the setting at the time of access. */
   public get timeoutSecs(): number {
     return TIMEOUT_SETTING.getValue<number | null>() || 0;
@@ -235,7 +247,6 @@ export class CliConfigListener extends ConfigListener implements CliConfig {
   public get numberTestThreads(): number {
     return NUMBER_OF_TEST_THREADS_SETTING.getValue();
   }
-
 
   public get numberThreads(): number {
     return NUMBER_OF_THREADS_SETTING.getValue<number>();
