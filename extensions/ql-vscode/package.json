@@ -126,7 +126,7 @@
         "codeQL.runningQueries.saveCache": {
           "type": "boolean",
           "default": false,
-          "description": "Aggressively save intermediate results to the disk cache. This advanced option is not recommended as it will greatly increase disk usage and evaluation time, but it may speed up subsequent queries if they are similar."
+          "description": "Aggressively save intermediate results to the disk cache. This may speed up subsequent queries if they are similar. Be aware that using this option will greatly increase disk usage and initial evaluation time."
         },
         "codeQL.runningQueries.cacheSize": {
           "type": [
