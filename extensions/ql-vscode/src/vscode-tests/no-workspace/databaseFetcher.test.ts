@@ -66,7 +66,7 @@ describe('databaseFetcher', function() {
       );
     });
 
-    it('should fail on a nonexistant prohect', async () => {
+    it('should fail on a nonexistent project', async () => {
       quickPickSpy.resolves('javascript');
       const lgtmUrl = 'https://lgtm.com/projects/g/github/hucairz';
       expect(convertToDatabaseUrl(lgtmUrl)).to.rejectedWith(/Invalid LGTM URL/);
