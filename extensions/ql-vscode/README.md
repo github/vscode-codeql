@@ -1,6 +1,6 @@
 # CodeQL extension for Visual Studio Code
 
-This project is an extension for Visual Studio Code that adds rich language support for [CodeQL](https://help.semmle.com/codeql) and allows you to easily find problems in codebases. In particular, the extension:
+This project is an extension for Visual Studio Code that adds rich language support for [CodeQL](https://codeql.github.com/docs/) and allows you to easily find problems in codebases. In particular, the extension:
 
 - Enables you to use CodeQL to query databases generated from source code.
 - Shows the flow of data through the results of path queries, which is essential for triaging security results.
@@ -12,7 +12,7 @@ To see what has changed in the last few versions of the extension, see the [Chan
 ## Quick start overview
 
 The information in this `README` file describes the quickest way to start using CodeQL.
-For information about other configurations, see the separate [CodeQL help](https://help.semmle.com/codeql/codeql-for-vscode.html).
+For information about other configurations, see the separate [CodeQL help](https://codeql.github.com/docs/codeql-for-visual-studio-code/).
 
 ### Quick start: Installing and configuring the extension
 
@@ -40,9 +40,9 @@ The CodeQL extension requires a minimum of Visual Studio Code 1.39. Older versio
 
 ### Checking access to the CodeQL CLI
 
-The extension uses the [CodeQL CLI](https://help.semmle.com/codeql/codeql-cli.html) to compile and run queries. The extension automatically manages access to the CLI for you by default (recommended). To check for updates to the CodeQL CLI, you can use the **CodeQL: Check for CLI Updates** command.
+The extension uses the [CodeQL CLI](https://codeql.github.com/docs/codeql-cli/) to compile and run queries. The extension automatically manages access to the CLI for you by default (recommended). To check for updates to the CodeQL CLI, you can use the **CodeQL: Check for CLI Updates** command.
 
-If you want to override the default behavior and use a CodeQL CLI that's already on your machine, see [Configuring access to the CodeQL CLI](https://help.semmle.com/codeql/codeql-for-vscode/procedures/setting-up.html#configuring-access-to-the-codeql-cli).
+If you want to override the default behavior and use a CodeQL CLI that's already on your machine, see [Configuring access to the CodeQL CLI](https://codeql.github.com/docs/codeql-for-visual-studio-code/setting-up-codeql-in-visual-studio-code/#configuring-access-to-the-codeql-cli).
 
 If you have any difficulty with CodeQL CLI access, see the **CodeQL Extension Log** in the **Output** view for any error messages.
 
@@ -52,7 +52,7 @@ When you're working with CodeQL, you need access to the standard CodeQL librarie
 Initially, we recommend that you clone and use the ready-to-use [starter workspace](https://github.com/github/vscode-codeql-starter/).
 This includes libraries and queries for the main supported languages, with folders set up ready for your custom queries. After cloning the workspace (use `git clone --recursive`), you can use it in the same way as any other VS Code workspace—with the added advantage that you can easily update the CodeQL libraries.
 
-For information about configuring an existing workspace for CodeQL, [see the documentation](https://help.semmle.com/codeql/codeql-for-vscode/procedures/setting-up.html#updating-an-existing-workspace-for-codeql).
+For information about configuring an existing workspace for CodeQL, [see the documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/setting-up-codeql-in-visual-studio-code/#updating-an-existing-workspace-for-codeql).
 
 ## Upgrading CodeQL standard libraries
 
@@ -75,7 +75,7 @@ You can find all the commands contributed by the extension in the Command Palett
 
 ### Importing a database from LGTM
 
-While you can use the [CodeQL CLI to create your own databases](https://help.semmle.com/codeql/codeql-cli/procedures/create-codeql-database.html), the simplest way to start is by downloading a database from LGTM.com.
+While you can use the [CodeQL CLI to create your own databases](https://codeql.github.com/docs/codeql-cli/creating-codeql-databases/), the simplest way to start is by downloading a database from LGTM.com.
 
 1. Open [LGTM.com](https://lgtm.com/#explore) in your browser.
 1. Search for a project you're interested in, for example [Apache Kafka](https://lgtm.com/projects/g/apache/kafka).
@@ -100,11 +100,11 @@ If there are any problems running a query, a notification is displayed in the bo
 
 ## What next?
 
-For more information about the CodeQL extension, [see the documentation](https://help.semmle.com/codeql/codeql-for-vscode.html). Otherwise, you could:
+For more information about the CodeQL extension, [see the documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/). Otherwise, you could:
 
-- [Create a database for a different codebase](https://help.semmle.com/codeql/codeql-cli/procedures/create-codeql-database.html).
+- [Create a database for a different codebase](https://codeql.github.com/docs/codeql-cli/creating-codeql-databases/).
 - [Try out variant analysis](https://help.semmle.com/QL/learn-ql/ql-training.html).
-- [Learn more about CodeQL](https://help.semmle.com/QL/learn-ql/).
+- [Learn more about CodeQL](https://codeql.github.com/docs/).
 - [Read how security researchers use CodeQL to find CVEs](https://securitylab.github.com/research).
 
 ## License
