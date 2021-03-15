@@ -1,0 +1,134 @@
+{
+  "Query Metadata": {
+    "prefix": "querymetadata",
+    "body": [
+      "/**",
+      " * @name $1",
+      " * @description $2",
+      " * @kind $3",
+      " * @id $4",
+      " * @tags $5",
+      " */"
+    ],
+    "description": "Metadata for a query"
+  },
+  "Class": {
+    "prefix": "class",
+    "body": ["class $1 extends $2 {", "\t$0", "}"],
+    "description": "A class"
+  },
+  "From/Where/Select": {
+    "prefix": "from",
+    "body": ["from $1", "where $2", "select $3"],
+    "description": "A from/where/select statement"
+  },
+  "Predicate": {
+    "prefix": "predicate",
+    "body": ["predicate $1($2) {", "\t$0", "}"],
+    "description": "A predicate"
+  },
+  "Dataflow Tracking Class": {
+    "prefix": "dataflowtracking",
+    "body": [
+      "class $1 extends DataFlow::Configuration {",
+      "\t$1() { this = \"$1\" }",
+      "\t",
+      "\toverride predicate isSource(DataFlow::Node node) {",
+      "\t\t${2:none()}",
+      "\t}",
+      "\t",
+      "\toverride predicate isSink(DataFlow::Node node) {",
+      "\t\t${3:none()}",
+      "\t}",
+      "}"
+    ],
+    "description": "Boilerplate for a dataflow tracking class"
+  },
+  "Taint Tracking Class": {
+    "prefix": "tainttracking",
+    "body": [
+      "class $1 extends TaintTracking::Configuration {",
+      "\t$1() { this = \"$1\" }",
+      "\t",
+      "\toverride predicate isSource(DataFlow::Node node) {",
+      "\t\t${2:none()}",
+      "\t}",
+      "\t",
+      "\toverride predicate isSink(DataFlow::Node node) {",
+      "\t\t${3:none()}",
+      "\t}",
+      "}"
+    ],
+    "description": "Boilerplate for a taint tracking class"
+  },
+  "Count": {
+    "prefix": "count",
+    "body": ["count($1 | $2 | $3)"],
+    "description": "A count aggregate"
+  },
+  "Max": {
+    "prefix": "max",
+    "body": ["max($1 | $2 | $3)"],
+    "description": "A max aggregate"
+  },
+  "Min": {
+    "prefix": "min",
+    "body": ["min($1 | $2 | $3)"],
+    "description": "A min aggregate"
+  },
+  "Average": {
+    "prefix": "avg",
+    "body": ["avg($1 | $2 | $3)"],
+    "description": "An average aggregate"
+  },
+  "Sum": {
+    "prefix": "sum",
+    "body": ["sum($1 | $2 | $3)"],
+    "description": "A sum aggregate"
+  },
+  "Concatenation": {
+    "prefix": "concat",
+    "body": ["concat($1 | $2 | $3)"],
+    "description": "A concatenation aggregate"
+  },
+  "Rank": {
+    "prefix": "rank",
+    "body": ["rank[$1]($2 | $3 | $4)"],
+    "description": "A rank aggregate"
+  },
+  "Strict Sum": {
+    "prefix": "strictsum",
+    "body": ["strictsum($1 | $2 | $3)"],
+    "description": "A strict sum aggregate"
+  },
+  "Strict Concatenation": {
+    "prefix": "strictconcat",
+    "body": ["strictconcat($1 | $2 | $3)"],
+    "description": "A strict concatenation aggregate"
+  },
+  "Strict Count": {
+    "prefix": "strictcount",
+    "body": ["strictcount($1 | $2 | $3)"],
+    "description": "A strict count aggregate"
+  },
+  "Unique": {
+    "prefix": "unique",
+    "body": ["unique($1 | $2 | $3)"],
+    "description": "A unique aggregate"
+  },
+  "Exists": {
+    "prefix": "exists",
+    "body": ["exists($1 | $2 | $3)"],
+    "description": "An exists quantifier"
+  },
+  "For All": {
+    "prefix": "forall",
+    "body": ["forall($1 | $2 | $3)"],
+    "description": "A for all quantifier"
+  },
+  "For All and Exists": {
+    "prefix": "forex",
+    "body": ["forex($1 | $2 | $3)"],
+    "description": "A for all and exists quantifier"
+  }
+}

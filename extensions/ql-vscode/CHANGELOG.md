@@ -9,6 +9,7 @@
 - Implement sorting of the query history view by name, date, and results count. [#777](https://github.com/github/vscode-codeql/pull/777)
 - Add a configuration option to pass additional arguments to the CLI when running tests. [#785](https://github.com/github/vscode-codeql/pull/785)
 - Introduce option to view query results as CSV. [#784](https://github.com/github/vscode-codeql/pull/784)
+- Add some snippets for commonly used QL statements. [#780](https://github.com/github/vscode-codeql/pull/780)
 
 ## 1.4.3 - 22 February 2021
 

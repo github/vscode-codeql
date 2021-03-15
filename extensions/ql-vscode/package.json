@@ -106,6 +106,12 @@
         "path": "./out/syntaxes/dbscheme.tmLanguage.json"
       }
     ],
+    "snippets": [
+      {
+        "language": "ql",
+        "path": "./snippets.json"
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "CodeQL",
