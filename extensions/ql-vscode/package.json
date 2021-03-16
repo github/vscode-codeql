@@ -182,6 +182,12 @@
           "default": "%q on %d - %s, %r result count [%t]",
           "description": "Default string for how to label query history items. %t is the time of the query, %q is the query name, %d is the database name, %r is the number of results, and %s is a status string."
         },
+        "codeQL.runningTests.additionalTestArguments": {
+          "scope": "machine",
+          "type": "array",
+          "default": [],
+          "markdownDescription": "Additional command line arguments to pass to the CLI when [running tests](https://codeql.github.com/docs/codeql-cli/manual/test-run/). This setting should be an array of strings, each containing an argument to be passed."
+        },
         "codeQL.runningTests.numberOfThreads": {
           "scope": "window",
           "type": "integer",
