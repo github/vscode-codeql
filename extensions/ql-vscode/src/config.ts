@@ -81,6 +81,7 @@ const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
 const RUNNING_TESTS_SETTING = new Setting('runningTests', ROOT_SETTING);
 const RESULTS_DISPLAY_SETTING = new Setting('resultsDisplay', ROOT_SETTING);
 
+export const ADDITIONAL_TEST_ARGUMENTS_SETTING = new Setting('additionalTestArguments', RUNNING_TESTS_SETTING);
 export const NUMBER_OF_TEST_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_TESTS_SETTING);
 export const MAX_QUERIES = new Setting('maxQueries', RUNNING_QUERIES_SETTING);
 export const AUTOSAVE_SETTING = new Setting('autoSave', RUNNING_QUERIES_SETTING);
@@ -108,9 +109,10 @@ export interface QueryHistoryConfig {
   onDidChangeConfiguration: Event<void>;
 }
 
-const CLI_SETTINGS = [NUMBER_OF_TEST_THREADS_SETTING, NUMBER_OF_THREADS_SETTING];
+const CLI_SETTINGS = [ADDITIONAL_TEST_ARGUMENTS_SETTING, NUMBER_OF_TEST_THREADS_SETTING, NUMBER_OF_THREADS_SETTING];
 
 export interface CliConfig {
+  additionalTestArguments: string[];
   numberTestThreads: number;
   numberThreads: number;
   onDidChangeConfiguration?: Event<void>;
@@ -243,6 +245,9 @@ export class QueryHistoryConfigListener extends ConfigListener implements QueryH
 }
 
 export class CliConfigListener extends ConfigListener implements CliConfig {
+  public get additionalTestArguments(): string[] {
+    return ADDITIONAL_TEST_ARGUMENTS_SETTING.getValue();
+  }
 
   public get numberTestThreads(): number {
     return NUMBER_OF_TEST_THREADS_SETTING.getValue();

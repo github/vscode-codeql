@@ -509,12 +509,12 @@ export class CodeQLCliServer implements Disposable {
     testPaths: string[], workspaces: string[], options: TestRunOptions
   ): AsyncGenerator<TestCompleted, void, unknown> {
 
-    const subcommandArgs = [
+    const subcommandArgs = this.cliConfig.additionalTestArguments.concat([
       '--additional-packs', workspaces.join(path.delimiter),
       '--threads',
       this.cliConfig.numberTestThreads.toString(),
       ...testPaths
-    ];
+    ]);
 
     for await (const event of await this.runAsyncCodeQlCliCommand<TestCompleted>(['test', 'run'],
       subcommandArgs, 'Run CodeQL Tests', options.cancellationToken, options.logger)) {
