@@ -26,6 +26,11 @@ import { CompilationMessage } from './pure/messages';
 const SARIF_FORMAT = 'sarifv2.1.0';
 
 /**
+ * The string used to specify CSV format.
+ */
+const CSV_FORMAT = 'csv';
+
+/**
  * Flags to pass to all cli commands.
  */
 const LOGGING_FLAGS = ['-v', '--log-to-stderr'];
@@ -582,18 +587,20 @@ export class CodeQLCliServer implements Disposable {
     return await this.runJsonCodeQlCliCommand<DecodedBqrsChunk>(['bqrs', 'decode'], subcommandArgs, 'Reading bqrs data');
   }
 
-  async interpretBqrs(metadata: { kind: string; id: string; scored?: string }, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
+  async runInterpretCommand(format: string, metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo) {
     const args = [
       `-t=kind=${metadata.kind}`,
       `-t=id=${metadata.id}`,
       '--output', interpretedResultsPath,
-      '--format', SARIF_FORMAT,
+      '--format', format,
+    ];
+    if (format == SARIF_FORMAT) {
       // TODO: This flag means that we don't group interpreted results
       // by primary location. We may want to revisit whether we call
       // interpretation with and without this flag, or do some
       // grouping client-side.
-      '--no-group-results',
-    ];
+      args.push('--no-group-results');
+    }
     if (config.isCanary() && metadata.scored !== undefined) {
       args.push(`-t=scored=${metadata.scored}`);
     }
@@ -611,6 +618,10 @@ export class CodeQLCliServer implements Disposable {
 
     args.push(resultsPath);
     await this.runCodeQlCliCommand(['bqrs', 'interpret'], args, 'Interpreting query results');
+  }
+
+  async interpretBqrs(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
+    await this.runInterpretCommand(SARIF_FORMAT, metadata, resultsPath, interpretedResultsPath, sourceInfo);
 
     let output: string;
     try {
@@ -629,6 +640,9 @@ export class CodeQLCliServer implements Disposable {
     }
   }
 
+  async generateResultsCsv(metadata: QueryMetadata, resultsPath: string, csvPath: string, sourceInfo?: SourceInfo): Promise<void> {
+    await this.runInterpretCommand(CSV_FORMAT, metadata, resultsPath, csvPath, sourceInfo);
+  }
 
   async sortBqrs(resultsPath: string, sortedResultsPath: string, resultSet: string, sortKeys: number[], sortDirections: SortDirection[]): Promise<void> {
     const sortDirectionStrings = sortDirections.map(direction => {

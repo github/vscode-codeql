@@ -396,8 +396,12 @@
         "title": "Show Query Text"
       },
       {
-        "command": "codeQLQueryHistory.viewSarif",
-        "title": "View SARIF"
+        "command": "codeQLQueryHistory.viewCsvResults",
+        "title": "View Results (CSV)"
+      },
+      {
+        "command": "codeQLQueryHistory.viewSarifResults",
+        "title": "View Results (SARIF)"
       },
       {
         "command": "codeQLQueryHistory.viewDil",
@@ -569,7 +573,12 @@
           "when": "view == codeQLQueryHistory"
         },
         {
-          "command": "codeQLQueryHistory.viewSarif",
+          "command": "codeQLQueryHistory.viewCsvResults",
+          "group": "9_qlCommands",
+          "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
+        },
+        {
+          "command": "codeQLQueryHistory.viewSarifResults",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
         },
@@ -696,7 +705,11 @@
           "when": "false"
         },
         {
-          "command": "codeQLQueryHistory.viewSarif",
+          "command": "codeQLQueryHistory.viewCsvResults",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.viewSarifResults",
           "when": "false"
         },
         {
