@@ -306,8 +306,14 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
-        'codeQLQueryHistory.viewSarif',
-        this.handleViewSarif.bind(this)
+        'codeQLQueryHistory.viewCsvResults',
+        this.handleViewCsvResults.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.viewSarifResults',
+        this.handleViewSarifResults.bind(this)
       )
     );
     this.push(
@@ -544,7 +550,7 @@ export class QueryHistoryManager extends DisposableObject {
     await vscode.window.showTextDocument(doc, { preview: false });
   }
 
-  async handleViewSarif(
+  async handleViewSarifResults(
     singleItem: CompletedQuery,
     multiSelect: CompletedQuery[]
   ) {
@@ -563,6 +569,19 @@ export class QueryHistoryManager extends DisposableObject {
         `Query ${label} has no interpreted results.`
       );
     }
+  }
+
+  async handleViewCsvResults(
+    singleItem: CompletedQuery,
+    multiSelect: CompletedQuery[]
+  ) {
+    if (!this.assertSingleQuery(multiSelect)) {
+      return;
+    }
+
+    await this.tryOpenExternalFile(
+      await singleItem.query.ensureCsvProduced(this.qs)
+    );
   }
 
   async handleViewDil(
@@ -778,3 +797,4 @@ the file in the file explorer and dragging it into the workspace.`
     this.treeDataProvider.refresh(completedQuery);
   }
 }
+

@@ -179,6 +179,10 @@ export async function interpretResults(
   if (await fs.pathExists(interpretedResultsPath)) {
     return JSON.parse(await fs.readFile(interpretedResultsPath, 'utf8'));
   }
+  return await server.interpretBqrs(ensureMetadataIsComplete(metadata), resultsPath, interpretedResultsPath, sourceInfo);
+}
+
+export function ensureMetadataIsComplete(metadata: QueryMetadata | undefined) {
   if (metadata === undefined) {
     throw new Error('Can\'t interpret results without query metadata');
   }
@@ -191,5 +195,5 @@ export async function interpretResults(
     // SARIF format does, so in the absence of one, we use a dummy id.
     id = 'dummy-id';
   }
-  return await server.interpretBqrs({ kind, id, scored }, resultsPath, interpretedResultsPath, sourceInfo);
+  return { kind, id, scored };
 }
