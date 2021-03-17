@@ -634,7 +634,7 @@ export class InterfaceManager extends DisposableObject {
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
         showAndLogErrorMessage(
-          `Exception during results interpretation: ${e.message}. Will show raw results instead.`
+          `${e.message.trim()}\nWill show raw results instead.`
         );
       }
     }

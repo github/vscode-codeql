@@ -11,6 +11,7 @@ import {
 } from 'vscode';
 import { CodeQLCliServer } from './cli';
 import { logger } from './logging';
+import { shortenErrorMessage } from './pure/helpers-pure';
 
 /**
  * Show an error message and log it to the console
@@ -29,8 +30,9 @@ export async function showAndLogErrorMessage(message: string, {
   items = [] as string[],
   fullMessage = undefined as (string | undefined)
 } = {}): Promise<string | undefined> {
-  return internalShowAndLog(message, items, outputLogger, Window.showErrorMessage, fullMessage);
+  return internalShowAndLog(shortenErrorMessage(message), items, outputLogger, Window.showErrorMessage, fullMessage);
 }
+
 /**
  * Show a warning message and log it to the console
  *
