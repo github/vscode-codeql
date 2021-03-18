@@ -49,7 +49,7 @@ export function shortenErrorMessage(errorMessage: string): string {
   succintMessage = succintMessage.replace(indentedLine, '$1').trim();
 
   // Remove duplicated lines.
-  const duplicatedLine = /(\r?\n.*)\1/g;
+  const duplicatedLine = /(\r?\n.*)\1+/g;
   succintMessage = succintMessage.replace(duplicatedLine, '$1');
 
   return succintMessage;
