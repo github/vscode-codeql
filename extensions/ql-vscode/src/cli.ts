@@ -104,6 +104,7 @@ export interface TestCompleted {
   evaluationMs: number;
   expected: string;
   diff: string[] | undefined;
+  failureDescription?: string;
 }
 
 /**
