@@ -10,6 +10,7 @@
 - Add a configuration option to pass additional arguments to the CLI when running tests. [#785](https://github.com/github/vscode-codeql/pull/785)
 - Introduce option to view query results as CSV. [#784](https://github.com/github/vscode-codeql/pull/784)
 - Add some snippets for commonly used QL statements. [#780](https://github.com/github/vscode-codeql/pull/780)
+- More descriptive error messages on QL test failures. [#788](https://github.com/github/vscode-codeql/pull/788)
 
 ## 1.4.3 - 22 February 2021
 
