@@ -423,9 +423,9 @@ export class DatabaseUI extends DisposableObject {
     if (failures.length) {
       const dirname = path.dirname(failures[0]);
       showAndLogErrorMessage(
-        `Failed to delete unused databases:\n  ${
-        failures.join('\n  ')
-        }\n. To delete unused databases, please remove them manually from the storage folder ${dirname}.`
+        `Failed to delete unused databases (${
+        failures.join(', ')
+        }).\nTo delete unused databases, please remove them manually from the storage folder ${dirname}.`
       );
     }
   };
