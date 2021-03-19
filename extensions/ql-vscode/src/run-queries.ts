@@ -640,8 +640,11 @@ export async function compileAndRunQueryAgainstDatabase(
         formattedMessages.push(formatted);
         qs.logger.log(formatted);
       }
-      if (quickEval && formattedMessages.length <= 3) {
-        showAndLogErrorMessage('Quick evaluation compilation failed: \n' + formattedMessages.join('\n'));
+      if (quickEval && formattedMessages.length <= 2) {
+        // If there are more than 2 error messages, they will not be displayed well in a popup
+        // and will be trimmed by the function displaying the error popup. Accordingly, we only
+        // try to show the errors if there are 2 or less, otherwise we direct the user to the log.
+        showAndLogErrorMessage('Quick evaluation compilation failed: ' + formattedMessages.join('\n'));
       } else {
         showAndLogErrorMessage((quickEval ? 'Quick evaluation' : 'Query') + compilationFailedErrorTail);
       }

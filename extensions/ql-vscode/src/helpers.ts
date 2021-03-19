@@ -29,8 +29,13 @@ export async function showAndLogErrorMessage(message: string, {
   items = [] as string[],
   fullMessage = undefined as (string | undefined)
 } = {}): Promise<string | undefined> {
-  return internalShowAndLog(message, items, outputLogger, Window.showErrorMessage, fullMessage);
+  return internalShowAndLog(dropLinesExceptInitial(message), items, outputLogger, Window.showErrorMessage, fullMessage);
 }
+
+function dropLinesExceptInitial(message: string, n = 2) {
+  return message.toString().split(/\r?\n/).slice(0, n).join('\n');
+}
+
 /**
  * Show a warning message and log it to the console
  *
