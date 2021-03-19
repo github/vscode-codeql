@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.4.4 - 19 March 2021
 
 - Introduce evaluator options for saving intermediate results to the disk cache (`codeQL.runningQueries.saveCache`) and for limiting the size of this cache (`codeQL.runningQueries.cacheSize`). [#778](https://github.com/github/vscode-codeql/pull/778)
