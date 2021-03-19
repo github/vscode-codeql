@@ -126,7 +126,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        version: ['v2.2.6', 'v2.3.3', 'v2.4.5']
+        version: ['v2.2.6', 'v2.3.3', 'v2.4.5', 'v2.4.6']
     env:
       CLI_VERSION: ${{ matrix.version }}
       TEST_CODEQL_PATH: '${{ github.workspace }}/codeql'
