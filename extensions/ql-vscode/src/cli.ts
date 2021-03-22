@@ -907,6 +907,20 @@ class SplitBuffer {
   }
 
   /**
+   * A version of startsWith that isn't overriden by a broken version of ms-python.
+   * 
+   * The definition comes from
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
+   * which is CC0/public domain
+   * 
+   * See https://github.com/github/vscode-codeql/issues/802 for more context as to why we need it.
+   */
+  private static startsWith(s: string, searchString: string, position: number): boolean {
+    const pos = position > 0 ? position | 0 : 0;
+    return s.substring(pos, pos + searchString.length) === searchString;
+  }
+
+  /**
    * Extract the next full line from the buffer, if one is available.
    * @returns The text of the next available full line (without the separator), or `undefined` if no
    * line is available.
@@ -914,7 +928,7 @@ class SplitBuffer {
   public getNextLine(): string | undefined {
     while (this.searchIndex <= (this.buffer.length - this.maxSeparatorLength)) {
       for (const separator of this.separators) {
-        if (this.buffer.startsWith(separator, this.searchIndex)) {
+        if (SplitBuffer.startsWith(this.buffer, separator, this.searchIndex)) {
           const line = this.buffer.substr(0, this.searchIndex);
           this.buffer = this.buffer.substr(this.searchIndex + separator.length);
           this.searchIndex = 0;
