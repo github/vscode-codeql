@@ -169,7 +169,12 @@ export class QueryInfo {
     if (!hasMetadataFile) {
       logger.log('Cannot produce interpreted results since the database does not have a .dbinfo or codeql-database.yml file.');
     }
-    return hasMetadataFile;
+
+    const hasKind = !!this.metadata?.kind;
+    if (!hasKind) {
+      logger.log('Cannot produce interpreted results since the query does not have @kind metadata.');
+    }
+    return hasMetadataFile && hasKind;
   }
 
   /**
