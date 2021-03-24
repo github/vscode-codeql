@@ -1,4 +1,4 @@
-# CodeQL for Visual Studio Code: Changelog
+#  CodeQL for Visual Studio Code: Changelog
 
 ## [UNRELEASED]
 
