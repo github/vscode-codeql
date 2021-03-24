@@ -1,4 +1,4 @@
-# CodeQL for Visual Studio Code
+ CodeQL for Visual Studio Code
 
 This project is an extension for Visual Studio Code that adds rich language support for CodeQL. It's used to find problems in code bases using CodeQL. It's written primarily in TypeScript.
 
