@@ -5,7 +5,7 @@ import * as Keys from '../pure/result-keys';
 import * as octicons from './octicons';
 import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection, emptyQueryResultsMessage } from './result-table-utils';
 import { onNavigation, NavigationEvent } from './results';
-import { PathTableResultSet } from '../pure/interface-types';
+import { InterpretedResultSet, SarifInterpretationData } from '../pure/interface-types';
 import {
   parseSarifPlainTextMessage,
   parseSarifLocation,
@@ -15,7 +15,7 @@ import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortStat
 import { vscode } from './vscode-api';
 import { isWholeFileLoc, isLineColumnLoc } from '../pure/bqrs-utils';
 
-export type PathTableProps = ResultTableProps & { resultSet: PathTableResultSet };
+export type PathTableProps = ResultTableProps & { resultSet: InterpretedResultSet<SarifInterpretationData> };
 export interface PathTableState {
   expanded: { [k: string]: boolean };
   selectedPathNode: undefined | Keys.PathNode;
@@ -51,7 +51,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
   }
 
   sortClass(column: InterpretedResultsSortColumn): string {
-    const sortState = this.props.resultSet.sortState;
+    const sortState = this.props.resultSet.interpretation.sortState;
     if (sortState !== undefined && sortState.sortBy === column) {
       return sortState.sortDirection === SortDirection.asc ? 'sort-asc' : 'sort-desc';
     }
@@ -61,7 +61,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
   }
 
   getNextSortState(column: InterpretedResultsSortColumn): InterpretedResultsSortState | undefined {
-    const oldSortState = this.props.resultSet.sortState;
+    const oldSortState = this.props.resultSet.interpretation.sortState;
     const prevDirection = oldSortState && oldSortState.sortBy === column ? oldSortState.sortDirection : undefined;
     const nextDirection = nextSortDirection(prevDirection, true);
     return nextDirection === undefined ? undefined :
@@ -94,7 +94,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     </thead>;
 
     const rows: JSX.Element[] = [];
-    const { numTruncatedResults, sourceLocationPrefix } = resultSet;
+    const { numTruncatedResults, sourceLocationPrefix } = resultSet.interpretation;
 
     function renderRelatedLocations(msg: string, relatedLocations: Sarif.Location[]): JSX.Element[] {
       const relatedLocationsById: { [k: string]: Sarif.Location } = {};
@@ -188,13 +188,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return (e) => this.toggle(e, indices);
     };
 
-    if (!resultSet.sarif.runs?.[0]?.results?.length) {
+    if (!resultSet.interpretation.data.runs?.[0]?.results?.length) {
       return this.renderNoResults();
     }
 
     let expansionIndex = 0;
 
-    resultSet.sarif.runs[0].results.forEach((result, resultIndex) => {
+    resultSet.interpretation.data.runs[0].results.forEach((result, resultIndex) => {
       const text = result.message.text || '[no text]';
       const msg: JSX.Element[] =
         result.relatedLocations === undefined ?
@@ -307,7 +307,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       const { selectedPathNode } = prevState;
       if (selectedPathNode === undefined) return prevState;
 
-      const path = Keys.getPath(this.props.resultSet.sarif, selectedPathNode);
+      const path = Keys.getPath(this.props.resultSet.interpretation.data, selectedPathNode);
       if (path === undefined) return prevState;
 
       const nextIndex = selectedPathNode.pathNodeIndex + event.direction;
@@ -318,7 +318,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         return prevState;
       }
 
-      const loc = parseSarifLocation(sarifLoc, this.props.resultSet.sourceLocationPrefix);
+      const loc = parseSarifLocation(sarifLoc, this.props.resultSet.interpretation.sourceLocationPrefix);
       if (isNoLocation(loc)) {
         return prevState;
       }
