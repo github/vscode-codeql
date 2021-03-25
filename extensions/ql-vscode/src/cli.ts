@@ -26,6 +26,11 @@ import { CompilationMessage } from './pure/messages';
 const SARIF_FORMAT = 'sarifv2.1.0';
 
 /**
+ * The string used to specify CSV format.
+ */
+const CSV_FORMAT = 'csv';
+
+/**
  * Flags to pass to all cli commands.
  */
 const LOGGING_FLAGS = ['-v', '--log-to-stderr'];
@@ -99,6 +104,7 @@ export interface TestCompleted {
   evaluationMs: number;
   expected: string;
   diff: string[] | undefined;
+  failureDescription?: string;
 }
 
 /**
@@ -509,12 +515,12 @@ export class CodeQLCliServer implements Disposable {
     testPaths: string[], workspaces: string[], options: TestRunOptions
   ): AsyncGenerator<TestCompleted, void, unknown> {
 
-    const subcommandArgs = [
+    const subcommandArgs = this.cliConfig.additionalTestArguments.concat([
       '--additional-packs', workspaces.join(path.delimiter),
       '--threads',
       this.cliConfig.numberTestThreads.toString(),
       ...testPaths
-    ];
+    ]);
 
     for await (const event of await this.runAsyncCodeQlCliCommand<TestCompleted>(['test', 'run'],
       subcommandArgs, 'Run CodeQL Tests', options.cancellationToken, options.logger)) {
@@ -582,18 +588,20 @@ export class CodeQLCliServer implements Disposable {
     return await this.runJsonCodeQlCliCommand<DecodedBqrsChunk>(['bqrs', 'decode'], subcommandArgs, 'Reading bqrs data');
   }
 
-  async interpretBqrs(metadata: { kind: string; id: string; scored?: string }, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
+  async runInterpretCommand(format: string, metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo) {
     const args = [
       `-t=kind=${metadata.kind}`,
       `-t=id=${metadata.id}`,
       '--output', interpretedResultsPath,
-      '--format', SARIF_FORMAT,
+      '--format', format,
+    ];
+    if (format == SARIF_FORMAT) {
       // TODO: This flag means that we don't group interpreted results
       // by primary location. We may want to revisit whether we call
       // interpretation with and without this flag, or do some
       // grouping client-side.
-      '--no-group-results',
-    ];
+      args.push('--no-group-results');
+    }
     if (config.isCanary() && metadata.scored !== undefined) {
       args.push(`-t=scored=${metadata.scored}`);
     }
@@ -611,6 +619,10 @@ export class CodeQLCliServer implements Disposable {
 
     args.push(resultsPath);
     await this.runCodeQlCliCommand(['bqrs', 'interpret'], args, 'Interpreting query results');
+  }
+
+  async interpretBqrs(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
+    await this.runInterpretCommand(SARIF_FORMAT, metadata, resultsPath, interpretedResultsPath, sourceInfo);
 
     let output: string;
     try {
@@ -629,6 +641,9 @@ export class CodeQLCliServer implements Disposable {
     }
   }
 
+  async generateResultsCsv(metadata: QueryMetadata, resultsPath: string, csvPath: string, sourceInfo?: SourceInfo): Promise<void> {
+    await this.runInterpretCommand(CSV_FORMAT, metadata, resultsPath, csvPath, sourceInfo);
+  }
 
   async sortBqrs(resultsPath: string, sortedResultsPath: string, resultSet: string, sortKeys: number[], sortDirections: SortDirection[]): Promise<void> {
     const sortDirectionStrings = sortDirections.map(direction => {
@@ -892,6 +907,20 @@ class SplitBuffer {
   }
 
   /**
+   * A version of startsWith that isn't overriden by a broken version of ms-python.
+   * 
+   * The definition comes from
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
+   * which is CC0/public domain
+   * 
+   * See https://github.com/github/vscode-codeql/issues/802 for more context as to why we need it.
+   */
+  private static startsWith(s: string, searchString: string, position: number): boolean {
+    const pos = position > 0 ? position | 0 : 0;
+    return s.substring(pos, pos + searchString.length) === searchString;
+  }
+
+  /**
    * Extract the next full line from the buffer, if one is available.
    * @returns The text of the next available full line (without the separator), or `undefined` if no
    * line is available.
@@ -899,7 +928,7 @@ class SplitBuffer {
   public getNextLine(): string | undefined {
     while (this.searchIndex <= (this.buffer.length - this.maxSeparatorLength)) {
       for (const separator of this.separators) {
-        if (this.buffer.startsWith(separator, this.searchIndex)) {
+        if (SplitBuffer.startsWith(this.buffer, separator, this.searchIndex)) {
           const line = this.buffer.substr(0, this.searchIndex);
           this.buffer = this.buffer.substr(this.searchIndex + separator.length);
           this.searchIndex = 0;

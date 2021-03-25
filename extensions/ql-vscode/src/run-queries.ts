@@ -24,6 +24,7 @@ import { QueryHistoryItemOptions } from './query-history';
 import * as qsClient from './queryserver-client';
 import { isQuickQueryPath } from './quick-query';
 import { compileDatabaseUpgradeSequence, hasNondestructiveUpgradeCapabilities, upgradeDatabaseExplicit } from './upgrades';
+import { ensureMetadataIsComplete } from './query-results';
 
 /**
  * run-queries.ts
@@ -53,6 +54,7 @@ export class QueryInfo {
 
   readonly compiledQueryPath: string;
   readonly dilPath: string;
+  readonly csvPath: string;
   readonly resultsPaths: ResultsPaths;
   readonly dataset: Uri; // guarantee the existence of a well-defined dataset dir at this point
   readonly queryID: number;
@@ -68,6 +70,7 @@ export class QueryInfo {
     this.queryID = QueryInfo.nextQueryId++;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${this.queryID}.qlo`);
     this.dilPath = path.join(tmpDir.name, `results${this.queryID}.dil`);
+    this.csvPath = path.join(tmpDir.name, `results${this.queryID}.csv`);
     this.resultsPaths = {
       resultsPath: path.join(tmpDir.name, `results${this.queryID}.bqrs`),
       interpretedResultsPath: path.join(tmpDir.name, `interpretedResults${this.queryID}.sarif`)
@@ -166,7 +169,12 @@ export class QueryInfo {
     if (!hasMetadataFile) {
       logger.log('Cannot produce interpreted results since the database does not have a .dbinfo or codeql-database.yml file.');
     }
-    return hasMetadataFile;
+
+    const hasKind = !!this.metadata?.kind;
+    if (!hasKind) {
+      logger.log('Cannot produce interpreted results since the query does not have @kind metadata.');
+    }
+    return hasMetadataFile && hasKind;
   }
 
   /**
@@ -181,6 +189,13 @@ export class QueryInfo {
    */
   async hasDil(): Promise<boolean> {
     return fs.pathExists(this.dilPath);
+  }
+
+  /**
+   * Holds if this query already has CSV results produced
+   */
+  async hasCsv(): Promise<boolean> {
+    return fs.pathExists(this.csvPath);
   }
 
   async ensureDilPath(qs: qsClient.QueryServerClient): Promise<string> {
@@ -198,7 +213,26 @@ export class QueryInfo {
     return this.dilPath;
   }
 
+  async ensureCsvProduced(qs: qsClient.QueryServerClient): Promise<string> {
+    if (await this.hasCsv()) {
+      return this.csvPath;
+    }
+
+    let sourceInfo;
+    if (this.dbItem.sourceArchive !== undefined) {
+      sourceInfo = {
+        sourceArchive: this.dbItem.sourceArchive.fsPath,
+        sourceLocationPrefix: await this.dbItem.getSourceLocationPrefix(
+          qs.cliServer
+        ),
+      };
+    }
+
+    await qs.cliServer.generateResultsCsv(ensureMetadataIsComplete(this.metadata), this.resultsPaths.resultsPath, this.csvPath, sourceInfo);
+    return this.csvPath;
+  }
 }
+
 
 export interface QueryWithResults {
   readonly query: QueryInfo;

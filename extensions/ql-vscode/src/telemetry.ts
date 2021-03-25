@@ -166,7 +166,7 @@ export class TelemetryListener extends ConfigListener {
         // Extension won't start until this completes.
         result = await showBinaryChoiceWithUrlDialog(
           'Does the CodeQL Extension by GitHub have your permission to collect usage data and metrics to help us improve CodeQL for VSCode?',
-          'https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/TELEMETRY.md'
+          'https://codeql.github.com/docs/codeql-for-visual-studio-code/about-telemetry-in-codeql-for-visual-studio-code'
         );
       }
       if (result !== undefined) {

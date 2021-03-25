@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.4.4",
+  "version": "1.4.6",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -106,6 +106,12 @@
         "path": "./out/syntaxes/dbscheme.tmLanguage.json"
       }
     ],
+    "snippets": [
+      {
+        "language": "ql",
+        "path": "./snippets.json"
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "CodeQL",
@@ -122,6 +128,21 @@
           "minimum": 0,
           "maximum": 1024,
           "description": "Number of threads for running queries."
+        },
+        "codeQL.runningQueries.saveCache": {
+          "type": "boolean",
+          "default": false,
+          "scope": "window",
+          "description": "Aggressively save intermediate results to the disk cache. This may speed up subsequent queries if they are similar. Be aware that using this option will greatly increase disk usage and initial evaluation time."
+        },
+        "codeQL.runningQueries.cacheSize": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "default": null,
+          "minimum": 1024,
+          "description": "Maximum size of the disk cache (in MB). Leave blank to allow the evaluator to automatically adjust the size of the disk cache based on the size of the codebase and the complexity of the queries being executed."
         },
         "codeQL.runningQueries.timeout": {
           "type": [
@@ -164,8 +185,14 @@
         },
         "codeQL.queryHistory.format": {
           "type": "string",
-          "default": "[%t] %q on %d - %s",
-          "description": "Default string for how to label query history items. %t is the time of the query, %q is the query name, %d is the database name, and %s is a status string."
+          "default": "%q on %d - %s, %r result count [%t]",
+          "description": "Default string for how to label query history items. %t is the time of the query, %q is the query name, %d is the database name, %r is the number of results, and %s is a status string."
+        },
+        "codeQL.runningTests.additionalTestArguments": {
+          "scope": "machine",
+          "type": "array",
+          "default": [],
+          "markdownDescription": "Additional command line arguments to pass to the CLI when [running tests](https://codeql.github.com/docs/codeql-cli/manual/test-run/). This setting should be an array of strings, each containing an argument to be passed."
         },
         "codeQL.runningTests.numberOfThreads": {
           "scope": "window",
@@ -179,7 +206,7 @@
           "type": "boolean",
           "default": false,
           "scope": "application",
-          "markdownDescription": "Specifies whether to send CodeQL usage telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent to GitHub. For more information, see [TELEMETRY.md](https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/TELEMETRY.md)"
+          "markdownDescription": "Specifies whether to send CodeQL usage telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent to GitHub. For more information, see the [telemetry documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/about-telemetry-in-codeql-for-visual-studio-code)"
         },
         "codeQL.telemetry.logTelemetry": {
           "type": "boolean",
@@ -343,6 +370,30 @@
         }
       },
       {
+        "command": "codeQLQueryHistory.sortByName",
+        "title": "Sort by Name",
+        "icon": {
+          "light": "media/light/sort-alpha.svg",
+          "dark": "media/dark/sort-alpha.svg"
+        }
+      },
+      {
+        "command": "codeQLQueryHistory.sortByDate",
+        "title": "Sort by Query Date",
+        "icon": {
+          "light": "media/light/sort-date.svg",
+          "dark": "media/dark/sort-date.svg"
+        }
+      },
+      {
+        "command": "codeQLQueryHistory.sortByCount",
+        "title": "Sort by Results Count",
+        "icon": {
+          "light": "media/light/sort-num.svg",
+          "dark": "media/dark/sort-num.svg"
+        }
+      },
+      {
         "command": "codeQLQueryHistory.showQueryLog",
         "title": "Show Query Log"
       },
@@ -351,8 +402,12 @@
         "title": "Show Query Text"
       },
       {
-        "command": "codeQLQueryHistory.viewSarif",
-        "title": "View SARIF"
+        "command": "codeQLQueryHistory.viewCsvResults",
+        "title": "View Results (CSV)"
+      },
+      {
+        "command": "codeQLQueryHistory.viewSarifResults",
+        "title": "View Results (SARIF)"
       },
       {
         "command": "codeQLQueryHistory.viewDil",
@@ -447,6 +502,21 @@
           "group": "navigation"
         },
         {
+          "command": "codeQLQueryHistory.sortByName",
+          "when": "view == codeQLQueryHistory",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLQueryHistory.sortByDate",
+          "when": "view == codeQLQueryHistory",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLQueryHistory.sortByCount",
+          "when": "view == codeQLQueryHistory",
+          "group": "navigation"
+        },
+        {
           "command": "codeQLAstViewer.clear",
           "when": "view == codeQLAstViewer",
           "group": "navigation"
@@ -509,7 +579,12 @@
           "when": "view == codeQLQueryHistory"
         },
         {
-          "command": "codeQLQueryHistory.viewSarif",
+          "command": "codeQLQueryHistory.viewCsvResults",
+          "group": "9_qlCommands",
+          "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
+        },
+        {
+          "command": "codeQLQueryHistory.viewSarifResults",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
         },
@@ -636,7 +711,11 @@
           "when": "false"
         },
         {
-          "command": "codeQLQueryHistory.viewSarif",
+          "command": "codeQLQueryHistory.viewCsvResults",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.viewSarifResults",
           "when": "false"
         },
         {
@@ -649,6 +728,18 @@
         },
         {
           "command": "codeQLQueryHistory.compareWith",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.sortByName",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.sortByDate",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.sortByCount",
           "when": "false"
         },
         {

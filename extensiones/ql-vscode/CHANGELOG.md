@@ -1,10 +1,23 @@
-# CodeQL for Visual Studio Code: Changelog
+#  CodeQL for Visual Studio Code: Changelog
 
 ## [UNRELEASED]
 
+## 1.4.5 - 22 March 2021
+
+- Avoid showing an error popup when user runs a query without `@kind` metadata. [#801](https://github.com/github/vscode-codeql/pull/801)
+- Fix running of tests when the `ms-python` extension is installed. [#803](https://github.com/github/vscode-codeql/pull/803)
+
+## 1.4.4 - 19 March 2021
+
+- Introduce evaluator options for saving intermediate results to the disk cache (`codeQL.runningQueries.saveCache`) and for limiting the size of this cache (`codeQL.runningQueries.cacheSize`). [#778](https://github.com/github/vscode-codeql/pull/778)
 - Respect the `codeQL.runningQueries.numberOfThreads` setting when creating SARIF files during result interpretation. [#771](https://github.com/github/vscode-codeql/pull/771)
 - Allow using raw LGTM project slugs for fetching LGTM databases. [#769](https://github.com/github/vscode-codeql/pull/769)
 - Better error messages when BQRS interpretation fails to produce SARIF. [#770](https://github.com/github/vscode-codeql/pull/770)
+- Implement sorting of the query history view by name, date, and results count. [#777](https://github.com/github/vscode-codeql/pull/777)
+- Add a configuration option to pass additional arguments to the CLI when running tests. [#785](https://github.com/github/vscode-codeql/pull/785)
+- Introduce option to view query results as CSV. [#784](https://github.com/github/vscode-codeql/pull/784)
+- Add some snippets for commonly used QL statements. [#782](https://github.com/github/vscode-codeql/pull/782)
+- More descriptive error messages on QL test failures. [#788](https://github.com/github/vscode-codeql/pull/788)
 
 ## 1.4.3 - 22 February 2021
 
@@ -18,7 +31,7 @@
 
 - Add a status bar item for the CodeQL CLI to show the current version. [#741](https://github.com/github/vscode-codeql/pull/741)
 - Fix version constraint for flagging CLI support of non-destructive updates. [#744](https://github.com/github/vscode-codeql/pull/744)
-- Add a _More Information_ button in the telemetry popup that opens [TELEMETRY.md](https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/TELEMETRY.md) in a browser tab. [#742](https://github.com/github/vscode-codeql/pull/742)
+- Add a _More Information_ button in the telemetry popup that opens the [telemetry documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/about-telemetry-in-codeql-for-visual-studio-code) in a browser tab. [#742](https://github.com/github/vscode-codeql/pull/742)
 
 ## 1.4.1 - 29 January 2021
 
@@ -28,7 +41,7 @@
 
 - Fix bug where databases are not reregistered when the query server restarts. [#734](https://github.com/github/vscode-codeql/pull/734)
 - Fix bug where upgrade requests were erroneously being marked as failed. [#734](https://github.com/github/vscode-codeql/pull/734)
-- On a strictly opt-in basis, collect anonymized usage data from the VS Code extension, helping improve CodeQL's usability and performance. See [TELEMETRY.md](https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/TELEMETRY.md) for more information on exactly what data is collected and what it is used for. [#611](https://github.com/github/vscode-codeql/pull/611)
+- On a strictly opt-in basis, collect anonymized usage data from the VS Code extension, helping improve CodeQL's usability and performance. See the [telemetry documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/about-telemetry-in-codeql-for-visual-studio-code) for more information on exactly what data is collected and what it is used for. [#611](https://github.com/github/vscode-codeql/pull/611)
 
 ## 1.3.10 - 20 January 2021
 
