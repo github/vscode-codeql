@@ -104,7 +104,9 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
 
         void this.loadResults();
         break;
-      case 'showInterpretedPage':
+      case 'showInterpretedPage': {
+        const tableName = ALERTS_TABLE_NAME;
+
         this.updateStateWithNewResultsInfo({
           resultsPath: '', // FIXME: Not used for interpreted, refactor so this is not needed
           parsedResultSets: {
@@ -114,16 +116,16 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
             resultSetNames: msg.resultSetNames,
             pageNumber: msg.pageNumber,
             resultSet: {
-              t: 'SarifResultSet',
-              name: ALERTS_TABLE_NAME,
+              t: 'InterpretedResultSet',
+              name: tableName,
               schema: {
-                name: ALERTS_TABLE_NAME,
+                name: tableName,
                 rows: 1,
                 columns: []
               },
-              ...msg.interpretation,
+              interpretation: msg.interpretation,
             },
-            selectedTable: ALERTS_TABLE_NAME,
+            selectedTable: tableName,
           },
           origResultsPaths: undefined as any, // FIXME: Not used for interpreted, refactor so this is not needed
           sortedResultsMap: new Map(), // FIXME: Not used for interpreted, refactor so this is not needed
@@ -136,6 +138,7 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
         });
         void this.loadResults();
         break;
+      }
       case 'resultsUpdating':
         this.setState({
           isExpectingResultsUpdate: true,
@@ -191,7 +194,7 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
     const resultSet = parsedResultSets.resultSet;
     if (!resultSet.t) {
       throw new Error(
-        'Missing result set type. Should be either "SarifResultSet" or "RawResultSet".'
+        'Missing result set type. Should be either "InterpretedResultSet" or "RawResultSet".'
       );
     }
     return [resultSet];

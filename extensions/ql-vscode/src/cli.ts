@@ -593,20 +593,13 @@ export class CodeQLCliServer implements Disposable {
     return await this.runJsonCodeQlCliCommand<DecodedBqrsChunk>(['bqrs', 'decode'], subcommandArgs, 'Reading bqrs data');
   }
 
-  async runInterpretCommand(format: string, metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo) {
+  async runInterpretCommand(format: string, additonalArgs: string[], metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo) {
     const args = [
       '--output', interpretedResultsPath,
       '--format', format,
       // Forward all of the query metadata.
       ...Object.entries(metadata).map(([key, value]) => `-t=${key}=${value}`)
-    ];
-    if (format == SARIF_FORMAT) {
-      // TODO: This flag means that we don't group interpreted results
-      // by primary location. We may want to revisit whether we call
-      // interpretation with and without this flag, or do some
-      // grouping client-side.
-      args.push('--no-group-results');
-    }
+    ].concat(additonalArgs);
     if (sourceInfo !== undefined) {
       args.push(
         '--source-archive', sourceInfo.sourceArchive,
@@ -623,8 +616,16 @@ export class CodeQLCliServer implements Disposable {
     await this.runCodeQlCliCommand(['bqrs', 'interpret'], args, 'Interpreting query results');
   }
 
-  async interpretBqrs(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
-    await this.runInterpretCommand(SARIF_FORMAT, metadata, resultsPath, interpretedResultsPath, sourceInfo);
+  async interpretBqrsSarif(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
+    const additionalArgs = [
+      // TODO: This flag means that we don't group interpreted results
+      // by primary location. We may want to revisit whether we call
+      // interpretation with and without this flag, or do some
+      // grouping client-side.
+      '--no-group-results'
+    ];
+
+    await this.runInterpretCommand(SARIF_FORMAT, additionalArgs, metadata, resultsPath, interpretedResultsPath, sourceInfo);
 
     let output: string;
     try {
@@ -644,7 +645,7 @@ export class CodeQLCliServer implements Disposable {
   }
 
   async generateResultsCsv(metadata: QueryMetadata, resultsPath: string, csvPath: string, sourceInfo?: SourceInfo): Promise<void> {
-    await this.runInterpretCommand(CSV_FORMAT, metadata, resultsPath, csvPath, sourceInfo);
+    await this.runInterpretCommand(CSV_FORMAT, [], metadata, resultsPath, csvPath, sourceInfo);
   }
 
   async sortBqrs(resultsPath: string, sortedResultsPath: string, resultSet: string, sortKeys: number[], sortDirections: SortDirection[]): Promise<void> {
@@ -898,11 +899,11 @@ class SplitBuffer {
 
   /**
    * A version of startsWith that isn't overriden by a broken version of ms-python.
-   *
+   * 
    * The definition comes from
    * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
    * which is CC0/public domain
-   *
+   * 
    * See https://github.com/github/vscode-codeql/issues/802 for more context as to why we need it.
    */
   private static startsWith(s: string, searchString: string, position: number): boolean {

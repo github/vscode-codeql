@@ -61,8 +61,8 @@ function getResultCount(resultSet: ResultSet): number {
   switch (resultSet.t) {
     case 'RawResultSet':
       return resultSet.schema.rows;
-    case 'SarifResultSet':
-      return resultSet.numTotalResults;
+    case 'InterpretedResultSet':
+      return resultSet.interpretation.numTotalResults;
   }
 }
 
@@ -87,26 +87,31 @@ export class ResultTables
       this.props.rawResultSets.map((rs) => ({ t: 'RawResultSet', ...rs }));
 
     if (this.props.interpretation != undefined) {
+      const tableName = this.getInterpretedTableName();
       resultSets.push({
-        t: 'SarifResultSet',
+        t: 'InterpretedResultSet',
         // FIXME: The values of version, columns, tupleCount are
-        // unused stubs because a SarifResultSet schema isn't used the
+        // unused stubs because a InterpretedResultSet schema isn't used the
         // same way as a RawResultSet. Probably should pull `name` field
         // out.
         schema: {
-          name: ALERTS_TABLE_NAME,
+          name: tableName,
           rows: 1,
           columns: []
         },
-        name: ALERTS_TABLE_NAME,
-        ...this.props.interpretation,
+        name: tableName,
+        interpretation: this.props.interpretation,
       });
     }
     return resultSets;
   }
 
+  private getInterpretedTableName(): string {
+    return ALERTS_TABLE_NAME;
+  }
+
   private getResultSetNames(): string[] {
-    return this.props.parsedResultSets.resultSetNames.concat([ALERTS_TABLE_NAME]);
+    return this.props.parsedResultSets.resultSetNames.concat([this.getInterpretedTableName()]);
   }
 
   constructor(props: ResultTablesProps) {
@@ -347,8 +352,15 @@ class ResultTable extends React.Component<ResultTableProps, Record<string, never
     switch (resultSet.t) {
       case 'RawResultSet': return <RawTable
         {...this.props} resultSet={resultSet} />;
-      case 'SarifResultSet': return <PathTable
-        {...this.props} resultSet={resultSet} />;
+      case 'InterpretedResultSet': {
+        const data = resultSet.interpretation.data;
+        switch (data.t) {
+          case 'SarifInterpretationData': {
+            const sarifResultSet = { ...resultSet, interpretation: { ...resultSet.interpretation, data } };
+            return <PathTable {...this.props} resultSet={sarifResultSet} />;
+          }
+        }
+      }
     }
   }
 }

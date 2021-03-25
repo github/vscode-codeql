@@ -3,10 +3,9 @@ import { env } from 'vscode';
 import { QueryWithResults, tmpDir, QueryInfo } from './run-queries';
 import * as messages from './pure/messages';
 import * as cli from './cli';
-import * as sarif from 'sarif';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { RawResultsSortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata, InterpretedResultsSortState, ResultsPaths } from './pure/interface-types';
+import { RawResultsSortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata, InterpretedResultsSortState, ResultsPaths, SarifInterpretationData } from './pure/interface-types';
 import { QueryHistoryConfig } from './config';
 import { QueryHistoryItemOptions } from './query-history';
 
@@ -167,19 +166,20 @@ export function getQueryName(query: QueryInfo) {
 
 
 /**
- * Call cli command to interpret results.
+ * Call cli command to interpret SARIF results.
  */
-export async function interpretResults(
+export async function interpretResultsSarif(
   server: cli.CodeQLCliServer,
   metadata: QueryMetadata | undefined,
   resultsPaths: ResultsPaths,
   sourceInfo?: cli.SourceInfo
-): Promise<sarif.Log> {
+): Promise<SarifInterpretationData> {
   const { resultsPath, interpretedResultsPath } = resultsPaths;
   if (await fs.pathExists(interpretedResultsPath)) {
-    return JSON.parse(await fs.readFile(interpretedResultsPath, 'utf8'));
+    return { ...JSON.parse(await fs.readFile(interpretedResultsPath, 'utf8')), t: 'SarifInterpretationData' };
   }
-  return await server.interpretBqrs(ensureMetadataIsComplete(metadata), resultsPath, interpretedResultsPath, sourceInfo);
+  const res = await server.interpretBqrsSarif(ensureMetadataIsComplete(metadata), resultsPath, interpretedResultsPath, sourceInfo);
+  return { ...res, t: 'SarifInterpretationData' };
 }
 
 export function ensureMetadataIsComplete(metadata: QueryMetadata | undefined) {

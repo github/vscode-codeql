@@ -32,7 +32,7 @@ import {
 import { Logger } from './logging';
 import * as messages from './pure/messages';
 import { commandRunner } from './commandRunner';
-import { CompletedQuery, interpretResults } from './query-results';
+import { CompletedQuery, interpretResultsSarif } from './query-results';
 import { QueryInfo, tmpDir } from './run-queries';
 import { parseSarifLocation, parseSarifPlainTextMessage } from './pure/sarif-utils';
 import {
@@ -92,7 +92,7 @@ function numPagesOfResultSet(resultSet: RawResultSet): number {
 }
 
 function numInterpretedPages(interpretation: Interpretation | undefined): number {
-  return Math.ceil((interpretation?.sarif.runs[0].results?.length || 0) / PAGE_SIZE.getValue<number>());
+  return Math.ceil((interpretation?.data.runs[0].results?.length || 0) / PAGE_SIZE.getValue<number>());
 }
 
 export class InterfaceManager extends DisposableObject {
@@ -139,9 +139,9 @@ export class InterfaceManager extends DisposableObject {
           this._diagnosticCollection.clear();
           if (this.isShowingPanel()) {
             void this.postMessage({
-              t: 'untoggleShowProblems'
-            });
-          }
+            t: 'untoggleShowProblems'
+          });
+        }
         }
       })
     );
@@ -447,7 +447,7 @@ export class InterfaceManager extends DisposableObject {
     if (this._interpretation === undefined) {
       throw new Error('Trying to show interpreted results but interpretation was undefined');
     }
-    if (this._interpretation.sarif.runs[0].results === undefined) {
+    if (this._interpretation.data.t === 'SarifInterpretationData' && this._interpretation.data.runs[0].results === undefined) {
       throw new Error('Trying to show interpreted results but results were undefined');
     }
 
@@ -560,7 +560,7 @@ export class InterfaceManager extends DisposableObject {
       return undefined;
     }
 
-    const sarif = await interpretResults(
+    const sarif = await interpretResultsSarif(
       this.cliServer,
       metadata,
       resultsPaths,
@@ -576,7 +576,7 @@ export class InterfaceManager extends DisposableObject {
     const numTotalResults = sarif.runs[0]?.results?.length || 0;
 
     const interpretation: Interpretation = {
-      sarif,
+      data: sarif,
       sourceLocationPrefix,
       numTruncatedResults: 0,
       numTotalResults,
@@ -589,7 +589,6 @@ export class InterfaceManager extends DisposableObject {
   private getPageOfInterpretedResults(
     pageNumber: number
   ): Interpretation {
-
     function getPageOfRun(run: Sarif.Run): Sarif.Run {
       return {
         ...run, results: run.results?.slice(
@@ -599,16 +598,21 @@ export class InterfaceManager extends DisposableObject {
       };
     }
 
-    if (this._interpretation === undefined) {
+    const interp = this._interpretation;
+    if (interp === undefined) {
       throw new Error('Tried to get interpreted results before interpretation finished');
     }
-    if (this._interpretation.sarif.runs.length !== 1) {
-      void this.logger.log(`Warning: SARIF file had ${this._interpretation.sarif.runs.length} runs, expected 1`);
+
+    if (interp.data.t !== 'SarifInterpretationData')
+      return interp;
+
+    if (interp.data.runs.length !== 1) {
+      void this.logger.log(`Warning: SARIF file had ${interp.data.runs.length} runs, expected 1`);
     }
-    const interp = this._interpretation;
+    
     return {
       ...interp,
-      sarif: { ...interp.sarif, runs: [getPageOfRun(interp.sarif.runs[0])] },
+      data: { ...interp.data, runs: [getPageOfRun(interp.data.runs[0])] },
     };
   }
 
@@ -694,9 +698,12 @@ export class InterfaceManager extends DisposableObject {
     interpretation: Interpretation,
     databaseItem: DatabaseItem
   ): Promise<void> {
-    const { sarif, sourceLocationPrefix } = interpretation;
+    const { data, sourceLocationPrefix } = interpretation;
 
-    if (!sarif.runs || !sarif.runs[0].results) {
+    if (data.t !== 'SarifInterpretationData')
+      return;
+
+    if (!data.runs || !data.runs[0].results) {
       void this.logger.log(
         'Didn\'t find a run in the sarif results. Error processing sarif?'
       );
@@ -705,7 +712,7 @@ export class InterfaceManager extends DisposableObject {
 
     const diagnostics: [Uri, ReadonlyArray<Diagnostic>][] = [];
 
-    for (const result of sarif.runs[0].results) {
+    for (const result of data.runs[0].results) {
       const message = result.message.text;
       if (message === undefined) {
         void this.logger.log('Sarif had result without plaintext message');
