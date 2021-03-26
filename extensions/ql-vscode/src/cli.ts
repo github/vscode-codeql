@@ -73,6 +73,11 @@ export interface UpgradesInfo {
  */
 export type QlpacksInfo = { [name: string]: string[] };
 
+/**
+ * The expected output of `codeql resolve qlref`.
+ */
+export type QlrefInfo = { resolvedPath: string };
+
 // `codeql bqrs interpret` requires both of these to be present or
 // both absent.
 export interface SourceInfo {
@@ -142,6 +147,11 @@ export class CodeQLCliServer implements Disposable {
    * the `--allow-downgrades` flag
    */
   private static CLI_VERSION_WITH_DOWNGRADES = new SemVer('2.4.4');
+
+  /**
+   * CLI version where the `codeql resolve qlref` command is available.
+   */
+  private static CLI_VERSION_WITH_RESOLVE_QLREF = new SemVer('2.5.1');
 
   /** The process for the cli server, or undefined if one doesn't exist yet */
   process?: child_process.ChildProcessWithoutNullStreams;
@@ -461,12 +471,15 @@ export class CodeQLCliServer implements Disposable {
    * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
    * @param commandArgs The arguments to pass to the `codeql` command.
    * @param description Description of the action being run, to be shown in log and error messages.
+   * @param addFormat Whether or not to add commandline arguments to specify the format as JSON.
    * @param progressReporter Used to output progress messages, e.g. to the status bar.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
-  async runJsonCodeQlCliCommand<OutputType>(command: string[], commandArgs: string[], description: string, progressReporter?: ProgressReporter): Promise<OutputType> {
-    // Add format argument first, in case commandArgs contains positional parameters.
-    const args = ['--format', 'json'].concat(commandArgs);
+  async runJsonCodeQlCliCommand<OutputType>(command: string[], commandArgs: string[], description: string, addFormat = true, progressReporter?: ProgressReporter): Promise<OutputType> {
+    let args: string[] = [];
+    if (addFormat) // Add format argument first, in case commandArgs contains positional parameters.
+      args = args.concat(['--format', 'json']);
+    args = args.concat(commandArgs);
     const result = await this.runCodeQlCliCommand(command, args, description, progressReporter);
     try {
       return JSON.parse(result) as OutputType;
@@ -502,6 +515,18 @@ export class CodeQLCliServer implements Disposable {
       ['resolve', 'tests', '--strict-test-discovery'],
       subcommandArgs,
       'Resolving tests'
+    );
+  }
+
+  public async resolveQlref(qlref: string): Promise<QlrefInfo> {
+    const subcommandArgs = [
+      qlref
+    ];
+    return await this.runJsonCodeQlCliCommand<QlrefInfo>(
+      ['resolve', 'qlref'],
+      subcommandArgs,
+      'Resolving qlref',
+      false
     );
   }
 
@@ -549,7 +574,7 @@ export class CodeQLCliServer implements Disposable {
     if (queryMemoryMb !== undefined) {
       args.push('--ram', queryMemoryMb.toString());
     }
-    return await this.runJsonCodeQlCliCommand<string[]>(['resolve', 'ram'], args, 'Resolving RAM settings', progressReporter);
+    return await this.runJsonCodeQlCliCommand<string[]>(['resolve', 'ram'], args, 'Resolving RAM settings', true, progressReporter);
   }
   /**
    * Gets the headers (and optionally pagination info) of a bqrs.
@@ -771,6 +796,10 @@ export class CodeQLCliServer implements Disposable {
 
   public async supportsDowngrades() {
     return (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_DOWNGRADES) >= 0;
+  }
+
+  public async supportsResolveQlref() {
+    return (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_RESOLVE_QLREF) >= 0;
   }
 
   private async refreshVersion() {

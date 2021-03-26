@@ -480,6 +480,23 @@ async function activateWithInstalledDistribution(
     }
   }
 
+  async function openReferencedFile(
+    selectedQuery: Uri
+  ): Promise<void> {
+    if (qs !== undefined) {
+      if (await cliServer.supportsResolveQlref()) {
+        const resolved = await cliServer.resolveQlref(selectedQuery.path);
+        const uri = Uri.file(resolved.resolvedPath);
+        await window.showTextDocument(uri, { preview: false });
+      } else {
+        helpers.showAndLogErrorMessage(
+          'Jumping from a .qlref file to the .ql file it references is not '
+          + 'supported with the CLI version you are running.\n'
+          + 'Please upgrade your CLI to use this feature.');
+      }
+    }
+  }
+
   ctx.subscriptions.push(tmpDirDisposal);
 
   logger.log('Initializing CodeQL language server.');
@@ -614,6 +631,12 @@ async function activateWithInstalledDistribution(
       {
         title: 'Run Quick Query'
       }
+    )
+  );
+  ctx.subscriptions.push(
+    commandRunner(
+      'codeQL.openReferencedFile',
+      openReferencedFile
     )
   );
 
