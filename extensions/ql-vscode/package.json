@@ -34,6 +34,7 @@
     "onCommand:codeQLDatabases.chooseDatabaseLgtm",
     "onCommand:codeQL.setCurrentDatabase",
     "onCommand:codeQL.viewAst",
+    "onCommand:codeQL.openReferencedFile",
     "onCommand:codeQL.chooseDatabaseFolder",
     "onCommand:codeQL.chooseDatabaseArchive",
     "onCommand:codeQL.chooseDatabaseInternet",
@@ -228,6 +229,10 @@
       {
         "command": "codeQL.quickEval",
         "title": "CodeQL: Quick Evaluation"
+      },
+      {
+        "command": "codeQL.openReferencedFile",
+        "title": "CodeQL: Open Referenced File"
       },
       {
         "command": "codeQL.quickQuery",
@@ -619,6 +624,11 @@
           "command": "codeQL.runQueries",
           "group": "9_qlCommands",
           "when": "resourceScheme != codeql-zip-archive"
+        },
+        {
+          "command": "codeQL.openReferencedFile",
+          "group": "9_qlCommands",
+          "when": "resourceExtname == .qlref"
         }
       ],
       "commandPalette": [
@@ -633,6 +643,10 @@
         {
           "command": "codeQL.quickEval",
           "when": "editorLangId == ql"
+        },
+        {
+          "command": "codeQL.openReferencedFile",
+          "when": "resourceExtname == .qlref"
         },
         {
           "command": "codeQL.setCurrentDatabase",
@@ -771,6 +785,10 @@
         {
           "command": "codeQL.quickEval",
           "when": "editorLangId == ql"
+        },
+        {
+          "command": "codeQL.openReferencedFile",
+          "when": "resourceExtname == .qlref"
         }
       ]
     },

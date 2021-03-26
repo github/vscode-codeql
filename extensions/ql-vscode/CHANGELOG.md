@@ -8,6 +8,7 @@
 
 - Avoid showing an error popup when user runs a query without `@kind` metadata. [#801](https://github.com/github/vscode-codeql/pull/801)
 - Fix running of tests when the `ms-python` extension is installed. [#803](https://github.com/github/vscode-codeql/pull/803)
+- Add an option to jump from a .qlref file to the .ql file it references.
 
 ## 1.4.4 - 19 March 2021
 
