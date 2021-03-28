@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Avoid showing an error popup when user runs a query with `@kind table` metadata. [#814](https://github.com/github/vscode-codeql/pull/814)
+
 ## 1.4.5 - 22 March 2021
 
 - Avoid showing an error popup when user runs a query without `@kind` metadata. [#801](https://github.com/github/vscode-codeql/pull/801)

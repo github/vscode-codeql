@@ -174,7 +174,10 @@ export class QueryInfo {
     if (!hasKind) {
       logger.log('Cannot produce interpreted results since the query does not have @kind metadata.');
     }
-    return hasMetadataFile && hasKind;
+
+    const isTable = hasKind && this.metadata?.kind === 'table';
+
+    return hasMetadataFile && hasKind && !isTable;
   }
 
   /**

@@ -24,6 +24,23 @@ describe('run-queries', () => {
     expect(info.dataset).to.eq('file:///abc');
   });
 
+  it('should check if interpreted results can be created', async () => {
+    const info = createMockQueryInfo();
+    (info.dbItem.hasMetadataFile as sinon.SinonStub).returns(true);
+
+    expect(await info.canHaveInterpretedResults()).to.eq(true);
+
+    (info.dbItem.hasMetadataFile as sinon.SinonStub).returns(false);
+    expect(await info.canHaveInterpretedResults()).to.eq(false);
+
+    (info.dbItem.hasMetadataFile as sinon.SinonStub).returns(true);
+    info.metadata!.kind = undefined;
+    expect(await info.canHaveInterpretedResults()).to.eq(false);
+
+    info.metadata!.kind = 'table';
+    expect(await info.canHaveInterpretedResults()).to.eq(false);
+  });
+
   describe('compile', () => {
     it('should compile', async () => {
       const info = createMockQueryInfo();
@@ -73,9 +90,14 @@ describe('run-queries', () => {
       {
         contents: {
           datasetUri: 'file:///abc'
-        }
+        },
+        hasMetadataFile: sinon.stub()
       } as unknown as DatabaseItem,
-      'my-scheme' // queryDbscheme
+      'my-scheme', // queryDbscheme,
+      undefined,
+      {
+        kind: 'problem'
+      }
     );
   }
 
