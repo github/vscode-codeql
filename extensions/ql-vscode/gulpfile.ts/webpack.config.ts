@@ -13,7 +13,10 @@ export const config: webpack.Configuration = {
   },
   devtool: 'inline-source-map',
   resolve: {
-    extensions: ['.js', '.ts', '.tsx', '.json']
+    extensions: ['.js', '.ts', '.tsx', '.json'],
+    fallback: {
+      path: false
+    }
   },
   module: {
     rules: [
