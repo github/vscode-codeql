@@ -13,6 +13,7 @@ const packageFiles = [
   'CHANGELOG.md',
   'README.md',
   'language-configuration.json',
+  'snippets.json',
   'media',
   'node_modules',
   'out'
