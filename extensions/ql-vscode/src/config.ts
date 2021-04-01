@@ -41,6 +41,7 @@ const ROOT_SETTING = new Setting('codeQL');
 
 // Global configuration
 const TELEMETRY_SETTING = new Setting('telemetry', ROOT_SETTING);
+const AST_VIEWER_SETTING = new Setting('astViewer', ROOT_SETTING);
 const GLOBAL_TELEMETRY_SETTING = new Setting('telemetry');
 
 export const LOG_TELEMETRY = new Setting('logTelemetry', TELEMETRY_SETTING);
@@ -279,3 +280,8 @@ export const CANARY_FEATURES = new Setting('canary', ROOT_SETTING);
 export function isCanary() {
   return !!CANARY_FEATURES.getValue<boolean>();
 }
+
+/**
+ * Avoids caching in the AST viewer if the user is also a canary user.
+ */
+export const NO_CACHE_AST_VIEWER = new Setting('disableCache', AST_VIEWER_SETTING);

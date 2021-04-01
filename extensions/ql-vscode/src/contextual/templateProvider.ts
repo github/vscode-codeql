@@ -25,6 +25,7 @@ import {
 } from './keyType';
 import { FullLocationLink, getLocationsForUriString, TEMPLATE_NAME } from './locationFinder';
 import { qlpackOfDatabase, resolveQueries } from './queryResolver';
+import { isCanary, NO_CACHE_AST_VIEWER } from '../config';
 
 /**
  * Run templated CodeQL queries to find definitions and references in
@@ -141,13 +142,19 @@ export class TemplatePrintAstProvider {
     if (!document) {
       throw new Error('Cannot view the AST. Please select a valid source file inside a CodeQL database.');
     }
-    const queryResults = await this.cache.get(document.uri.toString(), progress, token);
+    const queryResults = this.shouldCache()
+      ? await this.cache.get(document.uri.toString(), progress, token)
+      : await this.getAst(document.uri.toString(), progress, token);
 
     return new AstBuilder(
       queryResults, this.cli,
       this.dbm.findDatabaseItem(Uri.parse(queryResults.database.databaseUri!, true))!,
       document.fileName
     );
+  }
+
+  private shouldCache() {
+    return !(isCanary() && NO_CACHE_AST_VIEWER.getValue<boolean>());
   }
 
   private async getAst(
