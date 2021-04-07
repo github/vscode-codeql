@@ -51,7 +51,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
   }
 
   sortClass(column: InterpretedResultsSortColumn): string {
-    const sortState = this.props.resultSet.interpretation.sortState;
+    const sortState = this.props.resultSet.interpretation.data.sortState;
     if (sortState !== undefined && sortState.sortBy === column) {
       return sortState.sortDirection === SortDirection.asc ? 'sort-asc' : 'sort-desc';
     }
@@ -61,7 +61,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
   }
 
   getNextSortState(column: InterpretedResultsSortColumn): InterpretedResultsSortState | undefined {
-    const oldSortState = this.props.resultSet.interpretation.sortState;
+    const oldSortState = this.props.resultSet.interpretation.data.sortState;
     const prevDirection = oldSortState && oldSortState.sortBy === column ? oldSortState.sortDirection : undefined;
     const nextDirection = nextSortDirection(prevDirection, true);
     return nextDirection === undefined ? undefined :

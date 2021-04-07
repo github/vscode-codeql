@@ -702,7 +702,7 @@ export class CodeQLCliServer implements Disposable {
     await this.runCodeQlCliCommand(['bqrs', 'interpret'], args, 'Interpreting query results');
   }
 
-  async interpretBqrs(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
+  async interpretBqrsSarif(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
     const additionalArgs = [
       // TODO: This flag means that we don't group interpreted results
       // by primary location. We may want to revisit whether we call
@@ -710,7 +710,7 @@ export class CodeQLCliServer implements Disposable {
       // grouping client-side.
       '--no-group-results'
     ];
-    
+
     await this.runInterpretCommand(SARIF_FORMAT, additionalArgs, metadata, resultsPath, interpretedResultsPath, sourceInfo);
     return await sarifParser(interpretedResultsPath);
   }

@@ -49,6 +49,11 @@ export interface PreviousExecution {
 
 export type SarifInterpretationData = {
   t: 'SarifInterpretationData';
+  /**
+   * sortState being undefined means don't sort, just present results in the order
+   * they appear in the sarif file.
+   */
+  sortState?: InterpretedResultsSortState;
 } & sarif.Log;
 
 // Add more interpretation data kinds when needed (e.g., graph data)
@@ -58,11 +63,6 @@ export interface InterpretationT<T> {
   sourceLocationPrefix: string;
   numTruncatedResults: number;
   numTotalResults: number;
-  /**
-   * sortState being undefined means don't sort, just present results in the order
-   * they appear in the sarif file.
-   */
-  sortState?: InterpretedResultsSortState;
   data: T;
 }
 
