@@ -283,7 +283,7 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
           }
           sortStates={displayedResults.results.sortStates}
           interpretedSortState={
-            displayedResults.resultsInfo.interpretation?.sortState
+            displayedResults.resultsInfo.interpretation?.data.sortState
           }
           isLoadingNewResults={
             this.state.isExpectingResultsUpdate ||

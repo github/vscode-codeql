@@ -352,15 +352,8 @@ class ResultTable extends React.Component<ResultTableProps, Record<string, never
     switch (resultSet.t) {
       case 'RawResultSet': return <RawTable
         {...this.props} resultSet={resultSet} />;
-      case 'InterpretedResultSet': {
-        const data = resultSet.interpretation.data;
-        switch (data.t) {
-          case 'SarifInterpretationData': {
-            const sarifResultSet = { ...resultSet, interpretation: { ...resultSet.interpretation, data } };
-            return <PathTable {...this.props} resultSet={sarifResultSet} />;
-          }
-        }
-      }
+      case 'InterpretedResultSet': return <PathTable
+        {...this.props} resultSet={resultSet} />;
     }
   }
 }

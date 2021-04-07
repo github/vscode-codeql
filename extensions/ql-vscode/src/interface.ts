@@ -575,12 +575,12 @@ export class InterfaceManager extends DisposableObject {
 
     const numTotalResults = sarif.runs[0]?.results?.length || 0;
 
+    sarif.sortState = sortState;
     const interpretation: Interpretation = {
       data: sarif,
       sourceLocationPrefix,
       numTruncatedResults: 0,
-      numTotalResults,
-      sortState,
+      numTotalResults
     };
     this._interpretation = interpretation;
     return interpretation;
