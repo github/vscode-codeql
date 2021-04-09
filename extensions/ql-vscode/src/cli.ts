@@ -151,7 +151,7 @@ export class CodeQLCliServer implements Disposable {
   /**
    * CLI version where the `codeql resolve qlref` command is available.
    */
-  private static CLI_VERSION_WITH_RESOLVE_QLREF = new SemVer('2.5.1');
+  public static CLI_VERSION_WITH_RESOLVE_QLREF = new SemVer('2.5.1');
 
   /** The process for the cli server, or undefined if one doesn't exist yet */
   process?: child_process.ChildProcessWithoutNullStreams;
@@ -937,11 +937,11 @@ class SplitBuffer {
 
   /**
    * A version of startsWith that isn't overriden by a broken version of ms-python.
-   * 
+   *
    * The definition comes from
    * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
    * which is CC0/public domain
-   * 
+   *
    * See https://github.com/github/vscode-codeql/issues/802 for more context as to why we need it.
    */
   private static startsWith(s: string, searchString: string, position: number): boolean {
