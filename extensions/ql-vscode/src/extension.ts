@@ -18,7 +18,7 @@ import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
 
 import { AstViewer } from './astViewer';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
-import { CodeQLCliServer } from './cli';
+import { CodeQLCliServer, CliVersionConstraint } from './cli';
 import {
   CliConfigListener,
   DistributionConfigListener,
@@ -484,7 +484,7 @@ async function activateWithInstalledDistribution(
     selectedQuery: Uri
   ): Promise<void> {
     if (qs !== undefined) {
-      if (await cliServer.supportsResolveQlref()) {
+      if (await cliServer.cliConstraints.supportsResolveQlref()) {
         const resolved = await cliServer.resolveQlref(selectedQuery.path);
         const uri = Uri.file(resolved.resolvedPath);
         await window.showTextDocument(uri, { preview: false });
@@ -493,7 +493,7 @@ async function activateWithInstalledDistribution(
           'Jumping from a .qlref file to the .ql file it references is not '
           + 'supported with the CLI version you are running.\n'
           + `Please upgrade your CLI to version ${
-          CodeQLCliServer.CLI_VERSION_WITH_RESOLVE_QLREF
+          CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_QLREF
           } or later to use this feature.`);
       }
     }

@@ -67,11 +67,13 @@ describe('databases', () => {
       } as unknown as ExtensionContext,
       {
         sendRequest: sendRequestSpy,
-        supportsDatabaseRegistration: supportsDatabaseRegistrationSpy,
         onDidStartQueryServer: () => { /**/ }
       } as unknown as QueryServerClient,
       {
-        supportsLanguageName: supportsLanguageNameSpy,
+        cliConstraints: {
+          supportsLanguageName: supportsLanguageNameSpy,
+          supportsDatabaseRegistration: supportsDatabaseRegistrationSpy,
+        },
         resolveDatabase: resolveDatabaseSpy
       } as unknown as CodeQLCliServer,
       {} as Logger,

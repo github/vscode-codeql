@@ -8,7 +8,6 @@ import { QueryServerConfig } from './config';
 import { Logger, ProgressReporter } from './logging';
 import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './pure/messages';
 import * as messages from './pure/messages';
-import { SemVer } from 'semver';
 import { ProgressCallback, ProgressTask } from './commandRunner';
 
 type ServerOpts = {
@@ -49,11 +48,6 @@ type WithProgressReporting = (task: (progress: ProgressReporter, token: Cancella
  * to restart it (which disposes the existing process and starts a new one).
  */
 export class QueryServerClient extends DisposableObject {
-
-  /**
-   * Query Server version where database registration was introduced
-   */
-  private static VERSION_WITH_DB_REGISTRATION = new SemVer('2.4.1');
 
   serverProcess?: ServerProcess;
   evaluationResultCallbacks: { [key: number]: (res: EvaluationResult) => void };
@@ -145,7 +139,7 @@ export class QueryServerClient extends DisposableObject {
       args.push(this.config.cacheSize.toString());
     }
 
-    if (await this.supportsDatabaseRegistration()) {
+    if (await this.cliServer.cliConstraints.supportsDatabaseRegistration()) {
       args.push('--require-db-registration');
     }
 
@@ -200,10 +194,6 @@ export class QueryServerClient extends DisposableObject {
     this.nextProgress = 0;
     this.progressCallbacks = {};
     this.evaluationResultCallbacks = {};
-  }
-
-  async supportsDatabaseRegistration() {
-    return (await this.cliServer.getVersion()).compare(QueryServerClient.VERSION_WITH_DB_REGISTRATION) >= 0;
   }
 
   registerCallback(callback: (res: EvaluationResult) => void): number {
