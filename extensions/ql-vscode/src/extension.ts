@@ -492,7 +492,9 @@ async function activateWithInstalledDistribution(
         helpers.showAndLogErrorMessage(
           'Jumping from a .qlref file to the .ql file it references is not '
           + 'supported with the CLI version you are running.\n'
-          + 'Please upgrade your CLI to use this feature.');
+          + `Please upgrade your CLI to version ${
+          CodeQLCliServer.CLI_VERSION_WITH_RESOLVE_QLREF
+          } or later to use this feature.`);
       }
     }
   }
