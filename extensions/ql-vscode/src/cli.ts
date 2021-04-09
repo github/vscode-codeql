@@ -132,26 +132,6 @@ interface BqrsDecodeOptions {
  */
 export class CodeQLCliServer implements Disposable {
 
-  /**
-   * CLI version where --kind=DIL was introduced
-   */
-  private static CLI_VERSION_WITH_DECOMPILE_KIND_DIL = new SemVer('2.3.0');
-
-  /**
-   * CLI version where languages are exposed during a `codeql resolve database` command.
-   */
-  private static CLI_VERSION_WITH_LANGUAGE = new SemVer('2.4.1');
-
-  /**
-   * CLI version where `codeql resolve upgrades` supports
-   * the `--allow-downgrades` flag
-   */
-  private static CLI_VERSION_WITH_DOWNGRADES = new SemVer('2.4.4');
-
-  /**
-   * CLI version where the `codeql resolve qlref` command is available.
-   */
-  public static CLI_VERSION_WITH_RESOLVE_QLREF = new SemVer('2.5.1');
 
   /** The process for the cli server, or undefined if one doesn't exist yet */
   process?: child_process.ChildProcessWithoutNullStreams;
@@ -167,6 +147,8 @@ export class CodeQLCliServer implements Disposable {
 
   /** Path to current codeQL executable, or undefined if not running yet. */
   codeQlPath: string | undefined;
+
+  cliConstraints = new CliVersionConstraint(this);
 
   /**
    * When set to true, ignore some modal popups and assume user has clicked "yes".
@@ -716,7 +698,7 @@ export class CodeQLCliServer implements Disposable {
     const args = ['--additional-packs', searchPath.join(path.delimiter), '--dbscheme', dbScheme];
     if (targetDbScheme) {
       args.push('--target-dbscheme', targetDbScheme);
-      if (allowDowngradesIfPossible && await this.supportsDowngrades()) {
+      if (allowDowngradesIfPossible && await this.cliConstraints.supportsDowngrades()) {
         args.push('--allow-downgrades');
       }
     }
@@ -769,7 +751,7 @@ export class CodeQLCliServer implements Disposable {
   }
 
   async generateDil(qloFile: string, outFile: string): Promise<void> {
-    const extraArgs = await this.supportsDecompileDil()
+    const extraArgs = await this.cliConstraints.supportsDecompileDil()
       ? ['--kind', 'dil', '-o', outFile, qloFile]
       : ['-o', outFile, qloFile];
     await this.runCodeQlCliCommand(
@@ -784,22 +766,6 @@ export class CodeQLCliServer implements Disposable {
       this._version = await this.refreshVersion();
     }
     return this._version;
-  }
-
-  private async supportsDecompileDil() {
-    return (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_DECOMPILE_KIND_DIL) >= 0;
-  }
-
-  public async supportsLanguageName() {
-    return (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_LANGUAGE) >= 0;
-  }
-
-  public async supportsDowngrades() {
-    return (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_DOWNGRADES) >= 0;
-  }
-
-  public async supportsResolveQlref() {
-    return (await this.getVersion()).compare(CodeQLCliServer.CLI_VERSION_WITH_RESOLVE_QLREF) >= 0;
   }
 
   private async refreshVersion() {
@@ -1029,4 +995,61 @@ export function shouldDebugQueryServer() {
   return 'QUERY_SERVER_JAVA_DEBUG' in process.env
     && process.env.QUERY_SERVER_JAVA_DEBUG !== '0'
     && process.env.QUERY_SERVER_JAVA_DEBUG?.toLocaleLowerCase() !== 'false';
+}
+
+export class CliVersionConstraint {
+
+  /**
+   * CLI version where --kind=DIL was introduced
+   */
+  public static CLI_VERSION_WITH_DECOMPILE_KIND_DIL = new SemVer('2.3.0');
+
+  /**
+   * CLI version where languages are exposed during a `codeql resolve database` command.
+   */
+  public static CLI_VERSION_WITH_LANGUAGE = new SemVer('2.4.1');
+
+  /**
+   * CLI version where `codeql resolve upgrades` supports
+   * the `--allow-downgrades` flag
+   */
+  public static CLI_VERSION_WITH_DOWNGRADES = new SemVer('2.4.4');
+
+  /**
+   * CLI version where the `codeql resolve qlref` command is available.
+   */
+  public static CLI_VERSION_WITH_RESOLVE_QLREF = new SemVer('2.5.1');
+
+  /**
+   * CLI version where database registration was introduced
+   */
+  public static CLI_VERSION_WITH_DB_REGISTRATION = new SemVer('2.4.1');
+
+  constructor(private readonly cli: CodeQLCliServer) {
+    /**/
+  }
+
+  private async isVersionAtLeast(v: SemVer) {
+    return (await this.cli.getVersion()).compare(v) >= 0;
+  }
+
+  public async supportsDecompileDil() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DECOMPILE_KIND_DIL);
+  }
+
+  public async supportsLanguageName() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_LANGUAGE);
+  }
+
+  public async supportsDowngrades() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DOWNGRADES);
+  }
+
+  public async supportsResolveQlref() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_QLREF);
+  }
+
+  async supportsDatabaseRegistration() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DB_REGISTRATION);
+  }
 }

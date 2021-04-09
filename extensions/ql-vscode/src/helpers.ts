@@ -367,7 +367,7 @@ export class CachedOperation<U> {
  * `cli.CodeQLCliServer.resolveDatabase` and use the first entry in the
  * `languages` property.
  *
- * @see cli.CodeQLCliServer.supportsLanguageName
+ * @see cli.CliVersionConstraint.supportsLanguageName
  * @see cli.CodeQLCliServer.resolveDatabase
  */
 const dbSchemeToLanguage = {

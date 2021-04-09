@@ -129,7 +129,7 @@ describe('using the query server', function() {
     const parsedResults = new Checkpoint<void>();
 
     it('should register the database if necessary', async () => {
-      if (await qs.supportsDatabaseRegistration()) {
+      if (await cliServer.cliConstraints.supportsDatabaseRegistration()) {
         await qs.sendRequest(messages.registerDatabases, { databases: [db] }, token, (() => { /**/ }) as any);
       }
     });
