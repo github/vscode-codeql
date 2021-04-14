@@ -4,6 +4,7 @@
 
 - Avoid showing an error popup when user runs a query with `@kind table` metadata. [#814](https://github.com/github/vscode-codeql/pull/814)
 - Add an option to jump from a .qlref file to the .ql file it references. [#815](https://github.com/github/vscode-codeql/pull/815)
+- Avoid opening the results panel when a database is deleted. [#831](https://github.com/github/vscode-codeql/pull/831)
 
 ## 1.4.5 - 22 March 2021
 
