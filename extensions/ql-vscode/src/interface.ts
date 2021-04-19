@@ -554,24 +554,26 @@ export class InterfaceManager extends DisposableObject {
     sourceInfo: cli.SourceInfo | undefined,
     sourceLocationPrefix: string,
     sortState: InterpretedResultsSortState | undefined
-  ): Promise<Interpretation> {
+  ): Promise<Interpretation | undefined> {
+    if (!resultsPaths) {
+      this.logger.log('No results path. Cannot display interpreted results.');
+      return undefined;
+    }
+
     const sarif = await interpretResults(
       this.cliServer,
       metadata,
       resultsPaths,
       sourceInfo
     );
+
     sarif.runs.forEach(run => {
       if (run.results !== undefined) {
         sortInterpretedResults(run.results, sortState);
       }
     });
 
-    const numTotalResults = (() => {
-      if (sarif.runs.length === 0) return 0;
-      if (sarif.runs[0].results === undefined) return 0;
-      return sarif.runs[0].results.length;
-    })();
+    const numTotalResults = sarif.runs[0]?.results?.length || 0;
 
     const interpretation: Interpretation = {
       sarif,
@@ -672,6 +674,10 @@ export class InterfaceManager extends DisposableObject {
       sourceLocationPrefix,
       undefined
     );
+
+    if (!interpretation) {
+      return;
+    }
 
     try {
       await this.showProblemResultsAsDiagnostics(interpretation, database);
