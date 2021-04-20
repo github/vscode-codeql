@@ -174,13 +174,6 @@ export class InterfaceManager extends DisposableObject {
           ]
         }
       ));
-      // this._panel.onDidChangeViewState(
-      //   (e) => {
-      //     this.logger.log(JSON.stringify(e));
-      //   },
-      //   null,
-      //   ctx.subscriptions
-      // );
 
       this._panel.onDidDispose(
         () => {
