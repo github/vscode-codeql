@@ -186,14 +186,13 @@ export function ensureMetadataIsComplete(metadata: QueryMetadata | undefined) {
   if (metadata === undefined) {
     throw new Error('Can\'t interpret results without query metadata');
   }
-  let { kind, id, scored } = metadata;
-  if (kind === undefined) {
+  if (metadata.kind === undefined) {
     throw new Error('Can\'t interpret results without query metadata including kind');
   }
-  if (id === undefined) {
+  if (metadata.id === undefined) {
     // Interpretation per se doesn't really require an id, but the
     // SARIF format does, so in the absence of one, we use a dummy id.
-    id = 'dummy-id';
+    metadata.id = 'dummy-id';
   }
-  return { kind, id, scored };
+  return metadata;
 }
