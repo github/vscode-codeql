@@ -12,7 +12,6 @@ import { promisify } from 'util';
 import { CancellationToken, Disposable } from 'vscode';
 
 import { BQRSInfo, DecodedBqrsChunk } from './pure/bqrs-cli-types';
-import * as config from './config';
 import { CliConfig } from './config';
 import { DistributionProvider, FindDistributionResultKind } from './distribution';
 import { assertNever } from './pure/helpers-pure';
@@ -597,10 +596,10 @@ export class CodeQLCliServer implements Disposable {
 
   async runInterpretCommand(format: string, metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo) {
     const args = [
-      `-t=kind=${metadata.kind}`,
-      `-t=id=${metadata.id}`,
       '--output', interpretedResultsPath,
       '--format', format,
+      // Forward all of the query metadata.
+      ...Object.entries(metadata).map(([key, value]) => `-t=${key}=${value}`)
     ];
     if (format == SARIF_FORMAT) {
       // TODO: This flag means that we don't group interpreted results
@@ -608,9 +607,6 @@ export class CodeQLCliServer implements Disposable {
       // interpretation with and without this flag, or do some
       // grouping client-side.
       args.push('--no-group-results');
-    }
-    if (config.isCanary() && metadata.scored !== undefined) {
-      args.push(`-t=scored=${metadata.scored}`);
     }
     if (sourceInfo !== undefined) {
       args.push(
