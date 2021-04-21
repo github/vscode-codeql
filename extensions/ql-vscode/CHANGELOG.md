@@ -1,8 +1,8 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.4.6 - 21 April 2021
 
-- Avoid showing an error popup when user runs a query with `@kind table` metadata. [#814](https://github.com/github/vscode-codeql/pull/814)
+- Avoid showing an error popup when running a query with `@kind table` metadata. [#814](https://github.com/github/vscode-codeql/pull/814)
 - Add an option to jump from a .qlref file to the .ql file it references. [#815](https://github.com/github/vscode-codeql/pull/815)
 - Avoid opening the results panel when a database is deleted. [#831](https://github.com/github/vscode-codeql/pull/831)
 - Forward all query metadata to the CLI when interpreting results. [#838](https://github.com/github/vscode-codeql/pull/838)
