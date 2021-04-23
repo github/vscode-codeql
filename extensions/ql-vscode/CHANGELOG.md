@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.4.7 - 23 April 2021
 
 - Fix a bug that prevented the results view from being loaded. [#842](https://github.com/github/vscode-codeql/pull/842)
