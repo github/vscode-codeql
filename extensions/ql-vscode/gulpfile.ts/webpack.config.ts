@@ -15,7 +15,7 @@ export const config: webpack.Configuration = {
   resolve: {
     extensions: ['.js', '.ts', '.tsx', '.json'],
     fallback: {
-      path: false
+      path: require.resolve('path-browserify')
     }
   },
   module: {
