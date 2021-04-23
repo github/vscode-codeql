@@ -10,7 +10,12 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
-**To Reproduce**
+**Version**
+The CodeQL and VS Code version in which the bug occurs.
+<!-- To copy version information for the CodeQL extension, click "CodeQL CLI vX.X.X" in the status bar at the bottom of the screen. 
+To copy detailed version information for VS Code itself, see https://code.visualstudio.com/docs/supporting/FAQ#_how-do-i-find-the-version. -->
+
+**To reproduce**
 Steps to reproduce the behavior.
 
 **Expected behavior**

@@ -13,6 +13,7 @@ import {
   window
 } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
+import * as os from 'os';
 import * as path from 'path';
 import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
 
@@ -699,6 +700,14 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(
     commandRunner('codeQL.openDocumentation', async () =>
       env.openExternal(Uri.parse('https://codeql.github.com/docs/'))));
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.copyVersion', async () => {
+      const text = `CodeQL extension version: ${extension?.packageJSON.version} \nCodeQL CLI version: ${await cliServer.getVersion()} \nPlatform: ${os.platform()} ${os.arch()}`;
+      env.clipboard.writeText(text);
+      helpers.showAndLogInformationMessage(text);
+    }));
+
 
   logger.log('Starting language server.');
   ctx.subscriptions.push(client.start());
