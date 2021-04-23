@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix a bug that prevented the results view from being loaded. [#842](https://github.com/github/vscode-codeql/pull/842)
+
 ## 1.4.6 - 21 April 2021
 
 - Avoid showing an error popup when running a query with `@kind table` metadata. [#814](https://github.com/github/vscode-codeql/pull/814)
