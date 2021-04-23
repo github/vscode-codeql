@@ -167,9 +167,11 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
   protected update(results: QLTestDiscoveryResults): void {
     this._testDirectory = results.testDirectory;
 
-    // Watch for changes to any `.ql` or `.qlref` file in any of the QL packs that contain tests.
     this.watcher.clear();
+    // Watch for changes to any `.ql` or `.qlref` file in any of the QL packs that contain tests.
     this.watcher.addWatch(new RelativePattern(results.watchPath, '**/*.{ql,qlref}'));
+    // need to explicitly watch for changes to directories themselves.
+    this.watcher.addWatch(new RelativePattern(results.watchPath, '**/'));
     this._onDidChangeTests.fire();
   }
 
