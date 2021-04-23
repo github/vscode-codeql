@@ -19,7 +19,7 @@ export class CodeQlStatusBarHandler extends DisposableObject {
     this.push(this.item);
     this.push(workspace.onDidChangeConfiguration(this.handleDidChangeConfiguration, this));
     this.push(distributionConfigListener.onDidChangeConfiguration(() => this.updateStatusItem()));
-    this.item.command = 'codeQL.openDocumentation';
+    this.item.command = 'codeQL.copyVersion';
     this.updateStatusItem();
   }
 
@@ -37,7 +37,7 @@ export class CodeQlStatusBarHandler extends DisposableObject {
 
   private async updateStatusItem() {
     const canary = CANARY_FEATURES.getValue() ? ' (Canary)' : '';
-    // since getting the verison may take a few seconds, initialize with some
+    // since getting the version may take a few seconds, initialize with some
     // meaningful text.
     this.item.text = `CodeQL${canary}`;
 

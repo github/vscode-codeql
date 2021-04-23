@@ -243,6 +243,10 @@
         "title": "CodeQL: Open Documentation"
       },
       {
+        "command": "codeQL.copyVersion",
+        "title": "CodeQL: Copy Version Information"
+      },
+      {
         "command": "codeQLDatabases.chooseDatabaseFolder",
         "title": "Choose Database from Folder",
         "icon": {
