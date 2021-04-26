@@ -4,8 +4,6 @@
 
 - Copy version information to the clipboard when a user clicks the CodeQL section of the status bar. [#845](https://github.com/github/vscode-codeql/pull/845)
 - Ensure changes in directories that contain tests will be properly updated in the test explorer. [#846](https://github.com/github/vscode-codeql/pull/846)
-- Add a command to copy version information about the extension. [#845](https://github.com/github/vscode-codeql/pull/845)
-- Copy version information to the clipboard when a user clicks on the CodeQL section of the status bar. [#845](https://github.com/github/vscode-codeql/pull/845)
 
 ## 1.4.7 - 23 April 2021
 
