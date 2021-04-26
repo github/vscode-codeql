@@ -11,6 +11,12 @@ on:
 jobs:
   codeql:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security_events: write
+      pull_requests: read
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
