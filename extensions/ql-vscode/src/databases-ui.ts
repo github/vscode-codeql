@@ -108,7 +108,7 @@ class DatabaseTreeDataProvider extends DisposableObject
   }
 
   private handleDidChangeDatabaseItem = (event: DatabaseChangedEvent): void => {
-    // Note that events from the databse manager are instances of DatabaseChangedEvent
+    // Note that events from the database manager are instances of DatabaseChangedEvent
     // and events fired by the UI are instances of DatabaseItem
 
     // When event.item is undefined, then the entire tree is refreshed.
@@ -703,7 +703,7 @@ export class DatabaseUI extends DisposableObject {
    * 2. If the selected URI is a directory matching db-*, choose the containing directory
    * 3. choose the current directory
    *
-   * @param uri a URI that is a datbase folder or inside it
+   * @param uri a URI that is a database folder or inside it
    *
    * @return the actual database folder found by using the heuristics above.
    */
