@@ -295,7 +295,7 @@ export class DatabaseUI extends DisposableObject {
         'codeQLDatabases.chooseDatabaseLgtm',
         this.handleChooseDatabaseLgtm,
         {
-          title: 'Adding database from LGTM',
+          title: 'Adding database from LGTM. Choose a language from the dropdown, if available.',
         })
     );
     this.push(
