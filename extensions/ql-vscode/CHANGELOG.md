@@ -4,6 +4,7 @@
 
 - Copy version information to the clipboard when a user clicks the CodeQL section of the status bar. [#845](https://github.com/github/vscode-codeql/pull/845)
 - Ensure changes in directories that contain tests will be properly updated in the test explorer. [#846](https://github.com/github/vscode-codeql/pull/846)
+- Remind users to choose a language when downloading a database from LGTM. [#852](https://github.com/github/vscode-codeql/pull/852)
 
 ## 1.4.7 - 23 April 2021
 
