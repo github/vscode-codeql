@@ -682,7 +682,7 @@ async function activateWithInstalledDistribution(
     ) =>
       databaseUI.handleChooseDatabaseLgtm(progress, token),
       {
-        title: 'Adding database from LGTM. Choose a language from the dropdown, if available.',
+        title: 'Adding database from LGTM. Choose a language from the dropdown, if requested.',
       })
   );
   ctx.subscriptions.push(
