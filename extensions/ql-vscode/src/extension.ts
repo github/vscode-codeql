@@ -140,7 +140,7 @@ export interface CodeQLExtensionInterface {
 
 /**
  * Returns the CodeQLExtensionInterface, or an empty object if the interface is not
- * available afer activation is complete. This will happen if there is no cli
+ * available after activation is complete. This will happen if there is no cli
  * installed when the extension starts. Downloading and installing the cli
  * will happen at a later time.
  *
