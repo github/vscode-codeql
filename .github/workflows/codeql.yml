@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    - cron: '0 0 * * 0'
+    - cron: '21 17 * * 0'
 
 jobs:
   codeql:
@@ -14,8 +14,8 @@ jobs:
 
     permissions:
       contents: read
-      security_events: write
-      pull_requests: read
+      security-events: write
+      pull-requests: read
 
     steps:
       - name: Checkout repository
