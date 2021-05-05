@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.4.8 - 05 May 2021
 
 - Copy version information to the clipboard when a user clicks the CodeQL section of the status bar. [#845](https://github.com/github/vscode-codeql/pull/845)
