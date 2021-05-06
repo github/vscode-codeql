@@ -56,7 +56,8 @@ We recommend that you keep `npm run watch` running in the backgound and you only
 
 1. on first checkout
 2. whenever any of the non-TypeScript resources have changed
-3. on any change to files included in the webview
+3. on any change to files included in one of the webviews
+   - **Important**: This is easy to forget. You must explicitly run `npm run build` whenever one of the files in the webview is changed. These are the files in the `src/view` and `src/compare/view` folders.
 
 ### Installing the extension
 
