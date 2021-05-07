@@ -307,9 +307,11 @@ class App extends React.Component<{}, ResultsViewState> {
   }
 
   private vscodeMessageHandler(evt: MessageEvent) {
+    // sanitize origin
+    const origin = evt.origin.replace(/\n|\r/g, '');
     evt.origin === window.origin
       ? this.handleMessage(evt.data as IntoResultsViewMsg)
-      : console.error(`Invalid event origin ${evt.origin}`);
+      : console.error(`Invalid event origin ${origin}`);
   }
 }
 

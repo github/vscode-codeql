@@ -38,7 +38,9 @@ export function Compare(_: {}): JSX.Element {
             setComparison(msg);
         }
       } else {
-        console.error(`Invalid event origin ${evt.origin}`);
+        // sanitize origin
+        const origin = evt.origin.replace(/\n|\r/g, '');
+        console.error(`Invalid event origin ${origin}`);
       }
     });
   });
