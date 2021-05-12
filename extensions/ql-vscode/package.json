@@ -21,6 +21,16 @@
   "extensionDependencies": [
     "hbenl.vscode-test-explorer"
   ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Workspace trust is required to execute commands that can contain arbitrary paths. ",
+      "restrictedConfigurations": [
+        "codeQL.cli.executablePath",
+        "codeQL.runningTests.additionalTestArguments"
+      ]
+    }
+  },
   "activationEvents": [
     "onLanguage:ql",
     "onView:codeQLDatabases",
@@ -118,7 +128,7 @@
       "title": "CodeQL",
       "properties": {
         "codeQL.cli.executablePath": {
-          "scope": "machine",
+          "scope": "window",
           "type": "string",
           "default": "",
           "description": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.exe` on Windows. If empty, the extension will look for a CodeQL executable on your shell PATH, or if CodeQL is not on your PATH, download and manage its own CodeQL executable."
@@ -198,7 +208,7 @@
           "description": "Default string for how to label query history items. %t is the time of the query, %q is the query name, %d is the database name, %r is the number of results, and %s is a status string."
         },
         "codeQL.runningTests.additionalTestArguments": {
-          "scope": "machine",
+          "scope": "window",
           "type": "array",
           "default": [],
           "markdownDescription": "Additional command line arguments to pass to the CLI when [running tests](https://codeql.github.com/docs/codeql-cli/manual/test-run/). This setting should be an array of strings, each containing an argument to be passed."
