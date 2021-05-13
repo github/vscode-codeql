@@ -345,7 +345,7 @@ class ExtensionSpecificDistributionManager {
 
       const contentLength = assetStream.headers.get('content-length');
       const totalNumBytes = contentLength ? parseInt(contentLength, 10) : undefined;
-      reportStreamProgress(assetStream.body, 'Downloading CodeQL CLI…', totalNumBytes, progressCallback);
+      reportStreamProgress(assetStream.body, `Downloading CodeQL CLI ${release.name}…`, totalNumBytes, progressCallback);
 
       await new Promise((resolve, reject) =>
         assetStream.body.pipe(archiveFile)
