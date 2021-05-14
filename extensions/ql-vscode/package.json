@@ -179,6 +179,14 @@
           "default": 20,
           "description": "Max number of simultaneous queries to run using the 'CodeQL: Run Queries' command."
         },
+        "codeQL.runningQueries.customLogDirectory": {
+          "type": [
+            "string",
+            null
+          ],
+          "default": null,
+          "description": "Path to a directory where the CodeQL extension should store query server logs. If empty, the extension stores logs in a temporary workspace folder and deletes the contents after each run."
+        },
         "codeQL.resultsDisplay.pageSize": {
           "type": "integer",
           "default": 200,
