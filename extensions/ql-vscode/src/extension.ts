@@ -380,6 +380,7 @@ async function activateWithInstalledDistribution(
     cliServer,
     {
       logger: queryServerLogger,
+      contextStoragePath: getContextStoragePath(ctx),
     },
     (task) =>
       Window.withProgress(
@@ -768,9 +769,8 @@ function getContextStoragePath(ctx: ExtensionContext) {
 
 function initializeLogging(ctx: ExtensionContext): void {
   const storagePath = getContextStoragePath(ctx);
-  logger.init(storagePath);
-  queryServerLogger.init(storagePath);
-  ideServerLogger.init(storagePath);
+  logger.setLogStoragePath(storagePath, false);
+  ideServerLogger.setLogStoragePath(storagePath, false);
   ctx.subscriptions.push(logger);
   ctx.subscriptions.push(queryServerLogger);
   ctx.subscriptions.push(ideServerLogger);

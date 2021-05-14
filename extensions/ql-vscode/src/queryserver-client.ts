@@ -5,13 +5,16 @@ import { Disposable, CancellationToken, commands } from 'vscode';
 import { createMessageConnection, MessageConnection, RequestType } from 'vscode-jsonrpc';
 import * as cli from './cli';
 import { QueryServerConfig } from './config';
-import { Logger, ProgressReporter } from './logging';
+import { Logger, ProgressReporter, queryServerLogger } from './logging';
 import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './pure/messages';
 import * as messages from './pure/messages';
 import { ProgressCallback, ProgressTask } from './commandRunner';
+import * as fs from 'fs-extra';
+import * as helpers from './helpers';
 
 type ServerOpts = {
   logger: Logger;
+  contextStoragePath: string;
 }
 
 /** A running query server process and its associated message connection. */
@@ -86,8 +89,24 @@ export class QueryServerClient extends DisposableObject {
     this.evaluationResultCallbacks = {};
   }
 
+  initLogger() {
+    let storagePath = this.opts.contextStoragePath;
+    let isCustomLogDirectory = false;
+    if (this.config.customLogDirectory) {
+      if (fs.existsSync(this.config.customLogDirectory) && fs.statSync(this.config.customLogDirectory).isDirectory()) {
+        storagePath = this.config.customLogDirectory;
+        isCustomLogDirectory = true;
+      } else if (this.config.customLogDirectory) {
+        helpers.showAndLogErrorMessage(`${this.config.customLogDirectory} is not a valid directory. Logs will be stored in a temporary workspace directory instead.`);
+      }
+    }
+
+    queryServerLogger.setLogStoragePath(storagePath, isCustomLogDirectory);
+
+  }
+
   get logger(): Logger {
-    return this.opts.logger;
+    return queryServerLogger;
   }
 
   /** Stops the query server by disposing of the current server process. */
@@ -151,6 +170,7 @@ export class QueryServerClient extends DisposableObject {
       args.push('-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9010,server=y,suspend=n,quiet=y');
     }
 
+    this.initLogger();
     const child = cli.spawnServer(
       this.config.codeQlPath,
       'CodeQL query server',
@@ -185,7 +205,7 @@ export class QueryServerClient extends DisposableObject {
         callback(res);
       }
     });
-    this.serverProcess = new ServerProcess(child, connection, this.opts.logger);
+    this.serverProcess = new ServerProcess(child, connection, this.logger);
     // Ensure the server process is disposed together with this client.
     this.track(this.serverProcess);
     connection.listen();
