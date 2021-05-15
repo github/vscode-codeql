@@ -10,7 +10,7 @@ import {
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
-import { DatabaseManager, DatabaseItem } from './databases';
+import { DatabaseManager, DatabaseItem, getStorageFolder } from './databases';
 import {
   showAndLogInformationMessage,
 } from './helpers';
@@ -199,33 +199,6 @@ async function databaseArchiveFetcher(
   } else {
     throw new Error('Database not found in archive.');
   }
-}
-
-async function getStorageFolder(storagePath: string, urlStr: string) {
-  // we need to generate a folder name for the unzipped archive,
-  // this needs to be human readable since we may use this name as the initial
-  // name for the database
-  const url = Uri.parse(urlStr);
-  // MacOS has a max filename length of 255
-  // and remove a few extra chars in case we need to add a counter at the end.
-  let lastName = path.basename(url.path).substring(0, 250);
-  if (lastName.endsWith('.zip')) {
-    lastName = lastName.substring(0, lastName.length - 4);
-  }
-
-  const realpath = await fs.realpath(storagePath);
-  let folderName = path.join(realpath, lastName);
-
-  // avoid overwriting existing folders
-  let counter = 0;
-  while (await fs.pathExists(folderName)) {
-    counter++;
-    folderName = path.join(realpath, `${lastName}-${counter}`);
-    if (counter > 100) {
-      throw new Error('Could not find a unique name for downloaded database.');
-    }
-  }
-  return folderName;
 }
 
 function validateHttpsUrl(databaseUrl: string) {

@@ -105,7 +105,8 @@ describe('databases', () => {
     expect((databaseManager as any)._databaseItems).to.deep.eq([mockDbItem]);
     expect(updateSpy).to.have.been.calledWith('databaseList', [{
       options: MOCK_DB_OPTIONS,
-      uri: dbLocationUri().toString(true)
+      uri: dbLocationUri().toString(true),
+      managedUri: managedLocationUri().toString(true)
     }]);
     expect(spy).to.have.been.calledWith({
       item: undefined,
@@ -145,7 +146,8 @@ describe('databases', () => {
     expect(mockDbItem.name).to.eq('new name');
     expect(updateSpy).to.have.been.calledWith('databaseList', [{
       options: { ...MOCK_DB_OPTIONS, displayName: 'new name' },
-      uri: dbLocationUri().toString(true)
+      uri: dbLocationUri().toString(true),
+      managedUri: managedLocationUri().toString(true)
     }]);
 
     expect(spy).to.have.been.calledWith({
@@ -169,6 +171,7 @@ describe('databases', () => {
       expect(databaseManager.databaseItems).to.deep.eq([mockDbItem]);
       expect(updateSpy).to.have.been.calledWith('databaseList', [{
         uri: dbLocationUri().toString(true),
+        managedUri: managedLocationUri().toString(true),
         options: MOCK_DB_OPTIONS
       }]);
 
@@ -221,39 +224,7 @@ describe('databases', () => {
       expect(workspace.updateWorkspaceFolders).to.have.been.calledWith(0, 1);
 
       // should also delete the db contents
-      expect(fs.remove).to.have.been.calledWith(mockDbItem.databaseUri.fsPath);
-    });
-
-    it('should remove a database item outside of the extension controlled area', async () => {
-      const mockDbItem = createMockDB();
-      sandbox.stub(fs, 'remove').resolves();
-
-      // pretend that this item is the first workspace folder in the list
-      sandbox.stub(mockDbItem, 'belongsToSourceArchiveExplorerUri').returns(true);
-
-      await (databaseManager as any).addDatabaseItem(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem
-      );
-      updateSpy.resetHistory();
-
-      // pretend that the database location is not controlled by the extension
-      (databaseManager as any).ctx.storagePath = 'hucairz';
-
-      await databaseManager.removeDatabaseItem(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem
-      );
-
-      expect(databaseManager.databaseItems).to.deep.eq([]);
-      expect(updateSpy).to.have.been.calledWith('databaseList', []);
-      // should remove the folder
-      expect(workspace.updateWorkspaceFolders).to.have.been.calledWith(0, 1);
-
-      // should NOT delete the db contents
-      expect(fs.remove).not.to.have.been.called;
+      expect(fs.remove).to.have.been.calledWith(mockDbItem.managedDatabaseUri.fsPath);
     });
 
     it('should register and deregister a database when adding and removing it', async () => {
@@ -418,11 +389,13 @@ describe('databases', () => {
     // source archive location must be a real(-ish) location since
     // tests will add this to the workspace location
     sourceArchiveUri = sourceLocationUri(),
-    databaseUri = dbLocationUri()
+    databaseUri = dbLocationUri(),
+    managedDatabaseUri = managedLocationUri()
   ): DatabaseItemImpl {
 
     return new DatabaseItemImpl(
       databaseUri,
+      managedDatabaseUri,
       {
         sourceArchiveUri,
         datasetUri: databaseUri
@@ -437,6 +410,10 @@ describe('databases', () => {
   }
 
   function dbLocationUri() {
+    return Uri.file('/some/external/path');
+  }
+
+  function managedLocationUri() {
     return Uri.file(path.join(dir.name, 'db'));
   }
 });

@@ -56,7 +56,10 @@ export interface FullDatabaseOptions extends DatabaseOptions {
 }
 
 interface PersistedDatabaseItem {
+  /** The publicly-visible database URI, which may not be in an extension-controlled location. */
   uri: string;
+  /** The extension-managed database URI, which must be in an extension-controlled location. */
+  managedUri?: string;
   options?: DatabaseOptions;
 }
 
@@ -203,6 +206,8 @@ async function resolveDatabaseContents(uri: vscode.Uri): Promise<DatabaseContent
 export interface DatabaseItem {
   /** The URI of the database */
   readonly databaseUri: vscode.Uri;
+  /** The URI of the database in an extension-controlled location */
+  readonly managedDatabaseUri: vscode.Uri;
   /** The name of the database to be displayed in the UI */
   name: string;
 
@@ -298,6 +303,7 @@ export class DatabaseItemImpl implements DatabaseItem {
 
   public constructor(
     public readonly databaseUri: vscode.Uri,
+    public readonly managedDatabaseUri: vscode.Uri,
     contents: DatabaseContents | undefined,
     private options: FullDatabaseOptions,
     private readonly onChanged: (event: DatabaseChangedEvent) => void
@@ -409,6 +415,7 @@ export class DatabaseItemImpl implements DatabaseItem {
   public getPersistedState(): PersistedDatabaseItem {
     return {
       uri: this.databaseUri.toString(true),
+      managedUri: this.managedDatabaseUri.toString(true),
       options: this.options
     };
   }
@@ -525,7 +532,15 @@ export class DatabaseManager extends DisposableObject {
     token: vscode.CancellationToken,
     uri: vscode.Uri,
   ): Promise<DatabaseItem> {
-    const contents = await resolveDatabaseContents(uri);
+    let contents = await resolveDatabaseContents(uri);
+    const managedUri = await this.getDatabaseInManagedLocation(uri);
+    if (managedUri !== uri) {
+      // We always want to run resolveDatabaseContents() before doing any substantial work so that
+      // we can report obvious problems to the user quickly. If we end up copying the database
+      // directory to a new location, then we need to run resolveDatabaseContents() again to get
+      // the correct contents for the copied database directory.
+      contents = await resolveDatabaseContents(managedUri);
+    }
     // Ignore the source archive for QLTest databases by default.
     const isQLTestDatabase = path.extname(uri.fsPath) === '.testproj';
     const fullOptions: FullDatabaseOptions = {
@@ -535,7 +550,7 @@ export class DatabaseManager extends DisposableObject {
       dateAdded: Date.now(),
       language: await this.getPrimaryLanguage(uri.fsPath)
     };
-    const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions, (event) => {
+    const databaseItem = new DatabaseItemImpl(uri, managedUri, contents, fullOptions, (event) => {
       this._onDidChangeDatabaseItem.fire(event);
     });
 
@@ -543,6 +558,24 @@ export class DatabaseManager extends DisposableObject {
     await this.addDatabaseSourceArchiveFolder(databaseItem);
 
     return databaseItem;
+  }
+
+  /**
+   * Make a database directory available in an extension-controlled location. If the given URI is already
+   * in a controlled location, this method does nothing and returns the argement unchanged. Otherwise, it
+   * copies the given directory to an extension-controlled location and returns the new location.
+   *
+   * @param uri current location of the database directory, which must be a file path pointing to a directory
+   * @returns possibly new location of the database directory, which is guaranteed to be in an extension-controlled location
+   */
+  private async getDatabaseInManagedLocation(uri: vscode.Uri): Promise<vscode.Uri> {
+    if (this.isExtensionControlledLocation(uri)) {
+      return uri;
+    }
+    const baseStoragePath = this.ctx.storagePath || this.ctx.globalStoragePath;
+    const storageFolder = await getStorageFolder(baseStoragePath, uri.toString(true));
+    await fs.copy(uri.fsPath, storageFolder);
+    return vscode.Uri.file(storageFolder);
   }
 
   private async reregisterDatabases(
@@ -624,6 +657,12 @@ export class DatabaseManager extends DisposableObject {
     }
 
     const dbBaseUri = vscode.Uri.parse(state.uri, true);
+    let dbManagedUri = dbBaseUri;
+    if (state.managedUri) {
+      dbManagedUri = vscode.Uri.parse(state.managedUri);
+    }
+    dbManagedUri = await this.getDatabaseInManagedLocation(dbManagedUri);
+
     if (language === undefined) {
       // we haven't been successful yet at getting the language. try again
       language = await this.getPrimaryLanguage(dbBaseUri.fsPath);
@@ -635,7 +674,7 @@ export class DatabaseManager extends DisposableObject {
       dateAdded,
       language
     };
-    const item = new DatabaseItemImpl(dbBaseUri, undefined, fullOptions,
+    const item = new DatabaseItemImpl(dbBaseUri, dbManagedUri, undefined, fullOptions,
       (event) => {
         this._onDidChangeDatabaseItem.fire(event);
       });
@@ -785,13 +824,11 @@ export class DatabaseManager extends DisposableObject {
       vscode.workspace.updateWorkspaceFolders(folderIndex, 1);
     }
 
-    // Delete folder from file system only if it is controlled by the extension
-    if (this.isExtensionControlledLocation(item.databaseUri)) {
-      logger.log('Deleting database from filesystem.');
-      fs.remove(item.databaseUri.fsPath).then(
-        () => logger.log(`Deleted '${item.databaseUri.fsPath}'`),
-        e => logger.log(`Failed to delete '${item.databaseUri.fsPath}'. Reason: ${e.message}`));
-    }
+    // Delete the extension-controlled folder from file system
+    logger.log('Deleting database from filesystem.');
+    fs.remove(item.managedDatabaseUri.fsPath).then(
+      () => logger.log(`Deleted '${item.managedDatabaseUri.fsPath}'`),
+      e => logger.log(`Failed to delete '${item.managedDatabaseUri.fsPath}'. Reason: ${e.message}`));
 
     // Remove this database item from the allow-list
     await this.deregisterDatabase(progress, token, item);
@@ -871,4 +908,31 @@ export function getUpgradesDirectories(scripts: string[]): vscode.Uri[] {
   const parentDirs = scripts.map(dir => path.dirname(dir));
   const uniqueParentDirs = new Set(parentDirs);
   return Array.from(uniqueParentDirs).map(filePath => vscode.Uri.file(filePath));
+}
+
+export async function getStorageFolder(storagePath: string, urlStr: string) {
+  // we need to generate a folder name for the unzipped archive,
+  // this needs to be human readable since we may use this name as the initial
+  // name for the database
+  const url = vscode.Uri.parse(urlStr);
+  // MacOS has a max filename length of 255
+  // and remove a few extra chars in case we need to add a counter at the end.
+  let lastName = path.basename(url.path).substring(0, 250);
+  if (lastName.endsWith('.zip')) {
+    lastName = lastName.substring(0, lastName.length - 4);
+  }
+
+  const realpath = await fs.realpath(storagePath);
+  let folderName = path.join(realpath, lastName);
+
+  // avoid overwriting existing folders
+  let counter = 0;
+  while (await fs.pathExists(folderName)) {
+    counter++;
+    folderName = path.join(realpath, `${lastName}-${counter}`);
+    if (counter > 100) {
+      throw new Error('Could not find a unique name for downloaded database.');
+    }
+  }
+  return folderName;
 }
