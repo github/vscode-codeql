@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as Sarif from 'sarif';
 import * as Keys from '../pure/result-keys';
 import * as octicons from './octicons';
-import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection } from './result-table-utils';
+import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection, emptyQueryResultsMessage } from './result-table-utils';
 import { onNavigation, NavigationEvent } from './results';
 import { PathTableResultSet } from '../pure/interface-types';
 import {
@@ -79,7 +79,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     if (this.props.nonemptyRawResults) {
       return <span>No Alerts. See <a href='#' onClick={this.props.showRawResults}>raw results</a>.</span>;
     } else {
-      return <span>No Alerts</span>;
+      return emptyQueryResultsMessage();
     }
   }
 
