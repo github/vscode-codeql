@@ -266,6 +266,11 @@ export interface DatabaseItem {
   belongsToSourceArchiveExplorerUri(uri: vscode.Uri): boolean;
 
   /**
+   * Whether the database may be affected by test execution for the given path.
+   */
+  isAffectedByTest(testPath: string): Promise<boolean>;
+
+  /**
    * Gets the state of this database, to be persisted in the workspace state.
    */
   getPersistedState(): PersistedDatabaseItem;
@@ -469,6 +474,27 @@ export class DatabaseItemImpl implements DatabaseItem {
       return false;
     return uri.scheme === zipArchiveScheme &&
       decodeSourceArchiveUri(uri).sourceArchiveZipPath === this.sourceArchive.fsPath;
+  }
+
+  public async isAffectedByTest(testPath: string): Promise<boolean> {
+    const databasePath = this.databaseUri.fsPath;
+    if (!databasePath.endsWith('.testproj')) {
+      return false;
+    }
+    try {
+      const stats = await fs.stat(testPath);
+      if (stats.isDirectory()) {
+        return !path.relative(testPath, databasePath).startsWith('..');
+      } else {
+        // database for /one/two/three/test.ql is at /one/two/three/three.testproj
+        const testdir = path.dirname(testPath);
+        const testdirbase = path.basename(testdir);
+        return databasePath == path.join(testdir, testdirbase + '.testproj');
+      }
+    } catch {
+      // No information available for test path - assume database is unaffected.
+      return false;
+    }
   }
 }
 

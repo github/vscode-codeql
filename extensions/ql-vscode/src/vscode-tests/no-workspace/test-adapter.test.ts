@@ -1,24 +1,61 @@
 import 'vscode-test';
 import 'mocha';
 import * as sinon from 'sinon';
+import * as fs from 'fs-extra';
 import { Uri, WorkspaceFolder } from 'vscode';
 import { expect } from 'chai';
 
 import { QLTestAdapter } from '../../test-adapter';
 import { CodeQLCliServer } from '../../cli';
+import { DatabaseItem, DatabaseItemImpl, DatabaseManager, FullDatabaseOptions } from '../../databases';
 
 describe('test-adapter', () => {
   let adapter: QLTestAdapter;
+  let fakeDatabaseManager: DatabaseManager;
+  let currentDatabaseItem: DatabaseItem | undefined;
+  let databaseItems: DatabaseItem[] = [];
+  let openDatabaseSpy: sinon.SinonStub;
+  let removeDatabaseItemSpy: sinon.SinonStub;
+  let renameDatabaseItemSpy: sinon.SinonStub;
+  let setCurrentDatabaseItemSpy: sinon.SinonStub;
   let runTestsSpy: sinon.SinonStub;
   let resolveTestsSpy: sinon.SinonStub;
   let resolveQlpacksSpy: sinon.SinonStub;
   let sandox: sinon.SinonSandbox;
 
+  const preTestDatabaseItem = new DatabaseItemImpl(
+    Uri.file('/path/to/test/dir/dir.testproj'),
+    undefined,
+    { displayName: 'custom display name' } as unknown as FullDatabaseOptions,
+    (_) => { /* no change event listener */ }
+  );
+  const postTestDatabaseItem = new DatabaseItemImpl(
+    Uri.file('/path/to/test/dir/dir.testproj'),
+    undefined,
+    { displayName: 'default name' } as unknown as FullDatabaseOptions,
+    (_) => { /* no change event listener */ }
+  );
+
   beforeEach(() => {
     sandox = sinon.createSandbox();
     mockRunTests();
+    openDatabaseSpy = sandox.stub().resolves(postTestDatabaseItem);
+    removeDatabaseItemSpy = sandox.stub().resolves();
+    renameDatabaseItemSpy = sandox.stub().resolves();
+    setCurrentDatabaseItemSpy = sandox.stub().resolves();
     resolveQlpacksSpy = sandox.stub().resolves({});
     resolveTestsSpy = sandox.stub().resolves([]);
+    fakeDatabaseManager = {
+      currentDatabaseItem: undefined,
+      databaseItems: undefined,
+      openDatabase: openDatabaseSpy,
+      removeDatabaseItem: removeDatabaseItemSpy,
+      renameDatabaseItem: renameDatabaseItemSpy,
+      setCurrentDatabaseItem: setCurrentDatabaseItemSpy,
+    } as unknown as DatabaseManager;
+    sandox.stub(fakeDatabaseManager, 'currentDatabaseItem').get(() => currentDatabaseItem);
+    sandox.stub(fakeDatabaseManager, 'databaseItems').get(() => databaseItems);
+    sandox.stub(preTestDatabaseItem, 'isAffectedByTest').resolves(true);
     adapter = new QLTestAdapter({
       name: 'ABC',
       uri: Uri.parse('file:/ab/c')
@@ -26,7 +63,8 @@ describe('test-adapter', () => {
       runTests: runTestsSpy,
       resolveQlpacks: resolveQlpacksSpy,
       resolveTests: resolveTestsSpy
-    } as unknown as CodeQLCliServer);
+    } as unknown as CodeQLCliServer,
+      fakeDatabaseManager);
   });
 
   afterEach(() => {
@@ -74,12 +112,33 @@ describe('test-adapter', () => {
     expect(listenerSpy).to.have.callCount(5);
   });
 
+  it('should reregister testproj databases around test run', async () => {
+    sandox.stub(fs, 'access').resolves();
+    currentDatabaseItem = preTestDatabaseItem;
+    databaseItems = [preTestDatabaseItem];
+    await adapter.run(['/path/to/test/dir']);
+
+    removeDatabaseItemSpy.getCall(0).calledBefore(runTestsSpy.getCall(0));
+    openDatabaseSpy.getCall(0).calledAfter(runTestsSpy.getCall(0));
+    renameDatabaseItemSpy.getCall(0).calledAfter(openDatabaseSpy.getCall(0));
+    setCurrentDatabaseItemSpy.getCall(0).calledAfter(openDatabaseSpy.getCall(0));
+
+    sinon.assert.calledOnceWithExactly(
+      removeDatabaseItemSpy, sinon.match.any, sinon.match.any, preTestDatabaseItem);
+    sinon.assert.calledOnceWithExactly(
+      openDatabaseSpy, sinon.match.any, sinon.match.any, preTestDatabaseItem.databaseUri);
+    sinon.assert.calledOnceWithExactly(
+      renameDatabaseItemSpy, postTestDatabaseItem, preTestDatabaseItem.name);
+    sinon.assert.calledOnceWithExactly(
+      setCurrentDatabaseItemSpy, postTestDatabaseItem, true);
+  });
+
   function mockRunTests() {
     // runTests is an async generator function. This is not directly supported in sinon
     // However, we can pretend the same thing by just returning an async array.
     runTestsSpy = sandox.stub();
     runTestsSpy.returns(
-      (async function*() {
+      (async function* () {
         yield Promise.resolve({
           test: Uri.parse('file:/ab/c/d.ql').fsPath,
           pass: true,

@@ -179,7 +179,7 @@ describe('databases', () => {
       expect(spy).to.have.been.calledWith(mockEvent);
     });
 
-    it('should add a database item source archive', async function() {
+    it('should add a database item source archive', async function () {
       const mockDbItem = createMockDB();
       mockDbItem.name = 'xxx';
       await (databaseManager as any).addDatabaseSourceArchiveFolder(mockDbItem);
@@ -412,6 +412,72 @@ describe('databases', () => {
     });
     const result = (await (databaseManager as any).getPrimaryLanguage('hucairz'));
     expect(result).to.eq('');
+  });
+
+  describe('isAffectedByTest', () => {
+    const directoryStats = new fs.Stats();
+    const fileStats = new fs.Stats();
+
+    before(() => {
+      sinon.stub(directoryStats, 'isDirectory').returns(true);
+      sinon.stub(fileStats, 'isDirectory').returns(false);
+    });
+
+    it('should return true for testproj database in test directory', async () => {
+      sandbox.stub(fs, 'stat').resolves(directoryStats);
+      const db = createMockDB(sourceLocationUri(), Uri.file('/path/to/dir/dir.testproj'));
+      expect(await db.isAffectedByTest('/path/to/dir')).to.true;
+    });
+
+    it('should return false for non-existent test directory', async () => {
+      sandbox.stub(fs, 'stat').throws('Simulated Error: ENOENT');
+      const db = createMockDB(sourceLocationUri(), Uri.file('/path/to/dir/dir.testproj'));
+      expect(await db.isAffectedByTest('/path/to/dir')).to.false;
+    });
+
+    it('should return false for non-testproj database in test directory', async () => {
+      sandbox.stub(fs, 'stat').resolves(directoryStats);
+      const db = createMockDB(sourceLocationUri(), Uri.file('/path/to/dir/dir.proj'));
+      expect(await db.isAffectedByTest('/path/to/dir')).to.false;
+    });
+
+    it('should return false for testproj database outside test directory', async () => {
+      sandbox.stub(fs, 'stat').resolves(directoryStats);
+      const db = createMockDB(sourceLocationUri(), Uri.file('/path/to/other/dir.testproj'));
+      expect(await db.isAffectedByTest('/path/to/dir')).to.false;
+    });
+
+    it('should return false for testproj database for prefix directory', async () => {
+      sandbox.stub(fs, 'stat').resolves(directoryStats);
+      const db = createMockDB(sourceLocationUri(), Uri.file('/path/to/dir/dir.testproj'));
+      // /path/to/d is a prefix of /path/to/dir/dir.testproj, but
+      // /path/to/dir/dir.testproj is not under /path/to/d
+      expect(await db.isAffectedByTest('/path/to/d')).to.false;
+    });
+
+    it('should return true for testproj database for test file', async () => {
+      sandbox.stub(fs, 'stat').resolves(fileStats);
+      const db = createMockDB(sourceLocationUri(), Uri.file('/path/to/dir/dir.testproj'));
+      expect(await db.isAffectedByTest('/path/to/dir/test.ql')).to.true;
+    });
+
+    it('should return false for non-existent test file', async () => {
+      sandbox.stub(fs, 'stat').throws('Simulated Error: ENOENT');
+      const db = createMockDB(sourceLocationUri(), Uri.file('/path/to/dir/dir.testproj'));
+      expect(await db.isAffectedByTest('/path/to/dir/test.ql')).to.false;
+    });
+
+    it('should return false for non-testproj database for test file', async () => {
+      sandbox.stub(fs, 'stat').resolves(fileStats);
+      const db = createMockDB(sourceLocationUri(), Uri.file('/path/to/dir/dir.proj'));
+      expect(await db.isAffectedByTest('/path/to/dir/test.ql')).to.false;
+    });
+
+    it('should return false for testproj database not matching test file', async () => {
+      sandbox.stub(fs, 'stat').resolves(fileStats);
+      const db = createMockDB(sourceLocationUri(), Uri.file('/path/to/dir/dir.testproj'));
+      expect(await db.isAffectedByTest('/path/to/test.ql')).to.false;
+    });
   });
 
   function createMockDB(
