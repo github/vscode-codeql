@@ -93,10 +93,12 @@ export class QueryServerClient extends DisposableObject {
     let storagePath = this.opts.contextStoragePath;
     let isCustomLogDirectory = false;
     if (this.config.customLogDirectory) {
-      if (fs.existsSync(this.config.customLogDirectory) && fs.statSync(this.config.customLogDirectory).isDirectory()) {
+      try {
+        fs.mkdirSync(this.config.customLogDirectory);
+        helpers.showAndLogInformationMessage(`Storing query server logs to user-specified directory: ${this.config.customLogDirectory}.`);
         storagePath = this.config.customLogDirectory;
         isCustomLogDirectory = true;
-      } else if (this.config.customLogDirectory) {
+      } catch (e) {
         helpers.showAndLogErrorMessage(`${this.config.customLogDirectory} is not a valid directory. Logs will be stored in a temporary workspace directory instead.`);
       }
     }
