@@ -1,3 +1,4 @@
+import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
@@ -17,8 +18,9 @@ import { QLTestFile, QLTestNode, QLTestDirectory, QLTestDiscovery } from './qlte
 import { Event, EventEmitter, CancellationTokenSource, CancellationToken } from 'vscode';
 import { DisposableObject } from './pure/disposable-object';
 import { CodeQLCliServer } from './cli';
-import { getOnDiskWorkspaceFolders } from './helpers';
+import { getOnDiskWorkspaceFolders, showAndLogErrorMessage, showAndLogWarningMessage } from './helpers';
 import { testLogger } from './logging';
+import { DatabaseItem, DatabaseManager } from './databases';
 
 /**
  * Get the full path of the `.expected` file for the specified QL test.
@@ -57,13 +59,13 @@ function getTestOutputFile(testPath: string, extension: string): string {
  * A factory service that creates `QLTestAdapter` objects for workspace folders on demand.
  */
 export class QLTestAdapterFactory extends DisposableObject {
-  constructor(testHub: TestHub, cliServer: CodeQLCliServer) {
+  constructor(testHub: TestHub, cliServer: CodeQLCliServer, databaseManager: DatabaseManager) {
     super();
 
     // this will register a QLTestAdapter for each WorkspaceFolder
     this.push(new TestAdapterRegistrar(
       testHub,
-      workspaceFolder => new QLTestAdapter(workspaceFolder, cliServer)
+      workspaceFolder => new QLTestAdapter(workspaceFolder, cliServer, databaseManager)
     ));
   }
 }
@@ -91,7 +93,8 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
 
   constructor(
     public readonly workspaceFolder: vscode.WorkspaceFolder,
-    private readonly cliServer: CodeQLCliServer
+    private readonly cliServer: CodeQLCliServer,
+    private readonly databaseManager: DatabaseManager
   ) {
     super();
 
@@ -182,17 +185,77 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     testLogger.outputChannel.show(true);
 
     this.runningTask = this.track(new CancellationTokenSource());
+    const token = this.runningTask.token;
 
     this._testStates.fire({ type: 'started', tests: tests } as TestRunStartedEvent);
 
+    const currentDatabaseUri = this.databaseManager.currentDatabaseItem?.databaseUri;
+    const databasesUnderTest = this.databaseManager.databaseItems
+      .filter(database => tests.find(testPath => database.isAffectedByTest(testPath)));
+
+    await this.removeDatabasesBeforeTests(databasesUnderTest, token);
     try {
-      await this.runTests(tests, this.runningTask.token);
+      await this.runTests(tests, token);
+    } catch (e) {
+      // CodeQL testing can throw exception even in normal scenarios. For example, if the test run
+      // produces no output (which is normal), the testing command would throw an exception on
+      // unexpected EOF during json parsing. So nothing needs to be done here - all the relevant
+      // error information (if any) should have already been written to the test logger.
     }
-    catch (e) {
-      /**/
-    }
+    await this.reopenDatabasesAfterTests(databasesUnderTest, currentDatabaseUri, token);
+
     this._testStates.fire({ type: 'finished' } as TestRunFinishedEvent);
     this.clearTask();
+  }
+
+  private async removeDatabasesBeforeTests(
+    databasesUnderTest: DatabaseItem[], token: vscode.CancellationToken): Promise<void> {
+    for (const database of databasesUnderTest) {
+      try {
+        await this.databaseManager
+          .removeDatabaseItem(_ => { /* no progress reporting */ }, token, database);
+      } catch (e) {
+        // This method is invoked from Test Explorer UI, and testing indicates that Test
+        // Explorer UI swallows any thrown exception without reporting it to the user.
+        // So we need to display the error message ourselves and then rethrow.
+        showAndLogErrorMessage(`Cannot remove database ${database.name}: ${e}`);
+        throw e;
+      }
+    }
+  }
+
+  private async reopenDatabasesAfterTests(
+    databasesUnderTest: DatabaseItem[],
+    currentDatabaseUri: vscode.Uri | undefined,
+    token: vscode.CancellationToken): Promise<void> {
+    for (const closedDatabase of databasesUnderTest) {
+      const uri = closedDatabase.databaseUri;
+      if (await this.isFileAccessible(uri)) {
+        try {
+          const reopenedDatabase = await this.databaseManager
+            .openDatabase(_ => { /* no progress reporting */ }, token, uri);
+          await this.databaseManager.renameDatabaseItem(reopenedDatabase, closedDatabase.name);
+          if (currentDatabaseUri == uri) {
+            await this.databaseManager.setCurrentDatabaseItem(reopenedDatabase, true);
+          }
+        } catch (e) {
+          // This method is invoked from Test Explorer UI, and testing indicates that Test
+          // Explorer UI swallows any thrown exception without reporting it to the user.
+          // So we need to display the error message ourselves and then rethrow.
+          showAndLogWarningMessage(`Cannot reopen database ${uri}: ${e}`);
+          throw e;
+        }
+      }
+    }
+  }
+
+  private async isFileAccessible(uri: vscode.Uri): Promise<boolean> {
+    try {
+      await fs.access(uri.fsPath);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   private clearTask(): void {

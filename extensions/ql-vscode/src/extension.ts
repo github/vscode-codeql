@@ -526,7 +526,7 @@ async function activateWithInstalledDistribution(
   );
   if (testExplorerExtension) {
     const testHub = testExplorerExtension.exports;
-    const testAdapterFactory = new QLTestAdapterFactory(testHub, cliServer);
+    const testAdapterFactory = new QLTestAdapterFactory(testHub, cliServer, dbm);
     ctx.subscriptions.push(testAdapterFactory);
 
     const testUIService = new TestUIService(testHub);
