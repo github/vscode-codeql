@@ -28,9 +28,16 @@ export interface Logger {
   removeAdditionalLogLocation(location: string | undefined): void;
 
   /**
-   * The base location location where all side log files are stored.
+   * The base location where all side log files are stored.
    */
   getBaseLocation(): string | undefined;
+
+  /**
+   * Sets the location where logs are stored.
+   * @param storagePath The path where logs are stored.
+   * @param isCustomLogDirectory Whether the logs are stored in a custom, user-specified directory.
+   */
+  setLogStoragePath(storagePath: string, isCustomLogDirectory: boolean): Promise<void>;
 }
 
 export type ProgressReporter = Progress<{ message: string }>;
@@ -49,14 +56,14 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
     this.isCustomLogDirectory = false;
   }
 
-  setLogStoragePath(storagePath: string, isCustomLogDirectory: boolean): void {
+  async setLogStoragePath(storagePath: string, isCustomLogDirectory: boolean): Promise<void> {
     this.additionalLogLocationPath = path.join(storagePath, this.title);
 
     this.isCustomLogDirectory = isCustomLogDirectory;
 
     if (!this.isCustomLogDirectory) {
       // clear out any old state from previous runs
-      fs.remove(this.additionalLogLocationPath);
+      await fs.remove(this.additionalLogLocationPath);
     }
   }
 

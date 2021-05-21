@@ -48,7 +48,7 @@ describe('OutputChannelLogger tests', () => {
   });
 
   it('should create a side log in the workspace area', async () => {
-    logger.setLogStoragePath(tempFolders.storagePath.name, false);
+    await logger.setLogStoragePath(tempFolders.storagePath.name, false);
 
     await logger.log('xxx', { additionalLogLocation: 'first' });
     await logger.log('yyy', { additionalLogLocation: 'second' });
@@ -65,7 +65,7 @@ describe('OutputChannelLogger tests', () => {
   });
 
   it('should delete side logs on dispose', async () => {
-    logger.setLogStoragePath(tempFolders.storagePath.name, false);
+    await logger.setLogStoragePath(tempFolders.storagePath.name, false);
     await logger.log('xxx', { additionalLogLocation: 'first' });
     await logger.log('yyy', { additionalLogLocation: 'second' });
 
@@ -80,7 +80,7 @@ describe('OutputChannelLogger tests', () => {
   });
 
   it('should not delete side logs on dispose in a custom directory', async () => {
-    logger.setLogStoragePath(tempFolders.storagePath.name, true);
+    await logger.setLogStoragePath(tempFolders.storagePath.name, true);
     await logger.log('xxx', { additionalLogLocation: 'first' });
     await logger.log('yyy', { additionalLogLocation: 'second' });
 
@@ -95,7 +95,7 @@ describe('OutputChannelLogger tests', () => {
   });
 
   it('should remove an additional log location', async () => {
-    logger.setLogStoragePath(tempFolders.storagePath.name, false);
+    await logger.setLogStoragePath(tempFolders.storagePath.name, false);
     await logger.log('xxx', { additionalLogLocation: 'first' });
     await logger.log('yyy', { additionalLogLocation: 'second' });
 
@@ -110,7 +110,7 @@ describe('OutputChannelLogger tests', () => {
   });
 
   it('should not remove an additional log location in a custom directory', async () => {
-    logger.setLogStoragePath(tempFolders.storagePath.name, true);
+    await logger.setLogStoragePath(tempFolders.storagePath.name, true);
     await logger.log('xxx', { additionalLogLocation: 'first' });
     await logger.log('yyy', { additionalLogLocation: 'second' });
 
@@ -126,17 +126,17 @@ describe('OutputChannelLogger tests', () => {
 
   it('should delete an existing folder when setting the log storage path', async () => {
     fs.createFileSync(path.join(tempFolders.storagePath.name, 'test-logger', 'xxx'));
-    logger.setLogStoragePath(tempFolders.storagePath.name, false);
+    await logger.setLogStoragePath(tempFolders.storagePath.name, false);
     // should be empty dir
 
+    await waitABit();
     const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
-    // TODO: Why does this test pass? I'd expect the length to be 0 if it's correctly deleted the existing folder.
-    expect(fs.readdirSync(testLoggerFolder).length).to.equal(1);
+    expect(fs.existsSync(testLoggerFolder)).to.be.false;
   });
 
   it('should not delete an existing folder when setting the log storage path for a custom directory', async () => {
     fs.createFileSync(path.join(tempFolders.storagePath.name, 'test-logger', 'xxx'));
-    logger.setLogStoragePath(tempFolders.storagePath.name, true);
+    await logger.setLogStoragePath(tempFolders.storagePath.name, true);
     // should not be empty dir
 
     const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');

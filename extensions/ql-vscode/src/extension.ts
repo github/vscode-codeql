@@ -155,7 +155,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
   }
 
   const distributionConfigListener = new DistributionConfigListener();
-  initializeLogging(ctx);
+  await initializeLogging(ctx);
   await initializeTelemetry(extension, ctx);
   languageSupport.install();
 
@@ -767,10 +767,10 @@ function getContextStoragePath(ctx: ExtensionContext) {
   return ctx.storagePath || ctx.globalStoragePath;
 }
 
-function initializeLogging(ctx: ExtensionContext): void {
+async function initializeLogging(ctx: ExtensionContext): Promise<void> {
   const storagePath = getContextStoragePath(ctx);
-  logger.setLogStoragePath(storagePath, false);
-  ideServerLogger.setLogStoragePath(storagePath, false);
+  await logger.setLogStoragePath(storagePath, false);
+  await ideServerLogger.setLogStoragePath(storagePath, false);
   ctx.subscriptions.push(logger);
   ctx.subscriptions.push(queryServerLogger);
   ctx.subscriptions.push(ideServerLogger);

@@ -5,7 +5,7 @@ import { Disposable, CancellationToken, commands } from 'vscode';
 import { createMessageConnection, MessageConnection, RequestType } from 'vscode-jsonrpc';
 import * as cli from './cli';
 import { QueryServerConfig } from './config';
-import { Logger, ProgressReporter, queryServerLogger } from './logging';
+import { Logger, ProgressReporter } from './logging';
 import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './pure/messages';
 import * as messages from './pure/messages';
 import { ProgressCallback, ProgressTask } from './commandRunner';
@@ -89,13 +89,15 @@ export class QueryServerClient extends DisposableObject {
     this.evaluationResultCallbacks = {};
   }
 
-  initLogger() {
+  async initLogger() {
     let storagePath = this.opts.contextStoragePath;
     let isCustomLogDirectory = false;
     if (this.config.customLogDirectory) {
       try {
-        fs.mkdirSync(this.config.customLogDirectory);
-        helpers.showAndLogInformationMessage(`Storing query server logs to user-specified directory: ${this.config.customLogDirectory}.`);
+        if (!(await fs.pathExists(this.config.customLogDirectory))) {
+          await fs.mkdir(this.config.customLogDirectory);
+        }
+        this.logger.log(`Saving query server logs to user-specified directory: ${this.config.customLogDirectory}.`);
         storagePath = this.config.customLogDirectory;
         isCustomLogDirectory = true;
       } catch (e) {
@@ -103,12 +105,12 @@ export class QueryServerClient extends DisposableObject {
       }
     }
 
-    queryServerLogger.setLogStoragePath(storagePath, isCustomLogDirectory);
+    await this.logger.setLogStoragePath(storagePath, isCustomLogDirectory);
 
   }
 
   get logger(): Logger {
-    return queryServerLogger;
+    return this.opts.logger;
   }
 
   /** Stops the query server by disposing of the current server process. */
@@ -148,6 +150,7 @@ export class QueryServerClient extends DisposableObject {
 
   /** Starts a new query server process, sending progress messages to the given reporter. */
   private async startQueryServerImpl(progressReporter: ProgressReporter): Promise<void> {
+    await this.initLogger();
     const ramArgs = await this.cliServer.resolveRam(this.config.queryMemoryMb, progressReporter);
     const args = ['--threads', this.config.numThreads.toString()].concat(ramArgs);
 
@@ -172,7 +175,6 @@ export class QueryServerClient extends DisposableObject {
       args.push('-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9010,server=y,suspend=n,quiet=y');
     }
 
-    this.initLogger();
     const child = cli.spawnServer(
       this.config.codeQlPath,
       'CodeQL query server',
