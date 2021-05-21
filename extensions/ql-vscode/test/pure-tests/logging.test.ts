@@ -48,7 +48,7 @@ describe('OutputChannelLogger tests', () => {
   });
 
   it('should create a side log in the workspace area', async () => {
-    logger.init(tempFolders.storagePath.name);
+    logger.setLogStoragePath(tempFolders.storagePath.name, false);
 
     await logger.log('xxx', { additionalLogLocation: 'first' });
     await logger.log('yyy', { additionalLogLocation: 'second' });
@@ -65,7 +65,7 @@ describe('OutputChannelLogger tests', () => {
   });
 
   it('should delete side logs on dispose', async () => {
-    logger.init(tempFolders.storagePath.name);
+    logger.setLogStoragePath(tempFolders.storagePath.name, false);
     await logger.log('xxx', { additionalLogLocation: 'first' });
     await logger.log('yyy', { additionalLogLocation: 'second' });
 
@@ -79,8 +79,23 @@ describe('OutputChannelLogger tests', () => {
     expect(mockOutputChannel.dispose).to.have.been.calledWith();
   });
 
+  it('should not delete side logs on dispose in a custom directory', async () => {
+    logger.setLogStoragePath(tempFolders.storagePath.name, true);
+    await logger.log('xxx', { additionalLogLocation: 'first' });
+    await logger.log('yyy', { additionalLogLocation: 'second' });
+
+    const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
+    expect(fs.readdirSync(testLoggerFolder).length).to.equal(2);
+
+    await logger.dispose();
+    // need to wait for disposable-object to dispose
+    await waitABit();
+    expect(fs.readdirSync(testLoggerFolder).length).to.equal(2);
+    expect(mockOutputChannel.dispose).to.have.been.calledWith();
+  });
+
   it('should remove an additional log location', async () => {
-    logger.init(tempFolders.storagePath.name);
+    logger.setLogStoragePath(tempFolders.storagePath.name, false);
     await logger.log('xxx', { additionalLogLocation: 'first' });
     await logger.log('yyy', { additionalLogLocation: 'second' });
 
@@ -94,10 +109,35 @@ describe('OutputChannelLogger tests', () => {
     expect(fs.readFileSync(path.join(testLoggerFolder, 'second'), 'utf8')).to.equal('yyy\n');
   });
 
-  it('should delete an existing folder on init', async () => {
+  it('should not remove an additional log location in a custom directory', async () => {
+    logger.setLogStoragePath(tempFolders.storagePath.name, true);
+    await logger.log('xxx', { additionalLogLocation: 'first' });
+    await logger.log('yyy', { additionalLogLocation: 'second' });
+
+    const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
+    expect(fs.readdirSync(testLoggerFolder).length).to.equal(2);
+
+    await logger.removeAdditionalLogLocation('first');
+    // need to wait for disposable-object to dispose
+    await waitABit();
+    expect(fs.readdirSync(testLoggerFolder).length).to.equal(2);
+    expect(fs.readFileSync(path.join(testLoggerFolder, 'second'), 'utf8')).to.equal('yyy\n');
+  });
+
+  it('should delete an existing folder when setting the log storage path', async () => {
     fs.createFileSync(path.join(tempFolders.storagePath.name, 'test-logger', 'xxx'));
-    logger.init(tempFolders.storagePath.name);
+    logger.setLogStoragePath(tempFolders.storagePath.name, false);
     // should be empty dir
+
+    const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
+    // TODO: Why does this test pass? I'd expect the length to be 0 if it's correctly deleted the existing folder.
+    expect(fs.readdirSync(testLoggerFolder).length).to.equal(1);
+  });
+
+  it('should not delete an existing folder when setting the log storage path for a custom directory', async () => {
+    fs.createFileSync(path.join(tempFolders.storagePath.name, 'test-logger', 'xxx'));
+    logger.setLogStoragePath(tempFolders.storagePath.name, true);
+    // should not be empty dir
 
     const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
     expect(fs.readdirSync(testLoggerFolder).length).to.equal(1);
@@ -130,7 +170,7 @@ describe('OutputChannelLogger tests', () => {
     });
   }
 
-  function  waitABit(ms = 50): Promise<void> {
+  function waitABit(ms = 50): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 });
