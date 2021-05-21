@@ -142,7 +142,7 @@ export function nextSortDirection(direction: SortDirection | undefined, includeU
 }
 
 export function emptyQueryResultsMessage(): JSX.Element {
-  return <span>
+  return <div className='vscode-codeql__empty-query-message'><span>
     This query returned no results. If this isn&apos;t what you were expecting, and for effective query-writing tips, check out the <a href="https://codeql.github.com/docs/codeql-language-guides/">CodeQL language guides</a>.
-  </span>;
+  </span></div>;
 }
