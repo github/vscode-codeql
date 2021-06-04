@@ -70,6 +70,8 @@ import {
 } from './commandRunner';
 import { CodeQlStatusBarHandler } from './status-bar';
 
+import { Credentials } from './authentication';
+
 /**
  * extension.ts
  * ------------
@@ -709,6 +711,19 @@ async function activateWithInstalledDistribution(
       helpers.showAndLogInformationMessage(text);
     }));
 
+  /**
+   * Credentials for authenticating to GitHub.
+   * Currently unused, but will be useful in the future when making API calls.
+   */
+  const credentials = new Credentials();
+  await credentials.initialize(ctx);
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.authenticateToGitHub', async () => {
+      const octokit = await credentials.getOctokit();
+      const userInfo = await octokit.users.getAuthenticated();
+      helpers.showAndLogInformationMessage(`Authenticated to GitHub as user: ${userInfo.data.login}`);
+    }));
 
   logger.log('Starting language server.');
   ctx.subscriptions.push(client.start());

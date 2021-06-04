@@ -56,7 +56,7 @@ class AstViewerDataProvider extends DisposableObject implements TreeDataProvider
   }
 
   refresh(): void {
-    this._onDidChangeTreeData.fire();
+    this._onDidChangeTreeData.fire(undefined);
   }
   getChildren(item?: AstItem): ProviderResult<AstItem[]> {
     const children = item ? item.children : this.roots;
