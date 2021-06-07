@@ -71,7 +71,7 @@ export const onNavigation = new EventHandlerList<NavigationEvent>();
 /**
  * A minimal state container for displaying results.
  */
-class App extends React.Component<{}, ResultsViewState> {
+class App extends React.Component<Record<string, never>, ResultsViewState> {
   constructor(props: any) {
     super(props);
     this.state = {

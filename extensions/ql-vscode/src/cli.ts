@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import * as cpp from 'child-process-promise';
 import * as child_process from 'child_process';
 import * as fs from 'fs-extra';

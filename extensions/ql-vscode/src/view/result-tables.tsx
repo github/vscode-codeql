@@ -82,7 +82,7 @@ export class ResultTables
 
   private getResultSets(): ResultSet[] {
     const resultSets: ResultSet[] =
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore 2783
       this.props.rawResultSets.map((rs) => ({ t: 'RawResultSet', ...rs }));
 
@@ -336,7 +336,7 @@ export class ResultTables
   }
 }
 
-class ResultTable extends React.Component<ResultTableProps, {}> {
+class ResultTable extends React.Component<ResultTableProps, Record<string, never>> {
 
   constructor(props: ResultTableProps) {
     super(props);

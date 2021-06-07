@@ -216,7 +216,7 @@ describe('telemetry reporting', function() {
   it('should filter undesired properties from telemetry payload', async () => {
     await telemetryListener.initialize();
     // Reach into the internal appInsights client to grab our telemetry processor.
-    const telemetryProcessor: Function =
+    const telemetryProcessor: any =
       ((telemetryListener._reporter as any).appInsightsClient._telemetryProcessors)[0];
     const envelop = {
       tags: {

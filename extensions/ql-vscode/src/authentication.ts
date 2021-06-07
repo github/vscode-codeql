@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import * as vscode from 'vscode';
 import * as Octokit from '@octokit/rest';
 
