@@ -21,30 +21,24 @@ export class Credentials {
   static async initialize(context: vscode.ExtensionContext): Promise<Credentials> {
     const c = new Credentials();
     c.registerListeners(context);
-    await c.initializeOctokit(false);
+    await c.createOctokit(false);
     return c;
   }
 
-  private async initializeOctokit(createIfNone: boolean) {
-    // If `createIfNone` is true, a dialog pops up asking the user to authenticate as soon as the extension starts.
-    // Initializing with `createIfNone: false` for now, so we can have a more quiet prompt, i.e. a numbered label on
-    // the "accounts" icon in the activity bar.
+  private async createOctokit(createIfNone: boolean): Promise<Octokit.Octokit | undefined> {
     const session = await vscode.authentication.getSession(GITHUB_AUTH_PROVIDER_ID, SCOPES, { createIfNone: createIfNone });
 
-    if (session) {
-      this.octokit = new Octokit.Octokit({
+    return session
+      ? new Octokit.Octokit({
         auth: session.accessToken
-      });
-    } else {
-      this.octokit = undefined;
-    }
+      }) : undefined;
   }
 
   registerListeners(context: vscode.ExtensionContext): void {
     // Sessions are changed when a user logs in or logs out.
     context.subscriptions.push(vscode.authentication.onDidChangeSessions(async e => {
       if (e.provider.id === GITHUB_AUTH_PROVIDER_ID) {
-        await this.initializeOctokit(false);
+        this.octokit = await this.createOctokit(false);
       }
     }));
   }
@@ -54,11 +48,11 @@ export class Credentials {
       return this.octokit;
     }
 
-    await this.initializeOctokit(true);
+    this.octokit = await this.createOctokit(true);
     // octokit shouldn't be undefined, since we've set "createIfNone: true".
     // The following block is mainly here to prevent a compiler error.
     if (!this.octokit) {
-      throw new Error('Failed to initialize Octokit.');
+      throw new Error('Did not initialize Octokit.');
     }
     return this.octokit;
   }
