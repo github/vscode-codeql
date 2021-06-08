@@ -13,33 +13,38 @@ const SCOPES = ['repo'];
 export class Credentials {
   private octokit: Octokit.Octokit | undefined;
 
-  async initialize(context: vscode.ExtensionContext): Promise<void> {
-    this.registerListeners(context);
-    this.setOctokit();
+  // Explicitly make the constructor private, so that we can't accidentally call the constructor from outside the class
+  // without also initializing the class.
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  private constructor() { }
+
+  static async initialize(context: vscode.ExtensionContext): Promise<Credentials> {
+    const c = new Credentials();
+    c.registerListeners(context);
+    await c.initializeOctokit(false);
+    return c;
   }
 
-  private async setOctokit() {
-    // If `createIfNone` were true, a dialog would pop up asking the user to authenticate as soon as the extension starts.
-    // Setting `createIfNone` to false for now, so we can have a more "quiet" prompt, i.e. a numbered label on the "accounts"
-    // icon in the activity bar.
-    const session = await vscode.authentication.getSession(GITHUB_AUTH_PROVIDER_ID, SCOPES, { createIfNone: false });
+  private async initializeOctokit(createIfNone: boolean) {
+    // If `createIfNone` is true, a dialog pops up asking the user to authenticate as soon as the extension starts.
+    // Initializing with `createIfNone: false` for now, so we can have a more quiet prompt, i.e. a numbered label on
+    // the "accounts" icon in the activity bar.
+    const session = await vscode.authentication.getSession(GITHUB_AUTH_PROVIDER_ID, SCOPES, { createIfNone: createIfNone });
 
     if (session) {
       this.octokit = new Octokit.Octokit({
         auth: session.accessToken
       });
-
-      return;
+    } else {
+      this.octokit = undefined;
     }
-
-    this.octokit = undefined;
   }
 
   registerListeners(context: vscode.ExtensionContext): void {
     // Sessions are changed when a user logs in or logs out.
     context.subscriptions.push(vscode.authentication.onDidChangeSessions(async e => {
       if (e.provider.id === GITHUB_AUTH_PROVIDER_ID) {
-        await this.setOctokit();
+        await this.initializeOctokit(false);
       }
     }));
   }
@@ -49,12 +54,12 @@ export class Credentials {
       return this.octokit;
     }
 
-    const session = await vscode.authentication.getSession(GITHUB_AUTH_PROVIDER_ID, SCOPES, { createIfNone: true });
-    this.octokit = new Octokit.Octokit({
-      auth: session.accessToken
-    });
+    await this.initializeOctokit(true);
+    // octokit shouldn't be undefined, since we've set "createIfNone: true".
+    // The following block is mainly here to prevent a compiler error.
+    if (!this.octokit) {
+      throw new Error('Failed to initialize Octokit.');
+    }
     return this.octokit;
   }
 }
-
-

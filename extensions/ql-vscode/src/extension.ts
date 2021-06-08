@@ -714,8 +714,7 @@ async function activateWithInstalledDistribution(
    * Credentials for authenticating to GitHub.
    * Currently unused, but will be useful in the future when making API calls.
    */
-  const credentials = new Credentials();
-  await credentials.initialize(ctx);
+  const credentials = await Credentials.initialize(ctx);
 
   ctx.subscriptions.push(
     commandRunner('codeQL.authenticateToGitHub', async () => {
