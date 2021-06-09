@@ -28,6 +28,7 @@
     "onView:codeQLAstViewer",
     "onView:test-explorer",
     "onCommand:codeQL.checkForUpdatesToCLI",
+    "onCommand:codeQL.authenticateToGitHub",
     "onCommand:codeQLDatabases.chooseDatabaseFolder",
     "onCommand:codeQLDatabases.chooseDatabaseArchive",
     "onCommand:codeQLDatabases.chooseDatabaseInternet",
