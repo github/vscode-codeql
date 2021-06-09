@@ -149,7 +149,7 @@ export interface CodeQLExtensionInterface {
  * @returns CodeQLExtensionInterface
  */
 export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionInterface | {}> {
-  logger.log(`Starting ${extensionId} extension`);
+  void logger.log(`Starting ${extensionId} extension`);
   if (extension === undefined) {
     throw new Error(`Can't find extension ${extensionId}`);
   }
@@ -166,7 +166,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
   const shouldUpdateOnNextActivationKey = 'shouldUpdateOnNextActivation';
 
   registerErrorStubs([checkForUpdatesCommand], command => (async () => {
-    helpers.showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
+    void helpers.showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
   }));
 
   interface DistributionUpdateConfig {
@@ -178,7 +178,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
   async function installOrUpdateDistributionWithProgressTitle(progressTitle: string, config: DistributionUpdateConfig): Promise<void> {
     const minSecondsSinceLastUpdateCheck = config.isUserInitiated ? 0 : 86400;
     const noUpdatesLoggingFunc = config.shouldDisplayMessageWhenNoUpdates ?
-      helpers.showAndLogInformationMessage : async (message: string) => logger.log(message);
+      helpers.showAndLogInformationMessage : async (message: string) => void logger.log(message);
     const result = await distributionManager.checkForUpdatesToExtensionManagedDistribution(minSecondsSinceLastUpdateCheck);
 
     // We do want to auto update if there is no distribution at all
@@ -186,7 +186,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
 
     switch (result.kind) {
       case DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult:
-        logger.log('Didn\'t perform CodeQL CLI update check since a check was already performed within the previous ' +
+        void logger.log('Didn\'t perform CodeQL CLI update check since a check was already performed within the previous ' +
           `${minSecondsSinceLastUpdateCheck} seconds.`);
         break;
       case DistributionUpdateCheckResultKind.AlreadyUpToDate:
@@ -213,7 +213,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
             distributionManager.installExtensionManagedDistributionRelease(result.updatedRelease, progress));
 
           await ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
-          helpers.showAndLogInformationMessage(`CodeQL CLI updated to version "${result.updatedRelease.name}".`);
+          void helpers.showAndLogInformationMessage(`CodeQL CLI updated to version "${result.updatedRelease.name}".`);
         }
         break;
       default:
@@ -245,12 +245,12 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
         codeQlInstalled ? 'check for updates to' : 'install') + ' CodeQL CLI';
 
       if (e instanceof GithubRateLimitedError) {
-        alertFunction(`Rate limited while trying to ${taskDescription}. Please try again after ` +
+        void alertFunction(`Rate limited while trying to ${taskDescription}. Please try again after ` +
           `your rate limit window resets at ${e.rateLimitResetDate.toLocaleString(env.language)}.`);
       } else if (e instanceof GithubApiError) {
-        alertFunction(`Encountered GitHub API error while trying to ${taskDescription}. ` + e);
+        void alertFunction(`Encountered GitHub API error while trying to ${taskDescription}. ` + e);
       }
-      alertFunction(`Unable to ${taskDescription}. ` + e);
+      void alertFunction(`Unable to ${taskDescription}. ` + e);
     } finally {
       isInstallingOrUpdatingDistribution = false;
     }
@@ -260,7 +260,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     const result = await distributionManager.getDistribution();
     switch (result.kind) {
       case FindDistributionResultKind.CompatibleDistribution:
-        logger.log(`Found compatible version of CodeQL CLI (version ${result.version.raw})`);
+        void logger.log(`Found compatible version of CodeQL CLI (version ${result.version.raw})`);
         break;
       case FindDistributionResultKind.IncompatibleDistribution: {
         const fixGuidanceMessage = (() => {
@@ -275,16 +275,20 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
           }
         })();
 
-        helpers.showAndLogWarningMessage(`The current version of the CodeQL CLI (${result.version.raw}) ` +
-          'is incompatible with this extension. ' + fixGuidanceMessage);
+        void helpers.showAndLogWarningMessage(
+          `The current version of the CodeQL CLI (${result.version.raw}) ` +
+          `is incompatible with this extension. ${fixGuidanceMessage}`
+        );
         break;
       }
       case FindDistributionResultKind.UnknownCompatibilityDistribution:
-        helpers.showAndLogWarningMessage('Compatibility with the configured CodeQL CLI could not be determined. ' +
-          'You may experience problems using the extension.');
+        void helpers.showAndLogWarningMessage(
+          'Compatibility with the configured CodeQL CLI could not be determined. ' +
+          'You may experience problems using the extension.'
+        );
         break;
       case FindDistributionResultKind.NoDistribution:
-        helpers.showAndLogErrorMessage('The CodeQL CLI could not be found.');
+        void helpers.showAndLogErrorMessage('The CodeQL CLI could not be found.');
         break;
       default:
         assertNever(result);
@@ -311,7 +315,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     } else if (distributionResult.kind === FindDistributionResultKind.NoDistribution) {
       registerErrorStubs([checkForUpdatesCommand], command => async () => {
         const installActionName = 'Install CodeQL CLI';
-        const chosenAction = await helpers.showAndLogErrorMessage(`Can't execute ${command}: missing CodeQL CLI.`, {
+        const chosenAction = await void helpers.showAndLogErrorMessage(`Can't execute ${command}: missing CodeQL CLI.`, {
           items: [installActionName]
         });
         if (chosenAction === installActionName) {
@@ -357,13 +361,13 @@ async function activateWithInstalledDistribution(
   // of activation.
   errorStubs.forEach((stub) => stub.dispose());
 
-  logger.log('Initializing configuration listener...');
+  void logger.log('Initializing configuration listener...');
   const qlConfigurationListener = await QueryServerConfigListener.createQueryServerConfigListener(
     distributionManager
   );
   ctx.subscriptions.push(qlConfigurationListener);
 
-  logger.log('Initializing CodeQL cli server...');
+  void logger.log('Initializing CodeQL cli server...');
   const cliServer = new CodeQLCliServer(
     distributionManager,
     new CliConfigListener(),
@@ -374,7 +378,7 @@ async function activateWithInstalledDistribution(
   const statusBar = new CodeQlStatusBarHandler(cliServer, distributionConfigListener);
   ctx.subscriptions.push(statusBar);
 
-  logger.log('Initializing query server client.');
+  void logger.log('Initializing query server client.');
   const qs = new qsClient.QueryServerClient(
     qlConfigurationListener,
     cliServer,
@@ -391,10 +395,10 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(qs);
   await qs.startQueryServer();
 
-  logger.log('Initializing database manager.');
+  void logger.log('Initializing database manager.');
   const dbm = new DatabaseManager(ctx, qs, cliServer, logger);
   ctx.subscriptions.push(dbm);
-  logger.log('Initializing database panel.');
+  void logger.log('Initializing database panel.');
   const databaseUI = new DatabaseUI(
     dbm,
     qs,
@@ -404,7 +408,7 @@ async function activateWithInstalledDistribution(
   databaseUI.init();
   ctx.subscriptions.push(databaseUI);
 
-  logger.log('Initializing query history manager.');
+  void logger.log('Initializing query history manager.');
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
   ctx.subscriptions.push(queryHistoryConfigurationListener);
   const showResults = async (item: CompletedQuery) =>
@@ -419,11 +423,11 @@ async function activateWithInstalledDistribution(
       showResultsForComparison(from, to),
   );
   ctx.subscriptions.push(qhm);
-  logger.log('Initializing results panel interface.');
+  void logger.log('Initializing results panel interface.');
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
   ctx.subscriptions.push(intm);
 
-  logger.log('Initializing compare panel interface.');
+  void logger.log('Initializing compare panel interface.');
   const cmpm = new CompareInterfaceManager(
     ctx,
     dbm,
@@ -433,7 +437,7 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(cmpm);
 
-  logger.log('Initializing source archive filesystem provider.');
+  void logger.log('Initializing source archive filesystem provider.');
   archiveFilesystemProvider.activate(ctx);
 
   async function showResultsForComparison(
@@ -443,7 +447,7 @@ async function activateWithInstalledDistribution(
     try {
       await cmpm.showResults(from, to);
     } catch (e) {
-      helpers.showAndLogErrorMessage(e.message);
+      void helpers.showAndLogErrorMessage(e.message);
     }
   }
 
@@ -491,7 +495,7 @@ async function activateWithInstalledDistribution(
         const uri = Uri.file(resolved.resolvedPath);
         await window.showTextDocument(uri, { preview: false });
       } else {
-        helpers.showAndLogErrorMessage(
+        void helpers.showAndLogErrorMessage(
           'Jumping from a .qlref file to the .ql file it references is not '
           + 'supported with the CLI version you are running.\n'
           + `Please upgrade your CLI to version ${
@@ -503,7 +507,7 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(tmpDirDisposal);
 
-  logger.log('Initializing CodeQL language server.');
+  void logger.log('Initializing CodeQL language server.');
   const client = new LanguageClient(
     'CodeQL Language Server',
     () => spawnIdeServer(qlConfigurationListener),
@@ -521,7 +525,7 @@ async function activateWithInstalledDistribution(
     true
   );
 
-  logger.log('Initializing QLTest interface.');
+  void logger.log('Initializing QLTest interface.');
   const testExplorerExtension = extensions.getExtension<TestHub>(
     testExplorerExtensionId
   );
@@ -534,7 +538,7 @@ async function activateWithInstalledDistribution(
     ctx.subscriptions.push(testUIService);
   }
 
-  logger.log('Registering top-level command palette commands.');
+  void logger.log('Registering top-level command palette commands.');
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       'codeQL.runQuery',
@@ -650,7 +654,7 @@ async function activateWithInstalledDistribution(
       token: CancellationToken
     ) => {
       await qs.restartQueryServer(progress, token);
-      helpers.showAndLogInformationMessage('CodeQL Query Server restarted.', {
+      void helpers.showAndLogInformationMessage('CodeQL Query Server restarted.', {
         outputLogger: queryServerLogger,
       });
     }, {
@@ -705,16 +709,16 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(
     commandRunner('codeQL.copyVersion', async () => {
       const text = `CodeQL extension version: ${extension?.packageJSON.version} \nCodeQL CLI version: ${await cliServer.getVersion()} \nPlatform: ${os.platform()} ${os.arch()}`;
-      env.clipboard.writeText(text);
-      helpers.showAndLogInformationMessage(text);
+      await env.clipboard.writeText(text);
+      void helpers.showAndLogInformationMessage(text);
     }));
 
 
-  logger.log('Starting language server.');
+  void logger.log('Starting language server.');
   ctx.subscriptions.push(client.start());
 
   // Jump-to-definition and find-references
-  logger.log('Registering jump-to-definition handlers.');
+  void logger.log('Registering jump-to-definition handlers.');
   languages.registerDefinitionProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
     new TemplateQueryDefinitionProvider(cliServer, qs, dbm)
@@ -746,9 +750,9 @@ async function activateWithInstalledDistribution(
     title: 'Calculate AST'
   }));
 
-  commands.executeCommand('codeQLDatabases.removeOrphanedDatabases');
+  await commands.executeCommand('codeQLDatabases.removeOrphanedDatabases');
 
-  logger.log('Successfully finished extension initialization.');
+  void logger.log('Successfully finished extension initialization.');
 
   return {
     ctx,

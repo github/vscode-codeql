@@ -126,16 +126,16 @@ export function commandRunner(
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
-          logger.log(errorMessage);
+          void logger.log(errorMessage);
         } else {
-          showAndLogWarningMessage(errorMessage);
+          void showAndLogWarningMessage(errorMessage);
         }
       } else {
         // Include the full stack in the error log only.
         const fullMessage = e.stack
           ? `${errorMessage}\n${e.stack}`
           : errorMessage;
-        showAndLogErrorMessage(errorMessage, {
+        void showAndLogErrorMessage(errorMessage, {
           fullMessage
         });
       }
@@ -177,16 +177,16 @@ export function commandRunnerWithProgress<R>(
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
-          logger.log(errorMessage);
+          void logger.log(errorMessage);
         } else {
-          showAndLogWarningMessage(errorMessage);
+          void showAndLogWarningMessage(errorMessage);
         }
       } else {
         // Include the full stack in the error log only.
         const fullMessage = e.stack
           ? `${errorMessage}\n${e.stack}`
           : errorMessage;
-        showAndLogErrorMessage(errorMessage, {
+        void showAndLogErrorMessage(errorMessage, {
           fullMessage
         });
       }

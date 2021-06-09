@@ -224,14 +224,14 @@ export async function jumpToLocation(
     } catch (e) {
       if (e instanceof Error) {
         if (e.message.match(/File not found/)) {
-          Window.showErrorMessage(
+          void Window.showErrorMessage(
             'Original file of this result is not in the database\'s source archive.'
           );
         } else {
-          logger.log(`Unable to handleMsgFromView: ${e.message}`);
+          void logger.log(`Unable to handleMsgFromView: ${e.message}`);
         }
       } else {
-        logger.log(`Unable to handleMsgFromView: ${e}`);
+        void logger.log(`Unable to handleMsgFromView: ${e}`);
       }
     }
   }

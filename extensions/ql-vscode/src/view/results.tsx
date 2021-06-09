@@ -102,7 +102,7 @@ class App extends React.Component<{}, ResultsViewState> {
           queryPath: msg.queryPath,
         });
 
-        this.loadResults();
+        void this.loadResults();
         break;
       case 'showInterpretedPage':
         this.updateStateWithNewResultsInfo({
@@ -134,7 +134,7 @@ class App extends React.Component<{}, ResultsViewState> {
           queryName: msg.queryName,
           queryPath: msg.queryPath,
         });
-        this.loadResults();
+        void this.loadResults();
         break;
       case 'resultsUpdating':
         this.setState({

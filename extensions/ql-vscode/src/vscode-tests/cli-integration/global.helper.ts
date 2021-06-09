@@ -27,7 +27,7 @@ export default function(mocha: Mocha) {
       if (!fs.existsSync(dbLoc)) {
         try {
           await new Promise((resolve, reject) => {
-            fetch(DB_URL).then(response => {
+            return fetch(DB_URL).then(response => {
               const dest = fs.createWriteStream(dbLoc);
               response.body.pipe(dest);
 

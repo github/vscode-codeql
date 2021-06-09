@@ -234,7 +234,7 @@ export class DatabaseUI extends DisposableObject {
   }
 
   init() {
-    logger.log('Registering database panel commands.');
+    void logger.log('Registering database panel commands.');
     this.push(
       commandRunnerWithProgress(
         'codeQL.setCurrentDatabase',
@@ -369,20 +369,20 @@ export class DatabaseUI extends DisposableObject {
     try {
       return await this.chooseAndSetDatabase(true, progress, token);
     } catch (e) {
-      showAndLogErrorMessage(e.message);
+      void showAndLogErrorMessage(e.message);
       return undefined;
     }
   };
 
   handleRemoveOrphanedDatabases = async (): Promise<void> => {
-    logger.log('Removing orphaned databases from workspace storage.');
+    void logger.log('Removing orphaned databases from workspace storage.');
     let dbDirs = undefined;
 
     if (
       !(await fs.pathExists(this.storagePath)) ||
       !(await fs.stat(this.storagePath)).isDirectory()
     ) {
-      logger.log('Missing or invalid storage directory. Not trying to remove orphaned databases.');
+      void logger.log('Missing or invalid storage directory. Not trying to remove orphaned databases.');
       return;
     }
 
@@ -403,7 +403,7 @@ export class DatabaseUI extends DisposableObject {
     dbDirs = await asyncFilter(dbDirs, isLikelyDatabaseRoot);
 
     if (!dbDirs.length) {
-      logger.log('No orphaned databases found.');
+      void logger.log('No orphaned databases found.');
       return;
     }
 
@@ -412,8 +412,8 @@ export class DatabaseUI extends DisposableObject {
     await Promise.all(
       dbDirs.map(async dbDir => {
         try {
-          logger.log(`Deleting orphaned database '${dbDir}'.`);
-          await fs.rmdir(dbDir, { recursive: true } as any);  // typings doesn't recognize the options argument
+          void logger.log(`Deleting orphaned database '${dbDir}'.`);
+          await fs.remove(dbDir);
         } catch (e) {
           failures.push(`${path.basename(dbDir)}`);
         }
@@ -422,7 +422,7 @@ export class DatabaseUI extends DisposableObject {
 
     if (failures.length) {
       const dirname = path.dirname(failures[0]);
-      showAndLogErrorMessage(
+      void showAndLogErrorMessage(
         `Failed to delete unused databases (${
         failures.join(', ')
         }).\nTo delete unused databases, please remove them manually from the storage folder ${dirname}.`
@@ -438,7 +438,7 @@ export class DatabaseUI extends DisposableObject {
     try {
       return await this.chooseAndSetDatabase(false, progress, token);
     } catch (e) {
-      showAndLogErrorMessage(e.message);
+      void showAndLogErrorMessage(e.message);
       return undefined;
     }
   };
@@ -617,7 +617,7 @@ export class DatabaseUI extends DisposableObject {
     });
 
     if (newName) {
-      this.databaseManager.renameDatabaseItem(databaseItem, newName);
+      await this.databaseManager.renameDatabaseItem(databaseItem, newName);
     }
   };
 

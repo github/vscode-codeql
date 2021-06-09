@@ -218,7 +218,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
         // This method is invoked from Test Explorer UI, and testing indicates that Test
         // Explorer UI swallows any thrown exception without reporting it to the user.
         // So we need to display the error message ourselves and then rethrow.
-        showAndLogErrorMessage(`Cannot remove database ${database.name}: ${e}`);
+        void showAndLogErrorMessage(`Cannot remove database ${database.name}: ${e}`);
         throw e;
       }
     }
@@ -242,7 +242,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
           // This method is invoked from Test Explorer UI, and testing indicates that Test
           // Explorer UI swallows any thrown exception without reporting it to the user.
           // So we need to display the error message ourselves and then rethrow.
-          showAndLogWarningMessage(`Cannot reopen database ${uri}: ${e}`);
+          void showAndLogWarningMessage(`Cannot reopen database ${uri}: ${e}`);
           throw e;
         }
       }
@@ -268,7 +268,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
 
   public cancel(): void {
     if (this.runningTask !== undefined) {
-      testLogger.log('Cancelling test run...');
+      void testLogger.log('Cancelling test run...');
       this.runningTask.cancel();
       this.clearTask();
     }
@@ -288,7 +288,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
       let message: string | undefined;
       if (event.failureDescription || event.diff?.length) {
         message = ['', `${state}: ${event.test}`, event.failureDescription || event.diff?.join('\n'), ''].join('\n');
-        testLogger.log(message);
+        void testLogger.log(message);
       }
       this._testStates.fire({
         type: 'test',

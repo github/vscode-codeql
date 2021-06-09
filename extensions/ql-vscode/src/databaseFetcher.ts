@@ -51,8 +51,8 @@ export async function promptImportInternetDatabase(
   );
 
   if (item) {
-    commands.executeCommand('codeQLDatabases.focus');
-    showAndLogInformationMessage('Database downloaded and imported successfully.');
+    await commands.executeCommand('codeQLDatabases.focus');
+    void showAndLogInformationMessage('Database downloaded and imported successfully.');
   }
   return item;
 
@@ -91,8 +91,8 @@ export async function promptImportLgtmDatabase(
         token
       );
       if (item) {
-        commands.executeCommand('codeQLDatabases.focus');
-        showAndLogInformationMessage('Database downloaded and imported successfully.');
+        await commands.executeCommand('codeQLDatabases.focus');
+        void showAndLogInformationMessage('Database downloaded and imported successfully.');
       }
       return item;
     }
@@ -125,8 +125,8 @@ export async function importArchiveDatabase(
       token
     );
     if (item) {
-      commands.executeCommand('codeQLDatabases.focus');
-      showAndLogInformationMessage('Database unzipped and imported successfully.');
+      await commands.executeCommand('codeQLDatabases.focus');
+      void showAndLogInformationMessage('Database unzipped and imported successfully.');
     }
     return item;
   } catch (e) {
@@ -433,7 +433,7 @@ export async function convertToDatabaseUrl(lgtmUrl: string) {
       language,
     ].join('/')}`;
   } catch (e) {
-    logger.log(`Error: ${e.message}`);
+    void logger.log(`Error: ${e.message}`);
     throw new Error(`Invalid LGTM URL: ${lgtmUrl}`);
   }
 }
