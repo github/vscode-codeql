@@ -21,12 +21,12 @@ export class Credentials {
   static async initialize(context: vscode.ExtensionContext): Promise<Credentials> {
     const c = new Credentials();
     c.registerListeners(context);
-    await c.createOctokit(false);
+    c.octokit = await c.createOctokit(false);
     return c;
   }
 
   private async createOctokit(createIfNone: boolean): Promise<Octokit.Octokit | undefined> {
-    const session = await vscode.authentication.getSession(GITHUB_AUTH_PROVIDER_ID, SCOPES, { createIfNone: createIfNone });
+    const session = await vscode.authentication.getSession(GITHUB_AUTH_PROVIDER_ID, SCOPES, { createIfNone });
 
     return session
       ? new Octokit.Octokit({
