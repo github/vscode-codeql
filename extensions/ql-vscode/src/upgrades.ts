@@ -103,7 +103,7 @@ async function checkAndConfirmDatabaseUpgrade(
     descriptionMessage += `Would perform upgrade: ${script.description}\n`;
     descriptionMessage += `\t-> Compatibility: ${script.compatibility}\n`;
   }
-  logger.log(descriptionMessage);
+  void logger.log(descriptionMessage);
 
 
   // If the quiet flag is set, do the upgrade without a popup.
@@ -187,35 +187,35 @@ export async function upgradeDatabaseExplicit(
       compileUpgradeResult = await compileDatabaseUpgrade(qs, db, finalDbscheme, scripts, currentUpgradeTmp, progress, token);
     }
     catch (e) {
-      showAndLogErrorMessage(`Compilation of database upgrades failed: ${e}`);
+      void showAndLogErrorMessage(`Compilation of database upgrades failed: ${e}`);
       return;
     }
     finally {
-      qs.logger.log('Done compiling database upgrade.');
+      void qs.logger.log('Done compiling database upgrade.');
     }
 
     if (!compileUpgradeResult.compiledUpgrades) {
       const error = compileUpgradeResult.error || '[no error message available]';
-      showAndLogErrorMessage(`Compilation of database upgrades failed: ${error}`);
+      void showAndLogErrorMessage(`Compilation of database upgrades failed: ${error}`);
       return;
     }
 
     await checkAndConfirmDatabaseUpgrade(compileUpgradeResult.compiledUpgrades, db, qs.cliServer.quiet);
 
     try {
-      qs.logger.log('Running the following database upgrade:');
+      void qs.logger.log('Running the following database upgrade:');
 
       getUpgradeDescriptions(compileUpgradeResult.compiledUpgrades).map(s => s.description).join('\n');
       return await runDatabaseUpgrade(qs, db, compileUpgradeResult.compiledUpgrades, progress, token);
     }
     catch (e) {
-      showAndLogErrorMessage(`Database upgrade failed: ${e}`);
+      void showAndLogErrorMessage(`Database upgrade failed: ${e}`);
       return;
     } finally {
-      qs.logger.log('Done running database upgrade.');
+      void qs.logger.log('Done running database upgrade.');
     }
   } finally {
-    currentUpgradeTmp.cleanup();
+    await currentUpgradeTmp.cleanup();
   }
 }
 

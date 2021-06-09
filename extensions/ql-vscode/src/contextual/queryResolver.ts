@@ -37,7 +37,7 @@ export async function resolveQueries(cli: CodeQLCliServer, qlpack: string, keyTy
 
   const queries = await cli.resolveQueriesInSuite(suiteFile, helpers.getOnDiskWorkspaceFolders());
   if (queries.length === 0) {
-    helpers.showAndLogErrorMessage(
+    void helpers.showAndLogErrorMessage(
       `No ${nameOfKeyType(keyType)} queries (tagged "${tagOfKeyType(keyType)}") could be found in the current library path. \
       Try upgrading the CodeQL libraries. If that doesn't work, then ${nameOfKeyType(keyType)} queries are not yet available \
       for this language.`

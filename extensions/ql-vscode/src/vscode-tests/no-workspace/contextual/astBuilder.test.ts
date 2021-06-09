@@ -135,7 +135,7 @@ describe('AstBuilder', () => {
     };
 
     const astBuilder = createAstBuilder();
-    expect(astBuilder.getRoots()).to.be.rejectedWith('AST is invalid');
+    await expect(astBuilder.getRoots()).to.be.rejectedWith('AST is invalid');
   });
 
   function createAstBuilder() {

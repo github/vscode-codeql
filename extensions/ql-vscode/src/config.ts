@@ -226,7 +226,7 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
       return undefined;
     }
     if (memory == 0 || typeof (memory) !== 'number') {
-      logger.log(`Ignoring value '${memory}' for setting ${MEMORY_SETTING.qualifiedName}`);
+      void logger.log(`Ignoring value '${memory}' for setting ${MEMORY_SETTING.qualifiedName}`);
       return undefined;
     }
     return memory;

@@ -105,7 +105,7 @@ async function main() {
   }
 }
 
-main();
+void main();
 
 
 function getLaunchArgs(dir: TestDir) {

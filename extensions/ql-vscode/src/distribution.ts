@@ -153,7 +153,7 @@ export class DistributionManager implements DistributionProvider {
     // Check config setting, then extension specific distribution, then PATH.
     if (this.config.customCodeQlPath) {
       if (!await fs.pathExists(this.config.customCodeQlPath)) {
-        showAndLogErrorMessage(`The CodeQL executable path is specified as "${this.config.customCodeQlPath}" ` +
+        void showAndLogErrorMessage(`The CodeQL executable path is specified as "${this.config.customCodeQlPath}" ` +
           'by a configuration setting, but a CodeQL executable could not be found at that path. Please check ' +
           'that a CodeQL executable exists at the specified path or remove the setting.');
         return undefined;
@@ -191,7 +191,7 @@ export class DistributionManager implements DistributionProvider {
           };
         }
       }
-      logger.log('INFO: Could not find CodeQL on path.');
+      void logger.log('INFO: Could not find CodeQL on path.');
     }
 
     return undefined;
@@ -276,7 +276,7 @@ class ExtensionSpecificDistributionManager {
       try {
         await this.removeDistribution();
       } catch (e) {
-        logger.log('WARNING: Tried to remove corrupted CodeQL CLI at ' +
+        void logger.log('WARNING: Tried to remove corrupted CodeQL CLI at ' +
           `${this.getDistributionStoragePath()} but encountered an error: ${e}.`);
       }
     }
@@ -313,7 +313,7 @@ class ExtensionSpecificDistributionManager {
     progressCallback?: ProgressCallback): Promise<void> {
     await this.downloadDistribution(release, progressCallback);
     // Store the installed release within the global extension state.
-    this.storeInstalledRelease(release);
+    await this.storeInstalledRelease(release);
   }
 
   private async downloadDistribution(release: Release,
@@ -321,7 +321,7 @@ class ExtensionSpecificDistributionManager {
     try {
       await this.removeDistribution();
     } catch (e) {
-      logger.log(`Tried to clean up old version of CLI at ${this.getDistributionStoragePath()} ` +
+      void logger.log(`Tried to clean up old version of CLI at ${this.getDistributionStoragePath()} ` +
         `but encountered an error: ${e}.`);
     }
 
@@ -332,7 +332,7 @@ class ExtensionSpecificDistributionManager {
       throw new Error(`Invariant violation: chose a release to install that didn't have ${requiredAssetName}`);
     }
     if (assets.length > 1) {
-      logger.log('WARNING: chose a release with more than one asset to install, found ' +
+      void logger.log('WARNING: chose a release with more than one asset to install, found ' +
         assets.map(asset => asset.name).join(', '));
     }
 
@@ -355,7 +355,7 @@ class ExtensionSpecificDistributionManager {
 
       await this.bumpDistributionFolderIndex();
 
-      logger.log(`Extracting CodeQL CLI to ${this.getDistributionStoragePath()}`);
+      void logger.log(`Extracting CodeQL CLI to ${this.getDistributionStoragePath()}`);
       await extractZipArchive(archivePath, this.getDistributionStoragePath());
     } finally {
       await fs.remove(tmpDirectory);
@@ -368,7 +368,7 @@ class ExtensionSpecificDistributionManager {
    * This should not be called for a distribution that is currently in use, as remove may fail.
    */
   private async removeDistribution(): Promise<void> {
-    this.storeInstalledRelease(undefined);
+    await this.storeInstalledRelease(undefined);
     if (await fs.pathExists(this.getDistributionStoragePath())) {
       await fs.remove(this.getDistributionStoragePath());
     }
@@ -376,7 +376,7 @@ class ExtensionSpecificDistributionManager {
 
   private async getLatestRelease(): Promise<Release> {
     const requiredAssetName = DistributionManager.getRequiredAssetName();
-    logger.log(`Searching for latest release including ${requiredAssetName}.`);
+    void logger.log(`Searching for latest release including ${requiredAssetName}.`);
     return this.createReleasesApiConsumer().getLatestRelease(
       this.versionRange,
       this.config.includePrerelease,
@@ -384,11 +384,11 @@ class ExtensionSpecificDistributionManager {
         const matchingAssets = release.assets.filter(asset => asset.name === requiredAssetName);
         if (matchingAssets.length === 0) {
           // For example, this could be a release with no platform-specific assets.
-          logger.log(`INFO: Ignoring a release with no assets named ${requiredAssetName}`);
+          void logger.log(`INFO: Ignoring a release with no assets named ${requiredAssetName}`);
           return false;
         }
         if (matchingAssets.length > 1) {
-          logger.log(`WARNING: Ignoring a release with more than one asset named ${requiredAssetName}`);
+          void logger.log(`WARNING: Ignoring a release with more than one asset named ${requiredAssetName}`);
           return false;
         }
         return true;
@@ -707,16 +707,14 @@ export async function getExecutableFromDirectory(directory: string, warnWhenNotF
     return alternateExpectedLauncherPath;
   }
   if (warnWhenNotFound) {
-    logger.log(`WARNING: Expected to find a CodeQL CLI executable at ${expectedLauncherPath} but one was not found. ` +
+    void logger.log(`WARNING: Expected to find a CodeQL CLI executable at ${expectedLauncherPath} but one was not found. ` +
       'Will try PATH.');
   }
   return undefined;
 }
 
 function warnDeprecatedLauncher() {
-
-  showAndLogWarningMessage(
-
+  void showAndLogWarningMessage(
     `The "${deprecatedCodeQlLauncherName()!}" launcher has been deprecated and will be removed in a future version. ` +
     `Please use "${codeQlLauncherName()}" instead. It is recommended to update to the latest CodeQL binaries.`
   );

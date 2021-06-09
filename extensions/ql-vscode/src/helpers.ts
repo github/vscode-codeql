@@ -77,7 +77,7 @@ async function internalShowAndLog(
   fullMessage?: string
 ): Promise<string | undefined> {
   const label = 'Show Log';
-  outputLogger.log(fullMessage || message);
+  void outputLogger.log(fullMessage || message);
   const result = await fn(message, label, ...items);
   if (result === label) {
     outputLogger.show();
@@ -259,11 +259,11 @@ export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemeP
   const packs: { packDir: string | undefined; packName: string }[] =
     Object.entries(qlpacks).map(([packName, dirs]) => {
       if (dirs.length < 1) {
-        logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has no directories`);
+        void logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has no directories`);
         return { packName, packDir: undefined };
       }
       if (dirs.length > 1) {
-        logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has more than one directory; arbitrarily choosing the first`);
+        void logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has more than one directory; arbitrarily choosing the first`);
       }
       return {
         packName,
@@ -292,7 +292,7 @@ export async function getPrimaryDbscheme(datasetFolder: string): Promise<string>
   const dbscheme = dbschemes[0];
 
   if (dbschemes.length > 1) {
-    Window.showErrorMessage(`Found multiple dbschemes in ${datasetFolder} during quick query; arbitrarily choosing the first, ${dbscheme}, to decide what library to use.`);
+    void Window.showErrorMessage(`Found multiple dbschemes in ${datasetFolder} during quick query; arbitrarily choosing the first, ${dbscheme}, to decide what library to use.`);
   }
   return dbscheme;
 }

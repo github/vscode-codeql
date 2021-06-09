@@ -30,7 +30,7 @@ class ServerProcess implements Disposable {
   }
 
   dispose(): void {
-    this.logger.log('Stopping query server...');
+    void this.logger.log('Stopping query server...');
     this.connection.dispose();
     this.child.stdin!.end();
     this.child.stderr!.destroy();
@@ -38,7 +38,7 @@ class ServerProcess implements Disposable {
 
     // On Windows, we usually have to terminate the process before closing its stdout.
     this.child.stdout!.destroy();
-    this.logger.log('Stopped query server.');
+    void this.logger.log('Stopped query server.');
   }
 }
 
@@ -97,11 +97,11 @@ export class QueryServerClient extends DisposableObject {
         if (!(await fs.pathExists(this.config.customLogDirectory))) {
           await fs.mkdir(this.config.customLogDirectory);
         }
-        this.logger.log(`Saving query server logs to user-specified directory: ${this.config.customLogDirectory}.`);
+        void this.logger.log(`Saving query server logs to user-specified directory: ${this.config.customLogDirectory}.`);
         storagePath = this.config.customLogDirectory;
         isCustomLogDirectory = true;
       } catch (e) {
-        helpers.showAndLogErrorMessage(`${this.config.customLogDirectory} is not a valid directory. Logs will be stored in a temporary workspace directory instead.`);
+        void helpers.showAndLogErrorMessage(`${this.config.customLogDirectory} is not a valid directory. Logs will be stored in a temporary workspace directory instead.`);
       }
     }
 
@@ -118,7 +118,7 @@ export class QueryServerClient extends DisposableObject {
     if (this.serverProcess !== undefined) {
       this.disposeAndStopTracking(this.serverProcess);
     } else {
-      this.logger.log('No server process to be stopped.');
+      void this.logger.log('No server process to be stopped.');
     }
   }
 
@@ -192,9 +192,8 @@ export class QueryServerClient extends DisposableObject {
     const connection = createMessageConnection(child.stdout, child.stdin);
     connection.onRequest(completeQuery, res => {
       if (!(res.runId in this.evaluationResultCallbacks)) {
-        this.logger.log(`No callback associated with run id ${res.runId}, continuing without executing any callback`);
-      }
-      else {
+        void this.logger.log(`No callback associated with run id ${res.runId}, continuing without executing any callback`);
+      } else {
         const baseLocation = this.logger.getBaseLocation();
         if (baseLocation && this.activeQueryName) {
           res.logFileLocation = path.join(baseLocation, this.activeQueryName);

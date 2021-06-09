@@ -44,7 +44,7 @@ export class TestUIService extends UIService implements TestController {
   constructor(private readonly testHub: TestHub) {
     super();
 
-    logger.log('Registering CodeQL test panel commands.');
+    void logger.log('Registering CodeQL test panel commands.');
     this.registerCommand('codeQLTests.showOutputDifferences', this.showOutputDifferences);
     this.registerCommand('codeQLTests.acceptOutput', this.acceptOutput);
 
@@ -90,7 +90,7 @@ export class TestUIService extends UIService implements TestController {
       };
 
       if (!await fs.pathExists(expectedPath)) {
-        showAndLogWarningMessage(`'${path.basename(expectedPath)}' does not exist. Creating an empty file.`);
+        void showAndLogWarningMessage(`'${path.basename(expectedPath)}' does not exist. Creating an empty file.`);
         await fs.createFile(expectedPath);
       }
 
