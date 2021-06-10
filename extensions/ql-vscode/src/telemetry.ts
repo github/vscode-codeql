@@ -209,6 +209,8 @@ export let telemetryListener: TelemetryListener;
 
 export async function initializeTelemetry(extension: Extension<any>, ctx: ExtensionContext): Promise<void> {
   telemetryListener = new TelemetryListener(extension.id, extension.packageJSON.version, key, ctx);
-  await telemetryListener.initialize();
+  // do not await initialization, since doing so will sometimes cause a modal popup.
+  // this is a particular problem during integration tests, which will hang if a modal popup is displayed.
+  void telemetryListener.initialize();
   ctx.subscriptions.push(telemetryListener);
 }

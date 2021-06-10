@@ -763,7 +763,7 @@ export class DatabaseManager extends DisposableObject {
     item: DatabaseItem
   ) {
     this._databaseItems.push(item);
-    this.updatePersistedDatabaseList();
+    await this.updatePersistedDatabaseList();
 
     // Add this database item to the allow-list
     // Database items reconstituted from persisted state
@@ -780,7 +780,7 @@ export class DatabaseManager extends DisposableObject {
 
   public async renameDatabaseItem(item: DatabaseItem, newName: string) {
     item.name = newName;
-    this.updatePersistedDatabaseList();
+    await this.updatePersistedDatabaseList();
     this._onDidChangeDatabaseItem.fire({
       // pass undefined so that the entire tree is rebuilt in order to re-sort
       item: undefined,
@@ -800,7 +800,7 @@ export class DatabaseManager extends DisposableObject {
     if (index >= 0) {
       this._databaseItems.splice(index, 1);
     }
-    this.updatePersistedDatabaseList();
+    await this.updatePersistedDatabaseList();
 
     // Delete folder from workspace, if it is still there
     const folderIndex = (vscode.workspace.workspaceFolders || []).findIndex(
@@ -862,8 +862,8 @@ export class DatabaseManager extends DisposableObject {
       this._currentDatabaseItem.databaseUri.toString(true) : undefined);
   }
 
-  private updatePersistedDatabaseList(): void {
-    void this.ctx.workspaceState.update(DB_LIST, this._databaseItems.map(item => item.getPersistedState()));
+  private async updatePersistedDatabaseList(): Promise<void> {
+    await this.ctx.workspaceState.update(DB_LIST, this._databaseItems.map(item => item.getPersistedState()));
   }
 
   private isExtensionControlledLocation(uri: vscode.Uri) {
