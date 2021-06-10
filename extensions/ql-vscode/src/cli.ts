@@ -976,6 +976,7 @@ const lineEndings = ['\r\n', '\r', '\n'];
  */
 async function logStream(stream: Readable, logger: Logger): Promise<void> {
   for await (const line of await splitStreamAtSeparators(stream, lineEndings)) {
+    // Await the result of log here in order to ensure the logs are written in the correct order.
     await logger.log(line);
   }
 }

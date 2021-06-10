@@ -128,6 +128,14 @@ function getLaunchArgs(dir: TestDir) {
       return [
         '--disable-gpu',
         path.resolve(__dirname, '../../test/data'),
+
+        // explicitly disable extensions that are known to interfere with the CLI integration tests
+        '--disable-extension',
+        'eamodio.gitlens',
+        '--disable-extension',
+        'github.codespaces',
+        '--disable-extension',
+        'github.copilot',
         process.env.TEST_CODEQL_PATH!
       ];
 
