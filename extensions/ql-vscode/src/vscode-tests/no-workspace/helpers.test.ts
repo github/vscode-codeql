@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import 'mocha';
-import { ExtensionContext, Memento, window } from 'vscode';
+import { EnvironmentVariableCollection, EnvironmentVariableMutator, ExtensionContext, ExtensionMode, Memento, Uri, window } from 'vscode';
 import * as yaml from 'js-yaml';
 import * as tmp from 'tmp';
 import * as path from 'path';
@@ -146,6 +146,7 @@ describe('helpers', () => {
   });
 
   class MockExtensionContext implements ExtensionContext {
+    extensionMode: ExtensionMode = 3;
     subscriptions: { dispose(): unknown }[] = [];
     workspaceState: Memento = new MockMemento();
     globalState: Memento = new MockMemento();
@@ -156,6 +157,33 @@ describe('helpers', () => {
     storagePath = '';
     globalStoragePath = '';
     logPath = '';
+    extensionUri = Uri.parse('');
+    environmentVariableCollection = new MockEnvironmentVariableCollection();
+  }
+
+  class MockEnvironmentVariableCollection implements EnvironmentVariableCollection {
+    persistent = false;
+    replace(_variable: string, _value: string): void {
+      throw new Error('Method not implemented.');
+    }
+    append(_variable: string, _value: string): void {
+      throw new Error('Method not implemented.');
+    }
+    prepend(_variable: string, _value: string): void {
+      throw new Error('Method not implemented.');
+    }
+    get(_variable: string): EnvironmentVariableMutator | undefined {
+      throw new Error('Method not implemented.');
+    }
+    forEach(_callback: (variable: string, mutator: EnvironmentVariableMutator, collection: EnvironmentVariableCollection) => any, _thisArg?: any): void {
+      throw new Error('Method not implemented.');
+    }
+    delete(_variable: string): void {
+      throw new Error('Method not implemented.');
+    }
+    clear(): void {
+      throw new Error('Method not implemented.');
+    }
   }
 
   class MockMemento implements Memento {

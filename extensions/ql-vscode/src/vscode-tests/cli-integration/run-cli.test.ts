@@ -16,7 +16,7 @@ describe('Use cli', function() {
   let cli: CodeQLCliServer;
 
   beforeEach(async () => {
-    const extension = await extensions.getExtension<CodeQLExtensionInterface | {}>('GitHub.vscode-codeql')!.activate();
+    const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
     if ('cliServer' in extension) {
       cli = extension.cliServer;
     } else {

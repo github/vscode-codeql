@@ -21,7 +21,7 @@ const emptyComparison: SetComparisonsMessage = {
   message: 'Empty comparison'
 };
 
-export function Compare(_: {}): JSX.Element {
+export function Compare(_: Record<string, never>): JSX.Element {
   const [comparison, setComparison] = useState<SetComparisonsMessage>(
     emptyComparison
   );
@@ -66,8 +66,8 @@ export function Compare(_: {}): JSX.Element {
         {hasRows ? (
           <CompareTable comparison={comparison}></CompareTable>
         ) : (
-            <div className="vscode-codeql__compare-message">{message}</div>
-          )}
+          <div className="vscode-codeql__compare-message">{message}</div>
+        )}
       </>
     );
   } catch (err) {

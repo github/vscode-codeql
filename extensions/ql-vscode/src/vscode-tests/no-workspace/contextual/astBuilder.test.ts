@@ -19,23 +19,23 @@ This test uses an AST generated from this file (already BQRS-decoded in ../data/
 
 int interrupt_init(void)
 {
-	return 0;
+    return 0;
 }
 
 void enable_interrupts(void)
 {
-	return;
+    return;
 }
 int disable_interrupts(void)
 {
-	return 0;
+    return 0;
 }
  */
 
 
 describe('AstBuilder', () => {
   let mockCli: CodeQLCliServer;
-  let overrides: Record<string, object | undefined>;
+  let overrides: Record<string, Record<string, unknown> | undefined>;
 
   beforeEach(() => {
     mockCli = {

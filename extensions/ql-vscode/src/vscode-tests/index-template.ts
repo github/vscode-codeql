@@ -79,6 +79,7 @@ export async function runTestsInDirectory(testsRoot: string, useCli = false): Pr
           .filter(f => f.endsWith('.helper.js'))
           .forEach(f => {
             console.log(`Executing helper ${f}`);
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             const helper = require(path.resolve(testsRoot, f)).default;
             helper(mocha);
           });
