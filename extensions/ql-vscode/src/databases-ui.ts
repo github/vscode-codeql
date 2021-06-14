@@ -179,7 +179,7 @@ class DatabaseTreeDataProvider extends DisposableObject
 
   public set sortOrder(newSortOrder: SortOrder) {
     this._sortOrder = newSortOrder;
-    this._onDidChangeTreeData.fire();
+    this._onDidChangeTreeData.fire(undefined);
   }
 }
 
@@ -423,8 +423,7 @@ export class DatabaseUI extends DisposableObject {
     if (failures.length) {
       const dirname = path.dirname(failures[0]);
       void showAndLogErrorMessage(
-        `Failed to delete unused databases (${
-        failures.join(', ')
+        `Failed to delete unused databases (${failures.join(', ')
         }).\nTo delete unused databases, please remove them manually from the storage folder ${dirname}.`
       );
     }
@@ -583,8 +582,7 @@ export class DatabaseUI extends DisposableObject {
     } catch (e) {
       // rethrow and let this be handled by default error handling.
       throw new Error(
-        `Could not set database to ${path.basename(uri.fsPath)}. Reason: ${
-        e.message
+        `Could not set database to ${path.basename(uri.fsPath)}. Reason: ${e.message
         }`
       );
     }

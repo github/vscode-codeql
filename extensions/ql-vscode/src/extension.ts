@@ -148,7 +148,7 @@ export interface CodeQLExtensionInterface {
  *
  * @returns CodeQLExtensionInterface
  */
-export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionInterface | {}> {
+export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionInterface | Record<string, never>> {
   void logger.log(`Starting ${extensionId} extension`);
   if (extension === undefined) {
     throw new Error(`Can't find extension ${extensionId}`);
@@ -298,13 +298,13 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
 
   async function installOrUpdateThenTryActivate(
     config: DistributionUpdateConfig
-  ): Promise<CodeQLExtensionInterface | {}> {
+  ): Promise<CodeQLExtensionInterface | Record<string, never>> {
 
     await installOrUpdateDistribution(config);
 
     // Display the warnings even if the extension has already activated.
     const distributionResult = await getDistributionDisplayingDistributionWarnings();
-    let extensionInterface: CodeQLExtensionInterface | {} = {};
+    let extensionInterface: CodeQLExtensionInterface | Record<string, never> = {};
     if (!beganMainExtensionActivation && distributionResult.kind !== FindDistributionResultKind.NoDistribution) {
       extensionInterface = await activateWithInstalledDistribution(
         ctx,
@@ -498,8 +498,7 @@ async function activateWithInstalledDistribution(
         void helpers.showAndLogErrorMessage(
           'Jumping from a .qlref file to the .ql file it references is not '
           + 'supported with the CLI version you are running.\n'
-          + `Please upgrade your CLI to version ${
-          CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_QLREF
+          + `Please upgrade your CLI to version ${CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_QLREF
           } or later to use this feature.`);
       }
     }

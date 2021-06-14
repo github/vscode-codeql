@@ -34,7 +34,7 @@ class Checkpoint<T> {
     this.res = () => { /**/ };
     this.rej = () => { /**/ };
     this.promise = new Promise((res, rej) => {
-      this.res = res as () => {};
+      this.res = res as () => Record<string, never>;
       this.rej = rej;
     });
   }
@@ -104,7 +104,7 @@ describe('using the query server', function() {
 
   beforeEach(async () => {
     try {
-      const extension = await extensions.getExtension<CodeQLExtensionInterface | {}>('GitHub.vscode-codeql')!.activate();
+      const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
       if ('cliServer' in extension && 'qs' in extension) {
         cliServer = extension.cliServer;
         qs = extension.qs;

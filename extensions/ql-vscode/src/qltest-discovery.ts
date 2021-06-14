@@ -172,7 +172,7 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
     this.watcher.addWatch(new RelativePattern(results.watchPath, '**/*.{ql,qlref}'));
     // need to explicitly watch for changes to directories themselves.
     this.watcher.addWatch(new RelativePattern(results.watchPath, '**/'));
-    this._onDidChangeTests.fire();
+    this._onDidChangeTests.fire(undefined);
   }
 
   /**

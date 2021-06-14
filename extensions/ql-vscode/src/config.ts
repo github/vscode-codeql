@@ -147,7 +147,7 @@ export abstract class ConfigListener extends DisposableObject {
 
   protected abstract handleDidChangeConfiguration(e: ConfigurationChangeEvent): void;
   private updateConfiguration(): void {
-    this._onDidChangeConfiguration.fire();
+    this._onDidChangeConfiguration.fire(undefined);
   }
 
   public get onDidChangeConfiguration(): Event<void> {
@@ -189,7 +189,7 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
       config.push(distributionManager.onDidChangeDistribution(async () => {
         const codeQlPath = await distributionManager.getCodeQlPathWithoutVersionCheck();
         config._codeQlPath = codeQlPath!;
-        config._onDidChangeConfiguration.fire();
+        config._onDidChangeConfiguration.fire(undefined);
       }));
     }
     return config;

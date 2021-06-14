@@ -29,7 +29,7 @@ describe('config listeners', function() {
   });
 
   interface TestConfig<T> {
-    clazz: new () => {};
+    clazz: new () => unknown;
     settings: {
       name: string;
       property: string;
