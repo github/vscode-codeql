@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.5.0 - 14 June 2021
 
 - Display CodeQL CLI version being downloaded during an upgrade. [#862](https://github.com/github/vscode-codeql/pull/862)
 - Display a helpful message and link to documentation when a query produces no results. [#866](https://github.com/github/vscode-codeql/pull/866)
