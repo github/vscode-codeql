@@ -24,7 +24,7 @@
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": "limited",
-      "description": "Workspace trust is required to execute commands that can contain arbitrary paths. ",
+      "description": "Workspace trust is required to execute commands that can contain arbitrary paths.",
       "restrictedConfigurations": [
         "codeQL.cli.executablePath",
         "codeQL.runningTests.additionalTestArguments"

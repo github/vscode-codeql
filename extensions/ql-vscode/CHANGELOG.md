@@ -6,7 +6,8 @@
 - Display a helpful message and link to documentation when a query produces no results. [#866](https://github.com/github/vscode-codeql/pull/866)
 - Refresh test databases automatically after a test run. [#868](https://github.com/github/vscode-codeql/pull/868)
 - Allow users to specify a custom directory for storing query server logs (`codeQL.runningQueries.customLogDirectory`). The extension will not delete these logs automatically. [#863](https://github.com/github/vscode-codeql/pull/863)
-- Support the "workspace trust" feature. This extension is enabled in untrusted workspaces, but it restricts commands that contain arbitrary paths. [#861](https://github.com/github/vscode-codeql/pull/861)
+- Support the VS Code [Workspace Trust feature](https://code.visualstudio.com/docs/editor/workspace-trust). This extension is now enabled in untrusted workspaces, but it restricts commands that contain arbitrary paths. [#861](https://github.com/github/vscode-codeql/pull/861)
+- Allow the `codeQL.cli.executablePath` configuration setting to be set in workspace-scoped configuration files. This means that each workspace can now specify its own CodeQL CLI compiler, a feature that is unblocked due to implementing Workspace Trust. [#861](https://github.com/github/vscode-codeql/pull/861)
 
 ## 1.4.8 - 05 May 2021
 
