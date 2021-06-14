@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import 'mocha';
-import { EnvironmentVariableCollection, EnvironmentVariableMutator, ExtensionContext, ExtensionMode, Memento, Uri, window } from 'vscode';
+import { EnvironmentVariableCollection, EnvironmentVariableMutator, Event, ExtensionContext, ExtensionMode, Memento, SecretStorage, SecretStorageChangeEvent, Uri, window } from 'vscode';
 import * as yaml from 'js-yaml';
 import * as tmp from 'tmp';
 import * as path from 'path';
@@ -149,7 +149,7 @@ describe('helpers', () => {
     extensionMode: ExtensionMode = 3;
     subscriptions: { dispose(): unknown }[] = [];
     workspaceState: Memento = new MockMemento();
-    globalState: Memento = new MockMemento();
+    globalState = new MockGlobalStorage();
     extensionPath = '';
     asAbsolutePath(_relativePath: string): string {
       throw new Error('Method not implemented.');
@@ -159,6 +159,11 @@ describe('helpers', () => {
     logPath = '';
     extensionUri = Uri.parse('');
     environmentVariableCollection = new MockEnvironmentVariableCollection();
+    secrets = new MockSecretStorage();
+    storageUri = Uri.parse('');
+    globalStorageUri = Uri.parse('');
+    logUri = Uri.parse('');
+    extension: any;
   }
 
   class MockEnvironmentVariableCollection implements EnvironmentVariableCollection {
@@ -210,6 +215,25 @@ describe('helpers', () => {
     async update(key: string, value: any): Promise<void> {
       this.map.set(key, value);
     }
+  }
+
+  class MockGlobalStorage extends MockMemento {
+    public setKeysForSync(_keys: string[]): void {
+      return;
+    }
+  }
+
+  class MockSecretStorage implements SecretStorage {
+    get(_key: string): Thenable<string | undefined> {
+      throw new Error('Method not implemented.');
+    }
+    store(_key: string, _value: string): Thenable<void> {
+      throw new Error('Method not implemented.');
+    }
+    delete(_key: string): Thenable<void> {
+      throw new Error('Method not implemented.');
+    }
+    onDidChange!: Event<SecretStorageChangeEvent>;
   }
 
   it('should report stream progress', () => {
