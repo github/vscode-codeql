@@ -246,6 +246,10 @@
         "title": "CodeQL: Run Query"
       },
       {
+        "command": "codeQL.runRemoteQuery",
+        "title": "CodeQL: Run Remote Query"
+      },
+      {
         "command": "codeQL.runQueries",
         "title": "CodeQL: Run Queries in Selected Files"
       },
@@ -664,6 +668,10 @@
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
+          "command": "codeQL.runRemoteQuery",
+          "when": "editorLangId == ql && resourceExtname == .ql"
+        },
+        {
           "command": "codeQL.runQueries",
           "when": "false"
         },
@@ -803,6 +811,10 @@
       "editor/context": [
         {
           "command": "codeQL.runQuery",
+          "when": "editorLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.runRemoteQuery",
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {

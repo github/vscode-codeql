@@ -71,6 +71,7 @@ import {
 import { CodeQlStatusBarHandler } from './status-bar';
 
 import { Credentials } from './authentication';
+import runRemoteQuery from './run-remote-query';
 
 /**
  * extension.ts
@@ -643,6 +644,13 @@ async function activateWithInstalledDistribution(
     )
   );
   ctx.subscriptions.push(
+    commandRunner('codeQL.runRemoteQuery', async (
+      uri: Uri | undefined
+    ) => {
+      await runRemoteQuery(credentials, uri || window.activeTextEditor?.document.uri);
+    })
+  );
+  ctx.subscriptions.push(
     commandRunner(
       'codeQL.openReferencedFile',
       openReferencedFile
@@ -716,7 +724,7 @@ async function activateWithInstalledDistribution(
 
   /**
    * Credentials for authenticating to GitHub.
-   * Currently unused, but will be useful in the future when making API calls.
+   * These are used when making API calls.
    */
   const credentials = await Credentials.initialize(ctx);
 
