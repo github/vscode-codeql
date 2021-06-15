@@ -6,10 +6,6 @@
 
 name: Release
 on:
-  pull_request:
-    paths:
-      - '**/workflows/release.yml'
-
   workflow_dispatch:
 
   push:
