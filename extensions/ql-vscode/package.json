@@ -664,12 +664,16 @@
       ],
       "commandPalette": [
         {
+          "command": "codeQL.authenticateToGitHub",
+          "when": "config.codeQL.canary"
+        },
+        {
           "command": "codeQL.runQuery",
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
           "command": "codeQL.runRemoteQuery",
-          "when": "editorLangId == ql && resourceExtname == .ql"
+          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
         },
         {
           "command": "codeQL.runQueries",
@@ -815,7 +819,7 @@
         },
         {
           "command": "codeQL.runRemoteQuery",
-          "when": "editorLangId == ql && resourceExtname == .ql"
+          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
         },
         {
           "command": "codeQL.viewAst",
