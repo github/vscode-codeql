@@ -10,6 +10,11 @@ interface Config {
   language: string;
 }
 
+// Test "controller" repository and workflow.
+const OWNER = 'dsp-testing';
+const REPO = 'qc-controller';
+const WORKFLOW_ID = 'codeql-query.yml';
+
 export default async function runRemoteQuery(credentials: Credentials, uri?: Uri) {
   if (!uri || !uri.fsPath.endsWith('.ql')) {
     return;
@@ -23,7 +28,7 @@ export default async function runRemoteQuery(credentials: Credentials, uri?: Uri
 
   const repositoriesFile = queryFile.substring(0, queryFile.length - '.ql'.length) + '.repositories';
   if (!(await fs.pathExists(repositoriesFile))) {
-    void showAndLogErrorMessage(`Missing file: '${repositoriesFile}' to specify the repositories to run against.`);
+    void showAndLogErrorMessage(`Missing file: '${repositoriesFile}' to specify the repositories to run against. This file must be a sibling of ${queryFile}.`);
     return;
   }
 
@@ -33,16 +38,11 @@ export default async function runRemoteQuery(credentials: Credentials, uri?: Uri
   const language = config.language;
   const repositories = JSON.stringify(config.repositories);
 
-  // Test "controller" repository and workflow.
-  const owner = 'dsp-testing';
-  const repo = 'qc-controller';
-  const workflow_id = 'codeql-query.yml';
-
   try {
     await octokit.rest.actions.createWorkflowDispatch({
-      owner: owner,
-      repo: repo,
-      workflow_id: workflow_id,
+      owner: OWNER,
+      repo: REPO,
+      workflow_id: WORKFLOW_ID,
       ref: ref,
       inputs: {
         language,
@@ -51,7 +51,7 @@ export default async function runRemoteQuery(credentials: Credentials, uri?: Uri
         token
       }
     });
-    void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions).`);
+    void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${OWNER}/${REPO}/actions).`);
 
   } catch (error) {
     void showAndLogErrorMessage(error);
