@@ -16,7 +16,7 @@ const REPO = 'qc-controller';
 const WORKFLOW_ID = 'codeql-query.yml';
 
 export default async function runRemoteQuery(credentials: Credentials, uri?: Uri) {
-  if (!uri || !uri.fsPath.endsWith('.ql')) {
+  if (!uri?.fsPath.endsWith('.ql')) {
     return;
   }
 
