@@ -23,6 +23,7 @@ import { CodeQLCliServer, CliVersionConstraint } from './cli';
 import {
   CliConfigListener,
   DistributionConfigListener,
+  isCanary,
   MAX_QUERIES,
   QueryHistoryConfigListener,
   QueryServerConfigListener
@@ -69,6 +70,9 @@ import {
   ProgressUpdate
 } from './commandRunner';
 import { CodeQlStatusBarHandler } from './status-bar';
+
+import { Credentials } from './authentication';
+import runRemoteQuery from './run-remote-query';
 
 /**
  * extension.ts
@@ -640,6 +644,17 @@ async function activateWithInstalledDistribution(
       }
     )
   );
+  // The "runRemoteQuery" command is internal-only.
+  ctx.subscriptions.push(
+    commandRunner('codeQL.runRemoteQuery', async (
+      uri: Uri | undefined
+    ) => {
+      if (isCanary()) {
+        const credentials = await Credentials.initialize(ctx);
+        await runRemoteQuery(credentials, uri || window.activeTextEditor?.document.uri);
+      }
+    })
+  );
   ctx.subscriptions.push(
     commandRunner(
       'codeQL.openReferencedFile',
@@ -712,6 +727,20 @@ async function activateWithInstalledDistribution(
       void helpers.showAndLogInformationMessage(text);
     }));
 
+  // The "authenticateToGitHub" command is internal-only.
+  ctx.subscriptions.push(
+    commandRunner('codeQL.authenticateToGitHub', async () => {
+      if (isCanary()) {
+        /**
+         * Credentials for authenticating to GitHub.
+         * These are used when making API calls.
+         */
+        const credentials = await Credentials.initialize(ctx);
+        const octokit = await credentials.getOctokit();
+        const userInfo = await octokit.users.getAuthenticated();
+        void helpers.showAndLogInformationMessage(`Authenticated to GitHub as user: ${userInfo.data.login}`);
+      }
+    }));
 
   void logger.log('Starting language server.');
   ctx.subscriptions.push(client.start());

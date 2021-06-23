@@ -38,6 +38,7 @@
     "onView:codeQLAstViewer",
     "onView:test-explorer",
     "onCommand:codeQL.checkForUpdatesToCLI",
+    "onCommand:codeQL.authenticateToGitHub",
     "onCommand:codeQLDatabases.chooseDatabaseFolder",
     "onCommand:codeQLDatabases.chooseDatabaseArchive",
     "onCommand:codeQLDatabases.chooseDatabaseInternet",
@@ -237,8 +238,16 @@
     },
     "commands": [
       {
+        "command": "codeQL.authenticateToGitHub",
+        "title": "CodeQL: Authenticate to GitHub"
+      },
+      {
         "command": "codeQL.runQuery",
         "title": "CodeQL: Run Query"
+      },
+      {
+        "command": "codeQL.runRemoteQuery",
+        "title": "CodeQL: Run Remote Query"
       },
       {
         "command": "codeQL.runQueries",
@@ -655,8 +664,16 @@
       ],
       "commandPalette": [
         {
+          "command": "codeQL.authenticateToGitHub",
+          "when": "config.codeQL.canary"
+        },
+        {
           "command": "codeQL.runQuery",
           "when": "resourceLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.runRemoteQuery",
+          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
         },
         {
           "command": "codeQL.runQueries",
@@ -801,6 +818,10 @@
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
+          "command": "codeQL.runRemoteQuery",
+          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
+        },
+        {
           "command": "codeQL.viewAst",
           "when": "resourceScheme == codeql-zip-archive"
         },
@@ -868,6 +889,7 @@
     "format-staged": "lint-staged"
   },
   "dependencies": {
+    "@octokit/rest": "^18.5.6",
     "child-process-promise": "^2.2.1",
     "classnames": "~2.2.6",
     "fs-extra": "^9.0.1",
