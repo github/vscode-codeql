@@ -346,6 +346,10 @@
         "title": "Show Database Directory"
       },
       {
+        "command": "codeQLDatabases.addDatabaseSource",
+        "title": "Add Database Source to Workspace"
+      },
+      {
         "command": "codeQL.chooseDatabaseFolder",
         "title": "CodeQL: Choose Database from Folder"
       },
@@ -585,6 +589,11 @@
           "when": "view == codeQLDatabases"
         },
         {
+          "command": "codeQLDatabases.addDatabaseSource",
+          "group": "9_qlCommands",
+          "when": "view == codeQLDatabases"
+        },
+        {
           "command": "codeQLQueryHistory.openQuery",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory"
@@ -705,6 +714,10 @@
         },
         {
           "command": "codeQLDatabases.openDatabaseFolder",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.addDatabaseSource",
           "when": "false"
         },
         {

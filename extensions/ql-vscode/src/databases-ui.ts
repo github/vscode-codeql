@@ -350,6 +350,12 @@ export class DatabaseUI extends DisposableObject {
     );
     this.push(
       commandRunner(
+        'codeQLDatabases.addDatabaseSource',
+        this.handleAddSource
+      )
+    );
+    this.push(
+      commandRunner(
         'codeQLDatabases.removeOrphanedDatabases',
         this.handleRemoveOrphanedDatabases
       )
@@ -629,6 +635,25 @@ export class DatabaseUI extends DisposableObject {
       );
     } else {
       await env.openExternal(databaseItem.databaseUri);
+    }
+  };
+
+  /**
+   * Adds the source folder of a CodeQL database to the workspace.
+   * When a database is first added in the "Databases" view, its source folder is added to the workspace.
+   * If the source folder is removed from the workspace for some reason, we want to be able to re-add it if need be.
+   */
+  private handleAddSource = async (
+    databaseItem: DatabaseItem,
+    multiSelect: DatabaseItem[] | undefined
+  ): Promise<void> => {
+    if (multiSelect?.length) {
+      // TODO: This multiselect part doesn't work yet. Only the first databases is re-added.
+      await Promise.all(
+        multiSelect.map((dbItem) => this.databaseManager.addDatabaseSourceArchiveFolder(dbItem))
+      );
+    } else {
+      await this.databaseManager.addDatabaseSourceArchiveFolder(databaseItem);
     }
   };
 
