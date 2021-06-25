@@ -648,10 +648,9 @@ export class DatabaseUI extends DisposableObject {
     multiSelect: DatabaseItem[] | undefined
   ): Promise<void> => {
     if (multiSelect?.length) {
-      // TODO: This multiselect part doesn't work yet. Only the first databases is re-added.
-      await Promise.all(
-        multiSelect.map((dbItem) => this.databaseManager.addDatabaseSourceArchiveFolder(dbItem))
-      );
+      for (const dbItem of multiSelect) {
+        await this.databaseManager.addDatabaseSourceArchiveFolder(dbItem);
+      }
     } else {
       await this.databaseManager.addDatabaseSourceArchiveFolder(databaseItem);
     }
