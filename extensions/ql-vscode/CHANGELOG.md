@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Adds the _Add Database Source to Workspace_ command to the right-click context menu in the databases view. This lets users re-add a database's source folder to the workspace and browse the source code. [#891](https://github.com/github/vscode-codeql/pull/891)
+
 ## 1.5.1 - 23 June 2021
 
 No user facing changes.
