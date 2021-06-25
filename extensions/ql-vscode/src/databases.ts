@@ -587,7 +587,7 @@ export class DatabaseManager extends DisposableObject {
     }));
   }
 
-  private async addDatabaseSourceArchiveFolder(item: DatabaseItem) {
+  public async addDatabaseSourceArchiveFolder(item: DatabaseItem) {
     // The folder may already be in workspace state from a previous
     // session. If not, add it.
     const index = this.getDatabaseWorkspaceFolderIndex(item);
