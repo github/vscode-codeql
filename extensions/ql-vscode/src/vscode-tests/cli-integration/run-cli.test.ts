@@ -24,13 +24,15 @@ describe('Use cli', function() {
     }
   });
 
-  it('should have the correct version of the cli', async () => {
-    expect(
-      (await cli.getVersion()).toString()
-    ).to.eq(
-      new SemVer(process.env.CLI_VERSION || '').toString()
-    );
-  });
+  if (process.env.CLI_VERSION !== 'nightly') {
+    it('should have the correct version of the cli', async () => {
+      expect(
+        (await cli.getVersion()).toString()
+      ).to.eq(
+        new SemVer(process.env.CLI_VERSION || '').toString()
+      );
+    });
+  }
 
   it('should resolve ram', async () => {
     const result = await (cli as any).resolveRam(8192);
