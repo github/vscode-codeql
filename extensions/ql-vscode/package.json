@@ -246,6 +246,10 @@
         "title": "CodeQL: Run Query"
       },
       {
+        "command": "codeQL.runQueryOnMultipleDatabases",
+        "title": "CodeQL: Run Query on Multiple Databases"
+      },
+      {
         "command": "codeQL.runRemoteQuery",
         "title": "CodeQL: Run Remote Query"
       },
@@ -681,6 +685,10 @@
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
+          "command": "codeQL.runQueryOnMultipleDatabases",
+          "when": "resourceLangId == ql && resourceExtname == .ql"
+        },
+        {
           "command": "codeQL.runRemoteQuery",
           "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
         },
@@ -828,6 +836,10 @@
       "editor/context": [
         {
           "command": "codeQL.runQuery",
+          "when": "editorLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.runQueryOnMultipleDatabases",
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
