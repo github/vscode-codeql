@@ -51,12 +51,30 @@ jobs:
           name: vscode-codeql-extension
           path: artifacts
 
+  find-nightly:
+    name: Find Nightly Release
+    runs-on: ubuntu-latest
+    outputs:
+      url: ${{ steps.get-url.outputs.nightly-url }}
+    steps:
+      - name: Get Nightly Release URL
+        id: get-url
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        shell: bash
+        # This workflow step gets an unstable testing version of the CodeQL CLI. It should not be used outside of these tests.
+        run: |
+          LATEST=`gh api repos/dsp-testing/codeql-cli-nightlies/releases --jq '.[].tag_name' --method GET --raw-field 'per_page=1'`
+          echo "::set-output name=nightly-url::https://github.com/dsp-testing/codeql-cli-nightlies/releases/download/$LATEST"
+    
   test:
     name: Test
     runs-on: ${{ matrix.os }}
+    needs: [find-nightly]
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+        version: [stable, nightly]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -89,7 +107,12 @@ jobs:
       - name: Install CodeQL
         run: |
           mkdir codeql-home
-          curl -L --silent https://github.com/github/codeql-cli-binaries/releases/latest/download/codeql.zip -o codeql-home/codeql.zip
+          if [ ${{ matrix.version }} = "stable" ]
+          then
+            curl -L --silent https://github.com/github/codeql-cli-binaries/releases/latest/download/codeql.zip -o codeql-home/codeql.zip
+          else
+            curl -L --silent ${{ needs.find-nightly.outputs.url }}/codeql.zip -o codeql-home/codeql.zip
+          fi
           unzip -q -o codeql-home/codeql.zip -d codeql-home
           unzip -q -o codeql-home/codeql.zip codeql/codeql.exe -d codeql-home
           rm codeql-home/codeql.zip
@@ -124,12 +147,14 @@ jobs:
   cli-test:
     name: CLI Test
     runs-on: ${{ matrix.os }}
+    needs: [find-nightly]
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        version: ['v2.2.6', 'v2.3.3', 'v2.4.6', 'v2.5.7']
+        version: ['v2.2.6', 'v2.3.3', 'v2.4.6', 'v2.5.7', 'nightly']
     env:
       CLI_VERSION: ${{ matrix.version }}
+      NIGHTLY_URL: ${{ needs.find-nightly.outputs.url }}
       TEST_CODEQL_PATH: '${{ github.workspace }}/codeql'
 
     steps:
