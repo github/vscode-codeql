@@ -5,7 +5,7 @@ import 'mocha';
 import 'sinon-chai';
 import * as Sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
-import { CompletedQuery, interpretResults } from '../../query-results';
+import { CompletedQuery, interpretResultsSarif } from '../../query-results';
 import { QueryInfo, QueryWithResults, tmpDir } from '../../run-queries';
 import { QueryHistoryConfig } from '../../config';
 import { EvaluationResult, QueryResultType } from '../../pure/messages';
@@ -140,11 +140,11 @@ describe('CompletedQuery', () => {
     expect(completedQuery.interpolate('%t %q %d %s %%::%t %q %d %s %%')).to.eq('123 stu def failed %::123 stu def failed %');
   });
 
-  it('should interpretResults', async () => {
+  it('should interpretResultsSarif', async () => {
     const spy = Sinon.mock();
-    spy.returns('1234');
+    spy.returns({a: '1234'});
     const mockServer = {
-      interpretBqrs: spy
+      interpretBqrsSarif: spy
     } as unknown as CodeQLCliServer;
 
     const interpretedResultsPath = path.join(tmpDir.name, 'interpreted.json');
@@ -155,7 +155,7 @@ describe('CompletedQuery', () => {
       id: 'my-id' as string | undefined,
       scored: undefined
     };
-    const results1 = await interpretResults(
+    const results1 = await interpretResultsSarif(
       mockServer,
       metadata,
       {
@@ -164,7 +164,7 @@ describe('CompletedQuery', () => {
       sourceInfo as SourceInfo
     );
 
-    expect(results1).to.eq('1234');
+    expect(results1).to.deep.eq({ a: '1234', t: 'SarifInterpretationData' });
     expect(spy).to.have.been.calledWith(
       metadata,
       resultsPath, interpretedResultsPath, sourceInfo
@@ -172,9 +172,9 @@ describe('CompletedQuery', () => {
 
     // Try again, but with no id
     spy.reset();
-    spy.returns('1234');
+    spy.returns({a: '1234'});
     delete metadata.id;
-    const results2 = await interpretResults(
+    const results2 = await interpretResultsSarif(
       mockServer,
       metadata,
       {
@@ -182,7 +182,7 @@ describe('CompletedQuery', () => {
       },
       sourceInfo as SourceInfo
     );
-    expect(results2).to.eq('1234');
+    expect(results2).to.deep.eq({ a: '1234', t: 'SarifInterpretationData' });
     expect(spy).to.have.been.calledWith(
       { kind: 'my-kind', id: 'dummy-id', scored: undefined },
       resultsPath, interpretedResultsPath, sourceInfo
@@ -193,7 +193,7 @@ describe('CompletedQuery', () => {
     fs.writeFileSync(interpretedResultsPath, JSON.stringify({
       a: 6
     }), 'utf8');
-    const results3 = await interpretResults(
+    const results3 = await interpretResultsSarif(
       mockServer,
       metadata,
       {
@@ -201,7 +201,7 @@ describe('CompletedQuery', () => {
       },
       sourceInfo as SourceInfo
     );
-    expect(results3).to.deep.eq({ a: 6 });
+    expect(results3).to.deep.eq({ a: 6, t: 'SarifInterpretationData' });
   });
 
   function mockCompletedQuery() {

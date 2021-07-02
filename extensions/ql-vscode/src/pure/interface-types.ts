@@ -10,13 +10,14 @@ export const SELECT_TABLE_NAME = '#select';
 export const ALERTS_TABLE_NAME = 'alerts';
 
 export type RawTableResultSet = { t: 'RawResultSet' } & RawResultSet;
-export type PathTableResultSet = {
-  t: 'SarifResultSet';
+export type InterpretedResultSet<T> = {
+  t: 'InterpretedResultSet';
   readonly schema: ResultSetSchema;
   name: string;
-} & Interpretation;
+  interpretation: InterpretationT<T>;
+};
 
-export type ResultSet = RawTableResultSet | PathTableResultSet;
+export type ResultSet = RawTableResultSet | InterpretedResultSet<InterpretationData>;
 
 /**
  * Only ever show this many rows in a raw result table.
@@ -44,17 +45,26 @@ export interface PreviousExecution {
   durationSeconds: number;
 }
 
-export interface Interpretation {
-  sourceLocationPrefix: string;
-  numTruncatedResults: number;
-  numTotalResults: number;
+export type SarifInterpretationData = {
+  t: 'SarifInterpretationData';
   /**
    * sortState being undefined means don't sort, just present results in the order
    * they appear in the sarif file.
    */
   sortState?: InterpretedResultsSortState;
-  sarif: sarif.Log;
+} & sarif.Log;
+
+// Add more interpretation data kinds when needed (e.g., graph data)
+export type InterpretationData = SarifInterpretationData;
+
+export interface InterpretationT<T> {
+  sourceLocationPrefix: string;
+  numTruncatedResults: number;
+  numTotalResults: number;
+  data: T;
 }
+
+export type Interpretation = InterpretationT<InterpretationData>;
 
 export interface ResultsPaths {
   resultsPath: string;
@@ -351,7 +361,7 @@ export function getDefaultResultSetName(
   return [
     ALERTS_TABLE_NAME,
     SELECT_TABLE_NAME,
-    resultSetNames[0],
+    resultSetNames[0]
   ].filter((resultSetName) => resultSetNames.includes(resultSetName))[0];
 }
 
