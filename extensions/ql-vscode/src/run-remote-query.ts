@@ -13,7 +13,6 @@ interface Config {
 // Test "controller" repository and workflow.
 const OWNER = 'dsp-testing';
 const REPO = 'qc-controller';
-const WORKFLOW_ID = 'codeql-query.yml';
 
 export default async function runRemoteQuery(credentials: Credentials, uri?: Uri) {
   if (!uri?.fsPath.endsWith('.ql')) {
@@ -36,21 +35,23 @@ export default async function runRemoteQuery(credentials: Credentials, uri?: Uri
 
   const ref = config.ref || 'main';
   const language = config.language;
-  const repositories = JSON.stringify(config.repositories);
+  const repositories = config.repositories;
 
   try {
-    await octokit.rest.actions.createWorkflowDispatch({
-      owner: OWNER,
-      repo: REPO,
-      workflow_id: WORKFLOW_ID,
-      ref: ref,
-      inputs: {
-        language,
-        repositories,
-        query,
-        token
+    await octokit.request(
+      'POST /repos/:owner/:repo/code-scanning/codeql/queries',
+      {
+        owner: OWNER,
+        repo: REPO,
+        data: {
+          ref: ref,
+          language: language,
+          repositories: repositories,
+          query: query,
+          token: token,
+        }
       }
-    });
+    );
     void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${OWNER}/${REPO}/actions).`);
 
   } catch (error) {
