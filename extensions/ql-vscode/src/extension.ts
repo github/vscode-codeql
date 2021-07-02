@@ -10,7 +10,8 @@ import {
   Uri,
   window as Window,
   env,
-  window
+  window,
+  QuickPickItem
 } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import * as os from 'os';
@@ -559,6 +560,9 @@ async function activateWithInstalledDistribution(
       }
     )
   );
+  interface DatabaseQuickPickItem extends QuickPickItem {
+    databaseItem: DatabaseItem;
+  }
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       'codeQL.runQueryOnMultipleDatabases',
@@ -567,20 +571,23 @@ async function activateWithInstalledDistribution(
         token: CancellationToken,
         uri: Uri | undefined
       ) => {
+        const quickPickItems = dbm.databaseItems.map<DatabaseQuickPickItem>(dbItem => (
+          {
+            databaseItem: dbItem,
+            label: dbItem.name,
+            description: dbItem.language,
+          }
+        ));
         /**
-         * Databases selected from the quick pick menu.
+         * Databases that were selected in the quick pick menu.
          */
-        const quickpick = await window.showQuickPick(
-          // TODO: Return items of type "DatabaseItem" instead of "string"
-          // For this to work, I think we need "DatabaseItem" to extend "QuickPickItem":
-          // https://code.visualstudio.com/api/references/vscode-api#QuickPickItem
-          dbm.databaseItems.map(dbItem => dbItem.name),
-          { canPickMany: true },
+        const quickpick = await window.showQuickPick<DatabaseQuickPickItem>(
+          quickPickItems,
+          { canPickMany: true }
         );
         if (quickpick !== undefined) {
           for (const item of quickpick) {
-            // Instead of "item" (which is a string), we need the associated "DatabaseItem"...
-            await compileAndRunQuery(false, uri, progress, token, item);
+            await compileAndRunQuery(false, uri, progress, token, item.databaseItem);
           }
         } else {
           void helpers.showAndLogErrorMessage('No databases selected.');
