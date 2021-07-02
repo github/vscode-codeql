@@ -472,7 +472,9 @@ async function activateWithInstalledDistribution(
   ): Promise<void> {
     if (qs !== undefined) {
       const dbItem = databaseQuickPick !== undefined
+        // database selected from multi-database quick pick
         ? databaseQuickPick
+        // database currently selected in Databases UI
         : await databaseUI.getDatabaseItem(progress, token);
       if (dbItem === undefined) {
         throw new Error('Can\'t run query without a selected database');
@@ -587,7 +589,12 @@ async function activateWithInstalledDistribution(
         );
         if (quickpick !== undefined) {
           for (const item of quickpick) {
-            await compileAndRunQuery(false, uri, progress, token, item.databaseItem);
+            try {
+              await compileAndRunQuery(false, uri, progress, token, item.databaseItem);
+            } catch (error) {
+              // Skip databases that are incompatible with the query, e.g. using a different language.
+              void helpers.showAndLogErrorMessage(`Skipped database '${item.label}'. ${error}`);
+            }
           }
         } else {
           void helpers.showAndLogErrorMessage('No databases selected.');
