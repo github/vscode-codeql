@@ -499,13 +499,13 @@ export class QueryHistoryManager extends DisposableObject {
     if (
       prevItemClick !== undefined &&
       now.valueOf() - prevItemClick.time.valueOf() < DOUBLE_CLICK_TIME &&
-      singleItem == prevItemClick.item
+      finalSingleItem == prevItemClick.item
     ) {
       // show original query file on double click
-      await this.handleOpenQuery(singleItem, [singleItem]);
+      await this.handleOpenQuery(finalSingleItem, [finalSingleItem]);
     } else {
       // show results on single click
-      await this.invokeCallbackOn(singleItem);
+      await this.invokeCallbackOn(finalSingleItem);
     }
   }
 
