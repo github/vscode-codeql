@@ -190,8 +190,15 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     this._testStates.fire({ type: 'started', tests: tests } as TestRunStartedEvent);
 
     const currentDatabaseUri = this.databaseManager.currentDatabaseItem?.databaseUri;
-    const databasesUnderTest = this.databaseManager.databaseItems
-      .filter(database => tests.find(testPath => database.isAffectedByTest(testPath)));
+    const databasesUnderTest: DatabaseItem[] = [];
+    for (const database of this.databaseManager.databaseItems) {
+      for (const test of tests) {
+        if (await database.isAffectedByTest(test)) {
+          databasesUnderTest.push(database);
+          break;
+        }
+      }
+    }
 
     await this.removeDatabasesBeforeTests(databasesUnderTest, token);
     try {
