@@ -10,7 +10,8 @@ import {
   Uri,
   window as Window,
   env,
-  window
+  window,
+  QuickPickItem
 } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import * as os from 'os';
@@ -29,7 +30,7 @@ import {
   QueryServerConfigListener
 } from './config';
 import * as languageSupport from './languageSupport';
-import { DatabaseManager } from './databases';
+import { DatabaseItem, DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
 import {
   TemplateQueryDefinitionProvider,
@@ -467,9 +468,14 @@ async function activateWithInstalledDistribution(
     selectedQuery: Uri | undefined,
     progress: ProgressCallback,
     token: CancellationToken,
+    databaseQuickPick: DatabaseItem | undefined,
   ): Promise<void> {
     if (qs !== undefined) {
-      const dbItem = await databaseUI.getDatabaseItem(progress, token);
+      const dbItem = databaseQuickPick !== undefined
+        // database selected from multi-database quick pick
+        ? databaseQuickPick
+        // database currently selected in Databases UI
+        : await databaseUI.getDatabaseItem(progress, token);
       if (dbItem === undefined) {
         throw new Error('Can\'t run query without a selected database');
       }
@@ -549,9 +555,53 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined
-      ) => await compileAndRunQuery(false, uri, progress, token),
+      ) => await compileAndRunQuery(false, uri, progress, token, undefined),
       {
         title: 'Running query',
+        cancellable: true
+      }
+    )
+  );
+  interface DatabaseQuickPickItem extends QuickPickItem {
+    databaseItem: DatabaseItem;
+  }
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      'codeQL.runQueryOnMultipleDatabases',
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        uri: Uri | undefined
+      ) => {
+        const quickPickItems = dbm.databaseItems.map<DatabaseQuickPickItem>(dbItem => (
+          {
+            databaseItem: dbItem,
+            label: dbItem.name,
+            description: dbItem.language,
+          }
+        ));
+        /**
+         * Databases that were selected in the quick pick menu.
+         */
+        const quickpick = await window.showQuickPick<DatabaseQuickPickItem>(
+          quickPickItems,
+          { canPickMany: true }
+        );
+        if (quickpick !== undefined) {
+          for (const item of quickpick) {
+            try {
+              await compileAndRunQuery(false, uri, progress, token, item.databaseItem);
+            } catch (error) {
+              // Skip databases that are incompatible with the query, e.g. using a different language.
+              void helpers.showAndLogErrorMessage(`Skipped database '${item.label}'. ${error}`);
+            }
+          }
+        } else {
+          void helpers.showAndLogErrorMessage('No databases selected.');
+        }
+      },
+      {
+        title: 'Running query on selected databases',
         cancellable: true
       }
     )
@@ -611,7 +661,7 @@ async function activateWithInstalledDistribution(
         });
 
         await Promise.all(queryUris.map(async uri =>
-          compileAndRunQuery(false, uri, wrappedProgress, token)
+          compileAndRunQuery(false, uri, wrappedProgress, token, undefined)
             .then(() => queriesRemaining--)
         ));
       },
@@ -627,7 +677,7 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined
-      ) => await compileAndRunQuery(true, uri, progress, token),
+      ) => await compileAndRunQuery(true, uri, progress, token, undefined),
       {
         title: 'Running query',
         cancellable: true
