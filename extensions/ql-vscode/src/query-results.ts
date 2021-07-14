@@ -11,7 +11,8 @@ import {
   QueryMetadata,
   InterpretedResultsSortState,
   ResultsPaths,
-  SarifInterpretationData
+  SarifInterpretationData,
+  GraphInterpretationData
 } from './pure/interface-types';
 import { QueryHistoryConfig } from './config';
 import { DatabaseInfo } from './pure/interface-types';
@@ -178,7 +179,6 @@ export function ensureMetadataIsComplete(metadata: QueryMetadata | undefined) {
   }
   return metadata;
 }
-
 
 /**
  * Used in Interface and Compare-Interface for queries that we know have been complated.
@@ -379,4 +379,23 @@ export class FullQueryInfo {
       value: config
     });
   }
+}
+
+/**
+ * Call cli command to interpret graph results.
+ */
+export async function interpretGraphResults(
+  server: cli.CodeQLCliServer,
+  metadata: QueryMetadata | undefined,
+  resultsPaths: ResultsPaths,
+  sourceInfo?: cli.SourceInfo
+): Promise<GraphInterpretationData> {
+  const { resultsPath, interpretedResultsPath } = resultsPaths;
+  if (await fs.pathExists(interpretedResultsPath)) {
+    const dot = await server.readDotFiles(interpretedResultsPath);
+    return { dot, t: 'GraphInterpretationData' };
+  }
+
+  const dot = await server.interpretBqrsGraph(ensureMetadataIsComplete(metadata), resultsPath, interpretedResultsPath, sourceInfo);
+  return { dot, t: 'GraphInterpretationData' };
 }

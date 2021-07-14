@@ -41,7 +41,8 @@ import { DatabaseUI } from './databases-ui';
 import {
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
-  TemplatePrintAstProvider
+  TemplatePrintAstProvider,
+  TemplatePrintCfgProvider
 } from './contextual/templateProvider';
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
@@ -979,6 +980,26 @@ async function activateWithInstalledDistribution(
     commandRunner('codeQL.showLogs', async () => {
       logger.show();
     })
+  );
+
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      'codeQL.viewCfg',
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken
+      ) => {
+        const res = await new TemplatePrintCfgProvider(cliServer, dbm)
+          .provideCfgUri(window.activeTextEditor?.document);
+        if (res) {
+          await compileAndRunQuery(false, res[0], progress, token, undefined);
+        }
+      },
+      {
+        title: 'Calculate CFG',
+        cancellable: true
+      }
+    )
   );
 
   void logger.log('Starting language server.');

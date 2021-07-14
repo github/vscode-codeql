@@ -48,6 +48,7 @@
     "onCommand:codeQLDatabases.chooseDatabaseLgtm",
     "onCommand:codeQL.setCurrentDatabase",
     "onCommand:codeQL.viewAst",
+    "onCommand:codeQL.viewCfg",
     "onCommand:codeQL.openReferencedFile",
     "onCommand:codeQL.previewQueryHelp",
     "onCommand:codeQL.chooseDatabaseFolder",
@@ -367,6 +368,10 @@
       {
         "command": "codeQL.viewAst",
         "title": "CodeQL: View AST"
+      },
+      {
+        "command": "codeQL.viewCfg",
+        "title": "CodeQL: View CFG"
       },
       {
         "command": "codeQL.upgradeCurrentDatabase",
@@ -738,6 +743,11 @@
           "when": "resourceScheme == codeql-zip-archive && !explorerResourceIsFolder && !listMultiSelection"
         },
         {
+          "command": "codeQL.viewCfg",
+          "group": "9_qlCommands",
+          "when": "resourceScheme == codeql-zip-archive"
+        },
+        {
           "command": "codeQL.runQueries",
           "group": "9_qlCommands",
           "when": "resourceScheme != codeql-zip-archive"
@@ -796,6 +806,10 @@
         },
         {
           "command": "codeQL.viewAst",
+          "when": "resourceScheme == codeql-zip-archive"
+        },
+        {
+          "command": "codeQL.viewCfg",
           "when": "resourceScheme == codeql-zip-archive"
         },
         {
@@ -1017,6 +1031,8 @@
     "@primer/react": "^34.3.0",
     "child-process-promise": "^2.2.1",
     "classnames": "~2.2.6",
+    "d3": "^6.3.1",
+    "d3-graphviz": "^2.6.1",
     "fs-extra": "^9.0.1",
     "glob-promise": "^3.4.0",
     "js-yaml": "^3.14.0",
@@ -1048,6 +1064,8 @@
     "@types/child-process-promise": "^2.2.1",
     "@types/classnames": "~2.2.9",
     "@types/del": "^4.0.0",
+    "@types/d3": "^6.2.0",
+    "@types/d3-graphviz": "^2.6.6",
     "@types/fs-extra": "^9.0.6",
     "@types/glob": "^7.1.1",
     "@types/google-protobuf": "^3.2.7",
