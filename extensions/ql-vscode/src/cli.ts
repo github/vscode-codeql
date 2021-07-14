@@ -1,5 +1,6 @@
 import * as cpp from 'child-process-promise';
 import * as child_process from 'child_process';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sarif from 'sarif';
 import { SemVer } from 'semver';
@@ -713,6 +714,26 @@ export class CodeQLCliServer implements Disposable {
 
     await this.runInterpretCommand(SARIF_FORMAT, additionalArgs, metadata, resultsPath, interpretedResultsPath, sourceInfo);
     return await sarifParser(interpretedResultsPath);
+  }
+
+  async readDotFiles(dir: string): Promise<string[]> {
+    return Promise.all((await fs.readdir(dir))
+      .filter(name => path.extname(name).toLowerCase() === '.dot')
+      .map(file => fs.readFile(path.join(dir, file), 'utf8'))
+    );
+  }
+
+  async interpretBqrsGraph(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<string[]> {
+    const additionalArgs = sourceInfo ? ['--dot-location-url-format', 'file://' + sourceInfo.sourceLocationPrefix + '{path}:{start:line}:{start:column}:{end:line}:{end:column}'] : [];
+  
+    await this.runInterpretCommand('dot', additionalArgs, metadata, resultsPath, interpretedResultsPath, sourceInfo);
+  
+    try {
+      const dot = await this.readDotFiles(interpretedResultsPath);
+      return dot;
+    } catch (err) {
+      throw new Error(`Reading output of interpretation failed: ${err.stderr || err}`);
+    }
   }
 
   async generateResultsCsv(metadata: QueryMetadata, resultsPath: string, csvPath: string, sourceInfo?: SourceInfo): Promise<void> {

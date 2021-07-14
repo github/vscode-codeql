@@ -8,12 +8,14 @@ import {
   InterpretedResultsSortState,
   ResultSet,
   ALERTS_TABLE_NAME,
+  GRAPH_TABLE_NAME,
   SELECT_TABLE_NAME,
   getDefaultResultSetName,
   ParsedResultSets,
   IntoResultsViewMsg,
 } from '../pure/interface-types';
 import { PathTable } from './alert-table';
+import { Graph } from './graph';
 import { RawTable } from './raw-results-table';
 import {
   ResultTableProps,
@@ -107,7 +109,7 @@ export class ResultTables
   }
 
   private getInterpretedTableName(): string {
-    return ALERTS_TABLE_NAME;
+    return this.props.interpretation?.data.t === 'GraphInterpretationData' ? GRAPH_TABLE_NAME : ALERTS_TABLE_NAME;
   }
 
   private getResultSetNames(): string[] {
@@ -354,8 +356,19 @@ class ResultTable extends React.Component<ResultTableProps, Record<string, never
     switch (resultSet.t) {
       case 'RawResultSet': return <RawTable
         {...this.props} resultSet={resultSet} />;
-      case 'InterpretedResultSet': return <PathTable
-        {...this.props} resultSet={resultSet} />;
+      case 'InterpretedResultSet': {
+        const data = resultSet.interpretation.data;
+        switch (data.t) {
+          case 'SarifInterpretationData': {
+            const sarifResultSet = { ...resultSet, interpretation: { ...resultSet.interpretation, data } };
+            return <PathTable {...this.props} resultSet={sarifResultSet} />;
+          }
+          case 'GraphInterpretationData': {
+            const grapResultSet = { ...resultSet, interpretation: { ...resultSet.interpretation, data } };
+            return <Graph {...this.props} resultSet={grapResultSet} />;
+          }
+        }
+      }
     }
   }
 }

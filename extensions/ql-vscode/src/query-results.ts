@@ -5,9 +5,10 @@ import * as messages from './pure/messages';
 import * as cli from './cli';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { RawResultsSortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata, InterpretedResultsSortState, ResultsPaths, SarifInterpretationData } from './pure/interface-types';
+import { RawResultsSortState, SortedResultSetInfo, DatabaseInfo, QueryMetadata, InterpretedResultsSortState, ResultsPaths, SarifInterpretationData, GraphInterpretationData } from './pure/interface-types';
 import { QueryHistoryConfig } from './config';
 import { QueryHistoryItemOptions } from './query-history';
+
 
 export class CompletedQuery implements QueryWithResults {
   readonly date: Date;
@@ -210,4 +211,23 @@ export function ensureMetadataIsComplete(metadata: QueryMetadata | undefined) {
     metadata.id = 'dummy-id';
   }
   return metadata;
+}
+
+/**
+ * Call cli command to interpret graph results.
+ */
+export async function interpretGraphResults(
+  server: cli.CodeQLCliServer,
+  metadata: QueryMetadata | undefined,
+  resultsPaths: ResultsPaths,
+  sourceInfo?: cli.SourceInfo
+): Promise<GraphInterpretationData> {
+  const { resultsPath, interpretedResultsPath } = resultsPaths;
+  if (await fs.pathExists(interpretedResultsPath)) {
+    const dot = await server.readDotFiles(interpretedResultsPath);
+    return { dot, t: 'GraphInterpretationData' };
+  }
+
+  const dot = await server.interpretBqrsGraph(ensureMetadataIsComplete(metadata), resultsPath, interpretedResultsPath, sourceInfo);
+  return { dot, t: 'GraphInterpretationData' };
 }

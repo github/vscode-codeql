@@ -8,4 +8,4 @@
  * succeeds.
  */
 
-declare type Blob = string;
+//declare type Blob = string; // TODO: Check this
