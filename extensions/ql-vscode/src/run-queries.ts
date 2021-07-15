@@ -563,7 +563,7 @@ export async function compileAndRunQueryAgainstDatabase(
   const dbSchemaName = path.basename(db.contents.dbSchemeUri.fsPath);
   if (querySchemaName != dbSchemaName) {
     void logger.log(`Query schema was ${querySchemaName}, but database schema was ${dbSchemaName}.`);
-    throw new Error(`The query ${path.basename(queryPath)} cannot be run against the selected database: their target languages are different. Please select a different database and try again.`);
+    throw new Error(`The query ${path.basename(queryPath)} cannot be run against the selected database (${db.name}): their target languages are different. Please select a different database and try again.`);
   }
 
   const qlProgram: messages.QlProgram = {

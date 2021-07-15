@@ -468,14 +468,11 @@ async function activateWithInstalledDistribution(
     selectedQuery: Uri | undefined,
     progress: ProgressCallback,
     token: CancellationToken,
-    databaseQuickPick: DatabaseItem | undefined,
+    databaseItem: DatabaseItem | undefined,
   ): Promise<void> {
     if (qs !== undefined) {
-      const dbItem = databaseQuickPick !== undefined
-        // database selected from multi-database quick pick
-        ? databaseQuickPick
-        // database currently selected in Databases UI
-        : await databaseUI.getDatabaseItem(progress, token);
+      // If no databaseItem is specified, use the database currently selected in the Databases UI
+      const dbItem = databaseItem || await databaseUI.getDatabaseItem(progress, token);
       if (dbItem === undefined) {
         throw new Error('Can\'t run query without a selected database');
       }
@@ -588,13 +585,22 @@ async function activateWithInstalledDistribution(
           { canPickMany: true }
         );
         if (quickpick !== undefined) {
+          // Collect all skipped databases and display them at the end (instead of popping up individual errors)
+          const skippedDatabases = [];
+          const errors = [];
           for (const item of quickpick) {
             try {
               await compileAndRunQuery(false, uri, progress, token, item.databaseItem);
             } catch (error) {
-              // Skip databases that are incompatible with the query, e.g. using a different language.
-              void helpers.showAndLogErrorMessage(`Skipped database '${item.label}'. ${error}`);
+              skippedDatabases.push(item.label);
+              errors.push(error.message);
             }
+          }
+          if (skippedDatabases.length > 0) {
+            void logger.log(`Errors:\n${errors.join('\n')}`);
+            void helpers.showAndLogWarningMessage(
+              `The following databases were skipped:\n${skippedDatabases.join('\n')}.\nFor details about the errors, see the logs.`
+            );
           }
         } else {
           void helpers.showAndLogErrorMessage('No databases selected.');
