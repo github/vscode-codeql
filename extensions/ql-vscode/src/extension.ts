@@ -472,14 +472,14 @@ async function activateWithInstalledDistribution(
   ): Promise<void> {
     if (qs !== undefined) {
       // If no databaseItem is specified, use the database currently selected in the Databases UI
-      const dbItem = databaseItem || await databaseUI.getDatabaseItem(progress, token);
-      if (dbItem === undefined) {
+      databaseItem = databaseItem || await databaseUI.getDatabaseItem(progress, token);
+      if (databaseItem === undefined) {
         throw new Error('Can\'t run query without a selected database');
       }
       const info = await compileAndRunQueryAgainstDatabase(
         cliServer,
         qs,
-        dbItem,
+        databaseItem,
         quickEval,
         selectedQuery,
         progress,
