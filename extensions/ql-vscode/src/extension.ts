@@ -73,7 +73,7 @@ import {
 import { CodeQlStatusBarHandler } from './status-bar';
 
 import { Credentials } from './authentication';
-import runRemoteQuery from './run-remote-query';
+import { runRemoteQuery, findLanguage } from './run-remote-query';
 
 /**
  * extension.ts
@@ -570,7 +570,13 @@ async function activateWithInstalledDistribution(
         token: CancellationToken,
         uri: Uri | undefined
       ) => {
-        const quickPickItems = dbm.databaseItems.map<DatabaseQuickPickItem>(dbItem => (
+        const queryLanguage = await findLanguage(cliServer, uri);
+        const filteredDBs = dbm.databaseItems.filter(db => db.language === queryLanguage);
+        if (filteredDBs.length === 0) {
+          void helpers.showAndLogErrorMessage(`No databases found for language ${queryLanguage}`);
+          return;
+        }
+        const quickPickItems = filteredDBs.map<DatabaseQuickPickItem>(dbItem => (
           {
             databaseItem: dbItem,
             label: dbItem.name,
@@ -707,7 +713,7 @@ async function activateWithInstalledDistribution(
     ) => {
       if (isCanary()) {
         const credentials = await Credentials.initialize(ctx);
-        await runRemoteQuery(credentials, uri || window.activeTextEditor?.document.uri);
+        await runRemoteQuery(cliServer, credentials, uri || window.activeTextEditor?.document.uri);
       }
     })
   );

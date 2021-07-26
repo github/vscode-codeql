@@ -1,20 +1,51 @@
-import { Uri } from 'vscode';
+import { Uri, window } from 'vscode';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
-import { showAndLogErrorMessage, showAndLogInformationMessage } from './helpers';
+import { getOnDiskWorkspaceFolders, showAndLogErrorMessage, showAndLogInformationMessage } from './helpers';
 import { Credentials } from './authentication';
+import * as cli from './cli';
+import { logger } from './logging';
 
 interface Config {
   repositories: string[];
   ref?: string;
-  language: string;
+  language?: string;
 }
 
 // Test "controller" repository and workflow.
 const OWNER = 'dsp-testing';
 const REPO = 'qc-controller';
 
-export default async function runRemoteQuery(credentials: Credentials, uri?: Uri) {
+/**
+ * Finds the language that a query targets.
+ * If it can't be autodetected, prompt the user to specify the language manually.
+ */
+export async function findLanguage(
+  cliServer: cli.CodeQLCliServer,
+  queryUri: Uri | undefined
+): Promise<string> {
+  const uri = queryUri || window.activeTextEditor?.document.uri;
+  if (uri !== undefined) {
+    try {
+      const queryInfo = await cliServer.resolveQueryByLanguage(getOnDiskWorkspaceFolders(), uri);
+      return (Object.keys(queryInfo.byLanguage))[0];
+    } catch (e) {
+      void logger.log('Could not autodetect query language. Select language manually.');
+    }
+  }
+  const availableLanguages = Object.keys(await cliServer.resolveLanguages());
+  const language = await window.showQuickPick(
+    availableLanguages,
+    { placeHolder: 'Select target language for your query', ignoreFocusOut: true }
+  ) || '';
+  if (language === '') {
+    // This only happens if the user cancels the quick pick.
+    void showAndLogErrorMessage('Language not found. Language must be specified manually.');
+  }
+  return language;
+}
+
+export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials: Credentials, uri?: Uri) {
   if (!uri?.fsPath.endsWith('.ql')) {
     return;
   }
@@ -34,7 +65,7 @@ export default async function runRemoteQuery(credentials: Credentials, uri?: Uri
   const config = yaml.safeLoad(await fs.readFile(repositoriesFile, 'utf8')) as Config;
 
   const ref = config.ref || 'main';
-  const language = config.language;
+  const language = config.language || await findLanguage(cliServer, uri);
   const repositories = config.repositories;
 
   try {

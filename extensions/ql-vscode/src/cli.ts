@@ -8,7 +8,7 @@ import { Readable } from 'stream';
 import { StringDecoder } from 'string_decoder';
 import * as tk from 'tree-kill';
 import { promisify } from 'util';
-import { CancellationToken, Disposable } from 'vscode';
+import { CancellationToken, Disposable, Uri } from 'vscode';
 
 import { BQRSInfo, DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { CliConfig } from './config';
@@ -44,6 +44,16 @@ export interface QuerySetup {
 }
 
 /**
+ * The expected output of `codeql resolve queries --format bylanguage`.
+ */
+export interface QueryInfoByLanguage {
+  // Using `unknown` as a placeholder. For now, the value is only ever an empty object.
+  byLanguage: Record<string, Record<string, unknown>>;
+  noDeclaredLanguage: Record<string, unknown>;
+  multipleDeclaredLanguages: Record<string, unknown>;
+}
+
+/**
  * The expected output of `codeql resolve database`.
  */
 export interface DbInfo {
@@ -70,6 +80,11 @@ export interface UpgradesInfo {
  * The expected output of `codeql resolve qlpacks`.
  */
 export type QlpacksInfo = { [name: string]: string[] };
+
+/**
+ * The expected output of `codeql resolve languages`.
+ */
+export type LanguagesInfo = { [name: string]: string[] };
 
 /**
  * The expected output of `codeql resolve qlref`.
@@ -483,6 +498,20 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
+   * Resolves the language for a query.
+   * @param queryUri The URI of the query
+   */
+  async resolveQueryByLanguage(workspaces: string[], queryUri: Uri): Promise<QueryInfoByLanguage> {
+    const subcommandArgs = [
+      '--format', 'bylanguage',
+      queryUri.fsPath,
+      '--additional-packs',
+      workspaces.join(path.delimiter)
+    ];
+    return JSON.parse(await this.runCodeQlCliCommand(['resolve', 'queries'], subcommandArgs, 'Resolving query by language'));
+  }
+
+  /**
    * Finds all available QL tests in a given directory.
    * @param testPath Root of directory tree to search for tests.
    * @returns The list of tests that were found.
@@ -722,6 +751,14 @@ export class CodeQLCliServer implements Disposable {
       args,
       'Resolving qlpack information',
     );
+  }
+
+  /**
+   * Gets information about the available languages.
+   * @returns A dictionary mapping language name to the directory it comes from
+   */
+  async resolveLanguages(): Promise<LanguagesInfo> {
+    return await this.runJsonCodeQlCliCommand<LanguagesInfo>(['resolve', 'languages'], [], 'Resolving languages');
   }
 
   /**
