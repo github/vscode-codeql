@@ -12,7 +12,7 @@ import { workspace } from 'vscode';
  *       version. Note that for now, we must maintain the default version by hand.
  *       This may be set to `nightly`, in which case the `NIGHTLY_URL` variable must
  *       also be set.
- * 
+ *
  *     - NIGHTLY_URL: The URL for a nightly release of the CodeQL CLI that will be
  *       used if `CLI_VERSION` is set to `nightly`.
  *
@@ -44,7 +44,7 @@ const _10MB = _1MB * 10;
 
 // CLI version to test. Hard code the latest as default. And be sure
 // to update the env if it is not otherwise set.
-const CLI_VERSION = process.env.CLI_VERSION || 'v2.5.5';
+const CLI_VERSION = process.env.CLI_VERSION || 'v2.5.8';
 process.env.CLI_VERSION = CLI_VERSION;
 
 // Base dir where CLIs will be downloaded into

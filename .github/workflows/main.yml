@@ -66,7 +66,7 @@ jobs:
         run: |
           LATEST=`gh api repos/dsp-testing/codeql-cli-nightlies/releases --jq '.[].tag_name' --method GET --raw-field 'per_page=1'`
           echo "::set-output name=nightly-url::https://github.com/dsp-testing/codeql-cli-nightlies/releases/download/$LATEST"
-    
+
   test:
     name: Test
     runs-on: ${{ matrix.os }}
@@ -151,7 +151,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        version: ['v2.2.6', 'v2.3.3', 'v2.4.6', 'v2.5.7', 'nightly']
+        version: ['v2.2.6', 'v2.3.3', 'v2.4.6', 'v2.5.8', 'nightly']
     env:
       CLI_VERSION: ${{ matrix.version }}
       NIGHTLY_URL: ${{ needs.find-nightly.outputs.url }}
