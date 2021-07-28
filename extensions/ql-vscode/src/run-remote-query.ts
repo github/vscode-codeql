@@ -1,11 +1,11 @@
-import { Uri, window } from 'vscode';
+import { QuickPickItem, Uri, window } from 'vscode';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
 import { getOnDiskWorkspaceFolders, showAndLogErrorMessage, showAndLogInformationMessage } from './helpers';
 import { Credentials } from './authentication';
 import * as cli from './cli';
 import { logger } from './logging';
-
+import { getRemoteRepositoryLists } from './config';
 interface Config {
   repositories: string[];
   ref?: string;
@@ -47,6 +47,41 @@ export async function findLanguage(
   return language;
 }
 
+interface RepoListQuickPickItem extends QuickPickItem {
+  repoList: string[];
+}
+
+/**
+ * Gets the repositories to run the query against.
+ */
+async function getRepositories(): Promise<string[] | undefined> {
+  const repoLists = getRemoteRepositoryLists();
+  if (repoLists && Object.keys(repoLists).length) {
+    const quickPickItems = Object.entries(repoLists).map<RepoListQuickPickItem>(([key, value]) => (
+      {
+        label: key,       // the name of the repository list
+        repoList: value,  // the actual array of repositories
+      }
+    ));
+    const quickpick = await window.showQuickPick<RepoListQuickPickItem>(
+      quickPickItems,
+      {
+        placeHolder: 'Select a repository list. You can define repository lists in the `codeQL.remoteRepositoryLists` setting.',
+        ignoreFocusOut: true,
+      });
+    if (quickpick && quickpick.repoList.length > 0) {
+      void logger.log(`Selected repositories: ${quickpick.repoList}`);
+      return quickpick.repoList;
+    } else {
+      void showAndLogErrorMessage('No repositories selected.');
+      return;
+    }
+  } else {
+    void showAndLogErrorMessage('No repository lists defined. You can define repository lists in the `codeQL.remoteRepositoryLists` setting.');
+    return;
+  }
+}
+
 export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials: Credentials, uri?: Uri) {
   if (!uri?.fsPath.endsWith('.ql')) {
     return;
@@ -59,19 +94,31 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
   const query = await fs.readFile(queryFile, 'utf8');
 
   const repositoriesFile = queryFile.substring(0, queryFile.length - '.ql'.length) + '.repositories';
-  if (!(await fs.pathExists(repositoriesFile))) {
-    void showAndLogErrorMessage(`Missing file: '${repositoriesFile}' to specify the repositories to run against. This file must be a sibling of ${queryFile}.`);
-    return;
+  let ref: string | undefined;
+  let language: string | undefined;
+  let repositories: string[] | undefined;
+
+  // If the user has an explicit `.repositories` file, use that.
+  // Otherwise, prompt user to select repositories from the `codeQL.remoteRepositoryLists` setting.
+  if (await fs.pathExists(repositoriesFile)) {
+    void logger.log(`Found '${repositoriesFile}'. Using information from that file to run ${queryFile}.`);
+
+    const config = yaml.safeLoad(await fs.readFile(repositoriesFile, 'utf8')) as Config;
+
+    ref = config.ref || 'main';
+    language = config.language || await findLanguage(cliServer, uri);
+    repositories = config.repositories;
+  } else {
+    ref = 'main';
+    [language, repositories] = await Promise.all([findLanguage(cliServer, uri), getRepositories()]);
   }
 
-  const config = yaml.safeLoad(await fs.readFile(repositoriesFile, 'utf8')) as Config;
-
-  const ref = config.ref || 'main';
-  const language = config.language || await findLanguage(cliServer, uri);
-  const repositories = config.repositories;
-
   if (!language) {
-    return; // No error message needed, since `findlanguage` already displays one.
+    return; // No error message needed, since `findLanguage` already displays one.
+  }
+
+  if (!repositories || repositories.length === 0) {
+    return; // No error message needed, since `getRepositories` already displays one.
   }
 
   try {

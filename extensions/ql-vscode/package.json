@@ -233,6 +233,19 @@
           "default": false,
           "scope": "application",
           "description": "Specifies whether or not to write telemetry events to the extension log."
+        },
+        "codeQL.remoteRepositoryLists": {
+          "type": "object",
+          "patternProperties": {
+            ".*": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "default": null,
+          "markdownDescription": "[For internal use only] Lists of GitHub repositories that you want to query remotely. This should be a JSON object where each key is a user-specified name for this repository list, and the value is an array of GitHub repositories (of the form `<owner>/<repo>`)."
         }
       }
     },
