@@ -570,11 +570,15 @@ async function activateWithInstalledDistribution(
         token: CancellationToken,
         uri: Uri | undefined
       ) => {
+        let filteredDBs = dbm.databaseItems;
+        // If possible, only show databases with the right language (otherwise show all databases).
         const queryLanguage = await findLanguage(cliServer, uri);
-        const filteredDBs = dbm.databaseItems.filter(db => db.language === queryLanguage);
-        if (filteredDBs.length === 0) {
-          void helpers.showAndLogErrorMessage(`No databases found for language ${queryLanguage}`);
-          return;
+        if (queryLanguage) {
+          filteredDBs = dbm.databaseItems.filter(db => db.language === queryLanguage);
+          if (filteredDBs.length === 0) {
+            void helpers.showAndLogErrorMessage(`No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`);
+            return;
+          }
         }
         const quickPickItems = filteredDBs.map<DatabaseQuickPickItem>(dbItem => (
           {
@@ -588,7 +592,7 @@ async function activateWithInstalledDistribution(
          */
         const quickpick = await window.showQuickPick<DatabaseQuickPickItem>(
           quickPickItems,
-          { canPickMany: true }
+          { canPickMany: true, ignoreFocusOut: true }
         );
         if (quickpick !== undefined) {
           // Collect all skipped databases and display them at the end (instead of popping up individual errors)

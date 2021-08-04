@@ -23,12 +23,14 @@ const REPO = 'qc-controller';
 export async function findLanguage(
   cliServer: cli.CodeQLCliServer,
   queryUri: Uri | undefined
-): Promise<string> {
+): Promise<string | undefined> {
   const uri = queryUri || window.activeTextEditor?.document.uri;
   if (uri !== undefined) {
     try {
       const queryInfo = await cliServer.resolveQueryByLanguage(getOnDiskWorkspaceFolders(), uri);
-      return (Object.keys(queryInfo.byLanguage))[0];
+      const language = (Object.keys(queryInfo.byLanguage))[0];
+      void logger.log(`Detected query language: ${language}`);
+      return language;
     } catch (e) {
       void logger.log('Could not autodetect query language. Select language manually.');
     }
@@ -37,8 +39,8 @@ export async function findLanguage(
   const language = await window.showQuickPick(
     availableLanguages,
     { placeHolder: 'Select target language for your query', ignoreFocusOut: true }
-  ) || '';
-  if (language === '') {
+  );
+  if (!language) {
     // This only happens if the user cancels the quick pick.
     void showAndLogErrorMessage('Language not found. Language must be specified manually.');
   }
@@ -67,6 +69,10 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
   const ref = config.ref || 'main';
   const language = config.language || await findLanguage(cliServer, uri);
   const repositories = config.repositories;
+
+  if (!language) {
+    return;
+  }
 
   try {
     await octokit.request(
