@@ -71,7 +71,7 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
   const repositories = config.repositories;
 
   if (!language) {
-    return;
+    return; // No error message needed, since `findlanguage` already displays one.
   }
 
   try {

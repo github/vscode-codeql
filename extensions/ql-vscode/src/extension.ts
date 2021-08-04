@@ -571,6 +571,10 @@ async function activateWithInstalledDistribution(
         uri: Uri | undefined
       ) => {
         let filteredDBs = dbm.databaseItems;
+        if (filteredDBs.length === 0) {
+          void helpers.showAndLogErrorMessage('No databases found. Please add a suitable database to your workspace.');
+          return;
+        }
         // If possible, only show databases with the right language (otherwise show all databases).
         const queryLanguage = await findLanguage(cliServer, uri);
         if (queryLanguage) {
