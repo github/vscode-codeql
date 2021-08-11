@@ -77,8 +77,19 @@ async function getRepositories(): Promise<string[] | undefined> {
       return;
     }
   } else {
-    void showAndLogErrorMessage('No repository lists defined. You can define repository lists in the `codeQL.remoteRepositoryLists` setting.');
-    return;
+    void logger.log('No repository lists defined. Displaying text input box.');
+    const remoteRepo = await window.showInputBox({
+      title: 'Enter a GitHub repository in the format <owner>/<repo> (e.g. github/codeql)',
+      placeHolder: '<owner>/<repo>',
+      prompt: 'Tip: you can save frequently used repositories in the `codeql.remoteRepositoryLists` setting',
+      ignoreFocusOut: true,
+    });
+    if (!remoteRepo) {
+      void showAndLogErrorMessage('No repositories entered.');
+      return;
+    }
+    void logger.log(`Entered repository: ${remoteRepo}`);
+    return [remoteRepo];
   }
 }
 
