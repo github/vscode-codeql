@@ -78,7 +78,12 @@ async function getRepositories(): Promise<string[] | undefined> {
     }
   } else {
     void logger.log('No repository lists defined. Displaying text input box.');
-    const repoRegex = /^(?:[a-zA-Z0-9]+-?)*[a-zA-Z0-9]\/[a-zA-Z0-9-_]+$/;
+    /**
+     * This regex matches strings of the form `owner/repo` where:
+     * - `owner` is made up of alphanumeric characters or single hyphens, starting and ending in an alphanumeric character
+     * - `repo` is made up of alphanumeric characters, hyphens, or underscores
+     */
+    const repoRegex = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
     const remoteRepo = await window.showInputBox({
       title: 'Enter a GitHub repository in the format <owner>/<repo> (e.g. github/codeql)',
       placeHolder: '<owner>/<repo>',
