@@ -69,7 +69,7 @@ async function getRepositories(): Promise<string[] | undefined> {
         placeHolder: 'Select a repository list. You can define repository lists in the `codeQL.remoteRepositoryLists` setting.',
         ignoreFocusOut: true,
       });
-    if (quickpick && quickpick.repoList.length > 0) {
+    if (quickpick?.repoList.length) {
       void logger.log(`Selected repositories: ${quickpick.repoList}`);
       return quickpick.repoList;
     } else {
@@ -78,6 +78,7 @@ async function getRepositories(): Promise<string[] | undefined> {
     }
   } else {
     void logger.log('No repository lists defined. Displaying text input box.');
+    const repoRegex = /^(?:[a-zA-Z0-9]+-?)*[a-zA-Z0-9]\/[a-zA-Z0-9-_]+$/;
     const remoteRepo = await window.showInputBox({
       title: 'Enter a GitHub repository in the format <owner>/<repo> (e.g. github/codeql)',
       placeHolder: '<owner>/<repo>',
@@ -86,6 +87,9 @@ async function getRepositories(): Promise<string[] | undefined> {
     });
     if (!remoteRepo) {
       void showAndLogErrorMessage('No repositories entered.');
+      return;
+    } else if (!repoRegex.test(remoteRepo)) { // Check if user entered invalid input
+      void showAndLogErrorMessage('Invalid repository format. Must be in the format <owner>/<repo> (e.g. github/codeql)');
       return;
     }
     void logger.log(`Entered repository: ${remoteRepo}`);

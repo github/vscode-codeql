@@ -292,14 +292,13 @@ export function isCanary() {
  */
 export const NO_CACHE_AST_VIEWER = new Setting('disableCache', AST_VIEWER_SETTING);
 
-/*
+/**
  * Lists of GitHub repositories that you want to query remotely via the "Run Remote query" command.
  * Note: This command is only available for internal users.
  * 
  * This setting should be a JSON object where each key is a user-specified name (string),
  * and the value is an array of GitHub repositories (of the form `<owner>/<repo>`).
  */
-
 const REMOTE_REPO_LISTS = new Setting('remoteRepositoryLists', ROOT_SETTING);
 
 export function getRemoteRepositoryLists(): Record<string, string[]> | undefined {
