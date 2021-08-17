@@ -123,6 +123,7 @@ export interface TestCompleted {
   expected: string;
   diff: string[] | undefined;
   failureDescription?: string;
+  failureStage?: string;
 }
 
 /**

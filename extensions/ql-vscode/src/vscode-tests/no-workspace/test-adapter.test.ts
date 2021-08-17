@@ -96,7 +96,7 @@ describe('test-adapter', () => {
       type: 'test',
       state: 'errored',
       test: gPath,
-      message: `\nerrored: ${gPath}\npqr\nxyz\n`,
+      message: `\ncompilation error: ${gPath}\nERROR: abc\n`,
       decorations: [
         { line: 1, message: 'abc' }
       ]
@@ -149,14 +149,16 @@ describe('test-adapter', () => {
           pass: false,
           diff: ['pqr', 'xyz'],
           // a compile error
+          failureStage: 'COMPILATION',
           messages: [
-            { position: { line: 1 }, message: 'abc' }
+            { position: { line: 1 }, message: 'abc', severity: 'ERROR' }
           ]
         });
         yield Promise.resolve({
           test: Uri.parse('file:/ab/c/e/f/h.ql').fsPath,
           pass: false,
           diff: ['jkh', 'tuv'],
+          failureStage: 'RESULT',
           messages: []
         });
       })()
