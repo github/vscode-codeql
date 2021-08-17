@@ -294,7 +294,9 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
           : 'failed';
       let message: string | undefined;
       if (event.failureDescription || event.diff?.length) {
-        message = ['', `${state}: ${event.test}`, event.failureDescription || event.diff?.join('\n'), ''].join('\n');
+        message = event.failureStage === 'RESULT'
+          ? ['', `${state}: ${event.test}`, event.failureDescription || event.diff?.join('\n'), ''].join('\n')
+          : ['', `${event.failureStage?.toLowerCase()} error: ${event.test}`, event.failureDescription || `${event.messages[0].severity}: ${event.messages[0].message}`, ''].join('\n');
         void testLogger.log(message);
       }
       this._testStates.fire({
