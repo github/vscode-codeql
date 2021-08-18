@@ -177,10 +177,26 @@ jobs:
           npm run build
         shell: bash
 
+      - name: Decide on ref of CodeQL repo
+        id: choose-ref
+        shell: bash
+        run: |
+          if [[ "${{ matrix.version }}" == "nightly" ]]
+          then
+            REF="codeql-cli/latest"
+          elif [[ "${{ matrix.version }}" == "v2.2.6" || "${{ matrix.version }}" == "v2.3.3" ]]
+          then
+            REF="codeql-cli/v2.4.5"
+          else
+            REF="codeql-cli/${{ matrix.version }}"
+          fi
+          echo "::set-output name=ref::$REF"
+
       - name: Checkout QL
         uses: actions/checkout@v2
         with:
           repository: github/codeql
+          ref: ${{ steps.choose-ref.outputs.ref }}
           path: codeql
 
       - name: Run CLI tests (Linux)
