@@ -235,7 +235,10 @@
           "description": "Specifies whether or not to write telemetry events to the extension log."
         },
         "codeQL.remoteRepositoryLists": {
-          "type": "object",
+          "type": [
+            "object",
+            null
+          ],
           "patternProperties": {
             ".*": {
               "type": "array",
