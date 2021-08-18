@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.5.3 - 18 August 2021
 
 - Add a command _CodeQL: Run Query on Multiple Databases_, which lets users select multiple databases to run a query on. [#898](https://github.com/github/vscode-codeql/pull/898)
 - Autodetect what language a query targets. This refines the _CodeQL: Run Query on Multiple Databases_ command to only show relevant databases. [#915](https://github.com/github/vscode-codeql/pull/915)
