@@ -62,6 +62,9 @@ export class CompletedQuery implements QueryWithResults {
   get queryName(): string {
     return getQueryName(this.query);
   }
+  get queryFileName(): string {
+    return getQueryFileName(this.query);
+  }
 
   get statusString(): string {
     switch (this.result.resultType) {
@@ -88,13 +91,14 @@ export class CompletedQuery implements QueryWithResults {
   }
 
   interpolate(template: string): string {
-    const { databaseName, queryName, time, resultCount, statusString } = this;
+    const { databaseName, queryName, time, resultCount, statusString, queryFileName } = this;
     const replacements: { [k: string]: string } = {
       t: time,
       q: queryName,
       d: databaseName,
       r: resultCount.toString(),
       s: statusString,
+      f: queryFileName,
       '%': '%',
     };
     return template.replace(/%(.)/g, (match, key) => {
@@ -152,17 +156,28 @@ export class CompletedQuery implements QueryWithResults {
  * Uses metadata if it exists, and defaults to the query file name.
  */
 export function getQueryName(query: QueryInfo) {
+  if (query.quickEvalPosition !== undefined) {
+    return 'Quick evaluation of ' + getQueryFileName(query);
+  } else if (query.metadata?.name) {
+    return query.metadata.name;
+  } else {
+    return getQueryFileName(query);
+  }
+}
+
+/**
+ * Gets the file name for an evaluated query.
+ * Defaults to the query file name and may contain position information for quick eval queries.
+ */
+export function getQueryFileName(query: QueryInfo) {
   // Queries run through quick evaluation are not usually the entire query file.
   // Label them differently and include the line numbers.
   if (query.quickEvalPosition !== undefined) {
     const { line, endLine, fileName } = query.quickEvalPosition;
     const lineInfo = line === endLine ? `${line}` : `${line}-${endLine}`;
-    return `Quick evaluation of ${path.basename(fileName)}:${lineInfo}`;
-  } else if (query.metadata?.name) {
-    return query.metadata.name;
-  } else {
-    return path.basename(query.program.queryPath);
+    return `${path.basename(fileName)}:${lineInfo}`;
   }
+  return path.basename(query.program.queryPath);
 }
 
 
