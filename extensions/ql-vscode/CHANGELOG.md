@@ -2,6 +2,9 @@
 
 ## [UNRELEASED]
 
+- Adjust test log output to display diffs only when comparing failed test results with expected test results. [#920](https://github.com/github/vscode-codeql/pull/920)
+- Add support for filename pattern in history view. [#930](https://github.com/github/vscode-codeql/pull/930)
+
 ## 1.5.3 - 18 August 2021
 
 - Add a command _CodeQL: Run Query on Multiple Databases_, which lets users select multiple databases to run a query on. [#898](https://github.com/github/vscode-codeql/pull/898)
