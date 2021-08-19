@@ -54,6 +54,23 @@ describe('CompletedQuery', () => {
     expect(completedQuery.queryName).to.eq('Quick evaluation of yz:1');
   });
 
+  it('should get the query file name', () => {
+    const completedQuery = mockCompletedQuery();
+
+    // from the query path
+    expect(completedQuery.queryFileName).to.eq('stu');
+
+    // from quick eval position
+    (completedQuery.query as any).quickEvalPosition = {
+      line: 1,
+      endLine: 2,
+      fileName: '/home/users/yz'
+    };
+    expect(completedQuery.queryFileName).to.eq('yz:1-2');
+    (completedQuery.query as any).quickEvalPosition.endLine = 1;
+    expect(completedQuery.queryFileName).to.eq('yz:1');
+  });
+
   it('should get the label', () => {
     const completedQuery = mockCompletedQuery();
     expect(completedQuery.getLabel()).to.eq('ghi');
