@@ -25,6 +25,8 @@ import * as qsClient from './queryserver-client';
 import { isQuickQueryPath } from './quick-query';
 import { compileDatabaseUpgradeSequence, hasNondestructiveUpgradeCapabilities, upgradeDatabaseExplicit } from './upgrades';
 import { ensureMetadataIsComplete } from './query-results';
+import { SELECT_QUERY_NAME } from './contextual/locationFinder';
+import { DecodedBqrsChunk } from './pure/bqrs-cli-types';
 
 /**
  * run-queries.ts
@@ -214,6 +216,29 @@ export class QueryInfo {
 
     await qs.cliServer.generateDil(this.compiledQueryPath, this.dilPath);
     return this.dilPath;
+  }
+
+  async exportCsvResults(qs: qsClient.QueryServerClient, csvPath: string, onFinish: () => void): Promise<void> {
+    let stopDecoding = false;
+    const out = fs.createWriteStream(csvPath);
+    out.on('finish', onFinish);
+    out.on('error', () => {
+      if (!stopDecoding) {
+        stopDecoding = true;
+        void showAndLogErrorMessage(`Failed to write CSV results to ${csvPath}`);
+      }
+    });
+    let nextOffset: number | undefined = 0;
+    while (nextOffset !== undefined && !stopDecoding) {
+      const chunk: DecodedBqrsChunk = await qs.cliServer.bqrsDecode(this.resultsPaths.resultsPath, SELECT_QUERY_NAME, {
+        pageSize: 100,
+        offset: nextOffset,
+      });
+      for (const tuple of chunk.tuples)
+        out.write(tuple.join(',') + '\n');
+      nextOffset = chunk.next;
+    }
+    out.end();
   }
 
   async ensureCsvProduced(qs: qsClient.QueryServerClient): Promise<string> {

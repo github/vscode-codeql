@@ -306,6 +306,12 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
+        'codeQLQueryHistory.exportCsvResults',
+        this.handleExportCsvResults.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
         'codeQLQueryHistory.viewCsvResults',
         this.handleViewCsvResults.bind(this)
       )
@@ -569,6 +575,32 @@ export class QueryHistoryManager extends DisposableObject {
         `Query ${label} has no interpreted results.`
       );
     }
+  }
+
+  async handleExportCsvResults(
+    singleItem: CompletedQuery,
+    multiSelect: CompletedQuery[]
+  ) {
+    if (!this.assertSingleQuery(multiSelect)) {
+      return;
+    }
+
+    const saveLocation = await vscode.window.showSaveDialog({
+      title: 'CSV Results',
+      saveLabel: 'Export',
+      filters: {
+        'Comma-separated values': ['csv'],
+      }
+    });
+    if (!saveLocation) {
+      void showAndLogErrorMessage('No save location selected for CSV export!');
+      return;
+    }
+    await singleItem.query.exportCsvResults(this.qs, saveLocation.fsPath, () => {
+      void this.tryOpenExternalFile(
+        saveLocation.fsPath
+      );
+    });
   }
 
   async handleViewCsvResults(
