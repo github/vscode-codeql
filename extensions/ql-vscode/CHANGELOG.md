@@ -3,6 +3,7 @@
 ## [UNRELEASED]
 
 - Add support for filename pattern in history view. [#930](https://github.com/github/vscode-codeql/pull/930)
+- Add an option _Export Results (CSV)_ to export the results of a non-alert query. The existing options for alert queries have been renamed to _View Alerts_ to avoid confusion. [#929](https://github.com/github/vscode-codeql/pull/929)
 
 ## 1.5.3 - 18 August 2021
 

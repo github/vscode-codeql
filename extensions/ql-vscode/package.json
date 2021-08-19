@@ -462,12 +462,16 @@
         "title": "Show Query Text"
       },
       {
+        "command": "codeQLQueryHistory.exportCsvResults",
+        "title": "Export Results (CSV)"
+      },
+      {
         "command": "codeQLQueryHistory.viewCsvResults",
-        "title": "View Results (CSV)"
+        "title": "View Alerts (CSV)"
       },
       {
         "command": "codeQLQueryHistory.viewSarifResults",
-        "title": "View Results (SARIF)"
+        "title": "View Alerts (SARIF)"
       },
       {
         "command": "codeQLQueryHistory.viewDil",
@@ -644,6 +648,11 @@
           "when": "view == codeQLQueryHistory"
         },
         {
+          "command": "codeQLQueryHistory.exportCsvResults",
+          "group": "9_qlCommands",
+          "when": "view == codeQLQueryHistory && viewItem != interpretedResultsItem"
+        },
+        {
           "command": "codeQLQueryHistory.viewCsvResults",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
@@ -798,6 +807,10 @@
         },
         {
           "command": "codeQLQueryHistory.showQueryText",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.exportCsvResults",
           "when": "false"
         },
         {

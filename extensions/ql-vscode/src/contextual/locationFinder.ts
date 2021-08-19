@@ -12,7 +12,7 @@ import { ProgressCallback } from '../commandRunner';
 import { KeyType } from './keyType';
 import { qlpackOfDatabase, resolveQueries } from './queryResolver';
 
-const SELECT_QUERY_NAME = '#select';
+export const SELECT_QUERY_NAME = '#select';
 export const TEMPLATE_NAME = 'selectedSourceFile';
 
 export interface FullLocationLink extends vscode.LocationLink {
