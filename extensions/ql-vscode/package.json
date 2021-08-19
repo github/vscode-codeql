@@ -462,15 +462,15 @@
         "title": "Show Query Text"
       },
       {
-        "command": "codeQLQueryHistory.exportCsvResults",
-        "title": "Export Results (CSV)"
+        "command": "codeQLQueryHistory.viewCsvResults",
+        "title": "View Results (CSV)"
       },
       {
-        "command": "codeQLQueryHistory.viewCsvResults",
+        "command": "codeQLQueryHistory.viewCsvAlerts",
         "title": "View Alerts (CSV)"
       },
       {
-        "command": "codeQLQueryHistory.viewSarifResults",
+        "command": "codeQLQueryHistory.viewSarifAlerts",
         "title": "View Alerts (SARIF)"
       },
       {
@@ -648,17 +648,17 @@
           "when": "view == codeQLQueryHistory"
         },
         {
-          "command": "codeQLQueryHistory.exportCsvResults",
+          "command": "codeQLQueryHistory.viewCsvResults",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory && viewItem != interpretedResultsItem"
         },
         {
-          "command": "codeQLQueryHistory.viewCsvResults",
+          "command": "codeQLQueryHistory.viewCsvAlerts",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
         },
         {
-          "command": "codeQLQueryHistory.viewSarifResults",
+          "command": "codeQLQueryHistory.viewSarifAlerts",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
         },
@@ -810,15 +810,15 @@
           "when": "false"
         },
         {
-          "command": "codeQLQueryHistory.exportCsvResults",
-          "when": "false"
-        },
-        {
           "command": "codeQLQueryHistory.viewCsvResults",
           "when": "false"
         },
         {
-          "command": "codeQLQueryHistory.viewSarifResults",
+          "command": "codeQLQueryHistory.viewCsvAlerts",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.viewSarifAlerts",
           "when": "false"
         },
         {

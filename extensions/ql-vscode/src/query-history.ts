@@ -306,20 +306,20 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
-        'codeQLQueryHistory.exportCsvResults',
-        this.handleExportCsvResults.bind(this)
-      )
-    );
-    this.push(
-      commandRunner(
         'codeQLQueryHistory.viewCsvResults',
         this.handleViewCsvResults.bind(this)
       )
     );
     this.push(
       commandRunner(
-        'codeQLQueryHistory.viewSarifResults',
-        this.handleViewSarifResults.bind(this)
+        'codeQLQueryHistory.viewCsvAlerts',
+        this.handleViewCsvAlerts.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.viewSarifAlerts',
+        this.handleViewSarifAlerts.bind(this)
       )
     );
     this.push(
@@ -556,7 +556,7 @@ export class QueryHistoryManager extends DisposableObject {
     await vscode.window.showTextDocument(doc, { preview: false });
   }
 
-  async handleViewSarifResults(
+  async handleViewSarifAlerts(
     singleItem: CompletedQuery,
     multiSelect: CompletedQuery[]
   ) {
@@ -577,33 +577,25 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  async handleExportCsvResults(
+  async handleViewCsvResults(
     singleItem: CompletedQuery,
     multiSelect: CompletedQuery[]
   ) {
     if (!this.assertSingleQuery(multiSelect)) {
       return;
     }
-
-    const saveLocation = await vscode.window.showSaveDialog({
-      title: 'CSV Results',
-      saveLabel: 'Export',
-      filters: {
-        'Comma-separated values': ['csv'],
-      }
-    });
-    if (!saveLocation) {
-      void showAndLogErrorMessage('No save location selected for CSV export!');
+    if (await singleItem.query.hasCsv()) {
+      void this.tryOpenExternalFile(singleItem.query.csvPath);
       return;
     }
-    await singleItem.query.exportCsvResults(this.qs, saveLocation.fsPath, () => {
+    await singleItem.query.exportCsvResults(this.qs, singleItem.query.csvPath, () => {
       void this.tryOpenExternalFile(
-        saveLocation.fsPath
+        singleItem.query.csvPath
       );
     });
   }
 
-  async handleViewCsvResults(
+  async handleViewCsvAlerts(
     singleItem: CompletedQuery,
     multiSelect: CompletedQuery[]
   ) {
