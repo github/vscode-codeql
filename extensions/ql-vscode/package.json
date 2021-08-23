@@ -180,6 +180,11 @@
           "default": false,
           "description": "Enable debug logging and tuple counting when running CodeQL queries. This information is useful for debugging query performance."
         },
+        "codeQL.runningQueries.maxPaths": {
+          "type": "integer",
+          "default": 4,
+          "markdownDescription": "Max number of paths to display for each alert found by a path query (`@kind path-problem`)."
+        },
         "codeQL.runningQueries.autoSave": {
           "type": "boolean",
           "default": false,

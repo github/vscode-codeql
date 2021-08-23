@@ -79,6 +79,7 @@ const CACHE_SIZE_SETTING = new Setting('cacheSize', RUNNING_QUERIES_SETTING);
 const TIMEOUT_SETTING = new Setting('timeout', RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
 const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
+const MAX_PATHS = new Setting('maxPaths', RUNNING_QUERIES_SETTING);
 const RUNNING_TESTS_SETTING = new Setting('runningTests', ROOT_SETTING);
 const RESULTS_DISPLAY_SETTING = new Setting('resultsDisplay', ROOT_SETTING);
 
@@ -112,12 +113,13 @@ export interface QueryHistoryConfig {
   onDidChangeConfiguration: Event<void>;
 }
 
-const CLI_SETTINGS = [ADDITIONAL_TEST_ARGUMENTS_SETTING, NUMBER_OF_TEST_THREADS_SETTING, NUMBER_OF_THREADS_SETTING];
+const CLI_SETTINGS = [ADDITIONAL_TEST_ARGUMENTS_SETTING, NUMBER_OF_TEST_THREADS_SETTING, NUMBER_OF_THREADS_SETTING, MAX_PATHS];
 
 export interface CliConfig {
   additionalTestArguments: string[];
   numberTestThreads: number;
   numberThreads: number;
+  maxPaths: number;
   onDidChangeConfiguration?: Event<void>;
 }
 
@@ -262,6 +264,10 @@ export class CliConfigListener extends ConfigListener implements CliConfig {
 
   public get numberThreads(): number {
     return NUMBER_OF_THREADS_SETTING.getValue<number>();
+  }
+
+  public get maxPaths(): number {
+    return MAX_PATHS.getValue<number>();
   }
 
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
