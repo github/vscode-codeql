@@ -649,6 +649,11 @@ export class CodeQLCliServer implements Disposable {
       this.cliConfig.numberThreads.toString(),
     );
 
+    args.push(
+      '--max-paths',
+      this.cliConfig.maxPaths.toString(),
+    );
+
     args.push(resultsPath);
     await this.runCodeQlCliCommand(['bqrs', 'interpret'], args, 'Interpreting query results');
   }
