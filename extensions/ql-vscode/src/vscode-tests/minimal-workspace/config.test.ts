@@ -48,6 +48,10 @@ describe('config listeners', function() {
         name: 'codeQL.runningTests.numberOfThreads',
         property: 'numberTestThreads',
         values: [1, 0]
+      }, {
+        name: 'codeQL.runningQueries.maxPaths',
+        property: 'maxPaths',
+        values: [0, 1]
       }]
     },
     {
