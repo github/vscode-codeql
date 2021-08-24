@@ -183,6 +183,8 @@
         "codeQL.runningQueries.maxPaths": {
           "type": "integer",
           "default": 4,
+          "minimum": 1,
+          "maximum": 256,
           "markdownDescription": "Max number of paths to display for each alert found by a path query (`@kind path-problem`)."
         },
         "codeQL.runningQueries.autoSave": {
