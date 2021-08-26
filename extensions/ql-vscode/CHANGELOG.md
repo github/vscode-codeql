@@ -5,6 +5,7 @@
 - Add support for filename pattern in history view. [#930](https://github.com/github/vscode-codeql/pull/930)
 - Add an option _View Results (CSV)_ to view the results of a non-alert query. The existing options for alert queries have been renamed to _View Alerts_ to avoid confusion. [#929](https://github.com/github/vscode-codeql/pull/929)
 - Allow users to specify the number of paths to display for each alert. [#931](https://github.com/github/vscode-codeql/pull/931)
+- Adjust pagination controls in _CodeQL Query Results_ to always be visible [#936](https://github.com/github/vscode-codeql/pull/936)
 
 ## 1.5.3 - 18 August 2021
 
