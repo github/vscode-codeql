@@ -56,11 +56,8 @@ describe('Use cli', function() {
   it('should resolve languages', async function() {
     skipIfNoCodeQL(this);
     const languages = await cli.resolveLanguages();
-    // should have a bunch of languages. just check that a few known ones exist
-    expect(languages['cpp']).not.to.be.undefined;
-    expect(languages['csharp']).not.to.be.undefined;
-    expect(languages['java']).not.to.be.undefined;
-    expect(languages['javascript']).not.to.be.undefined;
-    expect(languages['python']).not.to.be.undefined;
+    for (const expectedLanguage of ['cpp', 'csharp', 'go', 'java', 'javascript', 'python']) {
+      expect(languages).to.have.property(expectedLanguage).that.is.not.undefined;
+    }
   });
 });
