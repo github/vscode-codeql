@@ -110,7 +110,7 @@ export async function displayQuickQuery(
 
     const datasetFolder = await dbItem.getDatasetFolder(cliServer);
     const dbscheme = await getPrimaryDbscheme(datasetFolder);
-    const qlpack = await getQlPackForDbscheme(cliServer, dbscheme);
+    const qlpack = (await getQlPackForDbscheme(cliServer, dbscheme)).dbschemePack;
     const qlPackFile = path.join(queriesDir, 'qlpack.yml');
     const qlFile = path.join(queriesDir, QUICK_QUERY_QUERY_NAME);
     const shouldRewrite = await checkShouldRewrite(qlPackFile, qlpack);

@@ -775,10 +775,14 @@ export class CodeQLCliServer implements Disposable {
    *   the default CLI search path is used.
    * @returns A list of query files found.
    */
-  resolveQueriesInSuite(suite: string, additionalPacks: string[], searchPath?: string[]): Promise<string[]> {
+  async resolveQueriesInSuite(suite: string, additionalPacks: string[], searchPath?: string[]): Promise<string[]> {
     const args = ['--additional-packs', additionalPacks.join(path.delimiter)];
     if (searchPath !== undefined) {
       args.push('--search-path', path.join(...searchPath));
+    }
+    if (await this.cliConstraints.supportsAllowLibraryPacksInResolveQueries()) {
+      // All of our usage of `codeql resolve queries` needs to handle library packs.
+      args.push('--allow-library-packs');
     }
     args.push(suite);
     return this.runJsonCodeQlCliCommand<string[]>(
@@ -1064,6 +1068,12 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_DB_REGISTRATION = new SemVer('2.4.1');
 
+  /**
+   * CLI version where the `--allow-library-packs` option to `codeql resolve queries` was
+   * introduced.
+   */
+  public static CLI_VERSION_WITH_ALLOW_LIBRARY_PACKS_IN_RESOLVE_QUERIES = new SemVer('2.6.1');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1086,6 +1096,10 @@ export class CliVersionConstraint {
 
   public async supportsResolveQlref() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_QLREF);
+  }
+
+  public async supportsAllowLibraryPacksInResolveQueries() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_ALLOW_LIBRARY_PACKS_IN_RESOLVE_QUERIES);
   }
 
   async supportsDatabaseRegistration() {
