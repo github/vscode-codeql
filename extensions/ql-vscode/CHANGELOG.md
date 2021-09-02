@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.5.4 - 02 September 2021
 
 - Add support for filename pattern in history view. [#930](https://github.com/github/vscode-codeql/pull/930)
 - Add an option _View Results (CSV)_ to view the results of a non-alert query. The existing options for alert queries have been renamed to _View Alerts_ to avoid confusion. [#929](https://github.com/github/vscode-codeql/pull/929)
