@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.5.4 - 02 September 2021
 
 - Add support for filename pattern in history view. [#930](https://github.com/github/vscode-codeql/pull/930)
