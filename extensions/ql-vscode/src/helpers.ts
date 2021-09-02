@@ -468,3 +468,34 @@ export async function isLikelyDatabaseRoot(maybeRoot: string) {
 export function isLikelyDbLanguageFolder(dbPath: string) {
   return !!path.basename(dbPath).startsWith('db-');
 }
+
+/**
+ * Finds the language that a query targets.
+ * If it can't be autodetected, prompt the user to specify the language manually.
+ */
+export async function findLanguage(
+  cliServer: CodeQLCliServer,
+  queryUri: Uri | undefined
+): Promise<string | undefined> {
+  const uri = queryUri || Window.activeTextEditor?.document.uri;
+  if (uri !== undefined) {
+    try {
+      const queryInfo = await cliServer.resolveQueryByLanguage(getOnDiskWorkspaceFolders(), uri);
+      const language = (Object.keys(queryInfo.byLanguage))[0];
+      void logger.log(`Detected query language: ${language}`);
+      return language;
+    } catch (e) {
+      void logger.log('Could not autodetect query language. Select language manually.');
+    }
+  }
+  const availableLanguages = Object.keys(await cliServer.resolveLanguages());
+  const language = await Window.showQuickPick(
+    availableLanguages,
+    { placeHolder: 'Select target language for your query', ignoreFocusOut: true }
+  );
+  if (!language) {
+    // This only happens if the user cancels the quick pick.
+    void showAndLogErrorMessage('Language not found. Language must be specified manually.');
+  }
+  return language;
+}

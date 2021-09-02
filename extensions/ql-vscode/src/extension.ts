@@ -73,7 +73,7 @@ import {
 import { CodeQlStatusBarHandler } from './status-bar';
 
 import { Credentials } from './authentication';
-import { runRemoteQuery, findLanguage } from './run-remote-query';
+import { runRemoteQuery } from './run-remote-query';
 
 /**
  * extension.ts
@@ -576,7 +576,7 @@ async function activateWithInstalledDistribution(
           return;
         }
         // If possible, only show databases with the right language (otherwise show all databases).
-        const queryLanguage = await findLanguage(cliServer, uri);
+        const queryLanguage = await helpers.findLanguage(cliServer, uri);
         if (queryLanguage) {
           filteredDBs = dbm.databaseItems.filter(db => db.language === queryLanguage);
           if (filteredDBs.length === 0) {

@@ -1,8 +1,9 @@
 import { expect } from 'chai';
-import { extensions } from 'vscode';
+import { extensions, Uri } from 'vscode';
+import * as path from 'path';
 import { SemVer } from 'semver';
 
-import { CodeQLCliServer } from '../../cli';
+import { CodeQLCliServer, QueryInfoByLanguage } from '../../cli';
 import { CodeQLExtensionInterface } from '../../extension';
 import { skipIfNoCodeQL } from '../ensureCli';
 import { getOnDiskWorkspaceFolders } from '../../helpers';
@@ -51,5 +52,20 @@ describe('Use cli', function() {
     expect(qlpacks['codeql-java']).not.to.be.undefined;
     expect(qlpacks['codeql-javascript']).not.to.be.undefined;
     expect(qlpacks['codeql-python']).not.to.be.undefined;
+  });
+
+  it('should resolve languages', async function() {
+    skipIfNoCodeQL(this);
+    const languages = await cli.resolveLanguages();
+    for (const expectedLanguage of ['cpp', 'csharp', 'go', 'java', 'javascript', 'python']) {
+      expect(languages).to.have.property(expectedLanguage).that.is.not.undefined;
+    }
+  });
+
+  it('should resolve query by language', async function() {
+    skipIfNoCodeQL(this);
+    const queryPath = path.join(__dirname, 'data', 'simple-javascript-query.ql');
+    const queryInfo: QueryInfoByLanguage = await cli.resolveQueryByLanguage(getOnDiskWorkspaceFolders(), Uri.file(queryPath));
+    expect((Object.keys(queryInfo.byLanguage))[0]).to.eql('javascript');
   });
 });
