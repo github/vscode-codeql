@@ -64,7 +64,7 @@ describe('Use cli', function() {
 
   it('should resolve query by language', async function() {
     skipIfNoCodeQL(this);
-    const queryPath = path.join(__dirname, 'data', 'simple-query.ql');
+    const queryPath = path.join(__dirname, 'data', 'simple-javascript-query.ql');
     const queryInfo: QueryInfoByLanguage = await cli.resolveQueryByLanguage(getOnDiskWorkspaceFolders(), Uri.file(queryPath));
     expect((Object.keys(queryInfo.byLanguage))[0]).to.eql('javascript');
   });
