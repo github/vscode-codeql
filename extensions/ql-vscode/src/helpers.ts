@@ -9,7 +9,7 @@ import {
   workspace,
   env
 } from 'vscode';
-import { CodeQLCliServer } from './cli';
+import { CodeQLCliServer, QlpacksInfo } from './cli';
 import { logger } from './logging';
 
 /**
@@ -254,9 +254,55 @@ function createRateLimitedResult(): RateLimitedResult {
   };
 }
 
-export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemePath: string): Promise<string> {
+export interface QlPacksForLanguage {
+  /** The name of the pack containing the dbscheme. */
+  dbschemePack: string;
+  /** `true` if `dbschemePack` is a library pack. */
+  dbschemePackIsLibraryPack: boolean;
+  /**
+   * The name of the corresponding standard query pack.
+   * Only defined if `dbschemePack` is a library pack.
+   */
+  queryPack?: string;
+}
+
+interface QlPackWithPath {
+  packName: string;
+  packDir: string | undefined;
+}
+
+async function findDbschemePack(packs: QlPackWithPath[], dbschemePath: string): Promise<{ name: string; isLibraryPack: boolean; }> {
+  for (const { packDir, packName } of packs) {
+    if (packDir !== undefined) {
+      const qlpack = yaml.safeLoad(await fs.readFile(path.join(packDir, 'qlpack.yml'), 'utf8')) as { dbscheme?: string; library?: boolean; };
+      if (qlpack.dbscheme !== undefined && path.basename(qlpack.dbscheme) === path.basename(dbschemePath)) {
+        return {
+          name: packName,
+          isLibraryPack: qlpack.library === true
+        };
+      }
+    }
+  }
+  throw new Error(`Could not find qlpack file for dbscheme ${dbschemePath}`);
+}
+
+function findStandardQueryPack(qlpacks: QlpacksInfo, dbschemePackName: string): string | undefined {
+  const matches = dbschemePackName.match(/^codeql\/(?<language>[a-z]+)-all$/);
+  if (matches) {
+    const queryPackName = `codeql/${matches.groups!.language}-queries`;
+    if (qlpacks[queryPackName] !== undefined) {
+      return queryPackName;
+    }
+  }
+
+  // Either the dbscheme pack didn't look like one where the queries might be in the query pack, or
+  // no query pack was found in the search path. Either is OK.
+  return undefined;
+}
+
+export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemePath: string): Promise<QlPacksForLanguage> {
   const qlpacks = await cliServer.resolveQlpacks(getOnDiskWorkspaceFolders());
-  const packs: { packDir: string | undefined; packName: string }[] =
+  const packs: QlPackWithPath[] =
     Object.entries(qlpacks).map(([packName, dirs]) => {
       if (dirs.length < 1) {
         void logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has no directories`);
@@ -270,15 +316,13 @@ export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemeP
         packDir: dirs[0]
       };
     });
-  for (const { packDir, packName } of packs) {
-    if (packDir !== undefined) {
-      const qlpack = yaml.safeLoad(await fs.readFile(path.join(packDir, 'qlpack.yml'), 'utf8')) as { dbscheme: string };
-      if (qlpack.dbscheme !== undefined && path.basename(qlpack.dbscheme) === path.basename(dbschemePath)) {
-        return packName;
-      }
-    }
-  }
-  throw new Error(`Could not find qlpack file for dbscheme ${dbschemePath}`);
+  const dbschemePack = await findDbschemePack(packs, dbschemePath);
+  const queryPack = dbschemePack.isLibraryPack ? findStandardQueryPack(qlpacks, dbschemePack.name) : undefined;
+  return {
+    dbschemePack: dbschemePack.name,
+    dbschemePackIsLibraryPack: dbschemePack.isLibraryPack,
+    queryPack
+  };
 }
 
 export async function getPrimaryDbscheme(datasetFolder: string): Promise<string> {

@@ -18,10 +18,13 @@ describe('queryResolver', () => {
   let writeFileSpy: sinon.SinonSpy;
   let getQlPackForDbschemeSpy: sinon.SinonStub;
   let getPrimaryDbschemeSpy: sinon.SinonStub;
-  let mockCli: Record<string, sinon.SinonStub>;
+  let mockCli: Record<string, sinon.SinonStub | Record<string, sinon.SinonStub>>;
   beforeEach(() => {
     mockCli = {
-      resolveQueriesInSuite: sinon.stub()
+      resolveQueriesInSuite: sinon.stub(),
+      cliConstraints: {
+        supportsAllowLibraryPacksInResolveQueries: sinon.stub().returns(true),
+      }
     };
     module = createModule();
   });
@@ -30,11 +33,27 @@ describe('queryResolver', () => {
 
     it('should resolve a query', async () => {
       mockCli.resolveQueriesInSuite.returns(['a', 'b']);
-      const result = await module.resolveQueries(mockCli, 'my-qlpack', KeyType.DefinitionQuery);
+      const result = await module.resolveQueries(mockCli, { dbschemePack: 'my-qlpack' }, KeyType.DefinitionQuery);
       expect(result).to.deep.equal(['a', 'b']);
       expect(writeFileSpy.getCall(0).args[0]).to.match(/.qls$/);
       expect(yaml.safeLoad(writeFileSpy.getCall(0).args[1])).to.deep.equal({
         qlpack: 'my-qlpack',
+        include: {
+          kind: 'definitions',
+          'tags contain': 'ide-contextual-queries/local-definitions'
+        }
+      });
+    });
+
+    it('should resolve a query from the queries pack if this is an old CLI', async () => {
+      // pretend this is an older CLI
+      (mockCli.cliConstraints as any).supportsAllowLibraryPacksInResolveQueries.returns(false);
+      mockCli.resolveQueriesInSuite.returns(['a', 'b']);
+      const result = await module.resolveQueries(mockCli, { dbschemePackIsLibraryPack: true, dbschemePack: 'my-qlpack', queryPack: 'my-qlpack2' }, KeyType.DefinitionQuery);
+      expect(result).to.deep.equal(['a', 'b']);
+      expect(writeFileSpy.getCall(0).args[0]).to.match(/.qls$/);
+      expect(yaml.safeLoad(writeFileSpy.getCall(0).args[1])).to.deep.equal({
+        qlpack: 'my-qlpack2',
         include: {
           kind: 'definitions',
           'tags contain': 'ide-contextual-queries/local-definitions'
@@ -48,12 +67,12 @@ describe('queryResolver', () => {
       // TODO: Figure out why chai-as-promised isn't failing the test on an
       // unhandled rejection.
       try {
-        await module.resolveQueries(mockCli, 'my-qlpack', KeyType.DefinitionQuery);
+        await module.resolveQueries(mockCli, { dbschemePack: 'my-qlpack' }, KeyType.DefinitionQuery);
         // should reject
         expect(true).to.be.false;
       } catch (e) {
         expect(e.message).to.eq(
-          'Couldn\'t find any queries tagged ide-contextual-queries/local-definitions for qlpack my-qlpack'
+          'Couldn\'t find any queries tagged ide-contextual-queries/local-definitions in any of the following packs: my-qlpack.'
         );
       }
     });
