@@ -524,7 +524,7 @@ export async function determineSelectedQuery(selectedResourceUri: Uri | undefine
   // then prompt the user to save it first.
   if (editor !== undefined && editor.document.uri.fsPath === queryPath) {
     if (await promptUserToSaveChanges(editor.document)) {
-      void editor.document.save();
+      await editor.document.save();
     }
   }
 
