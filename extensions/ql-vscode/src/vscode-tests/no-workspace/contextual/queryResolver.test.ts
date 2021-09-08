@@ -30,19 +30,19 @@ describe('queryResolver', () => {
   });
 
   describe('resolveQueries', () => {
-
     it('should resolve a query', async () => {
       mockCli.resolveQueriesInSuite.returns(['a', 'b']);
       const result = await module.resolveQueries(mockCli, { dbschemePack: 'my-qlpack' }, KeyType.DefinitionQuery);
       expect(result).to.deep.equal(['a', 'b']);
       expect(writeFileSpy.getCall(0).args[0]).to.match(/.qls$/);
-      expect(yaml.safeLoad(writeFileSpy.getCall(0).args[1])).to.deep.equal({
-        qlpack: 'my-qlpack',
+      expect(yaml.safeLoad(writeFileSpy.getCall(0).args[1])).to.deep.equal([{
+        from: 'my-qlpack',
+        queries: '.',
         include: {
           kind: 'definitions',
           'tags contain': 'ide-contextual-queries/local-definitions'
         }
-      });
+      }]);
     });
 
     it('should resolve a query from the queries pack if this is an old CLI', async () => {
