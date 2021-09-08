@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix bug where a query is sometimes run before the file is saved. [#947](https://github.com/github/vscode-codeql/pull/947)
+
 ## 1.5.4 - 02 September 2021
 
 - Add support for filename pattern in history view. [#930](https://github.com/github/vscode-codeql/pull/930)

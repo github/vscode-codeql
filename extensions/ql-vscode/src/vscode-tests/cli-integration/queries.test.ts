@@ -150,7 +150,7 @@ describe('Queries', function() {
       fs.readFileSync(qlpackFile, 'utf8')
     );
     // Should have chosen the js libraries
-    expect(qlpackContents.libraryPathDependencies[0]).to.eq('codeql-javascript');
+    expect(qlpackContents.libraryPathDependencies[0]).to.include('javascript');
   });
 
   it('should avoid creating a quick query', async () => {
