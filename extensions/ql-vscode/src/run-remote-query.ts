@@ -1,7 +1,7 @@
 import { QuickPickItem, Uri, window } from 'vscode';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
-import { findLanguage, showAndLogErrorMessage, showAndLogInformationMessage } from './helpers';
+import { findLanguage, showAndLogErrorMessage, showAndLogInformationMessage, showInformationMessageWithAction } from './helpers';
 import { Credentials } from './authentication';
 import * as cli from './cli';
 import { logger } from './logging';
@@ -39,7 +39,7 @@ async function getRepositories(): Promise<string[] | undefined> {
         ignoreFocusOut: true,
       });
     if (quickpick?.repoList.length) {
-      void logger.log(`Selected repositories: ${quickpick.repoList}`);
+      void logger.log(`Selected repositories: ${quickpick.repoList.join(', ')}`);
       return quickpick.repoList;
     } else {
       void showAndLogErrorMessage('No repositories selected.');
@@ -76,9 +76,6 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
     return;
   }
 
-  const octokit = await credentials.getOctokit();
-  const token = await credentials.getToken();
-
   const queryFile = uri.fsPath;
   const query = await fs.readFile(queryFile, 'utf8');
 
@@ -110,6 +107,13 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
     return; // No error message needed, since `getRepositories` already displays one.
   }
 
+  await runRemoteQueriesApiRequest(credentials, ref, language, repositories, query);
+}
+
+async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string, language: string, repositories: string[], query: string) {
+  const octokit = await credentials.getOctokit();
+  const token = await credentials.getToken();
+
   try {
     await octokit.request(
       'POST /repos/:owner/:repo/code-scanning/codeql/queries',
@@ -128,6 +132,33 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
     void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${OWNER}/${REPO}/actions).`);
 
   } catch (error) {
-    void showAndLogErrorMessage(error);
+    if (typeof error.message === 'string' && error.message.includes('Some repositories were invalid')) {
+      const invalidRepos = error?.response?.data?.invalid_repos || [];
+      const reposWithoutDbUploads = error?.response?.data?.repos_without_db_uploads || [];
+      void logger.log('Unable to run query on some of the specified repositories');
+      if (invalidRepos.length > 0) {
+        void logger.log(`Invalid repos: ${invalidRepos.join(', ')}`);
+      }
+      if (reposWithoutDbUploads.length > 0) {
+        void logger.log(`Repos without DB uploads: ${reposWithoutDbUploads.join(', ')}`);
+      }
+
+      if (invalidRepos.length + reposWithoutDbUploads.length === repositories.length) {
+        // Every repo is invalid in some way
+        void showAndLogErrorMessage('Unable to run query on any of the specified repositories.');
+        return;
+      }
+
+      const popupMessage = 'Unable to run query on some of the specified repositories. [See logs for more details](command:codeQL.showLogs).';
+      const rerunQuery = await showInformationMessageWithAction(popupMessage, 'Rerun on the valid repositories only');
+      if (rerunQuery) {
+        const validRepositories = repositories.filter(r => !invalidRepos.includes(r) && !reposWithoutDbUploads.includes(r));
+        void logger.log(`Rerunning query on set of valid repositories: ${JSON.stringify(validRepositories)}`);
+        await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, query);
+      }
+
+    } else {
+      void showAndLogErrorMessage(error);
+    }
   }
 }
