@@ -137,10 +137,10 @@ async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string,
       const reposWithoutDbUploads = error?.response?.data?.repos_without_db_uploads || [];
       void logger.log('Unable to run query on some of the specified repositories');
       if (invalidRepos.length > 0) {
-        void logger.log('Invalid repos: ' + invalidRepos.join(', '));
+        void logger.log(`Invalid repos: ${invalidRepos.join(', ')}`);
       }
       if (reposWithoutDbUploads.length > 0) {
-        void logger.log('Repos without DB uploads: ' + reposWithoutDbUploads.join(', '));
+        void logger.log(`Repos without DB uploads: ${reposWithoutDbUploads.join(', ')}`);
       }
 
       if (invalidRepos.length + reposWithoutDbUploads.length === repositories.length) {
@@ -149,11 +149,11 @@ async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string,
         return;
       }
 
-      const popupMessage = 'Unable to run query on some of the specified repositories. [See logs for more details](command:codeQL.showLogs)';
+      const popupMessage = 'Unable to run query on some of the specified repositories. [See logs for more details](command:codeQL.showLogs).';
       const rerunQuery = await showInformationMessageWithAction(popupMessage, 'Rerun on the valid repositories only');
       if (rerunQuery) {
         const validRepositories = repositories.filter(r => !invalidRepos.includes(r) && !reposWithoutDbUploads.includes(r));
-        void logger.log('Rerunning query on set of valid repositories: ' + JSON.stringify(validRepositories));
+        void logger.log(`Rerunning query on set of valid repositories: ${JSON.stringify(validRepositories)}`);
         await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, query);
       }
 
