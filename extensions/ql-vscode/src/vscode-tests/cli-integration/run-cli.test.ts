@@ -7,6 +7,8 @@ import { CodeQLCliServer, QueryInfoByLanguage } from '../../cli';
 import { CodeQLExtensionInterface } from '../../extension';
 import { skipIfNoCodeQL } from '../ensureCli';
 import { getOnDiskWorkspaceFolders } from '../../helpers';
+import { resolveQueries } from '../../contextual/queryResolver';
+import { KeyType } from '../../contextual/keyType';
 
 /**
  * Perform proper integration tests by running the CLI
@@ -67,5 +69,17 @@ describe('Use cli', function() {
     const queryPath = path.join(__dirname, 'data', 'simple-javascript-query.ql');
     const queryInfo: QueryInfoByLanguage = await cli.resolveQueryByLanguage(getOnDiskWorkspaceFolders(), Uri.file(queryPath));
     expect((Object.keys(queryInfo.byLanguage))[0]).to.eql('javascript');
+  });
+
+  it.only('should resolve printAST queries', async function() {
+    skipIfNoCodeQL(this);
+
+    const result = await resolveQueries(cli, {
+      dbschemePack: 'codeql/javascript-all',
+      dbschemePackIsLibraryPack: true,
+      queryPack: 'codeql/javascript-queries'
+    }, KeyType.PrintAstQuery);
+    expect(result.length).to.eq(1);
+    expect(result[0].endsWith('javascript/ql/src/printAst.ql')).to.be.true;
   });
 });
