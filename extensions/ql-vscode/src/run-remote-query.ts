@@ -39,7 +39,7 @@ async function getRepositories(): Promise<string[] | undefined> {
         ignoreFocusOut: true,
       });
     if (quickpick?.repoList.length) {
-      void logger.log(`Selected repositories: ${quickpick.repoList}`);
+      void logger.log(`Selected repositories: ${quickpick.repoList.join(', ')}`);
       return quickpick.repoList;
     } else {
       void showAndLogErrorMessage('No repositories selected.');
