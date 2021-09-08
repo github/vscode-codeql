@@ -136,16 +136,16 @@ async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string,
       const invalidRepos = error?.response?.data?.invalid_repos || [];
       const reposWithoutDbUploads = error?.response?.data?.repos_without_db_uploads || [];
       void logger.log('Unable to run query on all repositories');
-      void logger.log('invalidRepos = ' + JSON.stringify(invalidRepos));
-      void logger.log('reposWithoutDbUploads = ' + JSON.stringify(reposWithoutDbUploads));
+      void logger.log('Invalid repos: ' + invalidRepos.join(', '));
+      void logger.log('Repos without DB uploads: ' + reposWithoutDbUploads.join(', '));
 
       if (invalidRepos.length + reposWithoutDbUploads.length === repositories.length) {
         // Every repo is invalid in some way
-        void showAndLogErrorMessage('Unable to run query on the specified repositories.');
+        void showAndLogErrorMessage('Unable to run query on any of the specified repositories.');
         return;
       }
 
-      const popupMessage = 'Unable to run query on the specified repositories. See logs for more details.';
+      const popupMessage = 'Unable to run query on some of the specified repositories. See logs for more details.';
       const rerunQuery = await showInformationMessageWithAction(popupMessage, 'Rerun on the valid repositories only');
       if (rerunQuery) {
         const validRepositories = repositories.filter(r => !invalidRepos.includes(r) && !reposWithoutDbUploads.includes(r));
