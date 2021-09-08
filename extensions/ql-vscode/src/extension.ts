@@ -812,6 +812,10 @@ async function activateWithInstalledDistribution(
       }
     }));
 
+  commands.registerCommand('codeQL.showLogs', () => {
+    logger.show();
+  });
+
   void logger.log('Starting language server.');
   ctx.subscriptions.push(client.start());
 
