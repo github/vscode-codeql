@@ -3,6 +3,7 @@
 ## [UNRELEASED]
 
 - Fix bug where a query is sometimes run before the file is saved. [#947](https://github.com/github/vscode-codeql/pull/947)
+- Fix broken contextual queries, including _View AST_. [#949](https://github.com/github/vscode-codeql/pull/949)
 
 ## 1.5.4 - 02 September 2021
 
