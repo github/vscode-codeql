@@ -52,13 +52,14 @@ describe('queryResolver', () => {
       const result = await module.resolveQueries(mockCli, { dbschemePackIsLibraryPack: true, dbschemePack: 'my-qlpack', queryPack: 'my-qlpack2' }, KeyType.DefinitionQuery);
       expect(result).to.deep.equal(['a', 'b']);
       expect(writeFileSpy.getCall(0).args[0]).to.match(/.qls$/);
-      expect(yaml.safeLoad(writeFileSpy.getCall(0).args[1])).to.deep.equal({
-        qlpack: 'my-qlpack2',
+      expect(yaml.safeLoad(writeFileSpy.getCall(0).args[1])).to.deep.equal([{
+        from: 'my-qlpack2',
+        queries: '.',
         include: {
           kind: 'definitions',
           'tags contain': 'ide-contextual-queries/local-definitions'
         }
-      });
+      }]);
     });
 
     it('should throw an error when there are no queries found', async () => {
