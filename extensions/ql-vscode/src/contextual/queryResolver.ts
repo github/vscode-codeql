@@ -31,26 +31,24 @@ export async function qlpackOfDatabase(cli: CodeQLCliServer, db: DatabaseItem): 
  * @returns The found queries from the first pack in which any matching queries were found.
  */
 async function resolveQueriesFromPacks(cli: CodeQLCliServer, qlpacks: string[], keyType: KeyType): Promise<string[]> {
+  const suiteFile = (await tmp.file({
+    postfix: '.qls'
+  })).path;
+  const suiteYaml = [];
   for (const qlpack of qlpacks) {
-    const suiteFile = (await tmp.file({
-      postfix: '.qls'
-    })).path;
-    const suiteYaml = {
-      qlpack,
+    suiteYaml.push({
+      from: qlpack,
+      queries: '.',
       include: {
         kind: kindOfKeyType(keyType),
         'tags contain': tagOfKeyType(keyType)
       }
-    };
-    await fs.writeFile(suiteFile, yaml.safeDump(suiteYaml), 'utf8');
-
-    const queries = await cli.resolveQueriesInSuite(suiteFile, helpers.getOnDiskWorkspaceFolders());
-    if (queries.length > 0) {
-      return queries;
-    }
+    });
   }
+  await fs.writeFile(suiteFile, yaml.safeDump(suiteYaml), 'utf8');
 
-  return [];
+  const queries = await cli.resolveQueriesInSuite(suiteFile, helpers.getOnDiskWorkspaceFolders());
+  return queries;
 }
 
 export async function resolveQueries(cli: CodeQLCliServer, qlpacks: QlPacksForLanguage, keyType: KeyType): Promise<string[]> {
