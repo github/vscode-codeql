@@ -23,7 +23,7 @@ interface RepoListQuickPickItem extends QuickPickItem {
 /**
  * Gets the repositories to run the query against.
  */
-async function getRepositories(): Promise<string[] | undefined> {
+export async function getRepositories(): Promise<string[] | undefined> {
   const repoLists = getRemoteRepositoryLists();
   if (repoLists && Object.keys(repoLists).length) {
     const quickPickItems = Object.entries(repoLists).map<RepoListQuickPickItem>(([key, value]) => (
