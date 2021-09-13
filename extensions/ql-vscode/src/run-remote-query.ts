@@ -134,7 +134,7 @@ async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string,
   }
 }
 
-async function validateRepositories(error: any, credentials: Credentials, ref: string, language: string, repositories: string[], query: string) {
+export async function validateRepositories(error: any, credentials: Credentials, ref: string, language: string, repositories: string[], query: string) {
   if (typeof error.message === 'string' && error.message.includes('Some repositories were invalid')) {
     const invalidRepos = error?.response?.data?.invalid_repos || [];
     const reposWithoutDbUploads = error?.response?.data?.repos_without_db_uploads || [];
