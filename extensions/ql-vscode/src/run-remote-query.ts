@@ -130,11 +130,12 @@ async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string,
     void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${OWNER}/${REPO}/actions).`);
 
   } catch (error) {
-    await validateRepositories(error, credentials, ref, language, repositories, query);
+    await attemptRerun(error, credentials, ref, language, repositories, query);
   }
 }
 
-export async function validateRepositories(error: any, credentials: Credentials, ref: string, language: string, repositories: string[], query: string) {
+/** Attempts to rerun the query on only the valid repositories */
+export async function attemptRerun(error: any, credentials: Credentials, ref: string, language: string, repositories: string[], query: string) {
   if (typeof error.message === 'string' && error.message.includes('Some repositories were invalid')) {
     const invalidRepos = error?.response?.data?.invalid_repos || [];
     const reposWithoutDbUploads = error?.response?.data?.repos_without_db_uploads || [];

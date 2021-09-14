@@ -105,7 +105,7 @@ describe('run-remote-query', function() {
 
   });
 
-  describe('validateRepositories', () => {
+  describe('attemptRerun', () => {
     let sandbox: sinon.SinonSandbox;
     let showAndLogErrorMessageSpy: sinon.SinonStub;
     let showInformationMessageWithActionSpy: sinon.SinonStub;
@@ -152,7 +152,7 @@ describe('run-remote-query', function() {
       const repositories = ['abc/def', 'ghi/jkl', 'mno/pqr', 'stu/vwx'];
 
       // make the function call
-      await mod.validateRepositories(error, credentials, ref, language, repositories, query);
+      await mod.attemptRerun(error, credentials, ref, language, repositories, query);
 
       // check logging output
       expect(logSpy.firstCall.args[0]).to.contain('Unable to run query');
@@ -168,7 +168,7 @@ describe('run-remote-query', function() {
       showInformationMessageWithActionSpy.resolves(true);
 
       // make the function call
-      await mod.validateRepositories(error, credentials, ref, language, repositories, query);
+      await mod.attemptRerun(error, credentials, ref, language, repositories, query);
 
       // check logging output
       expect(logSpy.firstCall.args[0]).to.contain('Unable to run query');
