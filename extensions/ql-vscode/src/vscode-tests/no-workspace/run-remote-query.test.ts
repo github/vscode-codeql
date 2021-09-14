@@ -17,25 +17,29 @@ describe('run-remote-query', function() {
     let quickPickSpy: sinon.SinonStub;
     let showInputBoxSpy: sinon.SinonStub;
     let getRemoteRepositoryListsSpy: sinon.SinonStub;
+    let showAndLogErrorMessageSpy: sinon.SinonStub;
     let mod: any;
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       quickPickSpy = sandbox.stub(window, 'showQuickPick');
       showInputBoxSpy = sandbox.stub(window, 'showInputBox');
       getRemoteRepositoryListsSpy = sandbox.stub();
+      showAndLogErrorMessageSpy = sandbox.stub();
       mod = proxyquire('../../run-remote-query', {
         './config': {
           getRemoteRepositoryLists: getRemoteRepositoryListsSpy
-        }
+        },
+        './helpers': {
+          showAndLogErrorMessage: showAndLogErrorMessageSpy
+        },
       });
-
     });
 
     afterEach(() => {
       sandbox.restore();
     });
 
-    it('should return a repo list that you chose from your pre-defined config', async () => {
+    it('should run on a repo list that you chose from your pre-defined config', async () => {
       // fake return values
       quickPickSpy.resolves(
         { repoList: ['foo/bar', 'foo/baz'] }
@@ -56,19 +60,49 @@ describe('run-remote-query', function() {
       );
     });
 
-    it('should show a textbox if you have no repo lists configured', async () => {
-      // fake return values
-      showInputBoxSpy.resolves('foo/bar');
-      getRemoteRepositoryListsSpy.returns({});
+    // Test the regex in various "good" cases
+    const goodRepos = [
+      'owner/repo',
+      'owner-with-hyphens/repo-with-hyphens_and_underscores',
+      'ownerWithNumbers58/repoWithNumbers37'
+    ];
+    goodRepos.forEach(repo => {
+      it(`should run on a valid repo that you enter in the text box: ${repo}`, async () => {
+        // fake return values
+        getRemoteRepositoryListsSpy.returns({}); // no pre-defined repo lists
+        showInputBoxSpy.resolves(repo);
 
-      // make the function call
-      const repoList = await mod.getRepositories();
+        // make the function call
+        const repoList = await mod.getRepositories();
 
-      // Check that the return value is correct
-      expect(repoList).to.deep.equal(
-        ['foo/bar']
-      );
+        // Check that the return value is correct
+        expect(repoList).to.deep.equal(
+          [repo]
+        );
+      });
     });
+
+    // Test the regex in various "bad" cases
+    const badRepos = [
+      'invalid_owner/repo',
+      'owner/repo+some&invalid&stuff',
+      'owner-with-no-repo/',
+      '/repo-with-no-owner'
+    ];
+    badRepos.forEach(repo => {
+      it(`should show an error message if you enter an invalid repo in the text box: ${repo}`, async () => {
+        // fake return values
+        getRemoteRepositoryListsSpy.returns({}); // no pre-defined repo lists
+        showInputBoxSpy.resolves(repo);
+
+        // make the function call
+        await mod.getRepositories();
+
+        // check that we get the right error message
+        expect(showAndLogErrorMessageSpy.firstCall.args[0]).to.contain('Invalid repository format');
+      });
+    });
+
   });
 
   describe('validateRepositories', () => {
