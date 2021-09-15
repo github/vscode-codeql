@@ -801,6 +801,14 @@ export class CodeQLCliServer implements Disposable {
     );
   }
 
+  async packInstall(dir: string) {
+    return this.runJsonCodeQlCliCommand(['pack', 'install'], [dir], 'Installing pack dependencies');
+  }
+
+  async packBundle(dir: string, outputPath: string): Promise<void> {
+    return this.runJsonCodeQlCliCommand(['pack', 'bundle'], ['-o', outputPath, dir], 'Bundling pack');
+  }
+
   async generateDil(qloFile: string, outFile: string): Promise<void> {
     const extraArgs = await this.cliConstraints.supportsDecompileDil()
       ? ['--kind', 'dil', '-o', outFile, qloFile]

@@ -1,6 +1,8 @@
 import { QuickPickItem, Uri, window } from 'vscode';
+import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
+import * as tmp from 'tmp-promise';
 import { findLanguage, showAndLogErrorMessage, showAndLogInformationMessage, showInformationMessageWithAction } from './helpers';
 import { Credentials } from './authentication';
 import * as cli from './cli';
@@ -68,6 +70,22 @@ export async function getRepositories(): Promise<string[] | undefined> {
   }
 }
 
+async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: string): Promise<string> {
+
+  const packRoot = path.dirname(queryFile);
+
+  const bundlePath = await tmp.tmpName({
+    postfix: '.tgz',
+    prefix: 'qlpack-',
+  });
+
+  await cliServer.packBundle(packRoot, bundlePath);
+  const base64Pack = (await fs.readFile(bundlePath)).toString('base64');
+
+  await fs.unlink(bundlePath);
+  return base64Pack;
+}
+
 export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials: Credentials, uri?: Uri) {
   if (!uri?.fsPath.endsWith('.ql')) {
     return;
@@ -81,6 +99,7 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
   let language: string | undefined;
   let repositories: string[] | undefined;
 
+  await cliServer.packInstall(path.dirname(queryFile));
   // If the user has an explicit `.repositories` file, use that.
   // Otherwise, prompt user to select repositories from the `codeQL.remoteQueries.repositoryLists` setting.
   if (await fs.pathExists(repositoriesFile)) {
@@ -130,10 +149,11 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
   void logger.log(`Using controller repository: ${controllerRepo}`);
   const [owner, repo] = controllerRepo.split('/');
 
-  await runRemoteQueriesApiRequest(credentials, ref, language, repositories, query, owner, repo);
+  const queryPackBase64 = await generateQueryPack(cliServer, queryFile);
+  await runRemoteQueriesApiRequest(credentials, ref, language, repositories, query, owner, repo, queryPackBase64);
 }
 
-async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string, language: string, repositories: string[], query: string, owner: string, repo: string) {
+async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string, language: string, repositories: string[], query: string, owner: string, repo: string, queryPackBase64: string): Promise<void> {
   const octokit = await credentials.getOctokit();
 
   try {
@@ -143,22 +163,23 @@ async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string,
         owner,
         repo,
         data: {
-          ref: ref,
-          language: language,
-          repositories: repositories,
-          query: query,
+          ref,
+          language,
+          repositories,
+          query,
+          queryPack: queryPackBase64,
         }
       }
     );
     void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions).`);
 
   } catch (error) {
-    await attemptRerun(error, credentials, ref, language, repositories, query, owner, repo);
+    await attemptRerun(error, credentials, ref, language, repositories, query, owner, repo, queryPackBase64);
   }
 }
 
 /** Attempts to rerun the query on only the valid repositories */
-export async function attemptRerun(error: any, credentials: Credentials, ref: string, language: string, repositories: string[], query: string, owner: string, repo: string) {
+export async function attemptRerun(error: any, credentials: Credentials, ref: string, language: string, repositories: string[], query: string, owner: string, repo: string, queryPackBase64: string) {
   if (typeof error.message === 'string' && error.message.includes('Some repositories were invalid')) {
     const invalidRepos = error?.response?.data?.invalid_repos || [];
     const reposWithoutDbUploads = error?.response?.data?.repos_without_db_uploads || [];
@@ -181,7 +202,7 @@ export async function attemptRerun(error: any, credentials: Credentials, ref: st
     if (rerunQuery) {
       const validRepositories = repositories.filter(r => !invalidRepos.includes(r) && !reposWithoutDbUploads.includes(r));
       void logger.log(`Rerunning query on set of valid repositories: ${JSON.stringify(validRepositories)}`);
-      await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, query, owner, repo);
+      await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, query, owner, repo, queryPackBase64);
     }
 
   } else {
