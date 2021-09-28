@@ -241,7 +241,7 @@
           "scope": "application",
           "description": "Specifies whether or not to write telemetry events to the extension log."
         },
-        "codeQL.remoteRepositoryLists": {
+        "codeQL.remoteQueries.repositoryLists": {
           "type": [
             "object",
             null
