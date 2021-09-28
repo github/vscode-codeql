@@ -5,16 +5,12 @@ import { findLanguage, showAndLogErrorMessage, showAndLogInformationMessage, sho
 import { Credentials } from './authentication';
 import * as cli from './cli';
 import { logger } from './logging';
-import { getRemoteRepositoryLists } from './config';
+import { getRemoteControllerRepo, getRemoteRepositoryLists } from './config';
 interface Config {
   repositories: string[];
   ref?: string;
   language?: string;
 }
-
-// Test "controller" repository and workflow.
-const OWNER = 'dsp-testing';
-const REPO = 'qc-controller';
 
 interface RepoListQuickPickItem extends QuickPickItem {
   repoList: string[];
@@ -107,18 +103,30 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
     return; // No error message needed, since `getRepositories` already displays one.
   }
 
-  await runRemoteQueriesApiRequest(credentials, ref, language, repositories, query);
+  // Get the controller repo
+  let owner: string;
+  let repo: string;
+  const controllerRepo = getRemoteControllerRepo();
+  if (controllerRepo) {
+    void logger.log(`Using controller repository: ${controllerRepo}`);
+    [owner, repo] = controllerRepo.split('/');
+  } else {
+    [owner, repo] = ['dsp-testing', 'qc-controller'];
+    void logger.log(`No controller repository defined in the 'codeQL.remoteQueries.controllerRepo' setting. Using default repository: ${owner}/${repo}.`);
+  }
+
+  await runRemoteQueriesApiRequest(credentials, ref, language, repositories, query, owner, repo);
 }
 
-async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string, language: string, repositories: string[], query: string) {
+async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string, language: string, repositories: string[], query: string, owner: string, repo: string) {
   const octokit = await credentials.getOctokit();
 
   try {
     await octokit.request(
       'POST /repos/:owner/:repo/code-scanning/codeql/queries',
       {
-        owner: OWNER,
-        repo: REPO,
+        owner,
+        repo,
         data: {
           ref: ref,
           language: language,
@@ -127,15 +135,15 @@ async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string,
         }
       }
     );
-    void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${OWNER}/${REPO}/actions).`);
+    void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions).`);
 
   } catch (error) {
-    await attemptRerun(error, credentials, ref, language, repositories, query);
+    await attemptRerun(error, credentials, ref, language, repositories, query, owner, repo);
   }
 }
 
 /** Attempts to rerun the query on only the valid repositories */
-export async function attemptRerun(error: any, credentials: Credentials, ref: string, language: string, repositories: string[], query: string) {
+export async function attemptRerun(error: any, credentials: Credentials, ref: string, language: string, repositories: string[], query: string, owner: string, repo: string) {
   if (typeof error.message === 'string' && error.message.includes('Some repositories were invalid')) {
     const invalidRepos = error?.response?.data?.invalid_repos || [];
     const reposWithoutDbUploads = error?.response?.data?.repos_without_db_uploads || [];
@@ -158,7 +166,7 @@ export async function attemptRerun(error: any, credentials: Credentials, ref: st
     if (rerunQuery) {
       const validRepositories = repositories.filter(r => !invalidRepos.includes(r) && !reposWithoutDbUploads.includes(r));
       void logger.log(`Rerunning query on set of valid repositories: ${JSON.stringify(validRepositories)}`);
-      await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, query);
+      await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, query, owner, repo);
     }
 
   } else {
