@@ -5,7 +5,7 @@ import { findLanguage, showAndLogErrorMessage, showAndLogInformationMessage, sho
 import { Credentials } from './authentication';
 import * as cli from './cli';
 import { logger } from './logging';
-import { getRemoteControllerRepo, getRemoteRepositoryLists } from './config';
+import { getRemoteControllerRepo, getRemoteRepositoryLists, setRemoteControllerRepo } from './config';
 interface Config {
   repositories: string[];
   ref?: string;
@@ -15,6 +15,13 @@ interface Config {
 interface RepoListQuickPickItem extends QuickPickItem {
   repoList: string[];
 }
+
+/**
+ * This regex matches strings of the form `owner/repo` where:
+ * - `owner` is made up of alphanumeric characters or single hyphens, starting and ending in an alphanumeric character
+ * - `repo` is made up of alphanumeric characters, hyphens, or underscores
+ */
+const REPO_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
 
 /**
  * Gets the repositories to run the query against.
@@ -43,12 +50,6 @@ export async function getRepositories(): Promise<string[] | undefined> {
     }
   } else {
     void logger.log('No repository lists defined. Displaying text input box.');
-    /**
-     * This regex matches strings of the form `owner/repo` where:
-     * - `owner` is made up of alphanumeric characters or single hyphens, starting and ending in an alphanumeric character
-     * - `repo` is made up of alphanumeric characters, hyphens, or underscores
-     */
-    const repoRegex = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
     const remoteRepo = await window.showInputBox({
       title: 'Enter a GitHub repository in the format <owner>/<repo> (e.g. github/codeql)',
       placeHolder: '<owner>/<repo>',
@@ -58,7 +59,7 @@ export async function getRepositories(): Promise<string[] | undefined> {
     if (!remoteRepo) {
       void showAndLogErrorMessage('No repositories entered.');
       return;
-    } else if (!repoRegex.test(remoteRepo)) { // Check if user entered invalid input
+    } else if (!REPO_REGEX.test(remoteRepo)) { // Check if user entered invalid input
       void showAndLogErrorMessage('Invalid repository format. Must be in the format <owner>/<repo> (e.g. github/codeql)');
       return;
     }
@@ -103,17 +104,31 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
     return; // No error message needed, since `getRepositories` already displays one.
   }
 
-  // Get the controller repo
-  let owner: string;
-  let repo: string;
-  const controllerRepo = getRemoteControllerRepo();
-  if (controllerRepo) {
-    void logger.log(`Using controller repository: ${controllerRepo}`);
-    [owner, repo] = controllerRepo.split('/');
-  } else {
-    [owner, repo] = ['dsp-testing', 'qc-controller'];
-    void logger.log(`No controller repository defined in the 'codeQL.remoteQueries.controllerRepo' setting. Using default repository: ${owner}/${repo}.`);
+  // Get the controller repo from the config, if it exists.
+  // If it doesn't exist, prompt the user to enter it, and save that value to the config.
+  let controllerRepo: string | undefined;
+  controllerRepo = getRemoteControllerRepo();
+  if (!controllerRepo) {
+    void logger.log('No controller repository defined.');
+    controllerRepo = await window.showInputBox({
+      title: 'Controller repository in which to display progress and results of remote queries',
+      placeHolder: '<owner>/<repo>',
+      prompt: 'Enter the name of a GitHub repository in the format <owner>/<repo>',
+      ignoreFocusOut: true,
+    });
+    if (!controllerRepo) {
+      void showAndLogErrorMessage('No controller repository entered.');
+      return;
+    } else if (!REPO_REGEX.test(controllerRepo)) { // Check if user entered invalid input
+      void showAndLogErrorMessage('Invalid repository format. Must be a valid GitHub repository in the format <owner>/<repo>.');
+      return;
+    }
+    void logger.log(`Setting the controller repository as: ${controllerRepo}`);
+    await setRemoteControllerRepo(controllerRepo);
   }
+
+  void logger.log(`Using controller repository: ${controllerRepo}`);
+  const [owner, repo] = controllerRepo.split('/');
 
   await runRemoteQueriesApiRequest(credentials, ref, language, repositories, query, owner, repo);
 }
