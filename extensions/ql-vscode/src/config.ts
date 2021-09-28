@@ -325,3 +325,7 @@ const REMOTE_CONTROLLER_REPO = new Setting('controllerRepo', REMOTE_QUERIES_SETT
 export function getRemoteControllerRepo(): string | undefined {
   return REMOTE_CONTROLLER_REPO.getValue<string>() || undefined;
 }
+
+export async function setRemoteControllerRepo(repo: string | undefined) {
+  await REMOTE_CONTROLLER_REPO.updateValue(repo, ConfigurationTarget.Global);
+}
