@@ -126,6 +126,8 @@ describe('run-remote-query', function() {
     const language = 'javascript';
     const credentials = getMockCredentials(0);
     const query = 'select 1';
+    const owner = 'owner';
+    const repo = 'repo';
 
     beforeEach(() => {
       sandbox = sinon.createSandbox();
@@ -152,7 +154,7 @@ describe('run-remote-query', function() {
       const repositories = ['abc/def', 'ghi/jkl', 'mno/pqr', 'stu/vwx'];
 
       // make the function call
-      await mod.attemptRerun(error, credentials, ref, language, repositories, query);
+      await mod.attemptRerun(error, credentials, ref, language, repositories, query, owner, repo);
 
       // check logging output
       expect(logSpy.firstCall.args[0]).to.contain('Unable to run query');
@@ -168,7 +170,7 @@ describe('run-remote-query', function() {
       showInformationMessageWithActionSpy.resolves(true);
 
       // make the function call
-      await mod.attemptRerun(error, credentials, ref, language, repositories, query);
+      await mod.attemptRerun(error, credentials, ref, language, repositories, query, owner, repo);
 
       // check logging output
       expect(logSpy.firstCall.args[0]).to.contain('Unable to run query');
