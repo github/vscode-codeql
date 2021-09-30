@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Remove line about selecting a language from the dropdown when downloading database from LGTM. This makes the download progress visible when the popup is not expanded. [#894](https://github.com/github/vscode-codeql/issues/894)
+
 ## 1.5.5 - 08 September 2021
 
 - Fix bug where a query is sometimes run before the file is saved. [#947](https://github.com/github/vscode-codeql/pull/947)
