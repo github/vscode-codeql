@@ -108,8 +108,8 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
   // If it doesn't exist, prompt the user to enter it, and save that value to the config.
   let controllerRepo: string | undefined;
   controllerRepo = getRemoteControllerRepo();
-  if (!controllerRepo) {
-    void logger.log('No controller repository defined.');
+  if (!controllerRepo || !REPO_REGEX.test(controllerRepo)) {
+    void logger.log(controllerRepo ? 'Invalid controller repository name.' : 'No controller repository defined.');
     controllerRepo = await window.showInputBox({
       title: 'Controller repository in which to display progress and results of remote queries',
       placeHolder: '<owner>/<repo>',
