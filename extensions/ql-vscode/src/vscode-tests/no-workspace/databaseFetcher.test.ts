@@ -76,7 +76,7 @@ describe('databaseFetcher', function () {
       quickPickSpy.resolves('javascript');
       const lgtmUrl = 'https://lgtm.com/projects/g/github/hucairz';
       await expect(convertToDatabaseUrl(lgtmUrl, progressSpy)).to.rejectedWith(/Invalid LGTM URL/);
-      expect(progressSpy).to.have.been.calledOnce;
+      expect(progressSpy).to.have.callCount(0);
     });
   });
 
