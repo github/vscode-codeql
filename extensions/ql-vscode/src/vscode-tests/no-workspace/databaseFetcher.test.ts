@@ -13,11 +13,13 @@ import {
   looksLikeLgtmUrl,
   findDirWithFile,
 } from '../../databaseFetcher';
+import { ProgressUpdate } from '../../commandRunner';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe('databaseFetcher', function() {
+describe('databaseFetcher', function () {
   // These tests make API calls and may need extra time to complete.
+  const fakeProgress = (_: ProgressUpdate) => { /*do nothing*/ };
   this.timeout(10000);
 
   describe('convertToDatabaseUrl', () => {
@@ -35,7 +37,7 @@ describe('databaseFetcher', function() {
     it('should convert a project url to a database url', async () => {
       quickPickSpy.resolves('javascript');
       const lgtmUrl = 'https://lgtm.com/projects/g/github/codeql';
-      const dbUrl = await convertToDatabaseUrl(lgtmUrl);
+      const dbUrl = await convertToDatabaseUrl(lgtmUrl, fakeProgress);
 
       expect(dbUrl).to.equal(
         'https://lgtm.com/api/v1.0/snapshots/1506465042581/javascript'
@@ -48,7 +50,7 @@ describe('databaseFetcher', function() {
       quickPickSpy.resolves('python');
       const lgtmUrl =
         'https://lgtm.com/projects/g/github/codeql/subpage/subpage2?query=xxx';
-      const dbUrl = await convertToDatabaseUrl(lgtmUrl);
+      const dbUrl = await convertToDatabaseUrl(lgtmUrl, fakeProgress);
 
       expect(dbUrl).to.equal(
         'https://lgtm.com/api/v1.0/snapshots/1506465042581/python'
@@ -59,7 +61,7 @@ describe('databaseFetcher', function() {
       quickPickSpy.resolves('python');
       const lgtmUrl =
         'g/github/codeql';
-      const dbUrl = await convertToDatabaseUrl(lgtmUrl);
+      const dbUrl = await convertToDatabaseUrl(lgtmUrl, fakeProgress);
 
       expect(dbUrl).to.equal(
         'https://lgtm.com/api/v1.0/snapshots/1506465042581/python'
@@ -69,7 +71,7 @@ describe('databaseFetcher', function() {
     it('should fail on a nonexistent project', async () => {
       quickPickSpy.resolves('javascript');
       const lgtmUrl = 'https://lgtm.com/projects/g/github/hucairz';
-      await expect(convertToDatabaseUrl(lgtmUrl)).to.rejectedWith(/Invalid LGTM URL/);
+      await expect(convertToDatabaseUrl(lgtmUrl, fakeProgress)).to.rejectedWith(/Invalid LGTM URL/);
     });
   });
 
