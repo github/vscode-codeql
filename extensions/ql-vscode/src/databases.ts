@@ -811,6 +811,9 @@ export class DatabaseManager extends DisposableObject {
       vscode.workspace.updateWorkspaceFolders(folderIndex, 1);
     }
 
+    // Remove this database item from the allow-list
+    await this.deregisterDatabase(progress, token, item);
+
     // Delete folder from file system only if it is controlled by the extension
     if (this.isExtensionControlledLocation(item.databaseUri)) {
       logger.log('Deleting database from filesystem.');
@@ -818,9 +821,6 @@ export class DatabaseManager extends DisposableObject {
         () => logger.log(`Deleted '${item.databaseUri.fsPath}'`),
         e => logger.log(`Failed to delete '${item.databaseUri.fsPath}'. Reason: ${e.message}`));
     }
-
-    // Remove this database item from the allow-list
-    await this.deregisterDatabase(progress, token, item);
 
     // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
