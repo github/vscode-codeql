@@ -5,20 +5,23 @@ import { findLanguage, showAndLogErrorMessage, showAndLogInformationMessage, sho
 import { Credentials } from './authentication';
 import * as cli from './cli';
 import { logger } from './logging';
-import { getRemoteRepositoryLists } from './config';
+import { getRemoteControllerRepo, getRemoteRepositoryLists, setRemoteControllerRepo } from './config';
 interface Config {
   repositories: string[];
   ref?: string;
   language?: string;
 }
 
-// Test "controller" repository and workflow.
-const OWNER = 'dsp-testing';
-const REPO = 'qc-controller';
-
 interface RepoListQuickPickItem extends QuickPickItem {
   repoList: string[];
 }
+
+/**
+ * This regex matches strings of the form `owner/repo` where:
+ * - `owner` is made up of alphanumeric characters or single hyphens, starting and ending in an alphanumeric character
+ * - `repo` is made up of alphanumeric characters, hyphens, or underscores
+ */
+const REPO_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
 
 /**
  * Gets the repositories to run the query against.
@@ -35,7 +38,7 @@ export async function getRepositories(): Promise<string[] | undefined> {
     const quickpick = await window.showQuickPick<RepoListQuickPickItem>(
       quickPickItems,
       {
-        placeHolder: 'Select a repository list. You can define repository lists in the `codeQL.remoteRepositoryLists` setting.',
+        placeHolder: 'Select a repository list. You can define repository lists in the `codeQL.remoteQueries.repositoryLists` setting.',
         ignoreFocusOut: true,
       });
     if (quickpick?.repoList.length) {
@@ -47,22 +50,16 @@ export async function getRepositories(): Promise<string[] | undefined> {
     }
   } else {
     void logger.log('No repository lists defined. Displaying text input box.');
-    /**
-     * This regex matches strings of the form `owner/repo` where:
-     * - `owner` is made up of alphanumeric characters or single hyphens, starting and ending in an alphanumeric character
-     * - `repo` is made up of alphanumeric characters, hyphens, or underscores
-     */
-    const repoRegex = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
     const remoteRepo = await window.showInputBox({
       title: 'Enter a GitHub repository in the format <owner>/<repo> (e.g. github/codeql)',
       placeHolder: '<owner>/<repo>',
-      prompt: 'Tip: you can save frequently used repositories in the `codeql.remoteRepositoryLists` setting',
+      prompt: 'Tip: you can save frequently used repositories in the `codeQL.remoteQueries.repositoryLists` setting',
       ignoreFocusOut: true,
     });
     if (!remoteRepo) {
       void showAndLogErrorMessage('No repositories entered.');
       return;
-    } else if (!repoRegex.test(remoteRepo)) { // Check if user entered invalid input
+    } else if (!REPO_REGEX.test(remoteRepo)) { // Check if user entered invalid input
       void showAndLogErrorMessage('Invalid repository format. Must be in the format <owner>/<repo> (e.g. github/codeql)');
       return;
     }
@@ -85,7 +82,7 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
   let repositories: string[] | undefined;
 
   // If the user has an explicit `.repositories` file, use that.
-  // Otherwise, prompt user to select repositories from the `codeQL.remoteRepositoryLists` setting.
+  // Otherwise, prompt user to select repositories from the `codeQL.remoteQueries.repositoryLists` setting.
   if (await fs.pathExists(repositoriesFile)) {
     void logger.log(`Found '${repositoriesFile}'. Using information from that file to run ${queryFile}.`);
 
@@ -107,18 +104,44 @@ export async function runRemoteQuery(cliServer: cli.CodeQLCliServer, credentials
     return; // No error message needed, since `getRepositories` already displays one.
   }
 
-  await runRemoteQueriesApiRequest(credentials, ref, language, repositories, query);
+  // Get the controller repo from the config, if it exists.
+  // If it doesn't exist, prompt the user to enter it, and save that value to the config.
+  let controllerRepo: string | undefined;
+  controllerRepo = getRemoteControllerRepo();
+  if (!controllerRepo || !REPO_REGEX.test(controllerRepo)) {
+    void logger.log(controllerRepo ? 'Invalid controller repository name.' : 'No controller repository defined.');
+    controllerRepo = await window.showInputBox({
+      title: 'Controller repository in which to display progress and results of remote queries',
+      placeHolder: '<owner>/<repo>',
+      prompt: 'Enter the name of a GitHub repository in the format <owner>/<repo>',
+      ignoreFocusOut: true,
+    });
+    if (!controllerRepo) {
+      void showAndLogErrorMessage('No controller repository entered.');
+      return;
+    } else if (!REPO_REGEX.test(controllerRepo)) { // Check if user entered invalid input
+      void showAndLogErrorMessage('Invalid repository format. Must be a valid GitHub repository in the format <owner>/<repo>.');
+      return;
+    }
+    void logger.log(`Setting the controller repository as: ${controllerRepo}`);
+    await setRemoteControllerRepo(controllerRepo);
+  }
+
+  void logger.log(`Using controller repository: ${controllerRepo}`);
+  const [owner, repo] = controllerRepo.split('/');
+
+  await runRemoteQueriesApiRequest(credentials, ref, language, repositories, query, owner, repo);
 }
 
-async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string, language: string, repositories: string[], query: string) {
+async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string, language: string, repositories: string[], query: string, owner: string, repo: string) {
   const octokit = await credentials.getOctokit();
 
   try {
     await octokit.request(
       'POST /repos/:owner/:repo/code-scanning/codeql/queries',
       {
-        owner: OWNER,
-        repo: REPO,
+        owner,
+        repo,
         data: {
           ref: ref,
           language: language,
@@ -127,15 +150,15 @@ async function runRemoteQueriesApiRequest(credentials: Credentials, ref: string,
         }
       }
     );
-    void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${OWNER}/${REPO}/actions).`);
+    void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions).`);
 
   } catch (error) {
-    await attemptRerun(error, credentials, ref, language, repositories, query);
+    await attemptRerun(error, credentials, ref, language, repositories, query, owner, repo);
   }
 }
 
 /** Attempts to rerun the query on only the valid repositories */
-export async function attemptRerun(error: any, credentials: Credentials, ref: string, language: string, repositories: string[], query: string) {
+export async function attemptRerun(error: any, credentials: Credentials, ref: string, language: string, repositories: string[], query: string, owner: string, repo: string) {
   if (typeof error.message === 'string' && error.message.includes('Some repositories were invalid')) {
     const invalidRepos = error?.response?.data?.invalid_repos || [];
     const reposWithoutDbUploads = error?.response?.data?.repos_without_db_uploads || [];
@@ -158,7 +181,7 @@ export async function attemptRerun(error: any, credentials: Credentials, ref: st
     if (rerunQuery) {
       const validRepositories = repositories.filter(r => !invalidRepos.includes(r) && !reposWithoutDbUploads.includes(r));
       void logger.log(`Rerunning query on set of valid repositories: ${JSON.stringify(validRepositories)}`);
-      await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, query);
+      await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, query, owner, repo);
     }
 
   } else {

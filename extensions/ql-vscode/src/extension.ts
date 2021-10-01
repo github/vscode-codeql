@@ -792,10 +792,18 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.copyVersion', async () => {
-      const text = `CodeQL extension version: ${extension?.packageJSON.version} \nCodeQL CLI version: ${await cliServer.getVersion()} \nPlatform: ${os.platform()} ${os.arch()}`;
+      const text = `CodeQL extension version: ${extension?.packageJSON.version} \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${os.platform()} ${os.arch()}`;
       await env.clipboard.writeText(text);
       void helpers.showAndLogInformationMessage(text);
     }));
+
+  const getCliVersion = async () => {
+    try {
+      return await cliServer.getVersion();
+    } catch {
+      return '<missing>';
+    }
+  };
 
   // The "authenticateToGitHub" command is internal-only.
   ctx.subscriptions.push(
