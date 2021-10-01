@@ -298,6 +298,9 @@ export function isCanary() {
  */
 export const NO_CACHE_AST_VIEWER = new Setting('disableCache', AST_VIEWER_SETTING);
 
+// Settings for remote queries
+const REMOTE_QUERIES_SETTING = new Setting('remoteQueries', ROOT_SETTING);
+
 /**
  * Lists of GitHub repositories that you want to query remotely via the "Run Remote query" command.
  * Note: This command is only available for internal users.
@@ -305,8 +308,24 @@ export const NO_CACHE_AST_VIEWER = new Setting('disableCache', AST_VIEWER_SETTIN
  * This setting should be a JSON object where each key is a user-specified name (string),
  * and the value is an array of GitHub repositories (of the form `<owner>/<repo>`).
  */
-const REMOTE_REPO_LISTS = new Setting('remoteRepositoryLists', ROOT_SETTING);
+const REMOTE_REPO_LISTS = new Setting('repositoryLists', REMOTE_QUERIES_SETTING);
 
 export function getRemoteRepositoryLists(): Record<string, string[]> | undefined {
   return REMOTE_REPO_LISTS.getValue<Record<string, string[]>>() || undefined;
+}
+
+/**
+ * The name of the "controller" repository that you want to use with the "Run Remote query" command.
+ * Note: This command is only available for internal users.
+ *
+ * This setting should be a GitHub repository of the form `<owner>/<repo>`.
+ */
+const REMOTE_CONTROLLER_REPO = new Setting('controllerRepo', REMOTE_QUERIES_SETTING);
+
+export function getRemoteControllerRepo(): string | undefined {
+  return REMOTE_CONTROLLER_REPO.getValue<string>() || undefined;
+}
+
+export async function setRemoteControllerRepo(repo: string | undefined) {
+  await REMOTE_CONTROLLER_REPO.updateValue(repo, ConfigurationTarget.Global);
 }

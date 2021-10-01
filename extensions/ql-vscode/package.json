@@ -241,7 +241,7 @@
           "scope": "application",
           "description": "Specifies whether or not to write telemetry events to the extension log."
         },
-        "codeQL.remoteRepositoryLists": {
+        "codeQL.remoteQueries.repositoryLists": {
           "type": [
             "object",
             null
@@ -256,6 +256,13 @@
           },
           "default": null,
           "markdownDescription": "[For internal use only] Lists of GitHub repositories that you want to query remotely. This should be a JSON object where each key is a user-specified name for this repository list, and the value is an array of GitHub repositories (of the form `<owner>/<repo>`)."
+        },
+        "codeQL.remoteQueries.controllerRepo": {
+          "type": "string",
+          "default": "",
+          "pattern": "^$|^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+/[a-zA-Z0-9-_]+$",
+          "patternErrorMessage": "Please enter a valid GitHub repository",
+          "markdownDescription": "[For internal use only] The name of the GitHub repository where you can view the progress and results of the \"Run Remote query\" command. The repository should be of the form `<owner>/<repo>`)."
         }
       }
     },
