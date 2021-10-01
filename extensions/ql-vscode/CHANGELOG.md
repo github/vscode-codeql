@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-- Fix bug where version information does not copy when the CLI is missing. [#958](https://github.com/github/vscode-codeql/pull/958)
+- Fixed a bug where copying the version information fails when a CodeQL CLI cannot be found. [#958](https://github.com/github/vscode-codeql/pull/958)
 
 ## 1.5.5 - 08 September 2021
 
