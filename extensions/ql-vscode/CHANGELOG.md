@@ -2,6 +2,9 @@
 
 ## [UNRELEASED]
 
+
+- Remove line about selecting a language from the dropdown when downloading database from LGTM. This makes the download progress visible when the popup is not expanded. [#894](https://github.com/github/vscode-codeql/issues/894)
+
 - Fixed a bug where copying the version information fails when a CodeQL CLI cannot be found. [#958](https://github.com/github/vscode-codeql/pull/958)
 
 ## 1.5.5 - 08 September 2021
