@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix bug where version information does not copy when the CLI is missing. [#958](https://github.com/github/vscode-codeql/pull/958)
+
 ## 1.5.5 - 08 September 2021
 
 - Fix bug where a query is sometimes run before the file is saved. [#947](https://github.com/github/vscode-codeql/pull/947)
