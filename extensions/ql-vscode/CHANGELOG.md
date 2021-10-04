@@ -5,6 +5,7 @@
 - Fix a bug that shows 'Set current database' when hovering over the currently selected database in the databases view. [#976](https://github.com/github/vscode-codeql/pull/976)
 - Fix a bug with importing large databases. Databases over 4GB can now be imported directly from LGTM or from a zip file. This functionality is only available when using CodeQL CLI version 2.6.0 or later. [#971](https://github.com/github/vscode-codeql/pull/971)
 - Replace certain control codes (`U+0000` - `U+001F`) with their corresponding control labels (`U+2400` - `U+241F`)  in the results view. [#963](https://github.com/github/vscode-codeql/pull/963)
+- Allow case-insensitive project slugs for GitHub repositories when adding a CodeQL database from LGTM. [#978](https://github.com/github/vscode-codeql/pull/961)
 
 ## 1.5.6 - 07 October 2021
 
@@ -13,6 +14,12 @@
 - Fix a bug where copying the version information fails when a CodeQL CLI cannot be found. [#958](https://github.com/github/vscode-codeql/pull/958)
 - Avoid a race condition when deleting databases that can cause occasional errors. [#959](https://github.com/github/vscode-codeql/pull/959)
 - Update CodeQL logos. [#965](https://github.com/github/vscode-codeql/pull/965)
+- Fixed a bug where copying the version information fails when a CodeQL CLI cannot be found. [#958](https://github.com/github/vscode-codeql/pull/958)
+- Fix a bug where copying the version information fails when a CodeQL CLI cannot be found. [#958](https://github.com/github/vscode-codeql/pull/958)
+- Avoid a race condition when deleting databases that can cause occasional errors. [#959](https://github.com/github/vscode-codeql/pull/959)
+- Update CodeQL logos. [#965](https://github.com/github/vscode-codeql/pull/965)
+- Fixed a bug where copying the version information fails when a CodeQL CLI cannot be found. [#958](https://github.com/github/vscode-codeql/pull/958)
+- Make project slug for GitHub repositories case-insensitive when adding a CodeQL database from LGTM. [#961](https://github.com/github/vscode-codeql/pull/961)
 
 ## 1.5.5 - 08 September 2021
 

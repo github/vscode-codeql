@@ -112,6 +112,16 @@ export async function promptImportLgtmDatabase(
   return;
 }
 
+export async function retrieveCanonicalRepoName(lgtmUrl: string) {
+  const givenRepoName = extractProjectSlug(lgtmUrl);
+  const response = await checkForFailingResponse(await fetch(`https://api.github.com/repos/${givenRepoName}`), 'Failed to locate the repository on github');
+  const repo = await response.json();
+  if (!repo || !repo.full_name) {
+    return;
+  }
+  return repo.full_name;
+}
+
 /**
  * Imports a database from a local archive.
  *
@@ -300,7 +310,7 @@ async function fetchAndUnzip(
     step: 1,
   });
 
-  const response = await checkForFailingResponse(await fetch(databaseUrl));
+  const response = await checkForFailingResponse(await fetch(databaseUrl), 'Error downloading database');
   const archiveFileStream = fs.createWriteStream(archivePath);
 
   const contentLength = response.headers.get('content-length');
@@ -320,7 +330,7 @@ async function fetchAndUnzip(
   await fs.remove(archivePath);
 }
 
-async function checkForFailingResponse(response: Response): Promise<Response | never> {
+async function checkForFailingResponse(response: Response, errorMessage: string): Promise<Response | never> {
   if (response.ok) {
     return response;
   }
@@ -334,7 +344,7 @@ async function checkForFailingResponse(response: Response): Promise<Response | n
   } catch (e) {
     msg = text;
   }
-  throw new Error(`Error downloading database.\n\nReason: ${msg}`);
+  throw new Error(`${errorMessage}.\n\nReason: ${msg}`);
 }
 
 function isFile(databaseUrl: string) {
@@ -424,6 +434,16 @@ function convertRawLgtmSlug(maybeSlug: string): string | undefined {
   }
   return;
 }
+ 
+function extractProjectSlug(lgtmUrl: string): string | undefined {
+  // Only matches the '/g/' provider (github)
+  const re = new RegExp('https://lgtm.com/projects/g/(.*[^/])');
+  const match = lgtmUrl.match(re);
+  if (!match) {
+    return;
+  }
+  return match[1];
+}
 
 // exported for testing
 export async function convertToDatabaseUrl(
@@ -431,17 +451,20 @@ export async function convertToDatabaseUrl(
   progress: ProgressCallback) {
   try {
     lgtmUrl = convertRawLgtmSlug(lgtmUrl) || lgtmUrl;
-
-    const uri = Uri.parse(lgtmUrl, true);
-    const paths = ['api', 'v1.0'].concat(
-      uri.path.split('/').filter((segment) => segment)
-    ).slice(0, 6);
-    const projectUrl = `https://lgtm.com/${paths.join('/')}`;
-    const projectResponse = await fetch(projectUrl);
-    const projectJson = await projectResponse.json();
+    let projectJson = await downloadLgtmProjectMetadata(lgtmUrl);
 
     if (projectJson.code === 404) {
-      throw new Error();
+      // fallback check for github repositories with same name but different case
+      // will fail for other providers
+      let canonicalName = await retrieveCanonicalRepoName(lgtmUrl);
+      if (!canonicalName) {
+        throw new Error(`Project was not found at ${lgtmUrl}.`);
+      }
+      canonicalName = convertRawLgtmSlug(`g/${canonicalName}`);
+      projectJson = await downloadLgtmProjectMetadata(canonicalName);
+      if (projectJson.code === 404) {
+        throw new Error('Failed to download project from LGTM.');
+      }
     }
 
     const language = await promptForLanguage(projectJson, progress);
@@ -459,6 +482,16 @@ export async function convertToDatabaseUrl(
     void logger.log(`Error: ${e.message}`);
     throw new Error(`Invalid LGTM URL: ${lgtmUrl}`);
   }
+}
+
+async function downloadLgtmProjectMetadata(lgtmUrl: string): Promise<any> {
+  const uri = Uri.parse(lgtmUrl, true);
+  const paths = ['api', 'v1.0'].concat(
+    uri.path.split('/').filter((segment) => segment)
+  ).slice(0, 6);
+  const projectUrl = `https://lgtm.com/${paths.join('/')}`;
+  const projectResponse = await fetch(projectUrl);
+  return projectResponse.json();
 }
 
 async function promptForLanguage(
