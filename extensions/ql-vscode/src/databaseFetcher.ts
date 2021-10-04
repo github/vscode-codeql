@@ -433,27 +433,16 @@ export async function convertToDatabaseUrl(
   progress: ProgressCallback) {
   try {
     lgtmUrl = convertRawLgtmSlug(lgtmUrl) || lgtmUrl;
-
-    let uri = Uri.parse(lgtmUrl, true);
-    let paths = ['api', 'v1.0'].concat(
-      uri.path.split('/').filter((segment) => segment)
-    ).slice(0, 6);
-    const projectUrl = `https://lgtm.com/${paths.join('/')}`;
-    const projectResponse = await fetch(projectUrl);
-    let projectJson = await projectResponse.json();
+    let projectJson = await pullLgtmProject(lgtmUrl);
 
     if (projectJson.code === 404) {
-      let canon_name = await retrieveCanonicalRepoName(lgtmUrl);
-      if (!canon_name) {
+      // fallback check for repos with same name but different case
+      let canonicalName = await retrieveCanonicalRepoName(lgtmUrl);
+      if (!canonicalName) {
         throw new Error();
       }
-      // Go through process above
-      canon_name = convertRawLgtmSlug(`g/${canon_name}`);
-      uri = Uri.parse(canon_name, true);
-      paths = ['api', 'v1.0'].concat(
-        uri.path.split('/').filter((segment) => segment)
-      ).slice(0, 6);
-      projectJson = await fetch(`https://lgtm.com/${paths.join('/')}`).then(res => res.json());
+      canonicalName = convertRawLgtmSlug(`g/${canonicalName}`);
+      projectJson = pullLgtmProject(canonicalName);
     }
 
     const language = await promptForLanguage(projectJson, progress);
@@ -471,6 +460,16 @@ export async function convertToDatabaseUrl(
     void logger.log(`Error: ${e.message}`);
     throw new Error(`Invalid LGTM URL: ${lgtmUrl}`);
   }
+}
+
+async function pullLgtmProject(lgtmUrl: string): Promise<any> {
+  const uri = Uri.parse(lgtmUrl, true);
+  const paths = ['api', 'v1.0'].concat(
+    uri.path.split('/').filter((segment) => segment)
+  ).slice(0, 6);
+  const projectUrl = `https://lgtm.com/${paths.join('/')}`;
+  const projectResponse = await fetch(projectUrl);
+  return await projectResponse.json();
 }
 
 async function promptForLanguage(
