@@ -2,8 +2,8 @@
 
 ## [UNRELEASED]
 
-- Add progress messages to LGTM download option. This makes the two-step process (selecting a project, then selecting a language) more clear.
-- Remove line about selecting a language from the dropdown when downloading database from LGTM. This makes the download progress visible when the popup is not expanded. [#894](https://github.com/github/vscode-codeql/issues/894)
+- Add progress messages to LGTM download option. This makes the two-step process (selecting a project, then selecting a language) more clear. [#960](https://github.com/github/vscode-codeql/pull/960)
+- Remove line about selecting a language from the dropdown when downloading database from LGTM. This makes the download progress visible when the popup is not expanded. [#957](https://github.com/github/vscode-codeql/pull/957)
 - Fixed a bug where copying the version information fails when a CodeQL CLI cannot be found. [#958](https://github.com/github/vscode-codeql/pull/958)
 
 ## 1.5.5 - 08 September 2021
