@@ -11,6 +11,8 @@
 - Fix a bug where copying the version information fails when a CodeQL CLI cannot be found. [#958](https://github.com/github/vscode-codeql/pull/958)
 - Avoid a race condition when deleting databases that can cause occasional errors. [#959](https://github.com/github/vscode-codeql/pull/959)
 - Update CodeQL logos. [#965](https://github.com/github/vscode-codeql/pull/965)
+- Fixed a bug where copying the version information fails when a CodeQL CLI cannot be found. [#958](https://github.com/github/vscode-codeql/pull/958)
+- Make project slug for GitHub repositories case-insensitive when adding a CodeQL database from LGTM. [#961](https://github.com/github/vscode-codeql/pull/961)
 
 ## 1.5.5 - 08 September 2021
 
