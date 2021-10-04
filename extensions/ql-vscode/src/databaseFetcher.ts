@@ -419,7 +419,7 @@ function convertRawLgtmSlug(maybeSlug: string): string | undefined {
 }
 
 function parseLgtmUrl(lgtmUrl: string): string | undefined {
-  const re = /https:\/\/lgtm.com\/projects\/(g|gl|b|git)\/(.*)/;
+  const re = new RegExp('https://lgtm.com/projects/(g|gl|b|git)/(.*)');
   const match = lgtmUrl.match(re);
   if (!match) {
     return;
