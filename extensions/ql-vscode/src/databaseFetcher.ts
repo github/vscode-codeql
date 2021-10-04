@@ -72,6 +72,11 @@ export async function promptImportLgtmDatabase(
   progress: ProgressCallback,
   token: CancellationToken
 ): Promise<DatabaseItem | undefined> {
+  progress({
+    message: 'Choose project',
+    step: 1,
+    maxStep: 2
+  });
   const lgtmUrl = await window.showInputBox({
     prompt:
       'Enter the project slug or URL on LGTM (e.g., g/github/codeql or https://lgtm.com/projects/g/github/codeql)',
@@ -81,7 +86,7 @@ export async function promptImportLgtmDatabase(
   }
 
   if (looksLikeLgtmUrl(lgtmUrl)) {
-    const databaseUrl = await convertToDatabaseUrl(lgtmUrl);
+    const databaseUrl = await convertToDatabaseUrl(lgtmUrl, progress);
     if (databaseUrl) {
       const item = await databaseArchiveFetcher(
         databaseUrl,
@@ -405,7 +410,9 @@ function convertRawLgtmSlug(maybeSlug: string): string | undefined {
 }
 
 // exported for testing
-export async function convertToDatabaseUrl(lgtmUrl: string) {
+export async function convertToDatabaseUrl(
+  lgtmUrl: string,
+  progress: ProgressCallback) {
   try {
     lgtmUrl = convertRawLgtmSlug(lgtmUrl) || lgtmUrl;
 
@@ -421,7 +428,7 @@ export async function convertToDatabaseUrl(lgtmUrl: string) {
       throw new Error();
     }
 
-    const language = await promptForLanguage(projectJson);
+    const language = await promptForLanguage(projectJson, progress);
     if (!language) {
       return;
     }
@@ -439,8 +446,14 @@ export async function convertToDatabaseUrl(lgtmUrl: string) {
 }
 
 async function promptForLanguage(
-  projectJson: any
+  projectJson: any,
+  progress: ProgressCallback
 ): Promise<string | undefined> {
+  progress({
+    message: 'Choose language',
+    step: 2,
+    maxStep: 2
+  });
   if (!projectJson?.languages?.length) {
     return;
   }
