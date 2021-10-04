@@ -442,7 +442,7 @@ export async function convertToDatabaseUrl(
         throw new Error();
       }
       canonicalName = convertRawLgtmSlug(`g/${canonicalName}`);
-      projectJson = pullLgtmProject(canonicalName);
+      projectJson = await pullLgtmProject(canonicalName);
     }
 
     const language = await promptForLanguage(projectJson, progress);
@@ -469,7 +469,7 @@ async function pullLgtmProject(lgtmUrl: string): Promise<any> {
   ).slice(0, 6);
   const projectUrl = `https://lgtm.com/${paths.join('/')}`;
   const projectResponse = await fetch(projectUrl);
-  return await projectResponse.json();
+  return projectResponse.json();
 }
 
 async function promptForLanguage(
