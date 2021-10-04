@@ -107,6 +107,15 @@ export async function promptImportLgtmDatabase(
   return;
 }
 
+export async function retrieveCanonicalRepoName(lgtmUrl: string) {
+  const givenRepoName = parseLgtmUrl(lgtmUrl);
+  const repo = await fetch(`https://api.github.com/repos/${givenRepoName}`).then(res => res.json());
+  if (!repo || !repo.full_name) {
+    return;
+  }
+  return repo.full_name;
+}
+
 /**
  * Imports a database from a local archive.
  *
@@ -409,6 +418,15 @@ function convertRawLgtmSlug(maybeSlug: string): string | undefined {
   return;
 }
 
+function parseLgtmUrl(lgtmUrl: string): string | undefined {
+  const re = /https:\/\/lgtm.com\/projects\/(g|gl|b|git)\/(.*)/;
+  const match = lgtmUrl.match(re);
+  if (!match) {
+    return;
+  }
+  return match[2];
+}
+
 // exported for testing
 export async function convertToDatabaseUrl(
   lgtmUrl: string,
@@ -416,16 +434,26 @@ export async function convertToDatabaseUrl(
   try {
     lgtmUrl = convertRawLgtmSlug(lgtmUrl) || lgtmUrl;
 
-    const uri = Uri.parse(lgtmUrl, true);
-    const paths = ['api', 'v1.0'].concat(
+    let uri = Uri.parse(lgtmUrl, true);
+    let paths = ['api', 'v1.0'].concat(
       uri.path.split('/').filter((segment) => segment)
     ).slice(0, 6);
     const projectUrl = `https://lgtm.com/${paths.join('/')}`;
     const projectResponse = await fetch(projectUrl);
-    const projectJson = await projectResponse.json();
+    let projectJson = await projectResponse.json();
 
     if (projectJson.code === 404) {
-      throw new Error();
+      let canon_name = await retrieveCanonicalRepoName(lgtmUrl);
+      if (!canon_name) {
+        throw new Error();
+      }
+      // Go through process above
+      canon_name = convertRawLgtmSlug(`g/${canon_name}`);
+      uri = Uri.parse(canon_name, true);
+      paths = ['api', 'v1.0'].concat(
+        uri.path.split('/').filter((segment) => segment)
+      ).slice(0, 6);
+      projectJson = await fetch(`https://lgtm.com/${paths.join('/')}`).then(res => res.json());
     }
 
     const language = await promptForLanguage(projectJson, progress);
