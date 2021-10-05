@@ -436,7 +436,7 @@ export async function convertToDatabaseUrl(
     let projectJson = await pullLgtmProject(lgtmUrl);
 
     if (projectJson.code === 404) {
-      // fallback check for repos with same name but different case
+      // fallback check for github repos with same name but different case
       let canonicalName = await retrieveCanonicalRepoName(lgtmUrl);
       if (!canonicalName) {
         throw new Error();
