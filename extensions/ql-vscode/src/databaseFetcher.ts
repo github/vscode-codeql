@@ -109,7 +109,7 @@ export async function promptImportLgtmDatabase(
 
 export async function retrieveCanonicalRepoName(lgtmUrl: string) {
   const givenRepoName = parseLgtmUrl(lgtmUrl);
-  const response = await checkForFailingResponse(await fetch(`https://api.github.com/repos/${givenRepoName}`), "Failed to locate the repository on github");
+  const response = await checkForFailingResponse(await fetch(`https://api.github.com/repos/${givenRepoName}`), 'Failed to locate the repository on github');
   const repo = await response.json();
   if (!repo || !repo.full_name) {
     return;
@@ -295,7 +295,7 @@ async function fetchAndUnzip(
     step: 1,
   });
 
-  const response = await checkForFailingResponse(await fetch(databaseUrl), "Error downloading database");
+  const response = await checkForFailingResponse(await fetch(databaseUrl), 'Error downloading database');
   const archiveFileStream = fs.createWriteStream(archivePath);
 
   const contentLength = response.headers.get('content-length');
