@@ -462,7 +462,7 @@ export async function convertToDatabaseUrl(
   }
 }
 
-async function pullLgtmProject(lgtmUrl: string): Promise<any> {
+async function downloadLgtmProjectMetadata(lgtmUrl: string): Promise<any> {
   const uri = Uri.parse(lgtmUrl, true);
   const paths = ['api', 'v1.0'].concat(
     uri.path.split('/').filter((segment) => segment)
