@@ -109,7 +109,8 @@ export async function promptImportLgtmDatabase(
 
 export async function retrieveCanonicalRepoName(lgtmUrl: string) {
   const givenRepoName = parseLgtmUrl(lgtmUrl);
-  const repo = await fetch(`https://api.github.com/repos/${givenRepoName}`).then(res => res.json());
+  const response = await checkForFailingResponse(await fetch(`https://api.github.com/repos/${givenRepoName}`), "Failed to locate the repository on github");
+  const repo = await response.json();
   if (!repo || !repo.full_name) {
     return;
   }
@@ -294,7 +295,7 @@ async function fetchAndUnzip(
     step: 1,
   });
 
-  const response = await checkForFailingResponse(await fetch(databaseUrl));
+  const response = await checkForFailingResponse(await fetch(databaseUrl), "Error downloading database");
   const archiveFileStream = fs.createWriteStream(archivePath);
 
   const contentLength = response.headers.get('content-length');
@@ -313,7 +314,7 @@ async function fetchAndUnzip(
   await fs.remove(archivePath);
 }
 
-async function checkForFailingResponse(response: Response): Promise<Response | never> {
+async function checkForFailingResponse(response: Response, errorMessage: string): Promise<Response | never> {
   if (response.ok) {
     return response;
   }
@@ -327,7 +328,7 @@ async function checkForFailingResponse(response: Response): Promise<Response | n
   } catch (e) {
     msg = text;
   }
-  throw new Error(`Error downloading database.\n\nReason: ${msg}`);
+  throw new Error(`${errorMessage}.\n\nReason: ${msg}`);
 }
 
 function isFile(databaseUrl: string) {
@@ -417,9 +418,10 @@ function convertRawLgtmSlug(maybeSlug: string): string | undefined {
   }
   return;
 }
-
+ 
 function parseLgtmUrl(lgtmUrl: string): string | undefined {
-  const re = new RegExp('https://lgtm.com/projects/(g|gl|b|git)/(.*)');
+  // Only matches the '/g/' provider (github)
+  const re = new RegExp('https://lgtm.com/projects/g/(.*)');
   const match = lgtmUrl.match(re);
   if (!match) {
     return;
@@ -433,7 +435,7 @@ export async function convertToDatabaseUrl(
   progress: ProgressCallback) {
   try {
     lgtmUrl = convertRawLgtmSlug(lgtmUrl) || lgtmUrl;
-    let projectJson = await pullLgtmProject(lgtmUrl);
+    let projectJson = await downloadLgtmProjectMetadata(lgtmUrl);
 
     if (projectJson.code === 404) {
       // fallback check for github repos with same name but different case
@@ -442,7 +444,10 @@ export async function convertToDatabaseUrl(
         throw new Error();
       }
       canonicalName = convertRawLgtmSlug(`g/${canonicalName}`);
-      projectJson = await pullLgtmProject(canonicalName);
+      projectJson = await downloadLgtmProjectMetadata(canonicalName);
+      if (projectJson.code === 404) {
+        throw new Error();
+      }
     }
 
     const language = await promptForLanguage(projectJson, progress);
