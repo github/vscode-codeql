@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Added a check to look for and replace non-printable characters in results view. [#584](https://github.com/github/vscode-codeql/issues/584)
 
 - Remove line about selecting a language from the dropdown when downloading database from LGTM. This makes the download progress visible when the popup is not expanded. [#894](https://github.com/github/vscode-codeql/issues/894)
 
