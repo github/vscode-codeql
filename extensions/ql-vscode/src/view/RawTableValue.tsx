@@ -8,31 +8,31 @@ interface Props {
   databaseUri: string;
 }
 
+const codes: { [key: string]: any } = {
+  '\0': 'U+0000',
+  '\b': 'U+0008',
+  '\t': 'U+0009',
+  '\n': 'U+000A',
+  '\v': 'U+000B',
+  '\r': 'U+000D'
+};
+
 export default function RawTableValue(props: Props): JSX.Element {
-  const v = props.value;
-  const codes: { [key: string]: any } = {
-    '\n': 'U+000A',
-    '\b': 'U+2084',
-    '\0': 'U+0000'
-  };
+  const rawValue = props.value;
 
   if (
-    typeof v === 'string'
-    || typeof v === 'number'
-    || typeof v === 'boolean'
+    typeof rawValue === 'string'
+    || typeof rawValue === 'number'
+    || typeof rawValue === 'boolean'
   ) {
-    const text = v.toString();
+    const text = rawValue.toString();
     const newVal = text.split('');
     for (let i = 0; i < newVal.length; i++) {
-      for (const char in codes) {
-        if (char === newVal[i]) {
-          newVal[i] = codes[char];
-        }
-      }
+      newVal[i] = codes[newVal[i]] || newVal[i];
     }
     const cleanVal = newVal.join('');
     return <span>{cleanVal}</span>;
   }
 
-  return renderLocation(v.url, v.label, props.databaseUri);
+  return renderLocation(rawValue.url, rawValue.label, props.databaseUri);
 }
