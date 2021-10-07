@@ -268,7 +268,7 @@ describe('query-history', () => {
   });
 });
 
-function createMockQueryHistory(allHistory: {}[]) {
+function createMockQueryHistory(allHistory: Record<string, unknown>[]) {
   return {
     assertSingleQuery: (QueryHistoryManager.prototype as any).assertSingleQuery,
     findOtherQueryToCompare: (QueryHistoryManager.prototype as any).findOtherQueryToCompare,

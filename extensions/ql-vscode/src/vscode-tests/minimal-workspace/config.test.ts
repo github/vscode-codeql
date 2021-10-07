@@ -29,7 +29,7 @@ describe('config listeners', function() {
   });
 
   interface TestConfig<T> {
-    clazz: new () => {};
+    clazz: new () => unknown;
     settings: {
       name: string;
       property: string;
@@ -48,6 +48,10 @@ describe('config listeners', function() {
         name: 'codeQL.runningTests.numberOfThreads',
         property: 'numberTestThreads',
         values: [1, 0]
+      }, {
+        name: 'codeQL.runningQueries.maxPaths',
+        property: 'maxPaths',
+        values: [0, 1]
       }]
     },
     {

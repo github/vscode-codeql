@@ -13,19 +13,23 @@ import {
   looksLikeLgtmUrl,
   findDirWithFile,
 } from '../../databaseFetcher';
+import { ProgressCallback } from '../../commandRunner';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe('databaseFetcher', function() {
+describe('databaseFetcher', function () {
   // These tests make API calls and may need extra time to complete.
   this.timeout(10000);
 
   describe('convertToDatabaseUrl', () => {
     let sandbox: sinon.SinonSandbox;
     let quickPickSpy: sinon.SinonStub;
+    let progressSpy: ProgressCallback;
+
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       quickPickSpy = sandbox.stub(window, 'showQuickPick');
+      progressSpy = sandbox.spy();
     });
 
     afterEach(() => {
@@ -35,7 +39,7 @@ describe('databaseFetcher', function() {
     it('should convert a project url to a database url', async () => {
       quickPickSpy.resolves('javascript');
       const lgtmUrl = 'https://lgtm.com/projects/g/github/codeql';
-      const dbUrl = await convertToDatabaseUrl(lgtmUrl);
+      const dbUrl = await convertToDatabaseUrl(lgtmUrl, progressSpy);
 
       expect(dbUrl).to.equal(
         'https://lgtm.com/api/v1.0/snapshots/1506465042581/javascript'
@@ -48,28 +52,31 @@ describe('databaseFetcher', function() {
       quickPickSpy.resolves('python');
       const lgtmUrl =
         'https://lgtm.com/projects/g/github/codeql/subpage/subpage2?query=xxx';
-      const dbUrl = await convertToDatabaseUrl(lgtmUrl);
+      const dbUrl = await convertToDatabaseUrl(lgtmUrl, progressSpy);
 
       expect(dbUrl).to.equal(
         'https://lgtm.com/api/v1.0/snapshots/1506465042581/python'
       );
+      expect(progressSpy).to.have.been.calledOnce;
     });
 
     it('should convert a raw slug to a database url with extra path segments', async () => {
       quickPickSpy.resolves('python');
       const lgtmUrl =
         'g/github/codeql';
-      const dbUrl = await convertToDatabaseUrl(lgtmUrl);
+      const dbUrl = await convertToDatabaseUrl(lgtmUrl, progressSpy);
 
       expect(dbUrl).to.equal(
         'https://lgtm.com/api/v1.0/snapshots/1506465042581/python'
       );
+      expect(progressSpy).to.have.been.calledOnce;
     });
 
     it('should fail on a nonexistent project', async () => {
       quickPickSpy.resolves('javascript');
       const lgtmUrl = 'https://lgtm.com/projects/g/github/hucairz';
-      expect(convertToDatabaseUrl(lgtmUrl)).to.rejectedWith(/Invalid LGTM URL/);
+      await expect(convertToDatabaseUrl(lgtmUrl, progressSpy)).to.rejectedWith(/Invalid LGTM URL/);
+      expect(progressSpy).to.have.callCount(0);
     });
   });
 

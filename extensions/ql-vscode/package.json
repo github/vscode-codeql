@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.4.9",
+  "version": "1.5.6",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -13,7 +13,7 @@
     "url": "https://github.com/github/vscode-codeql"
   },
   "engines": {
-    "vscode": "^1.43.0"
+    "vscode": "^1.57.0"
   },
   "categories": [
     "Programming Languages"
@@ -21,6 +21,16 @@
   "extensionDependencies": [
     "hbenl.vscode-test-explorer"
   ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Workspace trust is required to execute commands that can contain arbitrary paths.",
+      "restrictedConfigurations": [
+        "codeQL.cli.executablePath",
+        "codeQL.runningTests.additionalTestArguments"
+      ]
+    }
+  },
   "activationEvents": [
     "onLanguage:ql",
     "onView:codeQLDatabases",
@@ -28,6 +38,7 @@
     "onView:codeQLAstViewer",
     "onView:test-explorer",
     "onCommand:codeQL.checkForUpdatesToCLI",
+    "onCommand:codeQL.authenticateToGitHub",
     "onCommand:codeQLDatabases.chooseDatabaseFolder",
     "onCommand:codeQLDatabases.chooseDatabaseArchive",
     "onCommand:codeQLDatabases.chooseDatabaseInternet",
@@ -118,10 +129,10 @@
       "title": "CodeQL",
       "properties": {
         "codeQL.cli.executablePath": {
-          "scope": "machine",
+          "scope": "window",
           "type": "string",
           "default": "",
-          "description": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.exe` on Windows. If empty, the extension will look for a CodeQL executable on your shell PATH, or if CodeQL is not on your PATH, download and manage its own CodeQL executable."
+          "markdownDescription": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.exe` on Windows. If empty, the extension will look for a CodeQL executable on your shell PATH, or if CodeQL is not on your PATH, download and manage its own CodeQL executable."
         },
         "codeQL.runningQueries.numberOfThreads": {
           "type": "integer",
@@ -169,6 +180,13 @@
           "default": false,
           "description": "Enable debug logging and tuple counting when running CodeQL queries. This information is useful for debugging query performance."
         },
+        "codeQL.runningQueries.maxPaths": {
+          "type": "integer",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 256,
+          "markdownDescription": "Max number of paths to display for each alert found by a path query (`@kind path-problem`)."
+        },
         "codeQL.runningQueries.autoSave": {
           "type": "boolean",
           "default": false,
@@ -195,10 +213,10 @@
         "codeQL.queryHistory.format": {
           "type": "string",
           "default": "%q on %d - %s, %r result count [%t]",
-          "description": "Default string for how to label query history items. %t is the time of the query, %q is the query name, %d is the database name, %r is the number of results, and %s is a status string."
+          "markdownDescription": "Default string for how to label query history items.\n* %t is the time of the query\n* %q is the human-readable query name\n* %f is the query file name\n* %d is the database name\n* %r is the number of results\n* %s is a status string"
         },
         "codeQL.runningTests.additionalTestArguments": {
-          "scope": "machine",
+          "scope": "window",
           "type": "array",
           "default": [],
           "markdownDescription": "Additional command line arguments to pass to the CLI when [running tests](https://codeql.github.com/docs/codeql-cli/manual/test-run/). This setting should be an array of strings, each containing an argument to be passed."
@@ -222,13 +240,48 @@
           "default": false,
           "scope": "application",
           "description": "Specifies whether or not to write telemetry events to the extension log."
+        },
+        "codeQL.remoteQueries.repositoryLists": {
+          "type": [
+            "object",
+            null
+          ],
+          "patternProperties": {
+            ".*": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "default": null,
+          "markdownDescription": "[For internal use only] Lists of GitHub repositories that you want to query remotely. This should be a JSON object where each key is a user-specified name for this repository list, and the value is an array of GitHub repositories (of the form `<owner>/<repo>`)."
+        },
+        "codeQL.remoteQueries.controllerRepo": {
+          "type": "string",
+          "default": "",
+          "pattern": "^$|^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+/[a-zA-Z0-9-_]+$",
+          "patternErrorMessage": "Please enter a valid GitHub repository",
+          "markdownDescription": "[For internal use only] The name of the GitHub repository where you can view the progress and results of the \"Run Remote query\" command. The repository should be of the form `<owner>/<repo>`)."
         }
       }
     },
     "commands": [
       {
+        "command": "codeQL.authenticateToGitHub",
+        "title": "CodeQL: Authenticate to GitHub"
+      },
+      {
         "command": "codeQL.runQuery",
         "title": "CodeQL: Run Query"
+      },
+      {
+        "command": "codeQL.runQueryOnMultipleDatabases",
+        "title": "CodeQL: Run Query on Multiple Databases"
+      },
+      {
+        "command": "codeQL.runRemoteQuery",
+        "title": "CodeQL: Run Remote Query"
       },
       {
         "command": "codeQL.runQueries",
@@ -327,6 +380,10 @@
         "title": "Show Database Directory"
       },
       {
+        "command": "codeQLDatabases.addDatabaseSource",
+        "title": "Add Database Source to Workspace"
+      },
+      {
         "command": "codeQL.chooseDatabaseFolder",
         "title": "CodeQL: Choose Database from Folder"
       },
@@ -423,8 +480,12 @@
         "title": "View Results (CSV)"
       },
       {
-        "command": "codeQLQueryHistory.viewSarifResults",
-        "title": "View Results (SARIF)"
+        "command": "codeQLQueryHistory.viewCsvAlerts",
+        "title": "View Alerts (CSV)"
+      },
+      {
+        "command": "codeQLQueryHistory.viewSarifAlerts",
+        "title": "View Alerts (SARIF)"
       },
       {
         "command": "codeQLQueryHistory.viewDil",
@@ -566,6 +627,11 @@
           "when": "view == codeQLDatabases"
         },
         {
+          "command": "codeQLDatabases.addDatabaseSource",
+          "group": "9_qlCommands",
+          "when": "view == codeQLDatabases"
+        },
+        {
           "command": "codeQLQueryHistory.openQuery",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory"
@@ -598,10 +664,15 @@
         {
           "command": "codeQLQueryHistory.viewCsvResults",
           "group": "9_qlCommands",
+          "when": "view == codeQLQueryHistory && viewItem != interpretedResultsItem"
+        },
+        {
+          "command": "codeQLQueryHistory.viewCsvAlerts",
+          "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
         },
         {
-          "command": "codeQLQueryHistory.viewSarifResults",
+          "command": "codeQLQueryHistory.viewSarifAlerts",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
         },
@@ -645,8 +716,20 @@
       ],
       "commandPalette": [
         {
+          "command": "codeQL.authenticateToGitHub",
+          "when": "config.codeQL.canary"
+        },
+        {
           "command": "codeQL.runQuery",
           "when": "resourceLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.runQueryOnMultipleDatabases",
+          "when": "resourceLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.runRemoteQuery",
+          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
         },
         {
           "command": "codeQL.runQueries",
@@ -678,6 +761,10 @@
         },
         {
           "command": "codeQLDatabases.openDatabaseFolder",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.addDatabaseSource",
           "when": "false"
         },
         {
@@ -741,7 +828,11 @@
           "when": "false"
         },
         {
-          "command": "codeQLQueryHistory.viewSarifResults",
+          "command": "codeQLQueryHistory.viewCsvAlerts",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.viewSarifAlerts",
           "when": "false"
         },
         {
@@ -789,6 +880,14 @@
         {
           "command": "codeQL.runQuery",
           "when": "editorLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.runQueryOnMultipleDatabases",
+          "when": "editorLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.runRemoteQuery",
+          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
         },
         {
           "command": "codeQL.viewAst",
@@ -858,6 +957,7 @@
     "format-staged": "lint-staged"
   },
   "dependencies": {
+    "@octokit/rest": "^18.5.6",
     "child-process-promise": "^2.2.1",
     "classnames": "~2.2.6",
     "fs-extra": "^9.0.1",
@@ -888,7 +988,7 @@
     "@types/fs-extra": "^9.0.6",
     "@types/glob": "^7.1.1",
     "@types/google-protobuf": "^3.2.7",
-    "@types/gulp": "^4.0.6",
+    "@types/gulp": "^4.0.9",
     "@types/gulp-replace": "0.0.31",
     "@types/gulp-sourcemaps": "0.0.32",
     "@types/js-yaml": "^3.12.5",
@@ -906,11 +1006,11 @@
     "@types/through2": "^2.0.36",
     "@types/tmp": "^0.1.0",
     "@types/unzipper": "~0.10.1",
-    "@types/vscode": "^1.43.0",
+    "@types/vscode": "^1.57.0",
     "@types/webpack": "^4.32.1",
     "@types/xml2js": "~0.4.4",
-    "@typescript-eslint/eslint-plugin": "~2.23.0",
-    "@typescript-eslint/parser": "~2.23.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/parser": "^4.26.0",
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^1.8.7",
     "chai": "^4.2.0",
@@ -938,7 +1038,7 @@
     "ts-loader": "^8.1.0",
     "ts-node": "^8.3.0",
     "ts-protoc-gen": "^0.9.0",
-    "typescript": "~3.8.3",
+    "typescript": "^4.3.2",
     "typescript-formatter": "^7.2.2",
     "vsce": "^1.65.0",
     "vscode-test": "^1.4.0",
@@ -959,5 +1059,8 @@
       "tsfmt -r",
       "eslint --fix"
     ]
+  },
+  "resolutions": {
+    "glob-parent": "~6.0.0"
   }
 }

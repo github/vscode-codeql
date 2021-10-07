@@ -173,7 +173,7 @@ export class CompareInterfaceManager extends DisposableObject {
         break;
 
       case 'changeCompare':
-        this.changeTable(msg.newResultSetName);
+        await this.changeTable(msg.newResultSetName);
         break;
 
       case 'viewSourceFile':
@@ -267,11 +267,11 @@ export class CompareInterfaceManager extends DisposableObject {
     return resultsDiff(fromResults, toResults);
   }
 
-  private openQuery(kind: 'from' | 'to') {
+  private async openQuery(kind: 'from' | 'to') {
     const toOpen =
       kind === 'from' ? this.comparePair?.from : this.comparePair?.to;
     if (toOpen) {
-      this.showQueryResultsCallback(toOpen);
+      await this.showQueryResultsCallback(toOpen);
     }
   }
 }

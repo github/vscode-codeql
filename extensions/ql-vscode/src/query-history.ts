@@ -193,7 +193,7 @@ export class HistoryTreeDataProvider extends DisposableObject {
 
   public set sortOrder(newSortOrder: SortOrder) {
     this._sortOrder = newSortOrder;
-    this._onDidChangeTreeData.fire();
+    this._onDidChangeTreeData.fire(undefined);
   }
 }
 
@@ -249,7 +249,7 @@ export class QueryHistoryManager extends DisposableObject {
       })
     );
 
-    logger.log('Registering query history panel commands.');
+    void logger.log('Registering query history panel commands.');
     this.push(
       commandRunner(
         'codeQLQueryHistory.openQuery',
@@ -312,8 +312,14 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
-        'codeQLQueryHistory.viewSarifResults',
-        this.handleViewSarifResults.bind(this)
+        'codeQLQueryHistory.viewCsvAlerts',
+        this.handleViewCsvAlerts.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.viewSarifAlerts',
+        this.handleViewSarifAlerts.bind(this)
       )
     );
     this.push(
@@ -402,7 +408,7 @@ export class QueryHistoryManager extends DisposableObject {
     });
     const current = this.treeDataProvider.getCurrent();
     if (current !== undefined) {
-      this.treeView.reveal(current);
+      await this.treeView.reveal(current);
       await this.invokeCallbackOn(current);
     }
   }
@@ -470,10 +476,10 @@ export class QueryHistoryManager extends DisposableObject {
       const to = await this.findOtherQueryToCompare(from, multiSelect);
 
       if (from && to) {
-        this.doCompareCallback(from, to);
+        await this.doCompareCallback(from, to);
       }
     } catch (e) {
-      showAndLogErrorMessage(e.message);
+      void showAndLogErrorMessage(e.message);
     }
   }
 
@@ -499,13 +505,13 @@ export class QueryHistoryManager extends DisposableObject {
     if (
       prevItemClick !== undefined &&
       now.valueOf() - prevItemClick.time.valueOf() < DOUBLE_CLICK_TIME &&
-      singleItem == prevItemClick.item
+      finalSingleItem == prevItemClick.item
     ) {
       // show original query file on double click
-      await this.handleOpenQuery(singleItem, [singleItem]);
+      await this.handleOpenQuery(finalSingleItem, [finalSingleItem]);
     } else {
       // show results on single click
-      await this.invokeCallbackOn(singleItem);
+      await this.invokeCallbackOn(finalSingleItem);
     }
   }
 
@@ -520,7 +526,7 @@ export class QueryHistoryManager extends DisposableObject {
     if (singleItem.logFileLocation) {
       await this.tryOpenExternalFile(singleItem.logFileLocation);
     } else {
-      showAndLogWarningMessage('No log file available');
+      void showAndLogWarningMessage('No log file available');
     }
   }
 
@@ -550,7 +556,7 @@ export class QueryHistoryManager extends DisposableObject {
     await vscode.window.showTextDocument(doc, { preview: false });
   }
 
-  async handleViewSarifResults(
+  async handleViewSarifAlerts(
     singleItem: CompletedQuery,
     multiSelect: CompletedQuery[]
   ) {
@@ -565,13 +571,31 @@ export class QueryHistoryManager extends DisposableObject {
       );
     } else {
       const label = singleItem.getLabel();
-      showAndLogInformationMessage(
+      void showAndLogInformationMessage(
         `Query ${label} has no interpreted results.`
       );
     }
   }
 
   async handleViewCsvResults(
+    singleItem: CompletedQuery,
+    multiSelect: CompletedQuery[]
+  ) {
+    if (!this.assertSingleQuery(multiSelect)) {
+      return;
+    }
+    if (await singleItem.query.hasCsv()) {
+      void this.tryOpenExternalFile(singleItem.query.csvPath);
+      return;
+    }
+    await singleItem.query.exportCsvResults(this.qs, singleItem.query.csvPath, () => {
+      void this.tryOpenExternalFile(
+        singleItem.query.csvPath
+      );
+    });
+  }
+
+  async handleViewCsvAlerts(
     singleItem: CompletedQuery,
     multiSelect: CompletedQuery[]
   ) {
@@ -644,7 +668,7 @@ export class QueryHistoryManager extends DisposableObject {
         // We must fire the onDidChangeTreeData event to ensure the current element can be selected
         // using `reveal` if the tree view was not visible when the current element was added.
         this.treeDataProvider.refresh();
-        this.treeView.reveal(current);
+        void this.treeView.reveal(current);
       }
     }
   }
@@ -671,13 +695,13 @@ the file in the file explorer and dragging it into the workspace.`
           try {
             await vscode.commands.executeCommand('revealFileInOS', uri);
           } catch (e) {
-            showAndLogErrorMessage(e.message);
+            void showAndLogErrorMessage(e.message);
           }
         }
       } else {
-        showAndLogErrorMessage(`Could not open file ${fileLocation}`);
-        logger.log(e.message);
-        logger.log(e.stack);
+        void showAndLogErrorMessage(`Could not open file ${fileLocation}`);
+        void logger.log(e.message);
+        void logger.log(e.stack);
       }
     }
   }
@@ -729,7 +753,7 @@ the file in the file explorer and dragging it into the workspace.`
 
   private assertSingleQuery(multiSelect: CompletedQuery[] = [], message = 'Please select a single query.') {
     if (multiSelect.length > 1) {
-      showAndLogErrorMessage(
+      void showAndLogErrorMessage(
         message
       );
       return false;
@@ -797,4 +821,3 @@ the file in the file explorer and dragging it into the workspace.`
     this.treeDataProvider.refresh(completedQuery);
   }
 }
-

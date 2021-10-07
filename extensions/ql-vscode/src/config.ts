@@ -79,6 +79,7 @@ const CACHE_SIZE_SETTING = new Setting('cacheSize', RUNNING_QUERIES_SETTING);
 const TIMEOUT_SETTING = new Setting('timeout', RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting('memory', RUNNING_QUERIES_SETTING);
 const DEBUG_SETTING = new Setting('debug', RUNNING_QUERIES_SETTING);
+const MAX_PATHS = new Setting('maxPaths', RUNNING_QUERIES_SETTING);
 const RUNNING_TESTS_SETTING = new Setting('runningTests', ROOT_SETTING);
 const RESULTS_DISPLAY_SETTING = new Setting('resultsDisplay', ROOT_SETTING);
 
@@ -112,12 +113,13 @@ export interface QueryHistoryConfig {
   onDidChangeConfiguration: Event<void>;
 }
 
-const CLI_SETTINGS = [ADDITIONAL_TEST_ARGUMENTS_SETTING, NUMBER_OF_TEST_THREADS_SETTING, NUMBER_OF_THREADS_SETTING];
+const CLI_SETTINGS = [ADDITIONAL_TEST_ARGUMENTS_SETTING, NUMBER_OF_TEST_THREADS_SETTING, NUMBER_OF_THREADS_SETTING, MAX_PATHS];
 
 export interface CliConfig {
   additionalTestArguments: string[];
   numberTestThreads: number;
   numberThreads: number;
+  maxPaths: number;
   onDidChangeConfiguration?: Event<void>;
 }
 
@@ -147,7 +149,7 @@ export abstract class ConfigListener extends DisposableObject {
 
   protected abstract handleDidChangeConfiguration(e: ConfigurationChangeEvent): void;
   private updateConfiguration(): void {
-    this._onDidChangeConfiguration.fire();
+    this._onDidChangeConfiguration.fire(undefined);
   }
 
   public get onDidChangeConfiguration(): Event<void> {
@@ -189,7 +191,7 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
       config.push(distributionManager.onDidChangeDistribution(async () => {
         const codeQlPath = await distributionManager.getCodeQlPathWithoutVersionCheck();
         config._codeQlPath = codeQlPath!;
-        config._onDidChangeConfiguration.fire();
+        config._onDidChangeConfiguration.fire(undefined);
       }));
     }
     return config;
@@ -226,7 +228,7 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
       return undefined;
     }
     if (memory == 0 || typeof (memory) !== 'number') {
-      logger.log(`Ignoring value '${memory}' for setting ${MEMORY_SETTING.qualifiedName}`);
+      void logger.log(`Ignoring value '${memory}' for setting ${MEMORY_SETTING.qualifiedName}`);
       return undefined;
     }
     return memory;
@@ -264,6 +266,10 @@ export class CliConfigListener extends ConfigListener implements CliConfig {
     return NUMBER_OF_THREADS_SETTING.getValue<number>();
   }
 
+  public get maxPaths(): number {
+    return MAX_PATHS.getValue<number>();
+  }
+
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     this.handleDidChangeConfigurationForRelevantSettings(CLI_SETTINGS, e);
   }
@@ -291,3 +297,35 @@ export function isCanary() {
  * Avoids caching in the AST viewer if the user is also a canary user.
  */
 export const NO_CACHE_AST_VIEWER = new Setting('disableCache', AST_VIEWER_SETTING);
+
+// Settings for remote queries
+const REMOTE_QUERIES_SETTING = new Setting('remoteQueries', ROOT_SETTING);
+
+/**
+ * Lists of GitHub repositories that you want to query remotely via the "Run Remote query" command.
+ * Note: This command is only available for internal users.
+ * 
+ * This setting should be a JSON object where each key is a user-specified name (string),
+ * and the value is an array of GitHub repositories (of the form `<owner>/<repo>`).
+ */
+const REMOTE_REPO_LISTS = new Setting('repositoryLists', REMOTE_QUERIES_SETTING);
+
+export function getRemoteRepositoryLists(): Record<string, string[]> | undefined {
+  return REMOTE_REPO_LISTS.getValue<Record<string, string[]>>() || undefined;
+}
+
+/**
+ * The name of the "controller" repository that you want to use with the "Run Remote query" command.
+ * Note: This command is only available for internal users.
+ *
+ * This setting should be a GitHub repository of the form `<owner>/<repo>`.
+ */
+const REMOTE_CONTROLLER_REPO = new Setting('controllerRepo', REMOTE_QUERIES_SETTING);
+
+export function getRemoteControllerRepo(): string | undefined {
+  return REMOTE_CONTROLLER_REPO.getValue<string>() || undefined;
+}
+
+export async function setRemoteControllerRepo(repo: string | undefined) {
+  await REMOTE_CONTROLLER_REPO.updateValue(repo, ConfigurationTarget.Global);
+}

@@ -119,7 +119,7 @@ export class TelemetryListener extends ConfigListener {
         }
 
         if (LOG_TELEMETRY.getValue<boolean>()) {
-          logger.log(`Telemetry: ${JSON.stringify(envelope)}`);
+          void logger.log(`Telemetry: ${JSON.stringify(envelope)}`);
         }
         return true;
       });
@@ -128,7 +128,7 @@ export class TelemetryListener extends ConfigListener {
 
   dispose() {
     super.dispose();
-    this.reporter?.dispose();
+    void this.reporter?.dispose();
   }
 
   sendCommandUsage(name: string, executionTime: number, error?: Error) {
@@ -187,7 +187,7 @@ export class TelemetryListener extends ConfigListener {
 
   private disposeReporter() {
     if (this.reporter) {
-      this.reporter.dispose();
+      void this.reporter.dispose();
       this.reporter = undefined;
     }
   }
@@ -209,6 +209,8 @@ export let telemetryListener: TelemetryListener;
 
 export async function initializeTelemetry(extension: Extension<any>, ctx: ExtensionContext): Promise<void> {
   telemetryListener = new TelemetryListener(extension.id, extension.packageJSON.version, key, ctx);
-  telemetryListener.initialize();
+  // do not await initialization, since doing so will sometimes cause a modal popup.
+  // this is a particular problem during integration tests, which will hang if a modal popup is displayed.
+  void telemetryListener.initialize();
   ctx.subscriptions.push(telemetryListener);
 }

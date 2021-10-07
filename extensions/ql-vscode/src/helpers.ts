@@ -9,7 +9,7 @@ import {
   workspace,
   env
 } from 'vscode';
-import { CodeQLCliServer } from './cli';
+import { CodeQLCliServer, QlpacksInfo } from './cli';
 import { logger } from './logging';
 
 /**
@@ -77,7 +77,7 @@ async function internalShowAndLog(
   fullMessage?: string
 ): Promise<string | undefined> {
   const label = 'Show Log';
-  outputLogger.log(fullMessage || message);
+  void outputLogger.log(fullMessage || message);
   const result = await fn(message, label, ...items);
   if (result === label) {
     outputLogger.show();
@@ -254,31 +254,75 @@ function createRateLimitedResult(): RateLimitedResult {
   };
 }
 
-export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemePath: string): Promise<string> {
+export interface QlPacksForLanguage {
+  /** The name of the pack containing the dbscheme. */
+  dbschemePack: string;
+  /** `true` if `dbschemePack` is a library pack. */
+  dbschemePackIsLibraryPack: boolean;
+  /**
+   * The name of the corresponding standard query pack.
+   * Only defined if `dbschemePack` is a library pack.
+   */
+  queryPack?: string;
+}
+
+interface QlPackWithPath {
+  packName: string;
+  packDir: string | undefined;
+}
+
+async function findDbschemePack(packs: QlPackWithPath[], dbschemePath: string): Promise<{ name: string; isLibraryPack: boolean; }> {
+  for (const { packDir, packName } of packs) {
+    if (packDir !== undefined) {
+      const qlpack = yaml.safeLoad(await fs.readFile(path.join(packDir, 'qlpack.yml'), 'utf8')) as { dbscheme?: string; library?: boolean; };
+      if (qlpack.dbscheme !== undefined && path.basename(qlpack.dbscheme) === path.basename(dbschemePath)) {
+        return {
+          name: packName,
+          isLibraryPack: qlpack.library === true
+        };
+      }
+    }
+  }
+  throw new Error(`Could not find qlpack file for dbscheme ${dbschemePath}`);
+}
+
+function findStandardQueryPack(qlpacks: QlpacksInfo, dbschemePackName: string): string | undefined {
+  const matches = dbschemePackName.match(/^codeql\/(?<language>[a-z]+)-all$/);
+  if (matches) {
+    const queryPackName = `codeql/${matches.groups!.language}-queries`;
+    if (qlpacks[queryPackName] !== undefined) {
+      return queryPackName;
+    }
+  }
+
+  // Either the dbscheme pack didn't look like one where the queries might be in the query pack, or
+  // no query pack was found in the search path. Either is OK.
+  return undefined;
+}
+
+export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemePath: string): Promise<QlPacksForLanguage> {
   const qlpacks = await cliServer.resolveQlpacks(getOnDiskWorkspaceFolders());
-  const packs: { packDir: string | undefined; packName: string }[] =
+  const packs: QlPackWithPath[] =
     Object.entries(qlpacks).map(([packName, dirs]) => {
       if (dirs.length < 1) {
-        logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has no directories`);
+        void logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has no directories`);
         return { packName, packDir: undefined };
       }
       if (dirs.length > 1) {
-        logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has more than one directory; arbitrarily choosing the first`);
+        void logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has more than one directory; arbitrarily choosing the first`);
       }
       return {
         packName,
         packDir: dirs[0]
       };
     });
-  for (const { packDir, packName } of packs) {
-    if (packDir !== undefined) {
-      const qlpack = yaml.safeLoad(await fs.readFile(path.join(packDir, 'qlpack.yml'), 'utf8')) as { dbscheme: string };
-      if (qlpack.dbscheme !== undefined && path.basename(qlpack.dbscheme) === path.basename(dbschemePath)) {
-        return packName;
-      }
-    }
-  }
-  throw new Error(`Could not find qlpack file for dbscheme ${dbschemePath}`);
+  const dbschemePack = await findDbschemePack(packs, dbschemePath);
+  const queryPack = dbschemePack.isLibraryPack ? findStandardQueryPack(qlpacks, dbschemePack.name) : undefined;
+  return {
+    dbschemePack: dbschemePack.name,
+    dbschemePackIsLibraryPack: dbschemePack.isLibraryPack,
+    queryPack
+  };
 }
 
 export async function getPrimaryDbscheme(datasetFolder: string): Promise<string> {
@@ -292,7 +336,7 @@ export async function getPrimaryDbscheme(datasetFolder: string): Promise<string>
   const dbscheme = dbschemes[0];
 
   if (dbschemes.length > 1) {
-    Window.showErrorMessage(`Found multiple dbschemes in ${datasetFolder} during quick query; arbitrarily choosing the first, ${dbscheme}, to decide what library to use.`);
+    void Window.showErrorMessage(`Found multiple dbschemes in ${datasetFolder} during quick query; arbitrarily choosing the first, ${dbscheme}, to decide what library to use.`);
   }
   return dbscheme;
 }
@@ -379,6 +423,12 @@ const dbSchemeToLanguage = {
   'go.dbscheme': 'go'
 };
 
+export const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce((acc, [k, v]) => {
+  acc[v] = k;
+  return acc;
+}, {} as { [k: string]: string });
+
+
 /**
  * Returns the initial contents for an empty query, based on the language of the selected
  * databse.
@@ -423,4 +473,35 @@ export async function isLikelyDatabaseRoot(maybeRoot: string) {
 
 export function isLikelyDbLanguageFolder(dbPath: string) {
   return !!path.basename(dbPath).startsWith('db-');
+}
+
+/**
+ * Finds the language that a query targets.
+ * If it can't be autodetected, prompt the user to specify the language manually.
+ */
+export async function findLanguage(
+  cliServer: CodeQLCliServer,
+  queryUri: Uri | undefined
+): Promise<string | undefined> {
+  const uri = queryUri || Window.activeTextEditor?.document.uri;
+  if (uri !== undefined) {
+    try {
+      const queryInfo = await cliServer.resolveQueryByLanguage(getOnDiskWorkspaceFolders(), uri);
+      const language = (Object.keys(queryInfo.byLanguage))[0];
+      void logger.log(`Detected query language: ${language}`);
+      return language;
+    } catch (e) {
+      void logger.log('Could not autodetect query language. Select language manually.');
+    }
+  }
+  const availableLanguages = Object.keys(await cliServer.resolveLanguages());
+  const language = await Window.showQuickPick(
+    availableLanguages,
+    { placeHolder: 'Select target language for your query', ignoreFocusOut: true }
+  );
+  if (!language) {
+    // This only happens if the user cancels the quick pick.
+    void showAndLogErrorMessage('Language not found. Language must be specified manually.');
+  }
+  return language;
 }

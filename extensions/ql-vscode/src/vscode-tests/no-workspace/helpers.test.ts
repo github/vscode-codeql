@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import 'mocha';
-import { ExtensionContext, Memento, window } from 'vscode';
+import { EnvironmentVariableCollection, EnvironmentVariableMutator, Event, ExtensionContext, ExtensionMode, Memento, SecretStorage, SecretStorageChangeEvent, Uri, window } from 'vscode';
 import * as yaml from 'js-yaml';
 import * as tmp from 'tmp';
 import * as path from 'path';
@@ -146,9 +146,10 @@ describe('helpers', () => {
   });
 
   class MockExtensionContext implements ExtensionContext {
+    extensionMode: ExtensionMode = 3;
     subscriptions: { dispose(): unknown }[] = [];
     workspaceState: Memento = new MockMemento();
-    globalState: Memento = new MockMemento();
+    globalState = new MockGlobalStorage();
     extensionPath = '';
     asAbsolutePath(_relativePath: string): string {
       throw new Error('Method not implemented.');
@@ -156,6 +157,38 @@ describe('helpers', () => {
     storagePath = '';
     globalStoragePath = '';
     logPath = '';
+    extensionUri = Uri.parse('');
+    environmentVariableCollection = new MockEnvironmentVariableCollection();
+    secrets = new MockSecretStorage();
+    storageUri = Uri.parse('');
+    globalStorageUri = Uri.parse('');
+    logUri = Uri.parse('');
+    extension: any;
+  }
+
+  class MockEnvironmentVariableCollection implements EnvironmentVariableCollection {
+    persistent = false;
+    replace(_variable: string, _value: string): void {
+      throw new Error('Method not implemented.');
+    }
+    append(_variable: string, _value: string): void {
+      throw new Error('Method not implemented.');
+    }
+    prepend(_variable: string, _value: string): void {
+      throw new Error('Method not implemented.');
+    }
+    get(_variable: string): EnvironmentVariableMutator | undefined {
+      throw new Error('Method not implemented.');
+    }
+    forEach(_callback: (variable: string, mutator: EnvironmentVariableMutator, collection: EnvironmentVariableCollection) => any, _thisArg?: any): void {
+      throw new Error('Method not implemented.');
+    }
+    delete(_variable: string): void {
+      throw new Error('Method not implemented.');
+    }
+    clear(): void {
+      throw new Error('Method not implemented.');
+    }
   }
 
   class MockMemento implements Memento {
@@ -182,6 +215,25 @@ describe('helpers', () => {
     async update(key: string, value: any): Promise<void> {
       this.map.set(key, value);
     }
+  }
+
+  class MockGlobalStorage extends MockMemento {
+    public setKeysForSync(_keys: string[]): void {
+      return;
+    }
+  }
+
+  class MockSecretStorage implements SecretStorage {
+    get(_key: string): Thenable<string | undefined> {
+      throw new Error('Method not implemented.');
+    }
+    store(_key: string, _value: string): Thenable<void> {
+      throw new Error('Method not implemented.');
+    }
+    delete(_key: string): Thenable<void> {
+      throw new Error('Method not implemented.');
+    }
+    onDidChange!: Event<SecretStorageChangeEvent>;
   }
 
   it('should report stream progress', () => {

@@ -262,7 +262,7 @@ export interface CompilationTarget {
   /**
    * Compile as a normal query
    */
-  query?: {};
+  query?: Record<string, never>;
   /**
    * Compile as a quick evaluation
    */
@@ -826,7 +826,7 @@ export interface ResultSet {
 /**
  * The type returned when the evaluation is complete
  */
-export type EvaluationComplete = {};
+export type EvaluationComplete = Record<string, never>;
 
 /**
  * The result of a single query

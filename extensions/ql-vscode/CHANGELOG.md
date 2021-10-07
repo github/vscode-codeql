@@ -2,11 +2,48 @@
 
 ## [UNRELEASED]
 
+- Add progress messages to LGTM download option. This makes the two-step process (selecting a project, then selecting a language) more clear. [#960](https://github.com/github/vscode-codeql/pull/960)
+- Remove line about selecting a language from the dropdown when downloading database from LGTM. This makes the download progress visible when the popup is not expanded. [#957](https://github.com/github/vscode-codeql/pull/957)
+- Fixed a bug where copying the version information fails when a CodeQL CLI cannot be found. [#958](https://github.com/github/vscode-codeql/pull/958)
+- Avoid a race condition when deleting databases that can cause occasional errors. [#959](https://github.com/github/vscode-codeql/pull/959)
+
+## 1.5.5 - 08 September 2021
+
+- Fix bug where a query is sometimes run before the file is saved. [#947](https://github.com/github/vscode-codeql/pull/947)
+- Fix broken contextual queries, including _View AST_. [#949](https://github.com/github/vscode-codeql/pull/949)
+
+## 1.5.4 - 02 September 2021
+
+- Add support for filename pattern in history view. [#930](https://github.com/github/vscode-codeql/pull/930)
+- Add an option _View Results (CSV)_ to view the results of a non-alert query. The existing options for alert queries have been renamed to _View Alerts_ to avoid confusion. [#929](https://github.com/github/vscode-codeql/pull/929)
+- Allow users to specify the number of paths to display for each alert. [#931](https://github.com/github/vscode-codeql/pull/931)
+- Adjust pagination controls in _CodeQL Query Results_ to always be visible [#936](https://github.com/github/vscode-codeql/pull/936)
+- Fix bug where _View AST_ fails due to recent refactoring in the standard library and query packs. [#939](https://github.com/github/vscode-codeql/pull/939)
+
+## 1.5.3 - 18 August 2021
+
+- Add a command _CodeQL: Run Query on Multiple Databases_, which lets users select multiple databases to run a query on. [#898](https://github.com/github/vscode-codeql/pull/898)
+- Autodetect what language a query targets. This refines the _CodeQL: Run Query on Multiple Databases_ command to only show relevant databases. [#915](https://github.com/github/vscode-codeql/pull/915)
+- Adjust test log output to display diffs only when comparing failed test results with expected test results. [#920](https://github.com/github/vscode-codeql/pull/920)
+
+## 1.5.2 - 13 July 2021
+
+- Add the _Add Database Source to Workspace_ command to the right-click context menu in the databases view. This lets users re-add a database's source folder to the workspace and browse the source code. [#891](https://github.com/github/vscode-codeql/pull/891)
+- Fix markdown rendering in the description of the `codeQL.cli.executablePath` setting. [#908](https://github.com/github/vscode-codeql/pull/908)
+- Fix the _Open Query Results_ command in the query history view. [#909](https://github.com/github/vscode-codeql/pull/909)
+
+## 1.5.1 - 23 June 2021
+
+No user facing changes.
+
+## 1.5.0 - 14 June 2021
+
 - Display CodeQL CLI version being downloaded during an upgrade. [#862](https://github.com/github/vscode-codeql/pull/862)
 - Display a helpful message and link to documentation when a query produces no results. [#866](https://github.com/github/vscode-codeql/pull/866)
 - Refresh test databases automatically after a test run. [#868](https://github.com/github/vscode-codeql/pull/868)
 - Allow users to specify a custom directory for storing query server logs (`codeQL.runningQueries.customLogDirectory`). The extension will not delete these logs automatically. [#863](https://github.com/github/vscode-codeql/pull/863)
-- Avoid a race condition when deleting databases that can cause occasional errors. [#959](https://github.com/github/vscode-codeql/pull/959)
+- Support the VS Code [Workspace Trust feature](https://code.visualstudio.com/docs/editor/workspace-trust). This extension is now enabled in untrusted workspaces, but it restricts commands that contain arbitrary paths. [#861](https://github.com/github/vscode-codeql/pull/861)
+- Allow the `codeQL.cli.executablePath` configuration setting to be set in workspace-scoped configuration files. This means that each workspace can now specify its own CodeQL CLI compiler, a feature that is unblocked due to implementing Workspace Trust. [#861](https://github.com/github/vscode-codeql/pull/861)
 
 ## 1.4.8 - 05 May 2021
 

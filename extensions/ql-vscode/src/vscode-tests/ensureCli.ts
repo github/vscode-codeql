@@ -6,10 +6,15 @@ import { workspace } from 'vscode';
 
 /**
  * This module ensures that the proper CLI is available for tests of the extension.
- * There are two environment variables to control this module:
+ * There are three environment variables to control this module:
  *
  *     - CLI_VERSION: The version of the CLI to install. Defaults to the most recent
  *       version. Note that for now, we must maintain the default version by hand.
+ *       This may be set to `nightly`, in which case the `NIGHTLY_URL` variable must
+ *       also be set.
+ *
+ *     - NIGHTLY_URL: The URL for a nightly release of the CodeQL CLI that will be
+ *       used if `CLI_VERSION` is set to `nightly`.
  *
  *     - CLI_BASE_DIR: The base dir where the CLI will be downloaded and unzipped.
  *       The download location is `${CLI_BASE_DIR}/assets` and the unzip loction is
@@ -39,7 +44,7 @@ const _10MB = _1MB * 10;
 
 // CLI version to test. Hard code the latest as default. And be sure
 // to update the env if it is not otherwise set.
-const CLI_VERSION = process.env.CLI_VERSION || 'v2.4.2';
+const CLI_VERSION = process.env.CLI_VERSION || 'v2.6.3';
 process.env.CLI_VERSION = CLI_VERSION;
 
 // Base dir where CLIs will be downloaded into
@@ -133,6 +138,11 @@ export function skipIfNoCodeQL(context: Mocha.Context) {
  * Url to download from
  */
 function getCliDownloadUrl(assetName: string) {
+  if (CLI_VERSION === 'nightly') {
+    if (!process.env.NIGHTLY_URL)
+      throw new Error('Nightly CLI was specified but no URL to download it from was given!');
+    return process.env.NIGHTLY_URL + `/${assetName}`;
+  }
   return `https://github.com/github/codeql-cli-binaries/releases/download/${CLI_VERSION}/${assetName}`;
 }
 

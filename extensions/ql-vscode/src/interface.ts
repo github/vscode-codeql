@@ -119,7 +119,7 @@ export class InterfaceManager extends DisposableObject {
         this.handleSelectionChange.bind(this)
       )
     );
-    logger.log('Registering path-step navigation commands.');
+    void logger.log('Registering path-step navigation commands.');
     this.push(
       commandRunner(
         'codeQLQueryResults.nextPathStep',
@@ -138,7 +138,7 @@ export class InterfaceManager extends DisposableObject {
         if (kind === DatabaseEventKind.Remove) {
           this._diagnosticCollection.clear();
           if (this.isShowingPanel()) {
-            this.postMessage({
+            void this.postMessage({
               t: 'untoggleShowProblems'
             });
           }
@@ -148,7 +148,7 @@ export class InterfaceManager extends DisposableObject {
   }
 
   async navigatePathStep(direction: number): Promise<void> {
-    this.postMessage({ t: 'navigatePath', direction });
+    await this.postMessage({ t: 'navigatePath', direction });
   }
 
   private isShowingPanel() {
@@ -207,14 +207,14 @@ export class InterfaceManager extends DisposableObject {
     sortState: InterpretedResultsSortState | undefined
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
-      showAndLogErrorMessage(
+      void showAndLogErrorMessage(
         'Failed to sort results since evaluation info was unknown.'
       );
       return;
     }
     // Notify the webview that it should expect new results.
     await this.postMessage({ t: 'resultsUpdating' });
-    this._displayedQuery.updateInterpretedSortState(sortState);
+    await this._displayedQuery.updateInterpretedSortState(sortState);
     await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
   }
 
@@ -223,7 +223,7 @@ export class InterfaceManager extends DisposableObject {
     sortState: RawResultsSortState | undefined
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
-      showAndLogErrorMessage(
+      void showAndLogErrorMessage(
         'Failed to sort results since evaluation info was unknown.'
       );
       return;
@@ -301,7 +301,7 @@ export class InterfaceManager extends DisposableObject {
           assertNever(msg);
       }
     } catch (e) {
-      showAndLogErrorMessage(e.message, {
+      void showAndLogErrorMessage(e.message, {
         fullMessage: e.stack
       });
     }
@@ -372,7 +372,7 @@ export class InterfaceManager extends DisposableObject {
       );
       // Address this click asynchronously so we still update the
       // query history immediately.
-      resultPromise.then((result) => {
+      void resultPromise.then((result) => {
         if (result === showButton) {
           panel.reveal();
         }
@@ -556,7 +556,7 @@ export class InterfaceManager extends DisposableObject {
     sortState: InterpretedResultsSortState | undefined
   ): Promise<Interpretation | undefined> {
     if (!resultsPaths) {
-      this.logger.log('No results path. Cannot display interpreted results.');
+      void this.logger.log('No results path. Cannot display interpreted results.');
       return undefined;
     }
 
@@ -603,7 +603,7 @@ export class InterfaceManager extends DisposableObject {
       throw new Error('Tried to get interpreted results before interpretation finished');
     }
     if (this._interpretation.sarif.runs.length !== 1) {
-      this.logger.log(`Warning: SARIF file had ${this._interpretation.sarif.runs.length} runs, expected 1`);
+      void this.logger.log(`Warning: SARIF file had ${this._interpretation.sarif.runs.length} runs, expected 1`);
     }
     const interp = this._interpretation;
     return {
@@ -642,7 +642,7 @@ export class InterfaceManager extends DisposableObject {
       } catch (e) {
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
-        showAndLogErrorMessage(
+        void showAndLogErrorMessage(
           `Showing raw results instead of interpreted ones due to an error. ${e.message}`
         );
       }
@@ -683,7 +683,7 @@ export class InterfaceManager extends DisposableObject {
       await this.showProblemResultsAsDiagnostics(interpretation, database);
     } catch (e) {
       const msg = e instanceof Error ? e.message : e.toString();
-      this.logger.log(
+      void this.logger.log(
         `Exception while computing problem results as diagnostics: ${msg}`
       );
       this._diagnosticCollection.clear();
@@ -697,7 +697,7 @@ export class InterfaceManager extends DisposableObject {
     const { sarif, sourceLocationPrefix } = interpretation;
 
     if (!sarif.runs || !sarif.runs[0].results) {
-      this.logger.log(
+      void this.logger.log(
         'Didn\'t find a run in the sarif results. Error processing sarif?'
       );
       return;
@@ -708,11 +708,11 @@ export class InterfaceManager extends DisposableObject {
     for (const result of sarif.runs[0].results) {
       const message = result.message.text;
       if (message === undefined) {
-        this.logger.log('Sarif had result without plaintext message');
+        void this.logger.log('Sarif had result without plaintext message');
         continue;
       }
       if (!result.locations) {
-        this.logger.log('Sarif had result without location');
+        void this.logger.log('Sarif had result without location');
         continue;
       }
 
@@ -725,7 +725,7 @@ export class InterfaceManager extends DisposableObject {
       }
       const resultLocation = tryResolveLocation(sarifLoc, databaseItem);
       if (!resultLocation) {
-        this.logger.log('Sarif location was not resolvable ' + sarifLoc);
+        void this.logger.log('Sarif location was not resolvable ' + sarifLoc);
         continue;
       }
       const parsedMessage = parseSarifPlainTextMessage(message);

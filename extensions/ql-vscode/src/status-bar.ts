@@ -20,7 +20,7 @@ export class CodeQlStatusBarHandler extends DisposableObject {
     this.push(workspace.onDidChangeConfiguration(this.handleDidChangeConfiguration, this));
     this.push(distributionConfigListener.onDidChangeConfiguration(() => this.updateStatusItem()));
     this.item.command = 'codeQL.copyVersion';
-    this.updateStatusItem();
+    void this.updateStatusItem();
   }
 
   private handleDidChangeConfiguration(e: ConfigurationChangeEvent) {

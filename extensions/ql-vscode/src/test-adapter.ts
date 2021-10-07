@@ -190,8 +190,15 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     this._testStates.fire({ type: 'started', tests: tests } as TestRunStartedEvent);
 
     const currentDatabaseUri = this.databaseManager.currentDatabaseItem?.databaseUri;
-    const databasesUnderTest = this.databaseManager.databaseItems
-      .filter(database => tests.find(testPath => database.isAffectedByTest(testPath)));
+    const databasesUnderTest: DatabaseItem[] = [];
+    for (const database of this.databaseManager.databaseItems) {
+      for (const test of tests) {
+        if (await database.isAffectedByTest(test)) {
+          databasesUnderTest.push(database);
+          break;
+        }
+      }
+    }
 
     await this.removeDatabasesBeforeTests(databasesUnderTest, token);
     try {
@@ -218,7 +225,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
         // This method is invoked from Test Explorer UI, and testing indicates that Test
         // Explorer UI swallows any thrown exception without reporting it to the user.
         // So we need to display the error message ourselves and then rethrow.
-        showAndLogErrorMessage(`Cannot remove database ${database.name}: ${e}`);
+        void showAndLogErrorMessage(`Cannot remove database ${database.name}: ${e}`);
         throw e;
       }
     }
@@ -242,7 +249,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
           // This method is invoked from Test Explorer UI, and testing indicates that Test
           // Explorer UI swallows any thrown exception without reporting it to the user.
           // So we need to display the error message ourselves and then rethrow.
-          showAndLogWarningMessage(`Cannot reopen database ${uri}: ${e}`);
+          void showAndLogWarningMessage(`Cannot reopen database ${uri}: ${e}`);
           throw e;
         }
       }
@@ -268,7 +275,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
 
   public cancel(): void {
     if (this.runningTask !== undefined) {
-      testLogger.log('Cancelling test run...');
+      void testLogger.log('Cancelling test run...');
       this.runningTask.cancel();
       this.clearTask();
     }
@@ -287,8 +294,10 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
           : 'failed';
       let message: string | undefined;
       if (event.failureDescription || event.diff?.length) {
-        message = ['', `${state}: ${event.test}`, event.failureDescription || event.diff?.join('\n'), ''].join('\n');
-        testLogger.log(message);
+        message = event.failureStage === 'RESULT'
+          ? ['', `${state}: ${event.test}`, event.failureDescription || event.diff?.join('\n'), ''].join('\n')
+          : ['', `${event.failureStage?.toLowerCase()} error: ${event.test}`, event.failureDescription || `${event.messages[0].severity}: ${event.messages[0].message}`, ''].join('\n');
+        void testLogger.log(message);
       }
       this._testStates.fire({
         type: 'test',

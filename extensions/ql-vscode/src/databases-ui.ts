@@ -179,7 +179,7 @@ class DatabaseTreeDataProvider extends DisposableObject
 
   public set sortOrder(newSortOrder: SortOrder) {
     this._sortOrder = newSortOrder;
-    this._onDidChangeTreeData.fire();
+    this._onDidChangeTreeData.fire(undefined);
   }
 }
 
@@ -234,7 +234,7 @@ export class DatabaseUI extends DisposableObject {
   }
 
   init() {
-    logger.log('Registering database panel commands.');
+    void logger.log('Registering database panel commands.');
     this.push(
       commandRunnerWithProgress(
         'codeQL.setCurrentDatabase',
@@ -295,7 +295,7 @@ export class DatabaseUI extends DisposableObject {
         'codeQLDatabases.chooseDatabaseLgtm',
         this.handleChooseDatabaseLgtm,
         {
-          title: 'Adding database from LGTM. Choose a language from the dropdown, if requested.',
+          title: 'Adding database from LGTM',
         })
     );
     this.push(
@@ -350,6 +350,12 @@ export class DatabaseUI extends DisposableObject {
     );
     this.push(
       commandRunner(
+        'codeQLDatabases.addDatabaseSource',
+        this.handleAddSource
+      )
+    );
+    this.push(
+      commandRunner(
         'codeQLDatabases.removeOrphanedDatabases',
         this.handleRemoveOrphanedDatabases
       )
@@ -369,20 +375,20 @@ export class DatabaseUI extends DisposableObject {
     try {
       return await this.chooseAndSetDatabase(true, progress, token);
     } catch (e) {
-      showAndLogErrorMessage(e.message);
+      void showAndLogErrorMessage(e.message);
       return undefined;
     }
   };
 
   handleRemoveOrphanedDatabases = async (): Promise<void> => {
-    logger.log('Removing orphaned databases from workspace storage.');
+    void logger.log('Removing orphaned databases from workspace storage.');
     let dbDirs = undefined;
 
     if (
       !(await fs.pathExists(this.storagePath)) ||
       !(await fs.stat(this.storagePath)).isDirectory()
     ) {
-      logger.log('Missing or invalid storage directory. Not trying to remove orphaned databases.');
+      void logger.log('Missing or invalid storage directory. Not trying to remove orphaned databases.');
       return;
     }
 
@@ -403,7 +409,7 @@ export class DatabaseUI extends DisposableObject {
     dbDirs = await asyncFilter(dbDirs, isLikelyDatabaseRoot);
 
     if (!dbDirs.length) {
-      logger.log('No orphaned databases found.');
+      void logger.log('No orphaned databases found.');
       return;
     }
 
@@ -412,8 +418,8 @@ export class DatabaseUI extends DisposableObject {
     await Promise.all(
       dbDirs.map(async dbDir => {
         try {
-          logger.log(`Deleting orphaned database '${dbDir}'.`);
-          await fs.rmdir(dbDir, { recursive: true } as any);  // typings doesn't recognize the options argument
+          void logger.log(`Deleting orphaned database '${dbDir}'.`);
+          await fs.remove(dbDir);
         } catch (e) {
           failures.push(`${path.basename(dbDir)}`);
         }
@@ -422,9 +428,8 @@ export class DatabaseUI extends DisposableObject {
 
     if (failures.length) {
       const dirname = path.dirname(failures[0]);
-      showAndLogErrorMessage(
-        `Failed to delete unused databases (${
-        failures.join(', ')
+      void showAndLogErrorMessage(
+        `Failed to delete unused databases (${failures.join(', ')
         }).\nTo delete unused databases, please remove them manually from the storage folder ${dirname}.`
       );
     }
@@ -438,7 +443,7 @@ export class DatabaseUI extends DisposableObject {
     try {
       return await this.chooseAndSetDatabase(false, progress, token);
     } catch (e) {
-      showAndLogErrorMessage(e.message);
+      void showAndLogErrorMessage(e.message);
       return undefined;
     }
   };
@@ -583,8 +588,7 @@ export class DatabaseUI extends DisposableObject {
     } catch (e) {
       // rethrow and let this be handled by default error handling.
       throw new Error(
-        `Could not set database to ${path.basename(uri.fsPath)}. Reason: ${
-        e.message
+        `Could not set database to ${path.basename(uri.fsPath)}. Reason: ${e.message
         }`
       );
     }
@@ -617,7 +621,7 @@ export class DatabaseUI extends DisposableObject {
     });
 
     if (newName) {
-      this.databaseManager.renameDatabaseItem(databaseItem, newName);
+      await this.databaseManager.renameDatabaseItem(databaseItem, newName);
     }
   };
 
@@ -631,6 +635,24 @@ export class DatabaseUI extends DisposableObject {
       );
     } else {
       await env.openExternal(databaseItem.databaseUri);
+    }
+  };
+
+  /**
+   * Adds the source folder of a CodeQL database to the workspace.
+   * When a database is first added in the "Databases" view, its source folder is added to the workspace.
+   * If the source folder is removed from the workspace for some reason, we want to be able to re-add it if need be.
+   */
+  private handleAddSource = async (
+    databaseItem: DatabaseItem,
+    multiSelect: DatabaseItem[] | undefined
+  ): Promise<void> => {
+    if (multiSelect?.length) {
+      for (const dbItem of multiSelect) {
+        await this.databaseManager.addDatabaseSourceArchiveFolder(dbItem);
+      }
+    } else {
+      await this.databaseManager.addDatabaseSourceArchiveFolder(databaseItem);
     }
   };
 

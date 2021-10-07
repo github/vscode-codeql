@@ -115,7 +115,7 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
 
   const dbAbsolutePath = path.join(parentDirectory, dbRelativePaths[0]);
   if (dbRelativePaths.length > 1) {
-    showAndLogWarningMessage(`Found multiple dataset directories in database, using '${dbAbsolutePath}'.`);
+    void showAndLogWarningMessage(`Found multiple dataset directories in database, using '${dbAbsolutePath}'.`);
   }
 
   return vscode.Uri.file(dbAbsolutePath);
@@ -138,7 +138,7 @@ async function findSourceArchive(
     }
   }
   if (!silent) {
-    showAndLogInformationMessage(
+    void showAndLogInformationMessage(
       `Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`
     );
   }
@@ -506,7 +506,7 @@ export class DatabaseItemImpl implements DatabaseItem {
 function eventFired<T>(event: vscode.Event<T>, timeoutMs = 1000): Promise<T | undefined> {
   return new Promise((res, _rej) => {
     const timeout = setTimeout(() => {
-      logger.log(`Waiting for event ${event} timed out after ${timeoutMs}ms`);
+      void logger.log(`Waiting for event ${event} timed out after ${timeoutMs}ms`);
       res(undefined);
       dispose();
     }, timeoutMs);
@@ -543,7 +543,7 @@ export class DatabaseManager extends DisposableObject {
     qs.onDidStartQueryServer(this.reregisterDatabases.bind(this));
 
     // Let this run async.
-    this.loadPersistedState();
+    void this.loadPersistedState();
   }
 
   public async openDatabase(
@@ -587,7 +587,7 @@ export class DatabaseManager extends DisposableObject {
     }));
   }
 
-  private async addDatabaseSourceArchiveFolder(item: DatabaseItem) {
+  public async addDatabaseSourceArchiveFolder(item: DatabaseItem) {
     // The folder may already be in workspace state from a previous
     // session. If not, add it.
     const index = this.getDatabaseWorkspaceFolderIndex(item);
@@ -605,15 +605,15 @@ export class DatabaseManager extends DisposableObject {
       const end = (vscode.workspace.workspaceFolders || []).length;
       const uri = item.getSourceArchiveExplorerUri();
       if (uri === undefined) {
-        logger.log(`Couldn't obtain file explorer uri for ${item.name}`);
+        void logger.log(`Couldn't obtain file explorer uri for ${item.name}`);
       }
       else {
-        logger.log(`Adding workspace folder for ${item.name} source archive at index ${end}`);
+        void logger.log(`Adding workspace folder for ${item.name} source archive at index ${end}`);
         if ((vscode.workspace.workspaceFolders || []).length < 2) {
           // Adding this workspace folder makes the workspace
           // multi-root, which may surprise the user. Let them know
           // we're doing this.
-          vscode.window.showInformationMessage(`Adding workspace folder for source archive of database ${item.name}.`);
+          void vscode.window.showInformationMessage(`Adding workspace folder for source archive of database ${item.name}.`);
         }
         vscode.workspace.updateWorkspaceFolders(end, 0, {
           name: `[${item.name} source archive]`,
@@ -696,7 +696,7 @@ export class DatabaseManager extends DisposableObject {
               await databaseItem.refresh();
               await this.registerDatabase(progress, token, databaseItem);
               if (currentDatabaseUri === database.uri) {
-                this.setCurrentDatabaseItem(databaseItem, true);
+                await this.setCurrentDatabaseItem(databaseItem, true);
               }
             }
             catch (e) {
@@ -706,7 +706,7 @@ export class DatabaseManager extends DisposableObject {
           }
         } catch (e) {
           // database list had an unexpected type - nothing to be done?
-          showAndLogErrorMessage(`Database list loading failed: ${e.message}`);
+          void showAndLogErrorMessage(`Database list loading failed: ${e.message}`);
         }
       });
   }
@@ -763,7 +763,7 @@ export class DatabaseManager extends DisposableObject {
     item: DatabaseItem
   ) {
     this._databaseItems.push(item);
-    this.updatePersistedDatabaseList();
+    await this.updatePersistedDatabaseList();
 
     // Add this database item to the allow-list
     // Database items reconstituted from persisted state
@@ -780,7 +780,7 @@ export class DatabaseManager extends DisposableObject {
 
   public async renameDatabaseItem(item: DatabaseItem, newName: string) {
     item.name = newName;
-    this.updatePersistedDatabaseList();
+    await this.updatePersistedDatabaseList();
     this._onDidChangeDatabaseItem.fire({
       // pass undefined so that the entire tree is rebuilt in order to re-sort
       item: undefined,
@@ -800,14 +800,14 @@ export class DatabaseManager extends DisposableObject {
     if (index >= 0) {
       this._databaseItems.splice(index, 1);
     }
-    this.updatePersistedDatabaseList();
+    await this.updatePersistedDatabaseList();
 
     // Delete folder from workspace, if it is still there
     const folderIndex = (vscode.workspace.workspaceFolders || []).findIndex(
       folder => item.belongsToSourceArchiveExplorerUri(folder.uri)
     );
     if (folderIndex >= 0) {
-      logger.log(`Removing workspace folder at index ${folderIndex}`);
+      void logger.log(`Removing workspace folder at index ${folderIndex}`);
       vscode.workspace.updateWorkspaceFolders(folderIndex, 1);
     }
 
@@ -816,10 +816,10 @@ export class DatabaseManager extends DisposableObject {
 
     // Delete folder from file system only if it is controlled by the extension
     if (this.isExtensionControlledLocation(item.databaseUri)) {
-      logger.log('Deleting database from filesystem.');
+      void logger.log('Deleting database from filesystem.');
       fs.remove(item.databaseUri.fsPath).then(
-        () => logger.log(`Deleted '${item.databaseUri.fsPath}'`),
-        e => logger.log(`Failed to delete '${item.databaseUri.fsPath}'. Reason: ${e.message}`));
+        () => void logger.log(`Deleted '${item.databaseUri.fsPath}'`),
+        e => void logger.log(`Failed to delete '${item.databaseUri.fsPath}'. Reason: ${e.message}`));
     }
 
     // note that we use undefined as the item in order to reset the entire tree
@@ -858,12 +858,12 @@ export class DatabaseManager extends DisposableObject {
   }
 
   private updatePersistedCurrentDatabaseItem(): void {
-    this.ctx.workspaceState.update(CURRENT_DB, this._currentDatabaseItem ?
+    void this.ctx.workspaceState.update(CURRENT_DB, this._currentDatabaseItem ?
       this._currentDatabaseItem.databaseUri.toString(true) : undefined);
   }
 
-  private updatePersistedDatabaseList(): void {
-    this.ctx.workspaceState.update(DB_LIST, this._databaseItems.map(item => item.getPersistedState()));
+  private async updatePersistedDatabaseList(): Promise<void> {
+    await this.ctx.workspaceState.update(DB_LIST, this._databaseItems.map(item => item.getPersistedState()));
   }
 
   private isExtensionControlledLocation(uri: vscode.Uri) {

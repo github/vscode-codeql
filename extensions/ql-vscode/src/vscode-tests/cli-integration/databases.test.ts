@@ -25,7 +25,7 @@ describe('Databases', function() {
 
   beforeEach(async () => {
     try {
-      const extension = await extensions.getExtension<CodeQLExtensionInterface | {}>('GitHub.vscode-codeql')!.activate();
+      const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
       if ('databaseManager' in extension) {
         databaseManager = extension.databaseManager;
       } else {

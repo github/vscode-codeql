@@ -12,7 +12,7 @@ export type RawTableProps = ResultTableProps & {
   offset: number;
 };
 
-export class RawTable extends React.Component<RawTableProps, {}> {
+export class RawTable extends React.Component<RawTableProps, Record<string, never>> {
   constructor(props: RawTableProps) {
     super(props);
   }

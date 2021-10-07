@@ -34,7 +34,7 @@ class Checkpoint<T> {
     this.res = () => { /**/ };
     this.rej = () => { /**/ };
     this.promise = new Promise((res, rej) => {
-      this.res = res as () => {};
+      this.res = res as () => Record<string, never>;
       this.rej = rej;
     });
   }
@@ -104,7 +104,7 @@ describe('using the query server', function() {
 
   beforeEach(async () => {
     try {
-      const extension = await extensions.getExtension<CodeQLExtensionInterface | {}>('GitHub.vscode-codeql')!.activate();
+      const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
       if ('cliServer' in extension && 'qs' in extension) {
         cliServer = extension.cliServer;
         qs = extension.qs;
@@ -119,7 +119,7 @@ describe('using the query server', function() {
 
   it('should be able to start the query server', async function() {
     await qs.startQueryServer();
-    queryServerStarted.resolve();
+    await queryServerStarted.resolve();
   });
 
   for (const queryTestCase of queryTestCases) {
@@ -160,10 +160,10 @@ describe('using the query server', function() {
         };
         const result = await qs.sendRequest(messages.compileQuery, params, token, () => { /**/ });
         expect(result.messages!.length).to.equal(0);
-        compilationSucceeded.resolve();
+        await compilationSucceeded.resolve();
       }
       catch (e) {
-        compilationSucceeded.reject(e);
+        await compilationSucceeded.reject(e);
       }
     });
 
@@ -171,7 +171,7 @@ describe('using the query server', function() {
       try {
         await compilationSucceeded.done();
         const callbackId = qs.registerCallback(_res => {
-          evaluationSucceeded.resolve();
+          void evaluationSucceeded.resolve();
         });
         const queryToRun: messages.QueryToRun = {
           resultsPath: RESULTS_PATH,
@@ -190,7 +190,7 @@ describe('using the query server', function() {
         await qs.sendRequest(messages.runQueries, params, token, () => { /**/ });
       }
       catch (e) {
-        evaluationSucceeded.reject(e);
+        await evaluationSucceeded.reject(e);
       }
     });
 
@@ -203,7 +203,7 @@ describe('using the query server', function() {
         const decoded = await cliServer.bqrsDecode(RESULTS_PATH, resultSet.name);
         actualResultSets[resultSet.name] = decoded.tuples;
       }
-      parsedResults.resolve();
+      await parsedResults.resolve();
     });
 
     it(`should have correct results for query ${queryName}`, async function() {

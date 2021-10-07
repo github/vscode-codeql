@@ -25,6 +25,8 @@ import * as qsClient from './queryserver-client';
 import { isQuickQueryPath } from './quick-query';
 import { compileDatabaseUpgradeSequence, hasNondestructiveUpgradeCapabilities, upgradeDatabaseExplicit } from './upgrades';
 import { ensureMetadataIsComplete } from './query-results';
+import { SELECT_QUERY_NAME } from './contextual/locationFinder';
+import { DecodedBqrsChunk } from './pure/bqrs-cli-types';
 
 /**
  * run-queries.ts
@@ -156,7 +158,7 @@ export class QueryInfo {
 
       compiled = await qs.sendRequest(messages.compileQuery, params, token, progress);
     } finally {
-      qs.logger.log(' - - - COMPILATION DONE - - - ');
+      void qs.logger.log(' - - - COMPILATION DONE - - - ');
     }
     return (compiled?.messages || []).filter(msg => msg.severity === messages.Severity.ERROR);
   }
@@ -167,12 +169,12 @@ export class QueryInfo {
   async canHaveInterpretedResults(): Promise<boolean> {
     const hasMetadataFile = await this.dbItem.hasMetadataFile();
     if (!hasMetadataFile) {
-      logger.log('Cannot produce interpreted results since the database does not have a .dbinfo or codeql-database.yml file.');
+      void logger.log('Cannot produce interpreted results since the database does not have a .dbinfo or codeql-database.yml file.');
     }
 
     const hasKind = !!this.metadata?.kind;
     if (!hasKind) {
-      logger.log('Cannot produce interpreted results since the query does not have @kind metadata.');
+      void logger.log('Cannot produce interpreted results since the query does not have @kind metadata.');
     }
 
     const isTable = hasKind && this.metadata?.kind === 'table';
@@ -214,6 +216,29 @@ export class QueryInfo {
 
     await qs.cliServer.generateDil(this.compiledQueryPath, this.dilPath);
     return this.dilPath;
+  }
+
+  async exportCsvResults(qs: qsClient.QueryServerClient, csvPath: string, onFinish: () => void): Promise<void> {
+    let stopDecoding = false;
+    const out = fs.createWriteStream(csvPath);
+    out.on('finish', onFinish);
+    out.on('error', () => {
+      if (!stopDecoding) {
+        stopDecoding = true;
+        void showAndLogErrorMessage(`Failed to write CSV results to ${csvPath}`);
+      }
+    });
+    let nextOffset: number | undefined = 0;
+    while (nextOffset !== undefined && !stopDecoding) {
+      const chunk: DecodedBqrsChunk = await qs.cliServer.bqrsDecode(this.resultsPaths.resultsPath, SELECT_QUERY_NAME, {
+        pageSize: 100,
+        offset: nextOffset,
+      });
+      for (const tuple of chunk.tuples)
+        out.write(tuple.join(',') + '\n');
+      nextOffset = chunk.next;
+    }
+    out.end();
   }
 
   async ensureCsvProduced(qs: qsClient.QueryServerClient): Promise<string> {
@@ -499,7 +524,7 @@ export async function determineSelectedQuery(selectedResourceUri: Uri | undefine
   // then prompt the user to save it first.
   if (editor !== undefined && editor.document.uri.fsPath === queryPath) {
     if (await promptUserToSaveChanges(editor.document)) {
-      editor.document.save();
+      await editor.document.save();
     }
   }
 
@@ -562,8 +587,8 @@ export async function compileAndRunQueryAgainstDatabase(
   const querySchemaName = path.basename(packConfig.dbscheme);
   const dbSchemaName = path.basename(db.contents.dbSchemeUri.fsPath);
   if (querySchemaName != dbSchemaName) {
-    logger.log(`Query schema was ${querySchemaName}, but database schema was ${dbSchemaName}.`);
-    throw new Error(`The query ${path.basename(queryPath)} cannot be run against the selected database: their target languages are different. Please select a different database and try again.`);
+    void logger.log(`Query schema was ${querySchemaName}, but database schema was ${dbSchemaName}.`);
+    throw new Error(`The query ${path.basename(queryPath)} cannot be run against the selected database (${db.name}): their target languages are different. Please select a different database and try again.`);
   }
 
   const qlProgram: messages.QlProgram = {
@@ -584,7 +609,7 @@ export async function compileAndRunQueryAgainstDatabase(
     metadata = await cliServer.resolveMetadata(qlProgram.queryPath);
   } catch (e) {
     // Ignore errors and provide no metadata.
-    logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
+    void logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
   }
 
   const query = new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata, templates);
@@ -612,8 +637,8 @@ export async function compileAndRunQueryAgainstDatabase(
       const result = await query.run(qs, upgradeQlo, progress, token);
       if (result.resultType !== messages.QueryResultType.SUCCESS) {
         const message = result.message || 'Failed to run query';
-        logger.log(message);
-        showAndLogErrorMessage(message);
+        void logger.log(message);
+        void showAndLogErrorMessage(message);
       }
       return {
         query,
@@ -633,7 +658,7 @@ export async function compileAndRunQueryAgainstDatabase(
       // so we include a general description of the problem,
       // and direct the user to the output window for the detailed compilation messages.
       // However we don't show quick eval errors there so we need to display them anyway.
-      qs.logger.log(`Failed to compile query ${query.program.queryPath} against database scheme ${query.program.dbschemePath}:`);
+      void qs.logger.log(`Failed to compile query ${query.program.queryPath} against database scheme ${query.program.dbschemePath}:`);
 
       const formattedMessages: string[] = [];
 
@@ -641,24 +666,24 @@ export async function compileAndRunQueryAgainstDatabase(
         const message = error.message || '[no error message available]';
         const formatted = `ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`;
         formattedMessages.push(formatted);
-        qs.logger.log(formatted);
+        void qs.logger.log(formatted);
       }
       if (quickEval && formattedMessages.length <= 2) {
         // If there are more than 2 error messages, they will not be displayed well in a popup
         // and will be trimmed by the function displaying the error popup. Accordingly, we only
         // try to show the errors if there are 2 or less, otherwise we direct the user to the log.
-        showAndLogErrorMessage('Quick evaluation compilation failed: ' + formattedMessages.join('\n'));
+        void showAndLogErrorMessage('Quick evaluation compilation failed: ' + formattedMessages.join('\n'));
       } else {
-        showAndLogErrorMessage((quickEval ? 'Quick evaluation' : 'Query') + compilationFailedErrorTail);
+        void showAndLogErrorMessage((quickEval ? 'Quick evaluation' : 'Query') + compilationFailedErrorTail);
       }
 
       return createSyntheticResult(query, db, historyItemOptions, 'Query had compilation errors', messages.QueryResultType.OTHER_ERROR);
     }
   } finally {
     try {
-      upgradeDir.cleanup();
+      await upgradeDir.cleanup();
     } catch (e) {
-      qs.logger.log(`Could not clean up the upgrades dir. Reason: ${e.message || e}`);
+      void qs.logger.log(`Could not clean up the upgrades dir. Reason: ${e.message || e}`);
     }
   }
 }

@@ -115,7 +115,7 @@ class InvalidSourceArchiveUriError extends Error {
 export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
   if (!uri.authority) {
     // Uri is malformed, but this is recoverable
-    logger.log(`Warning: ${new InvalidSourceArchiveUriError(uri).message}`);
+    void logger.log(`Warning: ${new InvalidSourceArchiveUriError(uri).message}`);
     return {
       pathWithinSourceArchive: '/',
       sourceArchiveZipPath: uri.path
@@ -141,7 +141,7 @@ function ensureFile(map: DirectoryHierarchyMap, file: string) {
   const dirname = path.dirname(file);
   if (dirname === '.') {
     const error = `Ill-formed path ${file} in zip archive (expected absolute path)`;
-    logger.log(error);
+    void logger.log(error);
     throw new Error(error);
   }
   ensureDir(map, dirname);

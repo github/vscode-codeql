@@ -27,7 +27,7 @@ export default function(mocha: Mocha) {
       if (!fs.existsSync(dbLoc)) {
         try {
           await new Promise((resolve, reject) => {
-            fetch(DB_URL).then(response => {
+            return fetch(DB_URL).then(response => {
               const dest = fs.createWriteStream(dbLoc);
               response.body.pipe(dest);
 
@@ -68,7 +68,7 @@ export default function(mocha: Mocha) {
   // ensure etension is cleaned up.
   (mocha.options as any).globalTeardown.push(
     async () => {
-      const extension = await extensions.getExtension<CodeQLExtensionInterface | {}>('GitHub.vscode-codeql')!.activate();
+      const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
       // This shuts down the extension and can only be run after all tests have completed.
       // If this is not called, then the test process will hang.
       if ('dispose' in extension) {
