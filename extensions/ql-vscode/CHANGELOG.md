@@ -6,6 +6,7 @@
 - Display a helpful message and link to documentation when a query produces no results. [#866](https://github.com/github/vscode-codeql/pull/866)
 - Refresh test databases automatically after a test run. [#868](https://github.com/github/vscode-codeql/pull/868)
 - Allow users to specify a custom directory for storing query server logs (`codeQL.runningQueries.customLogDirectory`). The extension will not delete these logs automatically. [#863](https://github.com/github/vscode-codeql/pull/863)
+- Avoid a race condition when deleting databases that can cause occasional errors. [#959](https://github.com/github/vscode-codeql/pull/959)
 
 ## 1.4.8 - 05 May 2021
 
