@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-- Add a check to make sure certain control codes (U+0000 - U+001F) are detected and replaced with their cooresponding control labels (0x2400) in the results view. [#963](https://github.com/github/vscode-codeql/pull/963)
+- Replace certain control codes (`U+0000` - `U+001F`) with their corresponding control labels (`U+2400` - `U+241F`)  in the results view. [#963](https://github.com/github/vscode-codeql/pull/963)
 
 ## 1.5.6 - 07 October 2021
 
