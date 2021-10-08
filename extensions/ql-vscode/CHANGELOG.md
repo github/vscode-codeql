@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Add a check to make sure certain control codes (U+0000 - U+001F) are detected and replaced with their cooresponding control labels (0x2400) in the results view. [#963](https://github.com/github/vscode-codeql/pull/963)
+
 ## 1.5.6 - 07 October 2021
 
 - Add progress messages to LGTM download option. This makes the two-step process (selecting a project, then selecting a language) more clear. [#960](https://github.com/github/vscode-codeql/pull/960)
