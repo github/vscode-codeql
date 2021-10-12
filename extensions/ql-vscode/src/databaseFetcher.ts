@@ -426,7 +426,7 @@ function extractProjectSlug(lgtmUrl: string): string | undefined {
   if (!match) {
     return;
   }
-  return match[2];
+  return match[1];
 }
 
 // exported for testing
