@@ -108,7 +108,7 @@ export async function promptImportLgtmDatabase(
 }
 
 export async function retrieveCanonicalRepoName(lgtmUrl: string) {
-  const givenRepoName = parseLgtmUrl(lgtmUrl);
+  const givenRepoName = extractProjectSlug(lgtmUrl);
   const response = await checkForFailingResponse(await fetch(`https://api.github.com/repos/${givenRepoName}`), 'Failed to locate the repository on github');
   const repo = await response.json();
   if (!repo || !repo.full_name) {
@@ -419,9 +419,9 @@ function convertRawLgtmSlug(maybeSlug: string): string | undefined {
   return;
 }
  
-function parseLgtmUrl(lgtmUrl: string): string | undefined {
+function extractProjectSlug(lgtmUrl: string): string | undefined {
   // Only matches the '/g/' provider (github)
-  const re = new RegExp('https://lgtm.com/projects/g/(.*)');
+  const re = new RegExp('https://lgtm.com/projects/g/(.*[^/])');
   const match = lgtmUrl.match(re);
   if (!match) {
     return;
@@ -441,12 +441,12 @@ export async function convertToDatabaseUrl(
       // fallback check for github repos with same name but different case
       let canonicalName = await retrieveCanonicalRepoName(lgtmUrl);
       if (!canonicalName) {
-        throw new Error();
+        throw new Error('Repository not found.');
       }
       canonicalName = convertRawLgtmSlug(`g/${canonicalName}`);
       projectJson = await downloadLgtmProjectMetadata(canonicalName);
       if (projectJson.code === 404) {
-        throw new Error();
+        throw new Error('Failed to download project from LGTM.');
       }
     }
 
