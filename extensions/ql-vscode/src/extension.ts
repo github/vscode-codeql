@@ -498,7 +498,7 @@ async function activateWithInstalledDistribution(
   ): Promise<void> {
     if (qs !== undefined) {
       if (await cliServer.cliConstraints.supportsResolveQlref()) {
-        const resolved = await cliServer.resolveQlref(selectedQuery.path);
+        const resolved = await cliServer.resolveQlref(selectedQuery.fsPath);
         const uri = Uri.file(resolved.resolvedPath);
         await window.showTextDocument(uri, { preview: false });
       } else {
