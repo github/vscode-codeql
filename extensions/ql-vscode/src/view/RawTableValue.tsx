@@ -9,14 +9,14 @@ interface Props {
 }
 
 export default function RawTableValue(props: Props): JSX.Element {
-  const v = props.value;
+  const rawValue = props.value;
   if (
-    typeof v === 'string'
-    || typeof v === 'number'
-    || typeof v === 'boolean'
+    typeof rawValue === 'string'
+    || typeof rawValue === 'number'
+    || typeof rawValue === 'boolean'
   ) {
-    return <span>{v.toString()}</span>;
+    return <span>{renderLocation(undefined, rawValue.toString())}</span>;
   }
 
-  return renderLocation(v.url, v.label, props.databaseUri);
+  return renderLocation(rawValue.url, rawValue.label, props.databaseUri);
 }
