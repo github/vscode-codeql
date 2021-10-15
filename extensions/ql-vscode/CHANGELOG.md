@@ -2,7 +2,8 @@
 
 ## [UNRELEASED]
 
-- Replace certain control codes (`U+0000` - `U+001F`) with their corresponding control labels (`U+2400` - `U+241F`)  in the results view. [#963](https://github.com/github/vscode-codeql/pull/963)
+- Use the CodeQL CLI command `database unbundle` for the archive download option, which ensures even archives over 4GB in size can be downloaded. [#971](https://github.com/github/vscode-codeql/pull/971)
+- Fix a bug with importing large databases. Databases over 4GB can now be imported directly from LGTM or from a zip file. This functionality is only available when using CodeQL CLI version 2.6.0 or later. [#963](https://github.com/github/vscode-codeql/pull/963)
 
 ## 1.5.6 - 07 October 2021
 

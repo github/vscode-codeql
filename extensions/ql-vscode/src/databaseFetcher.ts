@@ -1,12 +1,13 @@
 import fetch, { Response } from 'node-fetch';
-import * as unzipper from 'unzipper';
 import { zip } from 'zip-a-folder';
+import * as unzipper from 'unzipper';
 import {
   Uri,
   CancellationToken,
   commands,
   window,
 } from 'vscode';
+import { CodeQLCliServer } from './cli';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
@@ -32,6 +33,7 @@ export async function promptImportInternetDatabase(
   storagePath: string,
   progress: ProgressCallback,
   token: CancellationToken,
+  cli?: CodeQLCliServer
 ): Promise<DatabaseItem | undefined> {
   const databaseUrl = await window.showInputBox({
     prompt: 'Enter URL of zipfile of database to download',
@@ -47,7 +49,8 @@ export async function promptImportInternetDatabase(
     databaseManager,
     storagePath,
     progress,
-    token
+    token,
+    cli
   );
 
   if (item) {
@@ -70,7 +73,8 @@ export async function promptImportLgtmDatabase(
   databaseManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
-  token: CancellationToken
+  token: CancellationToken,
+  cli?: CodeQLCliServer
 ): Promise<DatabaseItem | undefined> {
   progress({
     message: 'Choose project',
@@ -93,7 +97,8 @@ export async function promptImportLgtmDatabase(
         databaseManager,
         storagePath,
         progress,
-        token
+        token,
+        cli
       );
       if (item) {
         await commands.executeCommand('codeQLDatabases.focus');
@@ -120,6 +125,7 @@ export async function importArchiveDatabase(
   storagePath: string,
   progress: ProgressCallback,
   token: CancellationToken,
+  cli?: CodeQLCliServer,
 ): Promise<DatabaseItem | undefined> {
   try {
     const item = await databaseArchiveFetcher(
@@ -127,7 +133,8 @@ export async function importArchiveDatabase(
       databaseManager,
       storagePath,
       progress,
-      token
+      token,
+      cli
     );
     if (item) {
       await commands.executeCommand('codeQLDatabases.focus');
@@ -159,7 +166,8 @@ async function databaseArchiveFetcher(
   databaseManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
-  token: CancellationToken
+  token: CancellationToken,
+  cli?: CodeQLCliServer,
 ): Promise<DatabaseItem> {
   progress({
     message: 'Getting database',
@@ -173,9 +181,9 @@ async function databaseArchiveFetcher(
   const unzipPath = await getStorageFolder(storagePath, databaseUrl);
 
   if (isFile(databaseUrl)) {
-    await readAndUnzip(databaseUrl, unzipPath, progress);
+    await readAndUnzip(databaseUrl, unzipPath, cli, progress);
   } else {
-    await fetchAndUnzip(databaseUrl, unzipPath, progress);
+    await fetchAndUnzip(databaseUrl, unzipPath, cli, progress);
   }
 
   progress({
@@ -249,6 +257,7 @@ function validateHttpsUrl(databaseUrl: string) {
 async function readAndUnzip(
   zipUrl: string,
   unzipPath: string,
+  cli?: CodeQLCliServer,
   progress?: ProgressCallback
 ) {
   // TODO: Providing progress as the file is unzipped is currently blocked
@@ -259,16 +268,22 @@ async function readAndUnzip(
     step: 9,
     message: `Unzipping into ${path.basename(unzipPath)}`
   });
-  // Must get the zip central directory since streaming the
-  // zip contents may not have correct local file headers.
-  // Instead, we can only rely on the central directory.
-  const directory = await unzipper.Open.file(zipFile);
-  await directory.extract({ path: unzipPath });
+  if (cli && await cli.cliConstraints.supportsDatabaseUnbundle()) {
+    // Use the `database unbundle` command if the installed cli version supports it
+    await cli.databaseUnbundle(zipFile, unzipPath);
+  } else {
+    // Must get the zip central directory since streaming the
+    // zip contents may not have correct local file headers.
+    // Instead, we can only rely on the central directory.
+    const directory = await unzipper.Open.file(zipFile);
+    await directory.extract({ path: unzipPath });
+  }
 }
 
 async function fetchAndUnzip(
   databaseUrl: string,
   unzipPath: string,
+  cli?: CodeQLCliServer,
   progress?: ProgressCallback
 ) {
   // Although it is possible to download and stream directly to an unzipped directory,
@@ -298,7 +313,8 @@ async function fetchAndUnzip(
       .on('error', reject)
   );
 
-  await readAndUnzip(Uri.file(archivePath).toString(true), unzipPath, progress);
+  await readAndUnzip(Uri.file(archivePath).toString(true), unzipPath, cli, progress);
+
 
   // remove archivePath eagerly since these archives can be large.
   await fs.remove(archivePath);

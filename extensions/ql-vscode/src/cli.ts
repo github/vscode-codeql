@@ -600,6 +600,15 @@ export class CodeQLCliServer implements Disposable {
     return await this.runJsonCodeQlCliCommand<BQRSInfo>(['bqrs', 'info'], subcommandArgs, 'Reading bqrs header');
   }
 
+  async databaseUnbundle(archivePath: string, target: string, name?: string): Promise<string> {
+    const subcommandArgs = [];
+    if (target) subcommandArgs.push('--target', target);
+    if (name) subcommandArgs.push('--name', name);
+    subcommandArgs.push(archivePath);
+ 
+    return await this.runCodeQlCliCommand(['database', 'unbundle'], subcommandArgs, `Extracting ${archivePath} to directory ${target}`);
+  }
+
   /**
   * Gets the results from a bqrs.
   * @param bqrsPath The path to the bqrs.
@@ -1074,6 +1083,11 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_ALLOW_LIBRARY_PACKS_IN_RESOLVE_QUERIES = new SemVer('2.6.1');
 
+  /**
+   * CLI version where the `database unbundle` subcommand was introduced.
+   */
+  public static CLI_VERSION_WITH_DATABASE_UNBUNDLE = new SemVer('2.6.0');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1105,4 +1119,9 @@ export class CliVersionConstraint {
   async supportsDatabaseRegistration() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DB_REGISTRATION);
   }
+
+  async supportsDatabaseUnbundle() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DATABASE_UNBUNDLE);
+  }
+
 }
