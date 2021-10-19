@@ -135,6 +135,7 @@ class DatabaseTreeDataProvider extends DisposableObject
         this.extensionPath,
         SELECTED_DATABASE_ICON
       );
+      item.contextValue = 'currentDatabase';
     } else if (element.error !== undefined) {
       item.iconPath = joinThemableIconPath(
         this.extensionPath,

@@ -731,6 +731,8 @@ export class DatabaseManager extends DisposableObject {
       this._currentDatabaseItem = item;
       this.updatePersistedCurrentDatabaseItem();
 
+      await vscode.commands.executeCommand('setContext', 'codeQL.currentDatabaseItem', item?.name);
+      
       this._onDidChangeCurrentDatabaseItem.fire({
         item,
         kind: DatabaseEventKind.Change
