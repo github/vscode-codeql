@@ -452,45 +452,26 @@ export class DatabaseUI extends DisposableObject {
     progress: ProgressCallback,
     token: CancellationToken
   ): Promise<DatabaseItem | undefined> => {
-    if (this.queryServer && await this.queryServer.cliServer.cliConstraints.supportsDatabaseUnbundle()) {
-      return await promptImportInternetDatabase(
-        this.databaseManager,
-        this.storagePath,
-        progress,
-        token,
-        this.queryServer.cliServer
-      );
-    } else {
-      return await promptImportInternetDatabase(        
-        this.databaseManager,
-        this.storagePath,
-        progress,
-        token
-      );
-    }
+    return await promptImportInternetDatabase(
+      this.databaseManager,
+      this.storagePath,
+      progress,
+      token,
+      this.queryServer?.cliServer
+    );
   };
 
   handleChooseDatabaseLgtm = async (
     progress: ProgressCallback,
     token: CancellationToken
   ): Promise<DatabaseItem | undefined> => {
-
-    if (this.queryServer && await this.queryServer.cliServer.cliConstraints.supportsDatabaseUnbundle()) {
-      return await promptImportLgtmDatabase(
-        this.databaseManager,
-        this.storagePath,
-        progress,
-        token,
-        this.queryServer.cliServer
-      );
-    } else {
-      return await promptImportLgtmDatabase(
-        this.databaseManager,
-        this.storagePath,
-        progress,
-        token
-      );
-    }
+    return await promptImportLgtmDatabase(
+      this.databaseManager,
+      this.storagePath,
+      progress,
+      token,
+      this.queryServer?.cliServer
+    );
   };
 
   async tryUpgradeCurrentDatabase(
@@ -591,10 +572,6 @@ export class DatabaseUI extends DisposableObject {
     token: CancellationToken,
     uri: Uri,
   ): Promise<void> => {
-    if (!this.queryServer) {
-      throw new Error('Query server not started');
-    }
-
     try {
       // Assume user has selected an archive if the file has a .zip extension
       if (uri.path.endsWith('.zip')) {
@@ -604,7 +581,7 @@ export class DatabaseUI extends DisposableObject {
           this.storagePath,
           progress,
           token,
-          this.queryServer.cliServer
+          this.queryServer?.cliServer
         );
       } else {
         await this.setCurrentDatabase(progress, token, uri);
@@ -719,10 +696,6 @@ export class DatabaseUI extends DisposableObject {
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<DatabaseItem | undefined> {
-    if (!this.queryServer) {
-      throw new Error('Query server not started');
-    }
-
     const uri = await chooseDatabaseDir(byFolder);
     if (!uri) {
       return undefined;
@@ -741,7 +714,7 @@ export class DatabaseUI extends DisposableObject {
         this.storagePath,
         progress,
         token,
-        this.queryServer.cliServer
+        this.queryServer?.cliServer
       );
     }
   }
