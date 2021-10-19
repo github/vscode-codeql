@@ -68,7 +68,8 @@ describe('Queries', function() {
         databaseManager,
         storagePath,
         progress,
-        token
+        token,
+        cli
       );
 
       if (!maybeDbItem) {

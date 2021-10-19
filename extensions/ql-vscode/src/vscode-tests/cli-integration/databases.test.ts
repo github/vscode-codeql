@@ -5,6 +5,7 @@ import { expect } from 'chai';
 import { extensions, CancellationToken, Uri, window } from 'vscode';
 
 import { CodeQLExtensionInterface } from '../../extension';
+import { CodeQLCliServer } from '../../cli';
 import { DatabaseManager } from '../../databases';
 import { promptImportLgtmDatabase, importArchiveDatabase, promptImportInternetDatabase } from '../../databaseFetcher';
 import { ProgressCallback } from '../../commandRunner';
@@ -17,10 +18,11 @@ describe('Databases', function() {
   this.timeout(60000);
 
   const LGTM_URL = 'https://lgtm.com/projects/g/aeisenberg/angular-bind-notifier/';
-
+  
   let databaseManager: DatabaseManager;
   let sandbox: sinon.SinonSandbox;
   let inputBoxStub: sinon.SinonStub;
+  let cli: CodeQLCliServer;
   let progressCallback: ProgressCallback;
 
   beforeEach(async () => {
@@ -53,7 +55,7 @@ describe('Databases', function() {
   it('should add a database from a folder', async () => {
     const progressCallback = sandbox.spy() as ProgressCallback;
     const uri = Uri.file(dbLoc);
-    let dbItem = await importArchiveDatabase(uri.toString(true), databaseManager, storagePath, progressCallback, {} as CancellationToken);
+    let dbItem = await importArchiveDatabase(uri.toString(true), databaseManager, storagePath, progressCallback, {} as CancellationToken, cli);
     expect(dbItem).to.be.eq(databaseManager.currentDatabaseItem);
     expect(dbItem).to.be.eq(databaseManager.databaseItems[0]);
     expect(dbItem).not.to.be.undefined;
@@ -64,7 +66,7 @@ describe('Databases', function() {
 
   it('should add a database from lgtm with only one language', async () => {
     inputBoxStub.resolves(LGTM_URL);
-    let dbItem = await promptImportLgtmDatabase(databaseManager, storagePath, progressCallback, {} as CancellationToken);
+    let dbItem = await promptImportLgtmDatabase(databaseManager, storagePath, progressCallback, {} as CancellationToken, cli);
     expect(dbItem).not.to.be.undefined;
     dbItem = dbItem!;
     expect(dbItem.name).to.eq('aeisenberg_angular-bind-notifier_106179a');
@@ -74,7 +76,7 @@ describe('Databases', function() {
   it('should add a database from a url', async () => {
     inputBoxStub.resolves(DB_URL);
 
-    let dbItem = await promptImportInternetDatabase(databaseManager, storagePath, progressCallback, {} as CancellationToken);
+    let dbItem = await promptImportInternetDatabase(databaseManager, storagePath, progressCallback, {} as CancellationToken, cli);
     expect(dbItem).not.to.be.undefined;
     dbItem = dbItem!;
     expect(dbItem.name).to.eq('db');

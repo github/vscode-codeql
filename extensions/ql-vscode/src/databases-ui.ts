@@ -451,14 +451,13 @@ export class DatabaseUI extends DisposableObject {
   handleChooseDatabaseInternet = async (
     progress: ProgressCallback,
     token: CancellationToken
-  ): Promise<
-    DatabaseItem | undefined
-  > => {
+  ): Promise<DatabaseItem | undefined> => {
     return await promptImportInternetDatabase(
       this.databaseManager,
       this.storagePath,
       progress,
-      token
+      token,
+      this.queryServer?.cliServer
     );
   };
 
@@ -470,7 +469,8 @@ export class DatabaseUI extends DisposableObject {
       this.databaseManager,
       this.storagePath,
       progress,
-      token
+      token,
+      this.queryServer?.cliServer
     );
   };
 
@@ -580,7 +580,8 @@ export class DatabaseUI extends DisposableObject {
           this.databaseManager,
           this.storagePath,
           progress,
-          token
+          token,
+          this.queryServer?.cliServer
         );
       } else {
         await this.setCurrentDatabase(progress, token, uri);
@@ -696,7 +697,6 @@ export class DatabaseUI extends DisposableObject {
     token: CancellationToken,
   ): Promise<DatabaseItem | undefined> {
     const uri = await chooseDatabaseDir(byFolder);
-
     if (!uri) {
       return undefined;
     }
@@ -713,7 +713,8 @@ export class DatabaseUI extends DisposableObject {
         this.databaseManager,
         this.storagePath,
         progress,
-        token
+        token,
+        this.queryServer?.cliServer
       );
     }
   }
