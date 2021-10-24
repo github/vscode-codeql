@@ -304,7 +304,7 @@ const REMOTE_QUERIES_SETTING = new Setting('remoteQueries', ROOT_SETTING);
 /**
  * Lists of GitHub repositories that you want to query remotely via the "Run Remote query" command.
  * Note: This command is only available for internal users.
- * 
+ *
  * This setting should be a JSON object where each key is a user-specified name (string),
  * and the value is an array of GitHub repositories (of the form `<owner>/<repo>`).
  */

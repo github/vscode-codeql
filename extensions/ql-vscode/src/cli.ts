@@ -605,7 +605,7 @@ export class CodeQLCliServer implements Disposable {
     if (target) subcommandArgs.push('--target', target);
     if (name) subcommandArgs.push('--name', name);
     subcommandArgs.push(archivePath);
- 
+
     return await this.runCodeQlCliCommand(['database', 'unbundle'], subcommandArgs, `Extracting ${archivePath} to directory ${target}`);
   }
 
@@ -805,8 +805,30 @@ export class CodeQLCliServer implements Disposable {
     return this.runJsonCodeQlCliCommand(['pack', 'install'], [dir], 'Installing pack dependencies');
   }
 
-  async packBundle(dir: string, outputPath: string): Promise<void> {
-    return this.runJsonCodeQlCliCommand(['pack', 'bundle'], ['-o', outputPath, dir], 'Bundling pack');
+  async packBundle(dir: string, workspaceFolders: string[], outputPath: string, precompile = true): Promise<void> {
+    const args = [
+      '-o',
+      outputPath,
+      dir,
+      '--additional-packs',
+      workspaceFolders.join(path.delimiter)
+    ];
+    if (!precompile && await this.cliConstraints.supportsNoPrecompile()) {
+      args.push('--no-precompile');
+    }
+
+    return this.runJsonCodeQlCliCommand(['pack', 'bundle'], args, 'Bundling pack');
+  }
+
+  async packPacklist(dir: string, includeQueries: boolean): Promise<string[]> {
+    const args = includeQueries ? [dir] : ['--no-include-queries', dir];
+    const results = await this.runJsonCodeQlCliCommand(['pack', 'packlist'], args, 'Generating the pack list');
+
+    if (await this.cliConstraints.usesNewPackPacklistLayout()) {
+      return (results as { paths: string[] }).paths;
+    } else {
+      return results as string[];
+    }
   }
 
   async generateDil(qloFile: string, outFile: string): Promise<void> {
@@ -1057,6 +1079,12 @@ export function shouldDebugQueryServer() {
     && process.env.QUERY_SERVER_JAVA_DEBUG?.toLocaleLowerCase() !== 'false';
 }
 
+export function shouldDebugCliServer() {
+  return 'CLI_SERVER_JAVA_DEBUG' in process.env
+    && process.env.CLI_SERVER_JAVA_DEBUG !== '0'
+    && process.env.CLI_SERVER_JAVA_DEBUG?.toLocaleLowerCase() !== 'false';
+}
+
 export class CliVersionConstraint {
 
   /**
@@ -1096,6 +1124,16 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_DATABASE_UNBUNDLE = new SemVer('2.6.0');
 
+  /**
+   * CLI version where the `--no-precompile` option for pack creation was introduced.
+   */
+  public static CLI_VERSION_WITH_NO_PRECOMPILE = new SemVer('2.7.1');
+
+  /**
+   * CLI version where `pack packlist` layout changed from array to object
+   */
+  public static CLI_VERSION_PACK_PACKLIST_LAYOUT_CHANGE = new SemVer('2.7.1');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1132,4 +1170,11 @@ export class CliVersionConstraint {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DATABASE_UNBUNDLE);
   }
 
+  async supportsNoPrecompile() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NO_PRECOMPILE);
+  }
+
+  async usesNewPackPacklistLayout() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_PACK_PACKLIST_LAYOUT_CHANGE);
+  }
 }
