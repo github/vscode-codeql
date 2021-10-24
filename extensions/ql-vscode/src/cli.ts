@@ -257,11 +257,16 @@ export class CodeQLCliServer implements Disposable {
    */
   private async launchProcess(): Promise<child_process.ChildProcessWithoutNullStreams> {
     const codeQlPath = await this.getCodeQlPath();
+    const args = [];
+    if (shouldDebugCliServer()) {
+      args.push('-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9012,server=n,suspend=y,quiet=y');
+    }
+
     return await spawnServer(
       codeQlPath,
       'CodeQL CLI Server',
       ['execute', 'cli-server'],
-      [],
+      args,
       this.logger,
       _data => { /**/ }
     );
@@ -605,7 +610,7 @@ export class CodeQLCliServer implements Disposable {
     if (target) subcommandArgs.push('--target', target);
     if (name) subcommandArgs.push('--name', name);
     subcommandArgs.push(archivePath);
- 
+
     return await this.runCodeQlCliCommand(['database', 'unbundle'], subcommandArgs, `Extracting ${archivePath} to directory ${target}`);
   }
 
@@ -1049,6 +1054,12 @@ export function shouldDebugQueryServer() {
     && process.env.QUERY_SERVER_JAVA_DEBUG?.toLocaleLowerCase() !== 'false';
 }
 
+export function shouldDebugCliServer() {
+  return 'CLI_SERVER_JAVA_DEBUG' in process.env
+    && process.env.CLI_SERVER_JAVA_DEBUG !== '0'
+    && process.env.CLI_SERVER_JAVA_DEBUG?.toLocaleLowerCase() !== 'false';
+}
+
 export class CliVersionConstraint {
 
   /**
@@ -1088,6 +1099,16 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_DATABASE_UNBUNDLE = new SemVer('2.6.0');
 
+  /**
+   * CLI version where the `--no-precompile` option for pack creation was introduced.
+   */
+  public static CLI_VERSION_WITH_NO_PRECOMPILE = new SemVer('2.7.0');
+
+  /**
+   * CLI version where `pack packlist` layout changed from array to object
+   */
+  public static CLI_VERSION_PACK_PACKLIST_LAYOUT_CHANGE = new SemVer('2.7.0');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1124,4 +1145,11 @@ export class CliVersionConstraint {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DATABASE_UNBUNDLE);
   }
 
+  async supportsNoPrecompile() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NO_PRECOMPILE);
+  }
+
+  async usesNewPackPacklistLayout() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_PACK_PACKLIST_LAYOUT_CHANGE);
+  }
 }
