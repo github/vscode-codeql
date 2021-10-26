@@ -1099,16 +1099,6 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_DATABASE_UNBUNDLE = new SemVer('2.6.0');
 
-  /**
-   * CLI version where the `--no-precompile` option for pack creation was introduced.
-   */
-  public static CLI_VERSION_WITH_NO_PRECOMPILE = new SemVer('2.7.0');
-
-  /**
-   * CLI version where `pack packlist` layout changed from array to object
-   */
-  public static CLI_VERSION_PACK_PACKLIST_LAYOUT_CHANGE = new SemVer('2.7.0');
-
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1145,11 +1135,4 @@ export class CliVersionConstraint {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DATABASE_UNBUNDLE);
   }
 
-  async supportsNoPrecompile() {
-    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NO_PRECOMPILE);
-  }
-
-  async usesNewPackPacklistLayout() {
-    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_PACK_PACKLIST_LAYOUT_CHANGE);
-  }
 }
