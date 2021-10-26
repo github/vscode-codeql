@@ -21,6 +21,9 @@
         // change to 'true' debug the IDE or Query servers
         "IDE_SERVER_JAVA_DEBUG": "false",
         "QUERY_SERVER_JAVA_DEBUG": "false",
+        "CLI_SERVER_JAVA_DEBUG": "false",
+        // Uncomment to set the JAVA_HOME for the codeql instance to use
+        // "CODEQL_JAVA_HOME": "/Library/Java/JavaVirtualMachines/jdk-12.0.1.jdk/Contents/Home"
       }
     },
     {
