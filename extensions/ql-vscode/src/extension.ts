@@ -496,9 +496,11 @@ async function activateWithInstalledDistribution(
   async function openReferencedFile(
     selectedQuery: Uri
   ): Promise<void> {
-    if (qs !== undefined) {
+    // If no file is selected, the path of the file in the editor is selected
+    const path = selectedQuery?.fsPath || window.activeTextEditor?.document.uri.fsPath;
+    if (qs !== undefined && path) {
       if (await cliServer.cliConstraints.supportsResolveQlref()) {
-        const resolved = await cliServer.resolveQlref(selectedQuery.fsPath);
+        const resolved = await cliServer.resolveQlref(path);
         const uri = Uri.file(resolved.resolvedPath);
         await window.showTextDocument(uri, { preview: false });
       } else {
