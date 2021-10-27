@@ -46,6 +46,7 @@
     "onCommand:codeQL.setCurrentDatabase",
     "onCommand:codeQL.viewAst",
     "onCommand:codeQL.openReferencedFile",
+    "onCommand:codeQL.previewQueryHelp",
     "onCommand:codeQL.chooseDatabaseFolder",
     "onCommand:codeQL.chooseDatabaseArchive",
     "onCommand:codeQL.chooseDatabaseInternet",
@@ -294,6 +295,10 @@
       {
         "command": "codeQL.openReferencedFile",
         "title": "CodeQL: Open Referenced File"
+      },
+      {
+        "command": "codeQL.previewQueryHelp",
+        "title": "CodeQL: Preview Query Help"
       },
       {
         "command": "codeQL.quickQuery",
@@ -682,6 +687,11 @@
           "when": "view == codeQLQueryHistory"
         },
         {
+          "command": "codeQL.previewQueryHelp",
+          "group": "9_qlCommands",
+          "when": "view == codeQLQueryHistory && resourceScheme == .qhelp && isWorkspaceTrusted"
+        },
+        {
           "command": "codeQLTests.showOutputDifferences",
           "group": "qltest@1",
           "when": "view == test-explorer && viewItem == testWithSource"
@@ -712,6 +722,11 @@
           "command": "codeQL.openReferencedFile",
           "group": "9_qlCommands",
           "when": "resourceExtname == .qlref"
+        },
+        {
+          "command": "codeQL.previewQueryHelp",
+          "group": "9_qlCommands",
+          "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
         }
       ],
       "commandPalette": [
@@ -742,6 +757,10 @@
         {
           "command": "codeQL.openReferencedFile",
           "when": "resourceExtname == .qlref"
+        },
+        {
+          "command": "codeQL.previewQueryHelp",
+          "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
         },
         {
           "command": "codeQL.setCurrentDatabase",
@@ -900,6 +919,10 @@
         {
           "command": "codeQL.openReferencedFile",
           "when": "resourceExtname == .qlref"
+        },
+        {
+          "command": "codeQL.previewQueryHelp",
+          "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
         }
       ]
     },
