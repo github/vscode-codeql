@@ -8,12 +8,12 @@ import * as yaml from 'js-yaml';
 
 import { runRemoteQuery } from '../../run-remote-query';
 import { Credentials } from '../../authentication';
-import { CodeQLCliServer } from '../../cli';
+import { CliVersionConstraint, CodeQLCliServer } from '../../cli';
 import { CodeQLExtensionInterface } from '../../extension';
-import { setRemoteControllerRepo } from '../../config';
+import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../config';
 import { UserCancellationException } from '../../commandRunner';
 
-describe('Remote queries', function() {
+describe.only('Remote queries', function() {
   const baseDir = path.join(__dirname, '../../../src/vscode-tests/cli-integration');
 
   let sandbox: sinon.SinonSandbox;
@@ -27,7 +27,8 @@ describe('Remote queries', function() {
   let progress: sinon.SinonSpy;
   let showQuickPickSpy: sinon.SinonStub;
 
-  beforeEach(async () => {
+  // use `function` so we have access to `this`
+  beforeEach(async function() {
     sandbox = sinon.createSandbox();
 
     const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
@@ -35,6 +36,12 @@ describe('Remote queries', function() {
       cli = extension.cliServer;
     } else {
       throw new Error('Extension not initialized. Make sure cli is downloaded and installed properly.');
+    }
+
+    if (!(await cli.cliConstraints.supportsRemoteQueries())) {
+      console.log(`Remote queries are not supported on CodeQL CLI v${CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
+        }. Skipping this test.`);
+      this.skip();
     }
     credentials = {} as unknown as Credentials;
     token = {
@@ -48,7 +55,8 @@ describe('Remote queries', function() {
       .onSecondCall().resolves('javascript' as unknown as QuickPickItem);
 
     // always run in the vscode-codeql repo
-    void setRemoteControllerRepo('github/vscode-codeql');
+    await setRemoteControllerRepo('github/vscode-codeql');
+    await setRemoteRepositoryLists({ 'vscode-codeql': ['github/vscode-codeql'] });
   });
 
   afterEach(() => {

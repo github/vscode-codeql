@@ -98,18 +98,27 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
 
     // also copy the lock file (either new name or old name) and the query file itself. These are not included in the packlist.
     [path.join(originalPackRoot, 'qlpack.lock.yml'), path.join(originalPackRoot, 'codeql-pack.lock.yml'), queryFile]
-      .forEach(aboslutePath => {
-        if (aboslutePath) {
-          toCopy.push(aboslutePath);
+      .forEach(absolutePath => {
+        if (absolutePath) {
+          toCopy.push(absolutePath);
         }
       });
-    void logger.log(`Copying ${toCopy.length} files to ${queryPackDir}`);
+
+    let copiedCount = 0;
     await fs.copy(originalPackRoot, queryPackDir, {
       filter: (file: string) =>
         // copy file if it is in the packlist, or it is a parent directory of a file in the packlist
-        !!toCopy.find(f => f === file || f.startsWith(file + path.sep)
-        )
+        !!toCopy.find(f => {
+          const matches = f === file || f.startsWith(file + path.sep);
+          if (matches) {
+            copiedCount++;
+          }
+          return matches;
+        })
     });
+
+    void logger.log(`Copied ${copiedCount} files to ${queryPackDir}`);
+
     language = await findLanguage(cliServer, Uri.file(targetQueryFileName));
 
   } else {
@@ -173,6 +182,11 @@ export async function runRemoteQuery(
   progress: ProgressCallback,
   token: CancellationToken
 ): Promise<void | string> {
+  if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
+    throw new Error(`Remote queries are not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
+      } or later.`);
+  }
+
   const { remoteQueryDir, queryPackDir } = await createRemoteQueriesTempDirectory();
   try {
     if (!uri?.fsPath.endsWith('.ql')) {
@@ -214,7 +228,6 @@ export async function runRemoteQuery(
     }
 
     if (!repositories || repositories.length === 0) {
-      // No error message needed, since `getRepositories` already displays one.
       throw new UserCancellationException('No repositories to query.');
     }
 

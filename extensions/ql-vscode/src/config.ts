@@ -314,6 +314,10 @@ export function getRemoteRepositoryLists(): Record<string, string[]> | undefined
   return REMOTE_REPO_LISTS.getValue<Record<string, string[]>>() || undefined;
 }
 
+export async function setRemoteRepositoryLists(lists: Record<string, string[]> | undefined) {
+  await REMOTE_REPO_LISTS.updateValue(lists, ConfigurationTarget.Global);
+}
+
 /**
  * The name of the "controller" repository that you want to use with the "Run Remote query" command.
  * Note: This command is only available for internal users.
