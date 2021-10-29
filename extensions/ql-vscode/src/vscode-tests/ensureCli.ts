@@ -58,6 +58,12 @@ export async function ensureCli(useCli: boolean) {
       return;
     }
 
+    if ('CODEQL_PATH' in process.env) {
+      const executablePath = process.env.CODEQL_PATH;
+      console.log(`Using existing CLI at ${executablePath}`);
+      return;
+    }
+
     const assetName = DistributionManager.getRequiredAssetName();
     const url = getCliDownloadUrl(assetName);
     const unzipDir = getCliUnzipDir();
