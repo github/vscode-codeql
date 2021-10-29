@@ -67,6 +67,7 @@ describe('Remote queries', function() {
     const fileUri = getFile('data-remote-qlpack/in-pack.ql');
 
     const queryPackRootDir = (await runRemoteQuery(cli, credentials, fileUri, true, progress, token))!;
+    printDirectoryContents(queryPackRootDir);
 
     // to retrieve the list of repositories
     expect(showQuickPickSpy).to.have.been.calledOnce;
@@ -77,25 +78,32 @@ describe('Remote queries', function() {
     expect(fs.readdirSync(queryPackRootDir).find(f => f.startsWith('qlpack-') && f.endsWith('-generated.tgz'))).not.to.be.undefined;
 
     const queryPackDir = path.join(queryPackRootDir, 'query-pack');
+    printDirectoryContents(queryPackDir);
+
     // in-pack.ql renamed to query.ql
     expect(fs.existsSync(path.join(queryPackDir, 'query.ql'))).to.be.true;
     expect(fs.existsSync(path.join(queryPackDir, 'lib.qll'))).to.be.true;
     expect(fs.existsSync(path.join(queryPackDir, 'qlpack.yml'))).to.be.true;
-    expect(fs.existsSync(
-      // depending on the cli version, we should have one of these files
-      path.join(queryPackDir, 'qlpack.lock.yml') || path.join(queryPackDir, 'codeql-pack.lock.yml')
-    )).to.be.true;
+
+    // depending on the cli version, we should have one of these files
+    expect(
+      fs.existsSync(path.join(queryPackDir, 'qlpack.lock.yml')) ||
+      fs.existsSync(path.join(queryPackDir, 'codeql-pack.lock.yml'))
+    ).to.be.true;
     expect(fs.existsSync(path.join(queryPackDir, 'not-in-pack.ql'))).to.be.false;
 
     // the compiled pack
     const compiledPackDir = path.join(queryPackDir, '.codeql/pack/github/remote-query-pack/0.0.0/');
+    printDirectoryContents(compiledPackDir);
+
     expect(fs.existsSync(path.join(compiledPackDir, 'query.ql'))).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'lib.qll'))).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
-    expect(fs.existsSync(
-      // depending on the cli version, we should have one of these files
-      path.join(compiledPackDir, 'qlpack.lock.yml') || path.join(queryPackDir, 'codeql-pack.lock.yml')
-    )).to.be.true;
+    // depending on the cli version, we should have one of these files
+    expect(
+      fs.existsSync(path.join(compiledPackDir, 'qlpack.lock.yml')) ||
+      fs.existsSync(path.join(compiledPackDir, 'codeql-pack.lock.yml'))
+    ).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'not-in-pack.ql'))).to.be.false;
 
     // dependencies
@@ -116,27 +124,32 @@ describe('Remote queries', function() {
     // check a few files that we know should exist and others that we know should not
 
     // the tarball to deliver to the server
+    printDirectoryContents(queryPackRootDir);
     expect(fs.readdirSync(queryPackRootDir).find(f => f.startsWith('qlpack-') && f.endsWith('-generated.tgz'))).not.to.be.undefined;
 
     const queryPackDir = path.join(queryPackRootDir, 'query-pack');
+    printDirectoryContents(queryPackDir);
     // in-pack.ql renamed to query.ql
     expect(fs.existsSync(path.join(queryPackDir, 'query.ql'))).to.be.true;
     expect(fs.existsSync(path.join(queryPackDir, 'qlpack.yml'))).to.be.true;
-    expect(fs.existsSync(
-      // depending on the cli version, we should have one of these files
-      path.join(queryPackDir, 'qlpack.lock.yml') || path.join(queryPackDir, 'codeql-pack.lock.yml')
-    )).to.be.true;
+    // depending on the cli version, we should have one of these files
+    expect(
+      fs.existsSync(path.join(queryPackDir, 'qlpack.lock.yml')) ||
+      fs.existsSync(path.join(queryPackDir, 'codeql-pack.lock.yml'))
+    ).to.be.true;
     expect(fs.existsSync(path.join(queryPackDir, 'lib.qll'))).to.be.false;
     expect(fs.existsSync(path.join(queryPackDir, 'not-in-pack.ql'))).to.be.false;
 
     // the compiled pack
     const compiledPackDir = path.join(queryPackDir, '.codeql/pack/codeql-remote/query/1.0.0/');
+    printDirectoryContents(compiledPackDir);
     expect(fs.existsSync(path.join(compiledPackDir, 'query.ql'))).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
-    expect(fs.existsSync(
-      // depending on the cli version, we should have one of these files
-      path.join(compiledPackDir, 'qlpack.lock.yml') || path.join(queryPackDir, 'codeql-pack.lock.yml')
-    )).to.be.true;
+    // depending on the cli version, we should have one of these files
+    expect(
+      fs.existsSync(path.join(compiledPackDir, 'qlpack.lock.yml')) ||
+      fs.existsSync(path.join(compiledPackDir, 'codeql-pack.lock.yml'))
+    ).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'lib.qll'))).to.be.false;
     expect(fs.existsSync(path.join(compiledPackDir, 'not-in-pack.ql'))).to.be.false;
     // should have generated a correct qlpack file
@@ -147,6 +160,7 @@ describe('Remote queries', function() {
 
     // dependencies
     const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
+    printDirectoryContents(libraryDir);
     const packNames = fs.readdirSync(libraryDir).sort();
     expect(packNames).to.deep.equal(['javascript-all', 'javascript-upgrades']);
   });
@@ -168,5 +182,13 @@ describe('Remote queries', function() {
 
   function getFile(file: string): Uri {
     return Uri.file(path.join(baseDir, file));
+  }
+
+  function printDirectoryContents(dir: string) {
+    console.log(`DIR ${dir}`);
+    if (!fs.existsSync(dir)) {
+      console.log(`DIR ${dir} does not exist`);
+    }
+    fs.readdirSync(dir).sort().forEach(f => console.log(`  ${f}`));
   }
 });
