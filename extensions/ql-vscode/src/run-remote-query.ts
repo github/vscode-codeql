@@ -109,7 +109,9 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
       filter: (file: string) =>
         // copy file if it is in the packlist, or it is a parent directory of a file in the packlist
         !!toCopy.find(f => {
-          const matches = f === file || f.startsWith(file + path.sep);
+          // Normalized paths ensure that Windows drive letters are capitalized consistently.
+          const normalizedPath = Uri.file(f).fsPath;
+          const matches = normalizedPath === file || normalizedPath.startsWith(file + path.sep);
           if (matches) {
             copiedCount++;
           }
