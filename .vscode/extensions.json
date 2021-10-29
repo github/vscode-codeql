@@ -3,7 +3,7 @@
   // Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
   // List of extensions which should be recommended for users of this workspace.
   "recommendations": [
-    "eamodio.tsl-problem-matcher",
+    "amodio.tsl-problem-matcher",
     "dbaeumer.vscode-eslint",
     "eternalphane.tsfmt-vscode"
   ],
