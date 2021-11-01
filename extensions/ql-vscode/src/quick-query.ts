@@ -118,7 +118,7 @@ export async function displayQuickQuery(
     // Only rewrite the qlpack file if the database has changed
     if (shouldRewrite) {
       const quickQueryQlpackYaml: any = {
-        name: 'quick-query',
+        name: 'vscode/quick-query',
         version: '1.0.0',
         libraryPathDependencies: [qlpack]
       };

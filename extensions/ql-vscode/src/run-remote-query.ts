@@ -119,6 +119,9 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
         })
     });
 
+    // ensure the qlpack.yml has a valid name
+    await ensureQueryPackName(queryPackDir);
+
     void logger.log(`Copied ${copiedCount} files to ${queryPackDir}`);
 
     language = await findLanguage(cliServer, Uri.file(targetQueryFileName));
@@ -159,6 +162,25 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
     base64Pack,
     language
   };
+}
+
+/**
+ * Ensure that the qlpack.yml has a valid name. For local purposes,
+ * Anonymous packs and names that are not prefixed by a scope (ie `<foo>/`)
+ * are sufficient. But in order to create a pack, the name must be prefixed.
+ *
+ * @param queryPackDir the directory containing the query pack.
+ */
+async function ensureQueryPackName(queryPackDir: string) {
+  const pack = yaml.safeLoad(await fs.readFile(path.join(queryPackDir, 'qlpack.yml'), 'utf8')) as { name: string; };
+  if (!pack.name || !pack.name.includes('/')) {
+    if (!pack.name) {
+      pack.name = 'codeql-remote/query';
+    } else if (!pack.name.includes('/')) {
+      pack.name = `codeql-remote/${pack.name}`;
+    }
+    await fs.writeFile(path.join(queryPackDir, 'qlpack.yml'), yaml.safeDump(pack));
+  }
 }
 
 async function createRemoteQueriesTempDirectory() {
