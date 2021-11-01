@@ -129,14 +129,14 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
 
     // copy only the query file to the query pack directory
     // and generate a synthetic query pack
-    // TODO this has a limitation that query packs inside of a workspace will not resolve it's peer dependencies.
+    // TODO this has a limitation that query packs inside of a workspace will not resolve its peer dependencies.
     // Something to work on later. For now, we will only support query packs that are not in a workspace.
     void logger.log(`Copying ${queryFile} to ${queryPackDir}`);
     await fs.copy(queryFile, targetQueryFileName);
     void logger.log('Generating synthetic query pack');
     const syntheticQueryPack = {
       name: 'codeql-remote/query',
-      version: '1.0.0',
+      version: '0.0.0',
       dependencies: {
         [`codeql/${language}-all`]: '*',
       }
