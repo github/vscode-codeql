@@ -77,9 +77,9 @@ $ vscode/scripts/code-cli.sh --install-extension dist/vscode-codeql-*.vsix # if 
 
 You can use VS Code to debug the extension without explicitly installing it. Just open this directory as a workspace in VS Code, and hit `F5` to start a debugging session.
 
-### Running the unit/integration tests
+### Running the unit tests and integration tests that do not require a CLI instance
 
-Ensure the `CODEQL_PATH` environment variable is set to point to the `codeql` cli executable.
+Unit tests and many integration tests do not require a copy of the CodeQL CLI.
 
 Outside of vscode, run:
 
@@ -88,6 +88,16 @@ npm run test && npm run integration
 ```
 
 Alternatively, you can run the tests inside of vscode. There are several vscode launch configurations defined that run the unit and integration tests. They can all be found in the debug view.
+
+Only the _With CLI_ tests require a CLI instance to run. See below on how to do that.
+
+Running from a terminal, you _must_ set the `TEST_CODEQL_PATH` variable to point to a checkout of the `github/codeql` repository. The appropriate CLI version will be downloaded as part of the test.
+
+### Running the integration tests
+
+The _Launch Integration Tests - With CLI_ tests require a CLI instance in order to run. There are several environment variables you can use to configure this.
+
+From inside of VSCode, open the `launch.json` file and in the _Launch Integration Tests - With CLI_ uncomment and change the environment variables appropriate for your purpose.
 
 ## Releasing (write access required)
 

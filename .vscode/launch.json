@@ -96,6 +96,19 @@
         // available in the workspace for the tests.
         // "${workspaceRoot}/../codeql"
       ],
+      "env": {
+        // Optionally, set the version to use for the integration tests.
+        // Use "nightly" to use the latest nightly build.
+        // "CLI_VERSION": "2.7.0",
+
+        // If CLI_VERSION is set to nightly, set this to the url of the nightly build.
+        // "NIGHTLY_URL": "some url to grab the nightly build",
+
+        // Optionally, add a path to the codeql executable to be used during these tests.
+        // If not specified, one will be downloaded automatically.
+        // This option overrides the CLI_VERSION option.
+        // "CLI_PATH": "${workspaceRoot}/../semmle-code/target/intree/codeql/codeql",
+      },
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [

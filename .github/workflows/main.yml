@@ -74,7 +74,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        version: [stable, nightly]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -104,31 +103,16 @@ jobs:
         run: |
           npm run lint
 
-      - name: Install CodeQL
-        run: |
-          mkdir codeql-home
-          if [ ${{ matrix.version }} = "stable" ]
-          then
-            curl -L --silent https://github.com/github/codeql-cli-binaries/releases/latest/download/codeql.zip -o codeql-home/codeql.zip
-          else
-            curl -L --silent ${{ needs.find-nightly.outputs.url }}/codeql.zip -o codeql-home/codeql.zip
-          fi
-          unzip -q -o codeql-home/codeql.zip -d codeql-home
-          unzip -q -o codeql-home/codeql.zip codeql/codeql.exe -d codeql-home
-          rm codeql-home/codeql.zip
-        shell: bash
-
       - name: Run unit tests (Linux)
         working-directory: extensions/ql-vscode
         if: matrix.os == 'ubuntu-latest'
         run: |
-          CODEQL_PATH=$GITHUB_WORKSPACE/codeql-home/codeql/codeql npm run test
+          npm run test
 
       - name: Run unit tests (Windows)
         if: matrix.os == 'windows-latest'
         working-directory: extensions/ql-vscode
         run: |
-          $env:CODEQL_PATH=$(Join-Path $env:GITHUB_WORKSPACE -ChildPath 'codeql-home/codeql/codeql.exe')
           npm run test
 
       - name: Run integration tests (Linux)
