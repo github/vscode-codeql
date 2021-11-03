@@ -58,8 +58,8 @@ export async function ensureCli(useCli: boolean) {
       return;
     }
 
-    if ('CODEQL_PATH' in process.env) {
-      const executablePath = process.env.CODEQL_PATH;
+    if ('CLI_PATH' in process.env) {
+      const executablePath = process.env.CLI_PATH;
       console.log(`Using existing CLI at ${executablePath}`);
       return;
     }
