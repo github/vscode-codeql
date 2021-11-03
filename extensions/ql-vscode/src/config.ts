@@ -304,7 +304,7 @@ const REMOTE_QUERIES_SETTING = new Setting('remoteQueries', ROOT_SETTING);
 /**
  * Lists of GitHub repositories that you want to query remotely via the "Run Remote query" command.
  * Note: This command is only available for internal users.
- * 
+ *
  * This setting should be a JSON object where each key is a user-specified name (string),
  * and the value is an array of GitHub repositories (of the form `<owner>/<repo>`).
  */
@@ -312,6 +312,10 @@ const REMOTE_REPO_LISTS = new Setting('repositoryLists', REMOTE_QUERIES_SETTING)
 
 export function getRemoteRepositoryLists(): Record<string, string[]> | undefined {
   return REMOTE_REPO_LISTS.getValue<Record<string, string[]>>() || undefined;
+}
+
+export async function setRemoteRepositoryLists(lists: Record<string, string[]> | undefined) {
+  await REMOTE_REPO_LISTS.updateValue(lists, ConfigurationTarget.Global);
 }
 
 /**

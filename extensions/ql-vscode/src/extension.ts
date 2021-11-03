@@ -718,13 +718,25 @@ async function activateWithInstalledDistribution(
   );
   // The "runRemoteQuery" command is internal-only.
   ctx.subscriptions.push(
-    commandRunner('codeQL.runRemoteQuery', async (
+    commandRunnerWithProgress('codeQL.runRemoteQuery', async (
+      progress: ProgressCallback,
+      token: CancellationToken,
       uri: Uri | undefined
     ) => {
       if (isCanary()) {
+        progress({
+          maxStep: 5,
+          step: 0,
+          message: 'Getting credentials'
+        });
         const credentials = await Credentials.initialize(ctx);
-        await runRemoteQuery(cliServer, credentials, uri || window.activeTextEditor?.document.uri);
+        await runRemoteQuery(cliServer, credentials, uri || window.activeTextEditor?.document.uri, false, progress, token);
+      } else {
+        throw new Error('Remote queries require the CodeQL Canary version to run.');
       }
+    }, {
+      title: 'Run Remote Query',
+      cancellable: true
     })
   );
   ctx.subscriptions.push(

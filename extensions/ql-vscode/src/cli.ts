@@ -806,6 +806,39 @@ export class CodeQLCliServer implements Disposable {
     );
   }
 
+  async packInstall(dir: string) {
+    return this.runJsonCodeQlCliCommand(['pack', 'install'], [dir], 'Installing pack dependencies');
+  }
+
+  async packBundle(dir: string, workspaceFolders: string[], outputPath: string, precompile = true): Promise<void> {
+    const args = [
+      '-o',
+      outputPath,
+      dir,
+      '--additional-packs',
+      workspaceFolders.join(path.delimiter)
+    ];
+    if (!precompile && await this.cliConstraints.supportsNoPrecompile()) {
+      args.push('--no-precompile');
+    }
+
+    return this.runJsonCodeQlCliCommand(['pack', 'bundle'], args, 'Bundling pack');
+  }
+
+  async packPacklist(dir: string, includeQueries: boolean): Promise<string[]> {
+    const args = includeQueries ? [dir] : ['--no-include-queries', dir];
+    // since 2.7.1, packlist returns an object with a "paths" property that is a list of packs.
+    // previous versions return a list of packs.
+    const results: { paths: string[] } | string[] = await this.runJsonCodeQlCliCommand(['pack', 'packlist'], args, 'Generating the pack list');
+
+    // Once we no longer need to support 2.7.0 or earlier, we can remove this and assume all versions return an object.
+    if ('paths' in results) {
+      return results.paths;
+    } else {
+      return results;
+    }
+  }
+
   async generateDil(qloFile: string, outFile: string): Promise<void> {
     const extraArgs = await this.cliConstraints.supportsDecompileDil()
       ? ['--kind', 'dil', '-o', outFile, qloFile]
@@ -1099,6 +1132,16 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_DATABASE_UNBUNDLE = new SemVer('2.6.0');
 
+  /**
+   * CLI version where the `--no-precompile` option for pack creation was introduced.
+   */
+  public static CLI_VERSION_WITH_NO_PRECOMPILE = new SemVer('2.7.1');
+
+  /**
+   * CLI version where remote queries are supported.
+   */
+  public static CLI_VERSION_REMOTE_QUERIES = new SemVer('2.6.3');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1133,6 +1176,14 @@ export class CliVersionConstraint {
 
   async supportsDatabaseUnbundle() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DATABASE_UNBUNDLE);
+  }
+
+  async supportsNoPrecompile() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NO_PRECOMPILE);
+  }
+
+  async supportsRemoteQueries() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES);
   }
 
 }

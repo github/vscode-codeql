@@ -10,6 +10,7 @@ import {
   env
 } from 'vscode';
 import { CodeQLCliServer, QlpacksInfo } from './cli';
+import { UserCancellationException } from './commandRunner';
 import { logger } from './logging';
 
 /**
@@ -494,14 +495,25 @@ export async function findLanguage(
       void logger.log('Could not autodetect query language. Select language manually.');
     }
   }
-  const availableLanguages = Object.keys(await cliServer.resolveLanguages());
+
+  // will be undefined if user cancels the quick pick.
+  return await askForLanguage(cliServer, false);
+}
+
+
+export async function askForLanguage(cliServer: CodeQLCliServer, throwOnEmpty = true): Promise<string | undefined> {
+  const availableLanguages = Object.keys(await cliServer.resolveLanguages()).sort();
   const language = await Window.showQuickPick(
     availableLanguages,
     { placeHolder: 'Select target language for your query', ignoreFocusOut: true }
   );
   if (!language) {
     // This only happens if the user cancels the quick pick.
-    void showAndLogErrorMessage('Language not found. Language must be specified manually.');
+    if (throwOnEmpty) {
+      throw new UserCancellationException('Cancelled.');
+    } else {
+      void showAndLogErrorMessage('Language not found. Language must be specified manually.');
+    }
   }
   return language;
 }
