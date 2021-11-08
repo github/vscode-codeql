@@ -29,7 +29,7 @@ describe('Use cli', function() {
     }
   });
 
-  if (process.env.CLI_VERSION !== 'nightly') {
+  if (process.env.CLI_VERSION && process.env.CLI_VERSION !== 'nightly') {
     it('should have the correct version of the cli', async () => {
       expect(
         (await cli.getVersion()).toString()

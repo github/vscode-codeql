@@ -61,6 +61,9 @@ export async function ensureCli(useCli: boolean) {
     if ('CLI_PATH' in process.env) {
       const executablePath = process.env.CLI_PATH;
       console.log(`Using existing CLI at ${executablePath}`);
+
+      // The CLI_VERSION env variable is not used when the CLI_PATH is set.
+      delete process.env.CLI_VERSION;
       return;
     }
 
