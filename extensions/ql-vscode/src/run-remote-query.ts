@@ -10,6 +10,8 @@ import { logger } from './logging';
 import { getRemoteControllerRepo, getRemoteRepositoryLists, setRemoteControllerRepo } from './config';
 import { tmpDir } from './run-queries';
 import { ProgressCallback, UserCancellationException } from './commandRunner';
+import { OctokitResponse } from '@octokit/types/dist-types';
+
 interface Config {
   repositories: string[];
   ref?: string;
@@ -18,6 +20,10 @@ interface Config {
 
 interface RepoListQuickPickItem extends QuickPickItem {
   repoList: string[];
+}
+
+interface QueriesResponse {
+  workflow_run_id: number
 }
 
 /**
@@ -347,7 +353,7 @@ async function runRemoteQueriesApiRequest(
 
   try {
     const octokit = await credentials.getOctokit();
-    await octokit.request(
+    const response: OctokitResponse<QueriesResponse, number> = await octokit.request(
       'POST /repos/:owner/:repo/code-scanning/codeql/queries',
       {
         owner,
@@ -360,7 +366,7 @@ async function runRemoteQueriesApiRequest(
         }
       }
     );
-    void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions).`);
+    void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.data.workflow_run_id}).`);
 
   } catch (error) {
     await attemptRerun(error, credentials, ref, language, repositories, owner, repo, queryPackBase64, dryRun);
