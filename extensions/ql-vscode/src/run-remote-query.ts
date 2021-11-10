@@ -134,7 +134,7 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
 
   } else {
     // open popup to ask for language if not already hardcoded
-    language = fallbackLanguage || await askForLanguage(cliServer);
+    language = fallbackLanguage || await askForLanguage();
 
     // copy only the query file to the query pack directory
     // and generate a synthetic query pack

@@ -497,14 +497,14 @@ export async function findLanguage(
   }
 
   // will be undefined if user cancels the quick pick.
-  return await askForLanguage(cliServer, false);
+  return await askForLanguage(false);
 }
 
+export const supportedLanguages = ['cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby'];
 
-export async function askForLanguage(cliServer: CodeQLCliServer, throwOnEmpty = true): Promise<string | undefined> {
-  const availableLanguages = Object.keys(await cliServer.resolveLanguages()).sort();
+export async function askForLanguage(throwOnEmpty = true): Promise<string | undefined> {
   const language = await Window.showQuickPick(
-    availableLanguages,
+    supportedLanguages,
     { placeHolder: 'Select target language for your query', ignoreFocusOut: true }
   );
   if (!language) {
