@@ -421,7 +421,8 @@ const dbSchemeToLanguage = {
   'semmlecode.dbscheme': 'java',
   'semmlecode.python.dbscheme': 'python',
   'semmlecode.csharp.dbscheme': 'csharp',
-  'go.dbscheme': 'go'
+  'go.dbscheme': 'go',
+  'ruby.dbscheme': 'ruby'
 };
 
 export const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce((acc, [k, v]) => {
@@ -500,7 +501,7 @@ export async function findLanguage(
   return await askForLanguage(false);
 }
 
-export const supportedLanguages = ['cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby'];
+export const supportedLanguages = Object.values(dbSchemeToLanguage).sort();
 
 export async function askForLanguage(throwOnEmpty = true): Promise<string | undefined> {
   const language = await Window.showQuickPick(
