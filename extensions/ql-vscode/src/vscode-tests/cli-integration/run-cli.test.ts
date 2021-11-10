@@ -6,7 +6,7 @@ import { SemVer } from 'semver';
 import { CodeQLCliServer, QueryInfoByLanguage } from '../../cli';
 import { CodeQLExtensionInterface } from '../../extension';
 import { skipIfNoCodeQL } from '../ensureCli';
-import { getOnDiskWorkspaceFolders, getQlPackForDbscheme, languageToDbScheme } from '../../helpers';
+import { getOnDiskWorkspaceFolders, getQlPackForDbscheme, languageToDbScheme, supportedLanguages } from '../../helpers';
 import { resolveQueries } from '../../contextual/queryResolver';
 import { KeyType } from '../../contextual/keyType';
 
@@ -14,8 +14,6 @@ import { KeyType } from '../../contextual/keyType';
  * Perform proper integration tests by running the CLI
  */
 describe('Use cli', function() {
-  const supportedLanguages = ['cpp', 'csharp', 'go', 'java', 'javascript', 'python'];
-
   this.timeout(60000);
 
   let cli: CodeQLCliServer;
