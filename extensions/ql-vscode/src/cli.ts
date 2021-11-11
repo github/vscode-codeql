@@ -17,6 +17,7 @@ import { assertNever } from './pure/helpers-pure';
 import { QueryMetadata, SortDirection } from './pure/interface-types';
 import { Logger, ProgressReporter } from './logging';
 import { CompilationMessage } from './pure/messages';
+import { dbSchemeToLanguage } from './helpers';
 
 /**
  * The version of the SARIF format that we are using.
@@ -159,6 +160,11 @@ export class CodeQLCliServer implements Disposable {
   /** Version of current cli, lazily computed by the `getVersion()` method */
   private _version: SemVer | undefined;
 
+  /** 
+   * The languages supported by the current version of the CLI, computed by `getSupportedLanguages()`.
+   */
+  private _supportedLanguages: string[] | undefined;
+
   /** Path to current codeQL executable, or undefined if not running yet. */
   codeQlPath: string | undefined;
 
@@ -181,12 +187,14 @@ export class CodeQLCliServer implements Disposable {
       this.distributionProvider.onDidChangeDistribution(() => {
         this.restartCliServer();
         this._version = undefined;
+        this._supportedLanguages = undefined;
       });
     }
     if (this.cliConfig.onDidChangeConfiguration) {
       this.cliConfig.onDidChangeConfiguration(() => {
         this.restartCliServer();
         this._version = undefined;
+        this._supportedLanguages = undefined;
       });
     }
   }
@@ -779,6 +787,23 @@ export class CodeQLCliServer implements Disposable {
    */
   async resolveLanguages(): Promise<LanguagesInfo> {
     return await this.runJsonCodeQlCliCommand<LanguagesInfo>(['resolve', 'languages'], [], 'Resolving languages');
+  }
+
+  /**
+   * Gets the list of available languages. Refines the result of `resolveLanguages()`, by excluding
+   * extra things like "xml" and "properties".
+   * 
+   * @returns An array of languages that are supported by the current version of the CodeQL CLI.
+   */
+  public async getSupportedLanguages(): Promise<string[]> {
+    if (!this._supportedLanguages) {
+      // Get the intersection of resolveLanguages with the list of hardcoded languages in dbSchemeToLanguage.
+      const resolvedLanguages = Object.keys(await this.resolveLanguages());
+      const hardcodedLanguages = Object.values(dbSchemeToLanguage);
+
+      this._supportedLanguages = resolvedLanguages.filter(lang => hardcodedLanguages.includes(lang));
+    }
+    return this._supportedLanguages;
   }
 
   /**
