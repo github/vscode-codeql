@@ -415,7 +415,7 @@ export class CachedOperation<U> {
  * @see cli.CliVersionConstraint.supportsLanguageName
  * @see cli.CodeQLCliServer.resolveDatabase
  */
-const dbSchemeToLanguage = {
+export const dbSchemeToLanguage = {
   'semmlecode.javascript.dbscheme': 'javascript',
   'semmlecode.cpp.dbscheme': 'cpp',
   'semmlecode.dbscheme': 'java',
@@ -498,14 +498,12 @@ export async function findLanguage(
   }
 
   // will be undefined if user cancels the quick pick.
-  return await askForLanguage(false);
+  return await askForLanguage(cliServer, false);
 }
 
-export const supportedLanguages = Object.values(dbSchemeToLanguage).sort();
-
-export async function askForLanguage(throwOnEmpty = true): Promise<string | undefined> {
+export async function askForLanguage(cliServer: CodeQLCliServer, throwOnEmpty = true): Promise<string | undefined> {
   const language = await Window.showQuickPick(
-    supportedLanguages,
+    await cliServer.getSupportedLanguages(),
     { placeHolder: 'Select target language for your query', ignoreFocusOut: true }
   );
   if (!language) {

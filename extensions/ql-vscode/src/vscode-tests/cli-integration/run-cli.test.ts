@@ -6,7 +6,7 @@ import { SemVer } from 'semver';
 import { CodeQLCliServer, QueryInfoByLanguage } from '../../cli';
 import { CodeQLExtensionInterface } from '../../extension';
 import { skipIfNoCodeQL } from '../ensureCli';
-import { getOnDiskWorkspaceFolders, getQlPackForDbscheme, languageToDbScheme, supportedLanguages } from '../../helpers';
+import { getOnDiskWorkspaceFolders, getQlPackForDbscheme, languageToDbScheme } from '../../helpers';
 import { resolveQueries } from '../../contextual/queryResolver';
 import { KeyType } from '../../contextual/keyType';
 
@@ -17,11 +17,13 @@ describe('Use cli', function() {
   this.timeout(60000);
 
   let cli: CodeQLCliServer;
+  let supportedLanguages: string[];
 
   beforeEach(async () => {
     const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
     if ('cliServer' in extension) {
       cli = extension.cliServer;
+      supportedLanguages = await cli.getSupportedLanguages();
     } else {
       throw new Error('Extension not initialized. Make sure cli is downloaded and installed properly.');
     }
@@ -56,12 +58,11 @@ describe('Use cli', function() {
     }
   });
 
-  it('should resolve languages', async function() {
+  it('should support the expected languages', async function() {
     skipIfNoCodeQL(this);
-    const languages = await cli.resolveLanguages();
-    for (const expectedLanguage of supportedLanguages) {
-      expect(languages).to.have.property(expectedLanguage).that.is.not.undefined;
-    }
+    // Just check a few examples that definitely are/aren't supported.
+    expect(supportedLanguages).to.include.members(['go', 'javascript', 'python']);
+    expect(supportedLanguages).to.not.include.members(['xml', 'properties']);
   });
 
   it('should resolve query by language', async function() {
@@ -71,15 +72,15 @@ describe('Use cli', function() {
     expect((Object.keys(queryInfo.byLanguage))[0]).to.eql('javascript');
   });
 
+  it('should resolve printAST queries for supported languages', async function() {
+    skipIfNoCodeQL(this);
+    supportedLanguages.forEach(async lang => {
+      if (lang === 'go') {
+        // The codeql-go submodule is not available in the integration tests.
+        return;
+      }
 
-  supportedLanguages.forEach(lang => {
-    if (lang === 'go') {
-      // The codeql-go submodule is not available in the integration tests.
-      return;
-    }
-    it(`should resolve printAST queries for ${lang}`, async function() {
-      skipIfNoCodeQL(this);
-
+      console.log(`resolving printAST queries for ${lang}`);
       const pack = await getQlPackForDbscheme(cli, languageToDbScheme[lang]);
       expect(pack.dbschemePack).to.contain(lang);
       if (pack.dbschemePackIsLibraryPack) {
