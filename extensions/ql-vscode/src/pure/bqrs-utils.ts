@@ -83,8 +83,7 @@ export function isLineColumnLoc(loc: UrlValue): loc is LineColumnLocation {
     && 'startLine' in loc
     && 'startColumn' in loc
     && 'endLine' in loc
-    && 'endColumn' in loc
-    && loc.endColumn > 0;
+    && 'endColumn' in loc;
 }
 
 export function isWholeFileLoc(loc: UrlValue): loc is WholeFileLocation {
