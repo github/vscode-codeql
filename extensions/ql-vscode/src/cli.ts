@@ -2,6 +2,11 @@ import * as cpp from 'child-process-promise';
 import * as child_process from 'child_process';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import { parser } from 'stream-json';
+import { pick } from 'stream-json/filters/Pick';
+import { verifier } from 'stream-json/utils/Verifier';
+import Assembler = require('stream-json/Assembler');
+import { chain } from 'stream-chain';
 import * as sarif from 'sarif';
 import { SemVer } from 'semver';
 import { Readable } from 'stream';
@@ -682,19 +687,56 @@ export class CodeQLCliServer implements Disposable {
 
   async interpretBqrs(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
     await this.runInterpretCommand(SARIF_FORMAT, metadata, resultsPath, interpretedResultsPath, sourceInfo);
+    try {
+      // Parse the SARIF file into token streams, filtering out only the results array.
+      const p = parser();
+      const pipeline = chain([
+        fs.createReadStream(interpretedResultsPath),
+        p,
+        pick({filter: 'runs.0.results'}),
+        verifier()
+      ]);
 
-    let output: string;
-    try {
-      output = await fs.readFile(interpretedResultsPath, 'utf8');
-    } catch (e) {
-      const rawMessage = e.stderr || e.message;
-      const errorMessage = rawMessage.startsWith('Cannot create a string')
-        ? `SARIF too large. ${rawMessage}`
-        : rawMessage;
-      throw new Error(`Reading output of interpretation failed: ${errorMessage}`);
-    }
-    try {
-      return JSON.parse(output) as sarif.Log;
+      // Creates JavaScript objects from the token stream
+      const asm = Assembler.connectTo(pipeline);
+
+      // Returns a constructed Log object with the results or an empty array if no results were found.
+      // If the parser fails for any reason, it will reject the promise.
+      return await new Promise((resolve, reject) => {
+        pipeline.on('error', (error) => {
+          reject(error);
+        });
+
+          asm.on('done', (asm) => {
+            const dummyTool : sarif.Tool = {driver: {name: ''}};
+            if (asm.current) {
+              const log : sarif.Log = {
+                version: '2.1.0', 
+                runs: [
+                  { 
+                    tool: dummyTool, 
+                    results: asm.current
+                  }
+                ]
+              };
+
+              resolve(log);
+            } else {
+              const log : sarif.Log = {
+                version: '2.1.0', 
+                runs: [
+                  { 
+                    tool: dummyTool, 
+                    results: []
+                  }
+                ]
+              };
+
+              resolve(log);
+            }
+  
+          });
+      });
     } catch (err) {
       throw new Error(`Parsing output of interpretation failed: ${err.stderr || err}`);
     }
