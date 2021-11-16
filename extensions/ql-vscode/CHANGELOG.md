@@ -3,6 +3,8 @@
 ## [UNRELEASED]
 
 - Fix the _CodeQL: Open Referenced File_ command for Windows systems. [#979](https://github.com/github/vscode-codeql/pull/979)
+- Fix the _CodeQL: Open Referenced File_ command for Windows systems. [#979](https://github.com/github/vscode-codeql/pull/979) 
+- Fix a bug that causes VSCode to crash when handling large SARIF files (>4GB) [#1004](https://github.com/github/vscode-codeql/pull/1004)
 - Fix a bug that shows 'Set current database' when hovering over the currently selected database in the databases view. [#976](https://github.com/github/vscode-codeql/pull/976)
 - Fix a bug with importing large databases. Databases over 4GB can now be imported directly from LGTM or from a zip file. This functionality is only available when using CodeQL CLI version 2.6.0 or later. [#971](https://github.com/github/vscode-codeql/pull/971)
 - Replace certain control codes (`U+0000` - `U+001F`) with their corresponding control labels (`U+2400` - `U+241F`) in the results view. [#963](https://github.com/github/vscode-codeql/pull/963)

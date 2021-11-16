@@ -1185,7 +1185,7 @@ export class CliVersionConstraint {
 
   /**
    * CLI version where database registration was introduced
-   */
+  */
   public static CLI_VERSION_WITH_DB_REGISTRATION = new SemVer('2.4.1');
 
   /**
