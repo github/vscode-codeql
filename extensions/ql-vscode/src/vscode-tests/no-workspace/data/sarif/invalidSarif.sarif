@@ -27,8 +27,7 @@
             "uri": "file:///C:/dev/sarif/sarif-tutorials/samples/Introduction/simple-example.js"
           }
         }
-      ],
-      "results": []
+      ]
     }
   ]
 }

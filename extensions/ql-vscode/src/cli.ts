@@ -589,7 +589,7 @@ export class CodeQLCliServer implements Disposable {
       const pipeline = chain([
         fs.createReadStream(interpretedResultsPath),
         p,
-        pick({filter: 'runs.0.results'}),
+        pick({filter: 'runs.0.results'})
       ]);
 
       // Creates JavaScript objects from the token stream
@@ -597,8 +597,11 @@ export class CodeQLCliServer implements Disposable {
 
       // Returns a constructed Log object with the results or an empty array if no results were found.
       // If the parser fails for any reason, it will reject the promise.
-      return await new Promise((resolve) => {
-
+      return await new Promise((resolve, reject) => {
+        pipeline.on('error', (error) => {
+          reject(error);
+        });
+        
         asm.on('done', (asm) => {
 
           const log : sarif.Log = {
