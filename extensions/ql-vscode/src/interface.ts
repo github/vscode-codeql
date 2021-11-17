@@ -365,8 +365,7 @@ export class InterfaceManager extends DisposableObject {
       const showButton = 'View Results';
       const queryName = results.queryName;
       const resultPromise = vscode.window.showInformationMessage(
-        `Finished running query ${
-        queryName.length > 0 ? ` "${queryName}"` : ''
+        `Finished running query ${queryName.length > 0 ? ` "${queryName}"` : ''
         }.`,
         showButton
       );
@@ -502,7 +501,12 @@ export class InterfaceManager extends DisposableObject {
     );
 
     const resultSetSchemas = await this.getResultSetSchemas(results, sorted ? selectedTable : '');
-    const resultSetNames = resultSetSchemas.map(schema => schema.name);
+
+    // If there is a specific sorted table selected, a different bqrs file is loaded that doesn't have all the result set names.
+    // Make sure that we load all result set names here.
+    // See https://github.com/github/vscode-codeql/issues/1005
+    const allResultSetSchemas = sorted ? await this.getResultSetSchemas(results, '') : resultSetSchemas;
+    const resultSetNames = allResultSetSchemas.map(schema => schema.name);
 
     const schema = resultSetSchemas.find(
       (resultSet) => resultSet.name == selectedTable
