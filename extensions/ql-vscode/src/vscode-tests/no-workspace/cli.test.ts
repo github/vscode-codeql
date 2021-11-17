@@ -14,11 +14,6 @@ describe.only('cliServerTests', () => {
 
   it('should return an empty array if there are no results', async () => {
     const result = await CodeQLCliServer.parseSarif(__dirname + '/data/sarif/emptyResultsSarif.sarif');
-    expect(result.runs[0].results?.length).to.eq(0);
-  });
-
-  it('should throw an error if the file fails to parse', async () => {
-    const result = await CodeQLCliServer.parseSarif(__dirname + '/data/sarif/invalidSarif.sarif');
-    await expect(result).to.rejectedWith(/Error: Parsing output of interpretation failed: /);
+    expect(result.runs[0].results).to.be.empty;
   });
 });

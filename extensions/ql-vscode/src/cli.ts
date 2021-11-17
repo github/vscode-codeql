@@ -4,7 +4,6 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { parser } from 'stream-json';
 import { pick } from 'stream-json/filters/Pick';
-import { verifier } from 'stream-json/utils/Verifier';
 import Assembler = require('stream-json/Assembler');
 import { chain } from 'stream-chain';
 import * as sarif from 'sarif';
@@ -591,7 +590,6 @@ export class CodeQLCliServer implements Disposable {
         fs.createReadStream(interpretedResultsPath),
         p,
         pick({filter: 'runs.0.results'}),
-        verifier()
       ]);
 
       // Creates JavaScript objects from the token stream
@@ -599,10 +597,7 @@ export class CodeQLCliServer implements Disposable {
 
       // Returns a constructed Log object with the results or an empty array if no results were found.
       // If the parser fails for any reason, it will reject the promise.
-      return await new Promise((resolve, reject) => {
-        pipeline.on('error', (error) => {
-          reject(error);
-        });
+      return await new Promise((resolve) => {
 
         asm.on('done', (asm) => {
 
