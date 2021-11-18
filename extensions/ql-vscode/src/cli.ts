@@ -87,6 +87,15 @@ export type QlpacksInfo = { [name: string]: string[] };
  */
 export type LanguagesInfo = { [name: string]: string[] };
 
+/** Information about an ML model, as resolved by `codeql resolve ml-models`. */
+export type MlModelInfo = {
+  checksum: string;
+  path: string;
+};
+
+/** The expected output of `codeql resolve ml-models`. */
+export type MlModelsInfo = { models: MlModelInfo[] };
+
 /**
  * The expected output of `codeql resolve qlref`.
  */
@@ -584,6 +593,12 @@ export class CodeQLCliServer implements Disposable {
     return await this.runJsonCodeQlCliCommand<QueryMetadata>(['resolve', 'metadata'], [queryPath], 'Resolving query metadata');
   }
 
+  /** Resolves the ML models that should be available when evaluating a query. */
+  async resolveMlModels(additionalPacks: string[]): Promise<MlModelsInfo> {
+    return await this.runJsonCodeQlCliCommand<MlModelsInfo>(['resolve', 'ml-models'], ['--additional-packs',
+      additionalPacks.join(path.delimiter)], 'Resolving ML models', false);
+  }
+
   /**
    * Gets the RAM setting for the query server.
    * @param queryMemoryMb The maximum amount of RAM to use, in MB.
@@ -621,16 +636,16 @@ export class CodeQLCliServer implements Disposable {
 
     return await this.runCodeQlCliCommand(['database', 'unbundle'], subcommandArgs, `Extracting ${archivePath} to directory ${target}`);
   }
-  
+
   /**
    * Uses a .qhelp file to generate Query Help documentation in a specified format.
    * @param pathToQhelp The path to the .qhelp file
    * @param format The format in which the query help should be generated {@link https://codeql.github.com/docs/codeql-cli/manual/generate-query-help/#cmdoption-codeql-generate-query-help-format}
    * @param outputDirectory The output directory for the generated file
    */
-  async generateQueryHelp(pathToQhelp:string, outputDirectory?: string): Promise<string> {
+  async generateQueryHelp(pathToQhelp: string, outputDirectory?: string): Promise<string> {
     const subcommandArgs = ['--format=markdown'];
-    if(outputDirectory) subcommandArgs.push('--output', outputDirectory);
+    if (outputDirectory) subcommandArgs.push('--output', outputDirectory);
     subcommandArgs.push(pathToQhelp);
 
     return await this.runCodeQlCliCommand(['generate', 'query-help'], subcommandArgs, `Generating qhelp in markdown format at ${outputDirectory}`);
@@ -1166,6 +1181,11 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_REMOTE_QUERIES = new SemVer('2.6.3');
 
+  /**
+   * CLI version where the `resolve ml-models` subcommand was introduced.
+   */
+  public static CLI_VERSION_WITH_RESOLVE_ML_MODELS = new SemVer('2.7.3');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1208,6 +1228,10 @@ export class CliVersionConstraint {
 
   async supportsRemoteQueries() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES);
+  }
+
+  async supportsResolveMlModels() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_ML_MODELS);
   }
 
 }
