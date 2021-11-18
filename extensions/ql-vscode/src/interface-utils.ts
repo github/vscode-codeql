@@ -70,7 +70,7 @@ function resolveFivePartLocation(
     Math.max(0, loc.startLine - 1),
     Math.max(0, loc.startColumn - 1),
     Math.max(0, loc.endLine - 1),
-    Math.max(0, loc.endColumn)
+    Math.max(1, loc.endColumn)
   );
 
   return new Location(databaseItem.resolveSourceFile(loc.uri), range);
