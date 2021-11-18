@@ -13,7 +13,7 @@ import { CodeQLExtensionInterface } from '../../extension';
 import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../config';
 import { UserCancellationException } from '../../commandRunner';
 
-describe.only('Remote queries', function() {
+describe('Remote queries', function() {
   const baseDir = path.join(__dirname, '../../../src/vscode-tests/cli-integration');
 
   let sandbox: sinon.SinonSandbox;

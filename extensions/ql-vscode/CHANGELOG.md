@@ -10,6 +10,7 @@
 - Add a _CodeQL: Preview Query Help_ command to generate Markdown previews of `.qhelp` query help files. This command should only be run in trusted workspaces. See https://codeql.github.com/docs/codeql-cli/testing-query-help-files for more information about query help. [#988](https://github.com/github/vscode-codeql/pull/988)
 - Make "Open Referenced File" command accessible from the active editor menu. [#989](https://github.com/github/vscode-codeql/pull/989)
 - Allow query result locations with 0 as the end column value. These are treated as the first column in the line. [#1002](https://github.com/github/vscode-codeql/pull/1002)
+- Change remote query support so that query files that are not in the root of the query pack can be uploaded and run. [#1009](https://github.com/github/vscode-codeql/pull/1009)
 
 ## 1.5.6 - 07 October 2021
 
