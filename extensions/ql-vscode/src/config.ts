@@ -333,3 +333,15 @@ export function getRemoteControllerRepo(): string | undefined {
 export async function setRemoteControllerRepo(repo: string | undefined) {
   await REMOTE_CONTROLLER_REPO.updateValue(repo, ConfigurationTarget.Global);
 }
+
+/**
+ * Whether to insecurely load ML models from CodeQL packs.
+ *
+ * This setting is for internal users only.
+ */
+const SHOULD_INSECURELY_LOAD_MODELS_FROM_PACKS =
+  new Setting('shouldInsecurelyLoadModelsFromPacks', RUNNING_QUERIES_SETTING);
+
+export function shouldInsecurelyLoadMlModelsFromPacks(): boolean {
+  return SHOULD_INSECURELY_LOAD_MODELS_FROM_PACKS.getValue<boolean>();
+}
