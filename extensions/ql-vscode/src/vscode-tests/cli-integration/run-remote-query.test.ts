@@ -250,8 +250,9 @@ describe('Remote queries', function() {
       },
       library: false,
       defaultSuite: [{
-        description: 'Query suite for remote query',
-        query: queryPath,
+        description: 'Query suite for remote query'
+      }, {
+        query: queryPath
       }]
     });
   }
@@ -261,12 +262,10 @@ describe('Remote queries', function() {
   }
 
   function printDirectoryContents(dir: string) {
-    dir;
-    // uncomment to debug
-    // console.log(`DIR ${dir}`);
-    // if (!fs.existsSync(dir)) {
-    //   console.log(`DIR ${dir} does not exist`);
-    // }
-    // fs.readdirSync(dir).sort().forEach(f => console.log(`  ${f}`));
+    console.log(`DIR ${dir}`);
+    if (!fs.existsSync(dir)) {
+      console.log(`DIR ${dir} does not exist`);
+    }
+    fs.readdirSync(dir).sort().forEach(f => console.log(`  ${f}`));
   }
 });

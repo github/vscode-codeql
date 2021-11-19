@@ -21,7 +21,7 @@ interface QlPack {
   name: string;
   version: string;
   dependencies: { [key: string]: string };
-  defaultSuite?: Record<string, unknown>;
+  defaultSuite?: Record<string, unknown>[];
   defaultSuiteFile?: Record<string, unknown>;
 }
 interface RepoListQuickPickItem extends QuickPickItem {
@@ -439,13 +439,13 @@ export async function attemptRerun(
  */
 async function fixDefaultSuite(queryPackDir: string, packRelativePath: string): Promise<void> {
   const packPath = path.join(queryPackDir, 'qlpack.yml');
-  const qlpack = (await yaml.safeLoad(await fs.readFile(packPath, 'utf8'))) as QlPack;
-  delete qlpack.defaultSuite;
+  const qlpack = yaml.safeLoad(await fs.readFile(packPath, 'utf8')) as QlPack;
   delete qlpack.defaultSuiteFile;
 
-  qlpack.defaultSuite = {
-    description: 'Query suite for remote query',
-    query: packRelativePath
-  };
+  qlpack.defaultSuite = [{
+    description: 'Query suite for remote query'
+  }, {
+    query: packRelativePath.replace('\\', '/')
+  }];
   await fs.writeFile(packPath, yaml.safeDump(qlpack));
 }
