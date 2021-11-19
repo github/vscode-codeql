@@ -6,6 +6,7 @@ export const config: webpack.Configuration = {
   entry: {
     resultsView: './src/view/results.tsx',
     compareView: './src/compare/view/Compare.tsx',
+    remoteQueriesView: './src/remote-queries/view/RemoteQueries.tsx',
   },
   output: {
     path: path.resolve(__dirname, '..', 'out'),
