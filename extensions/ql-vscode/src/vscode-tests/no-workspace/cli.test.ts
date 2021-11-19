@@ -7,11 +7,13 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe.only('cliServerTests', function() {
-  this.timeout(10000);
 
   it('should parse a valid SARIF file', async () => {
     const result = await CodeQLCliServer.parseSarif(__dirname + '/data/sarif/validSarif.sarif');
-    expect(result.runs.length).to.eq(1);
+    expect(result.version).to.exist;
+    expect(result.runs).to.exist;
+    expect(result.runs[0].tool).to.exist;
+    expect(result.runs[0].tool.driver).to.exist;
   });
 
   it('should return an empty array if there are no results', async () => {
