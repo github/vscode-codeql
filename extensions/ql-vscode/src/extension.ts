@@ -11,7 +11,8 @@ import {
   window as Window,
   env,
   window,
-  QuickPickItem
+  QuickPickItem,
+  tasks
 } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import * as os from 'os';
@@ -76,6 +77,7 @@ import { CodeQlStatusBarHandler } from './status-bar';
 import { Credentials } from './authentication';
 import { runRemoteQuery } from './remote-queries/run-remote-query';
 import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
+import { CodeQLTaskProvider } from './codeql-task-provider';
 
 /**
  * extension.ts
@@ -384,6 +386,10 @@ async function activateWithInstalledDistribution(
 
   const statusBar = new CodeQlStatusBarHandler(cliServer, distributionConfigListener);
   ctx.subscriptions.push(statusBar);
+
+  void logger.log('Initializing CodeQL task provider...');
+  const taskProvider = tasks.registerTaskProvider(CodeQLTaskProvider.CodeQLType, new CodeQLTaskProvider(cliServer));
+  ctx.subscriptions.push(taskProvider);
 
   void logger.log('Initializing query server client.');
   const qs = new qsClient.QueryServerClient(

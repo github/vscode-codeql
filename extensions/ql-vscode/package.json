@@ -972,6 +972,24 @@
         "view": "codeQLDatabases",
         "contents": "Add a CodeQL database:\n[From a folder](command:codeQLDatabases.chooseDatabaseFolder)\n[From an archive](command:codeQLDatabases.chooseDatabaseArchive)\n[From a URL (as a zip file)](command:codeQLDatabases.chooseDatabaseInternet)\n[From LGTM](command:codeQLDatabases.chooseDatabaseLgtm)"
       }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "codeql",
+        "required": [
+          "command"
+        ],
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "The CodeQL CLI command to execute."
+          },
+          "commandArgs": {
+            "type": "array",
+            "description": "Additional command options."
+          }
+        }
+      }
     ]
   },
   "scripts": {
