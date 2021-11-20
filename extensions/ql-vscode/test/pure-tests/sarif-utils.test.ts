@@ -1,19 +1,16 @@
 import 'mocha';
 import { expect } from 'chai';
 import * as Sarif from 'sarif';
-import * as path from 'path';
 
 import {
   getPathRelativeToSourceLocationPrefix,
   parseSarifLocation,
   parseSarifPlainTextMessage,
   unescapeSarifText,
-  parseSarif
 } from '../../src/pure/sarif-utils';
 
 
 describe('parsing sarif', () => {
-  const sarifDir = path.join(path.dirname(__dirname), 'sarif');
 
   it('should be able to parse a simple message from the spec', async function() {
     const message = 'Tainted data was used. The data came from [here](3).';
@@ -62,20 +59,6 @@ describe('parsing sarif', () => {
       .to.eq('file:/C:/a%20%3D/b%20c%3F/?x=test');
     expect(getPathRelativeToSourceLocationPrefix('/a/b/c', '?x=test'))
       .to.eq('file:/a/b/c/?x=test');
-  });
-
-  it('should parse a valid SARIF file', async () => {
-    const result = await parseSarif(path.join(sarifDir, 'validSarif.sarif'));
-    expect(result.version).to.exist;
-    expect(result.runs).to.exist;
-    expect(result.runs[0].tool).to.exist;
-    expect(result.runs[0].tool.driver).to.exist;
-    expect(result.runs.length).to.be.at.least(1);
-  });
-
-  it('should return an empty array if there are no results', async () => {
-    const result = await parseSarif(path.join(sarifDir, 'emptyResultsSarif.sarif'));
-    expect(result.runs[0].results).to.be.empty;
   });
 
   describe('parseSarifLocation', () => {

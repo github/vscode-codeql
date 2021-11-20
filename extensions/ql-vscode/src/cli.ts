@@ -16,7 +16,7 @@ import { assertNever } from './pure/helpers-pure';
 import { QueryMetadata, SortDirection } from './pure/interface-types';
 import { Logger, ProgressReporter } from './logging';
 import { CompilationMessage } from './pure/messages';
-import { parseSarif } from './pure/sarif-utils';
+import { sarifParser } from './sarif-parser';
 import { dbSchemeToLanguage } from './helpers';
 
 /**
@@ -682,7 +682,7 @@ export class CodeQLCliServer implements Disposable {
 
   async interpretBqrs(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
     await this.runInterpretCommand(SARIF_FORMAT, metadata, resultsPath, interpretedResultsPath, sourceInfo);
-    return await parseSarif(interpretedResultsPath);
+    return await sarifParser(interpretedResultsPath);
   }
 
   async generateResultsCsv(metadata: QueryMetadata, resultsPath: string, csvPath: string, sourceInfo?: SourceInfo): Promise<void> {
