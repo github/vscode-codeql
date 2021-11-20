@@ -969,6 +969,7 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "semver": "~7.3.2",
+    "stream": "^0.0.2",
     "stream-chain": "~2.2.4",
     "stream-json": "~1.7.3",
     "tmp": "^0.1.0",

@@ -1,11 +1,6 @@
 import * as cpp from 'child-process-promise';
 import * as child_process from 'child_process';
-import * as fs from 'fs-extra';
 import * as path from 'path';
-import { parser } from 'stream-json';
-import { pick } from 'stream-json/filters/Pick';
-import Assembler = require('stream-json/Assembler');
-import { chain } from 'stream-chain';
 import * as sarif from 'sarif';
 import { SemVer } from 'semver';
 import { Readable } from 'stream';
@@ -21,6 +16,7 @@ import { assertNever } from './pure/helpers-pure';
 import { QueryMetadata, SortDirection } from './pure/interface-types';
 import { Logger, ProgressReporter } from './logging';
 import { CompilationMessage } from './pure/messages';
+import { parseSarif } from './pure/sarif-utils';
 import { dbSchemeToLanguage } from './helpers';
 
 /**
@@ -37,8 +33,6 @@ const CSV_FORMAT = 'csv';
  * Flags to pass to all cli commands.
  */
 const LOGGING_FLAGS = ['-v', '--log-to-stderr'];
-
-const DUMMY_TOOL : sarif.Tool = {driver: {name: ''}};
 
 /**
  * The expected output of `codeql resolve library-path`.
@@ -582,46 +576,6 @@ export class CodeQLCliServer implements Disposable {
     }
   }
 
-  static async parseSarif(interpretedResultsPath: string) : Promise<sarif.Log> {
-    try {
-      // Parse the SARIF file into token streams, filtering out only the results array.
-      const p = parser();
-      const pipeline = chain([
-        fs.createReadStream(interpretedResultsPath),
-        p,
-        pick({filter: 'runs.0.results'})
-      ]);
-
-      // Creates JavaScript objects from the token stream
-      const asm = Assembler.connectTo(pipeline);
-
-      // Returns a constructed Log object with the results or an empty array if no results were found.
-      // If the parser fails for any reason, it will reject the promise.
-      return await new Promise((resolve, reject) => {
-        pipeline.on('error', (error) => {
-          reject(error);
-        });
-        
-        asm.on('done', (asm) => {
-
-          const log : sarif.Log = {
-            version: '2.1.0', 
-            runs: [
-              { 
-                tool: DUMMY_TOOL, 
-                results: asm.current ?? []
-              }
-            ]
-          };
-          
-          resolve(log);
-        });
-      });
-    } catch (err) {
-      throw new Error(`Parsing output of interpretation failed: ${err.stderr || err}`);
-    }
-  }
-
   /**
    * Gets the metadata for a query.
    * @param queryPath The path to the query.
@@ -728,7 +682,7 @@ export class CodeQLCliServer implements Disposable {
 
   async interpretBqrs(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
     await this.runInterpretCommand(SARIF_FORMAT, metadata, resultsPath, interpretedResultsPath, sourceInfo);
-    return await CodeQLCliServer.parseSarif(interpretedResultsPath);
+    return await parseSarif(interpretedResultsPath);
   }
 
   async generateResultsCsv(metadata: QueryMetadata, resultsPath: string, csvPath: string, sourceInfo?: SourceInfo): Promise<void> {
