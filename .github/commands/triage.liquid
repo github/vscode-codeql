@@ -1,0 +1,23 @@
+#### Feature Lifecycle Triage
+
+Based on our triage process we've assigned this issue the following priority:
+
+<!--
+{%- increment priority -%}
+{%- if data.visibility == "High" and data.impact == "High" -%}
+  {%- comment -%} priority is 1 {%- endcomment -%}
+{%- elsif data.visibility == "High" and data.effort == "Low" -%}
+  {%- increment priority -%}
+{%- elsif data.impact == "High" and data.effort == "Low" -%}
+  {%- increment priority -%}
+{%- elsif data.visibility == "High" and data.effort == "High" -%}
+  {%- increment priority -%}{%- increment priority -%}
+{%- elsif data.impact == "High" and data.effort == "High" %}
+  {%- increment priority -%}{%- increment priority -%}
+{%- else -%}
+  {%- increment priority -%}{%- increment priority -%}{%- increment priority -%}
+{%- endif -%}
+-->
+| Visibility | Impact | Effort | Priority |
+| ---------- | ------ | ------ | -------- |
+| {{ data.visibility }} | {{ data.impact }} | {{ data.effort }} | {{ priority }} |

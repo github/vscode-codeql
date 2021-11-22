@@ -1,0 +1,26 @@
+trigger: triage
+title: Triage
+description: Triage an incoming issue with a visibility, impact, effort, and priority.
+surfaces:
+  - issue
+steps:
+  - type: menu
+    id: visibility
+    label: Visibility
+    options:
+      - Low
+      - High
+  - type: menu
+    id: impact
+    label: Impact
+    options:
+      - Low
+      - High
+  - type: menu
+    id: effort
+    label: Effort
+    options:
+      - Low
+      - High
+  - type: fill
+    template_path: .github/commands/triage.liquid
