@@ -4,14 +4,16 @@ import * as sinon from 'sinon';
 import { CancellationToken, extensions, QuickPickItem, Uri, window } from 'vscode';
 import 'mocha';
 import * as fs from 'fs-extra';
+import * as os from 'os';
 import * as yaml from 'js-yaml';
 
-import { runRemoteQuery } from '../../run-remote-query';
+import { QlPack, runRemoteQuery } from '../../run-remote-query';
 import { Credentials } from '../../authentication';
 import { CliVersionConstraint, CodeQLCliServer } from '../../cli';
 import { CodeQLExtensionInterface } from '../../extension';
 import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../config';
 import { UserCancellationException } from '../../commandRunner';
+import { lte } from 'semver';
 
 describe('Remote queries', function() {
   const baseDir = path.join(__dirname, '../../../src/vscode-tests/cli-integration');
@@ -104,7 +106,7 @@ describe('Remote queries', function() {
       fs.existsSync(path.join(compiledPackDir, 'codeql-pack.lock.yml'))
     ).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'not-in-pack.ql'))).to.be.false;
-    verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'in-pack.ql', 'github/remote-query-pack', '0.0.0');
+    verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'in-pack.ql', 'github/remote-query-pack', '0.0.0', await pathSerializationBroken());
 
     // dependencies
     const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
@@ -145,7 +147,7 @@ describe('Remote queries', function() {
     printDirectoryContents(compiledPackDir);
     expect(fs.existsSync(path.join(compiledPackDir, 'in-pack.ql'))).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
-    verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'in-pack.ql', 'codeql-remote/query', '0.0.0');
+    verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'in-pack.ql', 'codeql-remote/query', '0.0.0', await pathSerializationBroken());
 
     // depending on the cli version, we should have one of these files
     expect(
@@ -200,7 +202,7 @@ describe('Remote queries', function() {
     expect(fs.existsSync(path.join(compiledPackDir, 'otherfolder/lib.qll'))).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'subfolder/in-pack.ql'))).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
-    verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'subfolder/in-pack.ql', 'github/remote-query-pack', '0.0.0');
+    verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'subfolder/in-pack.ql', 'github/remote-query-pack', '0.0.0', await pathSerializationBroken());
 
     // depending on the cli version, we should have one of these files
     expect(
@@ -236,8 +238,13 @@ describe('Remote queries', function() {
     }
   });
 
-  function verifyQlPack(qlpackPath: string, queryPath: string, packName: string, packVersion: string) {
-    const qlPack = yaml.safeLoad(fs.readFileSync(qlpackPath, 'utf8'));
+  function verifyQlPack(qlpackPath: string, queryPath: string, packName: string, packVersion: string, pathSerializationBroken: boolean) {
+    const qlPack = yaml.safeLoad(fs.readFileSync(qlpackPath, 'utf8')) as QlPack;
+
+    if (pathSerializationBroken) {
+      // the path serialization is broken, so we force it to be the path in the pack to be same as the query path
+      qlPack.defaultSuite![1].query = queryPath;
+    }
 
     // don't check the build metadata since it is variable
     delete (qlPack as any).buildMetadata;
@@ -257,6 +264,15 @@ describe('Remote queries', function() {
     });
   }
 
+  /**
+   * In version 2.7.2 and earlier, relative paths were not serialized correctly inside the qlpack.yml file.
+   * So, ignore part of the test for these versions.
+   *
+   * @returns true if path serialization is broken in this run
+   */
+  async function pathSerializationBroken() {
+    return lte((await cli.getVersion()), '2.7.2') && os.platform() === 'win32';
+  }
   function getFile(file: string): Uri {
     return Uri.file(path.join(baseDir, file));
   }

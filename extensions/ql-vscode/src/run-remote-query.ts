@@ -17,12 +17,12 @@ interface Config {
   language?: string;
 }
 
-interface QlPack {
+export interface QlPack {
   name: string;
   version: string;
   dependencies: { [key: string]: string };
   defaultSuite?: Record<string, unknown>[];
-  defaultSuiteFile?: Record<string, unknown>;
+  defaultSuiteFile?: string;
 }
 interface RepoListQuickPickItem extends QuickPickItem {
   repoList: string[];
@@ -195,7 +195,7 @@ async function findPackRoot(queryFile: string): Promise<string> {
   let dir = path.dirname(queryFile);
   while (!(await fs.pathExists(path.join(dir, 'qlpack.yml')))) {
     dir = path.dirname(dir);
-    if (dir === '/') {
+    if (isFileSystemRoot(dir)) {
       // there is no qlpack.yml in this direcory or any parent directory.
       // just use the query file's directory as the pack root.
       return path.dirname(queryFile);
@@ -203,6 +203,11 @@ async function findPackRoot(queryFile: string): Promise<string> {
   }
 
   return dir;
+}
+
+function isFileSystemRoot(dir: string): boolean {
+  const pathObj = path.parse(dir);
+  return pathObj.root === dir && pathObj.base === '';
 }
 
 async function createRemoteQueriesTempDirectory() {
@@ -445,7 +450,7 @@ async function fixDefaultSuite(queryPackDir: string, packRelativePath: string): 
   qlpack.defaultSuite = [{
     description: 'Query suite for remote query'
   }, {
-    query: packRelativePath.replace('\\', '/')
+    query: packRelativePath.replace(/\\/g, '/')
   }];
   await fs.writeFile(packPath, yaml.safeDump(qlpack));
 }
