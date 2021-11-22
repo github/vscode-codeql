@@ -1,6 +1,5 @@
 import * as cpp from 'child-process-promise';
 import * as child_process from 'child_process';
-import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sarif from 'sarif';
 import { SemVer } from 'semver';
@@ -17,6 +16,7 @@ import { assertNever } from './pure/helpers-pure';
 import { QueryMetadata, SortDirection } from './pure/interface-types';
 import { Logger, ProgressReporter } from './logging';
 import { CompilationMessage } from './pure/messages';
+import { sarifParser } from './sarif-parser';
 import { dbSchemeToLanguage } from './helpers';
 
 /**
@@ -696,22 +696,7 @@ export class CodeQLCliServer implements Disposable {
 
   async interpretBqrs(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
     await this.runInterpretCommand(SARIF_FORMAT, metadata, resultsPath, interpretedResultsPath, sourceInfo);
-
-    let output: string;
-    try {
-      output = await fs.readFile(interpretedResultsPath, 'utf8');
-    } catch (e) {
-      const rawMessage = e.stderr || e.message;
-      const errorMessage = rawMessage.startsWith('Cannot create a string')
-        ? `SARIF too large. ${rawMessage}`
-        : rawMessage;
-      throw new Error(`Reading output of interpretation failed: ${errorMessage}`);
-    }
-    try {
-      return JSON.parse(output) as sarif.Log;
-    } catch (err) {
-      throw new Error(`Parsing output of interpretation failed: ${err.stderr || err}`);
-    }
+    return await sarifParser(interpretedResultsPath);
   }
 
   async generateResultsCsv(metadata: QueryMetadata, resultsPath: string, csvPath: string, sourceInfo?: SourceInfo): Promise<void> {
@@ -1157,7 +1142,7 @@ export class CliVersionConstraint {
 
   /**
    * CLI version where database registration was introduced
-   */
+  */
   public static CLI_VERSION_WITH_DB_REGISTRATION = new SemVer('2.4.1');
 
   /**

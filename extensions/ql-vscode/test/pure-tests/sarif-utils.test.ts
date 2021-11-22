@@ -6,11 +6,12 @@ import {
   getPathRelativeToSourceLocationPrefix,
   parseSarifLocation,
   parseSarifPlainTextMessage,
-  unescapeSarifText
+  unescapeSarifText,
 } from '../../src/pure/sarif-utils';
 
 
 describe('parsing sarif', () => {
+
   it('should be able to parse a simple message from the spec', async function() {
     const message = 'Tainted data was used. The data came from [here](3).';
     const results = parseSarifPlainTextMessage(message);
