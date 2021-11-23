@@ -89,8 +89,12 @@ class CodeQLTaskTerminal implements vscode.Pseudoterminal {
 
   private async runCli(command: string[], commandArgs: string[]): Promise<void> {
     this.writeEmitter.fire('Running CodeQL task\r\n');
-    const output = await this.cliServer.runCodeQlCliCommand(command, commandArgs, '');
-    this.writeEmitter.fire(output);
+    try {
+      const output = await this.cliServer.runCodeQlCliCommand(command, commandArgs, '');
+      this.writeEmitter.fire(output);
+    } catch (e) {
+      this.writeEmitter.fire(`Error running CodeQL task: ${e}\r\n`);
+    }
     this.closeEmitter.fire(0);
   }
 }
