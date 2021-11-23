@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.5.7 - 23 November 2021
 
 - Fix the _CodeQL: Open Referenced File_ command for Windows systems. [#979](https://github.com/github/vscode-codeql/pull/979)
