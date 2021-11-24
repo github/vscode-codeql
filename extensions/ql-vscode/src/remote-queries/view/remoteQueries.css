@@ -1,5 +1,16 @@
-.vscode-codeql__result-table {
-  display: table;
-  border-collapse: collapse;
-  width: 100%;
+/* TODO: Add actual styling. Check for existing GitHub styling (fonts, icons, badges etc) */
+
+.vscode-codeql__title {
+  /* Something that isn't a link, but which has a title attribute */
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+}
+
+.octicon {
+  fill: var(--vscode-editor-foreground);
+  margin-top: 0.25em;
+}
+
+.octicon-light {
+  opacity: 0.6;
 }
