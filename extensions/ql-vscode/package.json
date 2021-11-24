@@ -751,6 +751,10 @@
           "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
         },
         {
+          "command": "codeQL.openRemoteQueriesView",
+          "when": "config.codeQL.canary"
+        },
+        {
           "command": "codeQL.runQueries",
           "when": "false"
         },
