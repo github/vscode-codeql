@@ -37,7 +37,16 @@ export class CodeQLTaskProvider implements vscode.TaskProvider {
       return this.tasks;
     }
     // Hard-code examples for now. Not sure if we can do this in a better way.
-    const commands: string[] = ['resolve languages', 'version'];
+    const commands: string[] = [
+      'resolve languages',
+      'version',
+      'pack install',      // TODO: Specify which qlpack to install dependencies for.
+      'resolve queries',   // TODO: Specify which query, directory, or suite to resolve. Also specify search path/additional packs.
+      'resolve qlpacks',   // TODO: Specify a search path/additional packs.
+      // 'pack publish',     // Needs a PAT (from octokit?)
+      // 'pack download',    // Needs a PAT (from octokit?)
+      // 'database create'   // Needs additional args.
+    ];
     const commandArgs: string[][] = [[]];
 
     const tasks: vscode.Task[] | undefined = [];
@@ -73,6 +82,8 @@ class CodeQLTaskTerminal implements vscode.Pseudoterminal {
 
   private fileWatcher: vscode.FileSystemWatcher | undefined;
 
+  // TODO: Open the terminal (i.e. run the task) in an appropriate folder (e.g. the enclosing folder of the currently active editor).
+  // Currently, it is run from the first workspace folder (codeql-custom-queries-cpp in the starter workspace).
   constructor(private cliServer: CodeQLCliServer, private command: string, private commandArgs: string[]) {
   }
 
