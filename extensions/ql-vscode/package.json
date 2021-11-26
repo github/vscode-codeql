@@ -273,6 +273,10 @@
         "title": "CodeQL: Authenticate to GitHub"
       },
       {
+        "command": "codeQL.indexTest",
+        "title": "CodeQL: Index Test"
+      },
+      {
         "command": "codeQL.runQuery",
         "title": "CodeQL: Run Query"
       },

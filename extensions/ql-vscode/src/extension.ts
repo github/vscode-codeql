@@ -74,7 +74,7 @@ import {
 import { CodeQlStatusBarHandler } from './status-bar';
 
 import { Credentials } from './authentication';
-import { runRemoteQuery } from './run-remote-query';
+import { getResultIndex, runRemoteQuery } from './run-remote-query';
 import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
 
 /**
@@ -846,6 +846,14 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(
     commandRunner('codeQL.openDocumentation', async () =>
       env.openExternal(Uri.parse('https://codeql.github.com/docs/'))));
+
+  // Just testing with some hard-coded values!
+  ctx.subscriptions.push(
+    commandRunner('codeQL.indexTest', async () => {
+      const credentials = await Credentials.initialize(ctx);
+      await getResultIndex(credentials, 'dsp-testing', 'qc-controller', 1515383763);
+    }
+    ));
 
   ctx.subscriptions.push(
     commandRunner('codeQL.copyVersion', async () => {
