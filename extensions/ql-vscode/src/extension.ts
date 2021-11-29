@@ -74,7 +74,7 @@ import {
 import { CodeQlStatusBarHandler } from './status-bar';
 
 import { Credentials } from './authentication';
-import { getResultIndex, runRemoteQuery } from './run-remote-query';
+import { getResultIndex, lastWorkflowId, runRemoteQuery } from './run-remote-query';
 import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
 
 /**
@@ -847,11 +847,15 @@ async function activateWithInstalledDistribution(
     commandRunner('codeQL.openDocumentation', async () =>
       env.openExternal(Uri.parse('https://codeql.github.com/docs/'))));
 
-  // Just testing with some hard-coded values!
+  // This command is just for testing!
   ctx.subscriptions.push(
     commandRunner('codeQL.indexTest', async () => {
       const credentials = await Credentials.initialize(ctx);
-      await getResultIndex(credentials, 'dsp-testing', 'qc-controller', 1515383763);
+      if (lastWorkflowId) {
+        await getResultIndex(credentials, 'dsp-testing', 'qc-controller', lastWorkflowId);
+      } else {
+        void helpers.showAndLogWarningMessage('No remote queries found in the current workspace session. Run a query using the "CodeQL: Run Remote Query" command first.');
+      }
     }
     ));
 
