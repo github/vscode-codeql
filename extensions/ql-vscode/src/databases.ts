@@ -121,20 +121,21 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
   return vscode.Uri.file(dbAbsolutePath);
 }
 
-async function findSourceArchive(
+// exported for testing
+export async function findSourceArchive(
   databasePath: string, silent = false
 ): Promise<vscode.Uri | undefined> {
-
   const relativePaths = ['src', 'output/src_archive'];
 
   for (const relativePath of relativePaths) {
     const basePath = path.join(databasePath, relativePath);
     const zipPath = basePath + '.zip';
 
-    if (await fs.pathExists(basePath)) {
-      return vscode.Uri.file(basePath);
-    } else if (await fs.pathExists(zipPath)) {
+    // Prefer using a zip archive over a directory.
+    if (await fs.pathExists(zipPath)) {
       return encodeArchiveBasePath(zipPath);
+    } else if (await fs.pathExists(basePath)) {
+      return vscode.Uri.file(basePath);
     }
   }
   if (!silent) {
@@ -161,7 +162,6 @@ async function resolveDatabase(
     datasetUri,
     sourceArchiveUri
   };
-
 }
 
 /** Gets the relative paths of all `.dbscheme` files in the given directory. */
