@@ -479,7 +479,7 @@ export class DatabaseItemImpl implements DatabaseItem {
     }
 
     if (!sourceArchive.fsPath.endsWith('.zip')) {
-      return `${this.name} has a source archive that is unzipped.`;
+      return `${this.name} has a source folder that is unzipped.`;
     }
     return;
   }

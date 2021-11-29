@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-- Emit more explicit error message when a user tries to add unzipped sources to the workspace. [1021](https://github.com/github/vscode-codeql/pull/1021)
+- Emit a more explicit error message when a user tries to add a database with an unzipped source folder to the workspace. [1021](https://github.com/github/vscode-codeql/pull/1021)
 
 ## 1.5.7 - 23 November 2021
 
