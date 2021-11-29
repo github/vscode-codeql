@@ -82,24 +82,24 @@ const data: Props = {
   totalResultCount: 72,
   executionTimestamp: formatDate(new Date()),
   executionDuration: '0.6 seconds',
-  downloadLink: 'www.google.com',
+  downloadLink: 'www.example.com',
   results: [
     {
       nwo: 'github/foo',
       resultCount: 35,
-      downloadLink: 'www.gogle.com',
+      downloadLink: 'www.example.com',
       fileSize: '12.3mb'
     },
     {
       nwo: 'github/bar',
       resultCount: 9,
-      downloadLink: 'www.gogle.com',
+      downloadLink: 'www.example.com',
       fileSize: '10.1mb'
     },
     {
       nwo: 'github/baz',
       resultCount: 80,
-      downloadLink: 'www.gogle.com',
+      downloadLink: 'www.example.com',
       fileSize: '11.2mb'
     }
   ]
