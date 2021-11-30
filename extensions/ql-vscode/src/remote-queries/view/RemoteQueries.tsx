@@ -24,14 +24,14 @@ interface Props {
 
 const AnalysisResult = (props: AnalysisResult) => (
   <span>
-    <span className="analysis-item">{octicons.repo}</span>
-    <span className="analysis-item">{props.nwo}</span>
-    <span className="analysis-item badge-container">
-      <span className="badge">{props.resultCount}</span>
+    <span className="vscode-codeql__analysis-item">{octicons.repo}</span>
+    <span className="vscode-codeql__analysis-item">{props.nwo}</span>
+    <span className="vscode-codeql__analysis-item vscode-codeql__badge-container">
+      <span className="vscode-codeql__badge">{props.resultCount}</span>
     </span>
-    <span className="analysis-item">
+    <span className="vscode-codeql__analysis-item">
       <a
-        className="download-link"
+        className="vscode-codeql__download-link"
         href={props.downloadLink}>
         {octicons.download}{props.fileSize}
       </a>
@@ -40,28 +40,28 @@ const AnalysisResult = (props: AnalysisResult) => (
 );
 
 export function RemoteQueries(props: Props): JSX.Element {
-  return <div>
-    <h1 className="query-title">{props.queryTitle}</h1>
+  return <div className="vscode-codeql__remote-queries-view">
+    <h1 className="vscode-codeql__query-title">{props.queryTitle}</h1>
 
-    <p>
+    <p className="vscode-codeql__paragraph">
       {props.totalResultCount} results in {props.totalRepositoryCount} repositories
       ({props.executionDuration}), {props.executionTimestamp}
     </p>
-    <p>
-      <span className="query-file">{octicons.file} <span>{props.queryFile}</span></span>
+    <p className="vscode-codeql__paragraph">
+      <span className="vscode-codeql__query-file">{octicons.file} <span>{props.queryFile}</span></span>
       <span>{octicons.codeSquare} <span>query</span></span>
     </p>
 
-    <div className="summary-container">
-      <h2 className="summary-title">Summary: {props.totalRepositoryCount} repositories affected</h2>
-      <a className="summary-download-link download-link" href={props.downloadLink}>
+    <div className="vscode-codeql__query-summary-container">
+      <h2 className="vscode-codeql__query-summary-title">Summary: {props.totalRepositoryCount} repositories affected</h2>
+      <a className="vscode-codeql__summary-download-link vscode-codeql__download-link" href={props.downloadLink}>
         {octicons.download}Download all
       </a>
     </div>
 
-    <ul className="results-list">
+    <ul className="vscode-codeql__results-list">
       {props.results.map(result =>
-        <li key={result.nwo} className="results-list-item">
+        <li key={result.nwo} className="vscode-codeql__results-list-item">
           <AnalysisResult {...result} />
         </li>
       )}

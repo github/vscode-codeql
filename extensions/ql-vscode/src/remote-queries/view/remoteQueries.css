@@ -1,26 +1,23 @@
-body {
+.vscode-codeql__remote-queries-view {
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial,
     sans-serif, Apple Color Emoji, Segoe UI Emoji;
 }
 
-p {
+.vscode-codeql__paragraph {
   margin: 0.5em 0 0.5em 0;
 }
 
-a {
+.vscode-codeql__download-link {
+  display: inline-block;
+  font-size: x-small;
   text-decoration: none;
 }
 
-.download-link {
-  display: inline-block;
-  font-size: x-small;
-}
-
-.download-link svg {
+.vscode-codeql__download-link svg {
   fill: var(--vscode-textLink-foreground);
 }
 
-.query-title {
+.vscode-codeql__query-title {
   font-size: large;
   margin-bottom: 0.5em;
   font-weight: 500;
@@ -38,15 +35,15 @@ a {
   opacity: 0.6;
 }
 
-.query-file {
+.vscode-codeql__query-file {
   padding-right: 1em;
 }
 
-.summary-container {
+.vscode-codeql__query-summary-container {
   padding-top: 1.5em;
 }
 
-.summary-title {
+.vscode-codeql__query-summary-title {
   font-size: medium;
   font-weight: 500;
   padding: 0 0.5em 0 0;
@@ -55,32 +52,32 @@ a {
   vertical-align: middle;
 }
 
-.summary-download-link {
+.vscode-codeql__summary-download-link {
   vertical-align: middle;
 }
 
-.results-list {
+.vscode-codeql__results-list {
   list-style-type: none;
   margin: 0;
   padding: 0.5em 0 0 0;
 }
 
-.results-list-item {
+.vscode-codeql__results-list-item {
   margin-top: 0.5em;
 }
 
-.analysis-item {
+.vscode-codeql__analysis-item {
   padding-right: 0.1em;
 }
 
-.badge-container {
+.vscode-codeql__badge-container {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   padding-left: 0.2em;
 }
 
-.badge {
+.vscode-codeql__badge {
   display: inline-block;
   min-width: 1.5em;
   padding: 0.3em;
