@@ -426,8 +426,8 @@ export async function attemptRerun(
 /**
  * Lists the workflow run artifacts for the given workflow run ID.
  * @param credentials Credentials for authenticating to the GitHub API.
- * @param owner 
- * @param repo 
+ * @param owner
+ * @param repo
  * @param workflowRunId The ID of the workflow run to list artifacts for.
  * @returns An array of artifact details (including artifact name and ID).
  */
@@ -460,8 +460,8 @@ function getArtifactIDfromName(artifactName: string, artifacts: Array<{ id: numb
 /**
  * Downloads an artifact from a workflow run.
  * @param credentials Credentials for authenticating to the GitHub API.
- * @param owner 
- * @param repo 
+ * @param owner
+ * @param repo
  * @param artifactId The ID of the artifact to download.
  * @returns The path to the enclosing directory of the unzipped artifact.
  */
@@ -480,10 +480,15 @@ async function downloadArtifact(
   });
   const artifactPath = path.join(tmpDir.name, `${artifactId}`);
   void logger.log(`Downloading artifact to ${artifactPath}.zip`);
-  await fs.writeFile(`${artifactPath}.zip`, Buffer.from(response.data as ArrayBuffer));
+  await fs.writeFile(
+    `${artifactPath}.zip`,
+    Buffer.from(response.data as ArrayBuffer)
+  );
 
   void logger.log(`Extracting artifact to ${artifactPath}`);
-  await (await unzipper.Open.file(`${artifactPath}.zip`)).extract({ path: artifactPath });
+  await (
+    await unzipper.Open.file(`${artifactPath}.zip`)
+  ).extract({ path: artifactPath });
   return artifactPath;
 }
 
@@ -496,10 +501,10 @@ interface ResultIndexItem {
 }
 
 /**
- * Gets the result index file for a given remote queries run. 
+ * Gets the result index file for a given remote queries run.
  * @param credentials Credentials for authenticating to the GitHub API.
- * @param owner 
- * @param repo 
+ * @param owner
+ * @param repo
  * @param workflowRunId The ID of the workflow run to get the result index for.
  * @returns An object containing the result index.
  */
