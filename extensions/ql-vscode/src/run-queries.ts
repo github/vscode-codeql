@@ -95,7 +95,7 @@ export class QueryInfo {
 
     const callbackId = qs.registerCallback(res => { result = res; });
 
-    const availableMlModelUris: messages.MlModel[] = availableMlModels.map(model => ({ uri: Uri.file(model.path).toString() }));
+    const availableMlModelUris: messages.MlModel[] = availableMlModels.map(model => ({ uri: Uri.file(model.path).toString(true) }));
 
     const queryToRun: messages.QueryToRun = {
       resultsPath: this.resultsPaths.resultsPath,
@@ -630,7 +630,6 @@ export async function compileAndRunQueryAgainstDatabase(
     } catch (e) {
       const message = `Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the ` +
         `query without any ML models: ${e}.`;
-      void logger.log(message);
       void showAndLogErrorMessage(message);
     }
   }
