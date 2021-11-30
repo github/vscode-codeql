@@ -273,8 +273,8 @@
         "title": "CodeQL: Authenticate to GitHub"
       },
       {
-        "command": "codeQL.indexTest",
-        "title": "CodeQL: Index Test"
+        "command": "codeQL.remoteQueryResultIndex",
+        "title": "CodeQL: Download Remote Query Result Index"
       },
       {
         "command": "codeQL.runQuery",

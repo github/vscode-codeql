@@ -849,7 +849,7 @@ async function activateWithInstalledDistribution(
 
   // This command is just for testing!
   ctx.subscriptions.push(
-    commandRunner('codeQL.indexTest', async () => {
+    commandRunner('codeQL.remoteQueryResultIndex', async () => {
       const credentials = await Credentials.initialize(ctx);
       if (lastWorkflowId) {
         await getResultIndex(credentials, 'dsp-testing', 'qc-controller', lastWorkflowId);

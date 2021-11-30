@@ -208,6 +208,8 @@ async function getPackedBundlePath(queryPackDir: string) {
 /**
  * The workflow run ID of the most recent remote query run.
  * Is undefined initially and gets updated whenever a remote query is run.
+ * 
+ * Note: this is a temporary solution until we have a way to track progress of a given remote query.
  */
 export let lastWorkflowId: number | undefined;
 
@@ -421,25 +423,20 @@ export async function attemptRerun(
   }
 }
 
-interface WorkflowRunArtifactsResponse {
-  artifacts: Array<
-    {
-      id: number;
-      name: string;
-    }
-  >
-}
-
 /**
  * Lists the workflow run artifacts for the given workflow run ID.
- * @returns An object containing the list of artifacts.
+ * @param credentials Credentials for authenticating to the GitHub API.
+ * @param owner 
+ * @param repo 
+ * @param workflowRunId The ID of the workflow run to list artifacts for.
+ * @returns An array of artifact details (including artifact name and ID).
  */
 async function listWorkflowRunArtifacts(
   credentials: Credentials,
   owner: string,
   repo: string,
   workflowRunId: number
-): Promise<WorkflowRunArtifactsResponse> {
+) {
   const octokit = await credentials.getOctokit();
   const response = await octokit.rest.actions.listWorkflowRunArtifacts({
     owner,
@@ -447,25 +444,26 @@ async function listWorkflowRunArtifacts(
     run_id: workflowRunId,
   });
 
-  return response.data;
+  return response.data.artifacts;
 }
 
 /**
+ * @param artifactName The artifact name, as a string.
+ * @param artifacts An array of artifact details (from the "list workflow run artifacts" API response).
  * @returns The artifact ID corresponding to the given artifact name.
  */
-function getArtifactIDfromName(artifactName: string, workflowRunArtifactsResponse: WorkflowRunArtifactsResponse): number | undefined {
-  for (const artifact of workflowRunArtifactsResponse.artifacts) {
-    if (artifact.name === artifactName) {
-      return artifact.id;
-    }
-  }
-  void logger.log(`Could not find artifact with name ${artifactName}.`);
-  return;
+function getArtifactIDfromName(artifactName: string, artifacts: Array<{ id: number, name: string }>): number | undefined {
+  const artifact = artifacts.find(a => a.name.localeCompare(artifactName) === 0);
+  return artifact ? artifact.id : undefined;
 }
 
 /**
  * Downloads an artifact from a workflow run.
- * @returns The path to enclosing directory of the unzipped artifact.
+ * @param credentials Credentials for authenticating to the GitHub API.
+ * @param owner 
+ * @param repo 
+ * @param artifactId The ID of the artifact to download.
+ * @returns The path to the enclosing directory of the unzipped artifact.
  */
 async function downloadArtifact(
   credentials: Credentials,
@@ -498,6 +496,10 @@ interface ResultIndexItem {
 }
 
 /**
+ * Gets the result index file for a given remote queries run. 
+ * @param credentials Credentials for authenticating to the GitHub API.
+ * @param owner 
+ * @param repo 
  * @param workflowRunId The ID of the workflow run to get the result index for.
  * @returns An object containing the result index.
  */
@@ -517,8 +519,14 @@ export async function getResultIndex(
     return [];
   }
   const artifactPath = await downloadArtifact(credentials, owner, repo, artifactId);
+  const indexFilePath = path.join(artifactPath, 'index.json');
+  if (!(await fs.pathExists(indexFilePath))) {
+    void showAndLogWarningMessage('Could not find an `index.json` file in the result artifact.');
+    return [];
+  }
   const resultIndex = await fs.readFile(path.join(artifactPath, 'index.json'), 'utf8');
 
+  // Logging the result for testing purposes. This is temporary.
   void logger.log(`Result index: ${resultIndex}`);
   return JSON.parse(resultIndex);
 }
