@@ -622,6 +622,7 @@ export async function compileAndRunQueryAgainstDatabase(
   // work with hidden settings, so we manually check that the workspace is trusted before looking at
   // whether the `shouldInsecurelyLoadMlModelsFromPacks` setting is enabled.
   if (workspace.isTrusted &&
+    config.isCanary() &&
     config.shouldInsecurelyLoadMlModelsFromPacks() &&
     await cliServer.cliConstraints.supportsResolveMlModels()) {
     try {
