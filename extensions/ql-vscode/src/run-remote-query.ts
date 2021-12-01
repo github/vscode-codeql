@@ -205,14 +205,6 @@ async function getPackedBundlePath(queryPackDir: string) {
   });
 }
 
-/**
- * The workflow run ID of the most recent remote query run.
- * Is undefined initially and gets updated whenever a remote query is run.
- * 
- * Note: this is a temporary solution until we have a way to track progress of a given remote query.
- */
-export let lastWorkflowId: number | undefined;
-
 export async function runRemoteQuery(
   cliServer: cli.CodeQLCliServer,
   credentials: Credentials,
@@ -376,7 +368,6 @@ async function runRemoteQueriesApiRequest(
     );
     const workflowRunId = response.data.workflow_run_id;
     void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${workflowRunId}).`);
-    lastWorkflowId = workflowRunId;
   } catch (error) {
     await attemptRerun(error, credentials, ref, language, repositories, owner, repo, queryPackBase64, dryRun);
   }
@@ -531,8 +522,6 @@ export async function getResultIndex(
   }
   const resultIndex = await fs.readFile(path.join(artifactPath, 'index.json'), 'utf8');
 
-  // Logging the result for testing purposes. This is temporary.
-  void logger.log(`Result index: ${resultIndex}`);
   try {
     return JSON.parse(resultIndex);
   } catch (error) {
