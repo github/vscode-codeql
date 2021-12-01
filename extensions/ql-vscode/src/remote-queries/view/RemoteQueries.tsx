@@ -53,7 +53,7 @@ export function RemoteQueries(props: Props): JSX.Element {
     </p>
 
     <div className="vscode-codeql__query-summary-container">
-      <h2 className="vscode-codeql__query-summary-title">Summary: {props.totalRepositoryCount} repositories affected</h2>
+      <h2 className="vscode-codeql__query-summary-title">Repositories with results ({props.totalRepositoryCount}):</h2>
       <a className="vscode-codeql__summary-download-link vscode-codeql__download-link" href={props.downloadLink}>
         {octicons.download}Download all
       </a>
