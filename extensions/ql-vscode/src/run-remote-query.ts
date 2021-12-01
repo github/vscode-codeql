@@ -453,8 +453,8 @@ async function listWorkflowRunArtifacts(
  * @returns The artifact ID corresponding to the given artifact name.
  */
 function getArtifactIDfromName(artifactName: string, artifacts: Array<{ id: number, name: string }>): number | undefined {
-  const artifact = artifacts.find(a => a.name.localeCompare(artifactName) === 0);
-  return artifact ? artifact.id : undefined;
+  const artifact = artifacts.find(a => a.name === artifactName);
+  return artifact?.id;
 }
 
 /**
@@ -533,5 +533,9 @@ export async function getResultIndex(
 
   // Logging the result for testing purposes. This is temporary.
   void logger.log(`Result index: ${resultIndex}`);
-  return JSON.parse(resultIndex);
+  try {
+    return JSON.parse(resultIndex);
+  } catch (error) {
+    throw new Error(`Invalid result index file: ${error}`);
+  }
 }
