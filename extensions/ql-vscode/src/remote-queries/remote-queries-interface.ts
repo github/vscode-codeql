@@ -74,7 +74,7 @@ export class RemoteQueriesInterfaceManager extends DisposableObject {
       );
 
       const stylesheetPathOnDisk = Uri.file(
-        ctx.asAbsolutePath('out/remoteQueries.css')
+        ctx.asAbsolutePath('out/remote-queries/view/remoteQueries.css')
       );
 
       panel.webview.html = getHtmlForWebview(

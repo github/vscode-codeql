@@ -37,6 +37,6 @@ export function watchTypeScript() {
 
 /** Copy CSS files for the results view into the output directory. */
 export function copyViewCss() {
-  return gulp.src('src/view/*.css')
+  return gulp.src('src/**/view/*.css')
     .pipe(gulp.dest('out'));
 }
