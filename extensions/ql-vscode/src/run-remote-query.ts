@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
 import * as tmp from 'tmp-promise';
-import { askForLanguage, findLanguage, getOnDiskWorkspaceFolders, showAndLogErrorMessage, showAndLogInformationMessage, showInformationMessageWithAction } from './helpers';
+import { askForLanguage, findLanguage, getOnDiskWorkspaceFolders, showAndLogErrorMessage, showAndLogInformationMessage, showAndLogWarningMessage, showInformationMessageWithAction } from './helpers';
 import { Credentials } from './authentication';
 import * as cli from './cli';
 import { logger } from './logging';
@@ -11,6 +11,7 @@ import { getRemoteControllerRepo, getRemoteRepositoryLists, setRemoteControllerR
 import { tmpDir } from './run-queries';
 import { ProgressCallback, UserCancellationException } from './commandRunner';
 import { OctokitResponse } from '@octokit/types/dist-types';
+import * as unzipper from 'unzipper';
 
 interface Config {
   repositories: string[];
@@ -344,7 +345,6 @@ async function runRemoteQueriesApiRequest(
   queryPackBase64: string,
   dryRun = false
 ): Promise<void> {
-
   if (dryRun) {
     void showAndLogInformationMessage('[DRY RUN] Would have sent request. See extension log for the payload.');
     void logger.log(JSON.stringify({ ref, language, repositories, owner, repo, queryPackBase64: queryPackBase64.substring(0, 100) + '... ' + queryPackBase64.length + ' bytes' }));
@@ -366,8 +366,8 @@ async function runRemoteQueriesApiRequest(
         }
       }
     );
-    void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.data.workflow_run_id}).`);
-
+    const workflowRunId = response.data.workflow_run_id;
+    void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${workflowRunId}).`);
   } catch (error) {
     await attemptRerun(error, credentials, ref, language, repositories, owner, repo, queryPackBase64, dryRun);
   }
@@ -411,5 +411,120 @@ export async function attemptRerun(
     }
   } else {
     void showAndLogErrorMessage(error);
+  }
+}
+
+/**
+ * Lists the workflow run artifacts for the given workflow run ID.
+ * @param credentials Credentials for authenticating to the GitHub API.
+ * @param owner
+ * @param repo
+ * @param workflowRunId The ID of the workflow run to list artifacts for.
+ * @returns An array of artifact details (including artifact name and ID).
+ */
+async function listWorkflowRunArtifacts(
+  credentials: Credentials,
+  owner: string,
+  repo: string,
+  workflowRunId: number
+) {
+  const octokit = await credentials.getOctokit();
+  const response = await octokit.rest.actions.listWorkflowRunArtifacts({
+    owner,
+    repo,
+    run_id: workflowRunId,
+  });
+
+  return response.data.artifacts;
+}
+
+/**
+ * @param artifactName The artifact name, as a string.
+ * @param artifacts An array of artifact details (from the "list workflow run artifacts" API response).
+ * @returns The artifact ID corresponding to the given artifact name.
+ */
+function getArtifactIDfromName(artifactName: string, artifacts: Array<{ id: number, name: string }>): number | undefined {
+  const artifact = artifacts.find(a => a.name === artifactName);
+  return artifact?.id;
+}
+
+/**
+ * Downloads an artifact from a workflow run.
+ * @param credentials Credentials for authenticating to the GitHub API.
+ * @param owner
+ * @param repo
+ * @param artifactId The ID of the artifact to download.
+ * @returns The path to the enclosing directory of the unzipped artifact.
+ */
+async function downloadArtifact(
+  credentials: Credentials,
+  owner: string,
+  repo: string,
+  artifactId: number
+): Promise<string> {
+  const octokit = await credentials.getOctokit();
+  const response = await octokit.rest.actions.downloadArtifact({
+    owner,
+    repo,
+    artifact_id: artifactId,
+    archive_format: 'zip',
+  });
+  const artifactPath = path.join(tmpDir.name, `${artifactId}`);
+  void logger.log(`Downloading artifact to ${artifactPath}.zip`);
+  await fs.writeFile(
+    `${artifactPath}.zip`,
+    Buffer.from(response.data as ArrayBuffer)
+  );
+
+  void logger.log(`Extracting artifact to ${artifactPath}`);
+  await (
+    await unzipper.Open.file(`${artifactPath}.zip`)
+  ).extract({ path: artifactPath });
+  return artifactPath;
+}
+
+interface ResultIndexItem {
+  nwo: string;
+  id: string;
+  results_count: number;
+  bqrs_file_size: number;
+  sarif_file_size?: number;
+}
+
+/**
+ * Gets the result index file for a given remote queries run.
+ * @param credentials Credentials for authenticating to the GitHub API.
+ * @param owner
+ * @param repo
+ * @param workflowRunId The ID of the workflow run to get the result index for.
+ * @returns An object containing the result index.
+ */
+export async function getResultIndex(
+  credentials: Credentials,
+  owner: string,
+  repo: string,
+  workflowRunId: number
+): Promise<ResultIndexItem[]> {
+  const artifactList = await listWorkflowRunArtifacts(credentials, owner, repo, workflowRunId);
+  const artifactId = getArtifactIDfromName('result-index', artifactList);
+  if (!artifactId) {
+    void showAndLogWarningMessage(
+      `Could not find a result index for the [specified workflow](https://github.com/${owner}/${repo}/actions/runs/${workflowRunId}).
+      Please check whether the workflow run has successfully completed.`
+    );
+    return [];
+  }
+  const artifactPath = await downloadArtifact(credentials, owner, repo, artifactId);
+  const indexFilePath = path.join(artifactPath, 'index.json');
+  if (!(await fs.pathExists(indexFilePath))) {
+    void showAndLogWarningMessage('Could not find an `index.json` file in the result artifact.');
+    return [];
+  }
+  const resultIndex = await fs.readFile(path.join(artifactPath, 'index.json'), 'utf8');
+
+  try {
+    return JSON.parse(resultIndex);
+  } catch (error) {
+    throw new Error(`Invalid result index file: ${error}`);
   }
 }
