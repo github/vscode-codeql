@@ -74,7 +74,7 @@ import {
 import { CodeQlStatusBarHandler } from './status-bar';
 
 import { Credentials } from './authentication';
-import { runRemoteQuery } from './run-remote-query';
+import { runRemoteQuery } from './remote-queries/run-remote-query';
 import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
 
 /**
