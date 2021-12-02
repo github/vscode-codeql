@@ -8,7 +8,8 @@ import {
   TextDocument,
   TextEditor,
   Uri,
-  window
+  window,
+  workspace
 } from 'vscode';
 import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 
@@ -86,6 +87,7 @@ export class QueryInfo {
   async run(
     qs: qsClient.QueryServerClient,
     upgradeQlo: string | undefined,
+    availableMlModels: cli.MlModelInfo[],
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<messages.EvaluationResult> {
@@ -93,12 +95,15 @@ export class QueryInfo {
 
     const callbackId = qs.registerCallback(res => { result = res; });
 
+    const availableMlModelUris: messages.MlModel[] = availableMlModels.map(model => ({ uri: Uri.file(model.path).toString(true) }));
+
     const queryToRun: messages.QueryToRun = {
       resultsPath: this.resultsPaths.resultsPath,
       qlo: Uri.file(this.compiledQueryPath).toString(),
       compiledUpgrade: upgradeQlo && Uri.file(upgradeQlo).toString(),
       allowUnknownTemplates: true,
       templateValues: this.templates,
+      availableMlModels: availableMlModelUris,
       id: callbackId,
       timeoutSecs: qs.config.timeoutSecs,
     };
@@ -612,6 +617,24 @@ export async function compileAndRunQueryAgainstDatabase(
     void logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
   }
 
+  let availableMlModels: cli.MlModelInfo[] = [];
+  // The `capabilities.untrustedWorkspaces.restrictedConfigurations` entry in package.json doesn't
+  // work with hidden settings, so we manually check that the workspace is trusted before looking at
+  // whether the `shouldInsecurelyLoadMlModelsFromPacks` setting is enabled.
+  if (workspace.isTrusted &&
+    config.isCanary() &&
+    config.shouldInsecurelyLoadMlModelsFromPacks() &&
+    await cliServer.cliConstraints.supportsResolveMlModels()) {
+    try {
+      availableMlModels = (await cliServer.resolveMlModels(diskWorkspaceFolders)).models;
+      void logger.log(`Found available ML models at the following paths: ${availableMlModels.map(x => `'${x.path}'`).join(', ')}.`);
+    } catch (e) {
+      const message = `Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the ` +
+        `query without any ML models: ${e}.`;
+      void showAndLogErrorMessage(message);
+    }
+  }
+
   const query = new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata, templates);
 
   const upgradeDir = await tmp.dir({ dir: upgradesTmpDir.name, unsafeCleanup: true });
@@ -634,7 +657,7 @@ export async function compileAndRunQueryAgainstDatabase(
     }
 
     if (errors.length === 0) {
-      const result = await query.run(qs, upgradeQlo, progress, token);
+      const result = await query.run(qs, upgradeQlo, availableMlModels, progress, token);
       if (result.resultType !== messages.QueryResultType.SUCCESS) {
         const message = result.message || 'Failed to run query';
         void logger.log(message);

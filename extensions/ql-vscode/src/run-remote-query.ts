@@ -19,6 +19,13 @@ interface Config {
   language?: string;
 }
 
+export interface QlPack {
+  name: string;
+  version: string;
+  dependencies: { [key: string]: string };
+  defaultSuite?: Record<string, unknown>[];
+  defaultSuiteFile?: string;
+}
 interface RepoListQuickPickItem extends QuickPickItem {
   repoList: string[];
 }
@@ -33,6 +40,11 @@ interface QueriesResponse {
  * - `repo` is made up of alphanumeric characters, hyphens, or underscores
  */
 const REPO_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
+
+/**
+ * Well-known names for the query pack used by the server.
+ */
+const QUERY_PACK_NAME = 'codeql-remote/query';
 
 /**
  * Gets the repositories to run the query against.
@@ -90,13 +102,9 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
   base64Pack: string,
   language: string
 }> {
-  const originalPackRoot = path.dirname(queryFile);
-  // TODO this assumes that the qlpack.yml is in the same directory as the query file, but in reality,
-  // the file could be in a parent directory.
-  const targetQueryFileName = path.join(queryPackDir, path.basename(queryFile));
-
-  // the server is expecting the query file to be named `query.ql`. Rename it here.
-  const renamedQueryFile = path.join(queryPackDir, 'query.ql');
+  const originalPackRoot = await findPackRoot(queryFile);
+  const packRelativePath = path.relative(originalPackRoot, queryFile);
+  const targetQueryFileName = path.join(queryPackDir, packRelativePath);
 
   let language: string | undefined;
   if (await fs.pathExists(path.join(originalPackRoot, 'qlpack.yml'))) {
@@ -126,9 +134,6 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
         })
     });
 
-    // ensure the qlpack.yml has a valid name
-    await ensureQueryPackName(queryPackDir);
-
     void logger.log(`Copied ${copiedCount} files to ${queryPackDir}`);
 
     language = await findLanguage(cliServer, Uri.file(targetQueryFileName));
@@ -139,13 +144,11 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
 
     // copy only the query file to the query pack directory
     // and generate a synthetic query pack
-    // TODO this has a limitation that query packs inside of a workspace will not resolve its peer dependencies.
-    // Something to work on later. For now, we will only support query packs that are not in a workspace.
     void logger.log(`Copying ${queryFile} to ${queryPackDir}`);
     await fs.copy(queryFile, targetQueryFileName);
     void logger.log('Generating synthetic query pack');
     const syntheticQueryPack = {
-      name: 'codeql-remote/query',
+      name: QUERY_PACK_NAME,
       version: '0.0.0',
       dependencies: {
         [`codeql/${language}-all`]: '*',
@@ -157,7 +160,7 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
     throw new UserCancellationException('Could not determine language.');
   }
 
-  await fs.rename(targetQueryFileName, renamedQueryFile);
+  await ensureNameAndSuite(queryPackDir, packRelativePath);
 
   const bundlePath = await getPackedBundlePath(queryPackDir);
   void logger.log(`Compiling and bundling query pack from ${queryPackDir} to ${bundlePath}. (This may take a while.)`);
@@ -171,23 +174,24 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
   };
 }
 
-/**
- * Ensure that the qlpack.yml has a valid name. For local purposes,
- * Anonymous packs and names that are not prefixed by a scope (ie `<foo>/`)
- * are sufficient. But in order to create a pack, the name must be prefixed.
- *
- * @param queryPackDir the directory containing the query pack.
- */
-async function ensureQueryPackName(queryPackDir: string) {
-  const pack = yaml.safeLoad(await fs.readFile(path.join(queryPackDir, 'qlpack.yml'), 'utf8')) as { name: string; };
-  if (!pack.name || !pack.name.includes('/')) {
-    if (!pack.name) {
-      pack.name = 'codeql-remote/query';
-    } else if (!pack.name.includes('/')) {
-      pack.name = `codeql-remote/${pack.name}`;
+async function findPackRoot(queryFile: string): Promise<string> {
+  // recursively find the directory containing qlpack.yml
+  let dir = path.dirname(queryFile);
+  while (!(await fs.pathExists(path.join(dir, 'qlpack.yml')))) {
+    dir = path.dirname(dir);
+    if (isFileSystemRoot(dir)) {
+      // there is no qlpack.yml in this direcory or any parent directory.
+      // just use the query file's directory as the pack root.
+      return path.dirname(queryFile);
     }
-    await fs.writeFile(path.join(queryPackDir, 'qlpack.yml'), yaml.safeDump(pack));
   }
+
+  return dir;
+}
+
+function isFileSystemRoot(dir: string): boolean {
+  const pathObj = path.parse(dir);
+  return pathObj.root === dir && pathObj.base === '';
 }
 
 async function createRemoteQueriesTempDirectory() {
@@ -412,6 +416,30 @@ export async function attemptRerun(
   } else {
     void showAndLogErrorMessage(error);
   }
+}
+
+/**
+ * Updates the default suite of the query pack. This is used to ensure
+ * only the specified query is run.
+ *
+ * Also, ensure the query pack name is set to the name expected by the server.
+ *
+ * @param queryPackDir The directory containing the query pack
+ * @param packRelativePath The relative path to the query pack from the root of the query pack
+ */
+async function ensureNameAndSuite(queryPackDir: string, packRelativePath: string): Promise<void> {
+  const packPath = path.join(queryPackDir, 'qlpack.yml');
+  const qlpack = yaml.safeLoad(await fs.readFile(packPath, 'utf8')) as QlPack;
+  delete qlpack.defaultSuiteFile;
+
+  qlpack.name = QUERY_PACK_NAME;
+
+  qlpack.defaultSuite = [{
+    description: 'Query suite for remote query'
+  }, {
+    query: packRelativePath.replace(/\\/g, '/')
+  }];
+  await fs.writeFile(packPath, yaml.safeDump(qlpack));
 }
 
 /**

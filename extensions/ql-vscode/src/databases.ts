@@ -121,20 +121,21 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
   return vscode.Uri.file(dbAbsolutePath);
 }
 
-async function findSourceArchive(
+// exported for testing
+export async function findSourceArchive(
   databasePath: string, silent = false
 ): Promise<vscode.Uri | undefined> {
-
   const relativePaths = ['src', 'output/src_archive'];
 
   for (const relativePath of relativePaths) {
     const basePath = path.join(databasePath, relativePath);
     const zipPath = basePath + '.zip';
 
-    if (await fs.pathExists(basePath)) {
-      return vscode.Uri.file(basePath);
-    } else if (await fs.pathExists(zipPath)) {
+    // Prefer using a zip archive over a directory.
+    if (await fs.pathExists(zipPath)) {
       return encodeArchiveBasePath(zipPath);
+    } else if (await fs.pathExists(basePath)) {
+      return vscode.Uri.file(basePath);
     }
   }
   if (!silent) {
@@ -161,7 +162,6 @@ async function resolveDatabase(
     datasetUri,
     sourceArchiveUri
   };
-
 }
 
 /** Gets the relative paths of all `.dbscheme` files in the given directory. */
@@ -258,7 +258,7 @@ export interface DatabaseItem {
    * Returns the root uri of the virtual filesystem for this database's source archive,
    * as displayed in the filesystem explorer.
    */
-  getSourceArchiveExplorerUri(): vscode.Uri | undefined;
+  getSourceArchiveExplorerUri(): vscode.Uri;
 
   /**
    * Holds if `uri` belongs to this database's source archive.
@@ -274,6 +274,11 @@ export interface DatabaseItem {
    * Gets the state of this database, to be persisted in the workspace state.
    */
   getPersistedState(): PersistedDatabaseItem;
+
+  /**
+   * Verifies that this database item has a zipped source folder. Returns an error message if it does not.
+   */
+  verifyZippedSources(): string | undefined;
 }
 
 export enum DatabaseEventKind {
@@ -459,11 +464,24 @@ export class DatabaseItemImpl implements DatabaseItem {
   /**
    * Returns the root uri of the virtual filesystem for this database's source archive.
    */
-  public getSourceArchiveExplorerUri(): vscode.Uri | undefined {
+  public getSourceArchiveExplorerUri(): vscode.Uri {
     const sourceArchive = this.sourceArchive;
-    if (sourceArchive === undefined || !sourceArchive.fsPath.endsWith('.zip'))
-      return undefined;
+    if (sourceArchive === undefined || !sourceArchive.fsPath.endsWith('.zip')) {
+      throw new Error(this.verifyZippedSources());
+    }
     return encodeArchiveBasePath(sourceArchive.fsPath);
+  }
+
+  public verifyZippedSources(): string | undefined {
+    const sourceArchive = this.sourceArchive;
+    if (sourceArchive === undefined) {
+      return `${this.name} has no source archive.`;
+    }
+
+    if (!sourceArchive.fsPath.endsWith('.zip')) {
+      return `${this.name} has a source folder that is unzipped.`;
+    }
+    return;
   }
 
   /**
@@ -603,26 +621,28 @@ export class DatabaseManager extends DisposableObject {
       // This is undesirable, as we might be adding and removing many
       // workspace folders as the user adds and removes databases.
       const end = (vscode.workspace.workspaceFolders || []).length;
+
+      const msg = item.verifyZippedSources();
+      if (msg) {
+        void logger.log(`Could not add source folder because ${msg}`);
+        return;
+      }
+
       const uri = item.getSourceArchiveExplorerUri();
-      if (uri === undefined) {
-        void logger.log(`Couldn't obtain file explorer uri for ${item.name}`);
+      void logger.log(`Adding workspace folder for ${item.name} source archive at index ${end}`);
+      if ((vscode.workspace.workspaceFolders || []).length < 2) {
+        // Adding this workspace folder makes the workspace
+        // multi-root, which may surprise the user. Let them know
+        // we're doing this.
+        void vscode.window.showInformationMessage(`Adding workspace folder for source archive of database ${item.name}.`);
       }
-      else {
-        void logger.log(`Adding workspace folder for ${item.name} source archive at index ${end}`);
-        if ((vscode.workspace.workspaceFolders || []).length < 2) {
-          // Adding this workspace folder makes the workspace
-          // multi-root, which may surprise the user. Let them know
-          // we're doing this.
-          void vscode.window.showInformationMessage(`Adding workspace folder for source archive of database ${item.name}.`);
-        }
-        vscode.workspace.updateWorkspaceFolders(end, 0, {
-          name: `[${item.name} source archive]`,
-          uri,
-        });
-        // vscode api documentation says we must to wait for this event
-        // between multiple `updateWorkspaceFolders` calls.
-        await eventFired(vscode.workspace.onDidChangeWorkspaceFolders);
-      }
+      vscode.workspace.updateWorkspaceFolders(end, 0, {
+        name: `[${item.name} source archive]`,
+        uri,
+      });
+      // vscode api documentation says we must to wait for this event
+      // between multiple `updateWorkspaceFolders` calls.
+      await eventFired(vscode.workspace.onDidChangeWorkspaceFolders);
     }
   }
 
@@ -732,7 +752,7 @@ export class DatabaseManager extends DisposableObject {
       this.updatePersistedCurrentDatabaseItem();
 
       await vscode.commands.executeCommand('setContext', 'codeQL.currentDatabaseItem', item?.name);
-      
+
       this._onDidChangeCurrentDatabaseItem.fire({
         item,
         kind: DatabaseEventKind.Change

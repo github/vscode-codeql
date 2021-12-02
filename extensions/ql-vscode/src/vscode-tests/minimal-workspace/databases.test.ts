@@ -12,7 +12,8 @@ import {
   DatabaseManager,
   DatabaseItemImpl,
   DatabaseContents,
-  FullDatabaseOptions
+  FullDatabaseOptions,
+  findSourceArchive
 } from '../../databases';
 import { Logger } from '../../logging';
 import { QueryServerClient } from '../../queryserver-client';
@@ -179,7 +180,7 @@ describe('databases', () => {
       expect(spy).to.have.been.calledWith(mockEvent);
     });
 
-    it('should add a database item source archive', async function () {
+    it('should add a database item source archive', async function() {
       const mockDbItem = createMockDB();
       mockDbItem.name = 'xxx';
       await (databaseManager as any).addDatabaseSourceArchiveFolder(mockDbItem);
@@ -477,6 +478,49 @@ describe('databases', () => {
       sandbox.stub(fs, 'stat').resolves(fileStats);
       const db = createMockDB(sourceLocationUri(), Uri.file('/path/to/dir/dir.testproj'));
       expect(await db.isAffectedByTest('/path/to/test.ql')).to.false;
+    });
+
+  });
+
+  describe.only('findSourceArchive', function() {
+    // not sure why, but some of these tests take more than two second to run.
+    this.timeout(5000);
+
+    ['src', 'output/src_archive'].forEach(name => {
+      it(`should find source folder in ${name}`, async () => {
+        const uri = Uri.file(path.join(dir.name, name));
+        fs.createFileSync(path.join(uri.fsPath, 'hucairz.txt'));
+        const srcUri = await findSourceArchive(dir.name);
+        expect(srcUri!.fsPath).to.eq(uri.fsPath);
+      });
+
+      it(`should find source archive in ${name}.zip`, async () => {
+        const uri = Uri.file(path.join(dir.name, name + '.zip'));
+        fs.createFileSync(uri.fsPath);
+        const srcUri = await findSourceArchive(dir.name);
+        expect(srcUri!.fsPath).to.eq(uri.fsPath);
+      });
+
+      it(`should prioritize ${name}.zip over ${name}`, async () => {
+        const uri = Uri.file(path.join(dir.name, name + '.zip'));
+        fs.createFileSync(uri.fsPath);
+
+        const uriFolder = Uri.file(path.join(dir.name, name));
+        fs.createFileSync(path.join(uriFolder.fsPath, 'hucairz.txt'));
+
+        const srcUri = await findSourceArchive(dir.name);
+        expect(srcUri!.fsPath).to.eq(uri.fsPath);
+      });
+    });
+
+    it('should prioritize src over output/src_archive', async () => {
+      const uriSrc = Uri.file(path.join(dir.name, 'src.zip'));
+      fs.createFileSync(uriSrc.fsPath);
+      const uriSrcArchive = Uri.file(path.join(dir.name, 'src.zip'));
+      fs.createFileSync(uriSrcArchive.fsPath);
+
+      const resultUri = await findSourceArchive(dir.name);
+      expect(resultUri!.fsPath).to.eq(uriSrc.fsPath);
     });
   });
 

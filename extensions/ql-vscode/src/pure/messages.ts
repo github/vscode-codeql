@@ -711,6 +711,11 @@ export interface EvaluateQueriesParams {
 
 export type TemplateDefinitions = { [key: string]: TemplateSource }
 
+export interface MlModel {
+  /** A URI pointing to the root directory of the model. */
+  uri: string;
+}
+
 /**
  * A single query that should be run
  */
@@ -744,6 +749,11 @@ export interface QueryToRun {
    * map should be set to the empty set or give an error.
    */
   allowUnknownTemplates: boolean;
+  /**
+   * The list of ML models that should be made available
+   * when evaluating the query.
+   */
+  availableMlModels?: MlModel[];
 }
 
 /**
