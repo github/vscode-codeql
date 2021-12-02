@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Add a CodeLens to make the Quick Evaluation command more accessible. Click the `Quick Evaluation` prompt above a predicate definition in the editor to evaluate that predicate on its own. [#1035](https://github.com/github/vscode-codeql/pull/1035)
+  
 ## 1.5.8 - 2 December 2021
 
 - Emit a more explicit error message when a user tries to add a database with an unzipped source folder to the workspace. [#1021](https://github.com/github/vscode-codeql/pull/1021)
