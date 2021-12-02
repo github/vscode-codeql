@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.5.8 - 2 December 2021
 
 - Emit a more explicit error message when a user tries to add a database with an unzipped source folder to the workspace. [#1021](https://github.com/github/vscode-codeql/pull/1021)
