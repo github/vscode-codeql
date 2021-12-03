@@ -68,7 +68,9 @@ describe('Remote queries', function() {
   it('should run a remote query that is part of a qlpack', async () => {
     const fileUri = getFile('data-remote-qlpack/in-pack.ql');
 
-    const queryPackRootDir = (await runRemoteQuery(cli, credentials, fileUri, true, progress, token))!;
+    const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+    expect(querySubmissionResult).to.be.ok;
+    const queryPackRootDir = querySubmissionResult!.queryDirPath!;
     printDirectoryContents(queryPackRootDir);
 
     // to retrieve the list of repositories
@@ -117,7 +119,9 @@ describe('Remote queries', function() {
   it('should run a remote query that is not part of a qlpack', async () => {
     const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
-    const queryPackRootDir = (await runRemoteQuery(cli, credentials, fileUri, true, progress, token))!;
+    const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+    expect(querySubmissionResult).to.be.ok;
+    const queryPackRootDir = querySubmissionResult!.queryDirPath!;
 
     // to retrieve the list of repositories
     // and a second time to ask for the language
@@ -172,7 +176,9 @@ describe('Remote queries', function() {
   it('should run a remote query that is nested inside a qlpack', async () => {
     const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
 
-    const queryPackRootDir = (await runRemoteQuery(cli, credentials, fileUri, true, progress, token))!;
+    const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+    expect(querySubmissionResult).to.be.ok;
+    const queryPackRootDir = querySubmissionResult!.queryDirPath!;
 
     // to retrieve the list of repositories
     expect(showQuickPickSpy).to.have.been.calledOnce;

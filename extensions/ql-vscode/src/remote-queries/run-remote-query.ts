@@ -12,6 +12,8 @@ import { tmpDir } from '../run-queries';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { OctokitResponse } from '@octokit/types/dist-types';
 import * as unzipper from 'unzipper';
+import { RemoteQuery } from './remote-query';
+import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 
 interface Config {
   repositories: string[];
@@ -216,7 +218,7 @@ export async function runRemoteQuery(
   dryRun: boolean,
   progress: ProgressCallback,
   token: CancellationToken
-): Promise<void | string> {
+): Promise<void | RemoteQuerySubmissionResult> {
   if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
     throw new Error(`Remote queries are not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
       } or later.`);
@@ -320,13 +322,20 @@ export async function runRemoteQuery(
       message: 'Sending request'
     });
 
-    await runRemoteQueriesApiRequest(credentials, ref, language, repositories, owner, repo, base64Pack, dryRun);
+    const workflowRunId = await runRemoteQueriesApiRequest(credentials, ref, language, repositories, owner, repo, base64Pack, dryRun);
+    const queryStartTime = new Date();
 
     if (dryRun) {
-      return remoteQueryDir.path;
+      return { queryDirPath: remoteQueryDir.path };
     } else {
+      if (!workflowRunId) {
+        return;
+      }
+
+      const remoteQuery = buildRemoteQueryEntity(repositories, queryFile, owner, repo, queryStartTime, workflowRunId);
+
       // don't return the path because it has been deleted
-      return;
+      return { query: remoteQuery };
     }
 
   } finally {
@@ -348,7 +357,7 @@ async function runRemoteQueriesApiRequest(
   repo: string,
   queryPackBase64: string,
   dryRun = false
-): Promise<void> {
+): Promise<void | number> {
   if (dryRun) {
     void showAndLogInformationMessage('[DRY RUN] Would have sent request. See extension log for the payload.');
     void logger.log(JSON.stringify({ ref, language, repositories, owner, repo, queryPackBase64: queryPackBase64.substring(0, 100) + '... ' + queryPackBase64.length + ' bytes' }));
@@ -372,8 +381,9 @@ async function runRemoteQueriesApiRequest(
     );
     const workflowRunId = response.data.workflow_run_id;
     void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${workflowRunId}).`);
+    return workflowRunId;
   } catch (error) {
-    await attemptRerun(error, credentials, ref, language, repositories, owner, repo, queryPackBase64, dryRun);
+    return await attemptRerun(error, credentials, ref, language, repositories, owner, repo, queryPackBase64, dryRun);
   }
 }
 
@@ -411,7 +421,7 @@ export async function attemptRerun(
     if (rerunQuery) {
       const validRepositories = repositories.filter(r => !invalidRepos.includes(r) && !reposWithoutDbUploads.includes(r));
       void logger.log(`Rerunning query on set of valid repositories: ${JSON.stringify(validRepositories)}`);
-      await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, owner, repo, queryPackBase64, dryRun);
+      return await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, owner, repo, queryPackBase64, dryRun);
     }
   } else {
     void showAndLogErrorMessage(error);
@@ -555,4 +565,33 @@ export async function getResultIndex(
   } catch (error) {
     throw new Error(`Invalid result index file: ${error}`);
   }
+}
+
+function buildRemoteQueryEntity(
+  repositories: string[],
+  queryFilePath: string,
+  controllerRepoOwner: string,
+  controllerRepoName: string,
+  queryStartTime: Date,
+  workflowRunId: number
+): RemoteQuery {
+  // For now, just use the file name as the query name. 
+  const queryName = path.basename(queryFilePath);
+
+  const queryRepos = repositories.map(r => {
+    const [owner, repo] = r.split('/');
+    return { owner: owner, name: repo };
+  });
+
+  return {
+    queryName,
+    queryFilePath,
+    controllerRepository: {
+      owner: controllerRepoOwner,
+      name: controllerRepoName,
+    },
+    repositories: queryRepos,
+    executionStartTime: queryStartTime,
+    actionsWorkflowRunId: workflowRunId
+  };
 }
