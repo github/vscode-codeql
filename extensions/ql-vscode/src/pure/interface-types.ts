@@ -364,3 +364,23 @@ export interface ParsedResultSets {
   resultSetNames: string[];
   resultSet: ResultSet;
 }
+
+export type FromRemoteQueriesMessage =
+  | RemoteQueryLoadedMessage
+  | RemoteQueryErrorMessage;
+
+export type ToRemoteQueriesMessage =
+  | OpenRemoteQueriesViewMessage;
+
+export interface RemoteQueryLoadedMessage {
+  t: 'remoteQueryLoaded';
+}
+
+export interface OpenRemoteQueriesViewMessage {
+  t: 'openRemoteQueriesView';
+}
+
+export interface RemoteQueryErrorMessage {
+  t: 'remoteQueryError';
+  error: string;
+}

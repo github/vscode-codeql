@@ -74,7 +74,8 @@ import {
 import { CodeQlStatusBarHandler } from './status-bar';
 
 import { Credentials } from './authentication';
-import { runRemoteQuery } from './run-remote-query';
+import { runRemoteQuery } from './remote-queries/run-remote-query';
+import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
 
 /**
  * extension.ts
@@ -501,23 +502,23 @@ async function activateWithInstalledDistribution(
     selectedQuery: Uri
   ): Promise<void> {
     // selectedQuery is unpopulated when executing through the command palette
-    const pathToQhelp =  selectedQuery ? selectedQuery.fsPath : window.activeTextEditor?.document.uri.fsPath;
-    if(pathToQhelp) {
+    const pathToQhelp = selectedQuery ? selectedQuery.fsPath : window.activeTextEditor?.document.uri.fsPath;
+    if (pathToQhelp) {
       // Create temporary directory
       const relativePathToMd = path.basename(pathToQhelp, '.qhelp') + '.md';
       const absolutePathToMd = path.join(qhelpTmpDir.name, relativePathToMd);
       const uri = Uri.file(absolutePathToMd);
       try {
-        await cliServer.generateQueryHelp(pathToQhelp , absolutePathToMd);
+        await cliServer.generateQueryHelp(pathToQhelp, absolutePathToMd);
         await commands.executeCommand('markdown.showPreviewToSide', uri);
       } catch (err) {
-        const errorMessage =  err.message.includes('Generating qhelp in markdown') ? (
+        const errorMessage = err.message.includes('Generating qhelp in markdown') ? (
           `Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
         ) : `Could not open a preview of the generated file (${absolutePathToMd}).`;
         void helpers.showAndLogErrorMessage(errorMessage, { fullMessage: `${errorMessage}\n${err}` });
       }
     }
-    
+
   }
 
   async function openReferencedFile(
@@ -743,6 +744,14 @@ async function activateWithInstalledDistribution(
       }
     )
   );
+
+  void logger.log('Initializing remote queries panel interface.');
+  const rmpm = new RemoteQueriesInterfaceManager(
+    ctx,
+    logger
+  );
+  ctx.subscriptions.push(rmpm);
+
   // The "runRemoteQuery" command is internal-only.
   ctx.subscriptions.push(
     commandRunnerWithProgress('codeQL.runRemoteQuery', async (
