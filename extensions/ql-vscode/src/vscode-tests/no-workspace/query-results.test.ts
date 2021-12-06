@@ -98,23 +98,25 @@ describe('CompletedQuery', () => {
     const completedQuery = mockCompletedQuery();
     expect(completedQuery.statusString).to.eq('failed');
 
-    completedQuery.result.message = 'Tremendously';
+    expect(completedQuery.result).to.exist;
+
+    completedQuery.result!.message = 'Tremendously';
     expect(completedQuery.statusString).to.eq('failed: Tremendously');
 
-    completedQuery.result.resultType = QueryResultType.OTHER_ERROR;
+    completedQuery.result!.resultType = QueryResultType.OTHER_ERROR;
     expect(completedQuery.statusString).to.eq('failed: Tremendously');
 
-    completedQuery.result.resultType = QueryResultType.CANCELLATION;
-    completedQuery.result.evaluationTime = 2000;
+    completedQuery.result!.resultType = QueryResultType.CANCELLATION;
+    completedQuery.result!.evaluationTime = 2000;
     expect(completedQuery.statusString).to.eq('cancelled after 2 seconds');
 
-    completedQuery.result.resultType = QueryResultType.OOM;
+    completedQuery.result!.resultType = QueryResultType.OOM;
     expect(completedQuery.statusString).to.eq('out of memory');
 
-    completedQuery.result.resultType = QueryResultType.SUCCESS;
+    completedQuery.result!.resultType = QueryResultType.SUCCESS;
     expect(completedQuery.statusString).to.eq('finished in 2 seconds');
 
-    completedQuery.result.resultType = QueryResultType.TIMEOUT;
+    completedQuery.result!.resultType = QueryResultType.TIMEOUT;
     expect(completedQuery.statusString).to.eq('timed out after 2 seconds');
 
   });
@@ -250,7 +252,8 @@ describe('CompletedQuery', () => {
         isQuickQuery: false
       },
       logFileLocation: 'mno',
-      dispose: disposeSpy
+      dispose: disposeSpy,
+      finishedRunning: true
     };
   }
 

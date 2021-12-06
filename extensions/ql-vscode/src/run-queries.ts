@@ -268,12 +268,13 @@ export class QueryInfo {
 
 
 export interface QueryWithResults {
+  finishedRunning: boolean;
   readonly query: QueryInfo;
-  readonly result: messages.EvaluationResult;
+  result: messages.EvaluationResult | undefined;
   readonly database: DatabaseInfo;
   readonly options: QueryHistoryItemOptions;
-  readonly logFileLocation?: string;
-  readonly dispose: () => void;
+  logFileLocation?: string | undefined;
+  dispose: () => void;
 }
 
 export async function clearCacheInDatabase(
@@ -551,16 +552,19 @@ export async function determineSelectedQuery(selectedResourceUri: Uri | undefine
   return { queryPath, quickEvalPosition, quickEvalText };
 }
 
-export async function compileAndRunQueryAgainstDatabase(
+export interface QueryInitInfo {
+  query: QueryInfo,
+  historyItemOptions: QueryHistoryItemOptions,
+  availableMlModels: cli.MlModelInfo[]
+}
+
+export async function initQuery(
   cliServer: cli.CodeQLCliServer,
-  qs: qsClient.QueryServerClient,
   db: DatabaseItem,
   quickEval: boolean,
   selectedQueryUri: Uri | undefined,
-  progress: ProgressCallback,
-  token: CancellationToken,
   templates?: messages.TemplateDefinitions,
-): Promise<QueryWithResults> {
+): Promise<QueryInitInfo> {
   if (!db.contents || !db.contents.dbSchemeUri) {
     throw new Error(`Database ${db.databaseUri} does not have a CodeQL database scheme.`);
   }
@@ -637,6 +641,51 @@ export async function compileAndRunQueryAgainstDatabase(
 
   const query = new QueryInfo(qlProgram, db, packConfig.dbscheme, quickEvalPosition, metadata, templates);
 
+  return { historyItemOptions: historyItemOptions, query: query, availableMlModels: availableMlModels };
+}
+
+export async function compileAndRunQueryAgainstDatabase(
+  cliServer: cli.CodeQLCliServer,
+  qs: qsClient.QueryServerClient,
+  db: DatabaseItem,
+  quickEval: boolean,
+  selectedQueryUri: Uri | undefined,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  templates?: messages.TemplateDefinitions
+) {
+  const queryInitInfo = await initQuery(
+    cliServer,
+    db,
+    quickEval,
+    selectedQueryUri,
+    templates
+  );
+  return compileAndRunInitializedQueryAgainstDatabase(
+    cliServer,
+    qs,
+    db,
+    quickEval,
+    progress,
+    token,
+    queryInitInfo.query,
+    queryInitInfo.historyItemOptions,
+    queryInitInfo.availableMlModels
+  );
+}
+
+export async function compileAndRunInitializedQueryAgainstDatabase(
+  cliServer: cli.CodeQLCliServer,
+  qs: qsClient.QueryServerClient,
+  db: DatabaseItem,
+  quickEval: boolean,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  query: QueryInfo,
+  historyItemOptions: QueryHistoryItemOptions,
+  availableMlModels: cli.MlModelInfo[]
+): Promise<QueryWithResults> {
+
   const upgradeDir = await tmp.dir({ dir: upgradesTmpDir.name, unsafeCleanup: true });
   try {
     let upgradeQlo;
@@ -674,7 +723,8 @@ export async function compileAndRunQueryAgainstDatabase(
         logFileLocation: result.logFileLocation,
         dispose: () => {
           qs.logger.removeAdditionalLogLocation(result.logFileLocation);
-        }
+        },
+        finishedRunning: true
       };
     } else {
       // Error dialogs are limited in size and scrollability,
@@ -715,6 +765,41 @@ const compilationFailedErrorTail = ' compilation failed. Please make sure there 
   ' and the query and database use the same target language. For more details on the error, go to View > Output,' +
   ' and choose CodeQL Query Server from the dropdown.';
 
+export function createResult(
+  query: QueryInfo,
+  db: DatabaseItem,
+  historyItemOptions: QueryHistoryItemOptions,
+  queryResultType: messages.QueryResultType
+): QueryWithResults {
+
+  // In case compilation was unsuccessful
+  if (!(queryResultType == messages.QueryResultType.SUCCESS)) {
+    const err: string = (queryResultType == messages.QueryResultType.CANCELLATION) ?
+      'Query run cancelled' : 'Query had compilation errors';
+    return createSyntheticResult(
+      query,
+      db,
+      historyItemOptions,
+      err,
+      messages.QueryResultType.OTHER_ERROR
+    );
+  }
+
+  // In case compilation is successful
+  return {
+    query: query,
+    result: undefined,
+    database: {
+      name: db.name,
+      databaseUri: db.databaseUri.toString(true)
+    },
+    options: historyItemOptions,
+    logFileLocation: undefined,
+    finishedRunning: false,
+    dispose: () => { /**/ }
+  };
+}
+
 function createSyntheticResult(
   query: QueryInfo,
   db: DatabaseItem,
@@ -738,5 +823,6 @@ function createSyntheticResult(
     },
     options: historyItemOptions,
     dispose: () => { /**/ },
+    finishedRunning: true,
   };
 }

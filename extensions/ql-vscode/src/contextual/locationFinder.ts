@@ -67,7 +67,7 @@ export async function getLocationsForUriString(
       templates
     );
 
-    if (results.result.resultType == messages.QueryResultType.SUCCESS) {
+    if (results.result && results.result.resultType == messages.QueryResultType.SUCCESS) {
       links.push(...await getLinksFromResults(results, cli, db, filter));
     }
   }

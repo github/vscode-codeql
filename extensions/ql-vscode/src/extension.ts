@@ -33,6 +33,7 @@ import {
 import * as languageSupport from './languageSupport';
 import { DatabaseItem, DatabaseManager } from './databases';
 import { DatabaseUI } from './databases-ui';
+import * as messages from './pure/messages';
 import {
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
@@ -58,7 +59,7 @@ import { QueryHistoryManager } from './query-history';
 import { CompletedQuery } from './query-results';
 import * as qsClient from './queryserver-client';
 import { displayQuickQuery } from './quick-query';
-import { compileAndRunQueryAgainstDatabase, tmpDirDisposal } from './run-queries';
+import { compileAndRunInitializedQueryAgainstDatabase, createResult, initQuery, QueryWithResults, tmpDirDisposal } from './run-queries';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
 import { CompareInterfaceManager } from './compare/compare-interface';
@@ -478,20 +479,43 @@ async function activateWithInstalledDistribution(
       if (databaseItem === undefined) {
         throw new Error('Can\'t run query without a selected database');
       }
-      const info = await compileAndRunQueryAgainstDatabase(
+
+      // Initialize Query
+      const queryInitInfo = await initQuery(
+        cliServer,
+        databaseItem,
+        quickEval,
+        selectedQuery
+      );
+
+      // Create QueryWithResults object
+      const queryInfo = createResult(
+        queryInitInfo.query,
+        databaseItem,
+        queryInitInfo.historyItemOptions,
+        messages.QueryResultType.OOM
+      );
+
+      // Add query to history item view
+      const runningQueryInfo: CompletedQuery = qhm.buildCompletedQuery(queryInfo);
+      qhm.addCompletedQuery(runningQueryInfo);
+
+      // Compile Query
+      const results: QueryWithResults = await compileAndRunInitializedQueryAgainstDatabase(
         cliServer,
         qs,
         databaseItem,
         quickEval,
-        selectedQuery,
         progress,
-        token
+        token,
+        queryInitInfo.query,
+        queryInitInfo.historyItemOptions,
+        queryInitInfo.availableMlModels
       );
-      const item = qhm.buildCompletedQuery(info);
-      await showResultsForCompletedQuery(item, WebviewReveal.NotForced);
-      // Note we must update the query history view after showing results as the
-      // display and sorting might depend on the number of results
-      await qhm.addCompletedQuery(item);
+
+      const completeQuery = qhm.buildCompletedQuery(results);
+      qhm.updateQueryWithResults(completeQuery);
+      await showResultsForCompletedQuery(runningQueryInfo, WebviewReveal.NotForced);
     }
   }
 
@@ -948,3 +972,4 @@ async function initializeLogging(ctx: ExtensionContext): Promise<void> {
 }
 
 const checkForUpdatesCommand = 'codeQL.checkForUpdatesToCLI';
+

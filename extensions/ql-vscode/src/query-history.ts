@@ -16,6 +16,7 @@ import { QueryServerClient } from './queryserver-client';
 import { DisposableObject } from './pure/disposable-object';
 import { commandRunner } from './commandRunner';
 import { assertNever } from './pure/helpers-pure';
+import { EvaluationResult } from './pure/messages';
 
 /**
  * query-history.ts
@@ -113,7 +114,9 @@ export class HistoryTreeDataProvider extends DisposableObject {
       ? 'interpretedResultsItem'
       : 'rawResultsItem';
 
-    if (!element.didRunSuccessfully) {
+    if (!element.finishedRunning) {
+      treeItem.iconPath = new vscode.ThemeIcon('search-refresh');
+    } else if (!element.didRunSuccessfully) {
       treeItem.iconPath = this.failedIconPath;
     }
 
@@ -187,6 +190,11 @@ export class HistoryTreeDataProvider extends DisposableObject {
     return this.allHistory.find((query) => query.query.queryID === queryId);
   }
 
+  updateWithResults(cq: CompletedQuery) {
+    const index = this.allHistory.indexOf(this.find(cq.query.queryID)!);
+    this.allHistory[index] = cq;
+  }
+
   public get sortOrder() {
     return this._sortOrder;
   }
@@ -209,6 +217,7 @@ export class QueryHistoryManager extends DisposableObject {
   treeView: vscode.TreeView<CompletedQuery>;
   lastItemClick: { time: Date; item: CompletedQuery } | undefined;
   compareWithItem: CompletedQuery | undefined;
+  inProgressQueries: Array<CompletedQuery>;
 
   constructor(
     private qs: QueryServerClient,
@@ -229,6 +238,7 @@ export class QueryHistoryManager extends DisposableObject {
       treeDataProvider,
       canSelectMany: true,
     });
+    this.inProgressQueries = new Array<CompletedQuery>();
     this.push(this.treeView);
     this.push(treeDataProvider);
 
@@ -394,6 +404,22 @@ export class QueryHistoryManager extends DisposableObject {
         )
       );
     }
+  }
+
+  async addRunningQueryToQueue(query: CompletedQuery) {
+    return this.inProgressQueries.push(query) - 1;
+  }
+
+  async completeRunningQuery(result: EvaluationResult, index: number, qs: QueryServerClient) : Promise<CompletedQuery> {
+    const item = this.inProgressQueries[index];
+    item.result = result;
+    item.logFileLocation = result.logFileLocation;
+    item.dispose = () => { 
+      qs.logger.removeAdditionalLogLocation(result.logFileLocation);
+    };
+    this.inProgressQueries[index] = item;
+    console.log('ITEM HAS BEEN UPDATED');
+    return item;
   }
 
   async handleRemoveHistoryItem(
@@ -646,6 +672,11 @@ export class QueryHistoryManager extends DisposableObject {
 
   addCompletedQuery(item: CompletedQuery) {
     this.treeDataProvider.pushQuery(item);
+    this.updateTreeViewSelectionIfVisible();
+  }
+
+  updateQueryWithResults(q: CompletedQuery) {
+    this.treeDataProvider.updateWithResults(q);
     this.updateTreeViewSelectionIfVisible();
   }
 
