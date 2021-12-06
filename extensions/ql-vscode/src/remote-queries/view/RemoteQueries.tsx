@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import * as Rdom from 'react-dom';
 import { SetRemoteQueryResultMessage } from '../../pure/interface-types';
-import { AnalysisResult, RemoteQueryResult } from './remote-query-result';
+import { AnalysisResult, RemoteQueryResult } from '../shared/remote-query-result';
 import * as octicons from '../../view/octicons';
 
 import { vscode } from '../../view/vscode-api';
