@@ -6,6 +6,7 @@
 
 - Emit a more explicit error message when a user tries to add a database with an unzipped source folder to the workspace. [#1021](https://github.com/github/vscode-codeql/pull/1021)
 - Ensure `src.zip` archives are used as the canonical source instead of `src` folders when importing databases. [#1025](https://github.com/github/vscode-codeql/pull/1025)
+- Add a CodeQL task provider. You can now run certain CodeQL CLI commands from the VS Code _Run Tasks_ menu. [#1014](https://github.com/github/vscode-codeql/pull/1014)
 
 ## 1.5.7 - 23 November 2021
 
