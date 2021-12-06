@@ -21,7 +21,12 @@ interface CodeQLTaskDefinition extends vscode.TaskDefinition {
   /**
    * User-specified properties for the task.
    */
-  prompts: string[];
+  prompts: Prompt[];
+}
+
+interface Prompt {
+  message: string;
+  values?: string[];
 }
 
 export class CodeQLTaskProvider implements vscode.TaskProvider {
@@ -49,30 +54,35 @@ export class CodeQLTaskProvider implements vscode.TaskProvider {
     }
     const cliCommands: CodeQLTaskDefinition[] = [
       {
-        command: 'version',  // TODO: Delete this, just a test command.
-        commandArgs: [],
-        prompts: [],
-        type: CodeQLTaskProvider.CodeQLType,
-      },
-      {
         command: 'resolve qlpacks',
-        commandArgs: ['--additional-packs', getOnDiskWorkspaceFolders().join(path.delimiter)],
+        commandArgs: [
+          '--additional-packs',
+          getOnDiskWorkspaceFolders().join(path.delimiter),
+        ],
         prompts: [],
         type: CodeQLTaskProvider.CodeQLType,
       },
       {
         command: 'pack install',
-        commandArgs: [],       // TODO: Specify which qlpack to install dependencies for. Resolve the commandArgs to all qlpack.ymls in the workspace and add those as --dir args.
-        prompts: [],
+        commandArgs: [],
+        prompts: [
+          {
+            message: 'Select the pack to install dependencies for',
+            values: getWorkspacePacks(),
+          },
+        ],
         type: CodeQLTaskProvider.CodeQLType,
       },
       {
         command: 'pack download',
         commandArgs: [],
-        prompts: ['Enter the <package-scope/name[@version]> of the pack to download:'],
+        prompts: [
+          {
+            message: 'Enter the <package-scope/name[@version]> of the pack to download',
+          },
+        ],
         type: CodeQLTaskProvider.CodeQLType,
-      },  // Needs a PAT for private packs (from octokit?)
-      // 'database create'   // Needs additional args.
+      },
     ];
 
     const tasks: vscode.Task[] | undefined = [];
@@ -99,14 +109,27 @@ class CodeQLTaskTerminal extends DisposableObject implements vscode.Pseudotermin
 
   // TODO: Open the terminal (i.e. run the task) in an appropriate folder (e.g. the enclosing folder of the currently active editor).
   // Currently, it is run from the first workspace folder (codeql-custom-queries-cpp in the starter workspace).
-  constructor(private cliServer: CodeQLCliServer, private command: string, private commandArgs: string[], private prompts: string[]) {
+  constructor(private cliServer: CodeQLCliServer, private command: string, private commandArgs: string[], private prompts: Prompt[]) {
     super();
   }
 
   async open(): Promise<void> {
     const promptedArgs: string[] = [];
     for (const prompt of this.prompts) {
-      const result = await vscode.window.showInputBox({ prompt, ignoreFocusOut: true });
+      let result: string | undefined;
+      // If prompt values are specified, show a quick pick to select the value.
+      // If no values are offered, show a text input box instead.
+      if (prompt.values) {
+        result = await vscode.window.showQuickPick(prompt.values, {
+          placeHolder: prompt.message,
+          ignoreFocusOut: true,
+        });
+      } else {
+        result = await vscode.window.showInputBox({
+          placeHolder: prompt.message,
+          ignoreFocusOut: true,
+        });
+      }
       if (result === undefined) {
         throw new UserCancellationException('No inputs provided.');
       }
@@ -133,13 +156,15 @@ class CodeQLTaskTerminal extends DisposableObject implements vscode.Pseudotermin
 
 /**
  * Lists all workspace folders that contain a qlpack.yml file.
+ * 
+ * Note: This currently only finds packs at the root of a workspace folder.
  */
 function getWorkspacePacks(): string[] {
   const packs: string[] = [];
   const workspaceFolders = getOnDiskWorkspaceFolders();
   for (const folder of workspaceFolders) {
     const qlpackYml = path.join(folder, 'qlpack.yml');
-    if (fs.pathExists(qlpackYml)) {
+    if (fs.pathExistsSync(qlpackYml)) {
       packs.push(folder);
     }
   }
