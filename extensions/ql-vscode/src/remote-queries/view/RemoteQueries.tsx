@@ -19,7 +19,7 @@ const emptyQueryResult: RemoteQueryResult = {
   results: []
 };
 
-const AnalysisResult = (props: AnalysisResult) => (
+const AnalysisResultItem = (props: AnalysisResult) => (
   <span>
     <span className="vscode-codeql__analysis-item">{octicons.repo}</span>
     <span className="vscode-codeql__analysis-item">{props.nwo}</span>
@@ -81,7 +81,7 @@ export function RemoteQueries(_: Record<string, never>): JSX.Element {
       <ul className="vscode-codeql__results-list">
         {queryResult.results.map(result =>
           <li key={result.nwo} className="vscode-codeql__results-list-item">
-            <AnalysisResult {...result} />
+            <AnalysisResultItem {...result} />
           </li>
         )}
       </ul>
