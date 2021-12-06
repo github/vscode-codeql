@@ -1,4 +1,3 @@
-import { DisposableObject } from '../pure/disposable-object';
 import {
   WebviewPanel,
   ExtensionContext,
@@ -16,10 +15,12 @@ import {
 import { Logger } from '../logging';
 import { getHtmlForWebview } from '../interface-utils';
 import { assertNever } from '../pure/helpers-pure';
-import { commandRunner } from '../commandRunner';
+import { AnalysisResult, RemoteQueryResult } from './remote-query-result';
+import { RemoteQuery } from './remote-query';
+import { RemoteQueryResult as RemoteQueryResultViewModel } from './view/remote-query-result';
+import { AnalysisResult as AnalysisResultViewModel } from './view/remote-query-result';
 
-
-export class RemoteQueriesInterfaceManager extends DisposableObject {
+export class RemoteQueriesInterfaceManager {
   private panel: WebviewPanel | undefined;
   private panelLoaded = false;
   private panelLoadedCallBacks: (() => void)[] = [];
@@ -28,20 +29,39 @@ export class RemoteQueriesInterfaceManager extends DisposableObject {
     private ctx: ExtensionContext,
     private logger: Logger,
   ) {
-    super();
-    commandRunner('codeQL.openRemoteQueriesView', () => this.handleOpenRemoteQueriesView());
     this.panelLoadedCallBacks.push(() => {
       void logger.log('Remote queries view loaded');
     });
   }
 
-  async showResults() {
+  async showResults(query: RemoteQuery, queryResult: RemoteQueryResult) {
     this.getPanel().reveal(undefined, true);
 
     await this.waitForPanelLoaded();
     await this.postMessage({
-      t: 'openRemoteQueriesView',
+      t: 'setRemoteQueryResult',
+      d: this.createViewModel(query, queryResult)
     });
+  }
+
+  private createViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
+    const queryFile = path.basename(query.queryFilePath);
+    const totalResultCount = queryResult.analysisResults.reduce((acc, cur) => acc + cur.resultCount, 0);
+    const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);
+    const analysisResults = this.mapAnalysisResults(queryResult.analysisResults);
+    const affectedRepositories = queryResult.analysisResults.filter(r => r.resultCount > 0);
+
+    return {
+      queryTitle: query.queryName,
+      queryFile: queryFile,
+      totalRepositoryCount: query.repositories.length,
+      affectedRepositoryCount: affectedRepositories.length,
+      totalResultCount: totalResultCount,
+      executionTimestamp: this.formatDate(query.executionStartTime),
+      executionDuration: executionDuration,
+      downloadLink: queryResult.allResultsDownloadUri,
+      results: analysisResults
+    };
   }
 
   getPanel(): WebviewPanel {
@@ -124,11 +144,64 @@ export class RemoteQueriesInterfaceManager extends DisposableObject {
     return this.getPanel().webview.postMessage(msg);
   }
 
-  async handleOpenRemoteQueriesView() {
-    this.getPanel().reveal(undefined, true);
-
-    await this.waitForPanelLoaded();
+  private getDuration(startTime: Date, endTime: Date): string {
+    const diffInMs = startTime.getTime() - endTime.getTime();
+    return this.formatDuration(diffInMs);
   }
 
+  private formatDuration(ms: number): string {
+    const seconds = ms / 1000;
+    const minutes = seconds / 60;
+    const hours = minutes / 60;
+    const days = hours / 24;
+    if (days > 1) {
+      return `${days.toFixed(2)} days`;
+    } else if (hours > 1) {
+      return `${hours.toFixed(2)} hours`;
+    } else if (minutes > 1) {
+      return `${minutes.toFixed(2)} minutes`;
+    } else {
+      return `${seconds.toFixed(2)} seconds`;
+    }
+  }
+
+  private formatDate = (d: Date): string => {
+    const datePart = d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    const timePart = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: 'numeric', hour12: true });
+    return `${datePart} at ${timePart}`;
+  };
+
+  private formatFileSize(bytes: number): string {
+    if (bytes < 1024) {
+      return `${bytes} bytes`;
+    } else if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(2)} kb`;
+    } else if (bytes < 1024 * 1024 * 1024) {
+      return `${(bytes / 1024 / 1024).toFixed(2)} mb`;
+    } else {
+      return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} gb`;
+    }
+  }
+
+  private mapAnalysisResults(analysisResults: AnalysisResult[]): AnalysisResultViewModel[] {
+    const filteredAnalysisResults = analysisResults.filter(r => r.resultCount > 0);
+
+    const sortedAnalysisResults = filteredAnalysisResults.sort((a, b) => {
+      if (a.resultCount > b.resultCount) {
+        return -1;
+      } else if (a.resultCount < b.resultCount) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+
+    return sortedAnalysisResults.map((analysisResult) => ({
+      nwo: analysisResult.nwo,
+      resultCount: analysisResult.resultCount,
+      downloadLink: analysisResult.downloadUri,
+      fileSize: this.formatFileSize(analysisResult.fileSizeInBytes)
+    }));
+  }
 }
 

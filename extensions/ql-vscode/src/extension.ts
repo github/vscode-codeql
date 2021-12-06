@@ -74,8 +74,8 @@ import {
 import { CodeQlStatusBarHandler } from './status-bar';
 
 import { Credentials } from './authentication';
-import { runRemoteQuery } from './remote-queries/run-remote-query';
-import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
+import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
+import { RemoteQuery } from './remote-queries/remote-query';
 
 /**
  * extension.ts
@@ -745,12 +745,8 @@ async function activateWithInstalledDistribution(
     )
   );
 
-  void logger.log('Initializing remote queries panel interface.');
-  const rmpm = new RemoteQueriesInterfaceManager(
-    ctx,
-    logger
-  );
-  ctx.subscriptions.push(rmpm);
+  void logger.log('Initializing remote queries interface.');
+  const rqm = new RemoteQueriesManager(ctx, logger, cliServer);
 
   // The "runRemoteQuery" command is internal-only.
   ctx.subscriptions.push(
@@ -765,8 +761,11 @@ async function activateWithInstalledDistribution(
           step: 0,
           message: 'Getting credentials'
         });
-        const credentials = await Credentials.initialize(ctx);
-        await runRemoteQuery(cliServer, credentials, uri || window.activeTextEditor?.document.uri, false, progress, token);
+        await rqm.runRemoteQuery(
+          uri || window.activeTextEditor?.document.uri,
+          progress,
+          token
+        );
       } else {
         throw new Error('Remote queries require the CodeQL Canary version to run.');
       }
@@ -775,6 +774,14 @@ async function activateWithInstalledDistribution(
       cancellable: true
     })
   );
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.monitorRemoteQuery', async (
+      query: RemoteQuery,
+      token: CancellationToken) => {
+      await rqm.monitorRemoteQuery(query, token);
+    }));
+
   ctx.subscriptions.push(
     commandRunner(
       'codeQL.openReferencedFile',

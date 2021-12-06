@@ -285,8 +285,8 @@
         "title": "CodeQL: Run Remote Query"
       },
       {
-        "command": "codeQL.openRemoteQueriesView",
-        "title": "CodeQL: Open Remote Queries View"
+        "command": "codeQL.monitorRemoteQuery",
+        "title": "CodeQL: Monitor Remote Query"
       },
       {
         "command": "codeQL.runQueries",
@@ -749,10 +749,6 @@
         {
           "command": "codeQL.runRemoteQuery",
           "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
-        },
-        {
-          "command": "codeQL.openRemoteQueriesView",
-          "when": "config.codeQL.canary"
         },
         {
           "command": "codeQL.runQueries",
