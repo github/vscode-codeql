@@ -36,7 +36,7 @@ const AnalysisResultItem = (props: AnalysisResult) => (
   </span>
 );
 
-export function RemoteQueries(_: Record<string, never>): JSX.Element {
+export function RemoteQueries(): JSX.Element {
   const [queryResult, setQueryResult] = useState<RemoteQueryResult>(emptyQueryResult);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export function RemoteQueries(_: Record<string, never>): JSX.Element {
       if (evt.origin === window.origin) {
         const msg: SetRemoteQueryResultMessage = evt.data;
         if (msg.t === 'setRemoteQueryResult') {
-          setQueryResult(msg.d);
+          setQueryResult(msg.queryResult);
         }
       } else {
         // sanitize origin
@@ -88,7 +88,7 @@ export function RemoteQueries(_: Record<string, never>): JSX.Element {
     </div>;
   } catch (err) {
     console.error(err);
-    return <div>Error!</div>;
+    return <div>There was an error displaying the view.</div>;
   }
 }
 

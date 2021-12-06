@@ -40,7 +40,7 @@ export class RemoteQueriesInterfaceManager {
     await this.waitForPanelLoaded();
     await this.postMessage({
       t: 'setRemoteQueryResult',
-      d: this.createViewModel(query, queryResult)
+      queryResult: this.createViewModel(query, queryResult)
     });
   }
 
@@ -172,29 +172,25 @@ export class RemoteQueriesInterfaceManager {
   };
 
   private formatFileSize(bytes: number): string {
+    const kb = bytes / 1024;
+    const mb = kb / 1024;
+    const gb = mb / 1024;
+
     if (bytes < 1024) {
       return `${bytes} bytes`;
-    } else if (bytes < 1024 * 1024) {
-      return `${(bytes / 1024).toFixed(2)} kb`;
-    } else if (bytes < 1024 * 1024 * 1024) {
-      return `${(bytes / 1024 / 1024).toFixed(2)} mb`;
+    } else if (kb < 1024) {
+      return `${kb.toFixed(2)} kb`;
+    } else if (mb < 1024) {
+      return `${mb.toFixed(2)} mb`;
     } else {
-      return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} gb`;
+      return `${gb.toFixed(2)} gb`;
     }
   }
 
   private mapAnalysisResults(analysisResults: AnalysisResult[]): AnalysisResultViewModel[] {
     const filteredAnalysisResults = analysisResults.filter(r => r.resultCount > 0);
 
-    const sortedAnalysisResults = filteredAnalysisResults.sort((a, b) => {
-      if (a.resultCount > b.resultCount) {
-        return -1;
-      } else if (a.resultCount < b.resultCount) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
+    const sortedAnalysisResults = filteredAnalysisResults.sort((a, b) => b.resultCount - a.resultCount);
 
     return sortedAnalysisResults.map((analysisResult) => ({
       nwo: analysisResult.nwo,

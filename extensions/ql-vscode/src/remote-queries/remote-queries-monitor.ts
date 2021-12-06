@@ -1,12 +1,14 @@
 import * as vscode from 'vscode';
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
-import { showAndLogErrorMessage } from '../helpers';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryWorkflowResult } from './remote-query-workflow-result';
 
 export class RemoteQueriesMonitor {
-  private static readonly twoDaysInSeconds = 86400;
+  // With a sleep of 5 seconds, the maximum number of attempts takes
+  // us to just over 2 days worth of monitoring.
+  private static readonly maxAttemptCount = 17280;
+  private static readonly sleepTime = 5000;
 
   constructor(
     private readonly extensionContext: vscode.ExtensionContext,
@@ -21,14 +23,14 @@ export class RemoteQueriesMonitor {
     const credentials = await Credentials.initialize(this.extensionContext);
 
     if (!credentials) {
-      await showAndLogErrorMessage('Error authenticating with GitHub');
+      throw Error('Error authenticating with GitHub');
     }
 
     let attemptCount = 0;
 
     const octokit = await credentials.getOctokit();
 
-    while (attemptCount <= RemoteQueriesMonitor.twoDaysInSeconds) {
+    while (attemptCount <= RemoteQueriesMonitor.maxAttemptCount) {
       if (cancellationToken && cancellationToken.isCancellationRequested) {
         return { status: 'Cancelled' };
       }
@@ -48,7 +50,7 @@ export class RemoteQueriesMonitor {
         }
       }
 
-      await this.sleep(1000);
+      await this.sleep(RemoteQueriesMonitor.sleepTime);
       attemptCount++;
     }
 

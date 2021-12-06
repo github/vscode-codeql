@@ -379,7 +379,7 @@ export interface RemoteQueryLoadedMessage {
 
 export interface SetRemoteQueryResultMessage {
   t: 'setRemoteQueryResult';
-  d: RemoteQueryResult
+  queryResult: RemoteQueryResult
 }
 
 export interface RemoteQueryErrorMessage {
