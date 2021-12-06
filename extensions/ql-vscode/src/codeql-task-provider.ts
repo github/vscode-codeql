@@ -1,5 +1,11 @@
 import * as vscode from 'vscode';
 import { CodeQLCliServer } from './cli';
+import * as path from 'path';
+import * as fs from 'fs-extra';
+
+import { getOnDiskWorkspaceFolders } from './helpers';
+import { DisposableObject } from './pure/disposable-object';
+import { UserCancellationException } from './commandRunner';
 
 interface CodeQLTaskDefinition extends vscode.TaskDefinition {
   /**
@@ -10,7 +16,12 @@ interface CodeQLTaskDefinition extends vscode.TaskDefinition {
   /**
    * Additional command arguments.
    */
-  commandArgs?: string[];
+  commandArgs: string[];
+
+  /**
+   * User-specified properties for the task.
+   */
+  prompts: string[];
 }
 
 export class CodeQLTaskProvider implements vscode.TaskProvider {
@@ -27,7 +38,7 @@ export class CodeQLTaskProvider implements vscode.TaskProvider {
     const command: string = _task.definition.command;
     if (command) {
       const definition: CodeQLTaskDefinition = <any>_task.definition;
-      return this.getTask(definition.command, definition.commandArgs ?? [], definition);
+      return this.getTask(definition);
     }
     return undefined;
   }
@@ -36,66 +47,76 @@ export class CodeQLTaskProvider implements vscode.TaskProvider {
     if (this.tasks !== undefined) {
       return this.tasks;
     }
-    // Hard-code examples for now. Not sure if we can do this in a better way.
-    const commands: string[] = [
-      'resolve languages',
-      'version',
-      'pack install',      // TODO: Specify which qlpack to install dependencies for.
-      'resolve queries',   // TODO: Specify which query, directory, or suite to resolve. Also specify search path/additional packs.
-      'resolve qlpacks',   // TODO: Specify a search path/additional packs.
-      // 'pack publish',     // Needs a PAT (from octokit?)
-      // 'pack download',    // Needs a PAT (from octokit?)
+    const cliCommands: CodeQLTaskDefinition[] = [
+      {
+        command: 'version',  // TODO: Delete this, just a test command.
+        commandArgs: [],
+        prompts: [],
+        type: CodeQLTaskProvider.CodeQLType,
+      },
+      {
+        command: 'resolve qlpacks',
+        commandArgs: ['--additional-packs', getOnDiskWorkspaceFolders().join(path.delimiter)],
+        prompts: [],
+        type: CodeQLTaskProvider.CodeQLType,
+      },
+      {
+        command: 'pack install',
+        commandArgs: [],       // TODO: Specify which qlpack to install dependencies for. Resolve the commandArgs to all qlpack.ymls in the workspace and add those as --dir args.
+        prompts: [],
+        type: CodeQLTaskProvider.CodeQLType,
+      },
+      {
+        command: 'pack download',
+        commandArgs: [],
+        prompts: ['Enter the <package-scope/name[@version]> of the pack to download:'],
+        type: CodeQLTaskProvider.CodeQLType,
+      },  // Needs a PAT for private packs (from octokit?)
       // 'database create'   // Needs additional args.
     ];
-    const commandArgs: string[][] = [[]];
 
     const tasks: vscode.Task[] | undefined = [];
-    commands.forEach(command => {
-      commandArgs.forEach(commandArgsGroup => {
-        tasks.push(this.getTask(command, commandArgsGroup));
-      });
+    cliCommands.forEach(cliCommand => {
+      tasks.push(this.getTask(cliCommand));
     });
     this.tasks = tasks;
     return this.tasks;
   }
 
-  private getTask(command: string, commandArgs: string[], definition?: CodeQLTaskDefinition): vscode.Task {
-    if (definition === undefined) {
-      definition = {
-        type: CodeQLTaskProvider.CodeQLType,
-        command,
-        commandArgs
-      };
-    }
-    return new vscode.Task(definition, vscode.TaskScope.Workspace, `${command} ${commandArgs.join(' ')}`,
+  private getTask(cliCommand: CodeQLTaskDefinition): vscode.Task {
+    return new vscode.Task(cliCommand, vscode.TaskScope.Workspace, `${cliCommand.command} ${cliCommand.commandArgs.join(' ')}`,
       CodeQLTaskProvider.CodeQLType, new vscode.CustomExecution(async (): Promise<vscode.Pseudoterminal> => {
-        return new CodeQLTaskTerminal(this.cliServer, command, commandArgs);
+        return new CodeQLTaskTerminal(this.cliServer, cliCommand.command, cliCommand.commandArgs, cliCommand.prompts);
       }));
   }
 }
 
-class CodeQLTaskTerminal implements vscode.Pseudoterminal {
+class CodeQLTaskTerminal extends DisposableObject implements vscode.Pseudoterminal {
   private writeEmitter = new vscode.EventEmitter<string>();
   onDidWrite: vscode.Event<string> = this.writeEmitter.event;
   private closeEmitter = new vscode.EventEmitter<number>();
   onDidClose?: vscode.Event<number> = this.closeEmitter.event;
 
-  private fileWatcher: vscode.FileSystemWatcher | undefined;
-
   // TODO: Open the terminal (i.e. run the task) in an appropriate folder (e.g. the enclosing folder of the currently active editor).
   // Currently, it is run from the first workspace folder (codeql-custom-queries-cpp in the starter workspace).
-  constructor(private cliServer: CodeQLCliServer, private command: string, private commandArgs: string[]) {
+  constructor(private cliServer: CodeQLCliServer, private command: string, private commandArgs: string[], private prompts: string[]) {
+    super();
   }
 
   async open(): Promise<void> {
-    await this.runCli([this.command], this.commandArgs);
+    const promptedArgs: string[] = [];
+    for (const prompt of this.prompts) {
+      const result = await vscode.window.showInputBox({ prompt, ignoreFocusOut: true });
+      if (result === undefined) {
+        throw new UserCancellationException('No inputs provided.');
+      }
+      promptedArgs.push(result);
+    }
+    await this.runCli([this.command], this.commandArgs.concat(promptedArgs));
   }
 
   close(): void {
-    // The terminal has been closed. Shutdown the build.
-    if (this.fileWatcher) {
-      this.fileWatcher.dispose();
-    }
+    this.dispose();
   }
 
   private async runCli(command: string[], commandArgs: string[]): Promise<void> {
@@ -108,4 +129,19 @@ class CodeQLTaskTerminal implements vscode.Pseudoterminal {
     }
     this.closeEmitter.fire(0);
   }
+}
+
+/**
+ * Lists all workspace folders that contain a qlpack.yml file.
+ */
+function getWorkspacePacks(): string[] {
+  const packs: string[] = [];
+  const workspaceFolders = getOnDiskWorkspaceFolders();
+  for (const folder of workspaceFolders) {
+    const qlpackYml = path.join(folder, 'qlpack.yml');
+    if (fs.pathExists(qlpackYml)) {
+      packs.push(folder);
+    }
+  }
+  return packs;
 }
