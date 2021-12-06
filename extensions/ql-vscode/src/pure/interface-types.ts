@@ -1,5 +1,5 @@
 import * as sarif from 'sarif';
-import { RemoteQueryResult } from '../remote-queries/view/remote-query-result';
+import { RemoteQueryResult } from '../remote-queries/shared/remote-query-result';
 import { RawResultSet, ResultRow, ResultSetSchema, Column, ResolvableLocationValue } from './bqrs-cli-types';
 
 /**

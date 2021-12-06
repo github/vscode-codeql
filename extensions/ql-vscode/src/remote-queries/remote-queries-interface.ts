@@ -17,8 +17,8 @@ import { getHtmlForWebview } from '../interface-utils';
 import { assertNever } from '../pure/helpers-pure';
 import { AnalysisResult, RemoteQueryResult } from './remote-query-result';
 import { RemoteQuery } from './remote-query';
-import { RemoteQueryResult as RemoteQueryResultViewModel } from './view/remote-query-result';
-import { AnalysisResult as AnalysisResultViewModel } from './view/remote-query-result';
+import { RemoteQueryResult as RemoteQueryResultViewModel } from './shared/remote-query-result';
+import { AnalysisResult as AnalysisResultViewModel } from './shared/remote-query-result';
 
 export class RemoteQueriesInterfaceManager {
   private panel: WebviewPanel | undefined;

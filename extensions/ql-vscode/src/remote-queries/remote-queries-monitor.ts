@@ -41,8 +41,8 @@ export class RemoteQueriesMonitor {
         run_id: remoteQuery.actionsWorkflowRunId
       });
 
-      if (this.areStringsSame(workflowRun.data.status, 'completed')) {
-        if (this.areStringsSame(workflowRun.data.conclusion, 'success')) {
+      if (workflowRun.data.status === 'completed') {
+        if (workflowRun.data.conclusion === 'success') {
           return { status: 'CompletedSuccessfully' };
         } else {
           const error = this.getWorkflowError(workflowRun.data.conclusion);
@@ -67,32 +67,20 @@ export class RemoteQueriesMonitor {
       return 'Workflow finished without a conclusion';
     }
 
-    if (this.areStringsSame(conclusion, 'cancelled')) {
+    if (conclusion === 'cancelled') {
       return 'The remote query execution was cancelled.';
     }
 
-    if (this.areStringsSame(conclusion, 'timed_out')) {
+    if (conclusion === 'timed_out') {
       return 'The remote query execution timed out.';
     }
 
-    if (this.areStringsSame(conclusion, 'failure')) {
+    if (conclusion === 'failure') {
       // TODO: Get the actual error from the workflow.
       return 'The remote query execution has failed.';
     }
 
     return `Unexpected query execution conclusion: ${conclusion}`;
-  }
-
-  private areStringsSame(a: string | null | undefined, b: string | null | undefined): boolean {
-    if ((a === undefined || a === null) && (b === undefined || b === null)) {
-      return true;
-    }
-
-    if (a === undefined || a == null || b === undefined || b == null) {
-      return false;
-    }
-
-    return a.localeCompare(b, undefined, { sensitivity: 'base' }) === 0;
   }
 }
 
