@@ -106,7 +106,9 @@ export class ResultTables
   }
 
   private getResultSetNames(): string[] {
-    return this.props.parsedResultSets.resultSetNames.concat([ALERTS_TABLE_NAME]);
+    return this.props.interpretation
+      ? this.props.parsedResultSets.resultSetNames.concat([ALERTS_TABLE_NAME])
+      : this.props.parsedResultSets.resultSetNames;
   }
 
   constructor(props: ResultTablesProps) {
