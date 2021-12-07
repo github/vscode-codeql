@@ -776,7 +776,7 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner('codeQL.monitorRemoteQuery', async (
+    commandRunnerWithProgress('codeQL.monitorRemoteQuery', async (
       query: RemoteQuery,
       token: CancellationToken) => {
       await rqm.monitorRemoteQuery(query, token);

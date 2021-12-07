@@ -54,7 +54,7 @@ export class RemoteQueriesManager {
       const resultIndexItems = await this.downloadResultIndex(credentials, query);
 
       const totalResultCount = resultIndexItems.reduce((acc, cur) => acc + cur.results_count, 0);
-      const message = `Query ${query.queryName}" run on ${query.repositories.length} repositories and returned ${totalResultCount} results`;
+      const message = `Query "${query.queryName}" run on ${query.repositories.length} repositories and returned ${totalResultCount} results`;
 
       const shouldOpenView = await showInformationMessageWithAction(message, 'View');
       if (shouldOpenView) {

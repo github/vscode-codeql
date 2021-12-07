@@ -179,11 +179,11 @@ export class RemoteQueriesInterfaceManager {
     if (bytes < 1024) {
       return `${bytes} bytes`;
     } else if (kb < 1024) {
-      return `${kb.toFixed(2)} kb`;
+      return `${kb.toFixed(2)} KB`;
     } else if (mb < 1024) {
-      return `${mb.toFixed(2)} mb`;
+      return `${mb.toFixed(2)} MB`;
     } else {
-      return `${gb.toFixed(2)} gb`;
+      return `${gb.toFixed(2)} GB`;
     }
   }
 
