@@ -88,3 +88,12 @@
   color: var(--vscode-badge-foreground);
   border-color: var(--vscode-badge-background);
 }
+
+.vscode-codeql__expand-button {
+  background: none;
+  color: var(--vscode-textLink-foreground);
+  border: none;
+  cursor: pointer;
+  padding-top: 1em;
+  font-size: x-small;
+}
