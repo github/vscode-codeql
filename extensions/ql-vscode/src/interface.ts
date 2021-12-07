@@ -160,10 +160,11 @@ export class InterfaceManager extends DisposableObject {
   getPanel(): vscode.WebviewPanel {
     if (this._panel == undefined) {
       const { ctx } = this;
+      const webViewColumn = this.chooseColumnForWebview();
       const panel = (this._panel = Window.createWebviewPanel(
         'resultsView', // internal name
         'CodeQL Query Results', // user-visible name
-        { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
+        { viewColumn: webViewColumn, preserveFocus: true },
         {
           enableScripts: true,
           enableFindWidget: true,
@@ -201,6 +202,29 @@ export class InterfaceManager extends DisposableObject {
       );
     }
     return this._panel;
+  }
+
+  /**
+   * Choose where to open the webview.
+   *
+   * If there is a single view column, then open beside it.
+   * If there are multiple view columns, then open beside the active column,
+   * unless the active editor is the last column. In this case, open in the first column.
+   *
+   * The goal is to avoid opening new columns when there already are two columns open.
+   */
+  private chooseColumnForWebview(): vscode.ViewColumn {
+    // This is not a great way to determine the number of view columns, but I
+    // can't find a vscode API that does it any better.
+    // Here, iterate through all the visible editors and determine the max view column.
+    // This won't work if the largest view column is empty.
+    const colCount = Window.visibleTextEditors.reduce((maxVal, editor) =>
+      Math.max(maxVal, Number.parseInt(editor.viewColumn?.toFixed() || '0', 10)), 0);
+    if (colCount <= 1) {
+      return vscode.ViewColumn.Beside;
+    }
+    const activeViewColumnNum = Number.parseInt(Window.activeTextEditor?.viewColumn?.toFixed() || '0', 10);
+    return activeViewColumnNum === colCount ? vscode.ViewColumn.One : vscode.ViewColumn.Beside;
   }
 
   private async changeInterpretedSortState(
