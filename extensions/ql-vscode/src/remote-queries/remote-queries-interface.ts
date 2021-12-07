@@ -40,15 +40,23 @@ export class RemoteQueriesInterfaceManager {
     await this.waitForPanelLoaded();
     await this.postMessage({
       t: 'setRemoteQueryResult',
-      queryResult: this.createViewModel(query, queryResult)
+      queryResult: this.buildViewModel(query, queryResult)
     });
   }
 
-  private createViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
+  /**
+   * Builds up a model tailored to the view based on the query and result domain entities.
+   * The data is cleaned up, sorted where necessary, and transformed to a format that
+   * the view model can use. 
+   * @param query Information about the query that was run.
+   * @param queryResult The result of the query.
+   * @returns A fully created view model.
+   */
+  private buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
     const queryFile = path.basename(query.queryFilePath);
     const totalResultCount = queryResult.analysisResults.reduce((acc, cur) => acc + cur.resultCount, 0);
     const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);
-    const analysisResults = this.mapAnalysisResults(queryResult.analysisResults);
+    const analysisResults = this.buildAnalysisResults(queryResult.analysisResults);
     const affectedRepositories = queryResult.analysisResults.filter(r => r.resultCount > 0);
 
     return {
@@ -187,7 +195,12 @@ export class RemoteQueriesInterfaceManager {
     }
   }
 
-  private mapAnalysisResults(analysisResults: AnalysisResult[]): AnalysisResultViewModel[] {
+  /**
+   * Builds up a list of analysis results, in a data structure tailored to the view.
+   * @param analysisResults The results of a specific analysis.
+   * @returns A fully created view model.
+   */
+  private buildAnalysisResults(analysisResults: AnalysisResult[]): AnalysisResultViewModel[] {
     const filteredAnalysisResults = analysisResults.filter(r => r.resultCount > 0);
 
     const sortedAnalysisResults = filteredAnalysisResults.sort((a, b) => b.resultCount - a.resultCount);

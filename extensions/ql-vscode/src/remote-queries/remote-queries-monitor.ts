@@ -76,7 +76,8 @@ export class RemoteQueriesMonitor {
     }
 
     if (conclusion === 'failure') {
-      // TODO: Get the actual error from the workflow.
+      // TODO: Get the actual error from the workflow or potentially
+      // from an artifact from the action itself.
       return 'The remote query execution has failed.';
     }
 

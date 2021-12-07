@@ -285,10 +285,6 @@
         "title": "CodeQL: Run Remote Query"
       },
       {
-        "command": "codeQL.monitorRemoteQuery",
-        "title": "CodeQL: Monitor Remote Query"
-      },
-      {
         "command": "codeQL.runQueries",
         "title": "CodeQL: Run Queries in Selected Files"
       },
