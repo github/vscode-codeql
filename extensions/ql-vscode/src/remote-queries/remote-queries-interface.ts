@@ -4,6 +4,7 @@ import {
   window as Window,
   ViewColumn,
   Uri,
+  workspace,
 } from 'vscode';
 import * as path from 'path';
 
@@ -62,6 +63,8 @@ export class RemoteQueriesInterfaceManager {
     return {
       queryTitle: query.queryName,
       queryFile: queryFile,
+      queryPath: query.queryFilePath,
+      queryTextTmpFile: query.queryTextTmpFile,
       totalRepositoryCount: query.repositories.length,
       affectedRepositoryCount: affectedRepositories.length,
       totalResultCount: totalResultCount,
@@ -129,6 +132,11 @@ export class RemoteQueriesInterfaceManager {
     });
   }
 
+  public async openFile(filePath: string) {
+    const textDocument = await workspace.openTextDocument(filePath);
+    await Window.showTextDocument(textDocument, ViewColumn.One);
+  }
+
   private async handleMsgFromView(
     msg: FromRemoteQueriesMessage
   ): Promise<void> {
@@ -142,6 +150,9 @@ export class RemoteQueriesInterfaceManager {
         void this.logger.log(
           `Remote query error: ${msg.error}`
         );
+        break;
+      case 'openFile':
+        await this.openFile(msg.filePath);
         break;
       default:
         assertNever(msg);
