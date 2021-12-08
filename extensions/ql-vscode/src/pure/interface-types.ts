@@ -368,7 +368,8 @@ export interface ParsedResultSets {
 
 export type FromRemoteQueriesMessage =
   | RemoteQueryLoadedMessage
-  | RemoteQueryErrorMessage;
+  | RemoteQueryErrorMessage
+  | OpenFileMsg;
 
 export type ToRemoteQueriesMessage =
   | SetRemoteQueryResultMessage;

@@ -39,6 +39,11 @@
   padding-right: 1em;
 }
 
+.vscode-codeql__query-file-link {
+  text-decoration: none;
+  padding-left: 0.3em;
+}
+
 .vscode-codeql__query-summary-container {
   padding-top: 1.5em;
 }

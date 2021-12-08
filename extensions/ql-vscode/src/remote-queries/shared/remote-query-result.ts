@@ -1,6 +1,8 @@
 export interface RemoteQueryResult {
   queryTitle: string;
   queryFile: string;
+  queryPath: string;
+  queryTextTmpFile: string;
   totalRepositoryCount: number;
   affectedRepositoryCount: number;
   totalResultCount: number;
