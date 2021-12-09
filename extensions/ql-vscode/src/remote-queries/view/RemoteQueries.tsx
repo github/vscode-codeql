@@ -7,6 +7,8 @@ import * as octicons from '../../view/octicons';
 
 import { vscode } from '../../view/vscode-api';
 
+const numOfReposInContractedMode = 10;
+
 const emptyQueryResult: RemoteQueryResult = {
   queryTitle: '',
   queryFile: '',
@@ -58,6 +60,9 @@ export function RemoteQueries(): JSX.Element {
     return <div>Waiting for results to load.</div>;
   }
 
+  const [repoListExpanded, setRepoListExpanded] = useState(false);
+  const numOfReposToShow = repoListExpanded ? queryResult.results.length : numOfReposInContractedMode;
+
   try {
     return <div className="vscode-codeql__remote-queries-view">
       <h1 className="vscode-codeql__query-title">{queryResult.queryTitle}</h1>
@@ -79,12 +84,18 @@ export function RemoteQueries(): JSX.Element {
       </div>
 
       <ul className="vscode-codeql__results-list">
-        {queryResult.results.map(result =>
+        {queryResult.results.slice(0, numOfReposToShow).map((result, i) =>
           <li key={result.nwo} className="vscode-codeql__results-list-item">
             <AnalysisResultItem {...result} />
           </li>
         )}
       </ul>
+      {
+        queryResult.results.length > numOfReposInContractedMode &&
+        <button className="vscode-codeql__expand-button" onClick={() => setRepoListExpanded(!repoListExpanded)}>
+          {repoListExpanded ? (<span>View less</span>) : (<span>View all</span>)}
+        </button>
+      }
     </div>;
   } catch (err) {
     console.error(err);

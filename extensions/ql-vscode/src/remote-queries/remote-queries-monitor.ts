@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
+import { getWorkflowStatus } from './gh-actions-api-client';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryWorkflowResult } from './remote-query-workflow-result';
 
@@ -28,26 +29,19 @@ export class RemoteQueriesMonitor {
 
     let attemptCount = 0;
 
-    const octokit = await credentials.getOctokit();
-
     while (attemptCount <= RemoteQueriesMonitor.maxAttemptCount) {
       if (cancellationToken && cancellationToken.isCancellationRequested) {
         return { status: 'Cancelled' };
       }
 
-      const workflowRun = await octokit.rest.actions.getWorkflowRun({
-        owner: remoteQuery.controllerRepository.owner,
-        repo: remoteQuery.controllerRepository.name,
-        run_id: remoteQuery.actionsWorkflowRunId
-      });
+      const workflowStatus = await getWorkflowStatus(
+        credentials,
+        remoteQuery.controllerRepository.owner,
+        remoteQuery.controllerRepository.name,
+        remoteQuery.actionsWorkflowRunId);
 
-      if (workflowRun.data.status === 'completed') {
-        if (workflowRun.data.conclusion === 'success') {
-          return { status: 'CompletedSuccessfully' };
-        } else {
-          const error = this.getWorkflowError(workflowRun.data.conclusion);
-          return { status: 'CompletedUnsuccessfully', error };
-        }
+      if (workflowStatus.status !== 'InProgress') {
+        return workflowStatus;
       }
 
       await this.sleep(RemoteQueriesMonitor.sleepTime);
@@ -60,28 +54,6 @@ export class RemoteQueriesMonitor {
 
   private async sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  private getWorkflowError(conclusion: string | null): string {
-    if (!conclusion) {
-      return 'Workflow finished without a conclusion';
-    }
-
-    if (conclusion === 'cancelled') {
-      return 'The remote query execution was cancelled.';
-    }
-
-    if (conclusion === 'timed_out') {
-      return 'The remote query execution timed out.';
-    }
-
-    if (conclusion === 'failure') {
-      // TODO: Get the actual error from the workflow or potentially
-      // from an artifact from the action itself.
-      return 'The remote query execution has failed.';
-    }
-
-    return `Unexpected query execution conclusion: ${conclusion}`;
   }
 }
 
