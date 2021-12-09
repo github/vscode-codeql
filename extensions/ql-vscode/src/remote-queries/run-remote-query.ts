@@ -521,7 +521,7 @@ async function downloadArtifact(
   return artifactPath;
 }
 
-interface ResultIndexItem {
+export interface ResultIndexItem {
   nwo: string;
   id: string;
   results_count: number;
