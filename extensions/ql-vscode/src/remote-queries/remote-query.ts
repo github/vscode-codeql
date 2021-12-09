@@ -3,7 +3,7 @@ import { Repository } from './repository';
 export interface RemoteQuery {
   queryName: string;
   queryFilePath: string;
-  queryTextTmpFile: string;
+  queryTextTmpFilePath: string;
   controllerRepository: Repository;
   repositories: Repository[];
   executionStartTime: Date;

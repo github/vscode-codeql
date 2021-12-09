@@ -468,12 +468,12 @@ function buildRemoteQueryEntity(
   });
 
   // TODO: Get query text from query file and save it in a temporary .ql file. 
-  const queryTextTmpFile = '';
+  const queryTextTmpFilePath = '';
 
   return {
     queryName,
     queryFilePath,
-    queryTextTmpFile,
+    queryTextTmpFilePath,
     controllerRepository: {
       owner: controllerRepoOwner,
       name: controllerRepoName,

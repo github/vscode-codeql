@@ -20,6 +20,7 @@ import { AnalysisResult, RemoteQueryResult } from './remote-query-result';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryResult as RemoteQueryResultViewModel } from './shared/remote-query-result';
 import { AnalysisResult as AnalysisResultViewModel } from './shared/remote-query-result';
+import { showAndLogWarningMessage } from '../helpers';
 
 export class RemoteQueriesInterfaceManager {
   private panel: WebviewPanel | undefined;
@@ -54,7 +55,7 @@ export class RemoteQueriesInterfaceManager {
    * @returns A fully created view model.
    */
   private buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
-    const queryFile = path.basename(query.queryFilePath);
+    const queryFileName = path.basename(query.queryFilePath);
     const totalResultCount = queryResult.analysisResults.reduce((acc, cur) => acc + cur.resultCount, 0);
     const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);
     const analysisResults = this.buildAnalysisResults(queryResult.analysisResults);
@@ -62,9 +63,9 @@ export class RemoteQueriesInterfaceManager {
 
     return {
       queryTitle: query.queryName,
-      queryFile: queryFile,
-      queryPath: query.queryFilePath,
-      queryTextTmpFile: query.queryTextTmpFile,
+      queryFileName: queryFileName,
+      queryFilePath: query.queryFilePath,
+      queryTextTmpFilePath: query.queryTextTmpFilePath,
       totalRepositoryCount: query.repositories.length,
       affectedRepositoryCount: affectedRepositories.length,
       totalResultCount: totalResultCount,
@@ -132,9 +133,13 @@ export class RemoteQueriesInterfaceManager {
     });
   }
 
-  public async openFile(filePath: string) {
-    const textDocument = await workspace.openTextDocument(filePath);
-    await Window.showTextDocument(textDocument, ViewColumn.One);
+  private async openFile(filePath: string) {
+    try {
+      const textDocument = await workspace.openTextDocument(filePath);
+      await Window.showTextDocument(textDocument, ViewColumn.One);
+    } catch (error) {
+      void showAndLogWarningMessage(`Could not open file: ${filePath}`);
+    }
   }
 
   private async handleMsgFromView(
