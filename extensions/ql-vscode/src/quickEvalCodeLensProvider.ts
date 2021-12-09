@@ -17,7 +17,7 @@ class QuickEvalCodeLensProvider implements CodeLensProvider {
       const regex = new RegExp(/(\w+)\s*\(\s*.*(?:,\s*)*\)\s*\{/);
       const matches = textLine.text.match(regex);
 
-      if (matches) {
+      if (matches && textLine.text.search(/^\s*\//)) {
         const range: Range = new Range(
           textLine.range.start.line, matches.index!,
           textLine.range.end.line, matches.index! + 1
