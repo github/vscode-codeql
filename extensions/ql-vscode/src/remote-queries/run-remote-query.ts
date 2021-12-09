@@ -331,7 +331,7 @@ export async function runRemoteQuery(
         return;
       }
 
-      const remoteQuery = buildRemoteQueryEntity(repositories, queryFile, owner, repo, queryStartTime, workflowRunId);
+      const remoteQuery = await buildRemoteQueryEntity(repositories, queryFile, owner, repo, queryStartTime, workflowRunId);
 
       // don't return the path because it has been deleted
       return { query: remoteQuery };
@@ -451,14 +451,14 @@ async function ensureNameAndSuite(queryPackDir: string, packRelativePath: string
   await fs.writeFile(packPath, yaml.safeDump(qlpack));
 }
 
-function buildRemoteQueryEntity(
+async function buildRemoteQueryEntity(
   repositories: string[],
   queryFilePath: string,
   controllerRepoOwner: string,
   controllerRepoName: string,
   queryStartTime: Date,
   workflowRunId: number
-): RemoteQuery {
+): Promise<RemoteQuery> {
   // For now, just use the file name as the query name. 
   const queryName = path.basename(queryFilePath);
 
@@ -467,8 +467,21 @@ function buildRemoteQueryEntity(
     return { owner: owner, name: repo };
   });
 
-  // TODO: Get query text from query file and save it in a temporary .ql file. 
-  const queryTextTmpFilePath = '';
+  // Get the query text from query file and save it in a temporary .ql file. 
+  const queryTextTmpFilePath = path.join(tmpDir.name, `tmp-${queryName}`);
+  const queryText = await fs.readFile(queryFilePath, 'utf8');
+  await fs.writeFile(
+    queryTextTmpFilePath, `\
+////////////////////////////////////////////////////////////////////////////////////
+// This is the text of the entire query file when it was executed for this query  //
+// run. The text or dependent libraries may have changed since then.              //
+//                                                                                //
+// To make changes to the query and the dependent libraries, save this file in a  //
+// suitable, permanent location.                                                  //
+////////////////////////////////////////////////////////////////////////////////////
+
+${queryText}`
+  );
 
   return {
     queryName,
