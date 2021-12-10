@@ -13,7 +13,7 @@ const emptyQueryResult: RemoteQueryResult = {
   queryTitle: '',
   queryFileName: '',
   queryFilePath: '',
-  queryTextTmpFilePath: '',
+  queryText: '',
   totalRepositoryCount: 0,
   affectedRepositoryCount: 0,
   totalResultCount: 0,
@@ -39,13 +39,6 @@ const AnalysisResultItem = (props: AnalysisResult) => (
     </span>
   </span>
 );
-
-function openFile(filePath: string): void {
-  vscode.postMessage({
-    t: 'openFile',
-    filePath
-  });
-}
 
 export function RemoteQueries(): JSX.Element {
   const [queryResult, setQueryResult] = useState<RemoteQueryResult>(emptyQueryResult);
@@ -74,11 +67,17 @@ export function RemoteQueries(): JSX.Element {
 
   try {
     const openQueryFile = () => {
-      openFile(queryResult.queryFilePath);
+      vscode.postMessage({
+        t: 'openFile',
+        filePath: queryResult.queryFilePath
+      });
     };
 
     const openQueryTextTmpFile = () => {
-      openFile(queryResult.queryTextTmpFilePath);
+      vscode.postMessage({
+        t: 'openVirtualFile',
+        queryText: queryResult.queryText
+      });
     };
 
     return <div className="vscode-codeql__remote-queries-view">
