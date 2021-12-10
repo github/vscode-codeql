@@ -3,7 +3,6 @@
 ## [UNRELEASED]
 
 - Add a CodeLens to make the Quick Evaluation command more accessible. Click the `Quick Evaluation` prompt above a predicate definition in the editor to evaluate that predicate on its own. [#1035](https://github.com/github/vscode-codeql/pull/1035)
-  
 - Fix a bug where the _Alerts_ option would show in the results view even if there is no alerts table available. [#1038](https://github.com/github/vscode-codeql/pull/1038)
 
 ## 1.5.8 - 2 December 2021
