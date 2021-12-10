@@ -18,13 +18,10 @@ class QuickEvalCodeLensProvider implements CodeLensProvider {
       // This currently does not match predicates that span multiple lines.
       const regex = new RegExp(/(\w+)\s*\([^()]*\)\s*\{/);
 
-      // Evaluates to 'true' if a comment is detected.
-      const commentedOut = (/^\s*\/\//).test(textLine.text);
-
       const matches = textLine.text.match(regex);
 
       // Make sure that a code lens is not generated for any predicate that is commented out.
-      if (matches && !commentedOut) {
+      if (matches && !(/^\s*\/\//).test(textLine.text)) {
         const range: Range = new Range(
           textLine.range.start.line, matches.index!,
           textLine.range.end.line, matches.index! + 1
