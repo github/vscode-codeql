@@ -169,7 +169,7 @@ export class CodeQLCliServer implements Disposable {
   /** Version of current cli, lazily computed by the `getVersion()` method */
   private _version: SemVer | undefined;
 
-  /** 
+  /**
    * The languages supported by the current version of the CLI, computed by `getSupportedLanguages()`.
    */
   private _supportedLanguages: string[] | undefined;
@@ -806,7 +806,7 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Gets the list of available languages. Refines the result of `resolveLanguages()`, by excluding
    * extra things like "xml" and "properties".
-   * 
+   *
    * @returns An array of languages that are supported by the current version of the CodeQL CLI.
    */
   public async getSupportedLanguages(): Promise<string[]> {
@@ -1186,6 +1186,11 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_RESOLVE_ML_MODELS = new SemVer('2.7.3');
 
+  /**
+   * CLI version where the `--old-eval-stats` option to the query server was introduced.
+   */
+  public static CLI_VERSION_WITH_OLD_EVAL_STATS = new SemVer('2.7.4');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1234,4 +1239,7 @@ export class CliVersionConstraint {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_ML_MODELS);
   }
 
+  async supportsOldEvalStats() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_OLD_EVAL_STATS);
+  }
 }

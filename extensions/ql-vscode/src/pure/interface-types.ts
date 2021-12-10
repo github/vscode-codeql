@@ -1,4 +1,5 @@
 import * as sarif from 'sarif';
+import { RemoteQueryResult } from '../remote-queries/shared/remote-query-result';
 import { RawResultSet, ResultRow, ResultSetSchema, Column, ResolvableLocationValue } from './bqrs-cli-types';
 
 /**
@@ -370,14 +371,15 @@ export type FromRemoteQueriesMessage =
   | RemoteQueryErrorMessage;
 
 export type ToRemoteQueriesMessage =
-  | OpenRemoteQueriesViewMessage;
+  | SetRemoteQueryResultMessage;
 
 export interface RemoteQueryLoadedMessage {
   t: 'remoteQueryLoaded';
 }
 
-export interface OpenRemoteQueriesViewMessage {
-  t: 'openRemoteQueriesView';
+export interface SetRemoteQueryResultMessage {
+  t: 'setRemoteQueryResult';
+  queryResult: RemoteQueryResult
 }
 
 export interface RemoteQueryErrorMessage {

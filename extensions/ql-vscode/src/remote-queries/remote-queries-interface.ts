@@ -1,4 +1,3 @@
-import { DisposableObject } from '../pure/disposable-object';
 import {
   WebviewPanel,
   ExtensionContext,
@@ -16,10 +15,12 @@ import {
 import { Logger } from '../logging';
 import { getHtmlForWebview } from '../interface-utils';
 import { assertNever } from '../pure/helpers-pure';
-import { commandRunner } from '../commandRunner';
+import { AnalysisResult, RemoteQueryResult } from './remote-query-result';
+import { RemoteQuery } from './remote-query';
+import { RemoteQueryResult as RemoteQueryResultViewModel } from './shared/remote-query-result';
+import { AnalysisResult as AnalysisResultViewModel } from './shared/remote-query-result';
 
-
-export class RemoteQueriesInterfaceManager extends DisposableObject {
+export class RemoteQueriesInterfaceManager {
   private panel: WebviewPanel | undefined;
   private panelLoaded = false;
   private panelLoadedCallBacks: (() => void)[] = [];
@@ -28,20 +29,47 @@ export class RemoteQueriesInterfaceManager extends DisposableObject {
     private ctx: ExtensionContext,
     private logger: Logger,
   ) {
-    super();
-    commandRunner('codeQL.openRemoteQueriesView', () => this.handleOpenRemoteQueriesView());
     this.panelLoadedCallBacks.push(() => {
       void logger.log('Remote queries view loaded');
     });
   }
 
-  async showResults() {
+  async showResults(query: RemoteQuery, queryResult: RemoteQueryResult) {
     this.getPanel().reveal(undefined, true);
 
     await this.waitForPanelLoaded();
     await this.postMessage({
-      t: 'openRemoteQueriesView',
+      t: 'setRemoteQueryResult',
+      queryResult: this.buildViewModel(query, queryResult)
     });
+  }
+
+  /**
+   * Builds up a model tailored to the view based on the query and result domain entities.
+   * The data is cleaned up, sorted where necessary, and transformed to a format that
+   * the view model can use. 
+   * @param query Information about the query that was run.
+   * @param queryResult The result of the query.
+   * @returns A fully created view model.
+   */
+  private buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
+    const queryFile = path.basename(query.queryFilePath);
+    const totalResultCount = queryResult.analysisResults.reduce((acc, cur) => acc + cur.resultCount, 0);
+    const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);
+    const analysisResults = this.buildAnalysisResults(queryResult.analysisResults);
+    const affectedRepositories = queryResult.analysisResults.filter(r => r.resultCount > 0);
+
+    return {
+      queryTitle: query.queryName,
+      queryFile: queryFile,
+      totalRepositoryCount: query.repositories.length,
+      affectedRepositoryCount: affectedRepositories.length,
+      totalResultCount: totalResultCount,
+      executionTimestamp: this.formatDate(query.executionStartTime),
+      executionDuration: executionDuration,
+      downloadLink: queryResult.allResultsDownloadUri,
+      results: analysisResults
+    };
   }
 
   getPanel(): WebviewPanel {
@@ -124,11 +152,65 @@ export class RemoteQueriesInterfaceManager extends DisposableObject {
     return this.getPanel().webview.postMessage(msg);
   }
 
-  async handleOpenRemoteQueriesView() {
-    this.getPanel().reveal(undefined, true);
-
-    await this.waitForPanelLoaded();
+  private getDuration(startTime: Date, endTime: Date): string {
+    const diffInMs = startTime.getTime() - endTime.getTime();
+    return this.formatDuration(diffInMs);
   }
 
+  private formatDuration(ms: number): string {
+    const seconds = ms / 1000;
+    const minutes = seconds / 60;
+    const hours = minutes / 60;
+    const days = hours / 24;
+    if (days > 1) {
+      return `${days.toFixed(2)} days`;
+    } else if (hours > 1) {
+      return `${hours.toFixed(2)} hours`;
+    } else if (minutes > 1) {
+      return `${minutes.toFixed(2)} minutes`;
+    } else {
+      return `${seconds.toFixed(2)} seconds`;
+    }
+  }
+
+  private formatDate = (d: Date): string => {
+    const datePart = d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    const timePart = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: 'numeric', hour12: true });
+    return `${datePart} at ${timePart}`;
+  };
+
+  private formatFileSize(bytes: number): string {
+    const kb = bytes / 1024;
+    const mb = kb / 1024;
+    const gb = mb / 1024;
+
+    if (bytes < 1024) {
+      return `${bytes} bytes`;
+    } else if (kb < 1024) {
+      return `${kb.toFixed(2)} KB`;
+    } else if (mb < 1024) {
+      return `${mb.toFixed(2)} MB`;
+    } else {
+      return `${gb.toFixed(2)} GB`;
+    }
+  }
+
+  /**
+   * Builds up a list of analysis results, in a data structure tailored to the view.
+   * @param analysisResults The results of a specific analysis.
+   * @returns A fully created view model.
+   */
+  private buildAnalysisResults(analysisResults: AnalysisResult[]): AnalysisResultViewModel[] {
+    const filteredAnalysisResults = analysisResults.filter(r => r.resultCount > 0);
+
+    const sortedAnalysisResults = filteredAnalysisResults.sort((a, b) => b.resultCount - a.resultCount);
+
+    return sortedAnalysisResults.map((analysisResult) => ({
+      nwo: analysisResult.nwo,
+      resultCount: analysisResult.resultCount,
+      downloadLink: analysisResult.downloadUri,
+      fileSize: this.formatFileSize(analysisResult.fileSizeInBytes)
+    }));
+  }
 }
 
