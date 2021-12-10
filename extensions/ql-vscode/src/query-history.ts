@@ -32,7 +32,7 @@ export type QueryHistoryItemOptions = {
   isQuickQuery?: boolean;
 };
 
-const SHOW_QUERY_TEXT_MSG = `\
+export const SHOW_QUERY_TEXT_MSG = `\
 ////////////////////////////////////////////////////////////////////////////////////
 // This is the text of the entire query file when it was executed for this query  //
 // run. The text or dependent libraries may have changed since then.              //
