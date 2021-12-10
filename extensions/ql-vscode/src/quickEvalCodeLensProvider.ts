@@ -16,7 +16,7 @@ class QuickEvalCodeLensProvider implements CodeLensProvider {
 
       // Match a predicate signature, including predicate name, parameter list, and opening brace.
       // This currently does not match predicates that span multiple lines.
-      const regex = new RegExp(/(\w+)\s*\(\s*.*(?:,\s*)*\)\s*\{/);
+      const regex = new RegExp(/(\w+)\s*\([^()]*\)\s*\{/);
 
       // Evaluates to 'true' if a comment is detected.
       const commentedOut = (/^\s*\/\//).test(textLine.text);
