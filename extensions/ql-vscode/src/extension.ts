@@ -11,7 +11,8 @@ import {
   window as Window,
   env,
   window,
-  QuickPickItem
+  QuickPickItem,
+  Range
 } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import * as os from 'os';
@@ -21,6 +22,7 @@ import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
 
 import { AstViewer } from './astViewer';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
+import QuickEvalCodeLensProvider from './quickEvalCodeLensProvider';
 import { CodeQLCliServer, CliVersionConstraint } from './cli';
 import {
   CliConfigListener,
@@ -156,6 +158,7 @@ export interface CodeQLExtensionInterface {
  * @returns CodeQLExtensionInterface
  */
 export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionInterface | Record<string, never>> {
+
   void logger.log(`Starting ${extensionId} extension`);
   if (extension === undefined) {
     throw new Error(`Can't find extension ${extensionId}`);
@@ -165,6 +168,9 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
   await initializeLogging(ctx);
   await initializeTelemetry(extension, ctx);
   languageSupport.install();
+
+  const codelensProvider = new QuickEvalCodeLensProvider();
+  languages.registerCodeLensProvider({ scheme: 'file', language: 'ql' }, codelensProvider);
 
   ctx.subscriptions.push(distributionConfigListener);
   const codeQlVersionRange = DEFAULT_DISTRIBUTION_VERSION_RANGE;
@@ -471,6 +477,7 @@ async function activateWithInstalledDistribution(
     progress: ProgressCallback,
     token: CancellationToken,
     databaseItem: DatabaseItem | undefined,
+    range?: Range
   ): Promise<void> {
     if (qs !== undefined) {
       // If no databaseItem is specified, use the database currently selected in the Databases UI
@@ -485,7 +492,9 @@ async function activateWithInstalledDistribution(
         quickEval,
         selectedQuery,
         progress,
-        token
+        token,
+        undefined,
+        range
       );
       const item = qhm.buildCompletedQuery(info);
       await showResultsForCompletedQuery(item, WebviewReveal.NotForced);
@@ -733,6 +742,22 @@ async function activateWithInstalledDistribution(
         cancellable: true
       })
   );
+
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      'codeQL.codeLensQuickEval',
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        uri: Uri,
+        range: Range
+      ) => await compileAndRunQuery(true, uri, progress, token, undefined, range),
+      {
+        title: 'Running query',
+        cancellable: true
+      })
+  );
+
   ctx.subscriptions.push(
     commandRunnerWithProgress('codeQL.quickQuery', async (
       progress: ProgressCallback,
