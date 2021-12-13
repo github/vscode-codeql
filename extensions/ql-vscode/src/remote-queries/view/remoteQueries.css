@@ -11,6 +11,7 @@
   display: inline-block;
   font-size: x-small;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .vscode-codeql__download-link svg {

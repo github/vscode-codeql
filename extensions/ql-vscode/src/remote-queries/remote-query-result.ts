@@ -1,12 +1,14 @@
+import { DownloadLink } from './download-link';
+
 export interface RemoteQueryResult {
   executionEndTime: Date;
   analysisResults: AnalysisResult[];
-  allResultsDownloadUri: string;
+  allResultsDownloadLink: DownloadLink;
 }
 
 export interface AnalysisResult {
   nwo: string,
   resultCount: number,
-  downloadUri: string,
+  downloadLink: DownloadLink,
   fileSizeInBytes: number
 }

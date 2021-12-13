@@ -6,6 +6,7 @@ import { AnalysisResult, RemoteQueryResult } from '../shared/remote-query-result
 import * as octicons from '../../view/octicons';
 
 import { vscode } from '../../view/vscode-api';
+import { DownloadLink } from '../download-link';
 
 const numOfReposInContractedMode = 10;
 
@@ -17,8 +18,18 @@ const emptyQueryResult: RemoteQueryResult = {
   totalResultCount: 0,
   executionTimestamp: '',
   executionDuration: '',
-  downloadLink: '',
+  downloadLink: {
+    id: '',
+    urlPath: '',
+  },
   results: []
+};
+
+const download = (link: DownloadLink) => {
+  vscode.postMessage({
+    t: 'remoteQueryDownloadLinkClicked',
+    downloadLink: link
+  });
 };
 
 const AnalysisResultItem = (props: AnalysisResult) => (
@@ -31,7 +42,7 @@ const AnalysisResultItem = (props: AnalysisResult) => (
     <span className="vscode-codeql__analysis-item">
       <a
         className="vscode-codeql__download-link"
-        href={props.downloadLink}>
+        onClick={() => download(props.downloadLink)}>
         {octicons.download}{props.fileSize}
       </a>
     </span>
@@ -78,7 +89,8 @@ export function RemoteQueries(): JSX.Element {
 
       <div className="vscode-codeql__query-summary-container">
         <h2 className="vscode-codeql__query-summary-title">Repositories with results ({queryResult.affectedRepositoryCount}):</h2>
-        <a className="vscode-codeql__summary-download-link vscode-codeql__download-link" href={queryResult.downloadLink}>
+        <a className="vscode-codeql__summary-download-link vscode-codeql__download-link"
+          onClick={() => download(queryResult.downloadLink)}>
           {octicons.download}Download all
         </a>
       </div>

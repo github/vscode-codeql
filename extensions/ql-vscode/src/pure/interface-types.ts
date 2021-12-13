@@ -1,4 +1,5 @@
 import * as sarif from 'sarif';
+import { DownloadLink } from '../remote-queries/download-link';
 import { RemoteQueryResult } from '../remote-queries/shared/remote-query-result';
 import { RawResultSet, ResultRow, ResultSetSchema, Column, ResolvableLocationValue } from './bqrs-cli-types';
 
@@ -368,7 +369,8 @@ export interface ParsedResultSets {
 
 export type FromRemoteQueriesMessage =
   | RemoteQueryLoadedMessage
-  | RemoteQueryErrorMessage;
+  | RemoteQueryErrorMessage
+  | RemoteQueryDownloadLinkClickedMessage;
 
 export type ToRemoteQueriesMessage =
   | SetRemoteQueryResultMessage;
@@ -385,4 +387,9 @@ export interface SetRemoteQueryResultMessage {
 export interface RemoteQueryErrorMessage {
   t: 'remoteQueryError';
   error: string;
+}
+
+export interface RemoteQueryDownloadLinkClickedMessage {
+  t: 'remoteQueryDownloadLinkClicked';
+  downloadLink: DownloadLink;
 }
