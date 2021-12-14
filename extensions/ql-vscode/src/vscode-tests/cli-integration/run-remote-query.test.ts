@@ -110,10 +110,14 @@ describe('Remote queries', function() {
     expect(fs.existsSync(path.join(compiledPackDir, 'not-in-pack.ql'))).to.be.false;
     verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'in-pack.ql', '0.0.0', await pathSerializationBroken());
 
-    // dependencies
     const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
     const packNames = fs.readdirSync(libraryDir).sort();
-    expect(packNames).to.deep.equal(['javascript-all', 'javascript-upgrades']);
+
+    // check dependencies.
+    // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
+    // later only have ['javascript-all']. ensure this test can handle eitehr
+    expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
+    expect(packNames[0]).to.deep.equal('javascript-all');
   });
 
   it('should run a remote query that is not part of a qlpack', async () => {
@@ -166,11 +170,15 @@ describe('Remote queries', function() {
     expect(qlpackContents.version).to.equal('0.0.0');
     expect(qlpackContents.dependencies?.['codeql/javascript-all']).to.equal('*');
 
-    // dependencies
     const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
     printDirectoryContents(libraryDir);
     const packNames = fs.readdirSync(libraryDir).sort();
-    expect(packNames).to.deep.equal(['javascript-all', 'javascript-upgrades']);
+
+    // check dependencies.
+    // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
+    // later only have ['javascript-all']. ensure this test can handle eitehr
+    expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
+    expect(packNames[0]).to.deep.equal('javascript-all');
   });
 
   it('should run a remote query that is nested inside a qlpack', async () => {
@@ -222,11 +230,15 @@ describe('Remote queries', function() {
     expect(qlpackContents.version).to.equal('0.0.0');
     expect(qlpackContents.dependencies?.['codeql/javascript-all']).to.equal('*');
 
-    // dependencies
     const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
     printDirectoryContents(libraryDir);
     const packNames = fs.readdirSync(libraryDir).sort();
-    expect(packNames).to.deep.equal(['javascript-all', 'javascript-upgrades']);
+
+    // check dependencies.
+    // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
+    // later only have ['javascript-all']. ensure this test can handle eitehr
+    expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
+    expect(packNames[0]).to.deep.equal('javascript-all');
   });
 
   it('should cancel a run before uploading', async () => {
