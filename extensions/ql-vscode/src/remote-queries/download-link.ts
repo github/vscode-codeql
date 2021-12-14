@@ -1,5 +1,5 @@
 /**
- * Represents a link to an item to be downloaded. 
+ * Represents a link to an artifact to be downloaded. 
  */
 export interface DownloadLink {
   /**
@@ -14,7 +14,7 @@ export interface DownloadLink {
   urlPath: string;
 
   /**
-   * An optional path to follow inside the downloaded directory.
+   * An optional path to follow inside the downloaded archive containing the artifact.
    */
   innerFilePath?: string;
 }

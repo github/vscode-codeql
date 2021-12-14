@@ -56,7 +56,7 @@ export class RemoteQueriesManager {
     if (queryResult.status === 'CompletedSuccessfully') {
       const resultIndex = await getRemoteQueryIndex(credentials, query);
       if (!resultIndex) {
-        await showAndLogErrorMessage(`There was an issue retrieving the result for the query ${query.queryName}`);
+        void showAndLogErrorMessage(`There was an issue retrieving the result for the query ${query.queryName}`);
         return;
       }
 
