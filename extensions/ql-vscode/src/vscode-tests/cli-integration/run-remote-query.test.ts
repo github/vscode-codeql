@@ -115,7 +115,7 @@ describe('Remote queries', function() {
 
     // check dependencies.
     // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
-    // later only have ['javascript-all']. ensure this test can handle eitehr
+    // later only have ['javascript-all']. ensure this test can handle either
     expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
     expect(packNames[0]).to.deep.equal('javascript-all');
   });
@@ -176,7 +176,7 @@ describe('Remote queries', function() {
 
     // check dependencies.
     // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
-    // later only have ['javascript-all']. ensure this test can handle eitehr
+    // later only have ['javascript-all']. ensure this test can handle either
     expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
     expect(packNames[0]).to.deep.equal('javascript-all');
   });
@@ -236,7 +236,7 @@ describe('Remote queries', function() {
 
     // check dependencies.
     // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
-    // later only have ['javascript-all']. ensure this test can handle eitehr
+    // later only have ['javascript-all']. ensure this test can handle either
     expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
     expect(packNames[0]).to.deep.equal('javascript-all');
   });
