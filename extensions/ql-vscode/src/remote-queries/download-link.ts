@@ -3,13 +3,13 @@
  */
 export interface DownloadLink {
   /**
-   *  A unique id of the file/artifact being downloaded. 
+   *  A unique id of the artifact being downloaded. 
    */
   id: string;
 
   /**
    * The URL path to use against the GitHub API to download the
-   * linked file/artifact. 
+   * linked artifact. 
    */
   urlPath: string;
 
