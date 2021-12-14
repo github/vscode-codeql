@@ -776,7 +776,7 @@ async function activateWithInstalledDistribution(
   void logger.log('Initializing remote queries interface.');
   const rqm = new RemoteQueriesManager(ctx, logger, cliServer);
 
-  registerTextProvider();
+  registerRemoteQueryTextProvider();
 
   // The "runRemoteQuery" command is internal-only.
   ctx.subscriptions.push(
@@ -991,7 +991,7 @@ const checkForUpdatesCommand = 'codeQL.checkForUpdatesToCLI';
  * 
  * TODO: Consolidate this with the 'codeql' text provider in query-history.ts.
  */
-function registerTextProvider() {
+function registerRemoteQueryTextProvider() {
   workspace.registerTextDocumentContentProvider('remote-query', {
     provideTextDocumentContent(
       uri: Uri

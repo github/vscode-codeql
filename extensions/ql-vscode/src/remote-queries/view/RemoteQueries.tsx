@@ -65,21 +65,21 @@ export function RemoteQueries(): JSX.Element {
   const [repoListExpanded, setRepoListExpanded] = useState(false);
   const numOfReposToShow = repoListExpanded ? queryResult.results.length : numOfReposInContractedMode;
 
+  const openQueryFile = () => {
+    vscode.postMessage({
+      t: 'openFile',
+      filePath: queryResult.queryFilePath
+    });
+  };
+
+  const openQueryTextVirtualFile = () => {
+    vscode.postMessage({
+      t: 'openVirtualFile',
+      queryText: queryResult.queryText
+    });
+  };
+
   try {
-    const openQueryFile = () => {
-      vscode.postMessage({
-        t: 'openFile',
-        filePath: queryResult.queryFilePath
-      });
-    };
-
-    const openQueryTextTmpFile = () => {
-      vscode.postMessage({
-        t: 'openVirtualFile',
-        queryText: queryResult.queryText
-      });
-    };
-
     return <div className="vscode-codeql__remote-queries-view">
       <h1 className="vscode-codeql__query-title">{queryResult.queryTitle}</h1>
 
@@ -94,7 +94,7 @@ export function RemoteQueries(): JSX.Element {
           </a>
         </span>
         <span>{octicons.codeSquare}
-          <a className="vscode-codeql__query-file-link" href="#" onClick={openQueryTextTmpFile}>
+          <a className="vscode-codeql__query-file-link" href="#" onClick={openQueryTextVirtualFile}>
             query
           </a>
         </span>
