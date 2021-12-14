@@ -334,17 +334,17 @@ async function convertToQlPath(filePath: string): Promise<string> {
 
 /** Gets the selected position within the given editor. */
 async function getSelectedPosition(editor: TextEditor, range?: Range): Promise<messages.Position> {
-    const selectedRange = range || editor.selection;
-    const pos = selectedRange.start;
-    const posEnd = selectedRange.end;
-    // Convert from 0-based to 1-based line and column numbers.
-    return {
-      fileName: await convertToQlPath(editor.document.fileName),
-      line: pos.line + 1,
-      column: pos.character + 1,
-      endLine: posEnd.line + 1,
-      endColumn: posEnd.character + 1
-    };
+  const selectedRange = range || editor.selection;
+  const pos = selectedRange.start;
+  const posEnd = selectedRange.end;
+  // Convert from 0-based to 1-based line and column numbers.
+  return {
+    fileName: await convertToQlPath(editor.document.fileName),
+    line: pos.line + 1,
+    column: pos.character + 1,
+    endLine: posEnd.line + 1,
+    endColumn: posEnd.character + 1
+  };
 }
 
 /**
@@ -612,13 +612,7 @@ export async function compileAndRunQueryAgainstDatabase(
   };
 
   // Read the query metadata if possible, to use in the UI.
-  let metadata: QueryMetadata | undefined;
-  try {
-    metadata = await cliServer.resolveMetadata(qlProgram.queryPath);
-  } catch (e) {
-    // Ignore errors and provide no metadata.
-    void logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
-  }
+  const metadata = await getQueryMetadata(cliServer, qlProgram.queryPath);
 
   let availableMlModels: cli.MlModelInfo[] = [];
   // The `capabilities.untrustedWorkspaces.restrictedConfigurations` entry in package.json doesn't
@@ -717,6 +711,22 @@ export async function compileAndRunQueryAgainstDatabase(
 const compilationFailedErrorTail = ' compilation failed. Please make sure there are no errors in the query, the database is up to date,' +
   ' and the query and database use the same target language. For more details on the error, go to View > Output,' +
   ' and choose CodeQL Query Server from the dropdown.';
+
+/**
+ * Gets metadata for a query, if it exists.
+ * @param cliServer The CLI server.
+ * @param queryPath The path to the query.
+ * @returns A promise that resolves to the query metadata, if available.
+ */
+export async function getQueryMetadata(cliServer: cli.CodeQLCliServer, queryPath: string): Promise<QueryMetadata | undefined> {
+  try {
+    return await cliServer.resolveMetadata(queryPath);
+  } catch (e) {
+    // Ignore errors and provide no metadata.
+    void logger.log(`Couldn't resolve metadata for ${queryPath}: ${e}`);
+    return;
+  }
+}
 
 function createSyntheticResult(
   query: QueryInfo,
