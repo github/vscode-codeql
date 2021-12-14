@@ -51,6 +51,22 @@ const AnalysisResultItem = (props: AnalysisResult) => (
   </span>
 );
 
+const SummaryWithResults = (queryResult: RemoteQueryResult) => (
+  <div className="vscode-codeql__query-summary-container">
+    <h2 className="vscode-codeql__query-summary-title">Repositories with results ({queryResult.affectedRepositoryCount}):</h2>
+    <a className="vscode-codeql__summary-download-link vscode-codeql__download-link"
+      onClick={() => download(queryResult.downloadLink)}>
+      {octicons.download}Download all
+    </a>
+  </div>
+);
+
+const SummaryNoResults = () => (
+  <div className="vscode-codeql__query-summary-container">
+    <h2 className="vscode-codeql__query-summary-title">No results found</h2>
+  </div>
+);
+
 export function RemoteQueries(): JSX.Element {
   const [queryResult, setQueryResult] = useState<RemoteQueryResult>(emptyQueryResult);
 
@@ -111,13 +127,11 @@ export function RemoteQueries(): JSX.Element {
         </span>
       </p>
 
-      <div className="vscode-codeql__query-summary-container">
-        <h2 className="vscode-codeql__query-summary-title">Repositories with results ({queryResult.affectedRepositoryCount}):</h2>
-        <a className="vscode-codeql__summary-download-link vscode-codeql__download-link"
-          onClick={() => download(queryResult.downloadLink)}>
-          {octicons.download}Download all
-        </a>
-      </div>
+      {
+        queryResult.affectedRepositoryCount === 0
+          ? <SummaryNoResults />
+          : <SummaryWithResults {...queryResult} />
+      }
 
       <ul className="vscode-codeql__results-list">
         {queryResult.results.slice(0, numOfReposToShow).map((result, i) =>
