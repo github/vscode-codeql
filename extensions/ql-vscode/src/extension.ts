@@ -12,7 +12,9 @@ import {
   env,
   window,
   QuickPickItem,
-  Range
+  Range,
+  workspace,
+  ProviderResult
 } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import * as os from 'os';
@@ -78,6 +80,7 @@ import { CodeQlStatusBarHandler } from './status-bar';
 import { Credentials } from './authentication';
 import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQuery } from './remote-queries/remote-query';
+import { URLSearchParams } from 'url';
 
 /**
  * extension.ts
@@ -773,6 +776,8 @@ async function activateWithInstalledDistribution(
   void logger.log('Initializing remote queries interface.');
   const rqm = new RemoteQueriesManager(ctx, logger, cliServer);
 
+  registerRemoteQueryTextProvider();
+
   // The "runRemoteQuery" command is internal-only.
   ctx.subscriptions.push(
     commandRunnerWithProgress('codeQL.runRemoteQuery', async (
@@ -980,3 +985,20 @@ async function initializeLogging(ctx: ExtensionContext): Promise<void> {
 }
 
 const checkForUpdatesCommand = 'codeQL.checkForUpdatesToCLI';
+
+/**
+ * This text provider lets us open readonly files in the editor.
+ * 
+ * TODO: Consolidate this with the 'codeql' text provider in query-history.ts.
+ */
+function registerRemoteQueryTextProvider() {
+  workspace.registerTextDocumentContentProvider('remote-query', {
+    provideTextDocumentContent(
+      uri: Uri
+    ): ProviderResult<string> {
+      const params = new URLSearchParams(uri.query);
+
+      return params.get('queryText');
+    },
+  });
+}

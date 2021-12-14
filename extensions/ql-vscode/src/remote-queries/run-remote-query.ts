@@ -331,7 +331,7 @@ export async function runRemoteQuery(
         return;
       }
 
-      const remoteQuery = buildRemoteQueryEntity(repositories, queryFile, owner, repo, queryStartTime, workflowRunId);
+      const remoteQuery = await buildRemoteQueryEntity(repositories, queryFile, owner, repo, queryStartTime, workflowRunId);
 
       // don't return the path because it has been deleted
       return { query: remoteQuery };
@@ -451,14 +451,14 @@ async function ensureNameAndSuite(queryPackDir: string, packRelativePath: string
   await fs.writeFile(packPath, yaml.safeDump(qlpack));
 }
 
-function buildRemoteQueryEntity(
+async function buildRemoteQueryEntity(
   repositories: string[],
   queryFilePath: string,
   controllerRepoOwner: string,
   controllerRepoName: string,
   queryStartTime: Date,
   workflowRunId: number
-): RemoteQuery {
+): Promise<RemoteQuery> {
   // For now, just use the file name as the query name. 
   const queryName = path.basename(queryFilePath);
 
@@ -467,9 +467,12 @@ function buildRemoteQueryEntity(
     return { owner: owner, name: repo };
   });
 
+  const queryText = await fs.readFile(queryFilePath, 'utf8');
+
   return {
     queryName,
     queryFilePath,
+    queryText,
     controllerRepository: {
       owner: controllerRepoOwner,
       name: controllerRepoName,

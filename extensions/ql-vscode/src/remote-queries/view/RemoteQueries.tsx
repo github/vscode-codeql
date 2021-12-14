@@ -12,7 +12,9 @@ const numOfReposInContractedMode = 10;
 
 const emptyQueryResult: RemoteQueryResult = {
   queryTitle: '',
-  queryFile: '',
+  queryFileName: '',
+  queryFilePath: '',
+  queryText: '',
   totalRepositoryCount: 0,
   affectedRepositoryCount: 0,
   totalResultCount: 0,
@@ -74,6 +76,20 @@ export function RemoteQueries(): JSX.Element {
   const [repoListExpanded, setRepoListExpanded] = useState(false);
   const numOfReposToShow = repoListExpanded ? queryResult.results.length : numOfReposInContractedMode;
 
+  const openQueryFile = () => {
+    vscode.postMessage({
+      t: 'openFile',
+      filePath: queryResult.queryFilePath
+    });
+  };
+
+  const openQueryTextVirtualFile = () => {
+    vscode.postMessage({
+      t: 'openVirtualFile',
+      queryText: queryResult.queryText
+    });
+  };
+
   try {
     return <div className="vscode-codeql__remote-queries-view">
       <h1 className="vscode-codeql__query-title">{queryResult.queryTitle}</h1>
@@ -83,8 +99,16 @@ export function RemoteQueries(): JSX.Element {
         ({queryResult.executionDuration}), {queryResult.executionTimestamp}
       </p>
       <p className="vscode-codeql__paragraph">
-        <span className="vscode-codeql__query-file">{octicons.file} <span>{queryResult.queryFile}</span></span>
-        <span>{octicons.codeSquare} <span>query</span></span>
+        <span className="vscode-codeql__query-file">{octicons.file}
+          <a className="vscode-codeql__query-file-link" href="#" onClick={openQueryFile}>
+            {queryResult.queryFileName}
+          </a>
+        </span>
+        <span>{octicons.codeSquare}
+          <a className="vscode-codeql__query-file-link" href="#" onClick={openQueryTextVirtualFile}>
+            query
+          </a>
+        </span>
       </p>
 
       <div className="vscode-codeql__query-summary-container">

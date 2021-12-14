@@ -4,6 +4,7 @@ import {
   window as Window,
   ViewColumn,
   Uri,
+  workspace,
 } from 'vscode';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -24,7 +25,9 @@ import { RemoteQueryResult as RemoteQueryResultViewModel } from './shared/remote
 import { AnalysisResult as AnalysisResultViewModel } from './shared/remote-query-result';
 import { downloadArtifactFromLink } from './gh-actions-api-client';
 import { Credentials } from '../authentication';
-import { showInformationMessageWithAction } from '../helpers';
+import { showAndLogWarningMessage, showInformationMessageWithAction } from '../helpers';
+import { URLSearchParams } from 'url';
+import { SHOW_QUERY_TEXT_MSG } from '../query-history';
 
 export class RemoteQueriesInterfaceManager {
   private panel: WebviewPanel | undefined;
@@ -59,7 +62,7 @@ export class RemoteQueriesInterfaceManager {
    * @returns A fully created view model.
    */
   private buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
-    const queryFile = path.basename(query.queryFilePath);
+    const queryFileName = path.basename(query.queryFilePath);
     const totalResultCount = queryResult.analysisResults.reduce((acc, cur) => acc + cur.resultCount, 0);
     const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);
     const analysisResults = this.buildAnalysisResults(queryResult.analysisResults);
@@ -67,7 +70,9 @@ export class RemoteQueriesInterfaceManager {
 
     return {
       queryTitle: query.queryName,
-      queryFile: queryFile,
+      queryFileName: queryFileName,
+      queryFilePath: query.queryFilePath,
+      queryText: query.queryText,
       totalRepositoryCount: query.repositories.length,
       affectedRepositoryCount: affectedRepositories.length,
       totalResultCount: totalResultCount,
@@ -135,6 +140,31 @@ export class RemoteQueriesInterfaceManager {
     });
   }
 
+  private async openFile(filePath: string) {
+    try {
+      const textDocument = await workspace.openTextDocument(filePath);
+      await Window.showTextDocument(textDocument, ViewColumn.One);
+    } catch (error) {
+      void showAndLogWarningMessage(`Could not open file: ${filePath}`);
+    }
+  }
+
+  private async openVirtualFile(text: string) {
+    try {
+      const params = new URLSearchParams({
+        queryText: encodeURIComponent(SHOW_QUERY_TEXT_MSG + text)
+      });
+      const uri = Uri.parse(
+        `remote-query:query-text.ql?${params.toString()}`,
+        true
+      );
+      const doc = await workspace.openTextDocument(uri);
+      await Window.showTextDocument(doc, { preview: false });
+    } catch (error) {
+      void showAndLogWarningMessage('Could not open query text');
+    }
+  }
+
   private async handleMsgFromView(
     msg: FromRemoteQueriesMessage
   ): Promise<void> {
@@ -148,6 +178,12 @@ export class RemoteQueriesInterfaceManager {
         void this.logger.log(
           `Remote query error: ${msg.error}`
         );
+        break;
+      case 'openFile':
+        await this.openFile(msg.filePath);
+        break;
+      case 'openVirtualFile':
+        await this.openVirtualFile(msg.queryText);
         break;
       case 'remoteQueryDownloadLinkClicked':
         await this.handleDownloadLinkClicked(msg);

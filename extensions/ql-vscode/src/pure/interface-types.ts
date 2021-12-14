@@ -182,6 +182,11 @@ export interface OpenFileMsg {
   filePath: string;
 }
 
+export interface OpenVirtualFileMsg {
+  t: 'openVirtualFile';
+  queryText: string;
+}
+
 /**
  * Message from the results view to toggle the display of
  * query diagnostics.
@@ -370,6 +375,8 @@ export interface ParsedResultSets {
 export type FromRemoteQueriesMessage =
   | RemoteQueryLoadedMessage
   | RemoteQueryErrorMessage
+  | OpenFileMsg
+  | OpenVirtualFileMsg
   | RemoteQueryDownloadLinkClickedMessage;
 
 export type ToRemoteQueriesMessage =

@@ -40,6 +40,16 @@
   padding-right: 1em;
 }
 
+.vscode-codeql__query-file-link {
+  text-decoration: none;
+  padding-left: 0.3em;
+  color: var(--vscode-editor-foreground);
+}
+
+.vscode-codeql__query-file-link:hover {
+  color: var(--vscode-editor-foreground);
+}
+
 .vscode-codeql__query-summary-container {
   padding-top: 1.5em;
 }
