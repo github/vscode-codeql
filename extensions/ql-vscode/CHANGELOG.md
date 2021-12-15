@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Avoid creating a third column when opening the results view. The results view will always open to the right of the active editor, unless the active editor is in the rightmost editor column. In that case open in the leftmost column. [#1037](https://github.com/github/vscode-codeql/pull/1037)
 - Add a CodeLens to make the Quick Evaluation command more accessible. Click the `Quick Evaluation` prompt above a predicate definition in the editor to evaluate that predicate on its own. [#1035](https://github.com/github/vscode-codeql/pull/1035)
 - Fix a bug where the _Alerts_ option would show in the results view even if there is no alerts table available. [#1038](https://github.com/github/vscode-codeql/pull/1038)
 
