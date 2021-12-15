@@ -8,11 +8,12 @@ import { Credentials } from '../authentication';
 import * as cli from '../cli';
 import { logger } from '../logging';
 import { getRemoteControllerRepo, getRemoteRepositoryLists, setRemoteControllerRepo } from '../config';
-import { tmpDir } from '../run-queries';
+import { getQueryMetadata, tmpDir } from '../run-queries';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { OctokitResponse } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
+import { QueryMetadata } from '../pure/interface-types';
 
 interface Config {
   repositories: string[];
@@ -323,6 +324,7 @@ export async function runRemoteQuery(
 
     const workflowRunId = await runRemoteQueriesApiRequest(credentials, ref, language, repositories, owner, repo, base64Pack, dryRun);
     const queryStartTime = new Date();
+    const queryMetadata = await getQueryMetadata(cliServer, queryFile);
 
     if (dryRun) {
       return { queryDirPath: remoteQueryDir.path };
@@ -331,7 +333,7 @@ export async function runRemoteQuery(
         return;
       }
 
-      const remoteQuery = buildRemoteQueryEntity(repositories, queryFile, owner, repo, queryStartTime, workflowRunId);
+      const remoteQuery = await buildRemoteQueryEntity(repositories, queryFile, queryMetadata, owner, repo, queryStartTime, workflowRunId);
 
       // don't return the path because it has been deleted
       return { query: remoteQuery };
@@ -451,25 +453,29 @@ async function ensureNameAndSuite(queryPackDir: string, packRelativePath: string
   await fs.writeFile(packPath, yaml.safeDump(qlpack));
 }
 
-function buildRemoteQueryEntity(
+async function buildRemoteQueryEntity(
   repositories: string[],
   queryFilePath: string,
+  queryMetadata: QueryMetadata | undefined,
   controllerRepoOwner: string,
   controllerRepoName: string,
   queryStartTime: Date,
   workflowRunId: number
-): RemoteQuery {
-  // For now, just use the file name as the query name. 
-  const queryName = path.basename(queryFilePath);
+): Promise<RemoteQuery> {
+  // The query name is either the name as specified in the query metadata, or the file name. 
+  const queryName = queryMetadata?.name ?? path.basename(queryFilePath);
 
   const queryRepos = repositories.map(r => {
     const [owner, repo] = r.split('/');
     return { owner: owner, name: repo };
   });
 
+  const queryText = await fs.readFile(queryFilePath, 'utf8');
+
   return {
     queryName,
     queryFilePath,
+    queryText,
     controllerRepository: {
       owner: controllerRepoOwner,
       name: controllerRepoName,

@@ -11,6 +11,7 @@
   display: inline-block;
   font-size: x-small;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .vscode-codeql__download-link svg {
@@ -37,6 +38,16 @@
 
 .vscode-codeql__query-file {
   padding-right: 1em;
+}
+
+.vscode-codeql__query-file-link {
+  text-decoration: none;
+  padding-left: 0.3em;
+  color: var(--vscode-editor-foreground);
+}
+
+.vscode-codeql__query-file-link:hover {
+  color: var(--vscode-editor-foreground);
 }
 
 .vscode-codeql__query-summary-container {

@@ -6,19 +6,32 @@ import { AnalysisResult, RemoteQueryResult } from '../shared/remote-query-result
 import * as octicons from '../../view/octicons';
 
 import { vscode } from '../../view/vscode-api';
+import { DownloadLink } from '../download-link';
 
 const numOfReposInContractedMode = 10;
 
 const emptyQueryResult: RemoteQueryResult = {
   queryTitle: '',
-  queryFile: '',
+  queryFileName: '',
+  queryFilePath: '',
+  queryText: '',
   totalRepositoryCount: 0,
   affectedRepositoryCount: 0,
   totalResultCount: 0,
   executionTimestamp: '',
   executionDuration: '',
-  downloadLink: '',
+  downloadLink: {
+    id: '',
+    urlPath: '',
+  },
   results: []
+};
+
+const download = (link: DownloadLink) => {
+  vscode.postMessage({
+    t: 'remoteQueryDownloadLinkClicked',
+    downloadLink: link
+  });
 };
 
 const AnalysisResultItem = (props: AnalysisResult) => (
@@ -31,11 +44,27 @@ const AnalysisResultItem = (props: AnalysisResult) => (
     <span className="vscode-codeql__analysis-item">
       <a
         className="vscode-codeql__download-link"
-        href={props.downloadLink}>
+        onClick={() => download(props.downloadLink)}>
         {octicons.download}{props.fileSize}
       </a>
     </span>
   </span>
+);
+
+const SummaryWithResults = (queryResult: RemoteQueryResult) => (
+  <div className="vscode-codeql__query-summary-container">
+    <h2 className="vscode-codeql__query-summary-title">Repositories with results ({queryResult.affectedRepositoryCount}):</h2>
+    <a className="vscode-codeql__summary-download-link vscode-codeql__download-link"
+      onClick={() => download(queryResult.downloadLink)}>
+      {octicons.download}Download all
+    </a>
+  </div>
+);
+
+const SummaryNoResults = () => (
+  <div className="vscode-codeql__query-summary-container">
+    <h2 className="vscode-codeql__query-summary-title">No results found</h2>
+  </div>
 );
 
 export function RemoteQueries(): JSX.Element {
@@ -63,6 +92,20 @@ export function RemoteQueries(): JSX.Element {
   const [repoListExpanded, setRepoListExpanded] = useState(false);
   const numOfReposToShow = repoListExpanded ? queryResult.results.length : numOfReposInContractedMode;
 
+  const openQueryFile = () => {
+    vscode.postMessage({
+      t: 'openFile',
+      filePath: queryResult.queryFilePath
+    });
+  };
+
+  const openQueryTextVirtualFile = () => {
+    vscode.postMessage({
+      t: 'openVirtualFile',
+      queryText: queryResult.queryText
+    });
+  };
+
   try {
     return <div className="vscode-codeql__remote-queries-view">
       <h1 className="vscode-codeql__query-title">{queryResult.queryTitle}</h1>
@@ -72,16 +115,23 @@ export function RemoteQueries(): JSX.Element {
         ({queryResult.executionDuration}), {queryResult.executionTimestamp}
       </p>
       <p className="vscode-codeql__paragraph">
-        <span className="vscode-codeql__query-file">{octicons.file} <span>{queryResult.queryFile}</span></span>
-        <span>{octicons.codeSquare} <span>query</span></span>
+        <span className="vscode-codeql__query-file">{octicons.file}
+          <a className="vscode-codeql__query-file-link" href="#" onClick={openQueryFile}>
+            {queryResult.queryFileName}
+          </a>
+        </span>
+        <span>{octicons.codeSquare}
+          <a className="vscode-codeql__query-file-link" href="#" onClick={openQueryTextVirtualFile}>
+            query
+          </a>
+        </span>
       </p>
 
-      <div className="vscode-codeql__query-summary-container">
-        <h2 className="vscode-codeql__query-summary-title">Repositories with results ({queryResult.affectedRepositoryCount}):</h2>
-        <a className="vscode-codeql__summary-download-link vscode-codeql__download-link" href={queryResult.downloadLink}>
-          {octicons.download}Download all
-        </a>
-      </div>
+      {
+        queryResult.affectedRepositoryCount === 0
+          ? <SummaryNoResults />
+          : <SummaryWithResults {...queryResult} />
+      }
 
       <ul className="vscode-codeql__results-list">
         {queryResult.results.slice(0, numOfReposToShow).map((result, i) =>

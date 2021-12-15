@@ -81,7 +81,7 @@ You can use VS Code to debug the extension without explicitly installing it. Jus
 
 Unit tests and many integration tests do not require a copy of the CodeQL CLI.
 
-Outside of vscode, run:
+Outside of vscode, in the `extensions/ql-vscode` directory, run:
 
 ```shell
 npm run test && npm run integration

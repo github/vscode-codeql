@@ -5,6 +5,7 @@ import * as tmp from 'tmp-promise';
 import {
   CancellationToken,
   ConfigurationTarget,
+  Range,
   TextDocument,
   TextEditor,
   Uri,
@@ -332,9 +333,10 @@ async function convertToQlPath(filePath: string): Promise<string> {
 
 
 /** Gets the selected position within the given editor. */
-async function getSelectedPosition(editor: TextEditor): Promise<messages.Position> {
-  const pos = editor.selection.start;
-  const posEnd = editor.selection.end;
+async function getSelectedPosition(editor: TextEditor, range?: Range): Promise<messages.Position> {
+  const selectedRange = range || editor.selection;
+  const pos = selectedRange.start;
+  const posEnd = selectedRange.end;
   // Convert from 0-based to 1-based line and column numbers.
   return {
     fileName: await convertToQlPath(editor.document.fileName),
@@ -490,7 +492,7 @@ type SelectedQuery = {
  * @param selectedResourceUri The selected resource when the command was run.
  * @param quickEval Whether the command being run is `Quick Evaluation`.
 */
-export async function determineSelectedQuery(selectedResourceUri: Uri | undefined, quickEval: boolean): Promise<SelectedQuery> {
+export async function determineSelectedQuery(selectedResourceUri: Uri | undefined, quickEval: boolean, range?: Range): Promise<SelectedQuery> {
   const editor = window.activeTextEditor;
 
   // Choose which QL file to use.
@@ -544,7 +546,7 @@ export async function determineSelectedQuery(selectedResourceUri: Uri | undefine
       // Report an error if we end up in this (hopefully unlikely) situation.
       throw new Error('The selected resource for quick evaluation should match the active editor.');
     }
-    quickEvalPosition = await getSelectedPosition(editor);
+    quickEvalPosition = await getSelectedPosition(editor, range);
     quickEvalText = editor.document.getText(editor.selection);
   }
 
@@ -560,13 +562,14 @@ export async function compileAndRunQueryAgainstDatabase(
   progress: ProgressCallback,
   token: CancellationToken,
   templates?: messages.TemplateDefinitions,
+  range?: Range
 ): Promise<QueryWithResults> {
   if (!db.contents || !db.contents.dbSchemeUri) {
     throw new Error(`Database ${db.databaseUri} does not have a CodeQL database scheme.`);
   }
 
   // Determine which query to run, based on the selection and the active editor.
-  const { queryPath, quickEvalPosition, quickEvalText } = await determineSelectedQuery(selectedQueryUri, quickEval);
+  const { queryPath, quickEvalPosition, quickEvalText } = await determineSelectedQuery(selectedQueryUri, quickEval, range);
 
   const historyItemOptions: QueryHistoryItemOptions = {};
   historyItemOptions.isQuickQuery === isQuickQueryPath(queryPath);
@@ -609,13 +612,7 @@ export async function compileAndRunQueryAgainstDatabase(
   };
 
   // Read the query metadata if possible, to use in the UI.
-  let metadata: QueryMetadata | undefined;
-  try {
-    metadata = await cliServer.resolveMetadata(qlProgram.queryPath);
-  } catch (e) {
-    // Ignore errors and provide no metadata.
-    void logger.log(`Couldn't resolve metadata for ${qlProgram.queryPath}: ${e}`);
-  }
+  const metadata = await getQueryMetadata(cliServer, qlProgram.queryPath);
 
   let availableMlModels: cli.MlModelInfo[] = [];
   // The `capabilities.untrustedWorkspaces.restrictedConfigurations` entry in package.json doesn't
@@ -714,6 +711,22 @@ export async function compileAndRunQueryAgainstDatabase(
 const compilationFailedErrorTail = ' compilation failed. Please make sure there are no errors in the query, the database is up to date,' +
   ' and the query and database use the same target language. For more details on the error, go to View > Output,' +
   ' and choose CodeQL Query Server from the dropdown.';
+
+/**
+ * Gets metadata for a query, if it exists.
+ * @param cliServer The CLI server.
+ * @param queryPath The path to the query.
+ * @returns A promise that resolves to the query metadata, if available.
+ */
+export async function getQueryMetadata(cliServer: cli.CodeQLCliServer, queryPath: string): Promise<QueryMetadata | undefined> {
+  try {
+    return await cliServer.resolveMetadata(queryPath);
+  } catch (e) {
+    // Ignore errors and provide no metadata.
+    void logger.log(`Couldn't resolve metadata for ${queryPath}: ${e}`);
+    return;
+  }
+}
 
 function createSyntheticResult(
   query: QueryInfo,

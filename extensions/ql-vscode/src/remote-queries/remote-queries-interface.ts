@@ -4,13 +4,17 @@ import {
   window as Window,
   ViewColumn,
   Uri,
+  workspace,
 } from 'vscode';
 import * as path from 'path';
+import * as vscode from 'vscode';
+import * as fs from 'fs-extra';
 
 import { tmpDir } from '../run-queries';
 import {
   ToRemoteQueriesMessage,
   FromRemoteQueriesMessage,
+  RemoteQueryDownloadLinkClickedMessage,
 } from '../pure/interface-types';
 import { Logger } from '../logging';
 import { getHtmlForWebview } from '../interface-utils';
@@ -19,6 +23,11 @@ import { AnalysisResult, RemoteQueryResult } from './remote-query-result';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryResult as RemoteQueryResultViewModel } from './shared/remote-query-result';
 import { AnalysisResult as AnalysisResultViewModel } from './shared/remote-query-result';
+import { downloadArtifactFromLink } from './gh-actions-api-client';
+import { Credentials } from '../authentication';
+import { showAndLogWarningMessage, showInformationMessageWithAction } from '../helpers';
+import { URLSearchParams } from 'url';
+import { SHOW_QUERY_TEXT_MSG } from '../query-history';
 
 export class RemoteQueriesInterfaceManager {
   private panel: WebviewPanel | undefined;
@@ -53,7 +62,7 @@ export class RemoteQueriesInterfaceManager {
    * @returns A fully created view model.
    */
   private buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
-    const queryFile = path.basename(query.queryFilePath);
+    const queryFileName = path.basename(query.queryFilePath);
     const totalResultCount = queryResult.analysisResults.reduce((acc, cur) => acc + cur.resultCount, 0);
     const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);
     const analysisResults = this.buildAnalysisResults(queryResult.analysisResults);
@@ -61,13 +70,15 @@ export class RemoteQueriesInterfaceManager {
 
     return {
       queryTitle: query.queryName,
-      queryFile: queryFile,
+      queryFileName: queryFileName,
+      queryFilePath: query.queryFilePath,
+      queryText: query.queryText,
       totalRepositoryCount: query.repositories.length,
       affectedRepositoryCount: affectedRepositories.length,
       totalResultCount: totalResultCount,
       executionTimestamp: this.formatDate(query.executionStartTime),
       executionDuration: executionDuration,
-      downloadLink: queryResult.allResultsDownloadUri,
+      downloadLink: queryResult.allResultsDownloadLink,
       results: analysisResults
     };
   }
@@ -129,6 +140,31 @@ export class RemoteQueriesInterfaceManager {
     });
   }
 
+  private async openFile(filePath: string) {
+    try {
+      const textDocument = await workspace.openTextDocument(filePath);
+      await Window.showTextDocument(textDocument, ViewColumn.One);
+    } catch (error) {
+      void showAndLogWarningMessage(`Could not open file: ${filePath}`);
+    }
+  }
+
+  private async openVirtualFile(text: string) {
+    try {
+      const params = new URLSearchParams({
+        queryText: encodeURIComponent(SHOW_QUERY_TEXT_MSG + text)
+      });
+      const uri = Uri.parse(
+        `remote-query:query-text.ql?${params.toString()}`,
+        true
+      );
+      const doc = await workspace.openTextDocument(uri);
+      await Window.showTextDocument(doc, { preview: false });
+    } catch (error) {
+      void showAndLogWarningMessage('Could not open query text');
+    }
+  }
+
   private async handleMsgFromView(
     msg: FromRemoteQueriesMessage
   ): Promise<void> {
@@ -143,8 +179,35 @@ export class RemoteQueriesInterfaceManager {
           `Remote query error: ${msg.error}`
         );
         break;
+      case 'openFile':
+        await this.openFile(msg.filePath);
+        break;
+      case 'openVirtualFile':
+        await this.openVirtualFile(msg.queryText);
+        break;
+      case 'remoteQueryDownloadLinkClicked':
+        await this.handleDownloadLinkClicked(msg);
+        break;
       default:
         assertNever(msg);
+    }
+  }
+
+  private async handleDownloadLinkClicked(msg: RemoteQueryDownloadLinkClickedMessage): Promise<void> {
+    const credentials = await Credentials.initialize(this.ctx);
+
+    const filePath = await downloadArtifactFromLink(credentials, msg.downloadLink);
+    const isDir = (await fs.stat(filePath)).isDirectory();
+    const message = `Result file saved at ${filePath}`;
+    if (isDir) {
+      await vscode.window.showInformationMessage(message);
+    }
+    else {
+      const shouldOpenResults = await showInformationMessageWithAction(message, 'Open');
+      if (shouldOpenResults) {
+        const textDocument = await vscode.workspace.openTextDocument(filePath);
+        await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+      }
     }
   }
 
@@ -208,9 +271,8 @@ export class RemoteQueriesInterfaceManager {
     return sortedAnalysisResults.map((analysisResult) => ({
       nwo: analysisResult.nwo,
       resultCount: analysisResult.resultCount,
-      downloadLink: analysisResult.downloadUri,
+      downloadLink: analysisResult.downloadLink,
       fileSize: this.formatFileSize(analysisResult.fileSizeInBytes)
     }));
   }
 }
-
