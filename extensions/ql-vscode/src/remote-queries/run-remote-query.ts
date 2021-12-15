@@ -3,12 +3,20 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
 import * as tmp from 'tmp-promise';
-import { askForLanguage, findLanguage, getOnDiskWorkspaceFolders, showAndLogErrorMessage, showAndLogInformationMessage, showInformationMessageWithAction } from '../helpers';
+import {
+  askForLanguage,
+  findLanguage,
+  getOnDiskWorkspaceFolders,
+  showAndLogErrorMessage,
+  showAndLogInformationMessage,
+  showInformationMessageWithAction,
+  tryGetQueryMetadata
+} from '../helpers';
 import { Credentials } from '../authentication';
 import * as cli from '../cli';
 import { logger } from '../logging';
 import { getRemoteControllerRepo, getRemoteRepositoryLists, setRemoteControllerRepo } from '../config';
-import { getQueryMetadata, tmpDir } from '../run-queries';
+import { tmpDir } from '../run-queries';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { OctokitResponse } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
@@ -324,7 +332,7 @@ export async function runRemoteQuery(
 
     const workflowRunId = await runRemoteQueriesApiRequest(credentials, ref, language, repositories, owner, repo, base64Pack, dryRun);
     const queryStartTime = new Date();
-    const queryMetadata = await getQueryMetadata(cliServer, queryFile);
+    const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
 
     if (dryRun) {
       return { queryDirPath: remoteQueryDir.path };
