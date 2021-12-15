@@ -5,11 +5,13 @@ import { ProgressCallback } from '../commandRunner';
 import { showAndLogErrorMessage, showInformationMessageWithAction } from '../helpers';
 import { Logger } from '../logging';
 import { runRemoteQuery } from './run-remote-query';
-import { getResultIndex, ResultIndexItem } from './gh-actions-api-client';
 import { RemoteQueriesInterfaceManager } from './remote-queries-interface';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueriesMonitor } from './remote-queries-monitor';
+import { getRemoteQueryIndex } from './gh-actions-api-client';
+import { RemoteQueryResultIndex } from './remote-query-result-index';
 import { RemoteQueryResult } from './remote-query-result';
+import { DownloadLink } from './download-link';
 
 export class RemoteQueriesManager {
   private readonly remoteQueriesMonitor: RemoteQueriesMonitor;
@@ -52,14 +54,19 @@ export class RemoteQueriesManager {
     const executionEndTime = new Date();
 
     if (queryResult.status === 'CompletedSuccessfully') {
-      const resultIndexItems = await this.downloadResultIndex(credentials, query);
+      const resultIndex = await getRemoteQueryIndex(credentials, query);
+      if (!resultIndex) {
+        void showAndLogErrorMessage(`There was an issue retrieving the result for the query ${query.queryName}`);
+        return;
+      }
 
-      const totalResultCount = resultIndexItems.reduce((acc, cur) => acc + cur.results_count, 0);
+      const queryResult = this.mapQueryResult(executionEndTime, resultIndex);
+
+      const totalResultCount = queryResult.analysisResults.reduce((acc, cur) => acc + cur.resultCount, 0);
       const message = `Query "${query.queryName}" run on ${query.repositories.length} repositories and returned ${totalResultCount} results`;
 
       const shouldOpenView = await showInformationMessageWithAction(message, 'View');
       if (shouldOpenView) {
-        const queryResult = this.mapQueryResult(executionEndTime, resultIndexItems);
         const rqim = new RemoteQueriesInterfaceManager(this.ctx, this.logger);
         await rqim.showResults(query, queryResult);
       }
@@ -71,31 +78,25 @@ export class RemoteQueriesManager {
     }
   }
 
-  private async downloadResultIndex(credentials: Credentials, query: RemoteQuery) {
-    return await getResultIndex(
-      credentials,
-      query.controllerRepository.owner,
-      query.controllerRepository.name,
-      query.actionsWorkflowRunId);
-  }
-
-  private mapQueryResult(executionEndTime: Date, resultindexItems: ResultIndexItem[]): RemoteQueryResult {
-    // Example URIs are used for now, but a solution for downloading the results will soon be implemented.
-    const allResultsDownloadUri = 'www.example.com';
-    const analysisDownloadUri = 'www.example.com';
-
-    const analysisResults = resultindexItems.map(ri => ({
-      nwo: ri.nwo,
-      resultCount: ri.results_count,
-      downloadUri: analysisDownloadUri,
-      fileSizeInBytes: ri.sarif_file_size || ri.bqrs_file_size,
-    })
-    );
+  private mapQueryResult(executionEndTime: Date, resultIndex: RemoteQueryResultIndex): RemoteQueryResult {
+    const analysisResults = resultIndex.items.map(item => ({
+      nwo: item.nwo,
+      resultCount: item.resultCount,
+      fileSizeInBytes: item.sarifFileSize ? item.sarifFileSize : item.bqrsFileSize,
+      downloadLink: {
+        id: item.artifactId.toString(),
+        urlPath: `${resultIndex.artifactsUrlPath}/${item.artifactId}`,
+        innerFilePath: item.sarifFileSize ? 'results.sarif' : 'results.bqrs'
+      } as DownloadLink
+    }));
 
     return {
       executionEndTime,
       analysisResults,
-      allResultsDownloadUri,
+      allResultsDownloadLink: {
+        id: resultIndex.allResultsArtifactId.toString(),
+        urlPath: `${resultIndex.artifactsUrlPath}/${resultIndex.allResultsArtifactId}`
+      }
     };
   }
 }

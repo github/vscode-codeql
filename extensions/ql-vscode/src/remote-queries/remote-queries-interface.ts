@@ -7,11 +7,14 @@ import {
   workspace,
 } from 'vscode';
 import * as path from 'path';
+import * as vscode from 'vscode';
+import * as fs from 'fs-extra';
 
 import { tmpDir } from '../run-queries';
 import {
   ToRemoteQueriesMessage,
   FromRemoteQueriesMessage,
+  RemoteQueryDownloadLinkClickedMessage,
 } from '../pure/interface-types';
 import { Logger } from '../logging';
 import { getHtmlForWebview } from '../interface-utils';
@@ -20,7 +23,9 @@ import { AnalysisResult, RemoteQueryResult } from './remote-query-result';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryResult as RemoteQueryResultViewModel } from './shared/remote-query-result';
 import { AnalysisResult as AnalysisResultViewModel } from './shared/remote-query-result';
-import { showAndLogWarningMessage } from '../helpers';
+import { downloadArtifactFromLink } from './gh-actions-api-client';
+import { Credentials } from '../authentication';
+import { showAndLogWarningMessage, showInformationMessageWithAction } from '../helpers';
 import { URLSearchParams } from 'url';
 import { SHOW_QUERY_TEXT_MSG } from '../query-history';
 
@@ -73,7 +78,7 @@ export class RemoteQueriesInterfaceManager {
       totalResultCount: totalResultCount,
       executionTimestamp: this.formatDate(query.executionStartTime),
       executionDuration: executionDuration,
-      downloadLink: queryResult.allResultsDownloadUri,
+      downloadLink: queryResult.allResultsDownloadLink,
       results: analysisResults
     };
   }
@@ -180,8 +185,29 @@ export class RemoteQueriesInterfaceManager {
       case 'openVirtualFile':
         await this.openVirtualFile(msg.queryText);
         break;
+      case 'remoteQueryDownloadLinkClicked':
+        await this.handleDownloadLinkClicked(msg);
+        break;
       default:
         assertNever(msg);
+    }
+  }
+
+  private async handleDownloadLinkClicked(msg: RemoteQueryDownloadLinkClickedMessage): Promise<void> {
+    const credentials = await Credentials.initialize(this.ctx);
+
+    const filePath = await downloadArtifactFromLink(credentials, msg.downloadLink);
+    const isDir = (await fs.stat(filePath)).isDirectory();
+    const message = `Result file saved at ${filePath}`;
+    if (isDir) {
+      await vscode.window.showInformationMessage(message);
+    }
+    else {
+      const shouldOpenResults = await showInformationMessageWithAction(message, 'Open');
+      if (shouldOpenResults) {
+        const textDocument = await vscode.workspace.openTextDocument(filePath);
+        await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+      }
     }
   }
 
@@ -245,9 +271,8 @@ export class RemoteQueriesInterfaceManager {
     return sortedAnalysisResults.map((analysisResult) => ({
       nwo: analysisResult.nwo,
       resultCount: analysisResult.resultCount,
-      downloadLink: analysisResult.downloadUri,
+      downloadLink: analysisResult.downloadLink,
       fileSize: this.formatFileSize(analysisResult.fileSizeInBytes)
     }));
   }
 }
-
