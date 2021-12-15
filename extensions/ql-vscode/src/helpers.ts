@@ -12,6 +12,7 @@ import {
 import { CodeQLCliServer, QlpacksInfo } from './cli';
 import { UserCancellationException } from './commandRunner';
 import { logger } from './logging';
+import { QueryMetadata } from './pure/interface-types';
 
 /**
  * Show an error message and log it to the console
@@ -515,4 +516,20 @@ export async function askForLanguage(cliServer: CodeQLCliServer, throwOnEmpty = 
     }
   }
   return language;
+}
+
+/**
+ * Gets metadata for a query, if it exists.
+ * @param cliServer The CLI server.
+ * @param queryPath The path to the query.
+ * @returns A promise that resolves to the query metadata, if available.
+ */
+export async function tryGetQueryMetadata(cliServer: CodeQLCliServer, queryPath: string): Promise<QueryMetadata | undefined> {
+  try {
+    return await cliServer.resolveMetadata(queryPath);
+  } catch (e) {
+    // Ignore errors and provide no metadata.
+    void logger.log(`Couldn't resolve metadata for ${queryPath}: ${e}`);
+    return;
+  }
 }

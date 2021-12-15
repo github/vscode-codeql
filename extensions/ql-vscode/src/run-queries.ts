@@ -17,7 +17,7 @@ import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 import * as cli from './cli';
 import * as config from './config';
 import { DatabaseItem } from './databases';
-import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from './helpers';
+import { getOnDiskWorkspaceFolders, showAndLogErrorMessage, tryGetQueryMetadata } from './helpers';
 import { ProgressCallback, UserCancellationException } from './commandRunner';
 import { DatabaseInfo, QueryMetadata, ResultsPaths } from './pure/interface-types';
 import { logger } from './logging';
@@ -612,7 +612,7 @@ export async function compileAndRunQueryAgainstDatabase(
   };
 
   // Read the query metadata if possible, to use in the UI.
-  const metadata = await getQueryMetadata(cliServer, qlProgram.queryPath);
+  const metadata = await tryGetQueryMetadata(cliServer, qlProgram.queryPath);
 
   let availableMlModels: cli.MlModelInfo[] = [];
   // The `capabilities.untrustedWorkspaces.restrictedConfigurations` entry in package.json doesn't
@@ -711,22 +711,6 @@ export async function compileAndRunQueryAgainstDatabase(
 const compilationFailedErrorTail = ' compilation failed. Please make sure there are no errors in the query, the database is up to date,' +
   ' and the query and database use the same target language. For more details on the error, go to View > Output,' +
   ' and choose CodeQL Query Server from the dropdown.';
-
-/**
- * Gets metadata for a query, if it exists.
- * @param cliServer The CLI server.
- * @param queryPath The path to the query.
- * @returns A promise that resolves to the query metadata, if available.
- */
-export async function getQueryMetadata(cliServer: cli.CodeQLCliServer, queryPath: string): Promise<QueryMetadata | undefined> {
-  try {
-    return await cliServer.resolveMetadata(queryPath);
-  } catch (e) {
-    // Ignore errors and provide no metadata.
-    void logger.log(`Couldn't resolve metadata for ${queryPath}: ${e}`);
-    return;
-  }
-}
 
 function createSyntheticResult(
   query: QueryInfo,
