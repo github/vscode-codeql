@@ -24,16 +24,19 @@ describe('helpers (with CLI)', function() {
     }
   });
 
-  it('should get query metadata if it exists', async () => {
-    // Query with empty metadata
-    const noMetadata = await tryGetQueryMetadata(cli, path.join(baseDir, 'data', 'simple-query.ql'));
+  it('should get query metadata when available', async () => {
     // Query with metadata
     const metadata = await tryGetQueryMetadata(cli, path.join(baseDir, 'data', 'simple-javascript-query.ql'));
-
-    expect(noMetadata).to.deep.equal({});
 
     expect(metadata!.name).to.equal('This is the name');
     expect(metadata!.kind).to.equal('problem');
     expect(metadata!.id).to.equal('javascript/example/test-query');
+  });
+
+  it('should handle query with no metadata', async () => {
+    // Query with empty metadata
+    const noMetadata = await tryGetQueryMetadata(cli, path.join(baseDir, 'data', 'simple-query.ql'));
+
+    expect(noMetadata).to.deep.equal({});
   });
 });
