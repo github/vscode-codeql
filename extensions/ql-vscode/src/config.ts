@@ -275,6 +275,16 @@ export class CliConfigListener extends ConfigListener implements CliConfig {
   }
 }
 
+/**
+ * Whether to enable CodeLens for the 'Quick Evaluation' command.
+ */
+const QUICK_EVAL_CODELENS_SETTING = new Setting('quickEvalCodelens', RUNNING_QUERIES_SETTING);
+
+export function isQuickEvalCodelensEnabled() {
+  return QUICK_EVAL_CODELENS_SETTING.getValue<boolean>();
+}
+
+
 // Enable experimental features
 
 /**

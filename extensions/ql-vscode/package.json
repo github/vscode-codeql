@@ -206,6 +206,11 @@
           "default": null,
           "description": "Path to a directory where the CodeQL extension should store query server logs. If empty, the extension stores logs in a temporary workspace folder and deletes the contents after each run."
         },
+        "codeQL.runningQueries.quickEvalCodelens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the 'Quick Evaluation' CodeLens."
+        },
         "codeQL.resultsDisplay.pageSize": {
           "type": "integer",
           "default": 200,
