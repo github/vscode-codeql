@@ -25,11 +25,11 @@ describe('run-remote-query', function() {
       showInputBoxSpy = sandbox.stub(window, 'showInputBox');
       getRemoteRepositoryListsSpy = sandbox.stub();
       showAndLogErrorMessageSpy = sandbox.stub();
-      mod = proxyquire('../../run-remote-query', {
-        './config': {
+      mod = proxyquire('../../remote-queries/run-remote-query', {
+        '../config': {
           getRemoteRepositoryLists: getRemoteRepositoryListsSpy
         },
-        './helpers': {
+        '../helpers': {
           showAndLogErrorMessage: showAndLogErrorMessageSpy
         },
       });
@@ -134,12 +134,12 @@ describe('run-remote-query', function() {
       logSpy = sandbox.stub();
       showAndLogErrorMessageSpy = sandbox.stub();
       showInformationMessageWithActionSpy = sandbox.stub();
-      mod = proxyquire('../../run-remote-query', {
-        './helpers': {
+      mod = proxyquire('../../remote-queries/run-remote-query', {
+        '../helpers': {
           showAndLogErrorMessage: showAndLogErrorMessageSpy,
           showInformationMessageWithAction: showInformationMessageWithActionSpy
         },
-        './logging': {
+        '../logging': {
           'logger': {
             log: logSpy
           }
