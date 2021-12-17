@@ -7,7 +7,7 @@ import { sarifParser } from '../../sarif-parser';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe.only('sarif parser', function() {
+describe('sarif parser', function() {
   const sarifDir = path.join(__dirname, 'data/sarif');
   it('should parse a valid SARIF file', async () => {
     const result = await sarifParser(path.join(sarifDir, 'validSarif.sarif'));

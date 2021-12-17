@@ -482,8 +482,8 @@ describe('databases', () => {
 
   });
 
-  describe.only('findSourceArchive', function() {
-    // not sure why, but some of these tests take more than two second to run.
+  describe('findSourceArchive', function() {
+    // not sure why, but some of these tests take more than two seconds to run.
     this.timeout(5000);
 
     ['src', 'output/src_archive'].forEach(name => {
