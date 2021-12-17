@@ -2,6 +2,7 @@ import * as colors from 'ansi-colors';
 import * as gulp from 'gulp';
 import * as sourcemaps from 'gulp-sourcemaps';
 import * as ts from 'gulp-typescript';
+import * as del from 'del';
 
 function goodReporter(): ts.reporter.Reporter {
   return {
@@ -19,6 +20,10 @@ function goodReporter(): ts.reporter.Reporter {
 }
 
 const tsProject = ts.createProject('tsconfig.json');
+
+export function cleanOutput() {
+  return tsProject.projectDirectory ? del(tsProject.projectDirectory + '/out/*') : Promise.resolve();
+}
 
 export function compileTypeScript() {
   return tsProject.src()
