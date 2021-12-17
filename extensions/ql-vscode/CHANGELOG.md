@@ -1,9 +1,9 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.5.9 - 17 December 2021
 
 - Avoid creating a third column when opening the results view. The results view will always open to the right of the active editor, unless the active editor is in the rightmost editor column. In that case open in the leftmost column. [#1037](https://github.com/github/vscode-codeql/pull/1037)
-- Add a CodeLens to make the Quick Evaluation command more accessible. Click the `Quick Evaluation` prompt above a predicate definition in the editor to evaluate that predicate on its own. You can enable/disable this in the `codeQL.runningQueries.quickEvalCodelens` setting. [#1035](https://github.com/github/vscode-codeql/pull/1035) & [#1052](https://github.com/github/vscode-codeql/pull/1052)
+- Add a CodeLens to make the Quick Evaluation command more accessible. Click the `Quick Evaluation` prompt above a predicate definition in the editor to evaluate that predicate on its own. You can enable/disable this feature in the `codeQL.runningQueries.quickEvalCodelens` setting. [#1035](https://github.com/github/vscode-codeql/pull/1035) & [#1052](https://github.com/github/vscode-codeql/pull/1052)
 - Fix a bug where the _Alerts_ option would show in the results view even if there is no alerts table available. [#1038](https://github.com/github/vscode-codeql/pull/1038)
 
 ## 1.5.8 - 2 December 2021
