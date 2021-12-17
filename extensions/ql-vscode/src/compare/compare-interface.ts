@@ -135,7 +135,7 @@ export class CompareInterfaceManager extends DisposableObject {
       );
 
       const stylesheetPathOnDisk = Uri.file(
-        ctx.asAbsolutePath('out/resultsView.css')
+        ctx.asAbsolutePath('out/view/resultsView.css')
       );
 
       panel.webview.html = getHtmlForWebview(
