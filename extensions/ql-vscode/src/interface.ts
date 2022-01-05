@@ -379,27 +379,29 @@ export class InterfaceManager extends DisposableObject {
 
     const panel = this.getPanel();
     await this.waitForPanelLoaded();
-    if (forceReveal === WebviewReveal.Forced) {
-      panel.reveal(undefined, true);
-    } else if (!panel.visible) {
-      // The results panel exists, (`.getPanel()` guarantees it) but
-      // is not visible; it's in a not-currently-viewed tab. Show a
-      // more asynchronous message to not so abruptly interrupt
-      // user's workflow by immediately revealing the panel.
-      const showButton = 'View Results';
-      const queryName = results.queryName;
-      const resultPromise = vscode.window.showInformationMessage(
-        `Finished running query ${queryName.length > 0 ? ` "${queryName}"` : ''
-        }.`,
-        showButton
-      );
-      // Address this click asynchronously so we still update the
-      // query history immediately.
-      void resultPromise.then((result) => {
-        if (result === showButton) {
-          panel.reveal();
-        }
-      });
+    if (!panel.visible) {
+      if (forceReveal === WebviewReveal.Forced) {
+        panel.reveal(undefined, true);
+      } else {
+        // The results panel exists, (`.getPanel()` guarantees it) but
+        // is not visible; it's in a not-currently-viewed tab. Show a
+        // more asynchronous message to not so abruptly interrupt
+        // user's workflow by immediately revealing the panel.
+        const showButton = 'View Results';
+        const queryName = results.queryName;
+        const resultPromise = vscode.window.showInformationMessage(
+          `Finished running query ${queryName.length > 0 ? ` "${queryName}"` : ''
+          }.`,
+          showButton
+        );
+        // Address this click asynchronously so we still update the
+        // query history immediately.
+        void resultPromise.then((result) => {
+          if (result === showButton) {
+            panel.reveal();
+          }
+        });
+      }
     }
 
     // Note that the resultSetSchemas will return offsets for the default (unsorted) page,
