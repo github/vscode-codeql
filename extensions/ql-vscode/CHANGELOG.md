@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix a bug where the results view moved column even when it was already visible. [#1070](https://github.com/github/vscode-codeql/pull/1070)
+
 ## 1.5.9 - 17 December 2021
 
 - Avoid creating a third column when opening the results view. The results view will always open to the right of the active editor, unless the active editor is in the rightmost editor column. In that case open in the leftmost column. [#1037](https://github.com/github/vscode-codeql/pull/1037)
