@@ -167,10 +167,6 @@ export class QueryServerClient extends DisposableObject {
       args.push('--require-db-registration');
     }
 
-    if (await this.cliServer.cliConstraints.supportsOldEvalStats()) {
-      args.push('--old-eval-stats');
-    }
-
     if (this.config.debug) {
       args.push('--debug', '--tuple-counting');
     }

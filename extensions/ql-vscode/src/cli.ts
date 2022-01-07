@@ -1186,11 +1186,6 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_RESOLVE_ML_MODELS = new SemVer('2.7.3');
 
-  /**
-   * CLI version where the `--old-eval-stats` option to the query server was introduced.
-   */
-  public static CLI_VERSION_WITH_OLD_EVAL_STATS = new SemVer('2.7.4');
-
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1237,9 +1232,5 @@ export class CliVersionConstraint {
 
   async supportsResolveMlModels() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_ML_MODELS);
-  }
-
-  async supportsOldEvalStats() {
-    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_OLD_EVAL_STATS);
   }
 }
