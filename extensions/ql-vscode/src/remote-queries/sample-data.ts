@@ -3,7 +3,7 @@ import { RemoteQueryResult } from './remote-query-result';
 
 export const sampleRemoteQuery: RemoteQuery = {
   queryName: 'Inefficient regular expression',
-  queryFilePath: '/Users/charisk/dev/vscode-codeql-starter/ql/javascript/ql/src/Performance/ReDoS.ql',
+  queryFilePath: '/Users/foo/dev/vscode-codeql-starter/ql/javascript/ql/src/Performance/ReDoS.ql',
   queryText: '/**\n * @name Inefficient regular expression\n * @description A regular expression that requires exponential time to match certain inputs\n *              can be a performance bottleneck, and may be vulnerable to denial-of-service\n *              attacks.\n * @kind problem\n * @problem.severity error\n * @security-severity 7.5\n * @precision high\n * @id js/redos\n * @tags security\n *       external/cwe/cwe-1333\n *       external/cwe/cwe-730\n *       external/cwe/cwe-400\n */\n\nimport javascript\nimport semmle.javascript.security.performance.ReDoSUtil\nimport semmle.javascript.security.performance.ExponentialBackTracking\n\nfrom RegExpTerm t, string pump, State s, string prefixMsg\nwhere hasReDoSResult(t, pump, s, prefixMsg)\nselect t,\n  "This part of the regular expression may cause exponential backtracking on strings " + prefixMsg +\n    "containing many repetitions of \'" + pump + "\'."\n',
   controllerRepository: {
     owner: 'big-corp',
