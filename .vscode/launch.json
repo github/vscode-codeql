@@ -59,7 +59,9 @@
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
-        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index"
+        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index",
+        "--disable-extensions",
+        "--disable-gpu"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
@@ -75,6 +77,8 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
         "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/minimal-workspace/index",
+        "--disable-extensions",
+        "--disable-gpu",
         "${workspaceRoot}/extensions/ql-vscode/test/data"
       ],
       "stopOnEntry": false,
@@ -91,8 +95,16 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
         "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/cli-integration/index",
+        "--disable-gpu",
+        "--disable-extension",
+        "eamodio.gitlens",
+        "--disable-extension",
+        "github.codespaces",
+        "--disable-extension",
+        "github.copilot",
         "${workspaceRoot}/extensions/ql-vscode/src/vscode-tests/cli-integration/data",
-        // Add a path to a checked out instance of the codeql repository so the libraries are
+        // Uncomment the last line and modify the path to a checked out 
+        // instance of the codeql repository so the libraries are
         // available in the workspace for the tests.
         // "${workspaceRoot}/../codeql"
       ],
