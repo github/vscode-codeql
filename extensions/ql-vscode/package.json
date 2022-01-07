@@ -291,7 +291,7 @@
       },
       {
         "command": "codeQL.showFakeRemoteQueryResults",
-        "title": "CodeQL: Show fake remote query results"
+        "title": "[Internal] CodeQL: Show fake remote query results"
       },
       {
         "command": "codeQL.runQueries",
