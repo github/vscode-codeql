@@ -81,6 +81,8 @@ import { Credentials } from './authentication';
 import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQuery } from './remote-queries/remote-query';
 import { URLSearchParams } from 'url';
+import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
+import { sampleRemoteQuery, sampleRemoteQueryResult } from './remote-queries/sample-data';
 
 /**
  * extension.ts
@@ -810,6 +812,12 @@ async function activateWithInstalledDistribution(
       query: RemoteQuery,
       token: CancellationToken) => {
       await rqm.monitorRemoteQuery(query, token);
+    }));
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.showFakeRemoteQueryResults', async () => {
+      const rqim = new RemoteQueriesInterfaceManager(ctx, logger);
+      await rqim.showResults(sampleRemoteQuery, sampleRemoteQueryResult);
     }));
 
   ctx.subscriptions.push(
