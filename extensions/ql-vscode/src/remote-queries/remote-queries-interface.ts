@@ -63,10 +63,10 @@ export class RemoteQueriesInterfaceManager {
    */
   private buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
     const queryFileName = path.basename(query.queryFilePath);
-    const totalResultCount = queryResult.analysisSummary.reduce((acc, cur) => acc + cur.resultCount, 0);
+    const totalResultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
     const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);
-    const analysisSummaries = this.buildAnalysisSummaries(queryResult.analysisSummary);
-    const affectedRepositories = queryResult.analysisSummary.filter(r => r.resultCount > 0);
+    const analysisSummaries = this.buildAnalysisSummaries(queryResult.analysisSummaries);
+    const affectedRepositories = queryResult.analysisSummaries.filter(r => r.resultCount > 0);
 
     return {
       queryTitle: query.queryName,

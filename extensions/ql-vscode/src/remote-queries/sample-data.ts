@@ -41,7 +41,7 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
     id: '137697018',
     urlPath: '/repos/big-corp/controller-repo/actions/artifacts/137697018'
   },
-  analysisSummary: [
+  analysisSummaries: [
     {
       nwo: 'big-corp/repo1',
       resultCount: 85,
