@@ -19,10 +19,10 @@ import {
 import { Logger } from '../logging';
 import { getHtmlForWebview } from '../interface-utils';
 import { assertNever } from '../pure/helpers-pure';
-import { AnalysisResult, RemoteQueryResult } from './remote-query-result';
+import { AnalysisSummary, RemoteQueryResult } from './remote-query-result';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryResult as RemoteQueryResultViewModel } from './shared/remote-query-result';
-import { AnalysisResult as AnalysisResultViewModel } from './shared/remote-query-result';
+import { AnalysisSummary as AnalysisResultViewModel } from './shared/remote-query-result';
 import { downloadArtifactFromLink } from './gh-actions-api-client';
 import { Credentials } from '../authentication';
 import { showAndLogWarningMessage, showInformationMessageWithAction } from '../helpers';
@@ -63,10 +63,10 @@ export class RemoteQueriesInterfaceManager {
    */
   private buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
     const queryFileName = path.basename(query.queryFilePath);
-    const totalResultCount = queryResult.analysisResults.reduce((acc, cur) => acc + cur.resultCount, 0);
+    const totalResultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
     const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);
-    const analysisResults = this.buildAnalysisResults(queryResult.analysisResults);
-    const affectedRepositories = queryResult.analysisResults.filter(r => r.resultCount > 0);
+    const analysisSummaries = this.buildAnalysisSummaries(queryResult.analysisSummaries);
+    const affectedRepositories = queryResult.analysisSummaries.filter(r => r.resultCount > 0);
 
     return {
       queryTitle: query.queryName,
@@ -79,7 +79,7 @@ export class RemoteQueriesInterfaceManager {
       executionTimestamp: this.formatDate(query.executionStartTime),
       executionDuration: executionDuration,
       downloadLink: queryResult.allResultsDownloadLink,
-      results: analysisResults
+      analysisSummaries: analysisSummaries
     };
   }
 
@@ -259,16 +259,16 @@ export class RemoteQueriesInterfaceManager {
   }
 
   /**
-   * Builds up a list of analysis results, in a data structure tailored to the view.
-   * @param analysisResults The results of a specific analysis.
+   * Builds up a list of analysis summaries, in a data structure tailored to the view.
+   * @param analysisSummaries The summaries of a specific analyses.
    * @returns A fully created view model.
    */
-  private buildAnalysisResults(analysisResults: AnalysisResult[]): AnalysisResultViewModel[] {
-    const filteredAnalysisResults = analysisResults.filter(r => r.resultCount > 0);
+  private buildAnalysisSummaries(analysisSummaries: AnalysisSummary[]): AnalysisResultViewModel[] {
+    const filteredAnalysisSummaries = analysisSummaries.filter(r => r.resultCount > 0);
 
-    const sortedAnalysisResults = filteredAnalysisResults.sort((a, b) => b.resultCount - a.resultCount);
+    const sortedAnalysisSummaries = filteredAnalysisSummaries.sort((a, b) => b.resultCount - a.resultCount);
 
-    return sortedAnalysisResults.map((analysisResult) => ({
+    return sortedAnalysisSummaries.map((analysisResult) => ({
       nwo: analysisResult.nwo,
       resultCount: analysisResult.resultCount,
       downloadLink: analysisResult.downloadLink,
