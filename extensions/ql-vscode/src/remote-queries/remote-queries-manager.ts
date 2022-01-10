@@ -62,7 +62,7 @@ export class RemoteQueriesManager {
 
       const queryResult = this.mapQueryResult(executionEndTime, resultIndex);
 
-      const totalResultCount = queryResult.analysisResults.reduce((acc, cur) => acc + cur.resultCount, 0);
+      const totalResultCount = queryResult.analysisSummary.reduce((acc, cur) => acc + cur.resultCount, 0);
       const message = `Query "${query.queryName}" run on ${query.repositories.length} repositories and returned ${totalResultCount} results`;
 
       const shouldOpenView = await showInformationMessageWithAction(message, 'View');
@@ -92,7 +92,7 @@ export class RemoteQueriesManager {
 
     return {
       executionEndTime,
-      analysisResults,
+      analysisSummary: analysisResults,
       allResultsDownloadLink: {
         id: resultIndex.allResultsArtifactId.toString(),
         urlPath: `${resultIndex.artifactsUrlPath}/${resultIndex.allResultsArtifactId}`

@@ -2,11 +2,11 @@ import { DownloadLink } from './download-link';
 
 export interface RemoteQueryResult {
   executionEndTime: Date;
-  analysisResults: AnalysisResult[];
+  analysisSummary: AnalysisSummary[];
   allResultsDownloadLink: DownloadLink;
 }
 
-export interface AnalysisResult {
+export interface AnalysisSummary {
   nwo: string,
   resultCount: number,
   downloadLink: DownloadLink,

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import * as Rdom from 'react-dom';
 import { SetRemoteQueryResultMessage } from '../../pure/interface-types';
-import { AnalysisResult, RemoteQueryResult } from '../shared/remote-query-result';
+import { AnalysisSummary, RemoteQueryResult } from '../shared/remote-query-result';
 import * as octicons from '../../view/octicons';
 
 import { vscode } from '../../view/vscode-api';
@@ -24,7 +24,7 @@ const emptyQueryResult: RemoteQueryResult = {
     id: '',
     urlPath: '',
   },
-  results: []
+  analysisSummaries: []
 };
 
 const download = (link: DownloadLink) => {
@@ -34,7 +34,7 @@ const download = (link: DownloadLink) => {
   });
 };
 
-const AnalysisResultItem = (props: AnalysisResult) => (
+const AnalysisSummaryItem = (props: AnalysisSummary) => (
   <span>
     <span className="vscode-codeql__analysis-item">{octicons.repo}</span>
     <span className="vscode-codeql__analysis-item">{props.nwo}</span>
@@ -90,7 +90,7 @@ export function RemoteQueries(): JSX.Element {
   }
 
   const [repoListExpanded, setRepoListExpanded] = useState(false);
-  const numOfReposToShow = repoListExpanded ? queryResult.results.length : numOfReposInContractedMode;
+  const numOfReposToShow = repoListExpanded ? queryResult.analysisSummaries.length : numOfReposInContractedMode;
 
   const openQueryFile = () => {
     vscode.postMessage({
@@ -133,15 +133,15 @@ export function RemoteQueries(): JSX.Element {
           : <SummaryWithResults {...queryResult} />
       }
 
-      <ul className="vscode-codeql__results-list">
-        {queryResult.results.slice(0, numOfReposToShow).map((result, i) =>
-          <li key={result.nwo} className="vscode-codeql__results-list-item">
-            <AnalysisResultItem {...result} />
+      <ul className="vscode-codeql__analysis-summaries-list">
+        {queryResult.analysisSummaries.slice(0, numOfReposToShow).map((summary, i) =>
+          <li key={summary.nwo} className="vscode-codeql__analysis-summaries-list-item">
+            <AnalysisSummaryItem {...summary} />
           </li>
         )}
       </ul>
       {
-        queryResult.results.length > numOfReposInContractedMode &&
+        queryResult.analysisSummaries.length > numOfReposInContractedMode &&
         <button className="vscode-codeql__expand-button" onClick={() => setRepoListExpanded(!repoListExpanded)}>
           {repoListExpanded ? (<span>View less</span>) : (<span>View all</span>)}
         </button>

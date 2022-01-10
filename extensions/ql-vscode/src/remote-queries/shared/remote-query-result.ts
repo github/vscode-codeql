@@ -11,10 +11,10 @@ export interface RemoteQueryResult {
   executionTimestamp: string;
   executionDuration: string;
   downloadLink: DownloadLink;
-  results: AnalysisResult[]
+  analysisSummaries: AnalysisSummary[]
 }
 
-export interface AnalysisResult {
+export interface AnalysisSummary {
   nwo: string,
   resultCount: number,
   downloadLink: DownloadLink,
