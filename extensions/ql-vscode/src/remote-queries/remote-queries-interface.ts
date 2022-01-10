@@ -260,15 +260,15 @@ export class RemoteQueriesInterfaceManager {
 
   /**
    * Builds up a list of analysis summaries, in a data structure tailored to the view.
-   * @param analysisResults The summary of a specific analysis.
+   * @param analysisSummaries The summaries of a specific analyses.
    * @returns A fully created view model.
    */
-  private buildAnalysisSummaries(analysisResults: AnalysisSummary[]): AnalysisResultViewModel[] {
-    const filteredAnalysisResults = analysisResults.filter(r => r.resultCount > 0);
+  private buildAnalysisSummaries(analysisSummaries: AnalysisSummary[]): AnalysisResultViewModel[] {
+    const filteredAnalysisSummaries = analysisSummaries.filter(r => r.resultCount > 0);
 
-    const sortedAnalysisResults = filteredAnalysisResults.sort((a, b) => b.resultCount - a.resultCount);
+    const sortedAnalysisSummaries = filteredAnalysisSummaries.sort((a, b) => b.resultCount - a.resultCount);
 
-    return sortedAnalysisResults.map((analysisResult) => ({
+    return sortedAnalysisSummaries.map((analysisResult) => ({
       nwo: analysisResult.nwo,
       resultCount: analysisResult.resultCount,
       downloadLink: analysisResult.downloadLink,

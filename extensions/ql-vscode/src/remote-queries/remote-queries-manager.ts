@@ -79,7 +79,7 @@ export class RemoteQueriesManager {
   }
 
   private mapQueryResult(executionEndTime: Date, resultIndex: RemoteQueryResultIndex): RemoteQueryResult {
-    const analysisResults = resultIndex.items.map(item => ({
+    const analysisSummaries = resultIndex.items.map(item => ({
       nwo: item.nwo,
       resultCount: item.resultCount,
       fileSizeInBytes: item.sarifFileSize ? item.sarifFileSize : item.bqrsFileSize,
@@ -92,7 +92,7 @@ export class RemoteQueriesManager {
 
     return {
       executionEndTime,
-      analysisSummaries: analysisResults,
+      analysisSummaries,
       allResultsDownloadLink: {
         id: resultIndex.allResultsArtifactId.toString(),
         urlPath: `${resultIndex.artifactsUrlPath}/${resultIndex.allResultsArtifactId}`
