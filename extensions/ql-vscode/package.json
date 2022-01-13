@@ -375,6 +375,14 @@
         "title": "CodeQL: Clear Cache"
       },
       {
+        "command": "codeQL.installPacks",
+        "title": "CodeQL: Install Packs"
+      },
+      {
+        "command": "codeQL.downloadPacks",
+        "title": "CodeQL: Download Packs"
+      },
+      {
         "command": "codeQLDatabases.setCurrentDatabase",
         "title": "Set Current Database"
       },
