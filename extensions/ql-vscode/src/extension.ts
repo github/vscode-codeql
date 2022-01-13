@@ -83,6 +83,7 @@ import { RemoteQuery } from './remote-queries/remote-query';
 import { URLSearchParams } from 'url';
 import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
 import { sampleRemoteQuery, sampleRemoteQueryResult } from './remote-queries/sample-data';
+import { handleDownloadPacks, handleInstallPacks } from './packaging';
 
 /**
  * extension.ts
@@ -921,6 +922,26 @@ async function activateWithInstalledDistribution(
         void helpers.showAndLogInformationMessage(`Authenticated to GitHub as user: ${userInfo.data.login}`);
       }
     }));
+
+  ctx.subscriptions.push(
+    commandRunnerWithProgress('codeQL.installPacks', async (
+      progress: ProgressCallback
+    ) =>
+      await handleInstallPacks(cliServer, progress),
+      {
+        title: 'Installing packs',
+      }
+    ));
+
+  ctx.subscriptions.push(
+    commandRunnerWithProgress('codeQL.downloadPacks', async (
+      progress: ProgressCallback
+    ) =>
+      await handleDownloadPacks(cliServer, progress),
+      {
+        title: 'Downloading packs',
+      }
+    ));
 
   commands.registerCommand('codeQL.showLogs', () => {
     logger.show();
