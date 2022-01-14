@@ -847,10 +847,10 @@ export class CodeQLCliServer implements Disposable {
 
   /**
    * Downloads a specified pack.
-   * @param pack The `<package-scope/name[@version]>` of the pack to download.
+   * @param packs The `<package-scope/name[@version]>` of the packs to download.
    */
-  async packDownload(pack: string) {
-    return this.runJsonCodeQlCliCommand(['pack', 'download'], [pack], 'Downloading packs');
+  async packDownload(packs: string[]) {
+    return this.runJsonCodeQlCliCommand(['pack', 'download'], packs, 'Downloading packs');
   }
 
   async packInstall(dir: string) {
