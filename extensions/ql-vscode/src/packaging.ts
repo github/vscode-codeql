@@ -1,41 +1,25 @@
 import { CodeQLCliServer } from './cli';
-import * as fs from 'fs-extra';
-import * as path from 'path';
 import {
   getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
   showAndLogInformationMessage,
+  showAndLogWarningMessage,
 } from './helpers';
-import { window } from 'vscode';
-import { ProgressCallback } from './commandRunner';
+import { QuickPickItem, window } from 'vscode';
+import { ProgressCallback, UserCancellationException } from './commandRunner';
+import { logger } from './logging';
 
-const CORE_PACKS = [
-  'codeql/cpp-all',
-  'codeql/csharp-all',
-  'codeql/go-all',
-  'codeql/java-all',
-  'codeql/javascript-all',
-  'codeql/python-all',
-  'codeql/ruby-all',
+const QUERY_PACKS = [
+  'codeql/cpp-queries',
+  'codeql/csharp-queries',
+  'codeql/go-queries',
+  'codeql/java-queries',
+  'codeql/javascript-queries',
+  'codeql/python-queries',
+  'codeql/ruby-queries',
+  'codeql/csharp-solorigate-queries',
+  'codeql/javascript-experimental-atm-queries',
 ];
-
-/**
- * Lists all workspace folders that contain a qlpack.yml file.
- *
- * Note: This currently only finds packs at the root of a workspace folder.
- * TODO: Add support for packs in subfolders.
- */
-function getWorkspacePacks(): string[] {
-  const packs: string[] = [];
-  const workspaceFolders = getOnDiskWorkspaceFolders();
-  for (const folder of workspaceFolders) {
-    const qlpackYml = path.join(folder, 'qlpack.yml');
-    if (fs.pathExistsSync(qlpackYml)) {
-      packs.push(folder);
-    }
-  }
-  return packs;
-}
 
 /**
  * Prompts user to choose packs to download, and downloads them.
@@ -53,14 +37,14 @@ export async function handleDownloadPacks(
     maxStep: 2,
   });
   let packsToDownload: string[] = [];
-  const corePackOption = 'Download core CodeQL packs';
+  const queryPackOption = 'Download core query packs';
   const customPackOption = 'Download custom specified pack';
   const quickpick = await window.showQuickPick(
-    [corePackOption, customPackOption],
+    [queryPackOption, customPackOption],
     { ignoreFocusOut: true }
   );
-  if (quickpick === corePackOption) {
-    packsToDownload = CORE_PACKS;
+  if (quickpick === queryPackOption) {
+    packsToDownload = QUERY_PACKS;
   } else if (quickpick === customPackOption) {
     const customPack = await window.showInputBox({
       prompt:
@@ -70,24 +54,28 @@ export async function handleDownloadPacks(
     if (customPack) {
       packsToDownload.push(customPack);
     } else {
-      void showAndLogErrorMessage('No pack specified.');
+      throw new UserCancellationException('No pack specified.');
     }
   }
   if (packsToDownload && packsToDownload.length > 0) {
     progress({
-      message: `Downloading ${packsToDownload.join(', ')}`,
+      message: 'Downloading packs. This may take a few minutes.',
       step: 2,
       maxStep: 2,
     });
-    for (const pack of packsToDownload) {
-      try {
-        await cliServer.packDownload(pack);
-      } catch (error) {
-        void showAndLogErrorMessage(`Unable to download pack ${pack}. See logs for more details.`);
-      }
+    try {
+      await cliServer.packDownload(packsToDownload);
+      void showAndLogInformationMessage('Finished downloading packs.');
+    } catch (error) {
+      void showAndLogErrorMessage(
+        'Unable to download all packs. See logs for more details.'
+      );
     }
-    void showAndLogInformationMessage('Finished downloading packs.');
   }
+}
+
+interface QLPackQuickPickItem extends QuickPickItem {
+  packRootDir: string[];
 }
 
 /**
@@ -105,40 +93,43 @@ export async function handleInstallPacks(
     step: 1,
     maxStep: 2,
   });
-  let packsToInstall: string[] = [];
-  const workspacePackOption = 'Install workspace packs';
-  const customPackOption = 'Install custom specified pack';
-  const quickpick = await window.showQuickPick(
-    [workspacePackOption, customPackOption],
-    { ignoreFocusOut: true }
-  );
-  if (quickpick === workspacePackOption) {
-    packsToInstall = getWorkspacePacks();
-  } else if (quickpick === customPackOption) {
-    const customPack = await window.showInputBox({
-      prompt:
-        'Enter the root directory of the pack to install (as an absolute path)',
-      ignoreFocusOut: true,
-    });
-    if (customPack) {
-      packsToInstall.push(customPack);
-    } else {
-      void showAndLogErrorMessage('No pack specified.');
-    }
-  }
+  const workspacePacks = await cliServer.resolveQlpacks(getOnDiskWorkspaceFolders());
+  const quickPickItems = Object.entries(workspacePacks).map<QLPackQuickPickItem>(([key, value]) => ({
+    label: key,
+    packRootDir: value,
+  }));
+  const packsToInstall = await window.showQuickPick(quickPickItems, {
+    placeHolder: 'Select packs to install',
+    canPickMany: true,
+    ignoreFocusOut: true,
+  });
   if (packsToInstall && packsToInstall.length > 0) {
     progress({
-      message: `Installing ${packsToInstall.join(', ')}`,
+      message: 'Installing packs. This may take a few minutes.',
       step: 2,
       maxStep: 2,
     });
+    const failedPacks = [];
+    const errors = [];
     for (const pack of packsToInstall) {
       try {
-        await cliServer.packInstall(pack);
+        for (const dir of pack.packRootDir) {
+          await cliServer.packInstall(dir);
+        }
       } catch (error) {
-        void showAndLogErrorMessage(`Unable to install pack ${pack}. See logs for more details.`);
+        failedPacks.push(pack.label);
+        errors.push(error);
       }
     }
-    void showAndLogInformationMessage('Finished installing packs.');
+    if (failedPacks.length > 0) {
+      void logger.log(`Errors:\n${errors.join('\n')}`);
+      void showAndLogWarningMessage(
+        `Unable to install some packs: ${failedPacks.join(', ')}. See logs for more details.`
+      );
+    } else {
+      void showAndLogInformationMessage('Finished installing packs.');
+    }
+  } else {
+    throw new UserCancellationException('No packs selected.');
   }
 }
