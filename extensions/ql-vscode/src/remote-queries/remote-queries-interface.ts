@@ -112,6 +112,10 @@ export class RemoteQueriesInterfaceManager {
         ctx.asAbsolutePath('out/remoteQueriesView.js')
       );
 
+      const baseStylesheetUriOnDisk = Uri.file(
+        ctx.asAbsolutePath('out/remote-queries/view/baseStyles.css')
+      );
+
       const stylesheetPathOnDisk = Uri.file(
         ctx.asAbsolutePath('out/remote-queries/view/remoteQueries.css')
       );
@@ -119,7 +123,7 @@ export class RemoteQueriesInterfaceManager {
       panel.webview.html = getHtmlForWebview(
         panel.webview,
         scriptPathOnDisk,
-        stylesheetPathOnDisk
+        [baseStylesheetUriOnDisk, stylesheetPathOnDisk]
       );
       panel.webview.onDidReceiveMessage(
         async (e) => this.handleMsgFromView(e),

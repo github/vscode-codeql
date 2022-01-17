@@ -117,13 +117,19 @@ export function tryResolveLocation(
 export function getHtmlForWebview(
   webview: Webview,
   scriptUriOnDisk: Uri,
-  stylesheetUriOnDisk: Uri
+  stylesheetUrisOnDisk: Uri[],
 ): string {
   // Convert the on-disk URIs into webview URIs.
   const scriptWebviewUri = webview.asWebviewUri(scriptUriOnDisk);
-  const stylesheetWebviewUri = webview.asWebviewUri(stylesheetUriOnDisk);
+  const stylesheetWebviewUris = stylesheetUrisOnDisk.map(stylesheetUriOnDisk =>
+    webview.asWebviewUri(stylesheetUriOnDisk));
+
   // Use a nonce in the content security policy to uniquely identify the above resources.
   const nonce = getNonce();
+
+  const stylesheetsHtmlLines = stylesheetWebviewUris.map(stylesheetWebviewUri =>
+    `<link nonce="${nonce}" rel="stylesheet" href="${stylesheetWebviewUri}">`);
+
   /*
    * Content security policy:
    * default-src: allow nothing by default.
@@ -137,7 +143,7 @@ export function getHtmlForWebview(
   <head>
     <meta http-equiv="Content-Security-Policy"
           content="default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; connect-src ${webview.cspSource};">
-    <link nonce="${nonce}" rel="stylesheet" href="${stylesheetWebviewUri}">
+        ${stylesheetsHtmlLines.join(' ')}
   </head>
   <body>
     <div id=root>

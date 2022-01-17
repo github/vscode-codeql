@@ -141,7 +141,7 @@ export class CompareInterfaceManager extends DisposableObject {
       panel.webview.html = getHtmlForWebview(
         panel.webview,
         scriptPathOnDisk,
-        stylesheetPathOnDisk
+        [stylesheetPathOnDisk]
       );
       panel.webview.onDidReceiveMessage(
         async (e) => this.handleMsgFromView(e),
