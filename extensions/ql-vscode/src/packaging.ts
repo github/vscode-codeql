@@ -3,7 +3,6 @@ import {
   getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
   showAndLogInformationMessage,
-  showAndLogWarningMessage,
 } from './helpers';
 import { QuickPickItem, window } from 'vscode';
 import { ProgressCallback, UserCancellationException } from './commandRunner';
@@ -123,8 +122,8 @@ export async function handleInstallPacks(
     }
     if (failedPacks.length > 0) {
       void logger.log(`Errors:\n${errors.join('\n')}`);
-      void showAndLogWarningMessage(
-        `Unable to install some packs: ${failedPacks.join(', ')}. See logs for more details.`
+      throw new Error(
+        `Unable to install packs: ${failedPacks.join(', ')}. See logs for more details.`
       );
     } else {
       void showAndLogInformationMessage('Finished installing packs.');
