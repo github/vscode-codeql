@@ -88,21 +88,22 @@ describe('Packaging commands', function() {
     );
   });
 
-  it('should install selected workspace packs', async () => {
+  it('should attempt to install selected workspace packs', async () => {
     const rootDir = path.join(__dirname, '../../../src/vscode-tests/cli-integration/data');
-    quickPickSpy.resolves(
-      [
-        {
-          label: 'integration-test-queries-javascript',
-          packRootDir: [rootDir],
-        },
-      ]
-    );
+    quickPickSpy.resolves([
+      {
+        label: 'integration-test-queries-javascript',
+        packRootDir: [rootDir],
+      },
+    ]);
 
-    await mod.handleInstallPacks(cli, progress);
-
-    expect(showAndLogInformationMessageSpy.firstCall.args[0]).to.contain(
-      'Finished installing packs.'
-    );
+    try {
+      await mod.handleInstallPacks(cli, progress);
+      expect(showAndLogInformationMessageSpy.firstCall.args[0]).to.contain(
+        'Finished installing packs.'
+      );
+    } catch (error) {
+      expect(error.message).to.contain('Unable to install packs:');
+    }
   });
 });
