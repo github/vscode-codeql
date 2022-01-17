@@ -47,7 +47,7 @@ describe('Packaging commands', function() {
     showAndLogErrorMessageSpy = sandbox.stub();
     showAndLogInformationMessageSpy = sandbox.stub();
     mod = proxyquire('../../packaging', {
-      '../helpers': {
+      './helpers': {
         showAndLogErrorMessage: showAndLogErrorMessageSpy,
         showAndLogInformationMessage: showAndLogInformationMessageSpy,
       },
