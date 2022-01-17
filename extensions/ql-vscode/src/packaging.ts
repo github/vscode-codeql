@@ -37,7 +37,7 @@ export async function handleDownloadPacks(
     maxStep: 2,
   });
   let packsToDownload: string[] = [];
-  const queryPackOption = 'Download core query packs';
+  const queryPackOption = 'Download all core query packs';
   const customPackOption = 'Download custom specified pack';
   const quickpick = await window.showQuickPick(
     [queryPackOption, customPackOption],
@@ -57,7 +57,7 @@ export async function handleDownloadPacks(
       throw new UserCancellationException('No pack specified.');
     }
   }
-  if (packsToDownload && packsToDownload.length > 0) {
+  if (packsToDownload?.length > 0) {
     progress({
       message: 'Downloading packs. This may take a few minutes.',
       step: 2,
