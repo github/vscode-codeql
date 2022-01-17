@@ -1,4 +1,5 @@
 import * as crypto from 'crypto';
+import * as os from 'os';
 import {
   Uri,
   Location,
@@ -143,7 +144,7 @@ export function getHtmlForWebview(
   <head>
     <meta http-equiv="Content-Security-Policy"
           content="default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; connect-src ${webview.cspSource};">
-        ${stylesheetsHtmlLines.join(' ')}
+        ${stylesheetsHtmlLines.join(`    ${os.EOL}`)}
   </head>
   <body>
     <div id=root>
