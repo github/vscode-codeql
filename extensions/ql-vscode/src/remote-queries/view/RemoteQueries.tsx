@@ -8,6 +8,12 @@ import * as octicons from '../../view/octicons';
 import { vscode } from '../../view/vscode-api';
 import { DownloadLink } from '../download-link';
 
+import SectionTitle from './SectionTitle';
+import VerticalSpace from './VerticalSpace';
+import Badge from './Badge';
+import ViewTitle from './ViewTitle';
+import DownloadButton from './DownloadButton';
+
 const numOfReposInContractedMode = 10;
 
 const emptyQueryResult: RemoteQueryResult = {
@@ -38,32 +44,23 @@ const AnalysisSummaryItem = (props: AnalysisSummary) => (
   <span>
     <span className="vscode-codeql__analysis-item">{octicons.repo}</span>
     <span className="vscode-codeql__analysis-item">{props.nwo}</span>
-    <span className="vscode-codeql__analysis-item vscode-codeql__badge-container">
-      <span className="vscode-codeql__badge">{props.resultCount}</span>
-    </span>
+    <span className="vscode-codeql__analysis-item"><Badge text={props.resultCount.toString()} /></span>
     <span className="vscode-codeql__analysis-item">
-      <a
-        className="vscode-codeql__download-link"
-        onClick={() => download(props.downloadLink)}>
-        {octicons.download}{props.fileSize}
-      </a>
+      <DownloadButton text={props.fileSize} onClick={() => download(props.downloadLink)} />
     </span>
   </span>
 );
 
 const SummaryWithResults = (queryResult: RemoteQueryResult) => (
   <div className="vscode-codeql__query-summary-container">
-    <h2 className="vscode-codeql__query-summary-title">Repositories with results ({queryResult.affectedRepositoryCount}):</h2>
-    <a className="vscode-codeql__summary-download-link vscode-codeql__download-link"
-      onClick={() => download(queryResult.downloadLink)}>
-      {octicons.download}Download all
-    </a>
+    <SectionTitle text={`Repositories with results (${queryResult.affectedRepositoryCount}):`} />
+    <DownloadButton text="Download all" onClick={() => download(queryResult.downloadLink)} />
   </div>
 );
 
 const SummaryNoResults = () => (
   <div className="vscode-codeql__query-summary-container">
-    <h2 className="vscode-codeql__query-summary-title">No results found</h2>
+    <SectionTitle text="No results found" />
   </div>
 );
 
@@ -107,25 +104,23 @@ export function RemoteQueries(): JSX.Element {
   };
 
   try {
-    return <div className="vscode-codeql__remote-queries-view">
-      <h1 className="vscode-codeql__query-title">{queryResult.queryTitle}</h1>
+    return <div>
+      <ViewTitle title={queryResult.queryTitle} />
 
-      <p className="vscode-codeql__paragraph">
-        {queryResult.totalResultCount} results in {queryResult.totalRepositoryCount} repositories
-        ({queryResult.executionDuration}), {queryResult.executionTimestamp}
-      </p>
-      <p className="vscode-codeql__paragraph">
-        <span className="vscode-codeql__query-file">{octicons.file}
-          <a className="vscode-codeql__query-file-link" href="#" onClick={openQueryFile}>
-            {queryResult.queryFileName}
-          </a>
-        </span>
-        <span>{octicons.codeSquare}
-          <a className="vscode-codeql__query-file-link" href="#" onClick={openQueryTextVirtualFile}>
-            query
-          </a>
-        </span>
-      </p>
+      <VerticalSpace />
+      {queryResult.totalResultCount} results in {queryResult.totalRepositoryCount} repositories
+      ({queryResult.executionDuration}), {queryResult.executionTimestamp}
+      <VerticalSpace />
+      <span className="vscode-codeql__query-file">{octicons.file}
+        <a className="vscode-codeql__query-file-link" href="#" onClick={openQueryFile}>
+          {queryResult.queryFileName}
+        </a>
+      </span>
+      <span>{octicons.codeSquare}
+        <a className="vscode-codeql__query-file-link" href="#" onClick={openQueryTextVirtualFile}>
+          query
+        </a>
+      </span>
 
       {
         queryResult.affectedRepositoryCount === 0
