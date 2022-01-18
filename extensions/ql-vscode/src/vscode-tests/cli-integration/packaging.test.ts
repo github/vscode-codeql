@@ -77,7 +77,7 @@ describe('Packaging commands', function() {
     );
   });
 
-  it('should show error for invalid user-specified pack', async () => {
+  it('should show error when downloading invalid user-specified pack', async () => {
     quickPickSpy.resolves('Download custom specified pack');
     inputBoxSpy.resolves('foo/not-a-real-pack@0.0.1');
 
@@ -88,7 +88,7 @@ describe('Packaging commands', function() {
     );
   });
 
-  it('should attempt to install selected workspace packs', async () => {
+  it('should install valid workspace pack', async () => {
     const rootDir = path.join(__dirname, '../../../src/vscode-tests/cli-integration/data');
     quickPickSpy.resolves([
       {
@@ -97,11 +97,26 @@ describe('Packaging commands', function() {
       },
     ]);
 
+    await mod.handleInstallPacks(cli, progress);
+    expect(showAndLogInformationMessageSpy.firstCall.args[0]).to.contain(
+      'Finished installing packs.'
+    );
+  });
+
+  it('should throw an error when installing invalid workspace pack', async () => {
+    const rootDir = path.join(__dirname, '../../../src/vscode-tests/cli-integration/data-invalid-pack');
+    quickPickSpy.resolves([
+      {
+        label: 'foo/bar',
+        packRootDir: [rootDir],
+      },
+    ]);
+
     try {
+      // expect this to throw an error
       await mod.handleInstallPacks(cli, progress);
-      expect(showAndLogInformationMessageSpy.firstCall.args[0]).to.contain(
-        'Finished installing packs.'
-      );
+      // This line should not be reached
+      expect(true).to.be.false;
     } catch (error) {
       expect(error.message).to.contain('Unable to install packs:');
     }
