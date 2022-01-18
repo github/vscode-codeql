@@ -154,13 +154,30 @@ async function listWorkflowRunArtifacts(
   workflowRunId: number
 ) {
   const octokit = await credentials.getOctokit();
-  const response = await octokit.rest.actions.listWorkflowRunArtifacts({
-    owner,
-    repo,
-    run_id: workflowRunId,
-  });
 
-  return response.data.artifacts;
+  // There are limits on the number of artifacts that are returned by the API
+  // so we use paging to make sure we retrieve all of them.
+  let morePages = true;
+  let pageNum = 1;
+  const allArtifacts = [];
+
+  if (morePages) {
+    const response = await octokit.rest.actions.listWorkflowRunArtifacts({
+      owner,
+      repo,
+      run_id: workflowRunId,
+      per_page: 100,
+      page: pageNum
+    });
+
+    allArtifacts.push(...response.data.artifacts);
+    pageNum++;
+    if (response.data.artifacts.length < 100) {
+      morePages = false;
+    }
+  }
+
+  return allArtifacts;
 }
 
 /**
