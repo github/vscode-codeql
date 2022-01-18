@@ -161,7 +161,7 @@ async function listWorkflowRunArtifacts(
   let pageNum = 1;
   const allArtifacts = [];
 
-  if (morePages) {
+  while (morePages) {
     const response = await octokit.rest.actions.listWorkflowRunArtifacts({
       owner,
       repo,
