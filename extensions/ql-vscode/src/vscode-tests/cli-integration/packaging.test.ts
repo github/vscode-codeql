@@ -5,7 +5,7 @@ import * as path from 'path';
 
 import * as pq from 'proxyquire';
 
-import { CodeQLCliServer } from '../../cli';
+import { CliVersionConstraint, CodeQLCliServer } from '../../cli';
 import { CodeQLExtensionInterface } from '../../extension';
 import { expect } from 'chai';
 
@@ -40,7 +40,11 @@ describe('Packaging commands', function() {
         'Extension not initialized. Make sure cli is downloaded and installed properly.'
       );
     }
-
+    if (!(await cli.cliConstraints.supportsPackaging())) {
+      console.log(`Packaging commands are not supported on CodeQL CLI v${CliVersionConstraint.CLI_VERSION_WITH_PACKAGING
+        }. Skipping this test.`);
+      this.skip();
+    }
     progress = sandbox.spy();
     quickPickSpy = sandbox.stub(window, 'showQuickPick');
     inputBoxSpy = sandbox.stub(window, 'showInputBox');

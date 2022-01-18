@@ -1,4 +1,4 @@
-import { CodeQLCliServer } from './cli';
+import { CliVersionConstraint, CodeQLCliServer } from './cli';
 import {
   getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
@@ -30,6 +30,10 @@ export async function handleDownloadPacks(
   cliServer: CodeQLCliServer,
   progress: ProgressCallback,
 ): Promise<void> {
+  if (!(await cliServer.cliConstraints.supportsPackaging())) {
+    throw new Error(`Packaging commands are not supported by this version of CodeQL. Please upgrade to v${CliVersionConstraint.CLI_VERSION_WITH_PACKAGING
+      } or later.`);
+  }
   progress({
     message: 'Choose packs to download',
     step: 1,
@@ -87,6 +91,10 @@ export async function handleInstallPacks(
   cliServer: CodeQLCliServer,
   progress: ProgressCallback,
 ): Promise<void> {
+  if (!(await cliServer.cliConstraints.supportsPackaging())) {
+    throw new Error(`Packaging commands are not supported by this version of CodeQL. Please upgrade to v${CliVersionConstraint.CLI_VERSION_WITH_PACKAGING
+      } or later.`);
+  }
   progress({
     message: 'Choose packs to install',
     step: 1,

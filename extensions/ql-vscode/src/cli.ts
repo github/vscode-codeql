@@ -1199,6 +1199,11 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_OLD_EVAL_STATS = new SemVer('2.7.4');
 
+  /**
+   * CLI version where packaging was introduced.
+   */
+  public static CLI_VERSION_WITH_PACKAGING = new SemVer('2.6.0');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1249,5 +1254,9 @@ export class CliVersionConstraint {
 
   async supportsOldEvalStats() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_OLD_EVAL_STATS);
+  }
+
+  async supportsPackaging() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_PACKAGING);
   }
 }
