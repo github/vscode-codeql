@@ -40,7 +40,53 @@ const download = (link: DownloadLink) => {
   });
 };
 
-const AnalysisSummaryItem = (props: AnalysisSummary) => (
+const openQueryFile = (queryResult: RemoteQueryResult) => {
+  vscode.postMessage({
+    t: 'openFile',
+    filePath: queryResult.queryFilePath
+  });
+};
+
+const openQueryTextVirtualFile = (queryResult: RemoteQueryResult) => {
+  vscode.postMessage({
+    t: 'openVirtualFile',
+    queryText: queryResult.queryText
+  });
+};
+
+const QueryInfo = (queryResult: RemoteQueryResult) => (
+  <>
+    <VerticalSpace />
+    {queryResult.totalResultCount} results in {queryResult.totalRepositoryCount} repositories
+    ({queryResult.executionDuration}), {queryResult.executionTimestamp}
+    <VerticalSpace />
+    <span className="vscode-codeql__query-file">{octicons.file}
+      <a className="vscode-codeql__query-file-link" href="#" onClick={() => openQueryFile(queryResult)}>
+        {queryResult.queryFileName}
+      </a>
+    </span>
+    <span>{octicons.codeSquare}
+      <a className="vscode-codeql__query-file-link" href="#" onClick={() => openQueryTextVirtualFile(queryResult)}>
+        query
+      </a>
+    </span>
+  </>
+);
+
+const SummaryTitleWithResults = (queryResult: RemoteQueryResult) => (
+  <div className="vscode-codeql__query-summary-container">
+    <SectionTitle text={`Repositories with results (${queryResult.affectedRepositoryCount}):`} />
+    <DownloadButton text="Download all" onClick={() => download(queryResult.downloadLink)} />
+  </div>
+);
+
+const SummaryTitleNoResults = () => (
+  <div className="vscode-codeql__query-summary-container">
+    <SectionTitle text="No results found" />
+  </div>
+);
+
+const SummaryItem = (props: AnalysisSummary) => (
   <span>
     <span className="vscode-codeql__analysis-item">{octicons.repo}</span>
     <span className="vscode-codeql__analysis-item">{props.nwo}</span>
@@ -51,18 +97,34 @@ const AnalysisSummaryItem = (props: AnalysisSummary) => (
   </span>
 );
 
-const SummaryWithResults = (queryResult: RemoteQueryResult) => (
-  <div className="vscode-codeql__query-summary-container">
-    <SectionTitle text={`Repositories with results (${queryResult.affectedRepositoryCount}):`} />
-    <DownloadButton text="Download all" onClick={() => download(queryResult.downloadLink)} />
-  </div>
-);
+const Summary = (queryResult: RemoteQueryResult) => {
+  const [repoListExpanded, setRepoListExpanded] = useState(false);
+  const numOfReposToShow = repoListExpanded ? queryResult.analysisSummaries.length : numOfReposInContractedMode;
 
-const SummaryNoResults = () => (
-  <div className="vscode-codeql__query-summary-container">
-    <SectionTitle text="No results found" />
-  </div>
-);
+  return (
+    <>
+      {
+        queryResult.affectedRepositoryCount === 0
+          ? <SummaryTitleNoResults />
+          : <SummaryTitleWithResults {...queryResult} />
+      }
+
+      <ul className="vscode-codeql__analysis-summaries-list">
+        {queryResult.analysisSummaries.slice(0, numOfReposToShow).map((summary, i) =>
+          <li key={summary.nwo} className="vscode-codeql__analysis-summaries-list-item">
+            <SummaryItem {...summary} />
+          </li>
+        )}
+      </ul>
+      {
+        queryResult.analysisSummaries.length > numOfReposInContractedMode &&
+        <button className="vscode-codeql__expand-button" onClick={() => setRepoListExpanded(!repoListExpanded)}>
+          {repoListExpanded ? (<span>View less</span>) : (<span>View all</span>)}
+        </button>
+      }
+    </>
+  );
+};
 
 export function RemoteQueries(): JSX.Element {
   const [queryResult, setQueryResult] = useState<RemoteQueryResult>(emptyQueryResult);
@@ -86,61 +148,11 @@ export function RemoteQueries(): JSX.Element {
     return <div>Waiting for results to load.</div>;
   }
 
-  const [repoListExpanded, setRepoListExpanded] = useState(false);
-  const numOfReposToShow = repoListExpanded ? queryResult.analysisSummaries.length : numOfReposInContractedMode;
-
-  const openQueryFile = () => {
-    vscode.postMessage({
-      t: 'openFile',
-      filePath: queryResult.queryFilePath
-    });
-  };
-
-  const openQueryTextVirtualFile = () => {
-    vscode.postMessage({
-      t: 'openVirtualFile',
-      queryText: queryResult.queryText
-    });
-  };
-
   try {
     return <div>
       <ViewTitle title={queryResult.queryTitle} />
-
-      <VerticalSpace />
-      {queryResult.totalResultCount} results in {queryResult.totalRepositoryCount} repositories
-      ({queryResult.executionDuration}), {queryResult.executionTimestamp}
-      <VerticalSpace />
-      <span className="vscode-codeql__query-file">{octicons.file}
-        <a className="vscode-codeql__query-file-link" href="#" onClick={openQueryFile}>
-          {queryResult.queryFileName}
-        </a>
-      </span>
-      <span>{octicons.codeSquare}
-        <a className="vscode-codeql__query-file-link" href="#" onClick={openQueryTextVirtualFile}>
-          query
-        </a>
-      </span>
-
-      {
-        queryResult.affectedRepositoryCount === 0
-          ? <SummaryNoResults />
-          : <SummaryWithResults {...queryResult} />
-      }
-
-      <ul className="vscode-codeql__analysis-summaries-list">
-        {queryResult.analysisSummaries.slice(0, numOfReposToShow).map((summary, i) =>
-          <li key={summary.nwo} className="vscode-codeql__analysis-summaries-list-item">
-            <AnalysisSummaryItem {...summary} />
-          </li>
-        )}
-      </ul>
-      {
-        queryResult.analysisSummaries.length > numOfReposInContractedMode &&
-        <button className="vscode-codeql__expand-button" onClick={() => setRepoListExpanded(!repoListExpanded)}>
-          {repoListExpanded ? (<span>View less</span>) : (<span>View all</span>)}
-        </button>
-      }
+      <QueryInfo {...queryResult} />
+      <Summary {...queryResult} />
     </div>;
   } catch (err) {
     console.error(err);
