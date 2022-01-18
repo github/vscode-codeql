@@ -123,7 +123,7 @@ export async function handleInstallPacks(
     if (failedPacks.length > 0) {
       void logger.log(`Errors:\n${errors.join('\n')}`);
       throw new Error(
-        `Unable to install packs: ${failedPacks.join(', ')}. See logs for more details.`
+        `Unable to install packs: ${failedPacks.join(', ')}. See log for more details.`
       );
     } else {
       void showAndLogInformationMessage('Finished installing packs.');
