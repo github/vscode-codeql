@@ -101,9 +101,9 @@ describe('Packaging commands', function() {
       },
     ]);
 
-    await mod.handleInstallPacks(cli, progress);
+    await mod.handleInstallPackDependencies(cli, progress);
     expect(showAndLogInformationMessageSpy.firstCall.args[0]).to.contain(
-      'Finished installing packs.'
+      'Finished installing pack dependencies.'
     );
   });
 
@@ -118,11 +118,11 @@ describe('Packaging commands', function() {
 
     try {
       // expect this to throw an error
-      await mod.handleInstallPacks(cli, progress);
+      await mod.handleInstallPackDependencies(cli, progress);
       // This line should not be reached
       expect(true).to.be.false;
     } catch (error) {
-      expect(error.message).to.contain('Unable to install packs:');
+      expect(error.message).to.contain('Unable to install pack dependencies');
     }
   });
 });
