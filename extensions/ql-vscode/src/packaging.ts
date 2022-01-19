@@ -110,15 +110,19 @@ export async function handleInstallPackDependencies(
     canPickMany: true,
     ignoreFocusOut: true,
   });
-  if (packsToInstall && packsToInstall.length > 0) {
-    progress({
-      message: 'Installing dependencies. This may take a few minutes.',
-      step: 2,
-      maxStep: 2,
-    });
+  const numberOfPacks = packsToInstall?.length || 0;
+  if (packsToInstall && numberOfPacks > 0) {
     const failedPacks = [];
     const errors = [];
+    // Start at 1 because we already have the first step
+    let count = 1;
     for (const pack of packsToInstall) {
+      count++;
+      progress({
+        message: `Installing dependencies for ${pack.label}`,
+        step: count,
+        maxStep: numberOfPacks + 1,
+      });
       try {
         for (const dir of pack.packRootDir) {
           await cliServer.packInstall(dir);
