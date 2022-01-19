@@ -71,7 +71,7 @@ export async function handleDownloadPacks(
       void showAndLogInformationMessage('Finished downloading packs.');
     } catch (error) {
       void showAndLogErrorMessage(
-        'Unable to download all packs. See logs for more details.'
+        'Unable to download all packs. See log for more details.'
       );
     }
   }
@@ -87,7 +87,7 @@ interface QLPackQuickPickItem extends QuickPickItem {
  * @param cliServer The CLI server.
  * @param progress A progress callback.
  */
-export async function handleInstallPacks(
+export async function handleInstallPackDependencies(
   cliServer: CodeQLCliServer,
   progress: ProgressCallback,
 ): Promise<void> {
@@ -96,7 +96,7 @@ export async function handleInstallPacks(
       } or later.`);
   }
   progress({
-    message: 'Choose packs to install',
+    message: 'Choose packs to install dependencies for',
     step: 1,
     maxStep: 2,
   });
@@ -106,13 +106,13 @@ export async function handleInstallPacks(
     packRootDir: value,
   }));
   const packsToInstall = await window.showQuickPick(quickPickItems, {
-    placeHolder: 'Select packs to install',
+    placeHolder: 'Select packs to install dependencies for',
     canPickMany: true,
     ignoreFocusOut: true,
   });
   if (packsToInstall && packsToInstall.length > 0) {
     progress({
-      message: 'Installing packs. This may take a few minutes.',
+      message: 'Installing dependencies. This may take a few minutes.',
       step: 2,
       maxStep: 2,
     });
@@ -131,10 +131,10 @@ export async function handleInstallPacks(
     if (failedPacks.length > 0) {
       void logger.log(`Errors:\n${errors.join('\n')}`);
       throw new Error(
-        `Unable to install packs: ${failedPacks.join(', ')}. See log for more details.`
+        `Unable to install pack dependencies for: ${failedPacks.join(', ')}. See log for more details.`
       );
     } else {
-      void showAndLogInformationMessage('Finished installing packs.');
+      void showAndLogInformationMessage('Finished installing pack dependencies.');
     }
   } else {
     throw new UserCancellationException('No packs selected.');
