@@ -33,9 +33,17 @@ const emptyQueryResult: RemoteQueryResult = {
   analysisSummaries: []
 };
 
-const download = (link: DownloadLink) => {
+const downloadAnalysisResults = (nwo: string, link: DownloadLink) => {
   vscode.postMessage({
-    t: 'remoteQueryDownloadLinkClicked',
+    t: 'remoteQueryDownloadAnalysisResults',
+    nwo,
+    downloadLink: link
+  });
+};
+
+const downloadAllAnalysesResults = (link: DownloadLink) => {
+  vscode.postMessage({
+    t: 'remoteQueryDownloadAllAnalysesResults',
     downloadLink: link
   });
 };
@@ -76,7 +84,9 @@ const QueryInfo = (queryResult: RemoteQueryResult) => (
 const SummaryTitleWithResults = (queryResult: RemoteQueryResult) => (
   <div className="vscode-codeql__query-summary-container">
     <SectionTitle text={`Repositories with results (${queryResult.affectedRepositoryCount}):`} />
-    <DownloadButton text="Download all" onClick={() => download(queryResult.downloadLink)} />
+    <DownloadButton
+      text="Download all"
+      onClick={() => downloadAllAnalysesResults(queryResult.downloadLink)} />
   </div>
 );
 
@@ -92,7 +102,9 @@ const SummaryItem = (props: AnalysisSummary) => (
     <span className="vscode-codeql__analysis-item">{props.nwo}</span>
     <span className="vscode-codeql__analysis-item"><Badge text={props.resultCount.toString()} /></span>
     <span className="vscode-codeql__analysis-item">
-      <DownloadButton text={props.fileSize} onClick={() => download(props.downloadLink)} />
+      <DownloadButton
+        text={props.fileSize}
+        onClick={() => downloadAnalysisResults(props.nwo, props.downloadLink)} />
     </span>
   </span>
 );

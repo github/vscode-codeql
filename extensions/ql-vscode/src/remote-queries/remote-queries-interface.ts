@@ -14,7 +14,6 @@ import { tmpDir } from '../run-queries';
 import {
   ToRemoteQueriesMessage,
   FromRemoteQueriesMessage,
-  RemoteQueryDownloadLinkClickedMessage,
 } from '../pure/interface-types';
 import { Logger } from '../logging';
 import { getHtmlForWebview } from '../interface-utils';
@@ -28,6 +27,7 @@ import { Credentials } from '../authentication';
 import { showAndLogWarningMessage, showInformationMessageWithAction } from '../helpers';
 import { URLSearchParams } from 'url';
 import { SHOW_QUERY_TEXT_MSG } from '../query-history';
+import { DownloadLink } from './download-link';
 
 export class RemoteQueriesInterfaceManager {
   private panel: WebviewPanel | undefined;
@@ -189,18 +189,21 @@ export class RemoteQueriesInterfaceManager {
       case 'openVirtualFile':
         await this.openVirtualFile(msg.queryText);
         break;
-      case 'remoteQueryDownloadLinkClicked':
-        await this.handleDownloadLinkClicked(msg);
+      case 'remoteQueryDownloadAnalysisResults':
+        await this.handleDownloadLinkClicked(msg.downloadLink);
+        break;
+      case 'remoteQueryDownloadAllAnalysesResults':
+        await this.handleDownloadLinkClicked(msg.downloadLink);
         break;
       default:
         assertNever(msg);
     }
   }
 
-  private async handleDownloadLinkClicked(msg: RemoteQueryDownloadLinkClickedMessage): Promise<void> {
+  private async handleDownloadLinkClicked(downloadLink: DownloadLink): Promise<void> {
     const credentials = await Credentials.initialize(this.ctx);
 
-    const filePath = await downloadArtifactFromLink(credentials, msg.downloadLink);
+    const filePath = await downloadArtifactFromLink(credentials, downloadLink);
     const isDir = (await fs.stat(filePath)).isDirectory();
     const message = `Result file saved at ${filePath}`;
     if (isDir) {

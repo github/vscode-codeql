@@ -377,7 +377,8 @@ export type FromRemoteQueriesMessage =
   | RemoteQueryErrorMessage
   | OpenFileMsg
   | OpenVirtualFileMsg
-  | RemoteQueryDownloadLinkClickedMessage;
+  | RemoteQueryDownloadAnalysisResultsMessage
+  | RemoteQueryDownloadAllAnalysesResultsMessage;
 
 export type ToRemoteQueriesMessage =
   | SetRemoteQueryResultMessage;
@@ -396,7 +397,13 @@ export interface RemoteQueryErrorMessage {
   error: string;
 }
 
-export interface RemoteQueryDownloadLinkClickedMessage {
-  t: 'remoteQueryDownloadLinkClicked';
+export interface RemoteQueryDownloadAnalysisResultsMessage {
+  t: 'remoteQueryDownloadAnalysisResults';
+  nwo: string
+  downloadLink: DownloadLink;
+}
+
+export interface RemoteQueryDownloadAllAnalysesResultsMessage {
+  t: 'remoteQueryDownloadAllAnalysesResults';
   downloadLink: DownloadLink;
 }
