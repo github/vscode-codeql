@@ -9,4 +9,4 @@ Replace this with a description of the changes your pull request makes.
 
 - [ ] [CHANGELOG.md](https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/CHANGELOG.md) has been updated to incorporate all user visible changes made by this pull request.
 - [ ] Issues have been created for any UI or other user-facing changes made by this pull request.
-- [ ] If this pull request makes user-facing changes that require documentation changes, the `ready-for-doc-review` label has been added to this pull request or the corresponding issue.
+- [ ] If this pull request makes user-facing changes that require documentation changes, open a corresponding docs pull request in the [github/codeql](https://github.com/github/codeql/tree/main/docs/codeql/codeql-for-visual-studio-code) repo and add the `ready-for-doc-review` label there.
