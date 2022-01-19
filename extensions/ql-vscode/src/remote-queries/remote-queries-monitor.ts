@@ -29,6 +29,9 @@ export class RemoteQueriesMonitor {
 
     let attemptCount = 0;
 
+    // Wait a bit before starting to monitor the workflow run.
+    await this.sleep(RemoteQueriesMonitor.sleepTime);
+
     while (attemptCount <= RemoteQueriesMonitor.maxAttemptCount) {
       if (cancellationToken && cancellationToken.isCancellationRequested) {
         return { status: 'Cancelled' };
