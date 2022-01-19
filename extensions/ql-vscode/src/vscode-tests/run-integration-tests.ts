@@ -80,10 +80,19 @@ async function main() {
     if (dirs.includes(TestDir.CliIntegration)) {
       console.log('Installing required extensions');
       const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
-      cp.spawnSync(cliPath, ['--install-extension', 'hbenl.vscode-test-explorer'], {
-        encoding: 'utf-8',
-        stdio: 'inherit'
-      });
+      cp.spawnSync(
+        cliPath,
+        [
+          '--install-extension',
+          'hbenl.vscode-test-explorer',
+          '--install-extension',
+          'ms-vscode.test-adapter-converter',
+        ],
+        {
+          encoding: 'utf-8',
+          stdio: 'inherit',
+        }
+      );
     }
 
     console.log(`Running integration tests in these directories: ${dirs}`);
