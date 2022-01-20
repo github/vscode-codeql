@@ -32,8 +32,8 @@ import {
 import { Logger } from './logging';
 import * as messages from './pure/messages';
 import { commandRunner } from './commandRunner';
-import { CompletedQuery, interpretResults } from './query-results';
-import { QueryInfo, tmpDir } from './run-queries';
+import { CompletedQueryInfo, interpretResults } from './query-results';
+import { QueryEvaluatonInfo, tmpDir } from './run-queries';
 import { parseSarifLocation, parseSarifPlainTextMessage } from './pure/sarif-utils';
 import {
   WebviewReveal,
@@ -47,6 +47,7 @@ import {
 import { getDefaultResultSetName, ParsedResultSets } from './pure/interface-types';
 import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './pure/bqrs-cli-types';
 import { PAGE_SIZE } from './config';
+import { FullCompletedQueryInfo } from './query-results';
 
 /**
  * interface.ts
@@ -96,7 +97,7 @@ function numInterpretedPages(interpretation: Interpretation | undefined): number
 }
 
 export class InterfaceManager extends DisposableObject {
-  private _displayedQuery?: CompletedQuery;
+  private _displayedQuery?: FullCompletedQueryInfo;
   private _interpretation?: Interpretation;
   private _panel: vscode.WebviewPanel | undefined;
   private _panelLoaded = false;
@@ -176,14 +177,14 @@ export class InterfaceManager extends DisposableObject {
         }
       ));
 
-      this._panel.onDidDispose(
+      this.push(this._panel.onDidDispose(
         () => {
           this._panel = undefined;
           this._displayedQuery = undefined;
         },
         null,
         ctx.subscriptions
-      );
+      ));
       const scriptPathOnDisk = vscode.Uri.file(
         ctx.asAbsolutePath('out/resultsView.js')
       );
@@ -195,11 +196,11 @@ export class InterfaceManager extends DisposableObject {
         scriptPathOnDisk,
         [stylesheetPathOnDisk]
       );
-      panel.webview.onDidReceiveMessage(
+      this.push(panel.webview.onDidReceiveMessage(
         async (e) => this.handleMsgFromView(e),
         undefined,
         ctx.subscriptions
-      );
+      ));
     }
     return this._panel;
   }
@@ -238,7 +239,7 @@ export class InterfaceManager extends DisposableObject {
     }
     // Notify the webview that it should expect new results.
     await this.postMessage({ t: 'resultsUpdating' });
-    await this._displayedQuery.updateInterpretedSortState(sortState);
+    await this._displayedQuery.completedQuery.updateInterpretedSortState(sortState);
     await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
   }
 
@@ -254,7 +255,7 @@ export class InterfaceManager extends DisposableObject {
     }
     // Notify the webview that it should expect new results.
     await this.postMessage({ t: 'resultsUpdating' });
-    await this._displayedQuery.updateSortState(
+    await this._displayedQuery.completedQuery.updateSortState(
       this.cliServer,
       resultSetName,
       sortState
@@ -314,7 +315,7 @@ export class InterfaceManager extends DisposableObject {
               // sortedResultsInfo doesn't have an entry for the current
               // result set. Use this to determine whether or not we use
               // the sorted bqrs file.
-              this._displayedQuery?.sortedResultsInfo.has(msg.selectedTable) || false
+              this._displayedQuery?.completedQuery.sortedResultsInfo.has(msg.selectedTable) || false
             );
           }
           break;
@@ -347,7 +348,7 @@ export class InterfaceManager extends DisposableObject {
 
   /**
    * Show query results in webview panel.
-   * @param results Evaluation info for the executed query.
+   * @param fullQuery Evaluation info for the executed query.
    * @param shouldKeepOldResultsWhileRendering Should keep old results while rendering.
    * @param forceReveal Force the webview panel to be visible and
    * Appropriate when the user has just performed an explicit
@@ -355,27 +356,27 @@ export class InterfaceManager extends DisposableObject {
    * history entry.
    */
   public async showResults(
-    results: CompletedQuery,
+    fullQuery: FullCompletedQueryInfo,
     forceReveal: WebviewReveal,
     shouldKeepOldResultsWhileRendering = false
   ): Promise<void> {
-    if (results.result.resultType !== messages.QueryResultType.SUCCESS) {
+    if (fullQuery.completedQuery.result.resultType !== messages.QueryResultType.SUCCESS) {
       return;
     }
 
     this._interpretation = undefined;
     const interpretationPage = await this.interpretResultsInfo(
-      results.query,
-      results.interpretedResultsSortState
+      fullQuery.completedQuery.query,
+      fullQuery.completedQuery.interpretedResultsSortState
     );
 
     const sortedResultsMap: SortedResultsMap = {};
-    results.sortedResultsInfo.forEach(
+    fullQuery.completedQuery.sortedResultsInfo.forEach(
       (v, k) =>
         (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v))
     );
 
-    this._displayedQuery = results;
+    this._displayedQuery = fullQuery;
 
     const panel = this.getPanel();
     await this.waitForPanelLoaded();
@@ -388,7 +389,7 @@ export class InterfaceManager extends DisposableObject {
         // more asynchronous message to not so abruptly interrupt
         // user's workflow by immediately revealing the panel.
         const showButton = 'View Results';
-        const queryName = results.queryName;
+        const queryName = fullQuery.getShortLabel();
         const resultPromise = vscode.window.showInformationMessage(
           `Finished running query ${queryName.length > 0 ? ` "${queryName}"` : ''
           }.`,
@@ -407,7 +408,7 @@ export class InterfaceManager extends DisposableObject {
     // Note that the resultSetSchemas will return offsets for the default (unsorted) page,
     // which may not be correct. However, in this case, it doesn't matter since we only
     // need the first offset, which will be the same no matter which sorting we use.
-    const resultSetSchemas = await this.getResultSetSchemas(results);
+    const resultSetSchemas = await this.getResultSetSchemas(fullQuery.completedQuery);
     const resultSetNames = resultSetSchemas.map(schema => schema.name);
 
     const selectedTable = getDefaultResultSetName(resultSetNames);
@@ -417,7 +418,7 @@ export class InterfaceManager extends DisposableObject {
 
     // Use sorted results path if it exists. This may happen if we are
     // reloading the results view after it has been sorted in the past.
-    const resultsPath = results.getResultsPath(selectedTable);
+    const resultsPath = fullQuery.completedQuery.getResultsPath(selectedTable);
     const pageSize = PAGE_SIZE.getValue<number>();
     const chunk = await this.cliServer.bqrsDecode(
       resultsPath,
@@ -432,7 +433,7 @@ export class InterfaceManager extends DisposableObject {
       }
     );
     const resultSet = transformBqrsResultSet(schema, chunk);
-    results.setResultCount(interpretationPage?.numTotalResults || resultSet.schema.rows);
+    fullQuery.completedQuery.setResultCount(interpretationPage?.numTotalResults || resultSet.schema.rows);
     const parsedResultSets: ParsedResultSets = {
       pageNumber: 0,
       pageSize,
@@ -446,17 +447,17 @@ export class InterfaceManager extends DisposableObject {
     await this.postMessage({
       t: 'setState',
       interpretation: interpretationPage,
-      origResultsPaths: results.query.resultsPaths,
+      origResultsPaths: fullQuery.completedQuery.query.resultsPaths,
       resultsPath: this.convertPathToWebviewUri(
-        results.query.resultsPaths.resultsPath
+        fullQuery.completedQuery.query.resultsPaths.resultsPath
       ),
       parsedResultSets,
       sortedResultsMap,
-      database: results.database,
+      database: fullQuery.initialInfo.databaseInfo,
       shouldKeepOldResultsWhileRendering,
-      metadata: results.query.metadata,
-      queryName: results.toString(),
-      queryPath: results.query.program.queryPath
+      metadata: fullQuery.completedQuery.query.metadata,
+      queryName: fullQuery.label,
+      queryPath: fullQuery.completedQuery.query.program.queryPath
     });
   }
 
@@ -476,25 +477,25 @@ export class InterfaceManager extends DisposableObject {
       throw new Error('Trying to show interpreted results but results were undefined');
     }
 
-    const resultSetSchemas = await this.getResultSetSchemas(this._displayedQuery);
+    const resultSetSchemas = await this.getResultSetSchemas(this._displayedQuery.completedQuery);
     const resultSetNames = resultSetSchemas.map(schema => schema.name);
 
     await this.postMessage({
       t: 'showInterpretedPage',
       interpretation: this.getPageOfInterpretedResults(pageNumber),
-      database: this._displayedQuery.database,
-      metadata: this._displayedQuery.query.metadata,
+      database: this._displayedQuery.initialInfo.databaseInfo,
+      metadata: this._displayedQuery.completedQuery.query.metadata,
       pageNumber,
       resultSetNames,
       pageSize: PAGE_SIZE.getValue(),
       numPages: numInterpretedPages(this._interpretation),
-      queryName: this._displayedQuery.toString(),
-      queryPath: this._displayedQuery.query.program.queryPath
+      queryName: this._displayedQuery.label,
+      queryPath: this._displayedQuery.completedQuery.query.program.queryPath
     });
   }
 
-  private async getResultSetSchemas(results: CompletedQuery, selectedTable = ''): Promise<ResultSetSchema[]> {
-    const resultsPath = results.getResultsPath(selectedTable);
+  private async getResultSetSchemas(completedQuery: CompletedQueryInfo, selectedTable = ''): Promise<ResultSetSchema[]> {
+    const resultsPath = completedQuery.getResultsPath(selectedTable);
     const schemas = await this.cliServer.bqrsInfo(
       resultsPath,
       PAGE_SIZE.getValue()
@@ -521,17 +522,17 @@ export class InterfaceManager extends DisposableObject {
     }
 
     const sortedResultsMap: SortedResultsMap = {};
-    results.sortedResultsInfo.forEach(
+    results.completedQuery.sortedResultsInfo.forEach(
       (v, k) =>
         (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v))
     );
 
-    const resultSetSchemas = await this.getResultSetSchemas(results, sorted ? selectedTable : '');
+    const resultSetSchemas = await this.getResultSetSchemas(results.completedQuery, sorted ? selectedTable : '');
 
     // If there is a specific sorted table selected, a different bqrs file is loaded that doesn't have all the result set names.
     // Make sure that we load all result set names here.
     // See https://github.com/github/vscode-codeql/issues/1005
-    const allResultSetSchemas = sorted ? await this.getResultSetSchemas(results, '') : resultSetSchemas;
+    const allResultSetSchemas = sorted ? await this.getResultSetSchemas(results.completedQuery, '') : resultSetSchemas;
     const resultSetNames = allResultSetSchemas.map(schema => schema.name);
 
     const schema = resultSetSchemas.find(
@@ -542,7 +543,7 @@ export class InterfaceManager extends DisposableObject {
 
     const pageSize = PAGE_SIZE.getValue<number>();
     const chunk = await this.cliServer.bqrsDecode(
-      results.getResultsPath(selectedTable, sorted),
+      results.completedQuery.getResultsPath(selectedTable, sorted),
       schema.name,
       {
         offset: schema.pagination?.offsets[pageNumber],
@@ -564,17 +565,17 @@ export class InterfaceManager extends DisposableObject {
     await this.postMessage({
       t: 'setState',
       interpretation: this._interpretation,
-      origResultsPaths: results.query.resultsPaths,
+      origResultsPaths: results.completedQuery.query.resultsPaths,
       resultsPath: this.convertPathToWebviewUri(
-        results.query.resultsPaths.resultsPath
+        results.completedQuery.query.resultsPaths.resultsPath
       ),
       parsedResultSets,
       sortedResultsMap,
-      database: results.database,
+      database: results.initialInfo.databaseInfo,
       shouldKeepOldResultsWhileRendering: false,
-      metadata: results.query.metadata,
-      queryName: results.toString(),
-      queryPath: results.query.program.queryPath
+      metadata: results.completedQuery.query.metadata,
+      queryName: results.label,
+      queryPath: results.completedQuery.query.program.queryPath
     });
   }
 
@@ -643,7 +644,7 @@ export class InterfaceManager extends DisposableObject {
   }
 
   private async interpretResultsInfo(
-    query: QueryInfo,
+    query: QueryEvaluatonInfo,
     sortState: InterpretedResultsSortState | undefined
   ): Promise<Interpretation | undefined> {
     if (

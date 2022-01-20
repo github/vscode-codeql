@@ -18,7 +18,7 @@ import { CachedOperation } from '../helpers';
 import { ProgressCallback, withProgress } from '../commandRunner';
 import * as messages from '../pure/messages';
 import { QueryServerClient } from '../queryserver-client';
-import { compileAndRunQueryAgainstDatabase, QueryWithResults } from '../run-queries';
+import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo, QueryWithResults } from '../run-queries';
 import AstBuilder from './astBuilder';
 import {
   KeyType,
@@ -123,15 +123,20 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
   }
 }
 
+type QueryWithDb = {
+  query: QueryWithResults,
+  dbUri: Uri
+};
+
 export class TemplatePrintAstProvider {
-  private cache: CachedOperation<QueryWithResults>;
+  private cache: CachedOperation<QueryWithDb>;
 
   constructor(
     private cli: CodeQLCliServer,
     private qs: QueryServerClient,
     private dbm: DatabaseManager,
   ) {
-    this.cache = new CachedOperation<QueryWithResults>(this.getAst.bind(this));
+    this.cache = new CachedOperation<QueryWithDb>(this.getAst.bind(this));
   }
 
   async provideAst(
@@ -142,13 +147,13 @@ export class TemplatePrintAstProvider {
     if (!document) {
       throw new Error('Cannot view the AST. Please select a valid source file inside a CodeQL database.');
     }
-    const queryResults = this.shouldCache()
+    const { query, dbUri } = this.shouldCache()
       ? await this.cache.get(document.uri.toString(), progress, token)
       : await this.getAst(document.uri.toString(), progress, token);
 
     return new AstBuilder(
-      queryResults, this.cli,
-      this.dbm.findDatabaseItem(Uri.parse(queryResults.database.databaseUri!, true))!,
+      query, this.cli,
+      this.dbm.findDatabaseItem(dbUri)!,
       document.fileName
     );
   }
@@ -161,7 +166,7 @@ export class TemplatePrintAstProvider {
     uriString: string,
     progress: ProgressCallback,
     token: CancellationToken
-  ): Promise<QueryWithResults> {
+  ): Promise<QueryWithDb> {
     const uri = Uri.parse(uriString, true);
     if (uri.scheme !== zipArchiveScheme) {
       throw new Error('Cannot view the AST. Please select a valid source file inside a CodeQL database.');
@@ -195,15 +200,26 @@ export class TemplatePrintAstProvider {
       }
     };
 
-    return await compileAndRunQueryAgainstDatabase(
-      this.cli,
-      this.qs,
-      db,
-      false,
+    const initialInfo = await createInitialQueryInfo(
       Uri.file(query),
-      progress,
-      token,
-      templates
+      {
+        name: db.name,
+        databaseUri: db.databaseUri.toString(),
+      },
+      false
     );
+
+    return {
+      query: await compileAndRunQueryAgainstDatabase(
+        this.cli,
+        this.qs,
+        db,
+        initialInfo,
+        progress,
+        token,
+        templates
+      ),
+      dbUri: db.databaseUri
+    };
   }
 }

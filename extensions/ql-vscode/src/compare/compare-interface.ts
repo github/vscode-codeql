@@ -9,7 +9,6 @@ import {
 import * as path from 'path';
 
 import { tmpDir } from '../run-queries';
-import { CompletedQuery } from '../query-results';
 import {
   FromCompareViewMessage,
   ToCompareViewMessage,
@@ -21,10 +20,11 @@ import { DatabaseManager } from '../databases';
 import { getHtmlForWebview, jumpToLocation } from '../interface-utils';
 import { transformBqrsResultSet, RawResultSet, BQRSInfo } from '../pure/bqrs-cli-types';
 import resultsDiff from './resultsDiff';
+import { FullCompletedQueryInfo } from '../query-results';
 
 interface ComparePair {
-  from: CompletedQuery;
-  to: CompletedQuery;
+  from: FullCompletedQueryInfo;
+  to: FullCompletedQueryInfo;
 }
 
 export class CompareInterfaceManager extends DisposableObject {
@@ -39,15 +39,15 @@ export class CompareInterfaceManager extends DisposableObject {
     private cliServer: CodeQLCliServer,
     private logger: Logger,
     private showQueryResultsCallback: (
-      item: CompletedQuery
+      item: FullCompletedQueryInfo
     ) => Promise<void>
   ) {
     super();
   }
 
   async showResults(
-    from: CompletedQuery,
-    to: CompletedQuery,
+    from: FullCompletedQueryInfo,
+    to: FullCompletedQueryInfo,
     selectedResultSetName?: string
   ) {
     this.comparePair = { from, to };
@@ -80,17 +80,13 @@ export class CompareInterfaceManager extends DisposableObject {
             // since we split the description into several rows
             // only run interpolation if the label is user-defined
             // otherwise we will wind up with duplicated rows
-            name: from.options.label
-              ? from.interpolate(from.getLabel())
-              : from.queryName,
-            status: from.statusString,
+            name: from.getShortLabel(),
+            status: from.completedQuery.statusString,
             time: from.time,
           },
           toQuery: {
-            name: to.options.label
-              ? to.interpolate(to.getLabel())
-              : to.queryName,
-            status: to.statusString,
+            name: to.getShortLabel(),
+            status: to.completedQuery.statusString,
             time: to.time,
           },
         },
@@ -99,7 +95,7 @@ export class CompareInterfaceManager extends DisposableObject {
         currentResultSetName: currentResultSetName,
         rows,
         message,
-        datebaseUri: to.database.databaseUri,
+        datebaseUri: to.initialInfo.databaseInfo.databaseUri,
       });
     }
   }
@@ -121,14 +117,14 @@ export class CompareInterfaceManager extends DisposableObject {
           ],
         }
       ));
-      this.panel.onDidDispose(
+      this.push(this.panel.onDidDispose(
         () => {
           this.panel = undefined;
           this.comparePair = undefined;
         },
         null,
         ctx.subscriptions
-      );
+      ));
 
       const scriptPathOnDisk = Uri.file(
         ctx.asAbsolutePath('out/compareView.js')
@@ -143,11 +139,11 @@ export class CompareInterfaceManager extends DisposableObject {
         scriptPathOnDisk,
         [stylesheetPathOnDisk]
       );
-      panel.webview.onDidReceiveMessage(
+      this.push(panel.webview.onDidReceiveMessage(
         async (e) => this.handleMsgFromView(e),
         undefined,
         ctx.subscriptions
-      );
+      ));
     }
     return this.panel;
   }
@@ -191,15 +187,15 @@ export class CompareInterfaceManager extends DisposableObject {
   }
 
   private async findCommonResultSetNames(
-    from: CompletedQuery,
-    to: CompletedQuery,
+    from: FullCompletedQueryInfo,
+    to: FullCompletedQueryInfo,
     selectedResultSetName: string | undefined
   ): Promise<[string[], string, RawResultSet, RawResultSet]> {
     const fromSchemas = await this.cliServer.bqrsInfo(
-      from.query.resultsPaths.resultsPath
+      from.completedQuery.query.resultsPaths.resultsPath
     );
     const toSchemas = await this.cliServer.bqrsInfo(
-      to.query.resultsPaths.resultsPath
+      to.completedQuery.query.resultsPaths.resultsPath
     );
     const fromSchemaNames = fromSchemas['result-sets'].map(
       (schema) => schema.name
@@ -215,12 +211,12 @@ export class CompareInterfaceManager extends DisposableObject {
     const fromResultSet = await this.getResultSet(
       fromSchemas,
       currentResultSetName,
-      from.query.resultsPaths.resultsPath
+      from.completedQuery.query.resultsPaths.resultsPath
     );
     const toResultSet = await this.getResultSet(
       toSchemas,
       currentResultSetName,
-      to.query.resultsPaths.resultsPath
+      to.completedQuery.query.resultsPaths.resultsPath
     );
     return [
       commonResultSetNames,

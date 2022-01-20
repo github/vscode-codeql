@@ -11,7 +11,7 @@ import { DatabaseItem, DatabaseManager } from '../../databases';
 import { CodeQLExtensionInterface } from '../../extension';
 import { dbLoc, storagePath } from './global.helper';
 import { importArchiveDatabase } from '../../databaseFetcher';
-import { compileAndRunQueryAgainstDatabase } from '../../run-queries';
+import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo } from '../../run-queries';
 import { CodeQLCliServer } from '../../cli';
 import { QueryServerClient } from '../../queryserver-client';
 import { skipIfNoCodeQL } from '../ensureCli';
@@ -96,15 +96,12 @@ describe('Queries', function() {
         cli,
         qs,
         dbItem,
-        false,
-        Uri.file(queryPath),
+        await mockInitialQueryInfo(queryPath),
         progress,
         token
       );
 
       // just check that the query was successful
-      expect(result.database.name).to.eq('db');
-      expect(result.options.queryText).to.eq(fs.readFileSync(queryPath, 'utf8'));
       expect(result.result.resultType).to.eq(QueryResultType.SUCCESS);
     } catch (e) {
       console.error('Test Failed');
@@ -121,15 +118,13 @@ describe('Queries', function() {
         cli,
         qs,
         dbItem,
-        false,
-        Uri.file(queryPath),
+        await mockInitialQueryInfo(queryPath),
         progress,
         token
       );
 
       // this message would indicate that the databases were not properly reregistered
       expect(result.result.message).not.to.eq('No result from server');
-      expect(result.options.queryText).to.eq(fs.readFileSync(queryPath, 'utf8'));
       expect(result.result.resultType).to.eq(QueryResultType.SUCCESS);
     } catch (e) {
       console.error('Test Failed');
@@ -173,5 +168,16 @@ describe('Queries', function() {
     } catch (e) {
       // ignore
     }
+  }
+
+  async function mockInitialQueryInfo(queryPath: string) {
+    return await createInitialQueryInfo(
+      Uri.file(queryPath),
+      {
+        name: dbItem.name,
+        databaseUri: dbItem.databaseUri.toString(),
+      },
+      false
+    );
   }
 });

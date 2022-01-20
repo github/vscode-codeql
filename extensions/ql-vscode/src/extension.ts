@@ -59,10 +59,10 @@ import { InterfaceManager } from './interface';
 import { WebviewReveal } from './interface-utils';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
 import { QueryHistoryManager } from './query-history';
-import { CompletedQuery } from './query-results';
+import { FullCompletedQueryInfo, FullQueryInfo } from './query-results';
 import * as qsClient from './queryserver-client';
 import { displayQuickQuery } from './quick-query';
-import { compileAndRunQueryAgainstDatabase, tmpDirDisposal } from './run-queries';
+import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo, tmpDirDisposal } from './run-queries';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
 import { CompareInterfaceManager } from './compare/compare-interface';
@@ -432,7 +432,7 @@ async function activateWithInstalledDistribution(
   void logger.log('Initializing query history manager.');
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
   ctx.subscriptions.push(queryHistoryConfigurationListener);
-  const showResults = async (item: CompletedQuery) =>
+  const showResults = async (item: FullCompletedQueryInfo) =>
     showResultsForCompletedQuery(item, WebviewReveal.Forced);
 
   const qhm = new QueryHistoryManager(
@@ -440,7 +440,7 @@ async function activateWithInstalledDistribution(
     ctx.extensionPath,
     queryHistoryConfigurationListener,
     showResults,
-    async (from: CompletedQuery, to: CompletedQuery) =>
+    async (from: FullCompletedQueryInfo, to: FullCompletedQueryInfo) =>
       showResultsForComparison(from, to),
   );
   ctx.subscriptions.push(qhm);
@@ -462,8 +462,8 @@ async function activateWithInstalledDistribution(
   archiveFilesystemProvider.activate(ctx);
 
   async function showResultsForComparison(
-    from: CompletedQuery,
-    to: CompletedQuery
+    from: FullCompletedQueryInfo,
+    to: FullCompletedQueryInfo
   ): Promise<void> {
     try {
       await cmpm.showResults(from, to);
@@ -473,7 +473,7 @@ async function activateWithInstalledDistribution(
   }
 
   async function showResultsForCompletedQuery(
-    query: CompletedQuery,
+    query: FullCompletedQueryInfo,
     forceReveal: WebviewReveal
   ): Promise<void> {
     await intm.showResults(query, forceReveal, false);
@@ -493,22 +493,35 @@ async function activateWithInstalledDistribution(
       if (databaseItem === undefined) {
         throw new Error('Can\'t run query without a selected database');
       }
-      const info = await compileAndRunQueryAgainstDatabase(
-        cliServer,
-        qs,
-        databaseItem,
-        quickEval,
-        selectedQuery,
-        progress,
-        token,
-        undefined,
-        range
-      );
-      const item = qhm.buildCompletedQuery(info);
-      await showResultsForCompletedQuery(item, WebviewReveal.NotForced);
-      // Note we must update the query history view after showing results as the
-      // display and sorting might depend on the number of results
-      await qhm.addCompletedQuery(item);
+      const databaseInfo = {
+        name: databaseItem.name,
+        databaseUri: databaseItem.databaseUri.toString(),
+      };
+
+      const initialInfo = await createInitialQueryInfo(selectedQuery, databaseInfo, quickEval, range);
+      const item = new FullQueryInfo(initialInfo, queryHistoryConfigurationListener);
+      qhm.addCompletedQuery(item);
+      await qhm.refreshTreeView(item);
+
+      try {
+        const info = await compileAndRunQueryAgainstDatabase(
+          cliServer,
+          qs,
+          databaseItem,
+          initialInfo,
+          progress,
+          token,
+        );
+        item.completeThisQuery(info);
+        await showResultsForCompletedQuery(item as FullCompletedQueryInfo, WebviewReveal.NotForced);
+        // Note we must update the query history view after showing results as the
+        // display and sorting might depend on the number of results
+      } catch (e) {
+        item.failureReason = e.message;
+        throw e;
+      } finally {
+        await qhm.refreshTreeView(item);
+      }
     }
   }
 
@@ -1027,7 +1040,7 @@ const checkForUpdatesCommand = 'codeQL.checkForUpdatesToCLI';
 
 /**
  * This text provider lets us open readonly files in the editor.
- * 
+ *
  * TODO: Consolidate this with the 'codeql' text provider in query-history.ts.
  */
 function registerRemoteQueryTextProvider() {
