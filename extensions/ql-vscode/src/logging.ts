@@ -74,31 +74,39 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
    * continuing.
    */
   async log(message: string, options = {} as LogOptions): Promise<void> {
-    if (options.trailingNewline === undefined) {
-      options.trailingNewline = true;
-    }
-
-    if (options.trailingNewline) {
-      this.outputChannel.appendLine(message);
-    } else {
-      this.outputChannel.append(message);
-    }
-
-    if (this.additionalLogLocationPath && options.additionalLogLocation) {
-      const logPath = path.join(this.additionalLogLocationPath, options.additionalLogLocation);
-      let additional = this.additionalLocations.get(logPath);
-      if (!additional) {
-        const msg = `| Log being saved to ${logPath} |`;
-        const separator = new Array(msg.length).fill('-').join('');
-        this.outputChannel.appendLine(separator);
-        this.outputChannel.appendLine(msg);
-        this.outputChannel.appendLine(separator);
-        additional = new AdditionalLogLocation(logPath, !this.isCustomLogDirectory);
-        this.additionalLocations.set(logPath, additional);
-        this.track(additional);
+    try {
+      if (options.trailingNewline === undefined) {
+        options.trailingNewline = true;
+      }
+      if (options.trailingNewline) {
+        this.outputChannel.appendLine(message);
+      } else {
+        this.outputChannel.append(message);
       }
 
-      await additional.log(message, options);
+      if (this.additionalLogLocationPath && options.additionalLogLocation) {
+        const logPath = path.join(this.additionalLogLocationPath, options.additionalLogLocation);
+        let additional = this.additionalLocations.get(logPath);
+        if (!additional) {
+          const msg = `| Log being saved to ${logPath} |`;
+          const separator = new Array(msg.length).fill('-').join('');
+          this.outputChannel.appendLine(separator);
+          this.outputChannel.appendLine(msg);
+          this.outputChannel.appendLine(separator);
+          additional = new AdditionalLogLocation(logPath, !this.isCustomLogDirectory);
+          this.additionalLocations.set(logPath, additional);
+          this.track(additional);
+        }
+
+        await additional.log(message, options);
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message === 'Channel has been closed') {
+        // Output channel is closed logging to console instead
+        console.log('Output channel is closed logging to console instead:', message);
+      } else {
+        throw e;
+      }
     }
   }
 

@@ -56,7 +56,7 @@ export class RemoteQueriesInterfaceManager {
   /**
    * Builds up a model tailored to the view based on the query and result domain entities.
    * The data is cleaned up, sorted where necessary, and transformed to a format that
-   * the view model can use. 
+   * the view model can use.
    * @param query Information about the query that was run.
    * @param queryResult The result of the query.
    * @returns A fully created view model.
@@ -125,10 +125,12 @@ export class RemoteQueriesInterfaceManager {
         scriptPathOnDisk,
         [baseStylesheetUriOnDisk, stylesheetPathOnDisk]
       );
-      panel.webview.onDidReceiveMessage(
-        async (e) => this.handleMsgFromView(e),
-        undefined,
-        ctx.subscriptions
+      ctx.subscriptions.push(
+        panel.webview.onDidReceiveMessage(
+          async (e) => this.handleMsgFromView(e),
+          undefined,
+          ctx.subscriptions
+        )
       );
     }
     return this.panel;
