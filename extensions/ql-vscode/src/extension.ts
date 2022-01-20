@@ -84,6 +84,7 @@ import { URLSearchParams } from 'url';
 import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
 import { sampleRemoteQuery, sampleRemoteQueryResult } from './remote-queries/sample-data';
 import { handleDownloadPacks, handleInstallPackDependencies } from './packaging';
+import { AnalysesResultsManager } from './remote-queries/analyses-results-manager';
 
 /**
  * extension.ts
@@ -817,7 +818,8 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.showFakeRemoteQueryResults', async () => {
-      const rqim = new RemoteQueriesInterfaceManager(ctx, logger);
+      const analysisResultsManager = new AnalysesResultsManager(ctx, logger);
+      const rqim = new RemoteQueriesInterfaceManager(ctx, logger, analysisResultsManager);
       await rqim.showResults(sampleRemoteQuery, sampleRemoteQueryResult);
     }));
 

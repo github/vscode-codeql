@@ -7,13 +7,13 @@ import {
   workspace,
 } from 'vscode';
 import * as path from 'path';
-import * as vscode from 'vscode';
-import * as fs from 'fs-extra';
 
 import { tmpDir } from '../run-queries';
 import {
   ToRemoteQueriesMessage,
   FromRemoteQueriesMessage,
+  RemoteQueryDownloadAnalysisResultsMessage,
+  RemoteQueryDownloadAllAnalysesResultsMessage,
 } from '../pure/interface-types';
 import { Logger } from '../logging';
 import { getHtmlForWebview } from '../interface-utils';
@@ -22,12 +22,11 @@ import { AnalysisSummary, RemoteQueryResult } from './remote-query-result';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryResult as RemoteQueryResultViewModel } from './shared/remote-query-result';
 import { AnalysisSummary as AnalysisResultViewModel } from './shared/remote-query-result';
-import { downloadArtifactFromLink } from './gh-actions-api-client';
-import { Credentials } from '../authentication';
-import { showAndLogWarningMessage, showInformationMessageWithAction } from '../helpers';
+import { showAndLogWarningMessage } from '../helpers';
 import { URLSearchParams } from 'url';
 import { SHOW_QUERY_TEXT_MSG } from '../query-history';
-import { DownloadLink } from './download-link';
+import { AnalysesResultsManager } from './analyses-results-manager';
+import { AnalysisResults } from './shared/analysis-result';
 
 export class RemoteQueriesInterfaceManager {
   private panel: WebviewPanel | undefined;
@@ -35,8 +34,9 @@ export class RemoteQueriesInterfaceManager {
   private panelLoadedCallBacks: (() => void)[] = [];
 
   constructor(
-    private ctx: ExtensionContext,
-    private logger: Logger,
+    private readonly ctx: ExtensionContext,
+    private readonly logger: Logger,
+    private readonly analysesResultsManager: AnalysesResultsManager
   ) {
     this.panelLoadedCallBacks.push(() => {
       void logger.log('Remote queries view loaded');
@@ -190,32 +190,31 @@ export class RemoteQueriesInterfaceManager {
         await this.openVirtualFile(msg.queryText);
         break;
       case 'remoteQueryDownloadAnalysisResults':
-        await this.handleDownloadLinkClicked(msg.downloadLink);
+        await this.downloadAnalysisResults(msg);
         break;
       case 'remoteQueryDownloadAllAnalysesResults':
-        await this.handleDownloadLinkClicked(msg.downloadLink);
+        await this.downloadAllAnalysesResults(msg);
         break;
       default:
         assertNever(msg);
     }
   }
 
-  private async handleDownloadLinkClicked(downloadLink: DownloadLink): Promise<void> {
-    const credentials = await Credentials.initialize(this.ctx);
+  private async downloadAnalysisResults(msg: RemoteQueryDownloadAnalysisResultsMessage): Promise<void> {
+    await this.analysesResultsManager.downloadAnalysisResults(msg.analysisSummary);
+    await this.setAnalysisResults(this.analysesResultsManager.getFlattenedAnalysesResults());
+  }
 
-    const filePath = await downloadArtifactFromLink(credentials, downloadLink);
-    const isDir = (await fs.stat(filePath)).isDirectory();
-    const message = `Result file saved at ${filePath}`;
-    if (isDir) {
-      await vscode.window.showInformationMessage(message);
-    }
-    else {
-      const shouldOpenResults = await showInformationMessageWithAction(message, 'Open');
-      if (shouldOpenResults) {
-        const textDocument = await vscode.workspace.openTextDocument(filePath);
-        await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
-      }
-    }
+  private async downloadAllAnalysesResults(msg: RemoteQueryDownloadAllAnalysesResultsMessage): Promise<void> {
+    await this.analysesResultsManager.downloadAllResults(msg.analysisSummaries);
+    await this.setAnalysisResults(this.analysesResultsManager.getFlattenedAnalysesResults());
+  }
+
+  private async setAnalysisResults(analysesResults: AnalysisResults[]): Promise<void> {
+    await this.postMessage({
+      t: 'setAnalysesResults',
+      analysesResults: analysesResults
+    });
   }
 
   private postMessage(msg: ToRemoteQueriesMessage): Thenable<boolean> {

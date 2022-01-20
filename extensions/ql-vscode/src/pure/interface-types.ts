@@ -1,6 +1,6 @@
 import * as sarif from 'sarif';
-import { DownloadLink } from '../remote-queries/download-link';
-import { RemoteQueryResult } from '../remote-queries/shared/remote-query-result';
+import { AnalysisResults } from '../remote-queries/shared/analysis-result';
+import { AnalysisSummary, RemoteQueryResult } from '../remote-queries/shared/remote-query-result';
 import { RawResultSet, ResultRow, ResultSetSchema, Column, ResolvableLocationValue } from './bqrs-cli-types';
 
 /**
@@ -381,7 +381,8 @@ export type FromRemoteQueriesMessage =
   | RemoteQueryDownloadAllAnalysesResultsMessage;
 
 export type ToRemoteQueriesMessage =
-  | SetRemoteQueryResultMessage;
+  | SetRemoteQueryResultMessage
+  | SetAnalysesResultsMessage;
 
 export interface RemoteQueryLoadedMessage {
   t: 'remoteQueryLoaded';
@@ -392,6 +393,11 @@ export interface SetRemoteQueryResultMessage {
   queryResult: RemoteQueryResult
 }
 
+export interface SetAnalysesResultsMessage {
+  t: 'setAnalysesResults';
+  analysesResults: AnalysisResults[];
+}
+
 export interface RemoteQueryErrorMessage {
   t: 'remoteQueryError';
   error: string;
@@ -399,11 +405,10 @@ export interface RemoteQueryErrorMessage {
 
 export interface RemoteQueryDownloadAnalysisResultsMessage {
   t: 'remoteQueryDownloadAnalysisResults';
-  nwo: string
-  downloadLink: DownloadLink;
+  analysisSummary: AnalysisSummary
 }
 
 export interface RemoteQueryDownloadAllAnalysesResultsMessage {
   t: 'remoteQueryDownloadAllAnalysesResults';
-  downloadLink: DownloadLink;
+  analysisSummaries: AnalysisSummary[];
 }

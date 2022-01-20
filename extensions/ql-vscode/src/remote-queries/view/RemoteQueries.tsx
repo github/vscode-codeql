@@ -1,18 +1,18 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import * as Rdom from 'react-dom';
-import { SetRemoteQueryResultMessage } from '../../pure/interface-types';
+import { ToRemoteQueriesMessage } from '../../pure/interface-types';
 import { AnalysisSummary, RemoteQueryResult } from '../shared/remote-query-result';
 import * as octicons from '../../view/octicons';
 
 import { vscode } from '../../view/vscode-api';
-import { DownloadLink } from '../download-link';
 
 import SectionTitle from './SectionTitle';
 import VerticalSpace from './VerticalSpace';
 import Badge from './Badge';
 import ViewTitle from './ViewTitle';
 import DownloadButton from './DownloadButton';
+import { AnalysisResults } from '../shared/analysis-result';
 
 const numOfReposInContractedMode = 10;
 
@@ -33,18 +33,17 @@ const emptyQueryResult: RemoteQueryResult = {
   analysisSummaries: []
 };
 
-const downloadAnalysisResults = (nwo: string, link: DownloadLink) => {
+const downloadAnalysisResults = (analysisSummary: AnalysisSummary) => {
   vscode.postMessage({
     t: 'remoteQueryDownloadAnalysisResults',
-    nwo,
-    downloadLink: link
+    analysisSummary
   });
 };
 
-const downloadAllAnalysesResults = (link: DownloadLink) => {
+const downloadAllAnalysesResults = (query: RemoteQueryResult) => {
   vscode.postMessage({
     t: 'remoteQueryDownloadAllAnalysesResults',
-    downloadLink: link
+    analysisSummaries: query.analysisSummaries
   });
 };
 
@@ -86,7 +85,7 @@ const SummaryTitleWithResults = (queryResult: RemoteQueryResult) => (
     <SectionTitle text={`Repositories with results (${queryResult.affectedRepositoryCount}):`} />
     <DownloadButton
       text="Download all"
-      onClick={() => downloadAllAnalysesResults(queryResult.downloadLink)} />
+      onClick={() => downloadAllAnalysesResults(queryResult)} />
   </div>
 );
 
@@ -104,11 +103,10 @@ const SummaryItem = (props: AnalysisSummary) => (
     <span className="vscode-codeql__analysis-item">
       <DownloadButton
         text={props.fileSize}
-        onClick={() => downloadAnalysisResults(props.nwo, props.downloadLink)} />
+        onClick={() => downloadAnalysisResults(props)} />
     </span>
   </span>
 );
-
 const Summary = (queryResult: RemoteQueryResult) => {
   const [repoListExpanded, setRepoListExpanded] = useState(false);
   const numOfReposToShow = repoListExpanded ? queryResult.analysisSummaries.length : numOfReposInContractedMode;
@@ -138,15 +136,59 @@ const Summary = (queryResult: RemoteQueryResult) => {
   );
 };
 
+const AnalysesResultsTitle = ({ totalAnalysesResults, totalResults }: { totalAnalysesResults: number, totalResults: number }) => {
+  if (totalAnalysesResults === totalResults) {
+    return <SectionTitle text={`${totalAnalysesResults} results`} />;
+  }
+
+  return <SectionTitle text={`${totalAnalysesResults}/${totalResults} results`} />;
+};
+
+const AnalysesResultsDescription = ({ totalAnalysesResults, totalResults }: { totalAnalysesResults: number, totalResults: number }) => {
+  if (totalAnalysesResults < totalResults) {
+    return <>
+      <VerticalSpace />
+      Some results haven&apos;t been downloaded automatically because of their size or because enough were downloaded already.
+      Download them manually from the list above if you want to see them here.
+    </>;
+  }
+
+  return <></>;
+};
+
+const AnalysesResults = ({ analysesResults, totalResults }: { analysesResults: AnalysisResults[], totalResults: number }) => {
+  const totalAnalysesResults = analysesResults.reduce((acc, curr) => acc + curr.results.length, 0);
+
+  if (totalResults === 0) {
+    return <></>;
+  }
+
+  return (
+    <>
+      <VerticalSpace />
+      <VerticalSpace />
+      <AnalysesResultsTitle
+        totalAnalysesResults={totalAnalysesResults}
+        totalResults={totalResults} />
+      <AnalysesResultsDescription
+        totalAnalysesResults={totalAnalysesResults}
+        totalResults={totalResults} />
+    </>
+  );
+};
+
 export function RemoteQueries(): JSX.Element {
   const [queryResult, setQueryResult] = useState<RemoteQueryResult>(emptyQueryResult);
+  const [analysesResults, setAnalysesResults] = useState<AnalysisResults[]>([]);
 
   useEffect(() => {
     window.addEventListener('message', (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
-        const msg: SetRemoteQueryResultMessage = evt.data;
+        const msg: ToRemoteQueriesMessage = evt.data;
         if (msg.t === 'setRemoteQueryResult') {
           setQueryResult(msg.queryResult);
+        } else if (msg.t === 'setAnalysesResults') {
+          setAnalysesResults(msg.analysesResults);
         }
       } else {
         // sanitize origin
@@ -165,6 +207,7 @@ export function RemoteQueries(): JSX.Element {
       <ViewTitle title={queryResult.queryTitle} />
       <QueryInfo {...queryResult} />
       <Summary {...queryResult} />
+      <AnalysesResults analysesResults={analysesResults} totalResults={queryResult.totalResultCount} />
     </div>;
   } catch (err) {
     console.error(err);

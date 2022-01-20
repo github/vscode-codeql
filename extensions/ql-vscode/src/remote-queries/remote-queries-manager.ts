@@ -12,15 +12,18 @@ import { getRemoteQueryIndex } from './gh-actions-api-client';
 import { RemoteQueryResultIndex } from './remote-query-result-index';
 import { RemoteQueryResult } from './remote-query-result';
 import { DownloadLink } from './download-link';
+import { AnalysesResultsManager } from './analyses-results-manager';
 
 export class RemoteQueriesManager {
   private readonly remoteQueriesMonitor: RemoteQueriesMonitor;
+  private readonly analysesResultsManager: AnalysesResultsManager;
 
   constructor(
     private readonly ctx: ExtensionContext,
     private readonly logger: Logger,
     private readonly cliServer: CodeQLCliServer
   ) {
+    this.analysesResultsManager = new AnalysesResultsManager(ctx, logger);
     this.remoteQueriesMonitor = new RemoteQueriesMonitor(ctx, logger);
   }
 
@@ -67,7 +70,7 @@ export class RemoteQueriesManager {
 
       const shouldOpenView = await showInformationMessageWithAction(message, 'View');
       if (shouldOpenView) {
-        const rqim = new RemoteQueriesInterfaceManager(this.ctx, this.logger);
+        const rqim = new RemoteQueriesInterfaceManager(this.ctx, this.logger, this.analysesResultsManager);
         await rqim.showResults(query, queryResult);
       }
     } else if (queryResult.status === 'CompletedUnsuccessfully') {
