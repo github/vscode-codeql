@@ -2,7 +2,6 @@ import { ExtensionContext } from 'vscode';
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import { downloadArtifactFromLink } from './gh-actions-api-client';
-import { DownloadLink } from './download-link';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import { AnalysisSummary } from './shared/remote-query-result';
@@ -11,27 +10,28 @@ import { AnalysisResults, QueryResult } from './shared/analysis-result';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for a single remote query.
-  private readonly analysesResults: { [key: string]: QueryResult[] };
+  private readonly analysesResults: AnalysisResults[];
 
   constructor(
     private readonly ctx: ExtensionContext,
     private readonly logger: Logger,
   ) {
-    this.analysesResults = {};
+    this.analysesResults = [];
   }
 
   public async downloadAnalysisResults(
     analysisSummary: AnalysisSummary,
   ): Promise<void> {
+    if (this.analysesResults.some(x => x.nwo === analysisSummary.nwo)) {
+      // We already have the results for this analysis, don't download again.
+      return;
+    }
+
     const credentials = await Credentials.initialize(this.ctx);
 
     void this.logger.log(`Downloading and processing results for ${analysisSummary.nwo}`);
 
-    const queryResults = await this.downloadSingleAnalysisResults(
-      analysisSummary.downloadLink,
-      credentials);
-
-    this.analysesResults[analysisSummary.nwo] = queryResults;
+    await this.downloadSingleAnalysisResults(analysisSummary, credentials);
   }
 
   public async downloadAllResults(
@@ -42,27 +42,31 @@ export class AnalysesResultsManager {
     void this.logger.log('Downloading and processing all results');
 
     for (const analysis of analysisSummaries) {
-      const queryResults = await this.downloadSingleAnalysisResults(analysis.downloadLink, credentials);
-      this.analysesResults[analysis.nwo] = queryResults;
+      await this.downloadSingleAnalysisResults(analysis, credentials);
     }
   }
 
-  public getFlattenedAnalysesResults(): AnalysisResults[] {
-    return Object.entries(this.analysesResults).map(([nwo, results]) => ({ nwo, results }));
+  public getAnalysesResults(): AnalysisResults[] {
+    return [...this.analysesResults];
   }
 
   private async downloadSingleAnalysisResults(
-    downloadLink: DownloadLink,
+    analysis: AnalysisSummary,
     credentials: Credentials
-  ): Promise<QueryResult[]> {
-    const artifactPath = await downloadArtifactFromLink(credentials, downloadLink);
+  ): Promise<void> {
+    const artifactPath = await downloadArtifactFromLink(credentials, analysis.downloadLink);
+
+    let analysisResults: AnalysisResults;
 
     if (path.extname(artifactPath) === '.sarif') {
-      return await this.readResults(artifactPath);
+      const queryResults = await this.readResults(artifactPath);
+      analysisResults = { nwo: analysis.nwo, results: queryResults };
     } else {
-      // Non-problem or problem-path queries are not currently fully supported.
-      return [];
+      void this.logger.log('Non-problem or problem-path queries are not currently fully supported.');
+      analysisResults = { nwo: analysis.nwo, results: [] };
     }
+
+    this.analysesResults.push(analysisResults);
   }
 
   private async readResults(filePath: string): Promise<QueryResult[]> {

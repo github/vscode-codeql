@@ -202,12 +202,12 @@ export class RemoteQueriesInterfaceManager {
 
   private async downloadAnalysisResults(msg: RemoteQueryDownloadAnalysisResultsMessage): Promise<void> {
     await this.analysesResultsManager.downloadAnalysisResults(msg.analysisSummary);
-    await this.setAnalysisResults(this.analysesResultsManager.getFlattenedAnalysesResults());
+    await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults());
   }
 
   private async downloadAllAnalysesResults(msg: RemoteQueryDownloadAllAnalysesResultsMessage): Promise<void> {
     await this.analysesResultsManager.downloadAllResults(msg.analysisSummaries);
-    await this.setAnalysisResults(this.analysesResultsManager.getFlattenedAnalysesResults());
+    await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults());
   }
 
   private async setAnalysisResults(analysesResults: AnalysisResults[]): Promise<void> {
