@@ -62,7 +62,7 @@ export class AnalysesResultsManager {
       const queryResults = await this.readResults(artifactPath);
       analysisResults = { nwo: analysis.nwo, results: queryResults };
     } else {
-      void this.logger.log('Non-problem or problem-path queries are not currently fully supported.');
+      void this.logger.log('Cannot download results. Only alert and path queries are fully supported.');
       analysisResults = { nwo: analysis.nwo, results: [] };
     }
 
