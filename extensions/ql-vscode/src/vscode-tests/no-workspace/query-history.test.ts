@@ -318,18 +318,14 @@ describe('query-history', () => {
       });
       expect(treeItem.label).to.contain('hucairz');
       expect(treeItem.contextValue).to.eq('rawResultsItem');
-      expect(treeItem.iconPath).to.deep.eq({
-        id: 'check', color: undefined
-      });
+      expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file('/a/b/c/media/drive.svg').fsPath);
     });
 
     it('should get a tree item with interpreted results', async () => {
       const mockQuery = createMockFullQueryInfo('a', createMockQueryWithResults(true, /* interpreted results */ true));
       const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
       expect(treeItem.contextValue).to.eq('interpretedResultsItem');
-      expect(treeItem.iconPath).to.deep.eq({
-        id: 'check', color: undefined
-      });
+      expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file('/a/b/c/media/drive.svg').fsPath);
     });
 
     it('should get a tree item that did not complete successfully', async () => {
@@ -348,7 +344,7 @@ describe('query-history', () => {
       const mockQuery = createMockFullQueryInfo('a');
       const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
       expect(treeItem.iconPath).to.deep.eq({
-        id: 'search-refresh', color: undefined
+        id: 'sync~spin', color: undefined
       });
     });
 

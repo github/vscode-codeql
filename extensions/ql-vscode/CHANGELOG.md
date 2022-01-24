@@ -4,6 +4,7 @@
 
 - Fix a bug where the results view moved column even when it was already visible. [#1070](https://github.com/github/vscode-codeql/pull/1070)
 - Add packaging-related commands. _CodeQL: Download Packs_ downloads query packs from the package registry that can be run locally, and _CodeQL: Install Pack Dependencies_ installs dependencies for packs in your workspace. [#1076](https://github.com/github/vscode-codeql/pull/1076)
+- Add query history items as soon as a query is run, including new icons for each history item. [#1094](https://github.com/github/vscode-codeql/pull/1094)
 
 ## 1.5.9 - 17 December 2021
 
