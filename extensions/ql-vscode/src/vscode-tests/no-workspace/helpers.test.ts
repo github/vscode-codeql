@@ -192,6 +192,9 @@ describe('helpers', () => {
   }
 
   class MockMemento implements Memento {
+    keys(): readonly string[] {
+      throw new Error('Method not implemented.');
+    }
     map = new Map<any, any>();
 
     /**
