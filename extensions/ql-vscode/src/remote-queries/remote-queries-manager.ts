@@ -14,9 +14,13 @@ import { RemoteQueryResult } from './remote-query-result';
 import { DownloadLink } from './download-link';
 import { AnalysesResultsManager } from './analyses-results-manager';
 
+const autoDownloadMaxSize = 300 * 1024;
+const autoDownloadMaxCount = 100;
+
 export class RemoteQueriesManager {
   private readonly remoteQueriesMonitor: RemoteQueriesMonitor;
   private readonly analysesResultsManager: AnalysesResultsManager;
+  private readonly interfaceManager: RemoteQueriesInterfaceManager;
 
   constructor(
     private readonly ctx: ExtensionContext,
@@ -24,6 +28,7 @@ export class RemoteQueriesManager {
     private readonly cliServer: CodeQLCliServer
   ) {
     this.analysesResultsManager = new AnalysesResultsManager(ctx, logger);
+    this.interfaceManager = new RemoteQueriesInterfaceManager(this.ctx, this.logger, this.analysesResultsManager);
     this.remoteQueriesMonitor = new RemoteQueriesMonitor(ctx, logger);
   }
 
@@ -65,13 +70,16 @@ export class RemoteQueriesManager {
 
       const queryResult = this.mapQueryResult(executionEndTime, resultIndex);
 
+      // Kick off auto-download of results.
+      void commands.executeCommand('codeQL.autoDownloadRemoteQueryResults', queryResult);
+
       const totalResultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
       const message = `Query "${query.queryName}" run on ${query.repositories.length} repositories and returned ${totalResultCount} results`;
 
       const shouldOpenView = await showInformationMessageWithAction(message, 'View');
       if (shouldOpenView) {
-        const rqim = new RemoteQueriesInterfaceManager(this.ctx, this.logger, this.analysesResultsManager);
-        await rqim.showResults(query, queryResult);
+        await this.interfaceManager.showResults(query, queryResult);
+
       }
     } else if (queryResult.status === 'CompletedUnsuccessfully') {
       await showAndLogErrorMessage(`Remote query execution failed. Error: ${queryResult.error}`);
@@ -79,6 +87,26 @@ export class RemoteQueriesManager {
     } else if (queryResult.status === 'Cancelled') {
       await showAndLogErrorMessage('Remote query monitoring was cancelled');
     }
+  }
+
+  public async autoDownloadRemoteQueryResults(
+    queryResult: RemoteQueryResult,
+    token: CancellationToken
+  ): Promise<void> {
+    const analysesToDownload = queryResult.analysisSummaries
+      .filter(a => a.fileSizeInBytes < autoDownloadMaxSize)
+      .slice(0, autoDownloadMaxCount)
+      .map(a => ({
+        nwo: a.nwo,
+        resultCount: a.resultCount,
+        downloadLink: a.downloadLink,
+        fileSize: a.fileSizeInBytes.toString()
+      }));
+
+    await this.analysesResultsManager.downloadAnalysesResults(
+      analysesToDownload,
+      token,
+      results => this.interfaceManager.setAnalysisResults(results));
   }
 
   private mapQueryResult(executionEndTime: Date, resultIndex: RemoteQueryResultIndex): RemoteQueryResult {

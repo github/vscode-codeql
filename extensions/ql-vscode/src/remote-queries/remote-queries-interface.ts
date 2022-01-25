@@ -51,6 +51,8 @@ export class RemoteQueriesInterfaceManager {
       t: 'setRemoteQueryResult',
       queryResult: this.buildViewModel(query, queryResult)
     });
+
+    await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults());
   }
 
   /**
@@ -201,20 +203,25 @@ export class RemoteQueriesInterfaceManager {
   }
 
   private async downloadAnalysisResults(msg: RemoteQueryDownloadAnalysisResultsMessage): Promise<void> {
-    await this.analysesResultsManager.downloadAnalysisResults(msg.analysisSummary);
-    await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults());
+    await this.analysesResultsManager.downloadAnalysisResults(
+      msg.analysisSummary,
+      results => this.setAnalysisResults(results));
   }
 
   private async downloadAllAnalysesResults(msg: RemoteQueryDownloadAllAnalysesResultsMessage): Promise<void> {
-    await this.analysesResultsManager.downloadAllResults(msg.analysisSummaries);
-    await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults());
+    await this.analysesResultsManager.downloadAnalysesResults(
+      msg.analysisSummaries,
+      undefined,
+      results => this.setAnalysisResults(results));
   }
 
-  private async setAnalysisResults(analysesResults: AnalysisResults[]): Promise<void> {
-    await this.postMessage({
-      t: 'setAnalysesResults',
-      analysesResults: analysesResults
-    });
+  public async setAnalysisResults(analysesResults: AnalysisResults[]): Promise<void> {
+    if (this.panel?.active) {
+      await this.postMessage({
+        t: 'setAnalysesResults',
+        analysesResults: analysesResults
+      });
+    }
   }
 
   private postMessage(msg: ToRemoteQueriesMessage): Thenable<boolean> {

@@ -1,4 +1,4 @@
-import { ExtensionContext } from 'vscode';
+import { CancellationToken, ExtensionContext } from 'vscode';
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import { downloadArtifactFromLink } from './gh-actions-api-client';
@@ -21,6 +21,7 @@ export class AnalysesResultsManager {
 
   public async downloadAnalysisResults(
     analysisSummary: AnalysisSummary,
+    publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
   ): Promise<void> {
     if (this.analysesResults.some(x => x.nwo === analysisSummary.nwo)) {
       // We already have the results for this analysis, don't download again.
@@ -32,17 +33,34 @@ export class AnalysesResultsManager {
     void this.logger.log(`Downloading and processing results for ${analysisSummary.nwo}`);
 
     await this.downloadSingleAnalysisResults(analysisSummary, credentials);
+    await publishResults(this.analysesResults);
   }
 
-  public async downloadAllResults(
-    analysisSummaries: AnalysisSummary[],
+  public async downloadAnalysesResults(
+    analysesToDownload: AnalysisSummary[],
+    token: CancellationToken | undefined,
+    publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
   ): Promise<void> {
     const credentials = await Credentials.initialize(this.ctx);
 
-    void this.logger.log('Downloading and processing all results');
+    void this.logger.log('Downloading and processing analyses results');
 
-    for (const analysis of analysisSummaries) {
-      await this.downloadSingleAnalysisResults(analysis, credentials);
+    const batchSize = 3;
+
+    for (let i = 0; i < analysesToDownload.length; i += batchSize) {
+      if (token && token.isCancellationRequested) {
+        throw new Error('Downloading of analyses results has been cancelled');
+      }
+
+      const batch = analysesToDownload.slice(i, i + batchSize);
+      const batchTasks = batch.map(analysis => this.downloadSingleAnalysisResults(analysis, credentials));
+
+      const nwos = batch.map(a => a.nwo).join(', ');
+      void this.logger.log(`Downloading batch ${Math.floor(i / 3) + 1} of analysis results (${nwos})`);
+
+      await Promise.all(batchTasks);
+
+      await publishResults(this.analysesResults);
     }
   }
 
