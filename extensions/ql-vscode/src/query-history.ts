@@ -28,7 +28,7 @@ import { URLSearchParams } from 'url';
 import { QueryServerClient } from './queryserver-client';
 import { DisposableObject } from './pure/disposable-object';
 import { commandRunner } from './commandRunner';
-import { assertNever, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/helpers-pure';
+import { assertNever, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, getErrorMessage, getErrorStack  } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo as LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { DatabaseManager } from './databases';
 import { registerQueryHistoryScubber } from './query-history-scrubber';
@@ -663,7 +663,7 @@ export class QueryHistoryManager extends DisposableObject {
         await this.doCompareCallback(from as CompletedLocalQueryInfo, to as CompletedLocalQueryInfo);
       }
     } catch (e) {
-      void showAndLogErrorMessage(e.message);
+      void showAndLogErrorMessage(getErrorMessage(e));
     }
   }
 
@@ -740,7 +740,7 @@ export class QueryHistoryManager extends DisposableObject {
       try {
         await commands.executeCommand('revealFileInOS', Uri.file(p));
       } catch (e) {
-        throw new Error(`Failed to open ${p}: ${e.message}`);
+        throw new Error(`Failed to open ${p}: ${getErrorMessage(e)}`);
       }
     }
   }
@@ -920,11 +920,12 @@ export class QueryHistoryManager extends DisposableObject {
     try {
       await window.showTextDocument(uri, { preview: false });
     } catch (e) {
+      const msg = getErrorMessage(e);
       if (
-        e.message.includes(
+        msg.includes(
           'Files above 50MB cannot be synchronized with extensions'
         ) ||
-        e.message.includes('too large to open')
+        msg.includes('too large to open')
       ) {
         const res = await showBinaryChoiceDialog(
           `VS Code does not allow extensions to open files >50MB. This file
@@ -937,13 +938,13 @@ the file in the file explorer and dragging it into the workspace.`
           try {
             await commands.executeCommand('revealFileInOS', uri);
           } catch (e) {
-            void showAndLogErrorMessage(e.message);
+            void showAndLogErrorMessage(getErrorMessage(e));
           }
         }
       } else {
         void showAndLogErrorMessage(`Could not open file ${fileLocation}`);
-        void logger.log(e.message);
-        void logger.log(e.stack);
+        void logger.log(getErrorMessage(e));
+        void logger.log(getErrorStack(e));
       }
     }
   }

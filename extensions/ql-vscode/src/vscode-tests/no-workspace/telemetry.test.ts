@@ -87,7 +87,7 @@ describe('telemetry reporting', function() {
       const reporter: any = telemetryListener._reporter;
       expect(reporter.userOptIn).to.eq(false); // disabled
     } catch (e) {
-      fail(e);
+      fail(e as Error);
     }
   });
 
@@ -98,7 +98,7 @@ describe('telemetry reporting', function() {
 
       expect(telemetryListener._reporter).to.be.undefined;
     } catch (e) {
-      fail(e);
+      fail(e as Error);
     }
   });
 

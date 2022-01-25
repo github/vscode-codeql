@@ -113,7 +113,7 @@ describe('using the query server', function() {
         throw new Error('Extension not initialized. Make sure cli is downloaded and installed properly.');
       }
     } catch (e) {
-      fail(e);
+      fail(e as Error);
     }
   });
 
@@ -163,7 +163,7 @@ describe('using the query server', function() {
         await compilationSucceeded.resolve();
       }
       catch (e) {
-        await compilationSucceeded.reject(e);
+        await compilationSucceeded.reject(e as Error);
       }
     });
 
@@ -190,7 +190,7 @@ describe('using the query server', function() {
         await qs.sendRequest(messages.runQueries, params, token, () => { /**/ });
       }
       catch (e) {
-        await evaluationSucceeded.reject(e);
+        await evaluationSucceeded.reject(e as Error);
       }
     });
 

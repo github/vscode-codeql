@@ -12,6 +12,7 @@ import { sarifParser } from '../sarif-parser';
 import { extractAnalysisAlerts } from './sarif-processing';
 import { CodeQLCliServer } from '../cli';
 import { extractRawResults } from './bqrs-processing';
+import { getErrorMessage } from '../pure/helpers-pure';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for each remote query.
@@ -118,7 +119,7 @@ export class AnalysesResultsManager {
       artifactPath = await downloadArtifactFromLink(credentials, this.storagePath, analysis.downloadLink);
     }
     catch (e) {
-      throw new Error(`Could not download the analysis results for ${analysis.nwo}: ${e.message}`);
+      throw new Error(`Could not download the analysis results for ${analysis.nwo}: ${getErrorMessage(e)}`);
     }
 
     const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(analysis.nwo, analysis.databaseSha);

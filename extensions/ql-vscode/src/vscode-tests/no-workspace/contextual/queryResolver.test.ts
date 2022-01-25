@@ -7,6 +7,7 @@ import * as chai from 'chai';
 import * as sinonChai from 'sinon-chai';
 import * as pq from 'proxyquire';
 import { KeyType } from '../../../contextual/keyType';
+import { getErrorMessage } from '../../../pure/helpers-pure';
 
 const proxyquire = pq.noPreserveCache().noCallThru();
 chai.use(chaiAsPromised);
@@ -70,7 +71,7 @@ describe('queryResolver', () => {
         // should reject
         expect(true).to.be.false;
       } catch (e) {
-        expect(e.message).to.eq(
+        expect(getErrorMessage(e)).to.eq(
           'Couldn\'t find any queries tagged ide-contextual-queries/local-definitions in any of the following packs: my-qlpack.'
         );
       }

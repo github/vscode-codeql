@@ -15,7 +15,7 @@ import * as cli from './cli';
 import { CodeQLCliServer } from './cli';
 import { DatabaseEventKind, DatabaseItem, DatabaseManager } from './databases';
 import { showAndLogErrorMessage, tmpDir } from './helpers';
-import { assertNever } from './pure/helpers-pure';
+import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import {
   FromResultsViewMsg,
   Interpretation,
@@ -353,8 +353,8 @@ export class InterfaceManager extends DisposableObject {
           assertNever(msg);
       }
     } catch (e) {
-      void showAndLogErrorMessage(e.message, {
-        fullMessage: e.stack
+      void showAndLogErrorMessage(getErrorMessage(e), {
+        fullMessage: getErrorStack(e)
       });
     }
   }
@@ -729,7 +729,7 @@ export class InterfaceManager extends DisposableObject {
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
         void showAndLogErrorMessage(
-          `Showing raw results instead of interpreted ones due to an error. ${e.message}`
+          `Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(e)}`
         );
       }
     }
@@ -768,9 +768,8 @@ export class InterfaceManager extends DisposableObject {
     try {
       await this.showProblemResultsAsDiagnostics(interpretation, database);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : e.toString();
       void this.logger.log(
-        `Exception while computing problem results as diagnostics: ${msg}`
+        `Exception while computing problem results as diagnostics: ${getErrorMessage(e)}`
       );
       this._diagnosticCollection.clear();
     }

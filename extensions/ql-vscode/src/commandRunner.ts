@@ -8,6 +8,7 @@ import {
 } from 'vscode';
 import { showAndLogErrorMessage, showAndLogWarningMessage } from './helpers';
 import { logger } from './logging';
+import { getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { telemetryListener } from './telemetry';
 
 export class UserCancellationException extends Error {
@@ -121,8 +122,9 @@ export function commandRunner(
     try {
       return await task(...args);
     } catch (e) {
-      error = e;
-      const errorMessage = `${e.message || e} (${commandId})`;
+      const errorMessage = `${getErrorMessage(e) || e} (${commandId})`;
+      error = e instanceof Error ? e : new Error(errorMessage);
+      const errorStack = getErrorStack(e);
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
@@ -132,8 +134,8 @@ export function commandRunner(
         }
       } else {
         // Include the full stack in the error log only.
-        const fullMessage = e.stack
-          ? `${errorMessage}\n${e.stack}`
+        const fullMessage = errorStack
+          ? `${errorMessage}\n${errorStack}`
           : errorMessage;
         void showAndLogErrorMessage(errorMessage, {
           fullMessage
@@ -173,8 +175,9 @@ export function commandRunnerWithProgress<R>(
     try {
       return await withProgress(progressOptionsWithDefaults, task, ...args);
     } catch (e) {
-      error = e;
-      const errorMessage = `${e.message || e} (${commandId})`;
+      const errorMessage = `${getErrorMessage(e) || e} (${commandId})`;
+      error = e instanceof Error ? e : new Error(errorMessage);
+      const errorStack = getErrorStack(e);
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
@@ -184,8 +187,8 @@ export function commandRunnerWithProgress<R>(
         }
       } else {
         // Include the full stack in the error log only.
-        const fullMessage = e.stack
-          ? `${errorMessage}\n${e.stack}`
+        const fullMessage = errorStack
+          ? `${errorMessage}\n${errorStack}`
           : errorMessage;
         void showAndLogErrorMessage(errorMessage, {
           outputLogger,

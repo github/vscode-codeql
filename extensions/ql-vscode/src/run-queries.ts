@@ -36,6 +36,7 @@ import { compileDatabaseUpgradeSequence, hasNondestructiveUpgradeCapabilities, u
 import { ensureMetadataIsComplete } from './query-results';
 import { SELECT_QUERY_NAME } from './contextual/locationFinder';
 import { DecodedBqrsChunk } from './pure/bqrs-cli-types';
+import { getErrorMessage } from './pure/helpers-pure';
 
 /**
  * run-queries.ts
@@ -790,7 +791,7 @@ export async function compileAndRunQueryAgainstDatabase(
       await upgradeDir?.cleanup();
     } catch (e) {
       void qs.logger.log(
-        `Could not clean up the upgrades dir. Reason: ${e.message || e}`,
+        `Could not clean up the upgrades dir. Reason: ${getErrorMessage(e)}`,
         { additionalLogLocation: query.logPath }
       );
     }

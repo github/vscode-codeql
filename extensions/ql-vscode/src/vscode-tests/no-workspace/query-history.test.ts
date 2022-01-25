@@ -19,6 +19,7 @@ import { DatabaseManager } from '../../databases';
 import * as tmp from 'tmp-promise';
 import { ONE_DAY_IN_MS, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, THREE_HOURS_IN_MS } from '../../pure/helpers-pure';
 import { tmpDir } from '../../helpers';
+import { getErrorMessage } from '../../pure/helpers-pure';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -162,7 +163,7 @@ describe('query-history', () => {
         await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, allHistory[0]]);
         assert(false, 'Should have thrown');
       } catch (e) {
-        expect(e.message).to.eq('Please select a successful query.');
+        expect(getErrorMessage(e)).to.eq('Please select a successful query.');
       }
     });
 
@@ -175,7 +176,7 @@ describe('query-history', () => {
         await (queryHistoryManager as any).findOtherQueryToCompare(allHistory[0], [allHistory[0], allHistory[1]]);
         assert(false, 'Should have thrown');
       } catch (e) {
-        expect(e.message).to.eq('Query databases must be the same.');
+        expect(getErrorMessage(e)).to.eq('Query databases must be the same.');
       }
     });
 
@@ -187,7 +188,7 @@ describe('query-history', () => {
         await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, allHistory[0], allHistory[1]]);
         assert(false, 'Should have thrown');
       } catch (e) {
-        expect(e.message).to.eq('Please select no more than 2 queries.');
+        expect(getErrorMessage(e)).to.eq('Please select no more than 2 queries.');
       }
     });
   });

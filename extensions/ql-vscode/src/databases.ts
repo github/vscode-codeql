@@ -19,6 +19,7 @@ import { DisposableObject } from './pure/disposable-object';
 import { Logger, logger } from './logging';
 import { registerDatabases, Dataset, deregisterDatabases } from './pure/messages';
 import { QueryServerClient } from './queryserver-client';
+import { getErrorMessage } from './pure/helpers-pure';
 
 /**
  * databases.ts
@@ -359,7 +360,7 @@ export class DatabaseItemImpl implements DatabaseItem {
       }
       catch (e) {
         this._contents = undefined;
-        this._error = e;
+        this._error = e instanceof Error ? e : new Error(String(e));
         throw e;
       }
     }
@@ -726,7 +727,7 @@ export class DatabaseManager extends DisposableObject {
           }
         } catch (e) {
           // database list had an unexpected type - nothing to be done?
-          void showAndLogErrorMessage(`Database list loading failed: ${e.message}`);
+          void showAndLogErrorMessage(`Database list loading failed: ${getErrorMessage(e)}`);
         }
       });
   }
@@ -841,7 +842,7 @@ export class DatabaseManager extends DisposableObject {
       void logger.log('Deleting database from filesystem.');
       fs.remove(item.databaseUri.fsPath).then(
         () => void logger.log(`Deleted '${item.databaseUri.fsPath}'`),
-        e => void logger.log(`Failed to delete '${item.databaseUri.fsPath}'. Reason: ${e.message}`));
+        e => void logger.log(`Failed to delete '${item.databaseUri.fsPath}'. Reason: ${getErrorMessage(e)}`));
     }
 
     // note that we use undefined as the item in order to reset the entire tree
