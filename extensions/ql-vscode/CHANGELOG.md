@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.5.10 - 25 January 2022
 
 - Fix a bug where the results view moved column even when it was already visible. [#1070](https://github.com/github/vscode-codeql/pull/1070)
 - Add packaging-related commands. _CodeQL: Download Packs_ downloads query packs from the package registry that can be run locally, and _CodeQL: Install Pack Dependencies_ installs dependencies for packs in your workspace. [#1076](https://github.com/github/vscode-codeql/pull/1076)
