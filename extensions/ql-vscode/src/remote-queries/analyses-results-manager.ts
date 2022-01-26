@@ -7,6 +7,7 @@ import * as fs from 'fs-extra';
 import { AnalysisSummary } from './shared/remote-query-result';
 import * as sarif from 'sarif';
 import { AnalysisResults, QueryResult } from './shared/analysis-result';
+import { UserCancellationException } from '../commandRunner';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for a single remote query.
@@ -46,17 +47,18 @@ export class AnalysesResultsManager {
     void this.logger.log('Downloading and processing analyses results');
 
     const batchSize = 3;
+    const numOfBatches = Math.ceil(analysesToDownload.length / 3);
 
     for (let i = 0; i < analysesToDownload.length; i += batchSize) {
       if (token?.isCancellationRequested) {
-        throw new Error('Downloading of analyses results has been cancelled');
+        throw new UserCancellationException('Downloading of analyses results has been cancelled', true);
       }
 
       const batch = analysesToDownload.slice(i, i + batchSize);
       const batchTasks = batch.map(analysis => this.downloadSingleAnalysisResults(analysis, credentials));
 
       const nwos = batch.map(a => a.nwo).join(', ');
-      void this.logger.log(`Downloading batch ${Math.floor(i / 3) + 1} of analysis results (${nwos})`);
+      void this.logger.log(`Downloading batch ${Math.floor(i / 3) + 1} of ${numOfBatches} (${nwos})`);
 
       await Promise.all(batchTasks);
 
