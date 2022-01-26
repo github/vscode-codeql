@@ -84,8 +84,10 @@ describe('run-queries', () => {
     });
   });
 
+  let queryNum = 0;
   function createMockQueryInfo() {
     return new QueryEvaluatonInfo(
+      queryNum++,
       'my-program' as unknown as QlProgram,
       {
         contents: {

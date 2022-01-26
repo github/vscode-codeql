@@ -54,24 +54,21 @@ export const tmpDirDisposal = {
  * output and results.
  */
 export class QueryEvaluatonInfo {
-  private static nextQueryId = 0;
-
   readonly compiledQueryPath: string;
   readonly dilPath: string;
   readonly csvPath: string;
   readonly resultsPaths: ResultsPaths;
   readonly dataset: Uri; // guarantee the existence of a well-defined dataset dir at this point
-  readonly queryID: number;
 
   constructor(
+    public readonly queryID: number,
     public readonly program: messages.QlProgram,
     public readonly dbItem: DatabaseItem,
     public readonly queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
     public readonly quickEvalPosition?: messages.Position,
     public readonly metadata?: QueryMetadata,
-    public readonly templates?: messages.TemplateDefinitions,
+    public readonly templates?: messages.TemplateDefinitions
   ) {
-    this.queryID = QueryEvaluatonInfo.nextQueryId++;
     this.compiledQueryPath = path.join(tmpDir.name, `compiledQuery${this.queryID}.qlo`);
     this.dilPath = path.join(tmpDir.name, `results${this.queryID}.dil`);
     this.csvPath = path.join(tmpDir.name, `results${this.queryID}.csv`);
@@ -617,7 +614,7 @@ export async function compileAndRunQueryAgainstDatabase(
     }
   }
 
-  const query = new QueryEvaluatonInfo(qlProgram, db, packConfig.dbscheme, initialInfo.quickEvalPosition, metadata, templates);
+  const query = new QueryEvaluatonInfo(initialInfo.id, qlProgram, db, packConfig.dbscheme, initialInfo.quickEvalPosition, metadata, templates);
 
   const upgradeDir = await tmp.dir({ dir: upgradesTmpDir.name, unsafeCleanup: true });
   try {
@@ -688,6 +685,7 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 }
 
+let queryId = 0;
 export async function createInitialQueryInfo(
   selectedQueryUri: Uri | undefined,
   databaseInfo: DatabaseInfo,
@@ -701,9 +699,10 @@ export async function createInitialQueryInfo(
     isQuickEval,
     isQuickQuery: isQuickQueryPath(queryPath),
     databaseInfo,
+    id: queryId++,
     start: new Date(),
     ... (isQuickEval ? {
-      queryText: quickEvalText,
+      queryText: quickEvalText!, // if this query is quick eval, it must have quick eval text
       quickEvalPosition: quickEvalPosition
     } : {
       queryText: await fs.readFile(queryPath, 'utf8')

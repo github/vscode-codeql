@@ -170,15 +170,6 @@ describe('query-results', () => {
       await completedQuery.updateSortState(mockServer, 'result-name');
       expect(completedQuery.sortedResultsInfo.size).to.eq(0);
     });
-
-    // interpolate
-    // time
-    // label
-    // getShortLabel
-    // getQueryFileName
-    // getQueryName
-
-    // status
   });
 
   it('should interpretResults', async () => {

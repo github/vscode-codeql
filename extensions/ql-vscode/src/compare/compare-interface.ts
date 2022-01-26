@@ -82,12 +82,12 @@ export class CompareInterfaceManager extends DisposableObject {
             // otherwise we will wind up with duplicated rows
             name: from.getShortLabel(),
             status: from.completedQuery.statusString,
-            time: from.time,
+            time: from.startTime,
           },
           toQuery: {
             name: to.getShortLabel(),
             status: to.completedQuery.statusString,
-            time: to.time,
+            time: to.startTime,
           },
         },
         columns: fromResultSet.schema.columns,

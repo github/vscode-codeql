@@ -406,12 +406,8 @@ export class QueryHistoryManager extends DisposableObject {
       throw new Error(NO_QUERY_SELECTED);
     }
 
-    if (!finalSingleItem.completedQuery) {
-      throw new Error('Select a completed query.');
-    }
-
     const textDocument = await workspace.openTextDocument(
-      Uri.file(finalSingleItem.completedQuery.query.program.queryPath)
+      Uri.file(finalSingleItem.initialInfo.queryPath)
     );
     const editor = await window.showTextDocument(
       textDocument,
@@ -580,18 +576,14 @@ export class QueryHistoryManager extends DisposableObject {
       throw new Error(NO_QUERY_SELECTED);
     }
 
-    if (!singleItem.completedQuery) {
-      return;
-    }
-
     const rawQueryName = singleItem.getQueryName();
     const queryName = rawQueryName.endsWith('.ql') ? rawQueryName : rawQueryName + '.ql';
     const params = new URLSearchParams({
-      isQuickEval: String(!!singleItem.completedQuery.query.quickEvalPosition),
+      isQuickEval: String(!!singleItem.initialInfo.quickEvalPosition),
       queryText: encodeURIComponent(await this.getQueryText(singleItem)),
     });
     const uri = Uri.parse(
-      `codeql:${singleItem.completedQuery.query.queryID}-${queryName}?${params.toString()}`, true
+      `codeql:${singleItem.initialInfo.id}-${queryName}?${params.toString()}`, true
     );
     const doc = await workspace.openTextDocument(uri);
     await window.showTextDocument(doc, { preview: false });
@@ -670,32 +662,10 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async getQueryText(queryHistoryItem: FullQueryInfo): Promise<string> {
-    if (queryHistoryItem.initialInfo.queryText) {
-      return queryHistoryItem.initialInfo.queryText;
-    }
-
-    if (!queryHistoryItem.completedQuery) {
-      return '<No label>';
-    }
-
-    const query = queryHistoryItem.completedQuery.query;
-
-    if (query.quickEvalPosition) {
-      // capture all selected lines
-      const startLine = query.quickEvalPosition.line;
-      const endLine = query.quickEvalPosition.endLine;
-      const textDocument = await workspace.openTextDocument(
-        query.quickEvalPosition.fileName
-      );
-      return textDocument.getText(
-        new Range(startLine - 1, 0, endLine, 0)
-      );
-    } else {
-      return '';
-    }
+    return queryHistoryItem.initialInfo.queryText;
   }
 
-  addCompletedQuery(item: FullQueryInfo) {
+  addQuery(item: FullQueryInfo) {
     this.treeDataProvider.pushQuery(item);
     this.updateTreeViewSelectionIfVisible();
   }

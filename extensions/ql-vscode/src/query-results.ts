@@ -22,13 +22,14 @@ import { DatabaseInfo } from './pure/interface-types';
  */
 export interface InitialQueryInfo {
   userSpecifiedLabel?: string; // if missing, use a default label
-  readonly queryText?: string; // text of the selected file
+  readonly queryText: string; // text of the selected file, or the selected text when doing quick eval
   readonly isQuickQuery: boolean;
   readonly isQuickEval: boolean;
   readonly quickEvalPosition?: messages.Position;
   readonly queryPath: string;
   readonly databaseInfo: DatabaseInfo
   readonly start: Date;
+  readonly id: number; // an incrementing number for each query
 }
 
 export enum QueryStatus {
@@ -183,14 +184,14 @@ export class FullQueryInfo {
     /**/
   }
 
-  get time() {
+  get startTime() {
     return this.initialInfo.start.toLocaleString(env.language);
   }
 
   interpolate(template: string): string {
     const { resultCount = 0, statusString = 'in progress' } = this.completedQuery || {};
     const replacements: { [k: string]: string } = {
-      t: this.time,
+      t: this.startTime,
       q: this.getQueryName(),
       d: this.initialInfo.databaseInfo.name,
       r: resultCount.toString(),
