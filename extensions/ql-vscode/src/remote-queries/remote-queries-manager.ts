@@ -100,7 +100,7 @@ export class RemoteQueriesManager {
         nwo: a.nwo,
         resultCount: a.resultCount,
         downloadLink: a.downloadLink,
-        fileSize: a.fileSizeInBytes.toString()
+        fileSize: String(a.fileSizeInBytes)
       }));
 
     await this.analysesResultsManager.downloadAnalysesResults(

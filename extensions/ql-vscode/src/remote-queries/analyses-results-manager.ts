@@ -48,7 +48,7 @@ export class AnalysesResultsManager {
     const batchSize = 3;
 
     for (let i = 0; i < analysesToDownload.length; i += batchSize) {
-      if (token && token.isCancellationRequested) {
+      if (token?.isCancellationRequested) {
         throw new Error('Downloading of analyses results has been cancelled');
       }
 
