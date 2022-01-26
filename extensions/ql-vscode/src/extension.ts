@@ -500,11 +500,11 @@ async function activateWithInstalledDistribution(
 
       const initialInfo = await createInitialQueryInfo(selectedQuery, databaseInfo, quickEval, range);
       const item = new FullQueryInfo(initialInfo, queryHistoryConfigurationListener);
-      qhm.addCompletedQuery(item);
+      qhm.addQuery(item);
       await qhm.refreshTreeView(item);
 
       try {
-        const info = await compileAndRunQueryAgainstDatabase(
+        const completedQueryInfo = await compileAndRunQueryAgainstDatabase(
           cliServer,
           qs,
           databaseItem,
@@ -512,7 +512,7 @@ async function activateWithInstalledDistribution(
           progress,
           token,
         );
-        item.completeThisQuery(info);
+        item.completeThisQuery(completedQueryInfo);
         await showResultsForCompletedQuery(item as FullCompletedQueryInfo, WebviewReveal.NotForced);
         // Note we must update the query history view after showing results as the
         // display and sorting might depend on the number of results
