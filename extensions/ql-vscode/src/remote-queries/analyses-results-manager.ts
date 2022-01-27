@@ -1,4 +1,4 @@
-import { ExtensionContext } from 'vscode';
+import { CancellationToken, ExtensionContext } from 'vscode';
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import { downloadArtifactFromLink } from './gh-actions-api-client';
@@ -7,6 +7,7 @@ import * as fs from 'fs-extra';
 import { AnalysisSummary } from './shared/remote-query-result';
 import * as sarif from 'sarif';
 import { AnalysisResults, QueryResult } from './shared/analysis-result';
+import { UserCancellationException } from '../commandRunner';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for a single remote query.
@@ -21,6 +22,7 @@ export class AnalysesResultsManager {
 
   public async downloadAnalysisResults(
     analysisSummary: AnalysisSummary,
+    publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
   ): Promise<void> {
     if (this.analysesResults.some(x => x.nwo === analysisSummary.nwo)) {
       // We already have the results for this analysis, don't download again.
@@ -32,17 +34,35 @@ export class AnalysesResultsManager {
     void this.logger.log(`Downloading and processing results for ${analysisSummary.nwo}`);
 
     await this.downloadSingleAnalysisResults(analysisSummary, credentials);
+    await publishResults(this.analysesResults);
   }
 
-  public async downloadAllResults(
-    analysisSummaries: AnalysisSummary[],
+  public async downloadAnalysesResults(
+    analysesToDownload: AnalysisSummary[],
+    token: CancellationToken | undefined,
+    publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
   ): Promise<void> {
     const credentials = await Credentials.initialize(this.ctx);
 
-    void this.logger.log('Downloading and processing all results');
+    void this.logger.log('Downloading and processing analyses results');
 
-    for (const analysis of analysisSummaries) {
-      await this.downloadSingleAnalysisResults(analysis, credentials);
+    const batchSize = 3;
+    const numOfBatches = Math.ceil(analysesToDownload.length / batchSize);
+
+    for (let i = 0; i < analysesToDownload.length; i += batchSize) {
+      if (token?.isCancellationRequested) {
+        throw new UserCancellationException('Downloading of analyses results has been cancelled', true);
+      }
+
+      const batch = analysesToDownload.slice(i, i + batchSize);
+      const batchTasks = batch.map(analysis => this.downloadSingleAnalysisResults(analysis, credentials));
+
+      const nwos = batch.map(a => a.nwo).join(', ');
+      void this.logger.log(`Downloading batch ${Math.floor(i / batchSize) + 1} of ${numOfBatches} (${nwos})`);
+
+      await Promise.all(batchTasks);
+
+      await publishResults(this.analysesResults);
     }
   }
 

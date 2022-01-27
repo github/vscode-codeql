@@ -80,6 +80,7 @@ import { CodeQlStatusBarHandler } from './status-bar';
 import { Credentials } from './authentication';
 import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQuery } from './remote-queries/remote-query';
+import { RemoteQueryResult } from './remote-queries/remote-query-result';
 import { URLSearchParams } from 'url';
 import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
 import { sampleRemoteQuery, sampleRemoteQueryResult } from './remote-queries/sample-data';
@@ -778,7 +779,7 @@ async function activateWithInstalledDistribution(
   );
 
   void logger.log('Initializing remote queries interface.');
-  const rqm = new RemoteQueriesManager(ctx, logger, cliServer);
+  const rqm = new RemoteQueriesManager(ctx, cliServer, logger);
 
   registerRemoteQueryTextProvider();
 
@@ -814,6 +815,13 @@ async function activateWithInstalledDistribution(
       query: RemoteQuery,
       token: CancellationToken) => {
       await rqm.monitorRemoteQuery(query, token);
+    }));
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.autoDownloadRemoteQueryResults', async (
+      queryResult: RemoteQueryResult,
+      token: CancellationToken) => {
+      await rqm.autoDownloadRemoteQueryResults(queryResult, token);
     }));
 
   ctx.subscriptions.push(
