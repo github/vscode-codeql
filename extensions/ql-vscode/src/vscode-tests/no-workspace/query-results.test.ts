@@ -6,7 +6,7 @@ import 'sinon-chai';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 import { FullQueryInfo, InitialQueryInfo, interpretResults } from '../../query-results';
-import { QueryEvaluatonInfo, QueryWithResults, tmpDir } from '../../run-queries';
+import { QueryEvaluationInfo, QueryWithResults, tmpDir } from '../../run-queries';
 import { QueryHistoryConfig } from '../../config';
 import { EvaluationResult, QueryResultType } from '../../pure/messages';
 import { SortDirection, SortedResultSetInfo } from '../../pure/interface-types';
@@ -248,7 +248,7 @@ describe('query-results', () => {
           resultsPath: '/a/b/c',
           interpretedResultsPath: '/d/e/f'
         }
-      } as QueryEvaluatonInfo,
+      } as QueryEvaluationInfo,
       result: {
         evaluationTime: 12340,
         resultType: didRunSuccessfully

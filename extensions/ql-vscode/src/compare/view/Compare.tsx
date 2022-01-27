@@ -17,7 +17,7 @@ const emptyComparison: SetComparisonsMessage = {
   columns: [],
   commonResultSetNames: [],
   currentResultSetName: '',
-  datebaseUri: '',
+  databaseUri: '',
   message: 'Empty comparison'
 };
 

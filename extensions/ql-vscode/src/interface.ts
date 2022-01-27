@@ -33,7 +33,7 @@ import { Logger } from './logging';
 import * as messages from './pure/messages';
 import { commandRunner } from './commandRunner';
 import { CompletedQueryInfo, interpretResults } from './query-results';
-import { QueryEvaluatonInfo, tmpDir } from './run-queries';
+import { QueryEvaluationInfo, tmpDir } from './run-queries';
 import { parseSarifLocation, parseSarifPlainTextMessage } from './pure/sarif-utils';
 import {
   WebviewReveal,
@@ -644,7 +644,7 @@ export class InterfaceManager extends DisposableObject {
   }
 
   private async interpretResultsInfo(
-    query: QueryEvaluatonInfo,
+    query: QueryEvaluationInfo,
     sortState: InterpretedResultsSortState | undefined
   ): Promise<Interpretation | undefined> {
     if (

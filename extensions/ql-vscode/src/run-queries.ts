@@ -53,7 +53,7 @@ export const tmpDirDisposal = {
  * temporary files associated with it, such as the compiled query
  * output and results.
  */
-export class QueryEvaluatonInfo {
+export class QueryEvaluationInfo {
   readonly compiledQueryPath: string;
   readonly dilPath: string;
   readonly csvPath: string;
@@ -266,7 +266,7 @@ export class QueryEvaluatonInfo {
 
 
 export interface QueryWithResults {
-  readonly query: QueryEvaluatonInfo;
+  readonly query: QueryEvaluationInfo;
   readonly result: messages.EvaluationResult;
   readonly logFileLocation?: string;
   readonly dispose: () => void;
@@ -351,7 +351,7 @@ async function getSelectedPosition(editor: TextEditor, range?: Range): Promise<m
 async function checkDbschemeCompatibility(
   cliServer: cli.CodeQLCliServer,
   qs: qsClient.QueryServerClient,
-  query: QueryEvaluatonInfo,
+  query: QueryEvaluationInfo,
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<void> {
@@ -393,7 +393,7 @@ async function checkDbschemeCompatibility(
   }
 }
 
-function reportNoUpgradePath(query: QueryEvaluatonInfo) {
+function reportNoUpgradePath(query: QueryEvaluationInfo) {
   throw new Error(`Query ${query.program.queryPath} expects database scheme ${query.queryDbscheme}, but the current database has a different scheme, and no database upgrades are available. The current database scheme may be newer than the CodeQL query libraries in your workspace.\n\nPlease try using a newer version of the query libraries.`);
 }
 
@@ -403,7 +403,7 @@ function reportNoUpgradePath(query: QueryEvaluatonInfo) {
 async function compileNonDestructiveUpgrade(
   qs: qsClient.QueryServerClient,
   upgradeTemp: tmp.DirectoryResult,
-  query: QueryEvaluatonInfo,
+  query: QueryEvaluationInfo,
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<string> {
@@ -614,7 +614,7 @@ export async function compileAndRunQueryAgainstDatabase(
     }
   }
 
-  const query = new QueryEvaluatonInfo(initialInfo.id, qlProgram, db, packConfig.dbscheme, initialInfo.quickEvalPosition, metadata, templates);
+  const query = new QueryEvaluationInfo(initialInfo.id, qlProgram, db, packConfig.dbscheme, initialInfo.quickEvalPosition, metadata, templates);
 
   const upgradeDir = await tmp.dir({ dir: upgradesTmpDir.name, unsafeCleanup: true });
   try {
@@ -716,7 +716,7 @@ const compilationFailedErrorTail = ' compilation failed. Please make sure there 
   ' and choose CodeQL Query Server from the dropdown.';
 
 function createSyntheticResult(
-  query: QueryEvaluatonInfo,
+  query: QueryEvaluationInfo,
   message: string,
   resultType: number
 ): QueryWithResults {

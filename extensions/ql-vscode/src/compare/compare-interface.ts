@@ -95,7 +95,7 @@ export class CompareInterfaceManager extends DisposableObject {
         currentResultSetName: currentResultSetName,
         rows,
         message,
-        datebaseUri: to.initialInfo.databaseInfo.databaseUri,
+        databaseUri: to.initialInfo.databaseInfo.databaseUri,
       });
     }
   }

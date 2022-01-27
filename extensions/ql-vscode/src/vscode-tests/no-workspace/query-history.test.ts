@@ -6,7 +6,7 @@ import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 import { logger } from '../../logging';
 import { QueryHistoryManager, HistoryTreeDataProvider } from '../../query-history';
-import { QueryEvaluatonInfo, QueryWithResults } from '../../run-queries';
+import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries';
 import { QueryHistoryConfigListener } from '../../config';
 import * as messages from '../../pure/messages';
 import { QueryServerClient } from '../../queryserver-client';
@@ -379,7 +379,7 @@ describe('query-history', () => {
     return {
       query: {
         hasInterpretedResults: () => Promise.resolve(hasInterpretedResults)
-      } as QueryEvaluatonInfo,
+      } as QueryEvaluationInfo,
       result: {
         resultType: didRunSuccessfully
           ? messages.QueryResultType.SUCCESS
