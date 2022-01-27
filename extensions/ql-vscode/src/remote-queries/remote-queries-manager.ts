@@ -24,8 +24,8 @@ export class RemoteQueriesManager {
 
   constructor(
     private readonly ctx: ExtensionContext,
-    private readonly logger: Logger,
-    private readonly cliServer: CodeQLCliServer
+    private readonly cliServer: CodeQLCliServer,
+    logger: Logger,
   ) {
     this.analysesResultsManager = new AnalysesResultsManager(ctx, logger);
     this.interfaceManager = new RemoteQueriesInterfaceManager(ctx, logger, this.analysesResultsManager);
