@@ -1,6 +1,6 @@
 import { env } from 'vscode';
 
-import { QueryWithResults, tmpDir, QueryEvaluatonInfo } from './run-queries';
+import { QueryWithResults, tmpDir, QueryEvaluationInfo } from './run-queries';
 import * as messages from './pure/messages';
 import * as cli from './cli';
 import * as sarif from 'sarif';
@@ -39,7 +39,7 @@ export enum QueryStatus {
 }
 
 export class CompletedQueryInfo implements QueryWithResults {
-  readonly query: QueryEvaluatonInfo;
+  readonly query: QueryEvaluationInfo;
   readonly result: messages.EvaluationResult;
   readonly logFileLocation?: string;
   resultCount: number;

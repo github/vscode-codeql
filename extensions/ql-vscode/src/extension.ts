@@ -501,8 +501,6 @@ async function activateWithInstalledDistribution(
       const initialInfo = await createInitialQueryInfo(selectedQuery, databaseInfo, quickEval, range);
       const item = new FullQueryInfo(initialInfo, queryHistoryConfigurationListener);
       qhm.addQuery(item);
-      await qhm.refreshTreeView(item);
-
       try {
         const completedQueryInfo = await compileAndRunQueryAgainstDatabase(
           cliServer,
@@ -520,7 +518,7 @@ async function activateWithInstalledDistribution(
         item.failureReason = e.message;
         throw e;
       } finally {
-        await qhm.refreshTreeView(item);
+        qhm.refreshTreeView();
       }
     }
   }

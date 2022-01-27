@@ -96,9 +96,6 @@ export class HistoryTreeDataProvider extends DisposableObject {
 
   private localSuccessIconPath: string;
 
-  /**
-   * When not undefined, must be reference-equal to an item in `this.databases`.
-   */
   private current: FullQueryInfo | undefined;
 
   constructor(extensionPath: string) {
@@ -152,8 +149,8 @@ export class HistoryTreeDataProvider extends DisposableObject {
     element?: FullQueryInfo
   ): ProviderResult<FullQueryInfo[]> {
     return element ? [] : this.history.sort((h1, h2) => {
-      const q1 = h1.completedQuery;
-      const q2 = h2.completedQuery;
+      const resultCount1 = h1.completedQuery?.resultCount ?? -1;
+      const resultCount2 = h2.completedQuery?.resultCount ?? -1;
 
       switch (this.sortOrder) {
         case SortOrder.NameAsc:
@@ -165,9 +162,15 @@ export class HistoryTreeDataProvider extends DisposableObject {
         case SortOrder.DateDesc:
           return h2.initialInfo.start.getTime() - h1.initialInfo.start.getTime();
         case SortOrder.CountAsc:
-          return (!q1 || !q2) ? 0 : q1.resultCount - q2.resultCount;
+          // If the result counts are equal, sort by name.
+          return resultCount1 - resultCount2 === 0
+            ? h1.label.localeCompare(h2.label, env.language)
+            : resultCount1 - resultCount2;
         case SortOrder.CountDesc:
-          return (!q1 || !q2) ? 0 : q2.resultCount - q1.resultCount;
+          // If the result counts are equal, sort by name.
+          return resultCount2 - resultCount1 === 0
+            ? h2.label.localeCompare(h1.label, env.language)
+            : resultCount2 - resultCount1;
         default:
           assertNever(this.sortOrder);
       }
@@ -183,8 +186,8 @@ export class HistoryTreeDataProvider extends DisposableObject {
   }
 
   pushQuery(item: FullQueryInfo): void {
-    this.current = item;
     this.history.push(item);
+    this.setCurrentItem(item);
     this.refresh();
   }
 
@@ -193,16 +196,17 @@ export class HistoryTreeDataProvider extends DisposableObject {
   }
 
   remove(item: FullQueryInfo) {
-    if (this.current === item) {
-      this.current = undefined;
+    const isCurrent = this.current === item;
+    if (isCurrent) {
+      this.setCurrentItem();
     }
     const index = this.history.findIndex((i) => i === item);
     if (index >= 0) {
       this.history.splice(index, 1);
-      if (this.current === undefined && this.history.length > 0) {
+      if (isCurrent && this.history.length > 0) {
         // Try to keep a current item, near the deleted item if there
         // are any available.
-        this.current = this.history[Math.min(index, this.history.length - 1)];
+        this.setCurrentItem(this.history[Math.min(index, this.history.length - 1)]);
       }
       this.refresh();
     }
@@ -212,8 +216,8 @@ export class HistoryTreeDataProvider extends DisposableObject {
     return this.history;
   }
 
-  refresh(item?: FullQueryInfo) {
-    this._onDidChangeTreeData.fire(item);
+  refresh() {
+    this._onDidChangeTreeData.fire(undefined);
   }
 
   public get sortOrder() {
@@ -267,11 +271,13 @@ export class QueryHistoryManager extends DisposableObject {
         this.updateTreeViewSelectionIfVisible()
       )
     );
-    // Don't allow the selection to become empty
     this.push(
       this.treeView.onDidChangeSelection(async (ev) => {
-        if (ev.selection.length == 0) {
+        if (ev.selection.length === 0) {
+          // Don't allow the selection to become empty
           this.updateTreeViewSelectionIfVisible();
+        } else {
+          this.treeDataProvider.setCurrentItem(ev.selection[0]);
         }
         this.updateCompareWith(ev.selection);
       })
@@ -433,12 +439,15 @@ export class QueryHistoryManager extends DisposableObject {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
     (finalMultiSelect || [finalSingleItem]).forEach((item) => {
-      this.treeDataProvider.remove(item);
-      item.completedQuery?.dispose();
+      // TODO: Removing in progress queries is not supported yet
+      if (item.status !== QueryStatus.InProgress) {
+        this.treeDataProvider.remove(item);
+        item.completedQuery?.dispose();
+      }
     });
     const current = this.treeDataProvider.getCurrent();
     if (current !== undefined) {
-      await this.treeView.reveal(current);
+      await this.treeView.reveal(current, { select: true });
       await this.invokeCallbackOn(current);
     }
   }
@@ -484,12 +493,7 @@ export class QueryHistoryManager extends DisposableObject {
     if (response !== undefined) {
       // Interpret empty string response as 'go back to using default'
       singleItem.initialInfo.userSpecifiedLabel = response === '' ? undefined : response;
-      if (this.treeDataProvider.sortOrder === SortOrder.NameAsc ||
-        this.treeDataProvider.sortOrder === SortOrder.NameDesc) {
-        this.treeDataProvider.refresh();
-      } else {
-        this.treeDataProvider.refresh(singleItem);
-      }
+      this.treeDataProvider.refresh();
     }
   }
 
@@ -685,7 +689,7 @@ export class QueryHistoryManager extends DisposableObject {
         // We must fire the onDidChangeTreeData event to ensure the current element can be selected
         // using `reveal` if the tree view was not visible when the current element was added.
         this.treeDataProvider.refresh();
-        void this.treeView.reveal(current);
+        void this.treeView.reveal(current, { select: true });
       }
     }
   }
@@ -826,12 +830,18 @@ the file in the file explorer and dragging it into the workspace.`
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ): { finalSingleItem: FullQueryInfo; finalMultiSelect: FullQueryInfo[] } {
-    if (singleItem === undefined && (multiSelect === undefined || multiSelect.length === 0 || multiSelect[0] === undefined)) {
+    if (!singleItem && !multiSelect?.[0]) {
       const selection = this.treeView.selection;
-      if (selection) {
+      const current = this.treeDataProvider.getCurrent();
+      if (selection?.length) {
         return {
           finalSingleItem: selection[0],
           finalMultiSelect: selection
+        };
+      } else if (current) {
+        return {
+          finalSingleItem: current,
+          finalMultiSelect: [current]
         };
       }
     }
@@ -841,7 +851,7 @@ the file in the file explorer and dragging it into the workspace.`
     };
   }
 
-  async refreshTreeView(item: FullQueryInfo): Promise<void> {
-    this.treeDataProvider.refresh(item);
+  refreshTreeView(): void {
+    this.treeDataProvider.refresh();
   }
 }

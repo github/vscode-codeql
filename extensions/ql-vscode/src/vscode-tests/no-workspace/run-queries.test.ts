@@ -5,7 +5,7 @@ import 'sinon-chai';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 
-import { QueryEvaluatonInfo } from '../../run-queries';
+import { QueryEvaluationInfo } from '../../run-queries';
 import { QlProgram, Severity, compileQuery } from '../../pure/messages';
 import { DatabaseItem } from '../../databases';
 
@@ -13,7 +13,7 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe('run-queries', () => {
-  it('should create a QueryEvaluatonInfo', () => {
+  it('should create a QueryEvaluationInfo', () => {
     const info = createMockQueryInfo();
 
     const queryID = info.queryID;
@@ -86,7 +86,7 @@ describe('run-queries', () => {
 
   let queryNum = 0;
   function createMockQueryInfo() {
-    return new QueryEvaluatonInfo(
+    return new QueryEvaluationInfo(
       queryNum++,
       'my-program' as unknown as QlProgram,
       {

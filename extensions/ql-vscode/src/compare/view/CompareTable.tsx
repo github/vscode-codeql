@@ -76,7 +76,7 @@ export default function CompareTable(props: Props) {
                 schemaName={comparison.currentResultSetName}
                 preventSort={true}
               />
-              {createRows(rows.from, comparison.datebaseUri)}
+              {createRows(rows.from, comparison.databaseUri)}
             </table>
           </td>
           <td>
@@ -86,7 +86,7 @@ export default function CompareTable(props: Props) {
                 schemaName={comparison.currentResultSetName}
                 preventSort={true}
               />
-              {createRows(rows.to, comparison.datebaseUri)}
+              {createRows(rows.to, comparison.databaseUri)}
             </table>
           </td>
         </tr>

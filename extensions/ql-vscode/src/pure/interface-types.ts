@@ -316,7 +316,7 @@ export interface SetComparisonsMessage {
   readonly currentResultSetName: string;
   readonly rows: QueryCompareResult | undefined;
   readonly message: string | undefined;
-  readonly datebaseUri: string;
+  readonly databaseUri: string;
 }
 
 export enum DiffKind {
