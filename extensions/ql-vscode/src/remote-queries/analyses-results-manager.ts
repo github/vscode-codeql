@@ -47,7 +47,7 @@ export class AnalysesResultsManager {
     void this.logger.log('Downloading and processing analyses results');
 
     const batchSize = 3;
-    const numOfBatches = Math.ceil(analysesToDownload.length / 3);
+    const numOfBatches = Math.ceil(analysesToDownload.length / batchSize);
 
     for (let i = 0; i < analysesToDownload.length; i += batchSize) {
       if (token?.isCancellationRequested) {
@@ -58,7 +58,7 @@ export class AnalysesResultsManager {
       const batchTasks = batch.map(analysis => this.downloadSingleAnalysisResults(analysis, credentials));
 
       const nwos = batch.map(a => a.nwo).join(', ');
-      void this.logger.log(`Downloading batch ${Math.floor(i / 3) + 1} of ${numOfBatches} (${nwos})`);
+      void this.logger.log(`Downloading batch ${Math.floor(i / batchSize) + 1} of ${numOfBatches} (${nwos})`);
 
       await Promise.all(batchTasks);
 

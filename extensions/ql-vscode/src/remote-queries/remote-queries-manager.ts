@@ -28,7 +28,7 @@ export class RemoteQueriesManager {
     private readonly cliServer: CodeQLCliServer
   ) {
     this.analysesResultsManager = new AnalysesResultsManager(ctx, logger);
-    this.interfaceManager = new RemoteQueriesInterfaceManager(this.ctx, this.logger, this.analysesResultsManager);
+    this.interfaceManager = new RemoteQueriesInterfaceManager(ctx, logger, this.analysesResultsManager);
     this.remoteQueriesMonitor = new RemoteQueriesMonitor(ctx, logger);
   }
 
