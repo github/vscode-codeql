@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 import { logger } from '../../logging';
-import { QueryHistoryManager, HistoryTreeDataProvider } from '../../query-history';
+import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
 import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries';
 import { QueryHistoryConfigListener } from '../../config';
 import * as messages from '../../pure/messages';
@@ -217,13 +217,14 @@ describe('query-history', () => {
     // will not change the selection
     const toDelete = allHistory[1];
     const selected = allHistory[3];
-    // avoid triggering the callback by setting the field directly
-    (queryHistoryManager.treeDataProvider as any).current = selected;
+
+    // select the item we want
+    await queryHistoryManager.treeView.reveal(selected, { select: true });
     await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
 
     expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
-    expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(selected);
-    expect(allHistory).not.to.contain(toDelete);
+    expect(queryHistoryManager.treeDataProvider.getCurrent()).to.deep.eq(selected);
+    expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
 
     // the current item should have been re-selected
     expect(selectedCallback).to.have.been.calledOnceWith(selected);
@@ -236,12 +237,14 @@ describe('query-history', () => {
     const toDelete = allHistory[1];
     const newSelected = allHistory[2];
     // avoid triggering the callback by setting the field directly
-    (queryHistoryManager.treeDataProvider as any).current = toDelete;
+
+    // select the item we want
+    await queryHistoryManager.treeView.reveal(toDelete, { select: true });
     await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
 
     expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
     expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(newSelected);
-    expect(allHistory).not.to.contain(toDelete);
+    expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
 
     // the current item should have been selected
     expect(selectedCallback).to.have.been.calledOnceWith(newSelected);
@@ -356,6 +359,155 @@ describe('query-history', () => {
     });
   });
 
+  describe('determineSelection', () => {
+    const singleItem = 'a';
+    const multipleItems = ['b', 'c', 'd'];
+
+    it('should get the selection from parameters', async () => {
+      queryHistoryManager = await createMockQueryHistory(allHistory);
+      const selection = (queryHistoryManager as any).determineSelection(singleItem, multipleItems);
+      expect(selection).to.deep.eq({
+        finalSingleItem: singleItem,
+        finalMultiSelect: multipleItems
+      });
+    });
+
+    it('should get the selection when single selection is empty', async () => {
+      queryHistoryManager = await createMockQueryHistory(allHistory);
+      const selection = (queryHistoryManager as any).determineSelection(undefined, multipleItems);
+      expect(selection).to.deep.eq({
+        finalSingleItem: multipleItems[0],
+        finalMultiSelect: multipleItems
+      });
+    });
+
+    it('should get the selection when multi-selection is empty', async () => {
+      queryHistoryManager = await createMockQueryHistory(allHistory);
+      const selection = (queryHistoryManager as any).determineSelection(singleItem, undefined);
+      expect(selection).to.deep.eq({
+        finalSingleItem: singleItem,
+        finalMultiSelect: [singleItem]
+      });
+    });
+
+    it('should get the selection from the treeView when both selections are empty', async () => {
+      queryHistoryManager = await createMockQueryHistory(allHistory);
+      await queryHistoryManager.treeView.reveal(allHistory[1], { select: true });
+      const selection = (queryHistoryManager as any).determineSelection(undefined, undefined);
+      expect(selection).to.deep.eq({
+        finalSingleItem: allHistory[1],
+        finalMultiSelect: [allHistory[1]]
+      });
+    });
+
+    it('should get the selection from the treeDataProvider when both selections and the treeView are empty', async () => {
+      queryHistoryManager = await createMockQueryHistory(allHistory);
+      await queryHistoryManager.treeView.reveal(allHistory[1], { select: true });
+      const selection = (queryHistoryManager as any).determineSelection(undefined, undefined);
+      expect(selection).to.deep.eq({
+        finalSingleItem: allHistory[1],
+        finalMultiSelect: [allHistory[1]]
+      });
+    });
+  });
+
+  describe('getChildren', () => {
+    const history = [
+      item('a', 10, 20),
+      item('b', 5, 30),
+      item('c', 1, 25),
+    ];
+    let treeDataProvider: HistoryTreeDataProvider;
+
+    beforeEach(async () => {
+      queryHistoryManager = await createMockQueryHistory(allHistory);
+      (queryHistoryManager.treeDataProvider as any).history = [...history];
+      treeDataProvider = queryHistoryManager.treeDataProvider;
+    });
+
+    it('should get children for name ascending', async () => {
+      const expected = [...history];
+      treeDataProvider.sortOrder = SortOrder.NameAsc;
+
+      const children = await treeDataProvider.getChildren();
+      expect(children).to.deep.eq(expected);
+    });
+
+    it('should get children for name descending', async () => {
+      const expected = [...history].reverse();
+      treeDataProvider.sortOrder = SortOrder.NameDesc;
+
+      const children = await treeDataProvider.getChildren();
+      expect(children).to.deep.eq(expected);
+    });
+
+    it('should get children for date ascending', async () => {
+      const expected = [history[2], history[1], history[0]];
+      treeDataProvider.sortOrder = SortOrder.DateAsc;
+
+      const children = await treeDataProvider.getChildren();
+      expect(children).to.deep.eq(expected);
+    });
+
+    it('should get children for date descending', async () => {
+      const expected = [history[0], history[1], history[2]];
+      treeDataProvider.sortOrder = SortOrder.DateDesc;
+
+      const children = await treeDataProvider.getChildren();
+      expect(children).to.deep.eq(expected);
+    });
+
+    it('should get children for result count ascending', async () => {
+      const expected = [history[0], history[2], history[1]];
+      treeDataProvider.sortOrder = SortOrder.CountAsc;
+
+      const children = await treeDataProvider.getChildren();
+      expect(children).to.deep.eq(expected);
+    });
+
+    it('should get children for result count descending', async () => {
+      const expected = [history[1], history[2], history[0]];
+      treeDataProvider.sortOrder = SortOrder.CountDesc;
+
+      const children = await treeDataProvider.getChildren();
+      expect(children).to.deep.eq(expected);
+    });
+
+    it('should get children for result count ascending when there are no results', async () => {
+      // fall back to name
+      const thisHistory = [item('a', 10), item('b', 50), item('c', 1)];
+      (queryHistoryManager!.treeDataProvider as any).history = [...thisHistory];
+      const expected = [...thisHistory];
+      treeDataProvider.sortOrder = SortOrder.CountAsc;
+
+      const children = await treeDataProvider.getChildren();
+      expect(children).to.deep.eq(expected);
+    });
+
+    it('should get children for result count descending when there are no results', async () => {
+      // fall back to name
+      const thisHistory = [item('a', 10), item('b', 50), item('c', 1)];
+      (queryHistoryManager!.treeDataProvider as any).history = [...thisHistory];
+      const expected = [...thisHistory].reverse();
+      treeDataProvider.sortOrder = SortOrder.CountDesc;
+
+      const children = await treeDataProvider.getChildren();
+      expect(children).to.deep.eq(expected);
+    });
+
+    function item(label: string, start: number, resultCount?: number) {
+      return {
+        label,
+        initialInfo: {
+          start: new Date(start),
+        },
+        completedQuery: {
+          resultCount,
+        }
+      };
+    }
+  });
+
   function createMockFullQueryInfo(dbName = 'a', queryWitbResults?: QueryWithResults, isFail = false): FullQueryInfo {
     const fqi = new FullQueryInfo(
       {
@@ -397,9 +549,9 @@ describe('query-history', () => {
       selectedCallback,
       doCompareCallback
     );
-    (qhm.treeDataProvider as any).history = allHistory;
+    (qhm.treeDataProvider as any).history = [...allHistory];
     await vscode.workspace.saveAll();
-
+    qhm.refreshTreeView();
     return qhm;
   }
 });
