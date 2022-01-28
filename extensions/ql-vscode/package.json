@@ -497,6 +497,10 @@
         "title": "Show Query Log"
       },
       {
+        "command": "codeQLQueryHistory.cancel",
+        "title": "Cancel"
+      },
+      {
         "command": "codeQLQueryHistory.showQueryText",
         "title": "Show Query Text"
       },
@@ -664,7 +668,7 @@
         {
           "command": "codeQLQueryHistory.removeHistoryItem",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory"
+          "when": "view == codeQLQueryHistory && viewItem != inProgressResultsItem"
         },
         {
           "command": "codeQLQueryHistory.setLabel",
@@ -674,12 +678,12 @@
         {
           "command": "codeQLQueryHistory.compareWith",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory"
+          "when": "view == codeQLQueryHistory && (viewItem == rawResultsItem || viewItem == interpretedResultsItem)"
         },
         {
           "command": "codeQLQueryHistory.showQueryLog",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory"
+          "when": "view == codeQLQueryHistory && (viewItem == rawResultsItem || viewItem == interpretedResultsItem)"
         },
         {
           "command": "codeQLQueryHistory.showQueryText",
@@ -689,7 +693,7 @@
         {
           "command": "codeQLQueryHistory.viewCsvResults",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory && viewItem != interpretedResultsItem"
+          "when": "view == codeQLQueryHistory && viewItem == rawResultsItem"
         },
         {
           "command": "codeQLQueryHistory.viewCsvAlerts",
@@ -704,12 +708,12 @@
         {
           "command": "codeQLQueryHistory.viewDil",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory"
+          "when": "view == codeQLQueryHistory && (viewItem == rawResultsItem || viewItem == interpretedResultsItem)"
         },
         {
-          "command": "codeQL.previewQueryHelp",
+          "command": "codeQLQueryHistory.cancel",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory && resourceScheme == .qhelp && isWorkspaceTrusted"
+          "when": "view == codeQLQueryHistory && viewItem == inProgressResultsItem"
         },
         {
           "command": "codeQLTests.showOutputDifferences",
@@ -860,6 +864,10 @@
         },
         {
           "command": "codeQLQueryHistory.showQueryLog",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.cancel",
           "when": "false"
         },
         {

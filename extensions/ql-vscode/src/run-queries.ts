@@ -695,7 +695,8 @@ let queryId = 0;
 export async function createInitialQueryInfo(
   selectedQueryUri: Uri | undefined,
   databaseInfo: DatabaseInfo,
-  isQuickEval: boolean, range?: Range
+  isQuickEval: boolean,
+  range?: Range
 ): Promise<InitialQueryInfo> {
   // Determine which query to run, based on the selection and the active editor.
   const { queryPath, quickEvalPosition, quickEvalText } = await determineSelectedQuery(selectedQueryUri, isQuickEval, range);

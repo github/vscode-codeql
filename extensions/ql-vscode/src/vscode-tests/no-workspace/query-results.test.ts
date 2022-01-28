@@ -12,6 +12,7 @@ import { EvaluationResult, QueryResultType } from '../../pure/messages';
 import { SortDirection, SortedResultSetInfo } from '../../pure/interface-types';
 import { CodeQLCliServer, SourceInfo } from '../../cli';
 import { env } from 'process';
+import { CancellationTokenSource } from 'vscode';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -266,7 +267,8 @@ describe('query-results', () => {
         start: new Date(),
         queryPath: 'path/to/hucairz'
       } as InitialQueryInfo,
-      mockQueryHistoryConfig()
+      mockQueryHistoryConfig(),
+      {} as CancellationTokenSource
     );
 
     if (queryWitbResults) {
