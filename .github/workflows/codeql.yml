@@ -26,6 +26,9 @@ jobs:
         with:
             languages: javascript
             config-file: ./.github/codeql/codeql-config.yml
+            # We require at least CodeQL CLI v2.7.6 to opt into the ML-powered queries beta. This
+            # can be removed once CodeQL Bundle v2.7.6 ships in the Actions VM images.
+            tools: latest
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@main
