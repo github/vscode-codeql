@@ -13,7 +13,9 @@
     "url": "https://github.com/github/vscode-codeql"
   },
   "engines": {
-    "vscode": "^1.59.0"
+    "vscode": "^1.59.0",
+    "node": "^14.17.1",
+    "npm": "^7.20.6"
   },
   "categories": [
     "Programming Languages"
