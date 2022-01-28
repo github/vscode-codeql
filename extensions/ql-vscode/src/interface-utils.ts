@@ -119,6 +119,7 @@ export function getHtmlForWebview(
   webview: Webview,
   scriptUriOnDisk: Uri,
   stylesheetUrisOnDisk: Uri[],
+  allowInlineStyles: boolean
 ): string {
   // Convert the on-disk URIs into webview URIs.
   const scriptWebviewUri = webview.asWebviewUri(scriptUriOnDisk);
@@ -128,8 +129,13 @@ export function getHtmlForWebview(
   // Use a nonce in the content security policy to uniquely identify the above resources.
   const nonce = getNonce();
 
-  const stylesheetsHtmlLines = stylesheetWebviewUris.map(stylesheetWebviewUri =>
-    `<link nonce="${nonce}" rel="stylesheet" href="${stylesheetWebviewUri}">`);
+  const stylesheetsHtmlLines = allowInlineStyles
+    ? stylesheetWebviewUris.map(uri => createStylesLinkWithoutNonce(uri))
+    : stylesheetWebviewUris.map(uri => createStylesLinkWithNonce(nonce, uri));
+
+  const styleSrc = allowInlineStyles
+    ? 'https://*.vscode-webview.net/ vscode-file: \'unsafe-inline\''
+    : `'nonce-${nonce}'`;
 
   /*
    * Content security policy:
@@ -143,7 +149,7 @@ export function getHtmlForWebview(
 <html>
   <head>
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; connect-src ${webview.cspSource};">
+          content="default-src 'none'; script-src 'nonce-${nonce}'; style-src ${styleSrc}; connect-src ${webview.cspSource};">
         ${stylesheetsHtmlLines.join(`    ${os.EOL}`)}
   </head>
   <body>
@@ -242,4 +248,12 @@ export async function jumpToLocation(
       }
     }
   }
+}
+
+function createStylesLinkWithNonce(nonce: string, uri: Uri): string {
+  return `<link nonce="${nonce}" rel="stylesheet" href="${uri}">`;
+}
+
+function createStylesLinkWithoutNonce(uri: Uri): string {
+  return `<link rel="stylesheet" href="${uri}">`;
 }

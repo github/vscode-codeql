@@ -8,6 +8,7 @@ import { AnalysisSummary } from './shared/remote-query-result';
 import * as sarif from 'sarif';
 import { AnalysisResults, QueryResult } from './shared/analysis-result';
 import { UserCancellationException } from '../commandRunner';
+import { showAndLogErrorMessage } from '../helpers';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for a single remote query.
@@ -33,8 +34,7 @@ export class AnalysesResultsManager {
 
     void this.logger.log(`Downloading and processing results for ${analysisSummary.nwo}`);
 
-    await this.downloadSingleAnalysisResults(analysisSummary, credentials);
-    await publishResults(this.analysesResults);
+    await this.downloadSingleAnalysisResults(analysisSummary, credentials, publishResults);
   }
 
   public async downloadAnalysesResults(
@@ -55,14 +55,12 @@ export class AnalysesResultsManager {
       }
 
       const batch = analysesToDownload.slice(i, i + batchSize);
-      const batchTasks = batch.map(analysis => this.downloadSingleAnalysisResults(analysis, credentials));
+      const batchTasks = batch.map(analysis => this.downloadSingleAnalysisResults(analysis, credentials, publishResults));
 
       const nwos = batch.map(a => a.nwo).join(', ');
       void this.logger.log(`Downloading batch ${Math.floor(i / batchSize) + 1} of ${numOfBatches} (${nwos})`);
 
       await Promise.all(batchTasks);
-
-      await publishResults(this.analysesResults);
     }
   }
 
@@ -72,21 +70,39 @@ export class AnalysesResultsManager {
 
   private async downloadSingleAnalysisResults(
     analysis: AnalysisSummary,
-    credentials: Credentials
+    credentials: Credentials,
+    publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
   ): Promise<void> {
-    const artifactPath = await downloadArtifactFromLink(credentials, analysis.downloadLink);
+    const analysisResults: AnalysisResults = {
+      nwo: analysis.nwo,
+      status: 'InProgress',
+      results: []
+    };
 
-    let analysisResults: AnalysisResults;
+    this.analysesResults.push(analysisResults);
+    void publishResults(this.analysesResults);
+
+    let artifactPath;
+    try {
+      artifactPath = await downloadArtifactFromLink(credentials, analysis.downloadLink);
+    }
+    catch (e) {
+      void showAndLogErrorMessage(
+        `There was an issue when downloading the analysis resutls for ${analysis.nwo}: ${e.message}`,
+        { fullMessage: e.stack });
+      return;
+    }
 
     if (path.extname(artifactPath) === '.sarif') {
       const queryResults = await this.readResults(artifactPath);
-      analysisResults = { nwo: analysis.nwo, results: queryResults };
+      analysisResults.results = queryResults;
+      analysisResults.status = 'Completed';
     } else {
       void this.logger.log('Cannot download results. Only alert and path queries are fully supported.');
-      analysisResults = { nwo: analysis.nwo, results: [] };
+      analysisResults.status = 'Failed';
     }
 
-    this.analysesResults.push(analysisResults);
+    void publishResults(this.analysesResults);
   }
 
   private async readResults(filePath: string): Promise<QueryResult[]> {

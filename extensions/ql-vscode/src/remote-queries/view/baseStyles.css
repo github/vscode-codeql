@@ -36,6 +36,16 @@ body {
 }
 
 /* -------------------------------------------------------------------------- */
+/* HorizontalSpace component */
+/* -------------------------------------------------------------------------- */
+
+.vscode-codeql__horizontal-space {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 0.2rem;
+}
+
+/* -------------------------------------------------------------------------- */
 /* Badge component */
 /* -------------------------------------------------------------------------- */
 
@@ -72,4 +82,16 @@ body {
 
 .vscode-codeql__download-button svg {
   fill: var(--vscode-textLink-foreground);
+}
+
+/* -------------------------------------------------------------------------- */
+/* DownloadSpinner component */
+/* -------------------------------------------------------------------------- */
+.vscode-codeql__download-spinner {
+  vertical-align: middle;
+}
+
+.vscode-codeql__download-spinner svg {
+  width: 0.8em;
+  height: 0.8em;
 }

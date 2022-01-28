@@ -83,7 +83,7 @@ import { RemoteQuery } from './remote-queries/remote-query';
 import { RemoteQueryResult } from './remote-queries/remote-query-result';
 import { URLSearchParams } from 'url';
 import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
-import { sampleRemoteQuery, sampleRemoteQueryResult } from './remote-queries/sample-data';
+import * as sampleData from './remote-queries/sample-data';
 import { handleDownloadPacks, handleInstallPackDependencies } from './packaging';
 import { AnalysesResultsManager } from './remote-queries/analyses-results-manager';
 
@@ -828,7 +828,11 @@ async function activateWithInstalledDistribution(
     commandRunner('codeQL.showFakeRemoteQueryResults', async () => {
       const analysisResultsManager = new AnalysesResultsManager(ctx, logger);
       const rqim = new RemoteQueriesInterfaceManager(ctx, logger, analysisResultsManager);
-      await rqim.showResults(sampleRemoteQuery, sampleRemoteQueryResult);
+      await rqim.showResults(sampleData.sampleRemoteQuery, sampleData.sampleRemoteQueryResult);
+
+      await rqim.setAnalysisResults(sampleData.sampleAnalysesResultsStage1);
+      await rqim.setAnalysisResults(sampleData.sampleAnalysesResultsStage2);
+      await rqim.setAnalysisResults(sampleData.sampleAnalysesResultsStage3);
     }));
 
   ctx.subscriptions.push(

@@ -193,7 +193,8 @@ export class InterfaceManager extends DisposableObject {
       panel.webview.html = getHtmlForWebview(
         panel.webview,
         scriptPathOnDisk,
-        [stylesheetPathOnDisk]
+        [stylesheetPathOnDisk],
+        false
       );
       panel.webview.onDidReceiveMessage(
         async (e) => this.handleMsgFromView(e),

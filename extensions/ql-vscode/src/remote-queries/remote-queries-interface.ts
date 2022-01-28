@@ -125,7 +125,8 @@ export class RemoteQueriesInterfaceManager {
       panel.webview.html = getHtmlForWebview(
         panel.webview,
         scriptPathOnDisk,
-        [baseStylesheetUriOnDisk, stylesheetPathOnDisk]
+        [baseStylesheetUriOnDisk, stylesheetPathOnDisk],
+        true
       );
       panel.webview.onDidReceiveMessage(
         async (e) => this.handleMsgFromView(e),
