@@ -1,4 +1,4 @@
-import { env } from 'vscode';
+import { CancellationTokenSource, env } from 'vscode';
 
 import { QueryWithResults, tmpDir, QueryEvaluationInfo } from './run-queries';
 import * as messages from './pure/messages';
@@ -180,8 +180,13 @@ export class FullQueryInfo {
   constructor(
     public readonly initialInfo: InitialQueryInfo,
     private readonly config: QueryHistoryConfig,
+    private readonly source: CancellationTokenSource
   ) {
     /**/
+  }
+
+  cancel() {
+    this.source.cancel();
   }
 
   get startTime() {

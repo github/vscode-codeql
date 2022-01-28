@@ -119,24 +119,24 @@ export class HistoryTreeDataProvider extends DisposableObject {
       arguments: [element],
     };
 
-    // Mark this query history item according to whether it has a
-    // SARIF file so that we can make context menu items conditionally
-    // available.
-    const hasResults = await element.completedQuery?.query.hasInterpretedResults();
-    treeItem.contextValue = hasResults
-      ? 'interpretedResultsItem'
-      : 'rawResultsItem';
-
+    // Populate the icon and the context value. We use the context value to
+    // control which commands are visible in the context menu.
+    let hasResults;
     switch (element.status) {
       case QueryStatus.InProgress:
-        // TODO this is not a good icon.
         treeItem.iconPath = new ThemeIcon('sync~spin');
+        treeItem.contextValue = 'inProgressResultsItem';
         break;
       case QueryStatus.Completed:
+        hasResults = await element.completedQuery?.query.hasInterpretedResults();
         treeItem.iconPath = this.localSuccessIconPath;
+        treeItem.contextValue = hasResults
+          ? 'interpretedResultsItem'
+          : 'rawResultsItem';
         break;
       case QueryStatus.Failed:
         treeItem.iconPath = this.failedIconPath;
+        treeItem.contextValue = 'cancelledResultsItem';
         break;
       default:
         assertNever(element.status);
@@ -334,6 +334,12 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
+        'codeQLQueryHistory.cancel',
+        this.handleCancel.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
         'codeQLQueryHistory.showQueryText',
         this.handleShowQueryText.bind(this)
       )
@@ -439,7 +445,7 @@ export class QueryHistoryManager extends DisposableObject {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
     (finalMultiSelect || [finalSingleItem]).forEach((item) => {
-      // TODO: Removing in progress queries is not supported yet
+      // Removing in progress queries is not supported yet
       if (item.status !== QueryStatus.InProgress) {
         this.treeDataProvider.remove(item);
         item.completedQuery?.dispose();
@@ -566,6 +572,19 @@ export class QueryHistoryManager extends DisposableObject {
     } else {
       void showAndLogWarningMessage('No log file available');
     }
+  }
+
+  async handleCancel(
+    singleItem: FullQueryInfo,
+    multiSelect: FullQueryInfo[]
+  ) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    (finalMultiSelect || [finalSingleItem]).forEach((item) => {
+      if (item.status === QueryStatus.InProgress) {
+        item.cancel();
+      }
+    });
   }
 
   async handleShowQueryText(

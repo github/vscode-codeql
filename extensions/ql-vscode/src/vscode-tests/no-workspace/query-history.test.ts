@@ -515,7 +515,8 @@ describe('query-history', () => {
         start: new Date(),
         queryPath: 'hucairz'
       } as InitialQueryInfo,
-      configListener
+      configListener,
+      {} as vscode.CancellationTokenSource
     );
 
     if (queryWitbResults) {

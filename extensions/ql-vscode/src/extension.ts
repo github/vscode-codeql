@@ -1,5 +1,6 @@
 import {
   CancellationToken,
+  CancellationTokenSource,
   commands,
   Disposable,
   ExtensionContext,
@@ -498,8 +499,12 @@ async function activateWithInstalledDistribution(
         databaseUri: databaseItem.databaseUri.toString(),
       };
 
+      // handle cancellation from the history view.
+      const source = new CancellationTokenSource();
+      token.onCancellationRequested(() => source.cancel());
+
       const initialInfo = await createInitialQueryInfo(selectedQuery, databaseInfo, quickEval, range);
-      const item = new FullQueryInfo(initialInfo, queryHistoryConfigurationListener);
+      const item = new FullQueryInfo(initialInfo, queryHistoryConfigurationListener, source);
       qhm.addQuery(item);
       try {
         const completedQueryInfo = await compileAndRunQueryAgainstDatabase(
@@ -508,7 +513,7 @@ async function activateWithInstalledDistribution(
           databaseItem,
           initialInfo,
           progress,
-          token,
+          source.token,
         );
         item.completeThisQuery(completedQueryInfo);
         await showResultsForCompletedQuery(item as FullCompletedQueryInfo, WebviewReveal.NotForced);
@@ -519,6 +524,7 @@ async function activateWithInstalledDistribution(
         throw e;
       } finally {
         qhm.refreshTreeView();
+        source.dispose();
       }
     }
   }
