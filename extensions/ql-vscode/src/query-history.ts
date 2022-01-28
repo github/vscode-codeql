@@ -70,7 +70,7 @@ const FAILED_QUERY_HISTORY_ITEM_ICON = 'media/red-x.svg';
  */
 const LOCAL_SUCCESS_QUERY_HISTORY_ITEM_ICON = 'media/drive.svg';
 
-enum SortOrder {
+export enum SortOrder {
   NameAsc = 'NameAsc',
   NameDesc = 'NameDesc',
   DateAsc = 'DateAsc',
@@ -820,6 +820,9 @@ the file in the file explorer and dragging it into the workspace.`
 
   /**
    * If no items are selected, attempt to grab the selection from the treeview.
+   * However, often the treeview itself does not have any selection. In this case,
+   * grab the selection from the `treeDataProvider` current item.
+   *
    * We need to use this method because when clicking on commands from the view title
    * bar, the selections are not passed in.
    *
@@ -844,6 +847,13 @@ the file in the file explorer and dragging it into the workspace.`
           finalMultiSelect: [current]
         };
       }
+    }
+
+    // ensure we do not return undefined
+    if (singleItem && !multiSelect?.[0]) {
+      multiSelect = [singleItem];
+    } else if (!singleItem && multiSelect?.[0]) {
+      singleItem = multiSelect[0];
     }
     return {
       finalSingleItem: singleItem,
