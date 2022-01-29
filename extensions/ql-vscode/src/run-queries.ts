@@ -542,7 +542,13 @@ export async function determineSelectedQuery(selectedResourceUri: Uri | undefine
       throw new Error('The selected resource for quick evaluation should match the active editor.');
     }
     quickEvalPosition = await getSelectedPosition(editor, range);
-    quickEvalText = editor.document.getText(editor.selection);
+    if (!editor.selection?.isEmpty) {
+      quickEvalText = editor.document.getText(editor.selection);
+    } else {
+      // capture the entire line if the user didn't select anything
+      const line = editor.document.lineAt(editor.selection.active.line);
+      quickEvalText = line.text.trim();
+    }
   }
 
   return { queryPath, quickEvalPosition, quickEvalText };
