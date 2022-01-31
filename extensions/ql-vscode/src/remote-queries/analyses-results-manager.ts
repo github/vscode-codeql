@@ -8,7 +8,7 @@ import { AnalysisSummary } from './shared/remote-query-result';
 import * as sarif from 'sarif';
 import { AnalysisResults, QueryResult } from './shared/analysis-result';
 import { UserCancellationException } from '../commandRunner';
-import { showAndLogErrorMessage } from '../helpers';
+import * as os from 'os';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for a single remote query.
@@ -60,7 +60,12 @@ export class AnalysesResultsManager {
       const nwos = batch.map(a => a.nwo).join(', ');
       void this.logger.log(`Downloading batch ${Math.floor(i / batchSize) + 1} of ${numOfBatches} (${nwos})`);
 
-      await Promise.all(batchTasks);
+      const taskResults = await Promise.allSettled(batchTasks);
+      const failedTasks = taskResults.filter(x => x.status === 'rejected') as Array<PromiseRejectedResult>;
+      if (failedTasks.length > 0) {
+        const failures = failedTasks.map(t => t.reason.message).concat(os.EOL);
+        throw Error(failures.join(os.EOL));
+      }
     }
   }
 
@@ -87,10 +92,7 @@ export class AnalysesResultsManager {
       artifactPath = await downloadArtifactFromLink(credentials, analysis.downloadLink);
     }
     catch (e) {
-      void showAndLogErrorMessage(
-        `There was an issue when downloading the analysis resutls for ${analysis.nwo}: ${e.message}`,
-        { fullMessage: e.stack });
-      return;
+      throw new Error(`Could not download the analysis resutls for ${analysis.nwo}: ${e.message}`);
     }
 
     if (path.extname(artifactPath) === '.sarif') {

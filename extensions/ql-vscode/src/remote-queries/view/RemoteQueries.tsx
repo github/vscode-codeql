@@ -94,7 +94,6 @@ const SummaryTitleWithResults = ({
   analysesResults: AnalysisResults[]
 }) => {
   const showDownloadButton = queryResult.totalResultCount !== sumAnalysesResults(analysesResults);
-  console.log(`showDownloadButton: ${showDownloadButton}`);
 
   return (
     <div className="vscode-codeql__query-summary-container">
