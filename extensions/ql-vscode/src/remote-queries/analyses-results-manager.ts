@@ -3,11 +3,10 @@ import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import { downloadArtifactFromLink } from './gh-actions-api-client';
 import * as path from 'path';
-import * as fs from 'fs-extra';
 import { AnalysisSummary } from './shared/remote-query-result';
-import * as sarif from 'sarif';
 import { AnalysisResults, QueryResult } from './shared/analysis-result';
 import { UserCancellationException } from '../commandRunner';
+import { sarifParser } from '../sarif-parser';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for a single remote query.
@@ -92,8 +91,7 @@ export class AnalysesResultsManager {
   private async readResults(filePath: string): Promise<QueryResult[]> {
     const queryResults: QueryResult[] = [];
 
-    const sarifContents = await fs.readFile(filePath, 'utf8');
-    const sarifLog = JSON.parse(sarifContents) as sarif.Log;
+    const sarifLog = await sarifParser(filePath);
 
     // Read the sarif file and extract information that we want to display
     // in the UI. For now we're only getting the message texts but we'll gradually
