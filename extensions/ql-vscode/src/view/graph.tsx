@@ -7,15 +7,26 @@ import { jumpToLocation } from './result-table-utils';
 import { tryGetLocationFromString } from '../pure/bqrs-utils';
 export type GraphProps = ResultTableProps & { resultSet: InterpretedResultSet<GraphInterpretationData> };
 
-const className = 'vscode-codeql__result-tables-graph';
-
+const graphClassName = 'vscode-codeql__result-tables-graph';
+const graphId = 'graph-results';
 export class Graph extends React.Component<GraphProps> {
   constructor(props: GraphProps) {
     super(props);
   }
 
   public render = (): JSX.Element => {
-    return <div id={className} className={className} />;
+    const { resultSet, offset } = this.props;
+    const graphData = resultSet.interpretation?.data?.dot[offset];
+
+    if (!graphData) {
+      return <>
+        <div className={graphClassName}>Graph is not available.</div>
+      </>;
+    }
+
+    return <>
+      <div id={graphId} className={graphClassName}><span>Rendering graph...</span></div>
+    </>;
   };
 
   public componentDidMount = () => {
@@ -27,7 +38,13 @@ export class Graph extends React.Component<GraphProps> {
   };
 
   private renderGraph = () => {
-    const { databaseUri, resultSet } = this.props;
+    const { databaseUri, resultSet, offset } = this.props;
+    const graphData = resultSet.interpretation?.data?.dot[offset];
+
+    if (!graphData) {
+      return;
+    }
+
     const options = {
       fit: true,
       fade: false,
@@ -35,13 +52,18 @@ export class Graph extends React.Component<GraphProps> {
       zoom: true,
     };
 
-    const element = document.querySelector(`.${className}`);
-    const color = element ? getComputedStyle(element).color : 'black';
-    const backgroundColor = element ? getComputedStyle(element).backgroundColor : 'transparent';
-    const borderColor = element ? getComputedStyle(element).borderColor : 'black';
+    const element = document.querySelector(`#${graphId}`);
+    if (!element) {
+      return;
+    }
+    element.firstChild?.remove();
+
+    const color = getComputedStyle(element).color;
+    const backgroundColor = getComputedStyle(element).backgroundColor;
+    const borderColor = getComputedStyle(element).borderColor;
     let firstPolygon = true;
 
-    graphviz(`#${className}`)
+    graphviz(`#${graphId}`)
       .options(options)
       .attributer(function(d) {
         if (d.tag == 'a') {
@@ -62,13 +84,14 @@ export class Graph extends React.Component<GraphProps> {
           // There is no proper way to identify the element containing the graph (which we
           // don't want a border around), as it is just has tag 'polygon'. Instead we assume
           // that the first polygon we see is that element
-          if (d.tag != 'polygon' || !firstPolygon)
+          if (d.tag != 'polygon' || !firstPolygon) {
             d.attributes.stroke = borderColor;
-          else
+          } else {
             firstPolygon = false;
+          }
         }
 
       })
-      .renderDot(resultSet.interpretation.data.dot[this.props.offset]);
+      .renderDot(graphData);
   };
 }

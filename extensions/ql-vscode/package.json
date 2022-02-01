@@ -745,7 +745,7 @@
         {
           "command": "codeQL.viewCfg",
           "group": "9_qlCommands",
-          "when": "resourceScheme == codeql-zip-archive"
+          "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {
           "command": "codeQL.runQueries",
@@ -810,7 +810,7 @@
         },
         {
           "command": "codeQL.viewCfg",
-          "when": "resourceScheme == codeql-zip-archive"
+          "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {
           "command": "codeQLDatabases.setCurrentDatabase",
@@ -957,6 +957,10 @@
         {
           "command": "codeQL.viewAst",
           "when": "resourceScheme == codeql-zip-archive"
+        },
+        {
+          "command": "codeQL.viewCfg",
+          "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {
           "command": "codeQL.quickEval",

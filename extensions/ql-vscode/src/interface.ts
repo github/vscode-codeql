@@ -162,9 +162,9 @@ export class InterfaceManager extends DisposableObject {
           this._diagnosticCollection.clear();
           if (this.isShowingPanel()) {
             void this.postMessage({
-            t: 'untoggleShowProblems'
-          });
-        }
+              t: 'untoggleShowProblems'
+            });
+          }
         }
       })
     );
@@ -347,8 +347,8 @@ export class InterfaceManager extends DisposableObject {
           break;
         default:
           assertNever(msg);
-        }
-      } catch (e) {
+      }
+    } catch (e) {
       void showAndLogErrorMessage(e.message, {
         fullMessage: e.stack
       });
@@ -608,15 +608,14 @@ export class InterfaceManager extends DisposableObject {
     sourceInfo: cli.SourceInfo | undefined,
     sourceLocationPrefix: string,
     sortState: InterpretedResultsSortState | undefined
- ): Promise<Interpretation | undefined> {
+  ): Promise<Interpretation | undefined> {
     if (!resultsPaths) {
       void this.logger.log('No results path. Cannot display interpreted results.');
       return undefined;
     }
     let data;
     let numTotalResults;
-    if (metadata?.kind === 'graph')
-    {
+    if (metadata?.kind === GRAPH_TABLE_NAME) {
       data = await interpretGraphResults(
         this.cliServer,
         metadata,
@@ -624,9 +623,7 @@ export class InterfaceManager extends DisposableObject {
         sourceInfo
       );
       numTotalResults = data.dot.length;
-    }
-    else
-    {
+    } else {
       const sarif = await interpretResultsSarif(
         this.cliServer,
         metadata,
@@ -635,7 +632,7 @@ export class InterfaceManager extends DisposableObject {
       );
 
       sarif.runs.forEach(run => {
-        if (run.results !== undefined) {
+        if (run.results) {
           sortInterpretedResults(run.results, sortState);
         }
       });
@@ -644,9 +641,9 @@ export class InterfaceManager extends DisposableObject {
       data = sarif;
 
       numTotalResults = (() => {
-        if (sarif.runs.length === 0) return 0;
-        if (sarif.runs[0].results === undefined) return 0;
-        return sarif.runs[0].results.length;
+        return sarif.runs?.[0]?.results
+          ? sarif.runs[0].results.length
+          : 0;
       })();
     }
 
@@ -686,7 +683,10 @@ export class InterfaceManager extends DisposableObject {
 
     return {
       ...interp,
-      data: { ...interp.data, runs: [getPageOfRun(interp.data.runs[0])] },
+      data: {
+        ...interp.data,
+        runs: [getPageOfRun(interp.data.runs[0])]
+      }
     };
   }
 

@@ -1061,11 +1061,11 @@ class SplitBuffer {
 
   /**
    * A version of startsWith that isn't overriden by a broken version of ms-python.
-   * 
+   *
    * The definition comes from
    * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
    * which is CC0/public domain
-   * 
+   *
    * See https://github.com/github/vscode-codeql/issues/802 for more context as to why we need it.
    */
   private static startsWith(s: string, searchString: string, position: number): boolean {

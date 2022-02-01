@@ -165,6 +165,25 @@ export async function interpretResultsSarif(
   return { ...res, t: 'SarifInterpretationData' };
 }
 
+/**
+ * Call cli command to interpret graph results.
+ */
+export async function interpretGraphResults(
+  cli: cli.CodeQLCliServer,
+  metadata: QueryMetadata | undefined,
+  resultsPaths: ResultsPaths,
+  sourceInfo?: cli.SourceInfo
+): Promise<GraphInterpretationData> {
+  const { resultsPath, interpretedResultsPath } = resultsPaths;
+  if (await fs.pathExists(interpretedResultsPath)) {
+    const dot = await cli.readDotFiles(interpretedResultsPath);
+    return { dot, t: 'GraphInterpretationData' };
+  }
+
+  const dot = await cli.interpretBqrsGraph(ensureMetadataIsComplete(metadata), resultsPath, interpretedResultsPath, sourceInfo);
+  return { dot, t: 'GraphInterpretationData' };
+}
+
 export function ensureMetadataIsComplete(metadata: QueryMetadata | undefined) {
   if (metadata === undefined) {
     throw new Error('Can\'t interpret results without query metadata');
@@ -379,23 +398,4 @@ export class FullQueryInfo {
       value: config
     });
   }
-}
-
-/**
- * Call cli command to interpret graph results.
- */
-export async function interpretGraphResults(
-  server: cli.CodeQLCliServer,
-  metadata: QueryMetadata | undefined,
-  resultsPaths: ResultsPaths,
-  sourceInfo?: cli.SourceInfo
-): Promise<GraphInterpretationData> {
-  const { resultsPath, interpretedResultsPath } = resultsPaths;
-  if (await fs.pathExists(interpretedResultsPath)) {
-    const dot = await server.readDotFiles(interpretedResultsPath);
-    return { dot, t: 'GraphInterpretationData' };
-  }
-
-  const dot = await server.interpretBqrsGraph(ensureMetadataIsComplete(metadata), resultsPath, interpretedResultsPath, sourceInfo);
-  return { dot, t: 'GraphInterpretationData' };
 }

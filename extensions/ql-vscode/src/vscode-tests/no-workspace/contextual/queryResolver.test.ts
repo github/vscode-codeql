@@ -65,8 +65,6 @@ describe('queryResolver', () => {
     it('should throw an error when there are no queries found', async () => {
       mockCli.resolveQueriesInSuite.returns([]);
 
-      // TODO: Figure out why chai-as-promised isn't failing the test on an
-      // unhandled rejection.
       try {
         await module.resolveQueries(mockCli, { dbschemePack: 'my-qlpack' }, KeyType.DefinitionQuery);
         // should reject

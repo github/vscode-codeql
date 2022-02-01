@@ -258,14 +258,14 @@ export class TemplatePrintCfgProvider {
 
     const qlpack = await qlpackOfDatabase(this.cli, db);
     if (!qlpack) {
-      throw new Error('Can\'t infer qlpack from database source archive');
+      throw new Error('Can\'t infer qlpack from database source archive.');
     }
     const queries = await resolveQueries(this.cli, qlpack, KeyType.PrintCfgQuery);
     if (queries.length > 1) {
-      throw new Error('Found multiple Print CFG queries. Can\'t continue');
+      throw new Error(`Found multiple Print CFG queries. Can't continue. Make sure there is exacly one query with the tag ${KeyType.PrintCfgQuery}`);
     }
     if (queries.length === 0) {
-      throw new Error('Did not find any Print CFG queries. Can\'t continue');
+      throw new Error(`Did not find any Print CFG queries. Can't continue. Make sure there is exacly one query with the tag ${KeyType.PrintCfgQuery}`);
     }
 
     const queryUri = Uri.file(queries[0]);
