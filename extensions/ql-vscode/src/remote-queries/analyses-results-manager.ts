@@ -6,6 +6,7 @@ import * as path from 'path';
 import { AnalysisSummary } from './shared/remote-query-result';
 import { AnalysisResults, QueryResult } from './shared/analysis-result';
 import { UserCancellationException } from '../commandRunner';
+import * as os from 'os';
 import { sarifParser } from '../sarif-parser';
 
 export class AnalysesResultsManager {
@@ -32,8 +33,7 @@ export class AnalysesResultsManager {
 
     void this.logger.log(`Downloading and processing results for ${analysisSummary.nwo}`);
 
-    await this.downloadSingleAnalysisResults(analysisSummary, credentials);
-    await publishResults(this.analysesResults);
+    await this.downloadSingleAnalysisResults(analysisSummary, credentials, publishResults);
   }
 
   public async downloadAnalysesResults(
@@ -47,6 +47,7 @@ export class AnalysesResultsManager {
 
     const batchSize = 3;
     const numOfBatches = Math.ceil(analysesToDownload.length / batchSize);
+    const allFailures = [];
 
     for (let i = 0; i < analysesToDownload.length; i += batchSize) {
       if (token?.isCancellationRequested) {
@@ -54,14 +55,22 @@ export class AnalysesResultsManager {
       }
 
       const batch = analysesToDownload.slice(i, i + batchSize);
-      const batchTasks = batch.map(analysis => this.downloadSingleAnalysisResults(analysis, credentials));
+      const batchTasks = batch.map(analysis => this.downloadSingleAnalysisResults(analysis, credentials, publishResults));
 
       const nwos = batch.map(a => a.nwo).join(', ');
       void this.logger.log(`Downloading batch ${Math.floor(i / batchSize) + 1} of ${numOfBatches} (${nwos})`);
 
-      await Promise.all(batchTasks);
+      const taskResults = await Promise.allSettled(batchTasks);
+      const failedTasks = taskResults.filter(x => x.status === 'rejected') as Array<PromiseRejectedResult>;
+      if (failedTasks.length > 0) {
+        const failures = failedTasks.map(t => t.reason.message);
+        failures.forEach(f => void this.logger.log(f));
+        allFailures.push(...failures);
+      }
+    }
 
-      await publishResults(this.analysesResults);
+    if (allFailures.length > 0) {
+      throw Error(allFailures.join(os.EOL));
     }
   }
 
@@ -71,21 +80,36 @@ export class AnalysesResultsManager {
 
   private async downloadSingleAnalysisResults(
     analysis: AnalysisSummary,
-    credentials: Credentials
+    credentials: Credentials,
+    publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
   ): Promise<void> {
-    const artifactPath = await downloadArtifactFromLink(credentials, analysis.downloadLink);
+    const analysisResults: AnalysisResults = {
+      nwo: analysis.nwo,
+      status: 'InProgress',
+      results: []
+    };
 
-    let analysisResults: AnalysisResults;
+    this.analysesResults.push(analysisResults);
+    void publishResults(this.analysesResults);
+
+    let artifactPath;
+    try {
+      artifactPath = await downloadArtifactFromLink(credentials, analysis.downloadLink);
+    }
+    catch (e) {
+      throw new Error(`Could not download the analysis results for ${analysis.nwo}: ${e.message}`);
+    }
 
     if (path.extname(artifactPath) === '.sarif') {
       const queryResults = await this.readResults(artifactPath);
-      analysisResults = { nwo: analysis.nwo, results: queryResults };
+      analysisResults.results = queryResults;
+      analysisResults.status = 'Completed';
     } else {
       void this.logger.log('Cannot download results. Only alert and path queries are fully supported.');
-      analysisResults = { nwo: analysis.nwo, results: [] };
+      analysisResults.status = 'Failed';
     }
 
-    this.analysesResults.push(analysisResults);
+    void publishResults(this.analysesResults);
   }
 
   private async readResults(filePath: string): Promise<QueryResult[]> {

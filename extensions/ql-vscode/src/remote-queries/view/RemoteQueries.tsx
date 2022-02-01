@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import * as Rdom from 'react-dom';
+import { ThemeProvider } from '@primer/react';
 import { ToRemoteQueriesMessage } from '../../pure/interface-types';
 import { AnalysisSummary, RemoteQueryResult } from '../shared/remote-query-result';
 import * as octicons from '../../view/octicons';
@@ -9,10 +10,12 @@ import { vscode } from '../../view/vscode-api';
 
 import SectionTitle from './SectionTitle';
 import VerticalSpace from './VerticalSpace';
+import HorizontalSpace from './HorizontalSpace';
 import Badge from './Badge';
 import ViewTitle from './ViewTitle';
 import DownloadButton from './DownloadButton';
 import { AnalysisResults } from '../shared/analysis-result';
+import DownloadSpinner from './DownloadSpinner';
 
 const numOfReposInContractedMode = 10;
 
@@ -61,6 +64,9 @@ const openQueryTextVirtualFile = (queryResult: RemoteQueryResult) => {
   });
 };
 
+const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
+  analysesResults.reduce((acc, curr) => acc + curr.results.length, 0);
+
 const QueryInfo = (queryResult: RemoteQueryResult) => (
   <>
     <VerticalSpace />
@@ -80,14 +86,26 @@ const QueryInfo = (queryResult: RemoteQueryResult) => (
   </>
 );
 
-const SummaryTitleWithResults = (queryResult: RemoteQueryResult) => (
-  <div className="vscode-codeql__query-summary-container">
-    <SectionTitle text={`Repositories with results (${queryResult.affectedRepositoryCount}):`} />
-    <DownloadButton
-      text="Download all"
-      onClick={() => downloadAllAnalysesResults(queryResult)} />
-  </div>
-);
+const SummaryTitleWithResults = ({
+  queryResult,
+  analysesResults
+}: {
+  queryResult: RemoteQueryResult,
+  analysesResults: AnalysisResults[]
+}) => {
+  const showDownloadButton = queryResult.totalResultCount !== sumAnalysesResults(analysesResults);
+
+  return (
+    <div className="vscode-codeql__query-summary-container">
+      <SectionTitle text={`Repositories with results (${queryResult.affectedRepositoryCount}):`} />
+      {
+        showDownloadButton && <DownloadButton
+          text="Download all"
+          onClick={() => downloadAllAnalysesResults(queryResult)} />
+      }
+    </div>
+  );
+};
 
 const SummaryTitleNoResults = () => (
   <div className="vscode-codeql__query-summary-container">
@@ -95,19 +113,55 @@ const SummaryTitleNoResults = () => (
   </div>
 );
 
-const SummaryItem = (props: AnalysisSummary) => (
+const SummaryItemDownload = ({
+  analysisSummary,
+  analysisResults
+}: {
+  analysisSummary: AnalysisSummary,
+  analysisResults: AnalysisResults | undefined
+}) => {
+  if (!analysisResults || analysisResults.status === 'Failed') {
+    return <DownloadButton
+      text={analysisSummary.fileSize}
+      onClick={() => downloadAnalysisResults(analysisSummary)} />;
+  }
+
+  if (analysisResults.status === 'InProgress') {
+    return <>
+      <HorizontalSpace />
+      <DownloadSpinner />
+    </>;
+  }
+
+  return (<></>);
+};
+
+const SummaryItem = ({
+  analysisSummary,
+  analysisResults
+}: {
+  analysisSummary: AnalysisSummary,
+  analysisResults: AnalysisResults | undefined
+}) => (
   <span>
     <span className="vscode-codeql__analysis-item">{octicons.repo}</span>
-    <span className="vscode-codeql__analysis-item">{props.nwo}</span>
-    <span className="vscode-codeql__analysis-item"><Badge text={props.resultCount.toString()} /></span>
+    <span className="vscode-codeql__analysis-item">{analysisSummary.nwo}</span>
+    <span className="vscode-codeql__analysis-item"><Badge text={analysisSummary.resultCount.toString()} /></span>
     <span className="vscode-codeql__analysis-item">
-      <DownloadButton
-        text={props.fileSize}
-        onClick={() => downloadAnalysisResults(props)} />
+      <SummaryItemDownload
+        analysisSummary={analysisSummary}
+        analysisResults={analysisResults} />
     </span>
   </span>
 );
-const Summary = (queryResult: RemoteQueryResult) => {
+
+const Summary = ({
+  queryResult,
+  analysesResults
+}: {
+  queryResult: RemoteQueryResult,
+  analysesResults: AnalysisResults[]
+}) => {
   const [repoListExpanded, setRepoListExpanded] = useState(false);
   const numOfReposToShow = repoListExpanded ? queryResult.analysisSummaries.length : numOfReposInContractedMode;
 
@@ -116,13 +170,17 @@ const Summary = (queryResult: RemoteQueryResult) => {
       {
         queryResult.affectedRepositoryCount === 0
           ? <SummaryTitleNoResults />
-          : <SummaryTitleWithResults {...queryResult} />
+          : <SummaryTitleWithResults
+            queryResult={queryResult}
+            analysesResults={analysesResults} />
       }
 
       <ul className="vscode-codeql__analysis-summaries-list">
         {queryResult.analysisSummaries.slice(0, numOfReposToShow).map((summary, i) =>
           <li key={summary.nwo} className="vscode-codeql__analysis-summaries-list-item">
-            <SummaryItem {...summary} />
+            <SummaryItem
+              analysisSummary={summary}
+              analysisResults={analysesResults.find(a => a.nwo === summary.nwo)} />
           </li>
         )}
       </ul>
@@ -157,7 +215,7 @@ const AnalysesResultsDescription = ({ totalAnalysesResults, totalResults }: { to
 };
 
 const AnalysesResults = ({ analysesResults, totalResults }: { analysesResults: AnalysisResults[], totalResults: number }) => {
-  const totalAnalysesResults = analysesResults.reduce((acc, curr) => acc + curr.results.length, 0);
+  const totalAnalysesResults = sumAnalysesResults(analysesResults);
 
   if (totalResults === 0) {
     return <></>;
@@ -204,10 +262,12 @@ export function RemoteQueries(): JSX.Element {
 
   try {
     return <div>
-      <ViewTitle title={queryResult.queryTitle} />
-      <QueryInfo {...queryResult} />
-      <Summary {...queryResult} />
-      <AnalysesResults analysesResults={analysesResults} totalResults={queryResult.totalResultCount} />
+      <ThemeProvider>
+        <ViewTitle title={queryResult.queryTitle} />
+        <QueryInfo {...queryResult} />
+        <Summary queryResult={queryResult} analysesResults={analysesResults} />
+        <AnalysesResults analysesResults={analysesResults} totalResults={queryResult.totalResultCount} />
+      </ThemeProvider>
     </div>;
   } catch (err) {
     console.error(err);

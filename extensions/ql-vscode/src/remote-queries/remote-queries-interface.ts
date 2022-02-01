@@ -125,7 +125,8 @@ export class RemoteQueriesInterfaceManager {
       panel.webview.html = getHtmlForWebview(
         panel.webview,
         scriptPathOnDisk,
-        [baseStylesheetUriOnDisk, stylesheetPathOnDisk]
+        [baseStylesheetUriOnDisk, stylesheetPathOnDisk],
+        true
       );
       ctx.subscriptions.push(
         panel.webview.onDidReceiveMessage(

@@ -1,5 +1,6 @@
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryResult } from './remote-query-result';
+import { AnalysisResults } from './shared/analysis-result';
 
 export const sampleRemoteQuery: RemoteQuery = {
   queryName: 'Inefficient regular expression',
@@ -84,3 +85,95 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
     }
   ]
 };
+
+
+const createAnalysisResults = (n: number) => Array(n).fill({ 'message': 'Sample text' });
+
+export const sampleAnalysesResultsStage1: AnalysisResults[] = [
+  {
+    nwo: 'big-corp/repo1',
+    status: 'InProgress',
+    results: []
+  },
+  {
+    nwo: 'big-corp/repo2',
+    status: 'InProgress',
+    results: []
+
+  },
+  {
+    nwo: 'big-corp/repo3',
+    status: 'InProgress',
+    results: []
+  },
+  // No entries for repo4
+];
+
+export const sampleAnalysesResultsStage2: AnalysisResults[] = [
+  {
+    nwo: 'big-corp/repo1',
+    status: 'Completed',
+    results: createAnalysisResults(85)
+  },
+  {
+    nwo: 'big-corp/repo2',
+    status: 'Completed',
+    results: createAnalysisResults(20)
+  },
+  {
+    nwo: 'big-corp/repo3',
+    status: 'InProgress',
+    results: []
+  },
+  {
+    nwo: 'big-corp/repo4',
+    status: 'InProgress',
+    results: []
+  },
+];
+
+export const sampleAnalysesResultsStage3: AnalysisResults[] = [
+  {
+    nwo: 'big-corp/repo1',
+    status: 'Completed',
+    results: createAnalysisResults(85)
+  },
+  {
+    nwo: 'big-corp/repo2',
+    status: 'Completed',
+    results: createAnalysisResults(20)
+  },
+  {
+    nwo: 'big-corp/repo3',
+    status: 'Completed',
+    results: createAnalysisResults(8)
+  },
+  {
+    nwo: 'big-corp/repo4',
+    status: 'Completed',
+    results: createAnalysisResults(3)
+  },
+];
+
+export const sampleAnalysesResultsWithFailure: AnalysisResults[] = [
+  {
+    nwo: 'big-corp/repo1',
+    status: 'Completed',
+    results: createAnalysisResults(85)
+  },
+  {
+    nwo: 'big-corp/repo2',
+    status: 'Completed',
+    results: createAnalysisResults(20)
+  },
+  {
+    nwo: 'big-corp/repo3',
+    status: 'Failed',
+    results: []
+  },
+  {
+    nwo: 'big-corp/repo4',
+    status: 'Completed',
+    results: createAnalysisResults(3)
+  },
+];
