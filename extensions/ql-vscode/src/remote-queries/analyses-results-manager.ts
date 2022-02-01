@@ -47,6 +47,7 @@ export class AnalysesResultsManager {
 
     const batchSize = 3;
     const numOfBatches = Math.ceil(analysesToDownload.length / batchSize);
+    const allFailures = [];
 
     for (let i = 0; i < analysesToDownload.length; i += batchSize) {
       if (token?.isCancellationRequested) {
@@ -62,9 +63,14 @@ export class AnalysesResultsManager {
       const taskResults = await Promise.allSettled(batchTasks);
       const failedTasks = taskResults.filter(x => x.status === 'rejected') as Array<PromiseRejectedResult>;
       if (failedTasks.length > 0) {
-        const failures = failedTasks.map(t => t.reason.message).concat(os.EOL);
-        throw Error(failures.join(os.EOL));
+        const failures = failedTasks.map(t => t.reason.message);
+        failures.forEach(f => void this.logger.log(f));
+        allFailures.push(...failures);
       }
+    }
+
+    if (allFailures.length > 0) {
+      throw Error(allFailures.join(os.EOL));
     }
   }
 
@@ -91,7 +97,7 @@ export class AnalysesResultsManager {
       artifactPath = await downloadArtifactFromLink(credentials, analysis.downloadLink);
     }
     catch (e) {
-      throw new Error(`Could not download the analysis resutls for ${analysis.nwo}: ${e.message}`);
+      throw new Error(`Could not download the analysis results for ${analysis.nwo}: ${e.message}`);
     }
 
     if (path.extname(artifactPath) === '.sarif') {
