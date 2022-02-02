@@ -438,6 +438,7 @@ async function activateWithInstalledDistribution(
 
   const qhm = new QueryHistoryManager(
     qs,
+    dbm,
     ctx.extensionPath,
     queryHistoryConfigurationListener,
     showResults,

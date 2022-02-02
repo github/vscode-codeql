@@ -11,6 +11,7 @@ import { QueryHistoryConfigListener } from '../../config';
 import * as messages from '../../pure/messages';
 import { QueryServerClient } from '../../queryserver-client';
 import { FullQueryInfo, InitialQueryInfo } from '../../query-results';
+import { DatabaseManager } from '../../databases';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -211,8 +212,11 @@ describe('query-history', () => {
     });
   });
 
-  it('should remove an item and not select a new one', async function() {
+  it('should remove an item and not select a new one', async () => {
     queryHistoryManager = await createMockQueryHistory(allHistory);
+    // initialize the selection
+    await queryHistoryManager.treeView.reveal(allHistory[0], { select: true });
+
     // deleting the first item when a different item is selected
     // will not change the selection
     const toDelete = allHistory[1];
@@ -220,13 +224,18 @@ describe('query-history', () => {
 
     // select the item we want
     await queryHistoryManager.treeView.reveal(selected, { select: true });
+
+    // should be selected
+    expect(queryHistoryManager.treeDataProvider.getCurrent()).to.deep.eq(selected);
+
+    // remove an item
     await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
 
     expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
     expect(queryHistoryManager.treeDataProvider.getCurrent()).to.deep.eq(selected);
     expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
 
-    // the current item should have been re-selected
+    // the same item should be selected
     expect(selectedCallback).to.have.been.calledOnceWith(selected);
   });
 
@@ -545,6 +554,7 @@ describe('query-history', () => {
   async function createMockQueryHistory(allHistory: FullQueryInfo[]) {
     const qhm = new QueryHistoryManager(
       {} as QueryServerClient,
+      {} as DatabaseManager,
       'xxx',
       configListener,
       selectedCallback,

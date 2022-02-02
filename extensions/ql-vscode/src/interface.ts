@@ -316,7 +316,7 @@ export class InterfaceManager extends DisposableObject {
               // sortedResultsInfo doesn't have an entry for the current
               // result set. Use this to determine whether or not we use
               // the sorted bqrs file.
-              this._displayedQuery?.completedQuery.sortedResultsInfo.has(msg.selectedTable) || false
+              !!this._displayedQuery?.completedQuery.sortedResultsInfo[msg.selectedTable] || false
             );
           }
           break;
@@ -372,8 +372,8 @@ export class InterfaceManager extends DisposableObject {
     );
 
     const sortedResultsMap: SortedResultsMap = {};
-    fullQuery.completedQuery.sortedResultsInfo.forEach(
-      (v, k) =>
+    Object.entries(fullQuery.completedQuery.sortedResultsInfo).forEach(
+      ([k, v]) =>
         (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v))
     );
 
@@ -458,7 +458,7 @@ export class InterfaceManager extends DisposableObject {
       shouldKeepOldResultsWhileRendering,
       metadata: fullQuery.completedQuery.query.metadata,
       queryName: fullQuery.label,
-      queryPath: fullQuery.completedQuery.query.program.queryPath
+      queryPath: fullQuery.initialInfo.queryPath
     });
   }
 
@@ -491,7 +491,7 @@ export class InterfaceManager extends DisposableObject {
       pageSize: PAGE_SIZE.getValue(),
       numPages: numInterpretedPages(this._interpretation),
       queryName: this._displayedQuery.label,
-      queryPath: this._displayedQuery.completedQuery.query.program.queryPath
+      queryPath: this._displayedQuery.initialInfo.queryPath
     });
   }
 
@@ -523,8 +523,8 @@ export class InterfaceManager extends DisposableObject {
     }
 
     const sortedResultsMap: SortedResultsMap = {};
-    results.completedQuery.sortedResultsInfo.forEach(
-      (v, k) =>
+    Object.entries(results.completedQuery.sortedResultsInfo).forEach(
+      ([k, v]) =>
         (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v))
     );
 
@@ -576,7 +576,7 @@ export class InterfaceManager extends DisposableObject {
       shouldKeepOldResultsWhileRendering: false,
       metadata: results.completedQuery.query.metadata,
       queryName: results.label,
-      queryPath: results.completedQuery.query.program.queryPath
+      queryPath: results.initialInfo.queryPath
     });
   }
 
@@ -649,14 +649,18 @@ export class InterfaceManager extends DisposableObject {
     sortState: InterpretedResultsSortState | undefined
   ): Promise<Interpretation | undefined> {
     if (
-      (await query.canHaveInterpretedResults()) &&
+      query.canHaveInterpretedResults() &&
       query.quickEvalPosition === undefined // never do results interpretation if quickEval
     ) {
       try {
-        const sourceLocationPrefix = await query.dbItem.getSourceLocationPrefix(
+        const dbItem = this.databaseManager.findDatabaseItem(Uri.file(query.dbItemPath));
+        if (!dbItem) {
+          throw new Error(`Could not find database item for ${query.dbItemPath}`);
+        }
+        const sourceLocationPrefix = await dbItem.getSourceLocationPrefix(
           this.cliServer
         );
-        const sourceArchiveUri = query.dbItem.sourceArchive;
+        const sourceArchiveUri = dbItem.sourceArchive;
         const sourceInfo =
           sourceArchiveUri === undefined
             ? undefined

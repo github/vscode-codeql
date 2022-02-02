@@ -35,13 +35,13 @@ export async function hasNondestructiveUpgradeCapabilities(qs: qsClient.QuerySer
  */
 export async function compileDatabaseUpgradeSequence(
   qs: qsClient.QueryServerClient,
-  db: DatabaseItem,
+  dbItem: DatabaseItem,
   resolvedSequence: string[],
   currentUpgradeTmp: tmp.DirectoryResult,
   progress: ProgressCallback,
   token: vscode.CancellationToken
 ): Promise<messages.CompileUpgradeSequenceResult> {
-  if (db.contents === undefined || db.contents.dbSchemeUri === undefined) {
+  if (dbItem.contents === undefined || dbItem.contents.dbSchemeUri === undefined) {
     throw new Error('Database is invalid, and cannot be upgraded.');
   }
   if (!await hasNondestructiveUpgradeCapabilities(qs)) {
@@ -56,14 +56,14 @@ export async function compileDatabaseUpgradeSequence(
 
 async function compileDatabaseUpgrade(
   qs: qsClient.QueryServerClient,
-  db: DatabaseItem,
+  dbItem: DatabaseItem,
   targetDbScheme: string,
   resolvedSequence: string[],
   currentUpgradeTmp: tmp.DirectoryResult,
   progress: ProgressCallback,
   token: vscode.CancellationToken
 ): Promise<messages.CompileUpgradeResult> {
-  if (!db.contents?.dbSchemeUri) {
+  if (!dbItem.contents?.dbSchemeUri) {
     throw new Error('Database is invalid, and cannot be upgraded.');
   }
   // We have the upgrades we want but compileUpgrade
@@ -78,7 +78,7 @@ async function compileDatabaseUpgrade(
   });
   return qs.sendRequest(messages.compileUpgrade, {
     upgrade: {
-      fromDbscheme: db.contents.dbSchemeUri.fsPath,
+      fromDbscheme: dbItem.contents.dbSchemeUri.fsPath,
       toDbscheme: targetDbScheme,
       additionalUpgrades: Array.from(uniqueParentDirs)
     },
@@ -159,18 +159,18 @@ function getUpgradeDescriptions(compiled: messages.CompiledUpgrades): messages.U
  */
 export async function upgradeDatabaseExplicit(
   qs: qsClient.QueryServerClient,
-  db: DatabaseItem,
+  dbItem: DatabaseItem,
   progress: ProgressCallback,
   token: vscode.CancellationToken,
 ): Promise<messages.RunUpgradeResult | undefined> {
 
   const searchPath: string[] = getOnDiskWorkspaceFolders();
 
-  if (!db?.contents?.dbSchemeUri) {
+  if (!dbItem?.contents?.dbSchemeUri) {
     throw new Error('Database is invalid, and cannot be upgraded.');
   }
   const upgradeInfo = await qs.cliServer.resolveUpgrades(
-    db.contents.dbSchemeUri.fsPath,
+    dbItem.contents.dbSchemeUri.fsPath,
     searchPath,
     false
   );
@@ -184,7 +184,7 @@ export async function upgradeDatabaseExplicit(
   try {
     let compileUpgradeResult: messages.CompileUpgradeResult;
     try {
-      compileUpgradeResult = await compileDatabaseUpgrade(qs, db, finalDbscheme, scripts, currentUpgradeTmp, progress, token);
+      compileUpgradeResult = await compileDatabaseUpgrade(qs, dbItem, finalDbscheme, scripts, currentUpgradeTmp, progress, token);
     }
     catch (e) {
       void showAndLogErrorMessage(`Compilation of database upgrades failed: ${e}`);
@@ -200,13 +200,13 @@ export async function upgradeDatabaseExplicit(
       return;
     }
 
-    await checkAndConfirmDatabaseUpgrade(compileUpgradeResult.compiledUpgrades, db, qs.cliServer.quiet);
+    await checkAndConfirmDatabaseUpgrade(compileUpgradeResult.compiledUpgrades, dbItem, qs.cliServer.quiet);
 
     try {
       void qs.logger.log('Running the following database upgrade:');
 
       getUpgradeDescriptions(compileUpgradeResult.compiledUpgrades).map(s => s.description).join('\n');
-      return await runDatabaseUpgrade(qs, db, compileUpgradeResult.compiledUpgrades, progress, token);
+      return await runDatabaseUpgrade(qs, dbItem, compileUpgradeResult.compiledUpgrades, progress, token);
     }
     catch (e) {
       void showAndLogErrorMessage(`Database upgrade failed: ${e}`);
