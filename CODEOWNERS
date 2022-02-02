@@ -1,1 +1,2 @@
 **/* @github/codeql-vscode-reviewers
+/extensions/ql-vscode/src/remote-queries/ @github/code-scanning-secexp-reviewers
