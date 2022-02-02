@@ -968,9 +968,11 @@ async function activateWithInstalledDistribution(
       }
     ));
 
-  commands.registerCommand('codeQL.showLogs', () => {
-    logger.show();
-  });
+  ctx.subscriptions.push(
+    commandRunner('codeQL.showLogs', async () => {
+      logger.show();
+    })
+  );
 
   void logger.log('Starting language server.');
   ctx.subscriptions.push(client.start());
@@ -993,12 +995,14 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(astViewer);
   ctx.subscriptions.push(commandRunnerWithProgress('codeQL.viewAst', async (
     progress: ProgressCallback,
-    token: CancellationToken
+    token: CancellationToken,
+    selectedFile: Uri,
   ) => {
+
     const ast = await templateProvider.provideAst(
       progress,
       token,
-      window.activeTextEditor?.document,
+      selectedFile ?? window.activeTextEditor?.document.uri,
     );
     if (ast) {
       astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
