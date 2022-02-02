@@ -668,7 +668,7 @@
         {
           "command": "codeQLQueryHistory.removeHistoryItem",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory && viewItem != inProgressResultsItem"
+          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLQueryHistory.setLabel",
@@ -678,12 +678,12 @@
         {
           "command": "codeQLQueryHistory.compareWith",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory && (viewItem == rawResultsItem || viewItem == interpretedResultsItem)"
+          "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem"
         },
         {
           "command": "codeQLQueryHistory.showQueryLog",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory && (viewItem == rawResultsItem || viewItem == interpretedResultsItem)"
+          "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem"
         },
         {
           "command": "codeQLQueryHistory.showQueryText",
@@ -693,37 +693,37 @@
         {
           "command": "codeQLQueryHistory.viewCsvResults",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory && viewItem == rawResultsItem"
+          "when": "viewItem == rawResultsItem"
         },
         {
           "command": "codeQLQueryHistory.viewCsvAlerts",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
+          "when": "viewItem == interpretedResultsItem"
         },
         {
           "command": "codeQLQueryHistory.viewSarifAlerts",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory && viewItem == interpretedResultsItem"
+          "when": "viewItem == interpretedResultsItem"
         },
         {
           "command": "codeQLQueryHistory.viewDil",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory && (viewItem == rawResultsItem || viewItem == interpretedResultsItem)"
+          "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem"
         },
         {
           "command": "codeQLQueryHistory.cancel",
           "group": "9_qlCommands",
-          "when": "view == codeQLQueryHistory && viewItem == inProgressResultsItem"
+          "when": "viewItem == inProgressResultsItem"
         },
         {
           "command": "codeQLTests.showOutputDifferences",
           "group": "qltest@1",
-          "when": "view == test-explorer && viewItem == testWithSource"
+          "when": "viewItem == testWithSource"
         },
         {
           "command": "codeQLTests.acceptOutput",
           "group": "qltest@2",
-          "when": "view == test-explorer && viewItem == testWithSource"
+          "when": "viewItem == testWithSource"
         }
       ],
       "explorer/context": [
