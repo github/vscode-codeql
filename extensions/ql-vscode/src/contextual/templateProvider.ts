@@ -10,6 +10,7 @@ import {
   TextDocument,
   Uri
 } from 'vscode';
+import * as path from 'path';
 
 import { decodeSourceArchiveUri, encodeArchiveBasePath, zipArchiveScheme } from '../archive-filesystem-provider';
 import { CodeQLCliServer } from '../cli';
@@ -142,19 +143,19 @@ export class TemplatePrintAstProvider {
   async provideAst(
     progress: ProgressCallback,
     token: CancellationToken,
-    document?: TextDocument
+    fileUri?: Uri
   ): Promise<AstBuilder | undefined> {
-    if (!document) {
+    if (!fileUri) {
       throw new Error('Cannot view the AST. Please select a valid source file inside a CodeQL database.');
     }
     const { query, dbUri } = this.shouldCache()
-      ? await this.cache.get(document.uri.toString(), progress, token)
-      : await this.getAst(document.uri.toString(), progress, token);
+      ? await this.cache.get(fileUri.toString(), progress, token)
+      : await this.getAst(fileUri.toString(), progress, token);
 
     return new AstBuilder(
       query, this.cli,
       this.dbm.findDatabaseItem(dbUri)!,
-      document.fileName
+      path.basename(fileUri.fsPath),
     );
   }
 
