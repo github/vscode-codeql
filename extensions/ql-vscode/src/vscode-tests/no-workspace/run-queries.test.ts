@@ -5,9 +5,9 @@ import 'sinon-chai';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 
-import { QueryEvaluationInfo } from '../../run-queries';
+import { QueryEvaluationInfo, queriesDir } from '../../run-queries';
 import { QlProgram, Severity, compileQuery } from '../../pure/messages';
-import { DatabaseItem } from '../../databases';
+import { Uri } from 'vscode';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -16,29 +16,28 @@ describe('run-queries', () => {
   it('should create a QueryEvaluationInfo', () => {
     const info = createMockQueryInfo();
 
-    const queryID = info.queryID;
-    expect(path.basename(info.compiledQueryPath)).to.eq(`compiledQuery${queryID}.qlo`);
-    expect(path.basename(info.dilPath)).to.eq(`results${queryID}.dil`);
-    expect(path.basename(info.resultsPaths.resultsPath)).to.eq(`results${queryID}.bqrs`);
-    expect(path.basename(info.resultsPaths.interpretedResultsPath)).to.eq(`interpretedResults${queryID}.sarif`);
-    expect(info.dataset).to.eq('file:///abc');
+    const queryId = info.id;
+    expect(info.compiledQueryPath).to.eq(path.join(queriesDir, queryId, 'compiledQuery.qlo'));
+    expect(info.dilPath).to.eq(path.join(queriesDir, queryId, 'results.dil'));
+    expect(info.resultsPaths.resultsPath).to.eq(path.join(queriesDir, queryId, 'results.bqrs'));
+    expect(info.resultsPaths.interpretedResultsPath).to.eq(path.join(queriesDir, queryId, 'interpretedResults.sarif'));
+    expect(info.dbItemPath).to.eq('file:///abc');
   });
 
   it('should check if interpreted results can be created', async () => {
-    const info = createMockQueryInfo();
-    (info.dbItem.hasMetadataFile as sinon.SinonStub).returns(true);
+    const info = createMockQueryInfo(true);
 
-    expect(await info.canHaveInterpretedResults()).to.eq(true);
+    expect(info.canHaveInterpretedResults()).to.eq(true);
 
-    (info.dbItem.hasMetadataFile as sinon.SinonStub).returns(false);
-    expect(await info.canHaveInterpretedResults()).to.eq(false);
+    (info as any).databaseHasMetadataFile = false;
+    expect(info.canHaveInterpretedResults()).to.eq(false);
 
-    (info.dbItem.hasMetadataFile as sinon.SinonStub).returns(true);
+    (info as any).databaseHasMetadataFile = true;
     info.metadata!.kind = undefined;
-    expect(await info.canHaveInterpretedResults()).to.eq(false);
+    expect(info.canHaveInterpretedResults()).to.eq(false);
 
     info.metadata!.kind = 'table';
-    expect(await info.canHaveInterpretedResults()).to.eq(false);
+    expect(info.canHaveInterpretedResults()).to.eq(false);
   });
 
   describe('compile', () => {
@@ -47,9 +46,13 @@ describe('run-queries', () => {
       const qs = createMockQueryServerClient();
       const mockProgress = 'progress-monitor';
       const mockCancel = 'cancel-token';
+      const mockQlProgram = {
+        mock: 'program'
+      } as unknown as QlProgram;
 
       const results = await info.compile(
         qs as any,
+        mockQlProgram,
         mockProgress as any,
         mockCancel as any
       );
@@ -74,7 +77,7 @@ describe('run-queries', () => {
           extraOptions: {
             timeoutSecs: 5
           },
-          queryToCheck: 'my-program',
+          queryToCheck: mockQlProgram,
           resultPath: info.compiledQueryPath,
           target: { query: {} }
         },
@@ -85,16 +88,11 @@ describe('run-queries', () => {
   });
 
   let queryNum = 0;
-  function createMockQueryInfo() {
+  function createMockQueryInfo(databaseHasMetadataFile = true) {
     return new QueryEvaluationInfo(
-      queryNum++,
-      'my-program' as unknown as QlProgram,
-      {
-        contents: {
-          datasetUri: 'file:///abc'
-        },
-        hasMetadataFile: sinon.stub()
-      } as unknown as DatabaseItem,
+      `save-dir${queryNum++}`,
+      Uri.parse('file:///abc').fsPath,
+      databaseHasMetadataFile,
       'my-scheme', // queryDbscheme,
       undefined,
       {

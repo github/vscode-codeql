@@ -1,6 +1,6 @@
 import { CancellationTokenSource, env } from 'vscode';
 
-import { QueryWithResults, tmpDir, QueryEvaluationInfo } from './run-queries';
+import { QueryWithResults, QueryEvaluationInfo } from './run-queries';
 import * as messages from './pure/messages';
 import * as cli from './cli';
 import * as sarif from 'sarif';
@@ -15,6 +15,7 @@ import {
 } from './pure/interface-types';
 import { QueryHistoryConfig } from './config';
 import { DatabaseInfo } from './pure/interface-types';
+import { showAndLogErrorMessage } from './helpers';
 
 /**
  * A description of the information about a query
@@ -29,7 +30,7 @@ export interface InitialQueryInfo {
   readonly queryPath: string;
   readonly databaseInfo: DatabaseInfo
   readonly start: Date;
-  readonly id: number; // an incrementing number for each query
+  readonly id: string; // unique id for this query.
 }
 
 export enum QueryStatus {
@@ -43,12 +44,16 @@ export class CompletedQueryInfo implements QueryWithResults {
   readonly result: messages.EvaluationResult;
   readonly logFileLocation?: string;
   resultCount: number;
+
+  /**
+   * This dispose method is called when the query is removed from the history view.
+   */
   dispose: () => void;
 
   /**
    * Map from result set name to SortedResultSetInfo.
    */
-  sortedResultsInfo: Map<string, SortedResultSetInfo>;
+  sortedResultsInfo: Record<string, SortedResultSetInfo>;
 
   /**
    * How we're currently sorting alerts. This is not mere interface
@@ -65,9 +70,13 @@ export class CompletedQueryInfo implements QueryWithResults {
     this.query = evaluation.query;
     this.result = evaluation.result;
     this.logFileLocation = evaluation.logFileLocation;
+
+    // Use the dispose method from the evaluation.
+    // The dispose will clean up any additional log locations that this
+    // query may have created.
     this.dispose = evaluation.dispose;
 
-    this.sortedResultsInfo = new Map();
+    this.sortedResultsInfo = {};
     this.resultCount = 0;
   }
 
@@ -95,7 +104,7 @@ export class CompletedQueryInfo implements QueryWithResults {
     if (!useSorted) {
       return this.query.resultsPaths.resultsPath;
     }
-    return this.sortedResultsInfo.get(selectedTable)?.resultsPath
+    return this.sortedResultsInfo[selectedTable]?.resultsPath
       || this.query.resultsPaths.resultsPath;
   }
 
@@ -109,12 +118,12 @@ export class CompletedQueryInfo implements QueryWithResults {
     sortState?: RawResultsSortState
   ): Promise<void> {
     if (sortState === undefined) {
-      this.sortedResultsInfo.delete(resultSetName);
+      delete this.sortedResultsInfo[resultSetName];
       return;
     }
 
     const sortedResultSetInfo: SortedResultSetInfo = {
-      resultsPath: path.join(tmpDir.name, `sortedResults${this.query.queryID}-${resultSetName}.bqrs`),
+      resultsPath: this.query.getSortedResultSetPath(resultSetName),
       sortState
     };
 
@@ -125,7 +134,7 @@ export class CompletedQueryInfo implements QueryWithResults {
       [sortState.columnIndex],
       [sortState.sortDirection]
     );
-    this.sortedResultsInfo.set(resultSetName, sortedResultSetInfo);
+    this.sortedResultsInfo[resultSetName] = sortedResultSetInfo;
   }
 
   async updateInterpretedSortState(sortState?: InterpretedResultsSortState): Promise<void> {
@@ -174,15 +183,63 @@ export type FullCompletedQueryInfo = FullQueryInfo & {
 };
 
 export class FullQueryInfo {
+
+  static async slurp(fsPath: string, config: QueryHistoryConfig): Promise<FullQueryInfo[]> {
+    try {
+      const data = await fs.readFile(fsPath, 'utf8');
+      const queries = JSON.parse(data);
+      return queries.map((q: FullQueryInfo) => {
+
+        // Need to explicitly set prototype since reading in from JSON will not
+        // do this automatically.
+        Object.setPrototypeOf(q, FullQueryInfo.prototype);
+
+        // The config object is a global, se we need to set it explicitly
+        // and ensure it is not serialized to JSON.
+        q.setConfig(config);
+
+        // Date instances are serialized as strings. Need to
+        // convert them back to Date instances.
+        (q.initialInfo as any).start = new Date(q.initialInfo.start);
+        if (q.completedQuery) {
+          // Again, need to explicitly set prototypes.
+          Object.setPrototypeOf(q.completedQuery, CompletedQueryInfo.prototype);
+          Object.setPrototypeOf(q.completedQuery.query, QueryEvaluationInfo.prototype);
+          // slurped queries do not need to be disposed
+          q.completedQuery.dispose = () => { /**/ };
+        }
+        return q;
+      });
+    } catch (e) {
+      void showAndLogErrorMessage('Error loading query history.', {
+        fullMessage: ['Error loading query history.', e.stack].join('\n'),
+      });
+      return [];
+    }
+  }
+
+  static async splat(queries: FullQueryInfo[], fsPath: string): Promise<void> {
+    try {
+      const data = JSON.stringify(queries, null, 2);
+      await fs.mkdirp(path.dirname(fsPath));
+      await fs.writeFile(fsPath, data);
+    } catch (e) {
+      void showAndLogErrorMessage('Error saving query history.', {
+        fullMessage: ['Error saving query history.', e.stack].join('\n'),
+      });
+    }
+  }
+
   public failureReason: string | undefined;
   public completedQuery: CompletedQueryInfo | undefined;
+  private config: QueryHistoryConfig | undefined;
 
   constructor(
     public readonly initialInfo: InitialQueryInfo,
-    private readonly config: QueryHistoryConfig,
+    config: QueryHistoryConfig,
     private readonly source: CancellationTokenSource
   ) {
-    /**/
+    this.setConfig(config);
   }
 
   cancel() {
@@ -214,7 +271,9 @@ export class FullQueryInfo {
    * Returns a label for this query that includes interpolated values.
    */
   get label(): string {
-    return this.interpolate(this.initialInfo.userSpecifiedLabel ?? this.config.format ?? '');
+    return this.interpolate(
+      this.initialInfo.userSpecifiedLabel ?? this.config?.format ?? ''
+    );
   }
 
   /**
@@ -285,5 +344,22 @@ export class FullQueryInfo {
     } else {
       return QueryStatus.Failed;
     }
+  }
+
+  /**
+   * The `config` property must not be serialized since it contains a listerner
+   * for global configuration changes. Instead, It should be set when the query
+   * is deserialized.
+   *
+   * @param config the global query history config object
+   */
+  private setConfig(config: QueryHistoryConfig) {
+    // avoid serializing config property
+    Object.defineProperty(this, 'config', {
+      enumerable: false,
+      writable: false,
+      configurable: true,
+      value: config
+    });
   }
 }

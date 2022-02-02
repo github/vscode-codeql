@@ -28,6 +28,7 @@ import { DisposableObject } from './pure/disposable-object';
 import { commandRunner } from './commandRunner';
 import { assertNever } from './pure/helpers-pure';
 import { FullCompletedQueryInfo, FullQueryInfo, QueryStatus } from './query-results';
+import { DatabaseManager } from './databases';
 
 /**
  * query-history.ts
@@ -246,6 +247,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   constructor(
     private qs: QueryServerClient,
+    private dbm: DatabaseManager,
     extensionPath: string,
     queryHistoryConfigListener: QueryHistoryConfig,
     private selectedCallback: (item: FullCompletedQueryInfo) => Promise<void>,
@@ -599,14 +601,12 @@ export class QueryHistoryManager extends DisposableObject {
       throw new Error(NO_QUERY_SELECTED);
     }
 
-    const rawQueryName = singleItem.getQueryName();
-    const queryName = rawQueryName.endsWith('.ql') ? rawQueryName : rawQueryName + '.ql';
     const params = new URLSearchParams({
       isQuickEval: String(!!singleItem.initialInfo.quickEvalPosition),
       queryText: encodeURIComponent(await this.getQueryText(singleItem)),
     });
     const uri = Uri.parse(
-      `codeql:${singleItem.initialInfo.id}-${queryName}?${params.toString()}`, true
+      `codeql:${singleItem.initialInfo.id}?${params.toString()}`, true
     );
     const doc = await workspace.openTextDocument(uri);
     await window.showTextDocument(doc, { preview: false });
@@ -620,7 +620,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
     const query = singleItem.completedQuery.query;
-    const hasInterpretedResults = await query.canHaveInterpretedResults();
+    const hasInterpretedResults = query.canHaveInterpretedResults();
     if (hasInterpretedResults) {
       await this.tryOpenExternalFile(
         query.resultsPaths.interpretedResultsPath
@@ -664,7 +664,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     await this.tryOpenExternalFile(
-      await singleItem.completedQuery.query.ensureCsvProduced(this.qs)
+      await singleItem.completedQuery.query.ensureCsvProduced(this.qs, this.dbm)
     );
   }
 

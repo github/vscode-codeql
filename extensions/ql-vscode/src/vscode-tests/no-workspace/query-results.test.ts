@@ -6,13 +6,13 @@ import 'sinon-chai';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 import { FullQueryInfo, InitialQueryInfo, interpretResults } from '../../query-results';
-import { QueryEvaluationInfo, QueryWithResults, tmpDir } from '../../run-queries';
+import { queriesDir, QueryEvaluationInfo, QueryWithResults, tmpDir } from '../../run-queries';
 import { QueryHistoryConfig } from '../../config';
 import { EvaluationResult, QueryResultType } from '../../pure/messages';
-import { SortDirection, SortedResultSetInfo } from '../../pure/interface-types';
+import { DatabaseInfo, SortDirection, SortedResultSetInfo } from '../../pure/interface-types';
 import { CodeQLCliServer, SourceInfo } from '../../cli';
 import { env } from 'process';
-import { CancellationTokenSource } from 'vscode';
+import { CancellationTokenSource, Uri } from 'vscode';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -20,12 +20,14 @@ const expect = chai.expect;
 describe('query-results', () => {
   let disposeSpy: sinon.SinonSpy;
   let onDidChangeQueryHistoryConfigurationSpy: sinon.SinonSpy;
+  let mockConfig: QueryHistoryConfig;
   let sandbox: sinon.SinonSandbox;
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     disposeSpy = sandbox.spy();
     onDidChangeQueryHistoryConfigurationSpy = sandbox.spy();
+    mockConfig = mockQueryHistoryConfig();
   });
 
   afterEach(() => {
@@ -102,15 +104,17 @@ describe('query-results', () => {
     it('should get the getResultsPath', () => {
       const fqi = createMockFullQueryInfo('a', createMockQueryWithResults());
       const completedQuery = fqi.completedQuery!;
-      // from results path
-      expect(completedQuery.getResultsPath('zxa', false)).to.eq('/a/b/c');
+      const expectedResultsPath = path.join(queriesDir, 'some-id/results.bqrs');
 
-      completedQuery.sortedResultsInfo.set('zxa', {
+      // from results path
+      expect(completedQuery.getResultsPath('zxa', false)).to.eq(expectedResultsPath);
+
+      completedQuery.sortedResultsInfo['zxa'] = {
         resultsPath: 'bxa'
-      } as SortedResultSetInfo);
+      } as SortedResultSetInfo;
 
       // still from results path
-      expect(completedQuery.getResultsPath('zxa', false)).to.eq('/a/b/c');
+      expect(completedQuery.getResultsPath('zxa', false)).to.eq(expectedResultsPath);
 
       // from sortedResultsInfo
       expect(completedQuery.getResultsPath('zxa')).to.eq('bxa');
@@ -141,6 +145,7 @@ describe('query-results', () => {
     });
 
     it('should updateSortState', async () => {
+      // setup
       const fqi = createMockFullQueryInfo('a', createMockQueryWithResults());
       const completedQuery = fqi.completedQuery!;
 
@@ -152,24 +157,29 @@ describe('query-results', () => {
         columnIndex: 1,
         sortDirection: SortDirection.desc
       };
-      await completedQuery.updateSortState(mockServer, 'result-name', sortState);
-      const expectedPath = path.join(tmpDir.name, 'sortedResults6789-result-name.bqrs');
+
+      // test
+      await completedQuery.updateSortState(mockServer, 'a-result-set-name', sortState);
+
+      // verify
+      const expectedResultsPath = path.join(queriesDir, 'some-id/results.bqrs');
+      const expectedSortedResultsPath = path.join(queriesDir, 'some-id/sortedResults-a-result-set-name.bqrs');
       expect(spy).to.have.been.calledWith(
-        '/a/b/c',
-        expectedPath,
-        'result-name',
+        expectedResultsPath,
+        expectedSortedResultsPath,
+        'a-result-set-name',
         [sortState.columnIndex],
         [sortState.sortDirection],
       );
 
-      expect(completedQuery.sortedResultsInfo.get('result-name')).to.deep.equal({
-        resultsPath: expectedPath,
+      expect(completedQuery.sortedResultsInfo['a-result-set-name']).to.deep.equal({
+        resultsPath: expectedSortedResultsPath,
         sortState
       });
 
-      // delete the sort stae
-      await completedQuery.updateSortState(mockServer, 'result-name');
-      expect(completedQuery.sortedResultsInfo.size).to.eq(0);
+      // delete the sort state
+      await completedQuery.updateSortState(mockServer, 'a-result-set-name');
+      expect(Object.values(completedQuery.sortedResultsInfo).length).to.eq(0);
     });
   });
 
@@ -237,19 +247,74 @@ describe('query-results', () => {
     expect(results3).to.deep.eq({ a: 6 });
   });
 
-  function createMockQueryWithResults(didRunSuccessfully = true, hasInterpretedResults = true): QueryWithResults {
-    return {
-      query: {
-        hasInterpretedResults: () => Promise.resolve(hasInterpretedResults),
-        queryID: 6789,
-        metadata: {
-          name: 'vwx'
-        },
-        resultsPaths: {
-          resultsPath: '/a/b/c',
-          interpretedResultsPath: '/d/e/f'
+  describe('splat and slurp', () => {
+    // TODO also add a test for round trip starting from file
+    it('should splat and slurp query history', async () => {
+      const infoSuccessRaw = createMockFullQueryInfo('a', createMockQueryWithResults(false, false, '/a/b/c/a', false));
+      const infoSuccessInterpreted = createMockFullQueryInfo('b', createMockQueryWithResults(true, true, '/a/b/c/b', false));
+      const infoEarlyFailure = createMockFullQueryInfo('c', undefined, true);
+      const infoLateFailure = createMockFullQueryInfo('d', createMockQueryWithResults(false, false, '/a/b/c/d', false));
+      const infoInprogress = createMockFullQueryInfo('e');
+      const allHistory = [
+        infoSuccessRaw,
+        infoSuccessInterpreted,
+        infoEarlyFailure,
+        infoLateFailure,
+        infoInprogress
+      ];
+
+      const allHistoryPath = path.join(queriesDir, 'all-history.json');
+      await FullQueryInfo.splat(allHistory, allHistoryPath);
+      const allHistoryActual = await FullQueryInfo.slurp(allHistoryPath, mockConfig);
+
+      // the dispose methods will be different. Ignore them.
+      allHistoryActual.forEach(info => {
+        if (info.completedQuery) {
+          const completedQuery = info.completedQuery;
+          (completedQuery as any).dispose = undefined;
+
+          // these fields should be missing on the slurped value
+          // but they are undefined on the original value
+          if (!('logFileLocation' in completedQuery)) {
+            (completedQuery as any).logFileLocation = undefined;
+          }
+          const query = completedQuery.query;
+          if (!('quickEvalPosition' in query)) {
+            (query as any).quickEvalPosition = undefined;
+          }
+          if (!('templates' in query)) {
+            (query as any).templates = undefined;
+          }
         }
-      } as QueryEvaluationInfo,
+      });
+      allHistory.forEach(info => {
+        if (info.completedQuery) {
+          (info.completedQuery as any).dispose = undefined;
+        }
+      });
+
+      // make the diffs somewhat sane by comparing each element directly
+      for (let i = 0; i < allHistoryActual.length; i++) {
+        expect(allHistoryActual[i]).to.deep.eq(allHistory[i]);
+      }
+      expect(allHistoryActual.length).to.deep.eq(allHistory.length);
+    });
+  });
+
+
+  function createMockQueryWithResults(didRunSuccessfully = true, hasInterpretedResults = true, dbPath = '/a/b/c', includeSpies = true): QueryWithResults {
+    const query = new QueryEvaluationInfo('some-id',
+      Uri.file(dbPath).fsPath, // parse the Uri to make sure it is platform-independent
+      true,
+      'queryDbscheme',
+      undefined,
+      {
+        name: 'vwx'
+      },
+    );
+
+    const result = {
+      query,
       result: {
         evaluationTime: 12340,
         resultType: didRunSuccessfully
@@ -258,14 +323,27 @@ describe('query-results', () => {
       } as EvaluationResult,
       dispose: disposeSpy,
     };
+
+    if (includeSpies) {
+      (query as any).hasInterpretedResults = () => Promise.resolve(hasInterpretedResults);
+    }
+
+    return result;
   }
 
   function createMockFullQueryInfo(dbName = 'a', queryWitbResults?: QueryWithResults, isFail = false): FullQueryInfo {
     const fqi = new FullQueryInfo(
       {
-        databaseInfo: { name: dbName },
+        databaseInfo: {
+          name: dbName,
+          databaseUri: Uri.parse(`/a/b/c/${dbName}`).fsPath
+        } as unknown as DatabaseInfo,
         start: new Date(),
-        queryPath: 'path/to/hucairz'
+        queryPath: 'path/to/hucairz',
+        queryText: 'some query',
+        isQuickQuery: false,
+        isQuickEval: false,
+        id: `some-id-${dbName}`,
       } as InitialQueryInfo,
       mockQueryHistoryConfig(),
       {} as CancellationTokenSource
