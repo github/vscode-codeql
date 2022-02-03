@@ -1,6 +1,6 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { ChevronUpIcon, ChevronDownIcon } from '@primer/octicons-react';
+import { ChevronDownIcon, ChevronRightIcon } from '@primer/octicons-react';
 import { useState } from 'react';
 
 const Container = styled.div`
@@ -33,8 +33,8 @@ const CollapsibleItem = ({
       <Container>
         <Button onClick={() => setExpanded(!isExpanded)}>
           {isExpanded
-            ? <ChevronUpIcon size={16} />
-            : <ChevronDownIcon size={16} />
+            ? <ChevronDownIcon size={16} />
+            : <ChevronRightIcon size={16} />
           }
         </Button>
         <TitleContainer>{title}</TitleContainer>

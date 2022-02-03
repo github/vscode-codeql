@@ -215,7 +215,7 @@ const AnalysesResultsDescription = ({ totalAnalysesResults, totalResults }: { to
   return <></>;
 };
 
-const AnalysisResults = (analysisResults: AnalysisResults) => {
+const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
   const title = <>
     {analysisResults.nwo}
     <Badge text={analysisResults.results.length.toString()} />
@@ -247,7 +247,7 @@ const AnalysesResults = ({ analysesResults, totalResults }: { analysesResults: A
       <ul className="vscode-codeql__analyses-results-list">
         {analysesResults.filter(a => a.results.length > 0).map(r =>
           <li key={r.nwo} className="vscode-codeql__analyses-results-list-item">
-            <AnalysisResults {...r} />
+            <RepoAnalysisResults {...r} />
           </li>)}
       </ul>
     </>
