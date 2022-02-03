@@ -69,10 +69,10 @@ const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
 
 const QueryInfo = (queryResult: RemoteQueryResult) => (
   <>
-    <VerticalSpace />
+    <VerticalSpace size={1} />
     {queryResult.totalResultCount} results in {queryResult.totalRepositoryCount} repositories
     ({queryResult.executionDuration}), {queryResult.executionTimestamp}
-    <VerticalSpace />
+    <VerticalSpace size={1} />
     <span className="vscode-codeql__query-file">{octicons.file}
       <a className="vscode-codeql__query-file-link" href="#" onClick={() => openQueryFile(queryResult)}>
         {queryResult.queryFileName}
@@ -97,7 +97,7 @@ const SummaryTitleWithResults = ({
 
   return (
     <div className="vscode-codeql__query-summary-container">
-      <SectionTitle text={`Repositories with results (${queryResult.affectedRepositoryCount}):`} />
+      <SectionTitle>Repositories with results ({queryResult.affectedRepositoryCount}):</SectionTitle>
       {
         showDownloadButton && <DownloadButton
           text="Download all"
@@ -109,7 +109,7 @@ const SummaryTitleWithResults = ({
 
 const SummaryTitleNoResults = () => (
   <div className="vscode-codeql__query-summary-container">
-    <SectionTitle text="No results found" />
+    <SectionTitle>No results found</SectionTitle>
   </div>
 );
 
@@ -128,7 +128,7 @@ const SummaryItemDownload = ({
 
   if (analysisResults.status === 'InProgress') {
     return <>
-      <HorizontalSpace />
+      <HorizontalSpace size={2} />
       <DownloadSpinner />
     </>;
   }
@@ -196,16 +196,16 @@ const Summary = ({
 
 const AnalysesResultsTitle = ({ totalAnalysesResults, totalResults }: { totalAnalysesResults: number, totalResults: number }) => {
   if (totalAnalysesResults === totalResults) {
-    return <SectionTitle text={`${totalAnalysesResults} results`} />;
+    return <SectionTitle>{totalAnalysesResults} results</SectionTitle>;
   }
 
-  return <SectionTitle text={`${totalAnalysesResults}/${totalResults} results`} />;
+  return <SectionTitle>{totalAnalysesResults}/{totalResults} results</SectionTitle>;
 };
 
 const AnalysesResultsDescription = ({ totalAnalysesResults, totalResults }: { totalAnalysesResults: number, totalResults: number }) => {
   if (totalAnalysesResults < totalResults) {
     return <>
-      <VerticalSpace />
+      <VerticalSpace size={1} />
       Some results haven&apos;t been downloaded automatically because of their size or because enough were downloaded already.
       Download them manually from the list above if you want to see them here.
     </>;
@@ -223,8 +223,7 @@ const AnalysesResults = ({ analysesResults, totalResults }: { analysesResults: A
 
   return (
     <>
-      <VerticalSpace />
-      <VerticalSpace />
+      <VerticalSpace size={2} />
       <AnalysesResultsTitle
         totalAnalysesResults={totalAnalysesResults}
         totalResults={totalResults} />
@@ -263,7 +262,7 @@ export function RemoteQueries(): JSX.Element {
   try {
     return <div>
       <ThemeProvider>
-        <ViewTitle title={queryResult.queryTitle} />
+        <ViewTitle>{queryResult.queryTitle}</ViewTitle>
         <QueryInfo {...queryResult} />
         <Summary queryResult={queryResult} analysesResults={analysesResults} />
         <AnalysesResults analysesResults={analysesResults} totalResults={queryResult.totalResultCount} />
