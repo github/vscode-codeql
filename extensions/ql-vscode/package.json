@@ -735,7 +735,7 @@
         {
           "command": "codeQL.viewAst",
           "group": "9_qlCommands",
-          "when": "resourceScheme == codeql-zip-archive"
+          "when": "resourceScheme == codeql-zip-archive && !explorerResourceIsFolder && !listMultiSelection"
         },
         {
           "command": "codeQL.runQueries",
