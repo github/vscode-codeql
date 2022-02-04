@@ -996,9 +996,8 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(commandRunnerWithProgress('codeQL.viewAst', async (
     progress: ProgressCallback,
     token: CancellationToken,
-    selectedFile: Uri,
+    selectedFile: Uri
   ) => {
-
     const ast = await templateProvider.provideAst(
       progress,
       token,
