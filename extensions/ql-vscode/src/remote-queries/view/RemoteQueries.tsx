@@ -16,6 +16,7 @@ import ViewTitle from './ViewTitle';
 import DownloadButton from './DownloadButton';
 import { AnalysisResults } from '../shared/analysis-result';
 import DownloadSpinner from './DownloadSpinner';
+import CollapsibleItem from './CollapsibleItem';
 
 const numOfReposInContractedMode = 10;
 
@@ -214,6 +215,19 @@ const AnalysesResultsDescription = ({ totalAnalysesResults, totalResults }: { to
   return <></>;
 };
 
+const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
+  const title = <>
+    {analysisResults.nwo}
+    <Badge text={analysisResults.results.length.toString()} />
+  </>;
+
+  return (
+    <CollapsibleItem title={title}>
+      {analysisResults.results.map((r, i) => (<p key={i} >{r.message}</p>))}
+    </CollapsibleItem>
+  );
+};
+
 const AnalysesResults = ({ analysesResults, totalResults }: { analysesResults: AnalysisResults[], totalResults: number }) => {
   const totalAnalysesResults = sumAnalysesResults(analysesResults);
 
@@ -230,6 +244,12 @@ const AnalysesResults = ({ analysesResults, totalResults }: { analysesResults: A
       <AnalysesResultsDescription
         totalAnalysesResults={totalAnalysesResults}
         totalResults={totalResults} />
+      <ul className="vscode-codeql__analyses-results-list">
+        {analysesResults.filter(a => a.results.length > 0).map(r =>
+          <li key={r.nwo} className="vscode-codeql__analyses-results-list-item">
+            <RepoAnalysisResults {...r} />
+          </li>)}
+      </ul>
     </>
   );
 };
