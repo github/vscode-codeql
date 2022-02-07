@@ -34,8 +34,6 @@ export async function getRemoteQueryIndex(
   const resultIndexArtifactId = getArtifactIDfromName('result-index', workflowUri, artifactList);
   const resultIndexItems = await getResultIndexItems(credentials, owner, repoName, resultIndexArtifactId);
 
-  const allResultsArtifactId = getArtifactIDfromName('all-results', workflowUri, artifactList);
-
   const items = resultIndexItems.map(item => {
     const artifactId = getArtifactIDfromName(item.id, workflowUri, artifactList);
 
@@ -50,9 +48,8 @@ export async function getRemoteQueryIndex(
   });
 
   return {
-    allResultsArtifactId,
     artifactsUrlPath,
-    items,
+    items
   };
 }
 

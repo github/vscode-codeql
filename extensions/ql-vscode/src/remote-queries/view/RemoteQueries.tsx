@@ -30,10 +30,6 @@ const emptyQueryResult: RemoteQueryResult = {
   totalResultCount: 0,
   executionTimestamp: '',
   executionDuration: '',
-  downloadLink: {
-    id: '',
-    urlPath: '',
-  },
   analysisSummaries: []
 };
 

@@ -1,6 +1,5 @@
 export interface RemoteQueryResultIndex {
   artifactsUrlPath: string;
-  allResultsArtifactId: number;
   items: RemoteQueryResultIndexItem[];
 }
 

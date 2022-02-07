@@ -80,7 +80,6 @@ export class RemoteQueriesInterfaceManager {
       totalResultCount: totalResultCount,
       executionTimestamp: this.formatDate(query.executionStartTime),
       executionDuration: executionDuration,
-      downloadLink: queryResult.allResultsDownloadLink,
       analysisSummaries: analysisSummaries
     };
   }
