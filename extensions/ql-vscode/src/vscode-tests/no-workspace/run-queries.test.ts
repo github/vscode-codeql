@@ -6,7 +6,7 @@ import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 
 import { QueryEvaluationInfo, queriesDir } from '../../run-queries';
-import { QlProgram, Severity, compileQuery } from '../../pure/messages';
+import { Severity, compileQuery } from '../../pure/messages';
 import { Uri } from 'vscode';
 
 chai.use(chaiAsPromised);
@@ -21,7 +21,7 @@ describe('run-queries', () => {
     expect(info.dilPath).to.eq(path.join(queriesDir, queryId, 'results.dil'));
     expect(info.resultsPaths.resultsPath).to.eq(path.join(queriesDir, queryId, 'results.bqrs'));
     expect(info.resultsPaths.interpretedResultsPath).to.eq(path.join(queriesDir, queryId, 'interpretedResults.sarif'));
-    expect(info.dbItemPath).to.eq('file:///abc');
+    expect(info.dbItemPath).to.eq(Uri.file('/abc').fsPath);
   });
 
   it('should check if interpreted results can be created', async () => {
@@ -47,8 +47,10 @@ describe('run-queries', () => {
       const mockProgress = 'progress-monitor';
       const mockCancel = 'cancel-token';
       const mockQlProgram = {
-        mock: 'program'
-      } as unknown as QlProgram;
+        dbschemePath: '',
+        libraryPath: [],
+        queryPath: ''
+      };
 
       const results = await info.compile(
         qs as any,

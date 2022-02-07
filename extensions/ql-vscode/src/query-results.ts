@@ -64,6 +64,10 @@ export class CompletedQueryInfo implements QueryWithResults {
    */
   interpretedResultsSortState: InterpretedResultsSortState | undefined;
 
+  /**
+   * Note that in the {@link FullQueryInfo.slurp} method, we create a CompletedQueryInfo instance
+   * by explicitly setting the prototype in order to avoid calling this constructor.
+   */
   constructor(
     evaluation: QueryWithResults,
   ) {
@@ -191,7 +195,8 @@ export class FullQueryInfo {
       return queries.map((q: FullQueryInfo) => {
 
         // Need to explicitly set prototype since reading in from JSON will not
-        // do this automatically.
+        // do this automatically. Note that we can't call the constructor here since
+        // the constructor invokes extra logic that we don't want to do.
         Object.setPrototypeOf(q, FullQueryInfo.prototype);
 
         // The config object is a global, se we need to set it explicitly
@@ -218,15 +223,22 @@ export class FullQueryInfo {
     }
   }
 
+  /**
+   * Save the query history to disk. It is not necessary that the parent directory
+   * exists, but if it does, it must be writable. An existing file will be overwritten.
+   *
+   * Any errors will be rethrown.
+   *
+   * @param queries the list of queries to save.
+   * @param fsPath the path to save the queries to.
+   */
   static async splat(queries: FullQueryInfo[], fsPath: string): Promise<void> {
     try {
       const data = JSON.stringify(queries, null, 2);
       await fs.mkdirp(path.dirname(fsPath));
       await fs.writeFile(fsPath, data);
     } catch (e) {
-      void showAndLogErrorMessage('Error saving query history.', {
-        fullMessage: ['Error saving query history.', e.stack].join('\n'),
-      });
+      throw new Error(`Error saving query history to ${fsPath}: ${e.message}`);
     }
   }
 
@@ -234,16 +246,20 @@ export class FullQueryInfo {
   public completedQuery: CompletedQueryInfo | undefined;
   private config: QueryHistoryConfig | undefined;
 
+  /**
+   * Note that in the {@link FullQueryInfo.slurp} method, we create a FullQueryInfo instance
+   * by explicitly setting the prototype in order to avoid calling this constructor.
+   */
   constructor(
     public readonly initialInfo: InitialQueryInfo,
     config: QueryHistoryConfig,
-    private readonly source: CancellationTokenSource
+    private readonly source?: CancellationTokenSource
   ) {
     this.setConfig(config);
   }
 
   cancel() {
-    this.source.cancel();
+    this.source?.cancel();
   }
 
   get startTime() {

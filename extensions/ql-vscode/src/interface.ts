@@ -316,7 +316,7 @@ export class InterfaceManager extends DisposableObject {
               // sortedResultsInfo doesn't have an entry for the current
               // result set. Use this to determine whether or not we use
               // the sorted bqrs file.
-              !!this._displayedQuery?.completedQuery.sortedResultsInfo[msg.selectedTable] || false
+              !!this._displayedQuery?.completedQuery.sortedResultsInfo[msg.selectedTable]
             );
           }
           break;
