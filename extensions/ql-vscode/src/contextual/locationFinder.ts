@@ -38,6 +38,7 @@ export async function getLocationsForUriString(
   dbm: DatabaseManager,
   uriString: string,
   keyType: KeyType,
+  queryStorageLocation: string,
   progress: ProgressCallback,
   token: CancellationToken,
   filter: (src: string, dest: string) => boolean
@@ -69,6 +70,7 @@ export async function getLocationsForUriString(
       qs,
       db,
       initialInfo,
+      queryStorageLocation,
       progress,
       token,
       templates

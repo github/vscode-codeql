@@ -1,9 +1,12 @@
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import {
   commands,
+  Disposable,
   env,
   Event,
   EventEmitter,
+  ExtensionContext,
   ProviderResult,
   Range,
   ThemeIcon,
@@ -80,6 +83,9 @@ export enum SortOrder {
   CountDesc = 'CountDesc',
 }
 
+const ONE_HOUR_IN_MS = 1000 * 60 * 60;
+const TWO_HOURS_IN_MS = 1000 * 60 * 60 * 2;
+
 /**
  * Tree data provider for the query history view.
  */
@@ -118,6 +124,7 @@ export class HistoryTreeDataProvider extends DisposableObject {
       title: 'Query History Item',
       command: 'codeQLQueryHistory.itemClicked',
       arguments: [element],
+      tooltip: element.failureReason || element.label
     };
 
     // Populate the icon and the context value. We use the context value to
@@ -217,6 +224,12 @@ export class HistoryTreeDataProvider extends DisposableObject {
     return this.history;
   }
 
+  set allHistory(history: FullQueryInfo[]) {
+    this.history = history;
+    this.current = history[0];
+    this.refresh();
+  }
+
   refresh() {
     this._onDidChangeTreeData.fire(undefined);
   }
@@ -240,16 +253,20 @@ const DOUBLE_CLICK_TIME = 500;
 const NO_QUERY_SELECTED = 'No query selected. Select a query history item you have already run and try again.';
 
 export class QueryHistoryManager extends DisposableObject {
+
   treeDataProvider: HistoryTreeDataProvider;
   treeView: TreeView<FullQueryInfo>;
   lastItemClick: { time: Date; item: FullQueryInfo } | undefined;
   compareWithItem: FullQueryInfo | undefined;
+  queryHistoryScrubber: Disposable;
+  private queryMetadataStorageLocation;
 
   constructor(
     private qs: QueryServerClient,
     private dbm: DatabaseManager,
-    extensionPath: string,
-    queryHistoryConfigListener: QueryHistoryConfig,
+    private queryStorageLocation: string,
+    ctx: ExtensionContext,
+    private queryHistoryConfigListener: QueryHistoryConfig,
     private selectedCallback: (item: FullCompletedQueryInfo) => Promise<void>,
     private doCompareCallback: (
       from: FullCompletedQueryInfo,
@@ -258,8 +275,10 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     super();
 
+    this.queryMetadataStorageLocation = path.join((ctx.storageUri || ctx.globalStorageUri).fsPath, 'query-history.json');
+
     this.treeDataProvider = this.push(new HistoryTreeDataProvider(
-      extensionPath
+      ctx.extensionPath
     ));
     this.treeView = this.push(window.createTreeView('codeQLQueryHistory', {
       treeDataProvider: this.treeDataProvider,
@@ -381,6 +400,16 @@ export class QueryHistoryManager extends DisposableObject {
     this.push(
       queryHistoryConfigListener.onDidChangeConfiguration(() => {
         this.treeDataProvider.refresh();
+        // recreate the history scrubber
+        this.queryHistoryScrubber.dispose();
+        this.queryHistoryScrubber = this.push(
+          registerQueryHistoryScubber(
+            ONE_HOUR_IN_MS, TWO_HOURS_IN_MS,
+            queryHistoryConfigListener.ttlInMillis,
+            this.queryStorageLocation,
+            ctx
+          )
+        );
       })
     );
 
@@ -398,6 +427,27 @@ export class QueryHistoryManager extends DisposableObject {
         );
       },
     }));
+
+    // Register the query history scrubber
+    // Every hour check if we need to re-run the query history scrubber.
+    this.queryHistoryScrubber = this.push(
+      registerQueryHistoryScubber(
+        ONE_HOUR_IN_MS, TWO_HOURS_IN_MS,
+        queryHistoryConfigListener.ttlInMillis,
+        path.join(ctx.globalStorageUri.fsPath, 'queries'),
+        ctx
+      )
+    );
+  }
+
+  async readQueryHistory(): Promise<void> {
+    const history = await FullQueryInfo.slurp(this.queryMetadataStorageLocation, this.queryHistoryConfigListener);
+    this.treeDataProvider.allHistory = history;
+  }
+
+  async writeQueryHistory(): Promise<void> {
+    const toSave = this.treeDataProvider.allHistory.filter(q => q.isCompleted());
+    await FullQueryInfo.splat(toSave, this.queryMetadataStorageLocation);
   }
 
   async invokeCallbackOn(queryHistoryItem: FullQueryInfo) {
@@ -445,14 +495,16 @@ export class QueryHistoryManager extends DisposableObject {
     multiSelect: FullQueryInfo[]
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
-
-    (finalMultiSelect || [finalSingleItem]).forEach((item) => {
-      // Removing in progress queries is not supported yet
+    const toDelete = (finalMultiSelect || [finalSingleItem]);
+    await Promise.all(toDelete.map(async (item) => {
+      // Removing in progress queries is not supported. They must be cancelled first.
       if (item.status !== QueryStatus.InProgress) {
         this.treeDataProvider.remove(item);
         item.completedQuery?.dispose();
+        await item.completedQuery?.query.cleanUp();
       }
-    });
+    }));
+    await this.writeQueryHistory();
     const current = this.treeDataProvider.getCurrent();
     if (current !== undefined) {
       await this.treeView.reveal(current, { select: true });
@@ -488,19 +540,21 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ): Promise<void> {
-    if (!this.assertSingleQuery(multiSelect)) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
 
     const response = await window.showInputBox({
       prompt: 'Label:',
       placeHolder: '(use default)',
-      value: singleItem.label,
+      value: finalSingleItem.label,
     });
     // undefined response means the user cancelled the dialog; don't change anything
     if (response !== undefined) {
       // Interpret empty string response as 'go back to using default'
-      singleItem.initialInfo.userSpecifiedLabel = response === '' ? undefined : response;
+      finalSingleItem.initialInfo.userSpecifiedLabel = response === '' ? undefined : response;
       this.treeDataProvider.refresh();
     }
   }
@@ -509,13 +563,15 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
     try {
-      if (!singleItem.completedQuery?.didRunSuccessfully) {
+      if (!finalSingleItem.completedQuery?.didRunSuccessfully) {
         throw new Error('Please select a successful query.');
       }
 
       const from = this.compareWithItem || singleItem;
-      const to = await this.findOtherQueryToCompare(from, multiSelect);
+      const to = await this.findOtherQueryToCompare(from, finalMultiSelect);
 
       if (from.isCompleted() && to?.isCompleted()) {
         await this.doCompareCallback(from as FullCompletedQueryInfo, to as FullCompletedQueryInfo);
@@ -593,20 +649,22 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ) {
-    if (!this.assertSingleQuery(multiSelect)) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
 
-    if (!singleItem) {
+    if (!finalSingleItem) {
       throw new Error(NO_QUERY_SELECTED);
     }
 
     const params = new URLSearchParams({
-      isQuickEval: String(!!singleItem.initialInfo.quickEvalPosition),
-      queryText: encodeURIComponent(await this.getQueryText(singleItem)),
+      isQuickEval: String(!!finalSingleItem.initialInfo.quickEvalPosition),
+      queryText: encodeURIComponent(await this.getQueryText(finalSingleItem)),
     });
     const uri = Uri.parse(
-      `codeql:${singleItem.initialInfo.id}?${params.toString()}`, true
+      `codeql:${finalSingleItem.initialInfo.id}?${params.toString()}`, true
     );
     const doc = await workspace.openTextDocument(uri);
     await window.showTextDocument(doc, { preview: false });
@@ -616,17 +674,20 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ) {
-    if (!this.assertSingleQuery(multiSelect) || !singleItem.completedQuery) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem.completedQuery) {
       return;
     }
-    const query = singleItem.completedQuery.query;
+
+    const query = finalSingleItem.completedQuery.query;
     const hasInterpretedResults = query.canHaveInterpretedResults();
     if (hasInterpretedResults) {
       await this.tryOpenExternalFile(
         query.resultsPaths.interpretedResultsPath
       );
     } else {
-      const label = singleItem.label;
+      const label = finalSingleItem.label;
       void showAndLogInformationMessage(
         `Query ${label} has no interpreted results.`
       );
@@ -637,13 +698,15 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ) {
-    if (!this.assertSingleQuery(multiSelect)) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
-    if (!singleItem.completedQuery) {
+    if (!finalSingleItem.completedQuery) {
       return;
     }
-    const query = singleItem.completedQuery.query;
+    const query = finalSingleItem.completedQuery.query;
     if (await query.hasCsv()) {
       void this.tryOpenExternalFile(query.csvPath);
       return;
@@ -659,12 +722,14 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ) {
-    if (!this.assertSingleQuery(multiSelect) || !singleItem.completedQuery) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem.completedQuery) {
       return;
     }
 
     await this.tryOpenExternalFile(
-      await singleItem.completedQuery.query.ensureCsvProduced(this.qs, this.dbm)
+      await finalSingleItem.completedQuery.query.ensureCsvProduced(this.qs, this.dbm)
     );
   }
 
@@ -672,15 +737,17 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[],
   ) {
-    if (!this.assertSingleQuery(multiSelect)) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
-    if (!singleItem.completedQuery) {
+    if (!finalSingleItem.completedQuery) {
       return;
     }
 
     await this.tryOpenExternalFile(
-      await singleItem.completedQuery.query.ensureDilPath(this.qs)
+      await finalSingleItem.completedQuery.query.ensureDilPath(this.qs)
     );
   }
 
@@ -883,4 +950,107 @@ the file in the file explorer and dragging it into the workspace.`
   refreshTreeView(): void {
     this.treeDataProvider.refresh();
   }
+}
+
+const LAST_SCRUB_TIME_KEY = 'lastScrubTime';
+
+/**
+ * Registers an interval timer that will periodically check for queries old enought
+ * to be deleted.
+ *
+ * Note that this scrubber will clean all queries from all workspaces. It should not
+ * run too often and it should only run from one workspace at a time.
+ *
+ * Generally, `wakeInterval` should be significantly shorter than `throttleTime`.
+ *
+ * @param wakeInterval How often to check to see if the job should run.
+ * @param throttleTime How often to actually run the job.
+ * @param maxQueryTime The maximum age of a query before is ready for deletion.
+ * @param queryDirectory The directory containing all queries.
+ * @param ctx The extension context.
+ */
+export function registerQueryHistoryScubber(
+  wakeInterval: number,
+  throttleTime: number,
+  maxQueryTime: number,
+  queryDirectory: string,
+  ctx: ExtensionContext,
+
+  // optional counter to keep track of how many times the scrubber has run
+  counter?: {
+    increment: () => void;
+  }
+): Disposable {
+  const deregister = setInterval(async () => {
+    const lastScrubTime = ctx.globalState.get<number>(LAST_SCRUB_TIME_KEY);
+    const now = Date.now();
+    if (lastScrubTime === undefined || now - lastScrubTime >= throttleTime) {
+      let scrubCount = 0;
+      try {
+        counter?.increment();
+        void logger.log('Scrubbing query directory. Removing old queries.');
+        // do a scrub
+        if (!(await fs.pathExists(queryDirectory))) {
+          void logger.log(`Query directory does not exist: ${queryDirectory}`);
+          return;
+        }
+
+        const baseNames = await fs.readdir(queryDirectory);
+        const errors: string[] = [];
+        for (const baseName of baseNames) {
+          const dir = path.join(queryDirectory, baseName);
+          const timestampFile = path.join(dir, 'timestamp');
+          try {
+            if (!(await fs.stat(dir)).isDirectory()) {
+              void logger.log(`  ${dir} is not a directory. Deleting.`);
+              await fs.remove(dir);
+              scrubCount++;
+            } else if (!(await fs.pathExists(timestampFile))) {
+              void logger.log(`  ${dir} has no timestamp file. Deleting.`);
+              await fs.remove(dir);
+              scrubCount++;
+            } else if (!(await fs.stat(timestampFile)).isFile()) {
+              void logger.log(`  ${timestampFile} is not a file. Deleting.`);
+              await fs.remove(dir);
+              scrubCount++;
+            } else {
+              const timestampText = await fs.readFile(timestampFile, 'utf8');
+              const timestamp = parseInt(timestampText, 10);
+
+              if (Number.isNaN(timestamp)) {
+                void logger.log(`  ${dir} has invalid timestamp '${timestampText}'. Deleting.`);
+                await fs.remove(dir);
+                scrubCount++;
+              } else if (now - timestamp > maxQueryTime) {
+                void logger.log(`  ${dir} is older than ${maxQueryTime / 1000} seconds. Deleting.`);
+                await fs.remove(dir);
+                scrubCount++;
+              } else {
+                void logger.log(`  ${dir} is not older than ${maxQueryTime / 1000} seconds. Keeping.`);
+              }
+            }
+          } catch (err) {
+            errors.push(`  Could not delete '${dir}': ${err}`);
+          }
+        }
+
+        if (errors.length) {
+          throw new Error('\n' + errors.join('\n'));
+        }
+      } catch (e) {
+        void logger.log(`Error while scrubbing query directory: ${e}`);
+      } finally {
+
+        // keep track of when we last scrubbed
+        await ctx.globalState.update(LAST_SCRUB_TIME_KEY, now);
+        void logger.log(`Scrubbed ${scrubCount} queries.`);
+      }
+    }
+  }, wakeInterval);
+
+  return {
+    dispose: () => {
+      clearInterval(deregister);
+    }
+  };
 }

@@ -47,9 +47,6 @@ export const tmpDirDisposal = {
   }
 };
 
-// exported for testing
-export const queriesDir = path.join(tmpDir.name, 'queries');
-
 /**
  * A collection of evaluation-time information about a query,
  * including the query itself, and where we have decided to put
@@ -57,14 +54,13 @@ export const queriesDir = path.join(tmpDir.name, 'queries');
  * output and results.
  */
 export class QueryEvaluationInfo {
-  readonly querySaveDir: string;
 
   /**
    * Note that in the {@link FullQueryInfo.slurp} method, we create a QueryEvaluationInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(
-    public readonly id: string,
+    private readonly querySaveDir: string,
     public readonly dbItemPath: string,
     private readonly databaseHasMetadataFile: boolean,
     public readonly queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
@@ -72,7 +68,7 @@ export class QueryEvaluationInfo {
     public readonly metadata?: QueryMetadata,
     public readonly templates?: messages.TemplateDefinitions
   ) {
-    this.querySaveDir = path.join(queriesDir, this.id);
+    /**/
   }
 
   get dilPath() {
@@ -96,6 +92,16 @@ export class QueryEvaluationInfo {
 
   getSortedResultSetPath(resultSetName: string) {
     return path.join(this.querySaveDir, `sortedResults-${resultSetName}.bqrs`);
+  }
+
+  /**
+   * Creates a file in the query directory that indicates when this query was created.
+   * This is important for keeping track of when queries should be removed.
+   */
+  async createTimestampFile() {
+    const timestampPath = path.join(this.querySaveDir, 'timestamp');
+    await fs.ensureDir(this.querySaveDir);
+    await fs.writeFile(timestampPath, Date.now().toString(), 'utf8');
   }
 
   async run(
@@ -290,6 +296,10 @@ export class QueryEvaluationInfo {
 
     await qs.cliServer.generateResultsCsv(ensureMetadataIsComplete(this.metadata), this.resultsPaths.resultsPath, this.csvPath, sourceInfo);
     return this.csvPath;
+  }
+
+  async cleanUp(): Promise<void> {
+    await fs.remove(this.querySaveDir);
   }
 }
 
@@ -588,6 +598,7 @@ export async function compileAndRunQueryAgainstDatabase(
   qs: qsClient.QueryServerClient,
   dbItem: DatabaseItem,
   initialInfo: InitialQueryInfo,
+  queryStorageLocation: string,
   progress: ProgressCallback,
   token: CancellationToken,
   templates?: messages.TemplateDefinitions,
@@ -635,10 +646,12 @@ export async function compileAndRunQueryAgainstDatabase(
   // The `capabilities.untrustedWorkspaces.restrictedConfigurations` entry in package.json doesn't
   // work with hidden settings, so we manually check that the workspace is trusted before looking at
   // whether the `shouldInsecurelyLoadMlModelsFromPacks` setting is enabled.
-  if (workspace.isTrusted &&
+  if (
+    workspace.isTrusted &&
     config.isCanary() &&
     config.shouldInsecurelyLoadMlModelsFromPacks() &&
-    await cliServer.cliConstraints.supportsResolveMlModels()) {
+    await cliServer.cliConstraints.supportsResolveMlModels()
+  ) {
     try {
       availableMlModels = (await cliServer.resolveMlModels(diskWorkspaceFolders)).models;
       void logger.log(`Found available ML models at the following paths: ${availableMlModels.map(x => `'${x.path}'`).join(', ')}.`);
@@ -651,7 +664,7 @@ export async function compileAndRunQueryAgainstDatabase(
 
   const hasMetadataFile = (await dbItem.hasMetadataFile());
   const query = new QueryEvaluationInfo(
-    initialInfo.id,
+    path.join(queryStorageLocation, initialInfo.id),
     dbItem.databaseUri.fsPath,
     hasMetadataFile,
     packConfig.dbscheme,
@@ -659,11 +672,13 @@ export async function compileAndRunQueryAgainstDatabase(
     metadata,
     templates
   );
+  await query.createTimestampFile();
 
-  const upgradeDir = await tmp.dir({ dir: upgradesTmpDir.name, unsafeCleanup: true });
+  let upgradeDir: tmp.DirectoryResult | undefined;
   try {
     let upgradeQlo;
     if (await hasNondestructiveUpgradeCapabilities(qs)) {
+      upgradeDir = await tmp.dir({ dir: upgradesTmpDir.name, unsafeCleanup: true });
       upgradeQlo = await compileNonDestructiveUpgrade(qs, upgradeDir, query, qlProgram, dbItem, progress, token);
     } else {
       await checkDbschemeCompatibility(cliServer, qs, query, qlProgram, dbItem, progress, token);
@@ -722,7 +737,7 @@ export async function compileAndRunQueryAgainstDatabase(
     }
   } finally {
     try {
-      await upgradeDir.cleanup();
+      await upgradeDir?.cleanup();
     } catch (e) {
       void qs.logger.log(`Could not clean up the upgrades dir. Reason: ${e.message || e}`);
     }

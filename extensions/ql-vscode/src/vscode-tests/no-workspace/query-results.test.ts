@@ -6,13 +6,12 @@ import 'sinon-chai';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 import { FullQueryInfo, InitialQueryInfo, interpretResults } from '../../query-results';
-import { queriesDir, QueryEvaluationInfo, QueryWithResults, tmpDir } from '../../run-queries';
+import { QueryEvaluationInfo, QueryWithResults, tmpDir } from '../../run-queries';
 import { QueryHistoryConfig } from '../../config';
 import { EvaluationResult, QueryResultType } from '../../pure/messages';
 import { DatabaseInfo, SortDirection, SortedResultSetInfo } from '../../pure/interface-types';
 import { CodeQLCliServer, SourceInfo } from '../../cli';
-import { env } from 'process';
-import { CancellationTokenSource, Uri } from 'vscode';
+import { CancellationTokenSource, Uri, env } from 'vscode';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -22,12 +21,15 @@ describe('query-results', () => {
   let onDidChangeQueryHistoryConfigurationSpy: sinon.SinonSpy;
   let mockConfig: QueryHistoryConfig;
   let sandbox: sinon.SinonSandbox;
+  let queryPath: string;
+  let cnt = 0;
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     disposeSpy = sandbox.spy();
     onDidChangeQueryHistoryConfigurationSpy = sandbox.spy();
     mockConfig = mockQueryHistoryConfig();
+    queryPath = path.join(Uri.file(tmpDir.name).fsPath, `query-${cnt++}`);
   });
 
   afterEach(() => {
@@ -40,6 +42,7 @@ describe('query-results', () => {
       const date = new Date('2022-01-01T00:00:00.000Z');
       const dateStr = date.toLocaleString(env.language);
       (fqi.initialInfo as any).start = date;
+
       expect(fqi.interpolate('xxx')).to.eq('xxx');
       expect(fqi.interpolate('%t %q %d %s %%')).to.eq(`${dateStr} hucairz a in progress %`);
       expect(fqi.interpolate('%t %q %d %s %%::%t %q %d %s %%')).to.eq(`${dateStr} hucairz a in progress %::${dateStr} hucairz a in progress %`);
@@ -51,7 +54,7 @@ describe('query-results', () => {
       // from the query path
       expect(fqi.getQueryName()).to.eq('hucairz');
 
-      fqi.completeThisQuery(createMockQueryWithResults());
+      fqi.completeThisQuery(createMockQueryWithResults(queryPath));
 
       // from the metadata
       expect(fqi.getQueryName()).to.eq('vwx');
@@ -92,7 +95,7 @@ describe('query-results', () => {
 
       // the %q from the config is now replaced by the name of the query
       // in the metadata
-      fqi.completeThisQuery(createMockQueryWithResults());
+      fqi.completeThisQuery(createMockQueryWithResults(queryPath));
       expect(fqi.label).to.eq('from config vwx');
 
       // replace the config with a user specified label
@@ -102,9 +105,10 @@ describe('query-results', () => {
     });
 
     it('should get the getResultsPath', () => {
-      const fqi = createMockFullQueryInfo('a', createMockQueryWithResults());
+      const query = createMockQueryWithResults(queryPath);
+      const fqi = createMockFullQueryInfo('a', query);
       const completedQuery = fqi.completedQuery!;
-      const expectedResultsPath = path.join(queriesDir, 'some-id/results.bqrs');
+      const expectedResultsPath = path.join(queryPath, 'results.bqrs');
 
       // from results path
       expect(completedQuery.getResultsPath('zxa', false)).to.eq(expectedResultsPath);
@@ -121,7 +125,7 @@ describe('query-results', () => {
     });
 
     it('should get the statusString', () => {
-      const fqi = createMockFullQueryInfo('a', createMockQueryWithResults(false));
+      const fqi = createMockFullQueryInfo('a', createMockQueryWithResults(queryPath, false));
       const completedQuery = fqi.completedQuery!;
 
       completedQuery.result.message = 'Tremendously';
@@ -146,7 +150,7 @@ describe('query-results', () => {
 
     it('should updateSortState', async () => {
       // setup
-      const fqi = createMockFullQueryInfo('a', createMockQueryWithResults());
+      const fqi = createMockFullQueryInfo('a', createMockQueryWithResults(queryPath));
       const completedQuery = fqi.completedQuery!;
 
       const spy = sandbox.spy();
@@ -162,8 +166,8 @@ describe('query-results', () => {
       await completedQuery.updateSortState(mockServer, 'a-result-set-name', sortState);
 
       // verify
-      const expectedResultsPath = path.join(queriesDir, 'some-id/results.bqrs');
-      const expectedSortedResultsPath = path.join(queriesDir, 'some-id/sortedResults-a-result-set-name.bqrs');
+      const expectedResultsPath = path.join(queryPath, 'results.bqrs');
+      const expectedSortedResultsPath = path.join(queryPath, 'sortedResults-a-result-set-name.bqrs');
       expect(spy).to.have.been.calledWith(
         expectedResultsPath,
         expectedSortedResultsPath,
@@ -248,12 +252,11 @@ describe('query-results', () => {
   });
 
   describe('splat and slurp', () => {
-    // TODO also add a test for round trip starting from file
     it('should splat and slurp query history', async () => {
-      const infoSuccessRaw = createMockFullQueryInfo('a', createMockQueryWithResults(false, false, '/a/b/c/a', false));
-      const infoSuccessInterpreted = createMockFullQueryInfo('b', createMockQueryWithResults(true, true, '/a/b/c/b', false));
+      const infoSuccessRaw = createMockFullQueryInfo('a', createMockQueryWithResults(`${queryPath}-a`, false, false, '/a/b/c/a', false));
+      const infoSuccessInterpreted = createMockFullQueryInfo('b', createMockQueryWithResults(`${queryPath}-b`, true, true, '/a/b/c/b', false));
       const infoEarlyFailure = createMockFullQueryInfo('c', undefined, true);
-      const infoLateFailure = createMockFullQueryInfo('d', createMockQueryWithResults(false, false, '/a/b/c/d', false));
+      const infoLateFailure = createMockFullQueryInfo('d', createMockQueryWithResults(`${queryPath}-c`, false, false, '/a/b/c/d', false));
       const infoInprogress = createMockFullQueryInfo('e');
       const allHistory = [
         infoSuccessRaw,
@@ -263,7 +266,16 @@ describe('query-results', () => {
         infoInprogress
       ];
 
-      const allHistoryPath = path.join(queriesDir, 'all-history.json');
+      // the expected results only contains the history with completed queries
+      const expectedHistory = [
+        infoSuccessRaw,
+        infoSuccessInterpreted,
+        infoLateFailure,
+      ];
+
+      const allHistoryPath = path.join(tmpDir.name, 'all-history.json');
+
+      // splat and slurp
       await FullQueryInfo.splat(allHistory, allHistoryPath);
       const allHistoryActual = await FullQueryInfo.slurp(allHistoryPath, mockConfig);
 
@@ -287,7 +299,7 @@ describe('query-results', () => {
           }
         }
       });
-      allHistory.forEach(info => {
+      expectedHistory.forEach(info => {
         if (info.completedQuery) {
           (info.completedQuery as any).dispose = undefined;
         }
@@ -295,16 +307,27 @@ describe('query-results', () => {
 
       // make the diffs somewhat sane by comparing each element directly
       for (let i = 0; i < allHistoryActual.length; i++) {
-        expect(allHistoryActual[i]).to.deep.eq(allHistory[i]);
+        expect(allHistoryActual[i]).to.deep.eq(expectedHistory[i]);
       }
-      expect(allHistoryActual.length).to.deep.eq(allHistory.length);
+      expect(allHistoryActual.length).to.deep.eq(expectedHistory.length);
     });
   });
 
+  function createMockQueryWithResults(
+    queryPath: string,
+    didRunSuccessfully = true,
+    hasInterpretedResults = true,
+    dbPath = '/a/b/c',
+    includeSpies = true
+  ): QueryWithResults {
+    // pretend that the results path exists
+    const resultsPath = path.join(queryPath, 'results.bqrs');
+    fs.mkdirpSync(queryPath);
+    fs.writeFileSync(resultsPath, '', 'utf8');
 
-  function createMockQueryWithResults(didRunSuccessfully = true, hasInterpretedResults = true, dbPath = '/a/b/c', includeSpies = true): QueryWithResults {
-    const query = new QueryEvaluationInfo('some-id',
-      Uri.file(dbPath).fsPath, // parse the Uri to make sure it is platform-independent
+    const query = new QueryEvaluationInfo(
+      queryPath,
+      Uri.file(dbPath).fsPath,
       true,
       'queryDbscheme',
       undefined,
@@ -361,6 +384,7 @@ describe('query-results', () => {
   function mockQueryHistoryConfig(): QueryHistoryConfig {
     return {
       onDidChangeConfiguration: onDidChangeQueryHistoryConfigurationSpy,
+      ttlInMillis: 999999,
       format: 'from config %q'
     };
   }

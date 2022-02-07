@@ -4,6 +4,7 @@
 
 - Fix a bug where invoking _View AST_ from the file explorer would not view the selected file. Instead it would view the active editor. Also, prevent the _View AST_ from appearing if the current selection includes a directory or multiple files. [#1113](https://github.com/github/vscode-codeql/pull/1113)
 - Add query history items as soon as a query is run, including new icons for each history item. [#1094](https://github.com/github/vscode-codeql/pull/1094)
+- Save query history items across restarts. Items will be saved for 30 days and can be overwritten by setting the `codeQL.queryHistory.ttl` configuration setting. [???]
 
 ## 1.5.10 - 25 January 2022
 

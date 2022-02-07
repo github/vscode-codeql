@@ -11,7 +11,7 @@ import { DatabaseItem, DatabaseManager } from '../../databases';
 import { CodeQLExtensionInterface } from '../../extension';
 import { dbLoc, storagePath } from './global.helper';
 import { importArchiveDatabase } from '../../databaseFetcher';
-import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo } from '../../run-queries';
+import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo, tmpDir } from '../../run-queries';
 import { CodeQLCliServer } from '../../cli';
 import { QueryServerClient } from '../../queryserver-client';
 import { skipIfNoCodeQL } from '../ensureCli';
@@ -97,6 +97,7 @@ describe('Queries', function() {
         qs,
         dbItem,
         await mockInitialQueryInfo(queryPath),
+        path.join(tmpDir.name, 'mock-storage-path'),
         progress,
         token
       );
@@ -119,6 +120,7 @@ describe('Queries', function() {
         qs,
         dbItem,
         await mockInitialQueryInfo(queryPath),
+        path.join(tmpDir.name, 'mock-storage-path'),
         progress,
         token
       );

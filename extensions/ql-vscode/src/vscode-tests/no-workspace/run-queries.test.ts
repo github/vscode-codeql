@@ -5,7 +5,7 @@ import 'sinon-chai';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 
-import { QueryEvaluationInfo, queriesDir } from '../../run-queries';
+import { QueryEvaluationInfo } from '../../run-queries';
 import { Severity, compileQuery } from '../../pure/messages';
 import { Uri } from 'vscode';
 
@@ -14,13 +14,13 @@ const expect = chai.expect;
 
 describe('run-queries', () => {
   it('should create a QueryEvaluationInfo', () => {
-    const info = createMockQueryInfo();
+    const saveDir = 'query-save-dir';
+    const info = createMockQueryInfo(true, saveDir);
 
-    const queryId = info.id;
-    expect(info.compiledQueryPath).to.eq(path.join(queriesDir, queryId, 'compiledQuery.qlo'));
-    expect(info.dilPath).to.eq(path.join(queriesDir, queryId, 'results.dil'));
-    expect(info.resultsPaths.resultsPath).to.eq(path.join(queriesDir, queryId, 'results.bqrs'));
-    expect(info.resultsPaths.interpretedResultsPath).to.eq(path.join(queriesDir, queryId, 'interpretedResults.sarif'));
+    expect(info.compiledQueryPath).to.eq(path.join(saveDir, 'compiledQuery.qlo'));
+    expect(info.dilPath).to.eq(path.join(saveDir, 'results.dil'));
+    expect(info.resultsPaths.resultsPath).to.eq(path.join(saveDir, 'results.bqrs'));
+    expect(info.resultsPaths.interpretedResultsPath).to.eq(path.join(saveDir, 'interpretedResults.sarif'));
     expect(info.dbItemPath).to.eq(Uri.file('/abc').fsPath);
   });
 
@@ -90,9 +90,9 @@ describe('run-queries', () => {
   });
 
   let queryNum = 0;
-  function createMockQueryInfo(databaseHasMetadataFile = true) {
+  function createMockQueryInfo(databaseHasMetadataFile = true, saveDir = `save-dir${queryNum++}`) {
     return new QueryEvaluationInfo(
-      `save-dir${queryNum++}`,
+      saveDir,
       Uri.parse('file:///abc').fsPath,
       databaseHasMetadataFile,
       'my-scheme', // queryDbscheme,

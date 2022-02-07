@@ -1,17 +1,21 @@
+import * as fs from 'fs-extra';
+import * as path from 'path';
 import * as chai from 'chai';
 import 'mocha';
 import 'sinon-chai';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
+
 import * as chaiAsPromised from 'chai-as-promised';
 import { logger } from '../../logging';
-import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
-import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries';
+import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder, registerQueryHistoryScubber } from '../../query-history';
+import { QueryEvaluationInfo, QueryWithResults, tmpDir } from '../../run-queries';
 import { QueryHistoryConfigListener } from '../../config';
 import * as messages from '../../pure/messages';
 import { QueryServerClient } from '../../queryserver-client';
 import { FullQueryInfo, InitialQueryInfo } from '../../query-results';
 import { DatabaseManager } from '../../databases';
+import * as tmp from 'tmp-promise';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -19,6 +23,7 @@ const assert = chai.assert;
 
 
 describe('query-history', () => {
+  const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
   let configListener: QueryHistoryConfigListener;
   let showTextDocumentSpy: sinon.SinonStub;
   let showInformationMessageSpy: sinon.SinonStub;
@@ -312,7 +317,7 @@ describe('query-history', () => {
   describe('HistoryTreeDataProvider', () => {
     let historyTreeDataProvider: HistoryTreeDataProvider;
     beforeEach(() => {
-      historyTreeDataProvider = new HistoryTreeDataProvider(vscode.Uri.file('/a/b/c').fsPath);
+      historyTreeDataProvider = new HistoryTreeDataProvider(vscode.Uri.file(mockExtensionLocation).fsPath);
     });
 
     afterEach(() => {
@@ -327,29 +332,30 @@ describe('query-history', () => {
         title: 'Query History Item',
         command: 'codeQLQueryHistory.itemClicked',
         arguments: [mockQuery],
+        tooltip: mockQuery.label,
       });
       expect(treeItem.label).to.contain('hucairz');
       expect(treeItem.contextValue).to.eq('rawResultsItem');
-      expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file('/a/b/c/media/drive.svg').fsPath);
+      expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file(mockExtensionLocation + '/media/drive.svg').fsPath);
     });
 
     it('should get a tree item with interpreted results', async () => {
       const mockQuery = createMockFullQueryInfo('a', createMockQueryWithResults(true, /* interpreted results */ true));
       const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
       expect(treeItem.contextValue).to.eq('interpretedResultsItem');
-      expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file('/a/b/c/media/drive.svg').fsPath);
+      expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file(mockExtensionLocation + '/media/drive.svg').fsPath);
     });
 
     it('should get a tree item that did not complete successfully', async () => {
       const mockQuery = createMockFullQueryInfo('a', createMockQueryWithResults(false), false);
       const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
-      expect(treeItem.iconPath).to.eq(vscode.Uri.file('/a/b/c/media/red-x.svg').fsPath);
+      expect(treeItem.iconPath).to.eq(vscode.Uri.file(mockExtensionLocation + '/media/red-x.svg').fsPath);
     });
 
     it('should get a tree item that failed before creating any results', async () => {
       const mockQuery = createMockFullQueryInfo('a', undefined, true);
       const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
-      expect(treeItem.iconPath).to.eq(vscode.Uri.file('/a/b/c/media/red-x.svg').fsPath);
+      expect(treeItem.iconPath).to.eq(vscode.Uri.file(mockExtensionLocation + '/media/red-x.svg').fsPath);
     });
 
     it('should get a tree item that is in progress', async () => {
@@ -537,17 +543,180 @@ describe('query-history', () => {
     return fqi;
   }
 
+  describe('query history scrubber', () => {
+    let clock: sinon.SinonFakeTimers;
+    let deregister: vscode.Disposable | undefined;
+    let mockCtx: vscode.ExtensionContext;
+    let runCount = 0;
+
+    const ONE_HOUR_IN_MS = 60 * 60 * 1000;
+    const TWO_HOURS_IN_MS = 2 * ONE_HOUR_IN_MS;
+    const ONE_DAY_IN_MS = 24 * ONE_HOUR_IN_MS;
+    // We don't want our times to align exactly with the hour,
+    // so we can better mimic real life
+    const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;
+    const tmpDir = tmp.dirSync({
+      unsafeCleanup: true
+    });
+
+    beforeEach(() => {
+      clock = sandbox.useFakeTimers({
+        toFake: ['setInterval', 'Date']
+      });
+      mockCtx = {
+        globalState: {
+          lastScrubTime: Date.now(),
+          get(key: string) {
+            if (key !== 'lastScrubTime') {
+              throw new Error(`Unexpected key: ${key}`);
+            }
+            return this.lastScrubTime;
+          },
+          async update(key: string, value: any) {
+            if (key !== 'lastScrubTime') {
+              throw new Error(`Unexpected key: ${key}`);
+            }
+            this.lastScrubTime = value;
+          }
+        }
+      } as any as vscode.ExtensionContext;
+    });
+
+    afterEach(() => {
+      clock.restore();
+      if (deregister) {
+        deregister.dispose();
+        deregister = undefined;
+      }
+    });
+
+    it('should not throw an error when the query directory does not exist', async function() {
+      // because of the waits, we need to have a higher timeout on this test.
+      this.timeout(5000);
+      registerScrubber('idontexist');
+
+      clock.tick(ONE_HOUR_IN_MS);
+      await wait();
+      expect(runCount, 'Should not have called the scrubber').to.eq(0);
+
+      clock.tick(ONE_HOUR_IN_MS - 1);
+      await wait();
+      expect(runCount, 'Should not have called the scrubber').to.eq(0);
+
+      clock.tick(1);
+      await wait();
+      expect(runCount, 'Should have called the scrubber once').to.eq(1);
+
+      clock.tick(TWO_HOURS_IN_MS);
+      await wait();
+      expect(runCount, 'Should have called the scrubber a second time').to.eq(2);
+
+      expect((mockCtx.globalState as any).lastScrubTime).to.eq(TWO_HOURS_IN_MS * 2, 'Should have scrubbed the last time at 4 hours.');
+    });
+
+    it('should scrub directories', async () => {
+      // create two query directories that are right around the cut off time
+      const queryDir = createMockQueryDir(ONE_HOUR_IN_MS, TWO_HOURS_IN_MS);
+      registerScrubber(queryDir);
+
+      clock.tick(TWO_HOURS_IN_MS);
+      await wait();
+
+      // should have deleted only the invalid locations
+      expectDirectories(
+        queryDir,
+        toQueryDirName(ONE_HOUR_IN_MS),
+        toQueryDirName(TWO_HOURS_IN_MS)
+      );
+
+      clock.tick(LESS_THAN_ONE_DAY);
+      await wait();
+
+      // should have deleted the older directory
+      expectDirectories(
+        queryDir,
+        toQueryDirName(TWO_HOURS_IN_MS)
+      );
+
+      // Wait two more hours and the final query will be deleted
+      clock.tick(TWO_HOURS_IN_MS);
+      await wait();
+
+      // should have deleted everything
+      expectDirectories(
+        queryDir
+      );
+    });
+
+    function expectDirectories(queryDir: string, ...dirNames: string[]) {
+      const files = fs.readdirSync(queryDir);
+      expect(files.sort()).to.deep.eq(dirNames.sort());
+    }
+
+    function createMockQueryDir(...timestamps: number[]) {
+      const dir = tmpDir.name;
+      const queryDir = path.join(dir, 'query');
+      // create qyuery directory and fill it with some query directories
+      fs.mkdirSync(queryDir);
+
+      // create an invalid file
+      const invalidFile = path.join(queryDir, 'invalid.txt');
+      fs.writeFileSync(invalidFile, 'invalid');
+
+      // create a directory without a timestamp file
+      const noTimestampDir = path.join(queryDir, 'noTimestampDir');
+      fs.mkdirSync(noTimestampDir);
+      fs.writeFileSync(path.join(noTimestampDir, 'invalid.txt'), 'invalid');
+
+      // create a directory with a timestamp file, but is invalid
+      const invalidTimestampDir = path.join(queryDir, 'invalidTimestampDir');
+      fs.mkdirSync(invalidTimestampDir);
+      fs.writeFileSync(path.join(invalidTimestampDir, 'timestamp'), 'invalid');
+
+      // create a directories with a valid timestamp files from the args
+      timestamps.forEach((timestamp) => {
+        const dir = path.join(queryDir, toQueryDirName(timestamp));
+        fs.mkdirSync(dir);
+        fs.writeFileSync(path.join(dir, 'timestamp'), `${Date.now() + timestamp}`);
+      });
+
+      return queryDir;
+    }
+
+    function toQueryDirName(timestamp: number) {
+      return `query-${timestamp}`;
+    }
+
+    function registerScrubber(dir: string) {
+      deregister = registerQueryHistoryScubber(
+        ONE_HOUR_IN_MS,
+        TWO_HOURS_IN_MS,
+        LESS_THAN_ONE_DAY,
+        dir,
+        mockCtx,
+        {
+          increment: () => runCount++
+        }
+      );
+    }
+
+    async function wait(ms = 500) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+  });
+
   function createMockQueryWithResults(didRunSuccessfully = true, hasInterpretedResults = true): QueryWithResults {
     return {
       query: {
-        hasInterpretedResults: () => Promise.resolve(hasInterpretedResults)
-      } as QueryEvaluationInfo,
+        hasInterpretedResults: () => Promise.resolve(hasInterpretedResults),
+        cleanUp: sandbox.stub(),
+      } as unknown as QueryEvaluationInfo,
       result: {
         resultType: didRunSuccessfully
           ? messages.QueryResultType.SUCCESS
           : messages.QueryResultType.OTHER_ERROR
       } as messages.EvaluationResult,
-      dispose: sandbox.spy(),
+      dispose: sandbox.spy()
     };
   }
 
@@ -556,6 +725,10 @@ describe('query-history', () => {
       {} as QueryServerClient,
       {} as DatabaseManager,
       'xxx',
+      {
+        globalStorageUri: vscode.Uri.file(mockExtensionLocation),
+        extensionPath: vscode.Uri.file('/x/y/z').fsPath,
+      } as vscode.ExtensionContext,
       configListener,
       selectedCallback,
       doCompareCallback

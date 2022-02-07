@@ -224,6 +224,12 @@
           "default": "%q on %d - %s, %r result count [%t]",
           "markdownDescription": "Default string for how to label query history items.\n* %t is the time of the query\n* %q is the human-readable query name\n* %f is the query file name\n* %d is the database name\n* %r is the number of results\n* %s is a status string"
         },
+        "codeQL.queryHistory.ttl": {
+          "type": "number",
+          "default": 30,
+          "description": "Number of days to retain queries in the query history before being automatically deleted.",
+          "scope": "machine"
+        },
         "codeQL.runningTests.additionalTestArguments": {
           "scope": "window",
           "type": "array",
