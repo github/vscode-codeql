@@ -59,6 +59,10 @@ export const queriesDir = path.join(tmpDir.name, 'queries');
 export class QueryEvaluationInfo {
   readonly querySaveDir: string;
 
+  /**
+   * Note that in the {@link FullQueryInfo.slurp} method, we create a QueryEvaluationInfo instance
+   * by explicitly setting the prototype in order to avoid calling this constructor.
+   */
   constructor(
     public readonly id: string,
     public readonly dbItemPath: string,
@@ -190,16 +194,19 @@ export class QueryEvaluationInfo {
   canHaveInterpretedResults(): boolean {
     if (!this.databaseHasMetadataFile) {
       void logger.log('Cannot produce interpreted results since the database does not have a .dbinfo or codeql-database.yml file.');
+      return false;
     }
 
     const hasKind = !!this.metadata?.kind;
     if (!hasKind) {
       void logger.log('Cannot produce interpreted results since the query does not have @kind metadata.');
+      return false;
     }
 
+    // table is the default query kind. It does not produce interpreted results.
+    // any query kind that is not table can, in principle, produce interpreted results.
     const isTable = hasKind && this.metadata?.kind === 'table';
-
-    return this.databaseHasMetadataFile && hasKind && !isTable;
+    return !isTable;
   }
 
   /**
@@ -388,15 +395,13 @@ async function checkDbschemeCompatibility(
 
     // At this point, we have learned about three dbschemes:
 
-    // query.program.dbschemePath is the dbscheme of the actual
-    // database we're querying.
+    // the dbscheme of the actual database we're querying.
     const dbschemeOfDb = await hash(dbItem.contents.dbSchemeUri.fsPath);
 
-    // query.queryDbScheme is the dbscheme of the query we're
-    // running, including the library we've resolved it to use.
+    // the dbscheme of the query we're running, including the library we've resolved it to use.
     const dbschemeOfLib = await hash(query.queryDbscheme);
 
-    // info.finalDbscheme is which database we're able to upgrade to
+    // the database we're able to upgrade to
     const upgradableTo = await hash(finalDbscheme);
 
     if (upgradableTo != dbschemeOfLib) {
@@ -533,14 +538,13 @@ export async function determineSelectedQuery(selectedResourceUri: Uri | undefine
   if (queryUri.scheme !== 'file') {
     throw new Error('Can only run queries that are on disk.');
   }
-  const queryPath = queryUri.fsPath || '';
+  const queryPath = queryUri.fsPath;
 
   if (quickEval) {
     if (!(queryPath.endsWith('.ql') || queryPath.endsWith('.qll'))) {
       throw new Error('The selected resource is not a CodeQL file; It should have the extension ".ql" or ".qll".');
     }
-  }
-  else {
+  } else {
     if (!(queryPath.endsWith('.ql'))) {
       throw new Error('The selected resource is not a CodeQL query file; It should have the extension ".ql".');
     }
@@ -645,10 +649,11 @@ export async function compileAndRunQueryAgainstDatabase(
     }
   }
 
+  const hasMetadataFile = (await dbItem.hasMetadataFile());
   const query = new QueryEvaluationInfo(
     initialInfo.id,
     dbItem.databaseUri.fsPath,
-    (await dbItem.hasMetadataFile()),
+    hasMetadataFile,
     packConfig.dbscheme,
     initialInfo.quickEvalPosition,
     metadata,
