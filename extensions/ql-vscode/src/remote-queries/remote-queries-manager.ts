@@ -123,11 +123,7 @@ export class RemoteQueriesManager {
 
     return {
       executionEndTime,
-      analysisSummaries,
-      allResultsDownloadLink: {
-        id: resultIndex.allResultsArtifactId.toString(),
-        urlPath: `${resultIndex.artifactsUrlPath}/${resultIndex.allResultsArtifactId}`
-      }
+      analysisSummaries
     };
   }
 }

@@ -38,10 +38,6 @@ export const sampleRemoteQuery: RemoteQuery = {
 
 export const sampleRemoteQueryResult: RemoteQueryResult = {
   executionEndTime: new Date('2022-01-06T17:04:37.026Z'),
-  allResultsDownloadLink: {
-    id: '137697018',
-    urlPath: '/repos/big-corp/controller-repo/actions/artifacts/137697018'
-  },
   analysisSummaries: [
     {
       nwo: 'big-corp/repo1',

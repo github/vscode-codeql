@@ -10,7 +10,6 @@ export interface RemoteQueryResult {
   totalResultCount: number;
   executionTimestamp: string;
   executionDuration: string;
-  downloadLink: DownloadLink;
   analysisSummaries: AnalysisSummary[]
 }
 
