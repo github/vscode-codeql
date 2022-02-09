@@ -367,9 +367,8 @@ describe('telemetry reporting', function() {
     );
 
     // Need to wait some time since the onDidChangeConfiguration listeners fire
-    // asynchronously and we sometimes need to wait for them to complete in
-    // order to have as successful test.
-    await wait(50);
+    // asynchronously. Must ensure they to complete in order to have a successful test.
+    await wait(100);
   }
 
   async function wait(ms = 0) {
