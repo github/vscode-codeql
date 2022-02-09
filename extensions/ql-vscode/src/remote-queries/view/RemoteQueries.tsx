@@ -275,13 +275,15 @@ export function RemoteQueries(): JSX.Element {
     return <div>Waiting for results to load.</div>;
   }
 
+  const showAnalysesResults = false;
+
   try {
     return <div>
       <ThemeProvider>
         <ViewTitle>{queryResult.queryTitle}</ViewTitle>
         <QueryInfo {...queryResult} />
         <Summary queryResult={queryResult} analysesResults={analysesResults} />
-        <AnalysesResults analysesResults={analysesResults} totalResults={queryResult.totalResultCount} />
+        {showAnalysesResults && <AnalysesResults analysesResults={analysesResults} totalResults={queryResult.totalResultCount} />}
       </ThemeProvider>
     </div>;
   } catch (err) {
