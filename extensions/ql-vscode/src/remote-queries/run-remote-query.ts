@@ -10,13 +10,13 @@ import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
   showInformationMessageWithAction,
-  tryGetQueryMetadata
+  tryGetQueryMetadata,
+  tmpDir
 } from '../helpers';
 import { Credentials } from '../authentication';
 import * as cli from '../cli';
 import { logger } from '../logging';
 import { getRemoteControllerRepo, getRemoteRepositoryLists, setRemoteControllerRepo } from '../config';
-import { tmpDir } from '../run-queries';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { OctokitResponse } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
@@ -439,7 +439,7 @@ async function buildRemoteQueryEntity(
   queryStartTime: Date,
   workflowRunId: number
 ): Promise<RemoteQuery> {
-  // The query name is either the name as specified in the query metadata, or the file name. 
+  // The query name is either the name as specified in the query metadata, or the file name.
   const queryName = queryMetadata?.name ?? path.basename(queryFilePath);
 
   const queryRepos = repositories.map(r => {

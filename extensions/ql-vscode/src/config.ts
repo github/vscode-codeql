@@ -2,8 +2,7 @@ import { DisposableObject } from './pure/disposable-object';
 import { workspace, Event, EventEmitter, ConfigurationChangeEvent, ConfigurationTarget } from 'vscode';
 import { DistributionManager } from './distribution';
 import { logger } from './logging';
-
-const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
+import { ONE_DAY_IN_MS } from './pure/helpers-pure';
 
 /** Helper class to look up a labelled (and possibly nested) setting. */
 export class Setting {
@@ -258,7 +257,7 @@ export class QueryHistoryConfigListener extends ConfigListener implements QueryH
   }
 
   /**
-   * The configuration value is in days, but return the value in milliseconds.
+   * The configuration value is in days, but return the value in milliseconds to make it easier to use.
    */
   public get ttlInMillis(): number {
     return (QUERY_HISTORY_TTL.getValue<number>() || 30) * ONE_DAY_IN_MS;

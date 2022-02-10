@@ -1,10 +1,9 @@
 import * as unzipper from 'unzipper';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { showAndLogWarningMessage } from '../helpers';
+import { showAndLogWarningMessage, tmpDir } from '../helpers';
 import { Credentials } from '../authentication';
 import { logger } from '../logging';
-import { tmpDir } from '../run-queries';
 import { RemoteQueryWorkflowResult } from './remote-query-workflow-result';
 import { DownloadLink } from './download-link';
 import { RemoteQuery } from './remote-query';
@@ -106,8 +105,8 @@ async function getResultIndexItems(
 /**
  * Gets the status of a workflow run.
  * @param credentials Credentials for authenticating to the GitHub API.
- * @param owner 
- * @param repo 
+ * @param owner
+ * @param repo
  * @param workflowRunId The ID of the workflow run to get the result index for.
  * @returns The workflow run status.
  */

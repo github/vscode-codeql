@@ -2,6 +2,7 @@ import * as fs from 'fs-extra';
 import * as glob from 'glob-promise';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
+import * as tmp from 'tmp-promise';
 import {
   ExtensionContext,
   Uri,
@@ -13,6 +14,17 @@ import { CodeQLCliServer, QlpacksInfo } from './cli';
 import { UserCancellationException } from './commandRunner';
 import { logger } from './logging';
 import { QueryMetadata } from './pure/interface-types';
+
+// Shared temporary folder for the extension.
+export const tmpDir = tmp.dirSync({ prefix: 'queries_', keep: false, unsafeCleanup: true });
+export const upgradesTmpDir = path.join(tmpDir.name, 'upgrades');
+fs.ensureDirSync(upgradesTmpDir);
+
+export const tmpDirDisposal = {
+  dispose: () => {
+    tmpDir.removeCallback();
+  }
+};
 
 /**
  * Show an error message and log it to the console

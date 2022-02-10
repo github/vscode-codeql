@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 import * as fs from 'fs-extra';
-import * as path from 'path';
 import * as tmp from 'tmp-promise';
+import * as path from 'path';
 import { nanoid } from 'nanoid';
 import {
   CancellationToken,
@@ -17,7 +17,7 @@ import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 import * as cli from './cli';
 import * as config from './config';
 import { DatabaseItem, DatabaseManager } from './databases';
-import { getOnDiskWorkspaceFolders, showAndLogErrorMessage, tryGetQueryMetadata } from './helpers';
+import { getOnDiskWorkspaceFolders, showAndLogErrorMessage, tryGetQueryMetadata, upgradesTmpDir } from './helpers';
 import { ProgressCallback, UserCancellationException } from './commandRunner';
 import { DatabaseInfo, QueryMetadata } from './pure/interface-types';
 import { logger } from './logging';
@@ -32,19 +32,20 @@ import { DecodedBqrsChunk } from './pure/bqrs-cli-types';
 
 /**
  * run-queries.ts
- * -------------
+ * --------------
  *
  * Compiling and running QL queries.
  */
 
-export const tmpDir = tmp.dirSync({ prefix: 'queries_', keep: false, unsafeCleanup: true });
-export const upgradesTmpDir = tmp.dirSync({ dir: tmpDir.name, prefix: 'upgrades_', keep: false, unsafeCleanup: true });
-export const tmpDirDisposal = {
-  dispose: () => {
-    upgradesTmpDir.removeCallback();
-    tmpDir.removeCallback();
-  }
-};
+/**
+ * Information about which query will be to be run. `quickEvalPosition` and `quickEvalText`
+ * is only filled in if the query is a quick query.
+ */
+interface SelectedQuery {
+  queryPath: string;
+  quickEvalPosition?: messages.Position;
+  quickEvalText?: string;
+}
 
 /**
  * A collection of evaluation-time information about a query,
@@ -131,6 +132,7 @@ export class QueryEvaluationInfo {
       id: callbackId,
       timeoutSecs: qs.config.timeoutSecs,
     };
+
     const dataset: messages.Dataset = {
       dbDir: dbItem.contents.datasetUri.fsPath,
       workingSet: 'default'
@@ -235,6 +237,10 @@ export class QueryEvaluationInfo {
     return fs.pathExists(this.csvPath);
   }
 
+  /**
+   * Returns the path to the DIL file produced by this query. If the query has not yet produced DIL,
+   * this will return first create the DIL file and then return the path to the DIL file.
+   */
   async ensureDilPath(qs: qsClient.QueryServerClient): Promise<string> {
     if (await this.hasDil()) {
       return this.dilPath;
@@ -250,6 +256,10 @@ export class QueryEvaluationInfo {
     return this.dilPath;
   }
 
+  /**
+   * Creates the CSV file containing the results of this query. This will only be called if the query
+   * does not have interpreted results and the CSV file does not already exist.
+   */
   async exportCsvResults(qs: qsClient.QueryServerClient, csvPath: string, onFinish: () => void): Promise<void> {
     let stopDecoding = false;
     const out = fs.createWriteStream(csvPath);
@@ -266,14 +276,21 @@ export class QueryEvaluationInfo {
         pageSize: 100,
         offset: nextOffset,
       });
-      for (const tuple of chunk.tuples)
+      for (const tuple of chunk.tuples) {
         out.write(tuple.join(',') + '\n');
+      }
       nextOffset = chunk.next;
     }
     out.end();
   }
 
-  async ensureCsvProduced(qs: qsClient.QueryServerClient, dbm: DatabaseManager): Promise<string> {
+  /**
+   * Returns the path to the CSV alerts interpretation of this query results. If CSV results have
+   * not yet been produced, this will return first create the CSV results and then return the path.
+   *
+   * This method only works for queries with interpreted results.
+   */
+  async ensureCsvAlerts(qs: qsClient.QueryServerClient, dbm: DatabaseManager): Promise<string> {
     if (await this.hasCsv()) {
       return this.csvPath;
     }
@@ -297,6 +314,9 @@ export class QueryEvaluationInfo {
     return this.csvPath;
   }
 
+  /**
+   * Cleans this query's results directory.
+   */
   async deleteQuery(): Promise<void> {
     await fs.remove(this.querySaveDir);
   }
@@ -333,9 +353,7 @@ export async function clearCacheInDatabase(
 }
 
 /**
- *
- * @param filePath This needs to be equivalent to java Path.toRealPath(NO_FOLLOW_LINKS)
- *
+ * @param filePath This needs to be equivalent to Java's `Path.toRealPath(NO_FOLLOW_LINKS)`
  */
 async function convertToQlPath(filePath: string): Promise<string> {
   if (process.platform === 'win32') {
@@ -381,9 +399,9 @@ async function getSelectedPosition(editor: TextEditor, range?: Range): Promise<m
 
 /**
  * Compare the dbscheme implied by the query `query` and that of the current database.
- * If they are compatible, do nothing.
- * If they are incompatible but the database can be upgraded, suggest that upgrade.
- * If they are incompatible and the database cannot be upgraded, throw an error.
+ * - If they are compatible, do nothing.
+ * - If they are incompatible but the database can be upgraded, suggest that upgrade.
+ * - If they are incompatible and the database cannot be upgraded, throw an error.
  */
 async function checkDbschemeCompatibility(
   cliServer: cli.CodeQLCliServer,
@@ -431,7 +449,9 @@ async function checkDbschemeCompatibility(
 }
 
 function reportNoUpgradePath(qlProgram: messages.QlProgram, query: QueryEvaluationInfo): void {
-  throw new Error(`Query ${qlProgram.queryPath} expects database scheme ${query.queryDbscheme}, but the current database has a different scheme, and no database upgrades are available. The current database scheme may be newer than the CodeQL query libraries in your workspace.\n\nPlease try using a newer version of the query libraries.`);
+  throw new Error(
+    `Query ${qlProgram.queryPath} expects database scheme ${query.queryDbscheme}, but the current database has a different scheme, and no database upgrades are available. The current database scheme may be newer than the CodeQL query libraries in your workspace.\n\nPlease try using a newer version of the query libraries.`
+  );
 }
 
 /**
@@ -476,7 +496,6 @@ async function compileNonDestructiveUpgrade(
   qlProgram.dbschemePath = query.queryDbscheme;
   // We are new enough that we will always support single file upgrades.
   return result.compiledUpgrade;
-
 }
 
 /**
@@ -521,12 +540,6 @@ async function promptUserToSaveChanges(document: TextDocument): Promise<boolean>
   return false;
 }
 
-type SelectedQuery = {
-  queryPath: string;
-  quickEvalPosition?: messages.Position;
-  quickEvalText?: string;
-};
-
 /**
  * Determines which QL file to run during an invocation of `Run Query` or `Quick Evaluation`, as follows:
  * - If the command was called by clicking on a file, then use that file.
@@ -537,12 +550,19 @@ type SelectedQuery = {
  * @param selectedResourceUri The selected resource when the command was run.
  * @param quickEval Whether the command being run is `Quick Evaluation`.
 */
-export async function determineSelectedQuery(selectedResourceUri: Uri | undefined, quickEval: boolean, range?: Range): Promise<SelectedQuery> {
+export async function determineSelectedQuery(
+  selectedResourceUri: Uri | undefined,
+  quickEval: boolean,
+  range?: Range
+): Promise<SelectedQuery> {
   const editor = window.activeTextEditor;
 
   // Choose which QL file to use.
   let queryUri: Uri;
-  if (selectedResourceUri === undefined) {
+  if (selectedResourceUri) {
+    // A resource was passed to the command handler, so use it.
+    queryUri = selectedResourceUri;
+  } else {
     // No resource was passed to the command handler, so obtain it from the active editor.
     // This usually happens when the command is called from the Command Palette.
     if (editor === undefined) {
@@ -550,9 +570,6 @@ export async function determineSelectedQuery(selectedResourceUri: Uri | undefine
     } else {
       queryUri = editor.document.uri;
     }
-  } else {
-    // A resource was passed to the command handler, so use it.
-    queryUri = selectedResourceUri;
   }
 
   if (queryUri.scheme !== 'file') {
@@ -680,7 +697,7 @@ export async function compileAndRunQueryAgainstDatabase(
   try {
     let upgradeQlo;
     if (await hasNondestructiveUpgradeCapabilities(qs)) {
-      upgradeDir = await tmp.dir({ dir: upgradesTmpDir.name, unsafeCleanup: true });
+      upgradeDir = await tmp.dir({ dir: upgradesTmpDir, unsafeCleanup: true });
       upgradeQlo = await compileNonDestructiveUpgrade(qs, upgradeDir, query, qlProgram, dbItem, progress, token);
     } else {
       await checkDbschemeCompatibility(cliServer, qs, query, qlProgram, dbItem, progress, token);
@@ -746,6 +763,16 @@ export async function compileAndRunQueryAgainstDatabase(
   }
 }
 
+/**
+ * Determines the initial information for a query. This is everything of interest
+ * we know about this query that is available before it is run.
+ *
+ * @param selectedQueryUri The Uri of the document containing the query to be run.
+ * @param databaseInfo The database to run the query against.
+ * @param isQuickEval true if this is a quick evaluation.
+ * @param range the selection range of the query to be run. Only used if isQuickEval is true.
+ * @returns The initial information for the query to be run.
+ */
 export async function createInitialQueryInfo(
   selectedQueryUri: Uri | undefined,
   databaseInfo: DatabaseInfo,
@@ -776,12 +803,14 @@ const compilationFailedErrorTail = ' compilation failed. Please make sure there 
   ' and the query and database use the same target language. For more details on the error, go to View > Output,' +
   ' and choose CodeQL Query Server from the dropdown.';
 
+/**
+ * Create a synthetic result for a query that failed to compile.
+ */
 function createSyntheticResult(
   query: QueryEvaluationInfo,
   message: string,
   resultType: number
 ): QueryWithResults {
-
   return {
     query,
     result: {

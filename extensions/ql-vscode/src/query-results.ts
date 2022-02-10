@@ -19,6 +19,14 @@ import { showAndLogErrorMessage } from './helpers';
 import { asyncFilter } from './pure/helpers-pure';
 
 /**
+ * query-results.ts
+ * ----------------
+ *
+ * A collection of classes and functions that collectively
+ * manage query results.
+ */
+
+/**
  * A description of the information about a query
  * that is available before results are populated.
  */

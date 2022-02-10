@@ -8,20 +8,21 @@ import * as sinon from 'sinon';
 
 import * as chaiAsPromised from 'chai-as-promised';
 import { logger } from '../../logging';
-import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
 import { registerQueryHistoryScubber } from '../../query-history-scrubber';
-import { QueryEvaluationInfo, QueryWithResults, tmpDir } from '../../run-queries';
+import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
+import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries';
 import { QueryHistoryConfigListener } from '../../config';
 import * as messages from '../../pure/messages';
 import { QueryServerClient } from '../../queryserver-client';
 import { FullQueryInfo, InitialQueryInfo } from '../../query-results';
 import { DatabaseManager } from '../../databases';
 import * as tmp from 'tmp-promise';
+import { ONE_DAY_IN_MS, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, THREE_HOURS_IN_MS } from '../../pure/helpers-pure';
+import { tmpDir } from '../../helpers';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 const assert = chai.assert;
-
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -552,10 +553,6 @@ describe('query-history', () => {
     let mockCtx: vscode.ExtensionContext;
     let runCount = 0;
 
-    const ONE_HOUR_IN_MS = 60 * 60 * 1000;
-    const TWO_HOURS_IN_MS = 2 * ONE_HOUR_IN_MS;
-    const THREE_HOURS_IN_MS = 3 * ONE_HOUR_IN_MS;
-    const ONE_DAY_IN_MS = 24 * ONE_HOUR_IN_MS;
     // We don't want our times to align exactly with the hour,
     // so we can better mimic real life
     const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;

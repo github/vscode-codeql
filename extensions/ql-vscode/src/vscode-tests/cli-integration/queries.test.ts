@@ -11,11 +11,12 @@ import { DatabaseItem, DatabaseManager } from '../../databases';
 import { CodeQLExtensionInterface } from '../../extension';
 import { dbLoc, storagePath } from './global.helper';
 import { importArchiveDatabase } from '../../databaseFetcher';
-import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo, tmpDir } from '../../run-queries';
+import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo } from '../../run-queries';
 import { CodeQLCliServer } from '../../cli';
 import { QueryServerClient } from '../../queryserver-client';
 import { skipIfNoCodeQL } from '../ensureCli';
 import { QueryResultType } from '../../pure/messages';
+import { tmpDir } from '../../helpers';
 
 
 /**

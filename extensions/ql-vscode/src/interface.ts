@@ -14,7 +14,7 @@ import {
 import * as cli from './cli';
 import { CodeQLCliServer } from './cli';
 import { DatabaseEventKind, DatabaseItem, DatabaseManager } from './databases';
-import { showAndLogErrorMessage } from './helpers';
+import { showAndLogErrorMessage, tmpDir } from './helpers';
 import { assertNever } from './pure/helpers-pure';
 import {
   FromResultsViewMsg,
@@ -33,7 +33,7 @@ import { Logger } from './logging';
 import * as messages from './pure/messages';
 import { commandRunner } from './commandRunner';
 import { CompletedQueryInfo, interpretResults } from './query-results';
-import { QueryEvaluationInfo, tmpDir } from './run-queries';
+import { QueryEvaluationInfo } from './run-queries';
 import { parseSarifLocation, parseSarifPlainTextMessage } from './pure/sarif-utils';
 import {
   WebviewReveal,

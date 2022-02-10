@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
-import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from './helpers';
+import { getOnDiskWorkspaceFolders, showAndLogErrorMessage, tmpDir } from './helpers';
 import { ProgressCallback, UserCancellationException } from './commandRunner';
 import { logger } from './logging';
 import * as messages from './pure/messages';
 import * as qsClient from './queryserver-client';
-import { upgradesTmpDir } from './run-queries';
 import * as tmp from 'tmp-promise';
 import * as path from 'path';
 import * as semver from 'semver';
@@ -180,7 +179,7 @@ export async function upgradeDatabaseExplicit(
   if (finalDbscheme === undefined) {
     throw new Error('Could not determine target dbscheme to upgrade to.');
   }
-  const currentUpgradeTmp = await tmp.dir({ dir: upgradesTmpDir.name, prefix: 'upgrade_', keep: false, unsafeCleanup: true });
+  const currentUpgradeTmp = await tmp.dir({ dir: tmpDir.name, prefix: 'upgrade_', keep: false, unsafeCleanup: true });
   try {
     let compileUpgradeResult: messages.CompileUpgradeResult;
     try {

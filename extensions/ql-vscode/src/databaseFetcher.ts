@@ -20,7 +20,7 @@ import {
   ProgressCallback,
 } from './commandRunner';
 import { logger } from './logging';
-import { tmpDir } from './run-queries';
+import { tmpDir } from './helpers';
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -434,7 +434,7 @@ function convertRawLgtmSlug(maybeSlug: string): string | undefined {
   }
   return;
 }
- 
+
 function extractProjectSlug(lgtmUrl: string): string | undefined {
   // Only matches the '/g/' provider (github)
   const re = new RegExp('https://lgtm.com/projects/g/(.*[^/])');
