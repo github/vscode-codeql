@@ -23,12 +23,6 @@ import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
 
-interface Config {
-  repositories: string[];
-  ref?: string;
-  language?: string;
-}
-
 export interface QlPack {
   name: string;
   version: string;
@@ -108,7 +102,7 @@ export async function getRepositories(): Promise<string[] | undefined> {
  *
  * @returns the entire qlpack as a base64 string.
  */
-async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: string, queryPackDir: string, fallbackLanguage?: string): Promise<{
+async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: string, queryPackDir: string): Promise<{
   base64Pack: string,
   language: string
 }> {
@@ -150,7 +144,7 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
 
   } else {
     // open popup to ask for language if not already hardcoded
-    language = fallbackLanguage || await askForLanguage(cliServer);
+    language = await askForLanguage(cliServer);
 
     // copy only the query file to the query pack directory
     // and generate a synthetic query pack
@@ -238,47 +232,22 @@ export async function runRemoteQuery(
       throw new UserCancellationException('Not a CodeQL query file.');
     }
 
-    progress({
-      maxStep: 5,
-      step: 1,
-      message: 'Determining project list'
-    });
-
     const queryFile = uri.fsPath;
-    const repositoriesFile = queryFile.substring(0, queryFile.length - '.ql'.length) + '.repositories';
-    let ref: string | undefined;
-    // For the case of single file remote queries, use the language from the config in order to avoid the user having to select it.
-    let fallbackLanguage: string | undefined;
-    let repositories: string[] | undefined;
 
     progress({
-      maxStep: 5,
-      step: 2,
+      maxStep: 4,
+      step: 1,
       message: 'Determining query target language'
     });
 
-    // If the user has an explicit `.repositories` file, use that.
-    // Otherwise, prompt user to select repositories from the `codeQL.remoteQueries.repositoryLists` setting.
-    if (await fs.pathExists(repositoriesFile)) {
-      void logger.log(`Found '${repositoriesFile}'. Using information from that file to run ${queryFile}.`);
-
-      const config = yaml.safeLoad(await fs.readFile(repositoriesFile, 'utf8')) as Config;
-
-      ref = config.ref || 'main';
-      fallbackLanguage = config.language;
-      repositories = config.repositories;
-    } else {
-      ref = 'main';
-      repositories = await getRepositories();
-    }
-
+    const repositories = await getRepositories();
     if (!repositories || repositories.length === 0) {
       throw new UserCancellationException('No repositories to query.');
     }
 
     progress({
-      maxStep: 5,
-      step: 3,
+      maxStep: 4,
+      step: 2,
       message: 'Determining controller repo'
     });
 
@@ -309,8 +278,8 @@ export async function runRemoteQuery(
     const [owner, repo] = controllerRepo.split('/');
 
     progress({
-      maxStep: 5,
-      step: 4,
+      maxStep: 4,
+      step: 3,
       message: 'Bundling the query pack'
     });
 
@@ -318,19 +287,19 @@ export async function runRemoteQuery(
       throw new UserCancellationException('Cancelled');
     }
 
-    const { base64Pack, language } = await generateQueryPack(cliServer, queryFile, queryPackDir, fallbackLanguage);
+    const { base64Pack, language } = await generateQueryPack(cliServer, queryFile, queryPackDir);
 
     if (token.isCancellationRequested) {
       throw new UserCancellationException('Cancelled');
     }
 
     progress({
-      maxStep: 5,
-      step: 5,
+      maxStep: 4,
+      step: 4,
       message: 'Sending request'
     });
 
-    const workflowRunId = await runRemoteQueriesApiRequest(credentials, ref, language, repositories, owner, repo, base64Pack, dryRun);
+    const workflowRunId = await runRemoteQueriesApiRequest(credentials, 'main', language, repositories, owner, repo, base64Pack, dryRun);
     const queryStartTime = new Date();
     const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
 
