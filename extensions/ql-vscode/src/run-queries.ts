@@ -10,8 +10,7 @@ import {
   TextDocument,
   TextEditor,
   Uri,
-  window,
-  workspace
+  window
 } from 'vscode';
 import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 
@@ -643,13 +642,7 @@ export async function compileAndRunQueryAgainstDatabase(
   const metadata = await tryGetQueryMetadata(cliServer, qlProgram.queryPath);
 
   let availableMlModels: cli.MlModelInfo[] = [];
-  // The `capabilities.untrustedWorkspaces.restrictedConfigurations` entry in package.json doesn't
-  // work with hidden settings, so we manually check that the workspace is trusted before looking at
-  // whether the `shouldInsecurelyLoadMlModelsFromPacks` setting is enabled.
-  if (workspace.isTrusted &&
-    config.isCanary() &&
-    config.shouldInsecurelyLoadMlModelsFromPacks() &&
-    await cliServer.cliConstraints.supportsResolveMlModels()) {
+  if (await cliServer.cliConstraints.supportsResolveMlModels()) {
     try {
       availableMlModels = (await cliServer.resolveMlModels(diskWorkspaceFolders)).models;
       void logger.log(`Found available ML models at the following paths: ${availableMlModels.map(x => `'${x.path}'`).join(', ')}.`);
