@@ -8,7 +8,7 @@ import {
 } from 'vscode';
 import * as path from 'path';
 
-import { tmpDir } from '../run-queries';
+import { tmpDir } from '../helpers';
 import {
   FromCompareViewMessage,
   ToCompareViewMessage,

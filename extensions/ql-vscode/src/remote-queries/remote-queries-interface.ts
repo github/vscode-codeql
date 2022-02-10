@@ -10,7 +10,6 @@ import {
 } from 'vscode';
 import * as path from 'path';
 
-import { tmpDir } from '../run-queries';
 import {
   ToRemoteQueriesMessage,
   FromRemoteQueriesMessage,
@@ -25,7 +24,7 @@ import { AnalysisSummary, RemoteQueryResult } from './remote-query-result';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryResult as RemoteQueryResultViewModel } from './shared/remote-query-result';
 import { AnalysisSummary as AnalysisResultViewModel } from './shared/remote-query-result';
-import { showAndLogWarningMessage } from '../helpers';
+import { showAndLogWarningMessage, tmpDir } from '../helpers';
 import { URLSearchParams } from 'url';
 import { SHOW_QUERY_TEXT_MSG } from '../query-history';
 import { AnalysesResultsManager } from './analyses-results-manager';

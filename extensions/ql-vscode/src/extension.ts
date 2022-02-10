@@ -54,7 +54,15 @@ import {
   GithubApiError,
   GithubRateLimitedError
 } from './distribution';
-import * as helpers from './helpers';
+import {
+  findLanguage,
+  tmpDirDisposal,
+  showBinaryChoiceDialog,
+  showAndLogErrorMessage,
+  showAndLogWarningMessage,
+  showAndLogInformationMessage,
+  showInformationMessageWithAction
+} from './helpers';
 import { assertNever } from './pure/helpers-pure';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
@@ -64,7 +72,7 @@ import { QueryHistoryManager } from './query-history';
 import { FullCompletedQueryInfo, FullQueryInfo } from './query-results';
 import * as qsClient from './queryserver-client';
 import { displayQuickQuery } from './quick-query';
-import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo, tmpDirDisposal } from './run-queries';
+import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo } from './run-queries';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
 import { CompareInterfaceManager } from './compare/compare-interface';
@@ -189,7 +197,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
   const shouldUpdateOnNextActivationKey = 'shouldUpdateOnNextActivation';
 
   registerErrorStubs([checkForUpdatesCommand], command => (async () => {
-    void helpers.showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
+    void showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
   }));
 
   interface DistributionUpdateConfig {
@@ -201,7 +209,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
   async function installOrUpdateDistributionWithProgressTitle(progressTitle: string, config: DistributionUpdateConfig): Promise<void> {
     const minSecondsSinceLastUpdateCheck = config.isUserInitiated ? 0 : 86400;
     const noUpdatesLoggingFunc = config.shouldDisplayMessageWhenNoUpdates ?
-      helpers.showAndLogInformationMessage : async (message: string) => void logger.log(message);
+      showAndLogInformationMessage : async (message: string) => void logger.log(message);
     const result = await distributionManager.checkForUpdatesToExtensionManagedDistribution(minSecondsSinceLastUpdateCheck);
 
     // We do want to auto update if there is no distribution at all
@@ -223,7 +231,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
           const updateAvailableMessage = `Version "${result.updatedRelease.name}" of the CodeQL CLI is now available. ` +
             'Do you wish to upgrade?';
           await ctx.globalState.update(shouldUpdateOnNextActivationKey, true);
-          if (await helpers.showInformationMessageWithAction(updateAvailableMessage, 'Restart and Upgrade')) {
+          if (await showInformationMessageWithAction(updateAvailableMessage, 'Restart and Upgrade')) {
             await commands.executeCommand('workbench.action.reloadWindow');
           }
         } else {
@@ -236,7 +244,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
             distributionManager.installExtensionManagedDistributionRelease(result.updatedRelease, progress));
 
           await ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
-          void helpers.showAndLogInformationMessage(`CodeQL CLI updated to version "${result.updatedRelease.name}".`);
+          void showAndLogInformationMessage(`CodeQL CLI updated to version "${result.updatedRelease.name}".`);
         }
         break;
       default:
@@ -263,7 +271,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
       // Don't rethrow the exception, because if the config is changed, we want to be able to retry installing
       // or updating the distribution.
       const alertFunction = (codeQlInstalled && !config.isUserInitiated) ?
-        helpers.showAndLogWarningMessage : helpers.showAndLogErrorMessage;
+        showAndLogWarningMessage : showAndLogErrorMessage;
       const taskDescription = (willUpdateCodeQl ? 'update' :
         codeQlInstalled ? 'check for updates to' : 'install') + ' CodeQL CLI';
 
@@ -298,20 +306,20 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
           }
         })();
 
-        void helpers.showAndLogWarningMessage(
+        void showAndLogWarningMessage(
           `The current version of the CodeQL CLI (${result.version.raw}) ` +
           `is incompatible with this extension. ${fixGuidanceMessage}`
         );
         break;
       }
       case FindDistributionResultKind.UnknownCompatibilityDistribution:
-        void helpers.showAndLogWarningMessage(
+        void showAndLogWarningMessage(
           'Compatibility with the configured CodeQL CLI could not be determined. ' +
           'You may experience problems using the extension.'
         );
         break;
       case FindDistributionResultKind.NoDistribution:
-        void helpers.showAndLogErrorMessage('The CodeQL CLI could not be found.');
+        void showAndLogErrorMessage('The CodeQL CLI could not be found.');
         break;
       default:
         assertNever(result);
@@ -338,7 +346,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     } else if (distributionResult.kind === FindDistributionResultKind.NoDistribution) {
       registerErrorStubs([checkForUpdatesCommand], command => async () => {
         const installActionName = 'Install CodeQL CLI';
-        const chosenAction = await void helpers.showAndLogErrorMessage(`Can't execute ${command}: missing CodeQL CLI.`, {
+        const chosenAction = await void showAndLogErrorMessage(`Can't execute ${command}: missing CodeQL CLI.`, {
           items: [installActionName]
         });
         if (chosenAction === installActionName) {
@@ -477,7 +485,7 @@ async function activateWithInstalledDistribution(
     try {
       await cmpm.showResults(from, to);
     } catch (e) {
-      void helpers.showAndLogErrorMessage(e.message);
+      void showAndLogErrorMessage(e.message);
     }
   }
 
@@ -559,7 +567,7 @@ async function activateWithInstalledDistribution(
         const errorMessage = err.message.includes('Generating qhelp in markdown') ? (
           `Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
         ) : `Could not open a preview of the generated file (${absolutePathToMd}).`;
-        void helpers.showAndLogErrorMessage(errorMessage, { fullMessage: `${errorMessage}\n${err}` });
+        void showAndLogErrorMessage(errorMessage, { fullMessage: `${errorMessage}\n${err}` });
       }
     }
 
@@ -576,7 +584,7 @@ async function activateWithInstalledDistribution(
         const uri = Uri.file(resolved.resolvedPath);
         await window.showTextDocument(uri, { preview: false });
       } else {
-        void helpers.showAndLogErrorMessage(
+        void showAndLogErrorMessage(
           'Jumping from a .qlref file to the .ql file it references is not '
           + 'supported with the CLI version you are running.\n'
           + `Please upgrade your CLI to version ${CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_QLREF
@@ -646,15 +654,15 @@ async function activateWithInstalledDistribution(
       ) => {
         let filteredDBs = dbm.databaseItems;
         if (filteredDBs.length === 0) {
-          void helpers.showAndLogErrorMessage('No databases found. Please add a suitable database to your workspace.');
+          void showAndLogErrorMessage('No databases found. Please add a suitable database to your workspace.');
           return;
         }
         // If possible, only show databases with the right language (otherwise show all databases).
-        const queryLanguage = await helpers.findLanguage(cliServer, uri);
+        const queryLanguage = await findLanguage(cliServer, uri);
         if (queryLanguage) {
           filteredDBs = dbm.databaseItems.filter(db => db.language === queryLanguage);
           if (filteredDBs.length === 0) {
-            void helpers.showAndLogErrorMessage(`No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`);
+            void showAndLogErrorMessage(`No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`);
             return;
           }
         }
@@ -686,12 +694,12 @@ async function activateWithInstalledDistribution(
           }
           if (skippedDatabases.length > 0) {
             void logger.log(`Errors:\n${errors.join('\n')}`);
-            void helpers.showAndLogWarningMessage(
+            void showAndLogWarningMessage(
               `The following databases were skipped:\n${skippedDatabases.join('\n')}.\nFor details about the errors, see the logs.`
             );
           }
         } else {
-          void helpers.showAndLogErrorMessage('No databases selected.');
+          void showAndLogErrorMessage('No databases selected.');
         }
       },
       {
@@ -718,7 +726,7 @@ async function activateWithInstalledDistribution(
         // files may be hidden from the user.
         if (dirFound) {
           const fileString = files.map(file => path.basename(file)).join(', ');
-          const res = await helpers.showBinaryChoiceDialog(
+          const res = await showBinaryChoiceDialog(
             `You are about to run ${files.length} queries: ${fileString} Do you want to continue?`
           );
           if (!res) {
@@ -882,7 +890,7 @@ async function activateWithInstalledDistribution(
       token: CancellationToken
     ) => {
       await qs.restartQueryServer(progress, token);
-      void helpers.showAndLogInformationMessage('CodeQL Query Server restarted.', {
+      void showAndLogInformationMessage('CodeQL Query Server restarted.', {
         outputLogger: queryServerLogger,
       });
     }, {
@@ -938,7 +946,7 @@ async function activateWithInstalledDistribution(
     commandRunner('codeQL.copyVersion', async () => {
       const text = `CodeQL extension version: ${extension?.packageJSON.version} \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${os.platform()} ${os.arch()}`;
       await env.clipboard.writeText(text);
-      void helpers.showAndLogInformationMessage(text);
+      void showAndLogInformationMessage(text);
     }));
 
   const getCliVersion = async () => {
@@ -960,7 +968,7 @@ async function activateWithInstalledDistribution(
         const credentials = await Credentials.initialize(ctx);
         const octokit = await credentials.getOctokit();
         const userInfo = await octokit.users.getAuthenticated();
-        void helpers.showAndLogInformationMessage(`Authenticated to GitHub as user: ${userInfo.data.login}`);
+        void showAndLogInformationMessage(`Authenticated to GitHub as user: ${userInfo.data.login}`);
       }
     }));
 

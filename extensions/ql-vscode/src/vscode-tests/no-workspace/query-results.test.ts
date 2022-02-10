@@ -6,12 +6,13 @@ import 'sinon-chai';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
 import { FullQueryInfo, InitialQueryInfo, interpretResults } from '../../query-results';
-import { QueryEvaluationInfo, QueryWithResults, tmpDir } from '../../run-queries';
+import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries';
 import { QueryHistoryConfig } from '../../config';
 import { EvaluationResult, QueryResultType } from '../../pure/messages';
 import { DatabaseInfo, SortDirection, SortedResultSetInfo } from '../../pure/interface-types';
 import { CodeQLCliServer, SourceInfo } from '../../cli';
 import { CancellationTokenSource, Uri, env } from 'vscode';
+import { tmpDir } from '../../helpers';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

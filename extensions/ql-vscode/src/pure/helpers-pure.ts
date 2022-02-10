@@ -29,3 +29,8 @@ export const asyncFilter = async function <T>(arr: T[], predicate: (arg0: T) => 
   const results = await Promise.all(arr.map(predicate));
   return arr.filter((_, index) => results[index]);
 };
+
+export const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
+export const ONE_HOUR_IN_MS = 1000 * 60 * 60;
+export const TWO_HOURS_IN_MS = 1000 * 60 * 60 * 2;
+export const THREE_HOURS_IN_MS = 1000 * 60 * 60 * 3;

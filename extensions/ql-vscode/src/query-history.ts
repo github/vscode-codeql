@@ -28,7 +28,7 @@ import { URLSearchParams } from 'url';
 import { QueryServerClient } from './queryserver-client';
 import { DisposableObject } from './pure/disposable-object';
 import { commandRunner } from './commandRunner';
-import { assertNever } from './pure/helpers-pure';
+import { assertNever, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/helpers-pure';
 import { FullCompletedQueryInfo, FullQueryInfo, QueryStatus } from './query-results';
 import { DatabaseManager } from './databases';
 import { registerQueryHistoryScubber } from './query-history-scrubber';
@@ -83,8 +83,15 @@ export enum SortOrder {
   CountDesc = 'CountDesc',
 }
 
-const ONE_HOUR_IN_MS = 1000 * 60 * 60;
-const TWO_HOURS_IN_MS = 1000 * 60 * 60 * 2;
+/**
+ * Number of milliseconds two clicks have to arrive apart to be
+ * considered a double-click.
+ */
+const DOUBLE_CLICK_TIME = 500;
+
+const NO_QUERY_SELECTED = 'No query selected. Select a query history item you have already run and try again.';
+
+const WORKSPACE_QUERY_HISTORY_FILE = 'workspace-query-history.json';
 
 /**
  * Tree data provider for the query history view.
@@ -244,15 +251,6 @@ export class HistoryTreeDataProvider extends DisposableObject {
   }
 }
 
-/**
- * Number of milliseconds two clicks have to arrive apart to be
- * considered a double-click.
- */
-const DOUBLE_CLICK_TIME = 500;
-
-const NO_QUERY_SELECTED = 'No query selected. Select a query history item you have already run and try again.';
-
-const WORKSPACE_QUERY_HISTORY_FILE = 'workspace-query-history.json';
 export class QueryHistoryManager extends DisposableObject {
 
   treeDataProvider: HistoryTreeDataProvider;
@@ -742,7 +740,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     await this.tryOpenExternalFile(
-      await finalSingleItem.completedQuery.query.ensureCsvProduced(this.qs, this.dbm)
+      await finalSingleItem.completedQuery.query.ensureCsvAlerts(this.qs, this.dbm)
     );
   }
 
