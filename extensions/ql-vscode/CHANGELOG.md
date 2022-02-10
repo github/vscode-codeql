@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.5.11 - 10 February 2022
 
 - Fix a bug where invoking _View AST_ from the file explorer would not view the selected file. Instead it would view the active editor. Also, prevent the _View AST_ from appearing if the current selection includes a directory or multiple files. [#1113](https://github.com/github/vscode-codeql/pull/1113)
