@@ -5,6 +5,8 @@ import {
   ViewColumn,
   Uri,
   workspace,
+  extensions,
+  commands,
 } from 'vscode';
 import * as path from 'path';
 
@@ -14,6 +16,7 @@ import {
   FromRemoteQueriesMessage,
   RemoteQueryDownloadAnalysisResultsMessage,
   RemoteQueryDownloadAllAnalysesResultsMessage,
+  RemoteQueryViewAnalysisResultsMessage,
 } from '../pure/interface-types';
 import { Logger } from '../logging';
 import { getHtmlForWebview } from '../interface-utils';
@@ -199,6 +202,9 @@ export class RemoteQueriesInterfaceManager {
       case 'remoteQueryDownloadAllAnalysesResults':
         await this.downloadAllAnalysesResults(msg);
         break;
+      case 'remoteQueryViewAnalysisResults':
+        await this.viewAnalysisResults(msg);
+        break;
       default:
         assertNever(msg);
     }
@@ -215,6 +221,28 @@ export class RemoteQueriesInterfaceManager {
       msg.analysisSummaries,
       undefined,
       results => this.setAnalysisResults(results));
+  }
+
+  private async viewAnalysisResults(msg: RemoteQueryViewAnalysisResultsMessage): Promise<void> {
+    const downloadLink = msg.analysisSummary.downloadLink;
+    const filePath = path.join(tmpDir.name, downloadLink.id, downloadLink.innerFilePath || '');
+
+    const sarifViewerExtensionId = 'MS-SarifVSCode.sarif-viewer';
+
+    const sarifExt = extensions.getExtension(sarifViewerExtensionId);
+    if (!sarifExt) {
+      // Ask the user if they want to install the extension to view the results.
+      void commands.executeCommand('workbench.extensions.installExtension', sarifViewerExtensionId);
+      return;
+    }
+
+    if (!sarifExt.isActive) {
+      await sarifExt.activate();
+    }
+
+    await sarifExt.exports.openLogs([
+      Uri.file(filePath),
+    ]);
   }
 
   public async setAnalysisResults(analysesResults: AnalysisResults[]): Promise<void> {

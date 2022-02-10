@@ -60,3 +60,7 @@
   padding-top: 1em;
   font-size: x-small;
 }
+
+.vscode-codeql__analysis-result-file-link {
+  vertical-align: middle;
+}
