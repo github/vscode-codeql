@@ -437,12 +437,23 @@ async function compileNonDestructiveUpgrade(
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<string> {
-  const searchPath = getOnDiskWorkspaceFolders();
 
   if (!dbItem?.contents?.dbSchemeUri) {
     throw new Error('Database is invalid, and cannot be upgraded.');
   }
-  const { scripts, matchesTarget } = await qs.cliServer.resolveUpgrades(dbItem.contents.dbSchemeUri.fsPath, searchPath, true, query.queryDbscheme);
+
+  // When packaging is used, dependencies may exist outside of the workspace and they are always on the resolved search path.
+  // When packaging is not used, all dependencies are in the workspace.
+  const upgradesPath = (await qs.cliServer.cliConstraints.supportsPackaging())
+    ? qlProgram.libraryPath
+    : getOnDiskWorkspaceFolders();
+
+  const { scripts, matchesTarget } = await qs.cliServer.resolveUpgrades(
+    dbItem.contents.dbSchemeUri.fsPath,
+    upgradesPath,
+    true,
+    query.queryDbscheme
+  );
 
   if (!matchesTarget) {
     reportNoUpgradePath(qlProgram, query);
