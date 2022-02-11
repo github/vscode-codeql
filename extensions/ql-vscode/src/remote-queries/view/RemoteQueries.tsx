@@ -17,6 +17,7 @@ import DownloadButton from './DownloadButton';
 import { AnalysisResults } from '../shared/analysis-result';
 import DownloadSpinner from './DownloadSpinner';
 import CollapsibleItem from './CollapsibleItem';
+import { FileSymlinkFileIcon } from '@primer/octicons-react';
 
 const numOfReposInContractedMode = 10;
 
@@ -44,6 +45,13 @@ const downloadAllAnalysesResults = (query: RemoteQueryResult) => {
   vscode.postMessage({
     t: 'remoteQueryDownloadAllAnalysesResults',
     analysisSummaries: query.analysisSummaries
+  });
+};
+
+const viewAnalysisResults = (analysisSummary: AnalysisSummary) => {
+  vscode.postMessage({
+    t: 'remoteQueryViewAnalysisResults',
+    analysisSummary
   });
 };
 
@@ -110,7 +118,7 @@ const SummaryTitleNoResults = () => (
   </div>
 );
 
-const SummaryItemDownload = ({
+const SummaryItemDownloadAndView = ({
   analysisSummary,
   analysisResults
 }: {
@@ -130,7 +138,13 @@ const SummaryItemDownload = ({
     </>;
   }
 
-  return (<></>);
+  return <>
+    <HorizontalSpace size={2} />
+    <a className="vscode-codeql__analysis-result-file-link"
+      onClick={() => viewAnalysisResults(analysisSummary)} >
+      <FileSymlinkFileIcon size={16} />
+    </a>
+  </>;
 };
 
 const SummaryItem = ({
@@ -145,7 +159,7 @@ const SummaryItem = ({
     <span className="vscode-codeql__analysis-item">{analysisSummary.nwo}</span>
     <span className="vscode-codeql__analysis-item"><Badge text={analysisSummary.resultCount.toString()} /></span>
     <span className="vscode-codeql__analysis-item">
-      <SummaryItemDownload
+      <SummaryItemDownloadAndView
         analysisSummary={analysisSummary}
         analysisResults={analysisResults} />
     </span>
@@ -275,13 +289,15 @@ export function RemoteQueries(): JSX.Element {
     return <div>Waiting for results to load.</div>;
   }
 
+  const showAnalysesResults = false;
+
   try {
     return <div>
       <ThemeProvider>
         <ViewTitle>{queryResult.queryTitle}</ViewTitle>
         <QueryInfo {...queryResult} />
         <Summary queryResult={queryResult} analysesResults={analysesResults} />
-        <AnalysesResults analysesResults={analysesResults} totalResults={queryResult.totalResultCount} />
+        {showAnalysesResults && <AnalysesResults analysesResults={analysesResults} totalResults={queryResult.totalResultCount} />}
       </ThemeProvider>
     </div>;
   } catch (err) {
