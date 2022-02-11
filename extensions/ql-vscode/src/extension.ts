@@ -436,13 +436,13 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(queryHistoryConfigurationListener);
   const showResults = async (item: FullCompletedQueryInfo) =>
     showResultsForCompletedQuery(item, WebviewReveal.Forced);
-  const queryStorageLocation = path.join(ctx.globalStorageUri.fsPath, 'queries');
-  await fs.ensureDir(queryStorageLocation);
+  const queryStorageDir = path.join(ctx.globalStorageUri.fsPath, 'queries');
+  await fs.ensureDir(queryStorageDir);
 
   const qhm = new QueryHistoryManager(
     qs,
     dbm,
-    queryStorageLocation,
+    queryStorageDir,
     ctx,
     queryHistoryConfigurationListener,
     showResults,
@@ -519,7 +519,7 @@ async function activateWithInstalledDistribution(
           qs,
           databaseItem,
           initialInfo,
-          queryStorageLocation,
+          queryStorageDir,
           progress,
           source.token,
         );
@@ -996,16 +996,16 @@ async function activateWithInstalledDistribution(
   void logger.log('Registering jump-to-definition handlers.');
   languages.registerDefinitionProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    new TemplateQueryDefinitionProvider(cliServer, qs, dbm, queryStorageLocation)
+    new TemplateQueryDefinitionProvider(cliServer, qs, dbm, queryStorageDir)
   );
 
   languages.registerReferenceProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    new TemplateQueryReferenceProvider(cliServer, qs, dbm, queryStorageLocation)
+    new TemplateQueryReferenceProvider(cliServer, qs, dbm, queryStorageDir)
   );
 
   const astViewer = new AstViewer();
-  const templateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm, queryStorageLocation);
+  const templateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm, queryStorageDir);
 
   ctx.subscriptions.push(astViewer);
   ctx.subscriptions.push(commandRunnerWithProgress('codeQL.viewAst', async (

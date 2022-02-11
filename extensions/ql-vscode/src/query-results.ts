@@ -270,15 +270,16 @@ export class FullQueryInfo {
   constructor(
     public readonly initialInfo: InitialQueryInfo,
     config: QueryHistoryConfig,
-    private source?: CancellationTokenSource // used to cancel in progress queries
+    private cancellationSource?: CancellationTokenSource // used to cancel in progress queries
   ) {
     this.setConfig(config);
   }
 
   cancel() {
-    this.source?.cancel();
+    this.cancellationSource?.cancel();
     // query is no longer in progress, can delete the cancellation token source
-    delete this.source;
+    this.cancellationSource?.dispose();
+    delete this.cancellationSource;
   }
 
   get startTime() {
@@ -361,7 +362,10 @@ export class FullQueryInfo {
 
   completeThisQuery(info: QueryWithResults) {
     this.completedQuery = new CompletedQueryInfo(info);
-    delete this.source;
+
+    // dispose of the cancellation token source and also ensure the source is not serialized as JSON
+    this.cancellationSource?.dispose();
+    delete this.cancellationSource;
   }
 
   /**

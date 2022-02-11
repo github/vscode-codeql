@@ -42,7 +42,7 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
     private cli: CodeQLCliServer,
     private qs: QueryServerClient,
     private dbm: DatabaseManager,
-    private queryStorageLocation: string,
+    private queryStorageDir: string,
   ) {
     this.cache = new CachedOperation<LocationLink[]>(this.getDefinitions.bind(this));
   }
@@ -70,7 +70,7 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
         this.dbm,
         uriString,
         KeyType.DefinitionQuery,
-        this.queryStorageLocation,
+        this.queryStorageDir,
         progress,
         token,
         (src, _dest) => src === uriString
@@ -86,7 +86,7 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
     private cli: CodeQLCliServer,
     private qs: QueryServerClient,
     private dbm: DatabaseManager,
-    private queryStorageLocation: string,
+    private queryStorageDir: string,
   ) {
     this.cache = new CachedOperation<FullLocationLink[]>(this.getReferences.bind(this));
   }
@@ -119,7 +119,7 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
         this.dbm,
         uriString,
         KeyType.DefinitionQuery,
-        this.queryStorageLocation,
+        this.queryStorageDir,
         progress,
         token,
         (src, _dest) => src === uriString
@@ -140,7 +140,7 @@ export class TemplatePrintAstProvider {
     private cli: CodeQLCliServer,
     private qs: QueryServerClient,
     private dbm: DatabaseManager,
-    private queryStorageLocation: string,
+    private queryStorageDir: string,
   ) {
     this.cache = new CachedOperation<QueryWithDb>(this.getAst.bind(this));
   }
@@ -221,7 +221,7 @@ export class TemplatePrintAstProvider {
         this.qs,
         db,
         initialInfo,
-        this.queryStorageLocation,
+        this.queryStorageDir,
         progress,
         token,
         templates

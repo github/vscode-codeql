@@ -1,5 +1,4 @@
 import * as path from 'path';
-import * as fs from 'fs-extra';
 import {
   commands,
   Disposable,
@@ -32,6 +31,7 @@ import { commandRunner } from './commandRunner';
 import { assertNever } from './pure/helpers-pure';
 import { FullCompletedQueryInfo, FullQueryInfo, QueryStatus } from './query-results';
 import { DatabaseManager } from './databases';
+import { registerQueryHistoryScubber } from './query-history-scrubber';
 
 /**
  * query-history.ts
@@ -258,13 +258,13 @@ export class QueryHistoryManager extends DisposableObject {
   treeView: TreeView<FullQueryInfo>;
   lastItemClick: { time: Date; item: FullQueryInfo } | undefined;
   compareWithItem: FullQueryInfo | undefined;
-  queryHistoryScrubber: Disposable;
+  queryHistoryScrubber: Disposable | undefined;
   private queryMetadataStorageLocation;
 
   constructor(
     private qs: QueryServerClient,
     private dbm: DatabaseManager,
-    private queryStorageLocation: string,
+    private queryStorageDir: string,
     ctx: ExtensionContext,
     private queryHistoryConfigListener: QueryHistoryConfig,
     private selectedCallback: (item: FullCompletedQueryInfo) => Promise<void>,
@@ -397,19 +397,15 @@ export class QueryHistoryManager extends DisposableObject {
         }
       )
     );
+
+    // There are two configuration items that affect the query history:
+    // 1. The ttl for query history items.
+    // 2. The default label for query history items.
+    // When either of these change, must refresh the tree view.
     this.push(
       queryHistoryConfigListener.onDidChangeConfiguration(() => {
         this.treeDataProvider.refresh();
-        // recreate the history scrubber
-        this.queryHistoryScrubber.dispose();
-        this.queryHistoryScrubber = this.push(
-          registerQueryHistoryScubber(
-            ONE_HOUR_IN_MS, TWO_HOURS_IN_MS,
-            queryHistoryConfigListener.ttlInMillis,
-            this.queryStorageLocation,
-            ctx
-          )
-        );
+        this.registerQueryHistoryScrubber(queryHistoryConfigListener, ctx);
       })
     );
 
@@ -428,19 +424,28 @@ export class QueryHistoryManager extends DisposableObject {
       },
     }));
 
-    // Register the query history scrubber
+    this.registerQueryHistoryScrubber(queryHistoryConfigListener, ctx);
+  }
+
+  /**
+   * Register and create the history scrubber.
+   */
+  private registerQueryHistoryScrubber(queryHistoryConfigListener: QueryHistoryConfig, ctx: ExtensionContext) {
+    this.queryHistoryScrubber?.dispose();
     // Every hour check if we need to re-run the query history scrubber.
     this.queryHistoryScrubber = this.push(
       registerQueryHistoryScubber(
-        ONE_HOUR_IN_MS, TWO_HOURS_IN_MS,
+        ONE_HOUR_IN_MS,
+        TWO_HOURS_IN_MS,
         queryHistoryConfigListener.ttlInMillis,
-        path.join(ctx.globalStorageUri.fsPath, 'queries'),
+        this.queryStorageDir,
         ctx
       )
     );
   }
 
   async readQueryHistory(): Promise<void> {
+    void logger.log(`Reading cached query history from '${this.queryMetadataStorageLocation}'.`);
     const history = await FullQueryInfo.slurp(this.queryMetadataStorageLocation, this.queryHistoryConfigListener);
     this.treeDataProvider.allHistory = history;
   }
@@ -501,7 +506,10 @@ export class QueryHistoryManager extends DisposableObject {
       if (item.status !== QueryStatus.InProgress) {
         this.treeDataProvider.remove(item);
         item.completedQuery?.dispose();
-        await item.completedQuery?.query.cleanUp();
+
+        // User has explicitly asked for this query to be removed.
+        // We need to delete it from disk as well.
+        await item.completedQuery?.query.deleteQuery();
       }
     }));
     await this.writeQueryHistory();
@@ -950,107 +958,4 @@ the file in the file explorer and dragging it into the workspace.`
   refreshTreeView(): void {
     this.treeDataProvider.refresh();
   }
-}
-
-const LAST_SCRUB_TIME_KEY = 'lastScrubTime';
-
-/**
- * Registers an interval timer that will periodically check for queries old enought
- * to be deleted.
- *
- * Note that this scrubber will clean all queries from all workspaces. It should not
- * run too often and it should only run from one workspace at a time.
- *
- * Generally, `wakeInterval` should be significantly shorter than `throttleTime`.
- *
- * @param wakeInterval How often to check to see if the job should run.
- * @param throttleTime How often to actually run the job.
- * @param maxQueryTime The maximum age of a query before is ready for deletion.
- * @param queryDirectory The directory containing all queries.
- * @param ctx The extension context.
- */
-export function registerQueryHistoryScubber(
-  wakeInterval: number,
-  throttleTime: number,
-  maxQueryTime: number,
-  queryDirectory: string,
-  ctx: ExtensionContext,
-
-  // optional counter to keep track of how many times the scrubber has run
-  counter?: {
-    increment: () => void;
-  }
-): Disposable {
-  const deregister = setInterval(async () => {
-    const lastScrubTime = ctx.globalState.get<number>(LAST_SCRUB_TIME_KEY);
-    const now = Date.now();
-    if (lastScrubTime === undefined || now - lastScrubTime >= throttleTime) {
-      let scrubCount = 0;
-      try {
-        counter?.increment();
-        void logger.log('Scrubbing query directory. Removing old queries.');
-        // do a scrub
-        if (!(await fs.pathExists(queryDirectory))) {
-          void logger.log(`Query directory does not exist: ${queryDirectory}`);
-          return;
-        }
-
-        const baseNames = await fs.readdir(queryDirectory);
-        const errors: string[] = [];
-        for (const baseName of baseNames) {
-          const dir = path.join(queryDirectory, baseName);
-          const timestampFile = path.join(dir, 'timestamp');
-          try {
-            if (!(await fs.stat(dir)).isDirectory()) {
-              void logger.log(`  ${dir} is not a directory. Deleting.`);
-              await fs.remove(dir);
-              scrubCount++;
-            } else if (!(await fs.pathExists(timestampFile))) {
-              void logger.log(`  ${dir} has no timestamp file. Deleting.`);
-              await fs.remove(dir);
-              scrubCount++;
-            } else if (!(await fs.stat(timestampFile)).isFile()) {
-              void logger.log(`  ${timestampFile} is not a file. Deleting.`);
-              await fs.remove(dir);
-              scrubCount++;
-            } else {
-              const timestampText = await fs.readFile(timestampFile, 'utf8');
-              const timestamp = parseInt(timestampText, 10);
-
-              if (Number.isNaN(timestamp)) {
-                void logger.log(`  ${dir} has invalid timestamp '${timestampText}'. Deleting.`);
-                await fs.remove(dir);
-                scrubCount++;
-              } else if (now - timestamp > maxQueryTime) {
-                void logger.log(`  ${dir} is older than ${maxQueryTime / 1000} seconds. Deleting.`);
-                await fs.remove(dir);
-                scrubCount++;
-              } else {
-                void logger.log(`  ${dir} is not older than ${maxQueryTime / 1000} seconds. Keeping.`);
-              }
-            }
-          } catch (err) {
-            errors.push(`  Could not delete '${dir}': ${err}`);
-          }
-        }
-
-        if (errors.length) {
-          throw new Error('\n' + errors.join('\n'));
-        }
-      } catch (e) {
-        void logger.log(`Error while scrubbing query directory: ${e}`);
-      } finally {
-
-        // keep track of when we last scrubbed
-        await ctx.globalState.update(LAST_SCRUB_TIME_KEY, now);
-        void logger.log(`Scrubbed ${scrubCount} queries.`);
-      }
-    }
-  }, wakeInterval);
-
-  return {
-    dispose: () => {
-      clearInterval(deregister);
-    }
-  };
 }

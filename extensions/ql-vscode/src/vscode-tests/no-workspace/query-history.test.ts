@@ -8,7 +8,8 @@ import * as sinon from 'sinon';
 
 import * as chaiAsPromised from 'chai-as-promised';
 import { logger } from '../../logging';
-import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder, registerQueryHistoryScubber } from '../../query-history';
+import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
+import { registerQueryHistoryScubber } from '../../query-history-scrubber';
 import { QueryEvaluationInfo, QueryWithResults, tmpDir } from '../../run-queries';
 import { QueryHistoryConfigListener } from '../../config';
 import * as messages from '../../pure/messages';

@@ -298,7 +298,7 @@ export class QueryEvaluationInfo {
     return this.csvPath;
   }
 
-  async cleanUp(): Promise<void> {
+  async deleteQuery(): Promise<void> {
     await fs.remove(this.querySaveDir);
   }
 }
@@ -598,7 +598,7 @@ export async function compileAndRunQueryAgainstDatabase(
   qs: qsClient.QueryServerClient,
   dbItem: DatabaseItem,
   initialInfo: InitialQueryInfo,
-  queryStorageLocation: string,
+  queryStorageDir: string,
   progress: ProgressCallback,
   token: CancellationToken,
   templates?: messages.TemplateDefinitions,
@@ -664,7 +664,7 @@ export async function compileAndRunQueryAgainstDatabase(
 
   const hasMetadataFile = (await dbItem.hasMetadataFile());
   const query = new QueryEvaluationInfo(
-    path.join(queryStorageLocation, initialInfo.id),
+    path.join(queryStorageDir, initialInfo.id),
     dbItem.databaseUri.fsPath,
     hasMetadataFile,
     packConfig.dbscheme,
