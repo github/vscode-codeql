@@ -369,7 +369,9 @@ describe('query-results', () => {
         id: `some-id-${dbName}`,
       } as InitialQueryInfo,
       mockQueryHistoryConfig(),
-      {} as CancellationTokenSource
+      {
+        dispose: () => { /**/ },
+      } as CancellationTokenSource
     );
 
     if (queryWitbResults) {

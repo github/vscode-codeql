@@ -532,7 +532,9 @@ describe('query-history', () => {
         queryPath: 'hucairz'
       } as InitialQueryInfo,
       configListener,
-      {} as vscode.CancellationTokenSource
+      {
+        dispose: () => { /**/ },
+      } as vscode.CancellationTokenSource
     );
 
     if (queryWitbResults) {
@@ -552,6 +554,7 @@ describe('query-history', () => {
 
     const ONE_HOUR_IN_MS = 60 * 60 * 1000;
     const TWO_HOURS_IN_MS = 2 * ONE_HOUR_IN_MS;
+    const THREE_HOURS_IN_MS = 3 * ONE_HOUR_IN_MS;
     const ONE_DAY_IN_MS = 24 * ONE_HOUR_IN_MS;
     // We don't want our times to align exactly with the hour,
     // so we can better mimic real life
@@ -615,9 +618,10 @@ describe('query-history', () => {
       expect((mockCtx.globalState as any).lastScrubTime).to.eq(TWO_HOURS_IN_MS * 2, 'Should have scrubbed the last time at 4 hours.');
     });
 
-    it('should scrub directories', async () => {
+    it('should scrub directories', async function() {
+      this.timeout(5000);
       // create two query directories that are right around the cut off time
-      const queryDir = createMockQueryDir(ONE_HOUR_IN_MS, TWO_HOURS_IN_MS);
+      const queryDir = createMockQueryDir(ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, THREE_HOURS_IN_MS);
       registerScrubber(queryDir);
 
       clock.tick(TWO_HOURS_IN_MS);
@@ -627,19 +631,33 @@ describe('query-history', () => {
       expectDirectories(
         queryDir,
         toQueryDirName(ONE_HOUR_IN_MS),
-        toQueryDirName(TWO_HOURS_IN_MS)
+        toQueryDirName(TWO_HOURS_IN_MS),
+        toQueryDirName(THREE_HOURS_IN_MS),
       );
 
       clock.tick(LESS_THAN_ONE_DAY);
       await wait();
 
-      // should have deleted the older directory
+      // nothing should have happened...yet
       expectDirectories(
         queryDir,
-        toQueryDirName(TWO_HOURS_IN_MS)
+        toQueryDirName(ONE_HOUR_IN_MS),
+        toQueryDirName(TWO_HOURS_IN_MS),
+        toQueryDirName(THREE_HOURS_IN_MS),
       );
 
-      // Wait two more hours and the final query will be deleted
+      clock.tick(1000);
+      await wait();
+
+      // should have deleted the two older directories
+      // even though they have different time stamps,
+      // they both expire during the same scrubbing period
+      expectDirectories(
+        queryDir,
+        toQueryDirName(THREE_HOURS_IN_MS),
+      );
+
+      // Wait until the next scrub time and the final directory is deleted
       clock.tick(TWO_HOURS_IN_MS);
       await wait();
 
@@ -710,7 +728,7 @@ describe('query-history', () => {
     return {
       query: {
         hasInterpretedResults: () => Promise.resolve(hasInterpretedResults),
-        cleanUp: sandbox.stub(),
+        deleteQuery: sandbox.stub(),
       } as unknown as QueryEvaluationInfo,
       result: {
         resultType: didRunSuccessfully
