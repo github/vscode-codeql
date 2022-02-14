@@ -1,5 +1,9 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
+- Fix a bug where database upgrades could not be resolved if some of the target pack's dependencies are outside of the workspace. [#1138](https://github.com/github/vscode-codeql/pull/1138)
+
 ## 1.5.11 - 10 February 2022
 
 - Fix a bug where invoking _View AST_ from the file explorer would not view the selected file. Instead it would view the active editor. Also, prevent the _View AST_ from appearing if the current selection includes a directory or multiple files. [#1113](https://github.com/github/vscode-codeql/pull/1113)

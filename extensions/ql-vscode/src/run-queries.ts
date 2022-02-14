@@ -10,8 +10,7 @@ import {
   TextDocument,
   TextEditor,
   Uri,
-  window,
-  workspace
+  window
 } from 'vscode';
 import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 
@@ -447,12 +446,23 @@ async function compileNonDestructiveUpgrade(
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<string> {
-  const searchPath = getOnDiskWorkspaceFolders();
 
   if (!dbItem?.contents?.dbSchemeUri) {
     throw new Error('Database is invalid, and cannot be upgraded.');
   }
-  const { scripts, matchesTarget } = await qs.cliServer.resolveUpgrades(dbItem.contents.dbSchemeUri.fsPath, searchPath, true, query.queryDbscheme);
+
+  // When packaging is used, dependencies may exist outside of the workspace and they are always on the resolved search path.
+  // When packaging is not used, all dependencies are in the workspace.
+  const upgradesPath = (await qs.cliServer.cliConstraints.supportsPackaging())
+    ? qlProgram.libraryPath
+    : getOnDiskWorkspaceFolders();
+
+  const { scripts, matchesTarget } = await qs.cliServer.resolveUpgrades(
+    dbItem.contents.dbSchemeUri.fsPath,
+    upgradesPath,
+    true,
+    query.queryDbscheme
+  );
 
   if (!matchesTarget) {
     reportNoUpgradePath(qlProgram, query);
@@ -643,15 +653,7 @@ export async function compileAndRunQueryAgainstDatabase(
   const metadata = await tryGetQueryMetadata(cliServer, qlProgram.queryPath);
 
   let availableMlModels: cli.MlModelInfo[] = [];
-  // The `capabilities.untrustedWorkspaces.restrictedConfigurations` entry in package.json doesn't
-  // work with hidden settings, so we manually check that the workspace is trusted before looking at
-  // whether the `shouldInsecurelyLoadMlModelsFromPacks` setting is enabled.
-  if (
-    workspace.isTrusted &&
-    config.isCanary() &&
-    config.shouldInsecurelyLoadMlModelsFromPacks() &&
-    await cliServer.cliConstraints.supportsResolveMlModels()
-  ) {
+  if (await cliServer.cliConstraints.supportsResolveMlModels()) {
     try {
       availableMlModels = (await cliServer.resolveMlModels(diskWorkspaceFolders)).models;
       void logger.log(`Found available ML models at the following paths: ${availableMlModels.map(x => `'${x.path}'`).join(', ')}.`);
