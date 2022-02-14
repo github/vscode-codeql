@@ -47,7 +47,7 @@ import {
 import { getDefaultResultSetName, ParsedResultSets } from './pure/interface-types';
 import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './pure/bqrs-cli-types';
 import { PAGE_SIZE } from './config';
-import { FullCompletedQueryInfo } from './query-results';
+import { CompletedLocalQueryInfo } from './query-results';
 
 /**
  * interface.ts
@@ -97,7 +97,7 @@ function numInterpretedPages(interpretation: Interpretation | undefined): number
 }
 
 export class InterfaceManager extends DisposableObject {
-  private _displayedQuery?: FullCompletedQueryInfo;
+  private _displayedQuery?: CompletedLocalQueryInfo;
   private _interpretation?: Interpretation;
   private _panel: vscode.WebviewPanel | undefined;
   private _panelLoaded = false;
@@ -357,7 +357,7 @@ export class InterfaceManager extends DisposableObject {
    * history entry.
    */
   public async showResults(
-    fullQuery: FullCompletedQueryInfo,
+    fullQuery: CompletedLocalQueryInfo,
     forceReveal: WebviewReveal,
     shouldKeepOldResultsWhileRendering = false
   ): Promise<void> {
