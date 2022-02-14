@@ -35,7 +35,7 @@ export function registerQueryHistoryScubber(
   // optional counter to keep track of how many times the scrubber has run
   counter?: Counter
 ): Disposable {
-  const deregister = setInterval(scrubber, wakeInterval, throttleTime, maxQueryTime, queryDirectory, ctx, counter);
+  const deregister = setInterval(scrubQueries, wakeInterval, throttleTime, maxQueryTime, queryDirectory, ctx, counter);
 
   return {
     dispose: () => {
@@ -44,7 +44,7 @@ export function registerQueryHistoryScubber(
   };
 }
 
-async function scrubber(
+async function scrubQueries(
   throttleTime: number,
   maxQueryTime: number,
   queryDirectory: string,

@@ -439,6 +439,7 @@ async function activateWithInstalledDistribution(
   const queryStorageDir = path.join(ctx.globalStorageUri.fsPath, 'queries');
   await fs.ensureDir(queryStorageDir);
 
+  void logger.log('Initializing query history.');
   const qhm = new QueryHistoryManager(
     qs,
     dbm,

@@ -273,7 +273,7 @@ describe('query-results', () => {
         infoLateFailure,
       ];
 
-      const allHistoryPath = path.join(tmpDir.name, 'all-history.json');
+      const allHistoryPath = path.join(tmpDir.name, 'workspace-query-history.json');
 
       // splat and slurp
       await FullQueryInfo.splat(allHistory, allHistoryPath);

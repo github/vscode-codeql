@@ -252,6 +252,7 @@ const DOUBLE_CLICK_TIME = 500;
 
 const NO_QUERY_SELECTED = 'No query selected. Select a query history item you have already run and try again.';
 
+const WORKSPACE_QUERY_HISTORY_FILE = 'workspace-query-history.json';
 export class QueryHistoryManager extends DisposableObject {
 
   treeDataProvider: HistoryTreeDataProvider;
@@ -275,7 +276,11 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     super();
 
-    this.queryMetadataStorageLocation = path.join((ctx.storageUri || ctx.globalStorageUri).fsPath, 'query-history.json');
+    // Note that we use workspace storage to hold the metadata for the query history.
+    // This is because the query history is specific to each workspace.
+    // For situations where `ctx.storageUri` is undefined (i.e., there is no workspace),
+    // we default to global storage.
+    this.queryMetadataStorageLocation = path.join((ctx.storageUri || ctx.globalStorageUri).fsPath, WORKSPACE_QUERY_HISTORY_FILE);
 
     this.treeDataProvider = this.push(new HistoryTreeDataProvider(
       ctx.extensionPath
