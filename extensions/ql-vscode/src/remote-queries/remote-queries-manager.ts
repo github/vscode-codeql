@@ -25,9 +25,10 @@ export class RemoteQueriesManager {
   constructor(
     private readonly ctx: ExtensionContext,
     private readonly cliServer: CodeQLCliServer,
+    readonly storagePath: string,
     logger: Logger,
   ) {
-    this.analysesResultsManager = new AnalysesResultsManager(ctx, logger);
+    this.analysesResultsManager = new AnalysesResultsManager(ctx, storagePath, logger);
     this.interfaceManager = new RemoteQueriesInterfaceManager(ctx, logger, this.analysesResultsManager);
     this.remoteQueriesMonitor = new RemoteQueriesMonitor(ctx, logger);
   }
@@ -69,6 +70,7 @@ export class RemoteQueriesManager {
       }
 
       const queryResult = this.mapQueryResult(executionEndTime, resultIndex);
+      await this.analysesResultsManager.prepareDownloadDirectory(query.queryName);
 
       // Kick off auto-download of results.
       void commands.executeCommand('codeQL.autoDownloadRemoteQueryResults', queryResult);

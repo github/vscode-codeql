@@ -303,7 +303,7 @@ export class QueryHistoryManager extends DisposableObject {
         } else {
           this.treeDataProvider.setCurrentItem(ev.selection[0]);
         }
-        this.updateCompareWith(ev.selection);
+        this.updateCompareWith([...ev.selection]);
       })
     );
 
@@ -929,14 +929,17 @@ the file in the file explorer and dragging it into the workspace.`
   private determineSelection(
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
-  ): { finalSingleItem: FullQueryInfo; finalMultiSelect: FullQueryInfo[] } {
+  ): {
+    finalSingleItem: FullQueryInfo;
+    finalMultiSelect: FullQueryInfo[]
+  } {
     if (!singleItem && !multiSelect?.[0]) {
       const selection = this.treeView.selection;
       const current = this.treeDataProvider.getCurrent();
       if (selection?.length) {
         return {
           finalSingleItem: selection[0],
-          finalMultiSelect: selection
+          finalMultiSelect: [...selection]
         };
       } else if (current) {
         return {

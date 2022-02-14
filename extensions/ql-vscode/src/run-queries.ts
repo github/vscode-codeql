@@ -17,7 +17,7 @@ import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 import * as cli from './cli';
 import * as config from './config';
 import { DatabaseItem, DatabaseManager } from './databases';
-import { getOnDiskWorkspaceFolders, showAndLogErrorMessage, tryGetQueryMetadata, upgradesTmpDir } from './helpers';
+import { createTimestampFile, getOnDiskWorkspaceFolders, showAndLogErrorMessage, tryGetQueryMetadata, upgradesTmpDir } from './helpers';
 import { ProgressCallback, UserCancellationException } from './commandRunner';
 import { DatabaseInfo, QueryMetadata } from './pure/interface-types';
 import { logger } from './logging';
@@ -99,9 +99,7 @@ export class QueryEvaluationInfo {
    * This is important for keeping track of when queries should be removed.
    */
   async createTimestampFile() {
-    const timestampPath = path.join(this.querySaveDir, 'timestamp');
-    await fs.ensureDir(this.querySaveDir);
-    await fs.writeFile(timestampPath, Date.now().toString(), 'utf8');
+    await createTimestampFile(this.querySaveDir);
   }
 
   async run(

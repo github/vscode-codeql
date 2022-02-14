@@ -8,6 +8,8 @@ import { AnalysisResults, QueryResult } from './shared/analysis-result';
 import { UserCancellationException } from '../commandRunner';
 import * as os from 'os';
 import { sarifParser } from '../sarif-parser';
+import { createTimestampFile } from '../helpers';
+import { nanoid } from 'nanoid';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for a single remote query.
@@ -15,6 +17,7 @@ export class AnalysesResultsManager {
 
   constructor(
     private readonly ctx: ExtensionContext,
+    private readonly storagePath: string,
     private readonly logger: Logger,
   ) {
     this.analysesResults = [];
@@ -78,6 +81,20 @@ export class AnalysesResultsManager {
     return [...this.analysesResults];
   }
 
+  /**
+   * Prepares a directory for storing analysis results for a single query run.
+   * This directory initially contains only a timestamp file, which will be
+   * used by the query history manager to determine when the directory
+   * should be deleted.
+   *
+   * @param queryName The name of the query that was run.
+   */
+  public async prepareDownloadDirectory(queryName: string): Promise<void> {
+    // Prepare the storage directory.
+    const artifactStorageDir = path.join(this.storagePath, `${queryName}-${nanoid()}`);
+    await createTimestampFile(artifactStorageDir);
+  }
+
   private async downloadSingleAnalysisResults(
     analysis: AnalysisSummary,
     credentials: Credentials,
@@ -94,7 +111,7 @@ export class AnalysesResultsManager {
 
     let artifactPath;
     try {
-      artifactPath = await downloadArtifactFromLink(credentials, analysis.downloadLink);
+      artifactPath = await downloadArtifactFromLink(credentials, analysis.downloadLink, this.storagePath);
     }
     catch (e) {
       throw new Error(`Could not download the analysis results for ${analysis.nwo}: ${e.message}`);
@@ -119,7 +136,7 @@ export class AnalysesResultsManager {
 
     // Read the sarif file and extract information that we want to display
     // in the UI. For now we're only getting the message texts but we'll gradually
-    // extract more information based on the UX we want to build. 
+    // extract more information based on the UX we want to build.
 
     sarifLog.runs?.forEach(run => {
       run?.results?.forEach(result => {
