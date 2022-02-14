@@ -3,6 +3,8 @@ import { workspace, Event, EventEmitter, ConfigurationChangeEvent, Configuration
 import { DistributionManager } from './distribution';
 import { logger } from './logging';
 
+const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
+
 /** Helper class to look up a labelled (and possibly nested) setting. */
 export class Setting {
   name: string;
@@ -54,8 +56,11 @@ const DISTRIBUTION_SETTING = new Setting('cli', ROOT_SETTING);
 export const CUSTOM_CODEQL_PATH_SETTING = new Setting('executablePath', DISTRIBUTION_SETTING);
 const INCLUDE_PRERELEASE_SETTING = new Setting('includePrerelease', DISTRIBUTION_SETTING);
 const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIBUTION_SETTING);
+
+// Query History configuration
 const QUERY_HISTORY_SETTING = new Setting('queryHistory', ROOT_SETTING);
 const QUERY_HISTORY_FORMAT_SETTING = new Setting('format', QUERY_HISTORY_SETTING);
+const QUERY_HISTORY_TTL = new Setting('format', QUERY_HISTORY_SETTING);
 
 /** When these settings change, the distribution should be updated. */
 const DISTRIBUTION_CHANGE_SETTINGS = [CUSTOM_CODEQL_PATH_SETTING, INCLUDE_PRERELEASE_SETTING, PERSONAL_ACCESS_TOKEN_SETTING];
@@ -71,7 +76,6 @@ export interface DistributionConfig {
 }
 
 // Query server configuration
-
 const RUNNING_QUERIES_SETTING = new Setting('runningQueries', ROOT_SETTING);
 const NUMBER_OF_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_QUERIES_SETTING);
 const SAVE_CACHE_SETTING = new Setting('saveCache', RUNNING_QUERIES_SETTING);
@@ -106,10 +110,11 @@ export interface QueryServerConfig {
 }
 
 /** When these settings change, the query history should be refreshed. */
-const QUERY_HISTORY_SETTINGS = [QUERY_HISTORY_FORMAT_SETTING];
+const QUERY_HISTORY_SETTINGS = [QUERY_HISTORY_FORMAT_SETTING, QUERY_HISTORY_TTL];
 
 export interface QueryHistoryConfig {
   format: string;
+  ttlInMillis: number;
   onDidChangeConfiguration: Event<void>;
 }
 
@@ -250,6 +255,13 @@ export class QueryHistoryConfigListener extends ConfigListener implements QueryH
 
   public get format(): string {
     return QUERY_HISTORY_FORMAT_SETTING.getValue<string>();
+  }
+
+  /**
+   * The configuration value is in days, but return the value in milliseconds.
+   */
+  public get ttlInMillis(): number {
+    return (QUERY_HISTORY_TTL.getValue<number>() || 30) * ONE_DAY_IN_MS;
   }
 }
 

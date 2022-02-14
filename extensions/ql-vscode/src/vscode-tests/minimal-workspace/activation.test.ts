@@ -15,6 +15,9 @@ describe('launching with a minimal workspace', async () => {
     assert(ext);
   });
 
+  // Note, this test will only pass in pristine workspaces. This means that when run locally and you
+  // reuse an existing workspace that starts with an open ql file, this test will fail. There is
+  // no need to make any changes since this will still pass on CI.
   it('should not activate the extension at first', () => {
     assert(ext!.isActive === false);
   });

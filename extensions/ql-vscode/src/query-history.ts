@@ -1,9 +1,11 @@
 import * as path from 'path';
 import {
   commands,
+  Disposable,
   env,
   Event,
   EventEmitter,
+  ExtensionContext,
   ProviderResult,
   Range,
   ThemeIcon,
@@ -29,6 +31,7 @@ import { commandRunner } from './commandRunner';
 import { assertNever } from './pure/helpers-pure';
 import { FullCompletedQueryInfo, FullQueryInfo, QueryStatus } from './query-results';
 import { DatabaseManager } from './databases';
+import { registerQueryHistoryScubber } from './query-history-scrubber';
 
 /**
  * query-history.ts
@@ -80,6 +83,9 @@ export enum SortOrder {
   CountDesc = 'CountDesc',
 }
 
+const ONE_HOUR_IN_MS = 1000 * 60 * 60;
+const TWO_HOURS_IN_MS = 1000 * 60 * 60 * 2;
+
 /**
  * Tree data provider for the query history view.
  */
@@ -118,6 +124,7 @@ export class HistoryTreeDataProvider extends DisposableObject {
       title: 'Query History Item',
       command: 'codeQLQueryHistory.itemClicked',
       arguments: [element],
+      tooltip: element.failureReason || element.label
     };
 
     // Populate the icon and the context value. We use the context value to
@@ -217,6 +224,12 @@ export class HistoryTreeDataProvider extends DisposableObject {
     return this.history;
   }
 
+  set allHistory(history: FullQueryInfo[]) {
+    this.history = history;
+    this.current = history[0];
+    this.refresh();
+  }
+
   refresh() {
     this._onDidChangeTreeData.fire(undefined);
   }
@@ -239,17 +252,22 @@ const DOUBLE_CLICK_TIME = 500;
 
 const NO_QUERY_SELECTED = 'No query selected. Select a query history item you have already run and try again.';
 
+const WORKSPACE_QUERY_HISTORY_FILE = 'workspace-query-history.json';
 export class QueryHistoryManager extends DisposableObject {
+
   treeDataProvider: HistoryTreeDataProvider;
   treeView: TreeView<FullQueryInfo>;
   lastItemClick: { time: Date; item: FullQueryInfo } | undefined;
   compareWithItem: FullQueryInfo | undefined;
+  queryHistoryScrubber: Disposable | undefined;
+  private queryMetadataStorageLocation;
 
   constructor(
     private qs: QueryServerClient,
     private dbm: DatabaseManager,
-    extensionPath: string,
-    queryHistoryConfigListener: QueryHistoryConfig,
+    private queryStorageDir: string,
+    ctx: ExtensionContext,
+    private queryHistoryConfigListener: QueryHistoryConfig,
     private selectedCallback: (item: FullCompletedQueryInfo) => Promise<void>,
     private doCompareCallback: (
       from: FullCompletedQueryInfo,
@@ -258,8 +276,14 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     super();
 
+    // Note that we use workspace storage to hold the metadata for the query history.
+    // This is because the query history is specific to each workspace.
+    // For situations where `ctx.storageUri` is undefined (i.e., there is no workspace),
+    // we default to global storage.
+    this.queryMetadataStorageLocation = path.join((ctx.storageUri || ctx.globalStorageUri).fsPath, WORKSPACE_QUERY_HISTORY_FILE);
+
     this.treeDataProvider = this.push(new HistoryTreeDataProvider(
-      extensionPath
+      ctx.extensionPath
     ));
     this.treeView = this.push(window.createTreeView('codeQLQueryHistory', {
       treeDataProvider: this.treeDataProvider,
@@ -378,9 +402,15 @@ export class QueryHistoryManager extends DisposableObject {
         }
       )
     );
+
+    // There are two configuration items that affect the query history:
+    // 1. The ttl for query history items.
+    // 2. The default label for query history items.
+    // When either of these change, must refresh the tree view.
     this.push(
       queryHistoryConfigListener.onDidChangeConfiguration(() => {
         this.treeDataProvider.refresh();
+        this.registerQueryHistoryScrubber(queryHistoryConfigListener, ctx);
       })
     );
 
@@ -398,6 +428,36 @@ export class QueryHistoryManager extends DisposableObject {
         );
       },
     }));
+
+    this.registerQueryHistoryScrubber(queryHistoryConfigListener, ctx);
+  }
+
+  /**
+   * Register and create the history scrubber.
+   */
+  private registerQueryHistoryScrubber(queryHistoryConfigListener: QueryHistoryConfig, ctx: ExtensionContext) {
+    this.queryHistoryScrubber?.dispose();
+    // Every hour check if we need to re-run the query history scrubber.
+    this.queryHistoryScrubber = this.push(
+      registerQueryHistoryScubber(
+        ONE_HOUR_IN_MS,
+        TWO_HOURS_IN_MS,
+        queryHistoryConfigListener.ttlInMillis,
+        this.queryStorageDir,
+        ctx
+      )
+    );
+  }
+
+  async readQueryHistory(): Promise<void> {
+    void logger.log(`Reading cached query history from '${this.queryMetadataStorageLocation}'.`);
+    const history = await FullQueryInfo.slurp(this.queryMetadataStorageLocation, this.queryHistoryConfigListener);
+    this.treeDataProvider.allHistory = history;
+  }
+
+  async writeQueryHistory(): Promise<void> {
+    const toSave = this.treeDataProvider.allHistory.filter(q => q.isCompleted());
+    await FullQueryInfo.splat(toSave, this.queryMetadataStorageLocation);
   }
 
   async invokeCallbackOn(queryHistoryItem: FullQueryInfo) {
@@ -445,14 +505,19 @@ export class QueryHistoryManager extends DisposableObject {
     multiSelect: FullQueryInfo[]
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
-
-    (finalMultiSelect || [finalSingleItem]).forEach((item) => {
-      // Removing in progress queries is not supported yet
+    const toDelete = (finalMultiSelect || [finalSingleItem]);
+    await Promise.all(toDelete.map(async (item) => {
+      // Removing in progress queries is not supported. They must be cancelled first.
       if (item.status !== QueryStatus.InProgress) {
         this.treeDataProvider.remove(item);
         item.completedQuery?.dispose();
+
+        // User has explicitly asked for this query to be removed.
+        // We need to delete it from disk as well.
+        await item.completedQuery?.query.deleteQuery();
       }
-    });
+    }));
+    await this.writeQueryHistory();
     const current = this.treeDataProvider.getCurrent();
     if (current !== undefined) {
       await this.treeView.reveal(current, { select: true });
@@ -488,19 +553,21 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ): Promise<void> {
-    if (!this.assertSingleQuery(multiSelect)) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
 
     const response = await window.showInputBox({
       prompt: 'Label:',
       placeHolder: '(use default)',
-      value: singleItem.label,
+      value: finalSingleItem.label,
     });
     // undefined response means the user cancelled the dialog; don't change anything
     if (response !== undefined) {
       // Interpret empty string response as 'go back to using default'
-      singleItem.initialInfo.userSpecifiedLabel = response === '' ? undefined : response;
+      finalSingleItem.initialInfo.userSpecifiedLabel = response === '' ? undefined : response;
       this.treeDataProvider.refresh();
     }
   }
@@ -509,13 +576,15 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
     try {
-      if (!singleItem.completedQuery?.didRunSuccessfully) {
+      if (!finalSingleItem.completedQuery?.didRunSuccessfully) {
         throw new Error('Please select a successful query.');
       }
 
       const from = this.compareWithItem || singleItem;
-      const to = await this.findOtherQueryToCompare(from, multiSelect);
+      const to = await this.findOtherQueryToCompare(from, finalMultiSelect);
 
       if (from.isCompleted() && to?.isCompleted()) {
         await this.doCompareCallback(from as FullCompletedQueryInfo, to as FullCompletedQueryInfo);
@@ -593,20 +662,22 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ) {
-    if (!this.assertSingleQuery(multiSelect)) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
 
-    if (!singleItem) {
+    if (!finalSingleItem) {
       throw new Error(NO_QUERY_SELECTED);
     }
 
     const params = new URLSearchParams({
-      isQuickEval: String(!!singleItem.initialInfo.quickEvalPosition),
-      queryText: encodeURIComponent(await this.getQueryText(singleItem)),
+      isQuickEval: String(!!finalSingleItem.initialInfo.quickEvalPosition),
+      queryText: encodeURIComponent(await this.getQueryText(finalSingleItem)),
     });
     const uri = Uri.parse(
-      `codeql:${singleItem.initialInfo.id}?${params.toString()}`, true
+      `codeql:${finalSingleItem.initialInfo.id}?${params.toString()}`, true
     );
     const doc = await workspace.openTextDocument(uri);
     await window.showTextDocument(doc, { preview: false });
@@ -616,17 +687,20 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ) {
-    if (!this.assertSingleQuery(multiSelect) || !singleItem.completedQuery) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem.completedQuery) {
       return;
     }
-    const query = singleItem.completedQuery.query;
+
+    const query = finalSingleItem.completedQuery.query;
     const hasInterpretedResults = query.canHaveInterpretedResults();
     if (hasInterpretedResults) {
       await this.tryOpenExternalFile(
         query.resultsPaths.interpretedResultsPath
       );
     } else {
-      const label = singleItem.label;
+      const label = finalSingleItem.label;
       void showAndLogInformationMessage(
         `Query ${label} has no interpreted results.`
       );
@@ -637,13 +711,15 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ) {
-    if (!this.assertSingleQuery(multiSelect)) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
-    if (!singleItem.completedQuery) {
+    if (!finalSingleItem.completedQuery) {
       return;
     }
-    const query = singleItem.completedQuery.query;
+    const query = finalSingleItem.completedQuery.query;
     if (await query.hasCsv()) {
       void this.tryOpenExternalFile(query.csvPath);
       return;
@@ -659,12 +735,14 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[]
   ) {
-    if (!this.assertSingleQuery(multiSelect) || !singleItem.completedQuery) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem.completedQuery) {
       return;
     }
 
     await this.tryOpenExternalFile(
-      await singleItem.completedQuery.query.ensureCsvProduced(this.qs, this.dbm)
+      await finalSingleItem.completedQuery.query.ensureCsvProduced(this.qs, this.dbm)
     );
   }
 
@@ -672,15 +750,17 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: FullQueryInfo,
     multiSelect: FullQueryInfo[],
   ) {
-    if (!this.assertSingleQuery(multiSelect)) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
-    if (!singleItem.completedQuery) {
+    if (!finalSingleItem.completedQuery) {
       return;
     }
 
     await this.tryOpenExternalFile(
-      await singleItem.completedQuery.query.ensureDilPath(this.qs)
+      await finalSingleItem.completedQuery.query.ensureDilPath(this.qs)
     );
   }
 

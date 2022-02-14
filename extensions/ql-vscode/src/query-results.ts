@@ -16,6 +16,7 @@ import {
 import { QueryHistoryConfig } from './config';
 import { DatabaseInfo } from './pure/interface-types';
 import { showAndLogErrorMessage } from './helpers';
+import { asyncFilter } from './pure/helpers-pure';
 
 /**
  * A description of the information about a query
@@ -190,9 +191,13 @@ export class FullQueryInfo {
 
   static async slurp(fsPath: string, config: QueryHistoryConfig): Promise<FullQueryInfo[]> {
     try {
+      if (!(await fs.pathExists(fsPath))) {
+        return [];
+      }
+
       const data = await fs.readFile(fsPath, 'utf8');
       const queries = JSON.parse(data);
-      return queries.map((q: FullQueryInfo) => {
+      const parsedQueries = queries.map((q: FullQueryInfo) => {
 
         // Need to explicitly set prototype since reading in from JSON will not
         // do this automatically. Note that we can't call the constructor here since
@@ -215,6 +220,14 @@ export class FullQueryInfo {
         }
         return q;
       });
+
+      // filter out queries that have been deleted on disk
+      // most likely another workspace has deleted them because the
+      // queries aged out.
+      return asyncFilter(parsedQueries, async (q) => {
+        const resultsPath = q.completedQuery?.query.resultsPaths.resultsPath;
+        return !!resultsPath && await fs.pathExists(resultsPath);
+      });
     } catch (e) {
       void showAndLogErrorMessage('Error loading query history.', {
         fullMessage: ['Error loading query history.', e.stack].join('\n'),
@@ -234,8 +247,12 @@ export class FullQueryInfo {
    */
   static async splat(queries: FullQueryInfo[], fsPath: string): Promise<void> {
     try {
-      const data = JSON.stringify(queries, null, 2);
-      await fs.mkdirp(path.dirname(fsPath));
+      if (!(await fs.pathExists(fsPath))) {
+        await fs.mkdir(path.dirname(fsPath), { recursive: true });
+      }
+      // remove incomplete queries since they cannot be recreated on restart
+      const filteredQueries = queries.filter(q => q.completedQuery !== undefined);
+      const data = JSON.stringify(filteredQueries, null, 2);
       await fs.writeFile(fsPath, data);
     } catch (e) {
       throw new Error(`Error saving query history to ${fsPath}: ${e.message}`);
@@ -253,13 +270,16 @@ export class FullQueryInfo {
   constructor(
     public readonly initialInfo: InitialQueryInfo,
     config: QueryHistoryConfig,
-    private readonly source?: CancellationTokenSource
+    private cancellationSource?: CancellationTokenSource // used to cancel in progress queries
   ) {
     this.setConfig(config);
   }
 
   cancel() {
-    this.source?.cancel();
+    this.cancellationSource?.cancel();
+    // query is no longer in progress, can delete the cancellation token source
+    this.cancellationSource?.dispose();
+    delete this.cancellationSource;
   }
 
   get startTime() {
@@ -342,6 +362,10 @@ export class FullQueryInfo {
 
   completeThisQuery(info: QueryWithResults) {
     this.completedQuery = new CompletedQueryInfo(info);
+
+    // dispose of the cancellation token source and also ensure the source is not serialized as JSON
+    this.cancellationSource?.dispose();
+    delete this.cancellationSource;
   }
 
   /**

@@ -19,6 +19,7 @@ import {
 } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import * as os from 'os';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp-promise';
 import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
@@ -435,16 +436,22 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(queryHistoryConfigurationListener);
   const showResults = async (item: FullCompletedQueryInfo) =>
     showResultsForCompletedQuery(item, WebviewReveal.Forced);
+  const queryStorageDir = path.join(ctx.globalStorageUri.fsPath, 'queries');
+  await fs.ensureDir(queryStorageDir);
 
+  void logger.log('Initializing query history.');
   const qhm = new QueryHistoryManager(
     qs,
     dbm,
-    ctx.extensionPath,
+    queryStorageDir,
+    ctx,
     queryHistoryConfigurationListener,
     showResults,
     async (from: FullCompletedQueryInfo, to: FullCompletedQueryInfo) =>
       showResultsForComparison(from, to),
   );
+  await qhm.readQueryHistory();
+
   ctx.subscriptions.push(qhm);
   void logger.log('Initializing results panel interface.');
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
@@ -513,10 +520,12 @@ async function activateWithInstalledDistribution(
           qs,
           databaseItem,
           initialInfo,
+          queryStorageDir,
           progress,
           source.token,
         );
         item.completeThisQuery(completedQueryInfo);
+        await qhm.writeQueryHistory();
         await showResultsForCompletedQuery(item as FullCompletedQueryInfo, WebviewReveal.NotForced);
         // Note we must update the query history view after showing results as the
         // display and sorting might depend on the number of results
@@ -988,16 +997,16 @@ async function activateWithInstalledDistribution(
   void logger.log('Registering jump-to-definition handlers.');
   languages.registerDefinitionProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    new TemplateQueryDefinitionProvider(cliServer, qs, dbm)
+    new TemplateQueryDefinitionProvider(cliServer, qs, dbm, queryStorageDir)
   );
 
   languages.registerReferenceProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    new TemplateQueryReferenceProvider(cliServer, qs, dbm)
+    new TemplateQueryReferenceProvider(cliServer, qs, dbm, queryStorageDir)
   );
 
   const astViewer = new AstViewer();
-  const templateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm);
+  const templateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm, queryStorageDir);
 
   ctx.subscriptions.push(astViewer);
   ctx.subscriptions.push(commandRunnerWithProgress('codeQL.viewAst', async (
@@ -1036,7 +1045,7 @@ async function activateWithInstalledDistribution(
 }
 
 function getContextStoragePath(ctx: ExtensionContext) {
-  return ctx.storagePath || ctx.globalStoragePath;
+  return ctx.storageUri?.fsPath || ctx.globalStorageUri.fsPath;
 }
 
 async function initializeLogging(ctx: ExtensionContext): Promise<void> {

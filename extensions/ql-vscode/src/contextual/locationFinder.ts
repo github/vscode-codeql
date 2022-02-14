@@ -28,6 +28,7 @@ export interface FullLocationLink extends LocationLink {
  * @param dbm The database manager
  * @param uriString The selected source file and location
  * @param keyType The contextual query type to run
+ * @param queryStorageDir The directory to store the query results
  * @param progress A progress callback
  * @param token A CancellationToken
  * @param filter A function that will filter extraneous results
@@ -38,6 +39,7 @@ export async function getLocationsForUriString(
   dbm: DatabaseManager,
   uriString: string,
   keyType: KeyType,
+  queryStorageDir: string,
   progress: ProgressCallback,
   token: CancellationToken,
   filter: (src: string, dest: string) => boolean
@@ -69,6 +71,7 @@ export async function getLocationsForUriString(
       qs,
       db,
       initialInfo,
+      queryStorageDir,
       progress,
       token,
       templates
