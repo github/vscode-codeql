@@ -75,7 +75,7 @@ const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
 const QueryInfo = (queryResult: RemoteQueryResult) => (
   <>
     <VerticalSpace size={1} />
-    {queryResult.totalResultCount} results in {queryResult.totalRepositoryCount} repositories
+    {queryResult.totalResultCount} results from running against {queryResult.totalRepositoryCount} repositories
     ({queryResult.executionDuration}), {queryResult.executionTimestamp}
     <VerticalSpace size={1} />
     <span className="vscode-codeql__query-file">{octicons.file}
