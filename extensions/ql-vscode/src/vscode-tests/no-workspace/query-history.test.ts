@@ -207,15 +207,11 @@ describe('query-history', () => {
       expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
     });
 
-    it('should throw if there is no selection', async () => {
+    it('should do nothing if there is no selection', async () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
-      try {
-        await queryHistoryManager.handleItemClicked(undefined!, []);
-        expect(true).to.be.false;
-      } catch (e) {
-        expect(selectedCallback).not.to.have.been.called;
-        expect(e.message).to.contain('No query selected');
-      }
+      await queryHistoryManager.handleItemClicked(undefined!, []);
+      expect(selectedCallback).not.to.have.been.called;
+      expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
     });
   });
 

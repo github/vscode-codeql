@@ -76,6 +76,11 @@ const FAILED_QUERY_HISTORY_ITEM_ICON = 'media/red-x.svg';
  */
 const LOCAL_SUCCESS_QUERY_HISTORY_ITEM_ICON = 'media/drive.svg';
 
+/**
+ * Path to icon to display next to a successful remote run.
+ */
+const REMOTE_SUCCESS_QUERY_HISTORY_ITEM_ICON = 'media/globe.svg';
+
 export enum SortOrder {
   NameAsc = 'NameAsc',
   NameDesc = 'NameDesc',
@@ -90,8 +95,6 @@ export enum SortOrder {
  * considered a double-click.
  */
 const DOUBLE_CLICK_TIME = 500;
-
-const NO_QUERY_SELECTED = 'No query selected. Select a query history item you have already run and try again.';
 
 const WORKSPACE_QUERY_HISTORY_FILE = 'workspace-query-history.json';
 
@@ -112,6 +115,8 @@ export class HistoryTreeDataProvider extends DisposableObject {
 
   private localSuccessIconPath: string;
 
+  private remoteSuccessIconPath: string;
+
   private current: QueryHistoryInfo | undefined;
 
   constructor(extensionPath: string) {
@@ -123,6 +128,10 @@ export class HistoryTreeDataProvider extends DisposableObject {
     this.localSuccessIconPath = path.join(
       extensionPath,
       LOCAL_SUCCESS_QUERY_HISTORY_ITEM_ICON
+    );
+    this.remoteSuccessIconPath = path.join(
+      extensionPath,
+      REMOTE_SUCCESS_QUERY_HISTORY_ITEM_ICON
     );
   }
 
@@ -136,31 +145,32 @@ export class HistoryTreeDataProvider extends DisposableObject {
       tooltip: element.failureReason || element.label
     };
 
-    if (element.t === 'local') {
-      // Populate the icon and the context value. We use the context value to
-      // control which commands are visible in the context menu.
-      let hasResults;
-      switch (element.status) {
-        case QueryStatus.InProgress:
-          treeItem.iconPath = new ThemeIcon('sync~spin');
-          treeItem.contextValue = 'inProgressResultsItem';
-          break;
-        case QueryStatus.Completed:
+    // Populate the icon and the context value. We use the context value to
+    // control which commands are visible in the context menu.
+    let hasResults;
+    switch (element.status) {
+      case QueryStatus.InProgress:
+        treeItem.iconPath = new ThemeIcon('sync~spin');
+        treeItem.contextValue = 'inProgressResultsItem';
+        break;
+      case QueryStatus.Completed:
+        if (element.t === 'local') {
           hasResults = await element.completedQuery?.query.hasInterpretedResults();
           treeItem.iconPath = this.localSuccessIconPath;
           treeItem.contextValue = hasResults
             ? 'interpretedResultsItem'
             : 'rawResultsItem';
-          break;
-        case QueryStatus.Failed:
-          treeItem.iconPath = this.failedIconPath;
-          treeItem.contextValue = 'cancelledResultsItem';
-          break;
-        default:
-          assertNever(element.status);
-      }
-    } else {
-      // TODO remote queries are not implemented yet.
+        } else {
+          treeItem.iconPath = this.remoteSuccessIconPath;
+          treeItem.contextValue = 'remoteResultsItem';
+        }
+        break;
+      case QueryStatus.Failed:
+        treeItem.iconPath = this.failedIconPath;
+        treeItem.contextValue = 'cancelledResultsItem';
+        break;
+      default:
+        assertNever(element.status);
     }
 
     return treeItem;
@@ -493,12 +503,8 @@ export class QueryHistoryManager extends DisposableObject {
     multiSelect: QueryHistoryInfo[]
   ): Promise<void> {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local') {
+    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local') {
       return;
-    }
-
-    if (!finalSingleItem) {
-      throw new Error(NO_QUERY_SELECTED);
     }
 
     const textDocument = await workspace.openTextDocument(
@@ -528,20 +534,30 @@ export class QueryHistoryManager extends DisposableObject {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
     const toDelete = (finalMultiSelect || [finalSingleItem]);
     await Promise.all(toDelete.map(async (item) => {
-      // TODO Remote queries are not implemented yet
-      if (item.t !== 'local') {
-        return;
-      }
+      if (item.t === 'local') {
+        // Removing in progress local queries is not supported. They must be cancelled first.
+        if (item.status !== QueryStatus.InProgress) {
+          this.treeDataProvider.remove(item);
+          item.completedQuery?.dispose();
 
-      // Removing in progress queries is not supported. They must be cancelled first.
-      if (item.status !== QueryStatus.InProgress) {
+          // User has explicitly asked for this query to be removed.
+          // We need to delete it from disk as well.
+          await item.completedQuery?.query.deleteQuery();
+        }
+      } else {
+        // Remote queries can be removed locally, but not remotely.
+        // The user must cancel the query on GitHub Actions explicitly.
+
         this.treeDataProvider.remove(item);
-        item.completedQuery?.dispose();
-
-        // User has explicitly asked for this query to be removed.
-        // We need to delete it from disk as well.
-        await item.completedQuery?.query.deleteQuery();
+        await item.deleteQuery();
+        void logger.log(`Deleted ${item.label}.`);
+        if (item.status === QueryStatus.InProgress) {
+          void showAndLogInformationMessage(
+            'The remote query is still running on GitHub Actions. To cancel there, you must go to the query run in your browser.'
+          );
+        }
       }
+
     }));
     await this.writeQueryHistory();
     const current = this.treeDataProvider.getCurrent();
@@ -581,7 +597,7 @@ export class QueryHistoryManager extends DisposableObject {
   ): Promise<void> {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local') {
+    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local') {
       return;
     }
 
@@ -605,7 +621,7 @@ export class QueryHistoryManager extends DisposableObject {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
     try {
-      if (finalSingleItem.t !== 'local') {
+      if (finalSingleItem?.t !== 'local') {
         throw new Error('Please select a local query.');
       }
 
@@ -629,12 +645,8 @@ export class QueryHistoryManager extends DisposableObject {
     multiSelect: QueryHistoryInfo[]
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local') {
+    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local') {
       return;
-    }
-
-    if (!finalSingleItem) {
-      throw new Error(NO_QUERY_SELECTED);
     }
 
     this.treeDataProvider.setCurrentItem(finalSingleItem);
@@ -694,12 +706,8 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local') {
+    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local') {
       return;
-    }
-
-    if (!finalSingleItem) {
-      throw new Error(NO_QUERY_SELECTED);
     }
 
     const params = new URLSearchParams({
@@ -719,7 +727,7 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
+    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local' || !finalSingleItem.completedQuery) {
       return;
     }
 
@@ -743,7 +751,7 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
+    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local' || !finalSingleItem.completedQuery) {
       return;
     }
     const query = finalSingleItem.completedQuery.query;
@@ -764,7 +772,7 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
+    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local' || !finalSingleItem.completedQuery) {
       return;
     }
 
@@ -779,7 +787,7 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
+    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local' || !finalSingleItem.completedQuery) {
       return;
     }
 
@@ -788,11 +796,12 @@ export class QueryHistoryManager extends DisposableObject {
     );
   }
 
-  async getQueryText(queryHistoryItem: LocalQueryInfo): Promise<string> {
-    return queryHistoryItem.initialInfo.queryText;
+  async getQueryText(item: QueryHistoryInfo): Promise<string> {
+    // TODO remote queries cannot have their text returned
+    return item.t === 'local' ? item.initialInfo.queryText : '';
   }
 
-  addQuery(item: LocalQueryInfo) {
+  addQuery(item: QueryHistoryInfo) {
     this.treeDataProvider.pushQuery(item);
     this.updateTreeViewSelectionIfVisible();
   }
@@ -978,7 +987,7 @@ the file in the file explorer and dragging it into the workspace.`
       }
     }
 
-    // ensure we do not return undefined
+    // ensure we only return undefined if we have neither a single or multi-selecion
     if (singleItem && !multiSelect?.[0]) {
       multiSelect = [singleItem];
     } else if (!singleItem && multiSelect?.[0]) {

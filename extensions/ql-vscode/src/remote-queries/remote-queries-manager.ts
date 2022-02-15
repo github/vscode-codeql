@@ -18,6 +18,9 @@ import { RemoteQueryResult } from './remote-query-result';
 import { DownloadLink } from './download-link';
 import { AnalysesResultsManager } from './analyses-results-manager';
 import { assertNever } from '../pure/helpers-pure';
+import { RemoteQueryHistoryItem } from './remote-query-history-item';
+import { QueryHistoryManager } from '../query-history';
+import { QueryStatus } from '../query-status';
 
 const autoDownloadMaxSize = 300 * 1024;
 const autoDownloadMaxCount = 100;
@@ -30,6 +33,7 @@ export class RemoteQueriesManager {
   constructor(
     private readonly ctx: ExtensionContext,
     private readonly cliServer: CodeQLCliServer,
+    private readonly qhm: QueryHistoryManager,
     private readonly storagePath: string,
     logger: Logger,
   ) {
@@ -61,6 +65,13 @@ export class RemoteQueriesManager {
     query: RemoteQuery,
     cancellationToken: CancellationToken
   ): Promise<void> {
+    const queryId = this.createQueryId(query.queryName);
+    await this.prepareStorageDirectory(queryId);
+    await this.storeFile(queryId, 'query.json', query);
+
+    const queryHistoryItem = new RemoteQueryHistoryItem(query.queryName, queryId, this.storagePath);
+    this.qhm.addQuery(queryHistoryItem);
+
     const credentials = await Credentials.initialize(this.ctx);
 
     const queryWorkflowResult = await this.remoteQueriesMonitor.monitorQuery(query, cancellationToken);
@@ -73,31 +84,30 @@ export class RemoteQueriesManager {
         void showAndLogErrorMessage(`There was an issue retrieving the result for the query ${query.queryName}`);
         return;
       }
-
-      const queryId = this.createQueryId(query.queryName);
-      await this.prepareStorageDirectory(queryId);
+      queryHistoryItem.completed = true;
+      queryHistoryItem.status = QueryStatus.Completed;
       const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryId);
 
-      // Write the query result to the storage directory.
-      const queryResultFilePath = path.join(this.storagePath, queryId, 'query-result.json');
-      await fs.writeFile(queryResultFilePath, JSON.stringify(queryResult, null, 2), 'utf8');
+      await this.storeFile(queryId, 'query-result.json', queryResult);
 
-      // Kick off auto-download of results.
+      // Kick off auto-download of results in the background.
       void commands.executeCommand('codeQL.autoDownloadRemoteQueryResults', queryResult);
 
-      const totalResultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
-      const message = `Query "${query.queryName}" run on ${query.repositories.length} repositories and returned ${totalResultCount} results`;
-
-      const shouldOpenView = await showInformationMessageWithAction(message, 'View');
-      if (shouldOpenView) {
-        await this.interfaceManager.showResults(query, queryResult);
-      }
+      // Ask if the user wants to open the results in the background.
+      void this.askToOpenResults(query, queryResult).then(
+        () => { /* do nothing */ },
+        err => {
+          void showAndLogErrorMessage(err);
+        }
+      );
     } else if (queryWorkflowResult.status === 'CompletedUnsuccessfully') {
+      queryHistoryItem.failureReason = queryWorkflowResult.error;
+      queryHistoryItem.status = QueryStatus.Failed;
       await showAndLogErrorMessage(`Remote query execution failed. Error: ${queryWorkflowResult.error}`);
-
     } else if (queryWorkflowResult.status === 'Cancelled') {
+      queryHistoryItem.failureReason = 'Cancelled';
+      queryHistoryItem.status = QueryStatus.Failed;
       await showAndLogErrorMessage('Remote query monitoring was cancelled');
-
     } else if (queryWorkflowResult.status === 'InProgress') {
       // Should not get here
       await showAndLogErrorMessage(`Unexpected status: ${queryWorkflowResult.status}`);
@@ -105,6 +115,7 @@ export class RemoteQueriesManager {
       // Ensure all cases are covered
       assertNever(queryWorkflowResult.status);
     }
+    this.qhm.refreshTreeView();
   }
 
   public async autoDownloadRemoteQueryResults(
@@ -146,6 +157,16 @@ export class RemoteQueriesManager {
     };
   }
 
+  private async askToOpenResults(query: RemoteQuery, queryResult: RemoteQueryResult): Promise<void> {
+    const totalResultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
+    const message = `Query "${query.queryName}" run on ${query.repositories.length} repositories and returned ${totalResultCount} results`;
+
+    const shouldOpenView = await showInformationMessageWithAction(message, 'View');
+    if (shouldOpenView) {
+      await this.interfaceManager.showResults(query, queryResult);
+    }
+  }
+
   /**
    * Generates a unique id for this query, suitable for determining the storage location for the downloaded query artifacts.
    * @param queryName
@@ -167,4 +188,10 @@ export class RemoteQueriesManager {
   private async prepareStorageDirectory(queryId: string): Promise<void> {
     await createTimestampFile(path.join(this.storagePath, queryId));
   }
+
+  private async storeFile(queryId: string, fileName: string, obj: any): Promise<void> {
+    const filePath = path.join(this.storagePath, queryId, fileName);
+    await fs.writeFile(filePath, JSON.stringify(obj, null, 2), 'utf8');
+  }
+
 }
