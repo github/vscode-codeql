@@ -239,6 +239,9 @@ export class RemoteQueriesInterfaceManager {
       await sarifExt.activate();
     }
 
+    // Clear any previous results before showing new results
+    await sarifExt.exports.closeAllLogs();
+
     await sarifExt.exports.openLogs([
       Uri.file(filePath),
     ]);
