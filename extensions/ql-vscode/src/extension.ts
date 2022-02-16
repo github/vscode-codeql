@@ -61,7 +61,8 @@ import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
   showAndLogInformationMessage,
-  showInformationMessageWithAction
+  showInformationMessageWithAction,
+  tmpDir
 } from './helpers';
 import { assertNever } from './pure/helpers-pure';
 import { spawnIdeServer } from './ide-server';
@@ -1003,18 +1004,23 @@ async function activateWithInstalledDistribution(
 
   // Jump-to-definition and find-references
   void logger.log('Registering jump-to-definition handlers.');
+
+  // Store contextual queries in a temporary folder so that they are removed
+  // when the application closes. There is no need for the user to interact with them.
+  const contextualQueryStorageDir = path.join(tmpDir.name, 'contextual-query-storage');
+  await fs.ensureDir(contextualQueryStorageDir);
   languages.registerDefinitionProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    new TemplateQueryDefinitionProvider(cliServer, qs, dbm, queryStorageDir)
+    new TemplateQueryDefinitionProvider(cliServer, qs, dbm, contextualQueryStorageDir)
   );
 
   languages.registerReferenceProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    new TemplateQueryReferenceProvider(cliServer, qs, dbm, queryStorageDir)
+    new TemplateQueryReferenceProvider(cliServer, qs, dbm, contextualQueryStorageDir)
   );
 
   const astViewer = new AstViewer();
-  const templateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm, queryStorageDir);
+  const templateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm, contextualQueryStorageDir);
 
   ctx.subscriptions.push(astViewer);
   ctx.subscriptions.push(commandRunnerWithProgress('codeQL.viewAst', async (
