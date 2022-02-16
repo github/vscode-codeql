@@ -229,7 +229,14 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
   }
 
   public get structuredEvalLogVerbosity(): number {
-    return STRUCTURED_EVAL_LOG_VERBOSITY_SETTING.getValue<number>();
+    const verbosity = STRUCTURED_EVAL_LOG_VERBOSITY_SETTING.getValue<number>();
+
+    if (verbosity < 1 || verbosity > 5 || typeof (verbosity) !== 'number') {
+      void logger.log(`Ignoring value '${verbosity}' for setting ${STRUCTURED_EVAL_LOG_VERBOSITY_SETTING.qualifiedName}; falling back to default value of 1`);
+      return 1;
+    }
+
+    return verbosity;
   }
 
   public get numThreads(): number {

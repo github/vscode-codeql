@@ -225,6 +225,8 @@
         "codeQL.runningQueries.structuredEvaluatorLog.verbosity": {
           "type": "integer",
           "default": 1,
+          "minimum": 1,
+          "maximum": 5,
           "description": "Specifies the verbosity of the structured evaluator logs, from 1 (least verbose) to 5 (most verbose). If not passed or empty, verbosity is set to 1. "
         },
         "codeQL.runningQueries.quickEvalCodelens": {
