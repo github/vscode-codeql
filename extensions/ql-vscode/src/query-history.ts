@@ -599,8 +599,8 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleCompareWith(
-    singleItem: LocalQueryInfo,
-    multiSelect: LocalQueryInfo[]
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[]
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
@@ -610,7 +610,7 @@ export class QueryHistoryManager extends DisposableObject {
       }
 
       if (!finalSingleItem.completedQuery?.didRunSuccessfully) {
-        throw new Error('Please select a successful query.');
+        throw new Error('Please select a query that has completed successfully.');
       }
 
       const from = this.compareWithItem || singleItem;
@@ -625,11 +625,11 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleItemClicked(
-    singleItem: LocalQueryInfo,
-    multiSelect: LocalQueryInfo[]
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[]
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
-    if (!this.assertSingleQuery(finalMultiSelect)) {
+    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local') {
       return;
     }
 
@@ -676,8 +676,8 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleCancel(
-    singleItem: LocalQueryInfo,
-    multiSelect: LocalQueryInfo[]
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[]
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
@@ -689,8 +689,8 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleShowQueryText(
-    singleItem: LocalQueryInfo,
-    multiSelect: LocalQueryInfo[]
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[]
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
@@ -714,8 +714,8 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleViewSarifAlerts(
-    singleItem: LocalQueryInfo,
-    multiSelect: LocalQueryInfo[]
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[]
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
@@ -738,15 +738,12 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleViewCsvResults(
-    singleItem: LocalQueryInfo,
-    multiSelect: LocalQueryInfo[]
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[]
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect)) {
-      return;
-    }
-    if (finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
+    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
       return;
     }
     const query = finalSingleItem.completedQuery.query;
@@ -777,20 +774,12 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleViewDil(
-    singleItem: LocalQueryInfo,
-    multiSelect: LocalQueryInfo[],
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[],
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect)) {
-      return;
-    }
-
-    if (finalSingleItem.t !== 'local') {
-      return;
-    }
-
-    if (!finalSingleItem.completedQuery) {
+    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
       return;
     }
 
@@ -867,11 +856,7 @@ the file in the file explorer and dragging it into the workspace.`
   ): Promise<CompletedLocalQueryInfo | undefined> {
 
     // Remote queries cannot be compared
-    if (singleItem.t !== 'local' || multiSelect.some(s => s.t !== 'local')) {
-      return undefined;
-    }
-
-    if (!singleItem.completedQuery) {
+    if (singleItem.t !== 'local' || multiSelect.some(s => s.t !== 'local') || !singleItem.completedQuery) {
       return undefined;
     }
     const dbName = singleItem.initialInfo.databaseInfo.name;

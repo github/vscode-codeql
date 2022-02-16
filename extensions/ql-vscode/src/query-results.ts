@@ -16,7 +16,7 @@ import {
 import { QueryHistoryConfig } from './config';
 import { DatabaseInfo } from './pure/interface-types';
 import { QueryStatus } from './query-status';
-import { RemoteQueryInfo } from './remote-queries/remote-query-info';
+import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 
 /**
  * query-results.ts
@@ -189,7 +189,7 @@ export type CompletedLocalQueryInfo = LocalQueryInfo & {
   completedQuery: CompletedQueryInfo
 };
 
-export type QueryHistoryInfo = LocalQueryInfo | RemoteQueryInfo;
+export type QueryHistoryInfo = LocalQueryInfo | RemoteQueryHistoryItem;
 
 export class LocalQueryInfo {
   readonly t = 'local';
@@ -199,7 +199,7 @@ export class LocalQueryInfo {
   private config: QueryHistoryConfig | undefined;
 
   /**
-   * Note that in the {@link FullQueryInfo.slurp} method, we create a FullQueryInfo instance
+   * Note that in the {@link slurpQueryHistory} method, we create a FullQueryInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(

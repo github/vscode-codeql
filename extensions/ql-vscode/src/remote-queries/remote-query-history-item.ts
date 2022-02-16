@@ -6,7 +6,7 @@ import { QueryStatus } from '../query-status';
 /**
  * Information about a remote query.
  */
-export interface RemoteQueryInfo {
+export interface RemoteQueryHistoryItem {
   readonly t: 'remote';
   label: string;
   failureReason: string | undefined;
