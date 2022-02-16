@@ -209,6 +209,24 @@
           "default": null,
           "description": "Path to a directory where the CodeQL extension should store query server logs. If empty, the extension stores logs in a temporary workspace folder and deletes the contents after each run."
         },
+        "codeQL.runningQueries.structuredEvaluatorLog": {
+          "type": [
+            "string",
+            null
+          ],
+          "default": "structured-evaluator-log.json",
+          "description": "Path to a file where the evaluator should store structured evaluator logs. If empty, the query server stores the logs in a default location and overwrites them after each query server run."
+        },
+        "codeQL.runningQueries.structuredEvaluatorLog.minify": {
+          "type": "boolean",
+          "default": false,
+          "description": "Minifies the JSON output of structured evaluator logs, removing all whitespace except a single newline between event objects. If not passed, logs are not minified."
+        },
+        "codeQL.runningQueries.structuredEvaluatorLog.verbosity": {
+          "type": "integer",
+          "default": 1,
+          "description": "Specifies the verbosity of the structured evaluator logs, from 1 (least verbose) to 5 (most verbose). If not passed or empty, verbosity is set to 1. "
+        },
         "codeQL.runningQueries.quickEvalCodelens": {
           "type": "boolean",
           "default": true,

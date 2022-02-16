@@ -169,6 +169,21 @@ export class QueryServerClient extends DisposableObject {
 
     if (await this.cliServer.cliConstraints.supportsOldEvalStats()) {
       args.push('--old-eval-stats');
+    } 
+
+    if (this.config.structuredEvalLogFile) {
+      args.push('--evaluator-log');
+      args.push(this.config.structuredEvalLogFile);
+
+      if (this.config.structuredEvalLogMinify) {
+        args.push('--evaluator-log-minify');
+      }
+
+      // 1 is default behavior in query server if argument is not passed.
+      if (this.config.structuredEvalLogVerbosity > 1) {
+        args.push('--evaluator-log-level');
+        args.push(this.config.structuredEvalLogVerbosity.toString());
+      }
     }
 
     if (this.config.debug) {
