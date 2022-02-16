@@ -1,3 +1,5 @@
+import * as path from 'path';
+import { tmpDir } from '../helpers';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryResult } from './remote-query-result';
 import { AnalysisResults } from './shared/analysis-result';
@@ -38,6 +40,7 @@ export const sampleRemoteQuery: RemoteQuery = {
 
 export const sampleRemoteQueryResult: RemoteQueryResult = {
   executionEndTime: new Date('2022-01-06T17:04:37.026Z'),
+  artifactStorageDir: path.join(tmpDir.name, 'query.ql-123-xyz'),
   analysisSummaries: [
     {
       nwo: 'big-corp/repo1',
@@ -46,7 +49,8 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
       downloadLink: {
         id: '137697017',
         urlPath: '/repos/big-corp/controller-repo/actions/artifacts/137697017',
-        innerFilePath: 'results.sarif'
+        innerFilePath: 'results.sarif',
+        artifactStorageDir: path.join(tmpDir.name, 'query.ql-123-xyz')
       }
     },
     {
@@ -56,7 +60,8 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
       downloadLink: {
         id: '137697018',
         urlPath: '/repos/big-corp/controller-repo/actions/artifacts/137697018',
-        innerFilePath: 'results.sarif'
+        innerFilePath: 'results.sarif',
+        artifactStorageDir: path.join(tmpDir.name, 'query.ql-123-xyz')
       }
     },
     {
@@ -66,7 +71,8 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
       downloadLink: {
         id: '137697019',
         urlPath: '/repos/big-corp/controller-repo/actions/artifacts/137697019',
-        innerFilePath: 'results.sarif'
+        innerFilePath: 'results.sarif',
+        artifactStorageDir: path.join(tmpDir.name, 'query.ql-123-xyz')
       }
     },
     {
@@ -76,7 +82,8 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
       downloadLink: {
         id: '137697020',
         urlPath: '/repos/big-corp/controller-repo/actions/artifacts/137697020',
-        innerFilePath: 'results.sarif'
+        innerFilePath: 'results.sarif',
+        artifactStorageDir: path.join(tmpDir.name, 'query.ql-123-xyz')
       }
     }
   ]

@@ -1,8 +1,12 @@
 import { CancellationToken, commands, ExtensionContext, Uri, window } from 'vscode';
+import { nanoid } from 'nanoid';
+import * as path from 'path';
+import * as fs from 'fs-extra';
+
 import { Credentials } from '../authentication';
 import { CodeQLCliServer } from '../cli';
 import { ProgressCallback } from '../commandRunner';
-import { showAndLogErrorMessage, showInformationMessageWithAction } from '../helpers';
+import { createTimestampFile, showAndLogErrorMessage, showInformationMessageWithAction } from '../helpers';
 import { Logger } from '../logging';
 import { runRemoteQuery } from './run-remote-query';
 import { RemoteQueriesInterfaceManager } from './remote-queries-interface';
@@ -13,6 +17,7 @@ import { RemoteQueryResultIndex } from './remote-query-result-index';
 import { RemoteQueryResult } from './remote-query-result';
 import { DownloadLink } from './download-link';
 import { AnalysesResultsManager } from './analyses-results-manager';
+import { assertNever } from '../pure/helpers-pure';
 
 const autoDownloadMaxSize = 300 * 1024;
 const autoDownloadMaxCount = 100;
@@ -25,7 +30,7 @@ export class RemoteQueriesManager {
   constructor(
     private readonly ctx: ExtensionContext,
     private readonly cliServer: CodeQLCliServer,
-    readonly storagePath: string,
+    private readonly storagePath: string,
     logger: Logger,
   ) {
     this.analysesResultsManager = new AnalysesResultsManager(ctx, storagePath, logger);
@@ -58,19 +63,23 @@ export class RemoteQueriesManager {
   ): Promise<void> {
     const credentials = await Credentials.initialize(this.ctx);
 
-    const queryResult = await this.remoteQueriesMonitor.monitorQuery(query, cancellationToken);
+    const queryWorkflowResult = await this.remoteQueriesMonitor.monitorQuery(query, cancellationToken);
 
     const executionEndTime = new Date();
 
-    if (queryResult.status === 'CompletedSuccessfully') {
+    if (queryWorkflowResult.status === 'CompletedSuccessfully') {
       const resultIndex = await getRemoteQueryIndex(credentials, query);
       if (!resultIndex) {
         void showAndLogErrorMessage(`There was an issue retrieving the result for the query ${query.queryName}`);
         return;
       }
 
-      const queryResult = this.mapQueryResult(executionEndTime, resultIndex);
-      await this.analysesResultsManager.prepareDownloadDirectory(query.queryName);
+      const artifactStorageDir = await this.prepareStorageDirectory(query.queryName);
+      const queryResult = this.mapQueryResult(executionEndTime, resultIndex, artifactStorageDir);
+
+      // Write the query result to the storage directory.
+      const queryResultFilePath = path.join(artifactStorageDir, 'query-result.json');
+      await fs.writeFile(queryResultFilePath, JSON.stringify(queryResult, null, 2), 'utf8');
 
       // Kick off auto-download of results.
       void commands.executeCommand('codeQL.autoDownloadRemoteQueryResults', queryResult);
@@ -81,13 +90,19 @@ export class RemoteQueriesManager {
       const shouldOpenView = await showInformationMessageWithAction(message, 'View');
       if (shouldOpenView) {
         await this.interfaceManager.showResults(query, queryResult);
-
       }
-    } else if (queryResult.status === 'CompletedUnsuccessfully') {
-      await showAndLogErrorMessage(`Remote query execution failed. Error: ${queryResult.error}`);
-      return;
-    } else if (queryResult.status === 'Cancelled') {
+    } else if (queryWorkflowResult.status === 'CompletedUnsuccessfully') {
+      await showAndLogErrorMessage(`Remote query execution failed. Error: ${queryWorkflowResult.error}`);
+
+    } else if (queryWorkflowResult.status === 'Cancelled') {
       await showAndLogErrorMessage('Remote query monitoring was cancelled');
+
+    } else if (queryWorkflowResult.status === 'InProgress') {
+      // Should not get here
+      await showAndLogErrorMessage(`Unexpected status: ${queryWorkflowResult.status}`);
+    } else {
+      // Ensure all cases are covered
+      assertNever(queryWorkflowResult.status);
     }
   }
 
@@ -111,7 +126,7 @@ export class RemoteQueriesManager {
       results => this.interfaceManager.setAnalysisResults(results));
   }
 
-  private mapQueryResult(executionEndTime: Date, resultIndex: RemoteQueryResultIndex): RemoteQueryResult {
+  private mapQueryResult(executionEndTime: Date, resultIndex: RemoteQueryResultIndex, artifactStorageDir: string): RemoteQueryResult {
     const analysisSummaries = resultIndex.items.map(item => ({
       nwo: item.nwo,
       resultCount: item.resultCount,
@@ -119,13 +134,32 @@ export class RemoteQueriesManager {
       downloadLink: {
         id: item.artifactId.toString(),
         urlPath: `${resultIndex.artifactsUrlPath}/${item.artifactId}`,
-        innerFilePath: item.sarifFileSize ? 'results.sarif' : 'results.bqrs'
+        innerFilePath: item.sarifFileSize ? 'results.sarif' : 'results.bqrs',
+        artifactStorageDir
       } as DownloadLink
     }));
 
     return {
       executionEndTime,
-      analysisSummaries
+      analysisSummaries,
+      artifactStorageDir
     };
+  }
+
+  /**
+   * Prepares a directory for storing analysis results for a single query run.
+   * This directory contains a timestamp file, which will be
+   * used by the query history manager to determine when the directory
+   * should be deleted.
+   *
+   * @param queryName The name of the query that was run.
+   *
+   * @returns A promise resolving to the directory where all artifacts for this remote query are stored.
+   */
+  private async prepareStorageDirectory(queryName: string): Promise<string> {
+    const artifactStorageDir = path.join(this.storagePath, `${queryName}-${nanoid()}`);
+    await createTimestampFile(artifactStorageDir);
+
+    return artifactStorageDir;
   }
 }

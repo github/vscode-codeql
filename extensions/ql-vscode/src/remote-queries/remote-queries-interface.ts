@@ -24,7 +24,7 @@ import { AnalysisSummary, RemoteQueryResult } from './remote-query-result';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryResult as RemoteQueryResultViewModel } from './shared/remote-query-result';
 import { AnalysisSummary as AnalysisResultViewModel } from './shared/remote-query-result';
-import { showAndLogWarningMessage, tmpDir } from '../helpers';
+import { showAndLogWarningMessage } from '../helpers';
 import { URLSearchParams } from 'url';
 import { SHOW_QUERY_TEXT_MSG } from '../query-history';
 import { AnalysesResultsManager } from './analyses-results-manager';
@@ -98,7 +98,7 @@ export class RemoteQueriesInterfaceManager {
           enableFindWidget: true,
           retainContextWhenHidden: true,
           localResourceRoots: [
-            Uri.file(tmpDir.name),
+            Uri.file(this.analysesResultsManager.storagePath),
             Uri.file(path.join(this.ctx.extensionPath, 'out')),
           ],
         }
@@ -224,7 +224,7 @@ export class RemoteQueriesInterfaceManager {
 
   private async viewAnalysisResults(msg: RemoteQueryViewAnalysisResultsMessage): Promise<void> {
     const downloadLink = msg.analysisSummary.downloadLink;
-    const filePath = path.join(tmpDir.name, downloadLink.id, downloadLink.innerFilePath || '');
+    const filePath = path.join(downloadLink.artifactStorageDir, downloadLink.id, downloadLink.innerFilePath || '');
 
     const sarifViewerExtensionId = 'MS-SarifVSCode.sarif-viewer';
 
