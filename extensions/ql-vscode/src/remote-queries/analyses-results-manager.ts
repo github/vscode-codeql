@@ -8,8 +8,6 @@ import { AnalysisResults, QueryResult } from './shared/analysis-result';
 import { UserCancellationException } from '../commandRunner';
 import * as os from 'os';
 import { sarifParser } from '../sarif-parser';
-import { createTimestampFile } from '../helpers';
-import { nanoid } from 'nanoid';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for a single remote query.
@@ -17,7 +15,7 @@ export class AnalysesResultsManager {
 
   constructor(
     private readonly ctx: ExtensionContext,
-    private readonly storagePath: string,
+    readonly storagePath: string,
     private readonly logger: Logger,
   ) {
     this.analysesResults = [];
@@ -81,20 +79,6 @@ export class AnalysesResultsManager {
     return [...this.analysesResults];
   }
 
-  /**
-   * Prepares a directory for storing analysis results for a single query run.
-   * This directory initially contains only a timestamp file, which will be
-   * used by the query history manager to determine when the directory
-   * should be deleted.
-   *
-   * @param queryName The name of the query that was run.
-   */
-  public async prepareDownloadDirectory(queryName: string): Promise<void> {
-    // Prepare the storage directory.
-    const artifactStorageDir = path.join(this.storagePath, `${queryName}-${nanoid()}`);
-    await createTimestampFile(artifactStorageDir);
-  }
-
   private async downloadSingleAnalysisResults(
     analysis: AnalysisSummary,
     credentials: Credentials,
@@ -111,7 +95,7 @@ export class AnalysesResultsManager {
 
     let artifactPath;
     try {
-      artifactPath = await downloadArtifactFromLink(credentials, analysis.downloadLink, this.storagePath);
+      artifactPath = await downloadArtifactFromLink(credentials, this.storagePath, analysis.downloadLink);
     }
     catch (e) {
       throw new Error(`Could not download the analysis results for ${analysis.nwo}: ${e.message}`);
