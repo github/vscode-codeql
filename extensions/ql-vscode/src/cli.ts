@@ -563,6 +563,17 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
+   * Issues an internal clear-cache command to the cli server. This
+   * command is used to clear the qlpack cache of the server.
+   *
+   * This cache is generally cleared every 1s. This method is used
+   * to force an early clearing of the cache.
+   */
+  public async clearCache(): Promise<void> {
+    await this.runCodeQlCliCommand(['clear-cache'], [], 'Clearing qlpack cache');
+  }
+
+  /**
    * Runs QL tests.
    * @param testPaths Full paths of the tests to run.
    * @param workspaces Workspace paths to use as search paths for QL packs.

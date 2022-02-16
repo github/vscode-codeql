@@ -166,6 +166,9 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
 
   await ensureNameAndSuite(queryPackDir, packRelativePath);
 
+  // Clear the cliServer cache so that the previous qlpack text is purged from the CLI.
+  await cliServer.clearCache();
+
   const bundlePath = await getPackedBundlePath(queryPackDir);
   void logger.log(`Compiling and bundling query pack from ${queryPackDir} to ${bundlePath}. (This may take a while.)`);
   await cliServer.packInstall(queryPackDir);
