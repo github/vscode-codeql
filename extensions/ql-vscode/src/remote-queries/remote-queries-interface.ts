@@ -224,7 +224,7 @@ export class RemoteQueriesInterfaceManager {
 
   private async viewAnalysisResults(msg: RemoteQueryViewAnalysisResultsMessage): Promise<void> {
     const downloadLink = msg.analysisSummary.downloadLink;
-    const filePath = path.join(downloadLink.artifactStorageDir, downloadLink.id, downloadLink.innerFilePath || '');
+    const filePath = path.join(this.analysesResultsManager.storagePath, downloadLink.queryId, downloadLink.id, downloadLink.innerFilePath || '');
 
     const sarifViewerExtensionId = 'MS-SarifVSCode.sarif-viewer';
 

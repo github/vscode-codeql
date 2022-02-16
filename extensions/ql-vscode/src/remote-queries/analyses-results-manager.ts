@@ -95,7 +95,7 @@ export class AnalysesResultsManager {
 
     let artifactPath;
     try {
-      artifactPath = await downloadArtifactFromLink(credentials, analysis.downloadLink);
+      artifactPath = await downloadArtifactFromLink(credentials, this.storagePath, analysis.downloadLink);
     }
     catch (e) {
       throw new Error(`Could not download the analysis results for ${analysis.nwo}: ${e.message}`);

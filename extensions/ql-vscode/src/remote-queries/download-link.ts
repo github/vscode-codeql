@@ -19,7 +19,7 @@ export interface DownloadLink {
   innerFilePath?: string;
 
   /**
-   * The full path to the directory where the artifacts for this link is stored.
+   * A unique id of the remote query run. This is used to determine where to store artifacts and data from the run.
    */
-  artifactStorageDir: string;
+  queryId: string;
 }

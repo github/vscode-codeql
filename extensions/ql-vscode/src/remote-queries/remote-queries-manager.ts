@@ -74,11 +74,12 @@ export class RemoteQueriesManager {
         return;
       }
 
-      const artifactStorageDir = await this.prepareStorageDirectory(query.queryName);
-      const queryResult = this.mapQueryResult(executionEndTime, resultIndex, artifactStorageDir);
+      const queryId = this.createQueryId(query.queryName);
+      await this.prepareStorageDirectory(queryId);
+      const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryId);
 
       // Write the query result to the storage directory.
-      const queryResultFilePath = path.join(artifactStorageDir, 'query-result.json');
+      const queryResultFilePath = path.join(this.storagePath, queryId, 'query-result.json');
       await fs.writeFile(queryResultFilePath, JSON.stringify(queryResult, null, 2), 'utf8');
 
       // Kick off auto-download of results.
@@ -126,7 +127,7 @@ export class RemoteQueriesManager {
       results => this.interfaceManager.setAnalysisResults(results));
   }
 
-  private mapQueryResult(executionEndTime: Date, resultIndex: RemoteQueryResultIndex, artifactStorageDir: string): RemoteQueryResult {
+  private mapQueryResult(executionEndTime: Date, resultIndex: RemoteQueryResultIndex, queryId: string): RemoteQueryResult {
     const analysisSummaries = resultIndex.items.map(item => ({
       nwo: item.nwo,
       resultCount: item.resultCount,
@@ -135,15 +136,24 @@ export class RemoteQueriesManager {
         id: item.artifactId.toString(),
         urlPath: `${resultIndex.artifactsUrlPath}/${item.artifactId}`,
         innerFilePath: item.sarifFileSize ? 'results.sarif' : 'results.bqrs',
-        artifactStorageDir
+        queryId,
       } as DownloadLink
     }));
 
     return {
       executionEndTime,
       analysisSummaries,
-      artifactStorageDir
     };
+  }
+
+  /**
+   * Generates a unique id for this query, suitable for determining the storage location for the downloaded query artifacts.
+   * @param queryName
+   * @returns
+   */
+  private createQueryId(queryName: string): string {
+    return `${queryName}-${nanoid()}`;
+
   }
 
   /**
@@ -153,13 +163,8 @@ export class RemoteQueriesManager {
    * should be deleted.
    *
    * @param queryName The name of the query that was run.
-   *
-   * @returns A promise resolving to the directory where all artifacts for this remote query are stored.
    */
-  private async prepareStorageDirectory(queryName: string): Promise<string> {
-    const artifactStorageDir = path.join(this.storagePath, `${queryName}-${nanoid()}`);
-    await createTimestampFile(artifactStorageDir);
-
-    return artifactStorageDir;
+  private async prepareStorageDirectory(queryId: string): Promise<void> {
+    await createTimestampFile(path.join(this.storagePath, queryId));
   }
 }
