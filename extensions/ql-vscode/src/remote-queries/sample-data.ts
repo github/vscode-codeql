@@ -46,7 +46,8 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
       downloadLink: {
         id: '137697017',
         urlPath: '/repos/big-corp/controller-repo/actions/artifacts/137697017',
-        innerFilePath: 'results.sarif'
+        innerFilePath: 'results.sarif',
+        queryId: 'query.ql-123-xyz'
       }
     },
     {
@@ -56,7 +57,8 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
       downloadLink: {
         id: '137697018',
         urlPath: '/repos/big-corp/controller-repo/actions/artifacts/137697018',
-        innerFilePath: 'results.sarif'
+        innerFilePath: 'results.sarif',
+        queryId: 'query.ql-123-xyz'
       }
     },
     {
@@ -66,7 +68,8 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
       downloadLink: {
         id: '137697019',
         urlPath: '/repos/big-corp/controller-repo/actions/artifacts/137697019',
-        innerFilePath: 'results.sarif'
+        innerFilePath: 'results.sarif',
+        queryId: 'query.ql-123-xyz'
       }
     },
     {
@@ -76,7 +79,8 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
       downloadLink: {
         id: '137697020',
         urlPath: '/repos/big-corp/controller-repo/actions/artifacts/137697020',
-        innerFilePath: 'results.sarif'
+        innerFilePath: 'results.sarif',
+        queryId: 'query.ql-123-xyz'
       }
     }
   ]

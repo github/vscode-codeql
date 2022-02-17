@@ -54,23 +54,23 @@ export async function getRemoteQueryIndex(
 
 export async function downloadArtifactFromLink(
   credentials: Credentials,
+  storagePath: string,
   downloadLink: DownloadLink
 ): Promise<string> {
+
   const octokit = await credentials.getOctokit();
 
   // Download the zipped artifact.
   const response = await octokit.request(`GET ${downloadLink.urlPath}/zip`, {});
 
-  const zipFilePath = path.join(tmpDir.name, `${downloadLink.id}.zip`);
+  const zipFilePath = path.join(storagePath, downloadLink.queryId, `${downloadLink.id}.zip`);
   await saveFile(`${zipFilePath}`, response.data as ArrayBuffer);
 
   // Extract the zipped artifact.
-  const extractedPath = path.join(tmpDir.name, downloadLink.id);
+  const extractedPath = path.join(storagePath, downloadLink.queryId, downloadLink.id);
   await unzipFile(zipFilePath, extractedPath);
 
-  return downloadLink.innerFilePath
-    ? path.join(extractedPath, downloadLink.innerFilePath)
-    : extractedPath;
+  return path.join(extractedPath, downloadLink.innerFilePath || '');
 }
 
 /**

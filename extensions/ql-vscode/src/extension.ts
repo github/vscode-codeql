@@ -815,7 +815,7 @@ async function activateWithInstalledDistribution(
   );
 
   void logger.log('Initializing remote queries interface.');
-  const rqm = new RemoteQueriesManager(ctx, cliServer, logger);
+  const rqm = new RemoteQueriesManager(ctx, cliServer, queryStorageDir, logger);
 
   registerRemoteQueryTextProvider();
 
@@ -862,7 +862,7 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.showFakeRemoteQueryResults', async () => {
-      const analysisResultsManager = new AnalysesResultsManager(ctx, logger);
+      const analysisResultsManager = new AnalysesResultsManager(ctx, queryStorageDir, logger);
       const rqim = new RemoteQueriesInterfaceManager(ctx, logger, analysisResultsManager);
       await rqim.showResults(sampleData.sampleRemoteQuery, sampleData.sampleRemoteQueryResult);
 
