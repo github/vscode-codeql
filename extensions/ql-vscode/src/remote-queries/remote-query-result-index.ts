@@ -3,7 +3,7 @@ export interface RemoteQueryResultIndex {
   items: RemoteQueryResultIndexItem[];
 }
 
-export interface RemoteQueryResultIndexItem {
+export interface RemoteQuerySuccessIndexItem {
   id: string;
   artifactId: number;
   nwo: string;
@@ -11,3 +11,12 @@ export interface RemoteQueryResultIndexItem {
   bqrsFileSize: number;
   sarifFileSize?: number;
 }
+
+export interface RemoteQueryFailureIndexItem {
+  id: string;
+  artifactId: number;
+  nwo: string;
+  error: string;
+}
+
+export type RemoteQueryResultIndexItem = RemoteQuerySuccessIndexItem & RemoteQueryFailureIndexItem;

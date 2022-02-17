@@ -12,9 +12,10 @@ import { RemoteQueryResultIndex, RemoteQueryResultIndexItem } from './remote-que
 interface ApiResultIndexItem {
   nwo: string;
   id: string;
-  results_count: number;
-  bqrs_file_size: number;
+  results_count?: number;
+  bqrs_file_size?: number;
   sarif_file_size?: number;
+  error?: string;
 }
 
 export async function getRemoteQueryIndex(
@@ -34,7 +35,8 @@ export async function getRemoteQueryIndex(
   const resultIndexItems = await getResultIndexItems(credentials, owner, repoName, resultIndexArtifactId);
 
   const items = resultIndexItems.map(item => {
-    const artifactId = getArtifactIDfromName(item.id, workflowUri, artifactList);
+    // We only need the artifact for non-error items.
+    const artifactId = item.error ? undefined : getArtifactIDfromName(item.id, workflowUri, artifactList);
 
     return {
       id: item.id.toString(),
@@ -43,6 +45,7 @@ export async function getRemoteQueryIndex(
       resultCount: item.results_count,
       bqrsFileSize: item.bqrs_file_size,
       sarifFileSize: item.sarif_file_size,
+      error: item.error
     } as RemoteQueryResultIndexItem;
   });
 
