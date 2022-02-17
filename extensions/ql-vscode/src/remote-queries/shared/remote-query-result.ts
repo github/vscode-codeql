@@ -1,4 +1,5 @@
 import { DownloadLink } from '../download-link';
+import { AnalysisFailure } from './analysis-failure';
 
 export interface RemoteQueryResult {
   queryTitle: string;
@@ -10,7 +11,8 @@ export interface RemoteQueryResult {
   totalResultCount: number;
   executionTimestamp: string;
   executionDuration: string;
-  analysisSummaries: AnalysisSummary[]
+  analysisSummaries: AnalysisSummary[],
+  analysisFailures: AnalysisFailure[];
 }
 
 export interface AnalysisSummary {

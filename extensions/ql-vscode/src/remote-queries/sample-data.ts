@@ -83,6 +83,12 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
         queryId: 'query.ql-123-xyz'
       }
     }
+  ],
+  analysisFailures: [
+    {
+      nwo: 'big-corp/repo5',
+      error: 'Error message'
+    }
   ]
 };
 
