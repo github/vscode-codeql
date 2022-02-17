@@ -492,8 +492,9 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
   ): Promise<void> {
+    // TODO will support remote queries
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local') {
+    if (!this.assertSingleQuery(finalMultiSelect) || (finalSingleItem && finalSingleItem.t !== 'local')) {
       return;
     }
 
@@ -581,7 +582,8 @@ export class QueryHistoryManager extends DisposableObject {
   ): Promise<void> {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local') {
+    // TODO will support remote queries
+    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local') {
       return;
     }
 
@@ -605,7 +607,8 @@ export class QueryHistoryManager extends DisposableObject {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
     try {
-      if (finalSingleItem.t !== 'local') {
+      // local queries only
+      if (finalSingleItem?.t !== 'local') {
         throw new Error('Please select a local query.');
       }
 
@@ -628,8 +631,9 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
   ) {
+    // TODO will support remote queries
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local') {
+    if (!this.assertSingleQuery(finalMultiSelect) || (finalSingleItem && finalSingleItem?.t !== 'local')) {
       return;
     }
 
@@ -660,6 +664,7 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: LocalQueryInfo,
     multiSelect: LocalQueryInfo[]
   ) {
+    // Local queries only
     if (!this.assertSingleQuery(multiSelect)) {
       return;
     }
@@ -679,6 +684,8 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
   ) {
+    // Local queries only
+    // In the future, we may support cancelling remote queries, but this is not a short term plan.
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
     (finalMultiSelect || [finalSingleItem]).forEach((item) => {
@@ -694,7 +701,8 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local') {
+    // TODO will support remote queries
+    if (!this.assertSingleQuery(finalMultiSelect) || (finalSingleItem && finalSingleItem?.t !== 'local')) {
       return;
     }
 
@@ -719,7 +727,8 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
+    // Local queries only
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
       return;
     }
 
@@ -743,7 +752,8 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
+    // Local queries only
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
       return;
     }
     const query = finalSingleItem.completedQuery.query;
@@ -764,7 +774,8 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
+    // Local queries only
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
       return;
     }
 
@@ -779,7 +790,8 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
+    // Local queries only
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'local' || !finalSingleItem.completedQuery) {
       return;
     }
 
