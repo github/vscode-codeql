@@ -303,7 +303,7 @@ export async function runRemoteQuery(
     });
 
     const workflowRunId = await runRemoteQueriesApiRequest(credentials, 'main', language, repositories, owner, repo, base64Pack, dryRun);
-    const queryStartTime = new Date();
+    const queryStartTime = Date.now();
     const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
 
     if (dryRun) {
@@ -435,7 +435,7 @@ async function buildRemoteQueryEntity(
   queryMetadata: QueryMetadata | undefined,
   controllerRepoOwner: string,
   controllerRepoName: string,
-  queryStartTime: Date,
+  queryStartTime: number,
   workflowRunId: number
 ): Promise<RemoteQuery> {
   // The query name is either the name as specified in the query metadata, or the file name.

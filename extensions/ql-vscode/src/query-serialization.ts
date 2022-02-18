@@ -38,7 +38,7 @@ export async function slurpQueryHistory(fsPath: string, config: QueryHistoryConf
           q.completedQuery.dispose = () => { /**/ };
         }
       } else if (q.t === 'remote') {
-        // TODO Remote queries are not implemented yet.
+        // noop
       }
       return q;
     });
@@ -47,8 +47,11 @@ export async function slurpQueryHistory(fsPath: string, config: QueryHistoryConf
     // most likely another workspace has deleted them because the
     // queries aged out.
     return asyncFilter(parsedQueries, async (q) => {
-      if (q.t !== 'local') {
-        return false;
+      if (q.t === 'remote') {
+        // the slurper doesn't know where the remote queries are stored
+        // so we need to assume here that they exist. Later, we check to
+        // see if they exist on disk.
+        return true;
       }
       const resultsPath = q.completedQuery?.query.resultsPaths.resultsPath;
       return !!resultsPath && await fs.pathExists(resultsPath);
@@ -57,6 +60,8 @@ export async function slurpQueryHistory(fsPath: string, config: QueryHistoryConf
     void showAndLogErrorMessage('Error loading query history.', {
       fullMessage: ['Error loading query history.', e.stack].join('\n'),
     });
+    // since the query history is invalid, it should be deleted so this error does not happen on next startup.
+    await fs.remove(fsPath);
     return [];
   }
 }
@@ -75,8 +80,8 @@ export async function splatQueryHistory(queries: QueryHistoryInfo[], fsPath: str
     if (!(await fs.pathExists(fsPath))) {
       await fs.mkdir(path.dirname(fsPath), { recursive: true });
     }
-    // remove incomplete queries since they cannot be recreated on restart
-    const filteredQueries = queries.filter(q => q.t === 'local' && q.completedQuery !== undefined);
+    // remove incomplete local queries since they cannot be recreated on restart
+    const filteredQueries = queries.filter(q => q.t === 'local' ? q.completedQuery !== undefined : true);
     const data = JSON.stringify(filteredQueries, null, 2);
     await fs.writeFile(fsPath, data);
   } catch (e) {

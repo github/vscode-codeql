@@ -288,13 +288,24 @@ export class QueryHistoryManager extends DisposableObject {
   queryHistoryScrubber: Disposable | undefined;
   private queryMetadataStorageLocation;
 
+  private readonly _onDidAddQueryItem = super.push(new EventEmitter<QueryHistoryInfo>());
+  readonly onDidAddQueryItem: Event<QueryHistoryInfo> = this
+    ._onDidAddQueryItem.event;
+
+  private readonly _onDidRemoveQueryItem = super.push(new EventEmitter<QueryHistoryInfo>());
+  readonly onDidRemoveQueryItem: Event<QueryHistoryInfo> = this
+    ._onDidRemoveQueryItem.event;
+
+  private readonly _onWillOpenQueryItem = super.push(new EventEmitter<QueryHistoryInfo>());
+  readonly onWillOpenQueryItem: Event<QueryHistoryInfo> = this
+    ._onWillOpenQueryItem.event;
+
   constructor(
     private qs: QueryServerClient,
     private dbm: DatabaseManager,
     private queryStorageDir: string,
     ctx: ExtensionContext,
     private queryHistoryConfigListener: QueryHistoryConfig,
-    private selectedCallback: (item: CompletedLocalQueryInfo) => Promise<void>,
     private doCompareCallback: (
       from: CompletedLocalQueryInfo,
       to: CompletedLocalQueryInfo
@@ -484,53 +495,54 @@ export class QueryHistoryManager extends DisposableObject {
     void logger.log(`Reading cached query history from '${this.queryMetadataStorageLocation}'.`);
     const history = await slurpQueryHistory(this.queryMetadataStorageLocation, this.queryHistoryConfigListener);
     this.treeDataProvider.allHistory = history;
+    this.treeDataProvider.allHistory.forEach((item) => {
+      this._onDidAddQueryItem.fire(item);
+    });
   }
 
   async writeQueryHistory(): Promise<void> {
-    const toSave = this.treeDataProvider.allHistory.filter(q => q.isCompleted());
-    await splatQueryHistory(toSave, this.queryMetadataStorageLocation);
-  }
-
-  async invokeCallbackOn(queryHistoryItem: QueryHistoryInfo) {
-    if (this.selectedCallback && queryHistoryItem.isCompleted()) {
-      const sc = this.selectedCallback;
-      await sc(queryHistoryItem as CompletedLocalQueryInfo);
-    }
+    await splatQueryHistory(this.treeDataProvider.allHistory, this.queryMetadataStorageLocation);
   }
 
   async handleOpenQuery(
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
   ): Promise<void> {
-    // TODO will support remote queries
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local') {
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
       return;
     }
 
+    const queryPath = finalSingleItem.t === 'local'
+      ? finalSingleItem.initialInfo.queryPath
+      : finalSingleItem.remoteQuery.queryFilePath;
+
     const textDocument = await workspace.openTextDocument(
-      Uri.file(finalSingleItem.initialInfo.queryPath)
+      Uri.file(queryPath)
     );
     const editor = await window.showTextDocument(
       textDocument,
       ViewColumn.One
     );
-    const queryText = finalSingleItem.initialInfo.queryText;
-    if (queryText !== undefined && finalSingleItem.initialInfo.isQuickQuery) {
-      await editor.edit((edit) =>
-        edit.replace(
-          textDocument.validateRange(
-            new Range(0, 0, textDocument.lineCount, 0)
-          ),
-          queryText
-        )
-      );
+
+    if (finalSingleItem.t === 'local') {
+      const queryText = finalSingleItem.initialInfo.queryText;
+      if (queryText !== undefined && finalSingleItem.initialInfo.isQuickQuery) {
+        await editor.edit((edit) =>
+          edit.replace(
+            textDocument.validateRange(
+              new Range(0, 0, textDocument.lineCount, 0)
+            ),
+            queryText
+          )
+        );
+      }
     }
   }
 
   async handleRemoveHistoryItem(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[]
+    multiSelect: QueryHistoryInfo[] = []
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
     const toDelete = (finalMultiSelect || [finalSingleItem]);
@@ -548,15 +560,13 @@ export class QueryHistoryManager extends DisposableObject {
       } else {
         // Remote queries can be removed locally, but not remotely.
         // The user must cancel the query on GitHub Actions explicitly.
-
         this.treeDataProvider.remove(item);
-        await item.deleteQuery();
         void logger.log(`Deleted ${item.label}.`);
         if (item.status === QueryStatus.InProgress) {
-          void showAndLogInformationMessage(
-            'The remote query is still running on GitHub Actions. To cancel there, you must go to the query run in your browser.'
-          );
+          void logger.log('The remote query is still running on GitHub Actions. To cancel there, you must go to the query run in your browser.');
         }
+
+        this._onDidRemoveQueryItem.fire(item);
       }
 
     }));
@@ -564,7 +574,7 @@ export class QueryHistoryManager extends DisposableObject {
     const current = this.treeDataProvider.getCurrent();
     if (current !== undefined) {
       await this.treeView.reveal(current, { select: true });
-      await this.invokeCallbackOn(current);
+      await this._onWillOpenQueryItem.fire(current);
     }
   }
 
@@ -635,7 +645,7 @@ export class QueryHistoryManager extends DisposableObject {
       const from = this.compareWithItem || singleItem;
       const to = await this.findOtherQueryToCompare(from, finalMultiSelect);
 
-      if (from.isCompleted() && to?.isCompleted()) {
+      if (from.completed && to?.completed) {
         await this.doCompareCallback(from as CompletedLocalQueryInfo, to as CompletedLocalQueryInfo);
       }
     } catch (e) {
@@ -647,9 +657,8 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
   ) {
-    // TODO will support remote queries
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local') {
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
       return;
     }
 
@@ -668,7 +677,7 @@ export class QueryHistoryManager extends DisposableObject {
       await this.handleOpenQuery(finalSingleItem, [finalSingleItem]);
     } else {
       // show results on single click
-      await this.invokeCallbackOn(finalSingleItem);
+      await this._onWillOpenQueryItem.fire(finalSingleItem);
     }
   }
 
@@ -713,17 +722,20 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    // TODO will support remote queries
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local') {
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
       return;
     }
 
     const params = new URLSearchParams({
-      isQuickEval: String(!!finalSingleItem.initialInfo.quickEvalPosition),
+      isQuickEval: String(!!(finalSingleItem.t === 'local' && finalSingleItem.initialInfo.quickEvalPosition)),
       queryText: encodeURIComponent(await this.getQueryText(finalSingleItem)),
     });
+    const queryId = finalSingleItem.t === 'local'
+      ? finalSingleItem.initialInfo.id
+      : finalSingleItem.queryId;
+
     const uri = Uri.parse(
-      `codeql:${finalSingleItem.initialInfo.id}?${params.toString()}`, true
+      `codeql:${queryId}?${params.toString()}`, true
     );
     const doc = await workspace.openTextDocument(uri);
     await window.showTextDocument(doc, { preview: false });
@@ -809,13 +821,15 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async getQueryText(item: QueryHistoryInfo): Promise<string> {
-    // TODO the query text for remote queries is not yet available
-    return item.t === 'local' ? item.initialInfo.queryText : '';
+    return item.t === 'local'
+      ? item.initialInfo.queryText
+      : item.remoteQuery.queryText;
   }
 
   addQuery(item: QueryHistoryInfo) {
     this.treeDataProvider.pushQuery(item);
     this.updateTreeViewSelectionIfVisible();
+    this._onDidAddQueryItem.fire(item);
   }
 
   /**
@@ -1011,7 +1025,8 @@ the file in the file explorer and dragging it into the workspace.`
     };
   }
 
-  refreshTreeView(): void {
+  async refreshTreeView(): Promise<void> {
     this.treeDataProvider.refresh();
+    await this.writeQueryHistory();
   }
 }
