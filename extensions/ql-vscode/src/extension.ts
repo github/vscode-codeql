@@ -539,6 +539,7 @@ async function activateWithInstalledDistribution(
         // Note we must update the query history view after showing results as the
         // display and sorting might depend on the number of results
       } catch (e) {
+        e.message = `Error running query: ${e.message}`;
         item.failureReason = e.message;
         throw e;
       } finally {
@@ -639,7 +640,10 @@ async function activateWithInstalledDistribution(
       {
         title: 'Running query',
         cancellable: true
-      }
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
     )
   );
   interface DatabaseQuickPickItem extends QuickPickItem {
@@ -771,7 +775,11 @@ async function activateWithInstalledDistribution(
       {
         title: 'Running queries',
         cancellable: true
-      })
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
+    )
   );
   ctx.subscriptions.push(
     commandRunnerWithProgress(
@@ -784,7 +792,10 @@ async function activateWithInstalledDistribution(
       {
         title: 'Running query',
         cancellable: true
-      })
+      },
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
+    )
   );
 
   ctx.subscriptions.push(
@@ -799,7 +810,11 @@ async function activateWithInstalledDistribution(
       {
         title: 'Running query',
         cancellable: true
-      })
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
+    )
   );
 
   ctx.subscriptions.push(
@@ -810,7 +825,10 @@ async function activateWithInstalledDistribution(
       displayQuickQuery(ctx, cliServer, databaseUI, progress, token),
       {
         title: 'Run Quick Query'
-      }
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
     )
   );
 

@@ -160,7 +160,8 @@ export function commandRunner(
 export function commandRunnerWithProgress<R>(
   commandId: string,
   task: ProgressTask<R>,
-  progressOptions: Partial<ProgressOptions>
+  progressOptions: Partial<ProgressOptions>,
+  outputLogger = logger
 ): Disposable {
   return commands.registerCommand(commandId, async (...args: any[]) => {
     const startTime = Date.now();
@@ -177,9 +178,9 @@ export function commandRunnerWithProgress<R>(
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
-          void logger.log(errorMessage);
+          void outputLogger.log(errorMessage);
         } else {
-          void showAndLogWarningMessage(errorMessage);
+          void showAndLogWarningMessage(errorMessage, { outputLogger });
         }
       } else {
         // Include the full stack in the error log only.
@@ -187,6 +188,7 @@ export function commandRunnerWithProgress<R>(
           ? `${errorMessage}\n${e.stack}`
           : errorMessage;
         void showAndLogErrorMessage(errorMessage, {
+          outputLogger,
           fullMessage
         });
       }
