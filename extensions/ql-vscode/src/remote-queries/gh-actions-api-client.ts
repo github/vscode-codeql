@@ -7,15 +7,25 @@ import { logger } from '../logging';
 import { RemoteQueryWorkflowResult } from './remote-query-workflow-result';
 import { DownloadLink } from './download-link';
 import { RemoteQuery } from './remote-query';
-import { RemoteQueryResultIndex, RemoteQueryResultIndexItem } from './remote-query-result-index';
+import { RemoteQueryFailureIndexItem, RemoteQueryResultIndex, RemoteQuerySuccessIndexItem } from './remote-query-result-index';
 
-interface ApiResultIndexItem {
+interface ApiSuccessIndexItem {
   nwo: string;
   id: string;
-  results_count?: number;
-  bqrs_file_size?: number;
+  results_count: number;
+  bqrs_file_size: number;
   sarif_file_size?: number;
-  error?: string;
+}
+
+interface ApiFailureIndexItem {
+  nwo: string;
+  id: string;
+  error: string;
+}
+
+interface ApiResultIndex {
+  successes: ApiSuccessIndexItem[];
+  failures: ApiFailureIndexItem[];
 }
 
 export async function getRemoteQueryIndex(
@@ -32,11 +42,10 @@ export async function getRemoteQueryIndex(
 
   const artifactList = await listWorkflowRunArtifacts(credentials, owner, repoName, workflowRunId);
   const resultIndexArtifactId = getArtifactIDfromName('result-index', workflowUri, artifactList);
-  const resultIndexItems = await getResultIndexItems(credentials, owner, repoName, resultIndexArtifactId);
+  const resultIndex = await getResultIndex(credentials, owner, repoName, resultIndexArtifactId);
 
-  const items = resultIndexItems.map(item => {
-    // We only need the artifact for non-error items.
-    const artifactId = item.error ? undefined : getArtifactIDfromName(item.id, workflowUri, artifactList);
+  const successes = resultIndex?.successes.map(item => {
+    const artifactId = getArtifactIDfromName(item.id, workflowUri, artifactList);
 
     return {
       id: item.id.toString(),
@@ -44,14 +53,22 @@ export async function getRemoteQueryIndex(
       nwo: item.nwo,
       resultCount: item.results_count,
       bqrsFileSize: item.bqrs_file_size,
-      sarifFileSize: item.sarif_file_size,
+      sarifFileSize: item.sarif_file_size
+    } as RemoteQuerySuccessIndexItem;
+  });
+
+  const failures = resultIndex?.failures.map(item => {
+    return {
+      id: item.id.toString(),
+      nwo: item.nwo,
       error: item.error
-    } as RemoteQueryResultIndexItem;
+    } as RemoteQueryFailureIndexItem;
   });
 
   return {
     artifactsUrlPath,
-    items
+    successes: successes || [],
+    failures: failures || []
   };
 }
 
@@ -84,17 +101,17 @@ export async function downloadArtifactFromLink(
  * @param workflowRunId The ID of the workflow run to get the result index for.
  * @returns An object containing the result index.
  */
-async function getResultIndexItems(
+async function getResultIndex(
   credentials: Credentials,
   owner: string,
   repo: string,
   artifactId: number
-): Promise<ApiResultIndexItem[]> {
+): Promise<ApiResultIndex | undefined> {
   const artifactPath = await downloadArtifact(credentials, owner, repo, artifactId);
   const indexFilePath = path.join(artifactPath, 'index.json');
   if (!(await fs.pathExists(indexFilePath))) {
     void showAndLogWarningMessage('Could not find an `index.json` file in the result artifact.');
-    return [];
+    return undefined;
   }
   const resultIndex = await fs.readFile(path.join(artifactPath, 'index.json'), 'utf8');
 
