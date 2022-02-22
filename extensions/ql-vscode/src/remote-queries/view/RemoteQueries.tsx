@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import * as Rdom from 'react-dom';
-import { ThemeProvider } from '@primer/react';
+import { Flash, ThemeProvider } from '@primer/react';
 import { ToRemoteQueriesMessage } from '../../pure/interface-types';
 import { AnalysisSummary, RemoteQueryResult } from '../shared/remote-query-result';
-import * as octicons from '../../view/octicons';
 
 import { vscode } from '../../view/vscode-api';
 
@@ -17,7 +16,7 @@ import DownloadButton from './DownloadButton';
 import { AnalysisResults } from '../shared/analysis-result';
 import DownloadSpinner from './DownloadSpinner';
 import CollapsibleItem from './CollapsibleItem';
-import { FileSymlinkFileIcon } from '@primer/octicons-react';
+import { AlertIcon, CodeSquareIcon, FileCodeIcon, FileSymlinkFileIcon, RepoIcon } from '@primer/octicons-react';
 
 const numOfReposInContractedMode = 10;
 
@@ -31,7 +30,8 @@ const emptyQueryResult: RemoteQueryResult = {
   totalResultCount: 0,
   executionTimestamp: '',
   executionDuration: '',
-  analysisSummaries: []
+  analysisSummaries: [],
+  analysisFailures: [],
 };
 
 const downloadAnalysisResults = (analysisSummary: AnalysisSummary) => {
@@ -78,18 +78,45 @@ const QueryInfo = (queryResult: RemoteQueryResult) => (
     {queryResult.totalResultCount} results from running against {queryResult.totalRepositoryCount} repositories
     ({queryResult.executionDuration}), {queryResult.executionTimestamp}
     <VerticalSpace size={1} />
-    <span className="vscode-codeql__query-file">{octicons.file}
+    <span className="vscode-codeql__query-file">
+      <FileCodeIcon size={16} />
       <a className="vscode-codeql__query-file-link" href="#" onClick={() => openQueryFile(queryResult)}>
         {queryResult.queryFileName}
       </a>
     </span>
-    <span>{octicons.codeSquare}
+    <span>
+      <CodeSquareIcon size={16} />
       <a className="vscode-codeql__query-file-link" href="#" onClick={() => openQueryTextVirtualFile(queryResult)}>
         query
       </a>
     </span>
   </>
 );
+
+const Failures = (queryResult: RemoteQueryResult) => {
+  if (queryResult.analysisFailures.length === 0) {
+    return <></>;
+  }
+  return (
+    <>
+      <VerticalSpace size={3} />
+      <Flash variant="danger">
+        {queryResult.analysisFailures.map((f, i) => (
+          <>
+            <p className="vscode-codeql__analysis-failure" key={i}>
+              <AlertIcon size={16} />
+              <b>{f.nwo}: </b>
+              {f.error}
+            </p>
+            {
+              i === queryResult.analysisFailures.length - 1 ? <></> : <VerticalSpace size={1} />
+            }
+          </>
+        ))}
+      </Flash>
+    </>
+  );
+};
 
 const SummaryTitleWithResults = ({
   queryResult,
@@ -155,7 +182,7 @@ const SummaryItem = ({
   analysisResults: AnalysisResults | undefined
 }) => (
   <span>
-    <span className="vscode-codeql__analysis-item">{octicons.repo}</span>
+    <span className="vscode-codeql__analysis-item"><RepoIcon size={16} /></span>
     <span className="vscode-codeql__analysis-item">{analysisSummary.nwo}</span>
     <span className="vscode-codeql__analysis-item"><Badge text={analysisSummary.resultCount.toString()} /></span>
     <span className="vscode-codeql__analysis-item">
@@ -293,9 +320,10 @@ export function RemoteQueries(): JSX.Element {
 
   try {
     return <div>
-      <ThemeProvider>
+      <ThemeProvider colorMode="auto">
         <ViewTitle>{queryResult.queryTitle}</ViewTitle>
         <QueryInfo {...queryResult} />
+        <Failures {...queryResult} />
         <Summary queryResult={queryResult} analysesResults={analysesResults} />
         {showAnalysesResults && <AnalysesResults analysesResults={analysesResults} totalResults={queryResult.totalResultCount} />}
       </ThemeProvider>

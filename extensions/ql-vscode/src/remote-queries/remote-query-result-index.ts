@@ -1,13 +1,21 @@
 export interface RemoteQueryResultIndex {
   artifactsUrlPath: string;
-  items: RemoteQueryResultIndexItem[];
+  successes: RemoteQuerySuccessIndexItem[];
+  failures: RemoteQueryFailureIndexItem[];
 }
 
-export interface RemoteQueryResultIndexItem {
+export interface RemoteQuerySuccessIndexItem {
   id: string;
   artifactId: number;
   nwo: string;
   resultCount: number;
   bqrsFileSize: number;
   sarifFileSize?: number;
+}
+
+export interface RemoteQueryFailureIndexItem {
+  id: string;
+  artifactId: number;
+  nwo: string;
+  error: string;
 }
