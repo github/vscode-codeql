@@ -70,7 +70,7 @@ import { InterfaceManager } from './interface';
 import { WebviewReveal } from './interface-utils';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
 import { QueryHistoryManager } from './query-history';
-import { FullCompletedQueryInfo, FullQueryInfo } from './query-results';
+import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
 import * as qsClient from './queryserver-client';
 import { displayQuickQuery } from './quick-query';
 import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo } from './run-queries';
@@ -443,7 +443,7 @@ async function activateWithInstalledDistribution(
   void logger.log('Initializing query history manager.');
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
   ctx.subscriptions.push(queryHistoryConfigurationListener);
-  const showResults = async (item: FullCompletedQueryInfo) =>
+  const showResults = async (item: CompletedLocalQueryInfo) =>
     showResultsForCompletedQuery(item, WebviewReveal.Forced);
   const queryStorageDir = path.join(ctx.globalStorageUri.fsPath, 'queries');
   await fs.ensureDir(queryStorageDir);
@@ -456,7 +456,7 @@ async function activateWithInstalledDistribution(
     ctx,
     queryHistoryConfigurationListener,
     showResults,
-    async (from: FullCompletedQueryInfo, to: FullCompletedQueryInfo) =>
+    async (from: CompletedLocalQueryInfo, to: CompletedLocalQueryInfo) =>
       showResultsForComparison(from, to),
   );
   await qhm.readQueryHistory();
@@ -480,8 +480,8 @@ async function activateWithInstalledDistribution(
   archiveFilesystemProvider.activate(ctx);
 
   async function showResultsForComparison(
-    from: FullCompletedQueryInfo,
-    to: FullCompletedQueryInfo
+    from: CompletedLocalQueryInfo,
+    to: CompletedLocalQueryInfo
   ): Promise<void> {
     try {
       await cmpm.showResults(from, to);
@@ -491,7 +491,7 @@ async function activateWithInstalledDistribution(
   }
 
   async function showResultsForCompletedQuery(
-    query: FullCompletedQueryInfo,
+    query: CompletedLocalQueryInfo,
     forceReveal: WebviewReveal
   ): Promise<void> {
     await intm.showResults(query, forceReveal, false);
@@ -521,7 +521,7 @@ async function activateWithInstalledDistribution(
       token.onCancellationRequested(() => source.cancel());
 
       const initialInfo = await createInitialQueryInfo(selectedQuery, databaseInfo, quickEval, range);
-      const item = new FullQueryInfo(initialInfo, queryHistoryConfigurationListener, source);
+      const item = new LocalQueryInfo(initialInfo, queryHistoryConfigurationListener, source);
       qhm.addQuery(item);
       try {
         const completedQueryInfo = await compileAndRunQueryAgainstDatabase(
@@ -535,7 +535,7 @@ async function activateWithInstalledDistribution(
         );
         item.completeThisQuery(completedQueryInfo);
         await qhm.writeQueryHistory();
-        await showResultsForCompletedQuery(item as FullCompletedQueryInfo, WebviewReveal.NotForced);
+        await showResultsForCompletedQuery(item as CompletedLocalQueryInfo, WebviewReveal.NotForced);
         // Note we must update the query history view after showing results as the
         // display and sorting might depend on the number of results
       } catch (e) {

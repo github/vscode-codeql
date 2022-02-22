@@ -20,11 +20,11 @@ import { DatabaseManager } from '../databases';
 import { getHtmlForWebview, jumpToLocation } from '../interface-utils';
 import { transformBqrsResultSet, RawResultSet, BQRSInfo } from '../pure/bqrs-cli-types';
 import resultsDiff from './resultsDiff';
-import { FullCompletedQueryInfo } from '../query-results';
+import { CompletedLocalQueryInfo } from '../query-results';
 
 interface ComparePair {
-  from: FullCompletedQueryInfo;
-  to: FullCompletedQueryInfo;
+  from: CompletedLocalQueryInfo;
+  to: CompletedLocalQueryInfo;
 }
 
 export class CompareInterfaceManager extends DisposableObject {
@@ -39,15 +39,15 @@ export class CompareInterfaceManager extends DisposableObject {
     private cliServer: CodeQLCliServer,
     private logger: Logger,
     private showQueryResultsCallback: (
-      item: FullCompletedQueryInfo
+      item: CompletedLocalQueryInfo
     ) => Promise<void>
   ) {
     super();
   }
 
   async showResults(
-    from: FullCompletedQueryInfo,
-    to: FullCompletedQueryInfo,
+    from: CompletedLocalQueryInfo,
+    to: CompletedLocalQueryInfo,
     selectedResultSetName?: string
   ) {
     this.comparePair = { from, to };
@@ -188,8 +188,8 @@ export class CompareInterfaceManager extends DisposableObject {
   }
 
   private async findCommonResultSetNames(
-    from: FullCompletedQueryInfo,
-    to: FullCompletedQueryInfo,
+    from: CompletedLocalQueryInfo,
+    to: CompletedLocalQueryInfo,
     selectedResultSetName: string | undefined
   ): Promise<[string[], string, RawResultSet, RawResultSet]> {
     const fromSchemas = await this.cliServer.bqrsInfo(

@@ -5,7 +5,7 @@ import 'mocha';
 import 'sinon-chai';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
-import { FullQueryInfo, InitialQueryInfo, interpretResults } from '../../query-results';
+import { LocalQueryInfo, InitialQueryInfo, interpretResults } from '../../query-results';
 import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries';
 import { QueryHistoryConfig } from '../../config';
 import { EvaluationResult, QueryResultType } from '../../pure/messages';
@@ -13,6 +13,7 @@ import { DatabaseInfo, SortDirection, SortedResultSetInfo } from '../../pure/int
 import { CodeQLCliServer, SourceInfo } from '../../cli';
 import { CancellationTokenSource, Uri, env } from 'vscode';
 import { tmpDir } from '../../helpers';
+import { slurpQueryHistory, splatQueryHistory } from '../../query-serialization';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -277,12 +278,12 @@ describe('query-results', () => {
       const allHistoryPath = path.join(tmpDir.name, 'workspace-query-history.json');
 
       // splat and slurp
-      await FullQueryInfo.splat(allHistory, allHistoryPath);
-      const allHistoryActual = await FullQueryInfo.slurp(allHistoryPath, mockConfig);
+      await splatQueryHistory(allHistory, allHistoryPath);
+      const allHistoryActual = await slurpQueryHistory(allHistoryPath, mockConfig);
 
       // the dispose methods will be different. Ignore them.
       allHistoryActual.forEach(info => {
-        if (info.completedQuery) {
+        if (info.t === 'local' && info.completedQuery) {
           const completedQuery = info.completedQuery;
           (completedQuery as any).dispose = undefined;
 
@@ -355,8 +356,8 @@ describe('query-results', () => {
     return result;
   }
 
-  function createMockFullQueryInfo(dbName = 'a', queryWitbResults?: QueryWithResults, isFail = false): FullQueryInfo {
-    const fqi = new FullQueryInfo(
+  function createMockFullQueryInfo(dbName = 'a', queryWitbResults?: QueryWithResults, isFail = false): LocalQueryInfo {
+    const fqi = new LocalQueryInfo(
       {
         databaseInfo: {
           name: dbName,
