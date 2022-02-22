@@ -100,15 +100,7 @@ const Failures = (queryResult: RemoteQueryResult) => {
   return (
     <>
       <VerticalSpace size={3} />
-      <Flash
-        variant="danger"
-        // Currently only works for dark mode (potential bug with Flash component)
-        // https://primer.style/react/Flash
-        sx={{
-          backgroundColor: '#3B2229',
-          color: '#ADBAC7',
-        }}
-      >
+      <Flash variant="danger">
         {queryResult.analysisFailures.map((f, i) => (
           <>
             <p className="vscode-codeql__analysis-failure" key={i}>
@@ -328,7 +320,7 @@ export function RemoteQueries(): JSX.Element {
 
   try {
     return <div>
-      <ThemeProvider>
+      <ThemeProvider colorMode="auto">
         <ViewTitle>{queryResult.queryTitle}</ViewTitle>
         <QueryInfo {...queryResult} />
         <Failures {...queryResult} />
