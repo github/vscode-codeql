@@ -514,8 +514,7 @@ export class CodeQLCliServer implements Disposable {
   async resolveLibraryPath(workspaces: string[], queryPath: string): Promise<QuerySetup> {
     const subcommandArgs = [
       '--query', queryPath,
-      '--additional-packs',
-      workspaces.join(path.delimiter)
+      ...this.getAdditionalPacksArg(workspaces)
     ];
     return await this.runJsonCodeQlCliCommand<QuerySetup>(['resolve', 'library-path'], subcommandArgs, 'Resolving library paths');
   }
@@ -528,8 +527,7 @@ export class CodeQLCliServer implements Disposable {
     const subcommandArgs = [
       '--format', 'bylanguage',
       queryUri.fsPath,
-      '--additional-packs',
-      workspaces.join(path.delimiter)
+      ...this.getAdditionalPacksArg(workspaces)
     ];
     return JSON.parse(await this.runCodeQlCliCommand(['resolve', 'queries'], subcommandArgs, 'Resolving query by language'));
   }
@@ -563,6 +561,17 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
+   * Issues an internal clear-cache command to the cli server. This
+   * command is used to clear the qlpack cache of the server.
+   *
+   * This cache is generally cleared every 1s. This method is used
+   * to force an early clearing of the cache.
+   */
+  public async clearCache(): Promise<void> {
+    await this.runCodeQlCliCommand(['clear-cache'], [], 'Clearing qlpack cache');
+  }
+
+  /**
    * Runs QL tests.
    * @param testPaths Full paths of the tests to run.
    * @param workspaces Workspace paths to use as search paths for QL packs.
@@ -573,7 +582,7 @@ export class CodeQLCliServer implements Disposable {
   ): AsyncGenerator<TestCompleted, void, unknown> {
 
     const subcommandArgs = this.cliConfig.additionalTestArguments.concat([
-      '--additional-packs', workspaces.join(path.delimiter),
+      ...this.getAdditionalPacksArg(workspaces),
       '--threads',
       this.cliConfig.numberTestThreads.toString(),
       ...testPaths
@@ -595,8 +604,12 @@ export class CodeQLCliServer implements Disposable {
 
   /** Resolves the ML models that should be available when evaluating a query. */
   async resolveMlModels(additionalPacks: string[]): Promise<MlModelsInfo> {
-    return await this.runJsonCodeQlCliCommand<MlModelsInfo>(['resolve', 'ml-models'], ['--additional-packs',
-      additionalPacks.join(path.delimiter)], 'Resolving ML models', false);
+    return await this.runJsonCodeQlCliCommand<MlModelsInfo>(
+      ['resolve', 'ml-models'],
+      this.getAdditionalPacksArg(additionalPacks),
+      'Resolving ML models',
+      false
+    );
   }
 
   /**
@@ -761,7 +774,7 @@ export class CodeQLCliServer implements Disposable {
    * @returns A list of database upgrade script directories
    */
   async resolveUpgrades(dbScheme: string, searchPath: string[], allowDowngradesIfPossible: boolean, targetDbScheme?: string): Promise<UpgradesInfo> {
-    const args = ['--additional-packs', searchPath.join(path.delimiter), '--dbscheme', dbScheme];
+    const args = [...this.getAdditionalPacksArg(searchPath), '--dbscheme', dbScheme];
     if (targetDbScheme) {
       args.push('--target-dbscheme', targetDbScheme);
       if (allowDowngradesIfPossible && await this.cliConstraints.supportsDowngrades()) {
@@ -783,7 +796,7 @@ export class CodeQLCliServer implements Disposable {
    * @returns A dictionary mapping qlpack name to the directory it comes from
    */
   resolveQlpacks(additionalPacks: string[], searchPath?: string[]): Promise<QlpacksInfo> {
-    const args = ['--additional-packs', additionalPacks.join(path.delimiter)];
+    const args = this.getAdditionalPacksArg(additionalPacks);
     if (searchPath?.length) {
       args.push('--search-path', path.join(...searchPath));
     }
@@ -829,7 +842,7 @@ export class CodeQLCliServer implements Disposable {
    * @returns A list of query files found.
    */
   async resolveQueriesInSuite(suite: string, additionalPacks: string[], searchPath?: string[]): Promise<string[]> {
-    const args = ['--additional-packs', additionalPacks.join(path.delimiter)];
+    const args = this.getAdditionalPacksArg(additionalPacks);
     if (searchPath !== undefined) {
       args.push('--search-path', path.join(...searchPath));
     }
@@ -862,8 +875,7 @@ export class CodeQLCliServer implements Disposable {
       '-o',
       outputPath,
       dir,
-      '--additional-packs',
-      workspaceFolders.join(path.delimiter)
+      ...this.getAdditionalPacksArg(workspaceFolders)
     ];
     if (!precompile && await this.cliConstraints.supportsNoPrecompile()) {
       args.push('--no-precompile');
@@ -917,6 +929,12 @@ export class CodeQLCliServer implements Disposable {
         // the cli class is never instantiated.
         throw new Error('No distribution found');
     }
+  }
+
+  private getAdditionalPacksArg(paths: string[]): string[] {
+    return paths.length
+      ? ['--additional-packs', paths.join(path.delimiter)]
+      : [];
   }
 }
 

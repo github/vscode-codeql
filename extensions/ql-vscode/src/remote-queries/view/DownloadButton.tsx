@@ -1,6 +1,6 @@
 import * as React from 'react';
-import * as octicons from '../../view/octicons';
 import styled from 'styled-components';
+import { DownloadIcon } from '@primer/octicons-react';
 
 const ButtonLink = styled.a`
   display: inline-block;
@@ -16,7 +16,7 @@ const ButtonLink = styled.a`
 
 const DownloadButton = ({ text, onClick }: { text: string, onClick: () => void }) => (
   <ButtonLink onClick={onClick}>
-    {octicons.download}{text}
+    <DownloadIcon size={16} />{text}
   </ButtonLink>
 );
 

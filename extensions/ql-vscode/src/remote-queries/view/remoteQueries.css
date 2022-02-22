@@ -1,15 +1,3 @@
-.octicon {
-  fill: var(--vscode-editor-foreground);
-  height: 1.2em;
-  width: 1.2em;
-  vertical-align: middle;
-  display: inline-block;
-}
-
-.octicon-light {
-  opacity: 0.6;
-}
-
 .vscode-codeql__query-file {
   padding-right: 1em;
 }
@@ -63,4 +51,11 @@
 
 .vscode-codeql__analysis-result-file-link {
   vertical-align: middle;
+}
+
+.vscode-codeql__analysis-failure {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas,
+    Liberation Mono, monospace;
+  color: var(--vscode-editor-foreground);
 }

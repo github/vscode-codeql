@@ -25,7 +25,7 @@ export class AnalysesResultsManager {
     analysisSummary: AnalysisSummary,
     publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
   ): Promise<void> {
-    if (this.analysesResults.some(x => x.nwo === analysisSummary.nwo)) {
+    if (this.isAnalysisDownloaded(analysisSummary)) {
       // We already have the results for this analysis, don't download again.
       return;
     }
@@ -38,10 +38,13 @@ export class AnalysesResultsManager {
   }
 
   public async downloadAnalysesResults(
-    analysesToDownload: AnalysisSummary[],
+    allAnalysesToDownload: AnalysisSummary[],
     token: CancellationToken | undefined,
     publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
   ): Promise<void> {
+    // Filter out analyses that we have already downloaded.
+    const analysesToDownload = allAnalysesToDownload.filter(x => !this.isAnalysisDownloaded(x));
+
     const credentials = await Credentials.initialize(this.ctx);
 
     void this.logger.log('Downloading and processing analyses results');
@@ -133,5 +136,9 @@ export class AnalysesResultsManager {
     });
 
     return queryResults;
+  }
+
+  private isAnalysisDownloaded(analysis: AnalysisSummary): boolean {
+    return this.analysesResults.some(x => x.nwo === analysis.nwo);
   }
 }

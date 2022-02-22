@@ -96,12 +96,16 @@ describe('Remote queries', function() {
     expect(fs.existsSync(path.join(queryPackDir, 'not-in-pack.ql'))).to.be.false;
 
     // the compiled pack
-    const compiledPackDir = path.join(queryPackDir, '.codeql/pack/github/remote-query-pack/0.0.0/');
+    const compiledPackDir = path.join(queryPackDir, '.codeql/pack/codeql-remote/query/0.0.0/');
     printDirectoryContents(compiledPackDir);
 
     expect(fs.existsSync(path.join(compiledPackDir, 'in-pack.ql'))).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'lib.qll'))).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
+    // should have generated a correct qlpack file
+    const qlpackContents: any = yaml.safeLoad(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
+    expect(qlpackContents.name).to.equal('codeql-remote/query');
+
     // depending on the cli version, we should have one of these files
     expect(
       fs.existsSync(path.join(compiledPackDir, 'qlpack.lock.yml')) ||
@@ -211,7 +215,7 @@ describe('Remote queries', function() {
     expect(fs.existsSync(path.join(queryPackDir, 'not-in-pack.ql'))).to.be.false;
 
     // the compiled pack
-    const compiledPackDir = path.join(queryPackDir, '.codeql/pack/github/remote-query-pack/0.0.0/');
+    const compiledPackDir = path.join(queryPackDir, '.codeql/pack/codeql-remote/query/0.0.0/');
     printDirectoryContents(compiledPackDir);
     expect(fs.existsSync(path.join(compiledPackDir, 'otherfolder/lib.qll'))).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'subfolder/in-pack.ql'))).to.be.true;

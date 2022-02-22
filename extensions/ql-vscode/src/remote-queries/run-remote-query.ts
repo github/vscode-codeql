@@ -166,6 +166,9 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
 
   await ensureNameAndSuite(queryPackDir, packRelativePath);
 
+  // Clear the cliServer cache so that the previous qlpack text is purged from the CLI.
+  await cliServer.clearCache();
+
   const bundlePath = await getPackedBundlePath(queryPackDir);
   void logger.log(`Compiling and bundling query pack from ${queryPackDir} to ${bundlePath}. (This may take a while.)`);
   await cliServer.packInstall(queryPackDir);
@@ -379,16 +382,12 @@ export async function attemptRerun(
 ) {
   if (typeof error.message === 'string' && error.message.includes('Some repositories were invalid')) {
     const invalidRepos = error?.response?.data?.invalid_repos || [];
-    const reposWithoutDbUploads = error?.response?.data?.repos_without_db_uploads || [];
     void logger.log('Unable to run query on some of the specified repositories');
     if (invalidRepos.length > 0) {
       void logger.log(`Invalid repos: ${invalidRepos.join(', ')}`);
     }
-    if (reposWithoutDbUploads.length > 0) {
-      void logger.log(`Repos without DB uploads: ${reposWithoutDbUploads.join(', ')}`);
-    }
 
-    if (invalidRepos.length + reposWithoutDbUploads.length === repositories.length) {
+    if (invalidRepos.length === repositories.length) {
       // Every repo is invalid in some way
       void showAndLogErrorMessage('Unable to run query on any of the specified repositories.');
       return;
@@ -397,7 +396,7 @@ export async function attemptRerun(
     const popupMessage = 'Unable to run query on some of the specified repositories. [See logs for more details](command:codeQL.showLogs).';
     const rerunQuery = await showInformationMessageWithAction(popupMessage, 'Rerun on the valid repositories only');
     if (rerunQuery) {
-      const validRepositories = repositories.filter(r => !invalidRepos.includes(r) && !reposWithoutDbUploads.includes(r));
+      const validRepositories = repositories.filter(r => !invalidRepos.includes(r));
       void logger.log(`Rerunning query on set of valid repositories: ${JSON.stringify(validRepositories)}`);
       return await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, owner, repo, queryPackBase64, dryRun);
     }

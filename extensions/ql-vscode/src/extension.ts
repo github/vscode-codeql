@@ -61,7 +61,8 @@ import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
   showAndLogInformationMessage,
-  showInformationMessageWithAction
+  showInformationMessageWithAction,
+  tmpDir
 } from './helpers';
 import { assertNever } from './pure/helpers-pure';
 import { spawnIdeServer } from './ide-server';
@@ -538,6 +539,7 @@ async function activateWithInstalledDistribution(
         // Note we must update the query history view after showing results as the
         // display and sorting might depend on the number of results
       } catch (e) {
+        e.message = `Error running query: ${e.message}`;
         item.failureReason = e.message;
         throw e;
       } finally {
@@ -638,7 +640,10 @@ async function activateWithInstalledDistribution(
       {
         title: 'Running query',
         cancellable: true
-      }
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
     )
   );
   interface DatabaseQuickPickItem extends QuickPickItem {
@@ -770,7 +775,11 @@ async function activateWithInstalledDistribution(
       {
         title: 'Running queries',
         cancellable: true
-      })
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
+    )
   );
   ctx.subscriptions.push(
     commandRunnerWithProgress(
@@ -783,7 +792,10 @@ async function activateWithInstalledDistribution(
       {
         title: 'Running query',
         cancellable: true
-      })
+      },
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
+    )
   );
 
   ctx.subscriptions.push(
@@ -798,7 +810,11 @@ async function activateWithInstalledDistribution(
       {
         title: 'Running query',
         cancellable: true
-      })
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
+    )
   );
 
   ctx.subscriptions.push(
@@ -809,7 +825,10 @@ async function activateWithInstalledDistribution(
       displayQuickQuery(ctx, cliServer, databaseUI, progress, token),
       {
         title: 'Run Quick Query'
-      }
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
     )
   );
 
@@ -1003,18 +1022,23 @@ async function activateWithInstalledDistribution(
 
   // Jump-to-definition and find-references
   void logger.log('Registering jump-to-definition handlers.');
+
+  // Store contextual queries in a temporary folder so that they are removed
+  // when the application closes. There is no need for the user to interact with them.
+  const contextualQueryStorageDir = path.join(tmpDir.name, 'contextual-query-storage');
+  await fs.ensureDir(contextualQueryStorageDir);
   languages.registerDefinitionProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    new TemplateQueryDefinitionProvider(cliServer, qs, dbm, queryStorageDir)
+    new TemplateQueryDefinitionProvider(cliServer, qs, dbm, contextualQueryStorageDir)
   );
 
   languages.registerReferenceProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    new TemplateQueryReferenceProvider(cliServer, qs, dbm, queryStorageDir)
+    new TemplateQueryReferenceProvider(cliServer, qs, dbm, contextualQueryStorageDir)
   );
 
   const astViewer = new AstViewer();
-  const templateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm, queryStorageDir);
+  const templateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm, contextualQueryStorageDir);
 
   ctx.subscriptions.push(astViewer);
   ctx.subscriptions.push(commandRunnerWithProgress('codeQL.viewAst', async (
