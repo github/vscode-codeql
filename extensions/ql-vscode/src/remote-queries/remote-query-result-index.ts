@@ -1,6 +1,7 @@
 export interface RemoteQueryResultIndex {
   artifactsUrlPath: string;
-  items: RemoteQueryResultIndexItem[];
+  successes: RemoteQuerySuccessIndexItem[];
+  failures: RemoteQueryFailureIndexItem[];
 }
 
 export interface RemoteQuerySuccessIndexItem {
@@ -18,5 +19,3 @@ export interface RemoteQueryFailureIndexItem {
   nwo: string;
   error: string;
 }
-
-export type RemoteQueryResultIndexItem = RemoteQuerySuccessIndexItem & RemoteQueryFailureIndexItem;

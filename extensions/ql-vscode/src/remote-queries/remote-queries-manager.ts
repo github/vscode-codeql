@@ -13,7 +13,7 @@ import { RemoteQueriesInterfaceManager } from './remote-queries-interface';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueriesMonitor } from './remote-queries-monitor';
 import { getRemoteQueryIndex } from './gh-actions-api-client';
-import { RemoteQueryFailureIndexItem, RemoteQueryResultIndex, RemoteQuerySuccessIndexItem } from './remote-query-result-index';
+import { RemoteQueryResultIndex } from './remote-query-result-index';
 import { RemoteQueryResult } from './remote-query-result';
 import { DownloadLink } from './download-link';
 import { AnalysesResultsManager } from './analyses-results-manager';
@@ -129,9 +129,7 @@ export class RemoteQueriesManager {
 
   private mapQueryResult(executionEndTime: Date, resultIndex: RemoteQueryResultIndex, queryId: string): RemoteQueryResult {
 
-    const successes = resultIndex.items.filter(item => !item.error) as RemoteQuerySuccessIndexItem[];
-    const failures = resultIndex.items.filter(item => item.error) as RemoteQueryFailureIndexItem[];
-    const analysisSummaries = successes.map(item => ({
+    const analysisSummaries = resultIndex.successes.map(item => ({
       nwo: item.nwo,
       resultCount: item.resultCount,
       fileSizeInBytes: item.sarifFileSize ? item.sarifFileSize : item.bqrsFileSize,
@@ -142,7 +140,7 @@ export class RemoteQueriesManager {
         queryId,
       } as DownloadLink
     }));
-    const analysisFailures = failures.map(item => ({
+    const analysisFailures = resultIndex.failures.map(item => ({
       nwo: item.nwo,
       error: item.error
     }));
