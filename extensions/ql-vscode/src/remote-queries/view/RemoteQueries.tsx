@@ -16,7 +16,7 @@ import DownloadButton from './DownloadButton';
 import { AnalysisResults } from '../shared/analysis-result';
 import DownloadSpinner from './DownloadSpinner';
 import CollapsibleItem from './CollapsibleItem';
-import { CodeSquareIcon, FileIcon, FileSymlinkFileIcon, RepoIcon } from '@primer/octicons-react';
+import { CodeSquareIcon, FileCodeIcon, FileSymlinkFileIcon, RepoIcon } from '@primer/octicons-react';
 
 const numOfReposInContractedMode = 10;
 
@@ -78,7 +78,7 @@ const QueryInfo = (queryResult: RemoteQueryResult) => (
     ({queryResult.executionDuration}), {queryResult.executionTimestamp}
     <VerticalSpace size={1} />
     <span className="vscode-codeql__query-file">
-      <FileIcon size={16} />
+      <FileCodeIcon size={16} />
       <a className="vscode-codeql__query-file-link" href="#" onClick={() => openQueryFile(queryResult)}>
         {queryResult.queryFileName}
       </a>
