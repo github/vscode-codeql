@@ -67,6 +67,7 @@ export class RemoteQueriesManager extends DisposableObject {
 
   private async handleRemoveQueryItem(queryItem: QueryHistoryInfo) {
     if (queryItem?.t === 'remote') {
+      this.analysesResultsManager.removeAnalysesResults(queryItem.queryId);
       await this.removeStorageDirectory(queryItem);
     }
   }
@@ -211,7 +212,8 @@ export class RemoteQueriesManager extends DisposableObject {
     return {
       executionEndTime,
       analysisSummaries,
-      analysisFailures
+      analysisFailures,
+      queryId
     };
   }
 
