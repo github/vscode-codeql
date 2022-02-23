@@ -291,7 +291,7 @@ export class LocalQueryInfo {
     }
   }
 
-  isCompleted(): boolean {
+  get completed(): boolean {
     return !!this.completedQuery;
   }
 

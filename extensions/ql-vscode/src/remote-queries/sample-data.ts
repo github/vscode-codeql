@@ -32,12 +32,12 @@ export const sampleRemoteQuery: RemoteQuery = {
       name: 'repo5'
     }
   ],
-  executionStartTime: new Date('2022-01-06T17:02:15.026Z'),
+  executionStartTime: new Date('2022-01-06T17:02:15.026Z').getTime(),
   actionsWorkflowRunId: 1662757118
 };
 
 export const sampleRemoteQueryResult: RemoteQueryResult = {
-  executionEndTime: new Date('2022-01-06T17:04:37.026Z'),
+  executionEndTime: new Date('2022-01-06T17:04:37.026Z').getTime(),
   analysisSummaries: [
     {
       nwo: 'big-corp/repo1',

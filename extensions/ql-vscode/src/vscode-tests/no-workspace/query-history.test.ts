@@ -743,12 +743,12 @@ describe('query-history', () => {
         extensionPath: vscode.Uri.file('/x/y/z').fsPath,
       } as vscode.ExtensionContext,
       configListener,
-      selectedCallback,
       doCompareCallback
     );
+    qhm.onWillOpenQueryItem(selectedCallback);
     (qhm.treeDataProvider as any).history = [...allHistory];
     await vscode.workspace.saveAll();
-    qhm.refreshTreeView();
+    await qhm.refreshTreeView();
     return qhm;
   }
 });
