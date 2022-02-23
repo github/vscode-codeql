@@ -80,16 +80,19 @@ export async function downloadArtifactFromLink(
 
   const octokit = await credentials.getOctokit();
 
-  // Download the zipped artifact.
-  const response = await octokit.request(`GET ${downloadLink.urlPath}/zip`, {});
-
-  const zipFilePath = path.join(storagePath, downloadLink.queryId, `${downloadLink.id}.zip`);
-  await saveFile(`${zipFilePath}`, response.data as ArrayBuffer);
-
-  // Extract the zipped artifact.
   const extractedPath = path.join(storagePath, downloadLink.queryId, downloadLink.id);
-  await unzipFile(zipFilePath, extractedPath);
 
+  // first check if we already have the artifact
+  if (!(await fs.pathExists(extractedPath))) {
+    // Download the zipped artifact.
+    const response = await octokit.request(`GET ${downloadLink.urlPath}/zip`, {});
+
+    const zipFilePath = path.join(storagePath, downloadLink.queryId, `${downloadLink.id}.zip`);
+    await saveFile(`${zipFilePath}`, response.data as ArrayBuffer);
+
+    // Extract the zipped artifact.
+    await unzipFile(zipFilePath, extractedPath);
+  }
   return path.join(extractedPath, downloadLink.innerFilePath || '');
 }
 

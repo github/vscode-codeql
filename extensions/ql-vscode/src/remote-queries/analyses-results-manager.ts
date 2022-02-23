@@ -1,12 +1,13 @@
+import * as os from 'os';
+import * as path from 'path';
 import { CancellationToken, ExtensionContext } from 'vscode';
+
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import { downloadArtifactFromLink } from './gh-actions-api-client';
-import * as path from 'path';
 import { AnalysisSummary } from './shared/remote-query-result';
 import { AnalysisResults, QueryResult } from './shared/analysis-result';
 import { UserCancellationException } from '../commandRunner';
-import * as os from 'os';
 import { sarifParser } from '../sarif-parser';
 
 export class AnalysesResultsManager {
@@ -26,8 +27,8 @@ export class AnalysesResultsManager {
     analysisSummary: AnalysisSummary,
     publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
   ): Promise<void> {
-    if (this.isAnalysisDownloaded(analysisSummary)) {
-      // We already have the results for this analysis, don't download again.
+    if (this.isAnalysisInMemory(analysisSummary)) {
+      // We already have the results for this analysis in memory, don't download again.
       return;
     }
 
@@ -43,8 +44,8 @@ export class AnalysesResultsManager {
     token: CancellationToken | undefined,
     publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
   ): Promise<void> {
-    // Filter out analyses that we have already downloaded.
-    const analysesToDownload = allAnalysesToDownload.filter(x => !this.isAnalysisDownloaded(x));
+    // Filter out analyses that we have already in memory.
+    const analysesToDownload = allAnalysesToDownload.filter(x => !this.isAnalysisInMemory(x));
 
     const credentials = await Credentials.initialize(this.ctx);
 
@@ -149,7 +150,7 @@ export class AnalysesResultsManager {
     return queryResults;
   }
 
-  private isAnalysisDownloaded(analysis: AnalysisSummary): boolean {
+  private isAnalysisInMemory(analysis: AnalysisSummary): boolean {
     return this.internalGetAnalysesResults(analysis.downloadLink.queryId).some(x => x.nwo === analysis.nwo);
   }
 }
