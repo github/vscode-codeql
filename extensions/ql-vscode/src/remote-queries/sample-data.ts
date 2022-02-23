@@ -37,6 +37,7 @@ export const sampleRemoteQuery: RemoteQuery = {
 };
 
 export const sampleRemoteQueryResult: RemoteQueryResult = {
+  queryId: 'query123',
   executionEndTime: new Date('2022-01-06T17:04:37.026Z').getTime(),
   analysisSummaries: [
     {

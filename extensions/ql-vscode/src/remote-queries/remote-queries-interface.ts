@@ -54,7 +54,7 @@ export class RemoteQueriesInterfaceManager {
       queryResult: this.buildViewModel(query, queryResult)
     });
 
-    await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults());
+    await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults(queryResult.queryId));
   }
 
   /**

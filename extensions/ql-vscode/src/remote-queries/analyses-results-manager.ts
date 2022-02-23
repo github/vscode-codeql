@@ -10,15 +10,16 @@ import * as os from 'os';
 import { sarifParser } from '../sarif-parser';
 
 export class AnalysesResultsManager {
-  // Store for the results of various analyses for a single remote query.
-  private readonly analysesResults: AnalysisResults[];
+  // Store for the results of various analyses for each remote query.
+  // The key is the queryId and is also the name of the directory where results are stored.
+  private readonly analysesResults: Map<string, AnalysisResults[]>;
 
   constructor(
     private readonly ctx: ExtensionContext,
     readonly storagePath: string,
     private readonly logger: Logger,
   ) {
-    this.analysesResults = [];
+    this.analysesResults = new Map();
   }
 
   public async downloadAnalysisResults(
@@ -78,8 +79,16 @@ export class AnalysesResultsManager {
     }
   }
 
-  public getAnalysesResults(): AnalysisResults[] {
-    return [...this.analysesResults];
+  public getAnalysesResults(queryId: string): AnalysisResults[] {
+    return [...this.internalGetAnalysesResults(queryId)];
+  }
+
+  private internalGetAnalysesResults(queryId: string): AnalysisResults[] {
+    return this.analysesResults.get(queryId) || [];
+  }
+
+  public removeAnalysesResults(queryId: string) {
+    this.analysesResults.delete(queryId);
   }
 
   private async downloadSingleAnalysisResults(
@@ -92,9 +101,11 @@ export class AnalysesResultsManager {
       status: 'InProgress',
       results: []
     };
-
-    this.analysesResults.push(analysisResults);
-    void publishResults(this.analysesResults);
+    const queryId = analysis.downloadLink.queryId;
+    const resultsForQuery = this.internalGetAnalysesResults(queryId);
+    resultsForQuery.push(analysisResults);
+    this.analysesResults.set(queryId, resultsForQuery);
+    void publishResults(resultsForQuery);
 
     let artifactPath;
     try {
@@ -113,7 +124,7 @@ export class AnalysesResultsManager {
       analysisResults.status = 'Failed';
     }
 
-    void publishResults(this.analysesResults);
+    void publishResults(resultsForQuery);
   }
 
   private async readResults(filePath: string): Promise<QueryResult[]> {
@@ -139,6 +150,6 @@ export class AnalysesResultsManager {
   }
 
   private isAnalysisDownloaded(analysis: AnalysisSummary): boolean {
-    return this.analysesResults.some(x => x.nwo === analysis.nwo);
+    return this.internalGetAnalysesResults(analysis.downloadLink.queryId).some(x => x.nwo === analysis.nwo);
   }
 }
