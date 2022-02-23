@@ -80,7 +80,11 @@ export class AnalysesResultsManager {
   }
 
   public getAnalysesResults(queryId: string): AnalysisResults[] {
-    return [...(this.analysesResults.get(queryId) || [])];
+    return [...this.internalGetAnalysesResults(queryId)];
+  }
+
+  private internalGetAnalysesResults(queryId: string): AnalysisResults[] {
+    return this.analysesResults.get(queryId) || [];
   }
 
   public removeAnalysesResults(queryId: string) {
@@ -98,7 +102,7 @@ export class AnalysesResultsManager {
       results: []
     };
     const queryId = analysis.downloadLink.queryId;
-    const resultsForQuery = this.analysesResults.get(queryId) || [];
+    const resultsForQuery = this.internalGetAnalysesResults(queryId);
     resultsForQuery.push(analysisResults);
     this.analysesResults.set(queryId, resultsForQuery);
     void publishResults(resultsForQuery);
@@ -146,6 +150,6 @@ export class AnalysesResultsManager {
   }
 
   private isAnalysisDownloaded(analysis: AnalysisSummary): boolean {
-    return (this.analysesResults.get(analysis.downloadLink.queryId) || []).some(x => x.nwo === analysis.nwo);
+    return this.internalGetAnalysesResults(analysis.downloadLink.queryId).some(x => x.nwo === analysis.nwo);
   }
 }
