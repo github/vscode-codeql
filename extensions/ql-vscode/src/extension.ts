@@ -833,7 +833,7 @@ async function activateWithInstalledDistribution(
   );
 
   void logger.log('Initializing remote queries interface.');
-  const rqm = new RemoteQueriesManager(ctx, cliServer, queryStorageDir, logger);
+  const rqm = new RemoteQueriesManager(ctx, cliServer, qhm, queryStorageDir, logger);
 
   registerRemoteQueryTextProvider();
 

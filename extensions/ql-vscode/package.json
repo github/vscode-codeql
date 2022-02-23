@@ -674,7 +674,7 @@
         {
           "command": "codeQLQueryHistory.removeHistoryItem",
           "group": "9_qlCommands",
-          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == cancelledResultsItem"
+          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLQueryHistory.setLabel",
