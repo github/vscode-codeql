@@ -6,12 +6,13 @@ export interface RemoteQueryResult {
   queryFileName: string;
   queryFilePath: string;
   queryText: string;
+  workflowRunUrl: string;
   totalRepositoryCount: number;
   affectedRepositoryCount: number;
   totalResultCount: number;
   executionTimestamp: string;
   executionDuration: string;
-  analysisSummaries: AnalysisSummary[],
+  analysisSummaries: AnalysisSummary[];
   analysisFailures: AnalysisFailure[];
 }
 
