@@ -77,6 +77,7 @@ export class RemoteQueriesInterfaceManager {
       queryFileName: queryFileName,
       queryFilePath: query.queryFilePath,
       queryText: query.queryText,
+      workflowRunUrl: `https://github.com/${query.controllerRepository.owner}/${query.controllerRepository.name}/actions/runs/${query.actionsWorkflowRunId}`,
       totalRepositoryCount: query.repositories.length,
       affectedRepositoryCount: affectedRepositories.length,
       totalResultCount: totalResultCount,
