@@ -34,6 +34,8 @@ import { DatabaseManager } from './databases';
 import { registerQueryHistoryScubber } from './query-history-scrubber';
 import { QueryStatus } from './query-status';
 import { slurpQueryHistory, splatQueryHistory } from './query-serialization';
+import * as fs from 'fs-extra';
+import { CliVersionConstraint } from './cli';
 
 /**
  * query-history.ts
@@ -408,6 +410,18 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
+        'codeQLQueryHistory.showEvalLog',
+        this.handleShowEvalLog.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.showEvalLogSummary',
+        this.handleShowEvalLogSummary.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
         'codeQLQueryHistory.cancel',
         this.handleCancel.bind(this)
       )
@@ -734,6 +748,46 @@ export class QueryHistoryManager extends DisposableObject {
       } catch (e) {
         throw new Error(`Failed to open ${p}: ${e.message}`);
       }
+    }
+  }
+  
+  private warnNoEvalLog() {
+    void showAndLogWarningMessage('No evaluator log is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG + '?');
+  }
+
+  async handleShowEvalLog(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[]
+  ) {
+    // Local queries only
+    if (!this.assertSingleQuery(multiSelect) || singleItem?.t !== 'local') {
+      return;
+    }
+
+    if (singleItem.evalLogLocation) {
+      await this.tryOpenExternalFile(singleItem.evalLogLocation);
+    } else {
+      this.warnNoEvalLog();
+    }
+  }
+
+  async handleShowEvalLogSummary(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[]
+  ) {
+    // Local queries only
+    if (!this.assertSingleQuery(multiSelect) || singleItem?.t !== 'local') {
+      return;
+    }
+
+    if (singleItem.evalLogLocation) {
+      const summaryLocation = singleItem.evalLogLocation + '.summary';
+      if (!fs.existsSync(summaryLocation)) {
+        await this.qs.cliServer.generateLogSummary(singleItem.evalLogLocation, summaryLocation);
+      }
+      await this.tryOpenExternalFile(summaryLocation);
+    } else {
+      this.warnNoEvalLog();
     }
   }
 

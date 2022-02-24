@@ -646,6 +646,35 @@ export interface ClearCacheParams {
    */
   dryRun: boolean;
 }
+
+/**
+ * Parameters to start a new structured log
+ */
+ export interface StartLogParams {
+  /**
+   * The dataset for which we want to start a new structured log
+   */
+  db: Dataset;
+  /**
+   * The path where we want to place the new structured log
+   */
+  logPath: string;
+}
+
+/**
+ * Parameters to terminate a structured log
+ */
+ export interface EndLogParams {
+  /**
+   * The dataset for which we want to terminated the log
+   */
+  db: Dataset;
+  /**
+   * The path of the log to terminate, will be a no-op if we aren't logging here
+   */
+  logPath: string;
+}
+
 /**
  * Parameters for trimming the cache of a dataset
  */
@@ -680,6 +709,26 @@ export interface ClearCacheResult {
    * deleted.
    */
   deletionMessage: string;
+}
+
+/**
+ * The result of starting a new structured log.
+ */
+export interface StartLogResult {
+  /**
+   * A user friendly message saying what happened.
+   */
+  outcomeMessage: string;
+}
+
+/**
+ * The result of terminating a structured.
+ */
+export interface EndLogResult {
+  /**
+   * A user friendly message saying what happened.
+   */
+  outcomeMessage: string;
 }
 
 /**
@@ -1017,6 +1066,16 @@ export const compileUpgrade = new rpc.RequestType<WithProgressId<CompileUpgradeP
  * Compile an upgrade script to upgrade a dataset.
  */
 export const compileUpgradeSequence = new rpc.RequestType<WithProgressId<CompileUpgradeSequenceParams>, CompileUpgradeSequenceResult, void, void>('compilation/compileUpgradeSequence');
+
+/**
+ * Start a new structured log in the evaluator, terminating the previous one if it exists
+ */
+ export const startLog = new rpc.RequestType<WithProgressId<StartLogParams>, StartLogResult, void, void>('evaluation/startLog');
+
+/**
+ * Terminate a structured log in the evaluator. Is a no-op if we aren't logging to the given location
+ */
+ export const endLog = new rpc.RequestType<WithProgressId<EndLogParams>, EndLogResult, void, void>('evaluation/endLog');
 
 /**
  * Clear the cache of a dataset

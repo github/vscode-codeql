@@ -146,7 +146,7 @@ export class QueryServerClient extends DisposableObject {
       args.push('--require-db-registration');
     }
 
-    if (await this.cliServer.cliConstraints.supportsOldEvalStats()) {
+    if (await this.cliServer.cliConstraints.supportsOldEvalStats() && !(await this.cliServer.cliConstraints.supportsPerQueryEvalLog())) {
       args.push('--old-eval-stats');
     }
 
@@ -257,4 +257,8 @@ export class QueryServerClient extends DisposableObject {
 
 export function findQueryLogFile(resultPath: string): string {
   return path.join(resultPath, 'query.log');
+}
+
+export function findQueryStructLogFile(resultPath: string): string {
+  return path.join(resultPath, 'evaluator-log.jsonl');
 }
