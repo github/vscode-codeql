@@ -29,7 +29,7 @@ import { ProgressCallback, UserCancellationException } from './commandRunner';
 import { DatabaseInfo, QueryMetadata } from './pure/interface-types';
 import { logger } from './logging';
 import * as messages from './pure/messages';
-import { InitialQueryInfo } from './query-results';
+import { InitialQueryInfo, LocalQueryInfo } from './query-results';
 import * as qsClient from './queryserver-client';
 import { isQuickQueryPath } from './quick-query';
 import { compileDatabaseUpgradeSequence, hasNondestructiveUpgradeCapabilities, upgradeDatabaseExplicit } from './upgrades';
@@ -95,6 +95,10 @@ export class QueryEvaluationInfo {
     return qsClient.findQueryLogFile(this.querySaveDir);
   }
 
+  get structLogPath() {
+    return qsClient.findQueryStructLogFile(this.querySaveDir);
+  }
+
   get resultsPaths() {
     return {
       resultsPath: path.join(this.querySaveDir, 'results.bqrs'),
@@ -125,6 +129,7 @@ export class QueryEvaluationInfo {
     dbItem: DatabaseItem,
     progress: ProgressCallback,
     token: CancellationToken,
+    queryInfo?: LocalQueryInfo,
   ): Promise<messages.EvaluationResult> {
     if (!dbItem.contents || dbItem.error) {
       throw new Error('Can\'t run query on invalid database.');
@@ -156,6 +161,12 @@ export class QueryEvaluationInfo {
       dbDir: dbItem.contents.datasetUri.fsPath,
       workingSet: 'default'
     };
+    if (queryInfo && await qs.cliServer.cliConstraints.supportsPerQueryEvalLog()) {
+      await qs.sendRequest(messages.startLog, {
+        db: dataset,
+        logPath: this.structLogPath,
+      });
+    }
     const params: messages.EvaluateQueriesParams = {
       db: dataset,
       evaluateId: callbackId,
@@ -172,6 +183,13 @@ export class QueryEvaluationInfo {
       }
     } finally {
       qs.unRegisterCallback(callbackId);
+      if (queryInfo && await qs.cliServer.cliConstraints.supportsPerQueryEvalLog()) {
+        await qs.sendRequest(messages.endLog, {
+          db: dataset,
+          logPath: this.structLogPath,
+        });
+        queryInfo.evalLogLocation = this.structLogPath;
+      }
     }
     return result || {
       evaluationTime: 0,
@@ -658,6 +676,7 @@ export async function compileAndRunQueryAgainstDatabase(
   progress: ProgressCallback,
   token: CancellationToken,
   templates?: messages.TemplateDefinitions,
+  queryInfo?: LocalQueryInfo,
 ): Promise<QueryWithResults> {
   if (!dbItem.contents || !dbItem.contents.dbSchemeUri) {
     throw new Error(`Database ${dbItem.databaseUri} does not have a CodeQL database scheme.`);
@@ -743,7 +762,7 @@ export async function compileAndRunQueryAgainstDatabase(
     }
 
     if (errors.length === 0) {
-      const result = await query.run(qs, upgradeQlo, availableMlModels, dbItem, progress, token);
+      const result = await query.run(qs, upgradeQlo, availableMlModels, dbItem, progress, token, queryInfo);
       if (result.resultType !== messages.QueryResultType.SUCCESS) {
         const message = result.message || 'Failed to run query';
         void logger.log(message);

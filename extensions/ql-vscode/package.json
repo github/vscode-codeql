@@ -523,6 +523,14 @@
         "title": "Open query directory"
       },
       {
+        "command": "codeQLQueryHistory.showEvalLog",
+        "title": "Show Evaluator Log (Raw)"
+      },
+      {
+        "command": "codeQLQueryHistory.showEvalLogSummary",
+        "title": "Show Evaluator Log (Summary)"
+      },
+      {
         "command": "codeQLQueryHistory.cancel",
         "title": "Cancel"
       },
@@ -726,6 +734,16 @@
           "when": "view == codeQLQueryHistory && !hasRemoteServer"
         },
         {
+          "command": "codeQLQueryHistory.showEvalLog",
+          "group": "9_qlCommands",
+          "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem || viewItem == cancelledResultsItem"
+        },
+        {
+          "command": "codeQLQueryHistory.showEvalLogSummary",
+          "group": "9_qlCommands",
+          "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem || viewItem == cancelledResultsItem"
+        },
+        {
           "command": "codeQLQueryHistory.showQueryText",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory"
@@ -922,6 +940,14 @@
         },
         {
           "command": "codeQLQueryHistory.showQueryLog",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.showEvalLog",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.showEvalLogSummary",
           "when": "false"
         },
         {
