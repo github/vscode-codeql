@@ -79,21 +79,21 @@ const QueryInfo = (queryResult: RemoteQueryResult) => (
     {queryResult.totalResultCount} results from running against {queryResult.totalRepositoryCount} repositories
     ({queryResult.executionDuration}), {queryResult.executionTimestamp}
     <VerticalSpace size={1} />
-    <span className="vscode-codeql__query-file">
-      <FileCodeIcon size={16} />
-      <a className="vscode-codeql__query-file-link" href="#" onClick={() => openQueryFile(queryResult)}>
+    <span>
+      <a className="vscode-codeql__query-info-link" href="#" onClick={() => openQueryFile(queryResult)}>
+        <span> <FileCodeIcon size={16} /> </span>
         {queryResult.queryFileName}
       </a>
     </span>
-    <span className="vscode-codeql__query-file">
-      <CodeSquareIcon size={16} />
-      <a className="vscode-codeql__query-file-link" href="#" onClick={() => openQueryTextVirtualFile(queryResult)}>
+    <span>
+      <a className="vscode-codeql__query-info-link" href="#" onClick={() => openQueryTextVirtualFile(queryResult)}>
+        <span> <CodeSquareIcon size={16} /> </span>
         Query
       </a>
     </span>
     <span>
-      <TerminalIcon size={16} />
-      <a className="vscode-codeql__query-file-link" href={queryResult.workflowRunUrl}>
+      <a className="vscode-codeql__query-info-link" href={queryResult.workflowRunUrl}>
+        <span> <TerminalIcon size={16} /> </span>
         Logs
       </a>
     </span>
