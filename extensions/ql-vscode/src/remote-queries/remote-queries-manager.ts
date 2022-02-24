@@ -133,26 +133,27 @@ export class RemoteQueriesManager extends DisposableObject {
 
     if (queryWorkflowResult.status === 'CompletedSuccessfully') {
       const resultIndex = await getRemoteQueryIndex(credentials, queryItem.remoteQuery);
-      if (!resultIndex) {
-        void showAndLogErrorMessage(`There was an issue retrieving the result for the query ${queryItem.label}`);
-        return;
-      }
       queryItem.completed = true;
-      queryItem.status = QueryStatus.Completed;
-      const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryItem.queryId);
+      if (resultIndex) {
+        queryItem.status = QueryStatus.Completed;
+        const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryItem.queryId);
 
-      await this.storeJsonFile(queryItem, 'query-result.json', queryResult);
+        await this.storeJsonFile(queryItem, 'query-result.json', queryResult);
 
-      // Kick off auto-download of results in the background.
-      void commands.executeCommand('codeQL.autoDownloadRemoteQueryResults', queryResult);
+        // Kick off auto-download of results in the background.
+        void commands.executeCommand('codeQL.autoDownloadRemoteQueryResults', queryResult);
 
-      // Ask if the user wants to open the results in the background.
-      void this.askToOpenResults(queryItem.remoteQuery, queryResult).then(
-        noop,
-        err => {
-          void showAndLogErrorMessage(err);
-        }
-      );
+        // Ask if the user wants to open the results in the background.
+        void this.askToOpenResults(queryItem.remoteQuery, queryResult).then(
+          noop,
+          err => {
+            void showAndLogErrorMessage(err);
+          }
+        );
+      } else {
+        void showAndLogErrorMessage(`There was an issue retrieving the result for the query ${queryItem.label}`);
+        queryItem.status = QueryStatus.Failed;
+      }
     } else if (queryWorkflowResult.status === 'CompletedUnsuccessfully') {
       queryItem.failureReason = queryWorkflowResult.error;
       queryItem.status = QueryStatus.Failed;
