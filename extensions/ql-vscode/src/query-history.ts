@@ -574,7 +574,7 @@ export class QueryHistoryManager extends DisposableObject {
     const current = this.treeDataProvider.getCurrent();
     if (current !== undefined) {
       await this.treeView.reveal(current, { select: true });
-      await this._onWillOpenQueryItem.fire(current);
+      this._onWillOpenQueryItem.fire(current);
     }
   }
 
@@ -655,7 +655,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleItemClicked(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[]
+    multiSelect: QueryHistoryInfo[] = []
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
     if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
@@ -676,8 +676,10 @@ export class QueryHistoryManager extends DisposableObject {
       // show original query file on double click
       await this.handleOpenQuery(finalSingleItem, [finalSingleItem]);
     } else {
-      // show results on single click
-      await this._onWillOpenQueryItem.fire(finalSingleItem);
+      // show results on single click only if query is completed successfully.
+      if (finalSingleItem.status === QueryStatus.Completed) {
+        await this._onWillOpenQueryItem.fire(finalSingleItem);
+      }
     }
   }
 
@@ -718,7 +720,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleShowQueryText(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[]
+    multiSelect: QueryHistoryInfo[] = []
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 

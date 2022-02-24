@@ -234,7 +234,7 @@ export class QueryServerClient extends DisposableObject {
   }
 
   get serverProcessPid(): number {
-    return this.serverProcess!.child.pid;
+    return this.serverProcess!.child.pid || 0;
   }
 
   async sendRequest<P, R, E, RO>(type: RequestType<WithProgressId<P>, R, E, RO>, parameter: P, token?: CancellationToken, progress?: (res: ProgressMessage) => void): Promise<R> {
