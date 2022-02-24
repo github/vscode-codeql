@@ -216,6 +216,7 @@ export class LocalQueryInfo {
 
   public failureReason: string | undefined;
   public completedQuery: CompletedQueryInfo | undefined;
+  public evalLogLocation: string | undefined;
   private config: QueryHistoryConfig | undefined;
 
   /**
