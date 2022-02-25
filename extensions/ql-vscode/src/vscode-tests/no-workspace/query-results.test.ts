@@ -18,7 +18,7 @@ import { slurpQueryHistory, splatQueryHistory } from '../../query-serialization'
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe.only('query-results', () => {
+describe('query-results', () => {
   let disposeSpy: sinon.SinonSpy;
   let onDidChangeQueryHistoryConfigurationSpy: sinon.SinonSpy;
   let mockConfig: QueryHistoryConfig;
