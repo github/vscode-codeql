@@ -6,6 +6,8 @@ import * as fs from 'fs-extra';
  * Note that this function uses synchronous fs calls, so it should only be used in tests.
  *
  * @param dir the directory to walk
+ *
+ * @return An iterator of the full path to all files recursively found in the directory.
  */
 export function* walk(dir: string): IterableIterator<string> {
   const files = fs.readdirSync(dir);

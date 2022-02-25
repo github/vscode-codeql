@@ -12,12 +12,12 @@ import { DatabaseManager } from '../../databases';
 import { tmpDir } from '../../helpers';
 import { QueryHistoryManager } from '../../query-history';
 import { QueryServerClient } from '../../queryserver-client';
-import { DisposableBucket } from '../../pure/disposable-object';
 import { Credentials } from '../../authentication';
 import { AnalysesResultsManager } from '../../remote-queries/analyses-results-manager';
 import { RemoteQueryResult } from '../../remote-queries/shared/remote-query-result';
-import { walk } from '../test-helpers';
+import { DisposableBucket } from '../disposable-bucket';
 import { testDisposeHandler } from '../test-dispose-handler';
+import { walk } from '../directory-walker';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -42,6 +42,8 @@ describe('Remote queries and query history manager', function() {
   let openTextDocumentSpy: sinon.SinonSpy;
 
   beforeEach(() => {
+    // Since these tests change the state of the query history manager, we need to copy the original
+    // to a temporary folder where we can manipulate it for tests
     copyHistoryState();
   });
 
@@ -96,7 +98,7 @@ describe('Remote queries and query history manager', function() {
     expect(qhm.treeDataProvider.allHistory.length).to.eq(2);
   });
 
-  it('should remove and then a query from history', async () => {
+  it('should remove and then add query from history', async () => {
     await qhm.readQueryHistory();
     const addSpy = sandbox.spy();
     disposables.push(qhm.onDidAddQueryItem(addSpy));
@@ -189,7 +191,7 @@ describe('Remote queries and query history manager', function() {
       );
     });
 
-    it('should avoid downloading an analysis result', async () => {
+    it('should avoid re-downloading an analysis result', async () => {
       // because the analysis result is already in on disk, it should not be downloaded
       const publisher = sandbox.spy();
       const analysisSummary = remoteQueryResult0.analysisSummaries[0];
@@ -292,14 +294,16 @@ describe('Remote queries and query history manager', function() {
       await arm.downloadAnalysesResults(analysisSummaries1, undefined, publisher);
 
       const result0 = arm.getAnalysesResults(rawQueryHistory[0].queryId);
-      const result1 = arm.getAnalysesResults(rawQueryHistory[1].queryId);
+      const result0Again = arm.getAnalysesResults(rawQueryHistory[0].queryId);
 
       // Shoule be equal, but not equivalent
-      expect(result0).to.deep.eq((arm as any).analysesResults.get(rawQueryHistory[0].queryId));
-      expect(result0).not.to.eq((arm as any).analysesResults.get(rawQueryHistory[0].queryId));
+      expect(result0).to.deep.eq(result0Again);
+      expect(result0).not.to.eq(result0Again);
 
-      expect(result1).to.deep.eq((arm as any).analysesResults.get(rawQueryHistory[1].queryId));
-      expect(result1).not.to.eq((arm as any).analysesResults.get(rawQueryHistory[1].queryId));
+      const result1 = arm.getAnalysesResults(rawQueryHistory[1].queryId);
+      const result1Again = arm.getAnalysesResults(rawQueryHistory[1].queryId);
+      expect(result1).to.deep.eq(result1Again);
+      expect(result1).not.to.eq(result1Again);
     });
 
     // This test is failing on windows in CI.
@@ -317,8 +321,6 @@ describe('Remote queries and query history manager', function() {
     });
   });
 
-  // Since this test changes the state of the query history manager, we need to copy the original
-  // to a temporary folder where we can manipulate it for tests
   function copyHistoryState() {
     fs.ensureDirSync(STORAGE_DIR);
     fs.copySync(path.join(__dirname, 'data/remote-queries/'), path.join(tmpDir.name, 'remote-queries'));
