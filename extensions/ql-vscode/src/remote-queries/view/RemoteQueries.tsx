@@ -102,8 +102,8 @@ const Failures = (queryResult: RemoteQueryResult) => {
       <VerticalSpace size={3} />
       <Flash variant="danger">
         {queryResult.analysisFailures.map((f, i) => (
-          <>
-            <p className="vscode-codeql__analysis-failure" key={i}>
+          <div key={i}>
+            <p className="vscode-codeql__analysis-failure">
               <AlertIcon size={16} />
               <b>{f.nwo}: </b>
               {f.error}
@@ -111,7 +111,7 @@ const Failures = (queryResult: RemoteQueryResult) => {
             {
               i === queryResult.analysisFailures.length - 1 ? <></> : <VerticalSpace size={1} />
             }
-          </>
+          </div>
         ))}
       </Flash>
     </>
