@@ -106,7 +106,8 @@ export class AnalysesResultsManager {
     const resultsForQuery = this.internalGetAnalysesResults(queryId);
     resultsForQuery.push(analysisResults);
     this.analysesResults.set(queryId, resultsForQuery);
-    void publishResults(resultsForQuery);
+    void publishResults([...resultsForQuery]);
+    const pos = resultsForQuery.length - 1;
 
     let artifactPath;
     try {
@@ -116,16 +117,23 @@ export class AnalysesResultsManager {
       throw new Error(`Could not download the analysis results for ${analysis.nwo}: ${e.message}`);
     }
 
+    let newAnaysisResults: AnalysisResults;
     if (path.extname(artifactPath) === '.sarif') {
       const queryResults = await this.readResults(artifactPath);
-      analysisResults.results = queryResults;
-      analysisResults.status = 'Completed';
+      newAnaysisResults = {
+        ...analysisResults,
+        results: queryResults,
+        status: 'Completed'
+      };
     } else {
       void this.logger.log('Cannot download results. Only alert and path queries are fully supported.');
-      analysisResults.status = 'Failed';
+      newAnaysisResults = {
+        ...analysisResults,
+        status: 'Failed'
+      };
     }
-
-    void publishResults(resultsForQuery);
+    resultsForQuery[pos] = newAnaysisResults;
+    void publishResults([...resultsForQuery]);
   }
 
   private async readResults(filePath: string): Promise<QueryResult[]> {

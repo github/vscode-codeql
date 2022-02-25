@@ -403,7 +403,7 @@ export class CodeQLCliServer implements Disposable {
     try {
       if (cancellationToken !== undefined) {
         cancellationRegistration = cancellationToken.onCancellationRequested(_e => {
-          tk(child.pid);
+          tk(child.pid || 0);
         });
       }
       if (logger !== undefined) {

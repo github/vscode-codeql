@@ -1,0 +1,29 @@
+{
+  "executionEndTime": 1645645080281,
+  "analysisSummaries": [
+    {
+      "nwo": "github/vscode-codeql",
+      "resultCount": 15,
+      "fileSizeInBytes": 191025,
+      "downloadLink": {
+        "id": "171543249",
+        "urlPath": "/repos/avocado-corp/hucairz/actions/artifacts/171543249",
+        "innerFilePath": "results.sarif",
+        "queryId": "MRVA Integration test 1-6sBi6oaky_fxqXW2NA4bx"
+      }
+    },
+    {
+      "nwo": "other/hucairz",
+      "resultCount": 15,
+      "fileSizeInBytes": 191025,
+      "downloadLink": {
+        "id": "11111111",
+        "urlPath": "/repos/avocado-corp/hucairz/actions/artifacts/11111111",
+        "innerFilePath": "results.sarif",
+        "queryId": "MRVA Integration test 1-6sBi6oaky_fxqXW2NA4bx"
+      }
+    }
+  ],
+  "analysisFailures": [],
+  "queryId": "MRVA Integration test 1-6sBi6oaky_fxqXW2NA4bx"
+}
