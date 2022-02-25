@@ -25,6 +25,9 @@ export class Graph extends React.Component<GraphProps> {
     }
 
     return <>
+      <div className={graphClassName}>
+        <strong>Warning:</strong> The Graph Viewer is not a publicly released feature and will crash on large graphs.
+      </div>
       <div id={graphId} className={graphClassName}><span>Rendering graph...</span></div>
     </>;
   };

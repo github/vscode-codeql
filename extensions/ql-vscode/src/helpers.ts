@@ -558,3 +558,28 @@ export async function createTimestampFile(storagePath: string) {
   await fs.ensureDir(storagePath);
   await fs.writeFile(timestampPath, Date.now().toString(), 'utf8');
 }
+
+
+/**
+ * Recursively walk a directory and return the full path to all files found.
+ * Symbolic links are ignored.
+ *
+ * @param dir the directory to walk
+ *
+ * @return An iterator of the full path to all files recursively found in the directory.
+ */
+ export async function* walkDirectory(dir: string): AsyncIterableIterator<string> {
+  const seenFiles = new Set<string>();
+  for await (const d of await fs.opendir(dir)) {
+    const entry = path.join(dir, d.name);
+    if (seenFiles.has(entry)) {
+      continue;
+    }
+    seenFiles.add(entry);
+    if (d.isDirectory()) {
+      yield* walkDirectory(entry);
+    } else if (d.isFile()) {
+      yield entry;
+    }
+  }
+}

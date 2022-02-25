@@ -13,7 +13,7 @@ import { CancellationToken, Disposable, Uri } from 'vscode';
 import { BQRSInfo, DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { CliConfig } from './config';
 import { DistributionProvider, FindDistributionResultKind } from './distribution';
-import { assertNever } from './pure/helpers-pure';
+import { assertNever, walkDirectory } from './pure/helpers-pure';
 import { QueryMetadata, SortDirection } from './pure/interface-types';
 import { Logger, ProgressReporter } from './logging';
 import { CompilationMessage } from './pure/messages';
@@ -729,11 +729,15 @@ export class CodeQLCliServer implements Disposable {
     return await sarifParser(interpretedResultsPath);
   }
 
+  // Warning: this function is untenable for large dot files,
   async readDotFiles(dir: string): Promise<string[]> {
-    return Promise.all((await fs.readdir(dir))
-      .filter(name => path.extname(name).toLowerCase() === '.dot')
-      .map(file => fs.readFile(path.join(dir, file), 'utf8'))
-    );
+    const dotFiles: Promise<string>[] = [];
+    for await (const file of walkDirectory(dir)) {
+      if (file.endsWith('.dot')) {
+        dotFiles.push(fs.readFile(file, 'utf8'));
+      }
+    }
+    return Promise.all(dotFiles);
   }
 
   async interpretBqrsGraph(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<string[]> {
@@ -1246,7 +1250,7 @@ export class CliVersionConstraint {
 
   /**
    * CLI version where the `--evaluator-log` and related options to the query server were introduced,
-   * on a per-query server basis. 
+   * on a per-query server basis.
    */
   public static CLI_VERSION_WITH_STRUCTURED_EVAL_LOG = new SemVer('2.8.2');
 

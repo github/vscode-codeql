@@ -86,7 +86,11 @@ export class QueryEvaluationInfo {
   get resultsPaths() {
     return {
       resultsPath: path.join(this.querySaveDir, 'results.bqrs'),
-      interpretedResultsPath: path.join(this.querySaveDir, 'interpretedResults.sarif'),
+      interpretedResultsPath: path.join(this.querySaveDir,
+        this.metadata?.kind === 'graph'
+          ? 'graphResults'
+          : 'interpretedResults.sarif'
+      ),
     };
   }
 
