@@ -16,6 +16,7 @@ import { CodeQLCliServer } from '../../cli';
 import { QueryServerClient } from '../../queryserver-client';
 import { skipIfNoCodeQL } from '../ensureCli';
 import { QueryResultType } from '../../pure/messages';
+import { tmpDir } from '../../helpers';
 
 
 /**
@@ -97,6 +98,7 @@ describe('Queries', function() {
         qs,
         dbItem,
         await mockInitialQueryInfo(queryPath),
+        path.join(tmpDir.name, 'mock-storage-path'),
         progress,
         token
       );
@@ -119,6 +121,7 @@ describe('Queries', function() {
         qs,
         dbItem,
         await mockInitialQueryInfo(queryPath),
+        path.join(tmpDir.name, 'mock-storage-path'),
         progress,
         token
       );

@@ -10,24 +10,18 @@ import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
   showInformationMessageWithAction,
-  tryGetQueryMetadata
+  tryGetQueryMetadata,
+  tmpDir
 } from '../helpers';
 import { Credentials } from '../authentication';
 import * as cli from '../cli';
 import { logger } from '../logging';
 import { getRemoteControllerRepo, getRemoteRepositoryLists, setRemoteControllerRepo } from '../config';
-import { tmpDir } from '../run-queries';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { OctokitResponse } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
-
-interface Config {
-  repositories: string[];
-  ref?: string;
-  language?: string;
-}
 
 export interface QlPack {
   name: string;
@@ -108,7 +102,7 @@ export async function getRepositories(): Promise<string[] | undefined> {
  *
  * @returns the entire qlpack as a base64 string.
  */
-async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: string, queryPackDir: string, fallbackLanguage?: string): Promise<{
+async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: string, queryPackDir: string): Promise<{
   base64Pack: string,
   language: string
 }> {
@@ -150,7 +144,7 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
 
   } else {
     // open popup to ask for language if not already hardcoded
-    language = fallbackLanguage || await askForLanguage(cliServer);
+    language = await askForLanguage(cliServer);
 
     // copy only the query file to the query pack directory
     // and generate a synthetic query pack
@@ -171,6 +165,9 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
   }
 
   await ensureNameAndSuite(queryPackDir, packRelativePath);
+
+  // Clear the cliServer cache so that the previous qlpack text is purged from the CLI.
+  await cliServer.clearCache();
 
   const bundlePath = await getPackedBundlePath(queryPackDir);
   void logger.log(`Compiling and bundling query pack from ${queryPackDir} to ${bundlePath}. (This may take a while.)`);
@@ -238,47 +235,22 @@ export async function runRemoteQuery(
       throw new UserCancellationException('Not a CodeQL query file.');
     }
 
-    progress({
-      maxStep: 5,
-      step: 1,
-      message: 'Determining project list'
-    });
-
     const queryFile = uri.fsPath;
-    const repositoriesFile = queryFile.substring(0, queryFile.length - '.ql'.length) + '.repositories';
-    let ref: string | undefined;
-    // For the case of single file remote queries, use the language from the config in order to avoid the user having to select it.
-    let fallbackLanguage: string | undefined;
-    let repositories: string[] | undefined;
 
     progress({
-      maxStep: 5,
-      step: 2,
+      maxStep: 4,
+      step: 1,
       message: 'Determining query target language'
     });
 
-    // If the user has an explicit `.repositories` file, use that.
-    // Otherwise, prompt user to select repositories from the `codeQL.remoteQueries.repositoryLists` setting.
-    if (await fs.pathExists(repositoriesFile)) {
-      void logger.log(`Found '${repositoriesFile}'. Using information from that file to run ${queryFile}.`);
-
-      const config = yaml.safeLoad(await fs.readFile(repositoriesFile, 'utf8')) as Config;
-
-      ref = config.ref || 'main';
-      fallbackLanguage = config.language;
-      repositories = config.repositories;
-    } else {
-      ref = 'main';
-      repositories = await getRepositories();
-    }
-
+    const repositories = await getRepositories();
     if (!repositories || repositories.length === 0) {
       throw new UserCancellationException('No repositories to query.');
     }
 
     progress({
-      maxStep: 5,
-      step: 3,
+      maxStep: 4,
+      step: 2,
       message: 'Determining controller repo'
     });
 
@@ -309,8 +281,8 @@ export async function runRemoteQuery(
     const [owner, repo] = controllerRepo.split('/');
 
     progress({
-      maxStep: 5,
-      step: 4,
+      maxStep: 4,
+      step: 3,
       message: 'Bundling the query pack'
     });
 
@@ -318,20 +290,21 @@ export async function runRemoteQuery(
       throw new UserCancellationException('Cancelled');
     }
 
-    const { base64Pack, language } = await generateQueryPack(cliServer, queryFile, queryPackDir, fallbackLanguage);
+    const { base64Pack, language } = await generateQueryPack(cliServer, queryFile, queryPackDir);
 
     if (token.isCancellationRequested) {
       throw new UserCancellationException('Cancelled');
     }
 
     progress({
-      maxStep: 5,
-      step: 5,
+      maxStep: 4,
+      step: 4,
       message: 'Sending request'
     });
 
-    const workflowRunId = await runRemoteQueriesApiRequest(credentials, ref, language, repositories, owner, repo, base64Pack, dryRun);
-    const queryStartTime = new Date();
+    // TODO When https://github.com/dsp-testing/qc-run2/pull/567 is merged, we can change the branch back to `main`.
+    const workflowRunId = await runRemoteQueriesApiRequest(credentials, 'better-errors', language, repositories, owner, repo, base64Pack, dryRun);
+    const queryStartTime = Date.now();
     const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
 
     if (dryRun) {
@@ -410,16 +383,12 @@ export async function attemptRerun(
 ) {
   if (typeof error.message === 'string' && error.message.includes('Some repositories were invalid')) {
     const invalidRepos = error?.response?.data?.invalid_repos || [];
-    const reposWithoutDbUploads = error?.response?.data?.repos_without_db_uploads || [];
     void logger.log('Unable to run query on some of the specified repositories');
     if (invalidRepos.length > 0) {
       void logger.log(`Invalid repos: ${invalidRepos.join(', ')}`);
     }
-    if (reposWithoutDbUploads.length > 0) {
-      void logger.log(`Repos without DB uploads: ${reposWithoutDbUploads.join(', ')}`);
-    }
 
-    if (invalidRepos.length + reposWithoutDbUploads.length === repositories.length) {
+    if (invalidRepos.length === repositories.length) {
       // Every repo is invalid in some way
       void showAndLogErrorMessage('Unable to run query on any of the specified repositories.');
       return;
@@ -428,7 +397,7 @@ export async function attemptRerun(
     const popupMessage = 'Unable to run query on some of the specified repositories. [See logs for more details](command:codeQL.showLogs).';
     const rerunQuery = await showInformationMessageWithAction(popupMessage, 'Rerun on the valid repositories only');
     if (rerunQuery) {
-      const validRepositories = repositories.filter(r => !invalidRepos.includes(r) && !reposWithoutDbUploads.includes(r));
+      const validRepositories = repositories.filter(r => !invalidRepos.includes(r));
       void logger.log(`Rerunning query on set of valid repositories: ${JSON.stringify(validRepositories)}`);
       return await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, owner, repo, queryPackBase64, dryRun);
     }
@@ -467,10 +436,10 @@ async function buildRemoteQueryEntity(
   queryMetadata: QueryMetadata | undefined,
   controllerRepoOwner: string,
   controllerRepoName: string,
-  queryStartTime: Date,
+  queryStartTime: number,
   workflowRunId: number
 ): Promise<RemoteQuery> {
-  // The query name is either the name as specified in the query metadata, or the file name. 
+  // The query name is either the name as specified in the query metadata, or the file name.
   const queryName = queryMetadata?.name ?? path.basename(queryFilePath);
 
   const queryRepos = repositories.map(r => {

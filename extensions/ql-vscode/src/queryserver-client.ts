@@ -171,6 +171,16 @@ export class QueryServerClient extends DisposableObject {
       args.push('--old-eval-stats');
     }
 
+    if (await this.cliServer.cliConstraints.supportsStructuredEvalLog()) {
+      args.push('--evaluator-log');
+      args.push(`${this.opts.contextStoragePath}/structured-evaluator-log.json`);
+
+      // We hard-code the verbosity level to 5 and minify to false. 
+      // This will be the behavior of the per-query structured logging in the CLI after 2.8.3.
+      args.push('--evaluator-log-level');
+      args.push('5');
+    }
+
     if (this.config.debug) {
       args.push('--debug', '--tuple-counting');
     }
@@ -234,7 +244,7 @@ export class QueryServerClient extends DisposableObject {
   }
 
   get serverProcessPid(): number {
-    return this.serverProcess!.child.pid;
+    return this.serverProcess!.child.pid || 0;
   }
 
   async sendRequest<P, R, E, RO>(type: RequestType<WithProgressId<P>, R, E, RO>, parameter: P, token?: CancellationToken, progress?: (res: ProgressMessage) => void): Promise<R> {

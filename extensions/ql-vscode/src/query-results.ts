@@ -16,7 +16,16 @@ import {
 } from './pure/interface-types';
 import { QueryHistoryConfig } from './config';
 import { DatabaseInfo } from './pure/interface-types';
-import { showAndLogErrorMessage } from './helpers';
+import { QueryStatus } from './query-status';
+import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
+
+/**
+ * query-results.ts
+ * ----------------
+ *
+ * A collection of classes and functions that collectively
+ * manage query results.
+ */
 
 /**
  * A description of the information about a query
@@ -32,12 +41,6 @@ export interface InitialQueryInfo {
   readonly databaseInfo: DatabaseInfo
   readonly start: Date;
   readonly id: string; // unique id for this query.
-}
-
-export enum QueryStatus {
-  InProgress = 'InProgress',
-  Completed = 'Completed',
-  Failed = 'Failed',
 }
 
 export class CompletedQueryInfo implements QueryWithResults {
@@ -202,84 +205,36 @@ export function ensureMetadataIsComplete(metadata: QueryMetadata | undefined) {
 /**
  * Used in Interface and Compare-Interface for queries that we know have been complated.
  */
-export type FullCompletedQueryInfo = FullQueryInfo & {
+export type CompletedLocalQueryInfo = LocalQueryInfo & {
   completedQuery: CompletedQueryInfo
 };
 
-export class FullQueryInfo {
+export type QueryHistoryInfo = LocalQueryInfo | RemoteQueryHistoryItem;
 
-  static async slurp(fsPath: string, config: QueryHistoryConfig): Promise<FullQueryInfo[]> {
-    try {
-      const data = await fs.readFile(fsPath, 'utf8');
-      const queries = JSON.parse(data);
-      return queries.map((q: FullQueryInfo) => {
-
-        // Need to explicitly set prototype since reading in from JSON will not
-        // do this automatically. Note that we can't call the constructor here since
-        // the constructor invokes extra logic that we don't want to do.
-        Object.setPrototypeOf(q, FullQueryInfo.prototype);
-
-        // The config object is a global, se we need to set it explicitly
-        // and ensure it is not serialized to JSON.
-        q.setConfig(config);
-
-        // Date instances are serialized as strings. Need to
-        // convert them back to Date instances.
-        (q.initialInfo as any).start = new Date(q.initialInfo.start);
-        if (q.completedQuery) {
-          // Again, need to explicitly set prototypes.
-          Object.setPrototypeOf(q.completedQuery, CompletedQueryInfo.prototype);
-          Object.setPrototypeOf(q.completedQuery.query, QueryEvaluationInfo.prototype);
-          // slurped queries do not need to be disposed
-          q.completedQuery.dispose = () => { /**/ };
-        }
-        return q;
-      });
-    } catch (e) {
-      void showAndLogErrorMessage('Error loading query history.', {
-        fullMessage: ['Error loading query history.', e.stack].join('\n'),
-      });
-      return [];
-    }
-  }
-
-  /**
-   * Save the query history to disk. It is not necessary that the parent directory
-   * exists, but if it does, it must be writable. An existing file will be overwritten.
-   *
-   * Any errors will be rethrown.
-   *
-   * @param queries the list of queries to save.
-   * @param fsPath the path to save the queries to.
-   */
-  static async splat(queries: FullQueryInfo[], fsPath: string): Promise<void> {
-    try {
-      const data = JSON.stringify(queries, null, 2);
-      await fs.mkdirp(path.dirname(fsPath));
-      await fs.writeFile(fsPath, data);
-    } catch (e) {
-      throw new Error(`Error saving query history to ${fsPath}: ${e.message}`);
-    }
-  }
+export class LocalQueryInfo {
+  readonly t = 'local';
 
   public failureReason: string | undefined;
   public completedQuery: CompletedQueryInfo | undefined;
   private config: QueryHistoryConfig | undefined;
 
   /**
-   * Note that in the {@link FullQueryInfo.slurp} method, we create a FullQueryInfo instance
+   * Note that in the {@link slurpQueryHistory} method, we create a FullQueryInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(
     public readonly initialInfo: InitialQueryInfo,
     config: QueryHistoryConfig,
-    private readonly source?: CancellationTokenSource
+    private cancellationSource?: CancellationTokenSource // used to cancel in progress queries
   ) {
     this.setConfig(config);
   }
 
   cancel() {
-    this.source?.cancel();
+    this.cancellationSource?.cancel();
+    // query is no longer in progress, can delete the cancellation token source
+    this.cancellationSource?.dispose();
+    delete this.cancellationSource;
   }
 
   get startTime() {
@@ -356,12 +311,16 @@ export class FullQueryInfo {
     }
   }
 
-  isCompleted(): boolean {
+  get completed(): boolean {
     return !!this.completedQuery;
   }
 
   completeThisQuery(info: QueryWithResults) {
     this.completedQuery = new CompletedQueryInfo(info);
+
+    // dispose of the cancellation token source and also ensure the source is not serialized as JSON
+    this.cancellationSource?.dispose();
+    delete this.cancellationSource;
   }
 
   /**
@@ -389,7 +348,7 @@ export class FullQueryInfo {
    *
    * @param config the global query history config object
    */
-  private setConfig(config: QueryHistoryConfig) {
+  setConfig(config: QueryHistoryConfig) {
     // avoid serializing config property
     Object.defineProperty(this, 'config', {
       enumerable: false,

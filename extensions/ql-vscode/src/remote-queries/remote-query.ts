@@ -6,6 +6,6 @@ export interface RemoteQuery {
   queryText: string;
   controllerRepository: Repository;
   repositories: Repository[];
-  executionStartTime: Date;
+  executionStartTime: number; // Use number here since it needs to be serialized and desserialized.
   actionsWorkflowRunId: number;
 }

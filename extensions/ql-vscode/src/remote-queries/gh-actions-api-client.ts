@@ -1,21 +1,31 @@
 import * as unzipper from 'unzipper';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { showAndLogWarningMessage } from '../helpers';
+import { showAndLogWarningMessage, tmpDir } from '../helpers';
 import { Credentials } from '../authentication';
 import { logger } from '../logging';
-import { tmpDir } from '../run-queries';
 import { RemoteQueryWorkflowResult } from './remote-query-workflow-result';
 import { DownloadLink } from './download-link';
 import { RemoteQuery } from './remote-query';
-import { RemoteQueryResultIndex, RemoteQueryResultIndexItem } from './remote-query-result-index';
+import { RemoteQueryFailureIndexItem, RemoteQueryResultIndex, RemoteQuerySuccessIndexItem } from './remote-query-result-index';
 
-interface ApiResultIndexItem {
+interface ApiSuccessIndexItem {
   nwo: string;
   id: string;
   results_count: number;
   bqrs_file_size: number;
   sarif_file_size?: number;
+}
+
+interface ApiFailureIndexItem {
+  nwo: string;
+  id: string;
+  error: string;
+}
+
+interface ApiResultIndex {
+  successes: ApiSuccessIndexItem[];
+  failures: ApiFailureIndexItem[];
 }
 
 export async function getRemoteQueryIndex(
@@ -32,9 +42,9 @@ export async function getRemoteQueryIndex(
 
   const artifactList = await listWorkflowRunArtifacts(credentials, owner, repoName, workflowRunId);
   const resultIndexArtifactId = getArtifactIDfromName('result-index', workflowUri, artifactList);
-  const resultIndexItems = await getResultIndexItems(credentials, owner, repoName, resultIndexArtifactId);
+  const resultIndex = await getResultIndex(credentials, owner, repoName, resultIndexArtifactId);
 
-  const items = resultIndexItems.map(item => {
+  const successes = resultIndex?.successes.map(item => {
     const artifactId = getArtifactIDfromName(item.id, workflowUri, artifactList);
 
     return {
@@ -43,35 +53,47 @@ export async function getRemoteQueryIndex(
       nwo: item.nwo,
       resultCount: item.results_count,
       bqrsFileSize: item.bqrs_file_size,
-      sarifFileSize: item.sarif_file_size,
-    } as RemoteQueryResultIndexItem;
+      sarifFileSize: item.sarif_file_size
+    } as RemoteQuerySuccessIndexItem;
+  });
+
+  const failures = resultIndex?.failures.map(item => {
+    return {
+      id: item.id.toString(),
+      nwo: item.nwo,
+      error: item.error
+    } as RemoteQueryFailureIndexItem;
   });
 
   return {
     artifactsUrlPath,
-    items
+    successes: successes || [],
+    failures: failures || []
   };
 }
 
 export async function downloadArtifactFromLink(
   credentials: Credentials,
+  storagePath: string,
   downloadLink: DownloadLink
 ): Promise<string> {
+
   const octokit = await credentials.getOctokit();
 
-  // Download the zipped artifact.
-  const response = await octokit.request(`GET ${downloadLink.urlPath}/zip`, {});
+  const extractedPath = path.join(storagePath, downloadLink.queryId, downloadLink.id);
 
-  const zipFilePath = path.join(tmpDir.name, `${downloadLink.id}.zip`);
-  await saveFile(`${zipFilePath}`, response.data as ArrayBuffer);
+  // first check if we already have the artifact
+  if (!(await fs.pathExists(extractedPath))) {
+    // Download the zipped artifact.
+    const response = await octokit.request(`GET ${downloadLink.urlPath}/zip`, {});
 
-  // Extract the zipped artifact.
-  const extractedPath = path.join(tmpDir.name, downloadLink.id);
-  await unzipFile(zipFilePath, extractedPath);
+    const zipFilePath = path.join(storagePath, downloadLink.queryId, `${downloadLink.id}.zip`);
+    await saveFile(`${zipFilePath}`, response.data as ArrayBuffer);
 
-  return downloadLink.innerFilePath
-    ? path.join(extractedPath, downloadLink.innerFilePath)
-    : extractedPath;
+    // Extract the zipped artifact.
+    await unzipFile(zipFilePath, extractedPath);
+  }
+  return path.join(extractedPath, downloadLink.innerFilePath || '');
 }
 
 /**
@@ -82,17 +104,17 @@ export async function downloadArtifactFromLink(
  * @param workflowRunId The ID of the workflow run to get the result index for.
  * @returns An object containing the result index.
  */
-async function getResultIndexItems(
+async function getResultIndex(
   credentials: Credentials,
   owner: string,
   repo: string,
   artifactId: number
-): Promise<ApiResultIndexItem[]> {
+): Promise<ApiResultIndex | undefined> {
   const artifactPath = await downloadArtifact(credentials, owner, repo, artifactId);
   const indexFilePath = path.join(artifactPath, 'index.json');
   if (!(await fs.pathExists(indexFilePath))) {
     void showAndLogWarningMessage('Could not find an `index.json` file in the result artifact.');
-    return [];
+    return undefined;
   }
   const resultIndex = await fs.readFile(path.join(artifactPath, 'index.json'), 'utf8');
 
@@ -106,8 +128,8 @@ async function getResultIndexItems(
 /**
  * Gets the status of a workflow run.
  * @param credentials Credentials for authenticating to the GitHub API.
- * @param owner 
- * @param repo 
+ * @param owner
+ * @param repo
  * @param workflowRunId The ID of the workflow run to get the result index for.
  * @returns The workflow run status.
  */

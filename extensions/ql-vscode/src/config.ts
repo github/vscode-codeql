@@ -2,6 +2,7 @@ import { DisposableObject } from './pure/disposable-object';
 import { workspace, Event, EventEmitter, ConfigurationChangeEvent, ConfigurationTarget } from 'vscode';
 import { DistributionManager } from './distribution';
 import { logger } from './logging';
+import { ONE_DAY_IN_MS } from './pure/helpers-pure';
 
 /** Helper class to look up a labelled (and possibly nested) setting. */
 export class Setting {
@@ -54,8 +55,11 @@ const DISTRIBUTION_SETTING = new Setting('cli', ROOT_SETTING);
 export const CUSTOM_CODEQL_PATH_SETTING = new Setting('executablePath', DISTRIBUTION_SETTING);
 const INCLUDE_PRERELEASE_SETTING = new Setting('includePrerelease', DISTRIBUTION_SETTING);
 const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIBUTION_SETTING);
+
+// Query History configuration
 const QUERY_HISTORY_SETTING = new Setting('queryHistory', ROOT_SETTING);
 const QUERY_HISTORY_FORMAT_SETTING = new Setting('format', QUERY_HISTORY_SETTING);
+const QUERY_HISTORY_TTL = new Setting('format', QUERY_HISTORY_SETTING);
 
 /** When these settings change, the distribution should be updated. */
 const DISTRIBUTION_CHANGE_SETTINGS = [CUSTOM_CODEQL_PATH_SETTING, INCLUDE_PRERELEASE_SETTING, PERSONAL_ACCESS_TOKEN_SETTING];
@@ -71,7 +75,6 @@ export interface DistributionConfig {
 }
 
 // Query server configuration
-
 const RUNNING_QUERIES_SETTING = new Setting('runningQueries', ROOT_SETTING);
 const NUMBER_OF_THREADS_SETTING = new Setting('numberOfThreads', RUNNING_QUERIES_SETTING);
 const SAVE_CACHE_SETTING = new Setting('saveCache', RUNNING_QUERIES_SETTING);
@@ -91,7 +94,10 @@ export const PAGE_SIZE = new Setting('pageSize', RESULTS_DISPLAY_SETTING);
 const CUSTOM_LOG_DIRECTORY_SETTING = new Setting('customLogDirectory', RUNNING_QUERIES_SETTING);
 
 /** When these settings change, the running query server should be restarted. */
-const QUERY_SERVER_RESTARTING_SETTINGS = [NUMBER_OF_THREADS_SETTING, SAVE_CACHE_SETTING, CACHE_SIZE_SETTING, MEMORY_SETTING, DEBUG_SETTING, CUSTOM_LOG_DIRECTORY_SETTING];
+const QUERY_SERVER_RESTARTING_SETTINGS = [
+  NUMBER_OF_THREADS_SETTING, SAVE_CACHE_SETTING, CACHE_SIZE_SETTING, MEMORY_SETTING,
+  DEBUG_SETTING, CUSTOM_LOG_DIRECTORY_SETTING,
+];
 
 export interface QueryServerConfig {
   codeQlPath: string;
@@ -106,10 +112,11 @@ export interface QueryServerConfig {
 }
 
 /** When these settings change, the query history should be refreshed. */
-const QUERY_HISTORY_SETTINGS = [QUERY_HISTORY_FORMAT_SETTING];
+const QUERY_HISTORY_SETTINGS = [QUERY_HISTORY_FORMAT_SETTING, QUERY_HISTORY_TTL];
 
 export interface QueryHistoryConfig {
   format: string;
+  ttlInMillis: number;
   onDidChangeConfiguration: Event<void>;
 }
 
@@ -251,6 +258,13 @@ export class QueryHistoryConfigListener extends ConfigListener implements QueryH
   public get format(): string {
     return QUERY_HISTORY_FORMAT_SETTING.getValue<string>();
   }
+
+  /**
+   * The configuration value is in days, but return the value in milliseconds to make it easier to use.
+   */
+  public get ttlInMillis(): number {
+    return (QUERY_HISTORY_TTL.getValue<number>() || 30) * ONE_DAY_IN_MS;
+  }
 }
 
 export class CliConfigListener extends ConfigListener implements CliConfig {
@@ -342,16 +356,4 @@ export function getRemoteControllerRepo(): string | undefined {
 
 export async function setRemoteControllerRepo(repo: string | undefined) {
   await REMOTE_CONTROLLER_REPO.updateValue(repo, ConfigurationTarget.Global);
-}
-
-/**
- * Whether to insecurely load ML models from CodeQL packs.
- *
- * This setting is for internal users only.
- */
-const SHOULD_INSECURELY_LOAD_MODELS_FROM_PACKS =
-  new Setting('shouldInsecurelyLoadModelsFromPacks', RUNNING_QUERIES_SETTING);
-
-export function shouldInsecurelyLoadMlModelsFromPacks(): boolean {
-  return SHOULD_INSECURELY_LOAD_MODELS_FROM_PACKS.getValue<boolean>();
 }

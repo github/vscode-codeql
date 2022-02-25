@@ -2,10 +2,15 @@
 
 ## [UNRELEASED]
 
+- Fix a bug where database upgrades could not be resolved if some of the target pack's dependencies are outside of the workspace. [#1138](https://github.com/github/vscode-codeql/pull/1138)
+- Open the query server logs for query errors (instead of the extension log). This will make it easier to track down query errors. [#1158](https://github.com/github/vscode-codeql/pull/1158)
+- Fix a bug where queries took a long time to run if there are no folders in the workspace. [#1157](https://github.com/github/vscode-codeql/pull/1157)
+
 ## 1.5.11 - 10 February 2022
 
 - Fix a bug where invoking _View AST_ from the file explorer would not view the selected file. Instead it would view the active editor. Also, prevent the _View AST_ from appearing if the current selection includes a directory or multiple files. [#1113](https://github.com/github/vscode-codeql/pull/1113)
 - Add query history items as soon as a query is run, including new icons for each history item. [#1094](https://github.com/github/vscode-codeql/pull/1094)
+- Save query history items across restarts. Items will be saved for 30 days and can be overwritten by setting the `codeQL.queryHistory.ttl` configuration setting. [#1130](https://github.com/github/vscode-codeql/pull/1130)
 - Allow in-progress query items to be cancelled from the query history view. [#1105](https://github.com/github/vscode-codeql/pull/1105)
 
 ## 1.5.10 - 25 January 2022
@@ -32,7 +37,7 @@
 - Fix a bug with importing large databases. Databases over 4GB can now be imported directly from LGTM or from a zip file. This functionality is only available when using CodeQL CLI version 2.6.0 or later. [#971](https://github.com/github/vscode-codeql/pull/971)
 - Replace certain control codes (`U+0000` - `U+001F`) with their corresponding control labels (`U+2400` - `U+241F`) in the results view. [#963](https://github.com/github/vscode-codeql/pull/963)
 - Allow case-insensitive project slugs for GitHub repositories when adding a CodeQL database from LGTM. [#978](https://github.com/github/vscode-codeql/pull/961)
-- Add a _CodeQL: Preview Query Help_ command to generate Markdown previews of `.qhelp` query help files. This command should only be run in trusted workspaces. See https://codeql.github.com/docs/codeql-cli/testing-query-help-files for more information about query help. [#988](https://github.com/github/vscode-codeql/pull/988)
+- Add a _CodeQL: Preview Query Help_ command to generate Markdown previews of `.qhelp` query help files. This command should only be run in trusted workspaces. See [the CodeQL CLI docs](https://codeql.github.com/docs/codeql-cli/testing-query-help-files) for more information about query help. [#988](https://github.com/github/vscode-codeql/pull/988)
 - Make "Open Referenced File" command accessible from the active editor menu. [#989](https://github.com/github/vscode-codeql/pull/989)
 - Fix a bug where result set names in the result set drop-down were disappearing when viewing a sorted table. [#1007](https://github.com/github/vscode-codeql/pull/1007)
 - Allow query result locations with 0 as the end column value. These are treated as the first column in the line. [#1002](https://github.com/github/vscode-codeql/pull/1002)

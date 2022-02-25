@@ -6,7 +6,7 @@
     "module": "commonjs",
     "target": "es2017",
     "outDir": "out",
-    "lib": ["ES2020"],
+    "lib": ["ES2021"],
     "moduleResolution": "node",
     "sourceMap": true,
     "rootDir": "src",

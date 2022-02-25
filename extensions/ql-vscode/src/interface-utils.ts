@@ -134,7 +134,7 @@ export function getHtmlForWebview(
     : stylesheetWebviewUris.map(uri => createStylesLinkWithNonce(nonce, uri));
 
   const styleSrc = allowInlineStyles
-    ? 'https://*.vscode-webview.net/ vscode-file: \'unsafe-inline\''
+    ? `${webview.cspSource} vscode-file: 'unsafe-inline'`
     : `'nonce-${nonce}'`;
 
   /*

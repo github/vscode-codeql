@@ -1,31 +1,34 @@
+import * as os from 'os';
+import * as path from 'path';
 import { CancellationToken, ExtensionContext } from 'vscode';
+
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import { downloadArtifactFromLink } from './gh-actions-api-client';
-import * as path from 'path';
 import { AnalysisSummary } from './shared/remote-query-result';
 import { AnalysisResults, QueryResult } from './shared/analysis-result';
 import { UserCancellationException } from '../commandRunner';
-import * as os from 'os';
 import { sarifParser } from '../sarif-parser';
 
 export class AnalysesResultsManager {
-  // Store for the results of various analyses for a single remote query.
-  private readonly analysesResults: AnalysisResults[];
+  // Store for the results of various analyses for each remote query.
+  // The key is the queryId and is also the name of the directory where results are stored.
+  private readonly analysesResults: Map<string, AnalysisResults[]>;
 
   constructor(
     private readonly ctx: ExtensionContext,
+    readonly storagePath: string,
     private readonly logger: Logger,
   ) {
-    this.analysesResults = [];
+    this.analysesResults = new Map();
   }
 
   public async downloadAnalysisResults(
     analysisSummary: AnalysisSummary,
     publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
   ): Promise<void> {
-    if (this.analysesResults.some(x => x.nwo === analysisSummary.nwo)) {
-      // We already have the results for this analysis, don't download again.
+    if (this.isAnalysisInMemory(analysisSummary)) {
+      // We already have the results for this analysis in memory, don't download again.
       return;
     }
 
@@ -37,10 +40,13 @@ export class AnalysesResultsManager {
   }
 
   public async downloadAnalysesResults(
-    analysesToDownload: AnalysisSummary[],
+    allAnalysesToDownload: AnalysisSummary[],
     token: CancellationToken | undefined,
     publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
   ): Promise<void> {
+    // Filter out analyses that we have already in memory.
+    const analysesToDownload = allAnalysesToDownload.filter(x => !this.isAnalysisInMemory(x));
+
     const credentials = await Credentials.initialize(this.ctx);
 
     void this.logger.log('Downloading and processing analyses results');
@@ -74,8 +80,16 @@ export class AnalysesResultsManager {
     }
   }
 
-  public getAnalysesResults(): AnalysisResults[] {
-    return [...this.analysesResults];
+  public getAnalysesResults(queryId: string): AnalysisResults[] {
+    return [...this.internalGetAnalysesResults(queryId)];
+  }
+
+  private internalGetAnalysesResults(queryId: string): AnalysisResults[] {
+    return this.analysesResults.get(queryId) || [];
+  }
+
+  public removeAnalysesResults(queryId: string) {
+    this.analysesResults.delete(queryId);
   }
 
   private async downloadSingleAnalysisResults(
@@ -88,28 +102,38 @@ export class AnalysesResultsManager {
       status: 'InProgress',
       results: []
     };
-
-    this.analysesResults.push(analysisResults);
-    void publishResults(this.analysesResults);
+    const queryId = analysis.downloadLink.queryId;
+    const resultsForQuery = this.internalGetAnalysesResults(queryId);
+    resultsForQuery.push(analysisResults);
+    this.analysesResults.set(queryId, resultsForQuery);
+    void publishResults([...resultsForQuery]);
+    const pos = resultsForQuery.length - 1;
 
     let artifactPath;
     try {
-      artifactPath = await downloadArtifactFromLink(credentials, analysis.downloadLink);
+      artifactPath = await downloadArtifactFromLink(credentials, this.storagePath, analysis.downloadLink);
     }
     catch (e) {
       throw new Error(`Could not download the analysis results for ${analysis.nwo}: ${e.message}`);
     }
 
+    let newAnaysisResults: AnalysisResults;
     if (path.extname(artifactPath) === '.sarif') {
       const queryResults = await this.readResults(artifactPath);
-      analysisResults.results = queryResults;
-      analysisResults.status = 'Completed';
+      newAnaysisResults = {
+        ...analysisResults,
+        results: queryResults,
+        status: 'Completed'
+      };
     } else {
       void this.logger.log('Cannot download results. Only alert and path queries are fully supported.');
-      analysisResults.status = 'Failed';
+      newAnaysisResults = {
+        ...analysisResults,
+        status: 'Failed'
+      };
     }
-
-    void publishResults(this.analysesResults);
+    resultsForQuery[pos] = newAnaysisResults;
+    void publishResults([...resultsForQuery]);
   }
 
   private async readResults(filePath: string): Promise<QueryResult[]> {
@@ -119,7 +143,7 @@ export class AnalysesResultsManager {
 
     // Read the sarif file and extract information that we want to display
     // in the UI. For now we're only getting the message texts but we'll gradually
-    // extract more information based on the UX we want to build. 
+    // extract more information based on the UX we want to build.
 
     sarifLog.runs?.forEach(run => {
       run?.results?.forEach(result => {
@@ -132,5 +156,9 @@ export class AnalysesResultsManager {
     });
 
     return queryResults;
+  }
+
+  private isAnalysisInMemory(analysis: AnalysisSummary): boolean {
+    return this.internalGetAnalysesResults(analysis.downloadLink.queryId).some(x => x.nwo === analysis.nwo);
   }
 }

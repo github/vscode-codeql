@@ -19,6 +19,7 @@ import {
 } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import * as os from 'os';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp-promise';
 import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
@@ -54,17 +55,26 @@ import {
   GithubApiError,
   GithubRateLimitedError
 } from './distribution';
-import * as helpers from './helpers';
+import {
+  findLanguage,
+  tmpDirDisposal,
+  showBinaryChoiceDialog,
+  showAndLogErrorMessage,
+  showAndLogWarningMessage,
+  showAndLogInformationMessage,
+  showInformationMessageWithAction,
+  tmpDir
+} from './helpers';
 import { assertNever } from './pure/helpers-pure';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
 import { WebviewReveal } from './interface-utils';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
 import { QueryHistoryManager } from './query-history';
-import { FullCompletedQueryInfo, FullQueryInfo } from './query-results';
+import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
 import * as qsClient from './queryserver-client';
 import { displayQuickQuery } from './quick-query';
-import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo, tmpDirDisposal } from './run-queries';
+import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo } from './run-queries';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
 import { CompareInterfaceManager } from './compare/compare-interface';
@@ -81,13 +91,13 @@ import { CodeQlStatusBarHandler } from './status-bar';
 
 import { Credentials } from './authentication';
 import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
-import { RemoteQuery } from './remote-queries/remote-query';
 import { RemoteQueryResult } from './remote-queries/remote-query-result';
 import { URLSearchParams } from 'url';
 import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
 import * as sampleData from './remote-queries/sample-data';
 import { handleDownloadPacks, handleInstallPackDependencies } from './packaging';
 import { AnalysesResultsManager } from './remote-queries/analyses-results-manager';
+import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 
 /**
  * extension.ts
@@ -189,7 +199,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
   const shouldUpdateOnNextActivationKey = 'shouldUpdateOnNextActivation';
 
   registerErrorStubs([checkForUpdatesCommand], command => (async () => {
-    void helpers.showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
+    void showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
   }));
 
   interface DistributionUpdateConfig {
@@ -201,7 +211,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
   async function installOrUpdateDistributionWithProgressTitle(progressTitle: string, config: DistributionUpdateConfig): Promise<void> {
     const minSecondsSinceLastUpdateCheck = config.isUserInitiated ? 0 : 86400;
     const noUpdatesLoggingFunc = config.shouldDisplayMessageWhenNoUpdates ?
-      helpers.showAndLogInformationMessage : async (message: string) => void logger.log(message);
+      showAndLogInformationMessage : async (message: string) => void logger.log(message);
     const result = await distributionManager.checkForUpdatesToExtensionManagedDistribution(minSecondsSinceLastUpdateCheck);
 
     // We do want to auto update if there is no distribution at all
@@ -223,7 +233,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
           const updateAvailableMessage = `Version "${result.updatedRelease.name}" of the CodeQL CLI is now available. ` +
             'Do you wish to upgrade?';
           await ctx.globalState.update(shouldUpdateOnNextActivationKey, true);
-          if (await helpers.showInformationMessageWithAction(updateAvailableMessage, 'Restart and Upgrade')) {
+          if (await showInformationMessageWithAction(updateAvailableMessage, 'Restart and Upgrade')) {
             await commands.executeCommand('workbench.action.reloadWindow');
           }
         } else {
@@ -236,7 +246,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
             distributionManager.installExtensionManagedDistributionRelease(result.updatedRelease, progress));
 
           await ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
-          void helpers.showAndLogInformationMessage(`CodeQL CLI updated to version "${result.updatedRelease.name}".`);
+          void showAndLogInformationMessage(`CodeQL CLI updated to version "${result.updatedRelease.name}".`);
         }
         break;
       default:
@@ -263,7 +273,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
       // Don't rethrow the exception, because if the config is changed, we want to be able to retry installing
       // or updating the distribution.
       const alertFunction = (codeQlInstalled && !config.isUserInitiated) ?
-        helpers.showAndLogWarningMessage : helpers.showAndLogErrorMessage;
+        showAndLogWarningMessage : showAndLogErrorMessage;
       const taskDescription = (willUpdateCodeQl ? 'update' :
         codeQlInstalled ? 'check for updates to' : 'install') + ' CodeQL CLI';
 
@@ -298,20 +308,20 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
           }
         })();
 
-        void helpers.showAndLogWarningMessage(
+        void showAndLogWarningMessage(
           `The current version of the CodeQL CLI (${result.version.raw}) ` +
           `is incompatible with this extension. ${fixGuidanceMessage}`
         );
         break;
       }
       case FindDistributionResultKind.UnknownCompatibilityDistribution:
-        void helpers.showAndLogWarningMessage(
+        void showAndLogWarningMessage(
           'Compatibility with the configured CodeQL CLI could not be determined. ' +
           'You may experience problems using the extension.'
         );
         break;
       case FindDistributionResultKind.NoDistribution:
-        void helpers.showAndLogErrorMessage('The CodeQL CLI could not be found.');
+        void showAndLogErrorMessage('The CodeQL CLI could not be found.');
         break;
       default:
         assertNever(result);
@@ -338,7 +348,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     } else if (distributionResult.kind === FindDistributionResultKind.NoDistribution) {
       registerErrorStubs([checkForUpdatesCommand], command => async () => {
         const installActionName = 'Install CodeQL CLI';
-        const chosenAction = await void helpers.showAndLogErrorMessage(`Can't execute ${command}: missing CodeQL CLI.`, {
+        const chosenAction = await void showAndLogErrorMessage(`Can't execute ${command}: missing CodeQL CLI.`, {
           items: [installActionName]
         });
         if (chosenAction === installActionName) {
@@ -434,18 +444,28 @@ async function activateWithInstalledDistribution(
   void logger.log('Initializing query history manager.');
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
   ctx.subscriptions.push(queryHistoryConfigurationListener);
-  const showResults = async (item: FullCompletedQueryInfo) =>
+  const showResults = async (item: CompletedLocalQueryInfo) =>
     showResultsForCompletedQuery(item, WebviewReveal.Forced);
+  const queryStorageDir = path.join(ctx.globalStorageUri.fsPath, 'queries');
+  await fs.ensureDir(queryStorageDir);
 
+  void logger.log('Initializing query history.');
   const qhm = new QueryHistoryManager(
     qs,
     dbm,
-    ctx.extensionPath,
+    queryStorageDir,
+    ctx,
     queryHistoryConfigurationListener,
-    showResults,
-    async (from: FullCompletedQueryInfo, to: FullCompletedQueryInfo) =>
+    async (from: CompletedLocalQueryInfo, to: CompletedLocalQueryInfo) =>
       showResultsForComparison(from, to),
   );
+
+  qhm.onWillOpenQueryItem(async item => {
+    if (item.t === 'local' && item.completed) {
+      await showResultsForCompletedQuery(item as CompletedLocalQueryInfo, WebviewReveal.Forced);
+    }
+  });
+
   ctx.subscriptions.push(qhm);
   void logger.log('Initializing results panel interface.');
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
@@ -465,18 +485,18 @@ async function activateWithInstalledDistribution(
   archiveFilesystemProvider.activate(ctx);
 
   async function showResultsForComparison(
-    from: FullCompletedQueryInfo,
-    to: FullCompletedQueryInfo
+    from: CompletedLocalQueryInfo,
+    to: CompletedLocalQueryInfo
   ): Promise<void> {
     try {
       await cmpm.showResults(from, to);
     } catch (e) {
-      void helpers.showAndLogErrorMessage(e.message);
+      void showAndLogErrorMessage(e.message);
     }
   }
 
   async function showResultsForCompletedQuery(
-    query: FullCompletedQueryInfo,
+    query: CompletedLocalQueryInfo,
     forceReveal: WebviewReveal
   ): Promise<void> {
     await intm.showResults(query, forceReveal, false);
@@ -506,7 +526,7 @@ async function activateWithInstalledDistribution(
       token.onCancellationRequested(() => source.cancel());
 
       const initialInfo = await createInitialQueryInfo(selectedQuery, databaseInfo, quickEval, range);
-      const item = new FullQueryInfo(initialInfo, queryHistoryConfigurationListener, source);
+      const item = new LocalQueryInfo(initialInfo, queryHistoryConfigurationListener, source);
       qhm.addQuery(item);
       try {
         const completedQueryInfo = await compileAndRunQueryAgainstDatabase(
@@ -514,18 +534,20 @@ async function activateWithInstalledDistribution(
           qs,
           databaseItem,
           initialInfo,
+          queryStorageDir,
           progress,
           source.token,
         );
         item.completeThisQuery(completedQueryInfo);
-        await showResultsForCompletedQuery(item as FullCompletedQueryInfo, WebviewReveal.NotForced);
+        await showResultsForCompletedQuery(item as CompletedLocalQueryInfo, WebviewReveal.NotForced);
         // Note we must update the query history view after showing results as the
         // display and sorting might depend on the number of results
       } catch (e) {
+        e.message = `Error running query: ${e.message}`;
         item.failureReason = e.message;
         throw e;
       } finally {
-        qhm.refreshTreeView();
+        await qhm.refreshTreeView();
         source.dispose();
       }
     }
@@ -551,7 +573,7 @@ async function activateWithInstalledDistribution(
         const errorMessage = err.message.includes('Generating qhelp in markdown') ? (
           `Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
         ) : `Could not open a preview of the generated file (${absolutePathToMd}).`;
-        void helpers.showAndLogErrorMessage(errorMessage, { fullMessage: `${errorMessage}\n${err}` });
+        void showAndLogErrorMessage(errorMessage, { fullMessage: `${errorMessage}\n${err}` });
       }
     }
 
@@ -568,7 +590,7 @@ async function activateWithInstalledDistribution(
         const uri = Uri.file(resolved.resolvedPath);
         await window.showTextDocument(uri, { preview: false });
       } else {
-        void helpers.showAndLogErrorMessage(
+        void showAndLogErrorMessage(
           'Jumping from a .qlref file to the .ql file it references is not '
           + 'supported with the CLI version you are running.\n'
           + `Please upgrade your CLI to version ${CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_QLREF
@@ -622,7 +644,10 @@ async function activateWithInstalledDistribution(
       {
         title: 'Running query',
         cancellable: true
-      }
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
     )
   );
   interface DatabaseQuickPickItem extends QuickPickItem {
@@ -638,15 +663,15 @@ async function activateWithInstalledDistribution(
       ) => {
         let filteredDBs = dbm.databaseItems;
         if (filteredDBs.length === 0) {
-          void helpers.showAndLogErrorMessage('No databases found. Please add a suitable database to your workspace.');
+          void showAndLogErrorMessage('No databases found. Please add a suitable database to your workspace.');
           return;
         }
         // If possible, only show databases with the right language (otherwise show all databases).
-        const queryLanguage = await helpers.findLanguage(cliServer, uri);
+        const queryLanguage = await findLanguage(cliServer, uri);
         if (queryLanguage) {
           filteredDBs = dbm.databaseItems.filter(db => db.language === queryLanguage);
           if (filteredDBs.length === 0) {
-            void helpers.showAndLogErrorMessage(`No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`);
+            void showAndLogErrorMessage(`No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`);
             return;
           }
         }
@@ -678,12 +703,12 @@ async function activateWithInstalledDistribution(
           }
           if (skippedDatabases.length > 0) {
             void logger.log(`Errors:\n${errors.join('\n')}`);
-            void helpers.showAndLogWarningMessage(
+            void showAndLogWarningMessage(
               `The following databases were skipped:\n${skippedDatabases.join('\n')}.\nFor details about the errors, see the logs.`
             );
           }
         } else {
-          void helpers.showAndLogErrorMessage('No databases selected.');
+          void showAndLogErrorMessage('No databases selected.');
         }
       },
       {
@@ -710,7 +735,7 @@ async function activateWithInstalledDistribution(
         // files may be hidden from the user.
         if (dirFound) {
           const fileString = files.map(file => path.basename(file)).join(', ');
-          const res = await helpers.showBinaryChoiceDialog(
+          const res = await showBinaryChoiceDialog(
             `You are about to run ${files.length} queries: ${fileString} Do you want to continue?`
           );
           if (!res) {
@@ -754,7 +779,11 @@ async function activateWithInstalledDistribution(
       {
         title: 'Running queries',
         cancellable: true
-      })
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
+    )
   );
   ctx.subscriptions.push(
     commandRunnerWithProgress(
@@ -767,7 +796,10 @@ async function activateWithInstalledDistribution(
       {
         title: 'Running query',
         cancellable: true
-      })
+      },
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
+    )
   );
 
   ctx.subscriptions.push(
@@ -782,7 +814,11 @@ async function activateWithInstalledDistribution(
       {
         title: 'Running query',
         cancellable: true
-      })
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
+    )
   );
 
   ctx.subscriptions.push(
@@ -793,12 +829,21 @@ async function activateWithInstalledDistribution(
       displayQuickQuery(ctx, cliServer, databaseUI, progress, token),
       {
         title: 'Run Quick Query'
-      }
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger
     )
   );
 
   void logger.log('Initializing remote queries interface.');
-  const rqm = new RemoteQueriesManager(ctx, cliServer, logger);
+  const rqm = new RemoteQueriesManager(ctx, cliServer, qhm, queryStorageDir, logger);
+  ctx.subscriptions.push(rqm);
+
+  // wait until after the remote queries manager is initialized to read the query history
+  // since the rqm is notified of queries being added.
+  await qhm.readQueryHistory();
+
 
   registerRemoteQueryTextProvider();
 
@@ -831,9 +876,9 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.monitorRemoteQuery', async (
-      query: RemoteQuery,
+      queryItem: RemoteQueryHistoryItem,
       token: CancellationToken) => {
-      await rqm.monitorRemoteQuery(query, token);
+      await rqm.monitorRemoteQuery(queryItem, token);
     }));
 
   ctx.subscriptions.push(
@@ -845,7 +890,7 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.showFakeRemoteQueryResults', async () => {
-      const analysisResultsManager = new AnalysesResultsManager(ctx, logger);
+      const analysisResultsManager = new AnalysesResultsManager(ctx, queryStorageDir, logger);
       const rqim = new RemoteQueriesInterfaceManager(ctx, logger, analysisResultsManager);
       await rqim.showResults(sampleData.sampleRemoteQuery, sampleData.sampleRemoteQueryResult);
 
@@ -874,7 +919,7 @@ async function activateWithInstalledDistribution(
       token: CancellationToken
     ) => {
       await qs.restartQueryServer(progress, token);
-      void helpers.showAndLogInformationMessage('CodeQL Query Server restarted.', {
+      void showAndLogInformationMessage('CodeQL Query Server restarted.', {
         outputLogger: queryServerLogger,
       });
     }, {
@@ -930,7 +975,7 @@ async function activateWithInstalledDistribution(
     commandRunner('codeQL.copyVersion', async () => {
       const text = `CodeQL extension version: ${extension?.packageJSON.version} \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${os.platform()} ${os.arch()}`;
       await env.clipboard.writeText(text);
-      void helpers.showAndLogInformationMessage(text);
+      void showAndLogInformationMessage(text);
     }));
 
   const getCliVersion = async () => {
@@ -952,7 +997,7 @@ async function activateWithInstalledDistribution(
         const credentials = await Credentials.initialize(ctx);
         const octokit = await credentials.getOctokit();
         const userInfo = await octokit.users.getAuthenticated();
-        void helpers.showAndLogInformationMessage(`Authenticated to GitHub as user: ${userInfo.data.login}`);
+        void showAndLogInformationMessage(`Authenticated to GitHub as user: ${userInfo.data.login}`);
       }
     }));
 
@@ -987,18 +1032,23 @@ async function activateWithInstalledDistribution(
 
   // Jump-to-definition and find-references
   void logger.log('Registering jump-to-definition handlers.');
+
+  // Store contextual queries in a temporary folder so that they are removed
+  // when the application closes. There is no need for the user to interact with them.
+  const contextualQueryStorageDir = path.join(tmpDir.name, 'contextual-query-storage');
+  await fs.ensureDir(contextualQueryStorageDir);
   languages.registerDefinitionProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    new TemplateQueryDefinitionProvider(cliServer, qs, dbm)
+    new TemplateQueryDefinitionProvider(cliServer, qs, dbm, contextualQueryStorageDir)
   );
 
   languages.registerReferenceProvider(
     { scheme: archiveFilesystemProvider.zipArchiveScheme },
-    new TemplateQueryReferenceProvider(cliServer, qs, dbm)
+    new TemplateQueryReferenceProvider(cliServer, qs, dbm, contextualQueryStorageDir)
   );
 
   const astViewer = new AstViewer();
-  const printAstTemplateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm);
+  const printAstTemplateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm, contextualQueryStorageDir);
   const cfgTemplateProvider = new TemplatePrintCfgProvider(cliServer, dbm);
 
   ctx.subscriptions.push(astViewer);
@@ -1027,8 +1077,7 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken
       ) => {
-        const res = await
-          cfgTemplateProvider.provideCfgUri(window.activeTextEditor?.document);
+        const res = await cfgTemplateProvider.provideCfgUri(window.activeTextEditor?.document);
         if (res) {
           await compileAndRunQuery(false, res[0], progress, token, undefined);
         }
@@ -1058,7 +1107,7 @@ async function activateWithInstalledDistribution(
 }
 
 function getContextStoragePath(ctx: ExtensionContext) {
-  return ctx.storagePath || ctx.globalStoragePath;
+  return ctx.storageUri?.fsPath || ctx.globalStorageUri.fsPath;
 }
 
 async function initializeLogging(ctx: ExtensionContext): Promise<void> {
