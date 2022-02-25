@@ -172,19 +172,13 @@ export class QueryServerClient extends DisposableObject {
     }
 
     if (await this.cliServer.cliConstraints.supportsStructuredEvalLog()) {
-      if (this.config.structuredEvalLogFile) {
-        args.push('--evaluator-log');
-        args.push(this.config.structuredEvalLogFile);
+      args.push('--evaluator-log');
+      args.push(`${this.opts.contextStoragePath}/structured-evaluator-log.json`);
   
-        if (this.config.structuredEvalLogMinify) {
-          args.push('--evaluator-log-minify');
-        }
-        // 1 is default behavior in query server if argument is not passed.
-        if (this.config.structuredEvalLogVerbosity > 1) {
-          args.push('--evaluator-log-level');
-          args.push(this.config.structuredEvalLogVerbosity.toString());
-        }
-      }
+      // We hard-code the verbosity level to 5 and minify to false. 
+      // This will be the behavior of the per-query structured logging in the CLI after 2.8.3.
+      args.push('--evaluator-log-level');
+      args.push('5');
     }
 
     if (this.config.debug) {

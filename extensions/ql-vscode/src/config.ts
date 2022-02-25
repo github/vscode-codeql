@@ -93,15 +93,10 @@ export const AUTOSAVE_SETTING = new Setting('autoSave', RUNNING_QUERIES_SETTING)
 export const PAGE_SIZE = new Setting('pageSize', RESULTS_DISPLAY_SETTING);
 const CUSTOM_LOG_DIRECTORY_SETTING = new Setting('customLogDirectory', RUNNING_QUERIES_SETTING);
 
-const STRUCTURED_EVAL_LOG_SETTING = new Setting('structuredEvaluatorLog', RUNNING_QUERIES_SETTING);
-const STRUCTURED_EVAL_LOG_MINIFY_SETTING = new Setting('minify', STRUCTURED_EVAL_LOG_SETTING);
-const STRUCTURED_EVAL_LOG_VERBOSITY_SETTING = new Setting('verbosity', STRUCTURED_EVAL_LOG_SETTING);
-
 /** When these settings change, the running query server should be restarted. */
 const QUERY_SERVER_RESTARTING_SETTINGS = [
   NUMBER_OF_THREADS_SETTING, SAVE_CACHE_SETTING, CACHE_SIZE_SETTING, MEMORY_SETTING, 
-  DEBUG_SETTING, CUSTOM_LOG_DIRECTORY_SETTING, STRUCTURED_EVAL_LOG_SETTING, 
-  STRUCTURED_EVAL_LOG_MINIFY_SETTING, STRUCTURED_EVAL_LOG_VERBOSITY_SETTING
+  DEBUG_SETTING, CUSTOM_LOG_DIRECTORY_SETTING, 
 ];
 
 export interface QueryServerConfig {
@@ -113,9 +108,6 @@ export interface QueryServerConfig {
   queryMemoryMb?: number;
   timeoutSecs: number;
   customLogDirectory?: string;
-  structuredEvalLogFile?: string;
-  structuredEvalLogMinify: boolean;
-  structuredEvalLogVerbosity: number;
   onDidChangeConfiguration?: Event<void>;
 }
 
@@ -218,25 +210,6 @@ export class QueryServerConfigListener extends ConfigListener implements QuerySe
 
   public get customLogDirectory(): string | undefined {
     return CUSTOM_LOG_DIRECTORY_SETTING.getValue<string>() || undefined;
-  }
-
-  public get structuredEvalLogFile(): string | undefined {
-    return STRUCTURED_EVAL_LOG_SETTING.getValue<string>() || undefined;
-  }
-
-  public get structuredEvalLogMinify(): boolean {
-    return STRUCTURED_EVAL_LOG_MINIFY_SETTING.getValue<boolean>();
-  }
-
-  public get structuredEvalLogVerbosity(): number {
-    const verbosity = STRUCTURED_EVAL_LOG_VERBOSITY_SETTING.getValue<number>();
-
-    if (verbosity < 1 || verbosity > 5 || typeof (verbosity) !== 'number') {
-      void logger.log(`Ignoring value '${verbosity}' for setting ${STRUCTURED_EVAL_LOG_VERBOSITY_SETTING.qualifiedName}; falling back to default value of 1`);
-      return 1;
-    }
-
-    return verbosity;
   }
 
   public get numThreads(): number {
