@@ -1205,11 +1205,10 @@ export class CliVersionConstraint {
   public static CLI_VERSION_WITH_PACKAGING = new SemVer('2.6.0');
 
   /**
-   * TODO(angelapwen): This is not quite accurate as the evaluator log options
-   * in the CLI have not yet been released. Update when released. 
-   * CLI version where the `--evaluator-log` and related options to the query server were introduced.
+   * CLI version where the `--evaluator-log` and related options to the query server were introduced,
+   * on a per-query server basis. 
    */
-   public static CLI_VERSION_WITH_STRUCTURED_EVAL_LOG = new SemVer('2.8.1');
+   public static CLI_VERSION_WITH_STRUCTURED_EVAL_LOG = new SemVer('2.8.2');
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
