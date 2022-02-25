@@ -254,20 +254,30 @@ describe('query-results', () => {
   });
 
   describe('splat and slurp', () => {
-    it('should splat and slurp query history', async () => {
-      const infoSuccessRaw = createMockFullQueryInfo('a', createMockQueryWithResults(`${queryPath}-a`, false, false, '/a/b/c/a', false));
-      const infoSuccessInterpreted = createMockFullQueryInfo('b', createMockQueryWithResults(`${queryPath}-b`, true, true, '/a/b/c/b', false));
-      const infoEarlyFailure = createMockFullQueryInfo('c', undefined, true);
-      const infoLateFailure = createMockFullQueryInfo('d', createMockQueryWithResults(`${queryPath}-c`, false, false, '/a/b/c/d', false));
-      const infoInprogress = createMockFullQueryInfo('e');
-      const allHistory = [
+
+    let infoSuccessRaw: LocalQueryInfo;
+    let infoSuccessInterpreted: LocalQueryInfo;
+    let infoEarlyFailure: LocalQueryInfo;
+    let infoLateFailure: LocalQueryInfo;
+    let infoInprogress: LocalQueryInfo;
+    let allHistory: LocalQueryInfo[];
+
+    beforeEach(() => {
+      infoSuccessRaw = createMockFullQueryInfo('a', createMockQueryWithResults(`${queryPath}-a`, false, false, '/a/b/c/a', false));
+      infoSuccessInterpreted = createMockFullQueryInfo('b', createMockQueryWithResults(`${queryPath}-b`, true, true, '/a/b/c/b', false));
+      infoEarlyFailure = createMockFullQueryInfo('c', undefined, true);
+      infoLateFailure = createMockFullQueryInfo('d', createMockQueryWithResults(`${queryPath}-c`, false, false, '/a/b/c/d', false));
+      infoInprogress = createMockFullQueryInfo('e');
+      allHistory = [
         infoSuccessRaw,
         infoSuccessInterpreted,
         infoEarlyFailure,
         infoLateFailure,
         infoInprogress
       ];
+    });
 
+    it('should splat and slurp query history', async () => {
       // the expected results only contains the history with completed queries
       const expectedHistory = [
         infoSuccessRaw,
@@ -312,6 +322,18 @@ describe('query-results', () => {
         expect(allHistoryActual[i]).to.deep.eq(expectedHistory[i]);
       }
       expect(allHistoryActual.length).to.deep.eq(expectedHistory.length);
+    });
+
+    it('should handle an invalid query history version', async () => {
+      const badPath = path.join(tmpDir.name, 'bad-query-history.json');
+      fs.writeFileSync(badPath, JSON.stringify({
+        version: 2,
+        queries: allHistory
+      }), 'utf8');
+
+      const allHistoryActual = await slurpQueryHistory(badPath, mockConfig);
+      // version number is invalid. Should return an empty array.
+      expect(allHistoryActual).to.deep.eq([]);
     });
   });
 
