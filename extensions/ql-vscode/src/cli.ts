@@ -13,12 +13,12 @@ import { CancellationToken, Disposable, Uri } from 'vscode';
 import { BQRSInfo, DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { CliConfig } from './config';
 import { DistributionProvider, FindDistributionResultKind } from './distribution';
-import { assertNever, walkDirectory } from './pure/helpers-pure';
+import { assertNever } from './pure/helpers-pure';
 import { QueryMetadata, SortDirection } from './pure/interface-types';
 import { Logger, ProgressReporter } from './logging';
 import { CompilationMessage } from './pure/messages';
 import { sarifParser } from './sarif-parser';
-import { dbSchemeToLanguage } from './helpers';
+import { dbSchemeToLanguage, walkDirectory } from './helpers';
 
 /**
  * The version of the SARIF format that we are using.

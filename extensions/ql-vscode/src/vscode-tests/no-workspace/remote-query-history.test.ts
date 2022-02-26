@@ -17,7 +17,7 @@ import { AnalysesResultsManager } from '../../remote-queries/analyses-results-ma
 import { RemoteQueryResult } from '../../remote-queries/shared/remote-query-result';
 import { DisposableBucket } from '../disposable-bucket';
 import { testDisposeHandler } from '../test-dispose-handler';
-import { walkDirectory } from '../../pure/helpers-pure';
+import { walkDirectory } from '../../helpers';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -41,13 +41,19 @@ describe('Remote queries and query history manager', function() {
   let showTextDocumentSpy: sinon.SinonSpy;
   let openTextDocumentSpy: sinon.SinonSpy;
 
-  beforeEach(async () => {
+  beforeEach(async function() {
+
+    // set a higher timeout since recursive delete below may take a while, expecially on Windows.
+    this.timeout(120000);
+
     // Since these tests change the state of the query history manager, we need to copy the original
     // to a temporary folder where we can manipulate it for tests
     await copyHistoryState();
   });
 
-  afterEach(() => {
+  afterEach(function() {
+    // set a higher timeout since recursive delete below may take a while, expecially on Windows.
+    this.timeout(120000);
     deleteHistoryState();
   });
 
@@ -332,7 +338,12 @@ describe('Remote queries and query history manager', function() {
   }
 
   function deleteHistoryState() {
-    fs.removeSync(STORAGE_DIR);
+    fs.rmSync(STORAGE_DIR, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 100
+    });
   }
 
   function replacePlaceholder(filePath: string) {
