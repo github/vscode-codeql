@@ -206,16 +206,21 @@ export class QueryEvaluationInfo {
       return false;
     }
 
-    const hasKind = !!this.metadata?.kind;
+    const kind = this.metadata?.kind;
+    const hasKind = !!kind;
     if (!hasKind) {
       void logger.log('Cannot produce interpreted results since the query does not have @kind metadata.');
       return false;
     }
 
+    // Graph queries only return interpreted results if we are in canary mode.
+    if (kind === 'graph') {
+      return config.isCanary();
+    }
+
     // table is the default query kind. It does not produce interpreted results.
     // any query kind that is not table can, in principle, produce interpreted results.
-    const isTable = hasKind && this.metadata?.kind === 'table';
-    return !isTable;
+    return kind !== 'table';
   }
 
   /**

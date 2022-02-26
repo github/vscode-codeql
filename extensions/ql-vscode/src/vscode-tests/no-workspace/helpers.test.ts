@@ -407,6 +407,7 @@ describe('walkDirectory', () => {
     tmpDir.removeCallback();
   });
 
+
   it('should walk a directory', async () => {
     const file1 = path.join(dir, 'file1');
     const file2 = path.join(dir, 'file2');
@@ -438,6 +439,8 @@ describe('walkDirectory', () => {
     fs.writeFileSync(file8, 'file8');
     fs.writeFileSync(file9, 'file9');
 
+    // We don't really need to be testing all of these variants of symlinks,
+    // but it doesn't hurt, and will help us if we ever do decide to support them.
     fs.symlinkSync(file6, symLinkFile7, 'file');
     fs.symlinkSync(dir3, symlinkDir, 'dir');
     fs.symlinkSync(file8, symlinkFile2, 'file');
