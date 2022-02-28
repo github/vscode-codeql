@@ -6,6 +6,7 @@ export interface RemoteQueryResult {
   queryFileName: string;
   queryFilePath: string;
   queryText: string;
+  language: string;
   workflowRunUrl: string;
   totalRepositoryCount: number;
   affectedRepositoryCount: number;

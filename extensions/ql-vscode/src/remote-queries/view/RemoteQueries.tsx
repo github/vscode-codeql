@@ -25,6 +25,7 @@ const emptyQueryResult: RemoteQueryResult = {
   queryFileName: '',
   queryFilePath: '',
   queryText: '',
+  language: '',
   workflowRunUrl: '',
   totalRepositoryCount: 0,
   affectedRepositoryCount: 0,
