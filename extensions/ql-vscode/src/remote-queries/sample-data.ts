@@ -102,6 +102,7 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
 const createAnalysisResults = (n: number) => Array(n).fill(
   {
     message: 'This shell command depends on an uncontrolled [absolute path](1).',
+    severity: 'Error',
     filePath: 'npm-packages/meteor-installer/config.js',
     contextRegion: {
       startLine: 253,
