@@ -95,6 +95,7 @@ export function processSarif(sarifLog: sarif.Log): ProcessedSarif {
           codeRegion: {
             startLine: codeRegion.startLine,
             startColumn: codeRegion.startColumn,
+            endLine: codeRegion.endLine,
             endColumn: codeRegion.endColumn
           }
         });

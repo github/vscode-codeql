@@ -23,6 +23,7 @@ export interface ContextRegion {
 export interface CodeRegion {
   startLine: number;
   startColumn: number;
+  endLine: number | undefined;
   endColumn: number;
 }
 
