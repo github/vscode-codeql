@@ -4,6 +4,7 @@ export interface RemoteQuery {
   queryName: string;
   queryFilePath: string;
   queryText: string;
+  language: string;
   controllerRepository: Repository;
   repositories: Repository[];
   executionStartTime: number; // Use number here since it needs to be serialized and desserialized.

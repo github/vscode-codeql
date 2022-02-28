@@ -314,7 +314,15 @@ export async function runRemoteQuery(
         return;
       }
 
-      const remoteQuery = await buildRemoteQueryEntity(repositories, queryFile, queryMetadata, owner, repo, queryStartTime, workflowRunId);
+      const remoteQuery = await buildRemoteQueryEntity(
+        repositories,
+        queryFile,
+        queryMetadata,
+        owner,
+        repo,
+        queryStartTime,
+        workflowRunId,
+        language);
 
       // don't return the path because it has been deleted
       return { query: remoteQuery };
@@ -437,7 +445,8 @@ async function buildRemoteQueryEntity(
   controllerRepoOwner: string,
   controllerRepoName: string,
   queryStartTime: number,
-  workflowRunId: number
+  workflowRunId: number,
+  language: string
 ): Promise<RemoteQuery> {
   // The query name is either the name as specified in the query metadata, or the file name.
   const queryName = queryMetadata?.name ?? path.basename(queryFilePath);
@@ -453,6 +462,7 @@ async function buildRemoteQueryEntity(
     queryName,
     queryFilePath,
     queryText,
+    language,
     controllerRepository: {
       owner: controllerRepoOwner,
       name: controllerRepoName,
