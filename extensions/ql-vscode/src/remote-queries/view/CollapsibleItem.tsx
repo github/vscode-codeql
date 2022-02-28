@@ -6,6 +6,7 @@ import { useState } from 'react';
 const Container = styled.div`
   display: block;
   vertical-align: middle;
+  cursor: pointer;
 `;
 
 const TitleContainer = styled.span`
@@ -15,6 +16,7 @@ const TitleContainer = styled.span`
 const Button = styled.button`
   display: inline-block;
   background-color: transparent;
+  color: var(--vscode-editor-foreground);
   border: none;
   padding-left: 0;
   padding-right: 0.1em;
@@ -30,8 +32,8 @@ const CollapsibleItem = ({
   const [isExpanded, setExpanded] = useState(false);
   return (
     <>
-      <Container>
-        <Button onClick={() => setExpanded(!isExpanded)}>
+      <Container onClick={() => setExpanded(!isExpanded)}>
+        <Button>
           {isExpanded
             ? <ChevronDownIcon size={16} />
             : <ChevronRightIcon size={16} />
