@@ -7,7 +7,14 @@ const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
 const warningColor = '#966C23';
 
 const getSeverityColor = (severity: ResultSeverity) => {
-  return severity === 'Error' ? 'red' : warningColor;
+  switch (severity) {
+    case 'Recommendation':
+      return 'blue';
+    case 'Warning':
+      return warningColor;
+    case 'Error':
+      return 'red';
+  }
 };
 
 const Container = styled.div`

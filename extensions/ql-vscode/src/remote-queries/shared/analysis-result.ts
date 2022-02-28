@@ -26,4 +26,4 @@ export interface CodeRegion {
   endColumn: number;
 }
 
-export type ResultSeverity = 'Warning' | 'Error';
+export type ResultSeverity = 'Recommendation' | 'Warning' | 'Error';

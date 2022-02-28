@@ -123,5 +123,14 @@ function getSeverity(sarifRun: sarif.Run, result: sarif.Result): ResultSeverity 
     return defaultSeverity;
   }
 
-  return severity.toLowerCase() === 'warning' ? 'Warning' : 'Error';
+  switch (severity.toLowerCase()) {
+    case 'recommendation':
+      return 'Recommendation';
+    case 'warning':
+      return 'Warning';
+    case 'error':
+      return 'Error';
+  }
+
+  return defaultSeverity;
 }
