@@ -98,7 +98,22 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
 };
 
 
-const createAnalysisResults = (n: number) => Array(n).fill({ 'message': 'Sample text' });
+const createAnalysisResults = (n: number) => Array(n).fill(
+  {
+    message: 'This shell command depends on an uncontrolled [absolute path](1).',
+    filePath: 'npm-packages/meteor-installer/config.js',
+    contextRegion: {
+      startLine: 253,
+      endLine: 257,
+      text: '  if (isWindows()) {\n    //set for the current session and beyond\n    child_process.execSync(`setx path "${meteorPath}/;%path%`);\n    return;\n  }\n',
+    },
+    codeRegion: {
+      startLine: 255,
+      startColumn: 28,
+      endColumn: 62
+    }
+  }
+);
 
 export const sampleAnalysesResultsStage1: AnalysisResults[] = [
   {

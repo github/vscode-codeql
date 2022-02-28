@@ -17,6 +17,7 @@ import { AnalysisResults } from '../shared/analysis-result';
 import DownloadSpinner from './DownloadSpinner';
 import CollapsibleItem from './CollapsibleItem';
 import { AlertIcon, CodeSquareIcon, FileCodeIcon, FileSymlinkFileIcon, RepoIcon, TerminalIcon } from '@primer/octicons-react';
+import AnalysisAlertResult from './AnalysisAlertResult';
 
 const numOfReposInContractedMode = 10;
 
@@ -220,7 +221,7 @@ const Summary = ({
             analysesResults={analysesResults} />
       }
 
-      <ul className="vscode-codeql__analysis-summaries-list">
+      <ul className="vscode-codeql__flat-list">
         {queryResult.analysisSummaries.slice(0, numOfReposToShow).map((summary, i) =>
           <li key={summary.nwo} className="vscode-codeql__analysis-summaries-list-item">
             <SummaryItem
@@ -267,7 +268,13 @@ const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
 
   return (
     <CollapsibleItem title={title}>
-      {analysisResults.results.map((r, i) => (<p key={i} >{r.message}</p>))}
+      <ul className="vscode-codeql__flat-list" >
+        {analysisResults.results.map((r, i) =>
+          <li key={i}>
+            <AnalysisAlertResult alert={r} />
+            <VerticalSpace size={2} />
+          </li>)}
+      </ul>
     </CollapsibleItem>
   );
 };
@@ -288,7 +295,7 @@ const AnalysesResults = ({ analysesResults, totalResults }: { analysesResults: A
       <AnalysesResultsDescription
         totalAnalysesResults={totalAnalysesResults}
         totalResults={totalResults} />
-      <ul className="vscode-codeql__analyses-results-list">
+      <ul className="vscode-codeql__flat-list">
         {analysesResults.filter(a => a.results.length > 0).map(r =>
           <li key={r.nwo} className="vscode-codeql__analyses-results-list-item">
             <RepoAnalysisResults {...r} />
