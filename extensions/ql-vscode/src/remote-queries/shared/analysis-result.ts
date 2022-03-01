@@ -11,7 +11,7 @@ export interface AnalysisAlert {
   severity: ResultSeverity;
   filePath: string;
   codeSnippet: CodeSnippet
-  highlightedRegion: HighligtedRegion
+  highlightedRegion: HighlightedRegion
 }
 
 export interface CodeSnippet {
@@ -20,7 +20,7 @@ export interface CodeSnippet {
   text: string;
 }
 
-export interface HighligtedRegion {
+export interface HighlightedRegion {
   startLine: number;
   startColumn: number;
   endLine: number | undefined;
