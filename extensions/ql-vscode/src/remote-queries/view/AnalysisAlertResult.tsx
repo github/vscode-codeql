@@ -1,10 +1,11 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import { Box, Link } from '@primer/react';
-import { AnalysisAlert, ResultSeverity } from '../shared/analysis-result';
+import { AnalysisAlert, HighlightedRegion, ResultSeverity } from '../shared/analysis-result';
 
 const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
 const warningColor = '#966C23';
+const highlightColor = '#534425';
 
 const getSeverityColor = (severity: ResultSeverity) => {
   switch (severity) {
@@ -35,11 +36,13 @@ const CodeContainer = styled.div`
   border-bottom: 0.1em solid ${borderColor};
   border-bottom-left-radius: 0.2em;
   border-bottom-right-radius: 0.2em;
+  padding-top: 1em;
+  padding-bottom: 1em;
 `;
 
 const MessageText = styled.span<{ severity: ResultSeverity }>`
   font-size: x-small;
-  color: ${props => `${getSeverityColor(props.severity)}`};
+  color: ${props => getSeverityColor(props.severity)};
   padding-left: 0.5em;
 `;
 
@@ -70,6 +73,54 @@ const Message = ({ alert, currentLineNumber }: {
   </MessageContainer>;
 };
 
+const replaceSpaceChar = (text: string) => text.replaceAll(' ', '\u00a0');
+
+const PlainLine = ({ text }: { text: string }) => {
+  return <span>{replaceSpaceChar(text)}</span>;
+};
+
+const HighlightedLine = ({ text }: { text: string }) => {
+  return <span style={{ backgroundColor: highlightColor }}>{replaceSpaceChar(text)}</span>;
+};
+
+const shouldHighlightLine = (lineNumber: number, highlightedRegion: HighlightedRegion) => {
+  if (lineNumber < highlightedRegion.startLine) {
+    return false;
+  }
+
+  if (highlightedRegion.endLine) {
+    return lineNumber <= highlightedRegion.endLine;
+  }
+
+  return true;
+};
+
+const CodeLine = ({
+  line,
+  lineNumber,
+  highlightedRegion
+}: {
+  line: string,
+  lineNumber: number,
+  highlightedRegion: HighlightedRegion
+}) => {
+  if (!shouldHighlightLine(lineNumber, highlightedRegion)) {
+    return <PlainLine text={line} />;
+  }
+
+  const section1 = line.substring(0, highlightedRegion.startColumn - 1);
+  const section2 = line.substring(highlightedRegion.startColumn - 1, highlightedRegion.endColumn - 1);
+  const section3 = line.substring(highlightedRegion.endColumn - 1, line.length);
+
+  return (
+    <>
+      <PlainLine text={section1} />
+      <HighlightedLine text={section2} />
+      <PlainLine text={section3} />
+    </>
+  );
+};
+
 const AnalysisAlertResult = ({ alert }: { alert: AnalysisAlert }) => {
   const code = alert.codeSnippet.text
     .split('\n')
@@ -86,13 +137,28 @@ const AnalysisAlertResult = ({ alert }: { alert: AnalysisAlert }) => {
         {code.map((line, index) => (
           <div key={index}>
             <Message alert={alert} currentLineNumber={startingLine + index} />
-            {/* TODO: Replace the following with actual code snippet component */}
-            <Box display="flex" >
-              <Box p={2} borderStyle="none" paddingTop="0.01em" paddingLeft="0.5em" paddingRight="0.5em">
+            <Box display="flex">
+              <Box
+                p={2}
+                borderStyle="none"
+                paddingTop="0.01em"
+                paddingLeft="0.5em"
+                paddingRight="0.5em"
+                paddingBottom="0.2em">
                 {startingLine + index}
               </Box>
-              <Box flexGrow={1} p={2} borderStyle="none" paddingTop="0.01em" paddingLeft="0.5em" paddingRight="0.5em">
-                {line}
+              <Box
+                flexGrow={1}
+                p={2}
+                borderStyle="none"
+                paddingTop="0.01em"
+                paddingLeft="1.5em"
+                paddingRight="0.5em"
+                paddingBottom="0.2em">
+                <CodeLine
+                  line={line}
+                  lineNumber={startingLine + index}
+                  highlightedRegion={alert.highlightedRegion} />
               </Box>
             </Box>
           </div>
