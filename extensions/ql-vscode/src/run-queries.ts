@@ -67,7 +67,7 @@ export class QueryEvaluationInfo {
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(
-    private readonly querySaveDir: string,
+    public readonly querySaveDir: string,
     public readonly dbItemPath: string,
     private readonly databaseHasMetadataFile: boolean,
     public readonly queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
