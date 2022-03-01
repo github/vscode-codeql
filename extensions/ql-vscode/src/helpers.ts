@@ -568,13 +568,10 @@ export async function createTimestampFile(storagePath: string) {
  *
  * @return An iterator of the full path to all files recursively found in the directory.
  */
- export async function* walkDirectory(dir: string): AsyncIterableIterator<string> {
+export async function* walkDirectory(dir: string): AsyncIterableIterator<string> {
   const seenFiles = new Set<string>();
   for await (const d of await fs.opendir(dir)) {
     const entry = path.join(dir, d.name);
-    if (seenFiles.has(entry)) {
-      continue;
-    }
     seenFiles.add(entry);
     if (d.isDirectory()) {
       yield* walkDirectory(entry);
