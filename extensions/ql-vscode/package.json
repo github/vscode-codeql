@@ -208,7 +208,8 @@
             null
           ],
           "default": null,
-          "description": "Path to a directory where the CodeQL extension should store query server logs. If empty, the extension stores logs in a temporary workspace folder and deletes the contents after each run."
+          "description": "Path to a directory where the CodeQL extension should store query server logs. If empty, the extension stores logs in a temporary workspace folder and deletes the contents after each run.",
+          "markdownDeprecationMessage": "This property is deprecated and no longer has any effect. All query logs are stored in the query history folder next to the query results."
         },
         "codeQL.runningQueries.quickEvalCodelens": {
           "type": "boolean",

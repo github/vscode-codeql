@@ -5,6 +5,7 @@
 - Fix a bug where database upgrades could not be resolved if some of the target pack's dependencies are outside of the workspace. [#1138](https://github.com/github/vscode-codeql/pull/1138)
 - Open the query server logs for query errors (instead of the extension log). This will make it easier to track down query errors. [#1158](https://github.com/github/vscode-codeql/pull/1158)
 - Fix a bug where queries took a long time to run if there are no folders in the workspace. [#1157](https://github.com/github/vscode-codeql/pull/1157)
+- [BREAKING CHANGE] The `codeQL.runningQueries.customLogDirectory` setting is deprecated and no longer has any function. Instead, all query log files will be stored in the query history directory, next to the query results. [#1178](https://github.com/github/vscode-codeql/pull/1178)
 
 ## 1.5.11 - 10 February 2022
 

@@ -1111,9 +1111,6 @@ function getContextStoragePath(ctx: ExtensionContext) {
 }
 
 async function initializeLogging(ctx: ExtensionContext): Promise<void> {
-  const storagePath = getContextStoragePath(ctx);
-  await logger.setLogStoragePath(storagePath, false);
-  await ideServerLogger.setLogStoragePath(storagePath, false);
   ctx.subscriptions.push(logger);
   ctx.subscriptions.push(queryServerLogger);
   ctx.subscriptions.push(ideServerLogger);

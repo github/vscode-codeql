@@ -12,7 +12,8 @@ const proxyquire = pq.noPreserveCache().noCallThru();
 chai.use(sinonChai);
 const expect = chai.expect;
 
-describe('OutputChannelLogger tests', () => {
+describe.only('OutputChannelLogger tests', function() {
+  this.timeout(999999);
   let OutputChannelLogger;
   const tempFolders: Record<string, tmp.DirResult> = {};
   let logger: any;
@@ -39,113 +40,24 @@ describe('OutputChannelLogger tests', () => {
     expect(mockOutputChannel.appendLine).not.to.have.been.calledWith('yyy');
     expect(mockOutputChannel.append).to.have.been.calledWith('yyy');
 
-    // additionalLogLocation ignored since not initialized
-    await logger.log('zzz', { additionalLogLocation: 'hucairz' });
+    await logger.log('zzz', createLogOptions('hucairz'));
 
-    // should not have created any side logs
-    expect(fs.readdirSync(tempFolders.globalStoragePath.name).length).to.equal(0);
-    expect(fs.readdirSync(tempFolders.storagePath.name).length).to.equal(0);
+    // should have created 1 side log
+    expect(fs.readdirSync(tempFolders.storagePath.name)).to.deep.equal(['hucairz']);
   });
 
-  it('should create a side log in the workspace area', async () => {
-    await logger.setLogStoragePath(tempFolders.storagePath.name, false);
-
-    await logger.log('xxx', { additionalLogLocation: 'first' });
-    await logger.log('yyy', { additionalLogLocation: 'second' });
-    await logger.log('zzz', { additionalLogLocation: 'first', trailingNewline: false });
+  it('should create a side log', async () => {
+    await logger.log('xxx', createLogOptions('first'));
+    await logger.log('yyy', createLogOptions('second'));
+    await logger.log('zzz', createLogOptions('first', false));
     await logger.log('aaa');
 
     // expect 2 side logs
-    const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
-    expect(fs.readdirSync(testLoggerFolder).length).to.equal(2);
+    expect(fs.readdirSync(tempFolders.storagePath.name).length).to.equal(2);
 
     // contents
-    expect(fs.readFileSync(path.join(testLoggerFolder, 'first'), 'utf8')).to.equal('xxx\nzzz');
-    expect(fs.readFileSync(path.join(testLoggerFolder, 'second'), 'utf8')).to.equal('yyy\n');
-  });
-
-  it('should delete side logs on dispose', async () => {
-    await logger.setLogStoragePath(tempFolders.storagePath.name, false);
-    await logger.log('xxx', { additionalLogLocation: 'first' });
-    await logger.log('yyy', { additionalLogLocation: 'second' });
-
-    const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
-    expect(fs.readdirSync(testLoggerFolder).length).to.equal(2);
-
-    await logger.dispose();
-    // need to wait for disposable-object to dispose
-    await waitABit();
-    expect(fs.readdirSync(testLoggerFolder).length).to.equal(0);
-    expect(mockOutputChannel.dispose).to.have.been.calledWith();
-  });
-
-  it('should not delete side logs on dispose in a custom directory', async () => {
-    await logger.setLogStoragePath(tempFolders.storagePath.name, true);
-    await logger.log('xxx', { additionalLogLocation: 'first' });
-    await logger.log('yyy', { additionalLogLocation: 'second' });
-
-    const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
-    expect(fs.readdirSync(testLoggerFolder).length).to.equal(2);
-
-    await logger.dispose();
-    // need to wait for disposable-object to dispose
-    await waitABit();
-    expect(fs.readdirSync(testLoggerFolder).length).to.equal(2);
-    expect(mockOutputChannel.dispose).to.have.been.calledWith();
-  });
-
-  it('should remove an additional log location', async () => {
-    await logger.setLogStoragePath(tempFolders.storagePath.name, false);
-    await logger.log('xxx', { additionalLogLocation: 'first' });
-    await logger.log('yyy', { additionalLogLocation: 'second' });
-
-    const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
-    expect(fs.readdirSync(testLoggerFolder).length).to.equal(2);
-
-    await logger.removeAdditionalLogLocation('first');
-    // need to wait for disposable-object to dispose
-    await waitABit();
-    expect(fs.readdirSync(testLoggerFolder).length).to.equal(1);
-    expect(fs.readFileSync(path.join(testLoggerFolder, 'second'), 'utf8')).to.equal('yyy\n');
-  });
-
-  it('should not remove an additional log location in a custom directory', async () => {
-    await logger.setLogStoragePath(tempFolders.storagePath.name, true);
-    await logger.log('xxx', { additionalLogLocation: 'first' });
-    await logger.log('yyy', { additionalLogLocation: 'second' });
-
-    const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
-    expect(fs.readdirSync(testLoggerFolder).length).to.equal(2);
-
-    await logger.removeAdditionalLogLocation('first');
-    // need to wait for disposable-object to dispose
-    await waitABit();
-    expect(fs.readdirSync(testLoggerFolder).length).to.equal(2);
-    expect(fs.readFileSync(path.join(testLoggerFolder, 'second'), 'utf8')).to.equal('yyy\n');
-  });
-
-  it('should delete an existing folder when setting the log storage path', async () => {
-    fs.createFileSync(path.join(tempFolders.storagePath.name, 'test-logger', 'xxx'));
-    await logger.setLogStoragePath(tempFolders.storagePath.name, false);
-    // should be empty dir
-
-    await waitABit();
-    const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
-    expect(fs.existsSync(testLoggerFolder)).to.be.false;
-  });
-
-  it('should not delete an existing folder when setting the log storage path for a custom directory', async () => {
-    fs.createFileSync(path.join(tempFolders.storagePath.name, 'test-logger', 'xxx'));
-    await logger.setLogStoragePath(tempFolders.storagePath.name, true);
-    // should not be empty dir
-
-    const testLoggerFolder = path.join(tempFolders.storagePath.name, 'test-logger');
-    expect(fs.readdirSync(testLoggerFolder).length).to.equal(1);
-  });
-
-  it('should show the output channel', () => {
-    logger.show(true);
-    expect(mockOutputChannel.show).to.have.been.calledWith(true);
+    expect(fs.readFileSync(path.join(tempFolders.storagePath.name, 'first'), 'utf8')).to.equal('xxx\nzzz');
+    expect(fs.readFileSync(path.join(tempFolders.storagePath.name, 'second'), 'utf8')).to.equal('yyy\n');
   });
 
   function createModule(): any {
@@ -170,7 +82,10 @@ describe('OutputChannelLogger tests', () => {
     });
   }
 
-  function waitABit(ms = 50): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  function createLogOptions(additionalLogLocation: string, trailingNewline?: boolean) {
+    return {
+      additionalLogLocation: path.join(tempFolders.storagePath.name, additionalLogLocation),
+      trailingNewline,
+    };
   }
 });

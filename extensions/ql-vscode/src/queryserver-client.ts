@@ -9,8 +9,6 @@ import { Logger, ProgressReporter } from './logging';
 import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './pure/messages';
 import * as messages from './pure/messages';
 import { ProgressCallback, ProgressTask } from './commandRunner';
-import * as fs from 'fs-extra';
-import * as helpers from './helpers';
 
 type ServerOpts = {
   logger: Logger;
@@ -68,7 +66,7 @@ export class QueryServerClient extends DisposableObject {
     this.queryServerStartListeners.push(e);
   }
 
-  public activeQueryName: string | undefined;
+  public activeQueryLogFIle: string | undefined;
 
   constructor(
     readonly config: QueryServerConfig,
@@ -87,26 +85,6 @@ export class QueryServerClient extends DisposableObject {
     this.nextProgress = 0;
     this.progressCallbacks = {};
     this.evaluationResultCallbacks = {};
-  }
-
-  async initLogger() {
-    let storagePath = this.opts.contextStoragePath;
-    let isCustomLogDirectory = false;
-    if (this.config.customLogDirectory) {
-      try {
-        if (!(await fs.pathExists(this.config.customLogDirectory))) {
-          await fs.mkdir(this.config.customLogDirectory);
-        }
-        void this.logger.log(`Saving query server logs to user-specified directory: ${this.config.customLogDirectory}.`);
-        storagePath = this.config.customLogDirectory;
-        isCustomLogDirectory = true;
-      } catch (e) {
-        void helpers.showAndLogErrorMessage(`${this.config.customLogDirectory} is not a valid directory. Logs will be stored in a temporary workspace directory instead.`);
-      }
-    }
-
-    await this.logger.setLogStoragePath(storagePath, isCustomLogDirectory);
-
   }
 
   get logger(): Logger {
@@ -150,7 +128,6 @@ export class QueryServerClient extends DisposableObject {
 
   /** Starts a new query server process, sending progress messages to the given reporter. */
   private async startQueryServerImpl(progressReporter: ProgressReporter): Promise<void> {
-    await this.initLogger();
     const ramArgs = await this.cliServer.resolveRam(this.config.queryMemoryMb, progressReporter);
     const args = ['--threads', this.config.numThreads.toString()].concat(ramArgs);
 
@@ -175,7 +152,7 @@ export class QueryServerClient extends DisposableObject {
       args.push('--evaluator-log');
       args.push(`${this.opts.contextStoragePath}/structured-evaluator-log.json`);
 
-      // We hard-code the verbosity level to 5 and minify to false. 
+      // We hard-code the verbosity level to 5 and minify to false.
       // This will be the behavior of the per-query structured logging in the CLI after 2.8.3.
       args.push('--evaluator-log-level');
       args.push('5');
@@ -197,7 +174,7 @@ export class QueryServerClient extends DisposableObject {
       this.logger,
       data => this.logger.log(data.toString(), {
         trailingNewline: false,
-        additionalLogLocation: this.activeQueryName
+        additionalLogLocation: this.activeQueryLogFIle
       }),
       undefined, // no listener for stdout
       progressReporter
@@ -208,10 +185,6 @@ export class QueryServerClient extends DisposableObject {
       if (!(res.runId in this.evaluationResultCallbacks)) {
         void this.logger.log(`No callback associated with run id ${res.runId}, continuing without executing any callback`);
       } else {
-        const baseLocation = this.logger.getBaseLocation();
-        if (baseLocation && this.activeQueryName) {
-          res.logFileLocation = path.join(baseLocation, this.activeQueryName);
-        }
         this.evaluationResultCallbacks[res.runId](res);
       }
       return {};
@@ -272,8 +245,11 @@ export class QueryServerClient extends DisposableObject {
    */
   private updateActiveQuery(method: string, parameter: any): void {
     if (method === messages.compileQuery.method) {
-      const queryPath = parameter?.queryToCheck?.queryPath || 'unknown';
-      this.activeQueryName = `query-${path.basename(queryPath)}-${this.nextProgress}.log`;
+      this.activeQueryLogFIle = findQueryLogFile(path.dirname(parameter.resultPath));
     }
   }
+}
+
+export function findQueryLogFile(resultPath: string): string {
+  return path.join(resultPath, 'query.log');
 }
