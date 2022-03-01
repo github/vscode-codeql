@@ -5,7 +5,7 @@
     "strict": true,
     "module": "commonjs",
     "target": "es2017",
-    "lib": ["es6"],
+    "lib": ["ES2021"],
     "moduleResolution": "node",
     "sourceMap": true,
     "rootDir": ".",
