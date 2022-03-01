@@ -104,12 +104,12 @@ const createAnalysisResults = (n: number) => Array(n).fill(
     message: 'This shell command depends on an uncontrolled [absolute path](1).',
     severity: 'Error',
     filePath: 'npm-packages/meteor-installer/config.js',
-    contextRegion: {
+    codeSnippet: {
       startLine: 253,
       endLine: 257,
       text: '  if (isWindows()) {\n    //set for the current session and beyond\n    child_process.execSync(`setx path "${meteorPath}/;%path%`);\n    return;\n  }\n',
     },
-    codeRegion: {
+    highlightedRegion: {
       startLine: 255,
       startColumn: 28,
       endColumn: 62
