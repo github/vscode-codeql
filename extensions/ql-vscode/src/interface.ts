@@ -90,15 +90,17 @@ function sortInterpretedResults(
 }
 
 function interpretedPageSize(interpretation: Interpretation | undefined): number {
-  if (interpretation && interpretation.data.t == 'GraphInterpretationData')
+  if (interpretation?.data.t == 'GraphInterpretationData') {
+    // Graph views always have one result per page.
     return 1;
+  }
   return PAGE_SIZE.getValue<number>();
 }
 
 function numPagesOfResultSet(resultSet: RawResultSet, interpretation?: Interpretation): number {
   const pageSize = interpretedPageSize(interpretation);
 
-  const n = interpretation && interpretation.data.t == 'GraphInterpretationData'
+  const n = interpretation?.data.t == 'GraphInterpretationData'
     ? interpretation.data.dot.length
     : resultSet.schema.rows;
 
@@ -106,8 +108,9 @@ function numPagesOfResultSet(resultSet: RawResultSet, interpretation?: Interpret
 }
 
 function numInterpretedPages(interpretation: Interpretation | undefined): number {
-  if (!interpretation)
+  if (!interpretation) {
     return 0;
+  }
 
   const pageSize = interpretedPageSize(interpretation);
 
