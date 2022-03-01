@@ -9,7 +9,7 @@ import { AnalysisSummary } from './shared/remote-query-result';
 import { AnalysisResults, AnalysisAlert } from './shared/analysis-result';
 import { UserCancellationException } from '../commandRunner';
 import { sarifParser } from '../sarif-parser';
-import { processSarif } from './sarif-processor';
+import { extractAnalysisAlerts } from './sarif-processing';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for each remote query.
@@ -140,7 +140,7 @@ export class AnalysesResultsManager {
   private async readResults(filePath: string): Promise<AnalysisAlert[]> {
     const sarifLog = await sarifParser(filePath);
 
-    const processedSarif = processSarif(sarifLog);
+    const processedSarif = extractAnalysisAlerts(sarifLog);
     if (processedSarif.errors) {
       void this.logger.log(`Error processing SARIF file: ${os.EOL}${processedSarif.errors.join(os.EOL)}`);
     }

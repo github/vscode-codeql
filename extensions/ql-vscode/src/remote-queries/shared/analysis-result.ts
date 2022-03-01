@@ -10,17 +10,17 @@ export interface AnalysisAlert {
   message: string;
   severity: ResultSeverity;
   filePath: string;
-  contextRegion: ContextRegion
-  codeRegion: CodeRegion
+  codeSnippet: CodeSnippet
+  highlightedRegion: HighligtedRegion
 }
 
-export interface ContextRegion {
+export interface CodeSnippet {
   startLine: number;
   endLine: number;
   text: string;
 }
 
-export interface CodeRegion {
+export interface HighligtedRegion {
   startLine: number;
   startColumn: number;
   endLine: number | undefined;

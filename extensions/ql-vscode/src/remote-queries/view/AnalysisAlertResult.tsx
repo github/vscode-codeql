@@ -52,7 +52,7 @@ const Message = ({ alert, currentLineNumber }: {
   alert: AnalysisAlert,
   currentLineNumber: number
 }) => {
-  if (alert.codeRegion.startLine !== currentLineNumber) {
+  if (alert.highlightedRegion.startLine !== currentLineNumber) {
     return <></>;
   }
   return <MessageContainer>
@@ -71,11 +71,11 @@ const Message = ({ alert, currentLineNumber }: {
 };
 
 const AnalysisAlertResult = ({ alert }: { alert: AnalysisAlert }) => {
-  const code = alert.contextRegion.text
+  const code = alert.codeSnippet.text
     .split('\n')
     .filter(line => line.replace('\n', '').length > 0);
 
-  const startingLine = alert.contextRegion.startLine;
+  const startingLine = alert.codeSnippet.startLine;
 
   return (
     <Container>
