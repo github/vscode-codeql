@@ -302,6 +302,7 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
   componentDidMount(): void {
     this.vscodeMessageHandler = this.vscodeMessageHandler.bind(this);
     window.addEventListener('message', this.vscodeMessageHandler);
+    vscode.postMessage({ t: 'resultViewLoaded' });
   }
 
   componentWillUnmount(): void {
@@ -320,5 +321,3 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
 }
 
 Rdom.render(<App />, document.getElementById('root'));
-
-vscode.postMessage({ t: 'resultViewLoaded' });

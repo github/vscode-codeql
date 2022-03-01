@@ -203,6 +203,7 @@ export class InterfaceManager extends DisposableObject {
         () => {
           this._panel = undefined;
           this._displayedQuery = undefined;
+          this._panelLoaded = false;
         },
         null,
         ctx.subscriptions
