@@ -8,12 +8,14 @@ import {
   InterpretedResultsSortState,
   ResultSet,
   ALERTS_TABLE_NAME,
+  GRAPH_TABLE_NAME,
   SELECT_TABLE_NAME,
   getDefaultResultSetName,
   ParsedResultSets,
   IntoResultsViewMsg,
 } from '../pure/interface-types';
 import { PathTable } from './alert-table';
+import { Graph } from './graph';
 import { RawTable } from './raw-results-table';
 import {
   ResultTableProps,
@@ -61,8 +63,8 @@ function getResultCount(resultSet: ResultSet): number {
   switch (resultSet.t) {
     case 'RawResultSet':
       return resultSet.schema.rows;
-    case 'SarifResultSet':
-      return resultSet.numTotalResults;
+    case 'InterpretedResultSet':
+      return resultSet.interpretation.numTotalResults;
   }
 }
 
@@ -87,27 +89,32 @@ export class ResultTables
       this.props.rawResultSets.map((rs) => ({ t: 'RawResultSet', ...rs }));
 
     if (this.props.interpretation != undefined) {
+      const tableName = this.getInterpretedTableName();
       resultSets.push({
-        t: 'SarifResultSet',
+        t: 'InterpretedResultSet',
         // FIXME: The values of version, columns, tupleCount are
-        // unused stubs because a SarifResultSet schema isn't used the
+        // unused stubs because a InterpretedResultSet schema isn't used the
         // same way as a RawResultSet. Probably should pull `name` field
         // out.
         schema: {
-          name: ALERTS_TABLE_NAME,
+          name: tableName,
           rows: 1,
           columns: []
         },
-        name: ALERTS_TABLE_NAME,
-        ...this.props.interpretation,
+        name: tableName,
+        interpretation: this.props.interpretation,
       });
     }
     return resultSets;
   }
 
+  private getInterpretedTableName(): string {
+    return this.props.interpretation?.data.t === 'GraphInterpretationData' ? GRAPH_TABLE_NAME : ALERTS_TABLE_NAME;
+  }
+
   private getResultSetNames(): string[] {
     return this.props.interpretation
-      ? this.props.parsedResultSets.resultSetNames.concat([ALERTS_TABLE_NAME])
+      ? this.props.parsedResultSets.resultSetNames.concat([this.getInterpretedTableName()])
       : this.props.parsedResultSets.resultSetNames;
   }
 
@@ -349,8 +356,19 @@ class ResultTable extends React.Component<ResultTableProps, Record<string, never
     switch (resultSet.t) {
       case 'RawResultSet': return <RawTable
         {...this.props} resultSet={resultSet} />;
-      case 'SarifResultSet': return <PathTable
-        {...this.props} resultSet={resultSet} />;
+      case 'InterpretedResultSet': {
+        const data = resultSet.interpretation.data;
+        switch (data.t) {
+          case 'SarifInterpretationData': {
+            const sarifResultSet = { ...resultSet, interpretation: { ...resultSet.interpretation, data } };
+            return <PathTable {...this.props} resultSet={sarifResultSet} />;
+          }
+          case 'GraphInterpretationData': {
+            const grapResultSet = { ...resultSet, interpretation: { ...resultSet.interpretation, data } };
+            return <Graph {...this.props} resultSet={grapResultSet} />;
+          }
+        }
+      }
     }
   }
 }

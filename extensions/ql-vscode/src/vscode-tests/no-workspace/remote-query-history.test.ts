@@ -17,7 +17,7 @@ import { AnalysesResultsManager } from '../../remote-queries/analyses-results-ma
 import { RemoteQueryResult } from '../../remote-queries/shared/remote-query-result';
 import { DisposableBucket } from '../disposable-bucket';
 import { testDisposeHandler } from '../test-dispose-handler';
-import { walk } from '../directory-walker';
+import { walkDirectory } from '../../helpers';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -41,13 +41,19 @@ describe('Remote queries and query history manager', function() {
   let showTextDocumentSpy: sinon.SinonSpy;
   let openTextDocumentSpy: sinon.SinonSpy;
 
-  beforeEach(() => {
+  beforeEach(async function() {
+
+    // set a higher timeout since recursive delete below may take a while, expecially on Windows.
+    this.timeout(120000);
+
     // Since these tests change the state of the query history manager, we need to copy the original
     // to a temporary folder where we can manipulate it for tests
-    copyHistoryState();
+    await copyHistoryState();
   });
 
-  afterEach(() => {
+  afterEach(function() {
+    // set a higher timeout since recursive delete below may take a while, expecially on Windows.
+    this.timeout(120000);
     deleteHistoryState();
   });
 
@@ -321,18 +327,23 @@ describe('Remote queries and query history manager', function() {
     });
   });
 
-  function copyHistoryState() {
+  async function copyHistoryState() {
     fs.ensureDirSync(STORAGE_DIR);
     fs.copySync(path.join(__dirname, 'data/remote-queries/'), path.join(tmpDir.name, 'remote-queries'));
 
     // also, replace the files with "PLACEHOLDER" so that they have the correct directory
-    for (const p of walk(STORAGE_DIR)) {
+    for await (const p of walkDirectory(STORAGE_DIR)) {
       replacePlaceholder(path.join(p));
     }
   }
 
   function deleteHistoryState() {
-    fs.removeSync(STORAGE_DIR);
+    fs.rmSync(STORAGE_DIR, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 100
+    });
   }
 
   function replacePlaceholder(filePath: string) {

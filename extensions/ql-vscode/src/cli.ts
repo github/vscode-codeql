@@ -1,5 +1,6 @@
 import * as cpp from 'child-process-promise';
 import * as child_process from 'child_process';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sarif from 'sarif';
 import { SemVer } from 'semver';
@@ -17,7 +18,7 @@ import { QueryMetadata, SortDirection } from './pure/interface-types';
 import { Logger, ProgressReporter } from './logging';
 import { CompilationMessage } from './pure/messages';
 import { sarifParser } from './sarif-parser';
-import { dbSchemeToLanguage } from './helpers';
+import { dbSchemeToLanguage, walkDirectory } from './helpers';
 
 /**
  * The version of the SARIF format that we are using.
@@ -687,20 +688,13 @@ export class CodeQLCliServer implements Disposable {
     return await this.runJsonCodeQlCliCommand<DecodedBqrsChunk>(['bqrs', 'decode'], subcommandArgs, 'Reading bqrs data');
   }
 
-  async runInterpretCommand(format: string, metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo) {
+  async runInterpretCommand(format: string, additonalArgs: string[], metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo) {
     const args = [
       '--output', interpretedResultsPath,
       '--format', format,
       // Forward all of the query metadata.
       ...Object.entries(metadata).map(([key, value]) => `-t=${key}=${value}`)
-    ];
-    if (format == SARIF_FORMAT) {
-      // TODO: This flag means that we don't group interpreted results
-      // by primary location. We may want to revisit whether we call
-      // interpretation with and without this flag, or do some
-      // grouping client-side.
-      args.push('--no-group-results');
-    }
+    ].concat(additonalArgs);
     if (sourceInfo !== undefined) {
       args.push(
         '--source-archive', sourceInfo.sourceArchive,
@@ -722,13 +716,47 @@ export class CodeQLCliServer implements Disposable {
     await this.runCodeQlCliCommand(['bqrs', 'interpret'], args, 'Interpreting query results');
   }
 
-  async interpretBqrs(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
-    await this.runInterpretCommand(SARIF_FORMAT, metadata, resultsPath, interpretedResultsPath, sourceInfo);
+  async interpretBqrsSarif(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<sarif.Log> {
+    const additionalArgs = [
+      // TODO: This flag means that we don't group interpreted results
+      // by primary location. We may want to revisit whether we call
+      // interpretation with and without this flag, or do some
+      // grouping client-side.
+      '--no-group-results'
+    ];
+
+    await this.runInterpretCommand(SARIF_FORMAT, additionalArgs, metadata, resultsPath, interpretedResultsPath, sourceInfo);
     return await sarifParser(interpretedResultsPath);
   }
 
+  // Warning: this function is untenable for large dot files,
+  async readDotFiles(dir: string): Promise<string[]> {
+    const dotFiles: Promise<string>[] = [];
+    for await (const file of walkDirectory(dir)) {
+      if (file.endsWith('.dot')) {
+        dotFiles.push(fs.readFile(file, 'utf8'));
+      }
+    }
+    return Promise.all(dotFiles);
+  }
+
+  async interpretBqrsGraph(metadata: QueryMetadata, resultsPath: string, interpretedResultsPath: string, sourceInfo?: SourceInfo): Promise<string[]> {
+    const additionalArgs = sourceInfo
+      ? ['--dot-location-url-format', 'file://' + sourceInfo.sourceLocationPrefix + '{path}:{start:line}:{start:column}:{end:line}:{end:column}']
+      : [];
+
+    await this.runInterpretCommand('dot', additionalArgs, metadata, resultsPath, interpretedResultsPath, sourceInfo);
+
+    try {
+      const dot = await this.readDotFiles(interpretedResultsPath);
+      return dot;
+    } catch (err) {
+      throw new Error(`Reading output of interpretation failed: ${err.stderr || err}`);
+    }
+  }
+
   async generateResultsCsv(metadata: QueryMetadata, resultsPath: string, csvPath: string, sourceInfo?: SourceInfo): Promise<void> {
-    await this.runInterpretCommand(CSV_FORMAT, metadata, resultsPath, csvPath, sourceInfo);
+    await this.runInterpretCommand(CSV_FORMAT, [], metadata, resultsPath, csvPath, sourceInfo);
   }
 
   async sortBqrs(resultsPath: string, sortedResultsPath: string, resultSet: string, sortKeys: number[], sortDirections: SortDirection[]): Promise<void> {
@@ -1224,9 +1252,9 @@ export class CliVersionConstraint {
 
   /**
    * CLI version where the `--evaluator-log` and related options to the query server were introduced,
-   * on a per-query server basis. 
+   * on a per-query server basis.
    */
-   public static CLI_VERSION_WITH_STRUCTURED_EVAL_LOG = new SemVer('2.8.2');
+  public static CLI_VERSION_WITH_STRUCTURED_EVAL_LOG = new SemVer('2.8.2');
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/

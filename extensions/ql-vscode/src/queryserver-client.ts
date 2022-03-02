@@ -174,7 +174,7 @@ export class QueryServerClient extends DisposableObject {
     if (await this.cliServer.cliConstraints.supportsStructuredEvalLog()) {
       args.push('--evaluator-log');
       args.push(`${this.opts.contextStoragePath}/structured-evaluator-log.json`);
-  
+
       // We hard-code the verbosity level to 5 and minify to false. 
       // This will be the behavior of the per-query structured logging in the CLI after 2.8.3.
       args.push('--evaluator-log-level');

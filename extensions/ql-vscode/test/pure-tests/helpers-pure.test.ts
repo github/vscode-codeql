@@ -1,5 +1,6 @@
 import { fail } from 'assert';
 import { expect } from 'chai';
+
 import { asyncFilter } from '../../src/pure/helpers-pure';
 
 describe('helpers-pure', () => {

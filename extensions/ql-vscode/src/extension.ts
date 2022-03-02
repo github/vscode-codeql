@@ -42,7 +42,8 @@ import { DatabaseUI } from './databases-ui';
 import {
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
-  TemplatePrintAstProvider
+  TemplatePrintAstProvider,
+  TemplatePrintCfgProvider
 } from './contextual/templateProvider';
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
@@ -1047,7 +1048,8 @@ async function activateWithInstalledDistribution(
   );
 
   const astViewer = new AstViewer();
-  const templateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm, contextualQueryStorageDir);
+  const printAstTemplateProvider = new TemplatePrintAstProvider(cliServer, qs, dbm, contextualQueryStorageDir);
+  const cfgTemplateProvider = new TemplatePrintCfgProvider(cliServer, dbm);
 
   ctx.subscriptions.push(astViewer);
   ctx.subscriptions.push(commandRunnerWithProgress('codeQL.viewAst', async (
@@ -1055,7 +1057,7 @@ async function activateWithInstalledDistribution(
     token: CancellationToken,
     selectedFile: Uri
   ) => {
-    const ast = await templateProvider.provideAst(
+    const ast = await printAstTemplateProvider.provideAst(
       progress,
       token,
       selectedFile ?? window.activeTextEditor?.document.uri,
@@ -1067,6 +1069,25 @@ async function activateWithInstalledDistribution(
     cancellable: true,
     title: 'Calculate AST'
   }));
+
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      'codeQL.viewCfg',
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken
+      ) => {
+        const res = await cfgTemplateProvider.provideCfgUri(window.activeTextEditor?.document);
+        if (res) {
+          await compileAndRunQuery(false, res[0], progress, token, undefined);
+        }
+      },
+      {
+        title: 'Calculating Control Flow Graph',
+        cancellable: true
+      }
+    )
+  );
 
   await commands.executeCommand('codeQLDatabases.removeOrphanedDatabases');
 

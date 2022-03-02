@@ -11,6 +11,7 @@ import {
   QueryMetadata,
   ResultsPaths,
   ALERTS_TABLE_NAME,
+  GRAPH_TABLE_NAME,
   ParsedResultSets,
 } from '../pure/interface-types';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
@@ -104,7 +105,9 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
 
         void this.loadResults();
         break;
-      case 'showInterpretedPage':
+      case 'showInterpretedPage': {
+        const tableName = msg.interpretation.data.t === 'GraphInterpretationData' ? GRAPH_TABLE_NAME : ALERTS_TABLE_NAME;
+
         this.updateStateWithNewResultsInfo({
           resultsPath: '', // FIXME: Not used for interpreted, refactor so this is not needed
           parsedResultSets: {
@@ -114,16 +117,16 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
             resultSetNames: msg.resultSetNames,
             pageNumber: msg.pageNumber,
             resultSet: {
-              t: 'SarifResultSet',
-              name: ALERTS_TABLE_NAME,
+              t: 'InterpretedResultSet',
+              name: tableName,
               schema: {
-                name: ALERTS_TABLE_NAME,
+                name: tableName,
                 rows: 1,
                 columns: []
               },
-              ...msg.interpretation,
+              interpretation: msg.interpretation,
             },
-            selectedTable: ALERTS_TABLE_NAME,
+            selectedTable: tableName,
           },
           origResultsPaths: undefined as any, // FIXME: Not used for interpreted, refactor so this is not needed
           sortedResultsMap: new Map(), // FIXME: Not used for interpreted, refactor so this is not needed
@@ -136,6 +139,7 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
         });
         void this.loadResults();
         break;
+      }
       case 'resultsUpdating':
         this.setState({
           isExpectingResultsUpdate: true,
@@ -191,7 +195,7 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
     const resultSet = parsedResultSets.resultSet;
     if (!resultSet.t) {
       throw new Error(
-        'Missing result set type. Should be either "SarifResultSet" or "RawResultSet".'
+        'Missing result set type. Should be either "InterpretedResultSet" or "RawResultSet".'
       );
     }
     return [resultSet];
@@ -260,6 +264,8 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
     ) {
       const parsedResultSets = displayedResults.resultsInfo.parsedResultSets;
       const key = (parsedResultSets.selectedTable || '') + parsedResultSets.pageNumber;
+      const data = displayedResults.resultsInfo.interpretation?.data;
+
       return (
         <ResultTables
           key={key}
@@ -279,9 +285,7 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
               : undefined
           }
           sortStates={displayedResults.results.sortStates}
-          interpretedSortState={
-            displayedResults.resultsInfo.interpretation?.sortState
-          }
+          interpretedSortState={data?.t == 'SarifInterpretationData' ? data.sortState : undefined}
           isLoadingNewResults={
             this.state.isExpectingResultsUpdate ||
             this.state.nextResultsInfo !== null
@@ -298,6 +302,7 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
   componentDidMount(): void {
     this.vscodeMessageHandler = this.vscodeMessageHandler.bind(this);
     window.addEventListener('message', this.vscodeMessageHandler);
+    vscode.postMessage({ t: 'resultViewLoaded' });
   }
 
   componentWillUnmount(): void {
@@ -316,5 +321,3 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
 }
 
 Rdom.render(<App />, document.getElementById('root'));
-
-vscode.postMessage({ t: 'resultViewLoaded' });

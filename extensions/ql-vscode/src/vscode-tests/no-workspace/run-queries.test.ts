@@ -4,15 +4,27 @@ import 'mocha';
 import 'sinon-chai';
 import * as sinon from 'sinon';
 import * as chaiAsPromised from 'chai-as-promised';
+import { Uri } from 'vscode';
 
 import { QueryEvaluationInfo } from '../../run-queries';
 import { Severity, compileQuery } from '../../pure/messages';
-import { Uri } from 'vscode';
+import * as config from '../../config';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe('run-queries', () => {
+  let sandbox: sinon.SinonSandbox;
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+
+    sandbox.stub(config, 'isCanary').returns(false);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it('should create a QueryEvaluationInfo', () => {
     const saveDir = 'query-save-dir';
     const info = createMockQueryInfo(true, saveDir);
@@ -38,6 +50,13 @@ describe('run-queries', () => {
 
     info.metadata!.kind = 'table';
     expect(info.canHaveInterpretedResults()).to.eq(false);
+
+    // Graphs are not interpreted unless canary is set
+    info.metadata!.kind = 'graph';
+    expect(info.canHaveInterpretedResults()).to.eq(false);
+
+    (config.isCanary as sinon.SinonStub).returns(true);
+    expect(info.canHaveInterpretedResults()).to.eq(true);
   });
 
   describe('compile', () => {
@@ -108,7 +127,7 @@ describe('run-queries', () => {
       config: {
         timeoutSecs: 5
       },
-      sendRequest: sinon.stub().returns(new Promise(resolve => {
+      sendRequest: sandbox.stub().returns(new Promise(resolve => {
         resolve({
           messages: [
             { message: 'err', severity: Severity.ERROR },
@@ -117,7 +136,7 @@ describe('run-queries', () => {
         });
       })),
       logger: {
-        log: sinon.spy()
+        log: sandbox.spy()
       }
     };
   }

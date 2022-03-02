@@ -1,11 +1,23 @@
 import { expect } from 'chai';
 import 'mocha';
-import { EnvironmentVariableCollection, EnvironmentVariableMutator, Event, ExtensionContext, ExtensionMode, Memento, SecretStorage, SecretStorageChangeEvent, Uri, window } from 'vscode';
+import {
+  EnvironmentVariableCollection,
+  EnvironmentVariableMutator,
+  Event,
+  ExtensionContext,
+  ExtensionMode,
+  Memento,
+  SecretStorage,
+  SecretStorageChangeEvent,
+  Uri,
+  window
+} from 'vscode';
 import * as yaml from 'js-yaml';
 import * as tmp from 'tmp';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as sinon from 'sinon';
+import { DirResult } from 'tmp';
 
 import {
   getInitialQueryContents,
@@ -13,7 +25,8 @@ import {
   isLikelyDbLanguageFolder,
   showBinaryChoiceDialog,
   showBinaryChoiceWithUrlDialog,
-  showInformationMessageWithAction
+  showInformationMessageWithAction,
+  walkDirectory
 } from '../../helpers';
 import { reportStreamProgress } from '../../commandRunner';
 import Sinon = require('sinon');
@@ -375,5 +388,70 @@ describe('helpers', () => {
         done();
       }).catch(e => fail(e));
     });
+  });
+});
+
+describe('walkDirectory', () => {
+  let tmpDir: DirResult;
+  let dir: string;
+  let dir2: string;
+
+  beforeEach(() => {
+    tmpDir = tmp.dirSync({ unsafeCleanup: true });
+    dir = path.join(tmpDir.name, 'dir');
+    fs.ensureDirSync(dir);
+    dir2 = path.join(tmpDir.name, 'dir2');
+  });
+
+  afterEach(() => {
+    tmpDir.removeCallback();
+  });
+
+
+  it('should walk a directory', async () => {
+    const file1 = path.join(dir, 'file1');
+    const file2 = path.join(dir, 'file2');
+    const file3 = path.join(dir, 'file3');
+    const dir3 = path.join(dir, 'dir3');
+    const file4 = path.join(dir, 'file4');
+    const file5 = path.join(dir, 'file5');
+    const file6 = path.join(dir, 'file6');
+
+    // These symlinks link back to paths that are already existing, so ignore.
+    const symLinkFile7 = path.join(dir, 'symlink0');
+    const symlinkDir = path.join(dir2, 'symlink1');
+
+    // some symlinks that point outside of the base dir.
+    const file8 = path.join(tmpDir.name, 'file8');
+    const file9 = path.join(dir2, 'file8');
+    const symlinkDir2 = path.join(dir2, 'symlink2');
+    const symlinkFile2 = path.join(dir2, 'symlinkFile3');
+
+    fs.ensureDirSync(dir2);
+    fs.ensureDirSync(dir3);
+
+    fs.writeFileSync(file1, 'file1');
+    fs.writeFileSync(file2, 'file2');
+    fs.writeFileSync(file3, 'file3');
+    fs.writeFileSync(file4, 'file4');
+    fs.writeFileSync(file5, 'file5');
+    fs.writeFileSync(file6, 'file6');
+    fs.writeFileSync(file8, 'file8');
+    fs.writeFileSync(file9, 'file9');
+
+    // We don't really need to be testing all of these variants of symlinks,
+    // but it doesn't hurt, and will help us if we ever do decide to support them.
+    fs.symlinkSync(file6, symLinkFile7, 'file');
+    fs.symlinkSync(dir3, symlinkDir, 'dir');
+    fs.symlinkSync(file8, symlinkFile2, 'file');
+    fs.symlinkSync(dir2, symlinkDir2, 'dir');
+
+    const files = [];
+    for await (const file of walkDirectory(dir)) {
+      files.push(file);
+    }
+
+    // Only real files should be returned.
+    expect(files.sort()).to.deep.eq([file1, file2, file3, file4, file5, file6]);
   });
 });
