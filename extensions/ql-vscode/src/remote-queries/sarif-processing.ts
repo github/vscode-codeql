@@ -84,7 +84,7 @@ export function extractAnalysisAlerts(
           continue;
         }
 
-        alerts.push({
+        const analysisAlert = {
           message,
           filePath,
           severity,
@@ -99,7 +99,15 @@ export function extractAnalysisAlerts(
             endLine: region.endLine,
             endColumn: region.endColumn
           }
-        });
+        };
+
+        const validationErrors = getAlertValidationErrors(analysisAlert);
+        if (validationErrors.length > 0) {
+          errors.push(...validationErrors);
+          continue;
+        }
+
+        alerts.push(analysisAlert);
       }
     }
   }
@@ -176,4 +184,20 @@ export function tryGetRule(
 
   // Couldn't find the rule.
   return undefined;
+}
+
+function getAlertValidationErrors(alert: AnalysisAlert): string[] {
+  const errors = [];
+
+  if (alert.codeSnippet.startLine > alert.codeSnippet.endLine) {
+    errors.push('The code snippet start line is greater than the end line');
+  }
+
+  const highlightedRegion = alert.highlightedRegion;
+  if (highlightedRegion.endLine === highlightedRegion.startLine &&
+    highlightedRegion.endColumn < highlightedRegion.startColumn) {
+    errors.push('The highlighted region end column is greater than the start column');
+  }
+
+  return errors;
 }
