@@ -21,7 +21,7 @@ import {
   createTimestampFile,
   getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
-  showAndLogInformationMessage,
+  showAndLogWarningMessage,
   tryGetQueryMetadata,
   upgradesTmpDir
 } from './helpers';
@@ -165,8 +165,8 @@ export class QueryEvaluationInfo {
     try {
       await qs.sendRequest(messages.runQueries, params, token, progress);
       if (qs.config.customLogDirectory) {
-        void showAndLogInformationMessage(
-          `Custom log directory is not supported. Query logs saved to ${this.logPath}. The "codeQL.runningQueries.customLogDirectory" option is deprecated. Unset the option to stop seeing this message.`
+        void showAndLogWarningMessage(
+          `Custom log directories are no longer supported. The "codeQL.runningQueries.customLogDirectory" setting is deprecated. Unset the setting to stop seeing this message. Query logs saved to ${this.logPath}.`
         );
       }
     } finally {

@@ -1,5 +1,7 @@
 import * as cp from 'child_process';
 import * as path from 'path';
+import * as fs from 'fs-extra';
+
 import { DisposableObject } from './pure/disposable-object';
 import { Disposable, CancellationToken, commands } from 'vscode';
 import { createMessageConnection, MessageConnection, RequestType } from 'vscode-jsonrpc';
@@ -66,7 +68,7 @@ export class QueryServerClient extends DisposableObject {
     this.queryServerStartListeners.push(e);
   }
 
-  public activeQueryLogFIle: string | undefined;
+  public activeQueryLogFile: string | undefined;
 
   constructor(
     readonly config: QueryServerConfig,
@@ -149,8 +151,11 @@ export class QueryServerClient extends DisposableObject {
     }
 
     if (await this.cliServer.cliConstraints.supportsStructuredEvalLog()) {
+      const structuredLogFile = `${this.opts.contextStoragePath}/structured-evaluator-log.json`;
+      await fs.ensureFile(structuredLogFile);
+
       args.push('--evaluator-log');
-      args.push(`${this.opts.contextStoragePath}/structured-evaluator-log.json`);
+      args.push(structuredLogFile);
 
       // We hard-code the verbosity level to 5 and minify to false.
       // This will be the behavior of the per-query structured logging in the CLI after 2.8.3.
@@ -163,7 +168,7 @@ export class QueryServerClient extends DisposableObject {
     }
 
     if (cli.shouldDebugQueryServer()) {
-      args.push('-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9010,server=y,suspend=n,quiet=y');
+      args.push('-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9010,server=n,suspend=y,quiet=y');
     }
 
     const child = cli.spawnServer(
@@ -174,7 +179,7 @@ export class QueryServerClient extends DisposableObject {
       this.logger,
       data => this.logger.log(data.toString(), {
         trailingNewline: false,
-        additionalLogLocation: this.activeQueryLogFIle
+        additionalLogLocation: this.activeQueryLogFile
       }),
       undefined, // no listener for stdout
       progressReporter
@@ -245,7 +250,7 @@ export class QueryServerClient extends DisposableObject {
    */
   private updateActiveQuery(method: string, parameter: any): void {
     if (method === messages.compileQuery.method) {
-      this.activeQueryLogFIle = findQueryLogFile(path.dirname(parameter.resultPath));
+      this.activeQueryLogFile = findQueryLogFile(path.dirname(parameter.resultPath));
     }
   }
 }
