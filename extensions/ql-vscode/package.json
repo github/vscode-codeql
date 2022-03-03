@@ -509,6 +509,10 @@
         "title": "Show Query Log"
       },
       {
+        "command": "codeQLQueryHistory.openQueryDirectory",
+        "title": "Open query directory"
+      },
+      {
         "command": "codeQLQueryHistory.cancel",
         "title": "Cancel"
       },
@@ -698,6 +702,11 @@
           "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem"
         },
         {
+          "command": "codeQLQueryHistory.openQueryDirectory",
+          "group": "9_qlCommands",
+          "when": "view == codeQLQueryHistory && !hasRemoteServer"
+        },
+        {
           "command": "codeQLQueryHistory.showQueryText",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory"
@@ -885,6 +894,10 @@
         },
         {
           "command": "codeQLQueryHistory.showQueryLog",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.openQueryDirectory",
           "when": "false"
         },
         {
