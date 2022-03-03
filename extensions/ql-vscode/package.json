@@ -545,6 +545,10 @@
         "title": "Compare Results"
       },
       {
+        "command": "codeQLQueryHistory.openOnGithub",
+        "title": "Open Remote Query on GitHub"
+      },
+      {
         "command": "codeQLQueryResults.nextPathStep",
         "title": "CodeQL: Show Next Step on Path"
       },
@@ -734,7 +738,12 @@
         {
           "command": "codeQLQueryHistory.cancel",
           "group": "9_qlCommands",
-          "when": "viewItem == inProgressResultsItem"
+          "when": "viewItem == inProgressResultsItem || viewItem == inProgressRemoteResultsItem"
+        },
+        {
+          "command": "codeQLQueryHistory.openOnGithub",
+          "group": "9_qlCommands",
+          "when": "viewItem == remoteResultsItem || viewItem == inProgressRemoteResultsItem"
         },
         {
           "command": "codeQLTests.showOutputDifferences",
@@ -902,6 +911,10 @@
         },
         {
           "command": "codeQLQueryHistory.cancel",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.openOnGithub",
           "when": "false"
         },
         {
