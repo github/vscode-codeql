@@ -1,4 +1,4 @@
-import { window as Window, OutputChannel, Progress, Disposable } from 'vscode';
+import { window as Window, OutputChannel, Progress } from 'vscode';
 import { DisposableObject } from './pure/disposable-object';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -26,18 +26,6 @@ export interface Logger {
    * @param location log to remove
    */
   removeAdditionalLogLocation(location: string | undefined): void;
-
-  /**
-   * The base location where all side log files are stored.
-   */
-  getBaseLocation(): string | undefined;
-
-  /**
-   * Sets the location where logs are stored.
-   * @param storagePath The path where logs are stored.
-   * @param isCustomLogDirectory Whether the logs are stored in a custom, user-specified directory.
-   */
-  setLogStoragePath(storagePath: string, isCustomLogDirectory: boolean): Promise<void>;
 }
 
 export type ProgressReporter = Progress<{ message: string }>;
@@ -46,25 +34,13 @@ export type ProgressReporter = Progress<{ message: string }>;
 export class OutputChannelLogger extends DisposableObject implements Logger {
   public readonly outputChannel: OutputChannel;
   private readonly additionalLocations = new Map<string, AdditionalLogLocation>();
-  private additionalLogLocationPath: string | undefined;
   isCustomLogDirectory: boolean;
 
-  constructor(private title: string) {
+  constructor(title: string) {
     super();
     this.outputChannel = Window.createOutputChannel(title);
     this.push(this.outputChannel);
     this.isCustomLogDirectory = false;
-  }
-
-  async setLogStoragePath(storagePath: string, isCustomLogDirectory: boolean): Promise<void> {
-    this.additionalLogLocationPath = path.join(storagePath, this.title);
-
-    this.isCustomLogDirectory = isCustomLogDirectory;
-
-    if (!this.isCustomLogDirectory) {
-      // clear out any old state from previous runs
-      await fs.remove(this.additionalLogLocationPath);
-    }
   }
 
   /**
@@ -84,8 +60,11 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
         this.outputChannel.append(message);
       }
 
-      if (this.additionalLogLocationPath && options.additionalLogLocation) {
-        const logPath = path.join(this.additionalLogLocationPath, options.additionalLogLocation);
+      if (options.additionalLogLocation) {
+        if (!path.isAbsolute(options.additionalLogLocation)) {
+          throw new Error(`Additional Log Location must be an absolute path: ${options.additionalLogLocation}`);
+        }
+        const logPath = options.additionalLogLocation;
         let additional = this.additionalLocations.get(logPath);
         if (!additional) {
           const msg = `| Log being saved to ${logPath} |`;
@@ -93,9 +72,8 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
           this.outputChannel.appendLine(separator);
           this.outputChannel.appendLine(msg);
           this.outputChannel.appendLine(separator);
-          additional = new AdditionalLogLocation(logPath, !this.isCustomLogDirectory);
+          additional = new AdditionalLogLocation(logPath);
           this.additionalLocations.set(logPath, additional);
-          this.track(additional);
         }
 
         await additional.log(message, options);
@@ -115,26 +93,15 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
   }
 
   removeAdditionalLogLocation(location: string | undefined): void {
-    if (this.additionalLogLocationPath && location) {
-      const logPath = location.startsWith(this.additionalLogLocationPath)
-        ? location
-        : path.join(this.additionalLogLocationPath, location);
-      const additional = this.additionalLocations.get(logPath);
-      if (additional) {
-        this.disposeAndStopTracking(additional);
-        this.additionalLocations.delete(logPath);
-      }
+    if (location) {
+      this.additionalLocations.delete(location);
     }
-  }
-
-  getBaseLocation() {
-    return this.additionalLogLocationPath;
   }
 }
 
-class AdditionalLogLocation extends Disposable {
-  constructor(private location: string, private shouldDeleteLogs: boolean) {
-    super(() => { /**/ });
+class AdditionalLogLocation {
+  constructor(private location: string) {
+    /**/
   }
 
   async log(message: string, options = {} as LogOptions): Promise<void> {
@@ -146,12 +113,6 @@ class AdditionalLogLocation extends Disposable {
     await fs.appendFile(this.location, message + (options.trailingNewline ? '\n' : ''), {
       encoding: 'utf8'
     });
-  }
-
-  async dispose(): Promise<void> {
-    if (this.shouldDeleteLogs) {
-      await fs.remove(this.location);
-    }
   }
 }
 

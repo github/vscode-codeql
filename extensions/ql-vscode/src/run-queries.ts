@@ -17,7 +17,14 @@ import { ErrorCodes, ResponseError } from 'vscode-languageclient';
 import * as cli from './cli';
 import * as config from './config';
 import { DatabaseItem, DatabaseManager } from './databases';
-import { createTimestampFile, getOnDiskWorkspaceFolders, showAndLogErrorMessage, tryGetQueryMetadata, upgradesTmpDir } from './helpers';
+import {
+  createTimestampFile,
+  getOnDiskWorkspaceFolders,
+  showAndLogErrorMessage,
+  showAndLogWarningMessage,
+  tryGetQueryMetadata,
+  upgradesTmpDir
+} from './helpers';
 import { ProgressCallback, UserCancellationException } from './commandRunner';
 import { DatabaseInfo, QueryMetadata } from './pure/interface-types';
 import { logger } from './logging';
@@ -60,7 +67,7 @@ export class QueryEvaluationInfo {
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(
-    private readonly querySaveDir: string,
+    public readonly querySaveDir: string,
     public readonly dbItemPath: string,
     private readonly databaseHasMetadataFile: boolean,
     public readonly queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
@@ -81,6 +88,10 @@ export class QueryEvaluationInfo {
 
   get compiledQueryPath() {
     return path.join(this.querySaveDir, 'compiledQuery.qlo');
+  }
+
+  get logPath() {
+    return qsClient.findQueryLogFile(this.querySaveDir);
   }
 
   get resultsPaths() {
@@ -120,7 +131,12 @@ export class QueryEvaluationInfo {
 
     let result: messages.EvaluationResult | null = null;
 
-    const callbackId = qs.registerCallback(res => { result = res; });
+    const callbackId = qs.registerCallback(res => {
+      result = {
+        ...res,
+        logFileLocation: this.logPath
+      };
+    });
 
     const availableMlModelUris: messages.MlModel[] = availableMlModels.map(model => ({ uri: Uri.file(model.path).toString(true) }));
 
@@ -148,6 +164,11 @@ export class QueryEvaluationInfo {
     };
     try {
       await qs.sendRequest(messages.runQueries, params, token, progress);
+      if (qs.config.customLogDirectory) {
+        void showAndLogWarningMessage(
+          `Custom log directories are no longer supported. The "codeQL.runningQueries.customLogDirectory" setting is deprecated. Unset the setting to stop seeing this message. Query logs saved to ${this.logPath}.`
+        );
+      }
     } finally {
       qs.unRegisterCallback(callbackId);
     }
@@ -192,7 +213,7 @@ export class QueryEvaluationInfo {
 
       compiled = await qs.sendRequest(messages.compileQuery, params, token, progress);
     } finally {
-      void qs.logger.log(' - - - COMPILATION DONE - - - ');
+      void qs.logger.log(' - - - COMPILATION DONE - - - ', { additionalLogLocation: this.logPath });
     }
     return (compiled?.messages || []).filter(msg => msg.severity === messages.Severity.ERROR);
   }
@@ -740,7 +761,10 @@ export async function compileAndRunQueryAgainstDatabase(
       // so we include a general description of the problem,
       // and direct the user to the output window for the detailed compilation messages.
       // However we don't show quick eval errors there so we need to display them anyway.
-      void qs.logger.log(`Failed to compile query ${initialInfo.queryPath} against database scheme ${qlProgram.dbschemePath}:`);
+      void qs.logger.log(
+        `Failed to compile query ${initialInfo.queryPath} against database scheme ${qlProgram.dbschemePath}:`,
+        { additionalLogLocation: query.logPath }
+      );
 
       const formattedMessages: string[] = [];
 
@@ -748,7 +772,7 @@ export async function compileAndRunQueryAgainstDatabase(
         const message = error.message || '[no error message available]';
         const formatted = `ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`;
         formattedMessages.push(formatted);
-        void qs.logger.log(formatted);
+        void qs.logger.log(formatted, { additionalLogLocation: query.logPath });
       }
       if (initialInfo.isQuickEval && formattedMessages.length <= 2) {
         // If there are more than 2 error messages, they will not be displayed well in a popup
@@ -765,7 +789,10 @@ export async function compileAndRunQueryAgainstDatabase(
     try {
       await upgradeDir?.cleanup();
     } catch (e) {
-      void qs.logger.log(`Could not clean up the upgrades dir. Reason: ${e.message || e}`);
+      void qs.logger.log(
+        `Could not clean up the upgrades dir. Reason: ${e.message || e}`,
+        { additionalLogLocation: query.logPath }
+      );
     }
   }
 }

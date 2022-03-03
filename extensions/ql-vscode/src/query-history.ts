@@ -402,6 +402,12 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
+        'codeQLQueryHistory.openQueryDirectory',
+        this.handleOpenQueryDirectory.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
         'codeQLQueryHistory.cancel',
         this.handleCancel.bind(this)
       )
@@ -700,6 +706,34 @@ export class QueryHistoryManager extends DisposableObject {
       await this.tryOpenExternalFile(singleItem.completedQuery.logFileLocation);
     } else {
       void showAndLogWarningMessage('No log file available');
+    }
+  }
+
+  async handleOpenQueryDirectory(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[]
+  ) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
+      return;
+    }
+
+    let p: string | undefined;
+    if (finalSingleItem.t === 'local') {
+      if (finalSingleItem.completedQuery) {
+        p = finalSingleItem.completedQuery.query.querySaveDir;
+      }
+    } else if (finalSingleItem.t === 'remote') {
+      p = path.join(this.queryStorageDir, finalSingleItem.queryId);
+    }
+
+    if (p) {
+      try {
+        await commands.executeCommand('revealFileInOS', Uri.file(p));
+      } catch (e) {
+        throw new Error(`Failed to open ${p}: ${e.message}`);
+      }
     }
   }
 
