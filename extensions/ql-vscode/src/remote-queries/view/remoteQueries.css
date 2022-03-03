@@ -12,20 +12,8 @@
   padding-top: 1.5em;
 }
 
-.vscode-codeql__analysis-summaries-list {
-  list-style-type: none;
-  margin: 0;
-  padding: 0.5em 0 0 0;
-}
-
 .vscode-codeql__analysis-summaries-list-item {
   margin-top: 0.5em;
-}
-
-.vscode-codeql__analyses-results-list {
-  list-style-type: none;
-  margin: 0;
-  padding: 0.5em 0 0 0;
 }
 
 .vscode-codeql__analyses-results-list-item {
@@ -54,4 +42,10 @@
   font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas,
     Liberation Mono, monospace;
   color: var(--vscode-editor-foreground);
+}
+
+.vscode-codeql__flat-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0.5em 0 0 0;
 }

@@ -3,9 +3,28 @@ export type AnalysisResultStatus = 'InProgress' | 'Completed' | 'Failed';
 export interface AnalysisResults {
   nwo: string;
   status: AnalysisResultStatus;
-  results: QueryResult[];
+  results: AnalysisAlert[];
 }
 
-export interface QueryResult {
-  message?: string;
+export interface AnalysisAlert {
+  message: string;
+  severity: ResultSeverity;
+  filePath: string;
+  codeSnippet: CodeSnippet
+  highlightedRegion: HighlightedRegion
 }
+
+export interface CodeSnippet {
+  startLine: number;
+  endLine: number;
+  text: string;
+}
+
+export interface HighlightedRegion {
+  startLine: number;
+  startColumn: number;
+  endLine: number | undefined;
+  endColumn: number;
+}
+
+export type ResultSeverity = 'Recommendation' | 'Warning' | 'Error';

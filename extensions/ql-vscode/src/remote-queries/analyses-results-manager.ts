@@ -6,9 +6,10 @@ import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import { downloadArtifactFromLink } from './gh-actions-api-client';
 import { AnalysisSummary } from './shared/remote-query-result';
-import { AnalysisResults, QueryResult } from './shared/analysis-result';
+import { AnalysisResults, AnalysisAlert } from './shared/analysis-result';
 import { UserCancellationException } from '../commandRunner';
 import { sarifParser } from '../sarif-parser';
+import { extractAnalysisAlerts } from './sarif-processing';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for each remote query.
@@ -136,26 +137,15 @@ export class AnalysesResultsManager {
     void publishResults([...resultsForQuery]);
   }
 
-  private async readResults(filePath: string): Promise<QueryResult[]> {
-    const queryResults: QueryResult[] = [];
-
+  private async readResults(filePath: string): Promise<AnalysisAlert[]> {
     const sarifLog = await sarifParser(filePath);
 
-    // Read the sarif file and extract information that we want to display
-    // in the UI. For now we're only getting the message texts but we'll gradually
-    // extract more information based on the UX we want to build.
+    const processedSarif = extractAnalysisAlerts(sarifLog);
+    if (processedSarif.errors) {
+      void this.logger.log(`Error processing SARIF file: ${os.EOL}${processedSarif.errors.join(os.EOL)}`);
+    }
 
-    sarifLog.runs?.forEach(run => {
-      run?.results?.forEach(result => {
-        if (result?.message?.text) {
-          queryResults.push({
-            message: result.message.text
-          });
-        }
-      });
-    });
-
-    return queryResults;
+    return processedSarif.alerts;
   }
 
   private isAnalysisInMemory(analysis: AnalysisSummary): boolean {
