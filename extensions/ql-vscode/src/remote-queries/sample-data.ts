@@ -102,6 +102,7 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
 const createAnalysisResults = (n: number) => Array(n).fill(
   {
     message: 'This shell command depends on an uncontrolled [absolute path](1).',
+    shortDescription: 'Shell command built from environment values',
     severity: 'Error',
     filePath: 'npm-packages/meteor-installer/config.js',
     codeSnippet: {
@@ -113,7 +114,202 @@ const createAnalysisResults = (n: number) => Array(n).fill(
       startLine: 255,
       startColumn: 28,
       endColumn: 62
-    }
+    },
+    codeFlows: [
+      {
+        threadFlows: [
+          {
+            filePath: 'npm-packages/meteor-installer/config.js',
+            highlightedRegion: {
+              startLine: 35,
+              startColumn: 20,
+              endColumn: 61
+            },
+            codeSnippet: {
+              startLine: 33,
+              endLine: 37,
+              text: '\nconst meteorLocalFolder = \'.meteor\';\nconst meteorPath = path.resolve(rootPath, meteorLocalFolder);\n\nmodule.exports = {\n'
+            }
+          },
+          {
+            filePath: 'npm-packages/meteor-installer/config.js',
+            highlightedRegion: {
+              startLine: 35,
+              startColumn: 7,
+              endColumn: 61
+            },
+            codeSnippet: {
+              startLine: 33,
+              endLine: 37,
+              text: '\nconst meteorLocalFolder = \'.meteor\';\nconst meteorPath = path.resolve(rootPath, meteorLocalFolder);\n\nmodule.exports = {\n'
+            }
+          },
+          {
+            filePath: 'npm-packages/meteor-installer/config.js',
+            highlightedRegion: {
+              startLine: 40,
+              startColumn: 3,
+              endColumn: 13
+            },
+            codeSnippet: {
+              startLine: 38,
+              endLine: 42,
+              text: '  METEOR_LATEST_VERSION,\n  extractPath: rootPath,\n  meteorPath,\n  release: process.env.INSTALL_METEOR_VERSION || METEOR_LATEST_VERSION,\n  rootPath,\n'
+            }
+          },
+          {
+            filePath: 'npm-packages/meteor-installer/install.js',
+            highlightedRegion: {
+              startLine: 12,
+              startColumn: 3,
+              endColumn: 13
+            },
+            codeSnippet: {
+              startLine: 10,
+              endLine: 14,
+              text: 'const os = require(\'os\');\nconst {\n  meteorPath,\n  release,\n  startedPath,\n'
+            }
+          },
+          {
+            filePath: 'npm-packages/meteor-installer/install.js',
+            highlightedRegion: {
+              startLine: 11,
+              startColumn: 7,
+              endLine: 22,
+              endColumn: 27
+            },
+            codeSnippet: {
+              startLine: 9,
+              endLine: 24,
+              text: 'const tmp = require(\'tmp\');\nconst os = require(\'os\');\nconst {\n  meteorPath,\n  release,\n  startedPath,\n  extractPath,\n  isWindows,\n  rootPath,\n  sudoUser,\n  isSudo,\n  isMac,\n  METEOR_LATEST_VERSION,\n} = require(\'./config.js\');\nconst { uninstall } = require(\'./uninstall\');\nconst {\n'
+            }
+          },
+          {
+            filePath: 'npm-packages/meteor-installer/install.js',
+            highlightedRegion: {
+              startLine: 255,
+              startColumn: 42,
+              endColumn: 52
+            },
+            codeSnippet: {
+              startLine: 253,
+              endLine: 257,
+              text: '  if (isWindows()) {\n    //set for the current session and beyond\n    child_process.execSync(`setx path "${meteorPath}/;%path%`);\n    return;\n  }\n'
+            }
+          },
+          {
+            filePath: 'npm-packages/meteor-installer/install.js',
+            highlightedRegion: {
+              startLine: 255,
+              startColumn: 28,
+              endColumn: 62
+            },
+            codeSnippet: {
+              startLine: 253,
+              endLine: 257,
+              text: '  if (isWindows()) {\n    //set for the current session and beyond\n    child_process.execSync(`setx path "${meteorPath}/;%path%`);\n    return;\n  }\n'
+            }
+          }
+        ]
+      },
+      {
+        threadFlows: [
+          {
+            filePath: 'npm-packages/meteor-installer/config2.js',
+            highlightedRegion: {
+              startLine: 35,
+              startColumn: 20,
+              endColumn: 61
+            },
+            codeSnippet: {
+              startLine: 33,
+              endLine: 37,
+              text: '\nconst meteorLocalFolder = \'.meteor\';\nconst meteorPath = path.resolve(rootPath, meteorLocalFolder);\n\nmodule.exports = {\n'
+            }
+          },
+          {
+            filePath: 'npm-packages/meteor-installer/config2.js',
+            highlightedRegion: {
+              startLine: 35,
+              startColumn: 7,
+              endColumn: 61
+            },
+            codeSnippet: {
+              startLine: 33,
+              endLine: 37,
+              text: '\nconst meteorLocalFolder = \'.meteor\';\nconst meteorPath = path.resolve(rootPath, meteorLocalFolder);\n\nmodule.exports = {\n'
+            }
+          },
+          {
+            filePath: 'npm-packages/meteor-installer/config2.js',
+            highlightedRegion: {
+              startLine: 40,
+              startColumn: 3,
+              endColumn: 13
+            },
+            codeSnippet: {
+              startLine: 38,
+              endLine: 42,
+              text: '  METEOR_LATEST_VERSION,\n  extractPath: rootPath,\n  meteorPath,\n  release: process.env.INSTALL_METEOR_VERSION || METEOR_LATEST_VERSION,\n  rootPath,\n'
+            }
+          },
+          {
+            filePath: 'npm-packages/meteor-installer/install2.js',
+            highlightedRegion: {
+              startLine: 12,
+              startColumn: 3,
+              endColumn: 13
+            },
+            codeSnippet: {
+              startLine: 10,
+              endLine: 14,
+              text: 'const os = require(\'os\');\nconst {\n  meteorPath,\n  release,\n  startedPath,\n'
+            }
+          },
+          {
+            filePath: 'npm-packages/meteor-installer/install2.js',
+            highlightedRegion: {
+              startLine: 11,
+              startColumn: 7,
+              endLine: 22,
+              endColumn: 27
+            },
+            codeSnippet: {
+              startLine: 9,
+              endLine: 24,
+              text: 'const tmp = require(\'tmp\');\nconst os = require(\'os\');\nconst {\n  meteorPath,\n  release,\n  startedPath,\n  extractPath,\n  isWindows,\n  rootPath,\n  sudoUser,\n  isSudo,\n  isMac,\n  METEOR_LATEST_VERSION,\n} = require(\'./config.js\');\nconst { uninstall } = require(\'./uninstall\');\nconst {\n'
+            }
+          },
+          {
+            filePath: 'npm-packages/meteor-installer/install2.js',
+            highlightedRegion: {
+              startLine: 255,
+              startColumn: 42,
+              endColumn: 52
+            },
+            codeSnippet: {
+              startLine: 253,
+              endLine: 257,
+              text: '  if (isWindows()) {\n    //set for the current session and beyond\n    child_process.execSync(`setx path "${meteorPath}/;%path%`);\n    return;\n  }\n'
+            }
+          },
+          {
+            filePath: 'npm-packages/meteor-installer/install2.js',
+            highlightedRegion: {
+              startLine: 255,
+              startColumn: 28,
+              endColumn: 62
+            },
+            codeSnippet: {
+              startLine: 253,
+              endLine: 257,
+              text: '  if (isWindows()) {\n    //set for the current session and beyond\n    child_process.execSync(`setx path "${meteorPath}/;%path%`);\n    return;\n  }\n'
+            }
+          }
+        ]
+      }
+    ]
+
   }
 );
 

@@ -8,10 +8,12 @@ export interface AnalysisResults {
 
 export interface AnalysisAlert {
   message: string;
+  shortDescription: string;
   severity: ResultSeverity;
   filePath: string;
-  codeSnippet: CodeSnippet
-  highlightedRegion: HighlightedRegion
+  codeSnippet: CodeSnippet;
+  highlightedRegion: HighlightedRegion;
+  codeFlows: CodeFlow[];
 }
 
 export interface CodeSnippet {
@@ -25,6 +27,17 @@ export interface HighlightedRegion {
   startColumn: number;
   endLine: number | undefined;
   endColumn: number;
+}
+
+export interface CodeFlow {
+  threadFlows: ThreadFlow[];
+}
+
+export interface ThreadFlow {
+  filePath: string;
+  codeSnippet: CodeSnippet;
+  highlightedRegion: HighlightedRegion;
+  message?: string;
 }
 
 export type ResultSeverity = 'Recommendation' | 'Warning' | 'Error';
