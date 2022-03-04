@@ -151,7 +151,7 @@ export class HistoryTreeDataProvider extends DisposableObject {
     switch (element.status) {
       case QueryStatus.InProgress:
         treeItem.iconPath = new ThemeIcon('sync~spin');
-        treeItem.contextValue = 'inProgressResultsItem';
+        treeItem.contextValue = element.t === 'local' ? 'inProgressResultsItem' : 'inProgressRemoteResultsItem';
         break;
       case QueryStatus.Completed:
         if (element.t === 'local') {
@@ -447,6 +447,14 @@ export class QueryHistoryManager extends DisposableObject {
         'codeQLQueryHistory.itemClicked',
         async (item: LocalQueryInfo) => {
           return this.handleItemClicked(item, [item]);
+        }
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.openOnGithub',
+        async (item: LocalQueryInfo) => {
+          return this.handleOpenOnGithub(item, [item]);
         }
       )
     );
@@ -853,6 +861,25 @@ export class QueryHistoryManager extends DisposableObject {
 
     await this.tryOpenExternalFile(
       await finalSingleItem.completedQuery.query.ensureDilPath(this.qs)
+    );
+  }
+
+  async handleOpenOnGithub(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[],
+  ) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    // Remote queries only
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'remote') {
+      return;
+    }
+
+    const { actionsWorkflowRunId: workflowRunId, controllerRepository: { owner, name } } = finalSingleItem.remoteQuery;
+
+    await commands.executeCommand(
+      'vscode.open',
+      Uri.parse(`https://github.com/${owner}/${name}/actions/runs/${workflowRunId}`)
     );
   }
 
