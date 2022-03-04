@@ -987,7 +987,7 @@
     "glob-promise": "^3.4.0",
     "js-yaml": "^3.14.0",
     "minimist": "~1.2.5",
-    "node-fetch": "~2.6.0",
+    "node-fetch": "~2.6.7",
     "path-browserify": "^1.0.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
