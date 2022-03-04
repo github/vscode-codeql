@@ -136,15 +136,15 @@ const CodeLine = ({
       ? highlightedRegion.startColumn
       : 0;
 
-  const highilightEndColumn = isSingleLineHighlight
+  const highlightEndColumn = isSingleLineHighlight
     ? highlightedRegion.endColumn
     : isLastHighlightedLine
       ? highlightedRegion.endColumn
       : line.length;
 
   const section1 = line.substring(0, highlightStartColumn - 1);
-  const section2 = line.substring(highlightStartColumn - 1, highilightEndColumn - 1);
-  const section3 = line.substring(highilightEndColumn - 1, line.length);
+  const section2 = line.substring(highlightStartColumn - 1, highlightEndColumn - 1);
+  const section3 = line.substring(highlightEndColumn - 1, line.length);
 
   return (
     <>
