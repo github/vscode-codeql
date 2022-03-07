@@ -302,8 +302,7 @@ export async function runRemoteQuery(
       message: 'Sending request'
     });
 
-    // TODO When https://github.com/dsp-testing/qc-run2/pull/567 is merged, we can change the branch back to `main`.
-    const workflowRunId = await runRemoteQueriesApiRequest(credentials, 'better-errors', language, repositories, owner, repo, base64Pack, dryRun);
+    const workflowRunId = await runRemoteQueriesApiRequest(credentials, 'main', language, repositories, owner, repo, base64Pack, dryRun);
     const queryStartTime = Date.now();
     const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
 
