@@ -12,7 +12,7 @@ const proxyquire = pq.noPreserveCache().noCallThru();
 chai.use(sinonChai);
 const expect = chai.expect;
 
-describe.only('OutputChannelLogger tests', function() {
+describe('OutputChannelLogger tests', function() {
   this.timeout(999999);
   let OutputChannelLogger;
   const tempFolders: Record<string, tmp.DirResult> = {};
