@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.6.0 - 7 March 2022
 
 - Fix a bug where database upgrades could not be resolved if some of the target pack's dependencies are outside of the workspace. [#1138](https://github.com/github/vscode-codeql/pull/1138)
