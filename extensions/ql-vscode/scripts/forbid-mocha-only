@@ -1,0 +1,7 @@
+if grep -rq --include '*.test.ts' 'it.only\|describe.only' ..; then
+    echo 'There is a .only() in the tests. Please remove it.'
+    exit 1;
+else
+    echo 'All good'
+    exit 0;
+fi

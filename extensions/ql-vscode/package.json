@@ -1170,7 +1170,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run format-staged",
-      "pre-push": "npm run lint"
+      "pre-push": "npm run lint && scripts/forbid-mocha-only"
     }
   },
   "lint-staged": {
