@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.5.12",
+  "version": "1.6.0",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
