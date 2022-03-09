@@ -211,14 +211,14 @@ describe('Remote queries and query history manager', function() {
       expect(publisher.getCall(0).args[0][0]).to.include({
         nwo: 'github/vscode-codeql',
         status: 'InProgress',
-        // alertResults: ... avoid checking the alertResults object since it is complex
+        // interpretedResults: ... avoid checking the interpretedResults object since it is complex
       });
 
       // second time, it has the path to the sarif file.
       expect(publisher.getCall(1).args[0][0]).to.include({
         nwo: 'github/vscode-codeql',
         status: 'Completed',
-        // alertResults: ... avoid checking the alertResults object since it is complex
+        // interpretedResults: ... avoid checking the interpretedResults object since it is complex
       });
       expect(publisher).to.have.been.calledTwice;
 
@@ -226,7 +226,7 @@ describe('Remote queries and query history manager', function() {
       expect(arm.getAnalysesResults(rawQueryHistory[0].queryId)[0]).to.include({
         nwo: 'github/vscode-codeql',
         status: 'Completed',
-        // alertResults: ... avoid checking the alertResults object since it is complex
+        // interpretedResults: ... avoid checking the interpretedResults object since it is complex
       });
       publisher.resetHistory();
 
@@ -242,7 +242,7 @@ describe('Remote queries and query history manager', function() {
       await arm.downloadAnalysesResults(analysisSummaries, undefined, publisher);
 
       const trimmed = publisher.getCalls().map(call => call.args[0]).map(args => {
-        args.forEach((analysisResult: any) => delete analysisResult.alertResults);
+        args.forEach((analysisResult: any) => delete analysisResult.interpretedResults);
         return args;
       });
 

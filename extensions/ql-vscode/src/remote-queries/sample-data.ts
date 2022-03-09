@@ -99,7 +99,7 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
 };
 
 
-const createAnalysisAlertResults = (n: number) => Array(n).fill(
+const createAnalysisInterpretedResults = (n: number) => Array(n).fill(
   {
     message: 'This shell command depends on an uncontrolled [absolute path](1).',
     shortDescription: 'Shell command built from environment values',
@@ -317,18 +317,18 @@ export const sampleAnalysesResultsStage1: AnalysisResults[] = [
   {
     nwo: 'big-corp/repo1',
     status: 'InProgress',
-    alertResults: []
+    interpretedResults: []
   },
   {
     nwo: 'big-corp/repo2',
     status: 'InProgress',
-    alertResults: []
+    interpretedResults: []
 
   },
   {
     nwo: 'big-corp/repo3',
     status: 'InProgress',
-    alertResults: []
+    interpretedResults: []
   },
   // No entries for repo4
 ];
@@ -337,22 +337,22 @@ export const sampleAnalysesResultsStage2: AnalysisResults[] = [
   {
     nwo: 'big-corp/repo1',
     status: 'Completed',
-    alertResults: createAnalysisAlertResults(85)
+    interpretedResults: createAnalysisInterpretedResults(85)
   },
   {
     nwo: 'big-corp/repo2',
     status: 'Completed',
-    alertResults: createAnalysisAlertResults(20)
+    interpretedResults: createAnalysisInterpretedResults(20)
   },
   {
     nwo: 'big-corp/repo3',
     status: 'InProgress',
-    alertResults: []
+    interpretedResults: []
   },
   {
     nwo: 'big-corp/repo4',
     status: 'InProgress',
-    alertResults: []
+    interpretedResults: []
   },
 ];
 
@@ -360,22 +360,22 @@ export const sampleAnalysesResultsStage3: AnalysisResults[] = [
   {
     nwo: 'big-corp/repo1',
     status: 'Completed',
-    alertResults: createAnalysisAlertResults(85)
+    interpretedResults: createAnalysisInterpretedResults(85)
   },
   {
     nwo: 'big-corp/repo2',
     status: 'Completed',
-    alertResults: createAnalysisAlertResults(20)
+    interpretedResults: createAnalysisInterpretedResults(20)
   },
   {
     nwo: 'big-corp/repo3',
     status: 'Completed',
-    alertResults: createAnalysisAlertResults(8)
+    interpretedResults: createAnalysisInterpretedResults(8)
   },
   {
     nwo: 'big-corp/repo4',
     status: 'Completed',
-    alertResults: createAnalysisAlertResults(3)
+    interpretedResults: createAnalysisInterpretedResults(3)
   },
 ];
 
@@ -383,21 +383,21 @@ export const sampleAnalysesResultsWithFailure: AnalysisResults[] = [
   {
     nwo: 'big-corp/repo1',
     status: 'Completed',
-    alertResults: createAnalysisAlertResults(85)
+    interpretedResults: createAnalysisInterpretedResults(85)
   },
   {
     nwo: 'big-corp/repo2',
     status: 'Completed',
-    alertResults: createAnalysisAlertResults(20)
+    interpretedResults: createAnalysisInterpretedResults(20)
   },
   {
     nwo: 'big-corp/repo3',
     status: 'Failed',
-    alertResults: []
+    interpretedResults: []
   },
   {
     nwo: 'big-corp/repo4',
     status: 'Completed',
-    alertResults: createAnalysisAlertResults(3)
+    interpretedResults: createAnalysisInterpretedResults(3)
   },
 ];

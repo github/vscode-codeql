@@ -101,7 +101,7 @@ export class AnalysesResultsManager {
     const analysisResults: AnalysisResults = {
       nwo: analysis.nwo,
       status: 'InProgress',
-      alertResults: []
+      interpretedResults: []
     };
     const queryId = analysis.downloadLink.queryId;
     const resultsForQuery = this.internalGetAnalysesResults(queryId);
@@ -123,7 +123,7 @@ export class AnalysesResultsManager {
       const queryResults = await this.readResults(artifactPath);
       newAnaysisResults = {
         ...analysisResults,
-        alertResults: queryResults,
+        interpretedResults: queryResults,
         status: 'Completed'
       };
     } else {

@@ -73,7 +73,7 @@ const openQueryTextVirtualFile = (queryResult: RemoteQueryResult) => {
 };
 
 const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
-  analysesResults.reduce((acc, curr) => acc + curr.alertResults.length, 0);
+  analysesResults.reduce((acc, curr) => acc + curr.interpretedResults.length, 0);
 
 const QueryInfo = (queryResult: RemoteQueryResult) => (
   <>
@@ -264,13 +264,13 @@ const AnalysesResultsDescription = ({ totalAnalysesResults, totalResults }: { to
 const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
   const title = <>
     {analysisResults.nwo}
-    <Badge text={analysisResults.alertResults.length.toString()} />
+    <Badge text={analysisResults.interpretedResults.length.toString()} />
   </>;
 
   return (
     <CollapsibleItem title={title}>
       <ul className="vscode-codeql__flat-list" >
-        {analysisResults.alertResults.map((r, i) =>
+        {analysisResults.interpretedResults.map((r, i) =>
           <li key={i}>
             <AnalysisAlertResult alert={r} />
             <VerticalSpace size={2} />
@@ -297,7 +297,7 @@ const AnalysesResults = ({ analysesResults, totalResults }: { analysesResults: A
         totalAnalysesResults={totalAnalysesResults}
         totalResults={totalResults} />
       <ul className="vscode-codeql__flat-list">
-        {analysesResults.filter(a => a.alertResults.length > 0).map(r =>
+        {analysesResults.filter(a => a.interpretedResults.length > 0).map(r =>
           <li key={r.nwo} className="vscode-codeql__analyses-results-list-item">
             <RepoAnalysisResults {...r} />
           </li>)}
