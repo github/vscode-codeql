@@ -1,6 +1,6 @@
 import * as sarif from 'sarif';
 
-import { AnalysisAlert, ResultSeverity } from './shared/analysis-result';
+import { AnalysisAlert, CodeFlow, CodeSnippet, HighlightedRegion, ResultSeverity, ThreadFlow } from './shared/analysis-result';
 
 const defaultSeverity = 'Warning';
 
@@ -36,76 +36,37 @@ export function extractAnalysisAlerts(
 
       const severity = tryGetSeverity(run, result) || defaultSeverity;
 
+      const { codeFlows, errors: codeFlowsErrors } = extractCodeFlows(result);
+      if (codeFlowsErrors.length > 0) {
+        errors.push(...codeFlowsErrors);
+        continue;
+      }
+
       if (!result.locations) {
         errors.push('No locations found in the SARIF result');
         continue;
       }
 
+      const rule = tryGetRule(run, result);
+      const shortDescription = rule?.shortDescription?.text || message;
+
       for (const location of result.locations) {
-        const contextRegion = location.physicalLocation?.contextRegion;
-        if (!contextRegion) {
-          errors.push('No context region found in the SARIF result location');
-          continue;
-        }
-        if (contextRegion.startLine === undefined) {
-          errors.push('No start line set for a result context region');
-          continue;
-        }
-        if (contextRegion.endLine === undefined) {
-          errors.push('No end line set for a result context region');
-          continue;
-        }
-        if (!contextRegion.snippet?.text) {
-          errors.push('No text set for a result context region');
-          continue;
-        }
+        const { processedLocation, errors: locationErrors } = extractLocation(location);
 
-        const region = location.physicalLocation?.region;
-        if (!region) {
-          errors.push('No region found in the SARIF result location');
-          continue;
-        }
-        if (region.startLine === undefined) {
-          errors.push('No start line set for a result region');
-          continue;
-        }
-        if (region.startColumn === undefined) {
-          errors.push('No start column set for a result region');
-          continue;
-        }
-        if (region.endColumn === undefined) {
-          errors.push('No end column set for a result region');
-          continue;
-        }
-
-        const filePath = location.physicalLocation?.artifactLocation?.uri;
-        if (!filePath) {
-          errors.push('No file path found in the SARIF result location');
+        if (locationErrors.length > 0) {
+          errors.push(...locationErrors);
           continue;
         }
 
         const analysisAlert = {
           message,
-          filePath,
+          shortDescription: shortDescription,
+          filePath: processedLocation!.filePath,
           severity,
-          codeSnippet: {
-            startLine: contextRegion.startLine,
-            endLine: contextRegion.endLine,
-            text: contextRegion.snippet.text
-          },
-          highlightedRegion: {
-            startLine: region.startLine,
-            startColumn: region.startColumn,
-            endLine: region.endLine,
-            endColumn: region.endColumn
-          }
+          codeSnippet: processedLocation!.codeSnippet,
+          highlightedRegion: processedLocation!.highlightedRegion,
+          codeFlows: codeFlows
         };
-
-        const validationErrors = getAlertValidationErrors(analysisAlert);
-        if (validationErrors.length > 0) {
-          errors.push(...validationErrors);
-          continue;
-        }
 
         alerts.push(analysisAlert);
       }
@@ -186,18 +147,149 @@ export function tryGetRule(
   return undefined;
 }
 
-function getAlertValidationErrors(alert: AnalysisAlert): string[] {
-  const errors = [];
+interface Location {
+  message?: string;
+  filePath: string;
+  codeSnippet: CodeSnippet,
+  highlightedRegion: HighlightedRegion
+}
 
-  if (alert.codeSnippet.startLine > alert.codeSnippet.endLine) {
-    errors.push('The code snippet start line is greater than the end line');
+function validateContextRegion(contextRegion: sarif.Region | undefined): string[] {
+  const errors: string[] = [];
+
+  if (!contextRegion) {
+    errors.push('No context region found in the SARIF result location');
+    return errors;
+  }
+  if (contextRegion.startLine === undefined) {
+    errors.push('No start line set for a result context region');
+  }
+  if (contextRegion.endLine === undefined) {
+    errors.push('No end line set for a result context region');
+  }
+  if (!contextRegion.snippet?.text) {
+    errors.push('No text set for a result context region');
   }
 
-  const highlightedRegion = alert.highlightedRegion;
-  if (highlightedRegion.endLine === highlightedRegion.startLine &&
-    highlightedRegion.endColumn < highlightedRegion.startColumn) {
-    errors.push('The highlighted region end column is greater than the start column');
+  if (errors.length > 0) {
+    return errors;
+  }
+
+  if (contextRegion.startLine! > contextRegion.endLine!) {
+    errors.push('Start line is greater than the end line in result context region');
   }
 
   return errors;
+}
+
+function validateRegion(region: sarif.Region | undefined): string[] {
+  const errors: string[] = [];
+
+  if (!region) {
+    errors.push('No region found in the SARIF result location');
+    return errors;
+  }
+  if (region.startLine === undefined) {
+    errors.push('No start line set for a result region');
+  }
+  if (region.startColumn === undefined) {
+    errors.push('No start column set for a result region');
+  }
+  if (region.endColumn === undefined) {
+    errors.push('No end column set for a result region');
+  }
+
+  if (errors.length > 0) {
+    return errors;
+  }
+
+  if (region.endLine! === region.startLine! &&
+    region.endColumn! < region.startColumn!) {
+    errors.push('End column is greater than the start column in a result region');
+  }
+
+  return errors;
+}
+
+function extractLocation(
+  location: sarif.Location
+): {
+  processedLocation: Location | undefined,
+  errors: string[]
+} {
+  const message = location.message?.text;
+
+  const errors = [];
+
+  const contextRegion = location.physicalLocation?.contextRegion;
+  const contextRegionErrors = validateContextRegion(contextRegion);
+  errors.push(...contextRegionErrors);
+
+  const region = location.physicalLocation?.region;
+  const regionErrors = validateRegion(region);
+  errors.push(...regionErrors);
+
+  const filePath = location.physicalLocation?.artifactLocation?.uri;
+  if (!filePath) {
+    errors.push('No file path found in the SARIF result location');
+  }
+
+  if (errors.length > 0) {
+    return { processedLocation: undefined, errors };
+  }
+
+  const processedLocation = {
+    message,
+    filePath,
+    codeSnippet: {
+      startLine: contextRegion!.startLine,
+      endLine: contextRegion!.endLine,
+      text: contextRegion!.snippet!.text
+    },
+    highlightedRegion: {
+      startLine: region!.startLine,
+      startColumn: region!.startColumn,
+      endLine: region!.endLine,
+      endColumn: region!.endColumn
+    }
+  } as Location;
+
+  return { processedLocation, errors: [] };
+}
+
+function extractCodeFlows(
+  result: sarif.Result
+): {
+  codeFlows: CodeFlow[],
+  errors: string[]
+} {
+  const codeFlows = [];
+  const errors = [];
+
+  if (result.codeFlows) {
+    for (const codeFlow of result.codeFlows) {
+      const threadFlows = [];
+
+      for (const threadFlow of codeFlow.threadFlows) {
+        for (const location of threadFlow.locations) {
+          const { processedLocation, errors: locationErrors } = extractLocation(location);
+          if (locationErrors.length > 0) {
+            errors.push(...locationErrors);
+            continue;
+          }
+
+          threadFlows.push({
+            filePath: processedLocation!.filePath,
+            codeSnippet: processedLocation!.codeSnippet,
+            highlightedRegion: processedLocation!.highlightedRegion,
+            message: processedLocation!.message
+          } as ThreadFlow);
+        }
+      }
+
+      codeFlows.push({ threadFlows } as CodeFlow);
+    }
+  }
+
+  return { errors, codeFlows: [] };
 }
