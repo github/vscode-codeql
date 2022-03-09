@@ -147,11 +147,13 @@ jobs:
                   If this was an authentication problem, please make sure the \
                   auth token hasn't expired."
 
+  # TODO This job is currently broken and is blocked on https://github.com/github/vscode-codeql/issues/1085
   open-vsx-publish:
     name: Publish to Open VSX Registry
     needs: build
     environment: publish-open-vsx
     runs-on: ubuntu-latest
+    if: 1 == 0
     env:
       OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
     steps:
