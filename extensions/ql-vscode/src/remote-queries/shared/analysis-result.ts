@@ -3,7 +3,7 @@ export type AnalysisResultStatus = 'InProgress' | 'Completed' | 'Failed';
 export interface AnalysisResults {
   nwo: string;
   status: AnalysisResultStatus;
-  results: AnalysisAlert[];
+  alertResults: AnalysisAlert[];
 }
 
 export interface AnalysisAlert {
