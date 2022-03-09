@@ -4,6 +4,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
 import * as sarif from 'sarif';
 import { extractAnalysisAlerts, tryGetRule, tryGetSeverity } from '../../src/remote-queries/sarif-processing';
+import { AnalysisMessage } from '../../src/remote-queries/shared/analysis-result';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -288,17 +289,19 @@ describe('SARIF processing', () => {
   });
 
   describe('tryGetSeverity', () => {
-    it('should return undefined if no rule found', () => {
+    it('should return undefined if no rule set', () => {
       const result = {
-        // The rule is missing here.
         message: 'msg'
       } as sarif.Result;
+
+      // The rule should be set here.
+      const rule: sarif.ReportingDescriptor | undefined = undefined;
 
       const sarifRun = {
         results: [result]
       } as sarif.Run;
 
-      const severity = tryGetSeverity(sarifRun, result);
+      const severity = tryGetSeverity(sarifRun, result, rule);
       expect(severity).to.be.undefined;
     });
 
@@ -310,24 +313,26 @@ describe('SARIF processing', () => {
         }
       } as sarif.Result;
 
+      const rule = {
+        id: 'A',
+        properties: {
+          // Severity not set
+        }
+      } as sarif.ReportingDescriptor;
+
       const sarifRun = {
         results: [result],
         tool: {
           driver: {
             rules: [
-              {
-                id: 'A',
-                properties: {
-                  // Severity not set
-                }
-              },
+              rule,
               result.rule
             ]
           }
         }
       } as sarif.Run;
 
-      const severity = tryGetSeverity(sarifRun, result);
+      const severity = tryGetSeverity(sarifRun, result, rule);
       expect(severity).to.be.undefined;
     });
 
@@ -346,24 +351,26 @@ describe('SARIF processing', () => {
           }
         } as sarif.Result;
 
+        const rule = {
+          id: 'A',
+          properties: {
+            'problem.severity': sarifSeverity
+          }
+        } as sarif.ReportingDescriptor;
+
         const sarifRun = {
           results: [result],
           tool: {
             driver: {
               rules: [
-                {
-                  id: 'A',
-                  properties: {
-                    'problem.severity': sarifSeverity
-                  }
-                },
+                rule,
                 result.rule
               ]
             }
           }
         } as sarif.Run;
 
-        const severity = tryGetSeverity(sarifRun, result);
+        const severity = tryGetSeverity(sarifRun, result, rule);
         expect(severity).to.equal(parsedSeverity);
       });
     });
@@ -532,9 +539,9 @@ describe('SARIF processing', () => {
       expect(result).to.be.ok;
       expect(result.errors.length).to.equal(0);
       expect(result.alerts.length).to.equal(3);
-      expect(result.alerts.find(a => a.message === 'msg1' && a.codeSnippet.text === 'foo')).to.be.ok;
-      expect(result.alerts.find(a => a.message === 'msg1' && a.codeSnippet.text === 'bar')).to.be.ok;
-      expect(result.alerts.find(a => a.message === 'msg2' && a.codeSnippet.text === 'baz')).to.be.ok;
+      expect(result.alerts.find(a => getMessageText(a.message) === 'msg1' && a.codeSnippet.text === 'foo')).to.be.ok;
+      expect(result.alerts.find(a => getMessageText(a.message) === 'msg1' && a.codeSnippet.text === 'bar')).to.be.ok;
+      expect(result.alerts.find(a => getMessageText(a.message) === 'msg2' && a.codeSnippet.text === 'baz')).to.be.ok;
       expect(result.alerts.every(a => a.severity === 'Warning')).to.be.true;
     });
 
@@ -576,5 +583,9 @@ describe('SARIF processing', () => {
         }
       ]
     } as sarif.Log;
+  }
+
+  function getMessageText(message: AnalysisMessage) {
+    return message.tokens.map(t => t.text).join('');
   }
 });

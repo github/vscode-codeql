@@ -7,12 +7,12 @@ export interface AnalysisResults {
 }
 
 export interface AnalysisAlert {
-  message: string;
+  message: AnalysisMessage;
   shortDescription: string;
   severity: ResultSeverity;
   filePath: string;
   codeSnippet: CodeSnippet;
-  highlightedRegion: HighlightedRegion;
+  highlightedRegion?: HighlightedRegion;
   codeFlows: CodeFlow[];
 }
 
@@ -37,7 +37,33 @@ export interface ThreadFlow {
   filePath: string;
   codeSnippet: CodeSnippet;
   highlightedRegion: HighlightedRegion;
+  message?: AnalysisMessage;
+}
+
+export interface AnalysisMessage {
+  tokens: AnalysisMessageToken[]
+}
+
+export type AnalysisMessageToken =
+  | AnalysisMessageTextToken
+  | AnalysisMessageLocationToken;
+
+export interface AnalysisMessageTextToken {
+  t: 'text';
+  text: string;
+}
+
+export interface AnalysisMessageLocationToken {
+  t: 'location';
+  text: string;
+  location: Location;
+}
+
+export interface Location {
   message?: string;
+  filePath: string;
+  codeSnippet: CodeSnippet;
+  highlightedRegion?: HighlightedRegion;
 }
 
 export type ResultSeverity = 'Recommendation' | 'Warning' | 'Error';

@@ -3,7 +3,7 @@ import { ActionList, ActionMenu, Box, Button, Label, Link, Overlay } from '@prim
 import * as React from 'react';
 import { useRef, useState } from 'react';
 import styled from 'styled-components';
-import { CodeFlow, ResultSeverity } from '../shared/analysis-result';
+import { CodeFlow, AnalysisMessage, ResultSeverity } from '../shared/analysis-result';
 import FileCodeSnippet from './FileCodeSnippet';
 import SectionTitle from './SectionTitle';
 import VerticalSpace from './VerticalSpace';
@@ -45,7 +45,7 @@ const CodePath = ({
   severity
 }: {
   codeFlow: CodeFlow;
-  message: string;
+  message: AnalysisMessage;
   severity: ResultSeverity;
 }) => {
   return <>
@@ -122,7 +122,7 @@ const CodePaths = ({
 }: {
   codeFlows: CodeFlow[],
   ruleDescription: string,
-  message: string,
+  message: AnalysisMessage,
   severity: ResultSeverity
 }) => {
   const [isOpen, setIsOpen] = useState(false);

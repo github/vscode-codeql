@@ -101,7 +101,35 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
 
 const createAnalysisResults = (n: number) => Array(n).fill(
   {
-    message: 'This shell command depends on an uncontrolled [absolute path](1).',
+    message: {
+      tokens: [
+        {
+          t: 'text',
+          text: 'This shell command depends on an uncontrolled '
+        },
+        {
+          t: 'location',
+          text: 'absolute path',
+          location: {
+            filePath: 'npm-packages/meteor-installer/config.js',
+            codeSnippet: {
+              startLine: 33,
+              endLine: 37,
+              text: '\nconst meteorLocalFolder = \'.meteor\';\nconst meteorPath = path.resolve(rootPath, meteorLocalFolder);\n\nmodule.exports = {\n'
+            },
+            highlightedRegion: {
+              startLine: 35,
+              startColumn: 20,
+              endColumn: 61
+            }
+          }
+        },
+        {
+          t: 'text',
+          text: '.'
+        }
+      ]
+    },
     shortDescription: 'Shell command built from environment values',
     severity: 'Error',
     filePath: 'npm-packages/meteor-installer/config.js',
