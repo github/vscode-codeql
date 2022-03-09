@@ -8,7 +8,7 @@ import { CancellationTokenSource } from 'vscode-jsonrpc';
 import * as messages from '../../pure/messages';
 import * as qsClient from '../../queryserver-client';
 import * as cli from '../../cli';
-import { ColumnValue } from '../../pure/bqrs-cli-types';
+import { CellValue } from '../../pure/bqrs-cli-types';
 import { extensions } from 'vscode';
 import { CodeQLExtensionInterface } from '../../extension';
 import { fail } from 'assert';
@@ -53,7 +53,7 @@ class Checkpoint<T> {
 }
 
 type ResultSets = {
-  [name: string]: ColumnValue[][];
+  [name: string]: CellValue[][];
 }
 
 type QueryTestCase = {
