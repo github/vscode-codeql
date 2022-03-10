@@ -41,7 +41,7 @@ export class RemoteQueriesManager extends DisposableObject {
     logger: Logger,
   ) {
     super();
-    this.analysesResultsManager = new AnalysesResultsManager(ctx, storagePath, logger);
+    this.analysesResultsManager = new AnalysesResultsManager(ctx, cliServer, storagePath, logger);
     this.interfaceManager = new RemoteQueriesInterfaceManager(ctx, logger, this.analysesResultsManager);
     this.remoteQueriesMonitor = new RemoteQueriesMonitor(ctx, logger);
 

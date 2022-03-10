@@ -4,7 +4,7 @@ import * as Rdom from 'react-dom';
 import { Flash, ThemeProvider } from '@primer/react';
 import { ToRemoteQueriesMessage } from '../../pure/interface-types';
 import { AnalysisSummary, RemoteQueryResult } from '../shared/remote-query-result';
-
+import { MAX_RAW_RESULTS } from '../shared/result-limits';
 import { vscode } from '../../view/vscode-api';
 
 import SectionTitle from './SectionTitle';
@@ -18,6 +18,7 @@ import DownloadSpinner from './DownloadSpinner';
 import CollapsibleItem from './CollapsibleItem';
 import { AlertIcon, CodeSquareIcon, FileCodeIcon, FileSymlinkFileIcon, RepoIcon, TerminalIcon } from '@primer/octicons-react';
 import AnalysisAlertResult from './AnalysisAlertResult';
+import RawResultsTable from './RawResultsTable';
 
 const numOfReposInContractedMode = 10;
 
@@ -72,8 +73,13 @@ const openQueryTextVirtualFile = (queryResult: RemoteQueryResult) => {
   });
 };
 
+const getAnalysisResultCount = (analysisResults: AnalysisResults): number => {
+  const rawResultCount = analysisResults.rawResults?.resultSet.rows.length || 0;
+  return analysisResults.interpretedResults.length + rawResultCount;
+};
+
 const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
-  analysesResults.reduce((acc, curr) => acc + curr.interpretedResults.length, 0);
+  analysesResults.reduce((acc, curr) => acc + getAnalysisResultCount(curr), 0);
 
 const QueryInfo = (queryResult: RemoteQueryResult) => (
   <>
@@ -249,22 +255,40 @@ const AnalysesResultsTitle = ({ totalAnalysesResults, totalResults }: { totalAna
   return <SectionTitle>{totalAnalysesResults}/{totalResults} results</SectionTitle>;
 };
 
-const AnalysesResultsDescription = ({ totalAnalysesResults, totalResults }: { totalAnalysesResults: number, totalResults: number }) => {
-  if (totalAnalysesResults < totalResults) {
-    return <>
-      <VerticalSpace size={1} />
-      Some results haven&apos;t been downloaded automatically because of their size or because enough were downloaded already.
-      Download them manually from the list above if you want to see them here.
-    </>;
-  }
+const AnalysesResultsDescription = ({
+  totalAnalysesResults,
+  totalResults,
+  analysesResults
+}: {
+  totalAnalysesResults: number,
+  totalResults: number,
+  analysesResults: AnalysisResults[]
+}) => {
+  const downloadsMessage = <>
+    <VerticalSpace size={1} />
+    Some results haven&apos;t been downloaded automatically because of their size or because enough were downloaded already.
+    Download them manually from the list above if you want to see them here.
+  </>;
 
-  return <></>;
+  const maxRawResultsMessage = <>
+    <VerticalSpace size={1} />
+    Some repositories have more than {MAX_RAW_RESULTS} results. We will only show you up to {MAX_RAW_RESULTS}
+    results for each repository.
+  </>;
+
+  return (
+    <>
+      {totalAnalysesResults < totalResults && downloadsMessage}
+      {analysesResults.some(a => a.rawResults?.capped) && maxRawResultsMessage}
+    </>
+  );
 };
 
 const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
+  const numOfResults = getAnalysisResultCount(analysisResults);
   const title = <>
     {analysisResults.nwo}
-    <Badge text={analysisResults.interpretedResults.length.toString()} />
+    <Badge text={numOfResults.toString()} />
   </>;
 
   return (
@@ -276,6 +300,11 @@ const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
             <VerticalSpace size={2} />
           </li>)}
       </ul>
+      {analysisResults.rawResults &&
+        <RawResultsTable
+          schema={analysisResults.rawResults.schema}
+          results={analysisResults.rawResults.resultSet} />
+      }
     </CollapsibleItem>
   );
 };
@@ -295,9 +324,10 @@ const AnalysesResults = ({ analysesResults, totalResults }: { analysesResults: A
         totalResults={totalResults} />
       <AnalysesResultsDescription
         totalAnalysesResults={totalAnalysesResults}
-        totalResults={totalResults} />
+        totalResults={totalResults}
+        analysesResults={analysesResults} />
       <ul className="vscode-codeql__flat-list">
-        {analysesResults.filter(a => a.interpretedResults.length > 0).map(r =>
+        {analysesResults.filter(a => a.interpretedResults.length > 0 || a.rawResults).map(r =>
           <li key={r.nwo} className="vscode-codeql__analyses-results-list-item">
             <RepoAnalysisResults {...r} />
           </li>)}

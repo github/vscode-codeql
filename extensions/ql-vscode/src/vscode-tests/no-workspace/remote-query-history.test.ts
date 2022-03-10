@@ -176,6 +176,7 @@ describe('Remote queries and query history manager', function() {
     let mockCredentials: any;
     let mockOctokit: any;
     let mockLogger: any;
+    let mockCliServer: any;
     let arm: AnalysesResultsManager;
 
     beforeEach(() => {
@@ -188,10 +189,15 @@ describe('Remote queries and query history manager', function() {
       mockLogger = {
         log: sandbox.spy()
       };
+      mockCliServer = {
+        bqrsInfo: sandbox.spy(),
+        bqrsDecode: sandbox.spy()
+      };
       sandbox.stub(Credentials, 'initialize').resolves(mockCredentials);
 
       arm = new AnalysesResultsManager(
         {} as ExtensionContext,
+        mockCliServer,
         path.join(STORAGE_DIR, 'queries'),
         mockLogger
       );

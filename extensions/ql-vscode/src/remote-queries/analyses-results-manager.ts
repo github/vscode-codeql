@@ -6,10 +6,12 @@ import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import { downloadArtifactFromLink } from './gh-actions-api-client';
 import { AnalysisSummary } from './shared/remote-query-result';
-import { AnalysisResults, AnalysisAlert } from './shared/analysis-result';
+import { AnalysisResults, AnalysisAlert, AnalysisRawResults } from './shared/analysis-result';
 import { UserCancellationException } from '../commandRunner';
 import { sarifParser } from '../sarif-parser';
 import { extractAnalysisAlerts } from './sarif-processing';
+import { CodeQLCliServer } from '../cli';
+import { extractRawResults } from './bqrs-processing';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for each remote query.
@@ -18,6 +20,7 @@ export class AnalysesResultsManager {
 
   constructor(
     private readonly ctx: ExtensionContext,
+    private readonly cliServer: CodeQLCliServer,
     readonly storagePath: string,
     private readonly logger: Logger,
   ) {
@@ -119,15 +122,23 @@ export class AnalysesResultsManager {
     }
 
     let newAnaysisResults: AnalysisResults;
-    if (path.extname(artifactPath) === '.sarif') {
-      const queryResults = await this.readResults(artifactPath);
+    const fileExtension = path.extname(artifactPath);
+    if (fileExtension === '.sarif') {
+      const queryResults = await this.readSarifResults(artifactPath);
       newAnaysisResults = {
         ...analysisResults,
         interpretedResults: queryResults,
         status: 'Completed'
       };
+    } else if (fileExtension === '.bqrs') {
+      const queryResults = await this.readBqrsResults(artifactPath);
+      newAnaysisResults = {
+        ...analysisResults,
+        rawResults: queryResults,
+        status: 'Completed'
+      };
     } else {
-      void this.logger.log('Cannot download results. Only alert and path queries are fully supported.');
+      void this.logger.log(`Cannot download results. File type '${fileExtension}' not supported.`);
       newAnaysisResults = {
         ...analysisResults,
         status: 'Failed'
@@ -137,7 +148,11 @@ export class AnalysesResultsManager {
     void publishResults([...resultsForQuery]);
   }
 
-  private async readResults(filePath: string): Promise<AnalysisAlert[]> {
+  private async readBqrsResults(filePath: string): Promise<AnalysisRawResults> {
+    return await extractRawResults(this.cliServer, this.logger, filePath);
+  }
+
+  private async readSarifResults(filePath: string): Promise<AnalysisAlert[]> {
     const sarifLog = await sarifParser(filePath);
 
     const processedSarif = extractAnalysisAlerts(sarifLog);
