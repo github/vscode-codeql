@@ -79,11 +79,11 @@ export interface WholeFileLocation {
 
 export type ResolvableLocationValue = WholeFileLocation | LineColumnLocation;
 
-export type UrlValue = ResolvableLocationValue  | string;
+export type UrlValue = ResolvableLocationValue | string;
 
-export type ColumnValue = EntityValue | number | string | boolean;
+export type CellValue = EntityValue | number | string | boolean;
 
-export type ResultRow = ColumnValue[];
+export type ResultRow = CellValue[];
 
 export interface RawResultSet {
   readonly schema: ResultSetSchema;
@@ -104,6 +104,6 @@ export function transformBqrsResultSet(
 }
 
 export interface DecodedBqrsChunk {
-  tuples: ColumnValue[][];
+  tuples: CellValue[][];
   next?: number;
 }
