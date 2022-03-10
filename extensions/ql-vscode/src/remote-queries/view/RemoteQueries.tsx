@@ -256,20 +256,21 @@ const AnalysesResultsTitle = ({ totalAnalysesResults, totalResults }: { totalAna
 };
 
 const AnalysesResultsDescription = ({
-  totalAnalysesResults,
-  totalResults,
-  analysesResults
+  queryResult,
+  analysesResults,
 }: {
-  totalAnalysesResults: number,
-  totalResults: number,
-  analysesResults: AnalysisResults[]
+  queryResult: RemoteQueryResult
+  analysesResults: AnalysisResults[],
 }) => {
+  const showDownloadsMessage = queryResult.analysisSummaries.some(
+    s => !analysesResults.some(a => a.nwo === s.nwo && a.status === 'Completed'));
   const downloadsMessage = <>
     <VerticalSpace size={1} />
     Some results haven&apos;t been downloaded automatically because of their size or because enough were downloaded already.
     Download them manually from the list above if you want to see them here.
   </>;
 
+  const showMaxResultsMessage = analysesResults.some(a => a.rawResults?.capped);
   const maxRawResultsMessage = <>
     <VerticalSpace size={1} />
     Some repositories have more than {MAX_RAW_RESULTS} results. We will only show you up to {MAX_RAW_RESULTS}
@@ -278,8 +279,8 @@ const AnalysesResultsDescription = ({
 
   return (
     <>
-      {totalAnalysesResults < totalResults && downloadsMessage}
-      {analysesResults.some(a => a.rawResults?.capped) && maxRawResultsMessage}
+      {showDownloadsMessage && downloadsMessage}
+      {showMaxResultsMessage && maxRawResultsMessage}
     </>
   );
 };
@@ -309,7 +310,15 @@ const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
   );
 };
 
-const AnalysesResults = ({ analysesResults, totalResults }: { analysesResults: AnalysisResults[], totalResults: number }) => {
+const AnalysesResults = ({
+  queryResult,
+  analysesResults,
+  totalResults
+}: {
+  queryResult: RemoteQueryResult,
+  analysesResults: AnalysisResults[],
+  totalResults: number
+}) => {
   const totalAnalysesResults = sumAnalysesResults(analysesResults);
 
   if (totalResults === 0) {
@@ -323,8 +332,7 @@ const AnalysesResults = ({ analysesResults, totalResults }: { analysesResults: A
         totalAnalysesResults={totalAnalysesResults}
         totalResults={totalResults} />
       <AnalysesResultsDescription
-        totalAnalysesResults={totalAnalysesResults}
-        totalResults={totalResults}
+        queryResult={queryResult}
         analysesResults={analysesResults} />
       <ul className="vscode-codeql__flat-list">
         {analysesResults.filter(a => a.interpretedResults.length > 0 || a.rawResults).map(r =>
@@ -370,7 +378,11 @@ export function RemoteQueries(): JSX.Element {
         <QueryInfo {...queryResult} />
         <Failures {...queryResult} />
         <Summary queryResult={queryResult} analysesResults={analysesResults} />
-        {showAnalysesResults && <AnalysesResults analysesResults={analysesResults} totalResults={queryResult.totalResultCount} />}
+        {showAnalysesResults &&
+          <AnalysesResults
+            queryResult={queryResult}
+            analysesResults={analysesResults}
+            totalResults={queryResult.totalResultCount} />}
       </ThemeProvider>
     </div>;
   } catch (err) {
