@@ -289,7 +289,7 @@ function extractCodeFlows(
           if (!location?.location) {
             errors.push('No location found in a SARIF thread flow');
           }
-          const { processedLocation, errors: locationErrors } = extractLocation(location!.location!);
+          const { processedLocation, errors: locationErrors } = extractLocation(location.location!);
           if (locationErrors.length > 0) {
             errors.push(...locationErrors);
             continue;
