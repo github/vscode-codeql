@@ -1,14 +1,15 @@
 import * as sarif from 'sarif';
-import { parseSarifPlainTextMessage } from '../pure/sarif-utils';
+import { parseSarifPlainTextMessage, parseSarifRegion } from '../pure/sarif-utils';
 
 import {
   AnalysisAlert,
   CodeFlow,
-  Location,
   AnalysisMessage,
   AnalysisMessageToken,
   ResultSeverity,
-  ThreadFlow
+  ThreadFlow,
+  CodeSnippet,
+  HighlightedRegion
 } from './shared/analysis-result';
 
 const defaultSeverity = 'Warning';
@@ -19,75 +20,61 @@ export function extractAnalysisAlerts(
   alerts: AnalysisAlert[],
   errors: string[]
 } {
-  if (!sarifLog) {
-    return { alerts: [], errors: ['No SARIF log was found'] };
-  }
-
-  if (!sarifLog.runs) {
-    return { alerts: [], errors: ['No runs found in the SARIF file'] };
-  }
-
-  const errors: string[] = [];
   const alerts: AnalysisAlert[] = [];
+  const errors: string[] = [];
 
-  for (const run of sarifLog.runs) {
-    if (!run.results) {
-      errors.push('No results found in the SARIF run');
-      continue;
-    }
-
-    for (const result of run.results) {
-      if (!result.message?.text) {
-        errors.push('No message found in the SARIF result');
-        continue;
-      }
-
-      const { message, errors: messageErrors } = extractMessage(result.message?.text, result);
-      if (messageErrors.length > 0) {
-        errors.push(...messageErrors);
-        continue;
-      }
-
-      const rule = tryGetRule(run, result);
-      const severity = tryGetSeverity(run, result, rule) || defaultSeverity;
-
-      const { codeFlows, errors: codeFlowsErrors } = extractCodeFlows(result);
-      if (codeFlowsErrors.length > 0) {
-        errors.push(...codeFlowsErrors);
-        continue;
-      }
-
-      if (!result.locations) {
-        errors.push('No locations found in the SARIF result');
-        continue;
-      }
-
-      const shortDescription = getShortDescription(rule, message!);
-
-      for (const location of result.locations) {
-        const { processedLocation, errors: locationErrors } = extractLocation(location);
-
-        if (locationErrors.length > 0) {
-          errors.push(...locationErrors);
+  try {
+    for (const run of sarifLog.runs!) {
+      for (const result of run.results!) {
+        try {
+          alerts.push(...extractResultAlerts(run, result));
+        } catch (e) {
+          errors.push(`Error when processing SARIF result: ${e}`);
           continue;
         }
-
-        const analysisAlert: AnalysisAlert = {
-          message: message!,
-          shortDescription,
-          filePath: processedLocation!.filePath,
-          severity,
-          codeSnippet: processedLocation!.codeSnippet,
-          highlightedRegion: processedLocation!.highlightedRegion,
-          codeFlows: codeFlows
-        };
-
-        alerts.push(analysisAlert);
       }
     }
+  } catch (e) {
+    errors.push(`Error when processing SARIF run: ${e}`);
   }
 
   return { alerts, errors };
+}
+
+function extractResultAlerts(
+  run: sarif.Run,
+  result: sarif.Result
+): AnalysisAlert[] {
+  const alerts: AnalysisAlert[] = [];
+
+  const message = getMessage(result);
+  const rule = tryGetRule(run, result);
+  const severity = tryGetSeverity(run, result, rule) || defaultSeverity;
+  const codeFlows = getCodeFlows(result);
+  const shortDescription = getShortDescription(rule, message!);
+
+  for (const location of result.locations!) {
+    const physicalLocation = location.physicalLocation!;
+    const filePath = physicalLocation.artifactLocation!.uri!;
+    const codeSnippet = getCodeSnippet(physicalLocation.contextRegion!);
+    const highlightedRegion = physicalLocation.region
+      ? getHighlightedRegion(physicalLocation.region!)
+      : undefined;
+
+    const analysisAlert: AnalysisAlert = {
+      message,
+      shortDescription,
+      filePath,
+      severity,
+      codeSnippet,
+      highlightedRegion,
+      codeFlows: codeFlows
+    };
+
+    alerts.push(analysisAlert);
+  }
+
+  return alerts;
 }
 
 function getShortDescription(
@@ -168,138 +155,50 @@ export function tryGetRule(
   return undefined;
 }
 
-function validateContextRegion(contextRegion: sarif.Region | undefined): string[] {
-  const errors: string[] = [];
+function getCodeSnippet(region: sarif.Region): CodeSnippet {
+  const text = region.snippet!.text!;
+  const { startLine, endLine } = parseSarifRegion(region);
 
-  if (!contextRegion) {
-    errors.push('No context region found in the SARIF result location');
-    return errors;
-  }
-  if (contextRegion.startLine === undefined) {
-    errors.push('No start line set for a result context region');
-  }
-  if (contextRegion.endLine === undefined) {
-    errors.push('No end line set for a result context region');
-  }
-  if (!contextRegion.snippet?.text) {
-    errors.push('No text set for a result context region');
-  }
-
-  if (errors.length > 0) {
-    return errors;
-  }
-
-  if (contextRegion.startLine! > contextRegion.endLine!) {
-    errors.push('Start line is greater than the end line in result context region');
-  }
-
-  return errors;
+  return {
+    startLine,
+    endLine,
+    text
+  } as CodeSnippet;
 }
 
-function validateRegion(region: sarif.Region | undefined): string[] {
-  const errors: string[] = [];
+function getHighlightedRegion(region: sarif.Region): HighlightedRegion {
+  const { startLine, startColumn, endLine, endColumn } = parseSarifRegion(region);
 
-  if (!region) {
-    errors.push('No region found in the SARIF result location');
-    return errors;
-  }
-  if (region.startLine === undefined) {
-    errors.push('No start line set for a result region');
-  }
-  if (region.startColumn === undefined) {
-    errors.push('No start column set for a result region');
-  }
-  if (region.endColumn === undefined) {
-    errors.push('No end column set for a result region');
-  }
-
-  if (errors.length > 0) {
-    return errors;
-  }
-
-  if (region.endLine! === region.startLine! &&
-    region.endColumn! < region.startColumn!) {
-    errors.push('End column is greater than the start column in a result region');
-  }
-
-  return errors;
+  return {
+    startLine,
+    startColumn,
+    endLine,
+    endColumn
+  };
 }
 
-function extractLocation(
-  location: sarif.Location
-): {
-  processedLocation: Location | undefined,
-  errors: string[]
-} {
-  const message = location.message?.text;
-
-  const errors = [];
-
-  const contextRegion = location.physicalLocation?.contextRegion;
-  const contextRegionErrors = validateContextRegion(contextRegion);
-  errors.push(...contextRegionErrors);
-
-  const region = location.physicalLocation?.region;
-  const regionErrors = validateRegion(region);
-  errors.push(...regionErrors);
-
-  const filePath = location.physicalLocation?.artifactLocation?.uri;
-  if (!filePath) {
-    errors.push('No file path found in the SARIF result location');
-  }
-
-  if (errors.length > 0) {
-    return { processedLocation: undefined, errors };
-  }
-
-  const processedLocation = {
-    message,
-    filePath,
-    codeSnippet: {
-      startLine: contextRegion!.startLine,
-      endLine: contextRegion!.endLine,
-      text: contextRegion!.snippet!.text
-    },
-    highlightedRegion: {
-      startLine: region!.startLine,
-      startColumn: region!.startColumn,
-      endLine: region!.endLine,
-      endColumn: region!.endColumn
-    }
-  } as Location;
-
-  return { processedLocation, errors: [] };
-}
-
-function extractCodeFlows(
+function getCodeFlows(
   result: sarif.Result
-): {
-  codeFlows: CodeFlow[],
-  errors: string[]
-} {
+): CodeFlow[] {
   const codeFlows = [];
-  const errors = [];
 
   if (result.codeFlows) {
     for (const codeFlow of result.codeFlows) {
       const threadFlows = [];
 
       for (const threadFlow of codeFlow.threadFlows) {
-        for (const location of threadFlow.locations) {
-          if (!location?.location) {
-            errors.push('No location found in a SARIF thread flow');
-          }
-          const { processedLocation, errors: locationErrors } = extractLocation(location.location!);
-          if (locationErrors.length > 0) {
-            errors.push(...locationErrors);
-            continue;
-          }
+        for (const threadFlowLocation of threadFlow.locations) {
+          const physicalLocation = threadFlowLocation!.location!.physicalLocation!;
+          const filePath = physicalLocation!.artifactLocation!.uri!;
+          const codeSnippet = getCodeSnippet(physicalLocation.contextRegion!);
+          const highlightedRegion = physicalLocation.region
+            ? getHighlightedRegion(physicalLocation.region)
+            : undefined;
 
           threadFlows.push({
-            filePath: processedLocation!.filePath,
-            codeSnippet: processedLocation!.codeSnippet,
-            highlightedRegion: processedLocation!.highlightedRegion,
-            message: processedLocation!.message
+            filePath,
+            codeSnippet,
+            highlightedRegion
           } as ThreadFlow);
         }
       }
@@ -308,44 +207,30 @@ function extractCodeFlows(
     }
   }
 
-  return { errors, codeFlows: [] };
+  return codeFlows;
 }
 
-function extractMessage(
-  messageText: string,
-  result: sarif.Result
-): {
-  message: AnalysisMessage | undefined,
-  errors: string[]
-} {
+function getMessage(result: sarif.Result): AnalysisMessage {
   const tokens: AnalysisMessageToken[] = [];
-  const errors: string[] = [];
 
+  const messageText = result.message!.text!;
   const messageParts = parseSarifPlainTextMessage(messageText);
+
   for (const messagePart of messageParts) {
     if (typeof messagePart === 'string') {
       tokens.push({ t: 'text', text: messagePart });
     } else {
-      const relatedLocation = result.relatedLocations?.find(rl => rl.id === messagePart.dest);
-      if (!relatedLocation) {
-        errors.push(`Could not find related location with id ${messagePart.dest}`);
-        continue;
-      }
-
-      const { processedLocation, errors: locationErrors } = extractLocation(relatedLocation);
-      if (locationErrors.length > 0) {
-        errors.push(...locationErrors);
-        continue;
-      }
-      else {
-        tokens.push({
-          t: 'location',
-          text: messagePart.text,
-          location: processedLocation!
-        });
-      }
+      const relatedLocation = result.relatedLocations!.find(rl => rl.id === messagePart.dest);
+      tokens.push({
+        t: 'location',
+        text: messagePart.text,
+        location: {
+          filePath: relatedLocation!.physicalLocation!.artifactLocation!.uri!,
+          highlightedRegion: getHighlightedRegion(relatedLocation!.physicalLocation!.region!),
+        }
+      });
     }
   }
 
-  return { message: { tokens }, errors };
+  return { tokens };
 }

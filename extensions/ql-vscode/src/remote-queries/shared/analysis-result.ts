@@ -25,7 +25,7 @@ export interface CodeSnippet {
 export interface HighlightedRegion {
   startLine: number;
   startColumn: number;
-  endLine: number | undefined;
+  endLine: number;
   endColumn: number;
 }
 
@@ -36,7 +36,7 @@ export interface CodeFlow {
 export interface ThreadFlow {
   filePath: string;
   codeSnippet: CodeSnippet;
-  highlightedRegion: HighlightedRegion;
+  highlightedRegion?: HighlightedRegion;
   message?: AnalysisMessage;
 }
 
@@ -56,14 +56,10 @@ export interface AnalysisMessageTextToken {
 export interface AnalysisMessageLocationToken {
   t: 'location';
   text: string;
-  location: Location;
-}
-
-export interface Location {
-  message?: string;
-  filePath: string;
-  codeSnippet: CodeSnippet;
-  highlightedRegion?: HighlightedRegion;
+  location: {
+    filePath: string;
+    highlightedRegion?: HighlightedRegion;
+  };
 }
 
 export type ResultSeverity = 'Recommendation' | 'Warning' | 'Error';

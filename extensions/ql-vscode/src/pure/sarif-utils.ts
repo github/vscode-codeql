@@ -127,33 +127,47 @@ export function parseSarifLocation(
       userVisibleFile
     } as ParsedSarifLocation;
   } else {
-    const region = physicalLocation.region;
-    // We assume that the SARIF we're given always has startLine
-    // This is not mandated by the SARIF spec, but should be true of
-    // SARIF output by our own tools.
-    const startLine = region.startLine!;
-
-    // These defaults are from SARIF 2.1.0 spec, section 3.30.2, "Text Regions"
-    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Ref493492556
-    const endLine = region.endLine === undefined ? startLine : region.endLine;
-    const startColumn = region.startColumn === undefined ? 1 : region.startColumn;
-
-    // We also assume that our tools will always supply `endColumn` field, which is
-    // fortunate, since the SARIF spec says that it defaults to the end of the line, whose
-    // length we don't know at this point in the code.
-    //
-    // It is off by one with respect to the way vscode counts columns in selections.
-    const endColumn = region.endColumn! - 1;
+    const region = parseSarifRegion(physicalLocation.region);
 
     return {
       uri: effectiveLocation,
       userVisibleFile,
-      startLine,
-      startColumn,
-      endLine,
-      endColumn,
+      ...region
     };
   }
+}
+
+export function parseSarifRegion(
+  region: Sarif.Region
+): {
+  startLine: number,
+  endLine: number,
+  startColumn: number,
+  endColumn: number
+} {
+  // We assume that the SARIF we're given always has startLine
+  // This is not mandated by the SARIF spec, but should be true of
+  // SARIF output by our own tools.
+  const startLine = region.startLine!;
+
+  // These defaults are from SARIF 2.1.0 spec, section 3.30.2, "Text Regions"
+  // https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Ref493492556
+  const endLine = region.endLine === undefined ? startLine : region.endLine;
+  const startColumn = region.startColumn === undefined ? 1 : region.startColumn;
+
+  // We also assume that our tools will always supply `endColumn` field, which is
+  // fortunate, since the SARIF spec says that it defaults to the end of the line, whose
+  // length we don't know at this point in the code.
+  //
+  // It is off by one with respect to the way vscode counts columns in selections.
+  const endColumn = region.endColumn! - 1;
+
+  return {
+    startLine,
+    startColumn,
+    endLine,
+    endColumn
+  };
 }
 
 export function isNoLocation(loc: ParsedSarifLocation): loc is NoLocation {
