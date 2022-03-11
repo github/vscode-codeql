@@ -1,5 +1,11 @@
 name: 'Dependency Review'
-on: [pull_request]
+on: 
+  - pull_request
+  - workflow_dispatch
+
+permissions:
+  actions: read
+  pull-requests: read
 
 jobs:
   dependency-review:
