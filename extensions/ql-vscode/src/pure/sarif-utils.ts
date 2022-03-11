@@ -145,9 +145,8 @@ export function parseSarifRegion(
   startColumn: number,
   endColumn: number
 } {
-  // We assume that the SARIF we're given always has startLine
-  // This is not mandated by the SARIF spec, but should be true of
-  // SARIF output by our own tools.
+  // The SARIF we're given should have a startLine, but we
+  // fall back to 1, just in case something has gone wrong.
   const startLine = region.startLine ?? 1;
 
   // These defaults are from SARIF 2.1.0 spec, section 3.30.2, "Text Regions"
@@ -155,9 +154,10 @@ export function parseSarifRegion(
   const endLine = region.endLine === undefined ? startLine : region.endLine;
   const startColumn = region.startColumn === undefined ? 1 : region.startColumn;
 
-  // We also assume that our tools will always supply `endColumn` field, which is
-  // fortunate, since the SARIF spec says that it defaults to the end of the line, whose
-  // length we don't know at this point in the code.
+  // Our tools should always supply `endColumn` field, which is fortunate, since 
+  // the SARIF spec says that it defaults to the end of the line, whose
+  // length we don't know at this point in the code. We fall back to 1,
+  // just in case something has gone wrong.
   //
   // It is off by one with respect to the way vscode counts columns in selections.
   const endColumn = (region.endColumn ?? 1) - 1;

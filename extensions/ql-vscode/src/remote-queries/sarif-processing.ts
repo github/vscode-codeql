@@ -23,19 +23,15 @@ export function extractAnalysisAlerts(
   const alerts: AnalysisAlert[] = [];
   const errors: string[] = [];
 
-  try {
-    for (const run of sarifLog.runs ?? []) {
-      for (const result of run.results ?? []) {
-        try {
-          alerts.push(...extractResultAlerts(run, result));
-        } catch (e) {
-          errors.push(`Error when processing SARIF result: ${e}`);
-          continue;
-        }
+  for (const run of sarifLog.runs ?? []) {
+    for (const result of run.results ?? []) {
+      try {
+        alerts.push(...extractResultAlerts(run, result));
+      } catch (e) {
+        errors.push(`Error when processing SARIF result: ${e}`);
+        continue;
       }
     }
-  } catch (e) {
-    errors.push(`Error when processing SARIF run: ${e}`);
   }
 
   return { alerts, errors };

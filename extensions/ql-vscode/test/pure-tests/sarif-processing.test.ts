@@ -378,7 +378,7 @@ describe('SARIF processing', () => {
   });
 
   describe('extractAnalysisAlerts', () => {
-    it('should return an error if no runs found in the SARIF', () => {
+    it('should not return any results if no runs found in the SARIF', () => {
       const sarif = {
         // Runs are missing here.
       } as sarif.Log;
@@ -386,11 +386,10 @@ describe('SARIF processing', () => {
       const result = extractAnalysisAlerts(sarif);
 
       expect(result).to.be.ok;
-      expect(result.errors.length).to.equal(1);
-      expectSarifRunParsingError(result.errors[0]);
+      expect(result.alerts.length).to.equal(0);
     });
 
-    it('should return errors for runs that have no results', () => {
+    it('should not return any results for runs that have no results', () => {
       const sarif = {
         runs: [
           {
@@ -405,8 +404,7 @@ describe('SARIF processing', () => {
       const result = extractAnalysisAlerts(sarif);
 
       expect(result).to.be.ok;
-      expect(result.errors.length).to.equal(1);
-      expectSarifRunParsingError(result.errors[0]);
+      expect(result.alerts.length).to.equal(0);
     });
 
     it('should return errors for results that have no message', () => {
@@ -588,10 +586,6 @@ describe('SARIF processing', () => {
       expect(message.tokens[2].text).to.equal('.');
     });
   });
-
-  function expectSarifRunParsingError(msg: string) {
-    expect(msg.startsWith('Error when processing SARIF run')).to.be.true;
-  }
 
   function expectResultParsingError(msg: string) {
     expect(msg.startsWith('Error when processing SARIF result')).to.be.true;
