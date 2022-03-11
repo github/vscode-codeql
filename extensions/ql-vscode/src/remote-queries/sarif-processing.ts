@@ -24,8 +24,8 @@ export function extractAnalysisAlerts(
   const errors: string[] = [];
 
   try {
-    for (const run of sarifLog.runs!) {
-      for (const result of run.results!) {
+    for (const run of sarifLog.runs ?? []) {
+      for (const result of run.results ?? []) {
         try {
           alerts.push(...extractResultAlerts(run, result));
         } catch (e) {
@@ -53,7 +53,7 @@ function extractResultAlerts(
   const codeFlows = getCodeFlows(result);
   const shortDescription = getShortDescription(rule, message!);
 
-  for (const location of result.locations!) {
+  for (const location of result.locations ?? []) {
     const physicalLocation = location.physicalLocation!;
     const filePath = physicalLocation.artifactLocation!.uri!;
     const codeSnippet = getCodeSnippet(physicalLocation.contextRegion!);
