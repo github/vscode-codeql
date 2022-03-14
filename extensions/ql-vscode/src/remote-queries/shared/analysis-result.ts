@@ -19,10 +19,15 @@ export interface AnalysisAlert {
   message: AnalysisMessage;
   shortDescription: string;
   severity: ResultSeverity;
-  filePath: string;
+  fileLink: FileLink;
   codeSnippet: CodeSnippet;
   highlightedRegion?: HighlightedRegion;
   codeFlows: CodeFlow[];
+}
+
+export interface FileLink {
+  fileLinkPrefix: string;
+  filePath: string;
 }
 
 export interface CodeSnippet {
@@ -43,7 +48,7 @@ export interface CodeFlow {
 }
 
 export interface ThreadFlow {
-  filePath: string;
+  fileLink: FileLink;
   codeSnippet: CodeSnippet;
   highlightedRegion?: HighlightedRegion;
   message?: AnalysisMessage;
@@ -66,7 +71,7 @@ export interface AnalysisMessageLocationToken {
   t: 'location';
   text: string;
   location: {
-    filePath: string;
+    fileLink: FileLink;
     highlightedRegion?: HighlightedRegion;
   };
 }

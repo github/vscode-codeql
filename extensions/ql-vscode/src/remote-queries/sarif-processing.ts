@@ -15,7 +15,8 @@ import {
 const defaultSeverity = 'Warning';
 
 export function extractAnalysisAlerts(
-  sarifLog: sarif.Log
+  sarifLog: sarif.Log,
+  fileLinkPrefix: string
 ): {
   alerts: AnalysisAlert[],
   errors: string[]
@@ -26,7 +27,7 @@ export function extractAnalysisAlerts(
   for (const run of sarifLog.runs ?? []) {
     for (const result of run.results ?? []) {
       try {
-        alerts.push(...extractResultAlerts(run, result));
+        alerts.push(...extractResultAlerts(run, result, fileLinkPrefix));
       } catch (e) {
         errors.push(`Error when processing SARIF result: ${e}`);
         continue;
@@ -39,14 +40,15 @@ export function extractAnalysisAlerts(
 
 function extractResultAlerts(
   run: sarif.Run,
-  result: sarif.Result
+  result: sarif.Result,
+  fileLinkPrefix: string
 ): AnalysisAlert[] {
   const alerts: AnalysisAlert[] = [];
 
-  const message = getMessage(result);
+  const message = getMessage(result, fileLinkPrefix);
   const rule = tryGetRule(run, result);
   const severity = tryGetSeverity(run, result, rule) || defaultSeverity;
-  const codeFlows = getCodeFlows(result);
+  const codeFlows = getCodeFlows(result, fileLinkPrefix);
   const shortDescription = getShortDescription(rule, message!);
 
   for (const location of result.locations ?? []) {
@@ -60,7 +62,10 @@ function extractResultAlerts(
     const analysisAlert: AnalysisAlert = {
       message,
       shortDescription,
-      filePath,
+      fileLink: {
+        fileLinkPrefix,
+        filePath,
+      },
       severity,
       codeSnippet,
       highlightedRegion,
@@ -174,7 +179,8 @@ function getHighlightedRegion(region: sarif.Region): HighlightedRegion {
 }
 
 function getCodeFlows(
-  result: sarif.Result
+  result: sarif.Result,
+  fileLinkPrefix: string
 ): CodeFlow[] {
   const codeFlows = [];
 
@@ -192,7 +198,10 @@ function getCodeFlows(
             : undefined;
 
           threadFlows.push({
-            filePath,
+            fileLink: {
+              fileLinkPrefix,
+              filePath,
+            },
             codeSnippet,
             highlightedRegion
           } as ThreadFlow);
@@ -206,7 +215,7 @@ function getCodeFlows(
   return codeFlows;
 }
 
-function getMessage(result: sarif.Result): AnalysisMessage {
+function getMessage(result: sarif.Result, fileLinkPrefix: string): AnalysisMessage {
   const tokens: AnalysisMessageToken[] = [];
 
   const messageText = result.message!.text!;
@@ -221,7 +230,10 @@ function getMessage(result: sarif.Result): AnalysisMessage {
         t: 'location',
         text: messagePart.text,
         location: {
-          filePath: relatedLocation!.physicalLocation!.artifactLocation!.uri!,
+          fileLink: {
+            fileLinkPrefix: fileLinkPrefix,
+            filePath: relatedLocation!.physicalLocation!.artifactLocation!.uri!,
+          },
           highlightedRegion: getHighlightedRegion(relatedLocation!.physicalLocation!.region!),
         }
       });
