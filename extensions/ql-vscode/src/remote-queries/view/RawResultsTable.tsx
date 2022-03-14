@@ -3,6 +3,7 @@ import { Box, Link } from '@primer/react';
 import { CellValue, RawResultSet, ResultSetSchema } from '../../pure/bqrs-cli-types';
 import { useState } from 'react';
 import TextButton from './TextButton';
+import { convertNonPrintableChars } from '../../text-utils';
 
 const numOfResultsInContractedMode = 5;
 
@@ -34,11 +35,11 @@ const Cell = ({
     case 'string':
     case 'number':
     case 'boolean':
-      return <span>{value.toString()}</span>;
+      return <span>{convertNonPrintableChars(value.toString())}</span>;
     case 'object':
       // TODO: This will be converted to a proper link once there
       // is support for populating link URLs.
-      return <Link>{value.label}</Link>;
+      return <Link>{convertNonPrintableChars(value.label)}</Link>;
   }
 };
 
