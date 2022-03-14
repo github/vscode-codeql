@@ -890,7 +890,7 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.showFakeRemoteQueryResults', async () => {
-      const analysisResultsManager = new AnalysesResultsManager(ctx, queryStorageDir, logger);
+      const analysisResultsManager = new AnalysesResultsManager(ctx, cliServer, queryStorageDir, logger);
       const rqim = new RemoteQueriesInterfaceManager(ctx, logger, analysisResultsManager);
       await rqim.showResults(sampleData.sampleRemoteQuery, sampleData.sampleRemoteQueryResult);
 

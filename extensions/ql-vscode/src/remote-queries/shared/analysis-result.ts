@@ -1,9 +1,18 @@
+import { RawResultSet, ResultSetSchema } from '../../pure/bqrs-cli-types';
+
 export type AnalysisResultStatus = 'InProgress' | 'Completed' | 'Failed';
 
 export interface AnalysisResults {
   nwo: string;
   status: AnalysisResultStatus;
   interpretedResults: AnalysisAlert[];
+  rawResults?: AnalysisRawResults;
+}
+
+export interface AnalysisRawResults {
+  schema: ResultSetSchema,
+  resultSet: RawResultSet,
+  capped: boolean;
 }
 
 export interface AnalysisAlert {
