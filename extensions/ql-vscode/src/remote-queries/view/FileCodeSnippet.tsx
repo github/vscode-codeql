@@ -1,6 +1,6 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { CodeSnippet, HighlightedRegion, ResultSeverity } from '../shared/analysis-result';
+import { CodeSnippet, HighlightedRegion, AnalysisMessage, ResultSeverity } from '../shared/analysis-result';
 import { Box, Link } from '@primer/react';
 import VerticalSpace from './VerticalSpace';
 
@@ -75,19 +75,19 @@ const HighlightedLine = ({ text }: { text: string }) => {
 };
 
 const Message = ({
-  messageText,
+  message,
   currentLineNumber,
   highlightedRegion,
   borderColor,
   children
 }: {
-  messageText: string,
+  message: AnalysisMessage,
   currentLineNumber: number,
-  highlightedRegion: HighlightedRegion,
+  highlightedRegion?: HighlightedRegion,
   borderColor: string,
   children: React.ReactNode
 }) => {
-  if (highlightedRegion.startLine !== currentLineNumber) {
+  if (!highlightedRegion || highlightedRegion.startLine !== currentLineNumber) {
     return <></>;
   }
 
@@ -101,7 +101,16 @@ const Message = ({
       paddingTop="1em"
       paddingBottom="1em">
       <MessageText>
-        {messageText}
+        {message.tokens.map((token, index) => {
+          switch (token.t) {
+            case 'text':
+              return <span key={`token-${index}`}>{token.text}</span>;
+            case 'location':
+              return <Link key={`token-${index}`} href='TODO'>{token.text}</Link>;
+            default:
+              return <></>;
+          }
+        })}
         {children && <>
           <VerticalSpace size={2} />
           {children}
@@ -120,9 +129,9 @@ const CodeLine = ({
 }: {
   line: string,
   lineNumber: number,
-  highlightedRegion: HighlightedRegion
+  highlightedRegion?: HighlightedRegion
 }) => {
-  if (!shouldHighlightLine(lineNumber, highlightedRegion)) {
+  if (!highlightedRegion || !shouldHighlightLine(lineNumber, highlightedRegion)) {
     return <PlainLine text={line} />;
   }
 
@@ -165,9 +174,9 @@ const FileCodeSnippet = ({
 }: {
   filePath: string,
   codeSnippet: CodeSnippet,
-  highlightedRegion: HighlightedRegion,
+  highlightedRegion?: HighlightedRegion,
   severity?: ResultSeverity,
-  message?: string,
+  message?: AnalysisMessage,
   messageChildren?: React.ReactNode,
 }) => {
 
@@ -184,7 +193,7 @@ const FileCodeSnippet = ({
         {code.map((line, index) => (
           <div key={index}>
             {message && severity && <Message
-              messageText={message}
+              message={message}
               currentLineNumber={startingLine + index}
               highlightedRegion={highlightedRegion}
               borderColor={getSeverityColor(severity)}>
