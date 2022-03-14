@@ -675,7 +675,7 @@ export async function compileAndRunQueryAgainstDatabase(
   progress: ProgressCallback,
   token: CancellationToken,
   templates?: messages.TemplateDefinitions,
-  queryInfo?: LocalQueryInfo,
+  queryInfo?: LocalQueryInfo, // May be omitted for queries not initiated by the user. If omitted we won't create a structured log for the query.
 ): Promise<QueryWithResults> {
   if (!dbItem.contents || !dbItem.contents.dbSchemeUri) {
     throw new Error(`Database ${dbItem.databaseUri} does not have a CodeQL database scheme.`);
