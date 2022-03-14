@@ -369,7 +369,7 @@ export function RemoteQueries(): JSX.Element {
     return <div>Waiting for results to load.</div>;
   }
 
-  const showAnalysesResults = false;
+  const showAnalysesResults = true;
 
   try {
     return <div>
