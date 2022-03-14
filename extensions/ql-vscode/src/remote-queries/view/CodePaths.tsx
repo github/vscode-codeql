@@ -71,7 +71,7 @@ const CodePath = ({
 
         <VerticalSpace size={2} />
         <FileCodeSnippet
-          filePath={threadFlow.filePath}
+          fileLink={threadFlow.fileLink}
           codeSnippet={threadFlow.codeSnippet}
           highlightedRegion={threadFlow.highlightedRegion}
           severity={severity}
@@ -82,7 +82,7 @@ const CodePath = ({
 };
 
 const getCodeFlowName = (codeFlow: CodeFlow) => {
-  const filePath = codeFlow.threadFlows[codeFlow.threadFlows.length - 1].filePath;
+  const filePath = codeFlow.threadFlows[codeFlow.threadFlows.length - 1].fileLink.filePath;
   return filePath.substring(filePath.lastIndexOf('/') + 1);
 };
 

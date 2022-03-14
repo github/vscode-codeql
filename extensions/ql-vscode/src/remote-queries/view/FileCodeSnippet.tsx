@@ -1,12 +1,20 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { CodeSnippet, HighlightedRegion, AnalysisMessage, ResultSeverity } from '../shared/analysis-result';
+import { CodeSnippet, FileLink, HighlightedRegion, AnalysisMessage, ResultSeverity } from '../shared/analysis-result';
 import { Box, Link } from '@primer/react';
 import VerticalSpace from './VerticalSpace';
 
 const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
 const warningColor = '#966C23';
 const highlightColor = '#534425';
+
+const createFileLink = (fileLink: FileLink, startLine?: number, endLine?: number) => {
+  if (startLine && endLine) {
+    return `${fileLink.fileLinkPrefix}/${fileLink.filePath}#L${startLine}-L${endLine}`;
+  } else {
+    return `${fileLink.fileLinkPrefix}/${fileLink.filePath}`;
+  }
+};
 
 const getSeverityColor = (severity: ResultSeverity) => {
   switch (severity) {
@@ -106,7 +114,11 @@ const Message = ({
             case 'text':
               return <span key={`token-${index}`}>{token.text}</span>;
             case 'location':
-              return <Link key={`token-${index}`} href='TODO'>{token.text}</Link>;
+              return <Link
+                key={`token-${index}`}
+                href={createFileLink(token.location.fileLink, token.location.highlightedRegion?.startLine, token.location.highlightedRegion?.endLine)}>
+                {token.text}
+              </Link>;
             default:
               return <></>;
           }
@@ -165,14 +177,14 @@ const CodeLine = ({
 };
 
 const FileCodeSnippet = ({
-  filePath,
+  fileLink,
   codeSnippet,
   highlightedRegion,
   severity,
   message,
   messageChildren,
 }: {
-  filePath: string,
+  fileLink: FileLink,
   codeSnippet: CodeSnippet,
   highlightedRegion?: HighlightedRegion,
   severity?: ResultSeverity,
@@ -183,11 +195,12 @@ const FileCodeSnippet = ({
   const code = codeSnippet.text.split('\n');
 
   const startingLine = codeSnippet.startLine;
+  const endingLine = codeSnippet.endLine;
 
   return (
     <Container>
       <TitleContainer>
-        <Link>{filePath}</Link>
+        <Link href={createFileLink(fileLink, startingLine, endingLine)}>{fileLink.filePath}</Link>
       </TitleContainer>
       <CodeContainer>
         {code.map((line, index) => (

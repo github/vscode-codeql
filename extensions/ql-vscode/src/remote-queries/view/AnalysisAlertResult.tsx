@@ -7,7 +7,7 @@ const AnalysisAlertResult = ({ alert }: { alert: AnalysisAlert }) => {
   const showPathsLink = alert.codeFlows.length > 0;
 
   return <FileCodeSnippet
-    filePath={alert.filePath}
+    fileLink={alert.fileLink}
     codeSnippet={alert.codeSnippet}
     highlightedRegion={alert.highlightedRegion}
     severity={alert.severity}
