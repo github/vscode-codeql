@@ -767,13 +767,15 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
   ) {
-    // Local queries only
-    if (!this.assertSingleQuery(multiSelect) || singleItem?.t !== 'local') {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    // Only applicable to an individual local query
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'local') {
       return;
     }
 
-    if (singleItem.evalLogLocation) {
-      await this.tryOpenExternalFile(singleItem.evalLogLocation);
+    if (finalSingleItem.evalLogLocation) {
+      await this.tryOpenExternalFile(finalSingleItem.evalLogLocation);
     } else {
       this.warnNoEvalLog();
     }
@@ -783,17 +785,18 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
   ) {
-    // Local queries only
-    if (!this.assertSingleQuery(multiSelect) || singleItem?.t !== 'local') {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    // Only applicable to an individual local query
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'local') {
       return;
     }
 
-    if (singleItem.evalLogLocation) {
-      const summaryLocation = singleItem.evalLogLocation + '.summary';
-      if (!fs.existsSync(summaryLocation)) {
-        await this.qs.cliServer.generateLogSummary(singleItem.evalLogLocation, summaryLocation);
+    if (finalSingleItem.evalLogLocation) {
+      if (!fs.existsSync(finalSingleItem.evalLogSummaryLocation)) {
+        await this.qs.cliServer.generateLogSummary(finalSingleItem.evalLogLocation, finalSingleItem.evalLogSummaryLocation);
       }
-      await this.tryOpenExternalFile(summaryLocation);
+      await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
     } else {
       this.warnNoEvalLog();
     }
