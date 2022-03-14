@@ -12,6 +12,7 @@ import { RemoteQueryFailureIndexItem, RemoteQueryResultIndex, RemoteQuerySuccess
 interface ApiSuccessIndexItem {
   nwo: string;
   id: string;
+  sha?: string;
   results_count: number;
   bqrs_file_size: number;
   sarif_file_size?: number;
@@ -51,6 +52,7 @@ export async function getRemoteQueryIndex(
       id: item.id.toString(),
       artifactId: artifactId,
       nwo: item.nwo,
+      sha: item.sha,
       resultCount: item.results_count,
       bqrsFileSize: item.bqrs_file_size,
       sarifFileSize: item.sarif_file_size

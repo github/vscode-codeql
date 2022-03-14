@@ -181,6 +181,7 @@ export class RemoteQueriesManager extends DisposableObject {
       .slice(0, autoDownloadMaxCount)
       .map(a => ({
         nwo: a.nwo,
+        databaseSha: a.databaseSha,
         resultCount: a.resultCount,
         downloadLink: a.downloadLink,
         fileSize: String(a.fileSizeInBytes)
@@ -196,6 +197,7 @@ export class RemoteQueriesManager extends DisposableObject {
 
     const analysisSummaries = resultIndex.successes.map(item => ({
       nwo: item.nwo,
+      databaseSha: item.sha || 'HEAD',
       resultCount: item.resultCount,
       fileSizeInBytes: item.sarifFileSize ? item.sarifFileSize : item.bqrsFileSize,
       downloadLink: {

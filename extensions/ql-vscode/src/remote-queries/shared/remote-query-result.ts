@@ -19,6 +19,7 @@ export interface RemoteQueryResult {
 
 export interface AnalysisSummary {
   nwo: string,
+  databaseSha: string,
   resultCount: number,
   downloadLink: DownloadLink,
   fileSize: string,
