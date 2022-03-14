@@ -8,6 +8,7 @@ export interface RemoteQuerySuccessIndexItem {
   id: string;
   artifactId: number;
   nwo: string;
+  sha?: string;
   resultCount: number;
   bqrsFileSize: number;
   sarifFileSize?: number;

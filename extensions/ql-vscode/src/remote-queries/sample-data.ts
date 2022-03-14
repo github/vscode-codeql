@@ -43,6 +43,7 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
   analysisSummaries: [
     {
       nwo: 'big-corp/repo1',
+      databaseSha: '1234567890',
       resultCount: 85,
       fileSizeInBytes: 14123,
       downloadLink: {
@@ -54,6 +55,7 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
     },
     {
       nwo: 'big-corp/repo2',
+      databaseSha: '1234567890',
       resultCount: 20,
       fileSizeInBytes: 8698,
       downloadLink: {
@@ -65,6 +67,7 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
     },
     {
       nwo: 'big-corp/repo3',
+      databaseSha: '1234567890',
       resultCount: 8,
       fileSizeInBytes: 4123,
       downloadLink: {
@@ -76,6 +79,7 @@ export const sampleRemoteQueryResult: RemoteQueryResult = {
     },
     {
       nwo: 'big-corp/repo4',
+      databaseSha: '1234567890',
       resultCount: 3,
       fileSizeInBytes: 3313,
       downloadLink: {
