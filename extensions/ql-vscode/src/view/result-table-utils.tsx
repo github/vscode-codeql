@@ -5,6 +5,7 @@ import { RawResultsSortState, QueryMetadata, SortDirection } from '../pure/inter
 import { assertNever } from '../pure/helpers-pure';
 import { ResultSet } from '../pure/interface-types';
 import { vscode } from './vscode-api';
+import { convertNonPrintableChars } from '../text-utils';
 
 export interface ResultTableProps {
   resultSet: ResultSet;
@@ -37,9 +38,6 @@ export const oddRowClassName = 'vscode-codeql__result-table-row--odd';
 export const pathRowClassName = 'vscode-codeql__result-table-row--path';
 export const selectedRowClassName = 'vscode-codeql__result-table-row--selected';
 
-const CONTROL_CODE = '\u001F'.codePointAt(0)!;
-const CONTROL_LABEL = '\u2400'.codePointAt(0)!;
-
 export function jumpToLocationHandler(
   loc: ResolvableLocationValue,
   databaseUri: string,
@@ -70,30 +68,6 @@ export function openFile(filePath: string): void {
   });
 }
 
-function convertedNonprintableChars(label: string) {
-  // If the label was empty, use a placeholder instead, so the link is still clickable.
-  if (!label) {
-    return '[empty string]';
-  } else if (label.match(/^\s+$/)) {
-    return `[whitespace: "${label}"]`;
-  } else {
-    /**
-     * If the label contains certain non-printable characters, loop through each
-     * character and replace it with the cooresponding unicode control label.
-    */
-    const convertedLabelArray: any[] = [];
-    for (let i = 0; i < label.length; i++) {
-      const labelCheck = label.codePointAt(i)!;
-      if (labelCheck <= CONTROL_CODE) {
-        convertedLabelArray[i] = String.fromCodePoint(labelCheck + CONTROL_LABEL);
-      } else {
-        convertedLabelArray[i] = label.charAt(i);
-      }
-    }
-    return convertedLabelArray.join('');
-  }
-}
-
 /**
  * Render a location as a link which when clicked displays the original location.
  */
@@ -105,7 +79,7 @@ export function renderLocation(
   callback?: () => void
 ): JSX.Element {
 
-  const displayLabel = convertedNonprintableChars(label!);
+  const displayLabel = convertNonPrintableChars(label!);
 
   if (loc === undefined) {
     return <span>{displayLabel}</span>;
