@@ -302,7 +302,7 @@ export async function runRemoteQuery(
       message: 'Sending request'
     });
 
-    const workflowRunId = await runRemoteQueriesApiRequest(credentials, 'main', language, repositories, owner, repo, base64Pack, dryRun);
+    const workflowRunId = await runRemoteQueriesApiRequest(credentials, 'get-db-sha', language, repositories, owner, repo, base64Pack, dryRun);
     const queryStartTime = Date.now();
     const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
 
