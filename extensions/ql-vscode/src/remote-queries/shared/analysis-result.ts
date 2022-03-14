@@ -10,8 +10,9 @@ export interface AnalysisResults {
 }
 
 export interface AnalysisRawResults {
-  schema: ResultSetSchema,
-  resultSet: RawResultSet,
+  schema: ResultSetSchema;
+  resultSet: RawResultSet;
+  fileLinkPrefix: string;
   capped: boolean;
 }
 

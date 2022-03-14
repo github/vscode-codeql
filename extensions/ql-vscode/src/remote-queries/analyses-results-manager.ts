@@ -133,7 +133,7 @@ export class AnalysesResultsManager {
         status: 'Completed'
       };
     } else if (fileExtension === '.bqrs') {
-      const queryResults = await this.readBqrsResults(artifactPath);
+      const queryResults = await this.readBqrsResults(artifactPath, fileLinkPrefix);
       newAnaysisResults = {
         ...analysisResults,
         rawResults: queryResults,
@@ -150,8 +150,8 @@ export class AnalysesResultsManager {
     void publishResults([...resultsForQuery]);
   }
 
-  private async readBqrsResults(filePath: string): Promise<AnalysisRawResults> {
-    return await extractRawResults(this.cliServer, this.logger, filePath);
+  private async readBqrsResults(filePath: string, fileLinkPrefix: string): Promise<AnalysisRawResults> {
+    return await extractRawResults(this.cliServer, this.logger, filePath, fileLinkPrefix);
   }
 
   private async readSarifResults(filePath: string, fileLinkPrefix: string): Promise<AnalysisAlert[]> {

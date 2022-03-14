@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Box, Link } from '@primer/react';
 import { CellValue, RawResultSet, ResultSetSchema } from '../../pure/bqrs-cli-types';
+import { tryGetRemoteLocation } from '../../pure/bqrs-utils';
 import { useState } from 'react';
 import TextButton from './TextButton';
 import { convertNonPrintableChars } from '../../text-utils';
@@ -8,9 +9,11 @@ import { convertNonPrintableChars } from '../../text-utils';
 const numOfResultsInContractedMode = 5;
 
 const Row = ({
-  row
+  row,
+  fileLinkPrefix
 }: {
-  row: CellValue[]
+  row: CellValue[],
+  fileLinkPrefix: string
 }) => (
   <>
     {row.map((cell, cellIndex) => (
@@ -20,35 +23,39 @@ const Row = ({
         justifyContent="center"
         alignItems="center"
         p={2}>
-        <Cell value={cell} />
+        <Cell value={cell} fileLinkPrefix={fileLinkPrefix} />
       </Box>
     ))}
   </>
 );
 
 const Cell = ({
-  value
+  value,
+  fileLinkPrefix
 }: {
-  value: CellValue
+  value: CellValue,
+  fileLinkPrefix: string
 }) => {
   switch (typeof value) {
     case 'string':
     case 'number':
     case 'boolean':
       return <span>{convertNonPrintableChars(value.toString())}</span>;
-    case 'object':
-      // TODO: This will be converted to a proper link once there
-      // is support for populating link URLs.
-      return <Link>{convertNonPrintableChars(value.label)}</Link>;
+    case 'object': {
+      const url = tryGetRemoteLocation(value.url, fileLinkPrefix);
+      return <Link href={url}>{convertNonPrintableChars(value.label)}</Link>;
+    }
   }
 };
 
 const RawResultsTable = ({
   schema,
-  results
+  results,
+  fileLinkPrefix
 }: {
   schema: ResultSetSchema,
-  results: RawResultSet
+  results: RawResultSet,
+  fileLinkPrefix: string
 }) => {
   const [tableExpanded, setTableExpanded] = useState(false);
   const numOfResultsToShow = tableExpanded ? results.rows.length : numOfResultsInContractedMode;
@@ -67,7 +74,7 @@ const RawResultsTable = ({
         maxWidth="45rem"
         p={2}>
         {results.rows.slice(0, numOfResultsToShow).map((row, rowIndex) => (
-          <Row key={rowIndex} row={row} />
+          <Row key={rowIndex} row={row} fileLinkPrefix={fileLinkPrefix} />
         ))}
       </Box>
       {

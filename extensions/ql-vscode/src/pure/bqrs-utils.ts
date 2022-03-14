@@ -93,3 +93,19 @@ export function isWholeFileLoc(loc: UrlValue): loc is WholeFileLocation {
 export function isStringLoc(loc: UrlValue): loc is string {
   return typeof loc === 'string';
 }
+
+export function tryGetRemoteLocation(
+  loc: UrlValue | undefined,
+  fileLinkPrefix: string
+): string | undefined {
+  if (loc === undefined) {
+    return undefined;
+  } else if (isWholeFileLoc(loc) || isLineColumnLoc(loc)) {
+    return fileLinkPrefix + loc.uri.replace(FILE_LOCATION_REGEX, '');
+  } else if (isStringLoc(loc)) {
+    const location = tryGetLocationFromString(loc);
+    return location?.uri;
+  } else {
+    return undefined;
+  }
+}

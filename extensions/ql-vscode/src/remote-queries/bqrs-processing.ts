@@ -7,7 +7,8 @@ import { MAX_RAW_RESULTS } from './shared/result-limits';
 export async function extractRawResults(
   cliServer: CodeQLCliServer,
   logger: Logger,
-  filePath: string
+  filePath: string,
+  fileLinkPrefix: string,
 ): Promise<AnalysisRawResults> {
   const bqrsInfo = await cliServer.bqrsInfo(filePath);
   const resultSets = bqrsInfo['result-sets'];
@@ -30,5 +31,5 @@ export async function extractRawResults(
 
   const capped = !!chunk.next;
 
-  return { schema, resultSet, capped };
+  return { schema, resultSet, fileLinkPrefix, capped };
 }
