@@ -312,6 +312,14 @@ export class LocalQueryInfo {
     }
   }
 
+  /**
+   * Return the location of a query's evaluator log summary. This file may not exist yet,
+   * in which case it can be created by invoking `codeql generate log-summary`.
+   */
+  get evalLogSummaryLocation(): string {
+    return this.evalLogLocation + '.summary';
+  }
+
   get completed(): boolean {
     return !!this.completedQuery;
   }
