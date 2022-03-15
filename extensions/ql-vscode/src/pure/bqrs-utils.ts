@@ -101,7 +101,12 @@ export function tryGetRemoteLocation(
   if (loc === undefined) {
     return undefined;
   } else if (isWholeFileLoc(loc) || isLineColumnLoc(loc)) {
-    return fileLinkPrefix + loc.uri.replace(FILE_LOCATION_REGEX, '');
+    // Trim the location
+    // file:/home/runner/work/turboscan/turboscan/cmd/enumgenerator/main.go
+    const parts = loc.uri.split('/');
+    const trimmedLocation = parts.slice(6, parts.length).join('/');
+    return `${fileLinkPrefix}\\${trimmedLocation}`;
+
   } else if (isStringLoc(loc)) {
     const location = tryGetLocationFromString(loc);
     return location?.uri;
