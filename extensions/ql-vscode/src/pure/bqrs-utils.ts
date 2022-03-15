@@ -4,6 +4,7 @@ import {
   LineColumnLocation,
   WholeFileLocation
 } from './bqrs-cli-types';
+import { createRemoteFileRef } from './location-link-utils';
 
 /**
  * The CodeQL filesystem libraries use this pattern in `getURL()` predicates
@@ -98,19 +99,20 @@ export function tryGetRemoteLocation(
   loc: UrlValue | undefined,
   fileLinkPrefix: string
 ): string | undefined {
-  if (loc === undefined) {
-    return undefined;
-  } else if (isWholeFileLoc(loc) || isLineColumnLoc(loc)) {
-    // Trim the location
-    // file:/home/runner/work/turboscan/turboscan/cmd/enumgenerator/main.go
-    const parts = loc.uri.split('/');
-    const trimmedLocation = parts.slice(6, parts.length).join('/');
-    return `${fileLinkPrefix}\\${trimmedLocation}`;
-
-  } else if (isStringLoc(loc)) {
-    const location = tryGetLocationFromString(loc);
-    return location?.uri;
-  } else {
+  const resolvableLocation = tryGetResolvableLocation(loc);
+  if (!resolvableLocation) {
     return undefined;
   }
+
+  // Remote locations have the following format:
+  // file:/home/runner/work/<repo>/<repo/relative/path/to/file
+  // So we need to drop the first 6 parts of the path.
+  const locationParts = resolvableLocation.uri.split('/');
+  const trimmedLocation = locationParts.slice(6, locationParts.length).join('/');
+
+  return createRemoteFileRef(
+    fileLinkPrefix,
+    trimmedLocation,
+    resolvableLocation.startLine,
+    resolvableLocation.endLine);
 }

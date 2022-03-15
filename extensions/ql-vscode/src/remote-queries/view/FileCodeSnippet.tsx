@@ -3,18 +3,11 @@ import styled from 'styled-components';
 import { CodeSnippet, FileLink, HighlightedRegion, AnalysisMessage, ResultSeverity } from '../shared/analysis-result';
 import { Box, Link } from '@primer/react';
 import VerticalSpace from './VerticalSpace';
+import { createRemoteFileRef } from '../../pure/location-link-utils';
 
 const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
 const warningColor = '#966C23';
 const highlightColor = '#534425';
-
-const createFileLink = (fileLink: FileLink, startLine?: number, endLine?: number) => {
-  if (startLine && endLine) {
-    return `${fileLink.fileLinkPrefix}/${fileLink.filePath}#L${startLine}-L${endLine}`;
-  } else {
-    return `${fileLink.fileLinkPrefix}/${fileLink.filePath}`;
-  }
-};
 
 const getSeverityColor = (severity: ResultSeverity) => {
   switch (severity) {
@@ -116,7 +109,11 @@ const Message = ({
             case 'location':
               return <Link
                 key={`token-${index}`}
-                href={createFileLink(token.location.fileLink, token.location.highlightedRegion?.startLine, token.location.highlightedRegion?.endLine)}>
+                href={createRemoteFileRef(
+                  token.location.fileLink.fileLinkPrefix,
+                  token.location.fileLink.filePath,
+                  token.location.highlightedRegion?.startLine,
+                  token.location.highlightedRegion?.endLine)}>
                 {token.text}
               </Link>;
             default:
@@ -197,10 +194,16 @@ const FileCodeSnippet = ({
   const startingLine = codeSnippet.startLine;
   const endingLine = codeSnippet.endLine;
 
+  const titleFileUri = createRemoteFileRef(
+    fileLink.fileLinkPrefix,
+    fileLink.filePath,
+    startingLine,
+    endingLine);
+
   return (
     <Container>
       <TitleContainer>
-        <Link href={createFileLink(fileLink, startingLine, endingLine)}>{fileLink.filePath}</Link>
+        <Link href={titleFileUri}>{fileLink.filePath}</Link>
       </TitleContainer>
       <CodeContainer>
         {code.map((line, index) => (
