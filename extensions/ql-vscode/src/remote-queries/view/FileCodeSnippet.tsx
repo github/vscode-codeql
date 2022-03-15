@@ -216,7 +216,8 @@ const FileCodeSnippet = ({
                 paddingTop="0.01em"
                 paddingLeft="1.5em"
                 paddingRight="0.5em"
-                paddingBottom="0.2em">
+                paddingBottom="0.2em"
+                sx={{ wordBreak: 'break-word' }}>
                 <CodeLine
                   line={line}
                   lineNumber={startingLine + index}
