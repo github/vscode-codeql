@@ -319,7 +319,7 @@ export class RemoteQueriesInterfaceManager {
 
     return sortedAnalysisSummaries.map((analysisResult) => ({
       nwo: analysisResult.nwo,
-      databaseSha: analysisResult.databaseSha,
+      databaseSha: analysisResult.databaseSha || 'HEAD',
       resultCount: analysisResult.resultCount,
       downloadLink: analysisResult.downloadLink,
       fileSize: this.formatFileSize(analysisResult.fileSizeInBytes)
