@@ -575,7 +575,10 @@ describe('SARIF processing', () => {
       expect(message.tokens[1].t).to.equal('location');
       expect(message.tokens[1].text).to.equal('absolute path');
       expect((message.tokens[1] as AnalysisMessageLocationToken).location).to.deep.equal({
-        filePath: 'npm-packages/meteor-installer/config.js',
+        fileLink: {
+          fileLinkPrefix: fakefileLinkPrefix,
+          filePath: 'npm-packages/meteor-installer/config.js',
+        },
         highlightedRegion: {
           startLine: 35,
           startColumn: 20,
