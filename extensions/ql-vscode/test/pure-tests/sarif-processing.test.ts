@@ -378,12 +378,13 @@ describe('SARIF processing', () => {
   });
 
   describe('extractAnalysisAlerts', () => {
+    const fakefileLinkPrefix = 'https://example.com';
     it('should not return any results if no runs found in the SARIF', () => {
       const sarif = {
         // Runs are missing here.
       } as sarif.Log;
 
-      const result = extractAnalysisAlerts(sarif);
+      const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
       expect(result).to.be.ok;
       expect(result.alerts.length).to.equal(0);
@@ -401,7 +402,7 @@ describe('SARIF processing', () => {
         ]
       } as sarif.Log;
 
-      const result = extractAnalysisAlerts(sarif);
+      const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
       expect(result).to.be.ok;
       expect(result.alerts.length).to.equal(0);
@@ -411,7 +412,7 @@ describe('SARIF processing', () => {
       const sarif = buildValidSarifLog();
       sarif.runs![0]!.results![0]!.message.text = undefined;
 
-      const result = extractAnalysisAlerts(sarif);
+      const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
       expect(result).to.be.ok;
       expect(result.errors.length).to.equal(1);
@@ -422,7 +423,7 @@ describe('SARIF processing', () => {
       const sarif = buildValidSarifLog();
       sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.contextRegion = undefined;
 
-      const result = extractAnalysisAlerts(sarif);
+      const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
       expect(result).to.be.ok;
       expect(result.errors.length).to.equal(1);
@@ -433,7 +434,7 @@ describe('SARIF processing', () => {
       const sarif = buildValidSarifLog();
       sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.region = undefined;
 
-      const result = extractAnalysisAlerts(sarif);
+      const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
       expect(result).to.be.ok;
       expect(result.alerts.length).to.equal(1);
@@ -443,7 +444,7 @@ describe('SARIF processing', () => {
       const sarif = buildValidSarifLog();
       sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.artifactLocation = undefined;
 
-      const result = extractAnalysisAlerts(sarif);
+      const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
       expect(result).to.be.ok;
       expect(result.errors.length).to.equal(1);
@@ -532,7 +533,7 @@ describe('SARIF processing', () => {
         ]
       } as sarif.Log;
 
-      const result = extractAnalysisAlerts(sarif);
+      const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
       expect(result).to.be.ok;
       expect(result.errors.length).to.equal(0);
       expect(result.alerts.length).to.equal(3);
@@ -562,7 +563,7 @@ describe('SARIF processing', () => {
         }
       ];
 
-      const result = extractAnalysisAlerts(sarif);
+      const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
       expect(result).to.be.ok;
       expect(result.errors.length).to.equal(0);
