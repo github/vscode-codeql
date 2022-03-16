@@ -258,7 +258,7 @@
           "scope": "application",
           "description": "Specifies whether or not to write telemetry events to the extension log."
         },
-        "codeQL.remoteQueries.repositoryLists": {
+        "codeQL.variantAnalysis.repositoryLists": {
           "type": [
             "object",
             null
@@ -272,14 +272,14 @@
             }
           },
           "default": null,
-          "markdownDescription": "[For internal use only] Lists of GitHub repositories that you want to query remotely. This should be a JSON object where each key is a user-specified name for this repository list, and the value is an array of GitHub repositories (of the form `<owner>/<repo>`)."
+          "markdownDescription": "[For internal use only] Lists of GitHub repositories that you want to run variant analysis against. This should be a JSON object where each key is a user-specified name for this repository list, and the value is an array of GitHub repositories (of the form `<owner>/<repo>`)."
         },
-        "codeQL.remoteQueries.controllerRepo": {
+        "codeQL.variantAnalysis.controllerRepo": {
           "type": "string",
           "default": "",
           "pattern": "^$|^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+/[a-zA-Z0-9-_]+$",
           "patternErrorMessage": "Please enter a valid GitHub repository",
-          "markdownDescription": "[For internal use only] The name of the GitHub repository where you can view the progress and results of the \"Run Remote query\" command. The repository should be of the form `<owner>/<repo>`)."
+          "markdownDescription": "[For internal use only] The name of the GitHub repository where you can view the progress and results of the \"Run Variant Analysis\" command. The repository should be of the form `<owner>/<repo>`)."
         }
       }
     },
@@ -297,8 +297,8 @@
         "title": "CodeQL: Run Query on Multiple Databases"
       },
       {
-        "command": "codeQL.runRemoteQuery",
-        "title": "CodeQL: Run Remote Query"
+        "command": "codeQL.runVariantAnalysis",
+        "title": "CodeQL: Run Variant Analysis"
       },
       {
         "command": "codeQL.runQueries",
@@ -542,7 +542,7 @@
       },
       {
         "command": "codeQLQueryHistory.openOnGithub",
-        "title": "Open Remote Query on GitHub"
+        "title": "Open Variant Analysis on GitHub"
       },
       {
         "command": "codeQLQueryResults.nextPathStep",
@@ -798,7 +798,7 @@
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.runRemoteQuery",
+          "command": "codeQL.runVariantAnalysis",
           "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
         },
         {
@@ -976,7 +976,7 @@
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.runRemoteQuery",
+          "command": "codeQL.runVariantAnalysis",
           "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
         },
         {

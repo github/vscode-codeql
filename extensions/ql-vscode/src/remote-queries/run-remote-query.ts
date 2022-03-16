@@ -65,7 +65,7 @@ export async function getRepositories(): Promise<string[] | undefined> {
     const quickpick = await window.showQuickPick<RepoListQuickPickItem>(
       quickPickItems,
       {
-        placeHolder: 'Select a repository list. You can define repository lists in the `codeQL.remoteQueries.repositoryLists` setting.',
+        placeHolder: 'Select a repository list. You can define repository lists in the `codeQL.variantAnalysis.repositoryLists` setting.',
         ignoreFocusOut: true,
       });
     if (quickpick?.repoList.length) {
@@ -80,7 +80,7 @@ export async function getRepositories(): Promise<string[] | undefined> {
     const remoteRepo = await window.showInputBox({
       title: 'Enter a GitHub repository in the format <owner>/<repo> (e.g. github/codeql)',
       placeHolder: '<owner>/<repo>',
-      prompt: 'Tip: you can save frequently used repositories in the `codeQL.remoteQueries.repositoryLists` setting',
+      prompt: 'Tip: you can save frequently used repositories in the `codeQL.variantAnalysis.repositoryLists` setting',
       ignoreFocusOut: true,
     });
     if (!remoteRepo) {

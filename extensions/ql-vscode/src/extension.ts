@@ -844,9 +844,9 @@ async function activateWithInstalledDistribution(
 
   registerRemoteQueryTextProvider();
 
-  // The "runRemoteQuery" command is internal-only.
+  // The "runVariantAnalysis" command is internal-only.
   ctx.subscriptions.push(
-    commandRunnerWithProgress('codeQL.runRemoteQuery', async (
+    commandRunnerWithProgress('codeQL.runVariantAnalysis', async (
       progress: ProgressCallback,
       token: CancellationToken,
       uri: Uri | undefined
@@ -866,7 +866,7 @@ async function activateWithInstalledDistribution(
         throw new Error('Remote queries require the CodeQL Canary version to run.');
       }
     }, {
-      title: 'Run Remote Query',
+      title: 'Run Variant Analysis',
       cancellable: true
     })
   );
