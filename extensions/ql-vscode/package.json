@@ -301,10 +301,6 @@
         "title": "CodeQL: Run Remote Query"
       },
       {
-        "command": "codeQL.showFakeRemoteQueryResults",
-        "title": "CodeQL: [Internal] Show fake remote query results"
-      },
-      {
         "command": "codeQL.runQueries",
         "title": "CodeQL: Run Queries in Selected Files"
       },
@@ -804,10 +800,6 @@
         {
           "command": "codeQL.runRemoteQuery",
           "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
-        },
-        {
-          "command": "codeQL.showFakeRemoteQueryResults",
-          "when": "config.codeQL.canary"
         },
         {
           "command": "codeQL.runQueries",
