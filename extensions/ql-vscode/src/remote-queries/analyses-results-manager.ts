@@ -121,17 +121,19 @@ export class AnalysesResultsManager {
       throw new Error(`Could not download the analysis results for ${analysis.nwo}: ${e.message}`);
     }
 
+    const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(analysis.nwo, analysis.databaseSha);
+
     let newAnaysisResults: AnalysisResults;
     const fileExtension = path.extname(artifactPath);
     if (fileExtension === '.sarif') {
-      const queryResults = await this.readSarifResults(artifactPath);
+      const queryResults = await this.readSarifResults(artifactPath, fileLinkPrefix);
       newAnaysisResults = {
         ...analysisResults,
         interpretedResults: queryResults,
         status: 'Completed'
       };
     } else if (fileExtension === '.bqrs') {
-      const queryResults = await this.readBqrsResults(artifactPath);
+      const queryResults = await this.readBqrsResults(artifactPath, fileLinkPrefix);
       newAnaysisResults = {
         ...analysisResults,
         rawResults: queryResults,
@@ -148,15 +150,15 @@ export class AnalysesResultsManager {
     void publishResults([...resultsForQuery]);
   }
 
-  private async readBqrsResults(filePath: string): Promise<AnalysisRawResults> {
-    return await extractRawResults(this.cliServer, this.logger, filePath);
+  private async readBqrsResults(filePath: string, fileLinkPrefix: string): Promise<AnalysisRawResults> {
+    return await extractRawResults(this.cliServer, this.logger, filePath, fileLinkPrefix);
   }
 
-  private async readSarifResults(filePath: string): Promise<AnalysisAlert[]> {
+  private async readSarifResults(filePath: string, fileLinkPrefix: string): Promise<AnalysisAlert[]> {
     const sarifLog = await sarifParser(filePath);
 
-    const processedSarif = extractAnalysisAlerts(sarifLog);
-    if (processedSarif.errors) {
+    const processedSarif = extractAnalysisAlerts(sarifLog, fileLinkPrefix);
+    if (processedSarif.errors.length) {
       void this.logger.log(`Error processing SARIF file: ${os.EOL}${processedSarif.errors.join(os.EOL)}`);
     }
 
@@ -165,5 +167,9 @@ export class AnalysesResultsManager {
 
   private isAnalysisInMemory(analysis: AnalysisSummary): boolean {
     return this.internalGetAnalysesResults(analysis.downloadLink.queryId).some(x => x.nwo === analysis.nwo);
+  }
+
+  private createGitHubDotcomFileLinkPrefix(nwo: string, sha: string): string {
+    return `https://github.com/${nwo}/blob/${sha}`;
   }
 }

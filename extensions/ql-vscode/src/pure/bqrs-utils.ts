@@ -4,6 +4,7 @@ import {
   LineColumnLocation,
   WholeFileLocation
 } from './bqrs-cli-types';
+import { createRemoteFileRef } from './location-link-utils';
 
 /**
  * The CodeQL filesystem libraries use this pattern in `getURL()` predicates
@@ -92,4 +93,31 @@ export function isWholeFileLoc(loc: UrlValue): loc is WholeFileLocation {
 
 export function isStringLoc(loc: UrlValue): loc is string {
   return typeof loc === 'string';
+}
+
+export function tryGetRemoteLocation(
+  loc: UrlValue | undefined,
+  fileLinkPrefix: string
+): string | undefined {
+  const resolvableLocation = tryGetResolvableLocation(loc);
+  if (!resolvableLocation) {
+    return undefined;
+  }
+
+  // Remote locations have the following format:
+  // file:/home/runner/work/<repo>/<repo/relative/path/to/file
+  // So we need to drop the first 6 parts of the path.
+
+  // TODO: We can make this more robust to other path formats.
+  const locationParts = resolvableLocation.uri.split('/');
+  const trimmedLocation = locationParts.slice(6, locationParts.length).join('/');
+
+  const fileLink = {
+    fileLinkPrefix,
+    filePath: trimmedLocation,
+  };
+  return createRemoteFileRef(
+    fileLink,
+    resolvableLocation.startLine,
+    resolvableLocation.endLine);
 }
