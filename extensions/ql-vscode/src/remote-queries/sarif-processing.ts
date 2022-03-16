@@ -169,7 +169,10 @@ function getHighlightedRegion(region: sarif.Region): HighlightedRegion {
     startLine,
     startColumn,
     endLine,
-    endColumn
+
+    // parseSarifRegion currently shifts the end column by 1 to account 
+    // for the way vscode counts columns so we need to shift it back.
+    endColumn: endColumn + 1
   };
 }
 
