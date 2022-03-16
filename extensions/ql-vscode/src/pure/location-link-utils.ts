@@ -1,12 +1,15 @@
+import { FileLink } from '../remote-queries/shared/analysis-result';
+
 export function createRemoteFileRef(
-  filePrefix: string,
-  filePath: string,
+  fileLink: FileLink,
   startLine?: number,
   endLine?: number
 ): string {
   if (startLine && endLine) {
-    return `${filePrefix}/${filePath}#L${startLine}-L${endLine}`;
+    return `${fileLink.fileLinkPrefix}/${fileLink.filePath}#L${startLine}-L${endLine}`;
+  } else if (startLine) {
+    return `${fileLink.fileLinkPrefix}/${fileLink.filePath}#L${startLine}`;
   } else {
-    return `${filePrefix}/${filePath}`;
+    return `${fileLink.fileLinkPrefix}/${fileLink.filePath}`;
   }
 }

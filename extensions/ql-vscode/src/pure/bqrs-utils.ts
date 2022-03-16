@@ -107,12 +107,17 @@ export function tryGetRemoteLocation(
   // Remote locations have the following format:
   // file:/home/runner/work/<repo>/<repo/relative/path/to/file
   // So we need to drop the first 6 parts of the path.
+
+  // TODO: We can make this more robust to other path formats.
   const locationParts = resolvableLocation.uri.split('/');
   const trimmedLocation = locationParts.slice(6, locationParts.length).join('/');
 
-  return createRemoteFileRef(
+  const fileLink = {
     fileLinkPrefix,
-    trimmedLocation,
+    filePath: trimmedLocation,
+  };
+  return createRemoteFileRef(
+    fileLink,
     resolvableLocation.startLine,
     resolvableLocation.endLine);
 }

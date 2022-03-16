@@ -121,7 +121,7 @@ export class AnalysesResultsManager {
       throw new Error(`Could not download the analysis results for ${analysis.nwo}: ${e.message}`);
     }
 
-    const fileLinkPrefix = this.createFileLinkPrefix(analysis.nwo, analysis.databaseSha);
+    const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(analysis.nwo, analysis.databaseSha);
 
     let newAnaysisResults: AnalysisResults;
     const fileExtension = path.extname(artifactPath);
@@ -169,7 +169,7 @@ export class AnalysesResultsManager {
     return this.internalGetAnalysesResults(analysis.downloadLink.queryId).some(x => x.nwo === analysis.nwo);
   }
 
-  private createFileLinkPrefix(nwo: string, sha: string): string {
+  private createGitHubDotcomFileLinkPrefix(nwo: string, sha: string): string {
     return `https://github.com/${nwo}/blob/${sha}`;
   }
 }

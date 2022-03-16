@@ -110,8 +110,7 @@ const Message = ({
               return <Link
                 key={`token-${index}`}
                 href={createRemoteFileRef(
-                  token.location.fileLink.fileLinkPrefix,
-                  token.location.fileLink.filePath,
+                  token.location.fileLink,
                   token.location.highlightedRegion?.startLine,
                   token.location.highlightedRegion?.endLine)}>
                 {token.text}
@@ -195,8 +194,7 @@ const FileCodeSnippet = ({
   const endingLine = codeSnippet.endLine;
 
   const titleFileUri = createRemoteFileRef(
-    fileLink.fileLinkPrefix,
-    fileLink.filePath,
+    fileLink,
     startingLine,
     endingLine);
 
