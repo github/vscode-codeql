@@ -19,7 +19,8 @@ const Row = ({
         borderStyle="solid"
         justifyContent="center"
         alignItems="center"
-        p={2}>
+        p={2}
+        sx={{ wordBreak: 'break-word' }}>
         <Cell value={cell} />
       </Box>
     ))}
