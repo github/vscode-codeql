@@ -583,7 +583,7 @@ describe('SARIF processing', () => {
           startLine: 35,
           startColumn: 20,
           endLine: 35,
-          endColumn: 59
+          endColumn: 60
         }
       });
       expect(message.tokens[2].t).to.equal('text');
