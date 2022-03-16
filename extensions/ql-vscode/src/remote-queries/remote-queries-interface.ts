@@ -186,7 +186,7 @@ export class RemoteQueriesInterfaceManager {
         break;
       case 'remoteQueryError':
         void this.logger.log(
-          `Remote query error: ${msg.error}`
+          `Variant analysis error: ${msg.error}`
         );
         break;
       case 'openFile':

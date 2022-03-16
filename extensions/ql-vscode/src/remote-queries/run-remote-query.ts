@@ -430,7 +430,7 @@ async function ensureNameAndSuite(queryPackDir: string, packRelativePath: string
   qlpack.name = QUERY_PACK_NAME;
 
   qlpack.defaultSuite = [{
-    description: 'Query suite for remote query'
+    description: 'Query suite for variant analysis'
   }, {
     query: packRelativePath.replace(/\\/g, '/')
   }];

@@ -577,7 +577,7 @@ export class QueryHistoryManager extends DisposableObject {
         this.treeDataProvider.remove(item);
         void logger.log(`Deleted ${item.label}.`);
         if (item.status === QueryStatus.InProgress) {
-          void logger.log('The remote query is still running on GitHub Actions. To cancel there, you must go to the query run in your browser.');
+          void logger.log('The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.');
         }
 
         this._onDidRemoveQueryItem.fire(item);
