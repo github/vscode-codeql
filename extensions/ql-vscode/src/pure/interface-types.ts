@@ -394,8 +394,7 @@ export type FromRemoteQueriesMessage =
   | OpenFileMsg
   | OpenVirtualFileMsg
   | RemoteQueryDownloadAnalysisResultsMessage
-  | RemoteQueryDownloadAllAnalysesResultsMessage
-  | RemoteQueryViewAnalysisResultsMessage;
+  | RemoteQueryDownloadAllAnalysesResultsMessage;
 
 export type ToRemoteQueriesMessage =
   | SetRemoteQueryResultMessage
@@ -430,7 +429,3 @@ export interface RemoteQueryDownloadAllAnalysesResultsMessage {
   analysisSummaries: AnalysisSummary[];
 }
 
-export interface RemoteQueryViewAnalysisResultsMessage {
-  t: 'remoteQueryViewAnalysisResults';
-  analysisSummary: AnalysisSummary
-}

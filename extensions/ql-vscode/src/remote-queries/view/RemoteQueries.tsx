@@ -16,7 +16,7 @@ import DownloadButton from './DownloadButton';
 import { AnalysisResults } from '../shared/analysis-result';
 import DownloadSpinner from './DownloadSpinner';
 import CollapsibleItem from './CollapsibleItem';
-import { AlertIcon, CodeSquareIcon, FileCodeIcon, FileSymlinkFileIcon, RepoIcon, TerminalIcon } from '@primer/octicons-react';
+import { AlertIcon, CodeSquareIcon, FileCodeIcon, RepoIcon, TerminalIcon } from '@primer/octicons-react';
 import AnalysisAlertResult from './AnalysisAlertResult';
 import RawResultsTable from './RawResultsTable';
 
@@ -49,13 +49,6 @@ const downloadAllAnalysesResults = (query: RemoteQueryResult) => {
   vscode.postMessage({
     t: 'remoteQueryDownloadAllAnalysesResults',
     analysisSummaries: query.analysisSummaries
-  });
-};
-
-const viewAnalysisResults = (analysisSummary: AnalysisSummary) => {
-  vscode.postMessage({
-    t: 'remoteQueryViewAnalysisResults',
-    analysisSummary
   });
 };
 
@@ -160,7 +153,7 @@ const SummaryTitleNoResults = () => (
   </div>
 );
 
-const SummaryItemDownloadAndView = ({
+const SummaryItemDownload = ({
   analysisSummary,
   analysisResults
 }: {
@@ -180,13 +173,7 @@ const SummaryItemDownloadAndView = ({
     </>;
   }
 
-  return <>
-    <HorizontalSpace size={2} />
-    <a className="vscode-codeql__analysis-result-file-link"
-      onClick={() => viewAnalysisResults(analysisSummary)} >
-      <FileSymlinkFileIcon size={16} />
-    </a>
-  </>;
+  return <></>;
 };
 
 const SummaryItem = ({
@@ -201,7 +188,7 @@ const SummaryItem = ({
     <span className="vscode-codeql__analysis-item">{analysisSummary.nwo}</span>
     <span className="vscode-codeql__analysis-item"><Badge text={analysisSummary.resultCount.toString()} /></span>
     <span className="vscode-codeql__analysis-item">
-      <SummaryItemDownloadAndView
+      <SummaryItemDownload
         analysisSummary={analysisSummary}
         analysisResults={analysisResults} />
     </span>

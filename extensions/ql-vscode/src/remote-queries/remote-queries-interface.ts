@@ -4,9 +4,7 @@ import {
   window as Window,
   ViewColumn,
   Uri,
-  workspace,
-  extensions,
-  commands,
+  workspace
 } from 'vscode';
 import * as path from 'path';
 
@@ -14,8 +12,7 @@ import {
   ToRemoteQueriesMessage,
   FromRemoteQueriesMessage,
   RemoteQueryDownloadAnalysisResultsMessage,
-  RemoteQueryDownloadAllAnalysesResultsMessage,
-  RemoteQueryViewAnalysisResultsMessage,
+  RemoteQueryDownloadAllAnalysesResultsMessage
 } from '../pure/interface-types';
 import { Logger } from '../logging';
 import { getHtmlForWebview } from '../interface-utils';
@@ -204,9 +201,6 @@ export class RemoteQueriesInterfaceManager {
       case 'remoteQueryDownloadAllAnalysesResults':
         await this.downloadAllAnalysesResults(msg);
         break;
-      case 'remoteQueryViewAnalysisResults':
-        await this.viewAnalysisResults(msg);
-        break;
       default:
         assertNever(msg);
     }
@@ -223,31 +217,6 @@ export class RemoteQueriesInterfaceManager {
       msg.analysisSummaries,
       undefined,
       results => this.setAnalysisResults(results));
-  }
-
-  private async viewAnalysisResults(msg: RemoteQueryViewAnalysisResultsMessage): Promise<void> {
-    const downloadLink = msg.analysisSummary.downloadLink;
-    const filePath = path.join(this.analysesResultsManager.storagePath, downloadLink.queryId, downloadLink.id, downloadLink.innerFilePath || '');
-
-    const sarifViewerExtensionId = 'MS-SarifVSCode.sarif-viewer';
-
-    const sarifExt = extensions.getExtension(sarifViewerExtensionId);
-    if (!sarifExt) {
-      // Ask the user if they want to install the extension to view the results.
-      void commands.executeCommand('workbench.extensions.installExtension', sarifViewerExtensionId);
-      return;
-    }
-
-    if (!sarifExt.isActive) {
-      await sarifExt.activate();
-    }
-
-    // Clear any previous results before showing new results
-    await sarifExt.exports.closeAllLogs();
-
-    await sarifExt.exports.openLogs([
-      Uri.file(filePath),
-    ]);
   }
 
   public async setAnalysisResults(analysesResults: AnalysisResults[]): Promise<void> {
