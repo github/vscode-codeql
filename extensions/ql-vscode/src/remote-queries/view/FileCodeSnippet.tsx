@@ -7,7 +7,7 @@ import { createRemoteFileRef } from '../../pure/location-link-utils';
 
 const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
 const warningColor = '#966C23';
-const highlightColor = '#534425';
+const highlightColor = 'var(--vscode-editor-findMatchHighlightBackground)';
 
 const getSeverityColor = (severity: ResultSeverity) => {
   switch (severity) {
