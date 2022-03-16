@@ -91,7 +91,7 @@ export class RemoteQueriesInterfaceManager {
       const { ctx } = this;
       const panel = (this.panel = Window.createWebviewPanel(
         'remoteQueriesView',
-        'Remote Query Results',
+        'CodeQL Query Results',
         { viewColumn: ViewColumn.Active, preserveFocus: true },
         {
           enableScripts: true,
