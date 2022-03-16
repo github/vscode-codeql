@@ -93,10 +93,7 @@ import { Credentials } from './authentication';
 import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQueryResult } from './remote-queries/remote-query-result';
 import { URLSearchParams } from 'url';
-import { RemoteQueriesInterfaceManager } from './remote-queries/remote-queries-interface';
-import * as sampleData from './remote-queries/sample-data';
 import { handleDownloadPacks, handleInstallPackDependencies } from './packaging';
-import { AnalysesResultsManager } from './remote-queries/analyses-results-manager';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 
 /**
@@ -886,17 +883,6 @@ async function activateWithInstalledDistribution(
       queryResult: RemoteQueryResult,
       token: CancellationToken) => {
       await rqm.autoDownloadRemoteQueryResults(queryResult, token);
-    }));
-
-  ctx.subscriptions.push(
-    commandRunner('codeQL.showFakeRemoteQueryResults', async () => {
-      const analysisResultsManager = new AnalysesResultsManager(ctx, cliServer, queryStorageDir, logger);
-      const rqim = new RemoteQueriesInterfaceManager(ctx, logger, analysisResultsManager);
-      await rqim.showResults(sampleData.sampleRemoteQuery, sampleData.sampleRemoteQueryResult);
-
-      await rqim.setAnalysisResults(sampleData.sampleAnalysesResultsStage1);
-      await rqim.setAnalysisResults(sampleData.sampleAnalysesResultsStage2);
-      await rqim.setAnalysisResults(sampleData.sampleAnalysesResultsStage3);
     }));
 
   ctx.subscriptions.push(
