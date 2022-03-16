@@ -369,8 +369,6 @@ export function RemoteQueries(): JSX.Element {
     return <div>Waiting for results to load.</div>;
   }
 
-  const showAnalysesResults = false;
-
   try {
     return <div>
       <ThemeProvider colorMode="auto">
@@ -378,11 +376,10 @@ export function RemoteQueries(): JSX.Element {
         <QueryInfo {...queryResult} />
         <Failures {...queryResult} />
         <Summary queryResult={queryResult} analysesResults={analysesResults} />
-        {showAnalysesResults &&
-          <AnalysesResults
-            queryResult={queryResult}
-            analysesResults={analysesResults}
-            totalResults={queryResult.totalResultCount} />}
+        <AnalysesResults
+          queryResult={queryResult}
+          analysesResults={analysesResults}
+          totalResults={queryResult.totalResultCount} />
       </ThemeProvider>
     </div>;
   } catch (err) {
