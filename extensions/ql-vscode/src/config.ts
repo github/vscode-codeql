@@ -323,7 +323,7 @@ export function isCanary() {
 export const NO_CACHE_AST_VIEWER = new Setting('disableCache', AST_VIEWER_SETTING);
 
 // Settings for remote queries
-const REMOTE_QUERIES_SETTING = new Setting('remoteQueries', ROOT_SETTING);
+const REMOTE_QUERIES_SETTING = new Setting('variantAnalysis', ROOT_SETTING);
 
 /**
  * Lists of GitHub repositories that you want to query remotely via the "Run Variant Analysis" command.
