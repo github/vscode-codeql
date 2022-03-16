@@ -33,10 +33,6 @@
   font-size: x-small;
 }
 
-.vscode-codeql__analysis-result-file-link {
-  vertical-align: middle;
-}
-
 .vscode-codeql__analysis-failure {
   margin: 0;
   font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas,
