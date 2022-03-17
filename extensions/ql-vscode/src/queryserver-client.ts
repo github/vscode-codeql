@@ -1,6 +1,5 @@
 import * as cp from 'child_process';
 import * as path from 'path';
-import * as fs from 'fs-extra';
 
 import { DisposableObject } from './pure/disposable-object';
 import { Disposable, CancellationToken, commands } from 'vscode';
