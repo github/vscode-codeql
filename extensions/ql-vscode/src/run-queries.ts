@@ -94,12 +94,12 @@ export class QueryEvaluationInfo {
     return qsClient.findQueryLogFile(this.querySaveDir);
   }
 
-  get structLogPath() {
-    return qsClient.findQueryStructLogFile(this.querySaveDir);
+  get evalLogPath() {
+    return qsClient.findQueryEvalLogFile(this.querySaveDir);
   }
 
-  get structLogSummaryPath() {
-    return qsClient.findQueryStructLogSummaryFile(this.querySaveDir);
+  get evalLogSummaryPath() {
+    return qsClient.findQueryEvalLogSummaryFile(this.querySaveDir);
   }
 
   get resultsPaths() {
@@ -167,7 +167,7 @@ export class QueryEvaluationInfo {
     if (queryInfo && await qs.cliServer.cliConstraints.supportsPerQueryEvalLog()) {
       await qs.sendRequest(messages.startLog, {
         db: dataset,
-        logPath: this.structLogPath,
+        logPath: this.evalLogPath,
       });
     }
     const params: messages.EvaluateQueriesParams = {
@@ -189,14 +189,14 @@ export class QueryEvaluationInfo {
       if (queryInfo && await qs.cliServer.cliConstraints.supportsPerQueryEvalLog()) {
         await qs.sendRequest(messages.endLog, {
           db: dataset,
-          logPath: this.structLogPath,
+          logPath: this.evalLogPath,
         });
-        if (this.hasStructLog()) {
-          queryInfo.evalLogLocation = this.structLogPath;
-          await qs.cliServer.generateLogSummary(this.structLogPath, this.structLogSummaryPath);
-          this.printStructuredLogSummary(qs);
+        if (this.hasEvalLog()) {
+          queryInfo.evalLogLocation = this.evalLogPath;
+          await qs.cliServer.generateLogSummary(this.evalLogPath, this.evalLogSummaryPath);
+          this.printEvalLogSummary(qs);
         } else {
-          void showAndLogWarningMessage(`Failed to write structured log to ${this.structLogPath}.`);
+          void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);
         }
       }
     }
@@ -214,22 +214,22 @@ export class QueryEvaluationInfo {
    * to the query server Output Window.
    * @param qs The current QueryServerClient instance for this query.
    */
-  printStructuredLogSummary(qs: qsClient.QueryServerClient) {
-    if (this.hasStructLogSummary()) {
-      fs.readFile(this.structLogSummaryPath, (err, buffer) => {
+  printEvalLogSummary(qs: qsClient.QueryServerClient) {
+    if (this.hasEvalLogSummary()) {
+      fs.readFile(this.evalLogSummaryPath, (err, buffer) => {
         if (err) {
-          throw new Error(`Could not read structured log summary file at ${this.structLogSummaryPath}.`);
+          throw new Error(`Could not read structured evaluator log summary file at ${this.evalLogSummaryPath}.`);
         }
         const summaryText = buffer.toString();
         const mostExpensivePredicatesIndex = summaryText.indexOf('Most expensive predicates');
 
         if (mostExpensivePredicatesIndex != -1) {
-          void qs.logger.log(' --- Structured Log Summary --- ', { additionalLogLocation: this.logPath });
+          void qs.logger.log(' --- Evaluator Log Summary --- ', { additionalLogLocation: this.logPath });
           void qs.logger.log(summaryText.substring(mostExpensivePredicatesIndex), { additionalLogLocation: this.logPath });
         }
       });
     } else {
-      void showAndLogWarningMessage(`Failed to write structured log summary to ${this.structLogSummaryPath}.`);
+      void showAndLogWarningMessage(`Failed to write structured evaluator log summary to ${this.evalLogSummaryPath}.`);
     }
   }
 
@@ -318,17 +318,17 @@ export class QueryEvaluationInfo {
   }
 
   /**
-   * Holds if this query already has a completed structured log
+   * Holds if this query already has a completed structured evaluator log
    */
-  async hasStructLog(): Promise<boolean> {
-    return fs.pathExists(this.structLogPath);
+  async hasEvalLog(): Promise<boolean> {
+    return fs.pathExists(this.evalLogPath);
   }
 
   /** 
-   * Holds if this query already has a completed structured log summary file
+   * Holds if this query already has a completed structured evaluator log summary file
    */
-  async hasStructLogSummary(): Promise<boolean> {
-    return fs.pathExists(this.structLogSummaryPath);
+  async hasEvalLogSummary(): Promise<boolean> {
+    return fs.pathExists(this.evalLogSummaryPath);
   }
 
   /**
