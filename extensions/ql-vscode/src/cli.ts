@@ -1268,15 +1268,9 @@ export class CliVersionConstraint {
   public static CLI_VERSION_WITH_PACKAGING = new SemVer('2.6.0');
 
   /**
-   * CLI version where the `--evaluator-log` and related options to the query server were introduced,
-   * on a per-query server basis.
-   */
-  public static CLI_VERSION_WITH_STRUCTURED_EVAL_LOG = new SemVer('2.8.2');
-
-   /**
-    * CLI version that supports rotating structured logs to produce one per query.
-    */
-    public static CLI_VERSION_WITH_PER_QUERY_EVAL_LOG = new SemVer('2.8.4');
+  * CLI version that supports rotating structured logs to produce one per query.
+  */
+  public static CLI_VERSION_WITH_PER_QUERY_EVAL_LOG = new SemVer('2.8.4');
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
@@ -1332,10 +1326,6 @@ export class CliVersionConstraint {
 
   async supportsPackaging() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_PACKAGING);
-  }
-
-  async supportsStructuredEvalLog() {
-    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_STRUCTURED_EVAL_LOG);
   }
 
   async supportsPerQueryEvalLog() {
