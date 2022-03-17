@@ -194,6 +194,7 @@ export class QueryEvaluationInfo {
         if (this.hasStructLog()) {
           queryInfo.evalLogLocation = this.structLogPath;
           await qs.cliServer.generateLogSummary(this.structLogPath, this.structLogSummaryPath);
+          this.printStructuredLogSummary(qs);
         } else {
           void showAndLogWarningMessage(`Failed to write structured log to ${this.structLogPath}.`);
         }
@@ -206,6 +207,30 @@ export class QueryEvaluationInfo {
       runId: callbackId,
       resultType: messages.QueryResultType.OTHER_ERROR
     };
+  }
+
+  /**
+   * Prints the end of the structured log summary file (starting from most expensive predicates)
+   * to the query server Output Window.
+   * @param qs The current QueryServerClient instance for this query.
+   */
+  printStructuredLogSummary(qs: qsClient.QueryServerClient) {
+    if (this.hasStructLogSummary()) {
+      fs.readFile(this.structLogSummaryPath, (err, buffer) => {
+        if (err) {
+          throw new Error(`Could not read structured log summary file at ${this.structLogSummaryPath}.`);
+        }
+        const summaryText = buffer.toString();
+        const mostExpensivePredicatesIndex = summaryText.indexOf('Most expensive predicates');
+
+        if (mostExpensivePredicatesIndex != -1) {
+          void qs.logger.log(' --- Structured Log Summary --- ', { additionalLogLocation: this.logPath });
+          void qs.logger.log(summaryText.substring(mostExpensivePredicatesIndex), { additionalLogLocation: this.logPath });
+        }
+      });
+    } else {
+      void showAndLogWarningMessage(`Failed to write structured log summary to ${this.structLogSummaryPath}.`);
+    }
   }
 
   async compile(
@@ -297,6 +322,13 @@ export class QueryEvaluationInfo {
    */
   async hasStructLog(): Promise<boolean> {
     return fs.pathExists(this.structLogPath);
+  }
+
+  /** 
+   * Holds if this query already has a completed structured log summary file
+   */
+  async hasStructLogSummary(): Promise<boolean> {
+    return fs.pathExists(this.structLogSummaryPath);
   }
 
   /**
