@@ -206,13 +206,6 @@ const FileCodeSnippet = ({
       <CodeContainer>
         {code.map((line, index) => (
           <div key={index}>
-            {message && severity && <Message
-              message={message}
-              currentLineNumber={startingLine + index - 1}
-              highlightedRegion={highlightedRegion}
-              borderColor={getSeverityColor(severity)}>
-              {messageChildren}
-            </Message>}
             <Box display="flex">
               <Box
                 p={2}
@@ -238,6 +231,13 @@ const FileCodeSnippet = ({
                   highlightedRegion={highlightedRegion} />
               </Box>
             </Box>
+            {message && severity && <Message
+              message={message}
+              currentLineNumber={startingLine + index}
+              highlightedRegion={highlightedRegion}
+              borderColor={getSeverityColor(severity)}>
+              {messageChildren}
+            </Message>}
           </div>
         ))}
       </CodeContainer>
