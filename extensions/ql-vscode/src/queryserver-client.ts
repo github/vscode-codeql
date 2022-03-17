@@ -262,3 +262,7 @@ export function findQueryLogFile(resultPath: string): string {
 export function findQueryStructLogFile(resultPath: string): string {
   return path.join(resultPath, 'evaluator-log.jsonl');
 }
+
+export function findQueryStructLogSummaryFile(resultPath: string): string {
+  return path.join(resultPath, 'evaluator-log.jsonl.summary');
+}

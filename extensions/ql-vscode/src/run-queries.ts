@@ -98,6 +98,10 @@ export class QueryEvaluationInfo {
     return qsClient.findQueryStructLogFile(this.querySaveDir);
   }
 
+  get structLogSummaryPath() {
+    return qsClient.findQueryStructLogSummaryFile(this.querySaveDir);
+  }
+
   get resultsPaths() {
     return {
       resultsPath: path.join(this.querySaveDir, 'results.bqrs'),
@@ -187,7 +191,12 @@ export class QueryEvaluationInfo {
           db: dataset,
           logPath: this.structLogPath,
         });
-        queryInfo.evalLogLocation = this.structLogPath;
+        if (this.hasStructLog()) {
+          queryInfo.evalLogLocation = this.structLogPath;
+          await qs.cliServer.generateLogSummary(this.structLogPath, this.structLogSummaryPath);
+        } else {
+          void showAndLogWarningMessage(`Failed to write structured log to ${this.structLogPath}.`);
+        }
       }
     }
     return result || {
@@ -281,6 +290,13 @@ export class QueryEvaluationInfo {
    */
   async hasCsv(): Promise<boolean> {
     return fs.pathExists(this.csvPath);
+  }
+
+  /**
+   * Holds if this query already has a completed structured log
+   */
+  async hasStructLog(): Promise<boolean> {
+    return fs.pathExists(this.structLogPath);
   }
 
   /**

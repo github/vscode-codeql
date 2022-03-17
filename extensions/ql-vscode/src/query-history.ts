@@ -34,7 +34,6 @@ import { DatabaseManager } from './databases';
 import { registerQueryHistoryScubber } from './query-history-scrubber';
 import { QueryStatus } from './query-status';
 import { slurpQueryHistory, splatQueryHistory } from './query-serialization';
-import * as fs from 'fs-extra';
 import { CliVersionConstraint } from './cli';
 
 /**
@@ -784,10 +783,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    if (finalSingleItem.evalLogLocation) {
-      if (!fs.existsSync(finalSingleItem.evalLogSummaryLocation)) {
-        await this.qs.cliServer.generateLogSummary(finalSingleItem.evalLogLocation, finalSingleItem.evalLogSummaryLocation);
-      }
+    if (finalSingleItem.evalLogSummaryLocation) {
       await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
     } else {
       this.warnNoEvalLog();
