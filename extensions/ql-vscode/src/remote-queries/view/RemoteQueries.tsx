@@ -260,7 +260,7 @@ const AnalysesResultsDescription = ({
   const showMaxResultsMessage = analysesResults.some(a => a.rawResults?.capped);
   const maxRawResultsMessage = <>
     <VerticalSpace size={1} />
-    Some repositories have more than {MAX_RAW_RESULTS} results. We will only show you up to 
+    Some repositories have more than {MAX_RAW_RESULTS} results. We will only show you up to&nbsp;
     {MAX_RAW_RESULTS} results for each repository.
   </>;
 

@@ -208,7 +208,7 @@ const FileCodeSnippet = ({
           <div key={index}>
             {message && severity && <Message
               message={message}
-              currentLineNumber={startingLine + index}
+              currentLineNumber={startingLine + index - 1}
               highlightedRegion={highlightedRegion}
               borderColor={getSeverityColor(severity)}>
               {messageChildren}
