@@ -88,7 +88,7 @@ const Message = ({
   borderColor: string,
   children: React.ReactNode
 }) => {
-  if (!highlightedRegion || highlightedRegion.startLine !== currentLineNumber) {
+  if (!highlightedRegion || highlightedRegion.endLine !== currentLineNumber) {
     return <></>;
   }
 
@@ -157,7 +157,7 @@ const CodeLine = ({
     ? highlightedRegion.endColumn
     : isLastHighlightedLine
       ? highlightedRegion.endColumn
-      : line.length;
+      : line.length + 1;
 
   const section1 = line.substring(0, highlightStartColumn - 1);
   const section2 = line.substring(highlightStartColumn - 1, highlightEndColumn - 1);
