@@ -7,7 +7,7 @@
 - Fix a bug where queries took a long time to run if there are no folders in the workspace. [#1157](https://github.com/github/vscode-codeql/pull/1157)
 - [BREAKING CHANGE] The `codeQL.runningQueries.customLogDirectory` setting is deprecated and no longer has any function. Instead, all query log files will be stored in the query history directory, next to the query results. [#1178](https://github.com/github/vscode-codeql/pull/1178)
 - Add a _Open query directory_ command for query items. This command opens the directory containing all artifacts for a query. [#1179](https://github.com/github/vscode-codeql/pull/1179)
-- Add options to display evaluator logs for a given query run. Some information that was previously found in the query server output may now be found here. [#1186](https://github.com/github/vscode-codeql/pull/1186)
+- Add options to display evaluator logs for a given query run. Some information that was previously found in the query server output may now be found here. Summaries are logged to the Query Server Output window at the end of the run. [#1186](https://github.com/github/vscode-codeql/pull/1186)
 
 ## 1.5.11 - 10 February 2022
 
