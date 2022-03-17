@@ -157,11 +157,11 @@ export class RemoteQueriesManager extends DisposableObject {
     } else if (queryWorkflowResult.status === 'CompletedUnsuccessfully') {
       queryItem.failureReason = queryWorkflowResult.error;
       queryItem.status = QueryStatus.Failed;
-      void showAndLogErrorMessage(`Remote query execution failed. Error: ${queryWorkflowResult.error}`);
+      void showAndLogErrorMessage(`Variant analysis execution failed. Error: ${queryWorkflowResult.error}`);
     } else if (queryWorkflowResult.status === 'Cancelled') {
       queryItem.failureReason = 'Cancelled';
       queryItem.status = QueryStatus.Failed;
-      void showAndLogErrorMessage('Remote query monitoring was cancelled');
+      void showAndLogErrorMessage('Variant analysis monitoring was cancelled');
     } else if (queryWorkflowResult.status === 'InProgress') {
       // Should not get here. Only including this to ensure `assertNever` uses proper type checking.
       void showAndLogErrorMessage(`Unexpected status: ${queryWorkflowResult.status}`);

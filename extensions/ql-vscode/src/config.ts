@@ -323,10 +323,10 @@ export function isCanary() {
 export const NO_CACHE_AST_VIEWER = new Setting('disableCache', AST_VIEWER_SETTING);
 
 // Settings for remote queries
-const REMOTE_QUERIES_SETTING = new Setting('remoteQueries', ROOT_SETTING);
+const REMOTE_QUERIES_SETTING = new Setting('variantAnalysis', ROOT_SETTING);
 
 /**
- * Lists of GitHub repositories that you want to query remotely via the "Run Remote query" command.
+ * Lists of GitHub repositories that you want to query remotely via the "Run Variant Analysis" command.
  * Note: This command is only available for internal users.
  *
  * This setting should be a JSON object where each key is a user-specified name (string),
@@ -343,7 +343,7 @@ export async function setRemoteRepositoryLists(lists: Record<string, string[]> |
 }
 
 /**
- * The name of the "controller" repository that you want to use with the "Run Remote query" command.
+ * The name of the "controller" repository that you want to use with the "Run Variant Analysis" command.
  * Note: This command is only available for internal users.
  *
  * This setting should be a GitHub repository of the form `<owner>/<repo>`.

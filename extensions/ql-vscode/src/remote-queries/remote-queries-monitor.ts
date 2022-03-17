@@ -49,7 +49,7 @@ export class RemoteQueriesMonitor {
       attemptCount++;
     }
 
-    void this.logger.log('Remote query monitoring timed out after 2 days');
+    void this.logger.log('Variant analysis monitoring timed out after 2 days');
     return { status: 'Cancelled' };
   }
 

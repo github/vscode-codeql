@@ -279,7 +279,7 @@ describe('Remote queries', function() {
       },
       library: false,
       defaultSuite: [{
-        description: 'Query suite for remote query'
+        description: 'Query suite for variant analysis'
       }, {
         query: queryPath
       }]

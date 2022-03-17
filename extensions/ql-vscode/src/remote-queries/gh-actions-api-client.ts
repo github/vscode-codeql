@@ -267,18 +267,18 @@ function getWorkflowError(conclusion: string | null): string {
   }
 
   if (conclusion === 'cancelled') {
-    return 'The remote query execution was cancelled.';
+    return 'Variant analysis execution was cancelled.';
   }
 
   if (conclusion === 'timed_out') {
-    return 'The remote query execution timed out.';
+    return 'Variant analysis execution timed out.';
   }
 
   if (conclusion === 'failure') {
     // TODO: Get the actual error from the workflow or potentially
     // from an artifact from the action itself.
-    return 'The remote query execution has failed.';
+    return 'Variant analysis execution has failed.';
   }
 
-  return `Unexpected query execution conclusion: ${conclusion}`;
+  return `Unexpected variant analysis execution conclusion: ${conclusion}`;
 }
