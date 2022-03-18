@@ -16,7 +16,7 @@ import {
 import { Credentials } from '../authentication';
 import * as cli from '../cli';
 import { logger } from '../logging';
-import { getRemoteControllerRepo, getRemoteRepositoryLists, setRemoteControllerRepo } from '../config';
+import { getActionBranch, getRemoteControllerRepo, getRemoteRepositoryLists, setRemoteControllerRepo } from '../config';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { OctokitResponse } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
@@ -302,7 +302,8 @@ export async function runRemoteQuery(
       message: 'Sending request'
     });
 
-    const workflowRunId = await runRemoteQueriesApiRequest(credentials, 'main', language, repositories, owner, repo, base64Pack, dryRun);
+    const actionBranch = getActionBranch();
+    const workflowRunId = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repositories, owner, repo, base64Pack, dryRun);
     const queryStartTime = Date.now();
     const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
 
