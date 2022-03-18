@@ -21,6 +21,8 @@ import {
 } from './commandRunner';
 import { logger } from './logging';
 import { tmpDir } from './helpers';
+import { REPO_REGEX } from './remote-queries/run-remote-query';
+import { Credentials } from './authentication';
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -46,6 +48,7 @@ export async function promptImportInternetDatabase(
 
   const item = await databaseArchiveFetcher(
     databaseUrl,
+    {},
     databaseManager,
     storagePath,
     progress,
@@ -59,6 +62,60 @@ export async function promptImportInternetDatabase(
   }
   return item;
 
+}
+
+/**
+ * Prompts a user to fetch a database from GitHub.
+ * User enters a GitHub repository and then the user is asked which language
+ * to download (if there is more than one)
+ *
+ * @param databaseManager the DatabaseManager
+ * @param storagePath where to store the unzipped database.
+ */
+export async function promptImportGithubDatabase(
+  databaseManager: DatabaseManager,
+  storagePath: string,
+  credentials: Credentials,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  cli?: CodeQLCliServer
+): Promise<DatabaseItem | undefined> {
+  progress({
+    message: 'Choose repository',
+    step: 1,
+    maxStep: 2
+  });
+  const githubRepo = await window.showInputBox({
+    title: 'Enter a GitHub repository in the format <owner>/<repo> (e.g. github/codeql)',
+    placeHolder: '<owner>/<repo>',
+    ignoreFocusOut: true,
+  });
+  if (!githubRepo) {
+    return;
+  }
+
+  if (REPO_REGEX.test(githubRepo)) {
+    const databaseUrl = await convertGithubNwoToDatabaseUrl(githubRepo, credentials, progress);
+    if (databaseUrl) {
+      const item = await databaseArchiveFetcher(
+        databaseUrl,
+        { 'Accept': 'application/zip' },
+        databaseManager,
+        storagePath,
+        progress,
+        token,
+        cli
+      );
+      if (item) {
+        await commands.executeCommand('codeQLDatabases.focus');
+        void showAndLogInformationMessage('Database downloaded and imported successfully.');
+      }
+      return item;
+    }
+  } else {
+    throw new Error(`Invalid GitHub repository: ${githubRepo}`);
+  }
+  return;
 }
 
 /**
@@ -94,6 +151,7 @@ export async function promptImportLgtmDatabase(
     if (databaseUrl) {
       const item = await databaseArchiveFetcher(
         databaseUrl,
+        {},
         databaseManager,
         storagePath,
         progress,
@@ -140,6 +198,7 @@ export async function importArchiveDatabase(
   try {
     const item = await databaseArchiveFetcher(
       databaseUrl,
+      {},
       databaseManager,
       storagePath,
       progress,
@@ -166,6 +225,7 @@ export async function importArchiveDatabase(
  * or in the local filesystem.
  *
  * @param databaseUrl URL from which to grab the database
+ * @param requestHeaders Headers to send with the request
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
  * @param progress callback to send progress messages to
@@ -173,6 +233,7 @@ export async function importArchiveDatabase(
  */
 async function databaseArchiveFetcher(
   databaseUrl: string,
+  requestHeaders: { [key: string]: string },
   databaseManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
@@ -193,7 +254,7 @@ async function databaseArchiveFetcher(
   if (isFile(databaseUrl)) {
     await readAndUnzip(databaseUrl, unzipPath, cli, progress);
   } else {
-    await fetchAndUnzip(databaseUrl, unzipPath, cli, progress);
+    await fetchAndUnzip(databaseUrl, requestHeaders, unzipPath, cli, progress);
   }
 
   progress({
@@ -292,6 +353,7 @@ async function readAndUnzip(
 
 async function fetchAndUnzip(
   databaseUrl: string,
+  requestHeaders: { [key: string]: string },
   unzipPath: string,
   cli?: CodeQLCliServer,
   progress?: ProgressCallback
@@ -310,7 +372,7 @@ async function fetchAndUnzip(
     step: 1,
   });
 
-  const response = await checkForFailingResponse(await fetch(databaseUrl), 'Error downloading database');
+  const response = await checkForFailingResponse(await fetch(databaseUrl, requestHeaders), 'Error downloading database');
   const archiveFileStream = fs.createWriteStream(archivePath);
 
   const contentLength = response.headers.get('content-length');
@@ -379,6 +441,37 @@ export async function findDirWithFile(
     }
   }
   return;
+}
+
+export async function convertGithubNwoToDatabaseUrl(
+  githubRepo: string,
+  credentials: Credentials,
+  progress: ProgressCallback): Promise<string | undefined> {
+  try {
+    // TODO: In future, we could accept GitHub URLs in addition to NWOs.
+    // Similar to "looksLikeLgtmUrl".
+    if (!REPO_REGEX.test(githubRepo)) {
+      throw new Error('Invalid repository format. Must be in the format <owner>/<repo> (e.g. github/codeql)');
+    }
+
+    const [owner, repo] = githubRepo.split('/');
+
+    const octokit = await credentials.getOctokit();
+    const response = await octokit.request('GET /repos/:owner/:repo/code-scanning/codeql/databases', { owner, repo });
+
+    const languages = response.data.map((db: any) => db.language);
+
+    const language = await promptForLanguage(languages, progress);
+    if (!language) {
+      return;
+    }
+
+    return `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`;
+
+  } catch (e) {
+    void logger.log(`Error: ${e.message}`);
+    throw new Error(`Invalid GitHub repository: ${githubRepo}`);
+  }
 }
 
 /**

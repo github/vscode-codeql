@@ -43,7 +43,7 @@ interface QueriesResponse {
  * - `owner` is made up of alphanumeric characters or single hyphens, starting and ending in an alphanumeric character
  * - `repo` is made up of alphanumeric characters, hyphens, or underscores
  */
-const REPO_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
+export const REPO_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
 
 /**
  * Well-known names for the query pack used by the server.

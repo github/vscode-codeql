@@ -33,11 +33,13 @@ import * as qsClient from './queryserver-client';
 import { upgradeDatabaseExplicit } from './upgrades';
 import {
   importArchiveDatabase,
+  promptImportGithubDatabase,
   promptImportInternetDatabase,
   promptImportLgtmDatabase,
 } from './databaseFetcher';
 import { CancellationToken } from 'vscode';
 import { asyncFilter } from './pure/helpers-pure';
+import { Credentials } from './authentication';
 
 type ThemableIconPath = { light: string; dark: string } | string;
 
@@ -219,7 +221,8 @@ export class DatabaseUI extends DisposableObject {
     private databaseManager: DatabaseManager,
     private readonly queryServer: qsClient.QueryServerClient | undefined,
     private readonly storagePath: string,
-    readonly extensionPath: string
+    readonly extensionPath: string,
+    private readonly getCredentials: () => Promise<Credentials>
   ) {
     super();
 
@@ -290,6 +293,20 @@ export class DatabaseUI extends DisposableObject {
           title: 'Adding database from URL',
         }
       )
+    );
+    this.push(
+      commandRunnerWithProgress(
+        'codeQLDatabases.chooseDatabaseGithub',
+        async (
+          progress: ProgressCallback,
+          token: CancellationToken
+        ) => {
+          const credentials = await this.getCredentials();
+          await this.handleChooseDatabaseGithub(credentials, progress, token);
+        },
+        {
+          title: 'Adding database from GitHub',
+        })
     );
     this.push(
       commandRunnerWithProgress(
@@ -456,6 +473,21 @@ export class DatabaseUI extends DisposableObject {
     return await promptImportInternetDatabase(
       this.databaseManager,
       this.storagePath,
+      progress,
+      token,
+      this.queryServer?.cliServer
+    );
+  };
+
+  handleChooseDatabaseGithub = async (
+    credentials: Credentials,
+    progress: ProgressCallback,
+    token: CancellationToken
+  ): Promise<DatabaseItem | undefined> => {
+    return await promptImportGithubDatabase(
+      this.databaseManager,
+      this.storagePath,
+      credentials,
       progress,
       token,
       this.queryServer?.cliServer

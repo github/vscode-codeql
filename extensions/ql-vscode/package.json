@@ -45,6 +45,7 @@
     "onCommand:codeQLDatabases.chooseDatabaseFolder",
     "onCommand:codeQLDatabases.chooseDatabaseArchive",
     "onCommand:codeQLDatabases.chooseDatabaseInternet",
+    "onCommand:codeQLDatabases.chooseDatabaseGithub",
     "onCommand:codeQLDatabases.chooseDatabaseLgtm",
     "onCommand:codeQL.setCurrentDatabase",
     "onCommand:codeQL.viewAst",
@@ -54,6 +55,7 @@
     "onCommand:codeQL.chooseDatabaseFolder",
     "onCommand:codeQL.chooseDatabaseArchive",
     "onCommand:codeQL.chooseDatabaseInternet",
+    "onCommand:codeQL.chooseDatabaseGithub",
     "onCommand:codeQL.chooseDatabaseLgtm",
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
@@ -357,6 +359,14 @@
         }
       },
       {
+        "command": "codeQLDatabases.chooseDatabaseGithub",
+        "title": "Download Database from GitHub",
+        "icon": {
+          "light": "media/light/cloud-download.svg",
+          "dark": "media/dark/cloud-download.svg"
+        }
+      },
+      {
         "command": "codeQLDatabases.chooseDatabaseLgtm",
         "title": "Download from LGTM",
         "icon": {
@@ -427,6 +437,10 @@
       {
         "command": "codeQL.chooseDatabaseInternet",
         "title": "CodeQL: Download Database"
+      },
+      {
+        "command": "codeQL.chooseDatabaseGithub",
+        "title": "CodeQL: Download Database from GitHub"
       },
       {
         "command": "codeQL.chooseDatabaseLgtm",
@@ -601,6 +615,11 @@
         },
         {
           "command": "codeQLDatabases.chooseDatabaseInternet",
+          "when": "view == codeQLDatabases",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLDatabases.chooseDatabaseGithub",
           "when": "view == codeQLDatabases",
           "group": "navigation"
         },
@@ -874,6 +893,10 @@
           "when": "false"
         },
         {
+          "command": "codeQLDatabases.chooseDatabaseGithub",
+          "when": "false"
+        },
+        {
           "command": "codeQLDatabases.chooseDatabaseLgtm",
           "when": "false"
         },
@@ -1037,7 +1060,7 @@
       },
       {
         "view": "codeQLDatabases",
-        "contents": "Add a CodeQL database:\n[From a folder](command:codeQLDatabases.chooseDatabaseFolder)\n[From an archive](command:codeQLDatabases.chooseDatabaseArchive)\n[From a URL (as a zip file)](command:codeQLDatabases.chooseDatabaseInternet)\n[From LGTM](command:codeQLDatabases.chooseDatabaseLgtm)"
+        "contents": "Add a CodeQL database:\n[From a folder](command:codeQLDatabases.chooseDatabaseFolder)\n[From an archive](command:codeQLDatabases.chooseDatabaseArchive)\n[From a URL (as a zip file)](command:codeQLDatabases.chooseDatabaseInternet)\n[From GitHub](command:codeQLDatabases.chooseDatabaseGithub)\n[From LGTM](command:codeQLDatabases.chooseDatabaseLgtm)"
       }
     ]
   },
