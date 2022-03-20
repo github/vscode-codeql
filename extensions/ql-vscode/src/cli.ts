@@ -1106,8 +1106,8 @@ class SplitBuffer {
     while (this.searchIndex <= (this.buffer.length - this.maxSeparatorLength)) {
       for (const separator of this.separators) {
         if (SplitBuffer.startsWith(this.buffer, separator, this.searchIndex)) {
-          const line = this.buffer.substr(0, this.searchIndex);
-          this.buffer = this.buffer.substr(this.searchIndex + separator.length);
+          const line = this.buffer.slice(0, this.searchIndex);
+          this.buffer = this.buffer.slice(this.searchIndex + separator.length);
           this.searchIndex = 0;
           return line;
         }
