@@ -76,7 +76,7 @@ export class QLTestAdapterFactory extends DisposableObject {
  * @param ext The new extension, including the `.`.
  */
 function changeExtension(p: string, ext: string): string {
-  return p.substr(0, p.length - path.extname(p).length) + ext;
+  return p.slice(0, -path.extname(p).length) + ext;
 }
 
 /**
