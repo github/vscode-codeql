@@ -90,7 +90,7 @@ export async function promptImportLgtmDatabase(
   }
 
   if (looksLikeLgtmUrl(lgtmUrl)) {
-    const databaseUrl = await convertToDatabaseUrl(lgtmUrl, progress);
+    const databaseUrl = await convertLgtmUrlToDatabaseUrl(lgtmUrl, progress);
     if (databaseUrl) {
       const item = await databaseArchiveFetcher(
         databaseUrl,
@@ -446,7 +446,7 @@ function extractProjectSlug(lgtmUrl: string): string | undefined {
 }
 
 // exported for testing
-export async function convertToDatabaseUrl(
+export async function convertLgtmUrlToDatabaseUrl(
   lgtmUrl: string,
   progress: ProgressCallback) {
   try {
