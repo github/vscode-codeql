@@ -467,7 +467,9 @@ export async function convertLgtmUrlToDatabaseUrl(
       }
     }
 
-    const language = await promptForLanguage(projectJson, progress);
+    const languages = projectJson?.languages?.map((lang: { language: string }) => lang.language) || [];
+
+    const language = await promptForLanguage(languages, progress);
     if (!language) {
       return;
     }
@@ -495,7 +497,7 @@ async function downloadLgtmProjectMetadata(lgtmUrl: string): Promise<any> {
 }
 
 async function promptForLanguage(
-  projectJson: any,
+  languages: string[],
   progress: ProgressCallback
 ): Promise<string | undefined> {
   progress({
@@ -503,17 +505,19 @@ async function promptForLanguage(
     step: 2,
     maxStep: 2
   });
-  if (!projectJson?.languages?.length) {
+  if (!languages.length) {
     return;
   }
-  if (projectJson.languages.length === 1) {
-    return projectJson.languages[0].language;
+  if (languages.length === 1) {
+    return languages[0];
   }
 
   return await window.showQuickPick(
-    projectJson.languages.map((lang: { language: string }) => lang.language), {
-    placeHolder: 'Select the database language to download:'
-  }
+    languages,
+    {
+      placeHolder: 'Select the database language to download:',
+      ignoreFocusOut: true,
+    }
   );
 }
 
