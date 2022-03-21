@@ -359,7 +359,7 @@ export async function setRemoteControllerRepo(repo: string | undefined) {
 }
 
 /**
- * The branch of "github/codeql-variant-analysis-action/" to use.
+ * The branch of "github/codeql-variant-analysis-action" to use with the "Run Variant Analysis" command.
  * Default value is "main".
  * Note: This command is only available for internal users.
  */
@@ -367,8 +367,4 @@ const ACTION_BRANCH = new Setting('actionBranch', REMOTE_QUERIES_SETTING);
 
 export function getActionBranch(): string {
   return ACTION_BRANCH.getValue<string>() || 'main';
-}
-
-export async function setActionBranch(branch: string | undefined) {
-  await ACTION_BRANCH.updateValue(branch, ConfigurationTarget.Global);
 }
