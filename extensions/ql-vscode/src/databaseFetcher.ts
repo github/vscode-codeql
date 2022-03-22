@@ -97,9 +97,10 @@ export async function promptImportGithubDatabase(
   if (REPO_REGEX.test(githubRepo)) {
     const databaseUrl = await convertGithubNwoToDatabaseUrl(githubRepo, credentials, progress);
     if (databaseUrl) {
+      const octokitToken = await credentials.getToken();
       const item = await databaseArchiveFetcher(
         databaseUrl,
-        { 'Accept': 'application/zip' },
+        { 'Accept': 'application/zip', 'Authorization': `Bearer ${octokitToken}` },
         databaseManager,
         storagePath,
         progress,
@@ -372,7 +373,10 @@ async function fetchAndUnzip(
     step: 1,
   });
 
-  const response = await checkForFailingResponse(await fetch(databaseUrl, requestHeaders), 'Error downloading database');
+  const response = await checkForFailingResponse(
+    await fetch(databaseUrl, { headers: requestHeaders }),
+    'Error downloading database'
+  );
   const archiveFileStream = fs.createWriteStream(archivePath);
 
   const contentLength = response.headers.get('content-length');
