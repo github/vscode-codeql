@@ -362,8 +362,8 @@
         "command": "codeQLDatabases.chooseDatabaseGithub",
         "title": "Download Database from GitHub",
         "icon": {
-          "light": "media/light/cloud-download.svg",
-          "dark": "media/dark/cloud-download.svg"
+          "light": "media/light/github.svg",
+          "dark": "media/dark/github.svg"
         }
       },
       {
