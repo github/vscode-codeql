@@ -620,7 +620,7 @@
         },
         {
           "command": "codeQLDatabases.chooseDatabaseGithub",
-          "when": "view == codeQLDatabases",
+          "when": "config.codeQL.canary && view == codeQLDatabases",
           "group": "navigation"
         },
         {
@@ -849,6 +849,10 @@
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {
+          "command": "codeQL.chooseDatabaseGithub",
+          "when": "config.codeQL.canary"
+        },
+        {
           "command": "codeQLDatabases.setCurrentDatabase",
           "when": "false"
         },
@@ -1060,7 +1064,7 @@
       },
       {
         "view": "codeQLDatabases",
-        "contents": "Add a CodeQL database:\n[From a folder](command:codeQLDatabases.chooseDatabaseFolder)\n[From an archive](command:codeQLDatabases.chooseDatabaseArchive)\n[From a URL (as a zip file)](command:codeQLDatabases.chooseDatabaseInternet)\n[From GitHub](command:codeQLDatabases.chooseDatabaseGithub)\n[From LGTM](command:codeQLDatabases.chooseDatabaseLgtm)"
+        "contents": "Add a CodeQL database:\n[From a folder](command:codeQLDatabases.chooseDatabaseFolder)\n[From an archive](command:codeQLDatabases.chooseDatabaseArchive)\n[From a URL (as a zip file)](command:codeQLDatabases.chooseDatabaseInternet)\n[From LGTM](command:codeQLDatabases.chooseDatabaseLgtm)"
       }
     ]
   },
