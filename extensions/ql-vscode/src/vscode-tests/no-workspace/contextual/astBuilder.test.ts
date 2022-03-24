@@ -7,6 +7,7 @@ import AstBuilder from '../../../contextual/astBuilder';
 import { QueryWithResults } from '../../../run-queries';
 import { CodeQLCliServer } from '../../../cli';
 import { DatabaseItem } from '../../../databases';
+import { Uri } from 'vscode';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -145,7 +146,7 @@ describe('AstBuilder', () => {
           resultsPath: '/a/b/c'
         }
       }
-    } as QueryWithResults, mockCli, {} as DatabaseItem, '');
+    } as QueryWithResults, mockCli, {} as DatabaseItem, Uri.file(''));
   }
 
   function mockDecode(resultSet: 'nodes' | 'edges' | 'graphProperties') {

@@ -10,7 +10,6 @@ import {
   TextDocument,
   Uri
 } from 'vscode';
-import * as path from 'path';
 
 import { decodeSourceArchiveUri, encodeArchiveBasePath, zipArchiveScheme } from '../archive-filesystem-provider';
 import { CodeQLCliServer } from '../cli';
@@ -160,7 +159,7 @@ export class TemplatePrintAstProvider {
     return new AstBuilder(
       query, this.cli,
       this.dbm.findDatabaseItem(dbUri)!,
-      path.basename(fileUri.fsPath),
+      fileUri,
     );
   }
 
