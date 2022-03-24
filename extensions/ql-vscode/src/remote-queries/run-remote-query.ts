@@ -22,6 +22,7 @@ import { OctokitResponse } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
+import { REPO_REGEX } from '../pure/helpers-pure';
 
 export interface QlPack {
   name: string;
@@ -37,13 +38,6 @@ interface RepoListQuickPickItem extends QuickPickItem {
 interface QueriesResponse {
   workflow_run_id: number
 }
-
-/**
- * This regex matches strings of the form `owner/repo` where:
- * - `owner` is made up of alphanumeric characters or single hyphens, starting and ending in an alphanumeric character
- * - `repo` is made up of alphanumeric characters, hyphens, or underscores
- */
-export const REPO_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
 
 /**
  * Well-known names for the query pack used by the server.

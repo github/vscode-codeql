@@ -21,8 +21,8 @@ import {
 } from './commandRunner';
 import { logger } from './logging';
 import { tmpDir } from './helpers';
-import { REPO_REGEX } from './remote-queries/run-remote-query';
 import { Credentials } from './authentication';
+import { REPO_REGEX } from './pure/helpers-pure';
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
