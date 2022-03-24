@@ -489,7 +489,7 @@ export async function convertGithubNwoToDatabaseUrl(
 
   } catch (e) {
     void logger.log(`Error: ${e.message}`);
-    throw new Error(`Invalid GitHub repository: ${githubRepo}`);
+    throw new Error(`Unable to get database for '${githubRepo}'`);
   }
 }
 
@@ -618,7 +618,7 @@ async function promptForLanguage(
     maxStep: 2
   });
   if (!languages.length) {
-    return;
+    throw new Error('No databases found');
   }
   if (languages.length === 1) {
     return languages[0];
