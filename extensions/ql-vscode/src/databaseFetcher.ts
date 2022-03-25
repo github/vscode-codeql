@@ -99,36 +99,39 @@ export async function promptImportGithubDatabase(
   }
 
   const databaseUrl = await convertGithubNwoToDatabaseUrl(githubRepo, credentials, progress);
-  if (databaseUrl) {
-    const octokit = await credentials.getOctokit();
-    /** 
-     * A token object returned by `octokit.auth()`. It's undocumented, but looks something like this:
-     * {
-     *   token: 'xxxx',
-     *   tokenType: 'oauth',
-     *   type: 'token',
-     * }
-     * We only need the actual token string.
-     */
-    const octokitToken = await octokit.auth() as { token: string };
-    if (!octokitToken.token) {
-      // Just print a generic error message for now. Ideally we could show more debugging info, like the
-      // octokit object, but that would expose a user token.
-      throw new Error('Unable to get GitHub token.');
-    }
-    const item = await databaseArchiveFetcher(
-      databaseUrl,
-      { 'Accept': 'application/zip', 'Authorization': `Bearer ${octokitToken.token}` },
-      databaseManager,
-      storagePath,
-      progress,
-      token,
-      cli
-    );
-    if (item) {
-      await commands.executeCommand('codeQLDatabases.focus');
-      void showAndLogInformationMessage('Database downloaded and imported successfully.');
-    }
+  if (!databaseUrl) {
+    return;
+  }
+
+  const octokit = await credentials.getOctokit();
+  /**
+   * The 'token' property of the token object returned by `octokit.auth()`.
+   * The object is undocumented, but looks something like this:
+   * {
+   *   token: 'xxxx',
+   *   tokenType: 'oauth',
+   *   type: 'token',
+   * }
+   * We only need the actual token string.
+   */
+  const octokitToken = (await octokit.auth() as { token: string })?.token;
+  if (!octokitToken) {
+    // Just print a generic error message for now. Ideally we could show more debugging info, like the
+    // octokit object, but that would expose a user token.
+    throw new Error('Unable to get GitHub token.');
+  }
+  const item = await databaseArchiveFetcher(
+    databaseUrl,
+    { 'Accept': 'application/zip', 'Authorization': `Bearer ${octokitToken}` },
+    databaseManager,
+    storagePath,
+    progress,
+    token,
+    cli
+  );
+  if (item) {
+    await commands.executeCommand('codeQLDatabases.focus');
+    void showAndLogInformationMessage('Database downloaded and imported successfully.');
     return item;
   }
   return;
