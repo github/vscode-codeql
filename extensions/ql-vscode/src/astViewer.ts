@@ -10,7 +10,8 @@ import {
   TextEditorSelectionChangeEvent,
   TextEditorSelectionChangeKind,
   Location,
-  Range
+  Range,
+  Uri
 } from 'vscode';
 import * as path from 'path';
 
@@ -104,7 +105,7 @@ class AstViewerDataProvider extends DisposableObject implements TreeDataProvider
 export class AstViewer extends DisposableObject {
   private treeView: TreeView<AstItem>;
   private treeDataProvider: AstViewerDataProvider;
-  private currentFile: string | undefined;
+  private currentFileUri: Uri | undefined;
 
   constructor() {
     super();
@@ -125,12 +126,12 @@ export class AstViewer extends DisposableObject {
     this.push(window.onDidChangeTextEditorSelection(this.updateTreeSelection, this));
   }
 
-  updateRoots(roots: AstItem[], db: DatabaseItem, fileName: string) {
+  updateRoots(roots: AstItem[], db: DatabaseItem, fileUri: Uri) {
     this.treeDataProvider.roots = roots;
     this.treeDataProvider.db = db;
     this.treeDataProvider.refresh();
-    this.treeView.message = `AST for ${path.basename(fileName)}`;
-    this.currentFile = fileName;
+    this.treeView.message = `AST for ${path.basename(fileUri.fsPath)}`;
+    this.currentFileUri = fileUri;
     // Handle error on reveal. This could happen if
     // the tree view is disposed during the reveal.
     this.treeView.reveal(roots[0], { focus: false })?.then(
@@ -174,7 +175,7 @@ export class AstViewer extends DisposableObject {
 
     if (
       this.treeView.visible &&
-      e.textEditor.document.uri.fsPath === this.currentFile &&
+      e.textEditor.document.uri.fsPath === this.currentFileUri?.fsPath &&
       e.selections.length === 1
     ) {
       const selection = e.selections[0];
@@ -199,6 +200,6 @@ export class AstViewer extends DisposableObject {
     this.treeDataProvider.db = undefined;
     this.treeDataProvider.refresh();
     this.treeView.message = undefined;
-    this.currentFile = undefined;
+    this.currentFileUri = undefined;
   }
 }

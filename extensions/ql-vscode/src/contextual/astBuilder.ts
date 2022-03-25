@@ -4,6 +4,7 @@ import { DecodedBqrsChunk, BqrsId, EntityValue } from '../pure/bqrs-cli-types';
 import { DatabaseItem } from '../databases';
 import { ChildAstItem, AstItem } from '../astViewer';
 import fileRangeFromURI from './fileRangeFromURI';
+import { Uri } from 'vscode';
 
 /**
  * A class that wraps a tree of QL results from a query that
@@ -17,7 +18,7 @@ export default class AstBuilder {
     queryResults: QueryWithResults,
     private cli: CodeQLCliServer,
     public db: DatabaseItem,
-    public fileName: string
+    public fileName: Uri
   ) {
     this.bqrsPath = queryResults.query.resultsPaths.resultsPath;
   }

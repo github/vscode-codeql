@@ -5,7 +5,7 @@ import * as sinon from 'sinon';
 import * as yaml from 'js-yaml';
 
 import { AstViewer, AstItem } from '../../astViewer';
-import { commands, Range } from 'vscode';
+import { commands, Range, Uri } from 'vscode';
 import { DatabaseItem } from '../../databases';
 import { testDisposeHandler } from '../test-dispose-handler';
 
@@ -40,7 +40,7 @@ describe('AstViewer', () => {
   it('should update the viewer roots', () => {
     const item = {} as DatabaseItem;
     viewer = new AstViewer();
-    viewer.updateRoots(astRoots, item, 'def/abc');
+    viewer.updateRoots(astRoots, item, Uri.file('def/abc'));
 
     expect((viewer as any).treeDataProvider.roots).to.eq(astRoots);
     expect((viewer as any).treeDataProvider.db).to.eq(item);
@@ -59,25 +59,31 @@ describe('AstViewer', () => {
     doSelectionTest(expr, expr.fileLocation?.range);
   });
 
-  it('should select nothing', () => {
+  it('should select nothing because of no overlap in range', () => {
     doSelectionTest(undefined, new Range(2, 3, 4, 5));
   });
+
+  it('should select nothing because of different file', () => {
+    doSelectionTest(undefined, astRoots[0].fileLocation?.range, Uri.file('def'));
+  });
+
+  const defaultUri = Uri.file('def/abc');
 
   function doSelectionTest(
     expectedSelection: any,
     selectionRange: Range | undefined,
-    fsPath = 'def/abc',
+    fileUri = defaultUri
   ) {
     const item = {} as DatabaseItem;
     viewer = new AstViewer();
-    viewer.updateRoots(astRoots, item, fsPath);
+    viewer.updateRoots(astRoots, item, defaultUri);
     const spy = sandbox.spy();
     (viewer as any).treeView.reveal = spy;
     Object.defineProperty((viewer as any).treeView, 'visible', {
       value: true
     });
 
-    const mockEvent = createMockEvent(selectionRange, fsPath);
+    const mockEvent = createMockEvent(selectionRange, fileUri);
     (viewer as any).updateTreeSelection(mockEvent);
     if (expectedSelection) {
       expect(spy).to.have.been.calledWith(expectedSelection);
@@ -88,7 +94,7 @@ describe('AstViewer', () => {
 
   function createMockEvent(
     selectionRange: Range | undefined,
-    fsPath: string,
+    uri: Uri,
   ) {
     return {
       selections: [{
@@ -98,7 +104,7 @@ describe('AstViewer', () => {
       textEditor: {
         document: {
           uri: {
-            fsPath
+            fsPath: uri.fsPath
           }
         }
       }
