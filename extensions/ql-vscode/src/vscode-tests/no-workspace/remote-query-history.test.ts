@@ -18,6 +18,7 @@ import { RemoteQueryResult } from '../../remote-queries/shared/remote-query-resu
 import { DisposableBucket } from '../disposable-bucket';
 import { testDisposeHandler } from '../test-dispose-handler';
 import { walkDirectory } from '../../helpers';
+import { getErrorMessage } from '../../pure/helpers-pure';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -291,7 +292,7 @@ describe('Remote queries and query history manager', function() {
         } as CancellationToken, publisher);
         expect.fail('Should have thrown');
       } catch (e) {
-        expect(e.message).to.contain('cancelled');
+        expect(getErrorMessage(e)).to.contain('cancelled');
       }
 
       expect(publisher).not.to.have.been.called;

@@ -8,6 +8,7 @@ import * as pq from 'proxyquire';
 import { CliVersionConstraint, CodeQLCliServer } from '../../cli';
 import { CodeQLExtensionInterface } from '../../extension';
 import { expect } from 'chai';
+import { getErrorMessage } from '../../pure/helpers-pure';
 
 const proxyquire = pq.noPreserveCache();
 
@@ -121,8 +122,8 @@ describe('Packaging commands', function() {
       await mod.handleInstallPackDependencies(cli, progress);
       // This line should not be reached
       expect(true).to.be.false;
-    } catch (error) {
-      expect(error.message).to.contain('Unable to install pack dependencies');
+    } catch (e) {
+      expect(getErrorMessage(e)).to.contain('Unable to install pack dependencies');
     }
   });
 });

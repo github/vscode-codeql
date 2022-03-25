@@ -18,7 +18,7 @@ describe('Databases', function() {
   this.timeout(60000);
 
   const LGTM_URL = 'https://lgtm.com/projects/g/aeisenberg/angular-bind-notifier/';
-  
+
   let databaseManager: DatabaseManager;
   let sandbox: sinon.SinonSandbox;
   let inputBoxStub: sinon.SinonStub;
@@ -40,7 +40,7 @@ describe('Databases', function() {
       progressCallback = sandbox.spy();
       inputBoxStub = sandbox.stub(window, 'showInputBox');
     } catch (e) {
-      fail(e);
+      fail(e as Error);
     }
   });
 
@@ -48,7 +48,7 @@ describe('Databases', function() {
     try {
       sandbox.restore();
     } catch (e) {
-      fail(e);
+      fail(e as Error);
     }
   });
 

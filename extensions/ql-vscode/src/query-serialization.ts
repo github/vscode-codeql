@@ -3,7 +3,7 @@ import * as path from 'path';
 
 import { QueryHistoryConfig } from './config';
 import { showAndLogErrorMessage } from './helpers';
-import { asyncFilter } from './pure/helpers-pure';
+import { asyncFilter, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedQueryInfo, LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { QueryEvaluationInfo } from './run-queries';
 
@@ -64,7 +64,7 @@ export async function slurpQueryHistory(fsPath: string, config: QueryHistoryConf
     });
   } catch (e) {
     void showAndLogErrorMessage('Error loading query history.', {
-      fullMessage: ['Error loading query history.', e.stack].join('\n'),
+      fullMessage: ['Error loading query history.', getErrorStack(e)].join('\n'),
     });
     // since the query history is invalid, it should be deleted so this error does not happen on next startup.
     await fs.remove(fsPath);
@@ -94,6 +94,6 @@ export async function splatQueryHistory(queries: QueryHistoryInfo[], fsPath: str
     }, null, 2);
     await fs.writeFile(fsPath, data);
   } catch (e) {
-    throw new Error(`Error saving query history to ${fsPath}: ${e.message}`);
+    throw new Error(`Error saving query history to ${fsPath}: ${getErrorMessage(e)}`);
   }
 }

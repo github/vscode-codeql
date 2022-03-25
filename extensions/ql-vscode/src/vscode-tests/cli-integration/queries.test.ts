@@ -78,7 +78,7 @@ describe('Queries', function() {
       }
       dbItem = maybeDbItem;
     } catch (e) {
-      fail(e);
+      fail(e as Error);
     }
   });
 
@@ -86,7 +86,7 @@ describe('Queries', function() {
     try {
       sandbox.restore();
     } catch (e) {
-      fail(e);
+      fail(e as Error);
     }
   });
 
@@ -107,7 +107,7 @@ describe('Queries', function() {
       expect(result.result.resultType).to.eq(QueryResultType.SUCCESS);
     } catch (e) {
       console.error('Test Failed');
-      fail(e);
+      fail(e as Error);
     }
   });
 
@@ -131,7 +131,7 @@ describe('Queries', function() {
       expect(result.result.resultType).to.eq(QueryResultType.SUCCESS);
     } catch (e) {
       console.error('Test Failed');
-      fail(e);
+      fail(e as Error);
     }
   });
 

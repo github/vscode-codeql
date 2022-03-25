@@ -42,3 +42,15 @@ export const THREE_HOURS_IN_MS = 1000 * 60 * 60 * 3;
  * - `repo` is made up of alphanumeric characters, hyphens, or underscores
  */
 export const REPO_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
+
+export function getErrorMessage(e: any) {
+  return e instanceof Error ? e.message : String(e);
+}
+
+export function getErrorStack(e: any) {
+  return e instanceof Error ? e.stack ?? '' : '';
+}
+
+export function asError(e: any): Error {
+  return e instanceof Error ? e : new Error(String(e));
+}

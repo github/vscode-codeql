@@ -21,6 +21,7 @@ import {
   ProgressCallback,
   UserCancellationException
 } from './commandRunner';
+import { getErrorMessage } from './pure/helpers-pure';
 
 const QUICK_QUERIES_DIR_NAME = 'quick-queries';
 const QUICK_QUERY_QUERY_NAME = 'quick-query.ql';
@@ -132,7 +133,7 @@ export async function displayQuickQuery(
     await Window.showTextDocument(await workspace.openTextDocument(qlFile));
   } catch (e) {
     if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
-      throw new UserCancellationException(e.message);
+      throw new UserCancellationException(getErrorMessage(e));
     } else {
       throw e;
     }

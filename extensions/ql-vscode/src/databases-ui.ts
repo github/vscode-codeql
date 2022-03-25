@@ -38,7 +38,7 @@ import {
   promptImportLgtmDatabase,
 } from './databaseFetcher';
 import { CancellationToken } from 'vscode';
-import { asyncFilter } from './pure/helpers-pure';
+import { asyncFilter, getErrorMessage } from './pure/helpers-pure';
 import { Credentials } from './authentication';
 
 type ThemableIconPath = { light: string; dark: string } | string;
@@ -393,7 +393,7 @@ export class DatabaseUI extends DisposableObject {
     try {
       return await this.chooseAndSetDatabase(true, progress, token);
     } catch (e) {
-      void showAndLogErrorMessage(e.message);
+      void showAndLogErrorMessage(getErrorMessage(e));
       return undefined;
     }
   };
@@ -461,7 +461,7 @@ export class DatabaseUI extends DisposableObject {
     try {
       return await this.chooseAndSetDatabase(false, progress, token);
     } catch (e) {
-      void showAndLogErrorMessage(e.message);
+      void showAndLogErrorMessage(getErrorMessage(e));
       return undefined;
     }
   };
@@ -622,8 +622,7 @@ export class DatabaseUI extends DisposableObject {
     } catch (e) {
       // rethrow and let this be handled by default error handling.
       throw new Error(
-        `Could not set database to ${path.basename(uri.fsPath)}. Reason: ${e.message
-        }`
+        `Could not set database to ${path.basename(uri.fsPath)}. Reason: ${getErrorMessage(e)}`
       );
     }
   };
