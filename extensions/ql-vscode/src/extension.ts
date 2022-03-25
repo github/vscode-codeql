@@ -433,7 +433,8 @@ async function activateWithInstalledDistribution(
     dbm,
     qs,
     getContextStoragePath(ctx),
-    ctx.extensionPath
+    ctx.extensionPath,
+    () => Credentials.initialize(ctx),
   );
   databaseUI.init();
   ctx.subscriptions.push(databaseUI);
@@ -930,6 +931,18 @@ async function activateWithInstalledDistribution(
       databaseUI.handleChooseDatabaseArchive(progress, token), {
       title: 'Choose a Database from an Archive'
     })
+  );
+  ctx.subscriptions.push(
+    commandRunnerWithProgress('codeQL.chooseDatabaseGithub', async (
+      progress: ProgressCallback,
+      token: CancellationToken
+    ) => {
+      const credentials = await Credentials.initialize(ctx);
+      await databaseUI.handleChooseDatabaseGithub(credentials, progress, token);
+    },
+      {
+        title: 'Adding database from GitHub',
+      })
   );
   ctx.subscriptions.push(
     commandRunnerWithProgress('codeQL.chooseDatabaseLgtm', (

@@ -45,6 +45,7 @@
     "onCommand:codeQLDatabases.chooseDatabaseFolder",
     "onCommand:codeQLDatabases.chooseDatabaseArchive",
     "onCommand:codeQLDatabases.chooseDatabaseInternet",
+    "onCommand:codeQLDatabases.chooseDatabaseGithub",
     "onCommand:codeQLDatabases.chooseDatabaseLgtm",
     "onCommand:codeQL.setCurrentDatabase",
     "onCommand:codeQL.viewAst",
@@ -54,6 +55,7 @@
     "onCommand:codeQL.chooseDatabaseFolder",
     "onCommand:codeQL.chooseDatabaseArchive",
     "onCommand:codeQL.chooseDatabaseInternet",
+    "onCommand:codeQL.chooseDatabaseGithub",
     "onCommand:codeQL.chooseDatabaseLgtm",
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
@@ -357,6 +359,14 @@
         }
       },
       {
+        "command": "codeQLDatabases.chooseDatabaseGithub",
+        "title": "Download Database from GitHub",
+        "icon": {
+          "light": "media/light/github.svg",
+          "dark": "media/dark/github.svg"
+        }
+      },
+      {
         "command": "codeQLDatabases.chooseDatabaseLgtm",
         "title": "Download from LGTM",
         "icon": {
@@ -427,6 +437,10 @@
       {
         "command": "codeQL.chooseDatabaseInternet",
         "title": "CodeQL: Download Database"
+      },
+      {
+        "command": "codeQL.chooseDatabaseGithub",
+        "title": "CodeQL: Download Database from GitHub"
       },
       {
         "command": "codeQL.chooseDatabaseLgtm",
@@ -602,6 +616,11 @@
         {
           "command": "codeQLDatabases.chooseDatabaseInternet",
           "when": "view == codeQLDatabases",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLDatabases.chooseDatabaseGithub",
+          "when": "config.codeQL.canary && view == codeQLDatabases",
           "group": "navigation"
         },
         {
@@ -830,6 +849,10 @@
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {
+          "command": "codeQL.chooseDatabaseGithub",
+          "when": "config.codeQL.canary"
+        },
+        {
           "command": "codeQLDatabases.setCurrentDatabase",
           "when": "false"
         },
@@ -871,6 +894,10 @@
         },
         {
           "command": "codeQLDatabases.chooseDatabaseInternet",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.chooseDatabaseGithub",
           "when": "false"
         },
         {
