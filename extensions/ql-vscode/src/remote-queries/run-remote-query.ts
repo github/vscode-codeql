@@ -9,7 +9,6 @@ import {
   getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
   showAndLogInformationMessage,
-  showInformationMessageWithAction,
   tryGetQueryMetadata,
   tmpDir
 } from '../helpers';
@@ -22,7 +21,7 @@ import { OctokitResponse } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
-import { REPO_REGEX } from '../pure/helpers-pure';
+import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
 
 export interface QlPack {
   name: string;
@@ -367,44 +366,7 @@ async function runRemoteQueriesApiRequest(
     void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${workflowRunId}).`);
     return workflowRunId;
   } catch (error) {
-    return await attemptRerun(error, credentials, ref, language, repositories, owner, repo, queryPackBase64, dryRun);
-  }
-}
-
-/** Attempts to rerun the query on only the valid repositories */
-export async function attemptRerun(
-  error: any,
-  credentials: Credentials,
-  ref: string,
-  language: string,
-  repositories: string[],
-  owner: string,
-  repo: string,
-  queryPackBase64: string,
-  dryRun = false
-) {
-  if (typeof error.message === 'string' && error.message.includes('Some repositories were invalid')) {
-    const invalidRepos = error?.response?.data?.invalid_repos || [];
-    void logger.log('Unable to run query on some of the specified repositories');
-    if (invalidRepos.length > 0) {
-      void logger.log(`Invalid repos: ${invalidRepos.join(', ')}`);
-    }
-
-    if (invalidRepos.length === repositories.length) {
-      // Every repo is invalid in some way
-      void showAndLogErrorMessage('Unable to run query on any of the specified repositories.');
-      return;
-    }
-
-    const popupMessage = 'Unable to run query on some of the specified repositories. [See logs for more details](command:codeQL.showLogs).';
-    const rerunQuery = await showInformationMessageWithAction(popupMessage, 'Rerun on the valid repositories only');
-    if (rerunQuery) {
-      const validRepositories = repositories.filter(r => !invalidRepos.includes(r));
-      void logger.log(`Rerunning query on set of valid repositories: ${JSON.stringify(validRepositories)}`);
-      return await runRemoteQueriesApiRequest(credentials, ref, language, validRepositories, owner, repo, queryPackBase64, dryRun);
-    }
-  } else {
-    void showAndLogErrorMessage(error);
+    void showAndLogErrorMessage(getErrorMessage(error));
   }
 }
 
