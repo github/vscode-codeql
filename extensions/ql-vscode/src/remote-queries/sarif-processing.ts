@@ -157,6 +157,15 @@ export function tryGetRule(
 }
 
 function getCodeSnippet(region: sarif.Region): CodeSnippet {
+
+  if (!region) {
+    // Handle SARIF generated from queries that do not have a region.
+    return {
+      startLine: 1,
+      endLine: 1,
+      text: ''
+    };
+  }
   const text = region.snippet!.text!;
   const { startLine, endLine } = parseSarifRegion(region);
 
@@ -175,7 +184,7 @@ function getHighlightedRegion(region: sarif.Region): HighlightedRegion {
     startColumn,
     endLine,
 
-    // parseSarifRegion currently shifts the end column by 1 to account 
+    // parseSarifRegion currently shifts the end column by 1 to account
     // for the way vscode counts columns so we need to shift it back.
     endColumn: endColumn + 1
   };

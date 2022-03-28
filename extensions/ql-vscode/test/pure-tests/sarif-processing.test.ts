@@ -421,7 +421,7 @@ describe('SARIF processing', () => {
 
     it('should return errors for result locations with no context region', () => {
       const sarif = buildValidSarifLog();
-      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.contextRegion = undefined;
+      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.contextRegion!.snippet = undefined;
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
@@ -597,7 +597,7 @@ describe('SARIF processing', () => {
 
   function buildValidSarifLog(): sarif.Log {
     return {
-      version: '0.0.1' as sarif.Log.version,
+      version: '2.1.0',
       runs: [
         {
           results: [

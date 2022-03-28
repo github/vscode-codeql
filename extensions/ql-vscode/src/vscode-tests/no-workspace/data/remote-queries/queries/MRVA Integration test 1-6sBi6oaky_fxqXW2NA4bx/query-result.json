@@ -22,6 +22,17 @@
         "innerFilePath": "results.sarif",
         "queryId": "MRVA Integration test 1-6sBi6oaky_fxqXW2NA4bx"
       }
+    },
+    {
+      "nwo": "hucairz/i-dont-exist",
+      "resultCount": 5,
+      "fileSizeInBytes": 81237,
+      "downloadLink": {
+        "id": "999999",
+        "urlPath": "/these/results/will/never/be/downloaded/999999",
+        "innerFilePath": "results.sarif",
+        "queryId": "MRVA Integration test 2-UL-vbKAjP8ffObxjsp7hN"
+      }
     }
   ],
   "analysisFailures": [],

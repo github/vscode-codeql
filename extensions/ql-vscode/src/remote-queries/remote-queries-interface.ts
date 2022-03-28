@@ -48,7 +48,7 @@ export class RemoteQueriesInterfaceManager {
     await this.waitForPanelLoaded();
     await this.postMessage({
       t: 'setRemoteQueryResult',
-      queryResult: this.buildViewModel(query, queryResult)
+      queryResult: await this.buildViewModel(query, queryResult)
     });
 
     await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults(queryResult.queryId));
@@ -62,14 +62,14 @@ export class RemoteQueriesInterfaceManager {
    * @param queryResult The result of the query.
    * @returns A fully created view model.
    */
-  private buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
+  private async buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): Promise<RemoteQueryResultViewModel> {
     const queryFileName = path.basename(query.queryFilePath);
     const totalResultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
     const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);
     const analysisSummaries = this.buildAnalysisSummaries(queryResult.analysisSummaries);
     const affectedRepositories = queryResult.analysisSummaries.filter(r => r.resultCount > 0);
 
-    return {
+    const model = {
       queryTitle: query.queryName,
       queryFileName: queryFileName,
       queryFilePath: query.queryFilePath,
@@ -84,6 +84,10 @@ export class RemoteQueriesInterfaceManager {
       analysisSummaries: analysisSummaries,
       analysisFailures: queryResult.analysisFailures,
     };
+
+    // Ensure all pre-downloaded artifacts are loaded into memory
+    await this.analysesResultsManager.loadDownloadedArtifacts(model.analysisSummaries);
+    return model;
   }
 
   getPanel(): WebviewPanel {
@@ -213,7 +217,7 @@ export class RemoteQueriesInterfaceManager {
   }
 
   private async downloadAllAnalysesResults(msg: RemoteQueryDownloadAllAnalysesResultsMessage): Promise<void> {
-    await this.analysesResultsManager.downloadAnalysesResults(
+    await this.analysesResultsManager.loadAnalysesResults(
       msg.analysisSummaries,
       undefined,
       results => this.setAnalysisResults(results));

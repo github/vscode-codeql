@@ -187,7 +187,7 @@ export class RemoteQueriesManager extends DisposableObject {
         fileSize: String(a.fileSizeInBytes)
       }));
 
-    await this.analysesResultsManager.downloadAnalysesResults(
+    await this.analysesResultsManager.loadAnalysesResults(
       analysesToDownload,
       token,
       results => this.interfaceManager.setAnalysisResults(results));
