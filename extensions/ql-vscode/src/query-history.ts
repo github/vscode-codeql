@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import {
   commands,
   Disposable,
@@ -747,6 +748,14 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (externalFilePath) {
+      if (!(await fs.pathExists(externalFilePath))) {
+        // timestamp file is missing (manually deleted?) try selecting the parent folder.
+        // It's less nice, but at least it will work.
+        externalFilePath = path.dirname(externalFilePath);
+        if (!(await fs.pathExists(externalFilePath))) {
+          throw new Error(`Query directory does not exist: ${externalFilePath}`);
+        }
+      }
       try {
         await commands.executeCommand('revealFileInOS', Uri.file(externalFilePath));
       } catch (e) {

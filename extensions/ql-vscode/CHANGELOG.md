@@ -3,8 +3,8 @@
 ## [UNRELEASED]
 
 - Fix a bug where the AST viewer was not synchronizing its selected node when the editor selection changes. [#1230](https://github.com/github/vscode-codeql/pull/1230)
-- Open the directory in the finder/explorer (instead of just highlighting it) when running the command "Open query directory" command from the query history view. [#1235](https://github.com/github/vscode-codeql/pull/1235)
-- Ensure query label changes are persisted across restarts. [#1235](https://github.com/github/vscode-codeql/pull/1235)
+- Open the directory in the finder/explorer (instead of just highlighting it) when running the "Open query directory" command from the query history view. [#1235](https://github.com/github/vscode-codeql/pull/1235)
+- Ensure query label in the query history view changes are persisted across restarts. [#1235](https://github.com/github/vscode-codeql/pull/1235)
 
 ## 1.6.1 - 17 March 2022
 
