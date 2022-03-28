@@ -1280,7 +1280,7 @@ export class CliVersionConstraint {
    /**
     * CLI version that supports rotating structured logs to produce one per query.
     */
-    public static CLI_VERSION_WITH_PER_QUERY_EVAL_LOG = new SemVer('2.9.0');
+    public static CLI_VERSION_WITH_PER_QUERY_EVAL_LOG = new SemVer('2.8.4');
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
