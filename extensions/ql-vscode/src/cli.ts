@@ -957,6 +957,7 @@ export class CodeQLCliServer implements Disposable {
   public async getVersion() {
     if (!this._version) {
       this._version = await this.refreshVersion();
+      // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
       await commands.executeCommand(
         'setContext', 'codeql.supportsEvalLog', await this.cliConstraints.supportsPerQueryEvalLog()
       );
