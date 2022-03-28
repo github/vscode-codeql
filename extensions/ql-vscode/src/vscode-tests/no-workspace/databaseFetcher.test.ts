@@ -12,6 +12,7 @@ import {
   convertLgtmUrlToDatabaseUrl,
   looksLikeLgtmUrl,
   findDirWithFile,
+  looksLikeGithubRepo,
 } from '../../databaseFetcher';
 import { ProgressCallback } from '../../commandRunner';
 import * as pq from 'proxyquire';
@@ -206,6 +207,32 @@ describe('databaseFetcher', function() {
       const lgtmUrl = 'https://lgtm.com/projects/g/github/hucairz';
       await expect(convertLgtmUrlToDatabaseUrl(lgtmUrl, progressSpy)).to.rejectedWith(/Invalid LGTM URL/);
       expect(progressSpy).to.have.callCount(0);
+    });
+  });
+
+  describe('looksLikeGithubRepo', () => {
+    it('should handle invalid urls', () => {
+      expect(looksLikeGithubRepo(''))
+        .to.be.false;
+      expect(looksLikeGithubRepo('http://github.com/foo/bar'))
+        .to.be.false;
+      expect(looksLikeGithubRepo('https://ww.github.com/foo/bar'))
+        .to.be.false;
+      expect(looksLikeGithubRepo('https://ww.github.com/foo'))
+        .to.be.false;
+      expect(looksLikeGithubRepo('foo'))
+        .to.be.false;
+    });
+
+    it('should handle valid urls', () => {
+      expect(looksLikeGithubRepo('https://github.com/foo/bar'))
+        .to.be.true;
+      expect(looksLikeGithubRepo('https://www.github.com/foo/bar'))
+        .to.be.true;
+      expect(looksLikeGithubRepo('https://github.com/foo/bar/sub/pages'))
+        .to.be.true;
+      expect(looksLikeGithubRepo('foo/bar'))
+        .to.be.true;
     });
   });
 
