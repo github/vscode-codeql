@@ -736,12 +736,12 @@
         {
           "command": "codeQLQueryHistory.showEvalLog",
           "group": "9_qlCommands",
-          "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem || viewItem == cancelledResultsItem"
+          "when": "codeql.supportsEvalLog && (viewItem == rawResultsItem || viewItem == interpretedResultsItem || viewItem == cancelledResultsItem)"
         },
         {
           "command": "codeQLQueryHistory.showEvalLogSummary",
           "group": "9_qlCommands",
-          "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem || viewItem == cancelledResultsItem"
+          "when": "codeql.supportsEvalLog && (viewItem == rawResultsItem || viewItem == interpretedResultsItem || viewItem == cancelledResultsItem)"
         },
         {
           "command": "codeQLQueryHistory.showQueryText",
