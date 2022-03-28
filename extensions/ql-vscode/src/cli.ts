@@ -8,7 +8,7 @@ import { Readable } from 'stream';
 import { StringDecoder } from 'string_decoder';
 import * as tk from 'tree-kill';
 import { promisify } from 'util';
-import { CancellationToken, Disposable, Uri } from 'vscode';
+import { CancellationToken, commands, Disposable, Uri } from 'vscode';
 
 import { BQRSInfo, DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { CliConfig } from './config';
@@ -957,6 +957,9 @@ export class CodeQLCliServer implements Disposable {
   public async getVersion() {
     if (!this._version) {
       this._version = await this.refreshVersion();
+      await commands.executeCommand(
+        'setContext', 'codeql.supportsEvalLog', await this.cliConstraints.supportsPerQueryEvalLog()
+      );
     }
     return this._version;
   }
@@ -1276,7 +1279,7 @@ export class CliVersionConstraint {
    /**
     * CLI version that supports rotating structured logs to produce one per query.
     */
-    public static CLI_VERSION_WITH_PER_QUERY_EVAL_LOG = new SemVer('2.8.4');
+    public static CLI_VERSION_WITH_PER_QUERY_EVAL_LOG = new SemVer('2.9.0');
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
