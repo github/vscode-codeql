@@ -40,6 +40,10 @@
   color: var(--vscode-editor-foreground);
 }
 
+.vscode-codeql__repositories-search {
+  margin: 1em 0 0 0;
+}
+
 .vscode-codeql__flat-list {
   list-style-type: none;
   margin: 0;
