@@ -722,7 +722,7 @@ export interface StartLogResult {
 }
 
 /**
- * The result of terminating a structured.
+ * The result of terminating a structured log.
  */
 export interface EndLogResult {
   /**

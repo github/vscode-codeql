@@ -95,16 +95,16 @@ export class QueryEvaluationInfo {
     return qsClient.findQueryLogFile(this.querySaveDir);
   }
 
-  get structLogPath() {
-    return qsClient.findQueryStructLogFile(this.querySaveDir);
+  get evalLogPath() {
+    return qsClient.findQueryEvalLogFile(this.querySaveDir);
   }
 
-  get structLogSummaryPath() {
-    return qsClient.findQueryStructLogSummaryFile(this.querySaveDir);
+  get evalLogSummaryPath() {
+    return qsClient.findQueryEvalLogSummaryFile(this.querySaveDir);
   }
 
-  get structLogEndSummaryPath() {
-    return qsClient.findQueryStructLogEndSummaryFile(this.querySaveDir);
+  get evalLogEndSummaryPath() {
+    return qsClient.findQueryEvalLogEndSummaryFile(this.querySaveDir);
   }
 
   get resultsPaths() {
@@ -172,7 +172,7 @@ export class QueryEvaluationInfo {
     if (queryInfo && await qs.cliServer.cliConstraints.supportsPerQueryEvalLog()) {
       await qs.sendRequest(messages.startLog, {
         db: dataset,
-        logPath: this.structLogPath,
+        logPath: this.evalLogPath,
       });
       
     }
@@ -195,21 +195,21 @@ export class QueryEvaluationInfo {
       if (queryInfo && await qs.cliServer.cliConstraints.supportsPerQueryEvalLog()) {
         await qs.sendRequest(messages.endLog, {
           db: dataset,
-          logPath: this.structLogPath,
+          logPath: this.evalLogPath,
         });
-        if (this.hasStructLog()) {
-          queryInfo.evalLogLocation = this.structLogPath;
-          await qs.cliServer.generateLogSummary(this.structLogPath, this.structLogSummaryPath, this.structLogEndSummaryPath);
+        if (this.hasEvalLog()) {
+          queryInfo.evalLogLocation = this.evalLogPath;
+          await qs.cliServer.generateLogSummary(this.evalLogPath, this.evalLogSummaryPath, this.evalLogEndSummaryPath);
           
-          fs.readFile(this.structLogEndSummaryPath, (err, buffer) => {
+          fs.readFile(this.evalLogEndSummaryPath, (err, buffer) => {
             if (err) {
-              throw new Error(`Could not read structured evaluator log end of summary file at ${this.structLogEndSummaryPath}.`);
+              throw new Error(`Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`);
             }
             void qs.logger.log(' --- Evaluator Log Summary --- ', { additionalLogLocation: this.logPath });
             void qs.logger.log(buffer.toString(), { additionalLogLocation: this.logPath });
           });
         } else {
-          void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.structLogPath}.`);
+          void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);
         }
       }
     }
@@ -328,8 +328,8 @@ export class QueryEvaluationInfo {
   /**
    * Holds if this query already has a completed structured evaluator log
    */
-   async hasStructLog(): Promise<boolean> {
-    return fs.pathExists(this.structLogPath);
+   async hasEvalLog(): Promise<boolean> {
+    return fs.pathExists(this.evalLogPath);
   }
 
   /**
