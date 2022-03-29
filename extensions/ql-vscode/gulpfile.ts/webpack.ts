@@ -7,8 +7,7 @@ export function compileView(cb: (err?: Error) => void) {
 
 export function watchView(cb: (err?: Error) => void) {
   const watchConfig = {
-    ...
-    config,
+    ...config,
     watch: true,
     watchOptions: {
       aggregateTimeout: 200,
