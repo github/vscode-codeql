@@ -1,8 +1,8 @@
 import * as gulp from 'gulp';
-import { compileTypeScript, watchTypeScript, copyViewCss, cleanOutput } from './typescript';
+import { compileTypeScript, watchTypeScript, copyViewCss, cleanOutput, watchCss } from './typescript';
 import { compileTextMateGrammar } from './textmate';
 import { copyTestData } from './tests';
-import { compileView } from './webpack';
+import { compileView, watchView } from './webpack';
 import { packageExtension } from './package';
 import { injectAppInsightsKey } from './appInsights';
 
@@ -14,5 +14,15 @@ export const buildWithoutPackage =
     )
   );
 
-export { cleanOutput, compileTextMateGrammar, watchTypeScript, compileTypeScript, copyTestData, injectAppInsightsKey };
+export {
+  cleanOutput,
+  compileTextMateGrammar,
+  watchTypeScript,
+  watchView,
+  compileTypeScript,
+  copyTestData,
+  injectAppInsightsKey,
+  compileView,
+  watchCss
+};
 export default gulp.series(buildWithoutPackage, injectAppInsightsKey, packageExtension);

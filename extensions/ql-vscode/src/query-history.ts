@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import {
   commands,
   Disposable,
@@ -28,12 +29,14 @@ import { URLSearchParams } from 'url';
 import { QueryServerClient } from './queryserver-client';
 import { DisposableObject } from './pure/disposable-object';
 import { commandRunner } from './commandRunner';
-import { assertNever, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, getErrorMessage, getErrorStack  } from './pure/helpers-pure';
+import { assertNever, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo as LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { DatabaseManager } from './databases';
 import { registerQueryHistoryScubber } from './query-history-scrubber';
 import { QueryStatus } from './query-status';
 import { slurpQueryHistory, splatQueryHistory } from './query-serialization';
+import * as fs from 'fs-extra';
+import { CliVersionConstraint } from './cli';
 
 /**
  * query-history.ts
@@ -181,38 +184,48 @@ export class HistoryTreeDataProvider extends DisposableObject {
   ): ProviderResult<QueryHistoryInfo[]> {
     return element ? [] : this.history.sort((h1, h2) => {
 
-      // TODO remote queries are not implemented yet.
-      if (h1.t !== 'local' && h2.t !== 'local') {
-        return 0;
-      }
-      if (h1.t !== 'local') {
-        return -1;
-      }
-      if (h2.t !== 'local') {
-        return 1;
-      }
+      const h1Label = h1.label.toLowerCase();
+      const h2Label = h2.label.toLowerCase();
 
-      const resultCount1 = h1.completedQuery?.resultCount ?? -1;
-      const resultCount2 = h2.completedQuery?.resultCount ?? -1;
+      const h1Date = h1.t === 'local'
+        ? h1.initialInfo.start.getTime()
+        : h1.remoteQuery?.executionStartTime;
+
+      const h2Date = h2.t === 'local'
+        ? h2.initialInfo.start.getTime()
+        : h2.remoteQuery?.executionStartTime;
+
+      // result count for remote queries is not available here.
+      const resultCount1 = h1.t === 'local'
+        ? h1.completedQuery?.resultCount ?? -1
+        : -1;
+      const resultCount2 = h2.t === 'local'
+        ? h2.completedQuery?.resultCount ?? -1
+        : -1;
 
       switch (this.sortOrder) {
         case SortOrder.NameAsc:
-          return h1.label.localeCompare(h2.label, env.language);
+          return h1Label.localeCompare(h2Label, env.language);
+
         case SortOrder.NameDesc:
-          return h2.label.localeCompare(h1.label, env.language);
+          return h2Label.localeCompare(h1Label, env.language);
+
         case SortOrder.DateAsc:
-          return h1.initialInfo.start.getTime() - h2.initialInfo.start.getTime();
+          return h1Date - h2Date;
+
         case SortOrder.DateDesc:
-          return h2.initialInfo.start.getTime() - h1.initialInfo.start.getTime();
+          return h2Date - h1Date;
+
         case SortOrder.CountAsc:
           // If the result counts are equal, sort by name.
           return resultCount1 - resultCount2 === 0
-            ? h1.label.localeCompare(h2.label, env.language)
+            ? h1Label.localeCompare(h2Label, env.language)
             : resultCount1 - resultCount2;
+
         case SortOrder.CountDesc:
           // If the result counts are equal, sort by name.
           return resultCount2 - resultCount1 === 0
-            ? h2.label.localeCompare(h1.label, env.language)
+            ? h2Label.localeCompare(h1Label, env.language)
             : resultCount2 - resultCount1;
         default:
           assertNever(this.sortOrder);
@@ -404,6 +417,18 @@ export class QueryHistoryManager extends DisposableObject {
       commandRunner(
         'codeQLQueryHistory.openQueryDirectory',
         this.handleOpenQueryDirectory.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.showEvalLog',
+        this.handleShowEvalLog.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.showEvalLogSummary',
+        this.handleShowEvalLogSummary.bind(this)
       )
     );
     this.push(
@@ -636,7 +661,7 @@ export class QueryHistoryManager extends DisposableObject {
     if (response !== undefined) {
       // Interpret empty string response as 'go back to using default'
       finalSingleItem.initialInfo.userSpecifiedLabel = response === '' ? undefined : response;
-      this.treeDataProvider.refresh();
+      await this.refreshTreeView();
     }
   }
 
@@ -727,21 +752,72 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    let p: string | undefined;
+    let externalFilePath: string | undefined;
     if (finalSingleItem.t === 'local') {
       if (finalSingleItem.completedQuery) {
-        p = finalSingleItem.completedQuery.query.querySaveDir;
+        externalFilePath = path.join(finalSingleItem.completedQuery.query.querySaveDir, 'timestamp');
       }
     } else if (finalSingleItem.t === 'remote') {
-      p = path.join(this.queryStorageDir, finalSingleItem.queryId);
+      externalFilePath = path.join(this.queryStorageDir, finalSingleItem.queryId, 'timestamp');
     }
 
-    if (p) {
-      try {
-        await commands.executeCommand('revealFileInOS', Uri.file(p));
-      } catch (e) {
-        throw new Error(`Failed to open ${p}: ${getErrorMessage(e)}`);
+    if (externalFilePath) {
+      if (!(await fs.pathExists(externalFilePath))) {
+        // timestamp file is missing (manually deleted?) try selecting the parent folder.
+        // It's less nice, but at least it will work.
+        externalFilePath = path.dirname(externalFilePath);
+        if (!(await fs.pathExists(externalFilePath))) {
+          throw new Error(`Query directory does not exist: ${externalFilePath}`);
+        }
       }
+      try {
+        await commands.executeCommand('revealFileInOS', Uri.file(externalFilePath));
+      } catch (e) {
+        throw new Error(`Failed to open ${externalFilePath}: ${getErrorMessage(e)}`);
+      }
+    }
+  }
+  
+  private warnNoEvalLog() {
+    void showAndLogWarningMessage('No evaluator log is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG + '?');
+  }
+
+  async handleShowEvalLog(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[]
+  ) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    // Only applicable to an individual local query
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'local') {
+      return;
+    }
+
+    if (finalSingleItem.evalLogLocation) {
+      await this.tryOpenExternalFile(finalSingleItem.evalLogLocation);
+    } else {
+      this.warnNoEvalLog();
+    }
+  }
+
+  async handleShowEvalLogSummary(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[]
+  ) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    // Only applicable to an individual local query
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'local') {
+      return;
+    }
+
+    if (finalSingleItem.evalLogLocation) {
+      if (!fs.existsSync(finalSingleItem.evalLogSummaryLocation)) {
+        await this.qs.cliServer.generateLogSummary(finalSingleItem.evalLogLocation, finalSingleItem.evalLogSummaryLocation);
+      }
+      await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
+    } else {
+      this.warnNoEvalLog();
     }
   }
 

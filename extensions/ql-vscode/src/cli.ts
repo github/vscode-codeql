@@ -8,7 +8,7 @@ import { Readable } from 'stream';
 import { StringDecoder } from 'string_decoder';
 import * as tk from 'tree-kill';
 import { promisify } from 'util';
-import { CancellationToken, Disposable, Uri } from 'vscode';
+import { CancellationToken, commands, Disposable, Uri } from 'vscode';
 
 import { BQRSInfo, DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { CliConfig } from './config';
@@ -666,6 +666,23 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
+  * Generate a summary of an evaluation log.
+  * @param inputPath The path of an evaluation event log.
+  * @param outputPath The path to write a human-readable summary of it to.
+  */
+   async generateLogSummary(
+    inputPath: string,
+    outputPath: string,
+  ): Promise<string> {
+    const subcommandArgs = [
+      '--format=text',
+      inputPath,
+      outputPath
+    ];
+    return await this.runCodeQlCliCommand(['generate', 'log-summary'], subcommandArgs, 'Generating log summary');
+  }
+
+  /**
   * Gets the results from a bqrs.
   * @param bqrsPath The path to the bqrs.
   * @param resultSet The result set to get.
@@ -940,6 +957,10 @@ export class CodeQLCliServer implements Disposable {
   public async getVersion() {
     if (!this._version) {
       this._version = await this.refreshVersion();
+      // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
+      await commands.executeCommand(
+        'setContext', 'codeql.supportsEvalLog', await this.cliConstraints.supportsPerQueryEvalLog()
+      );
     }
     return this._version;
   }
@@ -1256,6 +1277,11 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_STRUCTURED_EVAL_LOG = new SemVer('2.8.2');
 
+   /**
+    * CLI version that supports rotating structured logs to produce one per query.
+    */
+    public static CLI_VERSION_WITH_PER_QUERY_EVAL_LOG = new SemVer('2.8.4');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1314,5 +1340,9 @@ export class CliVersionConstraint {
 
   async supportsStructuredEvalLog() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_STRUCTURED_EVAL_LOG);
+  }
+
+  async supportsPerQueryEvalLog() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG);
   }
 }
