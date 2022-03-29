@@ -427,9 +427,11 @@ describe('query-history', () => {
 
   describe('getChildren', () => {
     const history = [
-      item('a', 10, 20),
-      item('b', 5, 30),
-      item('c', 1, 25),
+      item('a', 2, 'remote'),
+      item('b', 10, 'local', 20),
+      item('c', 5, 'local', 30),
+      item('d', 1, 'local', 25),
+      item('e', 6, 'remote'),
     ];
     let treeDataProvider: HistoryTreeDataProvider;
 
@@ -456,7 +458,7 @@ describe('query-history', () => {
     });
 
     it('should get children for date ascending', async () => {
-      const expected = [history[2], history[1], history[0]];
+      const expected = [history[3], history[0], history[2], history[4], history[1]];
       treeDataProvider.sortOrder = SortOrder.DateAsc;
 
       const children = await treeDataProvider.getChildren();
@@ -464,7 +466,7 @@ describe('query-history', () => {
     });
 
     it('should get children for date descending', async () => {
-      const expected = [history[0], history[1], history[2]];
+      const expected = [history[3], history[0], history[2], history[4], history[1]].reverse();
       treeDataProvider.sortOrder = SortOrder.DateDesc;
 
       const children = await treeDataProvider.getChildren();
@@ -472,7 +474,7 @@ describe('query-history', () => {
     });
 
     it('should get children for result count ascending', async () => {
-      const expected = [history[0], history[2], history[1]];
+      const expected = [history[0], history[4], history[1], history[3], history[2]];
       treeDataProvider.sortOrder = SortOrder.CountAsc;
 
       const children = await treeDataProvider.getChildren();
@@ -480,7 +482,7 @@ describe('query-history', () => {
     });
 
     it('should get children for result count descending', async () => {
-      const expected = [history[1], history[2], history[0]];
+      const expected = [history[0], history[4], history[1], history[3], history[2]].reverse();
       treeDataProvider.sortOrder = SortOrder.CountDesc;
 
       const children = await treeDataProvider.getChildren();
@@ -509,17 +511,27 @@ describe('query-history', () => {
       expect(children).to.deep.eq(expected);
     });
 
-    function item(label: string, start: number, resultCount?: number) {
-      return {
-        label,
-        initialInfo: {
-          start: new Date(start),
-        },
-        completedQuery: {
-          resultCount,
-        },
-        t: 'local'
-      };
+    function item(label: string, start: number, t = 'local', resultCount?: number) {
+      if (t === 'local') {
+        return {
+          label,
+          initialInfo: {
+            start: new Date(start),
+          },
+          completedQuery: {
+            resultCount,
+          },
+          t
+        };
+      } else {
+        return {
+          label,
+          remoteQuery: {
+            executionStartTime: start,
+          },
+          t
+        };
+      }
     }
   });
 
