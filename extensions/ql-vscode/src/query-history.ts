@@ -1,5 +1,4 @@
 import * as path from 'path';
-import * as fs from 'fs-extra';
 import {
   commands,
   Disposable,
@@ -777,7 +776,7 @@ export class QueryHistoryManager extends DisposableObject {
       }
     }
   }
-  
+
   private warnNoEvalLog() {
     void showAndLogWarningMessage('No evaluator log is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG + '?');
   }
