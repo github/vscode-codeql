@@ -337,13 +337,13 @@ describe('Remote queries and query history manager', function() {
       // Load remoteQueryResult0.analysisSummaries[1] into memory
       await arm.downloadAnalysisResults(remoteQueryResult0.analysisSummaries[1], () => Promise.resolve());
 
-      expect(await (arm as any).isDownloadedNotInMemory(remoteQueryResult0.analysisSummaries[0])).to.be.true;
+      expect(await (arm as any).isAnalysisDownloadedNotInMemory(remoteQueryResult0.analysisSummaries[0])).to.be.true;
 
       // in memory
-      expect(await (arm as any).isDownloadedNotInMemory(remoteQueryResult0.analysisSummaries[1])).to.be.false;
+      expect(await (arm as any).isAnalysisDownloadedNotInMemory(remoteQueryResult0.analysisSummaries[1])).to.be.false;
 
       // not downloaded
-      expect(await (arm as any).isDownloadedNotInMemory(remoteQueryResult0.analysisSummaries[2])).to.be.false;
+      expect(await (arm as any).isAnalysisDownloadedNotInMemory(remoteQueryResult0.analysisSummaries[2])).to.be.false;
     });
 
     it('should load downloaded artifacts', async () => {
