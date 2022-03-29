@@ -181,17 +181,17 @@ const FileCodeSnippet = ({
   messageChildren,
 }: {
   fileLink: FileLink,
-  codeSnippet?: CodeSnippet,
+  codeSnippet: CodeSnippet,
   highlightedRegion?: HighlightedRegion,
   severity?: ResultSeverity,
   message?: AnalysisMessage,
   messageChildren?: React.ReactNode,
 }) => {
 
-  const code = codeSnippet?.text.split('\n') || [];
+  const code = codeSnippet.text.split('\n');
 
-  const startingLine = codeSnippet?.startLine || 0;
-  const endingLine = codeSnippet?.endLine || 0;
+  const startingLine = codeSnippet.startLine;
+  const endingLine = codeSnippet.endLine;
 
   const titleFileUri = createRemoteFileRef(
     fileLink,

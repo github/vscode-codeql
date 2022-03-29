@@ -54,9 +54,9 @@ function extractResultAlerts(
   for (const location of result.locations ?? []) {
     const physicalLocation = location.physicalLocation!;
     const filePath = physicalLocation.artifactLocation!.uri!;
-    const codeSnippet = getCodeSnippet(physicalLocation.contextRegion, physicalLocation.region);
+    const codeSnippet = getCodeSnippet(physicalLocation.contextRegion!);
     const highlightedRegion = physicalLocation.region
-      ? getHighlightedRegion(physicalLocation.region)
+      ? getHighlightedRegion(physicalLocation.region!)
       : undefined;
 
     const analysisAlert: AnalysisAlert = {
@@ -156,21 +156,15 @@ export function tryGetRule(
   return undefined;
 }
 
-function getCodeSnippet(region?: sarif.Region, alternateRegion?: sarif.Region): CodeSnippet | undefined {
-  region = region ?? alternateRegion;
-
-  if (!region) {
-    return undefined;
-  }
-
-  const text = region.snippet?.text || '';
+function getCodeSnippet(region: sarif.Region): CodeSnippet {
+  const text = region.snippet!.text!;
   const { startLine, endLine } = parseSarifRegion(region);
 
   return {
     startLine,
     endLine,
     text
-  };
+  } as CodeSnippet;
 }
 
 function getHighlightedRegion(region: sarif.Region): HighlightedRegion {
@@ -181,7 +175,7 @@ function getHighlightedRegion(region: sarif.Region): HighlightedRegion {
     startColumn,
     endLine,
 
-    // parseSarifRegion currently shifts the end column by 1 to account
+    // parseSarifRegion currently shifts the end column by 1 to account 
     // for the way vscode counts columns so we need to shift it back.
     endColumn: endColumn + 1
   };
@@ -201,7 +195,7 @@ function getCodeFlows(
         for (const threadFlowLocation of threadFlow.locations) {
           const physicalLocation = threadFlowLocation!.location!.physicalLocation!;
           const filePath = physicalLocation!.artifactLocation!.uri!;
-          const codeSnippet = getCodeSnippet(physicalLocation.contextRegion, physicalLocation.region);
+          const codeSnippet = getCodeSnippet(physicalLocation.contextRegion!);
           const highlightedRegion = physicalLocation.region
             ? getHighlightedRegion(physicalLocation.region)
             : undefined;
