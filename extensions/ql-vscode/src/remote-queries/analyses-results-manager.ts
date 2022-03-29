@@ -14,7 +14,7 @@ import { extractAnalysisAlerts } from './sarif-processing';
 import { CodeQLCliServer } from '../cli';
 import { extractRawResults } from './bqrs-processing';
 import { asyncFilter, getErrorMessage } from '../pure/helpers-pure';
-import { toDownloadPath } from './download-link';
+import { createDownloadPath } from './download-link';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for each remote query.
@@ -51,17 +51,17 @@ export class AnalysesResultsManager {
    * it will be downloaded. If it is already downloaded, it will be loaded into memory.
    * If it is already in memory, this will be a no-op.
    *
-   * @param allAnalysesToDownload List of analyses to ensure are downloaded and in memory
+   * @param allAnalysesToLoad List of analyses to ensure are downloaded and in memory
    * @param token Optional cancellation token
    * @param publishResults Optional function to publish the results after loading
    */
   public async loadAnalysesResults(
-    allAnalysesToDownload: AnalysisSummary[],
+    allAnalysesToLoad: AnalysisSummary[],
     token?: CancellationToken,
     publishResults: (analysesResults: AnalysisResults[]) => Promise<void> = () => Promise.resolve()
   ): Promise<void> {
     // Filter out analyses that we have already in memory.
-    const analysesToDownload = allAnalysesToDownload.filter(x => !this.isAnalysisInMemory(x));
+    const analysesToDownload = allAnalysesToLoad.filter(x => !this.isAnalysisInMemory(x));
 
     const credentials = await Credentials.initialize(this.ctx);
 
@@ -166,11 +166,11 @@ export class AnalysesResultsManager {
   public async loadDownloadedArtifacts(
     allAnalysesToCheck: AnalysisSummary[]
   ) {
-    const allDownloadedAnalyses = await asyncFilter(allAnalysesToCheck, x => this.isDownloadedNotInMemory(x));
+    const allDownloadedAnalyses = await asyncFilter(allAnalysesToCheck, x => this.isAnalysisDownloadedNotInMemory(x));
     await this.loadAnalysesResults(allDownloadedAnalyses);
   }
 
-  private async isDownloadedNotInMemory(analysis: AnalysisSummary): Promise<boolean> {
+  private async isAnalysisDownloadedNotInMemory(analysis: AnalysisSummary): Promise<boolean> {
     const queryId = analysis.downloadLink.queryId;
     const resultsForQuery = this.internalGetAnalysesResults(queryId);
     const analysisResults = resultsForQuery.find(r => r.nwo === analysis.nwo);
@@ -180,7 +180,7 @@ export class AnalysesResultsManager {
     }
 
     // Check if the analysis results are already downloaded, but not in memory
-    return await fs.pathExists(toDownloadPath(this.storagePath, analysis.downloadLink));
+    return await fs.pathExists(createDownloadPath(this.storagePath, analysis.downloadLink));
   }
 
   private async readBqrsResults(filePath: string, fileLinkPrefix: string): Promise<AnalysisRawResults> {

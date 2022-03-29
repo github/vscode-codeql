@@ -419,15 +419,42 @@ describe('SARIF processing', () => {
       expectResultParsingError(result.errors[0]);
     });
 
-    it('should return errors for result locations with no context region', () => {
+    it('should not return errors for result locations with no snippet', () => {
       const sarif = buildValidSarifLog();
       sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.contextRegion!.snippet = undefined;
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
+      const expectedCodeSnippet = {
+        startLine: result.alerts[0].codeSnippet!.startLine,
+        endLine: result.alerts[0].codeSnippet!.endLine,
+        text: ''
+      };
+
+      const actualCodeSnippet = result.alerts[0].codeSnippet;
+
       expect(result).to.be.ok;
-      expect(result.errors.length).to.equal(1);
-      expectResultParsingError(result.errors[0]);
+      expectNoParsingError(result);
+      expect(actualCodeSnippet).to.deep.equal(expectedCodeSnippet);
+    });
+
+    it('should not return errors for result locations with no contextRegion', () => {
+      const sarif = buildValidSarifLog();
+      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.contextRegion = undefined;
+
+      const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
+
+      const expectedCodeSnippet = {
+        startLine: result.alerts[0].highlightedRegion!.startLine,
+        endLine: result.alerts[0].highlightedRegion!.endLine,
+        text: ''
+      };
+
+      const actualCodeSnippet = result.alerts[0].codeSnippet;
+
+      expect(result).to.be.ok;
+      expectNoParsingError(result);
+      expect(actualCodeSnippet).to.deep.equal(expectedCodeSnippet);
     });
 
     it('should not return errors for result locations with no region', () => {
@@ -438,6 +465,7 @@ describe('SARIF processing', () => {
 
       expect(result).to.be.ok;
       expect(result.alerts.length).to.equal(1);
+      expectNoParsingError(result);
     });
 
     it('should return errors for result locations with no physical location', () => {
@@ -537,9 +565,9 @@ describe('SARIF processing', () => {
       expect(result).to.be.ok;
       expect(result.errors.length).to.equal(0);
       expect(result.alerts.length).to.equal(3);
-      expect(result.alerts.find(a => getMessageText(a.message) === 'msg1' && a.codeSnippet.text === 'foo')).to.be.ok;
-      expect(result.alerts.find(a => getMessageText(a.message) === 'msg1' && a.codeSnippet.text === 'bar')).to.be.ok;
-      expect(result.alerts.find(a => getMessageText(a.message) === 'msg2' && a.codeSnippet.text === 'baz')).to.be.ok;
+      expect(result.alerts.find(a => getMessageText(a.message) === 'msg1' && a.codeSnippet!.text === 'foo')).to.be.ok;
+      expect(result.alerts.find(a => getMessageText(a.message) === 'msg1' && a.codeSnippet!.text === 'bar')).to.be.ok;
+      expect(result.alerts.find(a => getMessageText(a.message) === 'msg2' && a.codeSnippet!.text === 'baz')).to.be.ok;
       expect(result.alerts.every(a => a.severity === 'Warning')).to.be.true;
     });
 
@@ -593,6 +621,11 @@ describe('SARIF processing', () => {
 
   function expectResultParsingError(msg: string) {
     expect(msg.startsWith('Error when processing SARIF result')).to.be.true;
+  }
+
+  function expectNoParsingError(result: { errors: string[] | undefined }) {
+    const array = result.errors || [];
+    expect(array.length, array.join()).to.equal(0);
   }
 
   function buildValidSarifLog(): sarif.Log {

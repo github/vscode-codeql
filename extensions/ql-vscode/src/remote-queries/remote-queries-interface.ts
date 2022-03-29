@@ -46,10 +46,14 @@ export class RemoteQueriesInterfaceManager {
     this.getPanel().reveal(undefined, true);
 
     await this.waitForPanelLoaded();
+    const model = await this.buildViewModel(query, queryResult);
     await this.postMessage({
       t: 'setRemoteQueryResult',
-      queryResult: await this.buildViewModel(query, queryResult)
+      queryResult: model
     });
+
+    // Ensure all pre-downloaded artifacts are loaded into memory
+    await this.analysesResultsManager.loadDownloadedArtifacts(model.analysisSummaries);
 
     await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults(queryResult.queryId));
   }
@@ -69,7 +73,7 @@ export class RemoteQueriesInterfaceManager {
     const analysisSummaries = this.buildAnalysisSummaries(queryResult.analysisSummaries);
     const affectedRepositories = queryResult.analysisSummaries.filter(r => r.resultCount > 0);
 
-    const model = {
+    return {
       queryTitle: query.queryName,
       queryFileName: queryFileName,
       queryFilePath: query.queryFilePath,
@@ -84,10 +88,6 @@ export class RemoteQueriesInterfaceManager {
       analysisSummaries: analysisSummaries,
       analysisFailures: queryResult.analysisFailures,
     };
-
-    // Ensure all pre-downloaded artifacts are loaded into memory
-    await this.analysesResultsManager.loadDownloadedArtifacts(model.analysisSummaries);
-    return model;
   }
 
   getPanel(): WebviewPanel {

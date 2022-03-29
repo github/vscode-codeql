@@ -54,9 +54,9 @@ function extractResultAlerts(
   for (const location of result.locations ?? []) {
     const physicalLocation = location.physicalLocation!;
     const filePath = physicalLocation.artifactLocation!.uri!;
-    const codeSnippet = getCodeSnippet(physicalLocation.contextRegion!);
+    const codeSnippet = getCodeSnippet(physicalLocation.contextRegion, physicalLocation.region);
     const highlightedRegion = physicalLocation.region
-      ? getHighlightedRegion(physicalLocation.region!)
+      ? getHighlightedRegion(physicalLocation.region)
       : undefined;
 
     const analysisAlert: AnalysisAlert = {
@@ -156,24 +156,21 @@ export function tryGetRule(
   return undefined;
 }
 
-function getCodeSnippet(region: sarif.Region): CodeSnippet {
+function getCodeSnippet(region?: sarif.Region, alternateRegion?: sarif.Region): CodeSnippet | undefined {
+  region = region ?? alternateRegion;
 
   if (!region) {
-    // Handle SARIF generated from queries that do not have a region.
-    return {
-      startLine: 1,
-      endLine: 1,
-      text: ''
-    };
+    return undefined;
   }
-  const text = region.snippet!.text!;
+
+  const text = region.snippet?.text || '';
   const { startLine, endLine } = parseSarifRegion(region);
 
   return {
     startLine,
     endLine,
     text
-  } as CodeSnippet;
+  };
 }
 
 function getHighlightedRegion(region: sarif.Region): HighlightedRegion {
@@ -204,7 +201,7 @@ function getCodeFlows(
         for (const threadFlowLocation of threadFlow.locations) {
           const physicalLocation = threadFlowLocation!.location!.physicalLocation!;
           const filePath = physicalLocation!.artifactLocation!.uri!;
-          const codeSnippet = getCodeSnippet(physicalLocation.contextRegion!);
+          const codeSnippet = getCodeSnippet(physicalLocation.contextRegion, physicalLocation.region);
           const highlightedRegion = physicalLocation.region
             ? getHighlightedRegion(physicalLocation.region)
             : undefined;
