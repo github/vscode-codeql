@@ -16,7 +16,8 @@
     "noImplicitReturns": true,
     "experimentalDecorators": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "esModuleInterop": true
   },
   "include": ["*.ts"]
 }
