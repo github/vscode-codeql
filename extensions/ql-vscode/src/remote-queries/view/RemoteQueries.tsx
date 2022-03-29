@@ -325,6 +325,7 @@ const AnalysesResults = ({
         queryResult={queryResult}
         analysesResults={analysesResults} />
 
+      <VerticalSpace size={2} />
       <RepositoriesSearch
         filterValue={filterValue}
         setFilterValue={setFilterValue} />
@@ -368,18 +369,20 @@ export function RemoteQueries(): JSX.Element {
   }
 
   try {
-    return <div>
-      <ThemeProvider colorMode="auto">
-        <ViewTitle>{queryResult.queryTitle}</ViewTitle>
-        <QueryInfo {...queryResult} />
-        <Failures {...queryResult} />
-        <Summary queryResult={queryResult} analysesResults={analysesResults} />
-        <AnalysesResults
-          queryResult={queryResult}
-          analysesResults={analysesResults}
-          totalResults={queryResult.totalResultCount} />
-      </ThemeProvider>
-    </div>;
+    return (
+      <div className="vscode-codeql__remote-queries">
+        <ThemeProvider colorMode="auto">
+          <ViewTitle>{queryResult.queryTitle}</ViewTitle>
+          <QueryInfo {...queryResult} />
+          <Failures {...queryResult} />
+          <Summary queryResult={queryResult} analysesResults={analysesResults} />
+          <AnalysesResults
+            queryResult={queryResult}
+            analysesResults={analysesResults}
+            totalResults={queryResult.totalResultCount} />
+        </ThemeProvider>
+      </div>
+    );
   } catch (err) {
     console.error(err);
     return <div>There was an error displaying the view.</div>;

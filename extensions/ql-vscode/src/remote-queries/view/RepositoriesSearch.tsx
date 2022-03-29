@@ -14,7 +14,8 @@ const RepositoriesSearch = ({ filterValue, setFilterValue }: RepositoriesSearchP
       block
       sx={{
         backgroundColor: 'var(--vscode-editor-background);',
-        color: 'var(--vscode-editor-foreground);'
+        color: 'var(--vscode-editor-foreground);',
+        width: 'calc(100% - 14px)',
       }}
       className="vscode-codeql__repositories-search"
       leadingVisual={SearchIcon}

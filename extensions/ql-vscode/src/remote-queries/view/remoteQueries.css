@@ -1,3 +1,7 @@
+.vscode-codeql__remote-queries {
+  max-width: 55em;
+}
+
 .vscode-codeql__query-info-link {
   text-decoration: none;
   padding-right: 1em;
@@ -41,7 +45,6 @@
 }
 
 .vscode-codeql__repositories-search {
-  margin: 1em 0 0 0;
 }
 
 .vscode-codeql__flat-list {
