@@ -86,15 +86,15 @@ export async function promptImportGithubDatabase(
     maxStep: 2
   });
   const githubRepo = await window.showInputBox({
-    title: 'Enter a GitHub repository in the format <owner>/<repo> (e.g. github/codeql)',
-    placeHolder: '<owner>/<repo>',
+    title: 'Enter a GitHub repository URL or "name with owner" (e.g. https://github.com/github/codeql or github/codeql)',
+    placeHolder: 'https://github.com/<owner>/<repo> or <owner>/<repo>',
     ignoreFocusOut: true,
   });
   if (!githubRepo) {
     return;
   }
 
-  if (!REPO_REGEX.test(githubRepo)) {
+  if (!looksLikeGithubRepo(githubRepo)) {
     throw new Error(`Invalid GitHub repository: ${githubRepo}`);
   }
 
@@ -465,18 +465,62 @@ export async function findDirWithFile(
   return;
 }
 
+/**
+ * The URL pattern is https://github.com/{owner}/{name}/{subpages}.
+ *
+ * This function accepts any URL that matches the pattern above. It also accepts just the
+ * name with owner (NWO): `<owner>/<repo>`.
+ *
+ * @param githubRepo The GitHub repository URL or NWO
+ *
+ * @return true if this looks like a valid GitHub repository URL or NWO
+ */
+export function looksLikeGithubRepo(
+  githubRepo: string | undefined
+): githubRepo is string {
+  if (!githubRepo) {
+    return false;
+  }
+  if (REPO_REGEX.test(githubRepo) || convertGitHubUrlToNwo(githubRepo)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Converts a GitHub repository URL to the corresponding NWO.
+ * @param githubUrl The GitHub repository URL
+ * @return The corresponding NWO, or undefined if the URL is not valid
+ */
+function convertGitHubUrlToNwo(githubUrl: string): string | undefined {
+  try {
+    const uri = Uri.parse(githubUrl, true);
+    if (uri.scheme !== 'https') {
+      return;
+    }
+    if (uri.authority !== 'github.com' && uri.authority !== 'www.github.com') {
+      return;
+    }
+    const paths = uri.path.split('/').filter((segment: string) => segment);
+    const nwo = `${paths[0]}/${paths[1]}`;
+    if (REPO_REGEX.test(nwo)) {
+      return nwo;
+    }
+    return;
+  } catch (e) {
+    // Ignore the error here, since we catch failures at a higher level.
+    // In particular: returning undefined leads to an error in 'promptImportGithubDatabase'.
+    return;
+  }
+}
+
 export async function convertGithubNwoToDatabaseUrl(
   githubRepo: string,
   credentials: Credentials,
   progress: ProgressCallback): Promise<string | undefined> {
   try {
-    // TODO: In future, we could accept GitHub URLs in addition to NWOs.
-    // Similar to "looksLikeLgtmUrl".
-    if (!REPO_REGEX.test(githubRepo)) {
-      throw new Error('Invalid repository format. Must be in the format <owner>/<repo> (e.g. github/codeql)');
-    }
-
-    const [owner, repo] = githubRepo.split('/');
+    const nwo = convertGitHubUrlToNwo(githubRepo) || githubRepo;
+    const [owner, repo] = nwo.split('/');
 
     const octokit = await credentials.getOctokit();
     const response = await octokit.request('GET /repos/:owner/:repo/code-scanning/codeql/databases', { owner, repo });
@@ -531,7 +575,7 @@ export function looksLikeLgtmUrl(lgtmUrl: string | undefined): lgtmUrl is string
       return false;
     }
 
-    const paths = uri.path.split('/').filter((segment) => segment);
+    const paths = uri.path.split('/').filter((segment: string) => segment);
     return paths.length >= 4 && paths[0] === 'projects';
   } catch (e) {
     return false;
@@ -604,7 +648,7 @@ export async function convertLgtmUrlToDatabaseUrl(
 async function downloadLgtmProjectMetadata(lgtmUrl: string): Promise<any> {
   const uri = Uri.parse(lgtmUrl, true);
   const paths = ['api', 'v1.0'].concat(
-    uri.path.split('/').filter((segment) => segment)
+    uri.path.split('/').filter((segment: string) => segment)
   ).slice(0, 6);
   const projectUrl = `https://lgtm.com/${paths.join('/')}`;
   const projectResponse = await fetch(projectUrl);

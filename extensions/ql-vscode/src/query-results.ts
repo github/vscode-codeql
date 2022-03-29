@@ -216,6 +216,7 @@ export class LocalQueryInfo {
 
   public failureReason: string | undefined;
   public completedQuery: CompletedQueryInfo | undefined;
+  public evalLogLocation: string | undefined;
   private config: QueryHistoryConfig | undefined;
 
   /**
@@ -309,6 +310,14 @@ export class LocalQueryInfo {
     } else {
       return this.getQueryFileName();
     }
+  }
+
+  /**
+   * Return the location of a query's evaluator log summary. This file may not exist yet,
+   * in which case it can be created by invoking `codeql generate log-summary`.
+   */
+  get evalLogSummaryLocation(): string {
+    return this.evalLogLocation + '.summary';
   }
 
   get completed(): boolean {

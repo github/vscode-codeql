@@ -535,6 +535,8 @@ async function activateWithInstalledDistribution(
           queryStorageDir,
           progress,
           source.token,
+          undefined,
+          item,
         );
         item.completeThisQuery(completedQueryInfo);
         await showResultsForCompletedQuery(item as CompletedLocalQueryInfo, WebviewReveal.NotForced);
