@@ -1,5 +1,6 @@
 import * as gulp from 'gulp';
-import * as replace from 'gulp-replace';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const replace = require('gulp-replace');
 
 /** Inject the application insights key into the telemetry file */
 export function injectAppInsightsKey() {
