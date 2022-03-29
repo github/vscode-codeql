@@ -667,15 +667,18 @@ export class CodeQLCliServer implements Disposable {
 
   /**
   * Generate a summary of an evaluation log.
+  * @param endSummaryPath The path to write only the end of query part of the human-readable summary to. 
   * @param inputPath The path of an evaluation event log.
   * @param outputPath The path to write a human-readable summary of it to.
   */
    async generateLogSummary(
     inputPath: string,
     outputPath: string,
+    endSummaryPath: string,
   ): Promise<string> {
     const subcommandArgs = [
       '--format=text',
+      `--end-summary=${endSummaryPath}`,
       inputPath,
       outputPath
     ];

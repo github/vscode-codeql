@@ -781,6 +781,11 @@ export class QueryHistoryManager extends DisposableObject {
     void showAndLogWarningMessage('No evaluator log is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG + '?');
   }
 
+  private warnNoEvalLogSummary() {
+    void showAndLogWarningMessage('No evaluator log summary is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG + '?');
+  }
+
+
   async handleShowEvalLog(
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
@@ -810,13 +815,10 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    if (finalSingleItem.evalLogLocation) {
-      if (!fs.existsSync(finalSingleItem.evalLogSummaryLocation)) {
-        await this.qs.cliServer.generateLogSummary(finalSingleItem.evalLogLocation, finalSingleItem.evalLogSummaryLocation);
-      }
-      await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
+    if (finalSingleItem.evalLogSummaryLocation) {
+        await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
     } else {
-      this.warnNoEvalLog();
+      this.warnNoEvalLogSummary();
     }
   }
 
