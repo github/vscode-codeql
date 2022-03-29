@@ -508,6 +508,8 @@ function convertGitHubUrlToNwo(githubUrl: string): string | undefined {
     }
     return;
   } catch (e) {
+    // Ignore the error here, since we catch failures at a higher level.
+    // In particular: returning undefined leads to an error in 'promptImportGithubDatabase'.
     return;
   }
 }
