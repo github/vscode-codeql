@@ -3,7 +3,6 @@ import { CancellationToken, commands, ExtensionContext, extensions, Uri } from '
 import * as sinon from 'sinon';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import 'mocha';
 import { expect } from 'chai';
 import * as yaml from 'js-yaml';
 

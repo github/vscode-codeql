@@ -1,12 +1,9 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as chai from 'chai';
-import 'mocha';
-import 'sinon-chai';
+import { expect, assert } from 'chai';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 
-import * as chaiAsPromised from 'chai-as-promised';
 import { logger } from '../../logging';
 import { registerQueryHistoryScubber } from '../../query-history-scrubber';
 import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
@@ -20,10 +17,6 @@ import * as tmp from 'tmp-promise';
 import { ONE_DAY_IN_MS, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, THREE_HOURS_IN_MS } from '../../pure/helpers-pure';
 import { tmpDir } from '../../helpers';
 import { getErrorMessage } from '../../pure/helpers-pure';
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
-const assert = chai.assert;
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');

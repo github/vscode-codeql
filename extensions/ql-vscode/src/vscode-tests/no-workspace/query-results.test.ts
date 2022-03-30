@@ -1,10 +1,7 @@
-import * as chai from 'chai';
+import { expect } from 'chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import 'mocha';
-import 'sinon-chai';
 import * as sinon from 'sinon';
-import * as chaiAsPromised from 'chai-as-promised';
 import { LocalQueryInfo, InitialQueryInfo, interpretResultsSarif } from '../../query-results';
 import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries';
 import { QueryHistoryConfig } from '../../config';
@@ -14,9 +11,6 @@ import { CodeQLCliServer, SourceInfo } from '../../cli';
 import { CancellationTokenSource, Uri, env } from 'vscode';
 import { tmpDir } from '../../helpers';
 import { slurpQueryHistory, splatQueryHistory } from '../../query-serialization';
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe('query-results', () => {
   let disposeSpy: sinon.SinonSpy;

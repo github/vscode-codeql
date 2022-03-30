@@ -1,17 +1,11 @@
-import * as chai from 'chai';
+import { expect } from 'chai';
 import * as path from 'path';
-import 'mocha';
-import 'sinon-chai';
 import * as sinon from 'sinon';
-import * as chaiAsPromised from 'chai-as-promised';
 import { Uri } from 'vscode';
 
 import { QueryEvaluationInfo } from '../../run-queries';
 import { Severity, compileQuery } from '../../pure/messages';
 import * as config from '../../config';
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe('run-queries', () => {
   let sandbox: sinon.SinonSandbox;

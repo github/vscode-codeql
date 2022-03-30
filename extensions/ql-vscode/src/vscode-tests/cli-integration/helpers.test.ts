@@ -1,6 +1,5 @@
 import * as path from 'path';
 import { extensions } from 'vscode';
-import 'mocha';
 
 import { CodeQLCliServer } from '../../cli';
 import { CodeQLExtensionInterface } from '../../extension';

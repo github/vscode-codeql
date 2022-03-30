@@ -1,14 +1,10 @@
 import 'vscode-test';
-import 'mocha';
-import * as chaiAsPromised from 'chai-as-promised';
 import * as sinon from 'sinon';
-import * as chai from 'chai';
+import { expect } from 'chai';
 import { window } from 'vscode';
 import * as pq from 'proxyquire';
 
 const proxyquire = pq.noPreserveCache();
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe('run-remote-query', function() {
 

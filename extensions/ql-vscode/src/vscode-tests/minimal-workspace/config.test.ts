@@ -1,9 +1,6 @@
 import 'vscode-test';
-import 'mocha';
-import * as chaiAsPromised from 'chai-as-promised';
-import 'sinon-chai';
 import * as Sinon from 'sinon';
-import * as chai from 'chai';
+import { expect } from 'chai';
 import { workspace } from 'vscode';
 
 import {
@@ -11,9 +8,6 @@ import {
   QueryHistoryConfigListener,
   QueryServerConfigListener
 } from '../../config';
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe('config listeners', function() {
   // Because we are adding some extra waiting, need to bump the test timeouts.
