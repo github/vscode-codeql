@@ -19,6 +19,7 @@ import CollapsibleItem from './CollapsibleItem';
 import { AlertIcon, CodeSquareIcon, FileCodeIcon, RepoIcon, TerminalIcon } from '@primer/octicons-react';
 import AnalysisAlertResult from './AnalysisAlertResult';
 import RawResultsTable from './RawResultsTable';
+import RepositoriesSearch from './RepositoriesSearch';
 
 const numOfReposInContractedMode = 10;
 
@@ -308,6 +309,7 @@ const AnalysesResults = ({
   totalResults: number
 }) => {
   const totalAnalysesResults = sumAnalysesResults(analysesResults);
+  const [filterValue, setFilterValue] = React.useState('');
 
   if (totalResults === 0) {
     return <></>;
@@ -322,11 +324,20 @@ const AnalysesResults = ({
       <AnalysesResultsDescription
         queryResult={queryResult}
         analysesResults={analysesResults} />
+
+      <VerticalSpace size={2} />
+      <RepositoriesSearch
+        filterValue={filterValue}
+        setFilterValue={setFilterValue} />
+
       <ul className="vscode-codeql__flat-list">
-        {analysesResults.filter(a => a.interpretedResults.length > 0 || a.rawResults).map(r =>
-          <li key={r.nwo} className="vscode-codeql__analyses-results-list-item">
-            <RepoAnalysisResults {...r} />
-          </li>)}
+        {analysesResults
+          .filter(a => a.interpretedResults.length > 0 || a.rawResults)
+          .filter(a => a.nwo.toLowerCase().includes(filterValue.toLowerCase()))
+          .map(r =>
+            <li key={r.nwo} className="vscode-codeql__analyses-results-list-item">
+              <RepoAnalysisResults {...r} />
+            </li>)}
       </ul>
     </>
   );
@@ -358,18 +369,20 @@ export function RemoteQueries(): JSX.Element {
   }
 
   try {
-    return <div>
-      <ThemeProvider colorMode="auto">
-        <ViewTitle>{queryResult.queryTitle}</ViewTitle>
-        <QueryInfo {...queryResult} />
-        <Failures {...queryResult} />
-        <Summary queryResult={queryResult} analysesResults={analysesResults} />
-        <AnalysesResults
-          queryResult={queryResult}
-          analysesResults={analysesResults}
-          totalResults={queryResult.totalResultCount} />
-      </ThemeProvider>
-    </div>;
+    return (
+      <div className="vscode-codeql__remote-queries">
+        <ThemeProvider colorMode="auto">
+          <ViewTitle>{queryResult.queryTitle}</ViewTitle>
+          <QueryInfo {...queryResult} />
+          <Failures {...queryResult} />
+          <Summary queryResult={queryResult} analysesResults={analysesResults} />
+          <AnalysesResults
+            queryResult={queryResult}
+            analysesResults={analysesResults}
+            totalResults={queryResult.totalResultCount} />
+        </ThemeProvider>
+      </div>
+    );
   } catch (err) {
     console.error(err);
     return <div>There was an error displaying the view.</div>;

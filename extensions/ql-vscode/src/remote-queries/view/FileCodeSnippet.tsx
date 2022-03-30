@@ -37,7 +37,6 @@ const shouldHighlightLine = (lineNumber: number, highlightedRegion: HighlightedR
 const Container = styled.div`
   font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
   font-size: x-small;
-  width: 55em;
 `;
 
 const TitleContainer = styled.div`
