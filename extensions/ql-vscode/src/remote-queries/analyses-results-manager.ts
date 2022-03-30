@@ -163,23 +163,17 @@ export class AnalysesResultsManager {
   }
 
 
-  public async loadDownloadedArtifacts(
+  public async loadDownloadedAnalyses(
     allAnalysesToCheck: AnalysisSummary[]
   ) {
-    const allDownloadedAnalyses = await asyncFilter(allAnalysesToCheck, x => this.isAnalysisDownloadedNotInMemory(x));
+
+    // Find all analyses that are already downloaded.
+    const allDownloadedAnalyses = await asyncFilter(allAnalysesToCheck, x => this.isAnalysisDownloaded(x));
+    // Now, ensure that all of these analyses are in memory. Some may already be in memory. These are ignored.
     await this.loadAnalysesResults(allDownloadedAnalyses);
   }
 
-  private async isAnalysisDownloadedNotInMemory(analysis: AnalysisSummary): Promise<boolean> {
-    const queryId = analysis.downloadLink.queryId;
-    const resultsForQuery = this.internalGetAnalysesResults(queryId);
-    const analysisResults = resultsForQuery.find(r => r.nwo === analysis.nwo);
-    if (analysisResults) {
-      // We already have the results for this analysis in memory, no need to check further.
-      return false;
-    }
-
-    // Check if the analysis results are already downloaded, but not in memory
+  private async isAnalysisDownloaded(analysis: AnalysisSummary): Promise<boolean> {
     return await fs.pathExists(createDownloadPath(this.storagePath, analysis.downloadLink));
   }
 

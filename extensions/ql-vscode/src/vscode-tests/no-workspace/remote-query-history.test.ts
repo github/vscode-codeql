@@ -337,17 +337,18 @@ describe('Remote queries and query history manager', function() {
       // Load remoteQueryResult0.analysisSummaries[1] into memory
       await arm.downloadAnalysisResults(remoteQueryResult0.analysisSummaries[1], () => Promise.resolve());
 
-      expect(await (arm as any).isAnalysisDownloadedNotInMemory(remoteQueryResult0.analysisSummaries[0])).to.be.true;
+      // on disk
+      expect(await (arm as any).isAnalysisDownloaded(remoteQueryResult0.analysisSummaries[0])).to.be.true;
 
       // in memory
-      expect(await (arm as any).isAnalysisDownloadedNotInMemory(remoteQueryResult0.analysisSummaries[1])).to.be.false;
+      expect(await (arm as any).isAnalysisDownloaded(remoteQueryResult0.analysisSummaries[1])).to.be.true;
 
       // not downloaded
-      expect(await (arm as any).isAnalysisDownloadedNotInMemory(remoteQueryResult0.analysisSummaries[2])).to.be.false;
+      expect(await (arm as any).isAnalysisDownloaded(remoteQueryResult0.analysisSummaries[2])).to.be.false;
     });
 
     it('should load downloaded artifacts', async () => {
-      await arm.loadDownloadedArtifacts(remoteQueryResult0.analysisSummaries);
+      await arm.loadDownloadedAnalyses(remoteQueryResult0.analysisSummaries);
       const queryId = rawQueryHistory[0].queryId;
       const analysesResultsNwos = arm.getAnalysesResults(queryId).map(ar => ar.nwo).sort();
       expect(analysesResultsNwos[0]).to.eq('github/vscode-codeql');

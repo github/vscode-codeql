@@ -46,14 +46,14 @@ export class RemoteQueriesInterfaceManager {
     this.getPanel().reveal(undefined, true);
 
     await this.waitForPanelLoaded();
-    const model = await this.buildViewModel(query, queryResult);
+    const model = this.buildViewModel(query, queryResult);
     await this.postMessage({
       t: 'setRemoteQueryResult',
       queryResult: model
     });
 
     // Ensure all pre-downloaded artifacts are loaded into memory
-    await this.analysesResultsManager.loadDownloadedArtifacts(model.analysisSummaries);
+    await this.analysesResultsManager.loadDownloadedAnalyses(model.analysisSummaries);
 
     await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults(queryResult.queryId));
   }
@@ -66,7 +66,7 @@ export class RemoteQueriesInterfaceManager {
    * @param queryResult The result of the query.
    * @returns A fully created view model.
    */
-  private async buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): Promise<RemoteQueryResultViewModel> {
+  private buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
     const queryFileName = path.basename(query.queryFilePath);
     const totalResultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
     const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);

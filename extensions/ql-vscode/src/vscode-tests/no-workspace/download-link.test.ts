@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import { DownloadLink, createDownloadPath } from '../../remote-queries/download-link';
 
-describe('toDownloadPath', () => {
+describe('createDownloadPath', () => {
   it('should return the correct path', () => {
     const downloadLink: DownloadLink = {
       id: 'abc',
