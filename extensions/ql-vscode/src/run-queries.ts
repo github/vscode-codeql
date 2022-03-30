@@ -197,10 +197,9 @@ export class QueryEvaluationInfo {
           db: dataset,
           logPath: this.evalLogPath,
         });
-        if (this.hasEvalLog()) {
+        if (await this.hasEvalLog()) {
           queryInfo.evalLogLocation = this.evalLogPath;
           await qs.cliServer.generateLogSummary(this.evalLogPath, this.evalLogSummaryPath, this.evalLogEndSummaryPath);
-          
           fs.readFile(this.evalLogEndSummaryPath, (err, buffer) => {
             if (err) {
               throw new Error(`Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`);
