@@ -44,9 +44,6 @@
   color: var(--vscode-editor-foreground);
 }
 
-.vscode-codeql__repositories-search {
-}
-
 .vscode-codeql__flat-list {
   list-style-type: none;
   margin: 0;
