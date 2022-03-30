@@ -438,7 +438,7 @@ describe('SARIF processing', () => {
       expect(actualCodeSnippet).to.deep.equal(expectedCodeSnippet);
     });
 
-    it('should not return errors for result locations with no contextRegion', () => {
+    it('should use highlightedRegion for result locations with no contextRegion', () => {
       const sarif = buildValidSarifLog();
       sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.contextRegion = undefined;
 
@@ -623,8 +623,8 @@ describe('SARIF processing', () => {
     expect(msg.startsWith('Error when processing SARIF result')).to.be.true;
   }
 
-  function expectNoParsingError(result: { errors: string[] | undefined }) {
-    const array = result.errors || [];
+  function expectNoParsingError(result: { errors: string[] }) {
+    const array = result.errors;
     expect(array.length, array.join()).to.equal(0);
   }
 

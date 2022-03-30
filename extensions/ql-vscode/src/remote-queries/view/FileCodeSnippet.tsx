@@ -188,8 +188,6 @@ const FileCodeSnippet = ({
   messageChildren?: React.ReactNode,
 }) => {
 
-  const code = codeSnippet?.text.split('\n') || [];
-
   const startingLine = codeSnippet?.startLine || 0;
   const endingLine = codeSnippet?.endLine || 0;
 
@@ -197,6 +195,18 @@ const FileCodeSnippet = ({
     fileLink,
     startingLine,
     endingLine);
+
+  if (!codeSnippet) {
+    return (
+      <Container>
+        <TitleContainer>
+          <Link href={titleFileUri}>{fileLink.filePath}</Link>
+        </TitleContainer>
+      </Container>
+    );
+  }
+
+  const code = codeSnippet.text.split('\n');
 
   return (
     <Container>
