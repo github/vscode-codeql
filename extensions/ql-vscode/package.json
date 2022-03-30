@@ -1115,7 +1115,7 @@
     "@primer/react": "^35.0.0",
     "child-process-promise": "^2.2.1",
     "classnames": "~2.2.6",
-    "d3": "^6.3.1",
+    "d3": "^7.4.0",
     "d3-graphviz": "^2.6.1",
     "fs-extra": "^10.0.1",
     "glob-promise": "^3.4.0",
