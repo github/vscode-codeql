@@ -3,7 +3,8 @@ updates:
   - package-ecosystem: "npm"
     directory: "extensions/ql-vscode"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "thursday" # Thursday is arbitrary
     labels:
       - "Update dependencies"
     ignore:
@@ -12,7 +13,8 @@ updates:
   - package-ecosystem: "github-actions"
     directory: ".github"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "thursday" # Thursday is arbitrary
     labels:
       - "Update dependencies"
     ignore:
