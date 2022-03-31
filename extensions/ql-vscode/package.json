@@ -1206,7 +1206,7 @@
     "style-loader": "~0.23.1",
     "through2": "^4.0.2",
     "ts-loader": "^8.1.0",
-    "ts-node": "^8.3.0",
+    "ts-node": "^10.7.0",
     "ts-protoc-gen": "^0.9.0",
     "typescript": "^4.5.5",
     "typescript-formatter": "^7.2.2",
