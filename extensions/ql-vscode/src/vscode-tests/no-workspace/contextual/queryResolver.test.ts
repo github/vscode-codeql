@@ -1,18 +1,12 @@
 import 'vscode-test';
-import 'mocha';
 import * as yaml from 'js-yaml';
-import * as chaiAsPromised from 'chai-as-promised';
 import * as sinon from 'sinon';
-import * as chai from 'chai';
-import * as sinonChai from 'sinon-chai';
+import { expect } from 'chai';
 import * as pq from 'proxyquire';
 import { KeyType } from '../../../contextual/keyType';
 import { getErrorMessage } from '../../../pure/helpers-pure';
 
 const proxyquire = pq.noPreserveCache().noCallThru();
-chai.use(chaiAsPromised);
-chai.use(sinonChai);
-const expect = chai.expect;
 
 describe('queryResolver', () => {
   let module: Record<string, Function>;

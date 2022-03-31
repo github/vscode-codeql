@@ -1,17 +1,11 @@
-import * as chai from 'chai';
-import 'mocha';
-import 'sinon-chai';
+import { expect } from 'chai';
 import * as sinon from 'sinon';
-import * as chaiAsPromised from 'chai-as-promised';
 import TelemetryReporter from 'vscode-extension-telemetry';
 import { ExtensionContext, workspace, ConfigurationTarget, window } from 'vscode';
 import { TelemetryListener, telemetryListener as globalTelemetryListener } from '../../telemetry';
 import { UserCancellationException } from '../../commandRunner';
 import { fail } from 'assert';
 import { ENABLE_TELEMETRY } from '../../config';
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 const sandbox = sinon.createSandbox();
 

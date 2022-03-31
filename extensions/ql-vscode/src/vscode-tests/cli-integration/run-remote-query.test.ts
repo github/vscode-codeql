@@ -2,7 +2,6 @@ import { assert, expect } from 'chai';
 import * as path from 'path';
 import * as sinon from 'sinon';
 import { CancellationToken, extensions, QuickPickItem, Uri, window } from 'vscode';
-import 'mocha';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import * as yaml from 'js-yaml';

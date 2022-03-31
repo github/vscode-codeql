@@ -1,5 +1,4 @@
 import 'vscode-test';
-import 'mocha';
 import { Uri, WorkspaceFolder } from 'vscode';
 import { expect } from 'chai';
 import * as fs from 'fs-extra';

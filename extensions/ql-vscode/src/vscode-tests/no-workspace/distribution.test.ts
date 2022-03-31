@@ -1,18 +1,13 @@
-import * as chai from 'chai';
+import { expect } from 'chai';
 import * as path from 'path';
 import * as fetch from 'node-fetch';
-import 'chai/register-should';
 import * as semver from 'semver';
-import * as sinonChai from 'sinon-chai';
 import * as sinon from 'sinon';
 import * as pq from 'proxyquire';
-import 'mocha';
 
 import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer } from '../../distribution';
 
 const proxyquire = pq.noPreserveCache();
-chai.use(sinonChai);
-const expect = chai.expect;
 
 describe('Releases API consumer', () => {
   const owner = 'someowner';
@@ -95,7 +90,7 @@ describe('Releases API consumer', () => {
     it('fails if none of the releases are within the version range', async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
-      await chai.expect(
+      await expect(
         consumer.getLatestRelease(new semver.Range('5.*.*'))
       ).to.be.rejectedWith(Error);
     });
@@ -114,7 +109,7 @@ describe('Releases API consumer', () => {
     it('fails if none of the releases pass the additional compatibility test', async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
-      await chai.expect(consumer.getLatestRelease(
+      await expect(consumer.getLatestRelease(
         new semver.Range('2.*.*'),
         true,
         release => release.assets.some(asset => asset.name === 'otherExampleAsset.txt')

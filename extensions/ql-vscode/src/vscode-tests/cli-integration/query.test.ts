@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import * as fs from 'fs-extra';
-import 'mocha';
 import * as path from 'path';
 import * as tmp from 'tmp';
 import * as url from 'url';

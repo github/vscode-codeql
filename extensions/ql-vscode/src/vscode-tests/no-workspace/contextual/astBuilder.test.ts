@@ -1,6 +1,5 @@
 import * as fs from 'fs-extra';
-import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
+import { expect } from 'chai';
 import * as sinon from 'sinon';
 
 import AstBuilder from '../../../contextual/astBuilder';
@@ -8,9 +7,6 @@ import { QueryWithResults } from '../../../run-queries';
 import { CodeQLCliServer } from '../../../cli';
 import { DatabaseItem } from '../../../databases';
 import { Uri } from 'vscode';
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 /**
  *

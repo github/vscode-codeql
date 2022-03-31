@@ -1,5 +1,4 @@
 import 'vscode-test';
-import 'mocha';
 import * as sinon from 'sinon';
 import * as fs from 'fs-extra';
 import { Uri, WorkspaceFolder } from 'vscode';
@@ -138,7 +137,7 @@ describe('test-adapter', () => {
     // However, we can pretend the same thing by just returning an async array.
     runTestsSpy = sandox.stub();
     runTestsSpy.returns(
-      (async function* () {
+      (async function*() {
         yield Promise.resolve({
           test: Uri.parse('file:/ab/c/d.ql').fsPath,
           pass: true,

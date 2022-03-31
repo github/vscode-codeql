@@ -1,10 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sinon from 'sinon';
-import * as chai from 'chai';
-import 'mocha';
-import 'sinon-chai';
-import * as chaiAsPromised from 'chai-as-promised';
+import { expect } from 'chai';
 
 import { CancellationToken, ExtensionContext, Uri, window, workspace } from 'vscode';
 import { QueryHistoryConfig } from '../../config';
@@ -19,9 +16,6 @@ import { DisposableBucket } from '../disposable-bucket';
 import { testDisposeHandler } from '../test-dispose-handler';
 import { walkDirectory } from '../../helpers';
 import { getErrorMessage } from '../../pure/helpers-pure';
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 /**
  * Tests for remote queries and how they interact with the query history manager.

@@ -1,11 +1,9 @@
 import 'vscode-test';
-import 'mocha';
-import * as chaiAsPromised from 'chai-as-promised';
 import * as sinon from 'sinon';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as tmp from 'tmp';
-import * as chai from 'chai';
+import { expect } from 'chai';
 import { window } from 'vscode';
 
 import {
@@ -18,8 +16,6 @@ import { ProgressCallback } from '../../commandRunner';
 import * as pq from 'proxyquire';
 
 const proxyquire = pq.noPreserveCache();
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe('databaseFetcher', function() {
   // These tests make API calls and may need extra time to complete.

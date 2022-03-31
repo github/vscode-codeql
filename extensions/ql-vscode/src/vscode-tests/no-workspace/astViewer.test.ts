@@ -1,6 +1,5 @@
 import * as fs from 'fs-extra';
-import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
+import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as yaml from 'js-yaml';
 
@@ -8,11 +7,6 @@ import { AstViewer, AstItem } from '../../astViewer';
 import { commands, Range, Uri } from 'vscode';
 import { DatabaseItem } from '../../databases';
 import { testDisposeHandler } from '../test-dispose-handler';
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
-
-
 
 describe('AstViewer', () => {
   let astRoots: AstItem[];

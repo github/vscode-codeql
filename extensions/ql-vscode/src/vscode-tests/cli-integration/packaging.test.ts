@@ -1,6 +1,5 @@
 import * as sinon from 'sinon';
 import { extensions, window } from 'vscode';
-import 'mocha';
 import * as path from 'path';
 
 import * as pq from 'proxyquire';

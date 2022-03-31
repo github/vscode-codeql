@@ -1,5 +1,4 @@
 import 'vscode-test';
-import 'mocha';
 import * as tmp from 'tmp';
 import * as path from 'path';
 import * as fs from 'fs-extra';
