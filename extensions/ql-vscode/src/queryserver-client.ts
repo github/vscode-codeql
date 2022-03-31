@@ -264,9 +264,9 @@ export function findQueryEvalLogFile(resultPath: string): string {
 }
 
 export function findQueryEvalLogSummaryFile(resultPath: string): string {
-  return path.join(resultPath, 'evaluator-log.jsonl.summary');
+  return path.join(resultPath, 'evaluator-log.summary');
 }
 
 export function findQueryEvalLogEndSummaryFile(resultPath: string): string {
-  return path.join(resultPath, 'eoq-evaluator-log.jsonl.summary');
+  return path.join(resultPath, 'evaluator-log-end.summary');
 }
