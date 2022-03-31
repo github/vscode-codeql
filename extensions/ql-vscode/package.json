@@ -1156,7 +1156,7 @@
     "@types/gulp": "^4.0.9",
     "@types/gulp-replace": "^1.1.0",
     "@types/gulp-sourcemaps": "0.0.32",
-    "@types/js-yaml": "^3.12.5",
+    "@types/js-yaml": "^4.0.5",
     "@types/jszip": "~3.1.6",
     "@types/mocha": "^9.0.0",
     "@types/nanoid": "^3.0.0",
