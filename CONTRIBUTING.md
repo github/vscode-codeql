@@ -143,12 +143,7 @@ To regenerate the Open VSX token:
 1. Go to the [Access Tokens](https://open-vsx.org/user-settings/tokens) page and generate a new token.
 1. Update the secret in the `publish-open-vsx` environment in the project settings.
 
-To regenerate the VSCode Marketplace token:
-
-1. Follow the instructions on [getting a PAT for Azure DevOps](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#get-a-personal-access-token).
-1. Update the secret in the `publish-vscode-marketplace` environment in the project settings.
-
-Not that Azure DevOps PATs expire yearly and must be regenerated.
+To regenerate the VSCode Marketplace token, pleae see our internal documentation. Note that Azure DevOps PATs expire every 90 days and must be regenerated.
 
 ## Resources
 
