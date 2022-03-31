@@ -95,8 +95,16 @@ export class QueryEvaluationInfo {
     return qsClient.findQueryLogFile(this.querySaveDir);
   }
 
-  get structLogPath() {
-    return qsClient.findQueryStructLogFile(this.querySaveDir);
+  get evalLogPath() {
+    return qsClient.findQueryEvalLogFile(this.querySaveDir);
+  }
+
+  get evalLogSummaryPath() {
+    return qsClient.findQueryEvalLogSummaryFile(this.querySaveDir);
+  }
+
+  get evalLogEndSummaryPath() {
+    return qsClient.findQueryEvalLogEndSummaryFile(this.querySaveDir);
   }
 
   get resultsPaths() {
@@ -164,8 +172,9 @@ export class QueryEvaluationInfo {
     if (queryInfo && await qs.cliServer.cliConstraints.supportsPerQueryEvalLog()) {
       await qs.sendRequest(messages.startLog, {
         db: dataset,
-        logPath: this.structLogPath,
+        logPath: this.evalLogPath,
       });
+      
     }
     const params: messages.EvaluateQueriesParams = {
       db: dataset,
@@ -186,9 +195,22 @@ export class QueryEvaluationInfo {
       if (queryInfo && await qs.cliServer.cliConstraints.supportsPerQueryEvalLog()) {
         await qs.sendRequest(messages.endLog, {
           db: dataset,
-          logPath: this.structLogPath,
+          logPath: this.evalLogPath,
         });
-        queryInfo.evalLogLocation = this.structLogPath;
+        if (await this.hasEvalLog()) {
+          queryInfo.evalLogLocation = this.evalLogPath;
+          await qs.cliServer.generateLogSummary(this.evalLogPath, this.evalLogSummaryPath, this.evalLogEndSummaryPath);
+          queryInfo.evalLogSummaryLocation = this.evalLogSummaryPath;
+          fs.readFile(this.evalLogEndSummaryPath, (err, buffer) => {
+            if (err) {
+              throw new Error(`Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`);
+            }
+            void qs.logger.log(' --- Evaluator Log Summary --- ');
+            void qs.logger.log(buffer.toString());
+          });
+        } else {
+          void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);
+        }
       }
     }
     return result || {
@@ -301,6 +323,13 @@ export class QueryEvaluationInfo {
 
     await qs.cliServer.generateDil(this.compiledQueryPath, this.dilPath);
     return this.dilPath;
+  }
+
+  /**
+   * Holds if this query already has a completed structured evaluator log
+   */
+   async hasEvalLog(): Promise<boolean> {
+    return fs.pathExists(this.evalLogPath);
   }
 
   /**
