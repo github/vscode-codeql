@@ -21,7 +21,7 @@ export interface AnalysisAlert {
   shortDescription: string;
   severity: ResultSeverity;
   fileLink: FileLink;
-  codeSnippet: CodeSnippet;
+  codeSnippet?: CodeSnippet;
   highlightedRegion?: HighlightedRegion;
   codeFlows: CodeFlow[];
 }
