@@ -5,7 +5,7 @@ import { showAndLogWarningMessage, tmpDir } from '../helpers';
 import { Credentials } from '../authentication';
 import { logger } from '../logging';
 import { RemoteQueryWorkflowResult } from './remote-query-workflow-result';
-import { DownloadLink } from './download-link';
+import { DownloadLink, createDownloadPath } from './download-link';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryFailureIndexItem, RemoteQueryResultIndex, RemoteQuerySuccessIndexItem } from './remote-query-result-index';
 
@@ -82,14 +82,14 @@ export async function downloadArtifactFromLink(
 
   const octokit = await credentials.getOctokit();
 
-  const extractedPath = path.join(storagePath, downloadLink.queryId, downloadLink.id);
+  const extractedPath = createDownloadPath(storagePath, downloadLink);
 
   // first check if we already have the artifact
   if (!(await fs.pathExists(extractedPath))) {
     // Download the zipped artifact.
     const response = await octokit.request(`GET ${downloadLink.urlPath}/zip`, {});
 
-    const zipFilePath = path.join(storagePath, downloadLink.queryId, `${downloadLink.id}.zip`);
+    const zipFilePath = createDownloadPath(storagePath, downloadLink, 'zip');
     await saveFile(`${zipFilePath}`, response.data as ArrayBuffer);
 
     // Extract the zipped artifact.

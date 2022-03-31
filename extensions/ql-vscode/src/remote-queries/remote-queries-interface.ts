@@ -46,10 +46,14 @@ export class RemoteQueriesInterfaceManager {
     this.getPanel().reveal(undefined, true);
 
     await this.waitForPanelLoaded();
+    const model = this.buildViewModel(query, queryResult);
     await this.postMessage({
       t: 'setRemoteQueryResult',
-      queryResult: this.buildViewModel(query, queryResult)
+      queryResult: model
     });
+
+    // Ensure all pre-downloaded artifacts are loaded into memory
+    await this.analysesResultsManager.loadDownloadedAnalyses(model.analysisSummaries);
 
     await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults(queryResult.queryId));
   }
@@ -213,7 +217,7 @@ export class RemoteQueriesInterfaceManager {
   }
 
   private async downloadAllAnalysesResults(msg: RemoteQueryDownloadAllAnalysesResultsMessage): Promise<void> {
-    await this.analysesResultsManager.downloadAnalysesResults(
+    await this.analysesResultsManager.loadAnalysesResults(
       msg.analysisSummaries,
       undefined,
       results => this.setAnalysisResults(results));

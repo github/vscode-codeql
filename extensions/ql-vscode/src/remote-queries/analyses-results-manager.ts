@@ -1,3 +1,4 @@
+import * as fs from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 import { CancellationToken, ExtensionContext } from 'vscode';
@@ -12,7 +13,8 @@ import { sarifParser } from '../sarif-parser';
 import { extractAnalysisAlerts } from './sarif-processing';
 import { CodeQLCliServer } from '../cli';
 import { extractRawResults } from './bqrs-processing';
-import { getErrorMessage } from '../pure/helpers-pure';
+import { asyncFilter, getErrorMessage } from '../pure/helpers-pure';
+import { createDownloadPath } from './download-link';
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for each remote query.
@@ -44,13 +46,22 @@ export class AnalysesResultsManager {
     await this.downloadSingleAnalysisResults(analysisSummary, credentials, publishResults);
   }
 
-  public async downloadAnalysesResults(
-    allAnalysesToDownload: AnalysisSummary[],
-    token: CancellationToken | undefined,
-    publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
+  /**
+   * Loads the array analysis results. For each analysis results, if it is not downloaded yet,
+   * it will be downloaded. If it is already downloaded, it will be loaded into memory.
+   * If it is already in memory, this will be a no-op.
+   *
+   * @param allAnalysesToLoad List of analyses to ensure are downloaded and in memory
+   * @param token Optional cancellation token
+   * @param publishResults Optional function to publish the results after loading
+   */
+  public async loadAnalysesResults(
+    allAnalysesToLoad: AnalysisSummary[],
+    token?: CancellationToken,
+    publishResults: (analysesResults: AnalysisResults[]) => Promise<void> = () => Promise.resolve()
   ): Promise<void> {
     // Filter out analyses that we have already in memory.
-    const analysesToDownload = allAnalysesToDownload.filter(x => !this.isAnalysisInMemory(x));
+    const analysesToDownload = allAnalysesToLoad.filter(x => !this.isAnalysisInMemory(x));
 
     const credentials = await Credentials.initialize(this.ctx);
 
@@ -149,6 +160,21 @@ export class AnalysesResultsManager {
     }
     resultsForQuery[pos] = newAnaysisResults;
     void publishResults([...resultsForQuery]);
+  }
+
+
+  public async loadDownloadedAnalyses(
+    allAnalysesToCheck: AnalysisSummary[]
+  ) {
+
+    // Find all analyses that are already downloaded.
+    const allDownloadedAnalyses = await asyncFilter(allAnalysesToCheck, x => this.isAnalysisDownloaded(x));
+    // Now, ensure that all of these analyses are in memory. Some may already be in memory. These are ignored.
+    await this.loadAnalysesResults(allDownloadedAnalyses);
+  }
+
+  private async isAnalysisDownloaded(analysis: AnalysisSummary): Promise<boolean> {
+    return await fs.pathExists(createDownloadPath(this.storagePath, analysis.downloadLink));
   }
 
   private async readBqrsResults(filePath: string, fileLinkPrefix: string): Promise<AnalysisRawResults> {

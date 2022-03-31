@@ -245,8 +245,8 @@ describe('Remote queries and query history manager', function() {
 
     it('should download two artifacts at once', async () => {
       const publisher = sandbox.spy();
-      const analysisSummaries = [...remoteQueryResult0.analysisSummaries];
-      await arm.downloadAnalysesResults(analysisSummaries, undefined, publisher);
+      const analysisSummaries = [remoteQueryResult0.analysisSummaries[0], remoteQueryResult0.analysisSummaries[1]];
+      await arm.loadAnalysesResults(analysisSummaries, undefined, publisher);
 
       const trimmed = publisher.getCalls().map(call => call.args[0]).map(args => {
         args.forEach((analysisResult: any) => delete analysisResult.interpretedResults);
@@ -287,7 +287,7 @@ describe('Remote queries and query history manager', function() {
       const analysisSummaries = [...remoteQueryResult0.analysisSummaries];
 
       try {
-        await arm.downloadAnalysesResults(analysisSummaries, {
+        await arm.loadAnalysesResults(analysisSummaries, {
           isCancellationRequested: true
         } as CancellationToken, publisher);
         expect.fail('Should have thrown');
@@ -300,11 +300,11 @@ describe('Remote queries and query history manager', function() {
 
     it('should get the analysis results', async () => {
       const publisher = sandbox.spy();
-      const analysisSummaries0 = [...remoteQueryResult0.analysisSummaries];
+      const analysisSummaries0 = [remoteQueryResult0.analysisSummaries[0], remoteQueryResult0.analysisSummaries[1]];
       const analysisSummaries1 = [...remoteQueryResult1.analysisSummaries];
 
-      await arm.downloadAnalysesResults(analysisSummaries0, undefined, publisher);
-      await arm.downloadAnalysesResults(analysisSummaries1, undefined, publisher);
+      await arm.loadAnalysesResults(analysisSummaries0, undefined, publisher);
+      await arm.loadAnalysesResults(analysisSummaries1, undefined, publisher);
 
       const result0 = arm.getAnalysesResults(rawQueryHistory[0].queryId);
       const result0Again = arm.getAnalysesResults(rawQueryHistory[0].queryId);
@@ -323,7 +323,7 @@ describe('Remote queries and query history manager', function() {
     it.skip('should read sarif', async () => {
       const publisher = sandbox.spy();
       const analysisSummaries0 = [remoteQueryResult0.analysisSummaries[0]];
-      await arm.downloadAnalysesResults(analysisSummaries0, undefined, publisher);
+      await arm.loadAnalysesResults(analysisSummaries0, undefined, publisher);
 
       const sarif = fs.readJSONSync(path.join(STORAGE_DIR, 'queries', rawQueryHistory[0].queryId, '171543249', 'results.sarif'));
       const queryResults = sarif.runs
@@ -331,6 +331,29 @@ describe('Remote queries and query history manager', function() {
         .map((result: any) => ({ message: result.message.text }));
 
       expect(publisher.getCall(1).args[0][0].results).to.deep.eq(queryResults);
+    });
+
+    it('should check if an artifact is downloaded and not in memory', async () => {
+      // Load remoteQueryResult0.analysisSummaries[1] into memory
+      await arm.downloadAnalysisResults(remoteQueryResult0.analysisSummaries[1], () => Promise.resolve());
+
+      // on disk
+      expect(await (arm as any).isAnalysisDownloaded(remoteQueryResult0.analysisSummaries[0])).to.be.true;
+
+      // in memory
+      expect(await (arm as any).isAnalysisDownloaded(remoteQueryResult0.analysisSummaries[1])).to.be.true;
+
+      // not downloaded
+      expect(await (arm as any).isAnalysisDownloaded(remoteQueryResult0.analysisSummaries[2])).to.be.false;
+    });
+
+    it('should load downloaded artifacts', async () => {
+      await arm.loadDownloadedAnalyses(remoteQueryResult0.analysisSummaries);
+      const queryId = rawQueryHistory[0].queryId;
+      const analysesResultsNwos = arm.getAnalysesResults(queryId).map(ar => ar.nwo).sort();
+      expect(analysesResultsNwos[0]).to.eq('github/vscode-codeql');
+      expect(analysesResultsNwos[1]).to.eq('other/hucairz');
+      expect(analysesResultsNwos.length).to.eq(2);
     });
   });
 

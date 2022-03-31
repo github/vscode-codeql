@@ -1,3 +1,5 @@
+import * as path from 'path';
+
 /**
  * Represents a link to an artifact to be downloaded.
  */
@@ -22,4 +24,17 @@ export interface DownloadLink {
    * A unique id of the remote query run. This is used to determine where to store artifacts and data from the run.
    */
   queryId: string;
+}
+
+/**
+ * Converts a downloadLink to the path where the artifact should be stored.
+ *
+ * @param storagePath The base directory to store artifacts in.
+ * @param downloadLink The DownloadLink
+ * @param extension An optional file extension to append to the artifact (no `.`).
+ *
+ * @returns A full path to the download location of the artifact
+ */
+export function createDownloadPath(storagePath: string, downloadLink: DownloadLink, extension = '') {
+  return path.join(storagePath, downloadLink.queryId, downloadLink.id + (extension ? `.${extension}` : ''));
 }
