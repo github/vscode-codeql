@@ -782,7 +782,7 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   private warnNoEvalLogSummary() {
-    void showAndLogWarningMessage('No evaluator log summary is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG + '?');
+    void showAndLogWarningMessage(`No evaluator log summary is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
   }
 
 
