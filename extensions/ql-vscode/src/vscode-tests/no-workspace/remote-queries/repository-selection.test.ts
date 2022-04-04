@@ -21,7 +21,6 @@ describe('repository-selection', function() {
       showInputBoxSpy = sandbox.stub(window, 'showInputBox');
       getRemoteRepositoryListsSpy = sandbox.stub();
       showAndLogErrorMessageSpy = sandbox.stub();
-      // extensions/ql-vscode/src/remote-queries/repository-selection.ts
       mod = proxyquire('../../../remote-queries/repository-selection', {
         '../config': {
           getRemoteRepositoryLists: getRemoteRepositoryListsSpy
