@@ -226,7 +226,8 @@ export class RemoteQueriesManager extends DisposableObject {
 
   private async askToOpenResults(query: RemoteQuery, queryResult: RemoteQueryResult): Promise<void> {
     const totalResultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
-    const message = `Query "${query.queryName}" run on ${query.repositories.length} repositories and returned ${totalResultCount} results`;
+    const totalRepoCount = queryResult.analysisSummaries.length;
+    const message = `Query "${query.queryName}" run on ${totalRepoCount} repositories and returned ${totalResultCount} results`;
 
     const shouldOpenView = await showInformationMessageWithAction(message, 'View');
     if (shouldOpenView) {

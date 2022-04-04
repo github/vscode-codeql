@@ -308,7 +308,6 @@ export async function runRemoteQuery(
       }
 
       const remoteQuery = await buildRemoteQueryEntity(
-        repositories,
         queryFile,
         queryMetadata,
         owner,
@@ -395,7 +394,6 @@ async function ensureNameAndSuite(queryPackDir: string, packRelativePath: string
 }
 
 async function buildRemoteQueryEntity(
-  repositories: string[],
   queryFilePath: string,
   queryMetadata: QueryMetadata | undefined,
   controllerRepoOwner: string,
@@ -406,11 +404,6 @@ async function buildRemoteQueryEntity(
 ): Promise<RemoteQuery> {
   // The query name is either the name as specified in the query metadata, or the file name.
   const queryName = queryMetadata?.name ?? path.basename(queryFilePath);
-
-  const queryRepos = repositories.map(r => {
-    const [owner, repo] = r.split('/');
-    return { owner: owner, name: repo };
-  });
 
   const queryText = await fs.readFile(queryFilePath, 'utf8');
 
@@ -423,7 +416,6 @@ async function buildRemoteQueryEntity(
       owner: controllerRepoOwner,
       name: controllerRepoName,
     },
-    repositories: queryRepos,
     executionStartTime: queryStartTime,
     actionsWorkflowRunId: workflowRunId
   };
