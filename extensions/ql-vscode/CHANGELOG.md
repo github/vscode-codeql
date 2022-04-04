@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.6.2 - 4 April 2022
 
 - Fix a bug where the AST viewer was not synchronizing its selected node when the editor selection changes. [#1230](https://github.com/github/vscode-codeql/pull/1230)
 - Avoid synchronizing the `codeQL.cli.executablePath` setting. [#1252](https://github.com/github/vscode-codeql/pull/1252)
