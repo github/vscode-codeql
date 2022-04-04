@@ -6,16 +6,16 @@ import * as fs from 'fs-extra';
 import * as os from 'os';
 import * as yaml from 'js-yaml';
 
-import { QlPack, runRemoteQuery } from '../../remote-queries/run-remote-query';
-import { Credentials } from '../../authentication';
-import { CliVersionConstraint, CodeQLCliServer } from '../../cli';
-import { CodeQLExtensionInterface } from '../../extension';
-import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../config';
-import { UserCancellationException } from '../../commandRunner';
+import { QlPack, runRemoteQuery } from '../../../remote-queries/run-remote-query';
+import { Credentials } from '../../../authentication';
+import { CliVersionConstraint, CodeQLCliServer } from '../../../cli';
+import { CodeQLExtensionInterface } from '../../../extension';
+import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../../config';
+import { UserCancellationException } from '../../../commandRunner';
 import { lte } from 'semver';
 
 describe('Remote queries', function() {
-  const baseDir = path.join(__dirname, '../../../src/vscode-tests/cli-integration');
+  const baseDir = path.join(__dirname, '../../../../src/vscode-tests/cli-integration');
 
   let sandbox: sinon.SinonSandbox;
 

@@ -4,18 +4,18 @@ import * as sinon from 'sinon';
 import { expect } from 'chai';
 
 import { CancellationToken, ExtensionContext, Uri, window, workspace } from 'vscode';
-import { QueryHistoryConfig } from '../../config';
-import { DatabaseManager } from '../../databases';
-import { tmpDir } from '../../helpers';
-import { QueryHistoryManager } from '../../query-history';
-import { QueryServerClient } from '../../queryserver-client';
-import { Credentials } from '../../authentication';
-import { AnalysesResultsManager } from '../../remote-queries/analyses-results-manager';
-import { RemoteQueryResult } from '../../remote-queries/shared/remote-query-result';
-import { DisposableBucket } from '../disposable-bucket';
-import { testDisposeHandler } from '../test-dispose-handler';
-import { walkDirectory } from '../../helpers';
-import { getErrorMessage } from '../../pure/helpers-pure';
+import { QueryHistoryConfig } from '../../../config';
+import { DatabaseManager } from '../../../databases';
+import { tmpDir } from '../../../helpers';
+import { QueryHistoryManager } from '../../../query-history';
+import { QueryServerClient } from '../../../queryserver-client';
+import { Credentials } from '../../../authentication';
+import { AnalysesResultsManager } from '../../../remote-queries/analyses-results-manager';
+import { RemoteQueryResult } from '../../../remote-queries/shared/remote-query-result';
+import { DisposableBucket } from '../../disposable-bucket';
+import { testDisposeHandler } from '../../test-dispose-handler';
+import { walkDirectory } from '../../../helpers';
+import { getErrorMessage } from '../../../pure/helpers-pure';
 
 /**
  * Tests for remote queries and how they interact with the query history manager.
@@ -23,7 +23,7 @@ import { getErrorMessage } from '../../pure/helpers-pure';
 
 describe('Remote queries and query history manager', function() {
 
-  const EXTENSION_PATH = path.join(__dirname, '../../../');
+  const EXTENSION_PATH = path.join(__dirname, '../../../../');
   const STORAGE_DIR = Uri.file(path.join(tmpDir.name, 'remote-queries')).fsPath;
   const asyncNoop = async () => { /** noop */ };
 
@@ -353,7 +353,7 @@ describe('Remote queries and query history manager', function() {
 
   async function copyHistoryState() {
     fs.ensureDirSync(STORAGE_DIR);
-    fs.copySync(path.join(__dirname, 'data/remote-queries/'), path.join(tmpDir.name, 'remote-queries'));
+    fs.copySync(path.join(__dirname, '../data/remote-queries/'), path.join(tmpDir.name, 'remote-queries'));
 
     // also, replace the files with "PLACEHOLDER" so that they have the correct directory
     for await (const p of walkDirectory(STORAGE_DIR)) {
