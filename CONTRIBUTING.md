@@ -124,6 +124,7 @@ From inside of VSCode, open the `launch.json` file and in the _Launch Integratio
 1. Download the VSIX from the draft GitHub release at the top of [the releases page](https://github.com/github/vscode-codeql/releases) that is created when the release build finishes.
 1. Unzip the `.vsix` and inspect its `package.json` to make sure the version is what you expect,
    or look at the source if there's any doubt the right code is being shipped.
+1. Install the `.vsix` file into your vscode IDE and ensure the extension can load properly. Run a single command (like run query, or add database).
 1. Go to the actions tab of the vscode-codeql repository and select the [Release workflow](https://github.com/github/vscode-codeql/actions?query=workflow%3ARelease).
     - If there is an authentication failure when publishing, be sure to check that the authentication keys haven't expired. See below.
 1. Approve the deployments of the correct Release workflow. This will automatically publish to Open VSX and VS Code Marketplace.
