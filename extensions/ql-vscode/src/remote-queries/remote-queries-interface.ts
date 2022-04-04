@@ -71,6 +71,7 @@ export class RemoteQueriesInterfaceManager {
     const totalResultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
     const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);
     const analysisSummaries = this.buildAnalysisSummaries(queryResult.analysisSummaries);
+    const totalRepositoryCount = queryResult.analysisSummaries.length;
     const affectedRepositories = queryResult.analysisSummaries.filter(r => r.resultCount > 0);
 
     return {
@@ -80,7 +81,7 @@ export class RemoteQueriesInterfaceManager {
       queryText: query.queryText,
       language: query.language,
       workflowRunUrl: `https://github.com/${query.controllerRepository.owner}/${query.controllerRepository.name}/actions/runs/${query.actionsWorkflowRunId}`,
-      totalRepositoryCount: query.repositories.length,
+      totalRepositoryCount: totalRepositoryCount,
       affectedRepositoryCount: affectedRepositories.length,
       totalResultCount: totalResultCount,
       executionTimestamp: this.formatDate(query.executionStartTime),
