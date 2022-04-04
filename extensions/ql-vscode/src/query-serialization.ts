@@ -1,13 +1,12 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
-import { QueryHistoryConfig } from './config';
 import { showAndLogErrorMessage } from './helpers';
 import { asyncFilter, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedQueryInfo, LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { QueryEvaluationInfo } from './run-queries';
 
-export async function slurpQueryHistory(fsPath: string, config: QueryHistoryConfig): Promise<QueryHistoryInfo[]> {
+export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInfo[]> {
   try {
     if (!(await fs.pathExists(fsPath))) {
       return [];
@@ -28,10 +27,6 @@ export async function slurpQueryHistory(fsPath: string, config: QueryHistoryConf
       // the constructor invokes extra logic that we don't want to do.
       if (q.t === 'local') {
         Object.setPrototypeOf(q, LocalQueryInfo.prototype);
-
-        // The config object is a global, se we need to set it explicitly
-        // and ensure it is not serialized to JSON.
-        q.setConfig(config);
 
         // Date instances are serialized as strings. Need to
         // convert them back to Date instances.

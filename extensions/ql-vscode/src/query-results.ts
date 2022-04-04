@@ -14,7 +14,6 @@ import {
   SarifInterpretationData,
   GraphInterpretationData
 } from './pure/interface-types';
-import { QueryHistoryConfig } from './config';
 import { DatabaseInfo } from './pure/interface-types';
 import { QueryStatus } from './query-status';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
@@ -218,7 +217,6 @@ export class LocalQueryInfo {
   public completedQuery: CompletedQueryInfo | undefined;
   public evalLogLocation: string | undefined;
   public evalLogSummaryLocation: string | undefined;
-  private config: QueryHistoryConfig | undefined;
 
   /**
    * Note that in the {@link slurpQueryHistory} method, we create a FullQueryInfo instance
@@ -226,11 +224,8 @@ export class LocalQueryInfo {
    */
   constructor(
     public readonly initialInfo: InitialQueryInfo,
-    config: QueryHistoryConfig,
     private cancellationSource?: CancellationTokenSource // used to cancel in progress queries
-  ) {
-    this.setConfig(config);
-  }
+  ) { /**/ }
 
   cancel() {
     this.cancellationSource?.cancel();
@@ -243,43 +238,12 @@ export class LocalQueryInfo {
     return this.initialInfo.start.toLocaleString(env.language);
   }
 
-  interpolate(template: string): string {
-    const { resultCount = 0, statusString = 'in progress' } = this.completedQuery || {};
-    const replacements: { [k: string]: string } = {
-      t: this.startTime,
-      q: this.getQueryName(),
-      d: this.initialInfo.databaseInfo.name,
-      r: resultCount.toString(),
-      s: statusString,
-      f: this.getQueryFileName(),
-      '%': '%',
-    };
-    return template.replace(/%(.)/g, (match, key) => {
-      const replacement = replacements[key];
-      return replacement !== undefined ? replacement : match;
-    });
+  get userSpecifiedLabel() {
+    return this.initialInfo.userSpecifiedLabel;
   }
 
-  /**
-   * Returns a label for this query that includes interpolated values.
-   */
-  get label(): string {
-    return this.interpolate(
-      this.initialInfo.userSpecifiedLabel ?? this.config?.format ?? ''
-    );
-  }
-
-  /**
-   * Avoids getting the default label for the query.
-   * If there is a custom label for this query, interpolate and use that.
-   * Otherwise, use the name of the query.
-   *
-   * @returns the name of the query, unless there is a custom label for this query.
-   */
-  getShortLabel(): string {
-    return this.initialInfo.userSpecifiedLabel
-      ? this.interpolate(this.initialInfo.userSpecifiedLabel)
-      : this.getQueryName();
+  set userSpecifiedLabel(label: string | undefined) {
+    this.initialInfo.userSpecifiedLabel = label;
   }
 
   /**
@@ -341,22 +305,5 @@ export class LocalQueryInfo {
     } else {
       return QueryStatus.Failed;
     }
-  }
-
-  /**
-   * The `config` property must not be serialized since it contains a listerner
-   * for global configuration changes. Instead, It should be set when the query
-   * is deserialized.
-   *
-   * @param config the global query history config object
-   */
-  setConfig(config: QueryHistoryConfig) {
-    // avoid serializing config property
-    Object.defineProperty(this, 'config', {
-      enumerable: false,
-      writable: false,
-      configurable: true,
-      value: config
-    });
   }
 }
