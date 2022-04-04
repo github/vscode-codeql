@@ -6,7 +6,7 @@ import * as pq from 'proxyquire';
 
 const proxyquire = pq.noPreserveCache();
 
-describe('run-remote-query', function() {
+describe('repository-selection', function() {
 
   describe('getRepositories', () => {
     let sandbox: sinon.SinonSandbox;
@@ -21,7 +21,8 @@ describe('run-remote-query', function() {
       showInputBoxSpy = sandbox.stub(window, 'showInputBox');
       getRemoteRepositoryListsSpy = sandbox.stub();
       showAndLogErrorMessageSpy = sandbox.stub();
-      mod = proxyquire('../../remote-queries/run-remote-query', {
+      // extensions/ql-vscode/src/remote-queries/repository-selection.ts
+      mod = proxyquire('../../../remote-queries/repository-selection', {
         '../config': {
           getRemoteRepositoryLists: getRemoteRepositoryListsSpy
         },
