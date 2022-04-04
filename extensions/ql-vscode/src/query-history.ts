@@ -653,7 +653,7 @@ export class QueryHistoryManager extends DisposableObject {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
     // TODO will support remote queries
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local') {
+    if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
 
