@@ -22,7 +22,7 @@ import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
 import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
-import { getRepositorySelection, isInvalidSelection, RepositorySelection } from './repository-selection';
+import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
 
 export interface QlPack {
   name: string;
@@ -190,7 +190,7 @@ export async function runRemoteQuery(
     });
 
     const repoSelection = await getRepositorySelection();
-    if (isInvalidSelection(repoSelection)) {
+    if (!isValidSelection(repoSelection)) {
       throw new UserCancellationException('No repositories to query.');
     }
 

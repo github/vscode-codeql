@@ -60,18 +60,18 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
  * @param repoSelection The selection to check.
  * @returns A boolean flag indicating if the selection is valid or not.
  */
-export function isInvalidSelection(repoSelection: RepositorySelection): boolean {
+export function isValidSelection(repoSelection: RepositorySelection): boolean {
   if (repoSelection.repositories === undefined && repoSelection.repositoryLists === undefined) {
-    return true;
+    return false;
   }
   if (repoSelection.repositories !== undefined && repoSelection.repositories.length === 0) {
-    return true;
+    return false;
   }
   if (repoSelection.repositoryLists !== undefined && repoSelection.repositoryLists.length === 0) {
-    return true;
+    return false;
   }
 
-  return false;
+  return true;
 }
 
 function createSystemDefinedRepoListsQuickPickItems(): RepoListQuickPickItem[] {
