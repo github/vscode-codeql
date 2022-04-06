@@ -67,7 +67,7 @@ export function isValidSelection(repoSelection: RepositorySelection): boolean {
   if (repoSelection.repositories !== undefined && repoSelection.repositories.length === 0) {
     return false;
   }
-  if (repoSelection.repositoryLists !== undefined && repoSelection.repositoryLists.length === 0) {
+  if (repoSelection.repositoryLists?.length === 0) {
     return false;
   }
 
@@ -90,10 +90,10 @@ function createUserDefinedRepoListsQuickPickItems(): RepoListQuickPickItem[] {
     return [];
   }
 
-  return Object.entries(repoLists).map<RepoListQuickPickItem>(([key, value]) => (
+  return Object.entries(repoLists).map<RepoListQuickPickItem>(([label, repositories]) => (
     {
-      label: key,           // the name of the repository list
-      repositories: value,  // the actual array of repositories
+      label,            // the name of the repository list
+      repositories  // the actual array of repositories
     }
   ));
 }
