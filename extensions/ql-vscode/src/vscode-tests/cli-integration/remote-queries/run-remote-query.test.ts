@@ -52,7 +52,7 @@ describe('Remote queries', function() {
     progress = sandbox.spy();
     // Should not have asked for a language
     showQuickPickSpy = sandbox.stub(window, 'showQuickPick')
-      .onFirstCall().resolves({ repoList: ['github/vscode-codeql'] } as unknown as QuickPickItem)
+      .onFirstCall().resolves({ repositories: ['github/vscode-codeql'] } as unknown as QuickPickItem)
       .onSecondCall().resolves('javascript' as unknown as QuickPickItem);
 
     // always run in the vscode-codeql repo

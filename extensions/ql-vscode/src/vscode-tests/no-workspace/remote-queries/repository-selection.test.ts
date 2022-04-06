@@ -8,7 +8,7 @@ const proxyquire = pq.noPreserveCache();
 
 describe('repository-selection', function() {
 
-  describe('getRepositories', () => {
+  describe('getRepositorySelection', () => {
     let sandbox: sinon.SinonSandbox;
     let quickPickSpy: sinon.SinonStub;
     let showInputBoxSpy: sinon.SinonStub;
@@ -35,10 +35,10 @@ describe('repository-selection', function() {
       sandbox.restore();
     });
 
-    it('should run on a repo list that you chose from your pre-defined config', async () => {
+    it('should allow selection from repo lists from your pre-defined config', async () => {
       // fake return values
       quickPickSpy.resolves(
-        { repoList: ['foo/bar', 'foo/baz'] }
+        { repositories: ['foo/bar', 'foo/baz'] }
       );
       getRemoteRepositoryListsSpy.returns(
         {
@@ -48,11 +48,34 @@ describe('repository-selection', function() {
       );
 
       // make the function call
-      const repoList = await mod.getRepositories();
+      const repoSelection = await mod.getRepositorySelection();
 
       // Check that the return value is correct
-      expect(repoList).to.deep.eq(
+      expect(repoSelection.repositoryLists).to.be.undefined;
+      expect(repoSelection.repositories).to.deep.eq(
         ['foo/bar', 'foo/baz']
+      );
+    });
+
+    it('should allow selection from repo lists defined at the system level', async () => {
+      // fake return values
+      quickPickSpy.resolves(
+        { repositoryList: 'top_100' }
+      );
+      getRemoteRepositoryListsSpy.returns(
+        {
+          'list1': ['foo/bar', 'foo/baz'],
+          'list2': [],
+        }
+      );
+
+      // make the function call
+      const repoSelection = await mod.getRepositorySelection();
+
+      // Check that the return value is correct
+      expect(repoSelection.repositories).to.be.undefined;
+      expect(repoSelection.repositoryLists).to.deep.eq(
+        ['top_100']
       );
     });
 
@@ -65,14 +88,17 @@ describe('repository-selection', function() {
     goodRepos.forEach(repo => {
       it(`should run on a valid repo that you enter in the text box: ${repo}`, async () => {
         // fake return values
+        quickPickSpy.resolves(
+          { useCustomRepository: true }
+        );
         getRemoteRepositoryListsSpy.returns({}); // no pre-defined repo lists
         showInputBoxSpy.resolves(repo);
 
         // make the function call
-        const repoList = await mod.getRepositories();
+        const repoSelection = await mod.getRepositorySelection();
 
         // Check that the return value is correct
-        expect(repoList).to.deep.equal(
+        expect(repoSelection.repositories).to.deep.equal(
           [repo]
         );
       });
@@ -88,11 +114,14 @@ describe('repository-selection', function() {
     badRepos.forEach(repo => {
       it(`should show an error message if you enter an invalid repo in the text box: ${repo}`, async () => {
         // fake return values
+        quickPickSpy.resolves(
+          { useCustomRepository: true }
+        );
         getRemoteRepositoryListsSpy.returns({}); // no pre-defined repo lists
         showInputBoxSpy.resolves(repo);
 
         // make the function call
-        await mod.getRepositories();
+        await mod.getRepositorySelection();
 
         // check that we get the right error message
         expect(showAndLogErrorMessageSpy.firstCall.args[0]).to.contain('Invalid repository format');

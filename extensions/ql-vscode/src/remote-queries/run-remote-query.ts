@@ -22,7 +22,7 @@ import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
 import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
-import { getRepositories } from './repository-selection';
+import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
 
 export interface QlPack {
   name: string;
@@ -189,8 +189,8 @@ export async function runRemoteQuery(
       message: 'Determining query target language'
     });
 
-    const repositories = await getRepositories();
-    if (!repositories || repositories.length === 0) {
+    const repoSelection = await getRepositorySelection();
+    if (!isValidSelection(repoSelection)) {
       throw new UserCancellationException('No repositories to query.');
     }
 
@@ -249,7 +249,7 @@ export async function runRemoteQuery(
     });
 
     const actionBranch = getActionBranch();
-    const workflowRunId = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repositories, owner, repo, base64Pack, dryRun);
+    const workflowRunId = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, owner, repo, base64Pack, dryRun);
     const queryStartTime = Date.now();
     const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
 
@@ -287,15 +287,30 @@ async function runRemoteQueriesApiRequest(
   credentials: Credentials,
   ref: string,
   language: string,
-  repositories: string[],
+  repoSelection: RepositorySelection,
   owner: string,
   repo: string,
   queryPackBase64: string,
   dryRun = false
 ): Promise<void | number> {
+  const data = {
+    ref,
+    language,
+    repositories: repoSelection.repositories ?? undefined,
+    repository_lists: repoSelection.repositoryLists ?? undefined,
+    query_pack: queryPackBase64,
+  };
+
   if (dryRun) {
     void showAndLogInformationMessage('[DRY RUN] Would have sent request. See extension log for the payload.');
-    void logger.log(JSON.stringify({ ref, language, repositories, owner, repo, queryPackBase64: queryPackBase64.substring(0, 100) + '... ' + queryPackBase64.length + ' bytes' }));
+    void logger.log(JSON.stringify({
+      owner,
+      repo,
+      data: {
+        ...data,
+        queryPackBase64: queryPackBase64.substring(0, 100) + '... ' + queryPackBase64.length + ' bytes'
+      }
+    }));
     return;
   }
 
@@ -306,12 +321,7 @@ async function runRemoteQueriesApiRequest(
       {
         owner,
         repo,
-        data: {
-          ref,
-          language,
-          repositories,
-          query_pack: queryPackBase64,
-        }
+        data
       }
     );
     const workflowRunId = response.data.workflow_run_id;
