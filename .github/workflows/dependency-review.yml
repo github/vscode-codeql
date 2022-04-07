@@ -1,11 +1,10 @@
 name: 'Dependency Review'
-on: 
+on:
   - pull_request
   - workflow_dispatch
 
 permissions:
-  actions: read
-  pull-requests: read
+  contents: read
 
 jobs:
   dependency-review:
@@ -14,4 +13,4 @@ jobs:
       - name: 'Checkout Repository'
         uses: actions/checkout@v3
       - name: 'Dependency Review'
-        uses: dsp-testing/dependency-review-action@main
+        uses: actions/dependency-review-action@v1
