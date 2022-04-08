@@ -23,8 +23,8 @@ describe('markdown generation', async function() {
     const expectedTestOutput1 = await fs.readFile(path.join(__dirname, 'data/results-repo1.md'), 'utf8');
     const expectedTestOutput2 = await fs.readFile(path.join(__dirname, 'data/results-repo2.md'), 'utf8');
 
-    // Check that markdown output is correct
-    expect(markdownFile1.join('\n')).to.equal(expectedTestOutput1);
-    expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2);
+    // Check that markdown output is correct, after making line endings consistent
+    expect(markdownFile1.join('\n')).to.equal(expectedTestOutput1.replace(/\r?\n/g, '\n'));
+    expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2.replace(/\r?\n/g, '\n'));
   });
 });
