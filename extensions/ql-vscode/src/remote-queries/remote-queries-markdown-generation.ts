@@ -10,11 +10,20 @@ export type MarkdownFile = string[];
  */
 export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisResults[]): MarkdownFile[] {
   const files: MarkdownFile[] = [];
+  // Generate summary file with links to individual files
+  const summaryLines: MarkdownFile = generateMarkdownSummary(query);
   for (const analysisResult of analysesResults) {
     if (analysisResult.interpretedResults.length === 0) {
       // TODO: We'll add support for non-interpreted results later.
       continue;
     }
+
+    // Append nwo and results count to the summary table
+    summaryLines.push(
+      `| ${analysisResult.nwo} | [${analysisResult.interpretedResults.length} result(s)](${createGistRelativeLink(analysisResult.nwo)}) |`
+    );
+
+    // Generate individual markdown file for each repository
     const lines = [
       `### ${analysisResult.nwo}`,
       ''
@@ -25,8 +34,37 @@ export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisRe
     }
     files.push(lines);
   }
+  files.push(summaryLines);
   return files;
+}
 
+export function generateMarkdownSummary(query: RemoteQuery): MarkdownFile {
+  const lines: MarkdownFile = [];
+  // Title
+  lines.push(`## Results for "${query.queryName}"`);
+  lines.push('');
+
+  // Expandable section containing query text
+  const queryCodeBlock = [
+    '```ql',
+    ...query.queryText.split('\n'),
+    '```',
+  ];
+  lines.push(
+    ...buildExpandableMarkdownSection('Query', queryCodeBlock)
+  );
+
+  // Summary table
+  lines.push(
+    '### Summary',
+    ''
+  );
+  lines.push(
+    '| Repository | Results |',
+    '| --- | --- |',
+  );
+  // nwo and result count will be appended to this table
+  return lines;
 }
 
 function generateMarkdownForInterpretedResult(interpretedResult: AnalysisAlert, language: string): MarkdownFile {
@@ -96,4 +134,40 @@ export function createMarkdownRemoteFileRef(
 ): string {
   const markdownLink = `[${linkText || fileLink.filePath}](${createRemoteFileRef(fileLink, startLine, endLine)})`;
   return markdownLink;
+}
+
+/**
+ * Builds an expandable markdown section of the form:
+ * <details> 
+ * <summary>title</summary>
+ * 
+ * contents
+ * 
+ * </details>
+ */
+function buildExpandableMarkdownSection(title: string, contents: MarkdownFile): MarkdownFile {
+  const expandableLines: MarkdownFile = [];
+  expandableLines.push(
+    '<details>',
+    `<summary>${title}</summary>`,
+    '',
+  );
+  expandableLines.push(...contents);
+  expandableLines.push(
+    '',
+    '</details>',
+    ''
+  );
+  return expandableLines;
+}
+
+/**
+ * Creates anchor link to a file in the gist. This is of the form:
+ * '#file-<name>-<file-extension>'
+ * 
+ * TODO: Make sure these names align with the actual file names once we upload them to a gist.
+ */
+function createGistRelativeLink(nwo: string): string {
+  const [owner, repo] = nwo.split('/');
+  return `#file-${owner}-${repo}-md`;
 }
