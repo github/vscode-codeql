@@ -20,11 +20,20 @@ describe('markdown generation', async function() {
     const markdownFile1 = markdownFiles[0]; // results for github/codeql repo
     const markdownFile2 = markdownFiles[1]; // results for meteor/meteor repo
 
-    const expectedTestOutput1 = await fs.readFile(path.join(__dirname, 'data/results-repo1.md'), 'utf8');
-    const expectedTestOutput2 = await fs.readFile(path.join(__dirname, 'data/results-repo2.md'), 'utf8');
+    const expectedTestOutput1 = await readTestOutputFile('data/results-repo1.md');
+    const expectedTestOutput2 = await readTestOutputFile('data/results-repo2.md');
 
     // Check that markdown output is correct, after making line endings consistent
-    expect(markdownFile1.join('\n')).to.equal(expectedTestOutput1.replace(/\r?\n/g, '\n'));
-    expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2.replace(/\r?\n/g, '\n'));
+    expect(markdownFile1.join('\n')).to.equal(expectedTestOutput1);
+    expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2);
   });
 });
+
+/**
+ * Reads a test output file and returns it as a string.
+ * Replaces line endings with '\n' for consistency across operating systems.
+ */
+async function readTestOutputFile(relativePath: string): Promise<string> {
+  const file = await fs.readFile(path.join(__dirname, relativePath), 'utf8');
+  return file.replace(/\r?\n/g, '\n');
+}

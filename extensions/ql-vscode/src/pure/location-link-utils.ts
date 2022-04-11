@@ -13,17 +13,3 @@ export function createRemoteFileRef(
     return `${fileLink.fileLinkPrefix}/${fileLink.filePath}`;
   }
 }
-
-/**
- * Creates a markdown link to a remote file.
- * If the "link text" is not provided, we use the file path.
- */
-export function createMarkdownRemoteFileRef(
-  fileLink: FileLink,
-  startLine?: number,
-  endLine?: number,
-  linkText?: string,
-): string {
-  const markdownLink = `[${linkText || fileLink.filePath}](${createRemoteFileRef(fileLink, startLine, endLine)})`;
-  return markdownLink;
-}
