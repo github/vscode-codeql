@@ -10,7 +10,7 @@ function cleanupTemp() {
 
 ```
 
-This shell command depends on an uncontrolled [absolute path](https://github.com/github/codeql/blob/48015e5a2e6202131f2d1062cc066dc33ed69a9b/javascript/ql/src/Security/CWE-078/examples/shell-command-injection-from-environment.js#L4-L4).
+*This shell command depends on an uncontrolled [absolute path](https://github.com/github/codeql/blob/48015e5a2e6202131f2d1062cc066dc33ed69a9b/javascript/ql/src/Security/CWE-078/examples/shell-command-injection-from-environment.js#L4-L4).*
 
 ----------------------------------------
 
@@ -25,7 +25,7 @@ This shell command depends on an uncontrolled [absolute path](https://github.com
 
 ```
 
-This shell command depends on an uncontrolled [absolute path](https://github.com/github/codeql/blob/48015e5a2e6202131f2d1062cc066dc33ed69a9b/javascript/ql/test/query-tests/Security/CWE-078/tst_shell-command-injection-from-environment.js#L6-L6).
+*This shell command depends on an uncontrolled [absolute path](https://github.com/github/codeql/blob/48015e5a2e6202131f2d1062cc066dc33ed69a9b/javascript/ql/test/query-tests/Security/CWE-078/tst_shell-command-injection-from-environment.js#L6-L6).*
 
 ----------------------------------------
 
@@ -40,7 +40,7 @@ This shell command depends on an uncontrolled [absolute path](https://github.com
 
 ```
 
-This shell command depends on an uncontrolled [absolute path](https://github.com/github/codeql/blob/48015e5a2e6202131f2d1062cc066dc33ed69a9b/javascript/ql/test/query-tests/Security/CWE-078/tst_shell-command-injection-from-environment.js#L8-L8).
+*This shell command depends on an uncontrolled [absolute path](https://github.com/github/codeql/blob/48015e5a2e6202131f2d1062cc066dc33ed69a9b/javascript/ql/test/query-tests/Security/CWE-078/tst_shell-command-injection-from-environment.js#L8-L8).*
 
 ----------------------------------------
 
@@ -55,6 +55,6 @@ This shell command depends on an uncontrolled [absolute path](https://github.com
 
 ```
 
-This shell command depends on an uncontrolled [absolute path](https://github.com/github/codeql/blob/48015e5a2e6202131f2d1062cc066dc33ed69a9b/javascript/ql/test/query-tests/Security/CWE-078/tst_shell-command-injection-from-environment.js#L9-L9).
+*This shell command depends on an uncontrolled [absolute path](https://github.com/github/codeql/blob/48015e5a2e6202131f2d1062cc066dc33ed69a9b/javascript/ql/test/query-tests/Security/CWE-078/tst_shell-command-injection-from-environment.js#L9-L9).*
 
 ----------------------------------------
