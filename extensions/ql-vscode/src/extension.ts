@@ -838,7 +838,7 @@ async function activateWithInstalledDistribution(
     )
   );
 
-  void logger.log('Initializing remote queries interface.');
+  void logger.log('Initializing variant analysis results view.');
   const rqm = new RemoteQueriesManager(ctx, cliServer, qhm, queryStorageDir, logger);
   ctx.subscriptions.push(rqm);
 
@@ -868,7 +868,7 @@ async function activateWithInstalledDistribution(
           token
         );
       } else {
-        throw new Error('Remote queries require the CodeQL Canary version to run.');
+        throw new Error('Variant analysis requires the CodeQL Canary version to run.');
       }
     }, {
       title: 'Run Variant Analysis',
