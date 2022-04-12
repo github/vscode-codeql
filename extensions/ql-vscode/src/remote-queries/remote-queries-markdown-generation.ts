@@ -19,9 +19,10 @@ export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisRe
     }
 
     // Append nwo and results count to the summary table
-    summaryLines.push(
-      `| ${analysisResult.nwo} | [${analysisResult.interpretedResults.length} result(s)](${createGistRelativeLink(analysisResult.nwo)}) |`
-    );
+    const nwo = analysisResult.nwo;
+    const resultsCount = analysisResult.interpretedResults.length;
+    const link = createGistRelativeLink(nwo);
+    summaryLines.push(`| ${nwo} | [${resultsCount} result(s)](${link}) |`);
 
     // Generate individual markdown file for each repository
     const lines = [
@@ -34,15 +35,16 @@ export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisRe
     }
     files.push(lines);
   }
-  files.push(summaryLines);
-  return files;
+  return [summaryLines, ...files];
 }
 
 export function generateMarkdownSummary(query: RemoteQuery): MarkdownFile {
   const lines: MarkdownFile = [];
   // Title
-  lines.push(`## Results for "${query.queryName}"`);
-  lines.push('');
+  lines.push(
+    `### Results for "${query.queryName}"`,
+    ''
+  );
 
   // Expandable section containing query text
   const queryCodeBlock = [
@@ -54,12 +56,16 @@ export function generateMarkdownSummary(query: RemoteQuery): MarkdownFile {
     ...buildExpandableMarkdownSection('Query', queryCodeBlock)
   );
 
+  // Padding between sections
+  lines.push(
+    '<br />',
+    '',
+  );
+
   // Summary table
   lines.push(
     '### Summary',
-    ''
-  );
-  lines.push(
+    '',
     '| Repository | Results |',
     '| --- | --- |',
   );
@@ -151,9 +157,7 @@ function buildExpandableMarkdownSection(title: string, contents: MarkdownFile): 
     '<details>',
     `<summary>${title}</summary>`,
     '',
-  );
-  expandableLines.push(...contents);
-  expandableLines.push(
+    ...contents,
     '',
     '</details>',
     ''

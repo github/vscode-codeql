@@ -17,18 +17,18 @@ describe('markdown generation', async function() {
     // Check that query has results for two repositories, plus a summary file
     expect(markdownFiles.length).to.equal(3);
 
-    const markdownFile1 = markdownFiles[0]; // results for github/codeql repo
-    const markdownFile2 = markdownFiles[1]; // results for meteor/meteor repo
-    const markdownFile3 = markdownFiles[2]; // summary file
+    const markdownFile0 = markdownFiles[0]; // summary file
+    const markdownFile1 = markdownFiles[1]; // results for github/codeql repo
+    const markdownFile2 = markdownFiles[2]; // results for meteor/meteor repo
 
+    const expectedSummaryFile = await readTestOutputFile('data/summary.md');
     const expectedTestOutput1 = await readTestOutputFile('data/results-repo1.md');
     const expectedTestOutput2 = await readTestOutputFile('data/results-repo2.md');
-    const expectedSummaryFile = await readTestOutputFile('data/summary.md');
 
     // Check that markdown output is correct, after making line endings consistent
+    expect(markdownFile0.join('\n')).to.equal(expectedSummaryFile);
     expect(markdownFile1.join('\n')).to.equal(expectedTestOutput1);
     expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2);
-    expect(markdownFile3.join('\n')).to.equal(expectedSummaryFile);
   });
 });
 

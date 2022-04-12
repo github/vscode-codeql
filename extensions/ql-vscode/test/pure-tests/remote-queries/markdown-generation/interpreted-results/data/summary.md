@@ -1,4 +1,4 @@
-## Results for "Shell command built from environment values"
+### Results for "Shell command built from environment values"
 
 <details>
 <summary>Query</summary>
@@ -38,6 +38,8 @@ select highlight, source, sink, "This shell command depends on an uncontrolled $
 ```
 
 </details>
+
+<br />
 
 ### Summary
 
