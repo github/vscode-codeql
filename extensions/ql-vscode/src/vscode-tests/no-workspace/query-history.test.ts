@@ -27,6 +27,7 @@ describe('query-history', () => {
   let showQuickPickSpy: sinon.SinonStub;
   let queryHistoryManager: QueryHistoryManager | undefined;
   let selectedCallback: sinon.SinonStub;
+  let getCredentialsCallback: sinon.SinonStub;
   let doCompareCallback: sinon.SinonStub;
 
   let tryOpenExternalFile: Function;
@@ -49,6 +50,7 @@ describe('query-history', () => {
     tryOpenExternalFile = (QueryHistoryManager.prototype as any).tryOpenExternalFile;
     configListener = new QueryHistoryConfigListener();
     selectedCallback = sandbox.stub();
+    getCredentialsCallback = sandbox.stub();
     doCompareCallback = sandbox.stub();
   });
 
@@ -749,6 +751,7 @@ describe('query-history', () => {
         extensionPath: vscode.Uri.file('/x/y/z').fsPath,
       } as vscode.ExtensionContext,
       configListener,
+      getCredentialsCallback,
       doCompareCallback
     );
     qhm.onWillOpenQueryItem(selectedCallback);

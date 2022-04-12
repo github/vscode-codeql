@@ -155,9 +155,16 @@ export class RemoteQueriesManager extends DisposableObject {
         queryItem.status = QueryStatus.Failed;
       }
     } else if (queryWorkflowResult.status === 'CompletedUnsuccessfully') {
-      queryItem.failureReason = queryWorkflowResult.error;
-      queryItem.status = QueryStatus.Failed;
-      void showAndLogErrorMessage(`Variant analysis execution failed. Error: ${queryWorkflowResult.error}`);
+      if (queryWorkflowResult.error?.includes('cancelled')) {
+        // workflow was cancelled on the server
+        queryItem.failureReason = 'Cancelled';
+        queryItem.status = QueryStatus.Failed;
+        void showAndLogErrorMessage('Variant analysis monitoring was cancelled');
+      } else {
+        queryItem.failureReason = queryWorkflowResult.error;
+        queryItem.status = QueryStatus.Failed;
+        void showAndLogErrorMessage(`Variant analysis execution failed. Error: ${queryWorkflowResult.error}`);
+      }
     } else if (queryWorkflowResult.status === 'Cancelled') {
       queryItem.failureReason = 'Cancelled';
       queryItem.status = QueryStatus.Failed;

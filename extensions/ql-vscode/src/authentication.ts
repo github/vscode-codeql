@@ -7,7 +7,7 @@ const GITHUB_AUTH_PROVIDER_ID = 'github';
 // https://docs.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps
 const SCOPES = ['repo'];
 
-/** 
+/**
  * Handles authentication to GitHub, using the VS Code [authentication API](https://code.visualstudio.com/api/references/vscode-api#authentication).
  */
 export class Credentials {
@@ -18,6 +18,15 @@ export class Credentials {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() { }
 
+  /**
+   * Initializes an instance of credentials with an octokit instance.
+   *
+   * Do not call this method until you know you actually need an instance of credentials.
+   * since calling this method will require the user to log in.
+   *
+   * @param context The extension context.
+   * @returns An instance of credentials.
+   */
   static async initialize(context: vscode.ExtensionContext): Promise<Credentials> {
     const c = new Credentials();
     c.registerListeners(context);

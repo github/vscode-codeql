@@ -71,6 +71,7 @@ describe('Remote queries and query history manager', function() {
       {
         onDidChangeConfiguration: () => new DisposableBucket(),
       } as unknown as QueryHistoryConfig,
+      asyncNoop as any,
       asyncNoop
     );
     disposables.push(qhm);

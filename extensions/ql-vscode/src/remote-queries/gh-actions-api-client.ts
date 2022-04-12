@@ -74,6 +74,18 @@ export async function getRemoteQueryIndex(
   };
 }
 
+export async function cancelRemoteQuery(
+  credentials: Credentials,
+  remoteQuery: RemoteQuery
+): Promise<void> {
+  const octokit = await credentials.getOctokit();
+  const { actionsWorkflowRunId, controllerRepository: { owner, name } } = remoteQuery;
+  const response = await octokit.request(`POST /repos/${owner}/${name}/actions/runs/${actionsWorkflowRunId}/cancel`);
+  if (response.status >= 300) {
+    throw new Error(`Error cancelling remote query: ${response.status}`);
+  }
+}
+
 export async function downloadArtifactFromLink(
   credentials: Credentials,
   storagePath: string,
