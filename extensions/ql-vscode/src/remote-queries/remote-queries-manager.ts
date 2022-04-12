@@ -6,7 +6,7 @@ import * as fs from 'fs-extra';
 import { Credentials } from '../authentication';
 import { CodeQLCliServer } from '../cli';
 import { ProgressCallback } from '../commandRunner';
-import { createTimestampFile, showAndLogErrorMessage, showInformationMessageWithAction } from '../helpers';
+import { createTimestampFile, showAndLogErrorMessage, showAndLogInformationMessage, showInformationMessageWithAction } from '../helpers';
 import { Logger } from '../logging';
 import { runRemoteQuery } from './run-remote-query';
 import { RemoteQueriesInterfaceManager } from './remote-queries-interface';
@@ -159,7 +159,7 @@ export class RemoteQueriesManager extends DisposableObject {
         // workflow was cancelled on the server
         queryItem.failureReason = 'Cancelled';
         queryItem.status = QueryStatus.Failed;
-        void showAndLogErrorMessage('Variant analysis monitoring was cancelled');
+        void showAndLogInformationMessage('Variant analysis was cancelled');
       } else {
         queryItem.failureReason = queryWorkflowResult.error;
         queryItem.status = QueryStatus.Failed;
@@ -168,7 +168,7 @@ export class RemoteQueriesManager extends DisposableObject {
     } else if (queryWorkflowResult.status === 'Cancelled') {
       queryItem.failureReason = 'Cancelled';
       queryItem.status = QueryStatus.Failed;
-      void showAndLogErrorMessage('Variant analysis monitoring was cancelled');
+      void showAndLogErrorMessage('Variant analysis was cancelled');
     } else if (queryWorkflowResult.status === 'InProgress') {
       // Should not get here. Only including this to ensure `assertNever` uses proper type checking.
       void showAndLogErrorMessage(`Unexpected status: ${queryWorkflowResult.status}`);

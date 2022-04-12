@@ -32,9 +32,9 @@ describe('gh-actions-api-client', () => {
     });
 
     it('should fail to cancel a remote query', async () => {
-      mockResponse = sinon.stub().resolves({ status: 409 });
+      mockResponse = sinon.stub().resolves({ status: 409, data: { message: 'Uh oh!' } });
 
-      await expect(cancelRemoteQuery(mockCredentials, createMockRemoteQuery())).to.be.rejectedWith(/Error cancelling remote query/);
+      await expect(cancelRemoteQuery(mockCredentials, createMockRemoteQuery())).to.be.rejectedWith(/Error cancelling variant analysis: 409 Uh oh!/);
       expect(mockResponse.calledOnce).to.be.true;
       expect(mockResponse.firstCall.args[0]).to.equal('POST /repos/github/codeql/actions/runs/123/cancel');
     });

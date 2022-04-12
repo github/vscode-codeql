@@ -318,9 +318,8 @@ export class QueryHistoryManager extends DisposableObject {
     private qs: QueryServerClient,
     private dbm: DatabaseManager,
     private queryStorageDir: string,
-    ctx: ExtensionContext,
+    private ctx: ExtensionContext,
     private queryHistoryConfigListener: QueryHistoryConfig,
-    private readonly getCredentials: () => Promise<Credentials>,
     private doCompareCallback: (
       from: CompletedLocalQueryInfo,
       to: CompletedLocalQueryInfo
@@ -513,6 +512,10 @@ export class QueryHistoryManager extends DisposableObject {
     }));
 
     this.registerQueryHistoryScrubber(queryHistoryConfigListener, ctx);
+  }
+
+  private getCredentials() {
+    return Credentials.initialize(this.ctx);
   }
 
   /**
@@ -839,7 +842,7 @@ export class QueryHistoryManager extends DisposableObject {
         if (item.t === 'local') {
           item.cancel();
         } else if (item.t === 'remote') {
-          void showAndLogInformationMessage('Cancelling remote query. This may take a while.');
+          void showAndLogInformationMessage('Cancelling variant analysis. This may take a while.');
           const credentials = await this.getCredentials();
           await cancelRemoteQuery(credentials, item.remoteQuery);
         }

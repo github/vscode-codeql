@@ -455,7 +455,6 @@ async function activateWithInstalledDistribution(
     queryStorageDir,
     ctx,
     queryHistoryConfigurationListener,
-    () => Credentials.initialize(ctx),
     async (from: CompletedLocalQueryInfo, to: CompletedLocalQueryInfo) =>
       showResultsForComparison(from, to),
   );
