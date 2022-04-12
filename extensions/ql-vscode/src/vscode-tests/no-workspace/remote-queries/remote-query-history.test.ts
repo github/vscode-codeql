@@ -16,7 +16,6 @@ import { DisposableBucket } from '../../disposable-bucket';
 import { testDisposeHandler } from '../../test-dispose-handler';
 import { walkDirectory } from '../../../helpers';
 import { getErrorMessage } from '../../../pure/helpers-pure';
-import { HistoryItemLabelProvider } from '../../../history-item-label-provider';
 
 /**
  * Tests for remote queries and how they interact with the query history manager.
@@ -72,7 +71,6 @@ describe('Remote queries and query history manager', function() {
       {
         onDidChangeConfiguration: () => new DisposableBucket(),
       } as unknown as QueryHistoryConfig,
-      new HistoryItemLabelProvider({} as QueryHistoryConfig),
       asyncNoop
     );
     disposables.push(qhm);

@@ -1,8 +1,6 @@
 import { env } from 'vscode';
 import { QueryHistoryConfig } from './config';
 import { LocalQueryInfo, QueryHistoryInfo } from './query-results';
-import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
-
 
 interface InterpolateReplacements {
   t: string; // Start time
@@ -20,12 +18,11 @@ export class HistoryItemLabelProvider {
   }
 
   getLabel(item: QueryHistoryInfo) {
-    const replacements = item.t === 'local'
-      ? this.getLocalInterpolateReplacements(item)
-      : this.getRemoteInterpolateReplacements(item);
-
+    if (item.t === 'remote') {
+      return item.remoteQuery.queryName;
+    }
+    const replacements = this.getLocalInterpolateReplacements(item);
     const rawLabel = item.userSpecifiedLabel ?? (this.config.format || '%q');
-
     return this.interpolate(rawLabel, replacements);
   }
 
@@ -61,22 +58,6 @@ export class HistoryItemLabelProvider {
       s: statusString,
       f: item.getQueryFileName(),
       '%': '%',
-    };
-  }
-
-  private getRemoteInterpolateReplacements(item: RemoteQueryHistoryItem): InterpolateReplacements {
-    return {
-      t: new Date(item.remoteQuery.executionStartTime).toLocaleString(env.language),
-      q: item.remoteQuery.queryName,
-
-      // There is no database name for remote queries. Instead use the controller repository name.
-      d: `${item.remoteQuery.controllerRepository.owner}/${item.remoteQuery.controllerRepository.name}`,
-
-      // There is no synchronous way to get the results count.
-      r: '',
-      s: item.status,
-      f: item.remoteQuery.queryFilePath,
-      '%': '%'
     };
   }
 }

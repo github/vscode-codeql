@@ -10,6 +10,6 @@ export interface RemoteQueryHistoryItem {
   status: QueryStatus;
   completed: boolean;
   readonly queryId: string,
+  label: string; // TODO, the query label should have interpolation like local queries
   remoteQuery: RemoteQuery;
-  userSpecifiedLabel?: string;
 }
