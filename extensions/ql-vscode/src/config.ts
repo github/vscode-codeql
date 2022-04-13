@@ -322,7 +322,7 @@ export function isCanary() {
  */
 export const NO_CACHE_AST_VIEWER = new Setting('disableCache', AST_VIEWER_SETTING);
 
-// Settings for remote queries
+// Settings for variant analysis
 const REMOTE_QUERIES_SETTING = new Setting('variantAnalysis', ROOT_SETTING);
 
 /**

@@ -38,7 +38,7 @@ export class RemoteQueriesInterfaceManager {
     private readonly analysesResultsManager: AnalysesResultsManager
   ) {
     this.panelLoadedCallBacks.push(() => {
-      void logger.log('Remote queries view loaded');
+      void logger.log('Variant analysis results view loaded');
     });
   }
 
