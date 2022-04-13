@@ -102,9 +102,9 @@ function generateMarkdownForInterpretedResult(interpretedResult: AnalysisAlert, 
 function generateMarkdownForCodeSnippet(codeSnippet: string, language: string): MarkdownFile {
   const lines: MarkdownFile = [];
   lines.push(
-    `\`\`\`${language}`,
+    `<pre><code class="${language}">`,
     ...codeSnippet.split('\n'),
-    '```',
+    '</code></pre>',
   );
   lines.push('');
   return lines;
