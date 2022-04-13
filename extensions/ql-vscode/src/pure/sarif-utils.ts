@@ -1,4 +1,5 @@
 import * as Sarif from 'sarif';
+import { HighlightedRegion } from '../remote-queries/shared/analysis-result';
 import { ResolvableLocationValue } from './bqrs-cli-types';
 
 export interface SarifLink {
@@ -172,4 +173,66 @@ export function parseSarifRegion(
 
 export function isNoLocation(loc: ParsedSarifLocation): loc is NoLocation {
   return 'hint' in loc;
+}
+
+// Some helpers for highlighting specific regions from a SARIF code snippet
+
+/**
+ * Checks whether a particular line (determined by its line number in the original file)
+ * is part of the highlighted region of a SARIF code snippet.
+ */
+export function shouldHighlightLine(
+  lineNumber: number,
+  highlightedRegion: HighlightedRegion
+): boolean {
+  if (lineNumber < highlightedRegion.startLine) {
+    return false;
+  }
+
+  if (highlightedRegion.endLine == undefined) {
+    return lineNumber == highlightedRegion.startLine;
+  }
+
+  return lineNumber <= highlightedRegion.endLine;
+}
+
+/**
+ * A line of code split into: plain text before the highlighted section, the highlighted
+ * text itself, and plain text after the highlighted section.
+ */
+interface partiallyHighlightedLine {
+  plainSection1: string;
+  highlightedSection: string;
+  plainSection2: string;
+}
+
+/**
+ * Splits a line of code into the highlighted and non-highlighted sections.
+ */
+export function parseHighlightedLine(
+  line: string,
+  lineNumber: number,
+  highlightedRegion: HighlightedRegion
+): partiallyHighlightedLine {
+  const isSingleLineHighlight = highlightedRegion.endLine === undefined;
+  const isFirstHighlightedLine = lineNumber === highlightedRegion.startLine;
+  const isLastHighlightedLine = lineNumber === highlightedRegion.endLine;
+
+  const highlightStartColumn = isSingleLineHighlight
+    ? highlightedRegion.startColumn
+    : isFirstHighlightedLine
+      ? highlightedRegion.startColumn
+      : 0;
+
+  const highlightEndColumn = isSingleLineHighlight
+    ? highlightedRegion.endColumn
+    : isLastHighlightedLine
+      ? highlightedRegion.endColumn
+      : line.length + 1;
+
+  const plainSection1 = line.substring(0, highlightStartColumn - 1);
+  const highlightedSection = line.substring(highlightStartColumn - 1, highlightEndColumn - 1);
+  const plainSection2 = line.substring(highlightEndColumn - 1, line.length);
+
+  return { plainSection1, highlightedSection, plainSection2 };
 }
