@@ -51,6 +51,7 @@ export async function promptImportInternetDatabase(
     {},
     databaseManager,
     storagePath,
+    undefined,
     progress,
     token,
     cli
@@ -98,10 +99,12 @@ export async function promptImportGithubDatabase(
     throw new Error(`Invalid GitHub repository: ${githubRepo}`);
   }
 
-  const databaseUrl = await convertGithubNwoToDatabaseUrl(githubRepo, credentials, progress);
-  if (!databaseUrl) {
+  const result = await convertGithubNwoToDatabaseUrl(githubRepo, credentials, progress);
+  if (!result) {
     return;
   }
+
+  const { databaseUrl, name, owner } = result;
 
   const octokit = await credentials.getOctokit();
   /**
@@ -125,6 +128,7 @@ export async function promptImportGithubDatabase(
     { 'Accept': 'application/zip', 'Authorization': `Bearer ${octokitToken}` },
     databaseManager,
     storagePath,
+    `${owner}/${name}`,
     progress,
     token,
     cli
@@ -173,6 +177,7 @@ export async function promptImportLgtmDatabase(
         {},
         databaseManager,
         storagePath,
+        undefined,
         progress,
         token,
         cli
@@ -220,6 +225,7 @@ export async function importArchiveDatabase(
       {},
       databaseManager,
       storagePath,
+      undefined,
       progress,
       token,
       cli
@@ -247,6 +253,7 @@ export async function importArchiveDatabase(
  * @param requestHeaders Headers to send with the request
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
+ * @param nameOverride a name for the database that overrides the default
  * @param progress callback to send progress messages to
  * @param token cancellation token
  */
@@ -255,6 +262,7 @@ async function databaseArchiveFetcher(
   requestHeaders: { [key: string]: string },
   databaseManager: DatabaseManager,
   storagePath: string,
+  nameOverride: string | undefined,
   progress: ProgressCallback,
   token: CancellationToken,
   cli?: CodeQLCliServer,
@@ -296,7 +304,7 @@ async function databaseArchiveFetcher(
     });
     await ensureZippedSourceLocation(dbPath);
 
-    const item = await databaseManager.openDatabase(progress, token, Uri.file(dbPath));
+    const item = await databaseManager.openDatabase(progress, token, Uri.file(dbPath), nameOverride);
     await databaseManager.setCurrentDatabaseItem(item);
     return item;
   } else {
@@ -409,7 +417,6 @@ async function fetchAndUnzip(
 
   await readAndUnzip(Uri.file(archivePath).toString(true), unzipPath, cli, progress);
 
-
   // remove archivePath eagerly since these archives can be large.
   await fs.remove(archivePath);
 }
@@ -517,7 +524,11 @@ function convertGitHubUrlToNwo(githubUrl: string): string | undefined {
 export async function convertGithubNwoToDatabaseUrl(
   githubRepo: string,
   credentials: Credentials,
-  progress: ProgressCallback): Promise<string | undefined> {
+  progress: ProgressCallback): Promise<{
+    databaseUrl: string,
+    owner: string,
+    name: string
+  } | undefined> {
   try {
     const nwo = convertGitHubUrlToNwo(githubRepo) || githubRepo;
     const [owner, repo] = nwo.split('/');
@@ -532,7 +543,11 @@ export async function convertGithubNwoToDatabaseUrl(
       return;
     }
 
-    return `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`;
+    return {
+      databaseUrl: `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`,
+      owner,
+      name: repo
+    };
 
   } catch (e) {
     void logger.log(`Error: ${getErrorMessage(e)}`);
