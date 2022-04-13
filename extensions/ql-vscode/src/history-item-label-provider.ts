@@ -1,4 +1,5 @@
 import { env } from 'vscode';
+import * as path from 'path';
 import { QueryHistoryConfig } from './config';
 import { LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
@@ -6,10 +7,10 @@ import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-it
 interface InterpolateReplacements {
   t: string; // Start time
   q: string; // Query name
-  d: string; // Database/List name
-  r: string; // Result count
+  d: string; // Database/Controller repo name
+  r: string; // Result count/Empty
   s: string; // Status
-  f: string; // Query file path
+  f: string; // Query file name
   '%': '%'; // Percent sign
 }
 
@@ -56,7 +57,7 @@ export class HistoryItemLabelProvider {
       t: item.startTime,
       q: item.getQueryName(),
       d: item.initialInfo.databaseInfo.name,
-      r: resultCount.toString(),
+      r: `${resultCount} results`,
       s: statusString,
       f: item.getQueryFileName(),
       '%': '%',
@@ -74,7 +75,7 @@ export class HistoryItemLabelProvider {
       // There is no synchronous way to get the results count.
       r: '',
       s: item.status,
-      f: item.remoteQuery.queryFilePath,
+      f: path.basename(item.remoteQuery.queryFilePath),
       '%': '%'
     };
   }

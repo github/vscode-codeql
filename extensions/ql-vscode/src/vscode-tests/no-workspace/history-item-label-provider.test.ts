@@ -27,10 +27,10 @@ describe('HistoryItemLabelProvider', () => {
       expect(labelProvider.getLabel(fqi)).to.eq('xxx');
 
       fqi.userSpecifiedLabel = '%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql 456 %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql 456 results %`);
 
       fqi.userSpecifiedLabel = '%t %q %d %s %f %r %%::%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql 456 %::${dateStr} query-name db-name in progress query-file.ql 456 %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql 456 results %::${dateStr} query-name db-name in progress query-file.ql 456 results %`);
     });
 
     it('should interpolate query when not user specified', () => {
@@ -40,10 +40,10 @@ describe('HistoryItemLabelProvider', () => {
 
 
       config.format = '%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql 456 %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql 456 results %`);
 
       config.format = '%t %q %d %s %f %r %%::%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql 456 %::${dateStr} query-name db-name in progress query-file.ql 456 %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql 456 results %::${dateStr} query-name db-name in progress query-file.ql 456 results %`);
     });
 
     it('should get query short label', () => {

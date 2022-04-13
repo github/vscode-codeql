@@ -652,13 +652,11 @@ export class QueryHistoryManager extends DisposableObject {
   ): Promise<void> {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    // TODO will support remote queries
     if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
 
     const response = await window.showInputBox({
-      // prompt: 'Label:',
       placeHolder: `(use default: ${this.queryHistoryConfigListener.format})`,
       value: finalSingleItem.userSpecifiedLabel ?? '',
       title: 'Set query label',
