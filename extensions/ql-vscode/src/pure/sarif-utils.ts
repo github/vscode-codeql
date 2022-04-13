@@ -200,7 +200,7 @@ export function shouldHighlightLine(
  * A line of code split into: plain text before the highlighted section, the highlighted
  * text itself, and plain text after the highlighted section.
  */
-interface partiallyHighlightedLine {
+export interface PartiallyHighlightedLine {
   plainSection1: string;
   highlightedSection: string;
   plainSection2: string;
@@ -213,7 +213,7 @@ export function parseHighlightedLine(
   line: string,
   lineNumber: number,
   highlightedRegion: HighlightedRegion
-): partiallyHighlightedLine {
+): PartiallyHighlightedLine {
   const isSingleLineHighlight = highlightedRegion.endLine === undefined;
   const isFirstHighlightedLine = lineNumber === highlightedRegion.startLine;
   const isLastHighlightedLine = lineNumber === highlightedRegion.endLine;
