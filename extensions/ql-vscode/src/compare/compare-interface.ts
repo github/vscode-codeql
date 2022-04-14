@@ -22,6 +22,7 @@ import { transformBqrsResultSet, RawResultSet, BQRSInfo } from '../pure/bqrs-cli
 import resultsDiff from './resultsDiff';
 import { CompletedLocalQueryInfo } from '../query-results';
 import { getErrorMessage } from '../pure/helpers-pure';
+import { HistoryItemLabelProvider } from '../history-item-label-provider';
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
@@ -39,6 +40,7 @@ export class CompareInterfaceManager extends DisposableObject {
     private databaseManager: DatabaseManager,
     private cliServer: CodeQLCliServer,
     private logger: Logger,
+    private labelProvider: HistoryItemLabelProvider,
     private showQueryResultsCallback: (
       item: CompletedLocalQueryInfo
     ) => Promise<void>
@@ -81,12 +83,12 @@ export class CompareInterfaceManager extends DisposableObject {
             // since we split the description into several rows
             // only run interpolation if the label is user-defined
             // otherwise we will wind up with duplicated rows
-            name: from.getShortLabel(),
+            name: this.labelProvider.getShortLabel(from),
             status: from.completedQuery.statusString,
             time: from.startTime,
           },
           toQuery: {
-            name: to.getShortLabel(),
+            name: this.labelProvider.getShortLabel(to),
             status: to.completedQuery.statusString,
             time: to.startTime,
           },

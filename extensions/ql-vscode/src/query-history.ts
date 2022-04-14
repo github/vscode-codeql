@@ -36,6 +36,7 @@ import { QueryStatus } from './query-status';
 import { slurpQueryHistory, splatQueryHistory } from './query-serialization';
 import * as fs from 'fs-extra';
 import { CliVersionConstraint } from './cli';
+import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { Credentials } from './authentication';
 import { cancelRemoteQuery } from './remote-queries/gh-actions-api-client';
 
@@ -123,7 +124,10 @@ export class HistoryTreeDataProvider extends DisposableObject {
 
   private current: QueryHistoryInfo | undefined;
 
-  constructor(extensionPath: string) {
+  constructor(
+    extensionPath: string,
+    private readonly labelProvider: HistoryItemLabelProvider,
+  ) {
     super();
     this.failedIconPath = path.join(
       extensionPath,
@@ -140,13 +144,13 @@ export class HistoryTreeDataProvider extends DisposableObject {
   }
 
   async getTreeItem(element: QueryHistoryInfo): Promise<TreeItem> {
-    const treeItem = new TreeItem(element.label);
+    const treeItem = new TreeItem(this.labelProvider.getLabel(element));
 
     treeItem.command = {
       title: 'Query History Item',
       command: 'codeQLQueryHistory.itemClicked',
       arguments: [element],
-      tooltip: element.failureReason || element.label
+      tooltip: element.failureReason || this.labelProvider.getLabel(element)
     };
 
     // Populate the icon and the context value. We use the context value to
@@ -185,8 +189,8 @@ export class HistoryTreeDataProvider extends DisposableObject {
   ): ProviderResult<QueryHistoryInfo[]> {
     return element ? [] : this.history.sort((h1, h2) => {
 
-      const h1Label = h1.label.toLowerCase();
-      const h2Label = h2.label.toLowerCase();
+      const h1Label = this.labelProvider.getLabel(h1).toLowerCase();
+      const h2Label = this.labelProvider.getLabel(h2).toLowerCase();
 
       const h1Date = h1.t === 'local'
         ? h1.initialInfo.start.getTime()
@@ -315,12 +319,13 @@ export class QueryHistoryManager extends DisposableObject {
     ._onWillOpenQueryItem.event;
 
   constructor(
-    private qs: QueryServerClient,
-    private dbm: DatabaseManager,
-    private queryStorageDir: string,
-    private ctx: ExtensionContext,
-    private queryHistoryConfigListener: QueryHistoryConfig,
-    private doCompareCallback: (
+    private readonly qs: QueryServerClient,
+    private readonly dbm: DatabaseManager,
+    private readonly queryStorageDir: string,
+    private readonly ctx: ExtensionContext,
+    private readonly queryHistoryConfigListener: QueryHistoryConfig,
+    private readonly labelProvider: HistoryItemLabelProvider,
+    private readonly doCompareCallback: (
       from: CompletedLocalQueryInfo,
       to: CompletedLocalQueryInfo
     ) => Promise<void>
@@ -334,7 +339,8 @@ export class QueryHistoryManager extends DisposableObject {
     this.queryMetadataStorageLocation = path.join((ctx.storageUri || ctx.globalStorageUri).fsPath, WORKSPACE_QUERY_HISTORY_FILE);
 
     this.treeDataProvider = this.push(new HistoryTreeDataProvider(
-      ctx.extensionPath
+      ctx.extensionPath,
+      this.labelProvider
     ));
     this.treeView = this.push(window.createTreeView('codeQLQueryHistory', {
       treeDataProvider: this.treeDataProvider,
@@ -537,7 +543,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async readQueryHistory(): Promise<void> {
     void logger.log(`Reading cached query history from '${this.queryMetadataStorageLocation}'.`);
-    const history = await slurpQueryHistory(this.queryMetadataStorageLocation, this.queryHistoryConfigListener);
+    const history = await slurpQueryHistory(this.queryMetadataStorageLocation);
     this.treeDataProvider.allHistory = history;
     this.treeDataProvider.allHistory.forEach((item) => {
       this._onDidAddQueryItem.fire(item);
@@ -605,7 +611,7 @@ export class QueryHistoryManager extends DisposableObject {
         // Remote queries can be removed locally, but not remotely.
         // The user must cancel the query on GitHub Actions explicitly.
         this.treeDataProvider.remove(item);
-        void logger.log(`Deleted ${item.label}.`);
+        void logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
         if (item.status === QueryStatus.InProgress) {
           void logger.log('The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.');
         }
@@ -652,20 +658,20 @@ export class QueryHistoryManager extends DisposableObject {
   ): Promise<void> {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    // TODO will support remote queries
-    if (!this.assertSingleQuery(finalMultiSelect) || finalSingleItem?.t !== 'local') {
+    if (!this.assertSingleQuery(finalMultiSelect)) {
       return;
     }
 
     const response = await window.showInputBox({
-      prompt: 'Label:',
-      placeHolder: '(use default)',
-      value: finalSingleItem.label,
+      placeHolder: `(use default: ${this.queryHistoryConfigListener.format})`,
+      value: finalSingleItem.userSpecifiedLabel ?? '',
+      title: 'Set query label',
+      prompt: 'Set the query history item label. See the description of the codeQL.queryHistory.format setting for more information.',
     });
     // undefined response means the user cancelled the dialog; don't change anything
     if (response !== undefined) {
       // Interpret empty string response as 'go back to using default'
-      finalSingleItem.initialInfo.userSpecifiedLabel = response === '' ? undefined : response;
+      finalSingleItem.userSpecifiedLabel = response === '' ? undefined : response;
       await this.refreshTreeView();
     }
   }
@@ -895,7 +901,7 @@ export class QueryHistoryManager extends DisposableObject {
         query.resultsPaths.interpretedResultsPath
       );
     } else {
-      const label = finalSingleItem.label;
+      const label = this.labelProvider.getLabel(finalSingleItem);
       void showAndLogInformationMessage(
         `Query ${label} has no interpreted results.`
       );
@@ -1084,7 +1090,7 @@ the file in the file explorer and dragging it into the workspace.`
           otherQuery.initialInfo.databaseInfo.name === dbName
       )
       .map((item) => ({
-        label: item.label,
+        label: this.labelProvider.getLabel(item),
         description: (item as CompletedLocalQueryInfo).initialInfo.databaseInfo.name,
         detail: (item as CompletedLocalQueryInfo).completedQuery.statusString,
         query: item as CompletedLocalQueryInfo,

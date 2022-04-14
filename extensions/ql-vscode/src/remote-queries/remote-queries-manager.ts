@@ -110,7 +110,6 @@ export class RemoteQueriesManager extends DisposableObject {
         status: QueryStatus.InProgress,
         completed: false,
         queryId,
-        label: query.queryName,
         remoteQuery: query,
       };
       await this.prepareStorageDirectory(queryHistoryItem);
@@ -151,7 +150,7 @@ export class RemoteQueriesManager extends DisposableObject {
           }
         );
       } else {
-        void showAndLogErrorMessage(`There was an issue retrieving the result for the query ${queryItem.label}`);
+        void showAndLogErrorMessage(`There was an issue retrieving the result for the query ${queryItem.remoteQuery.queryName}`);
         queryItem.status = QueryStatus.Failed;
       }
     } else if (queryWorkflowResult.status === 'CompletedUnsuccessfully') {

@@ -8,7 +8,7 @@ import { logger } from '../../logging';
 import { registerQueryHistoryScubber } from '../../query-history-scrubber';
 import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
 import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries';
-import { QueryHistoryConfigListener } from '../../config';
+import { QueryHistoryConfig, QueryHistoryConfigListener } from '../../config';
 import * as messages from '../../pure/messages';
 import { QueryServerClient } from '../../queryserver-client';
 import { LocalQueryInfo, InitialQueryInfo } from '../../query-results';
@@ -17,6 +17,7 @@ import * as tmp from 'tmp-promise';
 import { ONE_DAY_IN_MS, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, THREE_HOURS_IN_MS } from '../../pure/helpers-pure';
 import { tmpDir } from '../../helpers';
 import { getErrorMessage } from '../../pure/helpers-pure';
+import { HistoryItemLabelProvider } from '../../history-item-label-provider';
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -308,8 +309,12 @@ describe('query-history', () => {
 
   describe('HistoryTreeDataProvider', () => {
     let historyTreeDataProvider: HistoryTreeDataProvider;
+    let labelProvider: HistoryItemLabelProvider;
     beforeEach(() => {
-      historyTreeDataProvider = new HistoryTreeDataProvider(vscode.Uri.file(mockExtensionLocation).fsPath);
+      labelProvider = new HistoryItemLabelProvider({
+        /**/
+      } as QueryHistoryConfig);
+      historyTreeDataProvider = new HistoryTreeDataProvider(vscode.Uri.file(mockExtensionLocation).fsPath, labelProvider);
     });
 
     afterEach(() => {
@@ -324,7 +329,7 @@ describe('query-history', () => {
         title: 'Query History Item',
         command: 'codeQLQueryHistory.itemClicked',
         arguments: [mockQuery],
-        tooltip: mockQuery.label,
+        tooltip: labelProvider.getLabel(mockQuery),
       });
       expect(treeItem.label).to.contain('hucairz');
       expect(treeItem.contextValue).to.eq('rawResultsItem');
@@ -507,9 +512,17 @@ describe('query-history', () => {
     function item(label: string, start: number, t = 'local', resultCount?: number) {
       if (t === 'local') {
         return {
-          label,
+          getQueryName() {
+            return label;
+          },
+          getQueryFileName() {
+            return label + '.ql';
+          },
           initialInfo: {
             start: new Date(start),
+            databaseInfo: {
+              name: 'test',
+            }
           },
           completedQuery: {
             resultCount,
@@ -518,9 +531,16 @@ describe('query-history', () => {
         };
       } else {
         return {
-          label,
+          status: 'success',
           remoteQuery: {
+            queryFilePath: label + '.ql',
+            queryName: label,
             executionStartTime: start,
+            controllerRepository: {
+              name: 'test',
+              owner: 'user',
+            },
+            repositories: []
           },
           t
         };
@@ -535,7 +555,6 @@ describe('query-history', () => {
         start: new Date(),
         queryPath: 'hucairz'
       } as InitialQueryInfo,
-      configListener,
       {
         dispose: () => { /**/ },
       } as vscode.CancellationTokenSource
@@ -749,6 +768,7 @@ describe('query-history', () => {
         extensionPath: vscode.Uri.file('/x/y/z').fsPath,
       } as vscode.ExtensionContext,
       configListener,
+      new HistoryItemLabelProvider({} as QueryHistoryConfig),
       doCompareCallback
     );
     qhm.onWillOpenQueryItem(selectedCallback);

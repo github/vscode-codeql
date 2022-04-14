@@ -49,6 +49,7 @@ import { getDefaultResultSetName, ParsedResultSets } from './pure/interface-type
 import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './pure/bqrs-cli-types';
 import { PAGE_SIZE } from './config';
 import { CompletedLocalQueryInfo } from './query-results';
+import { HistoryItemLabelProvider } from './history-item-label-provider';
 
 /**
  * interface.ts
@@ -136,7 +137,8 @@ export class InterfaceManager extends DisposableObject {
     public ctx: vscode.ExtensionContext,
     private databaseManager: DatabaseManager,
     public cliServer: CodeQLCliServer,
-    public logger: Logger
+    public logger: Logger,
+    private labelProvider: HistoryItemLabelProvider
   ) {
     super();
     this.push(this._diagnosticCollection);
@@ -416,7 +418,7 @@ export class InterfaceManager extends DisposableObject {
         // more asynchronous message to not so abruptly interrupt
         // user's workflow by immediately revealing the panel.
         const showButton = 'View Results';
-        const queryName = fullQuery.getShortLabel();
+        const queryName = this.labelProvider.getShortLabel(fullQuery);
         const resultPromise = vscode.window.showInformationMessage(
           `Finished running query ${queryName.length > 0 ? ` "${queryName}"` : ''
           }.`,
@@ -483,7 +485,7 @@ export class InterfaceManager extends DisposableObject {
       database: fullQuery.initialInfo.databaseInfo,
       shouldKeepOldResultsWhileRendering,
       metadata: fullQuery.completedQuery.query.metadata,
-      queryName: fullQuery.label,
+      queryName: this.labelProvider.getLabel(fullQuery),
       queryPath: fullQuery.initialInfo.queryPath
     });
   }
@@ -516,7 +518,7 @@ export class InterfaceManager extends DisposableObject {
       resultSetNames,
       pageSize: interpretedPageSize(this._interpretation),
       numPages: numInterpretedPages(this._interpretation),
-      queryName: this._displayedQuery.label,
+      queryName: this.labelProvider.getLabel(this._displayedQuery),
       queryPath: this._displayedQuery.initialInfo.queryPath
     });
   }
@@ -601,7 +603,7 @@ export class InterfaceManager extends DisposableObject {
       database: results.initialInfo.databaseInfo,
       shouldKeepOldResultsWhileRendering: false,
       metadata: results.completedQuery.query.metadata,
-      queryName: results.label,
+      queryName: this.labelProvider.getLabel(results),
       queryPath: results.initialInfo.queryPath
     });
   }

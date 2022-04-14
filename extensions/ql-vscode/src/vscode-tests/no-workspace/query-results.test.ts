@@ -4,18 +4,15 @@ import * as fs from 'fs-extra';
 import * as sinon from 'sinon';
 import { LocalQueryInfo, InitialQueryInfo, interpretResultsSarif } from '../../query-results';
 import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries';
-import { QueryHistoryConfig } from '../../config';
 import { EvaluationResult, QueryResultType } from '../../pure/messages';
 import { DatabaseInfo, SortDirection, SortedResultSetInfo } from '../../pure/interface-types';
 import { CodeQLCliServer, SourceInfo } from '../../cli';
-import { CancellationTokenSource, Uri, env } from 'vscode';
+import { CancellationTokenSource, Uri } from 'vscode';
 import { tmpDir } from '../../helpers';
 import { slurpQueryHistory, splatQueryHistory } from '../../query-serialization';
 
 describe('query-results', () => {
   let disposeSpy: sinon.SinonSpy;
-  let onDidChangeQueryHistoryConfigurationSpy: sinon.SinonSpy;
-  let mockConfig: QueryHistoryConfig;
   let sandbox: sinon.SinonSandbox;
   let queryPath: string;
   let cnt = 0;
@@ -23,8 +20,6 @@ describe('query-results', () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     disposeSpy = sandbox.spy();
-    onDidChangeQueryHistoryConfigurationSpy = sandbox.spy();
-    mockConfig = mockQueryHistoryConfig();
     queryPath = path.join(Uri.file(tmpDir.name).fsPath, `query-${cnt++}`);
   });
 
@@ -33,17 +28,6 @@ describe('query-results', () => {
   });
 
   describe('FullQueryInfo', () => {
-    it('should interpolate', () => {
-      const fqi = createMockFullQueryInfo();
-      const date = new Date('2022-01-01T00:00:00.000Z');
-      const dateStr = date.toLocaleString(env.language);
-      (fqi.initialInfo as any).start = date;
-
-      expect(fqi.interpolate('xxx')).to.eq('xxx');
-      expect(fqi.interpolate('%t %q %d %s %%')).to.eq(`${dateStr} hucairz a in progress %`);
-      expect(fqi.interpolate('%t %q %d %s %%::%t %q %d %s %%')).to.eq(`${dateStr} hucairz a in progress %::${dateStr} hucairz a in progress %`);
-    });
-
     it('should get the query name', () => {
       const fqi = createMockFullQueryInfo();
 
@@ -81,23 +65,6 @@ describe('query-results', () => {
       expect(fqi.getQueryFileName()).to.eq('yz:1-2');
       (fqi.initialInfo as any).quickEvalPosition.endLine = 1;
       expect(fqi.getQueryFileName()).to.eq('yz:1');
-    });
-
-    it('should get the label', () => {
-      const fqi = createMockFullQueryInfo('db-name');
-
-      // the %q from the config is now replaced by the file name of the query
-      expect(fqi.label).to.eq('from config hucairz');
-
-      // the %q from the config is now replaced by the name of the query
-      // in the metadata
-      fqi.completeThisQuery(createMockQueryWithResults(queryPath));
-      expect(fqi.label).to.eq('from config vwx');
-
-      // replace the config with a user specified label
-      // must be interpolated
-      fqi.initialInfo.userSpecifiedLabel = 'user specified label %d';
-      expect(fqi.label).to.eq('user specified label db-name');
     });
 
     it('should get the getResultsPath', () => {
@@ -283,7 +250,7 @@ describe('query-results', () => {
 
       // splat and slurp
       await splatQueryHistory(allHistory, allHistoryPath);
-      const allHistoryActual = await slurpQueryHistory(allHistoryPath, mockConfig);
+      const allHistoryActual = await slurpQueryHistory(allHistoryPath);
 
       // the dispose methods will be different. Ignore them.
       allHistoryActual.forEach(info => {
@@ -325,7 +292,7 @@ describe('query-results', () => {
         queries: allHistory
       }), 'utf8');
 
-      const allHistoryActual = await slurpQueryHistory(badPath, mockConfig);
+      const allHistoryActual = await slurpQueryHistory(badPath);
       // version number is invalid. Should return an empty array.
       expect(allHistoryActual).to.deep.eq([]);
     });
@@ -386,7 +353,6 @@ describe('query-results', () => {
         isQuickEval: false,
         id: `some-id-${dbName}`,
       } as InitialQueryInfo,
-      mockQueryHistoryConfig(),
       {
         dispose: () => { /**/ },
       } as CancellationTokenSource
@@ -399,13 +365,5 @@ describe('query-results', () => {
       fqi.failureReason = 'failure reason';
     }
     return fqi;
-  }
-
-  function mockQueryHistoryConfig(): QueryHistoryConfig {
-    return {
-      onDidChangeConfiguration: onDidChangeQueryHistoryConfigurationSpy,
-      ttlInMillis: 999999,
-      format: 'from config %q'
-    };
   }
 });

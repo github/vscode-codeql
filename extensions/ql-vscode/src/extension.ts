@@ -96,6 +96,7 @@ import { RemoteQueryResult } from './remote-queries/remote-query-result';
 import { URLSearchParams } from 'url';
 import { handleDownloadPacks, handleInstallPackDependencies } from './packaging';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
+import { HistoryItemLabelProvider } from './history-item-label-provider';
 
 /**
  * extension.ts
@@ -447,6 +448,7 @@ async function activateWithInstalledDistribution(
     showResultsForCompletedQuery(item, WebviewReveal.Forced);
   const queryStorageDir = path.join(ctx.globalStorageUri.fsPath, 'queries');
   await fs.ensureDir(queryStorageDir);
+  const labelProvider = new HistoryItemLabelProvider(queryHistoryConfigurationListener);
 
   void logger.log('Initializing query history.');
   const qhm = new QueryHistoryManager(
@@ -455,6 +457,7 @@ async function activateWithInstalledDistribution(
     queryStorageDir,
     ctx,
     queryHistoryConfigurationListener,
+    labelProvider,
     async (from: CompletedLocalQueryInfo, to: CompletedLocalQueryInfo) =>
       showResultsForComparison(from, to),
   );
@@ -466,8 +469,9 @@ async function activateWithInstalledDistribution(
   });
 
   ctx.subscriptions.push(qhm);
+
   void logger.log('Initializing results panel interface.');
-  const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger);
+  const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger, labelProvider);
   ctx.subscriptions.push(intm);
 
   void logger.log('Initializing compare panel interface.');
@@ -476,6 +480,7 @@ async function activateWithInstalledDistribution(
     dbm,
     cliServer,
     queryServerLogger,
+    labelProvider,
     showResults
   );
   ctx.subscriptions.push(cmpm);
@@ -525,7 +530,7 @@ async function activateWithInstalledDistribution(
       token.onCancellationRequested(() => source.cancel());
 
       const initialInfo = await createInitialQueryInfo(selectedQuery, databaseInfo, quickEval, range);
-      const item = new LocalQueryInfo(initialInfo, queryHistoryConfigurationListener, source);
+      const item = new LocalQueryInfo(initialInfo, source);
       qhm.addQuery(item);
       try {
         const completedQueryInfo = await compileAndRunQueryAgainstDatabase(
