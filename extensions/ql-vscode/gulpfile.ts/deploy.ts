@@ -1,5 +1,4 @@
 import * as fs from 'fs-extra';
-import * as jsonc from 'jsonc-parser';
 import * as path from 'path';
 
 export interface DeployedPackage {
@@ -28,7 +27,7 @@ async function copyPackage(sourcePath: string, destPath: string): Promise<void> 
 
 export async function deployPackage(packageJsonPath: string): Promise<DeployedPackage> {
   try {
-    const packageJson: any = jsonc.parse(await fs.readFile(packageJsonPath, 'utf8'));
+    const packageJson: any = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
 
     // Default to development build; use flag --release to indicate release build.
     const isDevBuild = !process.argv.includes('--release');
