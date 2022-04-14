@@ -337,18 +337,22 @@ async function runRemoteQueriesApiRequest(
   }
 }
 
-function parseResponse(owner: string, repo: string, response: QueriesResponse) {
-  const popupMessage = `Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflowRunId}).`
+// exported for testng only
+export function parseResponse(owner: string, repo: string, response: QueriesResponse) {
+  const popupMessage = `Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
     + (response.errors ? '\n\nSome repositories could not be scheduled. See extension log for details.' : '');
 
   let logMessage = `Successfully scheduled runs. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
+  if (response.repositories_queried) {
+    logMessage += `\n\nRepositories queried:\n${response.repositories_queried.join(', ')}`;
+  }
   if (response.errors) {
-    logMessage += '\nSome repositories could not be scheduled.';
+    logMessage += '\n\nSome repositories could not be scheduled.';
     if (response.errors.invalid_repositories?.length) {
-      logMessage += `\nInvalid repositories: ${response.errors.invalid_repositories.join(', ')}`;
+      logMessage += `\n\nInvalid repositories:\n${response.errors.invalid_repositories.join(', ')}`;
     }
     if (response.errors.repositories_without_database?.length) {
-      logMessage += `\nRepositories without databases: ${response.errors.repositories_without_database.join(', ')}`;
+      logMessage += `\n\nRepositories without databases:\n${response.errors.repositories_without_database.join(', ')}`;
     }
   }
 
