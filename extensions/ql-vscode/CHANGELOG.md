@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Re-enable publishing to open-vsx. [#1285](https://github.com/github/vscode-codeql/pull/1285)
+
 ## 1.6.4 - 6 April 2022
 
 No user facing changes.

@@ -667,11 +667,11 @@ export class CodeQLCliServer implements Disposable {
 
   /**
   * Generate a summary of an evaluation log.
-  * @param endSummaryPath The path to write only the end of query part of the human-readable summary to. 
+  * @param endSummaryPath The path to write only the end of query part of the human-readable summary to.
   * @param inputPath The path of an evaluation event log.
   * @param outputPath The path to write a human-readable summary of it to.
   */
-   async generateLogSummary(
+  async generateLogSummary(
     inputPath: string,
     outputPath: string,
     endSummaryPath: string,
@@ -1255,7 +1255,7 @@ export class CliVersionConstraint {
   public static CLI_VERSION_WITH_NO_PRECOMPILE = new SemVer('2.7.1');
 
   /**
-   * CLI version where remote queries are supported.
+   * CLI version where remote queries (variant analysis) are supported.
    */
   public static CLI_VERSION_REMOTE_QUERIES = new SemVer('2.6.3');
 
@@ -1280,16 +1280,16 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_STRUCTURED_EVAL_LOG = new SemVer('2.8.2');
 
-   /**
-    * CLI version that supports rotating structured logs to produce one per query.
-    * 
-    * Note that 2.8.4 supports generating the evaluation logs and summaries,
-    * but 2.9.0 includes a new option to produce the end-of-query summary logs to
-    * the query server console. For simplicity we gate all features behind 2.9.0,
-    * but if a user is tied to the 2.8 release, we can enable evaluator logs 
-    * and summaries for them.
-    */
-    public static CLI_VERSION_WITH_PER_QUERY_EVAL_LOG = new SemVer('2.9.0');
+  /**
+   * CLI version that supports rotating structured logs to produce one per query.
+   *
+   * Note that 2.8.4 supports generating the evaluation logs and summaries,
+   * but 2.9.0 includes a new option to produce the end-of-query summary logs to
+   * the query server console. For simplicity we gate all features behind 2.9.0,
+   * but if a user is tied to the 2.8 release, we can enable evaluator logs
+   * and summaries for them.
+   */
+  public static CLI_VERSION_WITH_PER_QUERY_EVAL_LOG = new SemVer('2.9.0');
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/

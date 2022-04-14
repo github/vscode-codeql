@@ -171,7 +171,7 @@ export async function runRemoteQuery(
   token: CancellationToken
 ): Promise<void | RemoteQuerySubmissionResult> {
   if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
-    throw new Error(`Remote queries are not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
+    throw new Error(`Variant analysis is not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
       } or later.`);
   }
 
@@ -207,7 +207,7 @@ export async function runRemoteQuery(
     if (!controllerRepo || !REPO_REGEX.test(controllerRepo)) {
       void logger.log(controllerRepo ? 'Invalid controller repository name.' : 'No controller repository defined.');
       controllerRepo = await window.showInputBox({
-        title: 'Controller repository in which to display progress and results of remote queries',
+        title: 'Controller repository in which to display progress and results of variant analysis',
         placeHolder: '<owner>/<repo>',
         prompt: 'Enter the name of a GitHub repository in the format <owner>/<repo>',
         ignoreFocusOut: true,

@@ -37,6 +37,8 @@ import { slurpQueryHistory, splatQueryHistory } from './query-serialization';
 import * as fs from 'fs-extra';
 import { CliVersionConstraint } from './cli';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
+import { Credentials } from './authentication';
+import { cancelRemoteQuery } from './remote-queries/gh-actions-api-client';
 
 /**
  * query-history.ts
@@ -320,7 +322,7 @@ export class QueryHistoryManager extends DisposableObject {
     private readonly qs: QueryServerClient,
     private readonly dbm: DatabaseManager,
     private readonly queryStorageDir: string,
-    ctx: ExtensionContext,
+    private readonly ctx: ExtensionContext,
     private readonly queryHistoryConfigListener: QueryHistoryConfig,
     private readonly labelProvider: HistoryItemLabelProvider,
     private readonly doCompareCallback: (
@@ -516,6 +518,10 @@ export class QueryHistoryManager extends DisposableObject {
     }));
 
     this.registerQueryHistoryScrubber(queryHistoryConfigListener, ctx);
+  }
+
+  private getCredentials() {
+    return Credentials.initialize(this.ctx);
   }
 
   /**
@@ -836,11 +842,20 @@ export class QueryHistoryManager extends DisposableObject {
     // In the future, we may support cancelling remote queries, but this is not a short term plan.
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    (finalMultiSelect || [finalSingleItem]).forEach((item) => {
-      if (item.status === QueryStatus.InProgress && item.t === 'local') {
-        item.cancel();
+    const selected = finalMultiSelect || [finalSingleItem];
+    const results = selected.map(async item => {
+      if (item.status === QueryStatus.InProgress) {
+        if (item.t === 'local') {
+          item.cancel();
+        } else if (item.t === 'remote') {
+          void showAndLogInformationMessage('Cancelling variant analysis. This may take a while.');
+          const credentials = await this.getCredentials();
+          await cancelRemoteQuery(credentials, item.remoteQuery);
+        }
       }
     });
+
+    await Promise.all(results);
   }
 
   async handleShowQueryText(

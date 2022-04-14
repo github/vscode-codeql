@@ -4,6 +4,7 @@ import { CodeSnippet, FileLink, HighlightedRegion, AnalysisMessage, ResultSeveri
 import { Box, Link } from '@primer/react';
 import VerticalSpace from './VerticalSpace';
 import { createRemoteFileRef } from '../../pure/location-link-utils';
+import { parseHighlightedLine, shouldHighlightLine } from '../../pure/sarif-utils';
 
 const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
 const warningColor = '#966C23';
@@ -21,18 +22,6 @@ const getSeverityColor = (severity: ResultSeverity) => {
 };
 
 const replaceSpaceChar = (text: string) => text.replaceAll(' ', '\u00a0');
-
-const shouldHighlightLine = (lineNumber: number, highlightedRegion: HighlightedRegion) => {
-  if (lineNumber < highlightedRegion.startLine) {
-    return false;
-  }
-
-  if (highlightedRegion.endLine == undefined) {
-    return lineNumber == highlightedRegion.startLine;
-  }
-
-  return lineNumber <= highlightedRegion.endLine;
-};
 
 const Container = styled.div`
   font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
@@ -142,31 +131,13 @@ const CodeLine = ({
     return <PlainLine text={line} />;
   }
 
-  const isSingleLineHighlight = highlightedRegion.endLine === undefined;
-  const isFirstHighlightedLine = lineNumber === highlightedRegion.startLine;
-  const isLastHighlightedLine = lineNumber === highlightedRegion.endLine;
-
-  const highlightStartColumn = isSingleLineHighlight
-    ? highlightedRegion.startColumn
-    : isFirstHighlightedLine
-      ? highlightedRegion.startColumn
-      : 0;
-
-  const highlightEndColumn = isSingleLineHighlight
-    ? highlightedRegion.endColumn
-    : isLastHighlightedLine
-      ? highlightedRegion.endColumn
-      : line.length + 1;
-
-  const section1 = line.substring(0, highlightStartColumn - 1);
-  const section2 = line.substring(highlightStartColumn - 1, highlightEndColumn - 1);
-  const section3 = line.substring(highlightEndColumn - 1, line.length);
+  const partiallyHighlightedLine = parseHighlightedLine(line, lineNumber, highlightedRegion);
 
   return (
     <>
-      <PlainLine text={section1} />
-      <HighlightedLine text={section2} />
-      <PlainLine text={section3} />
+      <PlainLine text={partiallyHighlightedLine.plainSection1} />
+      <HighlightedLine text={partiallyHighlightedLine.highlightedSection} />
+      <PlainLine text={partiallyHighlightedLine.plainSection2} />
     </>
   );
 };
