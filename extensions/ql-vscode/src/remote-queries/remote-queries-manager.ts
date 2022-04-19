@@ -196,7 +196,7 @@ export class RemoteQueriesManager extends DisposableObject {
     await this.analysesResultsManager.loadAnalysesResults(
       analysesToDownload,
       token,
-      results => this.interfaceManager.setAnalysisResults(results));
+      results => this.interfaceManager.setAnalysisResults(results, queryResult.queryId));
   }
 
   private mapQueryResult(executionEndTime: number, resultIndex: RemoteQueryResultIndex, queryId: string): RemoteQueryResult {
