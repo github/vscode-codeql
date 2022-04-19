@@ -148,7 +148,7 @@ export async function findSourceArchive(
 }
 
 async function resolveDatabase(
-  databasePath: string
+  databasePath: string,
 ): Promise<DatabaseContents> {
 
   const name = path.basename(databasePath);
@@ -170,7 +170,9 @@ async function getDbSchemeFiles(dbDirectory: string): Promise<string[]> {
   return await glob('*.dbscheme', { cwd: dbDirectory });
 }
 
-async function resolveDatabaseContents(uri: vscode.Uri): Promise<DatabaseContents> {
+async function resolveDatabaseContents(
+  uri: vscode.Uri,
+): Promise<DatabaseContents> {
   if (uri.scheme !== 'file') {
     throw new Error(`Database URI scheme '${uri.scheme}' not supported; only 'file' URIs are supported.`);
   }
@@ -569,14 +571,15 @@ export class DatabaseManager extends DisposableObject {
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     uri: vscode.Uri,
+    displayName?: string
   ): Promise<DatabaseItem> {
     const contents = await resolveDatabaseContents(uri);
     // Ignore the source archive for QLTest databases by default.
     const isQLTestDatabase = path.extname(uri.fsPath) === '.testproj';
     const fullOptions: FullDatabaseOptions = {
       ignoreSourceArchive: isQLTestDatabase,
-      // displayName is only set if a user explicitly renames a database
-      displayName: undefined,
+      // If a displayName is not passed in, the basename of folder containing the database is used.
+      displayName,
       dateAdded: Date.now(),
       language: await this.getPrimaryLanguage(uri.fsPath)
     };

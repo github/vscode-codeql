@@ -91,15 +91,17 @@ describe('databaseFetcher', function() {
       mockRequest.resolves(mockApiResponse);
       quickPickSpy.resolves('javascript');
       const githubRepo = 'github/codeql';
-      const dbUrl = await mod.convertGithubNwoToDatabaseUrl(
+      const { databaseUrl, name, owner } = await mod.convertGithubNwoToDatabaseUrl(
         githubRepo,
         credentials,
         progressSpy
       );
 
-      expect(dbUrl).to.equal(
+      expect(databaseUrl).to.equal(
         'https://api.github.com/repos/github/codeql/code-scanning/codeql/databases/javascript'
       );
+      expect(name).to.equal('codeql');
+      expect(owner).to.equal('github');
       expect(quickPickSpy.firstCall.args[0]).to.deep.equal([
         'csharp',
         'javascript',
