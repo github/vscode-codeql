@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { parseResponse } from '../../../remote-queries/run-remote-query';
 
-describe('run-remote-queries', () => {
+describe('run-remote-query', () => {
   describe('parseResponse', () => {
     it('should parse a successful response', () => {
       const result = parseResponse('org', 'name', {
@@ -15,6 +15,17 @@ describe('run-remote-queries', () => {
           '',
           'Repositories queried:',
           'a/b, c/d'].join('\n')
+      );
+    });
+
+    it('should parse a response with no repositories queried', () => {
+      const result = parseResponse('org', 'name', {
+        workflow_run_id: 123,
+      });
+
+      expect(result.popupMessage).to.equal('Successfully scheduled runs. [Click here to see the progress](https://github.com/org/name/actions/runs/123).');
+      expect(result.logMessage).to.equal(
+        'Successfully scheduled runs. See https://github.com/org/name/actions/runs/123.'
       );
     });
 
