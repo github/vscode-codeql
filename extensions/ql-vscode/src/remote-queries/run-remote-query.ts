@@ -353,6 +353,7 @@ export function parseResponse(owner: string, repo: string, response: QueriesResp
     }
     if (response.errors.repositories_without_database?.length) {
       logMessage += `\n\nRepositories without databases:\n${response.errors.repositories_without_database.join(', ')}`;
+      logMessage += '\nThese repositories have been added to the database storage service and we will attempt to create a database for them next time the store is updated.';
     }
   }
 

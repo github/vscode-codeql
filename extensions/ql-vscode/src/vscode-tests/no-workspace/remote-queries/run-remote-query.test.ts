@@ -77,7 +77,8 @@ describe('run-remote-query', () => {
           '',
           'Some repositories could not be scheduled.',
           '',
-          'Repositories without databases:\ne/f, g/h'].join('\n')
+          'Repositories without databases:\ne/f, g/h',
+          'These repositories have been added to the database storage service and we will attempt to create a database for them next time the store is updated.'].join('\n')
       );
     });
 
@@ -107,7 +108,8 @@ describe('run-remote-query', () => {
           'e/f, g/h',
           '',
           'Repositories without databases:',
-          'i/j, k/l'].join('\n')
+          'i/j, k/l',
+          'These repositories have been added to the database storage service and we will attempt to create a database for them next time the store is updated.'].join('\n')
       );
     });
   });
