@@ -1,18 +1,18 @@
 import { expect } from 'chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { generateMarkdown } from '../../../../../src/remote-queries/remote-queries-markdown-generation';
+import { generateMarkdown } from '../../../../src/remote-queries/remote-queries-markdown-generation';
 
 describe('markdown generation', async function() {
-  it('should generate markdown file for each repo with results', async function() {
-    const problemQuery = JSON.parse(
-      await fs.readFile(path.join(__dirname, 'data/problem-query.json'), 'utf8')
+  it('for path-problem-query: should generate markdown file for each repo with results', async function() {
+    const pathProblemQuery = JSON.parse(
+      await fs.readFile(path.join(__dirname, 'data/interpreted-results/path-problem/path-problem-query.json'), 'utf8')
     );
 
     const analysesResults = JSON.parse(
-      await fs.readFile(path.join(__dirname, 'data/analyses-results.json'), 'utf8')
+      await fs.readFile(path.join(__dirname, 'data/interpreted-results/path-problem/analyses-results.json'), 'utf8')
     );
-    const markdownFiles = generateMarkdown(problemQuery, analysesResults);
+    const markdownFiles = generateMarkdown(pathProblemQuery, analysesResults);
 
     // Check that query has results for two repositories, plus a summary file
     expect(markdownFiles.length).to.equal(3);
@@ -21,9 +21,9 @@ describe('markdown generation', async function() {
     const markdownFile1 = markdownFiles[1]; // results for github/codeql repo
     const markdownFile2 = markdownFiles[2]; // results for meteor/meteor repo
 
-    const expectedSummaryFile = await readTestOutputFile('data/summary.md');
-    const expectedTestOutput1 = await readTestOutputFile('data/results-repo1.md');
-    const expectedTestOutput2 = await readTestOutputFile('data/results-repo2.md');
+    const expectedSummaryFile = await readTestOutputFile('data/interpreted-results/path-problem/summary.md');
+    const expectedTestOutput1 = await readTestOutputFile('data/interpreted-results/path-problem/results-repo1.md');
+    const expectedTestOutput2 = await readTestOutputFile('data/interpreted-results/path-problem/results-repo2.md');
 
     // Check that markdown output is correct, after making line endings consistent
     expect(markdownFile0.join('\n')).to.equal(expectedSummaryFile);
