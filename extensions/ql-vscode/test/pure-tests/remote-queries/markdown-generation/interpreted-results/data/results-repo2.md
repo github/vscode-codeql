@@ -5,7 +5,7 @@
 <pre><code class="javascript">
   if (isWindows()) {
     //set for the current session and beyond
-    child_process.execSync(`setx path "${meteorPath}/;%path%`);
+    child_process.execSync(<strong>`setx path "${meteorPath}/;%path%`</strong>);
     return;
   }
 
