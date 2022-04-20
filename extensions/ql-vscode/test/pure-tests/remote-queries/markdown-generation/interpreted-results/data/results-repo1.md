@@ -5,7 +5,7 @@
 <pre><code class="javascript">
 function cleanupTemp() {
   let cmd = "rm -rf " + path.join(__dirname, "temp");
-  cp.execSync(cmd); // BAD
+  cp.execSync(<strong>cmd</strong>); // BAD
 }
 
 </code></pre>
@@ -19,7 +19,7 @@ function cleanupTemp() {
 <pre><code class="javascript">
 (function() {
 	cp.execFileSync('rm',  ['-rf', path.join(__dirname, "temp")]); // GOOD
-	cp.execSync('rm -rf ' + path.join(__dirname, "temp")); // BAD
+	cp.execSync(<strong>'rm -rf ' + path.join(__dirname, "temp")</strong>); // BAD
 
 	execa.shell('rm -rf ' + path.join(__dirname, "temp")); // NOT OK
 
@@ -34,7 +34,7 @@ function cleanupTemp() {
 <pre><code class="javascript">
 	cp.execSync('rm -rf ' + path.join(__dirname, "temp")); // BAD
 
-	execa.shell('rm -rf ' + path.join(__dirname, "temp")); // NOT OK
+	execa.shell(<strong>'rm -rf ' + path.join(__dirname, "temp")</strong>); // NOT OK
 	execa.shellSync('rm -rf ' + path.join(__dirname, "temp")); // NOT OK
 
 
@@ -49,7 +49,7 @@ function cleanupTemp() {
 <pre><code class="javascript">
 
 	execa.shell('rm -rf ' + path.join(__dirname, "temp")); // NOT OK
-	execa.shellSync('rm -rf ' + path.join(__dirname, "temp")); // NOT OK
+	execa.shellSync(<strong>'rm -rf ' + path.join(__dirname, "temp")</strong>); // NOT OK
 
 	const safe = "\"" + path.join(__dirname, "temp") + "\"";
 

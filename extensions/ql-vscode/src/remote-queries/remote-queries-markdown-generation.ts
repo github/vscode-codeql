@@ -1,6 +1,7 @@
 import { createRemoteFileRef } from '../pure/location-link-utils';
+import { parseHighlightedLine, shouldHighlightLine } from '../pure/sarif-utils';
 import { RemoteQuery } from './remote-query';
-import { AnalysisAlert, AnalysisResults, FileLink } from './shared/analysis-result';
+import { AnalysisAlert, AnalysisResults, CodeSnippet, FileLink, HighlightedRegion } from './shared/analysis-result';
 
 // Each array item is a line of the markdown file.
 export type MarkdownFile = string[];
@@ -81,10 +82,11 @@ function generateMarkdownForInterpretedResult(interpretedResult: AnalysisAlert, 
     interpretedResult.highlightedRegion?.endLine
   ));
   lines.push('');
-  const codeSnippet = interpretedResult.codeSnippet?.text;
+  const codeSnippet = interpretedResult.codeSnippet;
+  const highlightedRegion = interpretedResult.highlightedRegion;
   if (codeSnippet) {
     lines.push(
-      ...generateMarkdownForCodeSnippet(codeSnippet, language),
+      ...generateMarkdownForCodeSnippet(codeSnippet, language, highlightedRegion),
     );
   }
   const alertMessage = buildMarkdownAlertMessage(interpretedResult);
@@ -99,15 +101,41 @@ function generateMarkdownForInterpretedResult(interpretedResult: AnalysisAlert, 
   return lines;
 }
 
-function generateMarkdownForCodeSnippet(codeSnippet: string, language: string): MarkdownFile {
+function generateMarkdownForCodeSnippet(
+  codeSnippet: CodeSnippet,
+  language: string,
+  highlightedRegion?: HighlightedRegion
+): MarkdownFile {
   const lines: MarkdownFile = [];
+  const snippetStartLine = codeSnippet.startLine || 0;
+  const codeLines = codeSnippet.text
+    .split('\n')
+    .map((line, index) =>
+      highlightCodeLines(line, index + snippetStartLine, highlightedRegion)
+    );
   lines.push(
     `<pre><code class="${language}">`,
-    ...codeSnippet.split('\n'),
+    ...codeLines,
     '</code></pre>',
   );
   lines.push('');
   return lines;
+}
+
+function highlightCodeLines(
+  line: string,
+  lineNumber: number,
+  highlightedRegion?: HighlightedRegion
+): string {
+  if (!highlightedRegion || !shouldHighlightLine(lineNumber, highlightedRegion)) {
+    return line;
+  }
+  const partiallyHighlightedLine = parseHighlightedLine(
+    line,
+    lineNumber,
+    highlightedRegion
+  );
+  return `${partiallyHighlightedLine.plainSection1}<strong>${partiallyHighlightedLine.highlightedSection}</strong>${partiallyHighlightedLine.plainSection2}`;
 }
 
 function buildMarkdownAlertMessage(interpretedResult: AnalysisAlert): string {
