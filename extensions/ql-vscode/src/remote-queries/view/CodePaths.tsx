@@ -50,10 +50,10 @@ const CodePath = ({
 }) => {
   return <>
     {codeFlow.threadFlows.map((threadFlow, index) =>
-      <div key={`thread-flow-${index}`}>
+      <div key={`thread-flow-${index}`} style={{ maxWidth: '55em' }}>
         {index !== 0 && <VerticalSpace size={3} />}
 
-        <Box display="flex" justifyContent="center" alignItems="center" width="42.5em">
+        <Box display="flex" justifyContent="center" alignItems="center">
           <Box flexGrow={1} p={0} border="none">
             <SectionTitle>Step {index + 1}</SectionTitle>
           </Box>
