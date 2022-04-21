@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import * as os from 'os';
 import { parseResponse } from '../../../remote-queries/run-remote-query';
 
 describe('run-remote-query', () => {
@@ -14,7 +15,7 @@ describe('run-remote-query', () => {
         ['Successfully scheduled runs. See https://github.com/org/name/actions/runs/123.',
           '',
           'Repositories queried:',
-          'a/b, c/d'].join('\n')
+          'a/b, c/d'].join(os.EOL),
       );
     });
 
