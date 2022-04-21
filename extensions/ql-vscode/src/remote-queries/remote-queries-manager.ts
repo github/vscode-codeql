@@ -131,33 +131,13 @@ export class RemoteQueriesManager extends DisposableObject {
     const executionEndTime = Date.now();
 
     if (queryWorkflowResult.status === 'CompletedSuccessfully') {
-      const resultIndex = await getRemoteQueryIndex(credentials, queryItem.remoteQuery);
-      queryItem.completed = true;
-      if (resultIndex) {
-        queryItem.status = QueryStatus.Completed;
-        const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryItem.queryId);
-
-        await this.storeJsonFile(queryItem, 'query-result.json', queryResult);
-
-        // Kick off auto-download of results in the background.
-        void commands.executeCommand('codeQL.autoDownloadRemoteQueryResults', queryResult);
-
-        // Ask if the user wants to open the results in the background.
-        void this.askToOpenResults(queryItem.remoteQuery, queryResult).then(
-          noop,
-          err => {
-            void showAndLogErrorMessage(err);
-          }
-        );
-      } else {
-        void showAndLogErrorMessage(`There was an issue retrieving the result for the query ${queryItem.remoteQuery.queryName}`);
-        queryItem.status = QueryStatus.Failed;
-      }
+      await this.downloadAvailableResults(queryItem, credentials, executionEndTime);
     } else if (queryWorkflowResult.status === 'CompletedUnsuccessfully') {
       if (queryWorkflowResult.error?.includes('cancelled')) {
         // workflow was cancelled on the server
         queryItem.failureReason = 'Cancelled';
         queryItem.status = QueryStatus.Failed;
+        await this.downloadAvailableResults(queryItem, credentials, executionEndTime);
         void showAndLogInformationMessage('Variant analysis was cancelled');
       } else {
         queryItem.failureReason = queryWorkflowResult.error;
@@ -165,6 +145,7 @@ export class RemoteQueriesManager extends DisposableObject {
         void showAndLogErrorMessage(`Variant analysis execution failed. Error: ${queryWorkflowResult.error}`);
       }
     } else if (queryWorkflowResult.status === 'Cancelled') {
+      // workflow was cancelled from within VS Code
       queryItem.failureReason = 'Cancelled';
       queryItem.status = QueryStatus.Failed;
       void showAndLogErrorMessage('Variant analysis was cancelled');
@@ -281,5 +262,35 @@ export class RemoteQueriesManager extends DisposableObject {
   private async queryHistoryItemExists(queryItem: RemoteQueryHistoryItem): Promise<boolean> {
     const filePath = path.join(this.storagePath, queryItem.queryId);
     return await fs.pathExists(filePath);
+  }
+
+  /**
+   * Checks whether there's a result index artifact available for the given query.
+   * If so, set the query status to `Completed` and auto-download the results.
+   */
+  private async downloadAvailableResults(queryItem: RemoteQueryHistoryItem, credentials: Credentials, executionEndTime: number): Promise<void> {
+    const resultIndex = await getRemoteQueryIndex(credentials, queryItem.remoteQuery);
+    if (resultIndex) {
+      queryItem.completed = true;
+      queryItem.status = QueryStatus.Completed;
+      queryItem.failureReason = undefined;
+      const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryItem.queryId);
+
+      await this.storeJsonFile(queryItem, 'query-result.json', queryResult);
+
+      // Kick off auto-download of results in the background.
+      void commands.executeCommand('codeQL.autoDownloadRemoteQueryResults', queryResult);
+
+      // Ask if the user wants to open the results in the background.
+      void this.askToOpenResults(queryItem.remoteQuery, queryResult).then(
+        noop,
+        err => {
+          void showAndLogErrorMessage(err);
+        }
+      );
+    } else {
+      void showAndLogErrorMessage(`There was an issue retrieving the result for the query ${queryItem.remoteQuery.queryName}`);
+      queryItem.status = QueryStatus.Failed;
+    }
   }
 }

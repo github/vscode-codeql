@@ -42,7 +42,10 @@ export async function getRemoteQueryIndex(
   const artifactsUrlPath = `/repos/${owner}/${repoName}/actions/artifacts`;
 
   const artifactList = await listWorkflowRunArtifacts(credentials, owner, repoName, workflowRunId);
-  const resultIndexArtifactId = getArtifactIDfromName('result-index', workflowUri, artifactList);
+  const resultIndexArtifactId = tryGetArtifactIDfromName('result-index', artifactList);
+  if (!resultIndexArtifactId) {
+    return undefined;
+  }
   const resultIndex = await getResultIndex(credentials, owner, repoName, resultIndexArtifactId);
 
   const successes = resultIndex?.successes.map(item => {
@@ -223,14 +226,28 @@ function getArtifactIDfromName(
   workflowUri: string,
   artifacts: Array<{ id: number, name: string }>
 ): number {
-  const artifact = artifacts.find(a => a.name === artifactName);
+  const artifactId = tryGetArtifactIDfromName(artifactName, artifacts);
 
-  if (!artifact) {
+  if (!artifactId) {
     const errorMessage =
       `Could not find artifact with name ${artifactName} in workflow ${workflowUri}.
       Please check whether the workflow run has successfully completed.`;
     throw Error(errorMessage);
   }
+
+  return artifactId;
+}
+
+/**
+ * @param artifactName The artifact name, as a string.
+ * @param artifacts An array of artifact details (from the "list workflow run artifacts" API response).
+ * @returns The artifact ID corresponding to the given artifact name, if it exists.
+ */
+function tryGetArtifactIDfromName(
+  artifactName: string,
+  artifacts: Array<{ id: number, name: string }>
+): number | undefined {
+  const artifact = artifacts.find(a => a.name === artifactName);
 
   return artifact?.id;
 }
