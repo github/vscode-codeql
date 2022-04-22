@@ -145,10 +145,10 @@ export class RemoteQueriesManager extends DisposableObject {
         void showAndLogErrorMessage(`Variant analysis execution failed. Error: ${queryWorkflowResult.error}`);
       }
     } else if (queryWorkflowResult.status === 'Cancelled') {
-      // workflow was cancelled from within VS Code
       queryItem.failureReason = 'Cancelled';
       queryItem.status = QueryStatus.Failed;
-      void showAndLogErrorMessage('Variant analysis was cancelled');
+      await this.downloadAvailableResults(queryItem, credentials, executionEndTime);
+      void showAndLogInformationMessage('Variant analysis was cancelled');
     } else if (queryWorkflowResult.status === 'InProgress') {
       // Should not get here. Only including this to ensure `assertNever` uses proper type checking.
       void showAndLogErrorMessage(`Unexpected status: ${queryWorkflowResult.status}`);
@@ -268,7 +268,11 @@ export class RemoteQueriesManager extends DisposableObject {
    * Checks whether there's a result index artifact available for the given query.
    * If so, set the query status to `Completed` and auto-download the results.
    */
-  private async downloadAvailableResults(queryItem: RemoteQueryHistoryItem, credentials: Credentials, executionEndTime: number): Promise<void> {
+  private async downloadAvailableResults(
+    queryItem: RemoteQueryHistoryItem,
+    credentials: Credentials,
+    executionEndTime: number
+  ): Promise<void> {
     const resultIndex = await getRemoteQueryIndex(credentials, queryItem.remoteQuery);
     if (resultIndex) {
       queryItem.completed = true;
@@ -289,7 +293,11 @@ export class RemoteQueriesManager extends DisposableObject {
         }
       );
     } else {
-      void showAndLogErrorMessage(`There was an issue retrieving the result for the query ${queryItem.remoteQuery.queryName}`);
+      const controllerRepo = `${queryItem.remoteQuery.controllerRepository.owner}/${queryItem.remoteQuery.controllerRepository.name}`;
+      const workflowRunUrl = `https://github.com/${controllerRepo}/actions/runs/${queryItem.remoteQuery.actionsWorkflowRunId}`;
+      void showAndLogErrorMessage(
+        `There was an issue retrieving the result for the query [${queryItem.remoteQuery.queryName}](${workflowRunUrl}).`
+      );
       queryItem.status = QueryStatus.Failed;
     }
   }
