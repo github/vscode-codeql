@@ -338,10 +338,10 @@ async function runRemoteQueriesApiRequest(
   }
 }
 
-// exported for testng only
 const eol = os.EOL;
 const eol2 = os.EOL + os.EOL;
 
+// exported for testng only
 export function parseResponse(owner: string, repo: string, response: QueriesResponse) {
   const popupMessage = `Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
     + (response.errors ? `${eol2}Some repositories could not be scheduled. See extension log for details.` : '');
