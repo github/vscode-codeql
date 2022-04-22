@@ -89,8 +89,8 @@ function generateMarkdownForInterpretedResult(interpretedResult: AnalysisAlert, 
       ...generateMarkdownForCodeSnippet(codeSnippet, language, highlightedRegion),
     );
   }
-  const alertMessage = buildMarkdownAlertMessage(interpretedResult);
-  lines.push(alertMessage);
+  const alertMessageLines = buildMarkdownAlertMessage(interpretedResult, language);
+  lines.push(...alertMessageLines);
 
   // Padding between results
   lines.push(
@@ -142,22 +142,67 @@ function highlightCodeLines(
   return `${partiallyHighlightedLine.plainSection1}<strong>${partiallyHighlightedLine.highlightedSection}</strong>${partiallyHighlightedLine.plainSection2}`;
 }
 
-function buildMarkdownAlertMessage(interpretedResult: AnalysisAlert): string {
+function buildMarkdownAlertMessage(
+  interpretedResult: AnalysisAlert,
+  language: string
+): string[] {
+  const hasPathResults = interpretedResult.codeFlows.length > 0;
+  if (hasPathResults) {
+    // For path-problem queries, the "alert message" is an expandable section containing the path results.
+    return buildMarkdownPathResults(interpretedResult, language);
+  } else {
+    let alertMessage = '';
+    // For regular problem queries (no paths), the alert message is just a message
+    // containing a link to the affected file.
+    for (const token of interpretedResult.message.tokens) {
+      if (token.t === 'text') {
+        alertMessage += token.text;
+      } else if (token.t === 'location') {
+        alertMessage += createMarkdownRemoteFileRef(
+          token.location.fileLink,
+          token.location.highlightedRegion?.startLine,
+          token.location.highlightedRegion?.endLine,
+          token.text
+        );
+      }
+    }
+    // Italicize the alert message
+    return [`*${alertMessage}*`];
+  }
+}
+
+function buildMarkdownPathResults(
+  interpretedResult: AnalysisAlert,
+  language: string
+): MarkdownFile {
   let alertMessage = '';
   for (const token of interpretedResult.message.tokens) {
-    if (token.t === 'text') {
-      alertMessage += token.text;
-    } else if (token.t === 'location') {
-      alertMessage += createMarkdownRemoteFileRef(
-        token.location.fileLink,
-        token.location.highlightedRegion?.startLine,
-        token.location.highlightedRegion?.endLine,
-        token.text,
+    alertMessage += token.text;
+  }
+  const pathLines: MarkdownFile = [];
+  pathLines.push('#### Paths', '');
+  for (const codeFlow of interpretedResult.codeFlows) {
+    const stepCount = codeFlow.threadFlows.length;
+    pathLines.push(`Path with ${stepCount} steps`);
+    let index = 1;
+    for (const threadFlow of codeFlow.threadFlows) {
+      const link = createMarkdownRemoteFileRef(
+        threadFlow.fileLink,
+        threadFlow.highlightedRegion?.startLine,
+        threadFlow.highlightedRegion?.endLine
       );
+      const codeSnippet = generateMarkdownForCodeSnippet(
+        threadFlow.codeSnippet,
+        language,
+        threadFlow.highlightedRegion
+      );
+      // Indent the snippet to fit with the numbered list.
+      const codeSnippetIndented = codeSnippet.map((line) => `    ${line}`);
+      pathLines.push(`${index}. ${link}`, ...codeSnippetIndented);
+      index++;
     }
   }
-  // Italicize the alert message
-  return `*${alertMessage}*`;
+  return buildExpandableMarkdownSection(`<i>${alertMessage}</i>`, pathLines);
 }
 
 /**
