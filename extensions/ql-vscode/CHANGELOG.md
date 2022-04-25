@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.6.5 - 25 April 2022
 
 - Re-enable publishing to open-vsx. [#1285](https://github.com/github/vscode-codeql/pull/1285)
 
