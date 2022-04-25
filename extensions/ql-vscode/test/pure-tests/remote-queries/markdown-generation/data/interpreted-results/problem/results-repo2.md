@@ -41,12 +41,7 @@ pp.strictDirective = function(start) {
 
 [tools/tests/apps/modules/imports/links/acorn/src/parseutil.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/tools/tests/apps/modules/imports/links/acorn/src/parseutil.js#L9-L9)
 
-<pre><code class="javascript">// ## Parser utilities
-
-const literal = /^(?:'((?:\\.|[^'])*?)'|"(<strong>(?:\\.|[^"])*?</strong>)")/
-pp.strictDirective = function(start) {
-  for (;;) {
-</code></pre>
+<pre><code class="javascript">const literal = /^(?:'((?:\\.|[^'])*?)'|"(<strong>(?:\\.|[^"])*?</strong>)")/</code></pre>
 
 *This part of the regular expression may cause exponential backtracking on strings starting with '"' and containing many repetitions of '\!'.*
 

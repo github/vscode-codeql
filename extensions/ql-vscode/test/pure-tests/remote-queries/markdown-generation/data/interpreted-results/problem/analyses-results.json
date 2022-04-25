@@ -137,9 +137,9 @@
         },
         "severity": "Warning",
         "codeSnippet": {
-          "startLine": 7,
-          "endLine": 11,
-          "text": "// ## Parser utilities\n\nconst literal = /^(?:'((?:\\\\.|[^'])*?)'|\"((?:\\\\.|[^\"])*?)\")/\npp.strictDirective = function(start) {\n  for (;;) {\n"
+          "startLine": 9,
+          "endLine": 9,
+          "text": "const literal = /^(?:'((?:\\\\.|[^'])*?)'|\"((?:\\\\.|[^\"])*?)\")/"
         },
         "highlightedRegion": {
           "startLine": 9,
