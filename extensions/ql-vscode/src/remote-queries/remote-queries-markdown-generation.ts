@@ -115,16 +115,14 @@ function generateMarkdownForCodeSnippet(
     );
 
   // Make sure there are no extra newlines before or after the <code> block:
-  if (codeLines.length === 1) {
-    lines.push(`<pre><code class="${language}">${codeLines[0]}</code></pre>`);
-  } else {
-    lines.push(
-      `<pre><code class="${language}">${codeLines[0]}`,
-      ...codeLines.slice(1, -1),
-      `${codeLines[codeLines.length - 1]}</code></pre>`,
-    );
-  }
-  lines.push('');
+  const codeLinesWrapped = [...codeLines];
+  codeLinesWrapped[0] = `<pre><code class="${language}">${codeLinesWrapped[0]}`;
+  codeLinesWrapped[codeLinesWrapped.length - 1] = `${codeLinesWrapped[codeLinesWrapped.length - 1]}</code></pre>`;
+
+  lines.push(
+    ...codeLinesWrapped,
+    '',
+  );
   return lines;
 }
 
