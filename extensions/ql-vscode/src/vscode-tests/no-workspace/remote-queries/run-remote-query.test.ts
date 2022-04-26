@@ -42,7 +42,7 @@ describe('run-remote-query', () => {
       expect(result.popupMessage).to.equal(
         ['Successfully scheduled runs. [Click here to see the progress](https://github.com/org/name/actions/runs/123).',
           '',
-          'Some repositories could not be scheduled. See extension log for details.'].join('\n')
+          'Some repositories could not be scheduled. See extension log for details.'].join(os.EOL)
       );
       expect(result.logMessage).to.equal(
         ['Successfully scheduled runs. See https://github.com/org/name/actions/runs/123.',
@@ -53,7 +53,7 @@ describe('run-remote-query', () => {
           'Some repositories could not be scheduled.',
           '',
           'Invalid repositories:',
-          'e/f, g/h'].join('\n')
+          'e/f, g/h'].join(os.EOL)
       );
     });
 
@@ -69,17 +69,19 @@ describe('run-remote-query', () => {
       expect(result.popupMessage).to.equal(
         ['Successfully scheduled runs. [Click here to see the progress](https://github.com/org/name/actions/runs/123).',
           '',
-          'Some repositories could not be scheduled. See extension log for details.'].join('\n')
+          'Some repositories could not be scheduled. See extension log for details.'].join(os.EOL)
       );
       expect(result.logMessage).to.equal(
         ['Successfully scheduled runs. See https://github.com/org/name/actions/runs/123.',
           '',
-          'Repositories queried:\na/b, c/d',
+          'Repositories queried:',
+          'a/b, c/d',
           '',
           'Some repositories could not be scheduled.',
           '',
-          'Repositories without databases:\ne/f, g/h',
-          'These repositories have been added to the database storage service and we will attempt to create a database for them next time the store is updated.'].join('\n')
+          'Repositories without databases:',
+          'e/f, g/h',
+          'These repositories have been added to the database storage service and we will attempt to create a database for them next time the store is updated.'].join(os.EOL)
       );
     });
 
@@ -96,12 +98,13 @@ describe('run-remote-query', () => {
       expect(result.popupMessage).to.equal(
         ['Successfully scheduled runs. [Click here to see the progress](https://github.com/org/name/actions/runs/123).',
           '',
-          'Some repositories could not be scheduled. See extension log for details.'].join('\n')
+          'Some repositories could not be scheduled. See extension log for details.'].join(os.EOL)
       );
       expect(result.logMessage).to.equal(
         ['Successfully scheduled runs. See https://github.com/org/name/actions/runs/123.',
           '',
-          'Repositories queried:\na/b, c/d',
+          'Repositories queried:',
+          'a/b, c/d',
           '',
           'Some repositories could not be scheduled.',
           '',
@@ -110,7 +113,7 @@ describe('run-remote-query', () => {
           '',
           'Repositories without databases:',
           'i/j, k/l',
-          'These repositories have been added to the database storage service and we will attempt to create a database for them next time the store is updated.'].join('\n')
+          'These repositories have been added to the database storage service and we will attempt to create a database for them next time the store is updated.'].join(os.EOL)
       );
     });
   });
