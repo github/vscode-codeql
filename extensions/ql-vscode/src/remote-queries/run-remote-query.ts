@@ -2,6 +2,7 @@ import { CancellationToken, Uri, window } from 'vscode';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
+import * as os from 'os';
 import * as tmp from 'tmp-promise';
 import {
   askForLanguage,
@@ -337,22 +338,26 @@ async function runRemoteQueriesApiRequest(
   }
 }
 
+const eol = os.EOL;
+const eol2 = os.EOL + os.EOL;
+
 // exported for testng only
 export function parseResponse(owner: string, repo: string, response: QueriesResponse) {
   const popupMessage = `Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
-    + (response.errors ? '\n\nSome repositories could not be scheduled. See extension log for details.' : '');
+    + (response.errors ? `${eol2}Some repositories could not be scheduled. See extension log for details.` : '');
 
   let logMessage = `Successfully scheduled runs. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
   if (response.repositories_queried) {
-    logMessage += `\n\nRepositories queried:\n${response.repositories_queried.join(', ')}`;
+    logMessage += `${eol2}Repositories queried:${eol}${response.repositories_queried.join(', ')}`;
   }
   if (response.errors) {
-    logMessage += '\n\nSome repositories could not be scheduled.';
+    logMessage += `${eol2}Some repositories could not be scheduled.`;
     if (response.errors.invalid_repositories?.length) {
-      logMessage += `\n\nInvalid repositories:\n${response.errors.invalid_repositories.join(', ')}`;
+      logMessage += `${eol2}Invalid repositories:${eol}${response.errors.invalid_repositories.join(', ')}`;
     }
     if (response.errors.repositories_without_database?.length) {
-      logMessage += `\n\nRepositories without databases:\n${response.errors.repositories_without_database.join(', ')}`;
+      logMessage += `${eol2}Repositories without databases:${eol}${response.errors.repositories_without_database.join(', ')}`;
+      logMessage += `${eol}These repositories have been added to the database storage service and we will attempt to create a database for them next time the store is updated.`;
     }
   }
 
