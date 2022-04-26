@@ -61,6 +61,35 @@ describe('markdown generation', async function() {
       expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2);
     });
   });
+
+  describe('for non-alert query', async function() {
+    it('should generate markdown file for each repo with results', async function() {
+      const query = JSON.parse(
+        await fs.readFile(path.join(__dirname, 'data/raw-results/query.json'), 'utf8')
+      );
+      const analysesResults = JSON.parse(
+        await fs.readFile(path.join(__dirname, 'data/raw-results/analyses-results.json'), 'utf8')
+      );
+
+      const markdownFiles = generateMarkdown(query, analysesResults);
+
+      // Check that query has results for two repositories, plus a summary file
+      expect(markdownFiles.length).to.equal(3);
+
+      const markdownFile0 = markdownFiles[0]; // summary file
+      const markdownFile1 = markdownFiles[1]; // results for github/codeql repo
+      const markdownFile2 = markdownFiles[2]; // results for meteor/meteor repo
+
+      const expectedSummaryFile = await readTestOutputFile('data/raw-results/summary.md');
+      const expectedTestOutput1 = await readTestOutputFile('data/raw-results/results-repo1.md');
+      const expectedTestOutput2 = await readTestOutputFile('data/raw-results/results-repo2.md');
+
+      // Check that markdown output is correct, after making line endings consistent
+      expect(markdownFile0.join('\n')).to.equal(expectedSummaryFile);
+      expect(markdownFile1.join('\n')).to.equal(expectedTestOutput1);
+      expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2);
+    });
+  });
 });
 
 /**
