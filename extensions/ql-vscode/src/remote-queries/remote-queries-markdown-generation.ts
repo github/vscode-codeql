@@ -176,7 +176,7 @@ function generateMarkdownForPathResults(
   for (const codeFlow of interpretedResult.codeFlows) {
     const stepCount = codeFlow.threadFlows.length;
     pathLines.push(`#### Path with ${stepCount} steps`);
-    for (let i = 0; i < codeFlow.threadFlows.length; i++) {
+    for (let i = 0; i < stepCount; i++) {
       const threadFlow = codeFlow.threadFlows[i];
       const link = createMarkdownRemoteFileRef(
         threadFlow.fileLink,
