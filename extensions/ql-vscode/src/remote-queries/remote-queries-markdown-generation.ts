@@ -1,5 +1,5 @@
 import { createRemoteFileRef } from '../pure/location-link-utils';
-import { parseHighlightedLine, shouldHighlightLine } from '../pure/sarif-utils';
+import { getAnalysisResultCount, parseHighlightedLine, shouldHighlightLine } from '../pure/sarif-utils';
 import { RemoteQuery } from './remote-query';
 import { AnalysisAlert, AnalysisResults, CodeSnippet, FileLink, HighlightedRegion } from './shared/analysis-result';
 
@@ -14,14 +14,13 @@ export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisRe
   // Generate summary file with links to individual files
   const summaryLines: MarkdownFile = generateMarkdownSummary(query);
   for (const analysisResult of analysesResults) {
-    if (analysisResult.interpretedResults.length === 0) {
-      // TODO: We'll add support for non-interpreted results later.
+    if (analysisResult.interpretedResults.length === 0 && !analysisResult.rawResults) {
       continue;
     }
 
     // Append nwo and results count to the summary table
     const nwo = analysisResult.nwo;
-    const resultsCount = analysisResult.interpretedResults.length;
+    const resultsCount = getAnalysisResultCount(analysisResult);
     const link = createGistRelativeLink(nwo);
     summaryLines.push(`| ${nwo} | [${resultsCount} result(s)](${link}) |`);
 
@@ -33,6 +32,9 @@ export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisRe
     for (const interpretedResult of analysisResult.interpretedResults) {
       const individualResult = generateMarkdownForInterpretedResult(interpretedResult, query.language);
       lines.push(...individualResult);
+    }
+    if (analysisResult.rawResults) {
+      // TODO: Generate markdown table for raw results
     }
     files.push(lines);
   }
