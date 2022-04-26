@@ -20,6 +20,7 @@ import { AlertIcon, CodeSquareIcon, FileCodeIcon, RepoIcon, TerminalIcon } from 
 import AnalysisAlertResult from './AnalysisAlertResult';
 import RawResultsTable from './RawResultsTable';
 import RepositoriesSearch from './RepositoriesSearch';
+import { getAnalysisResultCount } from '../../pure/sarif-utils';
 
 const numOfReposInContractedMode = 10;
 
@@ -65,11 +66,6 @@ const openQueryTextVirtualFile = (queryResult: RemoteQueryResult) => {
     t: 'openVirtualFile',
     queryText: queryResult.queryText
   });
-};
-
-const getAnalysisResultCount = (analysisResults: AnalysisResults): number => {
-  const rawResultCount = analysisResults.rawResults?.resultSet.rows.length || 0;
-  return analysisResults.interpretedResults.length + rawResultCount;
 };
 
 const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
