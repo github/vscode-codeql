@@ -13,14 +13,13 @@ import HorizontalSpace from './HorizontalSpace';
 import Badge from './Badge';
 import ViewTitle from './ViewTitle';
 import DownloadButton from './DownloadButton';
-import { AnalysisResults } from '../shared/analysis-result';
+import { AnalysisResults, getAnalysisResultCount } from '../shared/analysis-result';
 import DownloadSpinner from './DownloadSpinner';
 import CollapsibleItem from './CollapsibleItem';
 import { AlertIcon, CodeSquareIcon, FileCodeIcon, RepoIcon, TerminalIcon } from '@primer/octicons-react';
 import AnalysisAlertResult from './AnalysisAlertResult';
 import RawResultsTable from './RawResultsTable';
 import RepositoriesSearch from './RepositoriesSearch';
-import { getAnalysisResultCount } from '../../pure/sarif-utils';
 
 const numOfReposInContractedMode = 10;
 
