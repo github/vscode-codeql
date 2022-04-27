@@ -774,7 +774,9 @@ describe('query-history', () => {
     qhm.onWillOpenQueryItem(selectedCallback);
     (qhm.treeDataProvider as any).history = [...allHistory];
     await vscode.workspace.saveAll();
+    await new Promise(res => setTimeout(res, 300));
     await qhm.refreshTreeView();
+    await new Promise(res => setTimeout(res, 300));
     return qhm;
   }
 });
