@@ -1,5 +1,5 @@
 import * as Sarif from 'sarif';
-import { AnalysisResults, HighlightedRegion } from '../remote-queries/shared/analysis-result';
+import { HighlightedRegion } from '../remote-queries/shared/analysis-result';
 import { ResolvableLocationValue } from './bqrs-cli-types';
 
 export interface SarifLink {
@@ -236,11 +236,3 @@ export function parseHighlightedLine(
 
   return { plainSection1, highlightedSection, plainSection2 };
 }
-
-/**
- * Returns the number of (raw + interpreted) results for an analysis.
- */
-export const getAnalysisResultCount = (analysisResults: AnalysisResults): number => {
-  const rawResultCount = analysisResults.rawResults?.resultSet.rows.length || 0;
-  return analysisResults.interpretedResults.length + rawResultCount;
-};

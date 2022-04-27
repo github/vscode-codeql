@@ -1,7 +1,7 @@
 import { createRemoteFileRef } from '../pure/location-link-utils';
-import { getAnalysisResultCount, parseHighlightedLine, shouldHighlightLine } from '../pure/sarif-utils';
+import { parseHighlightedLine, shouldHighlightLine } from '../pure/sarif-utils';
 import { RemoteQuery } from './remote-query';
-import { AnalysisAlert, AnalysisResults, CodeSnippet, FileLink, HighlightedRegion } from './shared/analysis-result';
+import { AnalysisAlert, AnalysisResults, CodeSnippet, FileLink, getAnalysisResultCount, HighlightedRegion } from './shared/analysis-result';
 
 // Each array item is a line of the markdown file.
 export type MarkdownFile = string[];
@@ -14,13 +14,13 @@ export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisRe
   // Generate summary file with links to individual files
   const summaryLines: MarkdownFile = generateMarkdownSummary(query);
   for (const analysisResult of analysesResults) {
-    if (analysisResult.interpretedResults.length === 0 && !analysisResult.rawResults) {
+    const resultsCount = getAnalysisResultCount(analysisResult);
+    if (resultsCount === 0) {
       continue;
     }
 
     // Append nwo and results count to the summary table
     const nwo = analysisResult.nwo;
-    const resultsCount = getAnalysisResultCount(analysisResult);
     const link = createGistRelativeLink(nwo);
     summaryLines.push(`| ${nwo} | [${resultsCount} result(s)](${link}) |`);
 
