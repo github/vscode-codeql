@@ -2,6 +2,7 @@ import { CancellationToken, Uri, window } from 'vscode';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
+import * as os from 'os';
 import * as tmp from 'tmp-promise';
 import {
   askForLanguage,
@@ -33,7 +34,12 @@ export interface QlPack {
 }
 
 interface QueriesResponse {
-  workflow_run_id: number
+  workflow_run_id: number,
+  errors?: {
+    invalid_repositories?: string[],
+    repositories_without_database?: string[],
+  },
+  repositories_queried?: string[],
 }
 
 /**
@@ -324,12 +330,41 @@ async function runRemoteQueriesApiRequest(
         data
       }
     );
-    const workflowRunId = response.data.workflow_run_id;
-    void showAndLogInformationMessage(`Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${workflowRunId}).`);
-    return workflowRunId;
+    const { popupMessage, logMessage } = parseResponse(owner, repo, response.data);
+    void showAndLogInformationMessage(popupMessage, { fullMessage: logMessage });
+    return response.data.workflow_run_id;
   } catch (error) {
     void showAndLogErrorMessage(getErrorMessage(error));
   }
+}
+
+const eol = os.EOL;
+const eol2 = os.EOL + os.EOL;
+
+// exported for testng only
+export function parseResponse(owner: string, repo: string, response: QueriesResponse) {
+  const popupMessage = `Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
+    + (response.errors ? `${eol2}Some repositories could not be scheduled. See extension log for details.` : '');
+
+  let logMessage = `Successfully scheduled runs. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
+  if (response.repositories_queried) {
+    logMessage += `${eol2}Repositories queried:${eol}${response.repositories_queried.join(', ')}`;
+  }
+  if (response.errors) {
+    logMessage += `${eol2}Some repositories could not be scheduled.`;
+    if (response.errors.invalid_repositories?.length) {
+      logMessage += `${eol2}Invalid repositories:${eol}${response.errors.invalid_repositories.join(', ')}`;
+    }
+    if (response.errors.repositories_without_database?.length) {
+      logMessage += `${eol2}Repositories without databases:${eol}${response.errors.repositories_without_database.join(', ')}`;
+      logMessage += `${eol}These repositories have been added to the database storage service and we will attempt to create a database for them next time the store is updated.`;
+    }
+  }
+
+  return {
+    popupMessage,
+    logMessage
+  };
 }
 
 /**

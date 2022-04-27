@@ -78,3 +78,11 @@ export interface AnalysisMessageLocationToken {
 }
 
 export type ResultSeverity = 'Recommendation' | 'Warning' | 'Error';
+
+/**
+ * Returns the number of (raw + interpreted) results for an analysis.
+ */
+export const getAnalysisResultCount = (analysisResults: AnalysisResults): number => {
+  const rawResultCount = analysisResults.rawResults?.resultSet.rows.length || 0;
+  return analysisResults.interpretedResults.length + rawResultCount;
+};

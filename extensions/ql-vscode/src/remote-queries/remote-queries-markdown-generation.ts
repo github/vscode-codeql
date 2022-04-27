@@ -1,6 +1,7 @@
 import { createRemoteFileRef } from '../pure/location-link-utils';
+import { parseHighlightedLine, shouldHighlightLine } from '../pure/sarif-utils';
 import { RemoteQuery } from './remote-query';
-import { AnalysisAlert, AnalysisResults, FileLink } from './shared/analysis-result';
+import { AnalysisAlert, AnalysisResults, CodeSnippet, FileLink, getAnalysisResultCount, HighlightedRegion } from './shared/analysis-result';
 
 // Each array item is a line of the markdown file.
 export type MarkdownFile = string[];
@@ -13,14 +14,13 @@ export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisRe
   // Generate summary file with links to individual files
   const summaryLines: MarkdownFile = generateMarkdownSummary(query);
   for (const analysisResult of analysesResults) {
-    if (analysisResult.interpretedResults.length === 0) {
-      // TODO: We'll add support for non-interpreted results later.
+    const resultsCount = getAnalysisResultCount(analysisResult);
+    if (resultsCount === 0) {
       continue;
     }
 
     // Append nwo and results count to the summary table
     const nwo = analysisResult.nwo;
-    const resultsCount = analysisResult.interpretedResults.length;
     const link = createGistRelativeLink(nwo);
     summaryLines.push(`| ${nwo} | [${resultsCount} result(s)](${link}) |`);
 
@@ -32,6 +32,9 @@ export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisRe
     for (const interpretedResult of analysisResult.interpretedResults) {
       const individualResult = generateMarkdownForInterpretedResult(interpretedResult, query.language);
       lines.push(...individualResult);
+    }
+    if (analysisResult.rawResults) {
+      // TODO: Generate markdown table for raw results
     }
     files.push(lines);
   }
@@ -81,36 +84,75 @@ function generateMarkdownForInterpretedResult(interpretedResult: AnalysisAlert, 
     interpretedResult.highlightedRegion?.endLine
   ));
   lines.push('');
-  const codeSnippet = interpretedResult.codeSnippet?.text;
+  const codeSnippet = interpretedResult.codeSnippet;
+  const highlightedRegion = interpretedResult.highlightedRegion;
   if (codeSnippet) {
     lines.push(
-      ...generateMarkdownForCodeSnippet(codeSnippet, language),
+      ...generateMarkdownForCodeSnippet(codeSnippet, language, highlightedRegion),
     );
   }
-  const alertMessage = buildMarkdownAlertMessage(interpretedResult);
-  lines.push(alertMessage);
+  const alertMessage = generateMarkdownForAlertMessage(interpretedResult);
+  lines.push(alertMessage, '');
+
+  // If available, show paths
+  const hasPathResults = interpretedResult.codeFlows.length > 0;
+  if (hasPathResults) {
+    const pathLines = generateMarkdownForPathResults(interpretedResult, language);
+    lines.push(...pathLines);
+  }
 
   // Padding between results
   lines.push(
-    '',
     '----------------------------------------',
     '',
   );
   return lines;
 }
 
-function generateMarkdownForCodeSnippet(codeSnippet: string, language: string): MarkdownFile {
+function generateMarkdownForCodeSnippet(
+  codeSnippet: CodeSnippet,
+  language: string,
+  highlightedRegion?: HighlightedRegion
+): MarkdownFile {
   const lines: MarkdownFile = [];
+  const snippetStartLine = codeSnippet.startLine || 0;
+  const codeLines = codeSnippet.text
+    .split('\n')
+    .map((line, index) =>
+      highlightCodeLines(line, index + snippetStartLine, highlightedRegion)
+    );
+
+  // Make sure there are no extra newlines before or after the <code> block:
+  const codeLinesWrapped = [...codeLines];
+  codeLinesWrapped[0] = `<pre><code class="${language}">${codeLinesWrapped[0]}`;
+  codeLinesWrapped[codeLinesWrapped.length - 1] = `${codeLinesWrapped[codeLinesWrapped.length - 1]}</code></pre>`;
+
   lines.push(
-    `\`\`\`${language}`,
-    ...codeSnippet.split('\n'),
-    '```',
+    ...codeLinesWrapped,
+    '',
   );
-  lines.push('');
   return lines;
 }
 
-function buildMarkdownAlertMessage(interpretedResult: AnalysisAlert): string {
+function highlightCodeLines(
+  line: string,
+  lineNumber: number,
+  highlightedRegion?: HighlightedRegion
+): string {
+  if (!highlightedRegion || !shouldHighlightLine(lineNumber, highlightedRegion)) {
+    return line;
+  }
+  const partiallyHighlightedLine = parseHighlightedLine(
+    line,
+    lineNumber,
+    highlightedRegion
+  );
+  return `${partiallyHighlightedLine.plainSection1}<strong>${partiallyHighlightedLine.highlightedSection}</strong>${partiallyHighlightedLine.plainSection2}`;
+}
+
+function generateMarkdownForAlertMessage(
+  interpretedResult: AnalysisAlert
+): string {
   let alertMessage = '';
   for (const token of interpretedResult.message.tokens) {
     if (token.t === 'text') {
@@ -120,12 +162,40 @@ function buildMarkdownAlertMessage(interpretedResult: AnalysisAlert): string {
         token.location.fileLink,
         token.location.highlightedRegion?.startLine,
         token.location.highlightedRegion?.endLine,
-        token.text,
+        token.text
       );
     }
   }
   // Italicize the alert message
   return `*${alertMessage}*`;
+}
+
+function generateMarkdownForPathResults(
+  interpretedResult: AnalysisAlert,
+  language: string
+): MarkdownFile {
+  const pathLines: MarkdownFile = [];
+  for (const codeFlow of interpretedResult.codeFlows) {
+    const stepCount = codeFlow.threadFlows.length;
+    pathLines.push(`#### Path with ${stepCount} steps`);
+    for (let i = 0; i < stepCount; i++) {
+      const threadFlow = codeFlow.threadFlows[i];
+      const link = createMarkdownRemoteFileRef(
+        threadFlow.fileLink,
+        threadFlow.highlightedRegion?.startLine,
+        threadFlow.highlightedRegion?.endLine
+      );
+      const codeSnippet = generateMarkdownForCodeSnippet(
+        threadFlow.codeSnippet,
+        language,
+        threadFlow.highlightedRegion
+      );
+      // Indent the snippet to fit with the numbered list.
+      const codeSnippetIndented = codeSnippet.map((line) => `    ${line}`);
+      pathLines.push(`${i + 1}. ${link}`, ...codeSnippetIndented);
+    }
+  }
+  return buildExpandableMarkdownSection('Show paths', pathLines);
 }
 
 /**

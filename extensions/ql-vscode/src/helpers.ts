@@ -76,9 +76,10 @@ export async function showAndLogWarningMessage(message: string, {
  */
 export async function showAndLogInformationMessage(message: string, {
   outputLogger = logger,
-  items = [] as string[]
+  items = [] as string[],
+  fullMessage = ''
 } = {}): Promise<string | undefined> {
-  return internalShowAndLog(message, items, outputLogger, Window.showInformationMessage);
+  return internalShowAndLog(message, items, outputLogger, Window.showInformationMessage, fullMessage);
 }
 
 type ShowMessageFn = (message: string, ...items: string[]) => Thenable<string | undefined>;

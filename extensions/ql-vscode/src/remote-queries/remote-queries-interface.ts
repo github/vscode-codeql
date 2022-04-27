@@ -30,6 +30,7 @@ import { AnalysisResults } from './shared/analysis-result';
 export class RemoteQueriesInterfaceManager {
   private panel: WebviewPanel | undefined;
   private panelLoaded = false;
+  private currentQueryId: string | undefined;
   private panelLoadedCallBacks: (() => void)[] = [];
 
   constructor(
@@ -47,6 +48,8 @@ export class RemoteQueriesInterfaceManager {
 
     await this.waitForPanelLoaded();
     const model = this.buildViewModel(query, queryResult);
+    this.currentQueryId = queryResult.queryId;
+
     await this.postMessage({
       t: 'setRemoteQueryResult',
       queryResult: model
@@ -55,7 +58,7 @@ export class RemoteQueriesInterfaceManager {
     // Ensure all pre-downloaded artifacts are loaded into memory
     await this.analysesResultsManager.loadDownloadedAnalyses(model.analysisSummaries);
 
-    await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults(queryResult.queryId));
+    await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults(queryResult.queryId), queryResult.queryId);
   }
 
   /**
@@ -111,6 +114,7 @@ export class RemoteQueriesInterfaceManager {
       this.panel.onDidDispose(
         () => {
           this.panel = undefined;
+          this.currentQueryId = undefined;
         },
         null,
         ctx.subscriptions
@@ -212,23 +216,25 @@ export class RemoteQueriesInterfaceManager {
   }
 
   private async downloadAnalysisResults(msg: RemoteQueryDownloadAnalysisResultsMessage): Promise<void> {
+    const queryId = this.currentQueryId;
     await this.analysesResultsManager.downloadAnalysisResults(
       msg.analysisSummary,
-      results => this.setAnalysisResults(results));
+      results => this.setAnalysisResults(results, queryId));
   }
 
   private async downloadAllAnalysesResults(msg: RemoteQueryDownloadAllAnalysesResultsMessage): Promise<void> {
+    const queryId = this.currentQueryId;
     await this.analysesResultsManager.loadAnalysesResults(
       msg.analysisSummaries,
       undefined,
-      results => this.setAnalysisResults(results));
+      results => this.setAnalysisResults(results, queryId));
   }
 
-  public async setAnalysisResults(analysesResults: AnalysisResults[]): Promise<void> {
-    if (this.panel?.active) {
+  public async setAnalysisResults(analysesResults: AnalysisResults[], queryId: string | undefined): Promise<void> {
+    if (this.panel?.active && this.currentQueryId === queryId) {
       await this.postMessage({
         t: 'setAnalysesResults',
-        analysesResults: analysesResults
+        analysesResults
       });
     }
   }

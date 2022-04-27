@@ -3,6 +3,7 @@ import * as sinon from 'sinon';
 import { expect } from 'chai';
 import { window } from 'vscode';
 import * as pq from 'proxyquire';
+import { UserCancellationException } from '../../../commandRunner';
 
 const proxyquire = pq.noPreserveCache();
 
@@ -13,20 +14,15 @@ describe('repository-selection', function() {
     let quickPickSpy: sinon.SinonStub;
     let showInputBoxSpy: sinon.SinonStub;
     let getRemoteRepositoryListsSpy: sinon.SinonStub;
-    let showAndLogErrorMessageSpy: sinon.SinonStub;
     let mod: any;
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       quickPickSpy = sandbox.stub(window, 'showQuickPick');
       showInputBoxSpy = sandbox.stub(window, 'showInputBox');
       getRemoteRepositoryListsSpy = sandbox.stub();
-      showAndLogErrorMessageSpy = sandbox.stub();
       mod = proxyquire('../../../remote-queries/repository-selection', {
         '../config': {
           getRemoteRepositoryLists: getRemoteRepositoryListsSpy
-        },
-        '../helpers': {
-          showAndLogErrorMessage: showAndLogErrorMessageSpy
         },
       });
     });
@@ -120,11 +116,8 @@ describe('repository-selection', function() {
         getRemoteRepositoryListsSpy.returns({}); // no pre-defined repo lists
         showInputBoxSpy.resolves(repo);
 
-        // make the function call
-        await mod.getRepositorySelection();
-
-        // check that we get the right error message
-        expect(showAndLogErrorMessageSpy.firstCall.args[0]).to.contain('Invalid repository format');
+        // function call should throw a UserCancellationException
+        await expect(mod.getRepositorySelection()).to.be.rejectedWith(UserCancellationException, 'Invalid repository format');
       });
     });
 

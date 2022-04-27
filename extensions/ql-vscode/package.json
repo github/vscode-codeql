@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.6.5",
+  "version": "1.6.6",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -739,12 +739,12 @@
         {
           "command": "codeQLQueryHistory.showEvalLog",
           "group": "9_qlCommands",
-          "when": "codeql.supportsEvalLog && (viewItem == rawResultsItem || viewItem == interpretedResultsItem || viewItem == cancelledResultsItem)"
+          "when": "codeql.supportsEvalLog && viewItem == rawResultsItem || codeql.supportsEvalLog && viewItem == interpretedResultsItem || codeql.supportsEvalLog && viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLQueryHistory.showEvalLogSummary",
           "group": "9_qlCommands",
-          "when": "codeql.supportsEvalLog && (viewItem == rawResultsItem || viewItem == interpretedResultsItem || viewItem == cancelledResultsItem)"
+          "when": "codeql.supportsEvalLog && viewItem == rawResultsItem || codeql.supportsEvalLog && viewItem == interpretedResultsItem || codeql.supportsEvalLog && viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLQueryHistory.scanEvalLog",

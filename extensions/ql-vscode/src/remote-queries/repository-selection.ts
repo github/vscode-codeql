@@ -1,8 +1,8 @@
 import { QuickPickItem, window } from 'vscode';
-import { showAndLogErrorMessage } from '../helpers';
 import { logger } from '../logging';
 import { getRemoteRepositoryLists } from '../config';
 import { REPO_REGEX } from '../pure/helpers-pure';
+import { UserCancellationException } from '../commandRunner';
 
 export interface RepositorySelection {
   repositories?: string[];
@@ -44,14 +44,14 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
   } else if (quickpick?.useCustomRepository) {
     const customRepo = await getCustomRepo();
     if (!customRepo || !REPO_REGEX.test(customRepo)) {
-      void showAndLogErrorMessage('Invalid repository format. Please enter a valid repository in the format <owner>/<repo> (e.g. github/codeql)');
-      return {};
+      throw new UserCancellationException('Invalid repository format. Please enter a valid repository in the format <owner>/<repo> (e.g. github/codeql)');
     }
     void logger.log(`Entered repository: ${customRepo}`);
     return { repositories: [customRepo] };
   } else {
-    void showAndLogErrorMessage('No repositories selected.');
-    return {};
+    // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
+    // We set 'true' to make this a silent exception.
+    throw new UserCancellationException('No repositories selected', true);
   }
 }
 

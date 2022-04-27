@@ -13,7 +13,7 @@ import HorizontalSpace from './HorizontalSpace';
 import Badge from './Badge';
 import ViewTitle from './ViewTitle';
 import DownloadButton from './DownloadButton';
-import { AnalysisResults } from '../shared/analysis-result';
+import { AnalysisResults, getAnalysisResultCount } from '../shared/analysis-result';
 import DownloadSpinner from './DownloadSpinner';
 import CollapsibleItem from './CollapsibleItem';
 import { AlertIcon, CodeSquareIcon, FileCodeIcon, RepoIcon, TerminalIcon } from '@primer/octicons-react';
@@ -65,11 +65,6 @@ const openQueryTextVirtualFile = (queryResult: RemoteQueryResult) => {
     t: 'openVirtualFile',
     queryText: queryResult.queryText
   });
-};
-
-const getAnalysisResultCount = (analysisResults: AnalysisResults): number => {
-  const rawResultCount = analysisResults.rawResults?.resultSet.rows.length || 0;
-  return analysisResults.interpretedResults.length + rawResultCount;
 };
 
 const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
