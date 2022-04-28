@@ -244,7 +244,7 @@ function generateMarkdownForRawTableCell(
       break;
   }
   // `|` characters break the table, so we need to escape them
-  return cellValue.replace('|', '\\|');
+  return cellValue.replaceAll('|', '\\|');
 }
 
 
