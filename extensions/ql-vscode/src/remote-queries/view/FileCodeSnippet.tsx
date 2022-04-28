@@ -163,8 +163,8 @@ const FileCodeSnippet = ({
 
   const titleFileUri = createRemoteFileRef(
     fileLink,
-    startingLine,
-    endingLine);
+    highlightedRegion?.startLine || startingLine,
+    highlightedRegion?.endLine || endingLine);
 
   if (!codeSnippet) {
     return (
