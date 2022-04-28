@@ -307,7 +307,7 @@
           ],
           [
             {
-              "label": "functio ... i+1); }",
+              "label": "| functio ... i+1); |}",
               "url": {
                 "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Statements/UselessComparisonTest/tst.js",
                 "startLine": 9,
