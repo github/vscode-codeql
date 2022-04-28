@@ -21,7 +21,7 @@ const getSeverityColor = (severity: ResultSeverity) => {
   }
 };
 
-const replaceSpaceChar = (text: string) => text.replaceAll(' ', '\u00a0');
+const replaceSpaceAndTabChar = (text: string) => text.replaceAll(' ', '\u00a0').replaceAll('\t', '\u00a0\u00a0\u00a0\u00a0');
 
 const Container = styled.div`
   font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
@@ -56,11 +56,11 @@ const MessageContainer = styled.div`
 `;
 
 const PlainLine = ({ text }: { text: string }) => {
-  return <span>{replaceSpaceChar(text)}</span>;
+  return <span>{replaceSpaceAndTabChar(text)}</span>;
 };
 
 const HighlightedLine = ({ text }: { text: string }) => {
-  return <span style={{ backgroundColor: highlightColor }}>{replaceSpaceChar(text)}</span>;
+  return <span style={{ backgroundColor: highlightColor }}>{replaceSpaceAndTabChar(text)}</span>;
 };
 
 const Message = ({
