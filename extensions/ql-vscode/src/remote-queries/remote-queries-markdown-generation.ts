@@ -3,13 +3,19 @@ import { parseHighlightedLine, shouldHighlightLine } from '../pure/sarif-utils';
 import { RemoteQuery } from './remote-query';
 import { AnalysisAlert, AnalysisResults, CodeSnippet, FileLink, getAnalysisResultCount, HighlightedRegion } from './shared/analysis-result';
 
+export type MarkdownLinkType = 'local' | 'gist';
+
 // Each array item is a line of the markdown file.
 export type MarkdownFile = string[];
 
 /**
  * Generates markdown files with variant analysis results.
  */
-export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisResults[]): MarkdownFile[] {
+export function generateMarkdown(
+  query: RemoteQuery,
+  analysesResults: AnalysisResults[],
+  linkType: MarkdownLinkType
+): MarkdownFile[] {
   const files: MarkdownFile[] = [];
   // Generate summary file with links to individual files
   const summaryLines: MarkdownFile = generateMarkdownSummary(query);
@@ -21,7 +27,7 @@ export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisRe
 
     // Append nwo and results count to the summary table
     const nwo = analysisResult.nwo;
-    const link = createGistRelativeLink(nwo);
+    const link = createRelativeLink(nwo, linkType);
     summaryLines.push(`| ${nwo} | [${resultsCount} result(s)](${link}) |`);
 
     // Generate individual markdown file for each repository
@@ -235,13 +241,18 @@ function buildExpandableMarkdownSection(title: string, contents: MarkdownFile): 
   return expandableLines;
 }
 
-/**
- * Creates anchor link to a file in the gist. This is of the form:
- * '#file-<name>-<file-extension>'
- * 
- * TODO: Make sure these names align with the actual file names once we upload them to a gist.
- */
-function createGistRelativeLink(nwo: string): string {
+function createRelativeLink(nwo: string, linkType: MarkdownLinkType): string {
   const [owner, repo] = nwo.split('/');
-  return `#file-${owner}-${repo}-md`;
+
+  switch (linkType) {
+    case 'local':
+      return `./${owner}-${repo}.md`;
+
+    case 'gist':
+      // Creates anchor link to a file in the gist. This is of the form:
+      // '#file-<name>-<file-extension>'
+      // 
+      // TODO: Make sure these names align with the actual file names once we upload them to a gist.
+      return `#file-${owner}-${repo}-md`;
+  }
 }
