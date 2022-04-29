@@ -775,7 +775,7 @@
         {
           "command": "codeQLQueryHistory.openOnGithub",
           "group": "9_qlCommands",
-          "when": "viewItem == remoteResultsItem || viewItem == inProgressRemoteResultsItem"
+          "when": "viewItem == remoteResultsItem || viewItem == inProgressRemoteResultsItem || viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLTests.showOutputDifferences",
