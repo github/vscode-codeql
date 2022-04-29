@@ -23,4 +23,4 @@
 | [`functio ...  true\n}`](https://github.com/github/codeql/blob/cbdd4927cee593b715d8469240ce1d31edaaef9b/javascript/ql/test/query-tests/Statements/UselessComparisonTest/constant.js#L1-L4) | `4` |
 | [`functio ... n -1;\n}`](https://github.com/github/codeql/blob/cbdd4927cee593b715d8469240ce1d31edaaef9b/javascript/ql/test/query-tests/Statements/UselessComparisonTest/example.js#L1-L12) | `12` |
 | [`functio ... turn; }`](https://github.com/github/codeql/blob/cbdd4927cee593b715d8469240ce1d31edaaef9b/javascript/ql/test/query-tests/Statements/UselessComparisonTest/tst.js#L8-L8) | `1` |
-| [`| functio ... i+1); |}`](https://github.com/github/codeql/blob/cbdd4927cee593b715d8469240ce1d31edaaef9b/javascript/ql/test/query-tests/Statements/UselessComparisonTest/tst.js#L9-L9) | `1` |
+| [`\| functio ... i+1); \|}`](https://github.com/github/codeql/blob/cbdd4927cee593b715d8469240ce1d31edaaef9b/javascript/ql/test/query-tests/Statements/UselessComparisonTest/tst.js#L9-L9) | `1` |
