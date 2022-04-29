@@ -178,10 +178,12 @@ function generateMarkdownForPathResults(
   interpretedResult: AnalysisAlert,
   language: string
 ): MarkdownFile {
-  const pathLines: MarkdownFile = [];
+  const lines: MarkdownFile = [];
+  lines.push('#### Paths', '');
   for (const codeFlow of interpretedResult.codeFlows) {
+    const pathLines: MarkdownFile = [];
     const stepCount = codeFlow.threadFlows.length;
-    pathLines.push(`#### Path with ${stepCount} steps`);
+    const title = `Path with ${stepCount} steps`;
     for (let i = 0; i < stepCount; i++) {
       const threadFlow = codeFlow.threadFlows[i];
       const link = createMarkdownRemoteFileRef(
@@ -198,8 +200,11 @@ function generateMarkdownForPathResults(
       const codeSnippetIndented = codeSnippet.map((line) => `    ${line}`);
       pathLines.push(`${i + 1}. ${link}`, ...codeSnippetIndented);
     }
+    lines.push(
+      ...buildExpandableMarkdownSection(title, pathLines)
+    );
   }
-  return buildExpandableMarkdownSection('Show paths', pathLines);
+  return lines;
 }
 
 function generateMarkdownForRawResults(
