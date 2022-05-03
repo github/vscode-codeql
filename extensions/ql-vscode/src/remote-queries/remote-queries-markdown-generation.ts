@@ -1,7 +1,10 @@
+import { CellValue } from '../pure/bqrs-cli-types';
+import { tryGetRemoteLocation } from '../pure/bqrs-utils';
 import { createRemoteFileRef } from '../pure/location-link-utils';
 import { parseHighlightedLine, shouldHighlightLine } from '../pure/sarif-utils';
+import { convertNonPrintableChars } from '../text-utils';
 import { RemoteQuery } from './remote-query';
-import { AnalysisAlert, AnalysisResults, CodeSnippet, FileLink, getAnalysisResultCount, HighlightedRegion } from './shared/analysis-result';
+import { AnalysisAlert, AnalysisRawResults, AnalysisResults, CodeSnippet, FileLink, getAnalysisResultCount, HighlightedRegion } from './shared/analysis-result';
 
 export type MarkdownLinkType = 'local' | 'gist';
 
@@ -40,7 +43,8 @@ export function generateMarkdown(
       lines.push(...individualResult);
     }
     if (analysisResult.rawResults) {
-      // TODO: Generate markdown table for raw results
+      const rawResultTable = generateMarkdownForRawResults(analysisResult.rawResults);
+      lines.push(...rawResultTable);
     }
     files.push(lines);
   }
@@ -180,10 +184,12 @@ function generateMarkdownForPathResults(
   interpretedResult: AnalysisAlert,
   language: string
 ): MarkdownFile {
-  const pathLines: MarkdownFile = [];
+  const lines: MarkdownFile = [];
+  lines.push('#### Paths', '');
   for (const codeFlow of interpretedResult.codeFlows) {
+    const pathLines: MarkdownFile = [];
     const stepCount = codeFlow.threadFlows.length;
-    pathLines.push(`#### Path with ${stepCount} steps`);
+    const title = `Path with ${stepCount} steps`;
     for (let i = 0; i < stepCount; i++) {
       const threadFlow = codeFlow.threadFlows[i];
       const link = createMarkdownRemoteFileRef(
@@ -200,9 +206,58 @@ function generateMarkdownForPathResults(
       const codeSnippetIndented = codeSnippet.map((line) => `    ${line}`);
       pathLines.push(`${i + 1}. ${link}`, ...codeSnippetIndented);
     }
+    lines.push(
+      ...buildExpandableMarkdownSection(title, pathLines)
+    );
   }
-  return buildExpandableMarkdownSection('Show paths', pathLines);
+  return lines;
 }
+
+function generateMarkdownForRawResults(
+  analysisRawResults: AnalysisRawResults
+): MarkdownFile {
+  const tableRows: MarkdownFile = [];
+  const columnCount = analysisRawResults.schema.columns.length;
+  // Table headers are the column names if they exist, and empty otherwise
+  const headers = analysisRawResults.schema.columns.map(
+    (column) => column.name || ''
+  );
+  const tableHeader = `| ${headers.join(' | ')} |`;
+
+  tableRows.push(tableHeader);
+  tableRows.push('|' + ' --- |'.repeat(columnCount));
+
+  for (const row of analysisRawResults.resultSet.rows) {
+    const cells = row.map((cell) =>
+      generateMarkdownForRawTableCell(cell, analysisRawResults.fileLinkPrefix)
+    );
+    tableRows.push(`| ${cells.join(' | ')} |`);
+  }
+  return tableRows;
+}
+
+function generateMarkdownForRawTableCell(
+  value: CellValue,
+  fileLinkPrefix: string
+) {
+  let cellValue: string;
+  switch (typeof value) {
+    case 'string':
+    case 'number':
+    case 'boolean':
+      cellValue = `\`${convertNonPrintableChars(value.toString())}\``;
+      break;
+    case 'object':
+      {
+        const url = tryGetRemoteLocation(value.url, fileLinkPrefix);
+        cellValue = `[\`${convertNonPrintableChars(value.label)}\`](${url})`;
+      }
+      break;
+  }
+  // `|` characters break the table, so we need to escape them
+  return cellValue.replaceAll('|', '\\|');
+}
+
 
 /**
  * Creates a markdown link to a remote file.

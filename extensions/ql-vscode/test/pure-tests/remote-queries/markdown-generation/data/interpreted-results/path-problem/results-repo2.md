@@ -11,10 +11,11 @@
 
 *This shell command depends on an uncontrolled [absolute path](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/config.js#L39-L39).*
 
-<details>
-<summary>Show paths</summary>
+#### Paths
 
-#### Path with 7 steps
+<details>
+<summary>Path with 7 steps</summary>
+
 1. [npm-packages/meteor-installer/config.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/config.js#L39-L39)
     <pre><code class="javascript">
     const meteorLocalFolder = '.meteor';
@@ -83,7 +84,12 @@
       }
     </code></pre>
     
-#### Path with 2 steps
+
+</details>
+
+<details>
+<summary>Path with 2 steps</summary>
+
 1. [npm-packages/meteor-installer/config.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/config.js#L39-L39)
     <pre><code class="javascript">
     const meteorLocalFolder = '.meteor';
