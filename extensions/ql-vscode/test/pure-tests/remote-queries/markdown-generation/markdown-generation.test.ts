@@ -13,7 +13,7 @@ describe('markdown generation', async function() {
       const analysesResults = JSON.parse(
         await fs.readFile(path.join(__dirname, 'data/interpreted-results/path-problem/analyses-results.json'), 'utf8')
       );
-      const markdownFiles = generateMarkdown(pathProblemQuery, analysesResults);
+      const markdownFiles = generateMarkdown(pathProblemQuery, analysesResults, 'gist');
 
       // Check that query has results for two repositories, plus a summary file
       expect(markdownFiles.length).to.equal(3);
@@ -42,7 +42,7 @@ describe('markdown generation', async function() {
       const analysesResults = JSON.parse(
         await fs.readFile(path.join(__dirname, 'data/interpreted-results/problem/analyses-results.json'), 'utf8')
       );
-      const markdownFiles = generateMarkdown(problemQuery, analysesResults);
+      const markdownFiles = generateMarkdown(problemQuery, analysesResults, 'gist');
 
       // Check that query has results for two repositories, plus a summary file
       expect(markdownFiles.length).to.equal(3);
@@ -71,7 +71,7 @@ describe('markdown generation', async function() {
         await fs.readFile(path.join(__dirname, 'data/raw-results/analyses-results.json'), 'utf8')
       );
 
-      const markdownFiles = generateMarkdown(query, analysesResults);
+      const markdownFiles = generateMarkdown(query, analysesResults, 'gist');
 
       // Check that query has results for two repositories, plus a summary file
       expect(markdownFiles.length).to.equal(3);
