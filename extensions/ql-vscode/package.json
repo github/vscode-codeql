@@ -747,11 +747,6 @@
           "when": "codeql.supportsEvalLog && viewItem == rawResultsItem || codeql.supportsEvalLog && viewItem == interpretedResultsItem || codeql.supportsEvalLog && viewItem == cancelledResultsItem"
         },
         {
-          "command": "codeQLQueryHistory.scanEvalLog",
-          "group": "9_qlCommands",
-          "when": "codeql.supportsEvalLog && (viewItem == rawResultsItem || viewItem == interpretedResultsItem || viewItem == cancelledResultsItem)"
-        },
-        {
           "command": "codeQLQueryHistory.showQueryText",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory"

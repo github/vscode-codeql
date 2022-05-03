@@ -97,6 +97,7 @@ import { URLSearchParams } from 'url';
 import { handleDownloadPacks, handleInstallPackDependencies } from './packaging';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
+import { JoinOrderScannerProvider } from './log-insights/join-order';
 
 /**
  * extension.ts
@@ -470,6 +471,9 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(qhm);
 
+  void logger.log('Initializing evaluation log scanners.');
+  ctx.subscriptions.push(qhm.registerLogScannerProvider(new JoinOrderScannerProvider()));
+
   void logger.log('Initializing results panel interface.');
   const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger, labelProvider);
   ctx.subscriptions.push(intm);
@@ -504,6 +508,8 @@ async function activateWithInstalledDistribution(
     forceReveal: WebviewReveal
   ): Promise<void> {
     await intm.showResults(query, forceReveal, false);
+    // Always update the log warnings so they stay in sync with the results.
+    await qhm.scanEvalLog(query);
   }
 
   async function compileAndRunQuery(

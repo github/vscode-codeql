@@ -217,6 +217,8 @@ export class LocalQueryInfo {
   public completedQuery: CompletedQueryInfo | undefined;
   public evalLogLocation: string | undefined;
   public evalLogSummaryLocation: string | undefined;
+  public evalLogSummarySymbolsLocation: string | undefined;
+  public evalLogJsonSummaryLocation: string | undefined;
 
   /**
    * Note that in the {@link slurpQueryHistory} method, we create a FullQueryInfo instance

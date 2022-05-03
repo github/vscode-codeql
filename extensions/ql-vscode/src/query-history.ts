@@ -1,11 +1,13 @@
 import * as path from 'path';
 import {
   commands,
+  Diagnostic,
   Disposable,
   env,
   Event,
   EventEmitter,
   ExtensionContext,
+  languages,
   ProviderResult,
   Range,
   ThemeIcon,
@@ -16,6 +18,7 @@ import {
   window,
   workspace,
 } from 'vscode';
+import * as JsonlParser from 'stream-json/jsonl/Parser';
 import { QueryHistoryConfig } from './config';
 import {
   showAndLogErrorMessage,
@@ -39,6 +42,9 @@ import { CliVersionConstraint } from './cli';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { Credentials } from './authentication';
 import { cancelRemoteQuery } from './remote-queries/gh-actions-api-client';
+import { PipelineInfo, SummarySymbols } from './log-insights/summary-parser';
+import { DiagnosticSeverity } from 'vscode-languageclient';
+import { EvaluationLogProblemReporter, EvaluationLogScannerProvider } from './log-insights/log-scanner';
 
 /**
  * query-history.ts
@@ -297,6 +303,41 @@ export class HistoryTreeDataProvider extends DisposableObject {
   }
 }
 
+/**
+ * Compute the key used to find a predicate in the summary symbols.
+ * @param name The name of the predicate.
+ * @param raHash The RA hash of the predicate.
+ * @returns The key of the predicate, consisting of `name@shortHash`, where `shortHash` is the first
+ * eight characters of `raHash`.
+ */
+function predicateSymbolKey(name: string, raHash: string): string {
+  return `${name}@${raHash.substring(0, 8)}`;
+}
+
+/**
+ * Implementation of `EvaluationLogProblemReporter` that generates `Diagnostic` objects to display
+ * in the VS Code "Problems" view.
+ */
+class ProblemReporter implements EvaluationLogProblemReporter {
+  public readonly diagnostics: Diagnostic[] = [];
+
+  constructor(private readonly symbols: SummarySymbols | undefined) {
+  }
+
+  public reportProblem(predicateName: string, raHash: string, iteration: number, message: string): void {
+    const nameWithHash = predicateSymbolKey(predicateName, raHash);
+    const predicateSymbol = this.symbols?.predicates[nameWithHash];
+    var predicateInfo: PipelineInfo | undefined = undefined;
+    if (predicateSymbol !== undefined) {
+      predicateInfo = predicateSymbol.iterations[iteration];
+    }
+    if (predicateInfo !== undefined) {
+      const range = new Range(predicateInfo.raStartLine, 0, predicateInfo.raEndLine + 1, 0);
+      this.diagnostics.push(new Diagnostic(range, message, DiagnosticSeverity.Error));
+    }
+  }
+}
+
 export class QueryHistoryManager extends DisposableObject {
 
   treeDataProvider: HistoryTreeDataProvider;
@@ -304,6 +345,7 @@ export class QueryHistoryManager extends DisposableObject {
   lastItemClick: { time: Date; item: QueryHistoryInfo } | undefined;
   compareWithItem: LocalQueryInfo | undefined;
   queryHistoryScrubber: Disposable | undefined;
+  private readonly diagnosticCollection = this.push(languages.createDiagnosticCollection('ql-eval-log'));
   private queryMetadataStorageLocation;
 
   private readonly _onDidAddQueryItem = super.push(new EventEmitter<QueryHistoryInfo>());
@@ -317,6 +359,9 @@ export class QueryHistoryManager extends DisposableObject {
   private readonly _onWillOpenQueryItem = super.push(new EventEmitter<QueryHistoryInfo>());
   readonly onWillOpenQueryItem: Event<QueryHistoryInfo> = this
     ._onWillOpenQueryItem.event;
+
+  private readonly scannerProviders = new Map<number, EvaluationLogScannerProvider>();
+  private nextScannerProviderId = 0;
 
   constructor(
     private readonly qs: QueryServerClient,
@@ -834,6 +879,24 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
+  /**
+   * Scan the evaluation log for a query, and report any diagnostics.
+   *
+   * @param query The query whose log is to be scanned.
+   */
+  public async scanEvalLog(
+    query: LocalQueryInfo
+  ): Promise<void> {
+    this.diagnosticCollection.clear();
+    if (query.evalLogJsonSummaryLocation) {
+      const diagnostics = await this.scanLog(query.evalLogJsonSummaryLocation, query.evalLogSummarySymbolsLocation);
+      const uri = Uri.file(query.evalLogSummaryLocation!);
+      this.diagnosticCollection.set(uri, diagnostics);
+    } else {
+      this.warnNoEvalLog();
+    }
+  }
+
   async handleCancel(
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
@@ -991,6 +1054,59 @@ export class QueryHistoryManager extends DisposableObject {
     this.treeDataProvider.pushQuery(item);
     this.updateTreeViewSelectionIfVisible();
     this._onDidAddQueryItem.fire(item);
+  }
+
+  /**
+   * Register a provider that can create instances of `EvaluationLogScanner` to scan evaluation logs
+   * for problems.
+   * @param provider The provider.
+   * @returns A `Disposable` that, when disposed, will unregister the provider.
+   */
+  registerLogScannerProvider(provider: EvaluationLogScannerProvider): Disposable {
+    const id = this.nextScannerProviderId;
+    this.nextScannerProviderId++;
+
+    this.scannerProviders.set(id, provider);
+    const manager = this;
+    return {
+      dispose(): void {
+        manager.scannerProviders.delete(id);
+      }
+    };
+  }
+
+  /**
+   * Scan the evaluator summary log for problems, using the scanners for all registered providers.
+   * @param jsonSummaryLocation The file path of the JSON summary log.
+   * @param symbolsLocation The file path of the symbols file for the human-readable log summary.
+   * @returns An array of `Diagnostic`s representing the problems found by scanners.
+   */
+  private async scanLog(jsonSummaryLocation: string, symbolsLocation: string | undefined): Promise<Diagnostic[]> {
+    var symbols: SummarySymbols | undefined = undefined;
+    if (symbolsLocation !== undefined) {
+      symbols = JSON.parse(await fs.readFile(symbolsLocation, { encoding: 'utf-8' }));
+    }
+
+    const problemReporter = new ProblemReporter(symbols);
+
+    const scanners = [...this.scannerProviders.values()].map(p => p.createScanner(problemReporter));
+
+    const stream = fs.createReadStream(jsonSummaryLocation)
+      .pipe(JsonlParser.parser())
+      .on('data', ({ value }) => {
+        scanners.forEach(scanner => {
+          scanner.onEvent(value);
+        });
+      });
+
+    await new Promise(function(resolve, reject) {
+      stream.on('end', resolve);
+      stream.on('error', reject);
+    });
+
+    scanners.forEach(scanner => scanner.onDone());
+
+    return problemReporter.diagnostics;
   }
 
   /**
