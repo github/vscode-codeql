@@ -27,9 +27,9 @@ describe('markdown generation', async function() {
       const expectedTestOutput2 = await readTestOutputFile('data/interpreted-results/path-problem/results-repo2.md');
 
       // Check that markdown output is correct, after making line endings consistent
-      expect(markdownFile0.join('\n')).to.equal(expectedSummaryFile);
-      expect(markdownFile1.join('\n')).to.equal(expectedTestOutput1);
-      expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2);
+      expect(markdownFile0.content.join('\n')).to.equal(expectedSummaryFile);
+      expect(markdownFile1.content.join('\n')).to.equal(expectedTestOutput1);
+      expect(markdownFile2.content.join('\n')).to.equal(expectedTestOutput2);
     });
   });
 
@@ -56,9 +56,9 @@ describe('markdown generation', async function() {
       const expectedTestOutput2 = await readTestOutputFile('data/interpreted-results/problem/results-repo2.md');
 
       // Check that markdown output is correct, after making line endings consistent
-      expect(markdownFile0.join('\n')).to.equal(expectedSummaryFile);
-      expect(markdownFile1.join('\n')).to.equal(expectedTestOutput1);
-      expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2);
+      expect(markdownFile0.content.join('\n')).to.equal(expectedSummaryFile);
+      expect(markdownFile1.content.join('\n')).to.equal(expectedTestOutput1);
+      expect(markdownFile2.content.join('\n')).to.equal(expectedTestOutput2);
     });
   });
 
@@ -85,9 +85,9 @@ describe('markdown generation', async function() {
       const expectedTestOutput2 = await readTestOutputFile('data/raw-results/results-repo2.md');
 
       // Check that markdown output is correct, after making line endings consistent
-      expect(markdownFile0.join('\n')).to.equal(expectedSummaryFile);
-      expect(markdownFile1.join('\n')).to.equal(expectedTestOutput1);
-      expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2);
+      expect(markdownFile0.content.join('\n')).to.equal(expectedSummaryFile);
+      expect(markdownFile1.content.join('\n')).to.equal(expectedTestOutput1);
+      expect(markdownFile2.content.join('\n')).to.equal(expectedTestOutput2);
     });
   });
 });
