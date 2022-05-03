@@ -690,7 +690,7 @@ export class CodeQLCliServer implements Disposable {
   * @param inputPath The path of an evaluation event log.
   * @param outputPath The path to write a JSON summary of it to.
   */
-   async generateJsonLogSummary(
+  async generateJsonLogSummary(
     inputPath: string,
     outputPath: string
   ): Promise<string> {

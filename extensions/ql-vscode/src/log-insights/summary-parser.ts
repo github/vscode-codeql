@@ -51,14 +51,14 @@ export async function generateSummarySymbols(fileLocation: string): Promise<Summ
   };
 
   const lines = summary.split(/\r?\n/);
-  var lineNumber = 0;
+  let lineNumber = 0;
   while (lineNumber < lines.length) {
     const startLineNumber = lineNumber;
     lineNumber++;
     const startLine = lines[startLineNumber];
     const nonRecursiveMatch = startLine.match(NON_RECURSIVE_TUPLE_COUNT_REGEXP);
-    var predicateName: string | undefined = undefined;
-    var iteration: number = 0;
+    let predicateName: string | undefined = undefined;
+    let iteration = 0;
     if (nonRecursiveMatch) {
       predicateName = nonRecursiveMatch.groups!.predicateName;
     } else {
@@ -71,7 +71,7 @@ export async function generateSummarySymbols(fileLocation: string): Promise<Summ
 
     if (predicateName !== undefined) {
       const raStartLine = lineNumber;
-      var raEndLine: number | undefined = undefined;
+      let raEndLine: number | undefined = undefined;
       while ((lineNumber < lines.length) && (raEndLine === undefined)) {
         const raLine = lines[lineNumber];
         const returnMatch = raLine.match(RETURN_REGEXP);
@@ -83,7 +83,7 @@ export async function generateSummarySymbols(fileLocation: string): Promise<Summ
       if (raEndLine === undefined) {
         raEndLine = lineNumber - 1;
       }
-      var symbol = symbols.predicates[predicateName];
+      let symbol = symbols.predicates[predicateName];
       if (symbol === undefined) {
         symbol = {
           iterations: {}

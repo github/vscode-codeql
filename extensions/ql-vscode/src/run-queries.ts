@@ -347,7 +347,7 @@ export class QueryEvaluationInfo {
   /**
    * Holds if this query already has a completed structured evaluator log
    */
-   async hasEvalLog(): Promise<boolean> {
+  async hasEvalLog(): Promise<boolean> {
     return fs.pathExists(this.evalLogPath);
   }
 

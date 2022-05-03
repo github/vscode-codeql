@@ -128,7 +128,7 @@ interface Bucket {
   tupleCounts: Int32Array;
   resultSize: number;
   dependentPredicateSizes: I.Map<string, number>;
-};
+}
 
 class JoinOrderScanner implements EvaluationLogScanner {
   // Map a predicate hash to its result size
@@ -289,9 +289,9 @@ class JoinOrderScanner implements EvaluationLogScanner {
       ...sccEvents.map(e => e.predicateIterationMillis.length)
     );
 
-    for (var iteration = 0; iteration < maxIteration; ++iteration) {
+    for (let iteration = 0; iteration < maxIteration; ++iteration) {
       // Loop through each predicate in this iteration
-      for (var predicate = 0; predicate < sccEvents.length; ++predicate) {
+      for (let predicate = 0; predicate < sccEvents.length; ++predicate) {
         const inLayerEvent = sccEvents[predicate];
         const iterationTime =
           inLayerEvent.predicateIterationMillis.length <= iteration
@@ -349,14 +349,14 @@ class JoinOrderScanner implements EvaluationLogScanner {
     const dependentPredicates = getDependentPredicates(
       inLayerEvent.ra[raReference]
     );
-    var dependentPredicateSizes: I.Map<string, number>;
+    let dependentPredicateSizes: I.Map<string, number>;
     // We treat the base case as a non-recursive pipeline. In that case, the dependent predicates are
     // the dependencies of the base case and the cur_deltas.
     if (raReference === 'base') {
       dependentPredicateSizes = I.Map(
         dependentPredicates.map((pred): [string, number] => {
           // A base case cannot contain a `prev_delta`, but it can contain a `cur_delta`.
-          var size = 0;
+          let size = 0;
           if (pred.endsWith('#cur_delta')) {
             size = this.curDeltaSizes(
               event,

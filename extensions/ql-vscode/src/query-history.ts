@@ -327,7 +327,7 @@ class ProblemReporter implements EvaluationLogProblemReporter {
   public reportProblem(predicateName: string, raHash: string, iteration: number, message: string): void {
     const nameWithHash = predicateSymbolKey(predicateName, raHash);
     const predicateSymbol = this.symbols?.predicates[nameWithHash];
-    var predicateInfo: PipelineInfo | undefined = undefined;
+    let predicateInfo: PipelineInfo | undefined = undefined;
     if (predicateSymbol !== undefined) {
       predicateInfo = predicateSymbol.iterations[iteration];
     }
@@ -1082,7 +1082,7 @@ export class QueryHistoryManager extends DisposableObject {
    * @returns An array of `Diagnostic`s representing the problems found by scanners.
    */
   private async scanLog(jsonSummaryLocation: string, symbolsLocation: string | undefined): Promise<Diagnostic[]> {
-    var symbols: SummarySymbols | undefined = undefined;
+    let symbols: SummarySymbols | undefined = undefined;
     if (symbolsLocation !== undefined) {
       symbols = JSON.parse(await fs.readFile(symbolsLocation, { encoding: 'utf-8' }));
     }

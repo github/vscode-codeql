@@ -650,7 +650,7 @@ export interface ClearCacheParams {
 /**
  * Parameters to start a new structured log
  */
- export interface StartLogParams {
+export interface StartLogParams {
   /**
    * The dataset for which we want to start a new structured log
    */
@@ -664,7 +664,7 @@ export interface ClearCacheParams {
 /**
  * Parameters to terminate a structured log
  */
- export interface EndLogParams {
+export interface EndLogParams {
   /**
    * The dataset for which we want to terminated the log
    */
@@ -1070,12 +1070,12 @@ export const compileUpgradeSequence = new rpc.RequestType<WithProgressId<Compile
 /**
  * Start a new structured log in the evaluator, terminating the previous one if it exists
  */
- export const startLog = new rpc.RequestType<WithProgressId<StartLogParams>, StartLogResult, void, void>('evaluation/startLog');
+export const startLog = new rpc.RequestType<WithProgressId<StartLogParams>, StartLogResult, void, void>('evaluation/startLog');
 
 /**
  * Terminate a structured log in the evaluator. Is a no-op if we aren't logging to the given location
  */
- export const endLog = new rpc.RequestType<WithProgressId<EndLogParams>, EndLogResult, void, void>('evaluation/endLog');
+export const endLog = new rpc.RequestType<WithProgressId<EndLogParams>, EndLogResult, void, void>('evaluation/endLog');
 
 /**
  * Clear the cache of a dataset
