@@ -81,7 +81,7 @@ describe('run-remote-query', () => {
           '',
           'Repositories without databases:',
           'e/f, g/h',
-          'For each public repository that has not yet been added to the database service to, we will try to create a database next time the store is updated.'].join(os.EOL)
+          'For each public repository that has not yet been added to the database service, we will try to create a database next time the store is updated.'].join(os.EOL)
       );
     });
 
@@ -113,7 +113,7 @@ describe('run-remote-query', () => {
           '',
           'Repositories without databases:',
           'i/j, k/l',
-          'For each public repository that has not yet been added to the database service to, we will try to create a database next time the store is updated.'].join(os.EOL)
+          'For each public repository that has not yet been added to the database service, we will try to create a database next time the store is updated.'].join(os.EOL)
       );
     });
   });
