@@ -357,7 +357,7 @@ export function parseResponse(owner: string, repo: string, response: QueriesResp
     }
     if (response.errors.repositories_without_database?.length) {
       logMessage += `${eol2}Repositories without databases:${eol}${response.errors.repositories_without_database.join(', ')}`;
-      logMessage += `${eol}These repositories have been added to the database storage service and we will attempt to create a database for them next time the store is updated.`;
+      logMessage += `${eol}For each public repository that has not yet been added to the database service, we will try to create a database next time the store is updated.`;
     }
   }
 
