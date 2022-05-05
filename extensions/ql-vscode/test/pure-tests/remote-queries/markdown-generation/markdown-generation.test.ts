@@ -1,9 +1,7 @@
 import { expect } from 'chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { generateMarkdown } from '../../../../src/remote-queries/remote-queries-markdown-generation';
-
-const expectedFileNames = ['summary', 'github-codeql', 'meteor-meteor'];
+import { generateMarkdown, MarkdownFile } from '../../../../src/remote-queries/remote-queries-markdown-generation';
 
 describe('markdown generation', async function() {
   describe('for path-problem query', async function() {
@@ -15,20 +13,10 @@ describe('markdown generation', async function() {
       const analysesResults = JSON.parse(
         await fs.readFile(path.join(__dirname, 'data/interpreted-results/path-problem/analyses-results.json'), 'utf8')
       );
-      const markdownFiles = generateMarkdown(pathProblemQuery, analysesResults, 'gist');
 
-      // Check that query has results for two repositories, plus a summary file
-      expect(markdownFiles.length).to.equal(3);
+      const actualFiles = generateMarkdown(pathProblemQuery, analysesResults, 'gist');
 
-      for (let i = 0; i < markdownFiles.length; i++) {
-        const markdownFile = markdownFiles[i];
-        const expectedContent = await readTestOutputFile(`data/interpreted-results/path-problem/expected/${expectedFileNames[i]}.md`);
-
-        // Check that the markdown file has the expected name
-        expect(markdownFile.fileName).to.equal(expectedFileNames[i]);
-        // Check that the markdown file has the expected content
-        expect(markdownFile.content.join('\n')).to.equal(expectedContent);
-      }
+      await checkGeneratedMarkdown(actualFiles, 'data/interpreted-results/path-problem/expected');
     });
   });
 
@@ -41,20 +29,9 @@ describe('markdown generation', async function() {
       const analysesResults = JSON.parse(
         await fs.readFile(path.join(__dirname, 'data/interpreted-results/problem/analyses-results.json'), 'utf8')
       );
-      const markdownFiles = generateMarkdown(problemQuery, analysesResults, 'gist');
+      const actualFiles = generateMarkdown(problemQuery, analysesResults, 'gist');
 
-      // Check that query has results for two repositories, plus a summary file
-      expect(markdownFiles.length).to.equal(3);
-
-      for (let i = 0; i < markdownFiles.length; i++) {
-        const markdownFile = markdownFiles[i];
-        const expectedContent = await readTestOutputFile(`data/interpreted-results/problem/expected/${expectedFileNames[i]}.md`);
-
-        // Check that the markdown file has the expected name
-        expect(markdownFile.fileName).to.equal(expectedFileNames[i]);
-        // Check that the markdown file has the expected content
-        expect(markdownFile.content.join('\n')).to.equal(expectedContent);
-      }
+      await checkGeneratedMarkdown(actualFiles, 'data/interpreted-results/problem/expected');
     });
   });
 
@@ -67,20 +44,9 @@ describe('markdown generation', async function() {
         await fs.readFile(path.join(__dirname, 'data/raw-results/analyses-results.json'), 'utf8')
       );
 
-      const markdownFiles = generateMarkdown(query, analysesResults, 'gist');
+      const actualFiles = generateMarkdown(query, analysesResults, 'gist');
 
-      // Check that query has results for two repositories, plus a summary file
-      expect(markdownFiles.length).to.equal(3);
-
-      for (let i = 0; i < markdownFiles.length; i++) {
-        const markdownFile = markdownFiles[i];
-        const expectedContent = await readTestOutputFile(`data/raw-results/expected/${expectedFileNames[i]}.md`);
-
-        // Check that the markdown file has the expected name
-        expect(markdownFile.fileName).to.equal(expectedFileNames[i]);
-        // Check that the markdown file has the expected content
-        expect(markdownFile.content.join('\n')).to.equal(expectedContent);
-      }
+      await checkGeneratedMarkdown(actualFiles, 'data/raw-results/expected');
     });
   });
 });
@@ -92,4 +58,22 @@ describe('markdown generation', async function() {
 async function readTestOutputFile(relativePath: string): Promise<string> {
   const file = await fs.readFile(path.join(__dirname, relativePath), 'utf8');
   return file.replace(/\r?\n/g, '\n');
+}
+
+/**
+ * Compares the generated (actual) markdown files to the expected markdown files and
+ * checks whether the names and contents are the same.  
+ */
+async function checkGeneratedMarkdown(actualFiles: MarkdownFile[], testDataBasePath: string) {
+  const expectedDir = path.join(__dirname, testDataBasePath);
+  const expectedFiles = await fs.readdir(expectedDir);
+
+  expect(actualFiles.length).to.equal(expectedFiles.length);
+
+  for (const expectedFile of expectedFiles) {
+    const actualFile = actualFiles.find(f => `${f.fileName}.md` === expectedFile);
+    expect(actualFile).to.not.be.undefined;
+    const expectedContent = await readTestOutputFile(path.join(testDataBasePath, expectedFile));
+    expect(actualFile!.content.join('\n')).to.equal(expectedContent);
+  }
 }
