@@ -22,7 +22,7 @@ describe('markdown generation', async function() {
 
       for (let i = 0; i < markdownFiles.length; i++) {
         const markdownFile = markdownFiles[i];
-        const expectedContent = await readTestOutputFile(`data/interpreted-results/path-problem/${expectedFileNames[i]}.md`);
+        const expectedContent = await readTestOutputFile(`data/interpreted-results/path-problem/expected/${expectedFileNames[i]}.md`);
 
         // Check that the markdown file has the expected name
         expect(markdownFile.fileName).to.equal(expectedFileNames[i]);
@@ -48,7 +48,7 @@ describe('markdown generation', async function() {
 
       for (let i = 0; i < markdownFiles.length; i++) {
         const markdownFile = markdownFiles[i];
-        const expectedContent = await readTestOutputFile(`data/interpreted-results/problem/${expectedFileNames[i]}.md`);
+        const expectedContent = await readTestOutputFile(`data/interpreted-results/problem/expected/${expectedFileNames[i]}.md`);
 
         // Check that the markdown file has the expected name
         expect(markdownFile.fileName).to.equal(expectedFileNames[i]);
@@ -74,7 +74,7 @@ describe('markdown generation', async function() {
 
       for (let i = 0; i < markdownFiles.length; i++) {
         const markdownFile = markdownFiles[i];
-        const expectedContent = await readTestOutputFile(`data/raw-results/${expectedFileNames[i]}.md`);
+        const expectedContent = await readTestOutputFile(`data/raw-results/expected/${expectedFileNames[i]}.md`);
 
         // Check that the markdown file has the expected name
         expect(markdownFile.fileName).to.equal(expectedFileNames[i]);
