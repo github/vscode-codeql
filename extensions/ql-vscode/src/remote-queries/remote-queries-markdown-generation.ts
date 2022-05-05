@@ -90,7 +90,7 @@ export function generateMarkdownSummary(query: RemoteQuery): MarkdownFile {
   );
   // nwo and result count will be appended to this table
   return {
-    fileName: 'summary',
+    fileName: '_summary',
     content: lines
   };
 }
