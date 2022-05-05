@@ -3,9 +3,10 @@ import * as Octokit from '@octokit/rest';
 
 const GITHUB_AUTH_PROVIDER_ID = 'github';
 
-// 'repo' scope should be enough for triggering workflows. For a comprehensive list, see:
+// We need 'repo' scope for triggering workflows and 'gist' scope for exporting results to Gist.
+// For a comprehensive list of scopes, see:
 // https://docs.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps
-const SCOPES = ['repo'];
+const SCOPES = ['repo', 'gist'];
 
 /**
  * Handles authentication to GitHub, using the VS Code [authentication API](https://code.visualstudio.com/api/references/vscode-api#authentication).

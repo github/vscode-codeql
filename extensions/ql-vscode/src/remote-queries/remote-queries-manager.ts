@@ -5,14 +5,14 @@ import * as fs from 'fs-extra';
 
 import { Credentials } from '../authentication';
 import { CodeQLCliServer } from '../cli';
-import { ProgressCallback } from '../commandRunner';
+import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { createTimestampFile, showAndLogErrorMessage, showAndLogInformationMessage, showInformationMessageWithAction } from '../helpers';
 import { Logger } from '../logging';
 import { runRemoteQuery } from './run-remote-query';
 import { RemoteQueriesInterfaceManager } from './remote-queries-interface';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueriesMonitor } from './remote-queries-monitor';
-import { getRemoteQueryIndex } from './gh-actions-api-client';
+import { createGist, getRemoteQueryIndex } from './gh-actions-api-client';
 import { RemoteQueryResultIndex } from './remote-query-result-index';
 import { RemoteQueryResult } from './remote-query-result';
 import { DownloadLink } from './download-link';
@@ -23,6 +23,7 @@ import { QueryHistoryManager } from '../query-history';
 import { QueryStatus } from '../query-status';
 import { DisposableObject } from '../pure/disposable-object';
 import { QueryHistoryInfo } from '../query-results';
+import { generateMarkdown } from './remote-queries-markdown-generation';
 
 const autoDownloadMaxSize = 300 * 1024;
 const autoDownloadMaxCount = 100;
@@ -38,7 +39,7 @@ export class RemoteQueriesManager extends DisposableObject {
     private readonly cliServer: CodeQLCliServer,
     private readonly qhm: QueryHistoryManager,
     private readonly storagePath: string,
-    logger: Logger,
+    private readonly logger: Logger,
   ) {
     super();
     this.analysesResultsManager = new AnalysesResultsManager(ctx, cliServer, storagePath, logger);
@@ -299,6 +300,61 @@ export class RemoteQueriesManager extends DisposableObject {
         `There was an issue retrieving the result for the query [${queryItem.remoteQuery.queryName}](${workflowRunUrl}).`
       );
       queryItem.status = QueryStatus.Failed;
+    }
+  }
+
+  public async exportVariantAnalysisResults(): Promise<void> {
+    const queryId = this.interfaceManager.getCurrentQueryId();
+    const queryHistoryItem = this.qhm.getCurrentQueryHistoryItem();
+
+    if (!queryId || !queryHistoryItem || !queryHistoryItem.completed || queryHistoryItem.t !== 'remote') {
+      throw new Error('No variant analysis results currently open. To open results, click an item in the query history view.');
+    }
+
+    void this.logger.log(`Exporting variant analysis results for query: ${queryId}`);
+    const query = queryHistoryItem.remoteQuery;
+    const analysesResults = this.analysesResultsManager.getAnalysesResults(queryId);
+
+    const credentials = await Credentials.initialize(this.ctx);
+
+    const gistOption = {
+      label: '$(ports-open-browser-icon) Create Gist (GitHub)',
+    };
+    const localMarkdownOption = {
+      label: '$(markdown) Save as markdown',
+    };
+
+    // User selects export format in quick pick
+    const exportFormat = await window.showQuickPick(
+      [gistOption, localMarkdownOption],
+      {
+        placeHolder: 'Select export format',
+        canPickMany: false,
+        ignoreFocusOut: true,
+      }
+    );
+
+    if (!exportFormat || !exportFormat.label) {
+      throw new UserCancellationException('No export format selected', true);
+    }
+
+    if (exportFormat === gistOption) {
+      const description = 'CodeQL Variant Analysis Results';
+
+      const markdownFiles = generateMarkdown(query, analysesResults, 'gist');
+
+      // Convert markdownFiles to the appropriate format for uploading to gist
+      const gistFiles = markdownFiles.reduce((acc, cur) => {
+        acc[`${cur.fileName}.md`] = { content: cur.content.join('\n') };
+        return acc;
+      }, {} as { [key: string]: { content: string } });
+
+      const gistUrl = await createGist(credentials, description, gistFiles);
+      void showAndLogInformationMessage(`Variant analysis results exported to [gist](${gistUrl}).`);
+    } else if (exportFormat === localMarkdownOption) {
+      // TODO: Write function that creates local markdown files
+      // const markdownFiles = generateMarkdown(query, analysesResults, 'local');
+      void showAndLogInformationMessage('Local markdown export not yet available');
     }
   }
 }

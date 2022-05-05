@@ -305,4 +305,9 @@ export class RemoteQueriesInterfaceManager {
       fileSize: this.formatFileSize(analysisResult.fileSizeInBytes)
     }));
   }
+
+  /** Gets the current query ID */
+  public getCurrentQueryId(): string | undefined {
+    return this.currentQueryId;
+  }
 }
