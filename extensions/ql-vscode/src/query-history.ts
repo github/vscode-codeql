@@ -590,6 +590,10 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
+  getCurrentQueryHistoryItem(): QueryHistoryInfo | undefined {
+    return this.treeDataProvider.getCurrent();
+  }
+
   async handleRemoveHistoryItem(
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] = []

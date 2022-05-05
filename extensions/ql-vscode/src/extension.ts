@@ -896,6 +896,11 @@ async function activateWithInstalledDistribution(
     }));
 
   ctx.subscriptions.push(
+    commandRunner('codeQL.exportVariantAnalysisResults', async () => {
+      await rqm.exportVariantAnalysisResults();
+    }));
+
+  ctx.subscriptions.push(
     commandRunner(
       'codeQL.openReferencedFile',
       openReferencedFile

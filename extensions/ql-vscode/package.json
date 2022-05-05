@@ -302,6 +302,10 @@
         "title": "CodeQL: Run Variant Analysis"
       },
       {
+        "command": "codeQL.exportVariantAnalysisResults",
+        "title": "CodeQL: Export Variant Analysis Results"
+      },
+      {
         "command": "codeQL.runQueries",
         "title": "CodeQL: Run Queries in Selected Files"
       },
@@ -836,6 +840,10 @@
         {
           "command": "codeQL.runVariantAnalysis",
           "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.exportVariantAnalysisResults",
+          "when": "config.codeQL.canary"
         },
         {
           "command": "codeQL.runQueries",
