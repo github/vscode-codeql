@@ -27,6 +27,17 @@ describe('Packaging commands', function() {
 
   beforeEach(async function() {
     sandbox = sinon.createSandbox();
+    progress = sandbox.spy();
+    quickPickSpy = sandbox.stub(window, 'showQuickPick');
+    inputBoxSpy = sandbox.stub(window, 'showInputBox');
+    showAndLogErrorMessageSpy = sandbox.stub();
+    showAndLogInformationMessageSpy = sandbox.stub();
+    mod = proxyquire('../../packaging', {
+      './helpers': {
+        showAndLogErrorMessage: showAndLogErrorMessageSpy,
+        showAndLogInformationMessage: showAndLogInformationMessageSpy,
+      },
+    });
 
     const extension = await extensions
       .getExtension<CodeQLExtensionInterface | Record<string, never>>(
@@ -45,17 +56,6 @@ describe('Packaging commands', function() {
         }. Skipping this test.`);
       this.skip();
     }
-    progress = sandbox.spy();
-    quickPickSpy = sandbox.stub(window, 'showQuickPick');
-    inputBoxSpy = sandbox.stub(window, 'showInputBox');
-    showAndLogErrorMessageSpy = sandbox.stub();
-    showAndLogInformationMessageSpy = sandbox.stub();
-    mod = proxyquire('../../packaging', {
-      './helpers': {
-        showAndLogErrorMessage: showAndLogErrorMessageSpy,
-        showAndLogInformationMessage: showAndLogInformationMessageSpy,
-      },
-    });
   });
 
   afterEach(() => {

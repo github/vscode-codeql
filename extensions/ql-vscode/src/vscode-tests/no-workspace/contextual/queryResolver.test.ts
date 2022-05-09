@@ -1,4 +1,3 @@
-import 'vscode-test';
 import * as yaml from 'js-yaml';
 import * as sinon from 'sinon';
 import { expect } from 'chai';

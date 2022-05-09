@@ -1,4 +1,3 @@
-import 'vscode-test';
 import { expect } from 'chai';
 import { Uri, Range } from 'vscode';
 

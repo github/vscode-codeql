@@ -5,17 +5,15 @@ import {
   runTests,
   downloadAndUnzipVSCode,
   resolveCliPathFromVSCodeExecutablePath
-} from 'vscode-test';
+} from '@vscode/test-electron';
 import { assertNever } from '../pure/helpers-pure';
+import * as tmp from 'tmp-promise';
 
-// For some reason, `TestOptions` is not exported directly from `vscode-test`,
+// For some reason, the following are not exported directly from `@vscode/test-electron`,
 // but we can be tricky and import directly from the out file.
-import { TestOptions } from 'vscode-test/out/runTest';
+import { TestOptions } from '@vscode/test-electron/out/runTest';
+import { systemDefaultPlatform } from '@vscode/test-electron/out/util';
 
-
-// Which version of vscode to test against. Can set to 'stable' or
-// 'insiders' or an explicit version number. See runTest.d.ts in
-// vscode-test for more details.
 
 // For CI purposes we want to leave this at 'stable' to catch any bugs
 // that might show up with new vscode versions released, even though
@@ -63,6 +61,8 @@ async function runTestsWithRetryOnSegfault(suite: TestOptions, tries: number): P
   process.exit(1);
 }
 
+const tmpDir = tmp.dirSync({ unsafeCleanup: true });
+
 /**
  * Integration test runner. Launches the VSCode Extension Development Host with this extension installed.
  * See https://github.com/microsoft/vscode-test/blob/master/sample/test/runTest.ts
@@ -76,10 +76,10 @@ async function main() {
     // Which tests to run. Use a comma-separated list of directories.
     const testDirsString = process.argv[2];
     const dirs = testDirsString.split(',').map(dir => dir.trim().toLocaleLowerCase());
-
+    const extensionTestsEnv: Record<string, string> = {};
     if (dirs.includes(TestDir.CliIntegration)) {
       console.log('Installing required extensions');
-      const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
+      const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath, systemDefaultPlatform);
       cp.spawnSync(
         cliPath,
         [
@@ -93,6 +93,7 @@ async function main() {
           stdio: 'inherit',
         }
       );
+      extensionTestsEnv.INTEGRATION_TEST_MODE = 'true';
     }
 
     console.log(`Running integration tests in these directories: ${dirs}`);
@@ -105,11 +106,13 @@ async function main() {
         vscodeExecutablePath,
         extensionDevelopmentPath,
         extensionTestsPath: path.resolve(__dirname, dir, 'index'),
+        extensionTestsEnv,
         launchArgs
       }, 3);
     }
   } catch (err) {
     console.error(`Unexpected exception while running tests: ${err}`);
+    console.error((err as Error).stack);
     process.exit(1);
   }
 }
@@ -122,13 +125,15 @@ function getLaunchArgs(dir: TestDir) {
     case TestDir.NoWorksspace:
       return [
         '--disable-extensions',
-        '--disable-gpu'
+        '--disable-gpu',
+        '--user-data-dir=' + path.join(tmpDir.name, dir, 'user-data')
       ];
 
     case TestDir.MinimalWorksspace:
       return [
         '--disable-extensions',
         '--disable-gpu',
+        '--user-data-dir=' + path.join(tmpDir.name, dir, 'user-data'),
         path.resolve(__dirname, '../../test/data')
       ];
 
@@ -145,8 +150,8 @@ function getLaunchArgs(dir: TestDir) {
         'github.codespaces',
         '--disable-extension',
         'github.copilot',
-        process.env.TEST_CODEQL_PATH!
-      ];
+        '--user-data-dir=' + path.join(tmpDir.name, dir, 'user-data'),
+      ].concat(process.env.TEST_CODEQL_PATH ? [process.env.TEST_CODEQL_PATH] : []);
 
     default:
       assertNever(dir);

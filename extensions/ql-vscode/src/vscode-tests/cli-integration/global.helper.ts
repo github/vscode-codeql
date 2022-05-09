@@ -4,12 +4,18 @@ import * as fs from 'fs-extra';
 import fetch from 'node-fetch';
 
 import { fail } from 'assert';
-import { ConfigurationTarget, extensions, workspace } from 'vscode';
+import { commands, ConfigurationTarget, extensions, workspace } from 'vscode';
 import { CodeQLExtensionInterface } from '../../extension';
+import { DatabaseManager } from '../../databases';
 
 // This file contains helpers shared between actual tests.
 
 export const DB_URL = 'https://github.com/github/vscode-codeql/files/5586722/simple-db.zip';
+
+process.addListener('unhandledRejection', (reason, p) => {
+  console.log('Unhandled Rejection at: Promise ', p, ' reason: ', reason);
+  fail(String(reason));
+});
 
 // We need to resolve the path, but the final three segments won't exist until later, so we only resolve the
 // first portion of the path.
@@ -83,4 +89,10 @@ export default function(mocha: Mocha) {
       removeStorage?.();
     }
   );
+}
+
+export async function cleanDatabases(databaseManager: DatabaseManager) {
+  for (const item of databaseManager.databaseItems) {
+    await commands.executeCommand('codeQLDatabases.removeDatabase', item);
+  }
 }

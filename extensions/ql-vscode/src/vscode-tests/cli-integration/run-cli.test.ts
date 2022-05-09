@@ -9,6 +9,7 @@ import { skipIfNoCodeQL } from '../ensureCli';
 import { getOnDiskWorkspaceFolders, getQlPackForDbscheme, languageToDbScheme } from '../../helpers';
 import { resolveQueries } from '../../contextual/queryResolver';
 import { KeyType } from '../../contextual/keyType';
+import { fail } from 'assert';
 
 /**
  * Perform proper integration tests by running the CLI
@@ -74,24 +75,28 @@ describe('Use cli', function() {
 
   it('should resolve printAST queries for supported languages', async function() {
     skipIfNoCodeQL(this);
-    supportedLanguages.forEach(async lang => {
-      if (lang === 'go') {
-        // The codeql-go submodule is not available in the integration tests.
-        return;
+    try {
+      for (const lang of supportedLanguages) {
+        if (lang === 'go') {
+          // The codeql-go submodule is not available in the integration tests.
+          return;
+        }
+
+        console.log(`resolving printAST queries for ${lang}`);
+        const pack = await getQlPackForDbscheme(cli, languageToDbScheme[lang]);
+        expect(pack.dbschemePack).to.contain(lang);
+        if (pack.dbschemePackIsLibraryPack) {
+          expect(pack.queryPack).to.contain(lang);
+        }
+
+        const result = await resolveQueries(cli, pack, KeyType.PrintAstQuery);
+
+        // It doesn't matter what the name or path of the query is, only
+        // that we have found exactly one query.
+        expect(result.length).to.eq(1);
       }
-
-      console.log(`resolving printAST queries for ${lang}`);
-      const pack = await getQlPackForDbscheme(cli, languageToDbScheme[lang]);
-      expect(pack.dbschemePack).to.contain(lang);
-      if (pack.dbschemePackIsLibraryPack) {
-        expect(pack.queryPack).to.contain(lang);
-      }
-
-      const result = await resolveQueries(cli, pack, KeyType.PrintAstQuery);
-
-      // It doesn't matter what the name or path of the query is, only
-      // that we have found exactly one query.
-      expect(result.length).to.eq(1);
-    });
+    } catch (e) {
+      fail(e as Error);
+    }
   });
 });

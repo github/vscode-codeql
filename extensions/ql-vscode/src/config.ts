@@ -368,3 +368,7 @@ const ACTION_BRANCH = new Setting('actionBranch', REMOTE_QUERIES_SETTING);
 export function getActionBranch(): string {
   return ACTION_BRANCH.getValue<string>() || 'main';
 }
+
+export function isIntegrationTestMode() {
+  return process.env.INTEGRATION_TEST_MODE === 'true';
+}

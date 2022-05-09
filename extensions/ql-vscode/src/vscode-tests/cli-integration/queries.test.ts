@@ -8,7 +8,7 @@ import * as yaml from 'js-yaml';
 
 import { DatabaseItem, DatabaseManager } from '../../databases';
 import { CodeQLExtensionInterface } from '../../extension';
-import { dbLoc, storagePath } from './global.helper';
+import { cleanDatabases, dbLoc, storagePath } from './global.helper';
 import { importArchiveDatabase } from '../../databaseFetcher';
 import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo } from '../../run-queries';
 import { CodeQLCliServer } from '../../cli';
@@ -52,16 +52,21 @@ describe('Queries', function() {
         qs = extension.qs;
         cli.quiet = true;
         ctx = extension.ctx;
-        qlpackFile = `${ctx.storagePath}/quick-queries/qlpack.yml`;
-        qlFile = `${ctx.storagePath}/quick-queries/quick-query.ql`;
+        qlpackFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack.yml`;
+        qlFile = `${ctx.storageUri?.fsPath}/quick-queries/quick-query.ql`;
       } else {
         throw new Error('Extension not initialized. Make sure cli is downloaded and installed properly.');
       }
 
+      // Ensure we are starting from a clean slate.
+      safeDel(qlFile);
+      safeDel(qlpackFile);
+
       progress = sandbox.spy();
       token = {} as CancellationToken;
 
-      // Add a database
+      // Add a database, but make sure the database manager is empty first
+      await cleanDatabases(databaseManager);
       const uri = Uri.file(dbLoc);
       const maybeDbItem = await importArchiveDatabase(
         uri.toString(true),
@@ -81,9 +86,12 @@ describe('Queries', function() {
     }
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     try {
       sandbox.restore();
+      safeDel(qlpackFile);
+      safeDel(qlFile);
+      await cleanDatabases(databaseManager);
     } catch (e) {
       fail(e as Error);
     }
@@ -135,9 +143,6 @@ describe('Queries', function() {
   });
 
   it('should create a quick query', async () => {
-    safeDel(qlFile);
-    safeDel(qlpackFile);
-
     await commands.executeCommand('codeQL.quickQuery');
 
     // should have created the quick query file and query pack file

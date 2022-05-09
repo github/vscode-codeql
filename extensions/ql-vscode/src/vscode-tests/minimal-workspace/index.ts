@@ -1,10 +1,12 @@
 import 'source-map-support/register';
-import { runTestsInDirectory } from '../index-template';
-
+import '@vscode/test-electron';
 import * as sinonChai from 'sinon-chai';
 import * as chai from 'chai';
 import 'chai/register-should';
 import * as chaiAsPromised from 'chai-as-promised';
+
+import { runTestsInDirectory } from '../index-template';
+
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
