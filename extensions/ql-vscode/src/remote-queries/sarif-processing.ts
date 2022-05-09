@@ -86,7 +86,7 @@ function getShortDescription(
     return rule.shortDescription.text;
   }
 
-  return message.tokens.map(token => token.text).join();
+  return message.tokens.map(token => token.text).join('');
 }
 
 export function tryGetSeverity(
