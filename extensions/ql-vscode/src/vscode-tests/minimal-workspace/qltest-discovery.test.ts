@@ -1,4 +1,3 @@
-import 'vscode-test';
 import { Uri, WorkspaceFolder } from 'vscode';
 import { expect } from 'chai';
 import * as fs from 'fs-extra';
