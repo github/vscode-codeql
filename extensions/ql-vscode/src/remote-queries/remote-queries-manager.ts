@@ -304,18 +304,18 @@ export class RemoteQueriesManager extends DisposableObject {
   }
 
   public async exportVariantAnalysisResults(): Promise<void> {
-    const queryId = this.interfaceManager.getCurrentQueryId();
     const queryHistoryItem = this.qhm.getCurrentQueryHistoryItem();
 
-    if (!queryId || !queryHistoryItem || !queryHistoryItem.completed || queryHistoryItem.t !== 'remote') {
+    if (!queryHistoryItem || queryHistoryItem.t !== 'remote') {
       throw new Error('No variant analysis results currently open. To open results, click an item in the query history view.');
+    } else if (!queryHistoryItem.completed) {
+      throw new Error('Variant analysis results are not yet available. Wait for results to be downloaded.');
     }
 
+    const queryId = queryHistoryItem.queryId;
     void this.logger.log(`Exporting variant analysis results for query: ${queryId}`);
     const query = queryHistoryItem.remoteQuery;
     const analysesResults = this.analysesResultsManager.getAnalysesResults(queryId);
-
-    const credentials = await Credentials.initialize(this.ctx);
 
     const gistOption = {
       label: '$(ports-open-browser-icon) Create Gist (GitHub)',
@@ -339,6 +339,7 @@ export class RemoteQueriesManager extends DisposableObject {
     }
 
     if (exportFormat === gistOption) {
+      const credentials = await Credentials.initialize(this.ctx);
       const description = 'CodeQL Variant Analysis Results';
 
       const markdownFiles = generateMarkdown(query, analysesResults, 'gist');
@@ -350,7 +351,12 @@ export class RemoteQueriesManager extends DisposableObject {
       }, {} as { [key: string]: { content: string } });
 
       const gistUrl = await createGist(credentials, description, gistFiles);
-      void showAndLogInformationMessage(`Variant analysis results exported to [gist](${gistUrl}).`);
+      if (gistUrl) {
+        const shouldOpenGist = await showInformationMessageWithAction('Variant analysis results exported to gist.', 'Open gist');
+        if (shouldOpenGist) {
+          await commands.executeCommand('vscode.open', Uri.parse(gistUrl));
+        }
+      }
     } else if (exportFormat === localMarkdownOption) {
       // TODO: Write function that creates local markdown files
       // const markdownFiles = generateMarkdown(query, analysesResults, 'local');
