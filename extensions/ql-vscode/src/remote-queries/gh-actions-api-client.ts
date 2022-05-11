@@ -322,7 +322,6 @@ export async function createGist(
   files: { [key: string]: { content: string } }
 ): Promise<string | undefined> {
   const octokit = await credentials.getOctokit();
-  console.log(description, files);
   const response = await octokit.request('POST /gists', {
     description,
     files,
