@@ -309,7 +309,7 @@ export class RemoteQueriesManager extends DisposableObject {
     if (!queryHistoryItem || queryHistoryItem.t !== 'remote') {
       throw new Error('No variant analysis results currently open. To open results, click an item in the query history view.');
     } else if (!queryHistoryItem.completed) {
-      throw new Error('Variant analysis results are not yet available. Wait for results to be downloaded.');
+      throw new Error('Variant analysis results are not yet available.');
     }
 
     const queryId = queryHistoryItem.queryId;
