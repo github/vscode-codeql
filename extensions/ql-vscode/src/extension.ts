@@ -97,6 +97,7 @@ import { URLSearchParams } from 'url';
 import { handleDownloadPacks, handleInstallPackDependencies } from './packaging';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
+import { exportRemoteQueryResults } from './remote-queries/export-results';
 
 /**
  * extension.ts
@@ -897,8 +898,9 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.exportVariantAnalysisResults', async () => {
-      await rqm.exportVariantAnalysisResults();
-    }));
+      await exportRemoteQueryResults(qhm, rqm, ctx);
+    })
+  );
 
   ctx.subscriptions.push(
     commandRunner(
