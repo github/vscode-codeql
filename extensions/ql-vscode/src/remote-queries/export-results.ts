@@ -1,7 +1,10 @@
-import { window, commands, Uri, ExtensionContext, QuickPickItem } from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs-extra';
+
+import { window, commands, Uri, ExtensionContext, QuickPickItem, workspace, ViewColumn } from 'vscode';
 import { Credentials } from '../authentication';
 import { UserCancellationException } from '../commandRunner';
-import { showInformationMessageWithAction, showAndLogInformationMessage } from '../helpers';
+import { showInformationMessageWithAction } from '../helpers';
 import { logger } from '../logging';
 import { QueryHistoryManager } from '../query-history';
 import { createGist } from './gh-actions-api-client';
@@ -9,6 +12,7 @@ import { RemoteQueriesManager } from './remote-queries-manager';
 import { generateMarkdown } from './remote-queries-markdown-generation';
 import { RemoteQuery } from './remote-query';
 import { AnalysisResults } from './shared/analysis-result';
+import { QueryHistoryInfo } from '../query-results';
 
 /**
  * Exports the results of the currently-selected remote query.
@@ -41,9 +45,7 @@ export async function exportRemoteQueryResults(
   if (exportFormat === gistOption) {
     await exportResultsToGist(ctx, query, analysesResults);
   } else if (exportFormat === localMarkdownOption) {
-    // TODO: Write function that creates local markdown files
-    // const markdownFiles = generateMarkdown(query, analysesResults, 'local');
-    void showAndLogInformationMessage('Local markdown export not yet available');
+    await exportResultsToLocalMarkdown(queryHistoryManager, queryHistoryItem, query, analysesResults);
   }
 }
 
@@ -93,5 +95,34 @@ async function exportResultsToGist(
     if (shouldOpenGist) {
       await commands.executeCommand('vscode.open', Uri.parse(gistUrl));
     }
+  }
+}
+
+/**
+ * Converts the results of a remote query to markdown and saves the files locally
+ * in the query directory (i.e. the workspace directory where query results and logs are saved).
+ */
+async function exportResultsToLocalMarkdown(
+  queryHistoryManager: QueryHistoryManager,
+  queryHistoryItem: QueryHistoryInfo,
+  query: RemoteQuery,
+  analysesResults: AnalysisResults[]
+) {
+  const markdownFiles = generateMarkdown(query, analysesResults, 'local');
+  const basePath = await queryHistoryManager.getQueryHistoryItemDirectory(
+    queryHistoryItem
+  );
+  for (const markdownFile of markdownFiles) {
+    const filePath = path.join(basePath, `${markdownFile.fileName}.md`);
+    await fs.writeFile(filePath, markdownFile.content.join('\n'), 'utf8');
+  }
+  const shouldOpenSummary = await showInformationMessageWithAction(
+    `Variant analysis results exported to \"${basePath}\".`,
+    'Open exported results'
+  );
+  if (shouldOpenSummary) {
+    const summaryFilePath = path.join(basePath, '_summary.md');
+    const summaryFile = await workspace.openTextDocument(summaryFilePath);
+    await window.showTextDocument(summaryFile, ViewColumn.One);
   }
 }
