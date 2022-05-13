@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import * as Rdom from 'react-dom';
-import { Flash, ThemeProvider } from '@primer/react';
+import { Box, Flash, ThemeProvider } from '@primer/react';
 import { ToRemoteQueriesMessage } from '../../pure/interface-types';
 import { AnalysisSummary, RemoteQueryResult } from '../shared/remote-query-result';
 import { MAX_RAW_RESULTS } from '../shared/result-limits';
@@ -20,6 +20,7 @@ import { AlertIcon, CodeSquareIcon, FileCodeIcon, RepoIcon, TerminalIcon } from 
 import AnalysisAlertResult from './AnalysisAlertResult';
 import RawResultsTable from './RawResultsTable';
 import RepositoriesSearch from './RepositoriesSearch';
+import ExportButton from './ExportButton';
 
 const numOfReposInContractedMode = 10;
 
@@ -238,6 +239,12 @@ const AnalysesResultsTitle = ({ totalAnalysesResults, totalResults }: { totalAna
   return <SectionTitle>{totalAnalysesResults}/{totalResults} results</SectionTitle>;
 };
 
+const exportResults = () => {
+  vscode.postMessage({
+    t: 'remoteQueryExportResults',
+  });
+};
+
 const AnalysesResultsDescription = ({
   queryResult,
   analysesResults,
@@ -313,9 +320,16 @@ const AnalysesResults = ({
   return (
     <>
       <VerticalSpace size={2} />
-      <AnalysesResultsTitle
-        totalAnalysesResults={totalAnalysesResults}
-        totalResults={totalResults} />
+      <Box display="flex">
+        <Box flexGrow={1}>
+          <AnalysesResultsTitle
+            totalAnalysesResults={totalAnalysesResults}
+            totalResults={totalResults} />
+        </Box>
+        <Box>
+          <ExportButton text="Export all" onClick={() => exportResults()}></ExportButton>
+        </Box>
+      </Box>
       <AnalysesResultsDescription
         queryResult={queryResult}
         analysesResults={analysesResults} />
