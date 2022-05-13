@@ -4,7 +4,8 @@ import {
   window as Window,
   ViewColumn,
   Uri,
-  workspace
+  workspace,
+  commands
 } from 'vscode';
 import * as path from 'path';
 
@@ -209,6 +210,9 @@ export class RemoteQueriesInterfaceManager {
         break;
       case 'remoteQueryDownloadAllAnalysesResults':
         await this.downloadAllAnalysesResults(msg);
+        break;
+      case 'remoteQueryExportResults':
+        await await commands.executeCommand('codeQL.exportVariantAnalysisResults');
         break;
       default:
         assertNever(msg);
