@@ -542,6 +542,10 @@
         "title": "Show Query Text"
       },
       {
+        "command": "codeQLQueryHistory.exportResults",
+        "title": "Export Results"
+      },
+      {
         "command": "codeQLQueryHistory.viewCsvResults",
         "title": "View Results (CSV)"
       },
@@ -750,6 +754,11 @@
           "command": "codeQLQueryHistory.showQueryText",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory"
+        },
+        {
+          "command": "codeQLQueryHistory.exportResults",
+          "group": "9_qlCommands",
+          "when": "view == codeQLQueryHistory && viewItem == remoteResultsItem"
         },
         {
           "command": "codeQLQueryHistory.viewCsvResults",
@@ -971,6 +980,10 @@
         },
         {
           "command": "codeQLQueryHistory.showQueryText",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.exportResults",
           "when": "false"
         },
         {
