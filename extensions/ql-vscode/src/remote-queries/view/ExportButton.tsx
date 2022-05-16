@@ -9,7 +9,7 @@ const Button = styled.button`
     background-color: var(--vscode-button-hoverBackground);
   }
   cursor: pointer;
-  padding: 5px 10px;
+  padding: 8px;
   border: 0;
 `;
 
