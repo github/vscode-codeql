@@ -20,7 +20,7 @@ import { AlertIcon, CodeSquareIcon, FileCodeIcon, RepoIcon, TerminalIcon } from 
 import AnalysisAlertResult from './AnalysisAlertResult';
 import RawResultsTable from './RawResultsTable';
 import RepositoriesSearch from './RepositoriesSearch';
-import ExportButton from './ExportButton';
+import ActionButton from './ActionButton';
 
 const numOfReposInContractedMode = 10;
 
@@ -327,7 +327,7 @@ const AnalysesResults = ({
             totalResults={totalResults} />
         </Box>
         <Box>
-          <ExportButton text="Export all" onClick={exportResults}></ExportButton>
+          <ActionButton text="Export all" onClick={exportResults}></ActionButton>
         </Box>
       </Box>
       <AnalysesResultsDescription
