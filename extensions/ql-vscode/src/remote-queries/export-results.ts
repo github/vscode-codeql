@@ -12,7 +12,6 @@ import { RemoteQueriesManager } from './remote-queries-manager';
 import { generateMarkdown } from './remote-queries-markdown-generation';
 import { RemoteQuery } from './remote-query';
 import { AnalysisResults } from './shared/analysis-result';
-import { QueryHistoryInfo } from '../query-results';
 
 /**
  * Exports the results of the currently-selected remote query.
@@ -45,7 +44,10 @@ export async function exportRemoteQueryResults(
   if (exportFormat === gistOption) {
     await exportResultsToGist(ctx, query, analysesResults);
   } else if (exportFormat === localMarkdownOption) {
-    await exportResultsToLocalMarkdown(queryHistoryManager, queryHistoryItem, query, analysesResults);
+    const queryDirectoryPath = await queryHistoryManager.getQueryHistoryItemDirectory(
+      queryHistoryItem
+    );
+    await exportResultsToLocalMarkdown(queryDirectoryPath, query, analysesResults);
   }
 }
 
@@ -100,29 +102,28 @@ async function exportResultsToGist(
 
 /**
  * Converts the results of a remote query to markdown and saves the files locally
- * in the query directory (where query results and metadata are also saved).
+ * in the query directory (i.e. the workspace directory where query results and logs are saved).
  */
 async function exportResultsToLocalMarkdown(
-  queryHistoryManager: QueryHistoryManager,
-  queryHistoryItem: QueryHistoryInfo,
+  queryDirectoryPath: string,
   query: RemoteQuery,
   analysesResults: AnalysisResults[]
 ) {
   const markdownFiles = generateMarkdown(query, analysesResults, 'local');
-  const basePath = await queryHistoryManager.getQueryHistoryItemDirectory(
-    queryHistoryItem
-  );
+  const exportedResultsPath = path.join(queryDirectoryPath, 'exported-results');
+  await fs.ensureDir(exportedResultsPath);
   for (const markdownFile of markdownFiles) {
-    const filePath = path.join(basePath, `${markdownFile.fileName}.md`);
+    const filePath = path.join(exportedResultsPath, `${markdownFile.fileName}.md`);
     await fs.writeFile(filePath, markdownFile.content.join('\n'), 'utf8');
   }
-  const shouldOpenSummary = await showInformationMessageWithAction(
-    `Variant analysis results exported to \"${basePath}\".`,
+  const shouldOpenExportedResults = await showInformationMessageWithAction(
+    `Variant analysis results exported to \"${exportedResultsPath}\".`,
     'Open exported results'
   );
-  if (shouldOpenSummary) {
-    const summaryFilePath = path.join(basePath, '_summary.md');
+  if (shouldOpenExportedResults) {
+    const summaryFilePath = path.join(exportedResultsPath, '_summary.md');
     const summaryFile = await workspace.openTextDocument(summaryFilePath);
     await window.showTextDocument(summaryFile, ViewColumn.One);
+    await commands.executeCommand('revealFileInOS', Uri.file(summaryFilePath));
   }
 }
