@@ -13,10 +13,10 @@ const Button = styled.button`
   border: 0;
 `;
 
-const ExportButton = ({ text, onClick }: { text: string, onClick: () => void }) => (
+const ActionButton = ({ text, onClick }: { text: string, onClick: () => void }) => (
   <Button onClick={onClick}>
     {text}
   </Button>
 );
 
-export default ExportButton;
+export default ActionButton;
