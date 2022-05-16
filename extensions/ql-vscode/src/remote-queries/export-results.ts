@@ -102,7 +102,7 @@ async function exportResultsToGist(
 
 /**
  * Converts the results of a remote query to markdown and saves the files locally
- * in the query directory (i.e. the workspace directory where query results and logs are saved).
+ * in the query directory (where query results and metadata are also saved).
  */
 async function exportResultsToLocalMarkdown(
   queryDirectoryPath: string,

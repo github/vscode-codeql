@@ -452,6 +452,12 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
+        'codeQLQueryHistory.exportResults',
+        this.handleExportResults.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
         'codeQLQueryHistory.viewCsvResults',
         this.handleViewCsvResults.bind(this)
       )
@@ -1001,6 +1007,10 @@ export class QueryHistoryManager extends DisposableObject {
     return item.t === 'local'
       ? item.initialInfo.queryText
       : item.remoteQuery.queryText;
+  }
+
+  async handleExportResults(): Promise<void> {
+    await commands.executeCommand('codeQL.exportVariantAnalysisResults');
   }
 
   addQuery(item: QueryHistoryInfo) {
