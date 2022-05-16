@@ -212,7 +212,7 @@ export class RemoteQueriesInterfaceManager {
         await this.downloadAllAnalysesResults(msg);
         break;
       case 'remoteQueryExportResults':
-        await await commands.executeCommand('codeQL.exportVariantAnalysisResults');
+        await commands.executeCommand('codeQL.exportVariantAnalysisResults');
         break;
       default:
         assertNever(msg);

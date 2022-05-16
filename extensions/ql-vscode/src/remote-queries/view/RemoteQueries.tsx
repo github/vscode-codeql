@@ -327,7 +327,7 @@ const AnalysesResults = ({
             totalResults={totalResults} />
         </Box>
         <Box>
-          <ExportButton text="Export all" onClick={() => exportResults()}></ExportButton>
+          <ExportButton text="Export all" onClick={exportResults}></ExportButton>
         </Box>
       </Box>
       <AnalysesResultsDescription
