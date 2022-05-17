@@ -199,15 +199,21 @@ export class QueryEvaluationInfo {
         });
         if (await this.hasEvalLog()) {
           queryInfo.evalLogLocation = this.evalLogPath;
-          await qs.cliServer.generateLogSummary(this.evalLogPath, this.evalLogSummaryPath, this.evalLogEndSummaryPath);
-          queryInfo.evalLogSummaryLocation = this.evalLogSummaryPath;
-          fs.readFile(this.evalLogEndSummaryPath, (err, buffer) => {
-            if (err) {
-              throw new Error(`Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`);
-            }
-            void qs.logger.log(' --- Evaluator Log Summary --- ');
-            void qs.logger.log(buffer.toString());
-          });
+          void qs.cliServer.generateLogSummary(this.evalLogPath, this.evalLogSummaryPath, this.evalLogEndSummaryPath)
+            .then(() => {
+              queryInfo.evalLogSummaryLocation = this.evalLogSummaryPath;
+              fs.readFile(this.evalLogEndSummaryPath, (err, buffer) => {
+                if (err) {
+                 throw new Error(`Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`);
+                }
+                void qs.logger.log(' --- Evaluator Log Summary --- ');
+                void qs.logger.log(buffer.toString());
+              });
+            })
+
+            .catch(err => {
+              void showAndLogWarningMessage(`Failed to generate structured evaluator log summary. Reason: ${err.message}`);
+            });
         } else {
           void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);
         }
