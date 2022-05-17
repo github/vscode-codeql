@@ -212,7 +212,7 @@ export class QueryEvaluationInfo {
             })
 
             .catch(err => {
-              void logger.log(`Failed to generate structured evaluator log summary. Reason: ${err.message}`);
+              void showAndLogWarningMessage(`Failed to generate structured evaluator log summary. Reason: ${err.message}`);
             });
         } else {
           void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);
