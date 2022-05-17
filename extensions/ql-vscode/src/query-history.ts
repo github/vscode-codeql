@@ -763,6 +763,18 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
+  async getQueryHistoryItemDirectory(queryHistoryItem: QueryHistoryInfo): Promise<string> {
+    if (queryHistoryItem.t === 'local') {
+      if (queryHistoryItem.completedQuery) {
+        return queryHistoryItem.completedQuery.query.querySaveDir;
+      }
+    } else if (queryHistoryItem.t === 'remote') {
+      return path.join(this.queryStorageDir, queryHistoryItem.queryId);
+    }
+
+    throw new Error('Unable to get query directory');
+  }
+
   async handleOpenQueryDirectory(
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
