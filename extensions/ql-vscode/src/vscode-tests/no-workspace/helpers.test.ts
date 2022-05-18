@@ -129,7 +129,7 @@ describe('helpers', () => {
     let dir: tmp.DirResult;
     beforeEach(() => {
       dir = tmp.dirSync();
-      const contents = yaml.safeDump({
+      const contents = yaml.dump({
         primaryLanguage: 'cpp'
       });
       fs.writeFileSync(path.join(dir.name, 'codeql-database.yml'), contents, 'utf8');

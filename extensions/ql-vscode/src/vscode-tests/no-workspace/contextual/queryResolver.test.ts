@@ -29,7 +29,7 @@ describe('queryResolver', () => {
       const result = await module.resolveQueries(mockCli, { dbschemePack: 'my-qlpack' }, KeyType.DefinitionQuery);
       expect(result).to.deep.equal(['a', 'b']);
       expect(writeFileSpy.getCall(0).args[0]).to.match(/.qls$/);
-      expect(yaml.safeLoad(writeFileSpy.getCall(0).args[1])).to.deep.equal([{
+      expect(yaml.load(writeFileSpy.getCall(0).args[1])).to.deep.equal([{
         from: 'my-qlpack',
         queries: '.',
         include: {
@@ -46,7 +46,7 @@ describe('queryResolver', () => {
       const result = await module.resolveQueries(mockCli, { dbschemePackIsLibraryPack: true, dbschemePack: 'my-qlpack', queryPack: 'my-qlpack2' }, KeyType.DefinitionQuery);
       expect(result).to.deep.equal(['a', 'b']);
       expect(writeFileSpy.getCall(0).args[0]).to.match(/.qls$/);
-      expect(yaml.safeLoad(writeFileSpy.getCall(0).args[1])).to.deep.equal([{
+      expect(yaml.load(writeFileSpy.getCall(0).args[1])).to.deep.equal([{
         from: 'my-qlpack2',
         queries: '.',
         include: {

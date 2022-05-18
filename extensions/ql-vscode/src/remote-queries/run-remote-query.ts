@@ -110,7 +110,7 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
         [`codeql/${language}-all`]: '*',
       }
     };
-    await fs.writeFile(path.join(queryPackDir, 'qlpack.yml'), yaml.safeDump(syntheticQueryPack));
+    await fs.writeFile(path.join(queryPackDir, 'qlpack.yml'), yaml.dump(syntheticQueryPack));
   }
   if (!language) {
     throw new UserCancellationException('Could not determine language.');
@@ -378,7 +378,7 @@ export function parseResponse(owner: string, repo: string, response: QueriesResp
  */
 async function ensureNameAndSuite(queryPackDir: string, packRelativePath: string): Promise<void> {
   const packPath = path.join(queryPackDir, 'qlpack.yml');
-  const qlpack = yaml.safeLoad(await fs.readFile(packPath, 'utf8')) as QlPack;
+  const qlpack = yaml.load(await fs.readFile(packPath, 'utf8')) as QlPack;
   delete qlpack.defaultSuiteFile;
 
   qlpack.name = QUERY_PACK_NAME;
@@ -388,7 +388,7 @@ async function ensureNameAndSuite(queryPackDir: string, packRelativePath: string
   }, {
     query: packRelativePath.replace(/\\/g, '/')
   }];
-  await fs.writeFile(packPath, yaml.safeDump(qlpack));
+  await fs.writeFile(packPath, yaml.dump(qlpack));
 }
 
 async function buildRemoteQueryEntity(

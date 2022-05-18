@@ -102,7 +102,7 @@ describe('Remote queries', function() {
     expect(fs.existsSync(path.join(compiledPackDir, 'lib.qll'))).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
     // should have generated a correct qlpack file
-    const qlpackContents: any = yaml.safeLoad(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
+    const qlpackContents: any = yaml.load(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
     expect(qlpackContents.name).to.equal('codeql-remote/query');
 
     // depending on the cli version, we should have one of these files
@@ -168,7 +168,7 @@ describe('Remote queries', function() {
     expect(fs.existsSync(path.join(compiledPackDir, 'lib.qll'))).to.be.false;
     expect(fs.existsSync(path.join(compiledPackDir, 'not-in-pack.ql'))).to.be.false;
     // should have generated a correct qlpack file
-    const qlpackContents: any = yaml.safeLoad(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
+    const qlpackContents: any = yaml.load(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
     expect(qlpackContents.name).to.equal('codeql-remote/query');
     expect(qlpackContents.version).to.equal('0.0.0');
     expect(qlpackContents.dependencies?.['codeql/javascript-all']).to.equal('*');
@@ -228,7 +228,7 @@ describe('Remote queries', function() {
     ).to.be.true;
     expect(fs.existsSync(path.join(compiledPackDir, 'not-in-pack.ql'))).to.be.false;
     // should have generated a correct qlpack file
-    const qlpackContents: any = yaml.safeLoad(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
+    const qlpackContents: any = yaml.load(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
     expect(qlpackContents.name).to.equal('codeql-remote/query');
     expect(qlpackContents.version).to.equal('0.0.0');
     expect(qlpackContents.dependencies?.['codeql/javascript-all']).to.equal('*');
@@ -260,7 +260,7 @@ describe('Remote queries', function() {
   });
 
   function verifyQlPack(qlpackPath: string, queryPath: string, packVersion: string, pathSerializationBroken: boolean) {
-    const qlPack = yaml.safeLoad(fs.readFileSync(qlpackPath, 'utf8')) as QlPack;
+    const qlPack = yaml.load(fs.readFileSync(qlpackPath, 'utf8')) as QlPack;
 
     if (pathSerializationBroken) {
       // the path serialization is broken, so we force it to be the path in the pack to be same as the query path
