@@ -35,7 +35,17 @@ export class Credentials {
     return c;
   }
 
-  private async createOctokit(createIfNone: boolean): Promise<Octokit.Octokit | undefined> {
+  static async initializeOverride(overrideToken: string) {
+    const c = new Credentials();
+    c.octokit = await c.createOctokit(false, overrideToken);
+    return c;
+  }
+
+  private async createOctokit(createIfNone: boolean, overrideToken?: string): Promise<Octokit.Octokit | undefined> {
+    if (overrideToken) {
+      return new Octokit.Octokit({ auth: overrideToken });
+    }
+
     const session = await vscode.authentication.getSession(GITHUB_AUTH_PROVIDER_ID, SCOPES, { createIfNone });
 
     if (session) {

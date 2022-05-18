@@ -253,14 +253,20 @@ describe('Remote queries and query history manager', function() {
       expect(trimmed[0]).to.deep.eq([{
         nwo: 'github/vscode-codeql',
         status: 'InProgress',
+        resultCount: 15,
+        starCount: 1
       }]);
 
       expect(trimmed[1]).to.deep.eq([{
         nwo: 'github/vscode-codeql',
         status: 'InProgress',
+        resultCount: 15,
+        starCount: 1
       }, {
         nwo: 'other/hucairz',
         status: 'InProgress',
+        resultCount: 15,
+        starCount: 1
       }]);
 
       // there is a third call. It is non-deterministic if
@@ -270,9 +276,13 @@ describe('Remote queries and query history manager', function() {
       expect(trimmed[3]).to.deep.eq([{
         nwo: 'github/vscode-codeql',
         status: 'Completed',
+        resultCount: 15,
+        starCount: 1
       }, {
         nwo: 'other/hucairz',
         status: 'Completed',
+        resultCount: 15,
+        starCount: 1
       }]);
 
       expect(publisher).to.have.callCount(4);
