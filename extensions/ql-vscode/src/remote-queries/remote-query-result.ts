@@ -2,10 +2,10 @@ import { DownloadLink } from './download-link';
 import { AnalysisFailure } from './shared/analysis-failure';
 
 export interface RemoteQueryResult {
-  executionEndTime: number; // Can't use a Date here since it needs to be serialized and desserialized.
-  analysisSummaries: AnalysisSummary[];
-  analysisFailures: AnalysisFailure[];
-  queryId: string;
+  executionEndTime: number, // Can't use a Date here since it needs to be serialized and desserialized.
+  analysisSummaries: AnalysisSummary[],
+  analysisFailures: AnalysisFailure[],
+  queryId: string,
 }
 
 export interface AnalysisSummary {
@@ -13,5 +13,6 @@ export interface AnalysisSummary {
   databaseSha: string,
   resultCount: number,
   downloadLink: DownloadLink,
-  fileSizeInBytes: number
+  fileSizeInBytes: number,
+  starCount?: number,
 }

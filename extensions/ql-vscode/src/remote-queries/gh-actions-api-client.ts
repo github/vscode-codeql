@@ -1,13 +1,14 @@
 import * as unzipper from 'unzipper';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { showAndLogWarningMessage, tmpDir } from '../helpers';
+import { showAndLogErrorMessage, showAndLogWarningMessage, tmpDir } from '../helpers';
 import { Credentials } from '../authentication';
 import { logger } from '../logging';
 import { RemoteQueryWorkflowResult } from './remote-query-workflow-result';
 import { DownloadLink, createDownloadPath } from './download-link';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryFailureIndexItem, RemoteQueryResultIndex, RemoteQuerySuccessIndexItem } from './remote-query-result-index';
+import { getErrorMessage } from '../pure/helpers-pure';
 
 interface ApiSuccessIndexItem {
   nwo: string;
@@ -331,4 +332,72 @@ export async function createGist(
     throw new Error(`Error exporting variant analysis results: ${response.status} ${response?.data || ''}`);
   }
   return response.data.html_url;
+}
+
+const stargazersQuery = `query Stars($repos: String!, $pageSize: Int!, $cursor: String) {
+  search(
+    query: $repos
+    type: REPOSITORY
+    first: $pageSize
+    after: $cursor
+  ) {
+    edges {
+      node {
+        ... on Repository {
+          name
+          owner {
+            login
+          }
+          stargazerCount
+        }
+      }
+      cursor
+    }
+  }
+}`;
+
+type StargazersQueryResponse = {
+  search: {
+    edges: {
+      cursor: string;
+      node: {
+        name: string;
+        owner: {
+          login: string;
+        };
+        stargazerCount: number;
+      }
+    }[]
+  }
+};
+
+export async function getStargazers(credentials: Credentials, nwos: string[], pageSize = 100): Promise<Record<string, number>> {
+  const octokit = await credentials.getOctokit();
+  const repos = `repo:${nwos.join(' repo:')} fork:true`;
+  let cursor = null;
+  const stargazers: Record<string, number> = {};
+  try {
+    do {
+      const response: StargazersQueryResponse = await octokit.graphql({
+        query: stargazersQuery,
+        repos,
+        pageSize,
+        cursor
+      });
+      cursor = response.search.edges.length === pageSize ? response.search.edges[pageSize - 1].cursor : null;
+
+      for (const edge of response.search.edges) {
+        const node = edge.node;
+        const owner = node.owner.login;
+        const name = node.name;
+        const stargazerCount = node.stargazerCount;
+        stargazers[`${owner}/${name}`] = stargazerCount;
+      }
+
+    } while (cursor);
+  } catch (e) {
+    void showAndLogErrorMessage(`Error retrieving repository metadata for variant analysis: ${getErrorMessage(e)}`);
+  }
+
+  return stargazers;
 }

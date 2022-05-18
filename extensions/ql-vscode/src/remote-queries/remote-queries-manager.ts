@@ -12,7 +12,7 @@ import { runRemoteQuery } from './run-remote-query';
 import { RemoteQueriesInterfaceManager } from './remote-queries-interface';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueriesMonitor } from './remote-queries-monitor';
-import { getRemoteQueryIndex } from './gh-actions-api-client';
+import { getRemoteQueryIndex, getStargazers } from './gh-actions-api-client';
 import { RemoteQueryResultIndex } from './remote-query-result-index';
 import { RemoteQueryResult } from './remote-query-result';
 import { DownloadLink } from './download-link';
@@ -182,7 +182,6 @@ export class RemoteQueriesManager extends DisposableObject {
   }
 
   private mapQueryResult(executionEndTime: number, resultIndex: RemoteQueryResultIndex, queryId: string): RemoteQueryResult {
-
     const analysisSummaries = resultIndex.successes.map(item => ({
       nwo: item.nwo,
       databaseSha: item.sha || 'HEAD',
@@ -281,6 +280,8 @@ export class RemoteQueriesManager extends DisposableObject {
       queryItem.failureReason = undefined;
       const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryItem.queryId);
 
+      await this.addStargazers(resultIndex, credentials, queryResult);
+
       await this.storeJsonFile(queryItem, 'query-result.json', queryResult);
 
       // Kick off auto-download of results in the background.
@@ -303,7 +304,13 @@ export class RemoteQueriesManager extends DisposableObject {
     }
   }
 
-  // Pulled from the analysis results manager, so that we can get access to 
+  private async addStargazers(resultIndex: RemoteQueryResultIndex, credentials: Credentials, queryResult: RemoteQueryResult) {
+    const nwos = resultIndex.successes.map(s => s.nwo);
+    const stargazers = await getStargazers(credentials, nwos);
+    queryResult.analysisSummaries.forEach(analysis => analysis.starCount = stargazers[analysis.nwo]);
+  }
+
+  // Pulled from the analysis results manager, so that we can get access to
   // analyses results from the "export results" command.
   public getAnalysesResults(queryId: string): AnalysisResults[] {
     return [...this.analysesResultsManager.getAnalysesResults(queryId)];

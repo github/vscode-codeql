@@ -116,7 +116,9 @@ export class AnalysesResultsManager {
     const analysisResults: AnalysisResults = {
       nwo: analysis.nwo,
       status: 'InProgress',
-      interpretedResults: []
+      interpretedResults: [],
+      resultCount: analysis.resultCount,
+      starCount: analysis.starCount,
     };
     const queryId = analysis.downloadLink.queryId;
     const resultsForQuery = this.internalGetAnalysesResults(queryId);

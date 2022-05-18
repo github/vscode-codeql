@@ -21,6 +21,8 @@ import AnalysisAlertResult from './AnalysisAlertResult';
 import RawResultsTable from './RawResultsTable';
 import RepositoriesSearch from './RepositoriesSearch';
 import ActionButton from './ActionButton';
+import StarCount from './StarCount';
+import SortRepoFilter, { Sort, sorter } from './SortRepoFilter';
 
 const numOfReposInContractedMode = 10;
 
@@ -125,10 +127,13 @@ const Failures = (queryResult: RemoteQueryResult) => {
 
 const SummaryTitleWithResults = ({
   queryResult,
-  analysesResults
+  analysesResults,
+  sort, setSort
 }: {
   queryResult: RemoteQueryResult,
-  analysesResults: AnalysisResults[]
+  analysesResults: AnalysisResults[],
+  sort: Sort,
+  setSort: (sort: Sort) => void
 }) => {
   const showDownloadButton = queryResult.totalResultCount !== sumAnalysesResults(analysesResults);
 
@@ -140,6 +145,11 @@ const SummaryTitleWithResults = ({
           text="Download all"
           onClick={() => downloadAllAnalysesResults(queryResult)} />
       }
+
+      <SortRepoFilter
+        sort={sort}
+        setSort={setSort}
+      />
     </div>
   );
 };
@@ -180,7 +190,7 @@ const SummaryItem = ({
   analysisSummary: AnalysisSummary,
   analysisResults: AnalysisResults | undefined
 }) => (
-  <span>
+  <>
     <span className="vscode-codeql__analysis-item"><RepoIcon size={16} /></span>
     <span className="vscode-codeql__analysis-item">{analysisSummary.nwo}</span>
     <span className="vscode-codeql__analysis-item"><Badge text={analysisSummary.resultCount.toString()} /></span>
@@ -189,15 +199,20 @@ const SummaryItem = ({
         analysisSummary={analysisSummary}
         analysisResults={analysisResults} />
     </span>
-  </span>
+    <StarCount starCount={analysisSummary.starCount} />
+  </>
 );
 
 const Summary = ({
   queryResult,
-  analysesResults
+  analysesResults,
+  sort,
+  setSort
 }: {
   queryResult: RemoteQueryResult,
-  analysesResults: AnalysisResults[]
+  analysesResults: AnalysisResults[],
+  sort: Sort,
+  setSort: (sort: Sort) => void
 }) => {
   const [repoListExpanded, setRepoListExpanded] = useState(false);
   const numOfReposToShow = repoListExpanded ? queryResult.analysisSummaries.length : numOfReposInContractedMode;
@@ -209,17 +224,21 @@ const Summary = ({
           ? <SummaryTitleNoResults />
           : <SummaryTitleWithResults
             queryResult={queryResult}
-            analysesResults={analysesResults} />
+            analysesResults={analysesResults}
+            sort={sort}
+            setSort={setSort} />
       }
 
       <ul className="vscode-codeql__flat-list">
-        {queryResult.analysisSummaries.slice(0, numOfReposToShow).map((summary, i) =>
-          <li key={summary.nwo} className="vscode-codeql__analysis-summaries-list-item">
-            <SummaryItem
-              analysisSummary={summary}
-              analysisResults={analysesResults.find(a => a.nwo === summary.nwo)} />
-          </li>
-        )}
+        {queryResult.analysisSummaries.slice(0, numOfReposToShow)
+          .sort(sorter(sort))
+          .map((summary, i) =>
+            <li key={summary.nwo} className="vscode-codeql__analysis-summaries-list-item">
+              <SummaryItem
+                analysisSummary={summary}
+                analysisResults={analysesResults.find(a => a.nwo === summary.nwo)} />
+            </li>
+          )}
       </ul>
       {
         queryResult.analysisSummaries.length > numOfReposInContractedMode &&
@@ -304,11 +323,13 @@ const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
 const AnalysesResults = ({
   queryResult,
   analysesResults,
-  totalResults
+  totalResults,
+  sort,
 }: {
   queryResult: RemoteQueryResult,
   analysesResults: AnalysisResults[],
-  totalResults: number
+  totalResults: number,
+  sort: Sort
 }) => {
   const totalAnalysesResults = sumAnalysesResults(analysesResults);
   const [filterValue, setFilterValue] = React.useState('');
@@ -343,6 +364,7 @@ const AnalysesResults = ({
         {analysesResults
           .filter(a => a.interpretedResults.length > 0 || a.rawResults)
           .filter(a => a.nwo.toLowerCase().includes(filterValue.toLowerCase()))
+          .sort(sorter(sort))
           .map(r =>
             <li key={r.nwo} className="vscode-codeql__analyses-results-list-item">
               <RepoAnalysisResults {...r} />
@@ -355,6 +377,7 @@ const AnalysesResults = ({
 export function RemoteQueries(): JSX.Element {
   const [queryResult, setQueryResult] = useState<RemoteQueryResult>(emptyQueryResult);
   const [analysesResults, setAnalysesResults] = useState<AnalysisResults[]>([]);
+  const [sort, setSort] = useState<Sort>('name');
 
   useEffect(() => {
     window.addEventListener('message', (evt: MessageEvent) => {
@@ -384,11 +407,16 @@ export function RemoteQueries(): JSX.Element {
           <ViewTitle>{queryResult.queryTitle}</ViewTitle>
           <QueryInfo {...queryResult} />
           <Failures {...queryResult} />
-          <Summary queryResult={queryResult} analysesResults={analysesResults} />
+          <Summary
+            queryResult={queryResult}
+            analysesResults={analysesResults}
+            sort={sort}
+            setSort={setSort} />
           <AnalysesResults
             queryResult={queryResult}
             analysesResults={analysesResults}
-            totalResults={queryResult.totalResultCount} />
+            totalResults={queryResult.totalResultCount}
+            sort={sort} />
         </ThemeProvider>
       </div>
     );
