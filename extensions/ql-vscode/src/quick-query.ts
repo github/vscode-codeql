@@ -123,7 +123,7 @@ export async function displayQuickQuery(
         version: '1.0.0',
         libraryPathDependencies: [qlpack]
       };
-      await fs.writeFile(qlPackFile, QLPACK_FILE_HEADER + yaml.safeDump(quickQueryQlpackYaml), 'utf8');
+      await fs.writeFile(qlPackFile, QLPACK_FILE_HEADER + yaml.dump(quickQueryQlpackYaml), 'utf8');
     }
 
     if (shouldRewrite || !(await fs.pathExists(qlFile))) {
@@ -144,6 +144,6 @@ async function checkShouldRewrite(qlPackFile: string, newDependency: string) {
   if (!(await fs.pathExists(qlPackFile))) {
     return true;
   }
-  const qlPackContents: any = yaml.safeLoad(await fs.readFile(qlPackFile, 'utf8'));
+  const qlPackContents: any = yaml.load(await fs.readFile(qlPackFile, 'utf8'));
   return qlPackContents.libraryPathDependencies?.[0] !== newDependency;
 }

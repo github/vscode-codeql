@@ -149,7 +149,7 @@ describe('Queries', function() {
     expect(fs.pathExistsSync(qlFile)).to.be.true;
     expect(fs.pathExistsSync(qlpackFile)).to.be.true;
 
-    const qlpackContents: any = await yaml.safeLoad(
+    const qlpackContents: any = await yaml.load(
       fs.readFileSync(qlpackFile, 'utf8')
     );
     // Should have chosen the js libraries
@@ -157,7 +157,7 @@ describe('Queries', function() {
   });
 
   it('should avoid creating a quick query', async () => {
-    fs.writeFileSync(qlpackFile, yaml.safeDump({
+    fs.writeFileSync(qlpackFile, yaml.dump({
       name: 'quick-query',
       version: '1.0.0',
       libraryPathDependencies: ['codeql-javascript']
