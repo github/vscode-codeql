@@ -306,7 +306,8 @@ export class RemoteQueriesInterfaceManager {
       databaseSha: analysisResult.databaseSha || 'HEAD',
       resultCount: analysisResult.resultCount,
       downloadLink: analysisResult.downloadLink,
-      fileSize: this.formatFileSize(analysisResult.fileSizeInBytes)
+      fileSize: this.formatFileSize(analysisResult.fileSizeInBytes),
+      starCount: analysisResult.starCount
     }));
   }
 }
