@@ -205,11 +205,8 @@ export class QueryEvaluationInfo {
             if (err) {
               throw new Error(`Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`);
             }
-            void qs.logger.log(' --- Evaluator Log Summary --- ');
-            void qs.logger.log(buffer.toString());
-            // Write summary to Query Log as well, as this information was present here before structured logging.
-            void logger.log(' --- Evaluator Log Summary --- ', { additionalLogLocation: this.logPath });
-            void logger.log(buffer.toString(), { additionalLogLocation: this.logPath });
+            void qs.logger.log(' --- Evaluator Log Summary --- ', { additionalLogLocation: this.logPath });
+            void qs.logger.log(buffer.toString(), { additionalLogLocation: this.logPath });
           });
         } else {
           void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);

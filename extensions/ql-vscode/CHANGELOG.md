@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-- Prints end-of-query evaluator log summaries to the Query Log and CodeQL Extension Log console. [#1349](https://github.com/github/vscode-codeql/pull/1349)
+- Prints end-of-query evaluator log summaries to the Query Log. [#1349](https://github.com/github/vscode-codeql/pull/1349)
 
 ## 1.6.5 - 25 April 2022
 
