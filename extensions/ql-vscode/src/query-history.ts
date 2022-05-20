@@ -763,6 +763,18 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
+  async getQueryHistoryItemDirectory(queryHistoryItem: QueryHistoryInfo): Promise<string> {
+    if (queryHistoryItem.t === 'local') {
+      if (queryHistoryItem.completedQuery) {
+        return queryHistoryItem.completedQuery.query.querySaveDir;
+      }
+    } else if (queryHistoryItem.t === 'remote') {
+      return path.join(this.queryStorageDir, queryHistoryItem.queryId);
+    }
+
+    throw new Error('Unable to get query directory');
+  }
+
   async handleOpenQueryDirectory(
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
@@ -800,13 +812,16 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   private warnNoEvalLog() {
-    void showAndLogWarningMessage('No evaluator log is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG + '?');
+    void showAndLogWarningMessage(`No evaluator log is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
   }
 
   private warnNoEvalLogSummary() {
-    void showAndLogWarningMessage(`No evaluator log summary is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
+    void showAndLogWarningMessage(`Evaluator log summary and evaluator log are not available for this run. Perhaps they failed before evaluation, or you are running with a version of CodeQL before ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
   }
 
+  private warnInProgressEvalLogSummary() {
+    void showAndLogWarningMessage('The evaluator log summary is still being generated. Please try again later. The summary generation process is tracked in the "CodeQL Extension Log" view.');
+  }
 
   async handleShowEvalLog(
     singleItem: QueryHistoryInfo,
@@ -839,8 +854,15 @@ export class QueryHistoryManager extends DisposableObject {
 
     if (finalSingleItem.evalLogSummaryLocation) {
       await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
-    } else {
-      this.warnNoEvalLogSummary();
+    } 
+    // Summary log file doesn't exist.
+    else {
+      if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
+        // If raw log does exist, then the summary log is still being generated.
+        this.warnInProgressEvalLogSummary();
+      } else {
+        this.warnNoEvalLogSummary();
+      }   
     }
   }
 

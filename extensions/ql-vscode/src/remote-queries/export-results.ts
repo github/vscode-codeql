@@ -1,7 +1,10 @@
-import { window, commands, Uri, ExtensionContext, QuickPickItem } from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs-extra';
+
+import { window, commands, Uri, ExtensionContext, QuickPickItem, workspace, ViewColumn } from 'vscode';
 import { Credentials } from '../authentication';
 import { UserCancellationException } from '../commandRunner';
-import { showInformationMessageWithAction, showAndLogInformationMessage } from '../helpers';
+import { showInformationMessageWithAction } from '../helpers';
 import { logger } from '../logging';
 import { QueryHistoryManager } from '../query-history';
 import { createGist } from './gh-actions-api-client';
@@ -41,9 +44,10 @@ export async function exportRemoteQueryResults(
   if (exportFormat === gistOption) {
     await exportResultsToGist(ctx, query, analysesResults);
   } else if (exportFormat === localMarkdownOption) {
-    // TODO: Write function that creates local markdown files
-    // const markdownFiles = generateMarkdown(query, analysesResults, 'local');
-    void showAndLogInformationMessage('Local markdown export not yet available');
+    const queryDirectoryPath = await queryHistoryManager.getQueryHistoryItemDirectory(
+      queryHistoryItem
+    );
+    await exportResultsToLocalMarkdown(queryDirectoryPath, query, analysesResults);
   }
 }
 
@@ -93,5 +97,33 @@ async function exportResultsToGist(
     if (shouldOpenGist) {
       await commands.executeCommand('vscode.open', Uri.parse(gistUrl));
     }
+  }
+}
+
+/**
+ * Converts the results of a remote query to markdown and saves the files locally
+ * in the query directory (where query results and metadata are also saved).
+ */
+async function exportResultsToLocalMarkdown(
+  queryDirectoryPath: string,
+  query: RemoteQuery,
+  analysesResults: AnalysisResults[]
+) {
+  const markdownFiles = generateMarkdown(query, analysesResults, 'local');
+  const exportedResultsPath = path.join(queryDirectoryPath, 'exported-results');
+  await fs.ensureDir(exportedResultsPath);
+  for (const markdownFile of markdownFiles) {
+    const filePath = path.join(exportedResultsPath, `${markdownFile.fileName}.md`);
+    await fs.writeFile(filePath, markdownFile.content.join('\n'), 'utf8');
+  }
+  const shouldOpenExportedResults = await showInformationMessageWithAction(
+    `Variant analysis results exported to \"${exportedResultsPath}\".`,
+    'Open exported results'
+  );
+  if (shouldOpenExportedResults) {
+    const summaryFilePath = path.join(exportedResultsPath, '_summary.md');
+    const summaryFile = await workspace.openTextDocument(summaryFilePath);
+    await window.showTextDocument(summaryFile, ViewColumn.One);
+    await commands.executeCommand('revealFileInOS', Uri.file(summaryFilePath));
   }
 }
