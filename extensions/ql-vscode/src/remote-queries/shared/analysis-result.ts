@@ -7,6 +7,8 @@ export interface AnalysisResults {
   status: AnalysisResultStatus;
   interpretedResults: AnalysisAlert[];
   rawResults?: AnalysisRawResults;
+  resultCount: number,
+  starCount?: number,
 }
 
 export interface AnalysisRawResults {

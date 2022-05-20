@@ -35,7 +35,25 @@ export class Credentials {
     return c;
   }
 
-  private async createOctokit(createIfNone: boolean): Promise<Octokit.Octokit | undefined> {
+  /**
+   * Initializes an instance of credentials with an octokit instance using
+   * a token from the user's GitHub account. This method is meant to be
+   * used non-interactive environments such as tests.
+   *
+   * @param overrideToken The GitHub token to use for authentication.
+   * @returns An instance of credentials.
+   */
+  static async initializeWithToken(overrideToken: string) {
+    const c = new Credentials();
+    c.octokit = await c.createOctokit(false, overrideToken);
+    return c;
+  }
+
+  private async createOctokit(createIfNone: boolean, overrideToken?: string): Promise<Octokit.Octokit | undefined> {
+    if (overrideToken) {
+      return new Octokit.Octokit({ auth: overrideToken });
+    }
+
     const session = await vscode.authentication.getSession(GITHUB_AUTH_PROVIDER_ID, SCOPES, { createIfNone });
 
     if (session) {

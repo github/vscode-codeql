@@ -118,6 +118,8 @@ jobs:
       - name: Run integration tests (Linux)
         if: matrix.os == 'ubuntu-latest'
         working-directory: extensions/ql-vscode
+        env:
+          VSCODE_CODEQL_GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         run: |
           sudo apt-get install xvfb
           /usr/bin/xvfb-run npm run integration
@@ -125,6 +127,8 @@ jobs:
       - name: Run integration tests (Windows)
         if: matrix.os == 'windows-latest'
         working-directory: extensions/ql-vscode
+        env:
+          VSCODE_CODEQL_GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         run: |
           npm run integration
 

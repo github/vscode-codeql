@@ -4,6 +4,10 @@
 
 - Prints end-of-query evaluator log summaries to the Query Log. [#1349](https://github.com/github/vscode-codeql/pull/1349)
 
+## 1.6.6 - 17 May 2022
+
+No user facing changes.
+
 ## 1.6.5 - 25 April 2022
 
 - Re-enable publishing to open-vsx. [#1285](https://github.com/github/vscode-codeql/pull/1285)

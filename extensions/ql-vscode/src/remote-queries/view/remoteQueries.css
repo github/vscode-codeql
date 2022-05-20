@@ -14,10 +14,12 @@
 
 .vscode-codeql__query-summary-container {
   padding-top: 1.5em;
+  display: flex;
 }
 
 .vscode-codeql__analysis-summaries-list-item {
   margin-top: 0.5em;
+  display: flex;
 }
 
 .vscode-codeql__analyses-results-list-item {

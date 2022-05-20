@@ -219,14 +219,14 @@ function transformFile(yaml: any) {
 }
 
 export function transpileTextMateGrammar() {
-  return through.obj((file: Vinyl, _encoding: string, callback: Function): void => {
+  return through.obj((file: Vinyl, _encoding: string, callback: (err: string | null, file: Vinyl | PluginError) => void): void => {
     if (file.isNull()) {
       callback(null, file);
     }
     else if (file.isBuffer()) {
       const buf: Buffer = file.contents;
       const yamlText: string = buf.toString('utf8');
-      const jsonData: any = jsYaml.safeLoad(yamlText);
+      const jsonData: any = jsYaml.load(yamlText);
       transformFile(jsonData);
 
       file.contents = Buffer.from(JSON.stringify(jsonData, null, 2), 'utf8');
