@@ -1,27 +1,33 @@
 import * as React from 'react';
 import { StarIcon } from '@primer/octicons-react';
+import styled from 'styled-components';
+
+const Star = styled.span`
+  flex-grow: 2;
+  text-align: right;
+  margin-right: 0;
+`;
+
+const Count = styled.span`
+  text-align: left;
+  width: 2em;
+  margin-left: 0.5em;
+`;
 
 type Props = { starCount?: number };
 
 const StarCount = ({ starCount }: Props) => (
   Number.isFinite(starCount) ? (
     <>
-      <span className="vscode-codeql__analysis-star">
+      <Star>
         <StarIcon size={16} />
-      </span>
-      <span className='vscode-codeql__analysis-count'>
+      </Star>
+      <Count>
         {displayStars(starCount!)}
-      </span>
+      </Count>
     </>
   ) : (
-    <>
-      <span className="vscode-codeql__analysis-star">
-        {/* empty */}
-      </span>
-      <span className='vscode-codeql__analysis-count'>
-        {/* empty */}
-      </span>
-    </>
+    <></>
   )
 );
 

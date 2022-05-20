@@ -181,7 +181,12 @@ export class RemoteQueriesManager extends DisposableObject {
       results => this.interfaceManager.setAnalysisResults(results, queryResult.queryId));
   }
 
-  private mapQueryResult(executionEndTime: number, resultIndex: RemoteQueryResultIndex, queryId: string): RemoteQueryResult {
+  private mapQueryResult(
+    executionEndTime: number,
+    resultIndex: RemoteQueryResultIndex,
+    queryId: string,
+    stargazers: Record<string, number>
+  ): RemoteQueryResult {
     const analysisSummaries = resultIndex.successes.map(item => ({
       nwo: item.nwo,
       databaseSha: item.sha || 'HEAD',
@@ -192,6 +197,7 @@ export class RemoteQueriesManager extends DisposableObject {
         urlPath: `${resultIndex.artifactsUrlPath}/${item.artifactId}`,
         innerFilePath: item.sarifFileSize ? 'results.sarif' : 'results.bqrs',
         queryId,
+        starCount: stargazers[item.nwo]
       } as DownloadLink
     }));
     const analysisFailures = resultIndex.failures.map(item => ({
@@ -278,9 +284,8 @@ export class RemoteQueriesManager extends DisposableObject {
       queryItem.completed = true;
       queryItem.status = QueryStatus.Completed;
       queryItem.failureReason = undefined;
-      const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryItem.queryId);
-
-      await this.addStargazers(resultIndex, credentials, queryResult);
+      const stargazers = await this.getStargazersCount(resultIndex, credentials);
+      const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryItem.queryId, stargazers);
 
       await this.storeJsonFile(queryItem, 'query-result.json', queryResult);
 
@@ -304,10 +309,9 @@ export class RemoteQueriesManager extends DisposableObject {
     }
   }
 
-  private async addStargazers(resultIndex: RemoteQueryResultIndex, credentials: Credentials, queryResult: RemoteQueryResult) {
+  private async getStargazersCount(resultIndex: RemoteQueryResultIndex, credentials: Credentials) {
     const nwos = resultIndex.successes.map(s => s.nwo);
-    const stargazers = await getStargazers(credentials, nwos);
-    queryResult.analysisSummaries.forEach(analysis => analysis.starCount = stargazers[analysis.nwo]);
+    return await getStargazers(credentials, nwos);
   }
 
   // Pulled from the analysis results manager, so that we can get access to

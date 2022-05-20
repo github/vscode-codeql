@@ -35,7 +35,15 @@ export class Credentials {
     return c;
   }
 
-  static async initializeOverride(overrideToken: string) {
+  /**
+   * Initializes an instance of credentials with an octokit instance using
+   * a token from the user's GitHub account. This method is meant to be
+   * used non-interactive environments such as tests.
+   *
+   * @param overrideToken The GitHub token to use for authentication.
+   * @returns An instance of credentials.
+   */
+  static async initializeWithToken(overrideToken: string) {
     const c = new Credentials();
     c.octokit = await c.createOctokit(false, overrideToken);
     return c;

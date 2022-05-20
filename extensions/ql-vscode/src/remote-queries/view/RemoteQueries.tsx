@@ -128,7 +128,8 @@ const Failures = (queryResult: RemoteQueryResult) => {
 const SummaryTitleWithResults = ({
   queryResult,
   analysesResults,
-  sort, setSort
+  sort,
+  setSort
 }: {
   queryResult: RemoteQueryResult,
   analysesResults: AnalysisResults[],
@@ -145,7 +146,6 @@ const SummaryTitleWithResults = ({
           text="Download all"
           onClick={() => downloadAllAnalysesResults(queryResult)} />
       }
-
       <SortRepoFilter
         sort={sort}
         setSort={setSort}

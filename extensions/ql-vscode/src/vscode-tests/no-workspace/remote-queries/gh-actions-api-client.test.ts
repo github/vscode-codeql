@@ -2,7 +2,7 @@ import { fail } from 'assert';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { Credentials } from '../../../authentication';
-import { cancelRemoteQuery, getStargazers } from '../../../remote-queries/gh-actions-api-client';
+import { cancelRemoteQuery, getStargazers as getStargazersCount } from '../../../remote-queries/gh-actions-api-client';
 import { RemoteQuery } from '../../../remote-queries/remote-query';
 
 describe('gh-actions-api-client mock responses', () => {
@@ -55,13 +55,13 @@ describe('gh-actions-api-client mock responses', () => {
 describe('gh-actions-api-client real responses', function() {
   this.timeout(10000);
 
-  it('should get the stargazers for projects', async () => {
+  it('should get the stargazers for repos', async () => {
     if (skip()) {
       return;
     }
 
-    const credentials = await Credentials.initializeOverride(process.env.VSCODE_CODEQL_GITHUB_TOKEN!);
-    const stargazers = await getStargazers(credentials, [
+    const credentials = await Credentials.initializeWithToken(process.env.VSCODE_CODEQL_GITHUB_TOKEN!);
+    const stargazers = await getStargazersCount(credentials, [
       'github/codeql',
       'github/vscode-codeql',
       'rails/rails',

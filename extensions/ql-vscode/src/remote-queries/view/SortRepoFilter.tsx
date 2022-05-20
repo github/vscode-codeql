@@ -1,9 +1,15 @@
 import * as React from 'react';
 import { FilterIcon } from '@primer/octicons-react';
-import { ActionList, ActionMenu } from '@primer/react';
+import { ActionList, ActionMenu, IconButton } from '@primer/react';
+import styled from 'styled-components';
+
+const SortWrapper = styled.span`
+  flex-grow: 2;
+  text-align: right;
+  margin-right: 0;
+`;
 
 export type Sort = 'name' | 'stars' | 'results';
-type SortBy = { name: string, sort: Sort }[];
 type Props = {
   sort: Sort;
   setSort: (sort: Sort) => void;
@@ -15,13 +21,13 @@ type Sortable = {
   resultCount?: number;
 };
 
-const sortBy: SortBy = [
+const sortBy = [
   { name: 'Sort by Name', sort: 'name' },
   { name: 'Sort by Results', sort: 'results' },
   { name: 'Sort by Stars', sort: 'stars' },
 ];
 
-export function sorter(sort: Sort) {
+export function sorter(sort: Sort): (left: Sortable, right: Sortable) => number {
   // stars and results are highest to lowest
   // name is alphabetical
   return (left: Sortable, right: Sortable) => {
@@ -43,25 +49,29 @@ export function sorter(sort: Sort) {
   };
 }
 
+// FIXME These styles are not correct. Need to figure out
+// why the theme is not being applied to the ActionMenu
 const SortRepoFilter = ({ sort, setSort }: Props) => {
-  return <span className="vscode-codeql__analysis-sorter">
+  return <SortWrapper>
     <ActionMenu>
-      <ActionMenu.Button
-        className="vscode-codeql__analysis-sort-dropdown"
-        aria-label="Sort results"
-        leadingIcon={FilterIcon}
-        trailingIcon="" />
-      <ActionMenu.Overlay width="medium">
+      <ActionMenu.Anchor>
+        <IconButton icon={FilterIcon} variant="invisible" aria-label="Sort results" />
+      </ActionMenu.Anchor>
+
+      <ActionMenu.Overlay width="small" anchorSide="outside-bottom">
         <ActionList selectionVariant="single">
           {sortBy.map((type, index) => (
-            <ActionList.Item key={index} selected={type.sort === sort} onSelect={() => setSort(type.sort)}>
+            <ActionList.Item
+              key={index}
+              selected={type.sort === sort} onSelect={() => setSort(type.sort as Sort)}
+            >
               {type.name}
             </ActionList.Item>
           ))}
         </ActionList>
       </ActionMenu.Overlay>
     </ActionMenu>
-  </span>;
+  </SortWrapper>;
 
 };
 

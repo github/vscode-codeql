@@ -30,19 +30,6 @@
   padding-right: 0.1em;
 }
 
-.vscode-codeql__analysis-sorter,
-.vscode-codeql__analysis-star {
-  flex-grow: 2;
-  text-align: right;
-  margin-right: 0;
-}
-
-.vscode-codeql__analysis-count {
-  text-align: left;
-  width: 2em;
-  margin-left: 0.5em;
-}
-
 .vscode-codeql__expand-button {
   background: none;
   color: var(--vscode-textLink-foreground);
@@ -50,13 +37,6 @@
   cursor: pointer;
   padding-top: 1em;
   font-size: x-small;
-}
-
-button.vscode-codeql__analysis-sort-dropdown {
-  display: inline-grid;
-  background-color: var(--vscode-editor-background);
-  border: none;
-  padding: 0.5em;
 }
 
 .vscode-codeql__analysis-failure {

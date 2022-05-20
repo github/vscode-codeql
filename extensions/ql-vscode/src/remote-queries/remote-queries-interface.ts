@@ -307,7 +307,7 @@ export class RemoteQueriesInterfaceManager {
       resultCount: analysisResult.resultCount,
       downloadLink: analysisResult.downloadLink,
       fileSize: this.formatFileSize(analysisResult.fileSizeInBytes),
-      starCount: analysisResult.starCount,
+      starCount: analysisResult.starCount
     }));
   }
 }
