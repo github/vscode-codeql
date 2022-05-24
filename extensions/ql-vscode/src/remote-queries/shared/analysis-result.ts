@@ -9,6 +9,7 @@ export interface AnalysisResults {
   rawResults?: AnalysisRawResults;
   resultCount: number,
   starCount?: number,
+  lastUpdated?: number,
 }
 
 export interface AnalysisRawResults {

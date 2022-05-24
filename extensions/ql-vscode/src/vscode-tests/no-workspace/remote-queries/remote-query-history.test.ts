@@ -254,6 +254,7 @@ describe('Remote queries and query history manager', function() {
         nwo: 'github/vscode-codeql',
         status: 'InProgress',
         resultCount: 15,
+        lastUpdated: 1653447088649,
         starCount: 1
       }]);
 
@@ -261,11 +262,13 @@ describe('Remote queries and query history manager', function() {
         nwo: 'github/vscode-codeql',
         status: 'InProgress',
         resultCount: 15,
+        lastUpdated: 1653447088649,
         starCount: 1
       }, {
         nwo: 'other/hucairz',
         status: 'InProgress',
         resultCount: 15,
+        lastUpdated: 1653447088649,
         starCount: 1
       }]);
 
@@ -277,11 +280,13 @@ describe('Remote queries and query history manager', function() {
         nwo: 'github/vscode-codeql',
         status: 'Completed',
         resultCount: 15,
+        lastUpdated: 1653447088649,
         starCount: 1
       }, {
         nwo: 'other/hucairz',
         status: 'Completed',
         resultCount: 15,
+        lastUpdated: 1653447088649,
         starCount: 1
       }]);
 

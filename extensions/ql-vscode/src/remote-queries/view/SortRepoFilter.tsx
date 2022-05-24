@@ -9,7 +9,7 @@ const SortWrapper = styled.span`
   margin-right: 0;
 `;
 
-export type Sort = 'name' | 'stars' | 'results';
+export type Sort = 'name' | 'stars' | 'results' | 'lastUpdated';
 type Props = {
   sort: Sort;
   setSort: (sort: Sort) => void;
@@ -19,12 +19,14 @@ type Sortable = {
   nwo: string;
   starCount?: number;
   resultCount?: number;
+  lastUpdated?: number;
 };
 
 const sortBy = [
   { name: 'Sort by Name', sort: 'name' },
   { name: 'Sort by Results', sort: 'results' },
   { name: 'Sort by Stars', sort: 'stars' },
+  { name: 'Sort by Last Updated', sort: 'lastUpdated' },
 ];
 
 export function sorter(sort: Sort): (left: Sortable, right: Sortable) => number {
@@ -37,6 +39,12 @@ export function sorter(sort: Sort): (left: Sortable, right: Sortable) => number 
         return stars;
       }
     }
+    if (sort === 'lastUpdated') {
+      const lastUpdated = (right.lastUpdated || 0) - (left.lastUpdated || 0);
+      if (lastUpdated !== 0) {
+        return lastUpdated;
+      }
+    }
     if (sort === 'results') {
       const results = (right.resultCount || 0) - (left.resultCount || 0);
       if (results !== 0) {
@@ -44,13 +52,11 @@ export function sorter(sort: Sort): (left: Sortable, right: Sortable) => number 
       }
     }
 
-    // Fall back on name compare if results or stars are equal
+    // Fall back on name compare if results, stars, or lastUpdated are equal
     return left.nwo.localeCompare(right.nwo, undefined, { sensitivity: 'base' });
   };
 }
 
-// FIXME These styles are not correct. Need to figure out
-// why the theme is not being applied to the ActionMenu
 const SortRepoFilter = ({ sort, setSort }: Props) => {
   return <SortWrapper>
     <ActionMenu>
@@ -72,7 +78,6 @@ const SortRepoFilter = ({ sort, setSort }: Props) => {
       </ActionMenu.Overlay>
     </ActionMenu>
   </SortWrapper>;
-
 };
 
 export default SortRepoFilter;

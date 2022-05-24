@@ -2,7 +2,7 @@ import { fail } from 'assert';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { Credentials } from '../../../authentication';
-import { cancelRemoteQuery, getStargazers as getStargazersCount } from '../../../remote-queries/gh-actions-api-client';
+import { cancelRemoteQuery, getRepositoriesMetadata as getStargazersCount } from '../../../remote-queries/gh-actions-api-client';
 import { RemoteQuery } from '../../../remote-queries/remote-query';
 
 describe('gh-actions-api-client mock responses', () => {

@@ -119,6 +119,7 @@ export class AnalysesResultsManager {
       interpretedResults: [],
       resultCount: analysis.resultCount,
       starCount: analysis.starCount,
+      lastUpdated: analysis.lastUpdated,
     };
     const queryId = analysis.downloadLink.queryId;
     const resultsForQuery = this.internalGetAnalysesResults(queryId);
