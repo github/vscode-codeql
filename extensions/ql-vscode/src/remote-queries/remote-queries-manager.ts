@@ -12,7 +12,7 @@ import { runRemoteQuery } from './run-remote-query';
 import { RemoteQueriesInterfaceManager } from './remote-queries-interface';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueriesMonitor } from './remote-queries-monitor';
-import { getRemoteQueryIndex, getStargazers } from './gh-actions-api-client';
+import { getRemoteQueryIndex, getRepositoriesMetadata, RepositoriesMetadata } from './gh-actions-api-client';
 import { RemoteQueryResultIndex } from './remote-query-result-index';
 import { RemoteQueryResult } from './remote-query-result';
 import { DownloadLink } from './download-link';
@@ -185,19 +185,20 @@ export class RemoteQueriesManager extends DisposableObject {
     executionEndTime: number,
     resultIndex: RemoteQueryResultIndex,
     queryId: string,
-    stargazers: Record<string, number>
+    metadata: RepositoriesMetadata
   ): RemoteQueryResult {
     const analysisSummaries = resultIndex.successes.map(item => ({
       nwo: item.nwo,
       databaseSha: item.sha || 'HEAD',
       resultCount: item.resultCount,
       fileSizeInBytes: item.sarifFileSize ? item.sarifFileSize : item.bqrsFileSize,
+      starCount: metadata[item.nwo].starCount,
+      lastUpdated: metadata[item.nwo].lastUpdated,
       downloadLink: {
         id: item.artifactId.toString(),
         urlPath: `${resultIndex.artifactsUrlPath}/${item.artifactId}`,
         innerFilePath: item.sarifFileSize ? 'results.sarif' : 'results.bqrs',
-        queryId,
-        starCount: stargazers[item.nwo]
+        queryId
       } as DownloadLink
     }));
     const analysisFailures = resultIndex.failures.map(item => ({
@@ -284,8 +285,8 @@ export class RemoteQueriesManager extends DisposableObject {
       queryItem.completed = true;
       queryItem.status = QueryStatus.Completed;
       queryItem.failureReason = undefined;
-      const stargazers = await this.getStargazersCount(resultIndex, credentials);
-      const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryItem.queryId, stargazers);
+      const metadata = await this.getRepositoriesMetadata(resultIndex, credentials);
+      const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryItem.queryId, metadata);
 
       await this.storeJsonFile(queryItem, 'query-result.json', queryResult);
 
@@ -309,9 +310,9 @@ export class RemoteQueriesManager extends DisposableObject {
     }
   }
 
-  private async getStargazersCount(resultIndex: RemoteQueryResultIndex, credentials: Credentials) {
+  private async getRepositoriesMetadata(resultIndex: RemoteQueryResultIndex, credentials: Credentials) {
     const nwos = resultIndex.successes.map(s => s.nwo);
-    return await getStargazers(credentials, nwos);
+    return await getRepositoriesMetadata(credentials, nwos);
   }
 
   // Pulled from the analysis results manager, so that we can get access to

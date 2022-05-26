@@ -2,7 +2,7 @@ import { fail } from 'assert';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { Credentials } from '../../../authentication';
-import { cancelRemoteQuery, getStargazers as getStargazersCount } from '../../../remote-queries/gh-actions-api-client';
+import { cancelRemoteQuery, getRepositoriesMetadata } from '../../../remote-queries/gh-actions-api-client';
 import { RemoteQuery } from '../../../remote-queries/remote-query';
 
 describe('gh-actions-api-client mock responses', () => {
@@ -61,7 +61,7 @@ describe('gh-actions-api-client real responses', function() {
     }
 
     const credentials = await Credentials.initializeWithToken(process.env.VSCODE_CODEQL_GITHUB_TOKEN!);
-    const stargazers = await getStargazersCount(credentials, [
+    const stargazers = await getRepositoriesMetadata(credentials, [
       'github/codeql',
       'github/vscode-codeql',
       'rails/rails',

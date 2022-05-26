@@ -12,6 +12,7 @@ const Count = styled.span`
   text-align: left;
   width: 2em;
   margin-left: 0.5em;
+  margin-right: 1.5em;
 `;
 
 type Props = { starCount?: number };

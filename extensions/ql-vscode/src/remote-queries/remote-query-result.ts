@@ -15,4 +15,5 @@ export interface AnalysisSummary {
   downloadLink: DownloadLink,
   fileSizeInBytes: number,
   starCount?: number,
+  lastUpdated?: number,
 }

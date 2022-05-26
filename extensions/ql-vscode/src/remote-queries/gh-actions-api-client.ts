@@ -334,7 +334,7 @@ export async function createGist(
   return response.data.html_url;
 }
 
-const stargazersQuery = `query Stars($repos: String!, $pageSize: Int!, $cursor: String) {
+const repositoriesMetadataQuery = `query Stars($repos: String!, $pageSize: Int!, $cursor: String) {
   search(
     query: $repos
     type: REPOSITORY
@@ -349,6 +349,7 @@ const stargazersQuery = `query Stars($repos: String!, $pageSize: Int!, $cursor: 
             login
           }
           stargazerCount
+          updatedAt
         }
       }
       cursor
@@ -356,7 +357,7 @@ const stargazersQuery = `query Stars($repos: String!, $pageSize: Int!, $cursor: 
   }
 }`;
 
-type StargazersQueryResponse = {
+type RepositoriesMetadataQueryResponse = {
   search: {
     edges: {
       cursor: string;
@@ -366,20 +367,23 @@ type StargazersQueryResponse = {
           login: string;
         };
         stargazerCount: number;
+        updatedAt: string; // Actually a ISO Date string
       }
     }[]
   }
 };
 
-export async function getStargazers(credentials: Credentials, nwos: string[], pageSize = 100): Promise<Record<string, number>> {
+export type RepositoriesMetadata = Record<string, { starCount: number, lastUpdated: number }>
+
+export async function getRepositoriesMetadata(credentials: Credentials, nwos: string[], pageSize = 100): Promise<RepositoriesMetadata> {
   const octokit = await credentials.getOctokit();
   const repos = `repo:${nwos.join(' repo:')} fork:true`;
   let cursor = null;
-  const stargazers: Record<string, number> = {};
+  const metadata: RepositoriesMetadata = {};
   try {
     do {
-      const response: StargazersQueryResponse = await octokit.graphql({
-        query: stargazersQuery,
+      const response: RepositoriesMetadataQueryResponse = await octokit.graphql({
+        query: repositoriesMetadataQuery,
         repos,
         pageSize,
         cursor
@@ -390,8 +394,11 @@ export async function getStargazers(credentials: Credentials, nwos: string[], pa
         const node = edge.node;
         const owner = node.owner.login;
         const name = node.name;
-        const stargazerCount = node.stargazerCount;
-        stargazers[`${owner}/${name}`] = stargazerCount;
+        const starCount = node.stargazerCount;
+        const lastUpdated = Date.now() - new Date(node.updatedAt).getTime();
+        metadata[`${owner}/${name}`] = {
+          starCount, lastUpdated
+        };
       }
 
     } while (cursor);
@@ -399,5 +406,5 @@ export async function getStargazers(credentials: Credentials, nwos: string[], pa
     void showAndLogErrorMessage(`Error retrieving repository metadata for variant analysis: ${getErrorMessage(e)}`);
   }
 
-  return stargazers;
+  return metadata;
 }

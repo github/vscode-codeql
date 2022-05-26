@@ -23,6 +23,7 @@ import RepositoriesSearch from './RepositoriesSearch';
 import ActionButton from './ActionButton';
 import StarCount from './StarCount';
 import SortRepoFilter, { Sort, sorter } from './SortRepoFilter';
+import LastUpdated from './LastUpdated';
 
 const numOfReposInContractedMode = 10;
 
@@ -200,6 +201,7 @@ const SummaryItem = ({
         analysisResults={analysisResults} />
     </span>
     <StarCount starCount={analysisSummary.starCount} />
+    <LastUpdated lastUpdated={analysisSummary.lastUpdated} />
   </>
 );
 
