@@ -395,7 +395,7 @@ export async function getRepositoriesMetadata(credentials: Credentials, nwos: st
         const owner = node.owner.login;
         const name = node.name;
         const starCount = node.stargazerCount;
-        const lastUpdated = new Date(node.updatedAt).getTime();
+        const lastUpdated = Date.now() - new Date(node.updatedAt).getTime();
         metadata[`${owner}/${name}`] = {
           starCount, lastUpdated
         };
