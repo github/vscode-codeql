@@ -72,9 +72,8 @@ const openQueryTextVirtualFile = (queryResult: RemoteQueryResult) => {
 };
 
 function createResultsDescription(queryResult: RemoteQueryResult) {
-  return `${queryResult.totalResultCount} results from running against ${queryResult.totalRepositoryCount
-    } ${queryResult.totalRepositoryCount === 1 ? 'repository' : 'repositories'
-    } (${queryResult.executionDuration}), ${queryResult.executionTimestamp}`;
+  const reposCount = `${queryResult.totalRepositoryCount} ${queryResult.totalRepositoryCount === 1 ? 'repository' : 'repositories'}`;
+  return `${queryResult.totalResultCount} results from running against ${reposCount} (${queryResult.executionDuration}), ${queryResult.executionTimestamp}`;
 }
 
 const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
