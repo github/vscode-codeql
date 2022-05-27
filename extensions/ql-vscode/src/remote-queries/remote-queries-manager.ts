@@ -192,8 +192,8 @@ export class RemoteQueriesManager extends DisposableObject {
       databaseSha: item.sha || 'HEAD',
       resultCount: item.resultCount,
       fileSizeInBytes: item.sarifFileSize ? item.sarifFileSize : item.bqrsFileSize,
-      starCount: metadata[item.nwo].starCount,
-      lastUpdated: metadata[item.nwo].lastUpdated,
+      starCount: metadata[item.nwo]?.starCount,
+      lastUpdated: metadata[item.nwo]?.lastUpdated,
       downloadLink: {
         id: item.artifactId.toString(),
         urlPath: `${resultIndex.artifactsUrlPath}/${item.artifactId}`,
