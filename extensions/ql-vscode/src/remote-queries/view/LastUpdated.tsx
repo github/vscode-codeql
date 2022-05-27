@@ -25,7 +25,7 @@ const LastUpdated = ({ lastUpdated }: Props) => (
         <RepoPushIcon size={16} />
       </IconContainer>
       <Duration>
-        {humanizeDuration(lastUpdated && -lastUpdated)}
+        {humanizeDuration(lastUpdated === undefined ? undefined : -lastUpdated)}
       </Duration>
     </>
   ) : (
