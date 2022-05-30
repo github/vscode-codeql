@@ -9,6 +9,7 @@ export async function extractRawResults(
   logger: Logger,
   filePath: string,
   fileLinkPrefix: string,
+  sourceLocationPrefix: string
 ): Promise<AnalysisRawResults> {
   const bqrsInfo = await cliServer.bqrsInfo(filePath);
   const resultSets = bqrsInfo['result-sets'];
@@ -31,5 +32,5 @@ export async function extractRawResults(
 
   const capped = !!chunk.next;
 
-  return { schema, resultSet, fileLinkPrefix, capped };
+  return { schema, resultSet, fileLinkPrefix, sourceLocationPrefix, capped };
 }

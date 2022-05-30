@@ -171,6 +171,7 @@ export class RemoteQueriesManager extends DisposableObject {
         nwo: a.nwo,
         databaseSha: a.databaseSha,
         resultCount: a.resultCount,
+        sourceLocationPrefix: a.sourceLocationPrefix,
         downloadLink: a.downloadLink,
         fileSize: String(a.fileSizeInBytes)
       }));
@@ -191,6 +192,7 @@ export class RemoteQueriesManager extends DisposableObject {
       nwo: item.nwo,
       databaseSha: item.sha || 'HEAD',
       resultCount: item.resultCount,
+      sourceLocationPrefix: item.sourceLocationPrefix,
       fileSizeInBytes: item.sarifFileSize ? item.sarifFileSize : item.bqrsFileSize,
       starCount: metadata[item.nwo]?.starCount,
       lastUpdated: metadata[item.nwo]?.lastUpdated,

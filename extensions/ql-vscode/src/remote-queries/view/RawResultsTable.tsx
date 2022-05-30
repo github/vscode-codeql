@@ -10,10 +10,12 @@ const numOfResultsInContractedMode = 5;
 
 const Row = ({
   row,
-  fileLinkPrefix
+  fileLinkPrefix,
+  sourceLocationPrefix
 }: {
   row: CellValue[],
-  fileLinkPrefix: string
+  fileLinkPrefix: string,
+  sourceLocationPrefix: string
 }) => (
   <>
     {row.map((cell, cellIndex) => (
@@ -24,7 +26,7 @@ const Row = ({
         alignItems="center"
         p={2}
         sx={{ wordBreak: 'break-word' }}>
-        <Cell value={cell} fileLinkPrefix={fileLinkPrefix} />
+        <Cell value={cell} fileLinkPrefix={fileLinkPrefix} sourceLocationPrefix={sourceLocationPrefix} />
       </Box>
     ))}
   </>
@@ -32,10 +34,12 @@ const Row = ({
 
 const Cell = ({
   value,
-  fileLinkPrefix
+  fileLinkPrefix,
+  sourceLocationPrefix
 }: {
   value: CellValue,
   fileLinkPrefix: string
+  sourceLocationPrefix: string
 }) => {
   switch (typeof value) {
     case 'string':
@@ -43,7 +47,7 @@ const Cell = ({
     case 'boolean':
       return <span>{convertNonPrintableChars(value.toString())}</span>;
     case 'object': {
-      const url = tryGetRemoteLocation(value.url, fileLinkPrefix);
+      const url = tryGetRemoteLocation(value.url, fileLinkPrefix, sourceLocationPrefix);
       return <Link href={url}>{convertNonPrintableChars(value.label)}</Link>;
     }
   }
@@ -52,11 +56,13 @@ const Cell = ({
 const RawResultsTable = ({
   schema,
   results,
-  fileLinkPrefix
+  fileLinkPrefix,
+  sourceLocationPrefix
 }: {
   schema: ResultSetSchema,
   results: RawResultSet,
-  fileLinkPrefix: string
+  fileLinkPrefix: string,
+  sourceLocationPrefix: string
 }) => {
   const [tableExpanded, setTableExpanded] = useState(false);
   const numOfResultsToShow = tableExpanded ? results.rows.length : numOfResultsInContractedMode;
@@ -75,7 +81,7 @@ const RawResultsTable = ({
         maxWidth="45rem"
         p={2}>
         {results.rows.slice(0, numOfResultsToShow).map((row, rowIndex) => (
-          <Row key={rowIndex} row={row} fileLinkPrefix={fileLinkPrefix} />
+          <Row key={rowIndex} row={row} fileLinkPrefix={fileLinkPrefix} sourceLocationPrefix={sourceLocationPrefix} />
         ))}
       </Box>
       {

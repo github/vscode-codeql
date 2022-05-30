@@ -16,6 +16,7 @@ export interface AnalysisRawResults {
   schema: ResultSetSchema;
   resultSet: RawResultSet;
   fileLinkPrefix: string;
+  sourceLocationPrefix: string;
   capped: boolean;
 }
 
