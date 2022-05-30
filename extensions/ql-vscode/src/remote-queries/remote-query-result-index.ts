@@ -12,6 +12,7 @@ export interface RemoteQuerySuccessIndexItem {
   resultCount: number;
   bqrsFileSize: number;
   sarifFileSize?: number;
+  sourceLocationPrefix: string;
 }
 
 export interface RemoteQueryFailureIndexItem {

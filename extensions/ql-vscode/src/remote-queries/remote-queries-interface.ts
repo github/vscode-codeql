@@ -306,6 +306,7 @@ export class RemoteQueriesInterfaceManager {
       databaseSha: analysisResult.databaseSha || 'HEAD',
       resultCount: analysisResult.resultCount,
       downloadLink: analysisResult.downloadLink,
+      sourceLocationPrefix: analysisResult.sourceLocationPrefix,
       fileSize: this.formatFileSize(analysisResult.fileSizeInBytes),
       starCount: analysisResult.starCount,
       lastUpdated: analysisResult.lastUpdated

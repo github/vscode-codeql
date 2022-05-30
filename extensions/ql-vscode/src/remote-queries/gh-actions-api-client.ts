@@ -17,6 +17,7 @@ interface ApiSuccessIndexItem {
   results_count: number;
   bqrs_file_size: number;
   sarif_file_size?: number;
+  source_location_prefix: string;
 }
 
 interface ApiFailureIndexItem {
@@ -59,7 +60,8 @@ export async function getRemoteQueryIndex(
       sha: item.sha,
       resultCount: item.results_count,
       bqrsFileSize: item.bqrs_file_size,
-      sarifFileSize: item.sarif_file_size
+      sarifFileSize: item.sarif_file_size,
+      sourceLocationPrefix: item.source_location_prefix
     } as RemoteQuerySuccessIndexItem;
   });
 

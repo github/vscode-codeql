@@ -316,7 +316,8 @@ const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
         <RawResultsTable
           schema={analysisResults.rawResults.schema}
           results={analysisResults.rawResults.resultSet}
-          fileLinkPrefix={analysisResults.rawResults.fileLinkPrefix} />
+          fileLinkPrefix={analysisResults.rawResults.fileLinkPrefix}
+          sourceLocationPrefix={analysisResults.rawResults.sourceLocationPrefix} />
       }
     </CollapsibleItem>
   );
