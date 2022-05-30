@@ -386,6 +386,7 @@
         ]
       },
       "fileLinkPrefix": "https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12",
+      "sourceLocationPrefix": "/home/runner/work/bulk-builder/bulk-builder",
       "capped": false
     }
   }
