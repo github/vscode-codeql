@@ -71,14 +71,18 @@ const openQueryTextVirtualFile = (queryResult: RemoteQueryResult) => {
   });
 };
 
+function createResultsDescription(queryResult: RemoteQueryResult) {
+  const reposCount = `${queryResult.totalRepositoryCount} ${queryResult.totalRepositoryCount === 1 ? 'repository' : 'repositories'}`;
+  return `${queryResult.totalResultCount} results from running against ${reposCount} (${queryResult.executionDuration}), ${queryResult.executionTimestamp}`;
+}
+
 const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
   analysesResults.reduce((acc, curr) => acc + getAnalysisResultCount(curr), 0);
 
 const QueryInfo = (queryResult: RemoteQueryResult) => (
   <>
     <VerticalSpace size={1} />
-    {queryResult.totalResultCount} results from running against {queryResult.totalRepositoryCount} repositories
-    ({queryResult.executionDuration}), {queryResult.executionTimestamp}
+    {createResultsDescription(queryResult)}
     <VerticalSpace size={1} />
     <span>
       <a className="vscode-codeql__query-info-link" href="#" onClick={() => openQueryFile(queryResult)}>

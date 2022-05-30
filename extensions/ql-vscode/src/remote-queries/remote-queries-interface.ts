@@ -27,6 +27,7 @@ import { URLSearchParams } from 'url';
 import { SHOW_QUERY_TEXT_MSG } from '../query-history';
 import { AnalysesResultsManager } from './analyses-results-manager';
 import { AnalysisResults } from './shared/analysis-result';
+import { humanizeUnit } from '../pure/time';
 
 export class RemoteQueriesInterfaceManager {
   private panel: WebviewPanel | undefined;
@@ -249,23 +250,7 @@ export class RemoteQueriesInterfaceManager {
 
   private getDuration(startTime: number, endTime: number): string {
     const diffInMs = startTime - endTime;
-    return this.formatDuration(diffInMs);
-  }
-
-  private formatDuration(ms: number): string {
-    const seconds = ms / 1000;
-    const minutes = seconds / 60;
-    const hours = minutes / 60;
-    const days = hours / 24;
-    if (days > 1) {
-      return `${days.toFixed(2)} days`;
-    } else if (hours > 1) {
-      return `${hours.toFixed(2)} hours`;
-    } else if (minutes > 1) {
-      return `${minutes.toFixed(2)} minutes`;
-    } else {
-      return `${seconds.toFixed(2)} seconds`;
-    }
+    return humanizeUnit(diffInMs);
   }
 
   private formatDate = (millis: number): string => {
