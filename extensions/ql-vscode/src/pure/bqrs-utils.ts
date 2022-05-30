@@ -97,20 +97,29 @@ export function isStringLoc(loc: UrlValue): loc is string {
 
 export function tryGetRemoteLocation(
   loc: UrlValue | undefined,
-  fileLinkPrefix: string
+  fileLinkPrefix: string,
+  sourceLocationPrefix: string,
 ): string | undefined {
   const resolvableLocation = tryGetResolvableLocation(loc);
   if (!resolvableLocation) {
     return undefined;
   }
 
-  // Remote locations have the following format:
-  // file:/home/runner/work/<repo>/<repo/relative/path/to/file
-  // So we need to drop the first 6 parts of the path.
+  let trimmedLocation: string;
 
-  // TODO: We can make this more robust to other path formats.
-  const locationParts = resolvableLocation.uri.split('/');
-  const trimmedLocation = locationParts.slice(6, locationParts.length).join('/');
+  // Remote locations have the following format:
+  // "file:${sourceLocationPrefix}/relative/path/to/file"
+  // So we need to strip off the first part to get the relative path.
+  if (sourceLocationPrefix) {
+    trimmedLocation = resolvableLocation.uri.replace(`file:${sourceLocationPrefix}/`, '');
+  } else {
+    // If the source location prefix is empty (e.g. for older remote queries), we assume that the database
+    // was created on a Linux actions runner and has the format:
+    // "file:/home/runner/work/<repo>/<repo/relative/path/to/file"
+    // So we need to drop the first 6 parts of the path.
+    const locationParts = resolvableLocation.uri.split('/');
+    trimmedLocation = locationParts.slice(6, locationParts.length).join('/');
+  }
 
   const fileLink = {
     fileLinkPrefix,
