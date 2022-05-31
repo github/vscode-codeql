@@ -2,7 +2,7 @@ import { DisposableObject } from './pure/disposable-object';
 import { workspace, Event, EventEmitter, ConfigurationChangeEvent, ConfigurationTarget } from 'vscode';
 import { DistributionManager } from './distribution';
 import { logger } from './logging';
-import { ONE_DAY_IN_MS } from './pure/helpers-pure';
+import { ONE_DAY_IN_MS } from './pure/time';
 
 /** Helper class to look up a labelled (and possibly nested) setting. */
 export class Setting {

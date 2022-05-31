@@ -28,7 +28,8 @@ import { URLSearchParams } from 'url';
 import { QueryServerClient } from './queryserver-client';
 import { DisposableObject } from './pure/disposable-object';
 import { commandRunner } from './commandRunner';
-import { assertNever, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, getErrorMessage, getErrorStack } from './pure/helpers-pure';
+import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
+import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo as LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { DatabaseManager } from './databases';
 import { registerQueryHistoryScubber } from './query-history-scrubber';
@@ -854,7 +855,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     if (finalSingleItem.evalLogSummaryLocation) {
       await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
-    } 
+    }
     // Summary log file doesn't exist.
     else {
       if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
@@ -862,7 +863,7 @@ export class QueryHistoryManager extends DisposableObject {
         this.warnInProgressEvalLogSummary();
       } else {
         this.warnNoEvalLogSummary();
-      }   
+      }
     }
   }
 
