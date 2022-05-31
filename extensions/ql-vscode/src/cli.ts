@@ -604,10 +604,13 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /** Resolves the ML models that should be available when evaluating a query. */
-  async resolveMlModels(additionalPacks: string[]): Promise<MlModelsInfo> {
+  async resolveMlModels(additionalPacks: string[], queryPath: string): Promise<MlModelsInfo> {
+    const args = await this.cliConstraints.supportsPreciseResolveMlModels()
+      ? [...this.getAdditionalPacksArg(additionalPacks), queryPath]
+      : this.getAdditionalPacksArg(additionalPacks);
     return await this.runJsonCodeQlCliCommand<MlModelsInfo>(
       ['resolve', 'ml-models'],
-      this.getAdditionalPacksArg(additionalPacks),
+      args,
       'Resolving ML models',
       false
     );
@@ -1265,6 +1268,11 @@ export class CliVersionConstraint {
   public static CLI_VERSION_WITH_RESOLVE_ML_MODELS = new SemVer('2.7.3');
 
   /**
+   * CLI version where the `resolve ml-models` subcommand was enhanced to work with packaging.
+   */
+public static CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS = new SemVer('2.10.0');
+
+  /**
    * CLI version where the `--old-eval-stats` option to the query server was introduced.
    */
   public static CLI_VERSION_WITH_OLD_EVAL_STATS = new SemVer('2.7.4');
@@ -1337,6 +1345,10 @@ export class CliVersionConstraint {
 
   async supportsResolveMlModels() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_ML_MODELS);
+  }
+
+  async supportsPreciseResolveMlModels() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS);
   }
 
   async supportsOldEvalStats() {

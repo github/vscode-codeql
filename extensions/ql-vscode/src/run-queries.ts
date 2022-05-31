@@ -174,7 +174,7 @@ export class QueryEvaluationInfo {
         db: dataset,
         logPath: this.evalLogPath,
       });
-      
+
     }
     const params: messages.EvaluateQueriesParams = {
       db: dataset,
@@ -204,7 +204,7 @@ export class QueryEvaluationInfo {
               queryInfo.evalLogSummaryLocation = this.evalLogSummaryPath;
               fs.readFile(this.evalLogEndSummaryPath, (err, buffer) => {
                 if (err) {
-                 throw new Error(`Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`);
+                  throw new Error(`Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`);
                 }
                 void qs.logger.log(' --- Evaluator Log Summary --- ', { additionalLogLocation: this.logPath });
                 void qs.logger.log(buffer.toString(), { additionalLogLocation: this.logPath });
@@ -334,7 +334,7 @@ export class QueryEvaluationInfo {
   /**
    * Holds if this query already has a completed structured evaluator log
    */
-   async hasEvalLog(): Promise<boolean> {
+  async hasEvalLog(): Promise<boolean> {
     return fs.pathExists(this.evalLogPath);
   }
 
@@ -755,8 +755,12 @@ export async function compileAndRunQueryAgainstDatabase(
   let availableMlModels: cli.MlModelInfo[] = [];
   if (await cliServer.cliConstraints.supportsResolveMlModels()) {
     try {
-      availableMlModels = (await cliServer.resolveMlModels(diskWorkspaceFolders)).models;
-      void logger.log(`Found available ML models at the following paths: ${availableMlModels.map(x => `'${x.path}'`).join(', ')}.`);
+      availableMlModels = (await cliServer.resolveMlModels(diskWorkspaceFolders, initialInfo.queryPath)).models;
+      if (availableMlModels.length) {
+        void logger.log(`Found available ML models at the following paths: ${availableMlModels.map(x => `'${x.path}'`).join(', ')}.`);
+      } else {
+        void logger.log('Did not find any available ML models.');
+      }
     } catch (e) {
       const message = `Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the ` +
         `query without any ML models: ${e}.`;
