@@ -1,7 +1,11 @@
 /*
- * Contains an assortment of helper functions for working with time, dates, and durations.
+ * Contains an assortment of helper constants and functions for working with time, dates, and durations.
  */
 
+export const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
+export const ONE_HOUR_IN_MS = 1000 * 60 * 60;
+export const TWO_HOURS_IN_MS = 1000 * 60 * 60 * 2;
+export const THREE_HOURS_IN_MS = 1000 * 60 * 60 * 3;
 
 const durationFormatter = new Intl.RelativeTimeFormat('en', {
   numeric: 'auto',
