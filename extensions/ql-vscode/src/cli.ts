@@ -1270,8 +1270,7 @@ export class CliVersionConstraint {
   /**
    * CLI version where the `resolve ml-models` subcommand was enhanced to work with packaging.
    */
-  // TODO: This is not the right version yet
-  public static CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS = new SemVer('2.9.3');
+public static CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS = new SemVer('2.10.0');
 
   /**
    * CLI version where the `--old-eval-stats` option to the query server was introduced.
