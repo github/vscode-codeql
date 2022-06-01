@@ -471,7 +471,7 @@
       },
       {
         "command": "codeQLQueryHistory.openQuery",
-        "title": "Open the query that produced these results",
+        "title": "Open the Query that Produced these Results",
         "icon": {
           "light": "media/light/edit.svg",
           "dark": "media/dark/edit.svg"
@@ -523,7 +523,7 @@
       },
       {
         "command": "codeQLQueryHistory.openQueryDirectory",
-        "title": "Open query directory"
+        "title": "Open Query Directory"
       },
       {
         "command": "codeQLQueryHistory.showEvalLog",

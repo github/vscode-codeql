@@ -3,6 +3,7 @@
 ## [UNRELEASED]
 
 - Prints end-of-query evaluator log summaries to the Query Log. [#1349](https://github.com/github/vscode-codeql/pull/1349)
+- Be consistent about casing in Query History menu. [#1369](https://github.com/github/vscode-codeql/pull/1369)
 
 ## 1.6.6 - 17 May 2022
 
