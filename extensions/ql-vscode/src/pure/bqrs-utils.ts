@@ -98,7 +98,7 @@ export function isStringLoc(loc: UrlValue): loc is string {
 export function tryGetRemoteLocation(
   loc: UrlValue | undefined,
   fileLinkPrefix: string,
-  sourceLocationPrefix: string,
+  sourceLocationPrefix: string | undefined,
 ): string | undefined {
   const resolvableLocation = tryGetResolvableLocation(loc);
   if (!resolvableLocation) {

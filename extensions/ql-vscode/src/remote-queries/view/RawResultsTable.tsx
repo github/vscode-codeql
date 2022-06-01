@@ -48,10 +48,11 @@ const Cell = ({
       return <span>{convertNonPrintableChars(value.toString())}</span>;
     case 'object': {
       const url = tryGetRemoteLocation(value.url, fileLinkPrefix, sourceLocationPrefix);
+      const safeLabel = convertNonPrintableChars(value.label);
       if (url) {
-        return <Link href={url}>{convertNonPrintableChars(value.label)}</Link>;
+        return <Link href={url}>{safeLabel}</Link>;
       } else {
-        return <span>{convertNonPrintableChars(value.label)}</span>;
+        return <span>{safeLabel}</span>;
       }
     }
   }
