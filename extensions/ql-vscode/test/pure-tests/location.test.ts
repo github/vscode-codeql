@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import 'mocha';
-import { tryGetResolvableLocation } from '../../src/pure/bqrs-utils';
+import { tryGetRemoteLocation, tryGetResolvableLocation } from '../../src/pure/bqrs-utils';
 
 describe('processing string locations', function() {
   it('should detect Windows whole-file locations', function() {
@@ -30,5 +30,81 @@ describe('processing string locations', function() {
       const wholeFileLoc = tryGetResolvableLocation(loc);
       expect(wholeFileLoc).to.be.undefined;
     }
+  });
+});
+
+describe('getting links to remote (GitHub) locations', function() {
+  it('should return undefined if resolvableLocation is undefined', function() {
+    const loc = 'not a location';
+    const fileLinkPrefix = '';
+    const sourceLocationPrefix = '';
+
+    const link = tryGetRemoteLocation(loc, fileLinkPrefix, sourceLocationPrefix);
+
+    expect(link).to.be.undefined;
+  });
+
+  it('should return undefined if resolvableLocation has the wrong format', function() {
+    const loc = {
+      uri: 'file:/path/to/file.ext',
+      startLine: 194,
+      startColumn: 18,
+      endLine: 237,
+      endColumn: 1,
+    };
+    const fileLinkPrefix = '';
+    const sourceLocationPrefix = '/home/foo/bar';
+
+    const link = tryGetRemoteLocation(loc, fileLinkPrefix, sourceLocationPrefix);
+
+    expect(link).to.be.undefined;
+  });
+
+  it('should return a remote file ref if the sourceLocationPrefix and resolvableLocation match up', function() {
+    const loc = {
+      uri: 'file:/home/foo/bar/path/to/file.ext',
+      startLine: 194,
+      startColumn: 18,
+      endLine: 237,
+      endColumn: 1,
+    };
+    const fileLinkPrefix = 'https://github.com/owner/repo/blob/sha1234';
+    const sourceLocationPrefix = '/home/foo/bar';
+
+    const link = tryGetRemoteLocation(loc, fileLinkPrefix, sourceLocationPrefix);
+
+    expect(link).to.eql('https://github.com/owner/repo/blob/sha1234/path/to/file.ext#L194-L237');
+  });
+
+  it('should return undefined if the sourceLocationPrefix is missing and resolvableLocation doesn\'t match the default format', function() {
+    const loc = {
+      uri: 'file:/home/foo/bar/path/to/file.ext',
+      startLine: 194,
+      startColumn: 18,
+      endLine: 237,
+      endColumn: 1,
+    };
+    const fileLinkPrefix = 'https://github.com/owner/repo/blob/sha1234';
+    const sourceLocationPrefix = '';
+
+    const link = tryGetRemoteLocation(loc, fileLinkPrefix, sourceLocationPrefix);
+
+    expect(link).to.eql(undefined);
+  });
+
+  it('should return a remote file ref if the sourceLocationPrefix is missing, but the resolvableLocation matches the default format', function() {
+    const loc = {
+      uri: 'file:/home/runner/work/foo/bar/path/to/file.ext',
+      startLine: 194,
+      startColumn: 18,
+      endLine: 237,
+      endColumn: 1,
+    };
+    const fileLinkPrefix = 'https://github.com/owner/repo/blob/sha1234';
+    const sourceLocationPrefix = '';
+
+    const link = tryGetRemoteLocation(loc, fileLinkPrefix, sourceLocationPrefix);
+
+    expect(link).to.eql('https://github.com/owner/repo/blob/sha1234/path/to/file.ext#L194-L237');
   });
 });
