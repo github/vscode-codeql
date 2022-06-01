@@ -29,7 +29,9 @@ Here are a few things you can do that will increase the likelihood of your pull 
 
 ## Setting up a local build
 
-Make sure you have installed recent versions of vscode (>= v1.52), node (>=12.16), and npm (>= 7.5.2). Earlier versions will probably work, but we no longer test against them.
+Make sure you have installed recent versions of vscode, node, and npm. Check the `engines` block in [`package.json`](https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/package.json) file for compatible versions. Earlier versions may work, but we no longer test against them.
+
+To automatically switch to the correct version of node, we recommend using [nvm](https://github.com/nvm-sh/nvm), which will pick-up the node version from `.nvmrc`.
 
 ### Installing all packages
 
@@ -102,6 +104,10 @@ From inside of VSCode, open the `launch.json` file and in the _Launch Integratio
 1. Double-check the `CHANGELOG.md` contains all desired change comments and has the version to be released with date at the top.
     * Go through all recent PRs and make sure they are properly accounted for.
     * Make sure all changelog entries have links back to their PR(s) if appropriate.
+1. Double-check that the node version we're using matches the one used for VS Code. If it doesn't, you will then need to update the node version in the following files:
+    * `.nvmrc` - this will enable `nvm` to automatically switch to the correct node version when you're in the project folder
+    * `.github/workflows/main.yml` - all the "node-version: <version>" settings
+    * `.github/workflows/release.yml` - the "node-version: <version>" setting
 1. Double-check that the extension `package.json` and `package-lock.json` have the version you intend to release. If you are doing a patch release (as opposed to minor or major version) this should already be correct.
 1. Create a PR for this release:
     * This PR will contain any missing bits from steps 1 and 2. Most of the time, this will just be updating `CHANGELOG.md` with today's date.
