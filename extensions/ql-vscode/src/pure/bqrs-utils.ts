@@ -111,12 +111,18 @@ export function tryGetRemoteLocation(
   // "file:${sourceLocationPrefix}/relative/path/to/file"
   // So we need to strip off the first part to get the relative path.
   if (sourceLocationPrefix) {
+    if (!resolvableLocation.uri.startsWith(`file:${sourceLocationPrefix}/`)) {
+      return undefined;
+    }
     trimmedLocation = resolvableLocation.uri.replace(`file:${sourceLocationPrefix}/`, '');
   } else {
     // If the source location prefix is empty (e.g. for older remote queries), we assume that the database
     // was created on a Linux actions runner and has the format:
-    // "file:/home/runner/work/<repo>/<repo/relative/path/to/file"
+    // "file:/home/runner/work/<repo>/<repo>/relative/path/to/file"
     // So we need to drop the first 6 parts of the path.
+    if (!resolvableLocation.uri.startsWith('file:/home/runner/work/')) {
+      return undefined;
+    }
     const locationParts = resolvableLocation.uri.split('/');
     trimmedLocation = locationParts.slice(6, locationParts.length).join('/');
   }
