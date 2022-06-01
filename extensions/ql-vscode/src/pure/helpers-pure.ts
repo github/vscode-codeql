@@ -38,6 +38,12 @@ export const asyncFilter = async function <T>(arr: T[], predicate: (arg0: T) => 
  */
 export const REPO_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
 
+/**
+ * This regex matches GiHub organization strings. These are made up for alphanumeric 
+ * characters or single hyphens, starting and ending in an alphanumeric character.
+ */
+export const ORG_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+$/;
+
 export function getErrorMessage(e: any) {
   return e instanceof Error ? e.message : String(e);
 }
