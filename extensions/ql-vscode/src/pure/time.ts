@@ -2,21 +2,19 @@
  * Contains an assortment of helper constants and functions for working with time, dates, and durations.
  */
 
-export const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
-export const ONE_HOUR_IN_MS = 1000 * 60 * 60;
-export const TWO_HOURS_IN_MS = 1000 * 60 * 60 * 2;
-export const THREE_HOURS_IN_MS = 1000 * 60 * 60 * 3;
+export const ONE_MINUTE_IN_MS = 1000 * 60;
+export const ONE_HOUR_IN_MS = ONE_MINUTE_IN_MS * 60;
+export const TWO_HOURS_IN_MS = ONE_HOUR_IN_MS * 2;
+export const THREE_HOURS_IN_MS = ONE_HOUR_IN_MS * 3;
+export const ONE_DAY_IN_MS = ONE_HOUR_IN_MS * 24;
+
+// These are approximations
+export const ONE_MONTH_IN_MS = ONE_DAY_IN_MS * 30;
+export const ONE_YEAR_IN_MS = ONE_DAY_IN_MS * 365;
 
 const durationFormatter = new Intl.RelativeTimeFormat('en', {
   numeric: 'auto',
 });
-
-// Months and years are approximate
-const MINUTE_IN_MILLIS = 1000 * 60;
-const HOUR_IN_MILLIS = 60 * MINUTE_IN_MILLIS;
-const DAY_IN_MILLIS = 24 * HOUR_IN_MILLIS;
-const MONTH_IN_MILLIS = 30 * DAY_IN_MILLIS;
-const YEAR_IN_MILLIS = 365 * DAY_IN_MILLIS;
 
 /**
  * Converts a number of milliseconds into a human-readable string with units, indicating a relative time in the past or future.
@@ -30,16 +28,16 @@ export function humanizeRelativeTime(relativeTimeMillis?: number) {
     return '';
   }
 
-  if (Math.abs(relativeTimeMillis) < HOUR_IN_MILLIS) {
-    return durationFormatter.format(Math.floor(relativeTimeMillis / MINUTE_IN_MILLIS), 'minute');
-  } else if (Math.abs(relativeTimeMillis) < DAY_IN_MILLIS) {
-    return durationFormatter.format(Math.floor(relativeTimeMillis / HOUR_IN_MILLIS), 'hour');
-  } else if (Math.abs(relativeTimeMillis) < MONTH_IN_MILLIS) {
-    return durationFormatter.format(Math.floor(relativeTimeMillis / DAY_IN_MILLIS), 'day');
-  } else if (Math.abs(relativeTimeMillis) < YEAR_IN_MILLIS) {
-    return durationFormatter.format(Math.floor(relativeTimeMillis / MONTH_IN_MILLIS), 'month');
+  if (Math.abs(relativeTimeMillis) < ONE_HOUR_IN_MS) {
+    return durationFormatter.format(Math.floor(relativeTimeMillis / ONE_MINUTE_IN_MS), 'minute');
+  } else if (Math.abs(relativeTimeMillis) < ONE_DAY_IN_MS) {
+    return durationFormatter.format(Math.floor(relativeTimeMillis / ONE_HOUR_IN_MS), 'hour');
+  } else if (Math.abs(relativeTimeMillis) < ONE_MONTH_IN_MS) {
+    return durationFormatter.format(Math.floor(relativeTimeMillis / ONE_DAY_IN_MS), 'day');
+  } else if (Math.abs(relativeTimeMillis) < ONE_YEAR_IN_MS) {
+    return durationFormatter.format(Math.floor(relativeTimeMillis / ONE_MONTH_IN_MS), 'month');
   } else {
-    return durationFormatter.format(Math.floor(relativeTimeMillis / YEAR_IN_MILLIS), 'year');
+    return durationFormatter.format(Math.floor(relativeTimeMillis / ONE_YEAR_IN_MS), 'year');
   }
 }
 
@@ -53,26 +51,26 @@ export function humanizeRelativeTime(relativeTimeMillis?: number) {
 export function humanizeUnit(millis?: number): string {
   // assume a blank or empty string is a zero
   // assume anything less than 0 is a zero
-  if (!millis || millis < MINUTE_IN_MILLIS) {
+  if (!millis || millis < ONE_MINUTE_IN_MS) {
     return 'Less than a minute';
   }
   let unit: string;
   let unitDiff: number;
-  if (millis < HOUR_IN_MILLIS) {
+  if (millis < ONE_HOUR_IN_MS) {
     unit = 'minute';
-    unitDiff = Math.floor(millis / MINUTE_IN_MILLIS);
-  } else if (millis < DAY_IN_MILLIS) {
+    unitDiff = Math.floor(millis / ONE_MINUTE_IN_MS);
+  } else if (millis < ONE_DAY_IN_MS) {
     unit = 'hour';
-    unitDiff = Math.floor(millis / HOUR_IN_MILLIS);
-  } else if (millis < MONTH_IN_MILLIS) {
+    unitDiff = Math.floor(millis / ONE_HOUR_IN_MS);
+  } else if (millis < ONE_MONTH_IN_MS) {
     unit = 'day';
-    unitDiff = Math.floor(millis / DAY_IN_MILLIS);
-  } else if (millis < YEAR_IN_MILLIS) {
+    unitDiff = Math.floor(millis / ONE_DAY_IN_MS);
+  } else if (millis < ONE_YEAR_IN_MS) {
     unit = 'month';
-    unitDiff = Math.floor(millis / MONTH_IN_MILLIS);
+    unitDiff = Math.floor(millis / ONE_MONTH_IN_MS);
   } else {
     unit = 'year';
-    unitDiff = Math.floor(millis / YEAR_IN_MILLIS);
+    unitDiff = Math.floor(millis / ONE_YEAR_IN_MS);
   }
 
   return createFormatter(unit).format(unitDiff);
