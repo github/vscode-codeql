@@ -260,7 +260,11 @@ function generateMarkdownForRawTableCell(
     case 'object':
       {
         const url = tryGetRemoteLocation(value.url, fileLinkPrefix, sourceLocationPrefix);
-        cellValue = `[\`${convertNonPrintableChars(value.label)}\`](${url})`;
+        if (url) {
+          cellValue = `[\`${convertNonPrintableChars(value.label)}\`](${url})`;
+        } else {
+          cellValue = `\`${convertNonPrintableChars(value.label)}\``;
+        }
       }
       break;
   }
