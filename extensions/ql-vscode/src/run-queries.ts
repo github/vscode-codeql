@@ -358,9 +358,12 @@ export class QueryEvaluationInfo {
         pageSize: 100,
         offset: nextOffset,
       });
-      for (const tuple of chunk.tuples) {
-        out.write(tuple.join(',') + '\n');
-      }
+      const quotes = chunk.columns.map(col => col.kind === 'String' ? '"' : '');
+      chunk.tuples.forEach((tuple) => {
+        out.write(tuple.map((v, i) => {
+          return `${quotes[i]}${v}${quotes[i]}`;
+        }).join(',') + '\n');
+      });
       nextOffset = chunk.next;
     }
     out.end();

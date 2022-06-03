@@ -103,7 +103,14 @@ export function transformBqrsResultSet(
   };
 }
 
+type BqrsKind = 'String' | 'Float' | 'Integer' | 'String' | 'Boolean' | 'Date' | 'Entity';
+
+interface BqrsColumn {
+  name: string;
+  kind: BqrsKind;
+}
 export interface DecodedBqrsChunk {
   tuples: CellValue[][];
   next?: number;
+  columns: BqrsColumn[];
 }
