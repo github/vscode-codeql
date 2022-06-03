@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.13.0'
+          node-version: '18'
 
       - name: Install dependencies
         working-directory: extensions/ql-vscode
