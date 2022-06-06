@@ -352,9 +352,14 @@ export class QueryEvaluationInfo {
         void showAndLogErrorMessage(`Failed to write CSV results to ${csvPath}`);
       }
     });
+    const resultSet = await this.chooseResultSet(qs);
+    if (!resultSet) {
+      void showAndLogWarningMessage('Query has no result set.');
+      return;
+    }
     let nextOffset: number | undefined = 0;
     while (nextOffset !== undefined && !stopDecoding) {
-      const chunk: DecodedBqrsChunk = await qs.cliServer.bqrsDecode(this.resultsPaths.resultsPath, SELECT_QUERY_NAME, {
+      const chunk: DecodedBqrsChunk = await qs.cliServer.bqrsDecode(this.resultsPaths.resultsPath, resultSet, {
         pageSize: 100,
         offset: nextOffset,
       });
@@ -369,6 +374,22 @@ export class QueryEvaluationInfo {
     out.end();
   }
 
+  /**
+   * Choose the name of the result set to run. If the `#select` set exists, use that. Otherwise,
+   * arbitrarily choose the first set. Most of the time, this will be correct.
+   *
+   * If the query has no result sets, then return undefined.
+   */
+  async chooseResultSet(qs: qsClient.QueryServerClient) {
+    const resultSets = (await qs.cliServer.bqrsInfo(this.resultsPaths.resultsPath, 0))['result-sets'];
+    if (!resultSets.length) {
+      return undefined;
+    }
+    if (resultSets.find(r => r.name === SELECT_QUERY_NAME)) {
+      return SELECT_QUERY_NAME;
+    }
+    return resultSets[0].name;
+  }
   /**
    * Returns the path to the CSV alerts interpretation of this query results. If CSV results have
    * not yet been produced, this will return first create the CSV results and then return the path.
