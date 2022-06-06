@@ -341,24 +341,33 @@ export class QueryEvaluationInfo {
   /**
    * Creates the CSV file containing the results of this query. This will only be called if the query
    * does not have interpreted results and the CSV file does not already exist.
+   *
+   * @return Promise<true> if the operation creates the file. Promise<false> if the operation does
+   * not create the file.
+   *
+   * @throws Error if the operation fails.
    */
-  async exportCsvResults(qs: qsClient.QueryServerClient, csvPath: string, onFinish: () => void): Promise<void> {
-    let stopDecoding = false;
-    const out = fs.createWriteStream(csvPath);
-    out.on('finish', onFinish);
-    out.on('error', () => {
-      if (!stopDecoding) {
-        stopDecoding = true;
-        void showAndLogErrorMessage(`Failed to write CSV results to ${csvPath}`);
-      }
-    });
+  async exportCsvResults(qs: qsClient.QueryServerClient, csvPath: string): Promise<boolean> {
     const resultSet = await this.chooseResultSet(qs);
     if (!resultSet) {
       void showAndLogWarningMessage('Query has no result set.');
-      return;
+      return false;
     }
+    let stopDecoding = false;
+    const out = fs.createWriteStream(csvPath);
+
+    const promise: Promise<boolean> = new Promise((resolve, reject) => {
+      out.on('finish', () => resolve(true));
+      out.on('error', () => {
+        if (!stopDecoding) {
+          stopDecoding = true;
+          reject(new Error(`Failed to write CSV results to ${csvPath}`));
+        }
+      });
+    });
+
     let nextOffset: number | undefined = 0;
-    while (nextOffset !== undefined && !stopDecoding) {
+    do {
       const chunk: DecodedBqrsChunk = await qs.cliServer.bqrsDecode(this.resultsPaths.resultsPath, resultSet, {
         pageSize: 100,
         offset: nextOffset,
@@ -370,8 +379,10 @@ export class QueryEvaluationInfo {
         }).join(',') + '\n');
       });
       nextOffset = chunk.next;
-    }
+    } while (nextOffset && !stopDecoding);
     out.end();
+
+    return promise;
   }
 
   /**
