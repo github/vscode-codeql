@@ -76,13 +76,13 @@ describe('repository-selection', function() {
       );
     });
 
-    // Test the org regex in various "good" cases
-    const goodOrgs = [
+    // Test the owner regex in various "good" cases
+    const goodOwners = [
       'owner',
       'owner-with-hyphens',
       'ownerWithNumbers58'
     ];
-    goodOrgs.forEach(org => {
+    goodOwners.forEach(org => {
       it(`should run on a valid org that you enter in the text box: ${org}`, async () => {
         // Fake return values
         quickPickSpy.resolves(
@@ -101,12 +101,12 @@ describe('repository-selection', function() {
       });
     });
 
-    // Test the org regex in various "bad" cases
-    const badOrgs = [
+    // Test the owner regex in various "bad" cases
+    const badOwners = [
       'invalid_owner',
       'owner-with-repo/repo'
     ];
-    badOrgs.forEach(org => {
+    badOwners.forEach(org => {
       it(`should show an error message if you enter an invalid org in the text box: ${org}`, async () => {
         // Fake return values
         quickPickSpy.resolves(
