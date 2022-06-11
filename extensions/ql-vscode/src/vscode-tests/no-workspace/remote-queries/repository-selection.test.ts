@@ -47,7 +47,7 @@ describe('repository-selection', function() {
 
       // Check that the return value is correct
       expect(repoSelection.repositoryLists).to.be.undefined;
-      expect(repoSelection.organizations).to.be.undefined;
+      expect(repoSelection.owners).to.be.undefined;
       expect(repoSelection.repositories).to.deep.eq(
         ['foo/bar', 'foo/baz']
       );
@@ -70,7 +70,7 @@ describe('repository-selection', function() {
 
       // Check that the return value is correct
       expect(repoSelection.repositories).to.be.undefined;
-      expect(repoSelection.organizations).to.be.undefined;
+      expect(repoSelection.owners).to.be.undefined;
       expect(repoSelection.repositoryLists).to.deep.eq(
         ['top_100']
       );
@@ -86,7 +86,7 @@ describe('repository-selection', function() {
       it(`should run on a valid org that you enter in the text box: ${org}`, async () => {
         // Fake return values
         quickPickSpy.resolves(
-          { useAllReposOfOrg: true }
+          { useAllReposOfOwner: true }
         );
         getRemoteRepositoryListsSpy.returns({}); // no pre-defined repo lists
         showInputBoxSpy.resolves(org);
@@ -97,7 +97,7 @@ describe('repository-selection', function() {
         // Check that the return value is correct
         expect(repoSelection.repositories).to.be.undefined;
         expect(repoSelection.repositoryLists).to.be.undefined;
-        expect(repoSelection.organisations).to.deep.eq([org]);
+        expect(repoSelection.owners).to.deep.eq([org]);
       });
     });
 
@@ -110,13 +110,13 @@ describe('repository-selection', function() {
       it(`should show an error message if you enter an invalid org in the text box: ${org}`, async () => {
         // Fake return values
         quickPickSpy.resolves(
-          { useAllReposOfOrg: true }
+          { useAllReposOfOwner: true }
         );
         getRemoteRepositoryListsSpy.returns({}); // no pre-defined repo lists
         showInputBoxSpy.resolves(org);
 
         // Function call should throw a UserCancellationException
-        await expect(mod.getRepositorySelection()).to.be.rejectedWith(UserCancellationException, 'Invalid organization format. Please enter a valid organization (e.g. github)');
+        await expect(mod.getRepositorySelection()).to.be.rejectedWith(UserCancellationException, 'Invalid user or organization format. Please enter a valid user or organization (e.g. github)');
       });
     });
 
@@ -140,7 +140,7 @@ describe('repository-selection', function() {
 
         // Check that the return value is correct
         expect(repoSelection.repositoryLists).to.be.undefined;
-        expect(repoSelection.organizations).to.be.undefined;
+        expect(repoSelection.owners).to.be.undefined;
         expect(repoSelection.repositories).to.deep.equal(
           [repo]
         );

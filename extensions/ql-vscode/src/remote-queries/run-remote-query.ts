@@ -304,7 +304,7 @@ async function runRemoteQueriesApiRequest(
     language,
     repositories: repoSelection.repositories ?? undefined,
     repository_lists: repoSelection.repositoryLists ?? undefined,
-    organisations: repoSelection.organisations ?? undefined,
+    repository_owners: repoSelection.owners ?? undefined,
     query_pack: queryPackBase64,
   };
 
