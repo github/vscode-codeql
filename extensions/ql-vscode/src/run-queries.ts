@@ -372,11 +372,12 @@ export class QueryEvaluationInfo {
         pageSize: 100,
         offset: nextOffset,
       });
-      const quotes = chunk.columns.map(col => col.kind === 'String' ? '"' : '');
       chunk.tuples.forEach((tuple) => {
-        out.write(tuple.map((v, i) => {
-          return `${quotes[i]}${v}${quotes[i]}`;
-        }).join(',') + '\n');
+        out.write(tuple.map((v, i) =>
+          chunk.columns[i].kind === 'String'
+            ? `"${typeof v === 'string' ? v.replaceAll('"', '""') : v}"`
+            : v
+        ).join(',') + '\n');
       });
       nextOffset = chunk.next;
     } while (nextOffset && !stopDecoding);

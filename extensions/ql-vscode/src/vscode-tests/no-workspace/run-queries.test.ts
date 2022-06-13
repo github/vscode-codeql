@@ -91,6 +91,40 @@ describe('run-queries', () => {
     });
   });
 
+  it('should export csv results with characters that need to be escaped', async () => {
+    const csvLocation = path.join(tmpDir.name, 'test.csv');
+    const qs = createMockQueryServerClient(
+      createMockCliServer({
+        bqrsInfo: [{ 'result-sets': [{ name: SELECT_QUERY_NAME }, { name: 'hucairz' }] }],
+        bqrsDecode: [{
+          columns: [{ kind: 'NotString' }, { kind: 'String' }],
+          // We only escape string columns. In practice, we will only see quotes in strings, but
+          // it is a good test anyway.
+          tuples: [
+            ['"a"', '"b"'],
+            ['c,xxx', 'd,yyy'],
+            ['aaa " bbb', 'ccc " ddd'],
+            [true, false],
+            [123, 456],
+            [123.98, 456.99],
+          ],
+        }]
+      })
+    );
+    const info = createMockQueryInfo();
+    const promise = info.exportCsvResults(qs, csvLocation);
+
+    const result = await promise;
+    expect(result).to.eq(true);
+
+    const csv = fs.readFileSync(csvLocation, 'utf8');
+    expect(csv).to.eq('"a","""b"""\nc,xxx,"d,yyy"\naaa " bbb,"ccc "" ddd"\ntrue,"false"\n123,"456"\n123.98,"456.99"\n');
+
+    // now verify that we are using the expected result set
+    expect((qs.cliServer.bqrsDecode as sinon.SinonStub).callCount).to.eq(1);
+    expect((qs.cliServer.bqrsDecode as sinon.SinonStub).getCall(0).args[1]).to.eq(SELECT_QUERY_NAME);
+  });
+
   it('should handle csv exports for a query with no result sets', async () => {
     const csvLocation = path.join(tmpDir.name, 'test.csv');
     const qs = createMockQueryServerClient(
