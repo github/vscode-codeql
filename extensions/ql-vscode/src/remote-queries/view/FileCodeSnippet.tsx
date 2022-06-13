@@ -24,8 +24,8 @@ const getSeverityColor = (severity: ResultSeverity) => {
 const replaceSpaceAndTabChar = (text: string) => text.replaceAll(' ', '\u00a0').replaceAll('\t', '\u00a0\u00a0\u00a0\u00a0');
 
 const Container = styled.div`
-  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
-  font-size: x-small;
+  font-family: var(--vscode-editor-font-family);
+  font-size: small;
 `;
 
 const TitleContainer = styled.div`
@@ -46,7 +46,7 @@ const CodeContainer = styled.div`
 `;
 
 const MessageText = styled.div`
-  font-size: x-small;
+  font-size: small;
   padding-left: 0.5em;
 `;
 
