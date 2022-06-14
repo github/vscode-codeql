@@ -17,30 +17,32 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
       - name: Checkout
         uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '16.13.0'
-
       - name: Install dependencies
+        shell: bash
         run: |
           cd extensions/ql-vscode
           npm ci
-        shell: bash
 
       - name: Build
+        shell: bash
         env:
+          NODE_OPTIONS: --openssl-legacy-provider
           APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
         run: |
           echo "APP INSIGHTS KEY LENGTH: ${#APP_INSIGHTS_KEY}"
           cd extensions/ql-vscode
           npm run build -- --release
-        shell: bash
 
       - name: Prepare artifacts
         id: prepare-artifacts
+        shell: bash
         run: |
           mkdir artifacts
           cp dist/*.vsix artifacts
@@ -95,12 +97,14 @@ jobs:
       # The checkout action does not fetch the main branch.
       # Fetch the main branch so that we can base the version bump PR against main.
       - name: Fetch main branch
+        shell: bash
         run: |
           git fetch --depth=1 origin main:main
           git checkout main
 
       - name: Bump patch version
         id: bump-patch-version
+        shell: bash
         if: success()
         run: |
           cd extensions/ql-vscode
@@ -110,6 +114,7 @@ jobs:
           echo "::set-output name=next_version::$NEXT_VERSION"
 
       - name: Add changelog for next release
+        shell: bash
         if: success()
         run: |
           cd extensions/ql-vscode
@@ -132,8 +137,6 @@ jobs:
     needs: build
     environment: publish-vscode-marketplace
     runs-on: ubuntu-latest
-    env:
-      VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v2
@@ -141,6 +144,7 @@ jobs:
           name: vscode-codeql-extension
 
       - name: Publish to Registry
+        shell: bash
         run: |
           npx vsce publish -p $VSCE_TOKEN --packagePath *.vsix || \
             echo "Failed to publish to VS Code Marketplace. \
@@ -152,8 +156,6 @@ jobs:
     needs: build
     environment: publish-open-vsx
     runs-on: ubuntu-latest
-    env:
-      OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v2
@@ -161,5 +163,6 @@ jobs:
           name: vscode-codeql-extension
 
       - name: Publish to Registry
+        shell: bash
         run: |
           npx ovsx publish -p $OPEN_VSX_TOKEN *.vsix

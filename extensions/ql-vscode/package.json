@@ -1115,11 +1115,11 @@
     ]
   },
   "scripts": {
-    "build": "NODE_OPTIONS=--openssl-legacy-provider gulp",
+    "build": "gulp",
     "watch": "npm-run-all -p watch:*",
-    "watch:extension": "NODE_OPTIONS=--openssl-legacy-provider tsc --watch",
-    "watch:webpack": "NODE_OPTIONS=--openssl-legacy-provider gulp watchView",
-    "watch:css": "NODE_OPTIONS=--openssl-legacy-provider gulp watchCss",
+    "watch:extension": "tsc --watch",
+    "watch:webpack": "gulp watchView",
+    "watch:css": "gulp watchCss",
     "test": "mocha --exit -r ts-node/register test/pure-tests/**/*.ts",
     "preintegration": "rm -rf ./out/vscode-tests && npm run build",
     "integration": "node ./out/vscode-tests/run-integration-tests.js no-workspace,minimal-workspace",
