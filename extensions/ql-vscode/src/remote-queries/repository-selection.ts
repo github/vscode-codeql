@@ -54,7 +54,7 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
   } else if (quickpick?.useAllReposOfOwner) {
     const owner = await getOwner();
     if (!owner || !OWNER_REGEX.test(owner)) {
-      throw new UserCancellationException('Invalid user or organization format. Please enter a valid user or organization (e.g. github)');
+      throw new Error(`Invalid user or organization: ${owner}`);
     }
     void logger.log(`Entered owner: ${owner}`);
     return { owners: [owner] };
