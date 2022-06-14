@@ -116,7 +116,7 @@ describe('repository-selection', function() {
         showInputBoxSpy.resolves(owner);
 
         // Function call should throw a UserCancellationException
-        await expect(mod.getRepositorySelection()).to.be.rejectedWith(UserCancellationException, 'Invalid user or organization format. Please enter a valid user or organization (e.g. github)');
+        await expect(mod.getRepositorySelection()).to.be.rejectedWith(Error, `Invalid user or organization: ${owner}`);
       });
     });
 
