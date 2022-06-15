@@ -1232,7 +1232,7 @@
     "typescript-formatter": "^7.2.2",
     "vsce": "^2.7.0",
     "vscode-test": "^1.4.0",
-    "webpack": "^5.28.0",
+    "webpack": "^5.62.2",
     "webpack-cli": "^4.6.0"
   },
   "husky": {
