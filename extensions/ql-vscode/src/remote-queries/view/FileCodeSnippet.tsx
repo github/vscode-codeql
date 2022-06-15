@@ -97,6 +97,7 @@ const Message = ({
               return <span key={`token-${index}`}>{token.text}</span>;
             case 'location':
               return <VSCodeLink
+                style={{ fontFamily: 'var(--vscode-editor-font-family)' }}
                 key={`token-${index}`}
                 href={createRemoteFileRef(
                   token.location.fileLink,
