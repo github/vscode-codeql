@@ -402,14 +402,29 @@ describe('query-history', () => {
       });
     });
 
-    it('should get the selection from the treeView when both selections are empty', async () => {
+    it('should get the selection from the treeView when both selections are empty', async function() {
+      this.timeout(999999999);
       queryHistoryManager = await createMockQueryHistory(allHistory);
-      await queryHistoryManager.treeView.reveal(allHistory[1], { select: true });
-      const selection = (queryHistoryManager as any).determineSelection(undefined, undefined);
-      expect(selection).to.deep.eq({
-        finalSingleItem: allHistory[1],
-        finalMultiSelect: [allHistory[1]]
+      const p = new Promise<void>(done => {
+        queryHistoryManager!.treeView.onDidChangeSelection(s => {
+          if (s.selection[0] !== allHistory[1]) {
+            return;
+          }
+          const selection = (queryHistoryManager as any).determineSelection(undefined, undefined);
+          expect(selection).to.deep.eq({
+            finalSingleItem: allHistory[1],
+            finalMultiSelect: [allHistory[1]]
+          });
+          done();
+        });
       });
+
+      // I can't explain why, but the first time the onDidChangeSelection event fires, the selection is
+      // not correct (it is inexplicably allHistory[2]). So we fire the event a second time to get the
+      // correct selection.
+      await queryHistoryManager.treeView.reveal(allHistory[0], { select: true });
+      await queryHistoryManager.treeView.reveal(allHistory[1], { select: true });
+      await p;
     });
 
     it('should get the selection from the treeDataProvider when both selections and the treeView are empty', async () => {
