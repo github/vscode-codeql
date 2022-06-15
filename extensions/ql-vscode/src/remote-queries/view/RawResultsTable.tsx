@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Box, Link } from '@primer/react';
+import { Box } from '@primer/react';
+import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
 import { CellValue, RawResultSet, ResultSetSchema } from '../../pure/bqrs-cli-types';
 import { tryGetRemoteLocation } from '../../pure/bqrs-utils';
 import { useState } from 'react';
@@ -50,7 +51,7 @@ const Cell = ({
       const url = tryGetRemoteLocation(value.url, fileLinkPrefix, sourceLocationPrefix);
       const safeLabel = convertNonPrintableChars(value.label);
       if (url) {
-        return <Link href={url}>{safeLabel}</Link>;
+        return <VSCodeLink href={url}>{safeLabel}</VSCodeLink>;
       } else {
         return <span>{safeLabel}</span>;
       }
