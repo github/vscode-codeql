@@ -115,15 +115,34 @@ From inside of VSCode, open the `launch.json` file and in the _Launch Integratio
     * Create a new commit with a message the same as the branch name.
     * Create a PR for this branch.
     * Wait for the PR to be merged into `main`
-1. Trigger a release build on Actions by adding a new tag on branch `main` named after the release, as above. Note that when you push to upstream, you will need to fully qualify the ref. A command like this will work:
+1. Switch to `main` and add a new tag on the `main` branch with your new version (named after the release), e.g.
+    ```bash
+    git checkout main
+    git tag v1.3.6
+    ```
+
+   If you've accidentally created a badly named tag, you can delete it via 
+    ```bash
+    git tag -d badly-named-tag
+    ```
+1. Push the new tag up:
+
+   a. If you're using a fork of the repo:
 
     ```bash
     git push upstream refs/tags/v1.3.6
     ```
+   
+   b. If you're working straight in this repo:
+
+    ```bash
+    git push origin refs/tags/v1.3.6
+    ``` 
+   
+   This will trigger [a release build](https://github.com/github/vscode-codeql/releases) on Actions.
 
     * **IMPORTANT** Make sure you are on the `main` branch and your local checkout is fully updated when you add the tag.
     * If you accidentally add the tag to the wrong ref, you can just force push it to the right one later.
-
 1. Monitor the status of the release build in the `Release` workflow in the Actions tab.
 1. Download the VSIX from the draft GitHub release at the top of [the releases page](https://github.com/github/vscode-codeql/releases) that is created when the release build finishes.
 1. Unzip the `.vsix` and inspect its `package.json` to make sure the version is what you expect,
