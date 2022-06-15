@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.6.7 - 15 June 2022
 
 - Prints end-of-query evaluator log summaries to the Query Log. [#1349](https://github.com/github/vscode-codeql/pull/1349)
