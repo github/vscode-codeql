@@ -78,7 +78,8 @@ describe('repository-selection', function() {
     const goodRepos = [
       'owner/repo',
       'owner-with-hyphens/repo-with-hyphens_and_underscores',
-      'ownerWithNumbers58/repoWithNumbers37'
+      'ownerWithNumbers58/repoWithNumbers37',
+      'owner/repo.with.periods',
     ];
     goodRepos.forEach(repo => {
       it(`should run on a valid repo that you enter in the text box: ${repo}`, async () => {

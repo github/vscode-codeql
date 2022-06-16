@@ -34,9 +34,9 @@ export const asyncFilter = async function <T>(arr: T[], predicate: (arg0: T) => 
 /**
  * This regex matches strings of the form `owner/repo` where:
  * - `owner` is made up of alphanumeric characters or single hyphens, starting and ending in an alphanumeric character
- * - `repo` is made up of alphanumeric characters, hyphens, or underscores
+ * - `repo` is made up of alphanumeric characters, hyphens, periods, or underscores
  */
-export const REPO_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
+export const REPO_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_\.]+$/;
 
 export function getErrorMessage(e: any) {
   return e instanceof Error ? e.message : String(e);
