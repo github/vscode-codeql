@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { Box } from '@primer/react';
 import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
 import { CellValue, RawResultSet, ResultSetSchema } from '../../pure/bqrs-cli-types';
 import { tryGetRemoteLocation } from '../../pure/bqrs-utils';
 import { useState } from 'react';
 import TextButton from './TextButton';
 import { convertNonPrintableChars } from '../../text-utils';
+
+const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
 
 const numOfResultsInContractedMode = 5;
 
@@ -20,15 +21,16 @@ const Row = ({
 }) => (
   <>
     {row.map((cell, cellIndex) => (
-      <Box key={cellIndex}
-        borderColor="border.default"
-        borderStyle="solid"
-        justifyContent="center"
-        alignItems="center"
-        p={2}
-        sx={{ wordBreak: 'break-word' }}>
+      <div key={cellIndex} style={{
+        borderColor: borderColor,
+        borderStyle: 'solid',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '0.4rem',
+        wordBreak: 'break-word'
+      }}>
         <Cell value={cell} fileLinkPrefix={fileLinkPrefix} sourceLocationPrefix={sourceLocationPrefix} />
-      </Box>
+      </div>
     ))}
   </>
 );
@@ -81,15 +83,16 @@ const RawResultsTable = ({
 
   return (
     <>
-      <Box
-        display="grid"
-        gridTemplateColumns={gridTemplateColumns}
-        maxWidth="45rem"
-        p={2}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: gridTemplateColumns,
+        maxWidth: '45rem',
+        padding: '0.4rem'
+      }}>
         {results.rows.slice(0, numOfResultsToShow).map((row, rowIndex) => (
           <Row key={rowIndex} row={row} fileLinkPrefix={fileLinkPrefix} sourceLocationPrefix={sourceLocationPrefix} />
         ))}
-      </Box>
+      </div>
       {
         showButton &&
         <TextButton size='x-small' onClick={() => setTableExpanded(!tableExpanded)}>

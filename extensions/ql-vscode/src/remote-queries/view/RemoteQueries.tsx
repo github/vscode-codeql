@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import * as Rdom from 'react-dom';
-import { Box, Flash, ThemeProvider } from '@primer/react';
+import { Flash, ThemeProvider } from '@primer/react';
 import { ToRemoteQueriesMessage } from '../../pure/interface-types';
 import { AnalysisSummary, RemoteQueryResult } from '../shared/remote-query-result';
 import { MAX_RAW_RESULTS } from '../shared/result-limits';
@@ -350,16 +350,16 @@ const AnalysesResults = ({
   return (
     <>
       <VerticalSpace size={2} />
-      <Box display="flex">
-        <Box flexGrow={1}>
+      <div style={{ display: 'flex' }}>
+        <div style={{ flexGrow: 1 }}>
           <AnalysesResultsTitle
             totalAnalysesResults={totalAnalysesResults}
             totalResults={totalResults} />
-        </Box>
-        <Box>
+        </div>
+        <div>
           <VSCodeButton onClick={exportResults}>Export all</VSCodeButton>
-        </Box>
-      </Box>
+        </div>
+      </div>
       <AnalysesResultsDescription
         queryResult={queryResult}
         analysesResults={analysesResults} />
