@@ -77,7 +77,7 @@ describe('repository-selection', function() {
     // Test the regex in various "good" cases
     const goodRepos = [
       'owner/repo',
-      'owner-with-hyphens/repo-with-hyphens_and_underscores',
+      'owner_with.symbols-/repo.with-symbols_',
       'ownerWithNumbers58/repoWithNumbers37'
     ];
     goodRepos.forEach(repo => {
@@ -101,7 +101,7 @@ describe('repository-selection', function() {
 
     // Test the regex in various "bad" cases
     const badRepos = [
-      'invalid_owner/repo',
+      'invalid*owner/repo',
       'owner/repo+some&invalid&stuff',
       'owner-with-no-repo/',
       '/repo-with-no-owner'
