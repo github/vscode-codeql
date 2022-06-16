@@ -1208,7 +1208,7 @@
     "chai-as-promised": "~7.1.1",
     "css-loader": "~3.1.0",
     "del": "^6.0.0",
-    "eslint": "~6.8.0",
+    "eslint": "~8.17.0",
     "eslint-plugin-react": "~7.19.0",
     "glob": "^7.1.4",
     "gulp": "^4.0.2",
