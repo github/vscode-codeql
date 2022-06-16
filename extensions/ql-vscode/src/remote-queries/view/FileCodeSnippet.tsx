@@ -1,10 +1,11 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import { CodeSnippet, FileLink, HighlightedRegion, AnalysisMessage, ResultSeverity } from '../shared/analysis-result';
-import { Box, Link } from '@primer/react';
+import { Box } from '@primer/react';
 import VerticalSpace from './VerticalSpace';
 import { createRemoteFileRef } from '../../pure/location-link-utils';
 import { parseHighlightedLine, shouldHighlightLine } from '../../pure/sarif-utils';
+import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
 
 const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
 const warningColor = '#966C23';
@@ -95,14 +96,15 @@ const Message = ({
             case 'text':
               return <span key={`token-${index}`}>{token.text}</span>;
             case 'location':
-              return <Link
+              return <VSCodeLink
+                style={{ fontFamily: 'var(--vscode-editor-font-family)' }}
                 key={`token-${index}`}
                 href={createRemoteFileRef(
                   token.location.fileLink,
                   token.location.highlightedRegion?.startLine,
                   token.location.highlightedRegion?.endLine)}>
                 {token.text}
-              </Link>;
+              </VSCodeLink>;
             default:
               return <></>;
           }
@@ -170,7 +172,7 @@ const FileCodeSnippet = ({
     return (
       <Container>
         <TitleContainer>
-          <Link href={titleFileUri}>{fileLink.filePath}</Link>
+          <VSCodeLink href={titleFileUri}>{fileLink.filePath}</VSCodeLink>
         </TitleContainer>
       </Container>
     );
@@ -181,7 +183,7 @@ const FileCodeSnippet = ({
   return (
     <Container>
       <TitleContainer>
-        <Link href={titleFileUri}>{fileLink.filePath}</Link>
+        <VSCodeLink href={titleFileUri}>{fileLink.filePath}</VSCodeLink>
       </TitleContainer>
       <CodeContainer>
         {code.map((line, index) => (

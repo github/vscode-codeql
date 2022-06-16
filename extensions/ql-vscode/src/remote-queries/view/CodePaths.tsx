@@ -1,5 +1,6 @@
 import { TriangleDownIcon, XCircleIcon } from '@primer/octicons-react';
-import { ActionList, ActionMenu, Box, Button, Label, Link, Overlay } from '@primer/react';
+import { ActionList, ActionMenu, Box, Button, Label, Overlay } from '@primer/react';
+import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
 import * as React from 'react';
 import { useRef, useState } from 'react';
 import styled from 'styled-components';
@@ -135,12 +136,12 @@ const CodePaths = ({
 
   return (
     <Box ref={anchorRef}>
-      <Link
+      <VSCodeLink
         onClick={() => setIsOpen(true)}
         ref={linkRef}
         sx={{ cursor: 'pointer' }}>
         Show paths
-      </Link>
+      </VSCodeLink>
       {isOpen && (
         <Overlay
           returnFocusRef={linkRef}
