@@ -77,9 +77,8 @@ describe('repository-selection', function() {
     // Test the regex in various "good" cases
     const goodRepos = [
       'owner/repo',
-      'owner-with-hyphens/repo-with-hyphens_and_underscores',
-      'ownerWithNumbers58/repoWithNumbers37',
-      'owner/repo.with.periods',
+      'owner_with.symbols-/repo.with-symbols_',
+      'ownerWithNumbers58/repoWithNumbers37'
     ];
     goodRepos.forEach(repo => {
       it(`should run on a valid repo that you enter in the text box: ${repo}`, async () => {
@@ -102,7 +101,7 @@ describe('repository-selection', function() {
 
     // Test the regex in various "bad" cases
     const badRepos = [
-      'invalid_owner/repo',
+      'invalid*owner/repo',
       'owner/repo+some&invalid&stuff',
       'owner-with-no-repo/',
       '/repo-with-no-owner'
