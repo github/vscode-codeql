@@ -1,41 +1,48 @@
 import * as React from 'react';
-import { Box, Link } from '@primer/react';
+import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
 import { CellValue, RawResultSet, ResultSetSchema } from '../../pure/bqrs-cli-types';
 import { tryGetRemoteLocation } from '../../pure/bqrs-utils';
 import { useState } from 'react';
 import TextButton from './TextButton';
 import { convertNonPrintableChars } from '../../text-utils';
 
+const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
+
 const numOfResultsInContractedMode = 5;
 
 const Row = ({
   row,
-  fileLinkPrefix
+  fileLinkPrefix,
+  sourceLocationPrefix
 }: {
   row: CellValue[],
-  fileLinkPrefix: string
+  fileLinkPrefix: string,
+  sourceLocationPrefix: string
 }) => (
   <>
     {row.map((cell, cellIndex) => (
-      <Box key={cellIndex}
-        borderColor="border.default"
-        borderStyle="solid"
-        justifyContent="center"
-        alignItems="center"
-        p={2}
-        sx={{ wordBreak: 'break-word' }}>
-        <Cell value={cell} fileLinkPrefix={fileLinkPrefix} />
-      </Box>
+      <div key={cellIndex} style={{
+        borderColor: borderColor,
+        borderStyle: 'solid',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '0.4rem',
+        wordBreak: 'break-word'
+      }}>
+        <Cell value={cell} fileLinkPrefix={fileLinkPrefix} sourceLocationPrefix={sourceLocationPrefix} />
+      </div>
     ))}
   </>
 );
 
 const Cell = ({
   value,
-  fileLinkPrefix
+  fileLinkPrefix,
+  sourceLocationPrefix
 }: {
   value: CellValue,
   fileLinkPrefix: string
+  sourceLocationPrefix: string
 }) => {
   switch (typeof value) {
     case 'string':
@@ -43,8 +50,13 @@ const Cell = ({
     case 'boolean':
       return <span>{convertNonPrintableChars(value.toString())}</span>;
     case 'object': {
-      const url = tryGetRemoteLocation(value.url, fileLinkPrefix);
-      return <Link href={url}>{convertNonPrintableChars(value.label)}</Link>;
+      const url = tryGetRemoteLocation(value.url, fileLinkPrefix, sourceLocationPrefix);
+      const safeLabel = convertNonPrintableChars(value.label);
+      if (url) {
+        return <VSCodeLink href={url}>{safeLabel}</VSCodeLink>;
+      } else {
+        return <span>{safeLabel}</span>;
+      }
     }
   }
 };
@@ -52,11 +64,13 @@ const Cell = ({
 const RawResultsTable = ({
   schema,
   results,
-  fileLinkPrefix
+  fileLinkPrefix,
+  sourceLocationPrefix
 }: {
   schema: ResultSetSchema,
   results: RawResultSet,
-  fileLinkPrefix: string
+  fileLinkPrefix: string,
+  sourceLocationPrefix: string
 }) => {
   const [tableExpanded, setTableExpanded] = useState(false);
   const numOfResultsToShow = tableExpanded ? results.rows.length : numOfResultsInContractedMode;
@@ -69,15 +83,16 @@ const RawResultsTable = ({
 
   return (
     <>
-      <Box
-        display="grid"
-        gridTemplateColumns={gridTemplateColumns}
-        maxWidth="45rem"
-        p={2}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: gridTemplateColumns,
+        maxWidth: '45rem',
+        padding: '0.4rem'
+      }}>
         {results.rows.slice(0, numOfResultsToShow).map((row, rowIndex) => (
-          <Row key={rowIndex} row={row} fileLinkPrefix={fileLinkPrefix} />
+          <Row key={rowIndex} row={row} fileLinkPrefix={fileLinkPrefix} sourceLocationPrefix={sourceLocationPrefix} />
         ))}
-      </Box>
+      </div>
       {
         showButton &&
         <TextButton size='x-small' onClick={() => setTableExpanded(!tableExpanded)}>

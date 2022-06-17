@@ -29,7 +29,9 @@ Here are a few things you can do that will increase the likelihood of your pull 
 
 ## Setting up a local build
 
-Make sure you have installed recent versions of vscode (>= v1.52), node (>=12.16), and npm (>= 7.5.2). Earlier versions will probably work, but we no longer test against them.
+Make sure you have installed recent versions of vscode, node, and npm. Check the `engines` block in [`package.json`](https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/package.json) file for compatible versions. Earlier versions may work, but we no longer test against them.
+
+To automatically switch to the correct version of node, we recommend using [nvm](https://github.com/nvm-sh/nvm), which will pick-up the node version from `.nvmrc`.
 
 ### Installing all packages
 
@@ -102,6 +104,10 @@ From inside of VSCode, open the `launch.json` file and in the _Launch Integratio
 1. Double-check the `CHANGELOG.md` contains all desired change comments and has the version to be released with date at the top.
     * Go through all recent PRs and make sure they are properly accounted for.
     * Make sure all changelog entries have links back to their PR(s) if appropriate.
+1. Double-check that the node version we're using matches the one used for VS Code. If it doesn't, you will then need to update the node version in the following files:
+    * `.nvmrc` - this will enable `nvm` to automatically switch to the correct node version when you're in the project folder
+    * `.github/workflows/main.yml` - all the "node-version: <version>" settings
+    * `.github/workflows/release.yml` - the "node-version: <version>" setting
 1. Double-check that the extension `package.json` and `package-lock.json` have the version you intend to release. If you are doing a patch release (as opposed to minor or major version) this should already be correct.
 1. Create a PR for this release:
     * This PR will contain any missing bits from steps 1 and 2. Most of the time, this will just be updating `CHANGELOG.md` with today's date.
@@ -109,15 +115,34 @@ From inside of VSCode, open the `launch.json` file and in the _Launch Integratio
     * Create a new commit with a message the same as the branch name.
     * Create a PR for this branch.
     * Wait for the PR to be merged into `main`
-1. Trigger a release build on Actions by adding a new tag on branch `main` named after the release, as above. Note that when you push to upstream, you will need to fully qualify the ref. A command like this will work:
+1. Switch to `main` and add a new tag on the `main` branch with your new version (named after the release), e.g.
+    ```bash
+    git checkout main
+    git tag v1.3.6
+    ```
+
+   If you've accidentally created a badly named tag, you can delete it via 
+    ```bash
+    git tag -d badly-named-tag
+    ```
+1. Push the new tag up:
+
+   a. If you're using a fork of the repo:
 
     ```bash
     git push upstream refs/tags/v1.3.6
     ```
+   
+   b. If you're working straight in this repo:
+
+    ```bash
+    git push origin refs/tags/v1.3.6
+    ``` 
+   
+   This will trigger [a release build](https://github.com/github/vscode-codeql/releases) on Actions.
 
     * **IMPORTANT** Make sure you are on the `main` branch and your local checkout is fully updated when you add the tag.
     * If you accidentally add the tag to the wrong ref, you can just force push it to the right one later.
-
 1. Monitor the status of the release build in the `Release` workflow in the Actions tab.
 1. Download the VSIX from the draft GitHub release at the top of [the releases page](https://github.com/github/vscode-codeql/releases) that is created when the release build finishes.
 1. Unzip the `.vsix` and inspect its `package.json` to make sure the version is what you expect,

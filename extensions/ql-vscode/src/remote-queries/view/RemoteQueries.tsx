@@ -1,16 +1,15 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import * as Rdom from 'react-dom';
-import { Box, Flash, ThemeProvider } from '@primer/react';
+import { Flash, ThemeProvider } from '@primer/react';
 import { ToRemoteQueriesMessage } from '../../pure/interface-types';
 import { AnalysisSummary, RemoteQueryResult } from '../shared/remote-query-result';
 import { MAX_RAW_RESULTS } from '../shared/result-limits';
 import { vscode } from '../../view/vscode-api';
-
+import { VSCodeBadge, VSCodeButton } from '@vscode/webview-ui-toolkit/react';
 import SectionTitle from './SectionTitle';
 import VerticalSpace from './VerticalSpace';
 import HorizontalSpace from './HorizontalSpace';
-import Badge from './Badge';
 import ViewTitle from './ViewTitle';
 import DownloadButton from './DownloadButton';
 import { AnalysisResults, getAnalysisResultCount } from '../shared/analysis-result';
@@ -20,7 +19,6 @@ import { AlertIcon, CodeSquareIcon, FileCodeIcon, RepoIcon, TerminalIcon } from 
 import AnalysisAlertResult from './AnalysisAlertResult';
 import RawResultsTable from './RawResultsTable';
 import RepositoriesSearch from './RepositoriesSearch';
-import ActionButton from './ActionButton';
 import StarCount from './StarCount';
 import SortRepoFilter, { Sort, sorter } from './SortRepoFilter';
 import LastUpdated from './LastUpdated';
@@ -198,7 +196,10 @@ const SummaryItem = ({
   <>
     <span className="vscode-codeql__analysis-item"><RepoIcon size={16} /></span>
     <span className="vscode-codeql__analysis-item">{analysisSummary.nwo}</span>
-    <span className="vscode-codeql__analysis-item"><Badge text={analysisSummary.resultCount.toString()} /></span>
+    <HorizontalSpace size={1} />
+    <span className="vscode-codeql__analysis-item">
+      <VSCodeBadge>{analysisSummary.resultCount.toString()}</VSCodeBadge>
+    </span>
     <span className="vscode-codeql__analysis-item">
       <SummaryItemDownload
         analysisSummary={analysisSummary}
@@ -304,7 +305,8 @@ const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
   const numOfResults = getAnalysisResultCount(analysisResults);
   const title = <>
     {analysisResults.nwo}
-    <Badge text={numOfResults.toString()} />
+    <HorizontalSpace size={1} />
+    <VSCodeBadge>{numOfResults.toString()}</VSCodeBadge>
   </>;
 
   return (
@@ -320,7 +322,8 @@ const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
         <RawResultsTable
           schema={analysisResults.rawResults.schema}
           results={analysisResults.rawResults.resultSet}
-          fileLinkPrefix={analysisResults.rawResults.fileLinkPrefix} />
+          fileLinkPrefix={analysisResults.rawResults.fileLinkPrefix}
+          sourceLocationPrefix={analysisResults.rawResults.sourceLocationPrefix} />
       }
     </CollapsibleItem>
   );
@@ -347,16 +350,16 @@ const AnalysesResults = ({
   return (
     <>
       <VerticalSpace size={2} />
-      <Box display="flex">
-        <Box flexGrow={1}>
+      <div style={{ display: 'flex' }}>
+        <div style={{ flexGrow: 1 }}>
           <AnalysesResultsTitle
             totalAnalysesResults={totalAnalysesResults}
             totalResults={totalResults} />
-        </Box>
-        <Box>
-          <ActionButton text="Export all" onClick={exportResults}></ActionButton>
-        </Box>
-      </Box>
+        </div>
+        <div>
+          <VSCodeButton onClick={exportResults}>Export all</VSCodeButton>
+        </div>
+      </div>
       <AnalysesResultsDescription
         queryResult={queryResult}
         analysesResults={analysesResults} />

@@ -1,5 +1,6 @@
 import { TriangleDownIcon, XCircleIcon } from '@primer/octicons-react';
-import { ActionList, ActionMenu, Box, Button, Label, Link, Overlay } from '@primer/react';
+import { ActionList, ActionMenu, Button, Label, Overlay } from '@primer/react';
+import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
 import * as React from 'react';
 import { useRef, useState } from 'react';
 import styled from 'styled-components';
@@ -53,21 +54,21 @@ const CodePath = ({
       <div key={`thread-flow-${index}`} style={{ maxWidth: '55em' }}>
         {index !== 0 && <VerticalSpace size={3} />}
 
-        <Box display="flex" justifyContent="center" alignItems="center">
-          <Box flexGrow={1} p={0} border="none">
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ flexGrow: 1, padding: 0, border: 'none' }}>
             <SectionTitle>Step {index + 1}</SectionTitle>
-          </Box>
+          </div>
           {index === 0 &&
-            <Box p={0} border="none">
+            <div style={{ padding: 0, border: 'none' }}>
               <Label>Source</Label>
-            </Box>
+            </div>
           }
           {index === codeFlow.threadFlows.length - 1 &&
-            <Box p={0} border="none">
+            <div style={{ padding: 0, border: 'none' }}>
               <Label>Sink</Label>
-            </Box>
+            </div>
           }
-        </Box>
+        </div>
 
         <VerticalSpace size={2} />
         <FileCodeSnippet
@@ -134,13 +135,13 @@ const CodePaths = ({
   const closeOverlay = () => setIsOpen(false);
 
   return (
-    <Box ref={anchorRef}>
-      <Link
+    <div ref={anchorRef}>
+      <VSCodeLink
         onClick={() => setIsOpen(true)}
         ref={linkRef}
         sx={{ cursor: 'pointer' }}>
         Show paths
-      </Link>
+      </VSCodeLink>
       {isOpen && (
         <Overlay
           returnFocusRef={linkRef}
@@ -153,14 +154,14 @@ const CodePaths = ({
             <SectionTitle>{ruleDescription}</SectionTitle>
             <VerticalSpace size={2} />
 
-            <Box display="flex" justifyContent="center" alignItems="center">
-              <Box p={0} border="none">
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ padding: 0, border: 0 }}>
                 {codeFlows.length} paths available: {selectedCodeFlow.threadFlows.length} steps in
-              </Box>
-              <Box flexGrow={1} p={0} paddingLeft="0.2em" border="none">
+              </div>
+              <div style={{ flexGrow: 1, padding: 0, paddingLeft: '0.2em', border: 'none' }}>
                 <Menu codeFlows={codeFlows} setSelectedCodeFlow={setSelectedCodeFlow} />
-              </Box>
-            </Box>
+              </div>
+            </div>
 
             <VerticalSpace size={2} />
             <CodePath
@@ -173,7 +174,7 @@ const CodePaths = ({
           </OverlayContainer>
         </Overlay>
       )}
-    </Box>
+    </div>
   );
 };
 

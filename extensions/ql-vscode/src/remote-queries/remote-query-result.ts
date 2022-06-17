@@ -12,6 +12,7 @@ export interface AnalysisSummary {
   nwo: string,
   databaseSha: string,
   resultCount: number,
+  sourceLocationPrefix: string,
   downloadLink: DownloadLink,
   fileSizeInBytes: number,
   starCount?: number,

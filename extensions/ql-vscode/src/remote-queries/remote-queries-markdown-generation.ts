@@ -238,7 +238,7 @@ function generateMarkdownForRawResults(
 
   for (const row of analysisRawResults.resultSet.rows) {
     const cells = row.map((cell) =>
-      generateMarkdownForRawTableCell(cell, analysisRawResults.fileLinkPrefix)
+      generateMarkdownForRawTableCell(cell, analysisRawResults.fileLinkPrefix, analysisRawResults.sourceLocationPrefix)
     );
     tableRows.push(`| ${cells.join(' | ')} |`);
   }
@@ -247,7 +247,8 @@ function generateMarkdownForRawResults(
 
 function generateMarkdownForRawTableCell(
   value: CellValue,
-  fileLinkPrefix: string
+  fileLinkPrefix: string,
+  sourceLocationPrefix: string
 ) {
   let cellValue: string;
   switch (typeof value) {
@@ -258,8 +259,12 @@ function generateMarkdownForRawTableCell(
       break;
     case 'object':
       {
-        const url = tryGetRemoteLocation(value.url, fileLinkPrefix);
-        cellValue = `[\`${convertNonPrintableChars(value.label)}\`](${url})`;
+        const url = tryGetRemoteLocation(value.url, fileLinkPrefix, sourceLocationPrefix);
+        if (url) {
+          cellValue = `[\`${convertNonPrintableChars(value.label)}\`](${url})`;
+        } else {
+          cellValue = `\`${convertNonPrintableChars(value.label)}\``;
+        }
       }
       break;
   }
