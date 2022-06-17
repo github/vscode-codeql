@@ -80,7 +80,9 @@ describe('repository-selection', function() {
     const goodOwners = [
       'owner',
       'owner-with-hyphens',
-      'ownerWithNumbers58'
+      'ownerWithNumbers58',
+      'owner_with_underscores',
+      'owner.with.periods.'
     ];
     goodOwners.forEach(owner => {
       it(`should run on a valid owner that you enter in the text box: ${owner}`, async () => {
@@ -103,7 +105,7 @@ describe('repository-selection', function() {
 
     // Test the owner regex in various "bad" cases
     const badOwners = [
-      'invalid_owner',
+      'invalid&owner',
       'owner-with-repo/repo'
     ];
     badOwners.forEach(owner => {

@@ -40,9 +40,9 @@ export const REPO_REGEX = /^[a-zA-Z0-9-_\.]+\/[a-zA-Z0-9-_\.]+$/;
 
 /**
  * This regex matches GiHub organization and user strings. These are made up for alphanumeric 
- * characters or single hyphens, starting and ending in an alphanumeric character.
+ * characters, hyphens, underscores or periods.
  */
-export const OWNER_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+$/;
+export const OWNER_REGEX = /^[a-zA-Z0-9-_\.]+$/;
 
 export function getErrorMessage(e: any) {
   return e instanceof Error ? e.message : String(e);
