@@ -1,7 +1,6 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import { CodeSnippet, FileLink, HighlightedRegion, AnalysisMessage, ResultSeverity } from '../shared/analysis-result';
-import { Box } from '@primer/react';
 import VerticalSpace from './VerticalSpace';
 import { createRemoteFileRef } from '../../pure/location-link-utils';
 import { parseHighlightedLine, shouldHighlightLine } from '../../pure/sarif-utils';
@@ -68,13 +67,13 @@ const Message = ({
   message,
   currentLineNumber,
   highlightedRegion,
-  borderColor,
+  borderLeftColor,
   children
 }: {
   message: AnalysisMessage,
   currentLineNumber: number,
   highlightedRegion?: HighlightedRegion,
-  borderColor: string,
+  borderLeftColor: string,
   children: React.ReactNode
 }) => {
   if (!highlightedRegion || highlightedRegion.endLine !== currentLineNumber) {
@@ -82,14 +81,15 @@ const Message = ({
   }
 
   return <MessageContainer>
-    <Box
-      borderColor="border.default"
-      borderWidth={1}
-      borderStyle="solid"
-      borderLeftColor={borderColor}
-      borderLeftWidth={3}
-      paddingTop="1em"
-      paddingBottom="1em">
+    <div style={{
+      borderColor: borderColor,
+      borderWidth: '0.1em',
+      borderStyle: 'solid',
+      borderLeftColor: borderLeftColor,
+      borderLeftWidth: '0.3em',
+      paddingTop: '1em',
+      paddingBottom: '1em'
+    }}>
       <MessageText>
         {message.tokens.map((token, index) => {
           switch (token.t) {
@@ -115,8 +115,7 @@ const Message = ({
         </>
         }
       </MessageText>
-    </Box>
-
+    </div>
   </MessageContainer>;
 };
 
@@ -188,36 +187,36 @@ const FileCodeSnippet = ({
       <CodeContainer>
         {code.map((line, index) => (
           <div key={index}>
-            <Box display="flex">
-              <Box
-                p={2}
-                borderStyle="none"
-                paddingTop="0.01em"
-                paddingLeft="0.5em"
-                paddingRight="0.5em"
-                paddingBottom="0.2em">
+            <div style={{ display: 'flex' }} >
+              <div style={{
+                borderStyle: 'none',
+                paddingTop: '0.01em',
+                paddingLeft: '0.5em',
+                paddingRight: '0.5em',
+                paddingBottom: '0.2em'
+              }}>
                 {startingLine + index}
-              </Box>
-              <Box
-                flexGrow={1}
-                p={2}
-                borderStyle="none"
-                paddingTop="0.01em"
-                paddingLeft="1.5em"
-                paddingRight="0.5em"
-                paddingBottom="0.2em"
-                sx={{ wordBreak: 'break-word' }}>
+              </div>
+              <div style={{
+                flexGrow: 1,
+                borderStyle: 'none',
+                paddingTop: '0.01em',
+                paddingLeft: '1.5em',
+                paddingRight: '0.5em',
+                paddingBottom: '0.2em',
+                wordBreak: 'break-word'
+              }}>
                 <CodeLine
                   line={line}
                   lineNumber={startingLine + index}
                   highlightedRegion={highlightedRegion} />
-              </Box>
-            </Box>
+              </div>
+            </div>
             {message && severity && <Message
               message={message}
               currentLineNumber={startingLine + index}
               highlightedRegion={highlightedRegion}
-              borderColor={getSeverityColor(severity)}>
+              borderLeftColor={getSeverityColor(severity)}>
               {messageChildren}
             </Message>}
           </div>
