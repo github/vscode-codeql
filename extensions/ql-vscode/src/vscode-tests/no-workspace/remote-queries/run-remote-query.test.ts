@@ -10,23 +10,12 @@ describe('run-remote-query', () => {
         repositories_queried: ['a/b', 'c/d'],
       });
 
-      expect(result.popupMessage).to.equal('Successfully scheduled runs. [Click here to see the progress](https://github.com/org/name/actions/runs/123).');
+      expect(result.popupMessage).to.equal('Successfully scheduled runs on 2 repositories. [Click here to see the progress](https://github.com/org/name/actions/runs/123).');
       expect(result.logMessage).to.equal(
-        ['Successfully scheduled runs. See https://github.com/org/name/actions/runs/123.',
+        ['Successfully scheduled runs on 2 repositories. See https://github.com/org/name/actions/runs/123.',
           '',
           'Repositories queried:',
           'a/b, c/d'].join(os.EOL),
-      );
-    });
-
-    it('should parse a response with no repositories queried', () => {
-      const result = parseResponse('org', 'name', {
-        workflow_run_id: 123,
-      });
-
-      expect(result.popupMessage).to.equal('Successfully scheduled runs. [Click here to see the progress](https://github.com/org/name/actions/runs/123).');
-      expect(result.logMessage).to.equal(
-        'Successfully scheduled runs. See https://github.com/org/name/actions/runs/123.'
       );
     });
 
@@ -40,12 +29,12 @@ describe('run-remote-query', () => {
       });
 
       expect(result.popupMessage).to.equal(
-        ['Successfully scheduled runs. [Click here to see the progress](https://github.com/org/name/actions/runs/123).',
+        ['Successfully scheduled runs on 2 repositories. [Click here to see the progress](https://github.com/org/name/actions/runs/123).',
           '',
           'Some repositories could not be scheduled. See extension log for details.'].join(os.EOL)
       );
       expect(result.logMessage).to.equal(
-        ['Successfully scheduled runs. See https://github.com/org/name/actions/runs/123.',
+        ['Successfully scheduled runs on 2 repositories. See https://github.com/org/name/actions/runs/123.',
           '',
           'Repositories queried:',
           'a/b, c/d',
@@ -67,12 +56,12 @@ describe('run-remote-query', () => {
       });
 
       expect(result.popupMessage).to.equal(
-        ['Successfully scheduled runs. [Click here to see the progress](https://github.com/org/name/actions/runs/123).',
+        ['Successfully scheduled runs on 2 repositories. [Click here to see the progress](https://github.com/org/name/actions/runs/123).',
           '',
           'Some repositories could not be scheduled. See extension log for details.'].join(os.EOL)
       );
       expect(result.logMessage).to.equal(
-        ['Successfully scheduled runs. See https://github.com/org/name/actions/runs/123.',
+        ['Successfully scheduled runs on 2 repositories. See https://github.com/org/name/actions/runs/123.',
           '',
           'Repositories queried:',
           'a/b, c/d',
@@ -96,12 +85,12 @@ describe('run-remote-query', () => {
       });
 
       expect(result.popupMessage).to.equal(
-        ['Successfully scheduled runs. [Click here to see the progress](https://github.com/org/name/actions/runs/123).',
+        ['Successfully scheduled runs on 2 repositories. [Click here to see the progress](https://github.com/org/name/actions/runs/123).',
           '',
           'Some repositories could not be scheduled. See extension log for details.'].join(os.EOL)
       );
       expect(result.logMessage).to.equal(
-        ['Successfully scheduled runs. See https://github.com/org/name/actions/runs/123.',
+        ['Successfully scheduled runs on 2 repositories. See https://github.com/org/name/actions/runs/123.',
           '',
           'Repositories queried:',
           'a/b, c/d',

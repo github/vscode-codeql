@@ -39,7 +39,7 @@ interface QueriesResponse {
     invalid_repositories?: string[],
     repositories_without_database?: string[],
   },
-  repositories_queried?: string[],
+  repositories_queried: string[],
 }
 
 /**
@@ -341,15 +341,16 @@ async function runRemoteQueriesApiRequest(
 const eol = os.EOL;
 const eol2 = os.EOL + os.EOL;
 
-// exported for testng only
+// exported for testing only
 export function parseResponse(owner: string, repo: string, response: QueriesResponse) {
-  const popupMessage = `Successfully scheduled runs. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
+  const repositoriesQueried = response.repositories_queried;
+  const numRepositoriesQueried = repositoriesQueried.length;
+
+  const popupMessage = `Successfully scheduled runs on ${numRepositoriesQueried} repositories. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
     + (response.errors ? `${eol2}Some repositories could not be scheduled. See extension log for details.` : '');
 
-  let logMessage = `Successfully scheduled runs. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
-  if (response.repositories_queried) {
-    logMessage += `${eol2}Repositories queried:${eol}${response.repositories_queried.join(', ')}`;
-  }
+  let logMessage = `Successfully scheduled runs on ${numRepositoriesQueried} repositories. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
+  logMessage += `${eol2}Repositories queried:${eol}${repositoriesQueried.join(', ')}`;
   if (response.errors) {
     logMessage += `${eol2}Some repositories could not be scheduled.`;
     if (response.errors.invalid_repositories?.length) {
