@@ -956,11 +956,11 @@ export class QueryHistoryManager extends DisposableObject {
       void this.tryOpenExternalFile(query.csvPath);
       return;
     }
-    await query.exportCsvResults(this.qs, query.csvPath, () => {
+    if (await query.exportCsvResults(this.qs, query.csvPath)) {
       void this.tryOpenExternalFile(
         query.csvPath
       );
-    });
+    }
   }
 
   async handleViewCsvAlerts(

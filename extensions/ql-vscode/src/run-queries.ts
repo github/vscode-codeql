@@ -341,31 +341,67 @@ export class QueryEvaluationInfo {
   /**
    * Creates the CSV file containing the results of this query. This will only be called if the query
    * does not have interpreted results and the CSV file does not already exist.
+   *
+   * @return Promise<true> if the operation creates the file. Promise<false> if the operation does
+   * not create the file.
+   *
+   * @throws Error if the operation fails.
    */
-  async exportCsvResults(qs: qsClient.QueryServerClient, csvPath: string, onFinish: () => void): Promise<void> {
+  async exportCsvResults(qs: qsClient.QueryServerClient, csvPath: string): Promise<boolean> {
+    const resultSet = await this.chooseResultSet(qs);
+    if (!resultSet) {
+      void showAndLogWarningMessage('Query has no result set.');
+      return false;
+    }
     let stopDecoding = false;
     const out = fs.createWriteStream(csvPath);
-    out.on('finish', onFinish);
-    out.on('error', () => {
-      if (!stopDecoding) {
-        stopDecoding = true;
-        void showAndLogErrorMessage(`Failed to write CSV results to ${csvPath}`);
-      }
+
+    const promise: Promise<boolean> = new Promise((resolve, reject) => {
+      out.on('finish', () => resolve(true));
+      out.on('error', () => {
+        if (!stopDecoding) {
+          stopDecoding = true;
+          reject(new Error(`Failed to write CSV results to ${csvPath}`));
+        }
+      });
     });
+
     let nextOffset: number | undefined = 0;
-    while (nextOffset !== undefined && !stopDecoding) {
-      const chunk: DecodedBqrsChunk = await qs.cliServer.bqrsDecode(this.resultsPaths.resultsPath, SELECT_QUERY_NAME, {
+    do {
+      const chunk: DecodedBqrsChunk = await qs.cliServer.bqrsDecode(this.resultsPaths.resultsPath, resultSet, {
         pageSize: 100,
         offset: nextOffset,
       });
-      for (const tuple of chunk.tuples) {
-        out.write(tuple.join(',') + '\n');
-      }
+      chunk.tuples.forEach((tuple) => {
+        out.write(tuple.map((v, i) =>
+          chunk.columns[i].kind === 'String'
+            ? `"${typeof v === 'string' ? v.replaceAll('"', '""') : v}"`
+            : v
+        ).join(',') + '\n');
+      });
       nextOffset = chunk.next;
-    }
+    } while (nextOffset && !stopDecoding);
     out.end();
+
+    return promise;
   }
 
+  /**
+   * Choose the name of the result set to run. If the `#select` set exists, use that. Otherwise,
+   * arbitrarily choose the first set. Most of the time, this will be correct.
+   *
+   * If the query has no result sets, then return undefined.
+   */
+  async chooseResultSet(qs: qsClient.QueryServerClient) {
+    const resultSets = (await qs.cliServer.bqrsInfo(this.resultsPaths.resultsPath, 0))['result-sets'];
+    if (!resultSets.length) {
+      return undefined;
+    }
+    if (resultSets.find(r => r.name === SELECT_QUERY_NAME)) {
+      return SELECT_QUERY_NAME;
+    }
+    return resultSets[0].name;
+  }
   /**
    * Returns the path to the CSV alerts interpretation of this query results. If CSV results have
    * not yet been produced, this will return first create the CSV results and then return the path.
