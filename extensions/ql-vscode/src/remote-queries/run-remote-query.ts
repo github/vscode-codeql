@@ -1,4 +1,4 @@
-import { CancellationToken, Uri, window } from 'vscode';
+import { CancellationToken, Uri } from 'vscode';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
@@ -16,14 +16,15 @@ import {
 import { Credentials } from '../authentication';
 import * as cli from '../cli';
 import { logger } from '../logging';
-import { getActionBranch, getRemoteControllerRepo, setRemoteControllerRepo } from '../config';
+import { getActionBranch } from '../config';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { OctokitResponse } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
-import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
+import { getErrorMessage } from '../pure/helpers-pure';
 import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
+import { getControllerRepoSelection } from './repository';
 
 export interface QlPack {
   name: string;
@@ -206,31 +207,8 @@ export async function runRemoteQuery(
       message: 'Determining controller repo'
     });
 
-    // Get the controller repo from the config, if it exists.
-    // If it doesn't exist, prompt the user to enter it, and save that value to the config.
-    let controllerRepo: string | undefined;
-    controllerRepo = getRemoteControllerRepo();
-    if (!controllerRepo || !REPO_REGEX.test(controllerRepo)) {
-      void logger.log(controllerRepo ? 'Invalid controller repository name.' : 'No controller repository defined.');
-      controllerRepo = await window.showInputBox({
-        title: 'Controller repository in which to display progress and results of variant analysis',
-        placeHolder: '<owner>/<repo>',
-        prompt: 'Enter the name of a GitHub repository in the format <owner>/<repo>',
-        ignoreFocusOut: true,
-      });
-      if (!controllerRepo) {
-        void showAndLogErrorMessage('No controller repository entered.');
-        return;
-      } else if (!REPO_REGEX.test(controllerRepo)) { // Check if user entered invalid input
-        void showAndLogErrorMessage('Invalid repository format. Must be a valid GitHub repository in the format <owner>/<repo>.');
-        return;
-      }
-      void logger.log(`Setting the controller repository as: ${controllerRepo}`);
-      await setRemoteControllerRepo(controllerRepo);
-    }
-
-    void logger.log(`Using controller repository: ${controllerRepo}`);
-    const [owner, repo] = controllerRepo.split('/');
+    const controllerRepoSelection = await getControllerRepoSelection();
+    const [owner, repo] = controllerRepoSelection.split('/');
 
     progress({
       maxStep: 4,
