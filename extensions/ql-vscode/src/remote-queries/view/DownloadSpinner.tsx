@@ -1,19 +1,15 @@
-import { Spinner } from '@primer/react';
+import { VSCodeProgressRing } from '@vscode/webview-ui-toolkit/react';
 import * as React from 'react';
 import styled from 'styled-components';
 
 const SpinnerContainer = styled.span`
   vertical-align: middle;
-
-  svg {
-    width: 0.8em;
-    height: 0.8em;  
-  }
+  display: inline-block;
 `;
 
 const DownloadSpinner = () => (
   <SpinnerContainer>
-    <Spinner size="small" />
+    <VSCodeProgressRing style={{ height: '0.8em', width: '0.8em' }} />
   </SpinnerContainer>
 );
 
