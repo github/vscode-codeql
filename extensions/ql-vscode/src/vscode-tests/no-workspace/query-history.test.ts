@@ -402,8 +402,7 @@ describe('query-history', () => {
       });
     });
 
-    it('should get the selection from the treeView when both selections are empty', async function() {
-      this.timeout(999999999);
+    it('should get the selection from the treeView when both selections are empty', async () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
       const p = new Promise<void>(done => {
         queryHistoryManager!.treeView.onDidChangeSelection(s => {
