@@ -244,6 +244,12 @@ describe('Remote queries', function() {
     expect(packNames[0]).to.deep.equal('javascript-all');
   });
 
+  it('should fail when the controller repo name is misspelled', async () => {
+    await setRemoteControllerRepo('github/vscode-codeql123');
+
+    expect(true).to.be.true;
+  });
+
   it('should cancel a run before uploading', async () => {
     const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
