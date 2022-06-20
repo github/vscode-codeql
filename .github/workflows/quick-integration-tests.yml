@@ -1,0 +1,42 @@
+name: _Run CLI tests_
+on: [push]
+
+jobs:
+  cli-test:
+    name: CLI Test
+    runs-on: ubuntu-latest
+    env:
+      CLI_VERSION: 'v2.9.4'
+      TEST_CODEQL_PATH: '${{ github.workspace }}/codeql'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '16.13.0'
+
+      - name: Install dependencies
+        working-directory: extensions/ql-vscode
+        run: |
+          npm install
+        shell: bash
+
+      - name: Build
+        working-directory: extensions/ql-vscode
+        run: |
+          npm run build
+        shell: bash
+
+      - name: Checkout QL
+        uses: actions/checkout@v2
+        with:
+          repository: github/codeql
+          ref: codeql-cli/v2.9.4
+          path: codeql
+
+      - name: Run CLI tests (Linux)
+        working-directory: extensions/ql-vscode
+        run: |
+          /usr/bin/xvfb-run npm run cli-integration
