@@ -95,9 +95,9 @@ import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQueryResult } from './remote-queries/remote-query-result';
 import { URLSearchParams } from 'url';
 import { handleDownloadPacks, handleInstallPackDependencies } from './packaging';
-import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { exportRemoteQueryResults } from './remote-queries/export-results';
+import { RemoteQuery } from './remote-queries/remote-query';
 
 /**
  * extension.ts
@@ -451,10 +451,20 @@ async function activateWithInstalledDistribution(
   await fs.ensureDir(queryStorageDir);
   const labelProvider = new HistoryItemLabelProvider(queryHistoryConfigurationListener);
 
+  void logger.log('Initializing results panel interface.');
+  const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger, labelProvider);
+  ctx.subscriptions.push(intm);
+
+  void logger.log('Initializing variant analysis manager.');
+  const rqm = new RemoteQueriesManager(ctx, cliServer, queryStorageDir, logger);
+  ctx.subscriptions.push(rqm);
+
   void logger.log('Initializing query history.');
   const qhm = new QueryHistoryManager(
     qs,
     dbm,
+    intm,
+    rqm,
     queryStorageDir,
     ctx,
     queryHistoryConfigurationListener,
@@ -463,17 +473,11 @@ async function activateWithInstalledDistribution(
       showResultsForComparison(from, to),
   );
 
-  qhm.onWillOpenQueryItem(async item => {
-    if (item.t === 'local' && item.completed) {
-      await showResultsForCompletedQuery(item as CompletedLocalQueryInfo, WebviewReveal.Forced);
-    }
-  });
 
   ctx.subscriptions.push(qhm);
 
-  void logger.log('Initializing results panel interface.');
-  const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger, labelProvider);
-  ctx.subscriptions.push(intm);
+  void logger.log('Reading query history');
+  await qhm.readQueryHistory();
 
   void logger.log('Initializing compare panel interface.');
   const cmpm = new CompareInterfaceManager(
@@ -844,14 +848,6 @@ async function activateWithInstalledDistribution(
     )
   );
 
-  void logger.log('Initializing variant analysis results view.');
-  const rqm = new RemoteQueriesManager(ctx, cliServer, qhm, queryStorageDir, logger);
-  ctx.subscriptions.push(rqm);
-
-  // wait until after the remote queries manager is initialized to read the query history
-  // since the rqm is notified of queries being added.
-  await qhm.readQueryHistory();
-
 
   registerRemoteQueryTextProvider();
 
@@ -884,9 +880,10 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.monitorRemoteQuery', async (
-      queryItem: RemoteQueryHistoryItem,
+      queryId: string,
+      query: RemoteQuery,
       token: CancellationToken) => {
-      await rqm.monitorRemoteQuery(queryItem, token);
+      await rqm.monitorRemoteQuery(queryId, query, token);
     }));
 
   ctx.subscriptions.push(

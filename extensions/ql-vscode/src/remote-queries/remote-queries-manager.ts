@@ -1,4 +1,4 @@
-import { CancellationToken, commands, ExtensionContext, Uri, window } from 'vscode';
+import { CancellationToken, commands, EventEmitter, ExtensionContext, Uri, window } from 'vscode';
 import { nanoid } from 'nanoid';
 import * as path from 'path';
 import * as fs from 'fs-extra';
@@ -18,18 +18,39 @@ import { RemoteQueryResult } from './remote-query-result';
 import { DownloadLink } from './download-link';
 import { AnalysesResultsManager } from './analyses-results-manager';
 import { assertNever } from '../pure/helpers-pure';
-import { RemoteQueryHistoryItem } from './remote-query-history-item';
-import { QueryHistoryManager } from '../query-history';
 import { QueryStatus } from '../query-status';
 import { DisposableObject } from '../pure/disposable-object';
-import { QueryHistoryInfo } from '../query-results';
 import { AnalysisResults } from './shared/analysis-result';
 
 const autoDownloadMaxSize = 300 * 1024;
 const autoDownloadMaxCount = 100;
 
 const noop = () => { /* do nothing */ };
+
+export interface NewQueryEvent {
+  queryId: string;
+  query: RemoteQuery
+}
+
+export interface RemovedQueryEvent {
+  queryId: string;
+}
+
+export interface UpdatedQueryStatusEvent {
+  queryId: string;
+  status: QueryStatus;
+  failureReason?: string;
+}
+
 export class RemoteQueriesManager extends DisposableObject {
+  public readonly onRemoteQueryAdded;
+  public readonly onRemoteQueryRemoved;
+  public readonly onRemoteQueryStatusUpdate;
+
+  private readonly remoteQueryAddedEventEmitter;
+  private readonly remoteQueryRemovedEventEmitter;
+  private readonly remoteQueryStatusUpdateEventEmitter;
+
   private readonly remoteQueriesMonitor: RemoteQueriesMonitor;
   private readonly analysesResultsManager: AnalysesResultsManager;
   private readonly interfaceManager: RemoteQueriesInterfaceManager;
@@ -37,7 +58,6 @@ export class RemoteQueriesManager extends DisposableObject {
   constructor(
     private readonly ctx: ExtensionContext,
     private readonly cliServer: CodeQLCliServer,
-    private readonly qhm: QueryHistoryManager,
     private readonly storagePath: string,
     logger: Logger,
   ) {
@@ -46,45 +66,43 @@ export class RemoteQueriesManager extends DisposableObject {
     this.interfaceManager = new RemoteQueriesInterfaceManager(ctx, logger, this.analysesResultsManager);
     this.remoteQueriesMonitor = new RemoteQueriesMonitor(ctx, logger);
 
-    // Handle events from the query history manager
-    this.push(this.qhm.onDidAddQueryItem(this.handleAddQueryItem.bind(this)));
-    this.push(this.qhm.onDidRemoveQueryItem(this.handleRemoveQueryItem.bind(this)));
-    this.push(this.qhm.onWillOpenQueryItem(this.handleOpenQueryItem.bind(this)));
+    this.remoteQueryAddedEventEmitter = super.push(new EventEmitter<NewQueryEvent>());
+    this.remoteQueryRemovedEventEmitter = super.push(new EventEmitter<RemovedQueryEvent>());
+    this.remoteQueryStatusUpdateEventEmitter = super.push(new EventEmitter<UpdatedQueryStatusEvent>());
+    this.onRemoteQueryAdded = this.remoteQueryAddedEventEmitter.event;
+    this.onRemoteQueryRemoved = this.remoteQueryRemovedEventEmitter.event;
+    this.onRemoteQueryStatusUpdate = this.remoteQueryStatusUpdateEventEmitter.event;
   }
 
-  private async handleAddQueryItem(queryItem: QueryHistoryInfo) {
-    if (queryItem?.t === 'remote') {
-      if (!(await this.queryHistoryItemExists(queryItem))) {
-        // In this case, the query was deleted from disk, most likely because it was purged
-        // by another workspace. We should remove it from the history manager.
-        await this.qhm.handleRemoveHistoryItem(queryItem);
-      } else if (queryItem.status === QueryStatus.InProgress) {
-        // In this case, last time we checked, the query was still in progress.
-        // We need to setup the monitor to check for completion.
-        await commands.executeCommand('codeQL.monitorRemoteQuery', queryItem);
-      }
+  public async rehydrateRemoteQuery(queryId: string, query: RemoteQuery, status: QueryStatus) {
+    if (!(await this.queryRecordExists(queryId))) {
+      // In this case, the query was deleted from disk, most likely because it was purged
+      // by another workspace.
+      this.remoteQueryRemovedEventEmitter.fire({ queryId });
+    } else if (status === QueryStatus.InProgress) {
+      // In this case, last time we checked, the query was still in progress.
+      // We need to setup the monitor to check for completion.
+      await commands.executeCommand('codeQL.monitorRemoteQuery', queryId, query);
     }
   }
 
-  private async handleRemoveQueryItem(queryItem: QueryHistoryInfo) {
-    if (queryItem?.t === 'remote') {
-      this.analysesResultsManager.removeAnalysesResults(queryItem.queryId);
-      await this.removeStorageDirectory(queryItem);
-    }
+  public async removeRemoteQuery(queryId: string) {
+    this.analysesResultsManager.removeAnalysesResults(queryId);
+    await this.removeStorageDirectory(queryId);
   }
 
-  private async handleOpenQueryItem(queryItem: QueryHistoryInfo) {
-    if (queryItem?.t === 'remote') {
-      try {
-        const remoteQueryResult = await this.retrieveJsonFile(queryItem, 'query-result.json') as RemoteQueryResult;
-        // open results in the background
-        void this.openResults(queryItem.remoteQuery, remoteQueryResult).then(
-          noop,
-          err => void showAndLogErrorMessage(err)
-        );
-      } catch (e) {
-        void showAndLogErrorMessage(`Could not open query results. ${e}`);
-      }
+  public async openRemoteQueryResults(queryId: string) {
+    try {
+      const remoteQuery = await this.retrieveJsonFile(queryId, 'query.json') as RemoteQuery;
+      const remoteQueryResult = await this.retrieveJsonFile(queryId, 'query-result.json') as RemoteQueryResult;
+
+      // Open results in the background
+      void this.openResults(remoteQuery, remoteQueryResult).then(
+        noop,
+        err => void showAndLogErrorMessage(err)
+      );
+    } catch (e) {
+      void showAndLogErrorMessage(`Could not open query results. ${e}`);
     }
   }
 
@@ -106,49 +124,40 @@ export class RemoteQueriesManager extends DisposableObject {
       const query = querySubmission.query;
       const queryId = this.createQueryId(query.queryName);
 
-      const queryHistoryItem: RemoteQueryHistoryItem = {
-        t: 'remote',
-        status: QueryStatus.InProgress,
-        completed: false,
-        queryId,
-        remoteQuery: query,
-      };
-      await this.prepareStorageDirectory(queryHistoryItem);
-      await this.storeJsonFile(queryHistoryItem, 'query.json', query);
+      await this.prepareStorageDirectory(queryId);
+      await this.storeJsonFile(queryId, 'query.json', query);
 
-      this.qhm.addQuery(queryHistoryItem);
-      await this.qhm.refreshTreeView();
+      this.remoteQueryAddedEventEmitter.fire({ queryId, query });
+      await commands.executeCommand('codeQL.monitorRemoteQuery', queryId, query);
     }
   }
 
   public async monitorRemoteQuery(
-    queryItem: RemoteQueryHistoryItem,
+    queryId: string,
+    remoteQuery: RemoteQuery,
     cancellationToken: CancellationToken
   ): Promise<void> {
     const credentials = await Credentials.initialize(this.ctx);
 
-    const queryWorkflowResult = await this.remoteQueriesMonitor.monitorQuery(queryItem.remoteQuery, cancellationToken);
+    const queryWorkflowResult = await this.remoteQueriesMonitor.monitorQuery(remoteQuery, cancellationToken);
 
     const executionEndTime = Date.now();
 
     if (queryWorkflowResult.status === 'CompletedSuccessfully') {
-      await this.downloadAvailableResults(queryItem, credentials, executionEndTime);
+      await this.downloadAvailableResults(queryId, remoteQuery, credentials, executionEndTime);
     } else if (queryWorkflowResult.status === 'CompletedUnsuccessfully') {
       if (queryWorkflowResult.error?.includes('cancelled')) {
-        // workflow was cancelled on the server
-        queryItem.failureReason = 'Cancelled';
-        queryItem.status = QueryStatus.Failed;
-        await this.downloadAvailableResults(queryItem, credentials, executionEndTime);
+        // Workflow was cancelled on the server
+        this.remoteQueryStatusUpdateEventEmitter.fire({ queryId, status: QueryStatus.Failed, failureReason: 'Cancelled' });
+        await this.downloadAvailableResults(queryId, remoteQuery, credentials, executionEndTime);
         void showAndLogInformationMessage('Variant analysis was cancelled');
       } else {
-        queryItem.failureReason = queryWorkflowResult.error;
-        queryItem.status = QueryStatus.Failed;
+        this.remoteQueryStatusUpdateEventEmitter.fire({ queryId, status: QueryStatus.Failed, failureReason: queryWorkflowResult.error });
         void showAndLogErrorMessage(`Variant analysis execution failed. Error: ${queryWorkflowResult.error}`);
       }
     } else if (queryWorkflowResult.status === 'Cancelled') {
-      queryItem.failureReason = 'Cancelled';
-      queryItem.status = QueryStatus.Failed;
-      await this.downloadAvailableResults(queryItem, credentials, executionEndTime);
+      this.remoteQueryStatusUpdateEventEmitter.fire({ queryId, status: QueryStatus.Failed, failureReason: 'Cancelled' });
+      await this.downloadAvailableResults(queryId, remoteQuery, credentials, executionEndTime);
       void showAndLogInformationMessage('Variant analysis was cancelled');
     } else if (queryWorkflowResult.status === 'InProgress') {
       // Should not get here. Only including this to ensure `assertNever` uses proper type checking.
@@ -157,7 +166,6 @@ export class RemoteQueriesManager extends DisposableObject {
       // Ensure all cases are covered
       assertNever(queryWorkflowResult.status);
     }
-    await this.qhm.refreshTreeView();
   }
 
   public async autoDownloadRemoteQueryResults(
@@ -238,7 +246,6 @@ export class RemoteQueriesManager extends DisposableObject {
    */
   private createQueryId(queryName: string): string {
     return `${queryName}-${nanoid()}`;
-
   }
 
   /**
@@ -247,29 +254,28 @@ export class RemoteQueriesManager extends DisposableObject {
    * used by the query history manager to determine when the directory
    * should be deleted.
    *
-   * @param queryName The name of the query that was run.
    */
-  private async prepareStorageDirectory(queryHistoryItem: RemoteQueryHistoryItem): Promise<void> {
-    await createTimestampFile(path.join(this.storagePath, queryHistoryItem.queryId));
+  private async prepareStorageDirectory(queryId: string): Promise<void> {
+    await createTimestampFile(path.join(this.storagePath, queryId));
   }
 
-  private async storeJsonFile<T>(queryHistoryItem: RemoteQueryHistoryItem, fileName: string, obj: T): Promise<void> {
-    const filePath = path.join(this.storagePath, queryHistoryItem.queryId, fileName);
+  private async storeJsonFile<T>(queryId: string, fileName: string, obj: T): Promise<void> {
+    const filePath = path.join(this.storagePath, queryId, fileName);
     await fs.writeFile(filePath, JSON.stringify(obj, null, 2), 'utf8');
   }
 
-  private async retrieveJsonFile<T>(queryHistoryItem: RemoteQueryHistoryItem, fileName: string): Promise<T> {
-    const filePath = path.join(this.storagePath, queryHistoryItem.queryId, fileName);
+  private async retrieveJsonFile<T>(queryId: string, fileName: string): Promise<T> {
+    const filePath = path.join(this.storagePath, queryId, fileName);
     return JSON.parse(await fs.readFile(filePath, 'utf8'));
   }
 
-  private async removeStorageDirectory(queryItem: RemoteQueryHistoryItem): Promise<void> {
-    const filePath = path.join(this.storagePath, queryItem.queryId);
+  private async removeStorageDirectory(queryId: string): Promise<void> {
+    const filePath = path.join(this.storagePath, queryId);
     await fs.remove(filePath);
   }
 
-  private async queryHistoryItemExists(queryItem: RemoteQueryHistoryItem): Promise<boolean> {
-    const filePath = path.join(this.storagePath, queryItem.queryId);
+  private async queryRecordExists(queryId: string): Promise<boolean> {
+    const filePath = path.join(this.storagePath, queryId);
     return await fs.pathExists(filePath);
   }
 
@@ -278,37 +284,36 @@ export class RemoteQueriesManager extends DisposableObject {
    * If so, set the query status to `Completed` and auto-download the results.
    */
   private async downloadAvailableResults(
-    queryItem: RemoteQueryHistoryItem,
+    queryId: string,
+    remoteQuery: RemoteQuery,
     credentials: Credentials,
     executionEndTime: number
   ): Promise<void> {
-    const resultIndex = await getRemoteQueryIndex(credentials, queryItem.remoteQuery);
+    const resultIndex = await getRemoteQueryIndex(credentials, remoteQuery);
     if (resultIndex) {
-      queryItem.completed = true;
-      queryItem.status = QueryStatus.Completed;
-      queryItem.failureReason = undefined;
+      this.remoteQueryStatusUpdateEventEmitter.fire({ queryId, status: QueryStatus.Completed });
       const metadata = await this.getRepositoriesMetadata(resultIndex, credentials);
-      const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryItem.queryId, metadata);
+      const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryId, metadata);
 
-      await this.storeJsonFile(queryItem, 'query-result.json', queryResult);
+      await this.storeJsonFile(queryId, 'query-result.json', queryResult);
 
       // Kick off auto-download of results in the background.
       void commands.executeCommand('codeQL.autoDownloadRemoteQueryResults', queryResult);
 
       // Ask if the user wants to open the results in the background.
-      void this.askToOpenResults(queryItem.remoteQuery, queryResult).then(
+      void this.askToOpenResults(remoteQuery, queryResult).then(
         noop,
         err => {
           void showAndLogErrorMessage(err);
         }
       );
     } else {
-      const controllerRepo = `${queryItem.remoteQuery.controllerRepository.owner}/${queryItem.remoteQuery.controllerRepository.name}`;
-      const workflowRunUrl = `https://github.com/${controllerRepo}/actions/runs/${queryItem.remoteQuery.actionsWorkflowRunId}`;
+      const controllerRepo = `${remoteQuery.controllerRepository.owner}/${remoteQuery.controllerRepository.name}`;
+      const workflowRunUrl = `https://github.com/${controllerRepo}/actions/runs/${remoteQuery.actionsWorkflowRunId}`;
       void showAndLogErrorMessage(
-        `There was an issue retrieving the result for the query [${queryItem.remoteQuery.queryName}](${workflowRunUrl}).`
+        `There was an issue retrieving the result for the query [${remoteQuery.queryName}](${workflowRunUrl}).`
       );
-      queryItem.status = QueryStatus.Failed;
+      this.remoteQueryStatusUpdateEventEmitter.fire({ queryId, status: QueryStatus.Failed });
     }
   }
 
