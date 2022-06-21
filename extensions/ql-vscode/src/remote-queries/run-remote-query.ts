@@ -333,8 +333,12 @@ async function runRemoteQueriesApiRequest(
     const { popupMessage, logMessage } = parseResponse(owner, repo, response.data);
     void showAndLogInformationMessage(popupMessage, { fullMessage: logMessage });
     return response.data.workflow_run_id;
-  } catch (error) {
-    void showAndLogErrorMessage(getErrorMessage(error));
+  } catch (error: any) {
+    if (error.status === 404) {
+      void showAndLogErrorMessage(`Controller repository was not found. Please make sure it's a valid repo name.${eol}`);
+    } else {
+      void showAndLogErrorMessage(getErrorMessage(error));
+    }
   }
 }
 
