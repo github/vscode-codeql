@@ -544,26 +544,24 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   private registerToRemoteQueriesEvents() {
-    this.remoteQueriesManager.onRemoteQueryAdded(event => {
-      const historyItem: RemoteQueryHistoryItem = {
+    const queryAddedSubscription = this.remoteQueriesManager.onRemoteQueryAdded(event => {
+      this.addQuery({
         t: 'remote',
         status: QueryStatus.InProgress,
         completed: false,
         queryId: event.queryId,
         remoteQuery: event.query,
-      };
-
-      this.addQuery(historyItem);
+      });
     });
 
-    this.remoteQueriesManager.onRemoteQueryRemoved(async (event) => {
+    const queryRemovedSubscription = this.remoteQueriesManager.onRemoteQueryRemoved(async (event) => {
       const item = this.treeDataProvider.allHistory.find(i => i.t === 'remote' && i.queryId === event.queryId);
       if (item) {
         await this.removeRemoteQuery(item as RemoteQueryHistoryItem);
       }
     });
 
-    this.remoteQueriesManager.onRemoteQueryStatusUpdate(async (event) => {
+    const queryStatusUpdateSubscription = this.remoteQueriesManager.onRemoteQueryStatusUpdate(async (event) => {
       const item = this.treeDataProvider.allHistory.find(i => i.t === 'remote' && i.queryId === event.queryId);
       if (item) {
         const remoteQueryHistoryItem = item as RemoteQueryHistoryItem;
@@ -574,6 +572,10 @@ export class QueryHistoryManager extends DisposableObject {
         void logger.log('Variant analysis status update event received for unknown variant analysis');
       }
     });
+
+    this.push(queryAddedSubscription);
+    this.push(queryRemovedSubscription);
+    this.push(queryStatusUpdateSubscription);
   }
 
   async readQueryHistory(): Promise<void> {

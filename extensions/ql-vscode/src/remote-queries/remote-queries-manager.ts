@@ -66,9 +66,9 @@ export class RemoteQueriesManager extends DisposableObject {
     this.interfaceManager = new RemoteQueriesInterfaceManager(ctx, logger, this.analysesResultsManager);
     this.remoteQueriesMonitor = new RemoteQueriesMonitor(ctx, logger);
 
-    this.remoteQueryAddedEventEmitter = super.push(new EventEmitter<NewQueryEvent>());
-    this.remoteQueryRemovedEventEmitter = super.push(new EventEmitter<RemovedQueryEvent>());
-    this.remoteQueryStatusUpdateEventEmitter = super.push(new EventEmitter<UpdatedQueryStatusEvent>());
+    this.remoteQueryAddedEventEmitter = this.push(new EventEmitter<NewQueryEvent>());
+    this.remoteQueryRemovedEventEmitter = this.push(new EventEmitter<RemovedQueryEvent>());
+    this.remoteQueryStatusUpdateEventEmitter = this.push(new EventEmitter<UpdatedQueryStatusEvent>());
     this.onRemoteQueryAdded = this.remoteQueryAddedEventEmitter.event;
     this.onRemoteQueryRemoved = this.remoteQueryRemovedEventEmitter.event;
     this.onRemoteQueryStatusUpdate = this.remoteQueryStatusUpdateEventEmitter.event;
