@@ -38,6 +38,7 @@ interface QueriesResponse {
   errors?: {
     invalid_repositories?: string[],
     repositories_without_database?: string[],
+    private_repositories?: string[],
   },
   repositories_queried: string[],
 }
@@ -360,6 +361,10 @@ export function parseResponse(owner: string, repo: string, response: QueriesResp
     if (response.errors.repositories_without_database?.length) {
       logMessage += `${eol2}Repositories without databases:${eol}${response.errors.repositories_without_database.join(', ')}`;
       logMessage += `${eol}For each public repository that has not yet been added to the database service, we will try to create a database next time the store is updated.`;
+    }
+    if (response.errors.private_repositories?.length) {
+      logMessage += `${eol2}Non-public repositories:${eol}${response.errors.private_repositories.join(', ')}`;
+      logMessage += `${eol}When using a public controller repository, only public repositories can be queried.`;
     }
   }
 
