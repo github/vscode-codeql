@@ -75,7 +75,7 @@ export default function(mocha: Mocha) {
     }
   );
 
-  // ensure etension is cleaned up.
+  // ensure extension is cleaned up.
   (mocha.options as any).globalTeardown.push(
     async () => {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
@@ -91,6 +91,21 @@ export default function(mocha: Mocha) {
   (mocha.options as any).globalTeardown.push(
     () => {
       removeStorage?.();
+    }
+  );
+
+  // check that the codeql folder is found in the workspace
+  (mocha.options as any).globalSetup.push(
+    async () => {
+      const folders = workspace.workspaceFolders;
+      if (!folders) {
+        fail('\n\n\nNo workspace folders found.\nYou will need a local copy of the codeql repo.\nMake sure you specify the path to it in launch.json.\nIt should be something along the lines of "${workspaceRoot}/../codeql" depending on where you have your local copy of the codeql repo.\n\n\n');
+      } else {
+        const codeqlFolder = folders.find(folder => folder.name === 'codeql');
+        if (!codeqlFolder) {
+          fail('\n\n\nNo workspace folders found.\nYou will need a local copy of the codeql repo.\nMake sure you specify the path to it in launch.json.\nIt should be something along the lines of "${workspaceRoot}/../codeql" depending on where you have your local copy of the codeql repo.\n\n\n');
+        }
+      }
     }
   );
 }
