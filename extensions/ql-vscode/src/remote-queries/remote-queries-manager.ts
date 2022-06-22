@@ -128,7 +128,7 @@ export class RemoteQueriesManager extends DisposableObject {
       await this.storeJsonFile(queryId, 'query.json', query);
 
       this.remoteQueryAddedEventEmitter.fire({ queryId, query });
-      await commands.executeCommand('codeQL.monitorRemoteQuery', queryId, query);
+      void commands.executeCommand('codeQL.monitorRemoteQuery', queryId, query);
     }
   }
 
