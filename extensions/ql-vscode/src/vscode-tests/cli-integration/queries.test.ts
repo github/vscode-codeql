@@ -157,10 +157,11 @@ describe('Queries', function() {
   });
 
   it('should avoid creating a quick query', async () => {
+    fs.mkdirpSync(path.dirname(qlpackFile));
     fs.writeFileSync(qlpackFile, yaml.dump({
       name: 'quick-query',
       version: '1.0.0',
-      libraryPathDependencies: ['codeql-javascript']
+      libraryPathDependencies: ['codeql/javascript-all']
     }));
     fs.writeFileSync(qlFile, 'xxx');
     await commands.executeCommand('codeQL.quickQuery');

@@ -12,9 +12,13 @@ import { DatabaseManager } from '../../databases';
 
 export const DB_URL = 'https://github.com/github/vscode-codeql/files/5586722/simple-db.zip';
 
-process.addListener('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: Promise ', p, ' reason: ', reason);
-  fail(String(reason));
+process.addListener('unhandledRejection', (reason) => {
+  if (reason instanceof Error && reason.message === 'Canceled') {
+    console.log('Cancellation requested after the test has ended.');
+    process.exit(0);
+  } else {
+    fail(String(reason));
+  }
 });
 
 // We need to resolve the path, but the final three segments won't exist until later, so we only resolve the
