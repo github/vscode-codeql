@@ -306,10 +306,6 @@
         "title": "CodeQL: Export Variant Analysis Results"
       },
       {
-        "command": "codeQL.copyRepoList",
-        "title": "Copy repository list"
-      },
-      {
         "command": "codeQL.runQueries",
         "title": "CodeQL: Run Queries in Selected Files"
       },
@@ -989,6 +985,10 @@
         },
         {
           "command": "codeQLQueryHistory.openOnGithub",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.copyRepoList",
           "when": "false"
         },
         {

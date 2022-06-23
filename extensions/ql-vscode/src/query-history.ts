@@ -493,7 +493,7 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
-        'codeQlQueryHistory.copyRepoList',
+        'codeQLQueryHistory.copyRepoList',
         this.handleCopyRepoList.bind(this)
       )
     );
