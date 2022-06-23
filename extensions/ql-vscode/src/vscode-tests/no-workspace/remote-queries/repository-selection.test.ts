@@ -2,34 +2,37 @@ import * as sinon from 'sinon';
 import { expect } from 'chai';
 import { window } from 'vscode';
 import * as pq from 'proxyquire';
+import * as fs from 'fs-extra';
 import { UserCancellationException } from '../../../commandRunner';
 
 const proxyquire = pq.noPreserveCache();
 
-describe('repository-selection', function() {
-
-  describe('getRepositorySelection', () => {
-    let sandbox: sinon.SinonSandbox;
-    let quickPickSpy: sinon.SinonStub;
-    let showInputBoxSpy: sinon.SinonStub;
-    let getRemoteRepositoryListsSpy: sinon.SinonStub;
-    let mod: any;
-    beforeEach(() => {
-      sandbox = sinon.createSandbox();
-      quickPickSpy = sandbox.stub(window, 'showQuickPick');
-      showInputBoxSpy = sandbox.stub(window, 'showInputBox');
-      getRemoteRepositoryListsSpy = sandbox.stub();
-      mod = proxyquire('../../../remote-queries/repository-selection', {
-        '../config': {
-          getRemoteRepositoryLists: getRemoteRepositoryListsSpy
-        },
-      });
+describe('repository selection', async () => {
+  let sandbox: sinon.SinonSandbox;
+  let quickPickSpy: sinon.SinonStub;
+  let showInputBoxSpy: sinon.SinonStub;
+  let getRemoteRepositoryListsSpy: sinon.SinonStub;
+  let getRemoteRepositoryListsPathSpy: sinon.SinonStub;
+  let mod: any;
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+    quickPickSpy = sandbox.stub(window, 'showQuickPick');
+    showInputBoxSpy = sandbox.stub(window, 'showInputBox');
+    getRemoteRepositoryListsSpy = sandbox.stub();
+    getRemoteRepositoryListsPathSpy = sandbox.stub();
+    mod = proxyquire('../../../remote-queries/repository-selection', {
+      '../config': {
+        getRemoteRepositoryLists: getRemoteRepositoryListsSpy,
+        getRemoteRepositoryListsPath: getRemoteRepositoryListsPathSpy
+      },
     });
+  });
 
-    afterEach(() => {
-      sandbox.restore();
-    });
+  afterEach(() => {
+    sandbox.restore();
+  });
 
+  describe('repo lists from settings', async () => {
     it('should allow selection from repo lists from your pre-defined config', async () => {
       // Fake return values
       quickPickSpy.resolves(
@@ -52,7 +55,9 @@ describe('repository-selection', function() {
         ['foo/bar', 'foo/baz']
       );
     });
+  });
 
+  describe('system level repo lists', async () => {
     it('should allow selection from repo lists defined at the system level', async () => {
       // Fake return values
       quickPickSpy.resolves(
@@ -121,7 +126,9 @@ describe('repository-selection', function() {
         await expect(mod.getRepositorySelection()).to.be.rejectedWith(Error, `Invalid user or organization: ${owner}`);
       });
     });
+  });
 
+  describe('custom repo', async () => {
     // Test the repo regex in various "good" cases
     const goodRepos = [
       'owner/repo',
@@ -169,6 +176,101 @@ describe('repository-selection', function() {
         await expect(mod.getRepositorySelection()).to.be.rejectedWith(UserCancellationException, 'Invalid repository format');
       });
     });
+  });
 
+  describe('external repository lists file', async () => {
+    let pathExistsStub: sinon.SinonStub;
+    let fsStatStub: sinon.SinonStub;
+    let fsReadFileStub: sinon.SinonStub;
+
+    beforeEach(() => {
+      pathExistsStub = sandbox.stub(fs, 'pathExists');
+      fsStatStub = sandbox.stub(fs, 'stat');
+      fsReadFileStub = sandbox.stub(fs, 'readFile');
+    });
+
+    afterEach(() => {
+      pathExistsStub.restore();
+      fsStatStub.restore();
+      fsReadFileStub.restore();
+    });
+
+    it('should fail if path does not exist', async () => {
+      const fakeFilePath = '/path/that/does/not/exist.json';
+      getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
+      pathExistsStub.resolves(false);
+
+      await expect(mod.getRepositorySelection()).to.be.rejectedWith(Error, `External repository lists file does not exist at ${fakeFilePath}`);
+    });
+
+    it('should fail if path points to directory', async () => {
+      const fakeFilePath = '/path/to/dir';
+      getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
+      pathExistsStub.resolves(true);
+      fsStatStub.resolves({ isDirectory: () => true } as any);
+
+      await expect(mod.getRepositorySelection()).to.be.rejectedWith(Error, 'External repository lists path should not point to a directory');
+    });
+
+    it('should fail if file does not have valid JSON', async () => {
+      const fakeFilePath = '/path/to/file.json';
+      getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
+      pathExistsStub.resolves(true);
+      fsStatStub.resolves({ isDirectory: () => false } as any);
+      fsReadFileStub.resolves('not-json' as any as Buffer);
+
+      await expect(mod.getRepositorySelection()).to.be.rejectedWith(Error, 'Invalid repository lists file. It should contain valid JSON.');
+    });
+
+    it('should fail if file contains array', async () => {
+      const fakeFilePath = '/path/to/file.json';
+      getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
+      pathExistsStub.resolves(true);
+      fsStatStub.resolves({ isDirectory: () => false } as any);
+      fsReadFileStub.resolves('[]' as any as Buffer);
+
+      await expect(mod.getRepositorySelection()).to.be.rejectedWith(Error, 'Invalid repository lists file. It should not contain an array.');
+    });
+
+    it('should fail if file does not contain repo lists in the right format', async () => {
+      const fakeFilePath = '/path/to/file.json';
+      getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
+      pathExistsStub.resolves(true);
+      fsStatStub.resolves({ isDirectory: () => false } as any);
+      const repoLists = {
+        'list1': 'owner1/repo1',
+      };
+      fsReadFileStub.resolves(JSON.stringify(repoLists) as any as Buffer);
+
+      await expect(mod.getRepositorySelection()).to.be.rejectedWith(Error, 'Invalid repository lists file. It should contain an array of repositories for each list.');
+    });
+
+    it('should get repo lists from file', async () => {
+      const fakeFilePath = '/path/to/file.json';
+      getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
+      pathExistsStub.resolves(true);
+      fsStatStub.resolves({ isDirectory: () => false } as any);
+      const repoLists = {
+        'list1': ['owner1/repo1', 'owner2/repo2'],
+        'list2': ['owner3/repo3']
+      };
+      fsReadFileStub.resolves(JSON.stringify(repoLists) as any as Buffer);
+      getRemoteRepositoryListsSpy.returns(
+        {
+          'list3': ['onwer4/repo4'],
+          'list4': [],
+        }
+      );
+
+      quickPickSpy.resolves(
+        { repositories: ['owner3/repo3'] }
+      );
+
+      const repoSelection = await mod.getRepositorySelection();
+
+      expect(repoSelection.repositoryLists).to.be.undefined;
+      expect(repoSelection.owners).to.be.undefined;
+      expect(repoSelection.repositories).to.deep.eq(['owner3/repo3']);
+    });
   });
 });
