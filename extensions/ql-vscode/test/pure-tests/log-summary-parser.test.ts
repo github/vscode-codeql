@@ -4,7 +4,7 @@ import 'mocha';
 import { parseVisualizerData } from '../../src/pure/log-summary-parser';
 
 describe('Parsing Valid Summary Text', () => {
-    let validSummaryText = `
+    const validSummaryText = `
     {
       "completionTime" : "2022-06-23T14:02:42.007Z",
       "raHash" : "e77dfaa9ciimqv7gb3imoesdb11",
@@ -74,11 +74,11 @@ describe('Parsing Valid Summary Text', () => {
         "raReference" : "pipeline"
       } ]
     }    
-  `
+  `;
   it('should return only valid EvaluatorLogData objects', () => {
     const evaluatorLogData = parseVisualizerData(validSummaryText);
     expect (evaluatorLogData.length).to.eq(2);
-    for (let item of evaluatorLogData) {
+    for (const item of evaluatorLogData) {
         expect(item.queryName).to.not.be.empty;
         expect(item.predicateName).to.not.be.empty;
         expect(item.timeInMillis).to.be.a('number');
@@ -86,23 +86,23 @@ describe('Parsing Valid Summary Text', () => {
     }
   });
 
-  let invalidHeaderText = `
+  const invalidHeaderText = `
   {
     "summaryLogVersion" : "0.3.0",
     "codeqlVersion" : "2.9.0+202204201304plus",
     "startTime" : "2022-06-23T14:02:41.607Z"
   }
-  `
+  `;
 
   it('should not parse a summary header object', () => {
     const evaluatorLogData = parseVisualizerData(invalidHeaderText);
     expect (evaluatorLogData.length).to.eq(0);
-    for (let item of evaluatorLogData) {
+    for (const item of evaluatorLogData) {
       expect(item).to.be.empty;
     }
   });
 
-  let invalidSummaryText = `
+  const invalidSummaryText = `
   {
     "completionTime" : "2022-06-23T14:02:42.019Z",
     "raHash" : "6bec314lcq8sm3skg9mpecscp02",
@@ -117,12 +117,12 @@ describe('Parsing Valid Summary Text', () => {
     "millis" : 3,
     "resultSize" : 8857
   }  
-  `
+  `;
 
   it('should not parse a log event missing RA or millis fields', () => {
     const evaluatorLogData = parseVisualizerData(invalidSummaryText);
     expect (evaluatorLogData.length).to.eq(0);
-    for (let item of evaluatorLogData) {
+    for (const item of evaluatorLogData) {
       expect(item).to.be.empty;
     }
   });
