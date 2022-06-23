@@ -306,6 +306,10 @@
         "title": "CodeQL: Export Variant Analysis Results"
       },
       {
+        "command": "codeQL.copyRepoList",
+        "title": "Copy repository list"
+      },
+      {
         "command": "codeQL.runQueries",
         "title": "CodeQL: Run Queries in Selected Files"
       },
@@ -574,6 +578,10 @@
         "title": "Open Variant Analysis on GitHub"
       },
       {
+        "command": "codeQLQueryHistory.copyRepoList",
+        "title": "Copy Repository List"
+      },
+      {
         "command": "codeQLQueryResults.nextPathStep",
         "title": "CodeQL: Show Next Step on Path"
       },
@@ -789,6 +797,11 @@
           "command": "codeQLQueryHistory.openOnGithub",
           "group": "9_qlCommands",
           "when": "viewItem == remoteResultsItem || viewItem == inProgressRemoteResultsItem || viewItem == cancelledResultsItem"
+        },
+        {
+          "command": "codeQLQueryHistory.copyRepoList",
+          "group": "9_qlCommands",
+          "when": "viewItem == remoteResultsItem"
         },
         {
           "command": "codeQLTests.showOutputDifferences",

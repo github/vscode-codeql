@@ -80,6 +80,7 @@ export class RemoteQueriesInterfaceManager {
     const affectedRepositories = queryResult.analysisSummaries.filter(r => r.resultCount > 0);
 
     return {
+      queryId: queryResult.queryId,
       queryTitle: query.queryName,
       queryFileName: queryFileName,
       queryFilePath: query.queryFilePath,
@@ -205,6 +206,9 @@ export class RemoteQueriesInterfaceManager {
         break;
       case 'openVirtualFile':
         await this.openVirtualFile(msg.queryText);
+        break;
+      case 'copyRepoList':
+        await commands.executeCommand('codeQL.copyRepoList', msg.queryId);
         break;
       case 'remoteQueryDownloadAnalysisResults':
         await this.downloadAnalysisResults(msg);

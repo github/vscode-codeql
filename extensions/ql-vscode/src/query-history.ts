@@ -491,6 +491,12 @@ export class QueryHistoryManager extends DisposableObject {
         }
       )
     );
+    this.push(
+      commandRunner(
+        'codeQlQueryHistory.copyRepoList',
+        this.handleCopyRepoList.bind(this)
+      )
+    );
 
     // There are two configuration items that affect the query history:
     // 1. The ttl for query history items.
@@ -1048,6 +1054,20 @@ export class QueryHistoryManager extends DisposableObject {
       'vscode.open',
       Uri.parse(`https://github.com/${owner}/${name}/actions/runs/${workflowRunId}`)
     );
+  }
+
+  async handleCopyRepoList(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[],
+  ) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    // Remote queries only
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'remote') {
+      return;
+    }
+
+    await commands.executeCommand('codeQL.copyRepoList', finalSingleItem.queryId);
   }
 
   async getQueryText(item: QueryHistoryInfo): Promise<string> {

@@ -2,6 +2,7 @@ import { DownloadLink } from '../download-link';
 import { AnalysisFailure } from './analysis-failure';
 
 export interface RemoteQueryResult {
+  queryId: string,
   queryTitle: string,
   queryFileName: string,
   queryFilePath: string,
