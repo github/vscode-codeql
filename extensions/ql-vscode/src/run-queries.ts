@@ -46,28 +46,6 @@ import { parseVisualizerData } from './pure/log-summary-parser';
  * Compiling and running QL queries.
  */
 
-// REVIEW: I think these should be moved to another class (EvaluatorLogVisualizer
-// or EvaluatorLogData on its own once we wire it up with the tree visualizer)? 
-
-// REVIEW: Suggestions on other fields that are useful for a performance 
-// debugger would be welcome!
-export interface EvaluatorLogData {
-  queryName: string;
-  predicateName: string;
-  timeInMillis: number;
-  resultSize: number;
-  ra?: Pipeline[];
-}
-
-interface Pipeline {
-  pipelineName: string;
-  steps: PipelineStep[];
-}
-
-interface PipelineStep {
-  body: string;
-}
-
 /**
  * Information about which query will be to be run. `quickEvalPosition` and `quickEvalText`
  * is only filled in if the query is a quick query.

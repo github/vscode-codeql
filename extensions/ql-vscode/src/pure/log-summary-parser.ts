@@ -1,4 +1,24 @@
-import { EvaluatorLogData } from '../run-queries';
+// REVIEW: Perhaps this file should be renamed now that it also includes the 
+// data model on top of the parsing logic?
+
+// REVIEW: Suggestions on other fields that are useful for a performance 
+// debugger would be welcome!
+export interface EvaluatorLogData {
+    queryName: string;
+    predicateName: string;
+    timeInMillis: number;
+    resultSize: number;
+    ra?: Pipeline[];
+  }
+  
+  interface Pipeline {
+    pipelineName: string;
+    steps: PipelineStep[];
+  }
+  
+  interface PipelineStep {
+    body: string;
+  }
 
 /**
  * A pure method that parses a string of evaluator log summaries into
