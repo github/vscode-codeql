@@ -689,6 +689,23 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
+  * Generate a JSON summary of an evaluation log.
+  * @param inputPath The path of an evaluation event log.
+  * @param outputPath The path to write a JSON summary of it to.
+  */
+   async generateJsonLogSummary(
+    inputPath: string,
+    outputPath: string,
+  ): Promise<string> {
+    const subcommandArgs = [
+      '--format=predicates',
+      inputPath,
+      outputPath
+    ];
+    return await this.runCodeQlCliCommand(['generate', 'log-summary'], subcommandArgs, 'Generating JSON log summary');
+  }
+
+  /**
   * Gets the results from a bqrs.
   * @param bqrsPath The path to the bqrs.
   * @param resultSet The result set to get.
