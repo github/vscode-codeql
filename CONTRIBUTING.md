@@ -95,9 +95,11 @@ Running from a terminal, you _must_ set the `TEST_CODEQL_PATH` variable to point
 
 ### Running the integration tests
 
-The _Launch Integration Tests - With CLI_ tests require a CLI instance in order to run. There are several environment variables you can use to configure this.
+You will need to run CLI tests using a task from inside of VS Code called _Launch Integration Tests - With CLI_.
 
-From inside of VSCode, open the `launch.json` file and in the _Launch Integration Tests - With CLI_ uncomment and change the environment variables appropriate for your purpose.
+The CLI integration tests require the CodeQL standard libraries in order to run so you will need to clone a local copy of the `github/codeql` repository.
+
+From inside of VSCode, open the `launch.json` file and in the _Launch Integration Tests - With CLI_ task, uncomment the `"${workspaceRoot}/../codeql"` line. If necessary, replace value with a path to your checkout, and then run the task.
 
 ## Releasing (write access required)
 
