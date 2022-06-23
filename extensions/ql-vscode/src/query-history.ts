@@ -40,6 +40,10 @@ import { CliVersionConstraint } from './cli';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { Credentials } from './authentication';
 import { cancelRemoteQuery } from './remote-queries/gh-actions-api-client';
+import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
+import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
+import { InterfaceManager } from './interface';
+import { WebviewReveal } from './interface-utils';
 
 /**
  * query-history.ts
@@ -307,21 +311,11 @@ export class QueryHistoryManager extends DisposableObject {
   queryHistoryScrubber: Disposable | undefined;
   private queryMetadataStorageLocation;
 
-  private readonly _onDidAddQueryItem = super.push(new EventEmitter<QueryHistoryInfo>());
-  readonly onDidAddQueryItem: Event<QueryHistoryInfo> = this
-    ._onDidAddQueryItem.event;
-
-  private readonly _onDidRemoveQueryItem = super.push(new EventEmitter<QueryHistoryInfo>());
-  readonly onDidRemoveQueryItem: Event<QueryHistoryInfo> = this
-    ._onDidRemoveQueryItem.event;
-
-  private readonly _onWillOpenQueryItem = super.push(new EventEmitter<QueryHistoryInfo>());
-  readonly onWillOpenQueryItem: Event<QueryHistoryInfo> = this
-    ._onWillOpenQueryItem.event;
-
   constructor(
     private readonly qs: QueryServerClient,
     private readonly dbm: DatabaseManager,
+    private readonly localQueriesInterfaceManager: InterfaceManager,
+    private readonly remoteQueriesManager: RemoteQueriesManager,
     private readonly queryStorageDir: string,
     private readonly ctx: ExtensionContext,
     private readonly queryHistoryConfigListener: QueryHistoryConfig,
@@ -525,6 +519,7 @@ export class QueryHistoryManager extends DisposableObject {
     }));
 
     this.registerQueryHistoryScrubber(queryHistoryConfigListener, ctx);
+    this.registerToRemoteQueriesEvents();
   }
 
   private getCredentials() {
@@ -548,12 +543,49 @@ export class QueryHistoryManager extends DisposableObject {
     );
   }
 
+  private registerToRemoteQueriesEvents() {
+    const queryAddedSubscription = this.remoteQueriesManager.onRemoteQueryAdded(event => {
+      this.addQuery({
+        t: 'remote',
+        status: QueryStatus.InProgress,
+        completed: false,
+        queryId: event.queryId,
+        remoteQuery: event.query,
+      });
+    });
+
+    const queryRemovedSubscription = this.remoteQueriesManager.onRemoteQueryRemoved(async (event) => {
+      const item = this.treeDataProvider.allHistory.find(i => i.t === 'remote' && i.queryId === event.queryId);
+      if (item) {
+        await this.removeRemoteQuery(item as RemoteQueryHistoryItem);
+      }
+    });
+
+    const queryStatusUpdateSubscription = this.remoteQueriesManager.onRemoteQueryStatusUpdate(async (event) => {
+      const item = this.treeDataProvider.allHistory.find(i => i.t === 'remote' && i.queryId === event.queryId);
+      if (item) {
+        const remoteQueryHistoryItem = item as RemoteQueryHistoryItem;
+        remoteQueryHistoryItem.status = event.status;
+        remoteQueryHistoryItem.failureReason = event.failureReason;
+        await this.refreshTreeView();
+      } else {
+        void logger.log('Variant analysis status update event received for unknown variant analysis');
+      }
+    });
+
+    this.push(queryAddedSubscription);
+    this.push(queryRemovedSubscription);
+    this.push(queryStatusUpdateSubscription);
+  }
+
   async readQueryHistory(): Promise<void> {
     void logger.log(`Reading cached query history from '${this.queryMetadataStorageLocation}'.`);
     const history = await slurpQueryHistory(this.queryMetadataStorageLocation);
     this.treeDataProvider.allHistory = history;
-    this.treeDataProvider.allHistory.forEach((item) => {
-      this._onDidAddQueryItem.fire(item);
+    this.treeDataProvider.allHistory.forEach(async (item) => {
+      if (item.t === 'remote') {
+        await this.remoteQueriesManager.rehydrateRemoteQuery(item.queryId, item.remoteQuery, item.status);
+      }
     });
   }
 
@@ -619,24 +651,28 @@ export class QueryHistoryManager extends DisposableObject {
           await item.completedQuery?.query.deleteQuery();
         }
       } else {
-        // Remote queries can be removed locally, but not remotely.
-        // The user must cancel the query on GitHub Actions explicitly.
-        this.treeDataProvider.remove(item);
-        void logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
-        if (item.status === QueryStatus.InProgress) {
-          void logger.log('The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.');
-        }
-
-        this._onDidRemoveQueryItem.fire(item);
+        await this.removeRemoteQuery(item);
       }
-
     }));
+
     await this.writeQueryHistory();
     const current = this.treeDataProvider.getCurrent();
     if (current !== undefined) {
       await this.treeView.reveal(current, { select: true });
-      this._onWillOpenQueryItem.fire(current);
+      await this.openQueryResults(current);
     }
+  }
+
+  private async removeRemoteQuery(item: RemoteQueryHistoryItem): Promise<void> {
+    // Remote queries can be removed locally, but not remotely.
+    // The user must cancel the query on GitHub Actions explicitly.
+    this.treeDataProvider.remove(item);
+    void logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
+    if (item.status === QueryStatus.InProgress) {
+      void logger.log('The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.');
+    }
+
+    await this.remoteQueriesManager.removeRemoteQuery(item.queryId);
   }
 
   async handleSortByName() {
@@ -739,7 +775,7 @@ export class QueryHistoryManager extends DisposableObject {
     } else {
       // show results on single click only if query is completed successfully.
       if (finalSingleItem.status === QueryStatus.Completed) {
-        await this._onWillOpenQueryItem.fire(finalSingleItem);
+        await this.openQueryResults(finalSingleItem);
       }
     }
   }
@@ -1027,7 +1063,6 @@ export class QueryHistoryManager extends DisposableObject {
   addQuery(item: QueryHistoryInfo) {
     this.treeDataProvider.pushQuery(item);
     this.updateTreeViewSelectionIfVisible();
-    this._onDidAddQueryItem.fire(item);
   }
 
   /**
@@ -1227,5 +1262,14 @@ the file in the file explorer and dragging it into the workspace.`
   async refreshTreeView(): Promise<void> {
     this.treeDataProvider.refresh();
     await this.writeQueryHistory();
+  }
+
+  private async openQueryResults(item: QueryHistoryInfo) {
+    if (item.t === 'local') {
+      await this.localQueriesInterfaceManager.showResults(item as CompletedLocalQueryInfo, WebviewReveal.Forced, false);
+    }
+    else if (item.t === 'remote') {
+      await this.remoteQueriesManager.openRemoteQueryResults(item.queryId);
+    }
   }
 }

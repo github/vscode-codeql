@@ -17,6 +17,8 @@ import { testDisposeHandler } from '../../test-dispose-handler';
 import { walkDirectory } from '../../../helpers';
 import { getErrorMessage } from '../../../pure/helpers-pure';
 import { HistoryItemLabelProvider } from '../../../history-item-label-provider';
+import { RemoteQueriesManager } from '../../../remote-queries/remote-queries-manager';
+import { InterfaceManager } from '../../../interface';
 
 /**
  * Tests for remote queries and how they interact with the query history manager.
@@ -30,12 +32,18 @@ describe('Remote queries and query history manager', function() {
 
   let sandbox: sinon.SinonSandbox;
   let qhm: QueryHistoryManager;
+  let localQueriesInterfaceManagerStub: InterfaceManager;
+  let remoteQueriesManagerStub: RemoteQueriesManager;
   let rawQueryHistory: any;
   let remoteQueryResult0: RemoteQueryResult;
   let remoteQueryResult1: RemoteQueryResult;
   let disposables: DisposableBucket;
   let showTextDocumentSpy: sinon.SinonSpy;
   let openTextDocumentSpy: sinon.SinonSpy;
+
+  let rehydrateRemoteQueryStub: sinon.SinonStub;
+  let removeRemoteQueryStub: sinon.SinonStub;
+  let openRemoteQueryResultsStub: sinon.SinonStub;
 
   beforeEach(async function() {
 
@@ -45,6 +53,25 @@ describe('Remote queries and query history manager', function() {
     // Since these tests change the state of the query history manager, we need to copy the original
     // to a temporary folder where we can manipulate it for tests
     await copyHistoryState();
+
+    sandbox = sinon.createSandbox();
+
+    localQueriesInterfaceManagerStub = {
+      showResults: sandbox.stub()
+    } as any as InterfaceManager;
+
+    rehydrateRemoteQueryStub = sandbox.stub();
+    removeRemoteQueryStub = sandbox.stub();
+    openRemoteQueryResultsStub = sandbox.stub();
+
+    remoteQueriesManagerStub = {
+      onRemoteQueryAdded: sandbox.stub(),
+      onRemoteQueryRemoved: sandbox.stub(),
+      onRemoteQueryStatusUpdate: sandbox.stub(),
+      rehydrateRemoteQuery: rehydrateRemoteQueryStub,
+      removeRemoteQuery: removeRemoteQueryStub,
+      openRemoteQueryResults: openRemoteQueryResultsStub
+    } as any as RemoteQueriesManager;
   });
 
   afterEach(function() {
@@ -64,6 +91,8 @@ describe('Remote queries and query history manager', function() {
     qhm = new QueryHistoryManager(
       {} as QueryServerClient,
       {} as DatabaseManager,
+      localQueriesInterfaceManagerStub,
+      remoteQueriesManagerStub,
       STORAGE_DIR,
       {
         globalStorageUri: Uri.file(STORAGE_DIR),
@@ -87,14 +116,12 @@ describe('Remote queries and query history manager', function() {
   });
 
   it('should read query history', async () => {
-    const spy = sandbox.spy();
-    disposables.push(qhm.onDidAddQueryItem(spy));
     await qhm.readQueryHistory();
 
     // Should have added the query history. Contents are directly from the file
-    expect(spy.getCall(0).args[0]).to.deep.eq(rawQueryHistory[0]);
-    expect(spy.getCall(1).args[0]).to.deep.eq(rawQueryHistory[1]);
-    expect(spy.callCount).to.eq(2);
+    expect(rehydrateRemoteQueryStub).to.have.callCount(2);
+    expect(rehydrateRemoteQueryStub.getCall(0).args[1]).to.deep.eq(rawQueryHistory[0].remoteQuery);
+    expect(rehydrateRemoteQueryStub.getCall(1).args[1]).to.deep.eq(rawQueryHistory[1].remoteQuery);
 
     expect(qhm.treeDataProvider.allHistory[0]).to.deep.eq(rawQueryHistory[0]);
     expect(qhm.treeDataProvider.allHistory[1]).to.deep.eq(rawQueryHistory[1]);
@@ -103,40 +130,35 @@ describe('Remote queries and query history manager', function() {
 
   it('should remove and then add query from history', async () => {
     await qhm.readQueryHistory();
-    const addSpy = sandbox.spy();
-    disposables.push(qhm.onDidAddQueryItem(addSpy));
-    const removeSpy = sandbox.spy();
-    disposables.push(qhm.onDidRemoveQueryItem(removeSpy));
 
     // Remove the first query
     await qhm.handleRemoveHistoryItem(qhm.treeDataProvider.allHistory[0]);
-    expect(removeSpy.getCall(0).args[0]).to.deep.eq(rawQueryHistory[0]);
-    expect(removeSpy.callCount).to.eq(1);
-    expect(addSpy.callCount).to.eq(0);
+
+    expect(removeRemoteQueryStub).calledOnceWithExactly(rawQueryHistory[0].queryId);
+    expect(rehydrateRemoteQueryStub).to.have.callCount(2);
+    expect(rehydrateRemoteQueryStub.getCall(0).args[1]).to.deep.eq(rawQueryHistory[0].remoteQuery);
+    expect(rehydrateRemoteQueryStub.getCall(1).args[1]).to.deep.eq(rawQueryHistory[1].remoteQuery);
+    expect(openRemoteQueryResultsStub).calledOnceWithExactly(rawQueryHistory[1].queryId);
     expect(qhm.treeDataProvider.allHistory).to.deep.eq(rawQueryHistory.slice(1));
 
     // Add it back
     qhm.addQuery(rawQueryHistory[0]);
-    expect(removeSpy.callCount).to.eq(1);
-    expect(addSpy.getCall(0).args[0]).to.deep.eq(rawQueryHistory[0]);
-    expect(addSpy.callCount).to.eq(1);
+    expect(removeRemoteQueryStub).to.have.callCount(1);
+    expect(rehydrateRemoteQueryStub).to.have.callCount(2);
     expect(qhm.treeDataProvider.allHistory).to.deep.eq([rawQueryHistory[1], rawQueryHistory[0]]);
   });
 
   it('should remove two queries from history', async () => {
     await qhm.readQueryHistory();
-    const addSpy = sandbox.spy();
-    disposables.push(qhm.onDidAddQueryItem(addSpy));
-    const removeSpy = sandbox.spy();
-    disposables.push(qhm.onDidRemoveQueryItem(removeSpy));
 
     // Remove the both queries
     // Just for fun, let's do it in reverse order
     await qhm.handleRemoveHistoryItem(undefined!, [qhm.treeDataProvider.allHistory[1], qhm.treeDataProvider.allHistory[0]]);
-    expect(removeSpy.getCall(0).args[0]).to.deep.eq(rawQueryHistory[1]);
-    expect(removeSpy.getCall(1).args[0]).to.deep.eq(rawQueryHistory[0]);
+
+    expect(removeRemoteQueryStub.callCount).to.eq(2);
+    expect(removeRemoteQueryStub.getCall(0).args[0]).to.eq(rawQueryHistory[1].queryId);
+    expect(removeRemoteQueryStub.getCall(1).args[0]).to.eq(rawQueryHistory[0].queryId);
     expect(qhm.treeDataProvider.allHistory).to.deep.eq([]);
-    expect(removeSpy.callCount).to.eq(2);
 
     // also, both queries should be removed from on disk storage
     expect(fs.readJSONSync(path.join(STORAGE_DIR, 'workspace-query-history.json'))).to.deep.eq({
@@ -147,11 +169,9 @@ describe('Remote queries and query history manager', function() {
 
   it('should handle a click', async () => {
     await qhm.readQueryHistory();
-    const openSpy = sandbox.spy();
-    disposables.push(qhm.onWillOpenQueryItem(openSpy));
 
     await qhm.handleItemClicked(qhm.treeDataProvider.allHistory[0], []);
-    expect(openSpy.getCall(0).args[0]).to.deep.eq(rawQueryHistory[0]);
+    expect(openRemoteQueryResultsStub).calledOnceWithExactly(rawQueryHistory[0].queryId);
   });
 
   it('should get the query text', async () => {
