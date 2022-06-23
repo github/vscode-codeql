@@ -37,6 +37,7 @@ import { ensureMetadataIsComplete } from './query-results';
 import { SELECT_QUERY_NAME } from './contextual/locationFinder';
 import { DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { getErrorMessage } from './pure/helpers-pure';
+import { parseVisualizerData } from './pure/log-summary-parser';
 
 /**
  * run-queries.ts
@@ -44,6 +45,28 @@ import { getErrorMessage } from './pure/helpers-pure';
  *
  * Compiling and running QL queries.
  */
+
+// REVIEW: I think these should be moved to another class (EvaluatorLogVisualizer
+// or EvaluatorLogData on its own once we wire it up with the tree visualizer)? 
+
+// REVIEW: Suggestions on other fields that are useful for a performance 
+// debugger would be welcome!
+export interface EvaluatorLogData {
+  queryName: string;
+  predicateName: string;
+  timeInMillis: number;
+  resultSize: number;
+  ra?: Pipeline[];
+}
+
+interface Pipeline {
+  pipelineName: string;
+  steps: PipelineStep[];
+}
+
+interface PipelineStep {
+  body: string;
+}
 
 /**
  * Information about which query will be to be run. `quickEvalPosition` and `quickEvalText`
@@ -103,6 +126,10 @@ export class QueryEvaluationInfo {
     return qsClient.findQueryEvalLogSummaryFile(this.querySaveDir);
   }
 
+  get jsonEvalLogSummaryPath() {
+    return qsClient.findJsonQueryEvalLogSummaryFile(this.querySaveDir);
+  }  
+  
   get evalLogEndSummaryPath() {
     return qsClient.findQueryEvalLogEndSummaryFile(this.querySaveDir);
   }
@@ -212,7 +239,28 @@ export class QueryEvaluationInfo {
             })
 
             .catch(err => {
-              void showAndLogWarningMessage(`Failed to generate structured evaluator log summary. Reason: ${err.message}`);
+              void showAndLogWarningMessage(`Failed to generate human-readable structured evaluator log summary. Reason: ${err.message}`);
+            });
+
+          // REVIEW: it seems clunky to have to run this command again just to get the same summary file
+          // in JSON format, but I'm not sure it's worth changing the way it works in the CLI for just
+          // this use case? 
+          void qs.cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath)
+            .then(() => {
+              // Convert summary into appropriate JSON object here. Perhaps move the parsing logic
+              // into another class later on?
+              
+              // REVIEW: We may want to stream this later on; we are generating the human-readable
+              // file in memory above but the JSON formatted one should be larger?
+              fs.readFile(this.jsonEvalLogSummaryPath, (err, buffer) => {
+                if (err) {
+                  throw new Error(`Could not read structured evaluator log end of summary JSON file at ${this.jsonEvalLogSummaryPath}.`);
+                }
+                parseVisualizerData(buffer.toString()); // Eventually this return value will feed into the tree visualizer.
+              });
+            })
+            .catch(err => {
+              void showAndLogWarningMessage(`Failed to generate JSON structured evaluator log summary. Reason: ${err.message}`);
             });
         } else {
           void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);
