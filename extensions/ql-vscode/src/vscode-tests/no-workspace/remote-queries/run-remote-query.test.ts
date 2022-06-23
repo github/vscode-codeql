@@ -98,7 +98,7 @@ describe('run-remote-query', () => {
           '',
           'Non-public repositories:',
           'e/f, g/h',
-          'When using a public controller repository, only public repositories can be queried'].join(os.EOL)
+          'When using a public controller repository, only public repositories can be queried.'].join(os.EOL)
       );
     });
 
