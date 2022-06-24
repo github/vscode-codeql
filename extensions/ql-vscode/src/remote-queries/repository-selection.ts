@@ -1,6 +1,7 @@
+import * as fs from 'fs-extra';
 import { QuickPickItem, window } from 'vscode';
 import { logger } from '../logging';
-import { getRemoteRepositoryLists } from '../config';
+import { getRemoteRepositoryLists, getRemoteRepositoryListsPath } from '../config';
 import { OWNER_REGEX, REPO_REGEX } from '../pure/helpers-pure';
 import { UserCancellationException } from '../commandRunner';
 
@@ -17,6 +18,11 @@ interface RepoListQuickPickItem extends QuickPickItem {
   useAllReposOfOwner?: boolean;
 }
 
+interface RepoList {
+  label: string;
+  repositories: string[];
+}
+
 /**
  * Gets the repositories or repository lists to run the query against.
  * @returns The user selection.
@@ -26,7 +32,7 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
     createCustomRepoQuickPickItem(),
     createAllReposOfOwnerQuickPickItem(),
     ...createSystemDefinedRepoListsQuickPickItems(),
-    ...createUserDefinedRepoListsQuickPickItems(),
+    ...(await createUserDefinedRepoListsQuickPickItems()),
   ];
 
   const options = {
@@ -88,18 +94,79 @@ function createSystemDefinedRepoListsQuickPickItems(): RepoListQuickPickItem[] {
   } as RepoListQuickPickItem));
 }
 
-function createUserDefinedRepoListsQuickPickItems(): RepoListQuickPickItem[] {
+async function readExternalRepoLists(): Promise<RepoList[]> {
+  const repoLists: RepoList[] = [];
+
+  const path = getRemoteRepositoryListsPath();
+  if (!path) {
+    return repoLists;
+  }
+
+  await validateExternalRepoListsFile(path);
+  const json = await readExternalRepoListsJson(path);
+
+  for (const [repoListName, repositories] of Object.entries(json)) {
+    if (!Array.isArray(repositories)) {
+      throw Error('Invalid repository lists file. It should contain an array of repositories for each list.');
+    }
+
+    repoLists.push({
+      label: repoListName,
+      repositories
+    });
+  }
+
+  return repoLists;
+}
+
+async function validateExternalRepoListsFile(path: string): Promise<void> {
+  const pathExists = await fs.pathExists(path);
+  if (!pathExists) {
+    throw Error(`External repository lists file does not exist at ${path}`);
+  }
+
+  const pathStat = await fs.stat(path);
+  if (pathStat.isDirectory()) {
+    throw Error('External repository lists path should not point to a directory');
+  }
+}
+
+async function readExternalRepoListsJson(path: string): Promise<Record<string, unknown>> {
+  let json;
+
+  try {
+    const fileContents = await fs.readFile(path, 'utf8');
+    json = await JSON.parse(fileContents);
+  } catch (error) {
+    throw Error('Invalid repository lists file. It should contain valid JSON.');
+  }
+
+  if (Array.isArray(json)) {
+    throw Error('Invalid repository lists file. It should be an object mapping names to a list of repositories.');
+  }
+
+  return json;
+}
+
+function readRepoListsFromSettings(): RepoList[] {
   const repoLists = getRemoteRepositoryLists();
   if (!repoLists) {
     return [];
   }
 
-  return Object.entries(repoLists).map<RepoListQuickPickItem>(([label, repositories]) => (
+  return Object.entries(repoLists).map<RepoList>(([label, repositories]) => (
     {
-      label,            // the name of the repository list
-      repositories  // the actual array of repositories
+      label,
+      repositories
     }
   ));
+}
+
+async function createUserDefinedRepoListsQuickPickItems(): Promise<RepoListQuickPickItem[]> {
+  const repoListsFromSetings = readRepoListsFromSettings();
+  const repoListsFromExternalFile = await readExternalRepoLists();
+
+  return [...repoListsFromSetings, ...repoListsFromExternalFile];
 }
 
 function createCustomRepoQuickPickItem(): RepoListQuickPickItem {

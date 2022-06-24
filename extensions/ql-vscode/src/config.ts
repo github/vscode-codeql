@@ -343,6 +343,21 @@ export async function setRemoteRepositoryLists(lists: Record<string, string[]> |
 }
 
 /**
+ * Path to a file that contains lists of GitHub repositories that you want to query remotely via 
+ * the "Run Variant Analysis" command.
+ * Note: This command is only available for internal users.
+ * 
+ * This setting should be a path to a JSON file that contains a JSON object where each key is a
+ * user-specified name (string), and the value is an array of GitHub repositories 
+ * (of the form `<owner>/<repo>`).
+ */
+const REPO_LISTS_PATH = new Setting('repositoryListsPath', REMOTE_QUERIES_SETTING);
+
+export function getRemoteRepositoryListsPath(): string | undefined {
+  return REPO_LISTS_PATH.getValue<string>() || undefined;
+}
+
+/**
  * The name of the "controller" repository that you want to use with the "Run Variant Analysis" command.
  * Note: This command is only available for internal users.
  *
