@@ -357,9 +357,6 @@ export class QueryEvaluationInfo {
    * into the appropriate data model for the log visualizer. 
    */
   parseJsonLogSummary(cliServer: cli.CodeQLCliServer): void {
-    // REVIEW: it seems clunky to have to run this command again just to get the same summary file
-    // in JSON format, but I'm not sure it's worth changing the way it works in the CLI for just
-    // this use case? 
     void cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath)
       .then(() => {
         // Convert summary into appropriate JSON object here. Perhaps move the parsing logic
