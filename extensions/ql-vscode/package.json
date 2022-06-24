@@ -574,6 +574,10 @@
         "title": "Open Variant Analysis on GitHub"
       },
       {
+        "command": "codeQLQueryHistory.copyRepoList",
+        "title": "Copy Repository List"
+      },
+      {
         "command": "codeQLQueryResults.nextPathStep",
         "title": "CodeQL: Show Next Step on Path"
       },
@@ -791,6 +795,11 @@
           "when": "viewItem == remoteResultsItem || viewItem == inProgressRemoteResultsItem || viewItem == cancelledResultsItem"
         },
         {
+          "command": "codeQLQueryHistory.copyRepoList",
+          "group": "9_qlCommands",
+          "when": "viewItem == remoteResultsItem"
+        },
+        {
           "command": "codeQLTests.showOutputDifferences",
           "group": "qltest@1",
           "when": "viewItem == testWithSource"
@@ -976,6 +985,10 @@
         },
         {
           "command": "codeQLQueryHistory.openOnGithub",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.copyRepoList",
           "when": "false"
         },
         {

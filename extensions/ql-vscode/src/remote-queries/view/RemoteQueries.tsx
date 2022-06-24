@@ -22,10 +22,12 @@ import RepositoriesSearch from './RepositoriesSearch';
 import StarCount from './StarCount';
 import SortRepoFilter, { Sort, sorter } from './SortRepoFilter';
 import LastUpdated from './LastUpdated';
+import RepoListCopyButton from './RepoListCopyButton';
 
 const numOfReposInContractedMode = 10;
 
 const emptyQueryResult: RemoteQueryResult = {
+  queryId: '',
   queryTitle: '',
   queryFileName: '',
   queryFilePath: '',
@@ -149,10 +151,14 @@ const SummaryTitleWithResults = ({
           text="Download all"
           onClick={() => downloadAllAnalysesResults(queryResult)} />
       }
-      <SortRepoFilter
-        sort={sort}
-        setSort={setSort}
-      />
+      <div style={{ flexGrow: 2, textAlign: 'right' }}>
+        <RepoListCopyButton queryResult={queryResult} />
+        <HorizontalSpace size={1} />
+        <SortRepoFilter
+          sort={sort}
+          setSort={setSort}
+        />
+      </div>
     </div>
   );
 };

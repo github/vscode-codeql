@@ -887,6 +887,12 @@ async function activateWithInstalledDistribution(
     }));
 
   ctx.subscriptions.push(
+    commandRunner('codeQL.copyRepoList', async (queryId: string) => {
+      await rqm.copyRemoteQueryRepoListToClipboard(queryId);
+    })
+  );
+
+  ctx.subscriptions.push(
     commandRunner('codeQL.autoDownloadRemoteQueryResults', async (
       queryResult: RemoteQueryResult,
       token: CancellationToken) => {

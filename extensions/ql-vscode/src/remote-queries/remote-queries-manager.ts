@@ -1,7 +1,8 @@
-import { CancellationToken, commands, EventEmitter, ExtensionContext, Uri, window } from 'vscode';
+import { CancellationToken, commands, EventEmitter, ExtensionContext, Uri, env, window } from 'vscode';
 import { nanoid } from 'nanoid';
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import * as os from 'os';
 
 import { Credentials } from '../authentication';
 import { CodeQLCliServer } from '../cli';
@@ -190,6 +191,22 @@ export class RemoteQueriesManager extends DisposableObject {
       results => this.interfaceManager.setAnalysisResults(results, queryResult.queryId));
   }
 
+  public async copyRemoteQueryRepoListToClipboard(queryId: string) {
+    const queryResult = await this.getRemoteQueryResult(queryId);
+    const repos = queryResult.analysisSummaries.map(a => a.nwo);
+
+    if (repos.length > 0) {
+      const text = [
+        '"new-repo-list": [',
+        ...repos.slice(0, -1).map(repo => `    "${repo}",`),
+        `    "${repos[repos.length - 1]}"`,
+        ']'
+      ];
+
+      await env.clipboard.writeText(text.join(os.EOL));
+    }
+  }
+
   private mapQueryResult(
     executionEndTime: number,
     resultIndex: RemoteQueryResultIndex,
@@ -257,6 +274,10 @@ export class RemoteQueriesManager extends DisposableObject {
    */
   private async prepareStorageDirectory(queryId: string): Promise<void> {
     await createTimestampFile(path.join(this.storagePath, queryId));
+  }
+
+  private async getRemoteQueryResult(queryId: string): Promise<RemoteQueryResult> {
+    return await this.retrieveJsonFile<RemoteQueryResult>(queryId, 'query-result.json');
   }
 
   private async storeJsonFile<T>(queryId: string, fileName: string, obj: T): Promise<void> {
