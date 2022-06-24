@@ -193,7 +193,9 @@ export class RemoteQueriesManager extends DisposableObject {
 
   public async copyRemoteQueryRepoListToClipboard(queryId: string) {
     const queryResult = await this.getRemoteQueryResult(queryId);
-    const repos = queryResult.analysisSummaries.map(a => a.nwo);
+    const repos = queryResult.analysisSummaries
+      .filter(a => a.resultCount > 0)
+      .map(a => a.nwo);
 
     if (repos.length > 0) {
       const text = [
