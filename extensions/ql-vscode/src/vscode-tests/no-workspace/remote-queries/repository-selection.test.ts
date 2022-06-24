@@ -9,22 +9,42 @@ const proxyquire = pq.noPreserveCache();
 
 describe('repository selection', async () => {
   let sandbox: sinon.SinonSandbox;
+
   let quickPickSpy: sinon.SinonStub;
   let showInputBoxSpy: sinon.SinonStub;
+
   let getRemoteRepositoryListsSpy: sinon.SinonStub;
   let getRemoteRepositoryListsPathSpy: sinon.SinonStub;
+
+  let pathExistsStub: sinon.SinonStub;
+  let fsStatStub: sinon.SinonStub;
+  let fsReadFileStub: sinon.SinonStub;
+
   let mod: any;
+
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+
     quickPickSpy = sandbox.stub(window, 'showQuickPick');
     showInputBoxSpy = sandbox.stub(window, 'showInputBox');
+
     getRemoteRepositoryListsSpy = sandbox.stub();
     getRemoteRepositoryListsPathSpy = sandbox.stub();
+
+    pathExistsStub = sandbox.stub(fs, 'pathExists');
+    fsStatStub = sandbox.stub(fs, 'stat');
+    fsReadFileStub = sandbox.stub(fs, 'readFile');
+
     mod = proxyquire('../../../remote-queries/repository-selection', {
       '../config': {
         getRemoteRepositoryLists: getRemoteRepositoryListsSpy,
         getRemoteRepositoryListsPath: getRemoteRepositoryListsPathSpy
       },
+      'fs-extra': {
+        pathExists: pathExistsStub,
+        stat: fsStatStub,
+        readFile: fsReadFileStub
+      }
     });
   });
 
@@ -179,22 +199,6 @@ describe('repository selection', async () => {
   });
 
   describe('external repository lists file', async () => {
-    let pathExistsStub: sinon.SinonStub;
-    let fsStatStub: sinon.SinonStub;
-    let fsReadFileStub: sinon.SinonStub;
-
-    beforeEach(() => {
-      pathExistsStub = sandbox.stub(fs, 'pathExists');
-      fsStatStub = sandbox.stub(fs, 'stat');
-      fsReadFileStub = sandbox.stub(fs, 'readFile');
-    });
-
-    afterEach(() => {
-      pathExistsStub.restore();
-      fsStatStub.restore();
-      fsReadFileStub.restore();
-    });
-
     it('should fail if path does not exist', async () => {
       const fakeFilePath = '/path/that/does/not/exist.json';
       getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
