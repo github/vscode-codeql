@@ -27,7 +27,7 @@ interface Pipeline {
       const jsonObj = JSON.parse(obj);
   
       // Only convert log items that have an RA and millis field
-      if (jsonObj.ra != undefined && jsonObj.millis != undefined) {
+      if (jsonObj.ra !== undefined && jsonObj.millis !== undefined) {
         const newLogData: EvaluatorLogData = {
           queryCausingWork: jsonObj.queryCausingWork,
           predicateName: jsonObj.predicateName,
