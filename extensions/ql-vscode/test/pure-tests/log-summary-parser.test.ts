@@ -79,9 +79,9 @@ describe('Parsing Valid Summary Text', () => {
     const evaluatorLogData = parseVisualizerData(validSummaryText);
     expect (evaluatorLogData.length).to.eq(2);
     for (const item of evaluatorLogData) {
-        expect(item.queryName).to.not.be.empty;
+        expect(item.queryCausingWork).to.not.be.empty;
         expect(item.predicateName).to.not.be.empty;
-        expect(item.timeInMillis).to.be.a('number');
+        expect(item.millis).to.be.a('number');
         expect(item.resultSize).to.be.a('number');
     }
   });

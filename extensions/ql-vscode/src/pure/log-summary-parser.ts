@@ -4,22 +4,18 @@
 // REVIEW: Suggestions on other fields that are useful for a performance 
 // debugger would be welcome!
 export interface EvaluatorLogData {
-    queryName: string;
+    queryCausingWork: string;
     predicateName: string;
-    timeInMillis: number;
+    millis: number;
     resultSize: number;
     ra?: Pipeline[];
   }
   
   interface Pipeline {
-    pipelineName: string;
-    steps: PipelineStep[];
+    // Key: pipeline identifier; Value: array of pipeline steps 
+    pipeline: Map<string, string[]>;
   }
   
-  interface PipelineStep {
-    body: string;
-  }
-
 /**
  * A pure method that parses a string of evaluator log summaries into
  * an array of EvaluatorLogData objects. 
@@ -38,9 +34,9 @@ export interface EvaluatorLogData {
       // REVIEW: Is there a way to make this less brittle? 
       if (jsonObj.ra != undefined && jsonObj.millis != undefined) {
         const newLogData: EvaluatorLogData = {
-          queryName: jsonObj.queryCausingWork,
+          queryCausingWork: jsonObj.queryCausingWork,
           predicateName: jsonObj.predicateName,
-          timeInMillis: jsonObj.millis,
+          millis: jsonObj.millis,
           resultSize: jsonObj.resultSize
           // TODO: need to also parse RA, pipeline arrays into the object. 
         };
