@@ -233,7 +233,7 @@ describe('repository selection', async () => {
       fsStatStub.resolves({ isDirectory: () => false } as any);
       fsReadFileStub.resolves('[]' as any as Buffer);
 
-      await expect(mod.getRepositorySelection()).to.be.rejectedWith(Error, 'Invalid repository lists file. It should not contain an array.');
+      await expect(mod.getRepositorySelection()).to.be.rejectedWith(Error, 'Invalid repository lists file. It should be an object mapping names to a list of repositories.');
     });
 
     it('should fail if file does not contain repo lists in the right format', async () => {

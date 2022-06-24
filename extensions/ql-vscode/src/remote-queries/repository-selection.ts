@@ -142,7 +142,7 @@ async function readExternalRepoListsJson(path: string): Promise<Record<string, u
   }
 
   if (Array.isArray(json)) {
-    throw Error('Invalid repository lists file. It should be an object mapping names to a list of repositories..');
+    throw Error('Invalid repository lists file. It should be an object mapping names to a list of repositories.');
   }
 
   return json;
