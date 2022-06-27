@@ -9,7 +9,6 @@ describe('Evaluator log summary tests', async function () {
   describe('for a valid summary text', async function () {
     it('should return only valid EvaluatorLogData objects', async function () {
       const validSummaryText = await fs.readFile(path.join(__dirname, 'evaluator-log-summaries/valid-summary.jsonl'), 'utf8');
-      console.log(validSummaryText.toString());
       const evaluatorLogData = parseVisualizerData(validSummaryText.toString());
       expect (evaluatorLogData.length).to.eq(2);
       for (const item of evaluatorLogData) {
