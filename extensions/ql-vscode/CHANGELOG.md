@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix a bug where quick queries cannot be compiled if the core libraries are not in the workspace. [#1411](https://github.com/github/vscode-codeql/pull/1411)
+
 ## 1.6.7 - 15 June 2022
 
 - Prints end-of-query evaluator log summaries to the Query Log. [#1349](https://github.com/github/vscode-codeql/pull/1349)
