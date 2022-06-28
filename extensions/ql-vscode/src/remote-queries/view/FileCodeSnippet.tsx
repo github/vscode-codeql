@@ -150,7 +150,7 @@ const Line = ({
   message?: AnalysisMessage,
   messageChildren?: React.ReactNode,
 }) => {
-  const showMessage = message &&
+  const shouldShowMessage = message &&
     severity &&
     highlightedRegion &&
     highlightedRegion.endLine == startingLineIndex + lineIndex;
@@ -181,7 +181,7 @@ const Line = ({
           highlightedRegion={highlightedRegion} />
       </div>
     </div>
-    {showMessage &&
+    {shouldShowMessage &&
       <MessageContainer>
         <Message
           message={message}
