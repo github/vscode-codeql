@@ -39,6 +39,8 @@ interface QueriesResponse {
     invalid_repositories?: string[],
     repositories_without_database?: string[],
     private_repositories?: string[],
+    cutoff_repositories?: string[],
+    cutoff_repositories_count?: number,
   },
   repositories_queried: string[],
 }
@@ -358,17 +360,30 @@ export function parseResponse(owner: string, repo: string, response: QueriesResp
   let logMessage = `Successfully scheduled runs on ${numRepositoriesQueried} repositories. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
   logMessage += `${eol2}Repositories queried:${eol}${repositoriesQueried.join(', ')}`;
   if (response.errors) {
+    const { invalid_repositories, repositories_without_database, private_repositories, cutoff_repositories, cutoff_repositories_count } = response.errors;
     logMessage += `${eol2}Some repositories could not be scheduled.`;
-    if (response.errors.invalid_repositories?.length) {
-      logMessage += `${eol2}Invalid repositories:${eol}${response.errors.invalid_repositories.join(', ')}`;
+    if (invalid_repositories?.length) {
+      logMessage += `${eol2}${invalid_repositories.length} repositories were invalid and could not be found:${eol}${invalid_repositories.join(', ')}`;
     }
-    if (response.errors.repositories_without_database?.length) {
-      logMessage += `${eol2}Repositories without databases:${eol}${response.errors.repositories_without_database.join(', ')}`;
+    if (repositories_without_database?.length) {
+      logMessage += `${eol2}${repositories_without_database.length} repositories did not have a CodeQL database available:${eol}${repositories_without_database.join(', ')}`;
       logMessage += `${eol}For each public repository that has not yet been added to the database service, we will try to create a database next time the store is updated.`;
     }
-    if (response.errors.private_repositories?.length) {
-      logMessage += `${eol2}Non-public repositories:${eol}${response.errors.private_repositories.join(', ')}`;
+    if (private_repositories?.length) {
+      logMessage += `${eol2}${private_repositories.length} repositories are not public:${eol}${private_repositories.join(', ')}`;
       logMessage += `${eol}When using a public controller repository, only public repositories can be queried.`;
+    }
+    if (cutoff_repositories_count) {
+      logMessage += `${eol2}${cutoff_repositories_count} repositories over the limit for a single request`;
+      if (cutoff_repositories) {
+        logMessage += `:${eol}${cutoff_repositories.join(', ')}`;
+        if (cutoff_repositories_count !== cutoff_repositories.length) {
+          logMessage += `${eol}...${eol}And ${cutoff_repositories_count - cutoff_repositories.length} more repositrories.`;
+        }
+      } else {
+        logMessage += '.';
+      }
+      logMessage += `${eol}Repositories were selected based on how recently they had been updated.`;
     }
   }
 
