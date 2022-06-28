@@ -917,8 +917,12 @@ export class CodeQLCliServer implements Disposable {
     return this.runJsonCodeQlCliCommand(['pack', 'download'], packs, 'Downloading packs');
   }
 
-  async packInstall(dir: string) {
-    return this.runJsonCodeQlCliCommand(['pack', 'install'], [dir], 'Installing pack dependencies');
+  async packInstall(dir: string, forceUpdate = false) {
+    const args = [dir];
+    if (forceUpdate) {
+      args.push('--mode', 'update');
+    }
+    return this.runJsonCodeQlCliCommand(['pack', 'install'], args, 'Installing pack dependencies');
   }
 
   async packBundle(dir: string, workspaceFolders: string[], outputPath: string, precompile = true): Promise<void> {
@@ -1270,7 +1274,7 @@ export class CliVersionConstraint {
   /**
    * CLI version where the `resolve ml-models` subcommand was enhanced to work with packaging.
    */
-public static CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS = new SemVer('2.10.0');
+  public static CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS = new SemVer('2.10.0');
 
   /**
    * CLI version where the `--old-eval-stats` option to the query server was introduced.

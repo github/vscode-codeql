@@ -38,6 +38,8 @@ describe('Queries', function() {
   let ctx: ExtensionContext;
 
   let qlpackFile: string;
+  let qlpackLockFile: string;
+  let oldQlpackLockFile: string; // codeql v2.6.3 and earlier
   let qlFile: string;
 
 
@@ -53,6 +55,8 @@ describe('Queries', function() {
         cli.quiet = true;
         ctx = extension.ctx;
         qlpackFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack.yml`;
+        qlpackLockFile = `${ctx.storageUri?.fsPath}/quick-queries/codeql-pack.lock.yml`;
+        oldQlpackLockFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack.lock.yml`;
         qlFile = `${ctx.storageUri?.fsPath}/quick-queries/quick-query.ql`;
       } else {
         throw new Error('Extension not initialized. Make sure cli is downloaded and installed properly.');
@@ -153,7 +157,14 @@ describe('Queries', function() {
       fs.readFileSync(qlpackFile, 'utf8')
     );
     // Should have chosen the js libraries
-    expect(qlpackContents.libraryPathDependencies[0]).to.include('javascript');
+    expect(qlpackContents.dependencies['codeql/javascript-all']).to.eq('*');
+
+    // Should also have a codeql-pack.lock.yml file
+    const packFileToUse = fs.pathExistsSync(qlpackLockFile) ? qlpackLockFile : oldQlpackLockFile;
+    const qlpackLock: any = await yaml.load(
+      fs.readFileSync(packFileToUse, 'utf8')
+    );
+    expect(!!qlpackLock.dependencies['codeql/javascript-all'].version).to.be.true;
   });
 
   it('should avoid creating a quick query', async () => {
@@ -161,7 +172,9 @@ describe('Queries', function() {
     fs.writeFileSync(qlpackFile, yaml.dump({
       name: 'quick-query',
       version: '1.0.0',
-      libraryPathDependencies: ['codeql/javascript-all']
+      dependencies: {
+        'codeql/javascript-all': '*'
+      }
     }));
     fs.writeFileSync(qlFile, 'xxx');
     await commands.executeCommand('codeQL.quickQuery');
