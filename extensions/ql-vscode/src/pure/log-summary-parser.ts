@@ -1,4 +1,6 @@
 // REVIEW: Perhaps this file should be renamed now that it also includes the 
+import * as os from 'os';
+
 // data model on top of the parsing logic?
 export interface EvaluatorLogData {
     queryCausingWork: string;
@@ -20,7 +22,7 @@ interface Pipeline {
  */
  export function parseVisualizerData(logSummary: string): EvaluatorLogData[] {
     // Remove newline delimiters because summary is in .jsonl format.
-    const jsonSummaryObjects: string[] = logSummary.split('\n\n');
+    const jsonSummaryObjects: string[] = logSummary.split(os.EOL + os.EOL);
     const visualizerData: EvaluatorLogData[] = [];
   
     for (const obj of jsonSummaryObjects) {
