@@ -55,71 +55,61 @@ const MessageContainer = styled.div`
   padding-bottom: 0.5em;
 `;
 
-const PlainLine = ({ text }: { text: string }) => {
+const PlainCode = ({ text }: { text: string }) => {
   return <span>{replaceSpaceAndTabChar(text)}</span>;
 };
 
-const HighlightedLine = ({ text }: { text: string }) => {
+const HighlightedCode = ({ text }: { text: string }) => {
   return <span style={{ backgroundColor: highlightColor }}>{replaceSpaceAndTabChar(text)}</span>;
 };
 
 const Message = ({
   message,
-  currentLineNumber,
-  highlightedRegion,
   borderLeftColor,
   children
 }: {
   message: AnalysisMessage,
-  currentLineNumber: number,
-  highlightedRegion?: HighlightedRegion,
   borderLeftColor: string,
   children: React.ReactNode
 }) => {
-  if (!highlightedRegion || highlightedRegion.endLine !== currentLineNumber) {
-    return <></>;
-  }
-
-  return <MessageContainer>
-    <div style={{
-      borderColor: borderColor,
-      borderWidth: '0.1em',
-      borderStyle: 'solid',
-      borderLeftColor: borderLeftColor,
-      borderLeftWidth: '0.3em',
-      paddingTop: '1em',
-      paddingBottom: '1em'
-    }}>
-      <MessageText>
-        {message.tokens.map((token, index) => {
-          switch (token.t) {
-            case 'text':
-              return <span key={`token-${index}`}>{token.text}</span>;
-            case 'location':
-              return <VSCodeLink
-                style={{ fontFamily: 'var(--vscode-editor-font-family)' }}
-                key={`token-${index}`}
-                href={createRemoteFileRef(
-                  token.location.fileLink,
-                  token.location.highlightedRegion?.startLine,
-                  token.location.highlightedRegion?.endLine)}>
-                {token.text}
-              </VSCodeLink>;
-            default:
-              return <></>;
-          }
-        })}
-        {children && <>
-          <VerticalSpace size={2} />
-          {children}
-        </>
+  return <div style={{
+    borderColor: borderColor,
+    borderWidth: '0.1em',
+    borderStyle: 'solid',
+    borderLeftColor: borderLeftColor,
+    borderLeftWidth: '0.3em',
+    paddingTop: '1em',
+    paddingBottom: '1em'
+  }}>
+    <MessageText>
+      {message.tokens.map((token, index) => {
+        switch (token.t) {
+          case 'text':
+            return <span key={`token-${index}`}>{token.text}</span>;
+          case 'location':
+            return <VSCodeLink
+              style={{ fontFamily: 'var(--vscode-editor-font-family)' }}
+              key={`token-${index}`}
+              href={createRemoteFileRef(
+                token.location.fileLink,
+                token.location.highlightedRegion?.startLine,
+                token.location.highlightedRegion?.endLine)}>
+              {token.text}
+            </VSCodeLink>;
+          default:
+            return <></>;
         }
-      </MessageText>
-    </div>
-  </MessageContainer>;
+      })}
+      {children && <>
+        <VerticalSpace size={2} />
+        {children}
+      </>
+      }
+    </MessageText>
+  </div>;
 };
 
-const CodeLine = ({
+const Code = ({
   line,
   lineNumber,
   highlightedRegion
@@ -129,18 +119,78 @@ const CodeLine = ({
   highlightedRegion?: HighlightedRegion
 }) => {
   if (!highlightedRegion || !shouldHighlightLine(lineNumber, highlightedRegion)) {
-    return <PlainLine text={line} />;
+    return <PlainCode text={line} />;
   }
 
   const partiallyHighlightedLine = parseHighlightedLine(line, lineNumber, highlightedRegion);
 
   return (
     <>
-      <PlainLine text={partiallyHighlightedLine.plainSection1} />
-      <HighlightedLine text={partiallyHighlightedLine.highlightedSection} />
-      <PlainLine text={partiallyHighlightedLine.plainSection2} />
+      <PlainCode text={partiallyHighlightedLine.plainSection1} />
+      <HighlightedCode text={partiallyHighlightedLine.highlightedSection} />
+      <PlainCode text={partiallyHighlightedLine.plainSection2} />
     </>
   );
+};
+
+const Line = ({
+  line,
+  lineIndex,
+  startingLineIndex,
+  highlightedRegion,
+  severity,
+  message,
+  messageChildren
+}: {
+  line: string,
+  lineIndex: number,
+  startingLineIndex: number,
+  highlightedRegion?: HighlightedRegion,
+  severity?: ResultSeverity,
+  message?: AnalysisMessage,
+  messageChildren?: React.ReactNode,
+}) => {
+  const showMessage = message &&
+    severity &&
+    highlightedRegion &&
+    highlightedRegion.endLine == startingLineIndex + lineIndex;
+
+  return <div>
+    <div style={{ display: 'flex' }} >
+      <div style={{
+        borderStyle: 'none',
+        paddingTop: '0.01em',
+        paddingLeft: '0.5em',
+        paddingRight: '0.5em',
+        paddingBottom: '0.2em'
+      }}>
+        {startingLineIndex + lineIndex}
+      </div>
+      <div style={{
+        flexGrow: 1,
+        borderStyle: 'none',
+        paddingTop: '0.01em',
+        paddingLeft: '1.5em',
+        paddingRight: '0.5em',
+        paddingBottom: '0.2em',
+        wordBreak: 'break-word'
+      }}>
+        <Code
+          line={line}
+          lineNumber={startingLineIndex + lineIndex}
+          highlightedRegion={highlightedRegion} />
+      </div>
+    </div>
+    {showMessage &&
+      <MessageContainer>
+        <Message
+          message={message}
+          borderLeftColor={getSeverityColor(severity)}>
+          {messageChildren}
+        </Message>
+      </MessageContainer>
+    }
+  </div>;
 };
 
 const FileCodeSnippet = ({
@@ -173,6 +223,12 @@ const FileCodeSnippet = ({
         <TitleContainer>
           <VSCodeLink href={titleFileUri}>{fileLink.filePath}</VSCodeLink>
         </TitleContainer>
+        {message && severity &&
+          <Message
+            message={message}
+            borderLeftColor={getSeverityColor(severity)}>
+            {messageChildren}
+          </Message>}
       </Container>
     );
   }
@@ -186,40 +242,16 @@ const FileCodeSnippet = ({
       </TitleContainer>
       <CodeContainer>
         {code.map((line, index) => (
-          <div key={index}>
-            <div style={{ display: 'flex' }} >
-              <div style={{
-                borderStyle: 'none',
-                paddingTop: '0.01em',
-                paddingLeft: '0.5em',
-                paddingRight: '0.5em',
-                paddingBottom: '0.2em'
-              }}>
-                {startingLine + index}
-              </div>
-              <div style={{
-                flexGrow: 1,
-                borderStyle: 'none',
-                paddingTop: '0.01em',
-                paddingLeft: '1.5em',
-                paddingRight: '0.5em',
-                paddingBottom: '0.2em',
-                wordBreak: 'break-word'
-              }}>
-                <CodeLine
-                  line={line}
-                  lineNumber={startingLine + index}
-                  highlightedRegion={highlightedRegion} />
-              </div>
-            </div>
-            {message && severity && <Message
-              message={message}
-              currentLineNumber={startingLine + index}
-              highlightedRegion={highlightedRegion}
-              borderLeftColor={getSeverityColor(severity)}>
-              {messageChildren}
-            </Message>}
-          </div>
+          <Line
+            key={`line-${index}`}
+            line={line}
+            lineIndex={index}
+            startingLineIndex={startingLine}
+            highlightedRegion={highlightedRegion}
+            severity={severity}
+            message={message}
+            messageChildren={messageChildren}
+          />
         ))}
       </CodeContainer>
     </Container>
