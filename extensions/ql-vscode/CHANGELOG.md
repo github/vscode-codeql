@@ -3,7 +3,7 @@
 ## [UNRELEASED]
 
 - Fix a bug where quick queries cannot be compiled if the core libraries are not in the workspace. [#1411](https://github.com/github/vscode-codeql/pull/1411)
-- Fix a bug where quick evaluation of library files would print an error message to the log when using CodeQL CLI v2.10.0. [#1412](https://github.com/github/vscode-codeql/pull/1412)
+- Fix a bug where quick evaluation of library files would display an error message when using CodeQL CLI v2.10.0. [#1412](https://github.com/github/vscode-codeql/pull/1412)
 
 ## 1.6.7 - 15 June 2022
 
