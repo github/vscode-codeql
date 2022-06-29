@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.6.8 - 29 June 2022
 
 - Fix a bug where quick queries cannot be compiled if the core libraries are not in the workspace. [#1411](https://github.com/github/vscode-codeql/pull/1411)
 - Fix a bug where quick evaluation of library files would display an error message when using CodeQL CLI v2.10.0. [#1412](https://github.com/github/vscode-codeql/pull/1412)
