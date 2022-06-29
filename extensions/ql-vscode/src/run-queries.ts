@@ -789,7 +789,11 @@ export async function compileAndRunQueryAgainstDatabase(
   const metadata = await tryGetQueryMetadata(cliServer, qlProgram.queryPath);
 
   let availableMlModels: cli.MlModelInfo[] = [];
-  if (await cliServer.cliConstraints.supportsResolveMlModels()) {
+  if (!initialInfo.queryPath.endsWith('.ql')) {
+    void logger.log('Quick evaluation within a query library does not currently support using ML models. Continuing without any ML models.');
+  } else if (!await cliServer.cliConstraints.supportsResolveMlModels()) {
+    void logger.log('Resolving ML models is unsupported by this version of the CLI. Running the query without any ML models.');
+  } else {
     try {
       availableMlModels = (await cliServer.resolveMlModels(diskWorkspaceFolders, initialInfo.queryPath)).models;
       if (availableMlModels.length) {
