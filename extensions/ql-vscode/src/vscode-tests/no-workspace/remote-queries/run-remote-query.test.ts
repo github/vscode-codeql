@@ -19,6 +19,21 @@ describe('run-remote-query', () => {
       );
     });
 
+    it('should parse a successful response with only one repo', () => {
+      const result = parseResponse('org', 'name', {
+        workflow_run_id: 123,
+        repositories_queried: ['a/b'],
+      });
+
+      expect(result.popupMessage).to.equal('Successfully scheduled runs on 1 repository. [Click here to see the progress](https://github.com/org/name/actions/runs/123).');
+      expect(result.logMessage).to.equal(
+        ['Successfully scheduled runs on 1 repository. See https://github.com/org/name/actions/runs/123.',
+          '',
+          'Repositories queried:',
+          'a/b'].join(os.EOL),
+      );
+    });
+
     it('should parse a response with invalid repos', () => {
       const result = parseResponse('org', 'name', {
         workflow_run_id: 123,

@@ -142,7 +142,7 @@ async function findPackRoot(queryFile: string): Promise<string> {
   while (!(await fs.pathExists(path.join(dir, 'qlpack.yml')))) {
     dir = path.dirname(dir);
     if (isFileSystemRoot(dir)) {
-      // there is no qlpack.yml in this direcory or any parent directory.
+      // there is no qlpack.yml in this directory or any parent directory.
       // just use the query file's directory as the pack root.
       return path.dirname(queryFile);
     }
@@ -354,10 +354,13 @@ export function parseResponse(owner: string, repo: string, response: QueriesResp
   const repositoriesQueried = response.repositories_queried;
   const numRepositoriesQueried = repositoriesQueried.length;
 
-  const popupMessage = `Successfully scheduled runs on ${numRepositoriesQueried} repositories. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
+  // Use "repository" for one, "repositories" for multiple.
+  const numRepositoriesMessage = `${numRepositoriesQueried} ${numRepositoriesQueried === 1 ? 'repository' : 'repositories'}`;
+
+  const popupMessage = `Successfully scheduled runs on ${numRepositoriesMessage}. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
     + (response.errors ? `${eol2}Some repositories could not be scheduled. See extension log for details.` : '');
 
-  let logMessage = `Successfully scheduled runs on ${numRepositoriesQueried} repositories. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
+  let logMessage = `Successfully scheduled runs on ${numRepositoriesMessage}. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
   logMessage += `${eol2}Repositories queried:${eol}${repositoriesQueried.join(', ')}`;
   if (response.errors) {
     const { invalid_repositories, repositories_without_database, private_repositories, cutoff_repositories, cutoff_repositories_count } = response.errors;
@@ -378,7 +381,7 @@ export function parseResponse(owner: string, repo: string, response: QueriesResp
       if (cutoff_repositories) {
         logMessage += `:${eol}${cutoff_repositories.join(', ')}`;
         if (cutoff_repositories_count !== cutoff_repositories.length) {
-          logMessage += `${eol}...${eol}And ${cutoff_repositories_count - cutoff_repositories.length} more repositrories.`;
+          logMessage += `${eol}...${eol}And ${cutoff_repositories_count - cutoff_repositories.length} more repositories.`;
         }
       } else {
         logMessage += '.';
