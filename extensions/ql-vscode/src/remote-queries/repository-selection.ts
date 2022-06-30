@@ -52,6 +52,10 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
     return { repositoryLists: [quickpick.repositoryList] };
   } else if (quickpick?.useCustomRepo) {
     const customRepo = await getCustomRepo();
+    if (customRepo === undefined) {
+      // The user cancelled, do nothing.
+      throw new UserCancellationException('No repositories selected', true);
+    }
     if (!customRepo || !REPO_REGEX.test(customRepo)) {
       throw new UserCancellationException('Invalid repository format. Please enter a valid repository in the format <owner>/<repo> (e.g. github/codeql)');
     }
@@ -59,6 +63,10 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
     return { repositories: [customRepo] };
   } else if (quickpick?.useAllReposOfOwner) {
     const owner = await getOwner();
+    if (owner === undefined) {
+      // The user cancelled, do nothing.
+      throw new UserCancellationException('No repositories selected', true);
+    }
     if (!owner || !OWNER_REGEX.test(owner)) {
       throw new Error(`Invalid user or organization: ${owner}`);
     }
@@ -197,6 +205,6 @@ async function getCustomRepo(): Promise<string | undefined> {
 async function getOwner(): Promise<string | undefined> {
   return await window.showInputBox({
     title: 'Enter a GitHub user or organization',
-    ignoreFocusOut: true,
+    ignoreFocusOut: true
   });
 }

@@ -100,7 +100,9 @@ describe('repository selection', async () => {
         ['top_100']
       );
     });
+  });
 
+  describe('custom owner', async () => {
     // Test the owner regex in various "good" cases
     const goodOwners = [
       'owner',
@@ -145,6 +147,18 @@ describe('repository selection', async () => {
         // Function call should throw a UserCancellationException
         await expect(mod.getRepositorySelection()).to.be.rejectedWith(Error, `Invalid user or organization: ${owner}`);
       });
+    });
+
+    it('should be ok for the user to change their mind', async () => {
+      quickPickSpy.resolves(
+        { useAllReposOfOwner: true }
+      );
+      getRemoteRepositoryListsSpy.returns({});
+
+      // The user pressed escape to cancel the operation
+      showInputBoxSpy.resolves(undefined);
+
+      await expect(mod.getRepositorySelection()).to.be.rejectedWith(UserCancellationException, 'No repositories selected');
     });
   });
 
@@ -195,6 +209,18 @@ describe('repository selection', async () => {
         // Function call should throw a UserCancellationException
         await expect(mod.getRepositorySelection()).to.be.rejectedWith(UserCancellationException, 'Invalid repository format');
       });
+    });
+
+    it('should be ok for the user to change their mind', async () => {
+      quickPickSpy.resolves(
+        { useCustomRepo: true }
+      );
+      getRemoteRepositoryListsSpy.returns({});
+
+      // The user pressed escape to cancel the operation
+      showInputBoxSpy.resolves(undefined);
+
+      await expect(mod.getRepositorySelection()).to.be.rejectedWith(UserCancellationException, 'No repositories selected');
     });
   });
 
