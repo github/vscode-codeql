@@ -606,7 +606,8 @@ export class CodeQLCliServer implements Disposable {
   /** Resolves the ML models that should be available when evaluating a query. */
   async resolveMlModels(additionalPacks: string[], queryPath: string): Promise<MlModelsInfo> {
     const args = await this.cliConstraints.supportsPreciseResolveMlModels()
-      ? [...this.getAdditionalPacksArg(additionalPacks), queryPath]
+      // use the dirname of the path so that we can handle query libraries
+      ? [...this.getAdditionalPacksArg(additionalPacks), path.dirname(queryPath)]
       : this.getAdditionalPacksArg(additionalPacks);
     return await this.runJsonCodeQlCliCommand<MlModelsInfo>(
       ['resolve', 'ml-models'],
