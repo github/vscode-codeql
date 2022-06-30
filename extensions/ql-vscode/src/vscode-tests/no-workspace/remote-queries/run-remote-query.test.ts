@@ -19,21 +19,6 @@ describe('run-remote-query', () => {
       );
     });
 
-    it('should parse a successful response with only one repo', () => {
-      const result = parseResponse('org', 'name', {
-        workflow_run_id: 123,
-        repositories_queried: ['a/b'],
-      });
-
-      expect(result.popupMessage).to.equal('Successfully scheduled runs on 1 repository. [Click here to see the progress](https://github.com/org/name/actions/runs/123).');
-      expect(result.logMessage).to.equal(
-        ['Successfully scheduled runs on 1 repository. See https://github.com/org/name/actions/runs/123.',
-          '',
-          'Repositories queried:',
-          'a/b'].join(os.EOL),
-      );
-    });
-
     it('should parse a response with invalid repos', () => {
       const result = parseResponse('org', 'name', {
         workflow_run_id: 123,
@@ -56,7 +41,7 @@ describe('run-remote-query', () => {
           '',
           'Some repositories could not be scheduled.',
           '',
-          '2 repositories were invalid and could not be found:',
+          '2 repositories invalid and could not be found:',
           'e/f, g/h'].join(os.EOL)
       );
     });
@@ -111,7 +96,7 @@ describe('run-remote-query', () => {
           '',
           'Some repositories could not be scheduled.',
           '',
-          '2 repositories are not public:',
+          '2 repositories not public:',
           'e/f, g/h',
           'When using a public controller repository, only public repositories can be queried.'].join(os.EOL)
       );
@@ -196,12 +181,57 @@ describe('run-remote-query', () => {
           '',
           'Some repositories could not be scheduled.',
           '',
-          '2 repositories were invalid and could not be found:',
+          '2 repositories invalid and could not be found:',
           'e/f, g/h',
           '',
           '2 repositories did not have a CodeQL database available:',
           'i/j, k/l',
           'For each public repository that has not yet been added to the database service, we will try to create a database next time the store is updated.'].join(os.EOL)
+      );
+    });
+
+    it('should parse a response with one repo of each category, and not pluralize "repositories"', () => {
+      const result = parseResponse('org', 'name', {
+        workflow_run_id: 123,
+        repositories_queried: ['a/b'],
+        errors: {
+          private_repositories: ['e/f'],
+          cutoff_repositories: ['i/j'],
+          cutoff_repositories_count: 1,
+          invalid_repositories: ['m/n'],
+          repositories_without_database: ['q/r'],
+        }
+      });
+
+      expect(result.popupMessage).to.equal(
+        ['Successfully scheduled runs on 1 repository. [Click here to see the progress](https://github.com/org/name/actions/runs/123).',
+          '',
+          'Some repositories could not be scheduled. See extension log for details.'].join(os.EOL)
+      );
+      expect(result.logMessage).to.equal(
+        [
+          'Successfully scheduled runs on 1 repository. See https://github.com/org/name/actions/runs/123.',
+          '',
+          'Repositories queried:',
+          'a/b',
+          '',
+          'Some repositories could not be scheduled.',
+          '',
+          '1 repository invalid and could not be found:',
+          'm/n',
+          '',
+          '1 repository did not have a CodeQL database available:',
+          'q/r',
+          'For each public repository that has not yet been added to the database service, we will try to create a database next time the store is updated.',
+          '',
+          '1 repository not public:',
+          'e/f',
+          'When using a public controller repository, only public repositories can be queried.',
+          '',
+          '1 repository over the limit for a single request:',
+          'i/j',
+          'Repositories were selected based on how recently they had been updated.',
+        ].join(os.EOL)
       );
     });
   });
