@@ -204,8 +204,9 @@ export class QueryEvaluationInfo {
         });
         if (await this.hasEvalLog()) {
           this.displayHumanReadableLogSummary(queryInfo, qs);
-          
-          this.parseJsonLogSummary(qs.cliServer);
+          if (config.isCanary()) {
+            this.parseJsonLogSummary(qs.cliServer);
+          }
         } else {
           void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);
         }
