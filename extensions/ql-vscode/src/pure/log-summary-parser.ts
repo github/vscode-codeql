@@ -1,7 +1,7 @@
-// REVIEW: Perhaps this file should be renamed now that it also includes the 
 import * as os from 'os';
 
-// data model on top of the parsing logic?
+// TODO(angelapwen): Only load in necessary information and
+// bytecode of the location for this log to save memory. 
 export interface EvaluatorLogData {
     queryCausingWork: string;
     predicateName: string;
@@ -34,8 +34,8 @@ interface Pipeline {
           queryCausingWork: jsonObj.queryCausingWork,
           predicateName: jsonObj.predicateName,
           millis: jsonObj.millis,
-          resultSize: jsonObj.resultSize
-          // TODO: need to also parse RA, pipeline arrays into the object. 
+          resultSize: jsonObj.resultSize,
+          ra: jsonObj.ra? jsonObj.ra: null
         };
         visualizerData.push(newLogData);
       }

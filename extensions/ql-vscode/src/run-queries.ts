@@ -358,11 +358,8 @@ export class QueryEvaluationInfo {
    */
   parseJsonLogSummary(cliServer: cli.CodeQLCliServer): void {
     void cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath)
-      .then(() => {
-        // Convert summary into appropriate JSON object here. Perhaps move the parsing logic
-        // into another class later on?            
-        // REVIEW: We may want to stream this later on; we are generating the human-readable
-        // file in memory above but the JSON formatted one should be larger?
+      .then(() => {         
+        // TODO(angelapwen): Stream the file in. 
         fs.readFile(this.jsonEvalLogSummaryPath, (err, buffer) => {
           if (err) {
             throw new Error(`Could not read structured evaluator log end of summary JSON file at ${this.jsonEvalLogSummaryPath}.`);

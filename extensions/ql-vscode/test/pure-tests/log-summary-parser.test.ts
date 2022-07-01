@@ -12,10 +12,16 @@ describe('Evaluator log summary tests', async function () {
       const evaluatorLogData = parseVisualizerData(validSummaryText.toString());
       expect (evaluatorLogData.length).to.eq(2);
       for (const item of evaluatorLogData) {
-          expect(item.queryCausingWork).to.not.be.empty;
-          expect(item.predicateName).to.not.be.empty;
-          expect(item.millis).to.be.a('number');
-          expect(item.resultSize).to.be.a('number');
+        expect(item.queryCausingWork).to.not.be.empty;
+        expect(item.predicateName).to.not.be.empty;
+        expect(item.millis).to.be.a('number');
+        expect(item.resultSize).to.be.a('number');
+        expect(item.ra).to.not.be.empty;
+        if (item.ra !== undefined) {
+          for (const pipeline of Object.entries(item.ra)) {
+            expect (pipeline).to.not.be.empty;
+          }
+        }
       }
     });
   
