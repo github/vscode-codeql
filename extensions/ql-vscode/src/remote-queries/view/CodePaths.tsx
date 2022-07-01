@@ -1,6 +1,6 @@
 import { TriangleDownIcon, XCircleIcon } from '@primer/octicons-react';
-import { ActionList, ActionMenu, Button, Label, Overlay } from '@primer/react';
-import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
+import { ActionList, ActionMenu, Button, Overlay } from '@primer/react';
+import { VSCodeLink, VSCodeTag } from '@vscode/webview-ui-toolkit/react';
 import * as React from 'react';
 import { useRef, useState } from 'react';
 import styled from 'styled-components';
@@ -60,12 +60,12 @@ const CodePath = ({
           </div>
           {index === 0 &&
             <div style={{ padding: 0, border: 'none' }}>
-              <Label>Source</Label>
+              <VSCodeTag>Source</VSCodeTag>
             </div>
           }
           {index === codeFlow.threadFlows.length - 1 &&
             <div style={{ padding: 0, border: 'none' }}>
-              <Label>Sink</Label>
+              <VSCodeTag>Sink</VSCodeTag>
             </div>
           }
         </div>
