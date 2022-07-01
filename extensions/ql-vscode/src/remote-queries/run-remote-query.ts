@@ -142,7 +142,7 @@ async function findPackRoot(queryFile: string): Promise<string> {
   while (!(await fs.pathExists(path.join(dir, 'qlpack.yml')))) {
     dir = path.dirname(dir);
     if (isFileSystemRoot(dir)) {
-      // there is no qlpack.yml in this direcory or any parent directory.
+      // there is no qlpack.yml in this directory or any parent directory.
       // just use the query file's directory as the pack root.
       return path.dirname(queryFile);
     }
@@ -349,36 +349,44 @@ async function runRemoteQueriesApiRequest(
 const eol = os.EOL;
 const eol2 = os.EOL + os.EOL;
 
+/**
+ * Returns "N repository" if N is one, "N repositories" otherwise.
+ */
+function pluralizeRepositories(numRepositories: number) {
+  return `${numRepositories} ${numRepositories === 1 ? 'repository' : 'repositories'}`;
+}
+
 // exported for testing only
 export function parseResponse(owner: string, repo: string, response: QueriesResponse) {
   const repositoriesQueried = response.repositories_queried;
   const numRepositoriesQueried = repositoriesQueried.length;
 
-  const popupMessage = `Successfully scheduled runs on ${numRepositoriesQueried} repositories. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
+  const popupMessage = `Successfully scheduled runs on ${pluralizeRepositories(numRepositoriesQueried)}. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
     + (response.errors ? `${eol2}Some repositories could not be scheduled. See extension log for details.` : '');
 
-  let logMessage = `Successfully scheduled runs on ${numRepositoriesQueried} repositories. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
+  let logMessage = `Successfully scheduled runs on ${pluralizeRepositories(numRepositoriesQueried)}. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
   logMessage += `${eol2}Repositories queried:${eol}${repositoriesQueried.join(', ')}`;
   if (response.errors) {
     const { invalid_repositories, repositories_without_database, private_repositories, cutoff_repositories, cutoff_repositories_count } = response.errors;
     logMessage += `${eol2}Some repositories could not be scheduled.`;
     if (invalid_repositories?.length) {
-      logMessage += `${eol2}${invalid_repositories.length} repositories were invalid and could not be found:${eol}${invalid_repositories.join(', ')}`;
+      logMessage += `${eol2}${pluralizeRepositories(invalid_repositories.length)} invalid and could not be found:${eol}${invalid_repositories.join(', ')}`;
     }
     if (repositories_without_database?.length) {
-      logMessage += `${eol2}${repositories_without_database.length} repositories did not have a CodeQL database available:${eol}${repositories_without_database.join(', ')}`;
+      logMessage += `${eol2}${pluralizeRepositories(repositories_without_database.length)} did not have a CodeQL database available:${eol}${repositories_without_database.join(', ')}`;
       logMessage += `${eol}For each public repository that has not yet been added to the database service, we will try to create a database next time the store is updated.`;
     }
     if (private_repositories?.length) {
-      logMessage += `${eol2}${private_repositories.length} repositories are not public:${eol}${private_repositories.join(', ')}`;
+      logMessage += `${eol2}${pluralizeRepositories(private_repositories.length)} not public:${eol}${private_repositories.join(', ')}`;
       logMessage += `${eol}When using a public controller repository, only public repositories can be queried.`;
     }
     if (cutoff_repositories_count) {
-      logMessage += `${eol2}${cutoff_repositories_count} repositories over the limit for a single request`;
+      logMessage += `${eol2}${pluralizeRepositories(cutoff_repositories_count)} over the limit for a single request`;
       if (cutoff_repositories) {
         logMessage += `:${eol}${cutoff_repositories.join(', ')}`;
         if (cutoff_repositories_count !== cutoff_repositories.length) {
-          logMessage += `${eol}...${eol}And ${cutoff_repositories_count - cutoff_repositories.length} more repositrories.`;
+          const moreRepositories = cutoff_repositories_count - cutoff_repositories.length;
+          logMessage += `${eol}...${eol}And another ${pluralizeRepositories(moreRepositories)}.`;
         }
       } else {
         logMessage += '.';
