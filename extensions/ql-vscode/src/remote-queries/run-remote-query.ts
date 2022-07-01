@@ -385,7 +385,8 @@ export function parseResponse(owner: string, repo: string, response: QueriesResp
       if (cutoff_repositories) {
         logMessage += `:${eol}${cutoff_repositories.join(', ')}`;
         if (cutoff_repositories_count !== cutoff_repositories.length) {
-          logMessage += `${eol}...${eol}And ${cutoff_repositories_count - cutoff_repositories.length} more repositories.`;
+          const moreRepositories = cutoff_repositories_count - cutoff_repositories.length;
+          logMessage += `${eol}...${eol}And another ${pluralizeRepositories(moreRepositories)}.`;
         }
       } else {
         logMessage += '.';
