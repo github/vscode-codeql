@@ -1,7 +1,7 @@
 import * as os from 'os';
 
 // TODO(angelapwen): Only load in necessary information and
-// bytecode of the location for this log to save memory. 
+// location in bytes for this log to save memory. 
 export interface EvaluatorLogData {
     queryCausingWork: string;
     predicateName: string;
