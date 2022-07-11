@@ -35,7 +35,7 @@ interface Pipeline {
           predicateName: jsonObj.predicateName,
           millis: jsonObj.millis,
           resultSize: jsonObj.resultSize,
-          ra: jsonObj.ra? jsonObj.ra: null
+          ra: jsonObj.ra
         };
         visualizerData.push(newLogData);
       }
