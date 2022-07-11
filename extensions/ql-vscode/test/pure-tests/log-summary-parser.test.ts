@@ -9,9 +9,9 @@ describe('Evaluator log summary tests', async function () {
   describe('for a valid summary text', async function () {
     it('should return only valid EvaluatorLogData objects', async function () {
       const validSummaryText = await fs.readFile(path.join(__dirname, 'evaluator-log-summaries/valid-summary.jsonl'), 'utf8');
-      const evaluatorLogData = parseVisualizerData(validSummaryText.toString());
-      expect (evaluatorLogData.length).to.eq(2);
-      for (const item of evaluatorLogData) {
+      const logDataItems = parseVisualizerData(validSummaryText.toString());
+      expect (logDataItems.length).to.eq(2);
+      for (const item of logDataItems) {
         expect(item.queryCausingWork).to.not.be.empty;
         expect(item.predicateName).to.not.be.empty;
         expect(item.millis).to.be.a('number');
@@ -26,18 +26,18 @@ describe('Evaluator log summary tests', async function () {
   
     it('should not parse a summary header object', async function () {
       const invalidHeaderText = await fs.readFile(path.join(__dirname, 'evaluator-log-summaries/invalid-header.jsonl'), 'utf8');
-      const evaluatorLogData = parseVisualizerData(invalidHeaderText);
-      expect (evaluatorLogData.length).to.eq(0);
-      for (const item of evaluatorLogData) {
+      const logDataItems = parseVisualizerData(invalidHeaderText);
+      expect (logDataItems.length).to.eq(0);
+      for (const item of logDataItems) {
         expect(item).to.be.empty;
       }
     });
   
     it('should not parse a log event missing RA or millis fields', async function () {
       const invalidSummaryText = await fs.readFile(path.join(__dirname, 'evaluator-log-summaries/invalid-summary.jsonl'), 'utf8');
-      const evaluatorLogData = parseVisualizerData(invalidSummaryText);
-      expect (evaluatorLogData.length).to.eq(0);
-      for (const item of evaluatorLogData) {
+      const logDataItems = parseVisualizerData(invalidSummaryText);
+      expect (logDataItems.length).to.eq(0);
+      for (const item of logDataItems) {
         expect(item).to.be.empty;
       }
     });
