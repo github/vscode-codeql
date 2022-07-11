@@ -363,7 +363,7 @@ export class QueryEvaluationInfo {
         // TODO(angelapwen): Stream the file in. 
         fs.readFile(this.jsonEvalLogSummaryPath, (err, buffer) => {
           if (err) {
-            throw new Error(`Could not read structured evaluator log end of summary JSON file at ${this.jsonEvalLogSummaryPath}.`);
+            throw new Error(`Could not read structured evaluator log summary JSON file at ${this.jsonEvalLogSummaryPath}`);
           }
           parseVisualizerData(buffer.toString()); // Eventually this return value will feed into the tree visualizer.
         });
