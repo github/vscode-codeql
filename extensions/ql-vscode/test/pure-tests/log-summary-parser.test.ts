@@ -28,18 +28,12 @@ describe('Evaluator log summary tests', async function () {
       const invalidHeaderText = await fs.readFile(path.join(__dirname, 'evaluator-log-summaries/invalid-header.jsonl'), 'utf8');
       const logDataItems = parseVisualizerData(invalidHeaderText);
       expect (logDataItems.length).to.eq(0);
-      for (const item of logDataItems) {
-        expect(item).to.be.empty;
-      }
     });
   
     it('should not parse a log event missing RA or millis fields', async function () {
       const invalidSummaryText = await fs.readFile(path.join(__dirname, 'evaluator-log-summaries/invalid-summary.jsonl'), 'utf8');
       const logDataItems = parseVisualizerData(invalidSummaryText);
       expect (logDataItems.length).to.eq(0);
-      for (const item of logDataItems) {
-        expect(item).to.be.empty;
-      }
     });
   });  
 });
