@@ -10,7 +10,7 @@ describe('Evaluator log summary tests', async function () {
     it('should return only valid EvaluatorLogData objects', async function () {
       const validSummaryText = await fs.readFile(path.join(__dirname, 'evaluator-log-summaries/valid-summary.jsonl'), 'utf8');
       const logDataItems = parseVisualizerData(validSummaryText.toString());
-      expect (logDataItems.length).to.eq(2);
+      expect (logDataItems.length).to.eq(3);
       for (const item of logDataItems) {
         expect(item.queryCausingWork).to.not.be.empty;
         expect(item.predicateName).to.not.be.empty;

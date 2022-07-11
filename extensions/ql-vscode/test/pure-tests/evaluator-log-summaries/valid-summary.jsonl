@@ -67,3 +67,58 @@
     "raReference" : "pipeline"
   } ]
 }
+
+{
+  "completionTime" : "2022-06-23T14:02:43.799Z",
+  "raHash" : "1d0c6wplpr6bnlnii51r7f6lh85",
+  "predicateName" : "QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff",
+  "appearsAs" : {
+    "QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff" : {
+      "uboot-taint.ql" : [ 10 ]
+    }
+  },
+  "queryCausingWork" : "uboot-taint.ql",
+  "evaluationStrategy" : "COMPUTE_RECURSIVE",
+  "millis" : 2,
+  "predicateIterationMillis" : [ 1, 0 ],
+  "deltaSizes" : [ 1, 0 ],
+  "resultSize" : 1,
+  "dependencies" : {
+    "namespaces" : "bf72dcmerq68kur5k2uttmjoco4",
+    "namespacembrs_1#antijoin_rhs" : "3c47bbkgae024k8hgf148mgeqi2",
+    "QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff#join_rhs#1" : "d55d698lva8n15u4v7055ma1vl9",
+    "namespacembrs" : "08a148i70tonoa8fp0mb5eb44r1",
+    "QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff#join_rhs" : "77cd9dha843p3v12qso4qpe4qoe"
+  },
+  "layerSize" : 1,
+  "ra" : {
+    "base" : [
+      "    {2} r1 = namespaces AND NOT namespacembrs_1#antijoin_rhs(Lhs.0)",
+      "    return r1"
+    ],
+    "standard" : [
+      "    {2} r1 = JOIN QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff#prev_delta WITH QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff#join_rhs#1 ON FIRST 1 OUTPUT Rhs.1, Lhs.1",
+      "",
+      "    {2} r2 = JOIN QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff#prev_delta WITH QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff#join_rhs ON FIRST 1 OUTPUT Rhs.1, (Lhs.1 ++ \"::\" ++ Rhs.2)",
+      "",
+      "    {2} r3 = r1 UNION r2",
+      "    {2} r4 = r3 AND NOT QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff#prev(Lhs.0, Lhs.1)",
+      "    return r4"
+    ],
+    "order_500000" : [
+      "    {2} r1 = JOIN QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff#prev_delta WITH QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff#join_rhs#1 ON FIRST 1 OUTPUT Rhs.1, Lhs.1",
+      "",
+      "    {2} r2 = JOIN QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff#prev_delta WITH namespacembrs ON FIRST 1 OUTPUT Rhs.1, Lhs.1",
+      "    {2} r3 = JOIN r2 WITH namespaces ON FIRST 1 OUTPUT Lhs.0, (Lhs.1 ++ \"::\" ++ Rhs.1)",
+      "",
+      "    {2} r4 = r1 UNION r3",
+      "    {2} r5 = r4 AND NOT QualifiedName::Namespace::getAQualifierForMembers#f0820431#ff#prev(Lhs.0, Lhs.1)",
+      "    return r5"
+    ]
+  },
+  "pipelineRuns" : [ {
+    "raReference" : "base"
+  }, {
+    "raReference" : "order_500000"
+  } ]
+}
