@@ -16,11 +16,10 @@ describe('Evaluator log summary tests', async function () {
         expect(item.predicateName).to.not.be.empty;
         expect(item.millis).to.be.a('number');
         expect(item.resultSize).to.be.a('number');
+        expect(item.ra).to.not.be.undefined;
         expect(item.ra).to.not.be.empty;
-        if (item.ra !== undefined) {
-          for (const pipeline of Object.entries(item.ra)) {
-            expect (pipeline).to.not.be.empty;
-          }
+        for (const pipeline of Object.entries(item.ra)) {
+          expect (pipeline).to.not.be.empty;
         }
       }
     });

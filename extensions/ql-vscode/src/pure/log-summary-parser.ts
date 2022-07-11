@@ -7,7 +7,7 @@ export interface EvaluatorLogData {
     predicateName: string;
     millis: number;
     resultSize: number;
-    ra?: Pipeline[];
+    ra: Pipeline[];
 }
   
 interface Pipeline {
