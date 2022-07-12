@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { Uri, Range } from 'vscode';
 
 import fileRangeFromURI from '../../../contextual/fileRangeFromURI';
@@ -7,18 +6,21 @@ import { WholeFileLocation, LineColumnLocation } from '../../../pure/bqrs-cli-ty
 
 describe('fileRangeFromURI', () => {
   it('should return undefined when value is not a file URI', () => {
-    expect(fileRangeFromURI('hucairz', createMockDatabaseItem())).to.be.undefined;
+    expect(fileRangeFromURI('hucairz', createMockDatabaseItem())).toBeUndefined();
   });
 
-  it('should fail to find a location when not a file URI and a full 5 part location', () => {
-    expect(fileRangeFromURI({
-      uri: 'https://yahoo.com',
-      startLine: 1,
-      startColumn: 2,
-      endLine: 3,
-      endColumn: 4,
-    } as LineColumnLocation, createMockDatabaseItem())).to.be.undefined;
-  });
+  it(
+    'should fail to find a location when not a file URI and a full 5 part location',
+    () => {
+      expect(fileRangeFromURI({
+        uri: 'https://yahoo.com',
+        startLine: 1,
+        startColumn: 2,
+        endLine: 3,
+        endColumn: 4,
+      } as LineColumnLocation, createMockDatabaseItem())).toBeUndefined();
+    }
+  );
 
   it('should fail to find a location when there is a silly protocol', () => {
     expect(fileRangeFromURI({
@@ -27,7 +29,7 @@ describe('fileRangeFromURI', () => {
       startColumn: 2,
       endLine: 3,
       endColumn: 4,
-    } as LineColumnLocation, createMockDatabaseItem())).to.be.undefined;
+    } as LineColumnLocation, createMockDatabaseItem())).toBeUndefined();
   });
 
   it('should return undefined when value is an empty uri', () => {
@@ -37,13 +39,13 @@ describe('fileRangeFromURI', () => {
       startColumn: 2,
       endLine: 3,
       endColumn: 4,
-    } as LineColumnLocation, createMockDatabaseItem())).to.be.undefined;
+    } as LineColumnLocation, createMockDatabaseItem())).toBeUndefined();
   });
 
   it('should return a range for a WholeFileLocation', () => {
     expect(fileRangeFromURI({
       uri: 'file:///hucairz',
-    } as WholeFileLocation, createMockDatabaseItem())).to.deep.eq({
+    } as WholeFileLocation, createMockDatabaseItem())).toEqual({
       uri: Uri.parse('file:///hucairz', true),
       range: new Range(0, 0, 0, 0)
     });
@@ -56,7 +58,7 @@ describe('fileRangeFromURI', () => {
       startColumn: 2,
       endLine: 3,
       endColumn: 4,
-    } as LineColumnLocation, createMockDatabaseItem())).to.deep.eq({
+    } as LineColumnLocation, createMockDatabaseItem())).toEqual({
       uri: Uri.parse('file:///hucairz', true),
       range: new Range(0, 1, 2, 4)
     });

@@ -1,7 +1,6 @@
 import * as sinon from 'sinon';
 import * as fs from 'fs-extra';
 import { Uri, WorkspaceFolder } from 'vscode';
-import { expect } from 'chai';
 
 import { QLTestAdapter } from '../../test-adapter';
 import { CodeQLCliServer } from '../../cli';
@@ -80,17 +79,17 @@ describe('test-adapter', () => {
 
     await adapter.run([testsPath]);
 
-    expect(listenerSpy.getCall(0).args).to.deep.eq([
+    expect(listenerSpy.getCall(0).args).toEqual([
       { type: 'started', tests: [testsPath] }
     ]);
-    expect(listenerSpy.getCall(1).args).to.deep.eq([{
+    expect(listenerSpy.getCall(1).args).toEqual([{
       type: 'test',
       state: 'passed',
       test: dPath,
       message: undefined,
       decorations: []
     }]);
-    expect(listenerSpy.getCall(2).args).to.deep.eq([{
+    expect(listenerSpy.getCall(2).args).toEqual([{
       type: 'test',
       state: 'errored',
       test: gPath,
@@ -99,15 +98,15 @@ describe('test-adapter', () => {
         { line: 1, message: 'abc' }
       ]
     }]);
-    expect(listenerSpy.getCall(3).args).to.deep.eq([{
+    expect(listenerSpy.getCall(3).args).toEqual([{
       type: 'test',
       state: 'failed',
       test: hPath,
       message: `\nfailed: ${hPath}\njkh\ntuv\n`,
       decorations: []
     }]);
-    expect(listenerSpy.getCall(4).args).to.deep.eq([{ type: 'finished' }]);
-    expect(listenerSpy).to.have.callCount(5);
+    expect(listenerSpy.getCall(4).args).toEqual([{ type: 'finished' }]);
+    expect(listenerSpy).toBeCalledTimes(5);
   });
 
   it('should reregister testproj databases around test run', async () => {

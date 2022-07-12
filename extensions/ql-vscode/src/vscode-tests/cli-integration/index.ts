@@ -1,7 +1,6 @@
 import 'source-map-support/register';
 import 'vscode-test';
 import { runTestsInDirectory } from '../index-template';
-import 'mocha';
 import * as sinonChai from 'sinon-chai';
 import * as chai from 'chai';
 import 'chai/register-should';

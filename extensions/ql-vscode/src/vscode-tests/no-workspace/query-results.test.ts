@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as sinon from 'sinon';
@@ -32,12 +31,12 @@ describe('query-results', () => {
       const fqi = createMockFullQueryInfo();
 
       // from the query path
-      expect(fqi.getQueryName()).to.eq('hucairz');
+      expect(fqi.getQueryName()).toBe('hucairz');
 
       fqi.completeThisQuery(createMockQueryWithResults(queryPath));
 
       // from the metadata
-      expect(fqi.getQueryName()).to.eq('vwx');
+      expect(fqi.getQueryName()).toBe('vwx');
 
       // from quick eval position
       (fqi.initialInfo as any).quickEvalPosition = {
@@ -45,16 +44,16 @@ describe('query-results', () => {
         endLine: 2,
         fileName: '/home/users/yz'
       };
-      expect(fqi.getQueryName()).to.eq('Quick evaluation of yz:1-2');
+      expect(fqi.getQueryName()).toBe('Quick evaluation of yz:1-2');
       (fqi.initialInfo as any).quickEvalPosition.endLine = 1;
-      expect(fqi.getQueryName()).to.eq('Quick evaluation of yz:1');
+      expect(fqi.getQueryName()).toBe('Quick evaluation of yz:1');
     });
 
     it('should get the query file name', () => {
       const fqi = createMockFullQueryInfo();
 
       // from the query path
-      expect(fqi.getQueryFileName()).to.eq('hucairz');
+      expect(fqi.getQueryFileName()).toBe('hucairz');
 
       // from quick eval position
       (fqi.initialInfo as any).quickEvalPosition = {
@@ -62,9 +61,9 @@ describe('query-results', () => {
         endLine: 2,
         fileName: '/home/users/yz'
       };
-      expect(fqi.getQueryFileName()).to.eq('yz:1-2');
+      expect(fqi.getQueryFileName()).toBe('yz:1-2');
       (fqi.initialInfo as any).quickEvalPosition.endLine = 1;
-      expect(fqi.getQueryFileName()).to.eq('yz:1');
+      expect(fqi.getQueryFileName()).toBe('yz:1');
     });
 
     it('should get the getResultsPath', () => {
@@ -74,17 +73,17 @@ describe('query-results', () => {
       const expectedResultsPath = path.join(queryPath, 'results.bqrs');
 
       // from results path
-      expect(completedQuery.getResultsPath('zxa', false)).to.eq(expectedResultsPath);
+      expect(completedQuery.getResultsPath('zxa', false)).toBe(expectedResultsPath);
 
       completedQuery.sortedResultsInfo['zxa'] = {
         resultsPath: 'bxa'
       } as SortedResultSetInfo;
 
       // still from results path
-      expect(completedQuery.getResultsPath('zxa', false)).to.eq(expectedResultsPath);
+      expect(completedQuery.getResultsPath('zxa', false)).toBe(expectedResultsPath);
 
       // from sortedResultsInfo
-      expect(completedQuery.getResultsPath('zxa')).to.eq('bxa');
+      expect(completedQuery.getResultsPath('zxa')).toBe('bxa');
     });
 
     it('should get the statusString', () => {
@@ -92,23 +91,23 @@ describe('query-results', () => {
       const completedQuery = fqi.completedQuery!;
 
       completedQuery.result.message = 'Tremendously';
-      expect(completedQuery.statusString).to.eq('failed: Tremendously');
+      expect(completedQuery.statusString).toBe('failed: Tremendously');
 
       completedQuery.result.resultType = QueryResultType.OTHER_ERROR;
-      expect(completedQuery.statusString).to.eq('failed: Tremendously');
+      expect(completedQuery.statusString).toBe('failed: Tremendously');
 
       completedQuery.result.resultType = QueryResultType.CANCELLATION;
       completedQuery.result.evaluationTime = 2345;
-      expect(completedQuery.statusString).to.eq('cancelled after 2 seconds');
+      expect(completedQuery.statusString).toBe('cancelled after 2 seconds');
 
       completedQuery.result.resultType = QueryResultType.OOM;
-      expect(completedQuery.statusString).to.eq('out of memory');
+      expect(completedQuery.statusString).toBe('out of memory');
 
       completedQuery.result.resultType = QueryResultType.SUCCESS;
-      expect(completedQuery.statusString).to.eq('finished in 2 seconds');
+      expect(completedQuery.statusString).toBe('finished in 2 seconds');
 
       completedQuery.result.resultType = QueryResultType.TIMEOUT;
-      expect(completedQuery.statusString).to.eq('timed out after 2 seconds');
+      expect(completedQuery.statusString).toBe('timed out after 2 seconds');
     });
 
     it('should updateSortState', async () => {
@@ -131,22 +130,22 @@ describe('query-results', () => {
       // verify
       const expectedResultsPath = path.join(queryPath, 'results.bqrs');
       const expectedSortedResultsPath = path.join(queryPath, 'sortedResults-a-result-set-name.bqrs');
-      expect(spy).to.have.been.calledWith(
+      expect(spy).toBeCalledWith(
         expectedResultsPath,
         expectedSortedResultsPath,
         'a-result-set-name',
         [sortState.columnIndex],
-        [sortState.sortDirection],
+        [sortState.sortDirection]
       );
 
-      expect(completedQuery.sortedResultsInfo['a-result-set-name']).to.deep.equal({
+      expect(completedQuery.sortedResultsInfo['a-result-set-name']).toEqual({
         resultsPath: expectedSortedResultsPath,
         sortState
       });
 
       // delete the sort state
       await completedQuery.updateSortState(mockServer, 'a-result-set-name');
-      expect(Object.values(completedQuery.sortedResultsInfo).length).to.eq(0);
+      expect(Object.values(completedQuery.sortedResultsInfo).length).toBe(0);
     });
   });
 
@@ -174,11 +173,8 @@ describe('query-results', () => {
       sourceInfo as SourceInfo
     );
 
-    expect(results1).to.deep.eq({ a: '1234', t: 'SarifInterpretationData' });
-    expect(spy).to.have.been.calledWith(
-      metadata,
-      resultsPath, interpretedResultsPath, sourceInfo
-    );
+    expect(results1).toEqual({ a: '1234', t: 'SarifInterpretationData' });
+    expect(spy).toBeCalledWith(metadata, resultsPath, interpretedResultsPath, sourceInfo);
 
     // Try again, but with no id
     spy.reset();
@@ -192,10 +188,12 @@ describe('query-results', () => {
       },
       sourceInfo as SourceInfo
     );
-    expect(results2).to.deep.eq({ a: '1234', t: 'SarifInterpretationData' });
-    expect(spy).to.have.been.calledWith(
+    expect(results2).toEqual({ a: '1234', t: 'SarifInterpretationData' });
+    expect(spy).toBeCalledWith(
       { kind: 'my-kind', id: 'dummy-id', scored: undefined },
-      resultsPath, interpretedResultsPath, sourceInfo
+      resultsPath,
+      interpretedResultsPath,
+      sourceInfo
     );
 
     // try a third time, but this time we get from file
@@ -211,7 +209,7 @@ describe('query-results', () => {
       },
       sourceInfo as SourceInfo
     );
-    expect(results3).to.deep.eq({ a: 6, t: 'SarifInterpretationData' });
+    expect(results3).toEqual({ a: 6, t: 'SarifInterpretationData' });
   });
 
   describe('splat and slurp', () => {
@@ -280,9 +278,9 @@ describe('query-results', () => {
 
       // make the diffs somewhat sane by comparing each element directly
       for (let i = 0; i < allHistoryActual.length; i++) {
-        expect(allHistoryActual[i]).to.deep.eq(expectedHistory[i]);
+        expect(allHistoryActual[i]).toEqual(expectedHistory[i]);
       }
-      expect(allHistoryActual.length).to.deep.eq(expectedHistory.length);
+      expect(allHistoryActual.length).toEqual(expectedHistory.length);
     });
 
     it('should handle an invalid query history version', async () => {
@@ -294,7 +292,7 @@ describe('query-results', () => {
 
       const allHistoryActual = await slurpQueryHistory(badPath);
       // version number is invalid. Should return an empty array.
-      expect(allHistoryActual).to.deep.eq([]);
+      expect(allHistoryActual).toEqual([]);
     });
   });
 

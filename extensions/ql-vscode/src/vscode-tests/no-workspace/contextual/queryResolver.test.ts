@@ -1,11 +1,9 @@
 import * as yaml from 'js-yaml';
 import * as sinon from 'sinon';
-import { expect } from 'chai';
-import * as pq from 'proxyquire';
 import { KeyType } from '../../../contextual/keyType';
 import { getErrorMessage } from '../../../pure/helpers-pure';
 
-const proxyquire = pq.noPreserveCache().noCallThru();
+const proxyquire;
 
 describe('queryResolver', () => {
   let module: Record<string, Function>;
@@ -27,9 +25,9 @@ describe('queryResolver', () => {
     it('should resolve a query', async () => {
       mockCli.resolveQueriesInSuite.returns(['a', 'b']);
       const result = await module.resolveQueries(mockCli, { dbschemePack: 'my-qlpack' }, KeyType.DefinitionQuery);
-      expect(result).to.deep.equal(['a', 'b']);
-      expect(writeFileSpy.getCall(0).args[0]).to.match(/.qls$/);
-      expect(yaml.load(writeFileSpy.getCall(0).args[1])).to.deep.equal([{
+      expect(result).toEqual(['a', 'b']);
+      expect(writeFileSpy.getCall(0).args[0]).toMatch(/.qls$/);
+      expect(yaml.load(writeFileSpy.getCall(0).args[1])).toEqual([{
         from: 'my-qlpack',
         queries: '.',
         include: {
@@ -44,9 +42,9 @@ describe('queryResolver', () => {
       (mockCli.cliConstraints as any).supportsAllowLibraryPacksInResolveQueries.returns(false);
       mockCli.resolveQueriesInSuite.returns(['a', 'b']);
       const result = await module.resolveQueries(mockCli, { dbschemePackIsLibraryPack: true, dbschemePack: 'my-qlpack', queryPack: 'my-qlpack2' }, KeyType.DefinitionQuery);
-      expect(result).to.deep.equal(['a', 'b']);
-      expect(writeFileSpy.getCall(0).args[0]).to.match(/.qls$/);
-      expect(yaml.load(writeFileSpy.getCall(0).args[1])).to.deep.equal([{
+      expect(result).toEqual(['a', 'b']);
+      expect(writeFileSpy.getCall(0).args[0]).toMatch(/.qls$/);
+      expect(yaml.load(writeFileSpy.getCall(0).args[1])).toEqual([{
         from: 'my-qlpack2',
         queries: '.',
         include: {
@@ -62,9 +60,9 @@ describe('queryResolver', () => {
       try {
         await module.resolveQueries(mockCli, { dbschemePack: 'my-qlpack' }, KeyType.DefinitionQuery);
         // should reject
-        expect(true).to.be.false;
+        expect(true).toBe(false);
       } catch (e) {
-        expect(getErrorMessage(e)).to.eq(
+        expect(getErrorMessage(e)).toBe(
           'Couldn\'t find any queries tagged ide-contextual-queries/local-definitions in any of the following packs: my-qlpack.'
         );
       }
@@ -82,8 +80,8 @@ describe('queryResolver', () => {
         }
       };
       const result = await module.qlpackOfDatabase(mockCli, db);
-      expect(result).to.eq('my-qlpack');
-      expect(getPrimaryDbschemeSpy).to.have.been.calledWith('/path/to/database');
+      expect(result).toBe('my-qlpack');
+      expect(getPrimaryDbschemeSpy).toBeCalledWith('/path/to/database');
     });
   });
 

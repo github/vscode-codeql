@@ -1,11 +1,9 @@
 import * as sinon from 'sinon';
-import { expect } from 'chai';
 import { window } from 'vscode';
-import * as pq from 'proxyquire';
 import * as fs from 'fs-extra';
 import { UserCancellationException } from '../../../commandRunner';
 
-const proxyquire = pq.noPreserveCache();
+const proxyquire;
 
 describe('repository selection', async () => {
   let sandbox: sinon.SinonSandbox;
@@ -69,11 +67,9 @@ describe('repository selection', async () => {
       const repoSelection = await mod.getRepositorySelection();
 
       // Check that the return value is correct
-      expect(repoSelection.repositoryLists).to.be.undefined;
-      expect(repoSelection.owners).to.be.undefined;
-      expect(repoSelection.repositories).to.deep.eq(
-        ['foo/bar', 'foo/baz']
-      );
+      expect(repoSelection.repositoryLists).toBeUndefined();
+      expect(repoSelection.owners).toBeUndefined();
+      expect(repoSelection.repositories).toEqual(['foo/bar', 'foo/baz']);
     });
   });
 
@@ -94,11 +90,9 @@ describe('repository selection', async () => {
       const repoSelection = await mod.getRepositorySelection();
 
       // Check that the return value is correct
-      expect(repoSelection.repositories).to.be.undefined;
-      expect(repoSelection.owners).to.be.undefined;
-      expect(repoSelection.repositoryLists).to.deep.eq(
-        ['top_100']
-      );
+      expect(repoSelection.repositories).toBeUndefined();
+      expect(repoSelection.owners).toBeUndefined();
+      expect(repoSelection.repositoryLists).toEqual(['top_100']);
     });
   });
 
@@ -124,9 +118,9 @@ describe('repository selection', async () => {
         const repoSelection = await mod.getRepositorySelection();
 
         // Check that the return value is correct
-        expect(repoSelection.repositories).to.be.undefined;
-        expect(repoSelection.repositoryLists).to.be.undefined;
-        expect(repoSelection.owners).to.deep.eq([owner]);
+        expect(repoSelection.repositories).toBeUndefined();
+        expect(repoSelection.repositoryLists).toBeUndefined();
+        expect(repoSelection.owners).toEqual([owner]);
       });
     });
 
@@ -182,11 +176,9 @@ describe('repository selection', async () => {
         const repoSelection = await mod.getRepositorySelection();
 
         // Check that the return value is correct
-        expect(repoSelection.repositoryLists).to.be.undefined;
-        expect(repoSelection.owners).to.be.undefined;
-        expect(repoSelection.repositories).to.deep.equal(
-          [repo]
-        );
+        expect(repoSelection.repositoryLists).toBeUndefined();
+        expect(repoSelection.owners).toBeUndefined();
+        expect(repoSelection.repositories).toEqual([repo]);
       });
     });
 
@@ -298,9 +290,9 @@ describe('repository selection', async () => {
 
       const repoSelection = await mod.getRepositorySelection();
 
-      expect(repoSelection.repositoryLists).to.be.undefined;
-      expect(repoSelection.owners).to.be.undefined;
-      expect(repoSelection.repositories).to.deep.eq(['owner3/repo3']);
+      expect(repoSelection.repositoryLists).toBeUndefined();
+      expect(repoSelection.owners).toBeUndefined();
+      expect(repoSelection.repositories).toEqual(['owner3/repo3']);
     });
   });
 });

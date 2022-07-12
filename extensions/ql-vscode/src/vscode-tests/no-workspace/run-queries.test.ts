@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as sinon from 'sinon';
@@ -28,34 +27,34 @@ describe('run-queries', () => {
     const saveDir = 'query-save-dir';
     const info = createMockQueryInfo(true, saveDir);
 
-    expect(info.compiledQueryPath).to.eq(path.join(saveDir, 'compiledQuery.qlo'));
-    expect(info.dilPath).to.eq(path.join(saveDir, 'results.dil'));
-    expect(info.resultsPaths.resultsPath).to.eq(path.join(saveDir, 'results.bqrs'));
-    expect(info.resultsPaths.interpretedResultsPath).to.eq(path.join(saveDir, 'interpretedResults.sarif'));
-    expect(info.dbItemPath).to.eq(Uri.file('/abc').fsPath);
+    expect(info.compiledQueryPath).toBe(path.join(saveDir, 'compiledQuery.qlo'));
+    expect(info.dilPath).toBe(path.join(saveDir, 'results.dil'));
+    expect(info.resultsPaths.resultsPath).toBe(path.join(saveDir, 'results.bqrs'));
+    expect(info.resultsPaths.interpretedResultsPath).toBe(path.join(saveDir, 'interpretedResults.sarif'));
+    expect(info.dbItemPath).toBe(Uri.file('/abc').fsPath);
   });
 
   it('should check if interpreted results can be created', async () => {
     const info = createMockQueryInfo(true);
 
-    expect(info.canHaveInterpretedResults()).to.eq(true);
+    expect(info.canHaveInterpretedResults()).toBe(true);
 
     (info as any).databaseHasMetadataFile = false;
-    expect(info.canHaveInterpretedResults()).to.eq(false);
+    expect(info.canHaveInterpretedResults()).toBe(false);
 
     (info as any).databaseHasMetadataFile = true;
     info.metadata!.kind = undefined;
-    expect(info.canHaveInterpretedResults()).to.eq(false);
+    expect(info.canHaveInterpretedResults()).toBe(false);
 
     info.metadata!.kind = 'table';
-    expect(info.canHaveInterpretedResults()).to.eq(false);
+    expect(info.canHaveInterpretedResults()).toBe(false);
 
     // Graphs are not interpreted unless canary is set
     info.metadata!.kind = 'graph';
-    expect(info.canHaveInterpretedResults()).to.eq(false);
+    expect(info.canHaveInterpretedResults()).toBe(false);
 
     (config.isCanary as sinon.SinonStub).returns(true);
-    expect(info.canHaveInterpretedResults()).to.eq(true);
+    expect(info.canHaveInterpretedResults()).toBe(true);
   });
 
   [SELECT_QUERY_NAME, 'other'].forEach(resultSetName => {
@@ -80,50 +79,55 @@ describe('run-queries', () => {
       const promise = info.exportCsvResults(qs, csvLocation);
 
       const result = await promise;
-      expect(result).to.eq(true);
+      expect(result).toBe(true);
 
       const csv = fs.readFileSync(csvLocation, 'utf8');
-      expect(csv).to.eq('a,"b"\nc,"d"\n"a",b,c\n');
+      expect(csv).toBe('a,"b"\nc,"d"\n"a",b,c\n');
 
       // now verify that we are using the expected result set
-      expect((qs.cliServer.bqrsDecode as sinon.SinonStub).callCount).to.eq(2);
-      expect((qs.cliServer.bqrsDecode as sinon.SinonStub).getCall(0).args[1]).to.eq(resultSetName);
+      expect((qs.cliServer.bqrsDecode as sinon.SinonStub).callCount).toBe(2);
+      expect((qs.cliServer.bqrsDecode as sinon.SinonStub).getCall(0).args[1]).toBe(resultSetName);
     });
   });
 
-  it('should export csv results with characters that need to be escaped', async () => {
-    const csvLocation = path.join(tmpDir.name, 'test.csv');
-    const qs = createMockQueryServerClient(
-      createMockCliServer({
-        bqrsInfo: [{ 'result-sets': [{ name: SELECT_QUERY_NAME }, { name: 'hucairz' }] }],
-        bqrsDecode: [{
-          columns: [{ kind: 'NotString' }, { kind: 'String' }],
-          // We only escape string columns. In practice, we will only see quotes in strings, but
-          // it is a good test anyway.
-          tuples: [
-            ['"a"', '"b"'],
-            ['c,xxx', 'd,yyy'],
-            ['aaa " bbb', 'ccc " ddd'],
-            [true, false],
-            [123, 456],
-            [123.98, 456.99],
-          ],
-        }]
-      })
-    );
-    const info = createMockQueryInfo();
-    const promise = info.exportCsvResults(qs, csvLocation);
+  it(
+    'should export csv results with characters that need to be escaped',
+    async () => {
+      const csvLocation = path.join(tmpDir.name, 'test.csv');
+      const qs = createMockQueryServerClient(
+        createMockCliServer({
+          bqrsInfo: [{ 'result-sets': [{ name: SELECT_QUERY_NAME }, { name: 'hucairz' }] }],
+          bqrsDecode: [{
+            columns: [{ kind: 'NotString' }, { kind: 'String' }],
+            // We only escape string columns. In practice, we will only see quotes in strings, but
+            // it is a good test anyway.
+            tuples: [
+              ['"a"', '"b"'],
+              ['c,xxx', 'd,yyy'],
+              ['aaa " bbb', 'ccc " ddd'],
+              [true, false],
+              [123, 456],
+              [123.98, 456.99],
+            ],
+          }]
+        })
+      );
+      const info = createMockQueryInfo();
+      const promise = info.exportCsvResults(qs, csvLocation);
 
-    const result = await promise;
-    expect(result).to.eq(true);
+      const result = await promise;
+      expect(result).toBe(true);
 
-    const csv = fs.readFileSync(csvLocation, 'utf8');
-    expect(csv).to.eq('"a","""b"""\nc,xxx,"d,yyy"\naaa " bbb,"ccc "" ddd"\ntrue,"false"\n123,"456"\n123.98,"456.99"\n');
+      const csv = fs.readFileSync(csvLocation, 'utf8');
+      expect(csv).toBe(
+        '"a","""b"""\nc,xxx,"d,yyy"\naaa " bbb,"ccc "" ddd"\ntrue,"false"\n123,"456"\n123.98,"456.99"\n'
+      );
 
-    // now verify that we are using the expected result set
-    expect((qs.cliServer.bqrsDecode as sinon.SinonStub).callCount).to.eq(1);
-    expect((qs.cliServer.bqrsDecode as sinon.SinonStub).getCall(0).args[1]).to.eq(SELECT_QUERY_NAME);
-  });
+      // now verify that we are using the expected result set
+      expect((qs.cliServer.bqrsDecode as sinon.SinonStub).callCount).toBe(1);
+      expect((qs.cliServer.bqrsDecode as sinon.SinonStub).getCall(0).args[1]).toBe(SELECT_QUERY_NAME);
+    }
+  );
 
   it('should handle csv exports for a query with no result sets', async () => {
     const csvLocation = path.join(tmpDir.name, 'test.csv');
@@ -134,7 +138,7 @@ describe('run-queries', () => {
     );
     const info = createMockQueryInfo();
     const result = await info.exportCsvResults(qs, csvLocation);
-    expect(result).to.eq(false);
+    expect(result).toBe(false);
   });
 
   describe('compile', () => {
@@ -156,7 +160,7 @@ describe('run-queries', () => {
         mockCancel as any
       );
 
-      expect(results).to.deep.eq([
+      expect(results).toEqual([
         { message: 'err', severity: Severity.ERROR }
       ]);
 

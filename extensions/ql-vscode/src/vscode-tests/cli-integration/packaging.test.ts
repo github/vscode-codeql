@@ -2,14 +2,11 @@ import * as sinon from 'sinon';
 import { extensions, window } from 'vscode';
 import * as path from 'path';
 
-import * as pq from 'proxyquire';
-
 import { CliVersionConstraint, CodeQLCliServer } from '../../cli';
 import { CodeQLExtensionInterface } from '../../extension';
-import { expect } from 'chai';
 import { getErrorMessage } from '../../pure/helpers-pure';
 
-const proxyquire = pq.noPreserveCache();
+const proxyquire;
 
 describe('Packaging commands', function() {
   let sandbox: sinon.SinonSandbox;
@@ -66,9 +63,7 @@ describe('Packaging commands', function() {
     quickPickSpy.resolves('Download all core query packs');
 
     await mod.handleDownloadPacks(cli, progress);
-    expect(showAndLogInformationMessageSpy.firstCall.args[0]).to.contain(
-      'Finished downloading packs.'
-    );
+    expect(showAndLogInformationMessageSpy.firstCall.args[0]).toEqual(expect.arrayContaining(['Finished downloading packs.']));
   });
 
   it('should download valid user-specified pack', async () => {
@@ -76,9 +71,7 @@ describe('Packaging commands', function() {
     inputBoxSpy.resolves('codeql/csharp-solorigate-queries');
 
     await mod.handleDownloadPacks(cli, progress);
-    expect(showAndLogInformationMessageSpy.firstCall.args[0]).to.contain(
-      'Finished downloading packs.'
-    );
+    expect(showAndLogInformationMessageSpy.firstCall.args[0]).toEqual(expect.arrayContaining(['Finished downloading packs.']));
   });
 
   it('should show error when downloading invalid user-specified pack', async () => {
@@ -87,9 +80,7 @@ describe('Packaging commands', function() {
 
     await mod.handleDownloadPacks(cli, progress);
 
-    expect(showAndLogErrorMessageSpy.firstCall.args[0]).to.contain(
-      'Unable to download all packs.'
-    );
+    expect(showAndLogErrorMessageSpy.firstCall.args[0]).toEqual(expect.arrayContaining(['Unable to download all packs.']));
   });
 
   it('should install valid workspace pack', async () => {
@@ -102,9 +93,7 @@ describe('Packaging commands', function() {
     ]);
 
     await mod.handleInstallPackDependencies(cli, progress);
-    expect(showAndLogInformationMessageSpy.firstCall.args[0]).to.contain(
-      'Finished installing pack dependencies.'
-    );
+    expect(showAndLogInformationMessageSpy.firstCall.args[0]).toEqual(expect.arrayContaining(['Finished installing pack dependencies.']));
   });
 
   it('should throw an error when installing invalid workspace pack', async () => {
@@ -120,9 +109,9 @@ describe('Packaging commands', function() {
       // expect this to throw an error
       await mod.handleInstallPackDependencies(cli, progress);
       // This line should not be reached
-      expect(true).to.be.false;
+      expect(true).toBe(false);
     } catch (e) {
-      expect(getErrorMessage(e)).to.contain('Unable to install pack dependencies');
+      expect(getErrorMessage(e)).toEqual(expect.arrayContaining(['Unable to install pack dependencies']));
     }
   });
 });

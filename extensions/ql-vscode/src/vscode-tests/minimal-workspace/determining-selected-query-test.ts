@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { Uri } from 'vscode';
@@ -16,8 +15,8 @@ export function run() {
   describe('Determining selected query', async () => {
     it('should allow ql files to be queried', async () => {
       const q = await determineSelectedQuery(Uri.parse('file:///tmp/queryname.ql'), false);
-      expect(q.queryPath).to.equal(path.join('/', 'tmp', 'queryname.ql'));
-      expect(q.quickEvalPosition).to.equal(undefined);
+      expect(q.queryPath).toBe(path.join('/', 'tmp', 'queryname.ql'));
+      expect(q.quickEvalPosition).toBeUndefined();
     });
 
     it('should allow ql files to be quick-evaled', async () => {

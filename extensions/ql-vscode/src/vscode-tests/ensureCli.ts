@@ -139,7 +139,7 @@ export function skipIfNoCodeQL(context: Mocha.Context) {
       'To fix in CI: checkout the github/codeql repository and set the \'TEST_CODEQL_PATH\' environment variable to the checked out directory.',
       'To fix when running from vs code, see the comment in the launch.json file in the \'Launch Integration Tests - With CLI\' section.'
     ].join('\n\n'));
-    context.skip();
+    describe.skip();
   }
 }
 

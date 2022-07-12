@@ -1,5 +1,4 @@
 import * as fs from 'fs-extra';
-import { expect } from 'chai';
 import * as sinon from 'sinon';
 
 import AstBuilder from '../../../contextual/astBuilder';
@@ -52,13 +51,13 @@ describe('AstBuilder', () => {
     const roots = await astBuilder.getRoots();
 
     const options = { entities: ['id', 'url', 'string'] };
-    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'nodes', options);
-    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'edges', options);
-    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'graphProperties', options);
+    expect(mockCli.bqrsDecode).toBeCalledWith('/a/b/c', 'nodes', options);
+    expect(mockCli.bqrsDecode).toBeCalledWith('/a/b/c', 'edges', options);
+    expect(mockCli.bqrsDecode).toBeCalledWith('/a/b/c', 'graphProperties', options);
 
     expect(roots.map(
       r => ({ ...r, children: undefined })
-    )).to.deep.eq(expectedRoots);
+    )).toEqual(expectedRoots);
   });
 
   it('should build an AST child without edge label', async () => {
@@ -67,7 +66,7 @@ describe('AstBuilder', () => {
     const astBuilder = createAstBuilder();
     const roots = await astBuilder.getRoots();
 
-    expect(roots[0].children[0].parent).to.eq(roots[0]);
+    expect(roots[0].children[0].parent).toBe(roots[0]);
     // break the recursion
     (roots[0].children[0] as any).parent = undefined;
     (roots[0].children[0] as any).children = undefined;
@@ -88,7 +87,7 @@ describe('AstBuilder', () => {
       parent: undefined
     };
 
-    expect(roots[0].children[0]).to.deep.eq(child);
+    expect(roots[0].children[0]).toEqual(child);
   });
 
   it('should build an AST child with edge label', async () => {
@@ -97,7 +96,7 @@ describe('AstBuilder', () => {
     const astBuilder = createAstBuilder();
     const roots = await astBuilder.getRoots();
 
-    expect(roots[0].children[1].parent).to.eq(roots[0]);
+    expect(roots[0].children[1].parent).toBe(roots[0]);
     // break the recursion
     (roots[0].children[1] as any).parent = undefined;
     (roots[0].children[1] as any).children = undefined;
@@ -118,7 +117,7 @@ describe('AstBuilder', () => {
       parent: undefined
     };
 
-    expect(roots[0].children[1]).to.deep.eq(child);
+    expect(roots[0].children[1]).toEqual(child);
   });
 
   it('should fail when graphProperties are not correct', async () => {

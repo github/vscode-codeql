@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as sinon from 'sinon';
@@ -12,7 +11,7 @@ import { getDefaultResultSetName } from '../../pure/interface-types';
 import { DatabaseItem } from '../../databases';
 
 describe('interface-utils', () => {
-  describe('webview uri conversion', function() {
+  describe('webview uri conversion', () => {
     const fileSuffix = '.bqrs';
 
     function setupWebview(filePrefix: string) {
@@ -32,7 +31,7 @@ describe('interface-utils', () => {
         }
       );
 
-      after(function() {
+      afterAll(() => {
         panel.dispose();
         tmpFile.removeCallback();
       });
@@ -46,26 +45,20 @@ describe('interface-utils', () => {
       };
     }
 
-    it('does not double-encode # in URIs', function() {
+    it('does not double-encode # in URIs', () => {
       const { fileUriOnDisk, panel } = setupWebview('#');
       const webviewUri = fileUriToWebviewUri(panel, fileUriOnDisk);
       const parsedUri = Uri.parse(webviewUri);
-      expect(path.basename(parsedUri.path, fileSuffix)).to.equal(
-        path.basename(fileUriOnDisk.path, fileSuffix)
-      );
+      expect(path.basename(parsedUri.path, fileSuffix)).toBe(path.basename(fileUriOnDisk.path, fileSuffix));
     });
   });
 
   describe('getDefaultResultSetName', () => {
     it('should get the default name', () => {
-      expect(getDefaultResultSetName(['a', 'b', '#select', 'alerts'])).to.equal(
-        'alerts'
-      );
-      expect(getDefaultResultSetName(['a', 'b', '#select'])).to.equal(
-        '#select'
-      );
-      expect(getDefaultResultSetName(['a', 'b'])).to.equal('a');
-      expect(getDefaultResultSetName([])).to.be.undefined;
+      expect(getDefaultResultSetName(['a', 'b', '#select', 'alerts'])).toBe('alerts');
+      expect(getDefaultResultSetName(['a', 'b', '#select'])).toBe('#select');
+      expect(getDefaultResultSetName(['a', 'b'])).toBe('a');
+      expect(getDefaultResultSetName([])).toBeUndefined();
     });
   });
 
@@ -79,12 +72,10 @@ describe('interface-utils', () => {
           'file://hucairz:0:0:0:0',
           mockDatabaseItem
         )
-      ).to.deep.equal(
-        new vscode.Location(
-          vscode.Uri.file('abc'),
-          new vscode.Range(0, 0, 0, 0)
-        )
-      );
+      ).toEqual(new vscode.Location(
+        vscode.Uri.file('abc'),
+        new vscode.Range(0, 0, 0, 0)
+      ));
     });
 
     it('should resolve a five-part location edge case', () => {
@@ -96,12 +87,10 @@ describe('interface-utils', () => {
           'file://hucairz:1:1:1:1',
           mockDatabaseItem
         )
-      ).to.deep.equal(
-        new vscode.Location(
-          vscode.Uri.file('abc'),
-          new vscode.Range(0, 0, 0, 1)
-        )
-      );
+      ).toEqual(new vscode.Location(
+        vscode.Uri.file('abc'),
+        new vscode.Range(0, 0, 0, 1)
+      ));
     });
 
     it('should resolve a five-part location', () => {
@@ -120,12 +109,10 @@ describe('interface-utils', () => {
           },
           mockDatabaseItem
         )
-      ).to.deep.equal(
-        new vscode.Location(
-          vscode.Uri.parse('abc'),
-          new vscode.Range(new vscode.Position(4, 3), new vscode.Position(3, 0))
-        )
-      );
+      ).toEqual(new vscode.Location(
+        vscode.Uri.parse('abc'),
+        new vscode.Range(new vscode.Position(4, 3), new vscode.Position(3, 0))
+      ));
       expect(mockDatabaseItem.resolveSourceFile).to.have.been.calledOnceWith(
         'hucairz'
       );
@@ -147,7 +134,7 @@ describe('interface-utils', () => {
           },
           mockDatabaseItem
         )
-      ).to.be.undefined;
+      ).toBeUndefined();
     });
 
     it('should resolve a string location for whole file', () => {
@@ -160,12 +147,10 @@ describe('interface-utils', () => {
           'file://hucairz:0:0:0:0',
           mockDatabaseItem
         )
-      ).to.deep.equal(
-        new vscode.Location(
-          vscode.Uri.parse('abc'),
-          new vscode.Range(0, 0, 0, 0)
-        )
-      );
+      ).toEqual(new vscode.Location(
+        vscode.Uri.parse('abc'),
+        new vscode.Range(0, 0, 0, 0)
+      ));
       expect(mockDatabaseItem.resolveSourceFile).to.have.been.calledOnceWith(
         'hucairz'
       );
@@ -181,12 +166,10 @@ describe('interface-utils', () => {
           'file://hucairz:5:4:3:2',
           mockDatabaseItem
         )
-      ).to.deep.equal(
-        new vscode.Location(
-          vscode.Uri.parse('abc'),
-          new vscode.Range(new vscode.Position(4, 3), new vscode.Position(2, 2))
-        )
-      );
+      ).toEqual(new vscode.Location(
+        vscode.Uri.parse('abc'),
+        new vscode.Range(new vscode.Position(4, 3), new vscode.Position(2, 2))
+      ));
       expect(mockDatabaseItem.resolveSourceFile).to.have.been.calledOnceWith(
         'hucairz'
       );
@@ -202,7 +185,7 @@ describe('interface-utils', () => {
           'file://hucairz:x:y:z:a',
           mockDatabaseItem
         )
-      ).to.be.undefined;
+      ).toBeUndefined();
     });
   });
 });

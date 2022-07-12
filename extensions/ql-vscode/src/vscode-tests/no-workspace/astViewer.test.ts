@@ -1,5 +1,4 @@
 import * as fs from 'fs-extra';
-import { expect } from 'chai';
 import * as sinon from 'sinon';
 import * as yaml from 'js-yaml';
 
@@ -36,20 +35,23 @@ describe('AstViewer', () => {
     viewer = new AstViewer();
     viewer.updateRoots(astRoots, item, Uri.file('def/abc'));
 
-    expect((viewer as any).treeDataProvider.roots).to.eq(astRoots);
-    expect((viewer as any).treeDataProvider.db).to.eq(item);
-    expect((viewer as any).treeView.message).to.eq('AST for abc');
+    expect((viewer as any).treeDataProvider.roots).toBe(astRoots);
+    expect((viewer as any).treeDataProvider.db).toBe(item);
+    expect((viewer as any).treeView.message).toBe('AST for abc');
   });
 
-  it('should update the tree selection based on a change in the editor selection', () => {
-    // Should select the namespace
-    doSelectionTest(astRoots[0], astRoots[0].fileLocation?.range);
-  });
+  it(
+    'should update the tree selection based on a change in the editor selection',
+    () => {
+      // Should select the namespace
+      doSelectionTest(astRoots[0], astRoots[0].fileLocation?.range);
+    }
+  );
 
   it('should select an AssignExpr', () => {
     // this one is interesting because it spans a couple of other nodes
     const expr = findNodeById(300, astRoots);
-    expect(expr.label).to.eq('[AssignExpr] ... = ...');
+    expect(expr.label).toBe('[AssignExpr] ... = ...');
     doSelectionTest(expr, expr.fileLocation?.range);
   });
 
@@ -80,9 +82,9 @@ describe('AstViewer', () => {
     const mockEvent = createMockEvent(selectionRange, fileUri);
     (viewer as any).updateTreeSelection(mockEvent);
     if (expectedSelection) {
-      expect(spy).to.have.been.calledWith(expectedSelection);
+      expect(spy).toBeCalledWith(expectedSelection);
     } else {
-      expect(spy).not.to.have.been.called;
+      expect(spy).not.toBeCalled();
     }
   }
 

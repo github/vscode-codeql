@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp';
@@ -88,8 +87,8 @@ const db: messages.Dataset = {
   workingSet: 'default',
 };
 
-describe('using the query server', function() {
-  before(function() {
+describe('using the query server', () => {
+  beforeAll(() => {
     skipIfNoCodeQL(this);
   });
 
@@ -116,7 +115,7 @@ describe('using the query server', function() {
     }
   });
 
-  it('should be able to start the query server', async function() {
+  it('should be able to start the query server', async () => {
     await qs.startQueryServer();
     await queryServerStarted.resolve();
   });
@@ -133,9 +132,9 @@ describe('using the query server', function() {
       }
     });
 
-    it(`should be able to compile query ${queryName}`, async function() {
+    it(`should be able to compile query ${queryName}`, async () => {
       await queryServerStarted.done();
-      expect(fs.existsSync(queryTestCase.queryPath)).to.be.true;
+      expect(fs.existsSync(queryTestCase.queryPath)).toBe(true);
       try {
         const qlProgram: messages.QlProgram = {
           libraryPath: [],
@@ -158,7 +157,7 @@ describe('using the query server', function() {
           target: { query: {} }
         };
         const result = await qs.sendRequest(messages.compileQuery, params, token, () => { /**/ });
-        expect(result.messages!.length).to.equal(0);
+        expect(result.messages!.length).toBe(0);
         await compilationSucceeded.resolve();
       }
       catch (e) {
@@ -166,7 +165,7 @@ describe('using the query server', function() {
       }
     });
 
-    it(`should be able to run query ${queryName}`, async function() {
+    it(`should be able to run query ${queryName}`, async () => {
       try {
         await compilationSucceeded.done();
         const callbackId = qs.registerCallback(_res => {
@@ -194,23 +193,26 @@ describe('using the query server', function() {
     });
 
     const actualResultSets: ResultSets = {};
-    it(`should be able to parse results of query ${queryName}`, async function() {
-      await evaluationSucceeded.done();
-      const info = await cliServer.bqrsInfo(RESULTS_PATH);
+    it(
+      `should be able to parse results of query ${queryName}`,
+      async () => {
+        await evaluationSucceeded.done();
+        const info = await cliServer.bqrsInfo(RESULTS_PATH);
 
-      for (const resultSet of info['result-sets']) {
-        const decoded = await cliServer.bqrsDecode(RESULTS_PATH, resultSet.name);
-        actualResultSets[resultSet.name] = decoded.tuples;
+        for (const resultSet of info['result-sets']) {
+          const decoded = await cliServer.bqrsDecode(RESULTS_PATH, resultSet.name);
+          actualResultSets[resultSet.name] = decoded.tuples;
+        }
+        await parsedResults.resolve();
       }
-      await parsedResults.resolve();
-    });
+    );
 
-    it(`should have correct results for query ${queryName}`, async function() {
+    it(`should have correct results for query ${queryName}`, async () => {
       await parsedResults.done();
-      expect(actualResultSets!).not.to.be.empty;
-      expect(Object.keys(actualResultSets!).sort()).to.eql(Object.keys(queryTestCase.expectedResultSets).sort());
+      expect(actualResultSets!).not.toHaveLength(0);
+      expect(Object.keys(actualResultSets!).sort()).toEqual(Object.keys(queryTestCase.expectedResultSets).sort());
       for (const name in queryTestCase.expectedResultSets) {
-        expect(actualResultSets![name]).to.eql(queryTestCase.expectedResultSets[name], `Results for query predicate ${name} do not match`);
+        expect(actualResultSets![name]).toEqual(queryTestCase.expectedResultSets[name]);
       }
     });
   }

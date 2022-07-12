@@ -1,13 +1,11 @@
-import { expect } from 'chai';
 import * as path from 'path';
 import * as fetch from 'node-fetch';
 import * as semver from 'semver';
 import * as sinon from 'sinon';
-import * as pq from 'proxyquire';
 
 import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer } from '../../distribution';
 
-const proxyquire = pq.noPreserveCache();
+const proxyquire;
 
 describe('Releases API consumer', () => {
   const owner = 'someowner';
@@ -77,14 +75,14 @@ describe('Releases API consumer', () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       const latestRelease = await consumer.getLatestRelease(unconstrainedVersionRange);
-      expect(latestRelease.id).to.equal(2);
+      expect(latestRelease.id).toBe(2);
     });
 
     it('version of picked release is within the version range', async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       const latestRelease = await consumer.getLatestRelease(new semver.Range('2.*.*'));
-      expect(latestRelease.id).to.equal(1);
+      expect(latestRelease.id).toBe(1);
     });
 
     it('fails if none of the releases are within the version range', async () => {
@@ -103,7 +101,7 @@ describe('Releases API consumer', () => {
         true,
         release => release.assets.some(asset => asset.name === 'exampleAsset.txt')
       );
-      expect(latestRelease.id).to.equal(3);
+      expect(latestRelease.id).toBe(3);
     });
 
     it('fails if none of the releases pass the additional compatibility test', async () => {
@@ -120,7 +118,7 @@ describe('Releases API consumer', () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       const latestRelease = await consumer.getLatestRelease(unconstrainedVersionRange, true);
-      expect(latestRelease.id).to.equal(5);
+      expect(latestRelease.id).toBe(5);
     });
   });
 
@@ -160,11 +158,11 @@ describe('Releases API consumer', () => {
 
     const assets = (await consumer.getLatestRelease(unconstrainedVersionRange)).assets;
 
-    expect(assets.length).to.equal(expectedAssets.length);
+    expect(assets.length).toBe(expectedAssets.length);
     expectedAssets.map((expectedAsset, index) => {
-      expect(assets[index].id).to.equal(expectedAsset.id);
-      expect(assets[index].name).to.equal(expectedAsset.name);
-      expect(assets[index].size).to.equal(expectedAsset.size);
+      expect(assets[index].id).toBe(expectedAsset.id);
+      expect(assets[index].name).toBe(expectedAsset.name);
+      expect(assets[index].size).toBe(expectedAsset.size);
     });
   });
 });
@@ -196,55 +194,55 @@ describe('Launcher path', () => {
   it('should not warn with proper launcher name', async () => {
     launcherThatExists = 'codeql.exe';
     const result = await getExecutableFromDirectory('abc');
-    expect(fsSpy).to.have.been.calledWith(pathToExe);
+    expect(fsSpy).toBeCalledWith(pathToExe);
 
     // correct launcher has been found, so alternate one not looked for
-    expect(fsSpy).not.to.have.been.calledWith(pathToCmd);
+    expect(fsSpy).not.toBeCalledWith(pathToCmd);
 
     // no warning message
-    expect(warnSpy).not.to.have.been.calledWith(sinon.match.string);
+    expect(warnSpy).not.toBeCalledWith(sinon.match.string);
     // No log message
-    expect(logSpy).not.to.have.been.calledWith(sinon.match.string);
-    expect(result).to.equal(pathToExe);
+    expect(logSpy).not.toBeCalledWith(sinon.match.string);
+    expect(result).toBe(pathToExe);
   });
 
   it('should warn when using a hard-coded deprecated launcher name', async () => {
     launcherThatExists = 'codeql.cmd';
     const result = await getExecutableFromDirectory('abc');
-    expect(fsSpy).to.have.been.calledWith(pathToExe);
-    expect(fsSpy).to.have.been.calledWith(pathToCmd);
+    expect(fsSpy).toBeCalledWith(pathToExe);
+    expect(fsSpy).toBeCalledWith(pathToCmd);
 
     // Should have opened a warning message
-    expect(warnSpy).to.have.been.calledWith(sinon.match.string);
+    expect(warnSpy).toBeCalledWith(sinon.match.string);
     // No log message
-    expect(logSpy).not.to.have.been.calledWith(sinon.match.string);
-    expect(result).to.equal(pathToCmd);
+    expect(logSpy).not.toBeCalledWith(sinon.match.string);
+    expect(result).toBe(pathToCmd);
   });
 
   it('should avoid warn when no launcher is found', async () => {
     launcherThatExists = 'xxx';
     const result = await getExecutableFromDirectory('abc', false);
-    expect(fsSpy).to.have.been.calledWith(pathToExe);
-    expect(fsSpy).to.have.been.calledWith(pathToCmd);
+    expect(fsSpy).toBeCalledWith(pathToExe);
+    expect(fsSpy).toBeCalledWith(pathToCmd);
 
     // no warning message
-    expect(warnSpy).not.to.have.been.calledWith(sinon.match.string);
+    expect(warnSpy).not.toBeCalledWith(sinon.match.string);
     // log message sent out
-    expect(logSpy).not.to.have.been.calledWith(sinon.match.string);
-    expect(result).to.equal(undefined);
+    expect(logSpy).not.toBeCalledWith(sinon.match.string);
+    expect(result).toBeUndefined();
   });
 
   it('should warn when no launcher is found', async () => {
     launcherThatExists = 'xxx';
     const result = await getExecutableFromDirectory('abc', true);
-    expect(fsSpy).to.have.been.calledWith(pathToExe);
-    expect(fsSpy).to.have.been.calledWith(pathToCmd);
+    expect(fsSpy).toBeCalledWith(pathToExe);
+    expect(fsSpy).toBeCalledWith(pathToCmd);
 
     // no warning message
-    expect(warnSpy).not.to.have.been.calledWith(sinon.match.string);
+    expect(warnSpy).not.toBeCalledWith(sinon.match.string);
     // log message sent out
-    expect(logSpy).to.have.been.calledWith(sinon.match.string);
-    expect(result).to.equal(undefined);
+    expect(logSpy).toBeCalledWith(sinon.match.string);
+    expect(result).toBeUndefined();
   });
 
   it('should not warn when deprecated launcher is used, but no new launcher is available', async function() {
@@ -256,11 +254,11 @@ describe('Launcher path', () => {
     launcherThatExists = 'codeql.cmd';
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
-    expect(result).to.equal(pathToCmd);
+    expect(result).toBe(pathToCmd);
 
     // no warning or error message
-    expect(warnSpy).to.have.callCount(0);
-    expect(errorSpy).to.have.callCount(0);
+    expect(warnSpy).toBeCalledTimes(0);
+    expect(errorSpy).toBeCalledTimes(0);
   });
 
   it('should warn when deprecated launcher is used, and new launcher is available', async () => {
@@ -272,11 +270,11 @@ describe('Launcher path', () => {
     launcherThatExists = ''; // pretend both launchers exist
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
-    expect(result).to.equal(pathToCmd);
+    expect(result).toBe(pathToCmd);
 
     // has warning message
-    expect(warnSpy).to.have.callCount(1);
-    expect(errorSpy).to.have.callCount(0);
+    expect(warnSpy).toBeCalledTimes(1);
+    expect(errorSpy).toBeCalledTimes(0);
   });
 
   it('should warn when launcher path is incorrect', async () => {
@@ -288,11 +286,11 @@ describe('Launcher path', () => {
     launcherThatExists = 'xxx'; // pretend neither launcher exists
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
-    expect(result).to.equal(undefined);
+    expect(result).toBeUndefined();
 
     // no error message
-    expect(warnSpy).to.have.callCount(0);
-    expect(errorSpy).to.have.callCount(1);
+    expect(warnSpy).toBeCalledTimes(0);
+    expect(errorSpy).toBeCalledTimes(1);
   });
 
   function createModule() {

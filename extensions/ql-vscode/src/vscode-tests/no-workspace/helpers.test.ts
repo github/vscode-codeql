@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import {
   EnvironmentVariableCollection,
   EnvironmentVariableMutator,
@@ -64,7 +63,7 @@ describe('helpers', () => {
         numTimesFuncCalled++;
       });
       await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
-      expect(numTimesFuncCalled).to.equal(1);
+      expect(numTimesFuncCalled).toBe(1);
     });
 
     it('doesn\'t invoke function again if no time has passed', async () => {
@@ -74,40 +73,49 @@ describe('helpers', () => {
       });
       await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
       await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
-      expect(numTimesFuncCalled).to.equal(1);
+      expect(numTimesFuncCalled).toBe(1);
     });
 
-    it('doesn\'t invoke function again if requested time since last invocation hasn\'t passed', async () => {
-      let numTimesFuncCalled = 0;
-      const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
-        numTimesFuncCalled++;
-      });
-      await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
-      currentUnixTime += 1;
-      await invocationRateLimiter.invokeFunctionIfIntervalElapsed(2);
-      expect(numTimesFuncCalled).to.equal(1);
-    });
+    it(
+      'doesn\'t invoke function again if requested time since last invocation hasn\'t passed',
+      async () => {
+        let numTimesFuncCalled = 0;
+        const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
+          numTimesFuncCalled++;
+        });
+        await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
+        currentUnixTime += 1;
+        await invocationRateLimiter.invokeFunctionIfIntervalElapsed(2);
+        expect(numTimesFuncCalled).toBe(1);
+      }
+    );
 
-    it('invokes function again immediately if requested time since last invocation is 0 seconds', async () => {
-      let numTimesFuncCalled = 0;
-      const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
-        numTimesFuncCalled++;
-      });
-      await invocationRateLimiter.invokeFunctionIfIntervalElapsed(0);
-      await invocationRateLimiter.invokeFunctionIfIntervalElapsed(0);
-      expect(numTimesFuncCalled).to.equal(2);
-    });
+    it(
+      'invokes function again immediately if requested time since last invocation is 0 seconds',
+      async () => {
+        let numTimesFuncCalled = 0;
+        const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
+          numTimesFuncCalled++;
+        });
+        await invocationRateLimiter.invokeFunctionIfIntervalElapsed(0);
+        await invocationRateLimiter.invokeFunctionIfIntervalElapsed(0);
+        expect(numTimesFuncCalled).toBe(2);
+      }
+    );
 
-    it('invokes function again after requested time since last invocation has elapsed', async () => {
-      let numTimesFuncCalled = 0;
-      const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
-        numTimesFuncCalled++;
-      });
-      await invocationRateLimiter.invokeFunctionIfIntervalElapsed(1);
-      currentUnixTime += 1;
-      await invocationRateLimiter.invokeFunctionIfIntervalElapsed(1);
-      expect(numTimesFuncCalled).to.equal(2);
-    });
+    it(
+      'invokes function again after requested time since last invocation has elapsed',
+      async () => {
+        let numTimesFuncCalled = 0;
+        const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
+          numTimesFuncCalled++;
+        });
+        await invocationRateLimiter.invokeFunctionIfIntervalElapsed(1);
+        currentUnixTime += 1;
+        await invocationRateLimiter.invokeFunctionIfIntervalElapsed(1);
+        expect(numTimesFuncCalled).toBe(2);
+      }
+    );
 
     it('invokes functions with different rate limiters', async () => {
       let numTimesFuncACalled = 0;
@@ -120,8 +128,8 @@ describe('helpers', () => {
       });
       await invocationRateLimiterA.invokeFunctionIfIntervalElapsed(100);
       await invocationRateLimiterB.invokeFunctionIfIntervalElapsed(100);
-      expect(numTimesFuncACalled).to.equal(1);
-      expect(numTimesFuncBCalled).to.equal(1);
+      expect(numTimesFuncACalled).toBe(1);
+      expect(numTimesFuncBCalled).toBe(1);
     });
   });
 
@@ -140,21 +148,21 @@ describe('helpers', () => {
     });
 
     it('should get initial query contents when language is known', () => {
-      expect(getInitialQueryContents('cpp', 'hucairz')).to.eq('import cpp\n\nselect ""');
+      expect(getInitialQueryContents('cpp', 'hucairz')).toBe('import cpp\n\nselect ""');
     });
 
     it('should get initial query contents when dbscheme is known', () => {
-      expect(getInitialQueryContents('', 'semmlecode.cpp.dbscheme')).to.eq('import cpp\n\nselect ""');
+      expect(getInitialQueryContents('', 'semmlecode.cpp.dbscheme')).toBe('import cpp\n\nselect ""');
     });
 
     it('should get initial query contents when nothing is known', () => {
-      expect(getInitialQueryContents('', 'hucairz')).to.eq('select ""');
+      expect(getInitialQueryContents('', 'hucairz')).toBe('select ""');
     });
   });
 
   it('should find likely db language folders', () => {
-    expect(isLikelyDbLanguageFolder('db-javascript')).to.be.true;
-    expect(isLikelyDbLanguageFolder('dbnot-a-db')).to.be.false;
+    expect(isLikelyDbLanguageFolder('db-javascript')).toBe(true);
+    expect(isLikelyDbLanguageFolder('dbnot-a-db')).toBe(false);
   });
 
   class MockExtensionContext implements ExtensionContext {
@@ -266,18 +274,18 @@ describe('helpers', () => {
     mockReadable.on.getCall(0).args[1]({ length: firstStep });
     mockReadable.on.getCall(0).args[1]({ length: secondStep });
 
-    expect(spy).to.have.callCount(3);
-    expect(spy).to.have.been.calledWith({
+    expect(spy).toBeCalledTimes(3);
+    expect(spy).toBeCalledWith({
       step: 0,
       maxStep: max,
       message: 'My prefix [0.0 MB of 4.0 MB]',
     });
-    expect(spy).to.have.been.calledWith({
+    expect(spy).toBeCalledWith({
       step: firstStep,
       maxStep: max,
       message: 'My prefix [1.6 MB of 4.0 MB]',
     });
-    expect(spy).to.have.been.calledWith({
+    expect(spy).toBeCalledWith({
       step: firstStep + secondStep,
       maxStep: max,
       message: 'My prefix [3.6 MB of 4.0 MB]',
@@ -292,10 +300,10 @@ describe('helpers', () => {
     (reportStreamProgress as any)(mockReadable, 'My prefix', undefined, spy);
 
     // There are no listeners registered to this readable
-    expect(mockReadable.on).not.to.have.been.called;
+    expect(mockReadable.on).not.toBeCalled();
 
-    expect(spy).to.have.callCount(1);
-    expect(spy).to.have.been.calledWith({
+    expect(spy).toBeCalledTimes(1);
+    expect(spy).toBeCalledWith({
       step: 1,
       maxStep: 2,
       message: 'My prefix (Size unknown)',
@@ -313,7 +321,7 @@ describe('helpers', () => {
       showInformationMessageSpy.onCall(0).resolvesArg(2);
       const res = showBinaryChoiceDialog('xxx');
       res.then((val) => {
-        expect(val).to.eq(true);
+        expect(val).toBe(true);
         done();
       }).catch(e => fail(e));
     });
@@ -323,7 +331,7 @@ describe('helpers', () => {
       showInformationMessageSpy.onCall(0).resolvesArg(3);
       const res = showBinaryChoiceDialog('xxx');
       res.then((val) => {
-        expect(val).to.eq(false);
+        expect(val).toBe(false);
         done();
       }).catch(e => fail(e));
     });
@@ -333,7 +341,7 @@ describe('helpers', () => {
       showInformationMessageSpy.onCall(0).resolvesArg(1);
       const res = showInformationMessageWithAction('xxx', 'yyy');
       res.then((val) => {
-        expect(val).to.eq(true);
+        expect(val).toBe(true);
         done();
       }).catch(e => fail(e));
     });
@@ -343,50 +351,59 @@ describe('helpers', () => {
       showInformationMessageSpy.onCall(0).resolves(undefined);
       const res = showInformationMessageWithAction('xxx', 'yyy');
       res.then((val) => {
-        expect(val).to.eq(false);
+        expect(val).toBe(false);
         done();
       }).catch(e => fail(e));
     });
 
-    it('should show a binary choice dialog with a url and return `yes`', (done) => {
-      // pretend user clicks on the url twice and then clicks 'yes'
-      showInformationMessageSpy.onCall(0).resolvesArg(2);
-      showInformationMessageSpy.onCall(1).resolvesArg(2);
-      showInformationMessageSpy.onCall(2).resolvesArg(3);
-      const res = showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
-      res.then((val) => {
-        expect(val).to.eq(true);
-        done();
-      }).catch(e => fail(e));
-    });
+    it(
+      'should show a binary choice dialog with a url and return `yes`',
+      (done) => {
+        // pretend user clicks on the url twice and then clicks 'yes'
+        showInformationMessageSpy.onCall(0).resolvesArg(2);
+        showInformationMessageSpy.onCall(1).resolvesArg(2);
+        showInformationMessageSpy.onCall(2).resolvesArg(3);
+        const res = showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
+        res.then((val) => {
+          expect(val).toBe(true);
+          done();
+        }).catch(e => fail(e));
+      }
+    );
 
-    it('should show a binary choice dialog with a url and return `no`', (done) => {
-      // pretend user clicks on the url twice and then clicks 'no'
-      showInformationMessageSpy.onCall(0).resolvesArg(2);
-      showInformationMessageSpy.onCall(1).resolvesArg(2);
-      showInformationMessageSpy.onCall(2).resolvesArg(4);
-      const res = showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
-      res.then((val) => {
-        expect(val).to.eq(false);
-        done();
-      }).catch(e => fail(e));
-    });
+    it(
+      'should show a binary choice dialog with a url and return `no`',
+      (done) => {
+        // pretend user clicks on the url twice and then clicks 'no'
+        showInformationMessageSpy.onCall(0).resolvesArg(2);
+        showInformationMessageSpy.onCall(1).resolvesArg(2);
+        showInformationMessageSpy.onCall(2).resolvesArg(4);
+        const res = showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
+        res.then((val) => {
+          expect(val).toBe(false);
+          done();
+        }).catch(e => fail(e));
+      }
+    );
 
-    it('should show a binary choice dialog and exit after clcking `more info` 5 times', (done) => {
-      // pretend user clicks on the url twice and then clicks 'no'
-      showInformationMessageSpy.onCall(0).resolvesArg(2);
-      showInformationMessageSpy.onCall(1).resolvesArg(2);
-      showInformationMessageSpy.onCall(2).resolvesArg(2);
-      showInformationMessageSpy.onCall(3).resolvesArg(2);
-      showInformationMessageSpy.onCall(4).resolvesArg(2);
-      const res = showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
-      res.then((val) => {
-        // No choie was made
-        expect(val).to.eq(undefined);
-        expect(showInformationMessageSpy.getCalls().length).to.eq(5);
-        done();
-      }).catch(e => fail(e));
-    });
+    it(
+      'should show a binary choice dialog and exit after clcking `more info` 5 times',
+      (done) => {
+        // pretend user clicks on the url twice and then clicks 'no'
+        showInformationMessageSpy.onCall(0).resolvesArg(2);
+        showInformationMessageSpy.onCall(1).resolvesArg(2);
+        showInformationMessageSpy.onCall(2).resolvesArg(2);
+        showInformationMessageSpy.onCall(3).resolvesArg(2);
+        showInformationMessageSpy.onCall(4).resolvesArg(2);
+        const res = showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
+        res.then((val) => {
+          // No choie was made
+          expect(val).toBeUndefined();
+          expect(showInformationMessageSpy.getCalls().length).toBe(5);
+          done();
+        }).catch(e => fail(e));
+      }
+    );
   });
 });
 
@@ -451,6 +468,6 @@ describe('walkDirectory', () => {
     }
 
     // Only real files should be returned.
-    expect(files.sort()).to.deep.eq([file1, file2, file3, file4, file5, file6]);
+    expect(files.sort()).toEqual([file1, file2, file3, file4, file5, file6]);
   });
 });

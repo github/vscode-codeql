@@ -3,7 +3,6 @@ import { CancellationToken, commands, ExtensionContext, extensions, Uri } from '
 import * as sinon from 'sinon';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { expect } from 'chai';
 import * as yaml from 'js-yaml';
 
 import { DatabaseItem, DatabaseManager } from '../../databases';
@@ -21,10 +20,10 @@ import { tmpDir } from '../../helpers';
 /**
  * Integration tests for queries
  */
-describe('Queries', function() {
+describe('Queries', () => {
   this.timeout(20000);
 
-  before(function() {
+  beforeAll(() => {
     skipIfNoCodeQL(this);
   });
 
@@ -115,7 +114,7 @@ describe('Queries', function() {
       );
 
       // just check that the query was successful
-      expect(result.result.resultType).to.eq(QueryResultType.SUCCESS);
+      expect(result.result.resultType).toBe(QueryResultType.SUCCESS);
     } catch (e) {
       console.error('Test Failed');
       fail(e as Error);
@@ -138,8 +137,8 @@ describe('Queries', function() {
       );
 
       // this message would indicate that the databases were not properly reregistered
-      expect(result.result.message).not.to.eq('No result from server');
-      expect(result.result.resultType).to.eq(QueryResultType.SUCCESS);
+      expect(result.result.message).not.toBe('No result from server');
+      expect(result.result.resultType).toBe(QueryResultType.SUCCESS);
     } catch (e) {
       console.error('Test Failed');
       fail(e as Error);
@@ -150,21 +149,21 @@ describe('Queries', function() {
     await commands.executeCommand('codeQL.quickQuery');
 
     // should have created the quick query file and query pack file
-    expect(fs.pathExistsSync(qlFile)).to.be.true;
-    expect(fs.pathExistsSync(qlpackFile)).to.be.true;
+    expect(fs.pathExistsSync(qlFile)).toBe(true);
+    expect(fs.pathExistsSync(qlpackFile)).toBe(true);
 
     const qlpackContents: any = await yaml.load(
       fs.readFileSync(qlpackFile, 'utf8')
     );
     // Should have chosen the js libraries
-    expect(qlpackContents.dependencies['codeql/javascript-all']).to.eq('*');
+    expect(qlpackContents.dependencies['codeql/javascript-all']).toBe('*');
 
     // Should also have a codeql-pack.lock.yml file
     const packFileToUse = fs.pathExistsSync(qlpackLockFile) ? qlpackLockFile : oldQlpackLockFile;
     const qlpackLock: any = await yaml.load(
       fs.readFileSync(packFileToUse, 'utf8')
     );
-    expect(!!qlpackLock.dependencies['codeql/javascript-all'].version).to.be.true;
+    expect(!!qlpackLock.dependencies['codeql/javascript-all'].version).toBe(true);
   });
 
   it('should avoid creating a quick query', async () => {
@@ -180,7 +179,7 @@ describe('Queries', function() {
     await commands.executeCommand('codeQL.quickQuery');
 
     // should not have created the quick query file because database schema hasn't changed
-    expect(fs.readFileSync(qlFile, 'utf8')).to.eq('xxx');
+    expect(fs.readFileSync(qlFile, 'utf8')).toBe('xxx');
   });
 
   function safeDel(file: string) {

@@ -1,5 +1,4 @@
 import * as Sinon from 'sinon';
-import { expect } from 'chai';
 import { workspace } from 'vscode';
 
 import {
@@ -8,7 +7,7 @@ import {
   QueryServerConfigListener
 } from '../../config';
 
-describe('config listeners', function() {
+describe('config listeners', () => {
   // Because we are adding some extra waiting, need to bump the test timeouts.
   this.timeout(5000);
 
@@ -108,8 +107,8 @@ describe('config listeners', function() {
         it(`should listen for changes to '${setting.name}'`, async () => {
           await workspace.getConfiguration().update(setting.name, setting.values[1]);
           await wait();
-          expect(listener[setting.property]).to.eq(setting.values[1]);
-          expect(spy).to.have.been.calledOnce;
+          expect(listener[setting.property]).toBe(setting.values[1]);
+          expect(spy).toBeCalledTimes(1);
         });
       });
     });
