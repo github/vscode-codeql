@@ -1133,7 +1133,7 @@
     "watch:extension": "tsc --watch",
     "watch:webpack": "gulp watchView",
     "watch:css": "gulp watchCss",
-    "test": "mocha --exit -r ts-node/register test/pure-tests/**/*.ts",
+    "test": "jest test/pure-tests/**/*.ts",
     "preintegration": "rm -rf ./out/vscode-tests && gulp",
     "integration": "node ./out/vscode-tests/run-integration-tests.js no-workspace,minimal-workspace",
     "cli-integration": "npm run preintegration && node ./out/vscode-tests/run-integration-tests.js cli-integration",
@@ -1267,5 +1267,8 @@
   },
   "resolutions": {
     "glob-parent": "6.0.0"
+  },
+  "jest": {
+    "verbose": true
   }
 }
