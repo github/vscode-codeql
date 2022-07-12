@@ -10,6 +10,7 @@ describe('Evaluator log summary tests', async function () {
     it('should return only valid EvaluatorLogData objects', async function () {
       const validSummaryText = await fs.readFile(path.join(__dirname, 'evaluator-log-summaries/valid-summary.jsonl'), 'utf8');
       const logDataItems = parseVisualizerData(validSummaryText.toString());
+      expect(logDataItems).to.not.be.undefined;
       expect (logDataItems.length).to.eq(3);
       for (const item of logDataItems) {
         expect(item.queryCausingWork).to.not.be.empty;
@@ -18,8 +19,10 @@ describe('Evaluator log summary tests', async function () {
         expect(item.resultSize).to.be.a('number');
         expect(item.ra).to.not.be.undefined;
         expect(item.ra).to.not.be.empty;
-        for (const pipeline of Object.entries(item.ra)) {
+        for (const [pipeline, steps] of Object.entries(item.ra)) {
           expect (pipeline).to.not.be.empty;
+          expect (steps).to.not.be.undefined;
+          expect (steps.length).to.be.greaterThan(0);
         }
       }
     });

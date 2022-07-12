@@ -7,12 +7,12 @@ export interface EvaluatorLogData {
     predicateName: string;
     millis: number;
     resultSize: number;
-    ra: Pipeline[];
+    ra: Pipelines;
 }
   
-interface Pipeline {
+interface Pipelines {
     // Key: pipeline identifier; Value: array of pipeline steps 
-    pipeline: Map<string, string[]>;
+    pipelineNamesToSteps: Map<string, string[]>;
 }
   
 /**
