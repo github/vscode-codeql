@@ -1,4 +1,3 @@
-import { assert, expect } from 'chai';
 import * as path from 'path';
 import * as sinon from 'sinon';
 import { CancellationToken, extensions, QuickPickItem, Uri, window } from 'vscode';
@@ -253,7 +252,7 @@ describe('Remote queries', () => {
 
     try {
       await promise;
-      assert.fail('should have thrown');
+      expect(false).toBe(true);
     } catch (e) {
       expect(e).toBeInstanceOf(UserCancellationException);
     }

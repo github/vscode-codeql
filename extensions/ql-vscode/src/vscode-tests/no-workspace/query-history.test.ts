@@ -180,7 +180,7 @@ describe('query-history', () => {
 
       try {
         await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, allHistory[0]]);
-        assert(false, 'Should have thrown');
+        expect(false).toBeTruthy();
       } catch (e) {
         expect(getErrorMessage(e)).toBe('Please select a successful query.');
       }
@@ -193,7 +193,7 @@ describe('query-history', () => {
         // allHistory[0] is database a
         // allHistory[1] is database b
         await (queryHistoryManager as any).findOtherQueryToCompare(allHistory[0], [allHistory[0], allHistory[1]]);
-        assert(false, 'Should have thrown');
+        expect(false).toBeTruthy();
       } catch (e) {
         expect(getErrorMessage(e)).toBe('Query databases must be the same.');
       }
@@ -205,7 +205,7 @@ describe('query-history', () => {
 
       try {
         await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, allHistory[0], allHistory[1]]);
-        assert(false, 'Should have thrown');
+        expect(false).toBeTruthy();
       } catch (e) {
         expect(getErrorMessage(e)).toBe('Please select no more than 2 queries.');
       }

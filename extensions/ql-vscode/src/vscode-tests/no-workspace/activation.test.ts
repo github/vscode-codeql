@@ -5,9 +5,9 @@ import * as vscode from 'vscode';
 describe('launching with no specified workspace', () => {
   const ext = vscode.extensions.getExtension('GitHub.vscode-codeql');
   it('should install the extension', () => {
-    assert(ext);
+    expect(ext).toBeTruthy();
   });
   it('should not activate the extension at first', () => {
-    assert(ext!.isActive === false);
+    expect(ext!.isActive === false).toBeTruthy();
   });
 });
