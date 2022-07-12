@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as Octokit from '@octokit/rest';
+import { retry } from '@octokit/plugin-retry';
 
 const GITHUB_AUTH_PROVIDER_ID = 'github';
 
@@ -51,14 +52,15 @@ export class Credentials {
 
   private async createOctokit(createIfNone: boolean, overrideToken?: string): Promise<Octokit.Octokit | undefined> {
     if (overrideToken) {
-      return new Octokit.Octokit({ auth: overrideToken });
+      return new Octokit.Octokit({ auth: overrideToken, retry });
     }
 
     const session = await vscode.authentication.getSession(GITHUB_AUTH_PROVIDER_ID, SCOPES, { createIfNone });
 
     if (session) {
       return new Octokit.Octokit({
-        auth: session.accessToken
+        auth: session.accessToken,
+        retry
       });
     } else {
       return undefined;
