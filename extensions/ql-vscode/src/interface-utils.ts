@@ -137,11 +137,12 @@ export function getHtmlForWebview(
     ? `${webview.cspSource} vscode-file: 'unsafe-inline'`
     : `'nonce-${nonce}'`;
 
+  const fontSrc = webview.cspSource;
+
   /*
    * Content security policy:
    * default-src: allow nothing by default.
    * script-src: allow only the given script, using the nonce.
-   * font-src: allow only the given fonts, using the nonce.
    * style-src: allow only the given stylesheet, using the nonce.
    * connect-src: only allow fetch calls to webview resource URIs
    * (this is used to load BQRS result files).
@@ -150,7 +151,7 @@ export function getHtmlForWebview(
 <html>
   <head>
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'none'; script-src 'nonce-${nonce}'; font-src ${styleSrc}; style-src ${styleSrc}; connect-src ${webview.cspSource};">
+          content="default-src 'none'; script-src 'nonce-${nonce}'; font-src ${fontSrc}; style-src ${styleSrc}; connect-src ${webview.cspSource};">
         ${stylesheetsHtmlLines.join(`    ${os.EOL}`)}
   </head>
   <body>
