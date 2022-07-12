@@ -1269,8 +1269,5 @@
   },
   "resolutions": {
     "glob-parent": "6.0.0"
-  },
-  "jest": {
-    "verbose": true
   }
 }
