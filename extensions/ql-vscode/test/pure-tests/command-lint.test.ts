@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 
@@ -8,7 +7,7 @@ type CmdDecl = {
   title?: string;
 }
 
-describe('commands declared in package.json', function() {
+describe('commands declared in package.json', () => {
   const manifest = fs.readJsonSync(path.join(__dirname, '../../package.json'));
   const commands = manifest.contributes.commands;
   const menus = manifest.contributes.menus;
@@ -34,7 +33,7 @@ describe('commands declared in package.json', function() {
       || command.match(/^codeQLQueryResults\./)
     ) {
       paletteCmds.add(command);
-      expect(title).not.to.be.undefined;
+      expect(title).toBeDefined();
       commandTitles[command] = title!;
     }
     else if (
@@ -44,7 +43,7 @@ describe('commands declared in package.json', function() {
       || command.match(/^codeQLTests\./)
     ) {
       scopedCmds.add(command);
-      expect(title).not.to.be.undefined;
+      expect(title).toBeDefined();
       commandTitles[command] = title!;
     }
     else {
@@ -69,34 +68,42 @@ describe('commands declared in package.json', function() {
       disabledInPalette.add(commandDecl.command);
   });
 
-  it('should have commands appropriately prefixed', function() {
+  it('should have commands appropriately prefixed', () => {
     paletteCmds.forEach(command => {
-      expect(commandTitles[command], `command ${command} should be prefixed with 'CodeQL: ', since it is accessible from the command palette`).to.match(/^CodeQL: /);
+      // command ${command} should be prefixed with 'CodeQL: ', since it is accessible from the command palette
+      expect(commandTitles[command]).toMatch(/^CodeQL: /);
     });
 
     contribContextMenuCmds.forEach(command => {
-      expect(commandTitles[command], `command ${command} should be prefixed with 'CodeQL: ', since it is accessible from a context menu in a non-extension-controlled context`).to.match(/^CodeQL: /);
+      // command ${command} should be prefixed with 'CodeQL: ', since it is accessible from a context menu in a non-extension-controlled context
+      expect(commandTitles[command]).toMatch(/^CodeQL: /);
     });
 
     scopedCmds.forEach(command => {
-      expect(commandTitles[command], `command ${command} should not be prefixed with 'CodeQL: ', since it is accessible from an extension-controlled context`).not.to.match(/^CodeQL: /);
+      // command ${command} should not be prefixed with 'CodeQL: ', since it is accessible from an extension-controlled context
+      expect(commandTitles[command]).not.toMatch(/^CodeQL: /);
     });
   });
 
-  it('should have the right commands accessible from the command palette', function() {
-    paletteCmds.forEach(command => {
-      expect(disabledInPalette.has(command), `command ${command} should be enabled in the command palette`).to.be.false;
-    });
+  it(
+    'should have the right commands accessible from the command palette',
+    () => {
+      paletteCmds.forEach(command => {
+        // command ${command} should be enabled in the command palette
+        expect(disabledInPalette.has(command)).toBe(false);
+      });
 
-    // Commands in contribContextMenuCmds may reasonbly be enabled or
-    // disabled in the command palette; for example, codeQL.runQuery
-    // is available there, since we heuristically figure out which
-    // query to run, but codeQL.setCurrentDatabase is not.
+      // Commands in contribContextMenuCmds may reasonbly be enabled or
+      // disabled in the command palette; for example, codeQL.runQuery
+      // is available there, since we heuristically figure out which
+      // query to run, but codeQL.setCurrentDatabase is not.
 
-    scopedCmds.forEach(command => {
-      expect(disabledInPalette.has(command), `command ${command} should be disabled in the command palette`).to.be.true;
-    });
-  });
+      scopedCmds.forEach(command => {
+        // command ${command} should be disabled in the command palette
+        expect(disabledInPalette.has(command)).toBe(true);
+      });
+    }
+  );
 
 
 });

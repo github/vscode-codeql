@@ -1,11 +1,10 @@
 import { fail } from 'assert';
-import { expect } from 'chai';
 
 import { asyncFilter, getErrorMessage } from '../../src/pure/helpers-pure';
 
 describe('helpers-pure', () => {
   it('should filter asynchronously', async () => {
-    expect(await asyncFilter([1, 2, 3], x => Promise.resolve(x > 2))).to.deep.eq([3]);
+    expect(await asyncFilter([1, 2, 3], x => Promise.resolve(x > 2))).toEqual([3]);
   });
 
   it('should throw on error when filtering', async () => {
@@ -17,7 +16,7 @@ describe('helpers-pure', () => {
       await asyncFilter([1, 2, 3], rejects);
       fail('Should have thrown');
     } catch (e) {
-      expect(getErrorMessage(e)).to.eq('opps');
+      expect(getErrorMessage(e)).toBe('opps');
     }
   });
 });

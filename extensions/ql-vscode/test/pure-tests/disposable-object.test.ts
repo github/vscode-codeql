@@ -2,10 +2,8 @@ import 'chai';
 import 'chai/register-should';
 import 'sinon-chai';
 import * as sinon from 'sinon';
-import 'mocha';
 
 import { DisposableObject } from '../../src/pure/disposable-object';
-import { expect } from 'chai';
 
 describe('DisposableObject and DisposeHandler', () => {
 
@@ -40,9 +38,9 @@ describe('DisposableObject and DisposeHandler', () => {
 
     disposableObject.dispose();
 
-    expect(disposable1.dispose).to.have.been.called;
-    expect(disposable2.dispose).to.have.been.called;
-    expect(disposable3.dispose).to.have.been.called;
+    expect(disposable1.dispose).toBeCalled();
+    expect(disposable2.dispose).toBeCalled();
+    expect(disposable3.dispose).toBeCalled();
 
     // pushed items must be called in reverse order
     sinon.assert.callOrder(disposable2.dispose, disposable1.dispose);
@@ -55,30 +53,30 @@ describe('DisposableObject and DisposeHandler', () => {
 
     disposableObject.dispose();
 
-    expect(disposable1.dispose).not.to.have.been.called;
-    expect(disposable2.dispose).not.to.have.been.called;
-    expect(disposable3.dispose).not.to.have.been.called;
+    expect(disposable1.dispose).not.toBeCalled();
+    expect(disposable2.dispose).not.toBeCalled();
+    expect(disposable3.dispose).not.toBeCalled();
   });
 
   it('should dispose and stop tracking objects', () => {
     disposableObject.track(disposable1);
     disposableObject.disposeAndStopTracking(disposable1);
 
-    expect(disposable1.dispose).to.have.been.called;
+    expect(disposable1.dispose).toBeCalled();
     disposable1.dispose.resetHistory();
 
     disposableObject.dispose();
-    expect(disposable1.dispose).not.to.have.been.called;
+    expect(disposable1.dispose).not.toBeCalled();
   });
 
   it('should avoid disposing an object that is not tracked', () => {
     disposableObject.push(disposable1);
     disposableObject.disposeAndStopTracking(disposable1);
 
-    expect(disposable1.dispose).not.to.have.been.called;
+    expect(disposable1.dispose).not.toBeCalled();
 
     disposableObject.dispose();
-    expect(disposable1.dispose).to.have.been.called;
+    expect(disposable1.dispose).toBeCalled();
   });
 
   it('ahould use a dispose handler', () => {
@@ -94,10 +92,10 @@ describe('DisposableObject and DisposeHandler', () => {
 
     disposableObject.dispose(handler);
 
-    expect(disposable1.dispose).to.have.been.called;
-    expect(disposable2.dispose).not.to.have.been.called;
-    expect(disposable3.dispose).to.have.been.called;
-    expect(disposable4.dispose).not.to.have.been.called;
+    expect(disposable1.dispose).toBeCalled();
+    expect(disposable2.dispose).not.toBeCalled();
+    expect(disposable3.dispose).toBeCalled();
+    expect(disposable4.dispose).not.toBeCalled();
 
     // now that disposableObject has been disposed, subsequent disposals are
     // no-ops
@@ -108,10 +106,10 @@ describe('DisposableObject and DisposeHandler', () => {
 
     disposableObject.dispose();
 
-    expect(disposable1.dispose).not.to.have.been.called;
-    expect(disposable2.dispose).not.to.have.been.called;
-    expect(disposable3.dispose).not.to.have.been.called;
-    expect(disposable4.dispose).not.to.have.been.called;
+    expect(disposable1.dispose).not.toBeCalled();
+    expect(disposable2.dispose).not.toBeCalled();
+    expect(disposable3.dispose).not.toBeCalled();
+    expect(disposable4.dispose).not.toBeCalled();
   });
 
   class MyDisposableObject extends DisposableObject {

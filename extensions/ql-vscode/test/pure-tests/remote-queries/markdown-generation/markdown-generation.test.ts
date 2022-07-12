@@ -1,53 +1,61 @@
-import { expect } from 'chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import { generateMarkdown, MarkdownFile } from '../../../../src/remote-queries/remote-queries-markdown-generation';
 
-describe('markdown generation', async function() {
-  describe('for path-problem query', async function() {
-    it('should generate markdown file for each repo with results', async function() {
-      const pathProblemQuery = JSON.parse(
-        await fs.readFile(path.join(__dirname, 'data/interpreted-results/path-problem/path-problem-query.json'), 'utf8')
-      );
+describe('markdown generation', async () => {
+  describe('for path-problem query', async () => {
+    it(
+      'should generate markdown file for each repo with results',
+      async () => {
+        const pathProblemQuery = JSON.parse(
+          await fs.readFile(path.join(__dirname, 'data/interpreted-results/path-problem/path-problem-query.json'), 'utf8')
+        );
 
-      const analysesResults = JSON.parse(
-        await fs.readFile(path.join(__dirname, 'data/interpreted-results/path-problem/analyses-results.json'), 'utf8')
-      );
+        const analysesResults = JSON.parse(
+          await fs.readFile(path.join(__dirname, 'data/interpreted-results/path-problem/analyses-results.json'), 'utf8')
+        );
 
-      const actualFiles = generateMarkdown(pathProblemQuery, analysesResults, 'gist');
+        const actualFiles = generateMarkdown(pathProblemQuery, analysesResults, 'gist');
 
-      await checkGeneratedMarkdown(actualFiles, 'data/interpreted-results/path-problem/expected');
-    });
+        await checkGeneratedMarkdown(actualFiles, 'data/interpreted-results/path-problem/expected');
+      }
+    );
   });
 
-  describe('for problem query', async function() {
-    it('should generate markdown file for each repo with results', async function() {
-      const problemQuery = JSON.parse(
-        await fs.readFile(path.join(__dirname, 'data/interpreted-results/problem/problem-query.json'), 'utf8')
-      );
+  describe('for problem query', async () => {
+    it(
+      'should generate markdown file for each repo with results',
+      async () => {
+        const problemQuery = JSON.parse(
+          await fs.readFile(path.join(__dirname, 'data/interpreted-results/problem/problem-query.json'), 'utf8')
+        );
 
-      const analysesResults = JSON.parse(
-        await fs.readFile(path.join(__dirname, 'data/interpreted-results/problem/analyses-results.json'), 'utf8')
-      );
-      const actualFiles = generateMarkdown(problemQuery, analysesResults, 'gist');
+        const analysesResults = JSON.parse(
+          await fs.readFile(path.join(__dirname, 'data/interpreted-results/problem/analyses-results.json'), 'utf8')
+        );
+        const actualFiles = generateMarkdown(problemQuery, analysesResults, 'gist');
 
-      await checkGeneratedMarkdown(actualFiles, 'data/interpreted-results/problem/expected');
-    });
+        await checkGeneratedMarkdown(actualFiles, 'data/interpreted-results/problem/expected');
+      }
+    );
   });
 
-  describe('for non-alert query', async function() {
-    it('should generate markdown file for each repo with results', async function() {
-      const query = JSON.parse(
-        await fs.readFile(path.join(__dirname, 'data/raw-results/query.json'), 'utf8')
-      );
-      const analysesResults = JSON.parse(
-        await fs.readFile(path.join(__dirname, 'data/raw-results/analyses-results.json'), 'utf8')
-      );
+  describe('for non-alert query', async () => {
+    it(
+      'should generate markdown file for each repo with results',
+      async () => {
+        const query = JSON.parse(
+          await fs.readFile(path.join(__dirname, 'data/raw-results/query.json'), 'utf8')
+        );
+        const analysesResults = JSON.parse(
+          await fs.readFile(path.join(__dirname, 'data/raw-results/analyses-results.json'), 'utf8')
+        );
 
-      const actualFiles = generateMarkdown(query, analysesResults, 'gist');
+        const actualFiles = generateMarkdown(query, analysesResults, 'gist');
 
-      await checkGeneratedMarkdown(actualFiles, 'data/raw-results/expected');
-    });
+        await checkGeneratedMarkdown(actualFiles, 'data/raw-results/expected');
+      }
+    );
   });
 });
 
@@ -68,12 +76,12 @@ async function checkGeneratedMarkdown(actualFiles: MarkdownFile[], testDataBaseP
   const expectedDir = path.join(__dirname, testDataBasePath);
   const expectedFiles = await fs.readdir(expectedDir);
 
-  expect(actualFiles.length).to.equal(expectedFiles.length);
+  expect(actualFiles.length).toBe(expectedFiles.length);
 
   for (const expectedFile of expectedFiles) {
     const actualFile = actualFiles.find(f => `${f.fileName}.md` === expectedFile);
-    expect(actualFile).to.not.be.undefined;
+    expect(actualFile).toBeDefined();
     const expectedContent = await readTestOutputFile(path.join(testDataBasePath, expectedFile));
-    expect(actualFile!.content.join('\n')).to.equal(expectedContent);
+    expect(actualFile!.content.join('\n')).toBe(expectedContent);
   }
 }

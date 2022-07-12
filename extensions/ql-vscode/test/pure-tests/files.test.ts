@@ -1,7 +1,6 @@
 import * as chai from 'chai';
 import 'chai/register-should';
 import * as sinonChai from 'sinon-chai';
-import 'mocha';
 import * as path from 'path';
 
 import { gatherQlFiles } from '../../src/pure/files';
@@ -16,24 +15,24 @@ describe('files', () => {
   it('should find one file', async () => {
     const singleFile = path.join(dataDir, 'query.ql');
     const result = await gatherQlFiles([singleFile]);
-    expect(result).to.deep.equal([[singleFile], false]);
+    expect(result).toEqual([[singleFile], false]);
   });
 
   it('should find no files', async () => {
     const result = await gatherQlFiles([]);
-    expect(result).to.deep.equal([[], false]);
+    expect(result).toEqual([[], false]);
   });
 
   it('should find no files', async () => {
     const singleFile = path.join(dataDir, 'library.qll');
     const result = await gatherQlFiles([singleFile]);
-    expect(result).to.deep.equal([[], false]);
+    expect(result).toEqual([[], false]);
   });
 
   it('should handle invalid file', async () => {
     const singleFile = path.join(dataDir, 'xxx');
     const result = await gatherQlFiles([singleFile]);
-    expect(result).to.deep.equal([[], false]);
+    expect(result).toEqual([[], false]);
   });
 
   it('should find two files', async () => {
@@ -43,7 +42,7 @@ describe('files', () => {
     const invalidFile = path.join(dataDir, 'xxx');
 
     const result = await gatherQlFiles([singleFile, otherFile, notFile, invalidFile]);
-    expect(result.sort()).to.deep.equal([[singleFile, otherFile], false]);
+    expect(result.sort()).toEqual([[singleFile, otherFile], false]);
   });
 
   it('should scan a directory', async () => {
@@ -52,7 +51,7 @@ describe('files', () => {
     const file3 = path.join(dataDir, 'query.ql');
 
     const result = await gatherQlFiles([dataDir]);
-    expect(result.sort()).to.deep.equal([[file1, file2, file3], true]);
+    expect(result.sort()).toEqual([[file1, file2, file3], true]);
   });
 
   it('should scan a directory and some files', async () => {
@@ -61,7 +60,7 @@ describe('files', () => {
     const empty2File = path.join(data2Dir, 'sub-folder', 'empty2.ql');
 
     const result = await gatherQlFiles([singleFile, data2Dir]);
-    expect(result.sort()).to.deep.equal([[singleFile, empty1File, empty2File], true]);
+    expect(result.sort()).toEqual([[singleFile, empty1File, empty2File], true]);
   });
 
   it('should avoid duplicates', async () => {
@@ -71,6 +70,6 @@ describe('files', () => {
 
     const result = await gatherQlFiles([file1, dataDir, file3]);
     result[0].sort();
-    expect(result.sort()).to.deep.equal([[file1, file2, file3], true]);
+    expect(result.sort()).toEqual([[file1, file2, file3], true]);
   });
 });
