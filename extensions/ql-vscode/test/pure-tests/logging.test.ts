@@ -61,10 +61,10 @@ describe('OutputChannelLogger tests', function() {
 
   function createModule(): any {
     mockOutputChannel = {
-      append: sinon.stub(),
-      appendLine: sinon.stub(),
-      show: sinon.stub(),
-      dispose: sinon.stub(),
+      append: jest.fn(),
+      appendLine: jest.fn(),
+      show: jest.fn(),
+      dispose: jest.fn(),
     };
 
     return proxyquire('../../src/logging', {

@@ -1,5 +1,4 @@
 import * as fs from 'fs-extra';
-import * as sinon from 'sinon';
 
 import AstBuilder from '../../../contextual/astBuilder';
 import { QueryWithResults } from '../../../run-queries';
@@ -34,11 +33,12 @@ describe('AstBuilder', () => {
   let overrides: Record<string, Record<string, unknown> | undefined>;
 
   beforeEach(() => {
-    mockCli = {
-      bqrsDecode: sinon.stub().callsFake((_: string, resultSet: 'nodes' | 'edges' | 'graphProperties') => {
-        return mockDecode(resultSet);
-      })
-    } as unknown as CodeQLCliServer;
+    mockCli = {} as unknown as CodeQLCliServer;
+
+    jest.spyOn(mockCli, 'bqrsDecode').mockImplementation((_: string, resultSet: 'nodes' | 'edges' | 'graphProperties') => {
+      return mockDecode(resultSet);
+    });
+
     overrides = {
       nodes: undefined,
       edges: undefined,

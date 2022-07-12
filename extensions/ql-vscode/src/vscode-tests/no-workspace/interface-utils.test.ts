@@ -65,7 +65,7 @@ describe('interface-utils', () => {
   describe('resolveWholeFileLocation', () => {
     it('should resolve a whole file location', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.file('abc')),
+        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.file('abc')),
       } as unknown) as DatabaseItem;
       expect(
         tryResolveLocation(
@@ -80,7 +80,7 @@ describe('interface-utils', () => {
 
     it('should resolve a five-part location edge case', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.file('abc')),
+        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.file('abc')),
       } as unknown) as DatabaseItem;
       expect(
         tryResolveLocation(
@@ -94,9 +94,8 @@ describe('interface-utils', () => {
     });
 
     it('should resolve a five-part location', () => {
-      const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.parse('abc')),
-      } as unknown) as DatabaseItem;
+      const mockDatabaseItem: DatabaseItem = ({} as unknown) as DatabaseItem;
+      jest.spyOn(mockDatabaseItem, 'resolveSourceFile').mockReturnValue(vscode.Uri.parse('abc'));
 
       expect(
         tryResolveLocation(
@@ -120,7 +119,7 @@ describe('interface-utils', () => {
 
     it('should resolve a five-part location with an empty path', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.parse('abc')),
+        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.file('abc')),
       } as unknown) as DatabaseItem;
 
       expect(
@@ -139,7 +138,7 @@ describe('interface-utils', () => {
 
     it('should resolve a string location for whole file', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.parse('abc')),
+        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.file('abc')),
       } as unknown) as DatabaseItem;
 
       expect(
@@ -158,7 +157,7 @@ describe('interface-utils', () => {
 
     it('should resolve a string location for five-part location', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.parse('abc')),
+        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.file('abc')),
       } as unknown) as DatabaseItem;
 
       expect(
@@ -177,7 +176,7 @@ describe('interface-utils', () => {
 
     it('should resolve a string location for invalid string', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.parse('abc')),
+        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.file('abc')),
       } as unknown) as DatabaseItem;
 
       expect(

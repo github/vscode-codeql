@@ -92,7 +92,7 @@ describe('databases', () => {
 
   it('should fire events when adding and removing a db item', async () => {
     const mockDbItem = createMockDB();
-    const spy = sinon.spy();
+    const spy = jest.fn();
     databaseManager.onDidChangeDatabaseItem(spy);
     await (databaseManager as any).addDatabaseItem(
       {} as ProgressCallback,
@@ -128,7 +128,7 @@ describe('databases', () => {
 
   it('should rename a db item and emit an event', async () => {
     const mockDbItem = createMockDB();
-    const spy = sinon.spy();
+    const spy = jest.fn();
     databaseManager.onDidChangeDatabaseItem(spy);
     await (databaseManager as any).addDatabaseItem(
       {} as ProgressCallback,

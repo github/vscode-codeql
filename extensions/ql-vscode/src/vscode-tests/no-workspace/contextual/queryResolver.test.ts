@@ -13,9 +13,9 @@ describe('queryResolver', () => {
   let mockCli: Record<string, sinon.SinonStub | Record<string, sinon.SinonStub>>;
   beforeEach(() => {
     mockCli = {
-      resolveQueriesInSuite: sinon.stub(),
+      resolveQueriesInSuite: jest.fn(),
       cliConstraints: {
-        supportsAllowLibraryPacksInResolveQueries: sinon.stub().returns(true),
+        supportsAllowLibraryPacksInResolveQueries: jest.fn().mockReturnValue(true),
       }
     };
     module = createModule();
@@ -86,9 +86,9 @@ describe('queryResolver', () => {
   });
 
   function createModule() {
-    writeFileSpy = sinon.spy();
-    getQlPackForDbschemeSpy = sinon.stub();
-    getPrimaryDbschemeSpy = sinon.stub();
+    writeFileSpy = jest.fn();
+    getQlPackForDbschemeSpy = jest.fn();
+    getPrimaryDbschemeSpy = jest.fn();
     return proxyquire('../../../contextual/queryResolver', {
       'fs-extra': {
         writeFile: writeFileSpy

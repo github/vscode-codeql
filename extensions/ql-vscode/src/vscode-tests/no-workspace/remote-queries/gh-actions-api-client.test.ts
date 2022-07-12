@@ -24,7 +24,7 @@ describe('gh-actions-api-client mock responses', () => {
 
   describe('cancelRemoteQuery', () => {
     it('should cancel a remote query', async () => {
-      mockResponse = sinon.stub().resolves({ status: 202 });
+      mockResponse = jest.fn().mockReturnValue({ status: 202 });
       await cancelRemoteQuery(mockCredentials, createMockRemoteQuery());
 
       expect(mockResponse.toBeCalledTimes(1)).toBe(true);
@@ -32,7 +32,7 @@ describe('gh-actions-api-client mock responses', () => {
     });
 
     it('should fail to cancel a remote query', async () => {
-      mockResponse = sinon.stub().resolves({ status: 409, data: { message: 'Uh oh!' } });
+      mockResponse = jest.fn().mockReturnValue({ status: 409, data: { message: 'Uh oh!' } });
 
       await expect(cancelRemoteQuery(mockCredentials, createMockRemoteQuery())).to.be.rejectedWith(/Error cancelling variant analysis: 409 Uh oh!/);
       expect(mockResponse.toBeCalledTimes(1)).toBe(true);

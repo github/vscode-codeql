@@ -137,7 +137,7 @@ describe('databaseFetcher', function() {
     });
 
     function getMockCredentials(response: any) {
-      mockRequest = sinon.stub().resolves(response);
+      mockRequest = jest.fn().mockReturnValue(response);
       return {
         getOctokit: () => ({
           request: mockRequest,
