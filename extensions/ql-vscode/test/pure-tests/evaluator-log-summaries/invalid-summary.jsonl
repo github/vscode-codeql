@@ -1,0 +1,14 @@
+{
+  "completionTime" : "2022-06-23T14:02:42.019Z",
+  "raHash" : "8caddafufc3it9svjph9m8d43me",
+  "predicateName" : "function_instantiation",
+  "appearsAs" : {
+    "function_instantiation" : {
+      "uboot-taint.ql" : [ 3, 9, 10, 11, 13, 14, 15, 17, 18, 20, 21, 22, 23, 24 ]
+    }
+  },
+  "queryCausingWork" : "uboot-taint.ql",
+  "evaluationStrategy" : "EXTENSIONAL",
+  "millis" : 0,
+  "resultSize" : 0
+}
