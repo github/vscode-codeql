@@ -137,6 +137,8 @@ export function getHtmlForWebview(
     ? `${webview.cspSource} vscode-file: 'unsafe-inline'`
     : `'nonce-${nonce}'`;
 
+  const fontSrc = webview.cspSource;
+
   /*
    * Content security policy:
    * default-src: allow nothing by default.
@@ -149,7 +151,7 @@ export function getHtmlForWebview(
 <html>
   <head>
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'none'; script-src 'nonce-${nonce}'; style-src ${styleSrc}; connect-src ${webview.cspSource};">
+          content="default-src 'none'; script-src 'nonce-${nonce}'; font-src ${fontSrc}; style-src ${styleSrc}; connect-src ${webview.cspSource};">
         ${stylesheetsHtmlLines.join(`    ${os.EOL}`)}
   </head>
   <body>
