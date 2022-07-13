@@ -59,7 +59,7 @@ const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIB
 // Query History configuration
 const QUERY_HISTORY_SETTING = new Setting('queryHistory', ROOT_SETTING);
 const QUERY_HISTORY_FORMAT_SETTING = new Setting('format', QUERY_HISTORY_SETTING);
-const QUERY_HISTORY_TTL = new Setting('format', QUERY_HISTORY_SETTING);
+const QUERY_HISTORY_TTL = new Setting('ttl', QUERY_HISTORY_SETTING);
 
 /** When these settings change, the distribution should be updated. */
 const DISTRIBUTION_CHANGE_SETTINGS = [CUSTOM_CODEQL_PATH_SETTING, INCLUDE_PRERELEASE_SETTING, PERSONAL_ACCESS_TOKEN_SETTING];
