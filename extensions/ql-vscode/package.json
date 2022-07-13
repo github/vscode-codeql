@@ -1145,7 +1145,7 @@
   "dependencies": {
     "@octokit/rest": "^18.5.6",
     "@octokit/plugin-retry": "^3.0.9",
-    "@primer/octicons-react": "^16.3.0",
+    "@primer/octicons-react": "^17.3.0",
     "@primer/react": "^35.0.0",
     "@vscode/codicons": "^0.0.31",
     "@vscode/webview-ui-toolkit": "^1.0.0",
