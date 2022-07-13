@@ -1,12 +1,6 @@
-import * as chai from 'chai';
-import 'chai/register-should';
-import * as sinonChai from 'sinon-chai';
 import * as path from 'path';
 
 import { gatherQlFiles } from '../../src/pure/files';
-
-chai.use(sinonChai);
-const expect = chai.expect;
 
 describe('files', () => {
   const dataDir = path.join(path.dirname(__dirname), 'data');

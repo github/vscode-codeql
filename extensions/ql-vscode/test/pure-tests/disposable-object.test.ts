@@ -1,33 +1,22 @@
-import 'chai';
-import 'chai/register-should';
-import 'sinon-chai';
-import * as sinon from 'sinon';
-
 import { DisposableObject } from '../../src/pure/disposable-object';
 
 describe('DisposableObject and DisposeHandler', () => {
 
-  let disposable1: { dispose: sinon.SinonSpy };
-  let disposable2: { dispose: sinon.SinonSpy };
-  let disposable3: { dispose: sinon.SinonSpy };
-  let disposable4: { dispose: sinon.SinonSpy };
+  let disposable1: { dispose: jest.fn() };
+  let disposable2: { dispose: jest.fn() };
+  let disposable3: { dispose: jest.fn() };
+  let disposable4: { dispose: jest.fn() };
   let disposableObject: any;
   let nestedDisposableObject: any;
-  const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
-    sandbox.restore();
-    disposable1 = { dispose: sandbox.spy() };
-    disposable2 = { dispose: sandbox.spy() };
-    disposable3 = { dispose: sandbox.spy() };
-    disposable4 = { dispose: sandbox.spy() };
+    disposable1 = { dispose: jest.fn() };
+    disposable2 = { dispose: jest.fn() };
+    disposable3 = { dispose: jest.fn() };
+    disposable4 = { dispose: jest.fn() };
 
     disposableObject = new MyDisposableObject();
     nestedDisposableObject = new MyDisposableObject();
-  });
-
-  afterEach(() => {
-    sandbox.restore();
   });
 
   it('should dispose tracked and pushed objects', () => {
@@ -43,7 +32,7 @@ describe('DisposableObject and DisposeHandler', () => {
     expect(disposable3.dispose).toBeCalled();
 
     // pushed items must be called in reverse order
-    sinon.assert.callOrder(disposable2.dispose, disposable1.dispose);
+    expect(disposable2.dispose).toHaveBeenCalledBefore(disposable1.dispose);
 
     // now that disposableObject has been disposed, subsequent disposals are
     // no-ops

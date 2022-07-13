@@ -1,11 +1,6 @@
-import * as chaiAsPromised from 'chai-as-promised';
-import * as chai from 'chai';
 import * as sarif from 'sarif';
 import { extractAnalysisAlerts, tryGetRule, tryGetSeverity } from '../../src/remote-queries/sarif-processing';
 import { AnalysisMessage, AnalysisMessageLocationToken } from '../../src/remote-queries/shared/analysis-result';
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe('SARIF processing', () => {
   describe('tryGetRule', () => {

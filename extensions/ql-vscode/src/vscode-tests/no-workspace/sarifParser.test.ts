@@ -1,11 +1,6 @@
 import * as path from 'path';
-import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
 
 import { sarifParser } from '../../sarif-parser';
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe('sarif parser', () => {
   const sarifDir = path.join(__dirname, 'data/sarif');

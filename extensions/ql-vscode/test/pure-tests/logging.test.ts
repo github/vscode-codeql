@@ -1,15 +1,8 @@
-import 'chai/register-should';
-import * as chai from 'chai';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp';
-import 'mocha';
-import * as sinonChai from 'sinon-chai';
-import * as sinon from 'sinon';
 
 const proxyquire;
-chai.use(sinonChai);
-const expect = chai.expect;
 
 describe('OutputChannelLogger tests', function() {
   this.timeout(999999);
