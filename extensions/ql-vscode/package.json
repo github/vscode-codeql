@@ -110,6 +110,12 @@
         "extensions": [
           ".qhelp"
         ]
+      },
+      {
+        "id": "ql-summary",
+        "filenames": [
+          "evaluator-log.summary"
+        ]
       }
     ],
     "grammars": [
@@ -608,6 +614,11 @@
           "light": "media/light/clear-all.svg",
           "dark": "media/dark/clear-all.svg"
         }
+      },
+      {
+        "command": "codeQL.gotoQL",
+        "title": "Go to QL Code",
+        "enablement": "codeql.hasQLSource"
       }
     ],
     "menus": {
@@ -1084,6 +1095,10 @@
         {
           "command": "codeQL.previewQueryHelp",
           "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
+        },
+        {
+          "command": "codeQL.gotoQL",
+          "when": "editorLangId == ql-summary"
         }
       ]
     },
