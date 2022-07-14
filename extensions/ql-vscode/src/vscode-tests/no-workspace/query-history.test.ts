@@ -762,6 +762,9 @@ describe('query-history', () => {
         TWO_HOURS_IN_MS,
         LESS_THAN_ONE_DAY,
         dir,
+        {
+          removeDeletedQueries: () => { return Promise.resolve(); }
+        } as QueryHistoryManager,
         mockCtx,
         {
           increment: () => runCount++

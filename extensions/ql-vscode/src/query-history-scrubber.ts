@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { Disposable, ExtensionContext } from 'vscode';
 import { logger } from './logging';
+import { QueryHistoryManager } from './query-history';
 
 const LAST_SCRUB_TIME_KEY = 'lastScrubTime';
 
@@ -30,12 +31,13 @@ export function registerQueryHistoryScubber(
   throttleTime: number,
   maxQueryTime: number,
   queryDirectory: string,
+  qhm: QueryHistoryManager,
   ctx: ExtensionContext,
 
   // optional counter to keep track of how many times the scrubber has run
   counter?: Counter
 ): Disposable {
-  const deregister = setInterval(scrubQueries, wakeInterval, throttleTime, maxQueryTime, queryDirectory, ctx, counter);
+  const deregister = setInterval(scrubQueries, wakeInterval, throttleTime, maxQueryTime, queryDirectory, qhm, ctx, counter);
 
   return {
     dispose: () => {
@@ -48,6 +50,7 @@ async function scrubQueries(
   throttleTime: number,
   maxQueryTime: number,
   queryDirectory: string,
+  qhm: QueryHistoryManager,
   ctx: ExtensionContext,
   counter?: Counter
 ) {
@@ -89,6 +92,7 @@ async function scrubQueries(
     } finally {
       void logger.log(`Scrubbed ${scrubCount} old queries.`);
     }
+    await qhm.removeDeletedQueries();
   }
 }
 
