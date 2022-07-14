@@ -1099,7 +1099,7 @@
         },
         {
           "command": "codeQL.gotoQL",
-          "when": "editorLangId == ql-summary"
+          "when": "editorLangId == ql-summary && config.codeQL.canary"
         }
       ]
     },
