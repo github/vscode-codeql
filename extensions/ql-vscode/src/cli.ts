@@ -683,7 +683,7 @@ export class CodeQLCliServer implements Disposable {
     const subcommandArgs = [
       '--format=text',
       `--end-summary=${endSummaryPath}`,
-      `--sourcemap`,
+      '--sourcemap',
       inputPath,
       outputPath
     ];
