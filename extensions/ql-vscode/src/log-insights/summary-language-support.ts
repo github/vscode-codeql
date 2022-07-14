@@ -3,6 +3,7 @@ import { RawSourceMap, SourceMapConsumer } from 'source-map';
 import { commands, Position, Selection, TextDocument, TextEditor, TextEditorRevealType, TextEditorSelectionChangeEvent, ViewColumn, window, workspace } from 'vscode';
 import { DisposableObject } from '../pure/disposable-object';
 import { commandRunner } from '../commandRunner';
+import { logger } from '../logging';
 
 /** A `Position` within a specified file on disk. */
 interface PositionInFile {
@@ -79,8 +80,13 @@ export class SummaryLanguageSupport extends DisposableObject {
         const sourceMapText = await fs.readFile(mapPath, 'utf-8');
         const rawMap: RawSourceMap = JSON.parse(sourceMapText);
         this.sourceMap = await new SourceMapConsumer(rawMap);
-      } catch {
-        // Error reading sourcemap. Pretend there was no sourcemap
+      } catch (e: unknown) {
+        // Error reading sourcemap. Pretend there was no sourcemap.
+        if (e instanceof Error) {
+          void logger.log(`Error reading sourcemap file '${mapPath}': ${e.message}`);
+        } else {
+          void logger.log(`Error reading sourcemap file '${mapPath}'`);
+        }
         this.sourceMap = undefined;
       }
       this.lastDocument = document;
