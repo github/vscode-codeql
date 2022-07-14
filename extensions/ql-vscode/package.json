@@ -35,6 +35,7 @@
   },
   "activationEvents": [
     "onLanguage:ql",
+    "onLanguage:ql-summary",
     "onView:codeQLDatabases",
     "onView:codeQLQueryHistory",
     "onView:codeQLAstViewer",
@@ -617,7 +618,7 @@
       },
       {
         "command": "codeQL.gotoQL",
-        "title": "Go to QL Code",
+        "title": "CodeQL: Go to QL Code",
         "enablement": "codeql.hasQLSource"
       }
     ],
