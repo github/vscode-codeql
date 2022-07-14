@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import { RawSourceMap, SourceMapConsumer } from 'source-map';
 import { commands, Position, Selection, TextDocument, TextEditor, TextEditorRevealType, TextEditorSelectionChangeEvent, ViewColumn, window, workspace } from 'vscode';
 import { DisposableObject } from '../pure/disposable-object';
@@ -76,7 +76,7 @@ export class SummaryLanguageSupport extends DisposableObject {
       const mapPath = document.uri.fsPath + '.map';
 
       try {
-        const sourceMapText = await fs.promises.readFile(mapPath, 'utf-8');
+        const sourceMapText = await fs.readFile(mapPath, 'utf-8');
         const rawMap: RawSourceMap = JSON.parse(sourceMapText);
         this.sourceMap = await new SourceMapConsumer(rawMap);
       } catch {
