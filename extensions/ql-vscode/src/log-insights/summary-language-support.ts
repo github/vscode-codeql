@@ -119,8 +119,7 @@ export class SummaryLanguageSupport extends DisposableObject {
   private async updateContext(): Promise<void> {
     const position = await this.getQLSourceLocation();
 
-    const result = await commands.executeCommand('setContext', 'codeql.hasQLSource', position !== undefined);
-    void result;
+    await commands.executeCommand('setContext', 'codeql.hasQLSource', position !== undefined);
   }
 
   handleDidChangeActiveTextEditor = async (editor: TextEditor | undefined): Promise<void> => {
