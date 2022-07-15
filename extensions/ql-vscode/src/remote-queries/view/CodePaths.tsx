@@ -1,8 +1,8 @@
-import { TriangleDownIcon, XCircleIcon } from '@primer/octicons-react';
-import { ActionList, ActionMenu, Button, Overlay } from '@primer/react';
-import { VSCodeLink, VSCodeTag } from '@vscode/webview-ui-toolkit/react';
+import { XCircleIcon } from '@primer/octicons-react';
+import { Overlay } from '@primer/react';
+import { VSCodeDropdown, VSCodeLink, VSCodeOption, VSCodeTag } from '@vscode/webview-ui-toolkit/react';
 import * as React from 'react';
-import { useRef, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { CodeFlow, AnalysisMessage, ResultSeverity } from '../shared/analysis-result';
 import FileCodeSnippet from './FileCodeSnippet';
@@ -94,25 +94,22 @@ const Menu = ({
   codeFlows: CodeFlow[],
   setSelectedCodeFlow: (value: React.SetStateAction<CodeFlow>) => void
 }) => {
-  return <ActionMenu>
-    <ActionMenu.Anchor>
-      <Button variant="invisible" sx={{ fontWeight: 'normal', color: 'var(--vscode-editor-foreground);', padding: 0 }} >
-        {getCodeFlowName(codeFlows[0])}
-        <TriangleDownIcon size={16} />
-      </Button>
-    </ActionMenu.Anchor>
-    <ActionMenu.Overlay sx={{ backgroundColor: 'var(--vscode-editor-background)' }}>
-      <ActionList>
-        {codeFlows.map((codeFlow, index) =>
-          <ActionList.Item
-            key={`codeflow-${index}'`}
-            onSelect={(e: React.MouseEvent) => { setSelectedCodeFlow(codeFlow); }}>
-            {getCodeFlowName(codeFlow)}
-          </ActionList.Item>
-        )}
-      </ActionList>
-    </ActionMenu.Overlay>
-  </ActionMenu>;
+  return <VSCodeDropdown
+    onChange={(event: ChangeEvent<HTMLSelectElement>) => {
+      const selectedOption = event.target;
+      const selectedIndex = selectedOption.value as unknown as number;
+      setSelectedCodeFlow(codeFlows[selectedIndex]);
+    }}
+  >
+    {codeFlows.map((codeFlow, index) =>
+      <VSCodeOption
+        key={`codeflow-${index}'`}
+        value={index}
+      >
+        {getCodeFlowName(codeFlow)}
+      </VSCodeOption>
+    )}
+  </VSCodeDropdown>;
 };
 
 const CodePaths = ({
