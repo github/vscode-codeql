@@ -2,7 +2,7 @@ import { XCircleIcon } from '@primer/octicons-react';
 import { Overlay } from '@primer/react';
 import { VSCodeDropdown, VSCodeLink, VSCodeOption, VSCodeTag } from '@vscode/webview-ui-toolkit/react';
 import * as React from 'react';
-import { useRef, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { CodeFlow, AnalysisMessage, ResultSeverity } from '../shared/analysis-result';
 import FileCodeSnippet from './FileCodeSnippet';
@@ -95,9 +95,9 @@ const Menu = ({
   setSelectedCodeFlow: (value: React.SetStateAction<CodeFlow>) => void
 }) => {
   return <VSCodeDropdown
-    onChange={(event: any) => {
+    onChange={(event: ChangeEvent<HTMLSelectElement>) => {
       const selectedOption = event.target;
-      const selectedIndex = selectedOption.value;
+      const selectedIndex = selectedOption.value as unknown as number;
       setSelectedCodeFlow(codeFlows[selectedIndex]);
     }}
   >
