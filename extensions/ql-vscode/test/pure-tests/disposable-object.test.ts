@@ -1,11 +1,12 @@
 import { DisposableObject } from '../../src/pure/disposable-object';
 
+
 describe('DisposableObject and DisposeHandler', () => {
 
-  let disposable1: { dispose: jest.fn() };
-  let disposable2: { dispose: jest.fn() };
-  let disposable3: { dispose: jest.fn() };
-  let disposable4: { dispose: jest.fn() };
+  let disposable1: { dispose: jest.MockedFunction };
+  let disposable2: { dispose: jest.MockedFunction };
+  let disposable3: { dispose: jest.MockedFunction };
+  let disposable4: { dispose: jest.MockedFunction };
   let disposableObject: any;
   let nestedDisposableObject: any;
 

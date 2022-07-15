@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as sinon from 'sinon';
 import * as tmp from 'tmp';
 import { window, ViewColumn, Uri } from 'vscode';
 import {
