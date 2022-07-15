@@ -11,7 +11,7 @@ import { createGist } from './gh-actions-api-client';
 import { RemoteQueriesManager } from './remote-queries-manager';
 import { generateMarkdown } from './remote-queries-markdown-generation';
 import { RemoteQuery } from './remote-query';
-import { AnalysisResults } from './shared/analysis-result';
+import { AnalysisResults, sumAnalysesResults } from './shared/analysis-result';
 
 /**
  * Exports the results of the currently-selected remote query.
