@@ -4,6 +4,7 @@ import { commands, Position, Selection, TextDocument, TextEditor, TextEditorReve
 import { DisposableObject } from '../pure/disposable-object';
 import { commandRunner } from '../commandRunner';
 import { logger } from '../logging';
+import { getErrorMessage } from '../pure/helpers-pure';
 
 /** A `Position` within a specified file on disk. */
 interface PositionInFile {
@@ -82,11 +83,7 @@ export class SummaryLanguageSupport extends DisposableObject {
         this.sourceMap = await new SourceMapConsumer(rawMap);
       } catch (e: unknown) {
         // Error reading sourcemap. Pretend there was no sourcemap.
-        if (e instanceof Error) {
-          void logger.log(`Error reading sourcemap file '${mapPath}': ${e.message}`);
-        } else {
-          void logger.log(`Error reading sourcemap file '${mapPath}'`);
-        }
+        void logger.log(`Error reading sourcemap file '${mapPath}': ${getErrorMessage(e)}`);
         this.sourceMap = undefined;
       }
       this.lastDocument = document;
