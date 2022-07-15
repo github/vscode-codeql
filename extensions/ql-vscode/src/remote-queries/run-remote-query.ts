@@ -258,18 +258,19 @@ export async function runRemoteQuery(
     });
 
     const actionBranch = getActionBranch();
-    const apiResponses = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, owner, repo, base64Pack, dryRun);
+    const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, owner, repo, base64Pack, dryRun);
     const queryStartTime = Date.now();
     const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
 
     if (dryRun) {
       return { queryDirPath: remoteQueryDir.path };
     } else {
-      if (!apiResponses) {
+      if (!apiResponse) {
         return;
       }
 
-      const { workflowRunId, numRepositoriesQueried } = apiResponses;
+      const workflowRunId = apiResponse.workflow_run_id;
+      const numRepositoriesQueried = apiResponse.repositories_queried.length;
       const remoteQuery = await buildRemoteQueryEntity(
         queryFile,
         queryMetadata,
@@ -303,7 +304,7 @@ async function runRemoteQueriesApiRequest(
   repo: string,
   queryPackBase64: string,
   dryRun = false
-): Promise<void | { workflowRunId: number, numRepositoriesQueried: number }> {
+): Promise<void | QueriesResponse> {
   const data = {
     ref,
     language,
@@ -338,10 +339,7 @@ async function runRemoteQueriesApiRequest(
     );
     const { popupMessage, logMessage } = parseResponse(owner, repo, response.data);
     void showAndLogInformationMessage(popupMessage, { fullMessage: logMessage });
-    return {
-      workflowRunId: response.data.workflow_run_id,
-      numRepositoriesQueried: response.data.repositories_queried.length
-    };
+    return response.data;
   } catch (error: any) {
     if (error.status === 404) {
       void showAndLogErrorMessage(`Controller repository was not found. Please make sure it's a valid repo name.${eol}`);
