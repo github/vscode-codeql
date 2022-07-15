@@ -258,17 +258,19 @@ export async function runRemoteQuery(
     });
 
     const actionBranch = getActionBranch();
-    const workflowRunId = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, owner, repo, base64Pack, dryRun);
+    const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, owner, repo, base64Pack, dryRun);
     const queryStartTime = Date.now();
     const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
 
     if (dryRun) {
       return { queryDirPath: remoteQueryDir.path };
     } else {
-      if (!workflowRunId) {
+      if (!apiResponse) {
         return;
       }
 
+      const workflowRunId = apiResponse.workflow_run_id;
+      const numRepositoriesQueried = apiResponse.repositories_queried.length;
       const remoteQuery = await buildRemoteQueryEntity(
         queryFile,
         queryMetadata,
@@ -276,7 +278,8 @@ export async function runRemoteQuery(
         repo,
         queryStartTime,
         workflowRunId,
-        language);
+        language,
+        numRepositoriesQueried);
 
       // don't return the path because it has been deleted
       return { query: remoteQuery };
@@ -301,7 +304,7 @@ async function runRemoteQueriesApiRequest(
   repo: string,
   queryPackBase64: string,
   dryRun = false
-): Promise<void | number> {
+): Promise<void | QueriesResponse> {
   const data = {
     ref,
     language,
@@ -336,7 +339,7 @@ async function runRemoteQueriesApiRequest(
     );
     const { popupMessage, logMessage } = parseResponse(owner, repo, response.data);
     void showAndLogInformationMessage(popupMessage, { fullMessage: logMessage });
-    return response.data.workflow_run_id;
+    return response.data;
   } catch (error: any) {
     if (error.status === 404) {
       void showAndLogErrorMessage(`Controller repository was not found. Please make sure it's a valid repo name.${eol}`);
@@ -432,7 +435,8 @@ async function buildRemoteQueryEntity(
   controllerRepoName: string,
   queryStartTime: number,
   workflowRunId: number,
-  language: string
+  language: string,
+  numRepositoriesQueried: number
 ): Promise<RemoteQuery> {
   // The query name is either the name as specified in the query metadata, or the file name.
   const queryName = queryMetadata?.name ?? path.basename(queryFilePath);
@@ -449,6 +453,7 @@ async function buildRemoteQueryEntity(
       name: controllerRepoName,
     },
     executionStartTime: queryStartTime,
-    actionsWorkflowRunId: workflowRunId
+    actionsWorkflowRunId: workflowRunId,
+    numRepositoriesQueried: numRepositoriesQueried,
   };
 }

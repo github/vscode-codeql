@@ -65,12 +65,14 @@ export class HistoryItemLabelProvider {
   }
 
   private getRemoteInterpolateReplacements(item: RemoteQueryHistoryItem): InterpolateReplacements {
+    const numRepositoriesQueried = item.remoteQuery.numRepositoriesQueried;
+    const numRepositoriesLabel = `${numRepositoriesQueried} ${numRepositoriesQueried === 1 ? 'repository' : 'repositories'}`;
     return {
       t: new Date(item.remoteQuery.executionStartTime).toLocaleString(env.language),
-      q: item.remoteQuery.queryName,
+      q: `${item.remoteQuery.queryName} (${item.remoteQuery.language})`,
 
-      // There is no database name for remote queries. Instead use the controller repository name.
-      d: `${item.remoteQuery.controllerRepository.owner}/${item.remoteQuery.controllerRepository.name}`,
+      // Return the number of repositories queried if available. Otherwise, use the controller repository name.
+      d: numRepositoriesQueried ? numRepositoriesLabel : `${item.remoteQuery.controllerRepository.owner}/${item.remoteQuery.controllerRepository.name}`,
 
       // There is no synchronous way to get the results count.
       r: '',

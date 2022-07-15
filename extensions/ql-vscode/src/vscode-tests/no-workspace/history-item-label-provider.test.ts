@@ -89,23 +89,30 @@ describe('HistoryItemLabelProvider', () => {
       expect(labelProvider.getLabel(fqi)).to.eq('xxx');
 
       fqi.userSpecifiedLabel = '%t %q %d %s %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name github/vscode-codeql-integration-tests in progress %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress %`);
 
       fqi.userSpecifiedLabel = '%t %q %d %s %%::%t %q %d %s %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name github/vscode-codeql-integration-tests in progress %::${dateStr} query-name github/vscode-codeql-integration-tests in progress %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress %::${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress %`);
     });
 
     it('should interpolate query when not user specified', () => {
       const fqi = createMockRemoteQueryInfo();
 
-      expect(labelProvider.getLabel(fqi)).to.eq('xxx query-name xxx');
+      expect(labelProvider.getLabel(fqi)).to.eq('xxx query-name (javascript) xxx');
 
 
       config.format = '%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name github/vscode-codeql-integration-tests in progress query-file.ql  %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql  %`);
 
       config.format = '%t %q %d %s %f %r %%::%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name github/vscode-codeql-integration-tests in progress query-file.ql  %::${dateStr} query-name github/vscode-codeql-integration-tests in progress query-file.ql  %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql  %::${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql  %`);
+    });
+
+    it('should use number of repositories instead of controller repo if available', () => {
+      const fqi = createMockRemoteQueryInfo(undefined, 2);
+
+      config.format = '%t %q %d %s %f %r %%';
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql  %`);
     });
 
     it('should get query short label', () => {
@@ -119,7 +126,7 @@ describe('HistoryItemLabelProvider', () => {
       expect(labelProvider.getShortLabel(fqi)).to.eq('query-name');
     });
 
-    function createMockRemoteQueryInfo(userSpecifiedLabel?: string) {
+    function createMockRemoteQueryInfo(userSpecifiedLabel?: string, numRepositoriesQueried?: number) {
       return {
         t: 'remote',
         userSpecifiedLabel,
@@ -130,7 +137,9 @@ describe('HistoryItemLabelProvider', () => {
           controllerRepository: {
             owner: 'github',
             name: 'vscode-codeql-integration-tests'
-          }
+          },
+          language: 'javascript',
+          numRepositoriesQueried,
         },
         status: 'in progress',
       } as unknown as RemoteQueryHistoryItem;
