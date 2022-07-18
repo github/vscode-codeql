@@ -102,17 +102,17 @@ describe('HistoryItemLabelProvider', () => {
 
 
       config.format = '%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql  %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql (16 results) %`);
 
       config.format = '%t %q %d %s %f %r %%::%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql  %::${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql  %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql (16 results) %::${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql (16 results) %`);
     });
 
     it('should use number of repositories instead of controller repo if available', () => {
       const fqi = createMockRemoteQueryInfo(undefined, 2);
 
       config.format = '%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql  %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql (16 results) %`);
     });
 
     it('should get query short label', () => {
@@ -142,6 +142,7 @@ describe('HistoryItemLabelProvider', () => {
           numRepositoriesQueried,
         },
         status: 'in progress',
+        resultCount: 16,
       } as unknown as RemoteQueryHistoryItem;
     }
   });

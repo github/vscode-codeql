@@ -74,8 +74,7 @@ export class HistoryItemLabelProvider {
       // Return the number of repositories queried if available. Otherwise, use the controller repository name.
       d: numRepositoriesQueried ? numRepositoriesLabel : `${item.remoteQuery.controllerRepository.owner}/${item.remoteQuery.controllerRepository.name}`,
 
-      // There is no synchronous way to get the results count.
-      r: '',
+      r: item.resultCount === undefined ? '' : `(${item.resultCount} results)`,
       s: item.status,
       f: path.basename(item.remoteQuery.queryFilePath),
       '%': '%'

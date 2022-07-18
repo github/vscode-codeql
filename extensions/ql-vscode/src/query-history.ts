@@ -574,6 +574,7 @@ export class QueryHistoryManager extends DisposableObject {
         const remoteQueryHistoryItem = item as RemoteQueryHistoryItem;
         remoteQueryHistoryItem.status = event.status;
         remoteQueryHistoryItem.failureReason = event.failureReason;
+        remoteQueryHistoryItem.resultCount = event.resultCount;
         if (event.status === QueryStatus.Completed) {
           remoteQueryHistoryItem.completed = true;
         }

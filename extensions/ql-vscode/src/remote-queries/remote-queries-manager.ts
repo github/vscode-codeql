@@ -42,6 +42,7 @@ export interface UpdatedQueryStatusEvent {
   status: QueryStatus;
   failureReason?: string;
   numRepositoriesQueried?: number;
+  resultCount?: number;
 }
 
 export class RemoteQueriesManager extends DisposableObject {
@@ -317,10 +318,12 @@ export class RemoteQueriesManager extends DisposableObject {
     if (resultIndex) {
       const metadata = await this.getRepositoriesMetadata(resultIndex, credentials);
       const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryId, metadata);
+      const resultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
       this.remoteQueryStatusUpdateEventEmitter.fire({
         queryId,
         status: QueryStatus.Completed,
         numRepositoriesQueried: queryResult.analysisSummaries.length,
+        resultCount
       });
 
       await this.storeJsonFile(queryId, 'query-result.json', queryResult);
