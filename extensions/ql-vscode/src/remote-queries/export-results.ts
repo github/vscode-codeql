@@ -74,7 +74,7 @@ async function determineExportFormat(
 /**
  * Converts the results of a remote query to markdown and uploads the files as a secret gist.
  */
-async function exportResultsToGist(
+export async function exportResultsToGist(
   ctx: ExtensionContext,
   query: RemoteQuery,
   analysesResults: AnalysisResults[]
