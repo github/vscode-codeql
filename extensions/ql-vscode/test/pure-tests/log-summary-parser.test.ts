@@ -7,7 +7,7 @@ import { parseVisualizerData } from '../../src/pure/log-summary-parser';
 
 describe('Evaluator log summary tests', async function () {
   describe('for a valid summary text', async function () {
-    it('should return only valid EvaluatorLogData objects', async function () {
+    it('should return only valid EvalLogData objects', async function () {
       const validSummaryText = await fs.readFile(path.join(__dirname, 'evaluator-log-summaries/valid-summary.jsonl'), 'utf8');
       const logDataItems = parseVisualizerData(validSummaryText.toString());
       expect(logDataItems).to.not.be.undefined;
