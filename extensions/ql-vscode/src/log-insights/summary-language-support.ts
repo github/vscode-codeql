@@ -46,6 +46,7 @@ export class SummaryLanguageSupport extends DisposableObject {
 
     this.push(window.onDidChangeActiveTextEditor(this.handleDidChangeActiveTextEditor));
     this.push(window.onDidChangeTextEditorSelection(this.handleDidChangeTextEditorSelection));
+    this.push(workspace.onDidCloseTextDocument(this.handleDidCloseTextDocument));
 
     this.push(commandRunner('codeQL.gotoQL', this.handleGotoQL));
   }
@@ -70,10 +71,7 @@ export class SummaryLanguageSupport extends DisposableObject {
     }
 
     if (this.lastDocument !== document) {
-      if (this.sourceMap !== undefined) {
-        this.sourceMap.destroy();
-        this.sourceMap = undefined;
-      }
+      this.clearCache();
 
       const mapPath = document.uri.fsPath + '.map';
 
@@ -113,24 +111,38 @@ export class SummaryLanguageSupport extends DisposableObject {
   }
 
   /**
+   * Clears the cached sourcemap and its corresponding `TextDocument`.
+   */
+  private clearCache(): void {
+    if (this.sourceMap !== undefined) {
+      this.sourceMap.destroy();
+      this.sourceMap = undefined;
+      this.lastDocument = undefined;
+    }
+  }
+
+  /**
    * Updates the `codeql.hasQLSource` context variable based on the current selection. This variable
    * controls whether or not the `codeQL.gotoQL` command is enabled.
    */
   private async updateContext(): Promise<void> {
     const position = await this.getQLSourceLocation();
 
-    const result = await commands.executeCommand('setContext', 'codeql.hasQLSource', position !== undefined);
-    void result;
+    await commands.executeCommand('setContext', 'codeql.hasQLSource', position !== undefined);
   }
 
-  handleDidChangeActiveTextEditor = async (editor: TextEditor | undefined): Promise<void> => {
-    void editor;
+  handleDidChangeActiveTextEditor = async (_editor: TextEditor | undefined): Promise<void> => {
     await this.updateContext();
   }
 
-  handleDidChangeTextEditorSelection = async (e: TextEditorSelectionChangeEvent): Promise<void> => {
-    void e;
+  handleDidChangeTextEditorSelection = async (_e: TextEditorSelectionChangeEvent): Promise<void> => {
     await this.updateContext();
+  }
+
+  handleDidCloseTextDocument = (document: TextDocument): void => {
+    if (this.lastDocument === document) {
+      this.clearCache();
+    }
   }
 
   handleGotoQL = async (): Promise<void> => {
