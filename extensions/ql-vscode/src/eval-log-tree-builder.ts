@@ -1,5 +1,5 @@
-import { ChildEvalLogTreeItem, EvalLogTreeItem } from '../eval-log-visualizer';
-import { EvalLogData as EvalLogData } from '../pure/log-summary-parser';
+import { ChildEvalLogTreeItem, EvalLogTreeItem } from './eval-log-visualizer';
+import { EvalLogData as EvalLogData } from './pure/log-summary-parser';
 
 export default class EvalLogTreeBuilder {
     private evalLogDataItems: EvalLogData[];

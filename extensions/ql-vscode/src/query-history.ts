@@ -45,7 +45,7 @@ import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-it
 import { InterfaceManager } from './interface';
 import { WebviewReveal } from './interface-utils';
 import { EvalLogVisualizer } from './eval-log-visualizer';
-import EvalLogTreeBuilder from './contextual/evalLogTreeBuilder';
+import EvalLogTreeBuilder from './eval-log-tree-builder';
 
 /**
  * query-history.ts
