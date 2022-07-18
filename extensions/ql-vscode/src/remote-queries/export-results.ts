@@ -80,7 +80,7 @@ async function exportResultsToGist(
   analysesResults: AnalysisResults[]
 ): Promise<void> {
   const credentials = await Credentials.initialize(ctx);
-  const description = 'CodeQL Variant Analysis Results';
+  const description = buildGistDescription(query, analysesResults);
   const markdownFiles = generateMarkdown(query, analysesResults, 'gist');
   // Convert markdownFiles to the appropriate format for uploading to gist
   const gistFiles = markdownFiles.reduce((acc, cur) => {
@@ -99,6 +99,15 @@ async function exportResultsToGist(
     }
   }
 }
+
+/**
+ * Builds Gist description
+ * Ex: Empty Block (Go) x results (y repositories)
+ */
+const buildGistDescription = (query: RemoteQuery, analysesResults: AnalysisResults[]) => {
+  const resultCount = sumAnalysesResults(analysesResults);
+  return `${query.queryName} (${query.language}) ${resultCount} results (${query.numRepositoriesQueried} repositories)`;
+};
 
 /**
  * Converts the results of a remote query to markdown and saves the files locally
