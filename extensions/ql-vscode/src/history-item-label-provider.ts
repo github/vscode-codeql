@@ -57,7 +57,7 @@ export class HistoryItemLabelProvider {
       t: item.startTime,
       q: item.getQueryName(),
       d: item.initialInfo.databaseInfo.name,
-      r: `${resultCount} results`,
+      r: `(${resultCount} results)`,
       s: statusString,
       f: item.getQueryFileName(),
       '%': '%',
