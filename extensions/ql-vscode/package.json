@@ -38,6 +38,7 @@
     "onView:codeQLDatabases",
     "onView:codeQLQueryHistory",
     "onView:codeQLAstViewer",
+    "onView:codeQLEvalLogVisualizer",
     "onView:test-explorer",
     "onCommand:codeQL.checkForUpdatesToCLI",
     "onCommand:codeQL.authenticateToGitHub",
@@ -534,6 +535,10 @@
         "title": "Show Evaluator Log (Summary)"
       },
       {
+        "command": "codeQLQueryHistory.showEvalLogVisualizer",
+        "title": "Show Evaluator Log (Visualizer)"
+      },
+      {
         "command": "codeQLQueryHistory.cancel",
         "title": "Cancel"
       },
@@ -604,6 +609,14 @@
       {
         "command": "codeQLAstViewer.clear",
         "title": "Clear AST",
+        "icon": {
+          "light": "media/light/clear-all.svg",
+          "dark": "media/dark/clear-all.svg"
+        }
+      },
+      {
+        "command": "codeQLEvalLogVisualizer.clear",
+        "title": "Clear Visualizer",
         "icon": {
           "light": "media/light/clear-all.svg",
           "dark": "media/dark/clear-all.svg"
@@ -681,6 +694,11 @@
           "command": "codeQLAstViewer.clear",
           "when": "view == codeQLAstViewer",
           "group": "navigation"
+        },
+        {
+          "command": "codeQLEvalLogVisualizer.clear",
+          "when": "view == codeQLEvalLogVisualizer",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -753,6 +771,11 @@
           "command": "codeQLQueryHistory.showEvalLogSummary",
           "group": "9_qlCommands",
           "when": "codeql.supportsEvalLog && viewItem == rawResultsItem || codeql.supportsEvalLog && viewItem == interpretedResultsItem || codeql.supportsEvalLog && viewItem == cancelledResultsItem"
+        },
+        {
+          "command": "codeQLQueryHistory.showEvalLogVisualizer",
+          "group": "9_qlCommands",
+          "when": "config.codeQL.canary && codeql.supportsEvalLog && viewItem == rawResultsItem || config.codeQL.canary && codeql.supportsEvalLog && viewItem == interpretedResultsItem || config.codeQL.canary && codeql.supportsEvalLog && viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLQueryHistory.showQueryText",
@@ -976,6 +999,10 @@
           "when": "false"
         },
         {
+          "command": "codeQLQueryHistory.showEvalLogVisualizer",
+          "when": "false"
+        },
+        {
           "command": "codeQLQueryHistory.openQueryDirectory",
           "when": "false"
         },
@@ -1044,6 +1071,10 @@
           "when": "false"
         },
         {
+          "command": "codeQLEvalLogVisualizer.clear",
+          "when": "false"
+        },
+        {
           "command": "codeQLTests.acceptOutput",
           "when": "false"
         },
@@ -1109,6 +1140,11 @@
         {
           "id": "codeQLAstViewer",
           "name": "AST Viewer"
+        },
+        {
+          "id": "codeQLEvalLogVisualizer",
+          "name": "Evaluator Log Visualizer",
+          "visibility": "collapsed"
         }
       ]
     },
@@ -1124,6 +1160,10 @@
       {
         "view": "codeQLDatabases",
         "contents": "Add a CodeQL database:\n[From a folder](command:codeQLDatabases.chooseDatabaseFolder)\n[From an archive](command:codeQLDatabases.chooseDatabaseArchive)\n[From a URL (as a zip file)](command:codeQLDatabases.chooseDatabaseInternet)\n[From LGTM](command:codeQLDatabases.chooseDatabaseLgtm)"
+      },
+      {
+        "view": "codeQLEvalLogVisualizer",
+        "contents": "Run the 'Show Evaluator Log (Visualizer)' command on a QL run in the Query History view.\n[Show Evaluator Log Visualizer](command:codeQLQueryHistory.showEvalLogVisualizer)"
       }
     ]
   },

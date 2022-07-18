@@ -205,7 +205,7 @@ export class QueryEvaluationInfo {
         if (await this.hasEvalLog()) {
           this.displayHumanReadableLogSummary(queryInfo, qs);
           if (config.isCanary()) {
-            this.parseJsonLogSummary(qs.cliServer);
+            this.parseJsonLogSummary(queryInfo, qs.cliServer);
           }
         } else {
           void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);
@@ -357,15 +357,15 @@ export class QueryEvaluationInfo {
    * Calls the appropriate CLI command to generate a JSON log summary and parse it 
    * into the appropriate data model for the log visualizer. 
    */
-  parseJsonLogSummary(cliServer: cli.CodeQLCliServer): void {
+  parseJsonLogSummary(queryInfo: LocalQueryInfo, cliServer: cli.CodeQLCliServer): void {
     void cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath)
-      .then(() => {         
+      .then(() => {
         // TODO(angelapwen): Stream the file in. 
         fs.readFile(this.jsonEvalLogSummaryPath, (err, buffer) => {
           if (err) {
             throw new Error(`Could not read structured evaluator log summary JSON file at ${this.jsonEvalLogSummaryPath}.`);
           }
-          parseVisualizerData(buffer.toString()); // Eventually this return value will feed into the tree visualizer.
+          queryInfo.evalLogVisualizerData = parseVisualizerData(buffer.toString());
         });
       })
       .catch(err => {

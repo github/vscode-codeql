@@ -44,6 +44,8 @@ import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { InterfaceManager } from './interface';
 import { WebviewReveal } from './interface-utils';
+import { EvalLogVisualizer } from './eval-log-visualizer';
+import EvalLogTreeBuilder from './contextual/evalLogTreeBuilder';
 
 /**
  * query-history.ts
@@ -431,6 +433,12 @@ export class QueryHistoryManager extends DisposableObject {
       commandRunner(
         'codeQLQueryHistory.showEvalLogSummary',
         this.handleShowEvalLogSummary.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.showEvalLogVisualizer',
+        this.handleShowEvalLogVisualizer.bind(this)
       )
     );
     this.push(
@@ -899,6 +907,42 @@ export class QueryHistoryManager extends DisposableObject {
       await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
     }
     // Summary log file doesn't exist.
+    else {
+      if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
+        // If raw log does exist, then the summary log is still being generated.
+        this.warnInProgressEvalLogSummary();
+      } else {
+        this.warnNoEvalLogSummary();
+      }
+    }
+  }
+
+  async handleShowEvalLogVisualizer(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[]
+  ) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+    // Only applicable to an individual local query
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'local') {
+      return;
+    }
+
+    // If visualizer data in memory does exist, then build tree and display
+    if (finalSingleItem.evalLogVisualizerData) {
+      const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.evalLogVisualizerData);
+      const evalLogVisualizer = new EvalLogVisualizer();
+
+      // REVIEW: Is this necessary? 
+      this.ctx.subscriptions.push(evalLogVisualizer);
+
+      // REVIEW: The evaluator log location should always be present if visualizer data is present. 
+      // Adding this condition to compile because the location may be undefined. 
+      if (evalLogTreeBuilder && finalSingleItem.evalLogLocation) {
+        evalLogVisualizer.updateRoots(await evalLogTreeBuilder.getRoots(), finalSingleItem.evalLogLocation);
+      }
+
+      return;
+    }
     else {
       if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
         // If raw log does exist, then the summary log is still being generated.
