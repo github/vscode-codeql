@@ -3,6 +3,7 @@ import * as path from 'path';
 import { QueryHistoryConfig } from './config';
 import { LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
+import { pluralize } from './helpers';
 
 interface InterpolateReplacements {
   t: string; // Start time
@@ -64,17 +65,23 @@ export class HistoryItemLabelProvider {
     };
   }
 
-  private getRemoteInterpolateReplacements(item: RemoteQueryHistoryItem): InterpolateReplacements {
+  // Return the number of repositories queried if available. Otherwise, use the controller repository name.
+  private buildRepoLabel(item: RemoteQueryHistoryItem): string {
     const numRepositoriesQueried = item.remoteQuery.numRepositoriesQueried;
-    const numRepositoriesLabel = `${numRepositoriesQueried} ${numRepositoriesQueried === 1 ? 'repository' : 'repositories'}`;
+
+    if (numRepositoriesQueried) {
+      return pluralize(numRepositoriesQueried, 'repository', 'repositories');
+    }
+
+    return `${item.remoteQuery.controllerRepository.owner}/${item.remoteQuery.controllerRepository.name}`;
+  }
+
+  private getRemoteInterpolateReplacements(item: RemoteQueryHistoryItem): InterpolateReplacements {
     return {
       t: new Date(item.remoteQuery.executionStartTime).toLocaleString(env.language),
       q: `${item.remoteQuery.queryName} (${item.remoteQuery.language})`,
-
-      // Return the number of repositories queried if available. Otherwise, use the controller repository name.
-      d: numRepositoriesQueried ? numRepositoriesLabel : `${item.remoteQuery.controllerRepository.owner}/${item.remoteQuery.controllerRepository.name}`,
-
-      r: item.resultCount === undefined ? '' : `(${item.resultCount} results)`,
+      d: this.buildRepoLabel(item),
+      r: `(${pluralize(item.resultCount, 'result', 'results')})`,
       s: item.status,
       f: path.basename(item.remoteQuery.queryFilePath),
       '%': '%'
