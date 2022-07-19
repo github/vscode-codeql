@@ -863,16 +863,16 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  private warnNoEvalLog() {
-    void showAndLogWarningMessage(`No evaluator log is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
-  }
-
-  private warnNoEvalLogSummary() {
-    void showAndLogWarningMessage(`Evaluator log summary and evaluator log are not available for this run. Perhaps they failed before evaluation, or you are running with a version of CodeQL before ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
+  private warnNoEvalLogs() {
+    void showAndLogWarningMessage(`Evaluator log, summary, and visualizer are not available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
   }
 
   private warnInProgressEvalLogSummary() {
-    void showAndLogWarningMessage('The evaluator log summary is still being generated. Please try again later. The summary generation process is tracked in the "CodeQL Extension Log" view.');
+    void showAndLogWarningMessage('The evaluator log summary is still being generated for this run. Please try again later. The summary generation process is tracked in the "CodeQL Extension Log" view.');
+  }
+
+  private warnInProgressEvalLogVisualizer() {
+    void showAndLogWarningMessage('The visualizer\'s data is still being generated for this run. Please try again later.');
   }
 
   async handleShowEvalLog(
@@ -889,7 +889,7 @@ export class QueryHistoryManager extends DisposableObject {
     if (finalSingleItem.evalLogLocation) {
       await this.tryOpenExternalFile(finalSingleItem.evalLogLocation);
     } else {
-      this.warnNoEvalLog();
+      this.warnNoEvalLogs();
     }
   }
 
@@ -913,7 +913,7 @@ export class QueryHistoryManager extends DisposableObject {
         // If raw log does exist, then the summary log is still being generated.
         this.warnInProgressEvalLogSummary();
       } else {
-        this.warnNoEvalLogSummary();
+        this.warnNoEvalLogs();
       }
     }
   }
@@ -932,7 +932,7 @@ export class QueryHistoryManager extends DisposableObject {
     if (finalSingleItem.evalLogVisualizerData) {
       const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.evalLogVisualizerData);
 
-      // REVIEW: The evaluator log location should always be present if visualizer data is present. 
+      // The evaluator log location should always be present if visualizer data is present. 
       // Adding this condition to compile because the location may be undefined. 
       if (evalLogTreeBuilder && finalSingleItem.evalLogLocation) {
         this.evalLogVisualizer.updateRoots(await evalLogTreeBuilder.getRoots(), finalSingleItem.evalLogLocation);
@@ -940,10 +940,10 @@ export class QueryHistoryManager extends DisposableObject {
     }
     else {
       if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
-        // If raw log does exist, then the summary log is still being generated.
-        this.warnInProgressEvalLogSummary();
+        // If raw log does exist, then the data from JSON summary is still being parsed into memory.
+        this.warnInProgressEvalLogVisualizer();
       } else {
-        this.warnNoEvalLogSummary();
+        this.warnNoEvalLogs();
       }
     }
   }
