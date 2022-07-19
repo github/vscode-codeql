@@ -1163,7 +1163,7 @@
       },
       {
         "view": "codeQLEvalLogVisualizer",
-        "contents": "Run the 'Show Evaluator Log (Visualizer)' command on a QL run in the Query History view.\n[Show Evaluator Log Visualizer](command:codeQLQueryHistory.showEvalLogVisualizer)"
+        "contents": "Run the 'Show Evaluator Log (Visualizer)' command on a QL run in the Query History view."
       }
     ]
   },
