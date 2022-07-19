@@ -448,6 +448,6 @@ async function buildRemoteQueryEntity(
     },
     executionStartTime: queryStartTime,
     actionsWorkflowRunId: workflowRunId,
-    repositoryCount: repositoryCount,
+    repositoryCount,
   };
 }
