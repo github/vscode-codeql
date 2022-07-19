@@ -7,12 +7,8 @@ export interface EvalLogData {
     predicateName: string;
     millis: number;
     resultSize: number;
-    ra: Pipelines;
-}
-  
-interface Pipelines {
     // Key: pipeline identifier; Value: array of pipeline steps 
-    pipelineNamesToSteps: Map<string, string[]>;
+    ra: Map<string, string[]>;
 }
   
 /**

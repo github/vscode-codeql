@@ -63,8 +63,6 @@ export class EvalLogVisualizer extends DisposableObject {
 
         this.push(this.treeView);
         this.push(this.treeDataProvider);
-        // REVIEW: When I run the command to view visualizer for a new query run, I get an 
-        // error that this command already exists. How can I clear it out each time? 
         this.push(
             commandRunner('codeQLEvalLogVisualizer.clear', async () => {
               this.clear();
