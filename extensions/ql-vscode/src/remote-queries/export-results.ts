@@ -4,7 +4,10 @@ import * as fs from 'fs-extra';
 import { window, commands, Uri, ExtensionContext, QuickPickItem, workspace, ViewColumn } from 'vscode';
 import { Credentials } from '../authentication';
 import { UserCancellationException } from '../commandRunner';
-import { showInformationMessageWithAction } from '../helpers';
+import {
+  showInformationMessageWithAction,
+  pluralize
+} from '../helpers';
 import { logger } from '../logging';
 import { QueryHistoryManager } from '../query-history';
 import { createGist } from './gh-actions-api-client';
@@ -106,9 +109,9 @@ export async function exportResultsToGist(
  */
 const buildGistDescription = (query: RemoteQuery, analysesResults: AnalysisResults[]) => {
   const resultCount = sumAnalysesResults(analysesResults);
-  const repositoryLabel = `${query.numRepositoriesQueried} ${query.numRepositoriesQueried === 1 ? 'repository' : 'repositories'}`;
-  const repositoryCount = query.numRepositoriesQueried ? repositoryLabel : '';
-  return `${query.queryName} (${query.language}) ${resultCount} results (${repositoryCount})`;
+  const resultLabel = pluralize(resultCount, 'result', 'results');
+  const repositoryLabel = pluralize(query.repositoryCount, 'repository', 'repositories');
+  return `${query.queryName} (${query.language}) ${resultLabel} (${repositoryLabel})`;
 };
 
 /**

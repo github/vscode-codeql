@@ -27,10 +27,10 @@ describe('HistoryItemLabelProvider', () => {
       expect(labelProvider.getLabel(fqi)).to.eq('xxx');
 
       fqi.userSpecifiedLabel = '%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql 456 results %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql (456 results) %`);
 
       fqi.userSpecifiedLabel = '%t %q %d %s %f %r %%::%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql 456 results %::${dateStr} query-name db-name in progress query-file.ql 456 results %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql (456 results) %::${dateStr} query-name db-name in progress query-file.ql (456 results) %`);
     });
 
     it('should interpolate query when not user specified', () => {
@@ -40,10 +40,10 @@ describe('HistoryItemLabelProvider', () => {
 
 
       config.format = '%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql 456 results %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql (456 results) %`);
 
       config.format = '%t %q %d %s %f %r %%::%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql 456 results %::${dateStr} query-name db-name in progress query-file.ql 456 results %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name db-name in progress query-file.ql (456 results) %::${dateStr} query-name db-name in progress query-file.ql (456 results) %`);
     });
 
     it('should get query short label', () => {
@@ -102,17 +102,17 @@ describe('HistoryItemLabelProvider', () => {
 
 
       config.format = '%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql  %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql (16 results) %`);
 
       config.format = '%t %q %d %s %f %r %%::%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql  %::${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql  %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql (16 results) %::${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress query-file.ql (16 results) %`);
     });
 
     it('should use number of repositories instead of controller repo if available', () => {
       const fqi = createMockRemoteQueryInfo(undefined, 2);
 
       config.format = '%t %q %d %s %f %r %%';
-      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql  %`);
+      expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql (16 results) %`);
     });
 
     it('should get query short label', () => {
@@ -126,7 +126,7 @@ describe('HistoryItemLabelProvider', () => {
       expect(labelProvider.getShortLabel(fqi)).to.eq('query-name');
     });
 
-    function createMockRemoteQueryInfo(userSpecifiedLabel?: string, numRepositoriesQueried?: number) {
+    function createMockRemoteQueryInfo(userSpecifiedLabel?: string, repositoryCount?: number) {
       return {
         t: 'remote',
         userSpecifiedLabel,
@@ -139,9 +139,10 @@ describe('HistoryItemLabelProvider', () => {
             name: 'vscode-codeql-integration-tests'
           },
           language: 'javascript',
-          numRepositoriesQueried,
+          repositoryCount,
         },
         status: 'in progress',
+        resultCount: 16,
       } as unknown as RemoteQueryHistoryItem;
     }
   });

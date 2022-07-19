@@ -205,13 +205,12 @@ export class HistoryTreeDataProvider extends DisposableObject {
         ? h2.initialInfo.start.getTime()
         : h2.remoteQuery?.executionStartTime;
 
-      // result count for remote queries is not available here.
       const resultCount1 = h1.t === 'local'
         ? h1.completedQuery?.resultCount ?? -1
-        : -1;
+        : h1.resultCount ?? -1;
       const resultCount2 = h2.t === 'local'
         ? h2.completedQuery?.resultCount ?? -1
-        : -1;
+        : h2.resultCount ?? -1;
 
       switch (this.sortOrder) {
         case SortOrder.NameAsc:
@@ -574,6 +573,7 @@ export class QueryHistoryManager extends DisposableObject {
         const remoteQueryHistoryItem = item as RemoteQueryHistoryItem;
         remoteQueryHistoryItem.status = event.status;
         remoteQueryHistoryItem.failureReason = event.failureReason;
+        remoteQueryHistoryItem.resultCount = event.resultCount;
         if (event.status === QueryStatus.Completed) {
           remoteQueryHistoryItem.completed = true;
         }

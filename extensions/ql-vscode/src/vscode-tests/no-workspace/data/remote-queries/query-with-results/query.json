@@ -6,5 +6,5 @@
   "controllerRepository": { "owner": "dsp-testing", "name": "qc-controller" },
   "executionStartTime": 1649419081990,
   "actionsWorkflowRunId": 2115000864,
-  "numRepositoriesQueried": 10
+  "repositoryCount": 10
 }

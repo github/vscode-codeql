@@ -3,6 +3,7 @@ import * as path from 'path';
 import { QueryHistoryConfig } from './config';
 import { LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
+import { pluralize } from './helpers';
 
 interface InterpolateReplacements {
   t: string; // Start time
@@ -57,25 +58,30 @@ export class HistoryItemLabelProvider {
       t: item.startTime,
       q: item.getQueryName(),
       d: item.initialInfo.databaseInfo.name,
-      r: `${resultCount} results`,
+      r: `(${resultCount} results)`,
       s: statusString,
       f: item.getQueryFileName(),
       '%': '%',
     };
   }
 
+  // Return the number of repositories queried if available. Otherwise, use the controller repository name.
+  private buildRepoLabel(item: RemoteQueryHistoryItem): string {
+    const repositoryCount = item.remoteQuery.repositoryCount;
+
+    if (repositoryCount) {
+      return pluralize(repositoryCount, 'repository', 'repositories');
+    }
+
+    return `${item.remoteQuery.controllerRepository.owner}/${item.remoteQuery.controllerRepository.name}`;
+  }
+
   private getRemoteInterpolateReplacements(item: RemoteQueryHistoryItem): InterpolateReplacements {
-    const numRepositoriesQueried = item.remoteQuery.numRepositoriesQueried;
-    const numRepositoriesLabel = `${numRepositoriesQueried} ${numRepositoriesQueried === 1 ? 'repository' : 'repositories'}`;
     return {
       t: new Date(item.remoteQuery.executionStartTime).toLocaleString(env.language),
       q: `${item.remoteQuery.queryName} (${item.remoteQuery.language})`,
-
-      // Return the number of repositories queried if available. Otherwise, use the controller repository name.
-      d: numRepositoriesQueried ? numRepositoriesLabel : `${item.remoteQuery.controllerRepository.owner}/${item.remoteQuery.controllerRepository.name}`,
-
-      // There is no synchronous way to get the results count.
-      r: '',
+      d: this.buildRepoLabel(item),
+      r: `(${pluralize(item.resultCount, 'result', 'results')})`,
       s: item.status,
       f: path.basename(item.remoteQuery.queryFilePath),
       '%': '%'
