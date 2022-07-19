@@ -15,7 +15,7 @@ import { RemoteQuery } from './remote-query';
 import { RemoteQueriesMonitor } from './remote-queries-monitor';
 import { getRemoteQueryIndex, getRepositoriesMetadata, RepositoriesMetadata } from './gh-actions-api-client';
 import { RemoteQueryResultIndex } from './remote-query-result-index';
-import { RemoteQueryResult } from './remote-query-result';
+import { RemoteQueryResult, sumAnalysisSummariesResults } from './remote-query-result';
 import { DownloadLink } from './download-link';
 import { AnalysesResultsManager } from './analyses-results-manager';
 import { assertNever } from '../pure/helpers-pure';
@@ -250,7 +250,7 @@ export class RemoteQueriesManager extends DisposableObject {
   }
 
   private async askToOpenResults(query: RemoteQuery, queryResult: RemoteQueryResult): Promise<void> {
-    const totalResultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
+    const totalResultCount = sumAnalysisSummariesResults(queryResult.analysisSummaries);
     const totalRepoCount = queryResult.analysisSummaries.length;
     const message = `Query "${query.queryName}" run on ${totalRepoCount} repositories and returned ${totalResultCount} results`;
 
@@ -318,7 +318,7 @@ export class RemoteQueriesManager extends DisposableObject {
     if (resultIndex) {
       const metadata = await this.getRepositoriesMetadata(resultIndex, credentials);
       const queryResult = this.mapQueryResult(executionEndTime, resultIndex, queryId, metadata);
-      const resultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
+      const resultCount = sumAnalysisSummariesResults(queryResult.analysisSummaries);
       this.remoteQueryStatusUpdateEventEmitter.fire({
         queryId,
         status: QueryStatus.Completed,
