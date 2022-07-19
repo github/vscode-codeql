@@ -7,6 +7,7 @@ import { RemoteQuery } from './remote-query';
 export interface RemoteQueryHistoryItem {
   readonly t: 'remote';
   failureReason?: string;
+  resultCount?: number;
   status: QueryStatus;
   completed: boolean;
   readonly queryId: string,

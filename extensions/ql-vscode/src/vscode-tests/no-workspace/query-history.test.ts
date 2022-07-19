@@ -456,11 +456,11 @@ describe('query-history', () => {
 
   describe('getChildren', () => {
     const history = [
-      item('a', 2, 'remote'),
+      item('a', 2, 'remote', 24),
       item('b', 10, 'local', 20),
       item('c', 5, 'local', 30),
       item('d', 1, 'local', 25),
-      item('e', 6, 'remote'),
+      item('e', 6, 'remote', 5),
     ];
     let treeDataProvider: HistoryTreeDataProvider;
 
@@ -503,7 +503,7 @@ describe('query-history', () => {
     });
 
     it('should get children for result count ascending', async () => {
-      const expected = [history[0], history[4], history[1], history[3], history[2]];
+      const expected = [history[4], history[1], history[0], history[3], history[2]];
       treeDataProvider.sortOrder = SortOrder.CountAsc;
 
       const children = await treeDataProvider.getChildren();
@@ -511,7 +511,7 @@ describe('query-history', () => {
     });
 
     it('should get children for result count descending', async () => {
-      const expected = [history[0], history[4], history[1], history[3], history[2]].reverse();
+      const expected = [history[4], history[1], history[0], history[3], history[2]].reverse();
       treeDataProvider.sortOrder = SortOrder.CountDesc;
 
       const children = await treeDataProvider.getChildren();
@@ -573,6 +573,7 @@ describe('query-history', () => {
             },
             repositories: []
           },
+          resultCount,
           t
         };
       }
@@ -762,6 +763,9 @@ describe('query-history', () => {
         TWO_HOURS_IN_MS,
         LESS_THAN_ONE_DAY,
         dir,
+        {
+          removeDeletedQueries: () => { return Promise.resolve(); }
+        } as QueryHistoryManager,
         mockCtx,
         {
           increment: () => runCount++
