@@ -4,6 +4,7 @@ import * as path from 'path';
 import { showAndLogErrorMessage } from './helpers';
 import { asyncFilter, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedQueryInfo, LocalQueryInfo, QueryHistoryInfo } from './query-results';
+import { QueryStatus } from './query-status';
 import { QueryEvaluationInfo } from './run-queries';
 
 export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInfo[]> {
@@ -39,7 +40,12 @@ export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInf
           q.completedQuery.dispose = () => { /**/ };
         }
       } else if (q.t === 'remote') {
-        // noop
+        // A bug was introduced that didn't set the completed flag in query history
+        // items. The following code makes sure that the flag is set in order to
+        // "patch" older query history items.
+        if (q.status === QueryStatus.Completed) {
+          q.completed = true;
+        }
       }
       return q;
     });

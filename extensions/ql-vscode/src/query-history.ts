@@ -574,6 +574,9 @@ export class QueryHistoryManager extends DisposableObject {
         const remoteQueryHistoryItem = item as RemoteQueryHistoryItem;
         remoteQueryHistoryItem.status = event.status;
         remoteQueryHistoryItem.failureReason = event.failureReason;
+        if (event.status === QueryStatus.Completed) {
+          remoteQueryHistoryItem.completed = true;
+        }
         await this.refreshTreeView();
       } else {
         void logger.log('Variant analysis status update event received for unknown variant analysis');
