@@ -90,3 +90,9 @@ export const getAnalysisResultCount = (analysisResults: AnalysisResults): number
   const rawResultCount = analysisResults.rawResults?.resultSet.rows.length || 0;
   return analysisResults.interpretedResults.length + rawResultCount;
 };
+
+/**
+ * Returns the total number of results for an analysis by adding all individual repo results.
+ */
+export const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
+  analysesResults.reduce((acc, curr) => acc + getAnalysisResultCount(curr), 0);

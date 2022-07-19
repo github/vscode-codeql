@@ -11,7 +11,7 @@ import { createGist } from './gh-actions-api-client';
 import { RemoteQueriesManager } from './remote-queries-manager';
 import { generateMarkdown } from './remote-queries-markdown-generation';
 import { RemoteQuery } from './remote-query';
-import { AnalysisResults } from './shared/analysis-result';
+import { AnalysisResults, sumAnalysesResults } from './shared/analysis-result';
 
 /**
  * Exports the results of the currently-selected remote query.
@@ -74,13 +74,13 @@ async function determineExportFormat(
 /**
  * Converts the results of a remote query to markdown and uploads the files as a secret gist.
  */
-async function exportResultsToGist(
+export async function exportResultsToGist(
   ctx: ExtensionContext,
   query: RemoteQuery,
   analysesResults: AnalysisResults[]
 ): Promise<void> {
   const credentials = await Credentials.initialize(ctx);
-  const description = 'CodeQL Variant Analysis Results';
+  const description = buildGistDescription(query, analysesResults);
   const markdownFiles = generateMarkdown(query, analysesResults, 'gist');
   // Convert markdownFiles to the appropriate format for uploading to gist
   const gistFiles = markdownFiles.reduce((acc, cur) => {
@@ -99,6 +99,17 @@ async function exportResultsToGist(
     }
   }
 }
+
+/**
+ * Builds Gist description
+ * Ex: Empty Block (Go) x results (y repositories)
+ */
+const buildGistDescription = (query: RemoteQuery, analysesResults: AnalysisResults[]) => {
+  const resultCount = sumAnalysesResults(analysesResults);
+  const repositoryLabel = `${query.numRepositoriesQueried} ${query.numRepositoriesQueried === 1 ? 'repository' : 'repositories'}`;
+  const repositoryCount = query.numRepositoriesQueried ? repositoryLabel : '';
+  return `${query.queryName} (${query.language}) ${resultCount} results (${repositoryCount})`;
+};
 
 /**
  * Converts the results of a remote query to markdown and saves the files locally
