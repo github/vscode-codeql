@@ -19,6 +19,7 @@ import { getErrorMessage } from '../../../pure/helpers-pure';
 import { HistoryItemLabelProvider } from '../../../history-item-label-provider';
 import { RemoteQueriesManager } from '../../../remote-queries/remote-queries-manager';
 import { InterfaceManager } from '../../../interface';
+import { EvalLogVisualizer } from '../../../eval-log-visualizer';
 
 /**
  * Tests for remote queries and how they interact with the query history manager.
@@ -93,6 +94,7 @@ describe('Remote queries and query history manager', function() {
       {} as DatabaseManager,
       localQueriesInterfaceManagerStub,
       remoteQueriesManagerStub,
+      {} as EvalLogVisualizer,
       STORAGE_DIR,
       {
         globalStorageUri: Uri.file(STORAGE_DIR),

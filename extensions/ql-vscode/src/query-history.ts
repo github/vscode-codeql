@@ -318,6 +318,7 @@ export class QueryHistoryManager extends DisposableObject {
     private readonly dbm: DatabaseManager,
     private readonly localQueriesInterfaceManager: InterfaceManager,
     private readonly remoteQueriesManager: RemoteQueriesManager,
+    private readonly evalLogVisualizer: EvalLogVisualizer,
     private readonly queryStorageDir: string,
     private readonly ctx: ExtensionContext,
     private readonly queryHistoryConfigListener: QueryHistoryConfig,
@@ -919,7 +920,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleShowEvalLogVisualizer(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[]
+    multiSelect: QueryHistoryInfo[],
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
     // Only applicable to an individual local query
@@ -930,18 +931,12 @@ export class QueryHistoryManager extends DisposableObject {
     // If visualizer data in memory does exist, then build tree and display
     if (finalSingleItem.evalLogVisualizerData) {
       const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.evalLogVisualizerData);
-      const evalLogVisualizer = new EvalLogVisualizer();
-
-      // REVIEW: Is this necessary? 
-      this.ctx.subscriptions.push(evalLogVisualizer);
 
       // REVIEW: The evaluator log location should always be present if visualizer data is present. 
       // Adding this condition to compile because the location may be undefined. 
       if (evalLogTreeBuilder && finalSingleItem.evalLogLocation) {
-        evalLogVisualizer.updateRoots(await evalLogTreeBuilder.getRoots(), finalSingleItem.evalLogLocation);
+        this.evalLogVisualizer.updateRoots(await evalLogTreeBuilder.getRoots(), finalSingleItem.evalLogLocation);
       }
-
-      return;
     }
     else {
       if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
