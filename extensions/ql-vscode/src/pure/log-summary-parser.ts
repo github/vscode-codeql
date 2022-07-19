@@ -1,7 +1,5 @@
-import * as os from 'os';
-
 // TODO(angelapwen): Only load in necessary information and
-// location in bytes for this log to save memory. 
+// location in bytes for this log to save memory.
 export interface EvaluatorLogData {
     queryCausingWork: string;
     predicateName: string;
@@ -9,25 +7,25 @@ export interface EvaluatorLogData {
     resultSize: number;
     ra: Pipelines;
 }
-  
+
 interface Pipelines {
-    // Key: pipeline identifier; Value: array of pipeline steps 
+    // Key: pipeline identifier; Value: array of pipeline steps
     pipelineNamesToSteps: Map<string, string[]>;
 }
-  
+
 /**
  * A pure method that parses a string of evaluator log summaries into
- * an array of EvaluatorLogData objects. 
- * 
+ * an array of EvaluatorLogData objects.
+ *
  */
  export function parseVisualizerData(logSummary: string): EvaluatorLogData[] {
     // Remove newline delimiters because summary is in .jsonl format.
-    const jsonSummaryObjects: string[] = logSummary.split(os.EOL + os.EOL);
+    const jsonSummaryObjects: string[] = logSummary.split(/\r?\n\r?\n/g);
     const visualizerData: EvaluatorLogData[] = [];
-  
+
     for (const obj of jsonSummaryObjects) {
       const jsonObj = JSON.parse(obj);
-  
+
       // Only convert log items that have an RA and millis field
       if (jsonObj.ra !== undefined && jsonObj.millis !== undefined) {
         const newLogData: EvaluatorLogData = {
@@ -39,6 +37,6 @@ interface Pipelines {
         };
         visualizerData.push(newLogData);
       }
-    } 
+    }
     return visualizerData;
 }
