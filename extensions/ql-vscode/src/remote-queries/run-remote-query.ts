@@ -271,7 +271,7 @@ export async function runRemoteQuery(
       }
 
       const workflowRunId = apiResponse.workflow_run_id;
-      const numRepositoriesQueried = apiResponse.repositories_queried.length;
+      const repositoryCount = apiResponse.repositories_queried.length;
       const remoteQuery = await buildRemoteQueryEntity(
         queryFile,
         queryMetadata,
@@ -280,7 +280,7 @@ export async function runRemoteQuery(
         queryStartTime,
         workflowRunId,
         language,
-        numRepositoriesQueried);
+        repositoryCount);
 
       // don't return the path because it has been deleted
       return { query: remoteQuery };
@@ -356,12 +356,12 @@ const eol2 = os.EOL + os.EOL;
 // exported for testing only
 export function parseResponse(owner: string, repo: string, response: QueriesResponse) {
   const repositoriesQueried = response.repositories_queried;
-  const numRepositoriesQueried = repositoriesQueried.length;
+  const repositoryCount = repositoriesQueried.length;
 
-  const popupMessage = `Successfully scheduled runs on ${pluralize(numRepositoriesQueried, 'repository', 'repositories')}. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
+  const popupMessage = `Successfully scheduled runs on ${pluralize(repositoryCount, 'repository', 'repositories')}. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
     + (response.errors ? `${eol2}Some repositories could not be scheduled. See extension log for details.` : '');
 
-  let logMessage = `Successfully scheduled runs on ${pluralize(numRepositoriesQueried, 'repository', 'repositories')}. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
+  let logMessage = `Successfully scheduled runs on ${pluralize(repositoryCount, 'repository', 'repositories')}. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
   logMessage += `${eol2}Repositories queried:${eol}${repositoriesQueried.join(', ')}`;
   if (response.errors) {
     const { invalid_repositories, repositories_without_database, private_repositories, cutoff_repositories, cutoff_repositories_count } = response.errors;
@@ -430,7 +430,7 @@ async function buildRemoteQueryEntity(
   queryStartTime: number,
   workflowRunId: number,
   language: string,
-  numRepositoriesQueried: number
+  repositoryCount: number
 ): Promise<RemoteQuery> {
   // The query name is either the name as specified in the query metadata, or the file name.
   const queryName = queryMetadata?.name ?? path.basename(queryFilePath);
@@ -448,6 +448,6 @@ async function buildRemoteQueryEntity(
     },
     executionStartTime: queryStartTime,
     actionsWorkflowRunId: workflowRunId,
-    numRepositoriesQueried: numRepositoriesQueried,
+    repositoryCount: repositoryCount,
   };
 }

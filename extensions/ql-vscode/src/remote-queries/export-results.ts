@@ -110,7 +110,7 @@ export async function exportResultsToGist(
 const buildGistDescription = (query: RemoteQuery, analysesResults: AnalysisResults[]) => {
   const resultCount = sumAnalysesResults(analysesResults);
   const resultLabel = pluralize(resultCount, 'result', 'results');
-  const repositoryLabel = pluralize(query.numRepositoriesQueried, 'repository', 'repositories');
+  const repositoryLabel = pluralize(query.repositoryCount, 'repository', 'repositories');
   return `${query.queryName} (${query.language}) ${resultLabel} (${repositoryLabel})`;
 };
 

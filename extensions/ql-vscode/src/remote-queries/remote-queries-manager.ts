@@ -41,7 +41,7 @@ export interface UpdatedQueryStatusEvent {
   queryId: string;
   status: QueryStatus;
   failureReason?: string;
-  numRepositoriesQueried?: number;
+  repositoryCount?: number;
   resultCount?: number;
 }
 
@@ -322,7 +322,7 @@ export class RemoteQueriesManager extends DisposableObject {
       this.remoteQueryStatusUpdateEventEmitter.fire({
         queryId,
         status: QueryStatus.Completed,
-        numRepositoriesQueried: queryResult.analysisSummaries.length,
+        repositoryCount: queryResult.analysisSummaries.length,
         resultCount
       });
 

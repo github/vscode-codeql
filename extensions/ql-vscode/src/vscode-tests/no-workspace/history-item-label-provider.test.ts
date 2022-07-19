@@ -126,7 +126,7 @@ describe('HistoryItemLabelProvider', () => {
       expect(labelProvider.getShortLabel(fqi)).to.eq('query-name');
     });
 
-    function createMockRemoteQueryInfo(userSpecifiedLabel?: string, numRepositoriesQueried?: number) {
+    function createMockRemoteQueryInfo(userSpecifiedLabel?: string, repositoryCount?: number) {
       return {
         t: 'remote',
         userSpecifiedLabel,
@@ -139,7 +139,7 @@ describe('HistoryItemLabelProvider', () => {
             name: 'vscode-codeql-integration-tests'
           },
           language: 'javascript',
-          numRepositoriesQueried,
+          repositoryCount,
         },
         status: 'in progress',
         resultCount: 16,

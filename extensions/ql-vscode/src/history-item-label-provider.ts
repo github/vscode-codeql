@@ -67,10 +67,10 @@ export class HistoryItemLabelProvider {
 
   // Return the number of repositories queried if available. Otherwise, use the controller repository name.
   private buildRepoLabel(item: RemoteQueryHistoryItem): string {
-    const numRepositoriesQueried = item.remoteQuery.numRepositoriesQueried;
+    const repositoryCount = item.remoteQuery.repositoryCount;
 
-    if (numRepositoriesQueried) {
-      return pluralize(numRepositoriesQueried, 'repository', 'repositories');
+    if (repositoryCount) {
+      return pluralize(repositoryCount, 'repository', 'repositories');
     }
 
     return `${item.remoteQuery.controllerRepository.owner}/${item.remoteQuery.controllerRepository.name}`;
