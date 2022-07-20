@@ -77,14 +77,10 @@ export class EvalLogVisualizer extends DisposableObject {
     }
 
     // Called when the Show Evaluator Log (Visualizer) command is run on a new query.
-
-    // REVIEW: Should the tree be automatically updated every time a new query is run?
-    // It can be kind of confusing if the current query results doesn't align with the current 
-    // visualizer. Or maybe in the future the top-level of the tree should be a single query run?
-    updateRoots(roots: EvalLogTreeItem[], evalLogPath: string): void {
+    updateRoots(roots: EvalLogTreeItem[]): void {
         this.treeDataProvider.roots = roots;
         this.treeDataProvider.refresh();
-        this.treeView.message = `Visualizer for ${path.basename(evalLogPath)}`;
+        this.treeView.message = 'Visualizer for query:'; // Currently only one query supported at a time. 
 
         // Handle error on reveal. This could happen if
         // the tree view is disposed during the reveal.

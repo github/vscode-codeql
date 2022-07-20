@@ -935,7 +935,7 @@ export class QueryHistoryManager extends DisposableObject {
       // The evaluator log location should always be present if visualizer data is present. 
       // Adding this condition to compile because the location may be undefined. 
       if (evalLogTreeBuilder && finalSingleItem.evalLogLocation) {
-        this.evalLogVisualizer.updateRoots(await evalLogTreeBuilder.getRoots(), finalSingleItem.evalLogLocation);
+        this.evalLogVisualizer.updateRoots(await evalLogTreeBuilder.getRoots());
       }
       return;
     }

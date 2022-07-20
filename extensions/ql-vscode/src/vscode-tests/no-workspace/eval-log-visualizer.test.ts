@@ -24,9 +24,7 @@ describe('EvalLogVisualizer', () => {
         }
     });
 
-    it('should update the visualizer\'s roots', () => {
-        const evalLogPath = 'test-path.json';
-        
+    it('should update the visualizer\'s roots', () => {        
         const rootItem1: EvalLogTreeItem = {
             label: 'root-1',
             children: []
@@ -67,10 +65,10 @@ describe('EvalLogVisualizer', () => {
 
         roots = [rootItem1, rootItem2];
 
-        visualizer.updateRoots(roots, evalLogPath); 
+        visualizer.updateRoots(roots); 
     
         expect((visualizer as any).treeDataProvider.roots).to.eq(roots);
-        expect((visualizer as any).treeView.message).to.eq(`Visualizer for ${evalLogPath}`);
+        expect((visualizer as any).treeView.message).to.eq('Visualizer for query:');
     });
 
     it('should clear the visualizer\'s roots', () => {
