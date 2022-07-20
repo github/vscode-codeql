@@ -9,15 +9,19 @@ describe('EvalLogTreeBuilder', () => {
         
         // Force children, parent to be undefined for ease of testing. 
         expect(roots.map(
-          r => ({ ...r, children: undefined })
+            r => ({ ...r, children: undefined })
         )).to.deep.eq(expectedRoots);
 
         expect((roots[0].children.map(
+            pred => ({ ...pred, children: undefined, parent: undefined }) 
+         ))).to.deep.eq(expectedPredicate);
+
+        expect((roots[0].children[0].children.map(
            ra => ({ ...ra, children: undefined, parent: undefined }) 
         ))).to.deep.eq(expectedRA);
         
         // Pipeline steps' children should be empty so do not force undefined children here. 
-        expect(roots[0].children[0].children.map(
+        expect(roots[0].children[0].children[0].children.map(
             step => ({ ...step, parent: undefined }) 
         )).to.deep.eq(expectedPipelineSteps);
     });
@@ -42,10 +46,18 @@ describe('EvalLogTreeBuilder', () => {
         }
     ];
 
-    const expectedRoots = [  
+    const expectedRoots = [
         {
-            label: 'quick_eval#query#ffffffff - 596 tuples in 1 ms for query test-query.ql',
+            label: 'test-query.ql',
             children: undefined
+        }
+    ];
+
+    const expectedPredicate = [  
+        {
+            label: 'quick_eval#query#ffffffff (596 tuples, 1 ms)',
+            children: undefined,
+            parent: undefined
         },
     ];
 

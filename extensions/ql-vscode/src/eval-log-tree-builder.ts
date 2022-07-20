@@ -15,24 +15,30 @@ export default class EvalLogTreeBuilder {
     private async parseRoots(): Promise<EvalLogTreeItem[]> {
         const roots: EvalLogTreeItem[] = [];
 
-        // For each item, create a TreeItem object with appropriate parents/children 
-        this.evalLogDataItems.forEach(logDataItem => {
+        // Once the viewer can show logs for multiple queries, there will be more than 1 item at the root
+        // level. For now, there will always be one root (the one query being shown).
+        const queryLabel = `${this.evalLogDataItems[0].queryCausingWork}`;
+        const queryItem: EvalLogTreeItem = {
+            label: queryLabel,
+            children: [] // Will assign predicate items as children shortly.
+        };
 
-            // TODO(angelapwen): Once the viewer can show logs for multiple queries, then queries should be the root level.
-            // Every object is a root except the RA for now
-            const label = `${logDataItem.predicateName} - ${logDataItem.resultSize} tuples in ${logDataItem.millis} ms for query ${logDataItem.queryCausingWork}`;
-            const rootItem: EvalLogTreeItem = {
-                label,
+        // For each predicate, create a TreeItem object with appropriate parents/children 
+        this.evalLogDataItems.forEach(logDataItem => {
+            const predicateLabel = `${logDataItem.predicateName} (${logDataItem.resultSize} tuples, ${logDataItem.millis} ms)`;
+            const predicateItem: ChildEvalLogTreeItem = {
+                label: predicateLabel,
+                parent: queryItem,
                 children: [] // Will assign pipeline items as children shortly.
             };
             for (const [pipelineName, steps] of Object.entries(logDataItem.ra)) {
                 const pipelineLabel = `Pipeline: ${pipelineName}`;
                 const pipelineItem: ChildEvalLogTreeItem = {
                     label: pipelineLabel,
-                    parent: rootItem,
+                    parent: predicateItem,
                     children: [] // Will assign step items as children shortly.
                 };
-                rootItem.children.push(pipelineItem);
+                predicateItem.children.push(pipelineItem);
         
                 steps.forEach( (step: string) => {
                     const stepLabel = step;
@@ -44,8 +50,9 @@ export default class EvalLogTreeBuilder {
                     pipelineItem.children.push(stepItem);
                 });
             }
-            roots.push(rootItem);
+            queryItem.children.push(predicateItem);
         });
-    return roots;
+        roots.push(queryItem);
+        return roots;
     }
 }

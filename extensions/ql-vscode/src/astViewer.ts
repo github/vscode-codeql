@@ -126,6 +126,7 @@ export class AstViewer extends DisposableObject {
     this.push(window.onDidChangeTextEditorSelection(this.updateTreeSelection, this));
   }
 
+  // After query finishes running, call viewer and inject new data to data provider 
   updateRoots(roots: AstItem[], db: DatabaseItem, fileUri: Uri) {
     this.treeDataProvider.roots = roots;
     this.treeDataProvider.db = db;
