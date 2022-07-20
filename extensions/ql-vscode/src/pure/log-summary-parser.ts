@@ -8,7 +8,7 @@ export interface EvalLogData {
     millis: number;
     resultSize: number;
     // Key: pipeline identifier; Value: array of pipeline steps 
-    ra: Map<string, string[]>;
+    ra: Record<string, string[]>;
 }
   
 /**
