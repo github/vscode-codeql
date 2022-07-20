@@ -34,10 +34,14 @@ export default class EvalLogTreeBuilder {
                 };
                 rootItem.children.push(pipelineItem);
         
-                pipelineItem.children = steps.map((step: string) => {
-                    label: step,
-                    parent: pipelineItem,
-                    children: []
+                steps.forEach( (step: string) => {
+                    const stepLabel = step;
+                    const stepItem: ChildEvalLogTreeItem =  {
+                        label: stepLabel,
+                        parent: pipelineItem,
+                        children: []
+                    };
+                    pipelineItem.children.push(stepItem);
                 });
             }
             roots.push(rootItem);
