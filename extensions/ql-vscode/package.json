@@ -1144,7 +1144,8 @@
         {
           "id": "codeQLEvalLogVisualizer",
           "name": "Evaluator Log Visualizer",
-          "visibility": "collapsed"
+          "visibility": "collapsed",
+          "when": "config.codeQL.canary"
         }
       ]
     },
