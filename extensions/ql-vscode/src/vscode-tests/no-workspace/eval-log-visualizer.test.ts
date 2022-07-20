@@ -24,7 +24,7 @@ describe('EvalLogVisualizer', () => {
         }
     });
 
-    it('should update the visualizer roots', () => {
+    it('should update the visualizer\'s roots', () => {
         const evalLogPath = 'test-path.json';
         
         const rootItem1: EvalLogTreeItem = {
@@ -74,8 +74,7 @@ describe('EvalLogVisualizer', () => {
     });
 
     it('should clear the visualizer\'s roots', () => {
-        // REVIEW: I can't call visualizer.clear() here unless I make the function public, but
-        // I'm not sure it's worth making it public just for the sake of testing. Or is there a 
-        // way to call the "Clear" command in these tests?
+        visualizer.dispose(testDisposeHandler);
+        expect((visualizer as any).treeDataProvider.roots.length).to.eq(0);
     });
 });
