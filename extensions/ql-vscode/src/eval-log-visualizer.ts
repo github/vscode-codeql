@@ -1,7 +1,6 @@
 import { window, TreeDataProvider, TreeView, TreeItem, ProviderResult, Event, EventEmitter, TreeItemCollapsibleState } from 'vscode';
 import { commandRunner } from './commandRunner';
 import { DisposableObject } from './pure/disposable-object';
-import path = require('path');
 import { showAndLogErrorMessage } from './helpers';
 
 export interface EvalLogTreeItem {
