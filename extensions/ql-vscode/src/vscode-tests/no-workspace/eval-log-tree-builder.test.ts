@@ -51,7 +51,7 @@ describe('EvalLogTreeBuilder', () => {
 
     const expectedRA = [  
         {
-            label: 'Pipeline ID: pipeline',
+            label: 'Pipeline: pipeline',
             children: undefined,
             parent: undefined
         }
