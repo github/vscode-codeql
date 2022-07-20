@@ -906,15 +906,15 @@ export class QueryHistoryManager extends DisposableObject {
 
     if (finalSingleItem.evalLogSummaryLocation) {
       await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
+      return;
     }
+
     // Summary log file doesn't exist.
-    else {
-      if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
-        // If raw log does exist, then the summary log is still being generated.
-        this.warnInProgressEvalLogSummary();
-      } else {
-        this.warnNoEvalLogs();
-      }
+    if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
+      // If raw log does exist, then the summary log is still being generated.
+      this.warnInProgressEvalLogSummary();
+    } else {
+      this.warnNoEvalLogs();
     }
   }
 
@@ -937,14 +937,15 @@ export class QueryHistoryManager extends DisposableObject {
       if (evalLogTreeBuilder && finalSingleItem.evalLogLocation) {
         this.evalLogVisualizer.updateRoots(await evalLogTreeBuilder.getRoots(), finalSingleItem.evalLogLocation);
       }
+      return;
     }
-    else {
-      if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
-        // If raw log does exist, then the data from JSON summary is still being parsed into memory.
-        this.warnInProgressEvalLogVisualizer();
-      } else {
-        this.warnNoEvalLogs();
-      }
+
+    // Otherwise we do not have the visualizer data ready
+    if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
+      // If raw log does exist, then the data from JSON summary is still being parsed into memory.
+      this.warnInProgressEvalLogVisualizer();
+    } else {
+      this.warnNoEvalLogs();
     }
   }
 

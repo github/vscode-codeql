@@ -22,12 +22,11 @@ export default class EvalLogTreeBuilder {
             // Every object is a root except the RA for now
             const label = `${logDataItem.predicateName} - ${logDataItem.resultSize} tuples in ${logDataItem.millis} ms for query ${logDataItem.queryCausingWork}`;
             const rootItem: EvalLogTreeItem = {
-                label: label,
+                label,
                 children: [] // Will assign pipeline items as children shortly.
             };
-
             for (const [pipelineName, steps] of Object.entries(logDataItem.ra)) {
-                const pipelineLabel = `Pipeline ID: ${pipelineName}`;
+                const pipelineLabel = `Pipeline: ${pipelineName}`;
                 const pipelineItem: ChildEvalLogTreeItem = {
                     label: pipelineLabel,
                     parent: rootItem,

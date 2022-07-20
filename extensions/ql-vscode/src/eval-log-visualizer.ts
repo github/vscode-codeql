@@ -36,7 +36,7 @@ class EvalLogDataProvider extends DisposableObject implements TreeDataProvider<E
     getChildren(element?: EvalLogTreeItem): ProviderResult<EvalLogTreeItem[]> {
         // If no item is passed, return the root.
         if (!element) {
-            return this.roots ? this.roots : [];
+            return this.roots || [];
         }
         // Otherwise it is called with an existing item, to load its children.
         return element.children;
