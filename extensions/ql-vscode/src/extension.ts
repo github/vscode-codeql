@@ -98,7 +98,7 @@ import { handleDownloadPacks, handleInstallPackDependencies } from './packaging'
 import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { exportRemoteQueryResults } from './remote-queries/export-results';
 import { RemoteQuery } from './remote-queries/remote-query';
-import { EvalLogVisualizer } from './eval-log-visualizer';
+import { EvalLogViewer } from './eval-log-viewer';
 
 /**
  * extension.ts
@@ -443,9 +443,9 @@ async function activateWithInstalledDistribution(
   databaseUI.init();
   ctx.subscriptions.push(databaseUI);
 
-  void logger.log('Initializing evaluator log visualizer.');
-  const evalLogVisualizer = new EvalLogVisualizer();
-  ctx.subscriptions.push(evalLogVisualizer);
+  void logger.log('Initializing evaluator log viewer.');
+  const evalLogViewer = new EvalLogViewer();
+  ctx.subscriptions.push(evalLogViewer);
 
   void logger.log('Initializing query history manager.');
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
@@ -470,7 +470,7 @@ async function activateWithInstalledDistribution(
     dbm,
     intm,
     rqm,
-    evalLogVisualizer,
+    evalLogViewer,
     queryStorageDir,
     ctx,
     queryHistoryConfigurationListener,

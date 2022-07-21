@@ -44,7 +44,7 @@ import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { InterfaceManager } from './interface';
 import { WebviewReveal } from './interface-utils';
-import { EvalLogVisualizer } from './eval-log-visualizer';
+import { EvalLogViewer } from './eval-log-viewer';
 import EvalLogTreeBuilder from './eval-log-tree-builder';
 
 /**
@@ -317,7 +317,7 @@ export class QueryHistoryManager extends DisposableObject {
     private readonly dbm: DatabaseManager,
     private readonly localQueriesInterfaceManager: InterfaceManager,
     private readonly remoteQueriesManager: RemoteQueriesManager,
-    private readonly evalLogVisualizer: EvalLogVisualizer,
+    private readonly evalLogViewer: EvalLogViewer,
     private readonly queryStorageDir: string,
     private readonly ctx: ExtensionContext,
     private readonly queryHistoryConfigListener: QueryHistoryConfig,
@@ -437,8 +437,8 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
-        'codeQLQueryHistory.showEvalLogVisualizer',
-        this.handleShowEvalLogVisualizer.bind(this)
+        'codeQLQueryHistory.showEvalLogViewer',
+        this.handleShowEvalLogViewer.bind(this)
       )
     );
     this.push(
@@ -877,15 +877,15 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   private warnNoEvalLogs() {
-    void showAndLogWarningMessage(`Evaluator log, summary, and visualizer are not available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
+    void showAndLogWarningMessage(`Evaluator log, summary, and viewer are not available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
   }
 
   private warnInProgressEvalLogSummary() {
     void showAndLogWarningMessage('The evaluator log summary is still being generated for this run. Please try again later. The summary generation process is tracked in the "CodeQL Extension Log" view.');
   }
 
-  private warnInProgressEvalLogVisualizer() {
-    void showAndLogWarningMessage('The visualizer\'s data is still being generated for this run. Please try again later.');
+  private warnInProgressEvalLogViewer() {
+    void showAndLogWarningMessage('The viewer\'s data is still being generated for this run. Please try again later.');
   }
 
   async handleShowEvalLog(
@@ -931,7 +931,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  async handleShowEvalLogVisualizer(
+  async handleShowEvalLogViewer(
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[],
   ) {
@@ -941,22 +941,22 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    // If visualizer data in memory does exist, then build tree and display
-    if (finalSingleItem.evalLogVisualizerData) {
-      const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.getQueryName(), finalSingleItem.evalLogVisualizerData);
+    // If viewer data in memory does exist, then build tree and display
+    if (finalSingleItem.evalLogViewerData) {
+      const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.getQueryName(), finalSingleItem.evalLogViewerData);
 
-      // The evaluator log location should always be present if visualizer data is present. 
+      // The evaluator log location should always be present if viewer data is present. 
       // Adding this condition to compile because the location may be undefined. 
       if (evalLogTreeBuilder && finalSingleItem.evalLogLocation) {
-        this.evalLogVisualizer.updateRoots(await evalLogTreeBuilder.getRoots());
+        this.evalLogViewer.updateRoots(await evalLogTreeBuilder.getRoots());
       }
       return;
     }
 
-    // Otherwise we do not have the visualizer data ready
+    // Otherwise we do not have the viewer data ready
     if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
       // If raw log does exist, then the data from JSON summary is still being parsed into memory.
-      this.warnInProgressEvalLogVisualizer();
+      this.warnInProgressEvalLogViewer();
     } else {
       this.warnNoEvalLogs();
     }

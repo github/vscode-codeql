@@ -37,7 +37,7 @@ import { ensureMetadataIsComplete } from './query-results';
 import { SELECT_QUERY_NAME } from './contextual/locationFinder';
 import { DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { getErrorMessage } from './pure/helpers-pure';
-import { parseVisualizerData } from './pure/log-summary-parser';
+import { parseViewerData } from './pure/log-summary-parser';
 
 /**
  * run-queries.ts
@@ -106,8 +106,8 @@ export class QueryEvaluationInfo {
 
   get jsonEvalLogSummaryPath() {
     return qsClient.findJsonQueryEvalLogSummaryFile(this.querySaveDir);
-  }  
-  
+  }
+
   get evalLogEndSummaryPath() {
     return qsClient.findQueryEvalLogEndSummaryFile(this.querySaveDir);
   }
@@ -355,7 +355,7 @@ export class QueryEvaluationInfo {
 
   /**
    * Calls the appropriate CLI command to generate a JSON log summary and parse it 
-   * into the appropriate data model for the log visualizer. 
+   * into the appropriate data model for the log viewer. 
    */
   parseJsonLogSummary(queryInfo: LocalQueryInfo, cliServer: cli.CodeQLCliServer): void {
     void cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath)
@@ -365,13 +365,13 @@ export class QueryEvaluationInfo {
           if (err) {
             throw new Error(`Could not read structured evaluator log summary JSON file at ${this.jsonEvalLogSummaryPath}.`);
           }
-          queryInfo.evalLogVisualizerData = parseVisualizerData(buffer.toString());
+          queryInfo.evalLogViewerData = parseViewerData(buffer.toString());
         });
       })
       .catch(err => {
         void showAndLogWarningMessage(`Failed to generate JSON structured evaluator log summary. Reason: ${err.message}`);
-      });  
-    }
+      });
+  }
 
   /**
    * Creates the CSV file containing the results of this query. This will only be called if the query
