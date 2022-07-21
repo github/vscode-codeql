@@ -79,7 +79,12 @@ export class EvalLogVisualizer extends DisposableObject {
     updateRoots(roots: EvalLogTreeItem[]): void {
         this.treeDataProvider.roots = roots;
         this.treeDataProvider.refresh();
-        this.treeView.message = 'Visualizer for query:'; // Currently only one query supported at a time. 
+
+        if (roots.length == 0) {
+            this.treeView.message = 'No predicates evaluated in this query run.';
+        } else {
+            this.treeView.message = 'Visualizer for query:'; // Currently only one query supported at a time. 
+        }
 
         // Handle error on reveal. This could happen if
         // the tree view is disposed during the reveal.

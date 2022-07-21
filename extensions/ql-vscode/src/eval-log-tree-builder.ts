@@ -15,6 +15,10 @@ export default class EvalLogTreeBuilder {
     private async parseRoots(): Promise<EvalLogTreeItem[]> {
         const roots: EvalLogTreeItem[] = [];
 
+        if (this.evalLogDataItems.length == 0) {
+            return roots; // Empty
+        }
+
         // Once the viewer can show logs for multiple queries, there will be more than 1 item at the root
         // level. For now, there will always be one root (the one query being shown).
         const queryLabel = `${this.evalLogDataItems[0].queryCausingWork}`;

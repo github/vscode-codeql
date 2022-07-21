@@ -71,6 +71,12 @@ describe('EvalLogVisualizer', () => {
         expect((visualizer as any).treeView.message).to.eq('Visualizer for query:');
     });
 
+    it ('should display descriptive message when no data exists', () => {
+        visualizer.updateRoots([]);
+        expect((visualizer as any).treeDataProvider.roots.length).to.eq(0);
+        expect((visualizer as any).treeView.message).to.eq('No predicates evaluated in this query run.');
+    });
+
     it('should clear the visualizer\'s roots', () => {
         visualizer.dispose(testDisposeHandler);
         expect((visualizer as any).treeDataProvider.roots.length).to.eq(0);
