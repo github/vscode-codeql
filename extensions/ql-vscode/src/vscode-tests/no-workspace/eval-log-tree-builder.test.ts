@@ -4,7 +4,7 @@ import { EvalLogData } from '../../pure/log-summary-parser';
 
 describe('EvalLogTreeBuilder', () => {      
     it('should build the log tree roots', async () => {
-        const builder = createLogTreeBuilder();
+        const builder = new EvalLogTreeBuilder(evalLogDataItems);
         const roots = await builder.getRoots();
         
         // Force children, parent to be undefined for ease of testing. 
@@ -25,10 +25,6 @@ describe('EvalLogTreeBuilder', () => {
             step => ({ ...step, parent: undefined }) 
         )).to.deep.eq(expectedPipelineSteps);
     });
-
-    function createLogTreeBuilder() {
-        return new EvalLogTreeBuilder(evalLogDataItems);
-    }
 
     const evalLogDataItems: EvalLogData[] = [
         {
