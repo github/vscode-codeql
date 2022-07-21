@@ -2,6 +2,10 @@
 
 ## [UNRELEASED]
 
+## 1.6.9 - 20 July 2022
+
+No user facing changes.
+
 ## 1.6.8 - 29 June 2022
 
 - Fix a bug where quick queries cannot be compiled if the core libraries are not in the workspace. [#1411](https://github.com/github/vscode-codeql/pull/1411)

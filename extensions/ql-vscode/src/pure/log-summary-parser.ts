@@ -1,5 +1,3 @@
-import * as os from 'os';
-
 // TODO(angelapwen): Only load in necessary information and
 // location in bytes for this log to save memory. 
 export interface EvalLogData {
@@ -9,20 +7,20 @@ export interface EvalLogData {
     // Key: pipeline identifier; Value: array of pipeline steps 
     ra: Record<string, string[]>;
 }
-  
+
 /**
  * A pure method that parses a string of evaluator log summaries into
- * an array of EvalLogData objects. 
- * 
+ * an array of EvaluatorLogData objects.
+ *
  */
  export function parseVisualizerData(logSummary: string): EvalLogData[] {
     // Remove newline delimiters because summary is in .jsonl format.
-    const jsonSummaryObjects: string[] = logSummary.split(os.EOL + os.EOL);
-    const visualizerData: EvalLogData[] = [];
-  
+    const jsonSummaryObjects: string[] = logSummary.split(/\r?\n\r?\n/g);
+    const visualizerData: EvaluatorLogData[] = [];
+
     for (const obj of jsonSummaryObjects) {
       const jsonObj = JSON.parse(obj);
-  
+
       // Only convert log items that have an RA and millis field
       if (jsonObj.ra !== undefined && jsonObj.millis !== undefined) {
         const newLogData: EvalLogData = {
@@ -33,6 +31,6 @@ export interface EvalLogData {
         };
         visualizerData.push(newLogData);
       }
-    } 
+    }
     return visualizerData;
 }

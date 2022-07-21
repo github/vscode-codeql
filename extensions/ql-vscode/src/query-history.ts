@@ -207,13 +207,12 @@ export class HistoryTreeDataProvider extends DisposableObject {
         ? h2.initialInfo.start.getTime()
         : h2.remoteQuery?.executionStartTime;
 
-      // result count for remote queries is not available here.
       const resultCount1 = h1.t === 'local'
         ? h1.completedQuery?.resultCount ?? -1
-        : -1;
+        : h1.resultCount ?? -1;
       const resultCount2 = h2.t === 'local'
         ? h2.completedQuery?.resultCount ?? -1
-        : -1;
+        : h2.resultCount ?? -1;
 
       switch (this.sortOrder) {
         case SortOrder.NameAsc:
@@ -514,7 +513,7 @@ export class QueryHistoryManager extends DisposableObject {
     this.push(
       queryHistoryConfigListener.onDidChangeConfiguration(() => {
         this.treeDataProvider.refresh();
-        this.registerQueryHistoryScrubber(queryHistoryConfigListener, ctx);
+        this.registerQueryHistoryScrubber(queryHistoryConfigListener, this, ctx);
       })
     );
 
@@ -533,7 +532,7 @@ export class QueryHistoryManager extends DisposableObject {
       },
     }));
 
-    this.registerQueryHistoryScrubber(queryHistoryConfigListener, ctx);
+    this.registerQueryHistoryScrubber(queryHistoryConfigListener, this, ctx);
     this.registerToRemoteQueriesEvents();
   }
 
@@ -544,7 +543,7 @@ export class QueryHistoryManager extends DisposableObject {
   /**
    * Register and create the history scrubber.
    */
-  private registerQueryHistoryScrubber(queryHistoryConfigListener: QueryHistoryConfig, ctx: ExtensionContext) {
+  private registerQueryHistoryScrubber(queryHistoryConfigListener: QueryHistoryConfig, qhm: QueryHistoryManager, ctx: ExtensionContext) {
     this.queryHistoryScrubber?.dispose();
     // Every hour check if we need to re-run the query history scrubber.
     this.queryHistoryScrubber = this.push(
@@ -553,6 +552,7 @@ export class QueryHistoryManager extends DisposableObject {
         TWO_HOURS_IN_MS,
         queryHistoryConfigListener.ttlInMillis,
         this.queryStorageDir,
+        qhm,
         ctx
       )
     );
@@ -582,6 +582,10 @@ export class QueryHistoryManager extends DisposableObject {
         const remoteQueryHistoryItem = item as RemoteQueryHistoryItem;
         remoteQueryHistoryItem.status = event.status;
         remoteQueryHistoryItem.failureReason = event.failureReason;
+        remoteQueryHistoryItem.resultCount = event.resultCount;
+        if (event.status === QueryStatus.Completed) {
+          remoteQueryHistoryItem.completed = true;
+        }
         await this.refreshTreeView();
       } else {
         void logger.log('Variant analysis status update event received for unknown variant analysis');
@@ -646,6 +650,15 @@ export class QueryHistoryManager extends DisposableObject {
 
   getCurrentQueryHistoryItem(): QueryHistoryInfo | undefined {
     return this.treeDataProvider.getCurrent();
+  }
+
+  async removeDeletedQueries() {
+    await Promise.all(this.treeDataProvider.allHistory.map(async (item) => {
+      if (item.t == 'local' && item.completedQuery && !(await fs.pathExists(item.completedQuery?.query.querySaveDir))) {
+        this.treeDataProvider.remove(item);
+        item.completedQuery?.dispose();
+      }
+    }));
   }
 
   async handleRemoveHistoryItem(

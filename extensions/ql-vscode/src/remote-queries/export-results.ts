@@ -4,14 +4,17 @@ import * as fs from 'fs-extra';
 import { window, commands, Uri, ExtensionContext, QuickPickItem, workspace, ViewColumn } from 'vscode';
 import { Credentials } from '../authentication';
 import { UserCancellationException } from '../commandRunner';
-import { showInformationMessageWithAction } from '../helpers';
+import {
+  showInformationMessageWithAction,
+  pluralize
+} from '../helpers';
 import { logger } from '../logging';
 import { QueryHistoryManager } from '../query-history';
 import { createGist } from './gh-actions-api-client';
 import { RemoteQueriesManager } from './remote-queries-manager';
 import { generateMarkdown } from './remote-queries-markdown-generation';
 import { RemoteQuery } from './remote-query';
-import { AnalysisResults } from './shared/analysis-result';
+import { AnalysisResults, sumAnalysesResults } from './shared/analysis-result';
 
 /**
  * Exports the results of the currently-selected remote query.
@@ -74,13 +77,13 @@ async function determineExportFormat(
 /**
  * Converts the results of a remote query to markdown and uploads the files as a secret gist.
  */
-async function exportResultsToGist(
+export async function exportResultsToGist(
   ctx: ExtensionContext,
   query: RemoteQuery,
   analysesResults: AnalysisResults[]
 ): Promise<void> {
   const credentials = await Credentials.initialize(ctx);
-  const description = 'CodeQL Variant Analysis Results';
+  const description = buildGistDescription(query, analysesResults);
   const markdownFiles = generateMarkdown(query, analysesResults, 'gist');
   // Convert markdownFiles to the appropriate format for uploading to gist
   const gistFiles = markdownFiles.reduce((acc, cur) => {
@@ -99,6 +102,17 @@ async function exportResultsToGist(
     }
   }
 }
+
+/**
+ * Builds Gist description
+ * Ex: Empty Block (Go) x results (y repositories)
+ */
+const buildGistDescription = (query: RemoteQuery, analysesResults: AnalysisResults[]) => {
+  const resultCount = sumAnalysesResults(analysesResults);
+  const resultLabel = pluralize(resultCount, 'result', 'results');
+  const repositoryLabel = query.repositoryCount ? `(${pluralize(query.repositoryCount, 'repository', 'repositories')})` : '';
+  return `${query.queryName} (${query.language}) ${resultLabel} ${repositoryLabel}`;
+};
 
 /**
  * Converts the results of a remote query to markdown and saves the files locally

@@ -1,7 +1,5 @@
 import * as React from 'react';
-import { ChangeEvent } from 'react';
-import { TextInput } from '@primer/react';
-import { SearchIcon } from '@primer/octicons-react';
+import { VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
 
 interface RepositoriesSearchProps {
   filterValue: string;
@@ -10,20 +8,16 @@ interface RepositoriesSearchProps {
 
 const RepositoriesSearch = ({ filterValue, setFilterValue }: RepositoriesSearchProps) => {
   return <>
-    <TextInput
-      block
-      sx={{
-        backgroundColor: 'var(--vscode-editor-background);',
-        color: 'var(--vscode-editor-foreground);',
-        width: 'calc(100% - 14px)',
-      }}
-      leadingVisual={SearchIcon}
-      aria-label="Repository search"
+    <VSCodeTextField
+      style={{ width: '100%' }}
+      placeholder='Filter by repository owner/name'
+      ariaLabel="Repository search"
       name="repository-search"
-      placeholder="Filter by repository owner/name"
       value={filterValue}
-      onChange={(e: ChangeEvent) => setFilterValue((e.target as HTMLInputElement).value)}
-    />
+      onInput={(e: InputEvent) => setFilterValue((e.target as HTMLInputElement).value)}
+    >
+      <span slot="start" className="codicon codicon-search"></span>
+    </VSCodeTextField>
   </>;
 };
 
