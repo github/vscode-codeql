@@ -10,13 +10,13 @@ export interface EvalLogData {
 
 /**
  * A pure method that parses a string of evaluator log summaries into
- * an array of EvaluatorLogData objects.
+ * an array of EvalLogData objects.
  *
  */
  export function parseVisualizerData(logSummary: string): EvalLogData[] {
     // Remove newline delimiters because summary is in .jsonl format.
     const jsonSummaryObjects: string[] = logSummary.split(/\r?\n\r?\n/g);
-    const visualizerData: EvaluatorLogData[] = [];
+    const visualizerData: EvalLogData[] = [];
 
     for (const obj of jsonSummaryObjects) {
       const jsonObj = JSON.parse(obj);

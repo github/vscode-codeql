@@ -6,7 +6,6 @@ describe('EvalLogTreeBuilder', () => {
     it('should build the log tree roots', async () => {
         const evalLogDataItems: EvalLogData[] = [
             {
-                queryCausingWork: 'test-query.ql',
                 predicateName: 'quick_eval#query#ffffffff',
                 millis: 1,
                 resultSize: 596,
@@ -58,8 +57,8 @@ describe('EvalLogTreeBuilder', () => {
             children: [],
             parent: undefined
         }];
-        
-        const builder = new EvalLogTreeBuilder(evalLogDataItems[0].queryCausingWork, evalLogDataItems);
+
+        const builder = new EvalLogTreeBuilder('test-query.ql', evalLogDataItems);
         const roots = await builder.getRoots();
         
         // Force children, parent to be undefined for ease of testing. 
