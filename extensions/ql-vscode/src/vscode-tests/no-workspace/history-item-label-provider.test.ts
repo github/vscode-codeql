@@ -95,7 +95,7 @@ describe('HistoryItemLabelProvider', () => {
       expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress %::${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress %`);
     });
 
-    it('should interpolate query when not user specified', () => {
+    it('should interpolate query when not user-specified', () => {
       const fqi = createMockRemoteQueryInfo();
 
       expect(labelProvider.getLabel(fqi)).to.eq('xxx query-name (javascript) xxx');
