@@ -930,7 +930,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     // If visualizer data in memory does exist, then build tree and display
     if (finalSingleItem.evalLogVisualizerData) {
-      const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.evalLogVisualizerData);
+      const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.getQueryName(), finalSingleItem.evalLogVisualizerData);
 
       // The evaluator log location should always be present if visualizer data is present. 
       // Adding this condition to compile because the location may be undefined. 

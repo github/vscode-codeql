@@ -2,9 +2,11 @@ import { ChildEvalLogTreeItem, EvalLogTreeItem } from './eval-log-visualizer';
 import { EvalLogData as EvalLogData } from './pure/log-summary-parser';
 
 export default class EvalLogTreeBuilder {
+    private queryName: string;
     private evalLogDataItems: EvalLogData[];
     
-    constructor(evaluatorLogDataItems: EvalLogData[]) {
+    constructor(queryName: string, evaluatorLogDataItems: EvalLogData[]) {
+        this.queryName = queryName;
         this.evalLogDataItems = evaluatorLogDataItems;
     }
 
@@ -15,17 +17,22 @@ export default class EvalLogTreeBuilder {
     private async parseRoots(): Promise<EvalLogTreeItem[]> {
         const roots: EvalLogTreeItem[] = [];
 
-        if (this.evalLogDataItems.length == 0) {
-            return roots; // Empty
-        }
-
         // Once the viewer can show logs for multiple queries, there will be more than 1 item at the root
         // level. For now, there will always be one root (the one query being shown).
-        const queryLabel = `${this.evalLogDataItems[0].queryCausingWork}`;
         const queryItem: EvalLogTreeItem = {
-            label: queryLabel,
+            label: this.queryName,
             children: [] // Will assign predicate items as children shortly.
         };
+
+        // Display descriptive message when no data exists 
+        if (this.evalLogDataItems.length == 0) {
+            const noResultsItem: ChildEvalLogTreeItem = {
+                label: 'No predicates evaluated in this query run.',
+                parent: queryItem,
+                children: [],
+            };
+            queryItem.children.push(noResultsItem);
+        }
 
         // For each predicate, create a TreeItem object with appropriate parents/children 
         this.evalLogDataItems.forEach(logDataItem => {
@@ -56,6 +63,7 @@ export default class EvalLogTreeBuilder {
             }
             queryItem.children.push(predicateItem);
         });
+
         roots.push(queryItem);
         return roots;
     }
