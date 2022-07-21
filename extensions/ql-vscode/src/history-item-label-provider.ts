@@ -77,11 +77,12 @@ export class HistoryItemLabelProvider {
   }
 
   private getRemoteInterpolateReplacements(item: RemoteQueryHistoryItem): InterpolateReplacements {
+    const resultCount = item.resultCount ? `(${pluralize(item.resultCount, 'result', 'results')})` : '';
     return {
       t: new Date(item.remoteQuery.executionStartTime).toLocaleString(env.language),
       q: `${item.remoteQuery.queryName} (${item.remoteQuery.language})`,
       d: this.buildRepoLabel(item),
-      r: `(${pluralize(item.resultCount, 'result', 'results')})`,
+      r: resultCount,
       s: item.status,
       f: path.basename(item.remoteQuery.queryFilePath),
       '%': '%'

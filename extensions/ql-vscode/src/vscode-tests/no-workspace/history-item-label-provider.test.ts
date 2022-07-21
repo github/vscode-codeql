@@ -126,6 +126,22 @@ describe('HistoryItemLabelProvider', () => {
       expect(labelProvider.getShortLabel(fqi)).to.eq('query-name');
     });
 
+    describe('when results are present', () => {
+      it('should display results if there are any', () => {
+        const fqi = createMockRemoteQueryInfo({ resultCount: 16, repositoryCount: 2 });
+        config.format = '%t %q %d %s %f %r %%';
+        expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql (16 results) %`);
+      });
+    });
+
+    describe('when results are not present', () => {
+      it('should skip displaying them', () => {
+        const fqi = createMockRemoteQueryInfo({ resultCount: 0, repositoryCount: 2 });
+        config.format = '%t %q %d %s %f %r %%';
+        expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql  %`);
+      });
+    });
+
     function createMockRemoteQueryInfo({
       resultCount = 16,
       userSpecifiedLabel = undefined,
