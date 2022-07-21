@@ -13,7 +13,6 @@ describe('Evaluator log summary tests', async function () {
       expect(logDataItems).to.not.be.undefined;
       expect (logDataItems.length).to.eq(3);
       for (const item of logDataItems) {
-        expect(item.queryCausingWork).to.not.be.empty;
         expect(item.predicateName).to.not.be.empty;
         expect(item.millis).to.be.a('number');
         expect(item.resultSize).to.be.a('number');

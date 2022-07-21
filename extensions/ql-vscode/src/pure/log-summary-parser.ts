@@ -3,7 +3,6 @@ import * as os from 'os';
 // TODO(angelapwen): Only load in necessary information and
 // location in bytes for this log to save memory. 
 export interface EvalLogData {
-    queryCausingWork: string;
     predicateName: string;
     millis: number;
     resultSize: number;
@@ -27,7 +26,6 @@ export interface EvalLogData {
       // Only convert log items that have an RA and millis field
       if (jsonObj.ra !== undefined && jsonObj.millis !== undefined) {
         const newLogData: EvalLogData = {
-          queryCausingWork: jsonObj.queryCausingWork,
           predicateName: jsonObj.predicateName,
           millis: jsonObj.millis,
           resultSize: jsonObj.resultSize,
