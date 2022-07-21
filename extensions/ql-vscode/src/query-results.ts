@@ -17,7 +17,6 @@ import {
 import { DatabaseInfo } from './pure/interface-types';
 import { QueryStatus } from './query-status';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
-import { EvalLogData } from './pure/log-summary-parser';
 
 /**
  * query-results.ts
@@ -218,7 +217,7 @@ export class LocalQueryInfo {
   public completedQuery: CompletedQueryInfo | undefined;
   public evalLogLocation: string | undefined;
   public evalLogSummaryLocation: string | undefined;
-  public evalLogViewerData: EvalLogData[] | undefined;
+  public jsonEvalLogSummaryLocation: string | undefined;
 
   /**
    * Note that in the {@link slurpQueryHistory} method, we create a FullQueryInfo instance

@@ -46,6 +46,7 @@ import { InterfaceManager } from './interface';
 import { WebviewReveal } from './interface-utils';
 import { EvalLogViewer } from './eval-log-viewer';
 import EvalLogTreeBuilder from './eval-log-tree-builder';
+import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
 
 /**
  * query-history.ts
@@ -885,7 +886,7 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   private warnInProgressEvalLogViewer() {
-    void showAndLogWarningMessage('The viewer\'s data is still being generated for this run. Please try again later.');
+    void showAndLogWarningMessage('The viewer\'s data is still being generated for this run. Please try again or re-run the query.');
   }
 
   async handleShowEvalLog(
@@ -941,25 +942,21 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    // If viewer data in memory does exist, then build tree and display
-    if (finalSingleItem.evalLogViewerData) {
-      const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.getQueryName(), finalSingleItem.evalLogViewerData);
-
-      // The evaluator log location should always be present if viewer data is present. 
-      // Adding this condition to compile because the location may be undefined. 
-      if (evalLogTreeBuilder && finalSingleItem.evalLogLocation) {
-        this.evalLogViewer.updateRoots(await evalLogTreeBuilder.getRoots());
-      }
+    // If the JSON summary file location wasn't saved, display error
+    if (finalSingleItem.jsonEvalLogSummaryLocation == undefined) {
+      this.warnInProgressEvalLogViewer();
       return;
     }
 
-    // Otherwise we do not have the viewer data ready
-    if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
-      // If raw log does exist, then the data from JSON summary is still being parsed into memory.
-      this.warnInProgressEvalLogViewer();
-    } else {
-      this.warnNoEvalLogs();
-    }
+    // TODO(angelapwen): Stream the file in. 
+    void fs.readFile(finalSingleItem.jsonEvalLogSummaryLocation, async (err, buffer) => {
+      if (err) {
+        throw new Error(`Could not read evaluator log summary JSON file to generate viewer data at ${finalSingleItem.jsonEvalLogSummaryLocation}.`);
+      }
+      const evalLogData: EvalLogData[] = parseViewerData(buffer.toString());
+      const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.getQueryName(), evalLogData);
+      this.evalLogViewer.updateRoots(await evalLogTreeBuilder.getRoots());
+    });
   }
 
   async handleCancel(

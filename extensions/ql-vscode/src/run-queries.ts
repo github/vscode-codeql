@@ -37,7 +37,6 @@ import { ensureMetadataIsComplete } from './query-results';
 import { SELECT_QUERY_NAME } from './contextual/locationFinder';
 import { DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { getErrorMessage } from './pure/helpers-pure';
-import { parseViewerData } from './pure/log-summary-parser';
 
 /**
  * run-queries.ts
@@ -204,8 +203,9 @@ export class QueryEvaluationInfo {
         });
         if (await this.hasEvalLog()) {
           this.displayHumanReadableLogSummary(queryInfo, qs);
-          if (config.isCanary()) {
-            this.parseJsonLogSummary(queryInfo, qs.cliServer);
+          if (config.isCanary()) { // Generate JSON summary for viewer.
+            void qs.cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath);
+            queryInfo.jsonEvalLogSummaryLocation = this.jsonEvalLogSummaryPath;
           }
         } else {
           void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);
@@ -350,26 +350,6 @@ export class QueryEvaluationInfo {
       })
       .catch(err => {
         void showAndLogWarningMessage(`Failed to generate human-readable structured evaluator log summary. Reason: ${err.message}`);
-      });
-  }
-
-  /**
-   * Calls the appropriate CLI command to generate a JSON log summary and parse it 
-   * into the appropriate data model for the log viewer. 
-   */
-  parseJsonLogSummary(queryInfo: LocalQueryInfo, cliServer: cli.CodeQLCliServer): void {
-    void cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath)
-      .then(() => {
-        // TODO(angelapwen): Stream the file in. 
-        fs.readFile(this.jsonEvalLogSummaryPath, (err, buffer) => {
-          if (err) {
-            throw new Error(`Could not read structured evaluator log summary JSON file at ${this.jsonEvalLogSummaryPath}.`);
-          }
-          queryInfo.evalLogViewerData = parseViewerData(buffer.toString());
-        });
-      })
-      .catch(err => {
-        void showAndLogWarningMessage(`Failed to generate JSON structured evaluator log summary. Reason: ${err.message}`);
       });
   }
 
