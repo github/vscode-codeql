@@ -46,7 +46,7 @@ class EvalLogDataProvider extends DisposableObject implements TreeDataProvider<E
   }
 }
 
-// Manages a tree viewer of structured evaluator logs.
+/** Manages a tree viewer of structured evaluator logs. */
 export class EvalLogViewer extends DisposableObject {
   private treeView: TreeView<EvalLogTreeItem>;
   private treeDataProvider: EvalLogDataProvider;
