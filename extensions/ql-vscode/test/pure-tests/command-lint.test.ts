@@ -41,6 +41,7 @@ describe('commands declared in package.json', function() {
       command.match(/^codeQLDatabases\./)
       || command.match(/^codeQLQueryHistory\./)
       || command.match(/^codeQLAstViewer\./)
+      || command.match(/^codeQLEvalLogViewer\./)
       || command.match(/^codeQLTests\./)
     ) {
       scopedCmds.add(command);

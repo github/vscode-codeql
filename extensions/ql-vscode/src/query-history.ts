@@ -44,6 +44,9 @@ import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { InterfaceManager } from './interface';
 import { WebviewReveal } from './interface-utils';
+import { EvalLogViewer } from './eval-log-viewer';
+import EvalLogTreeBuilder from './eval-log-tree-builder';
+import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
 
 /**
  * query-history.ts
@@ -315,6 +318,7 @@ export class QueryHistoryManager extends DisposableObject {
     private readonly dbm: DatabaseManager,
     private readonly localQueriesInterfaceManager: InterfaceManager,
     private readonly remoteQueriesManager: RemoteQueriesManager,
+    private readonly evalLogViewer: EvalLogViewer,
     private readonly queryStorageDir: string,
     private readonly ctx: ExtensionContext,
     private readonly queryHistoryConfigListener: QueryHistoryConfig,
@@ -430,6 +434,12 @@ export class QueryHistoryManager extends DisposableObject {
       commandRunner(
         'codeQLQueryHistory.showEvalLogSummary',
         this.handleShowEvalLogSummary.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.showEvalLogViewer',
+        this.handleShowEvalLogViewer.bind(this)
       )
     );
     this.push(
@@ -867,16 +877,16 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  private warnNoEvalLog() {
-    void showAndLogWarningMessage(`No evaluator log is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
-  }
-
-  private warnNoEvalLogSummary() {
-    void showAndLogWarningMessage(`Evaluator log summary and evaluator log are not available for this run. Perhaps they failed before evaluation, or you are running with a version of CodeQL before ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
+  private warnNoEvalLogs() {
+    void showAndLogWarningMessage(`Evaluator log, summary, and viewer are not available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
   }
 
   private warnInProgressEvalLogSummary() {
-    void showAndLogWarningMessage('The evaluator log summary is still being generated. Please try again later. The summary generation process is tracked in the "CodeQL Extension Log" view.');
+    void showAndLogWarningMessage('The evaluator log summary is still being generated for this run. Please try again later. The summary generation process is tracked in the "CodeQL Extension Log" view.');
+  }
+
+  private warnInProgressEvalLogViewer() {
+    void showAndLogWarningMessage('The viewer\'s data is still being generated for this run. Please try again or re-run the query.');
   }
 
   async handleShowEvalLog(
@@ -893,7 +903,7 @@ export class QueryHistoryManager extends DisposableObject {
     if (finalSingleItem.evalLogLocation) {
       await this.tryOpenExternalFile(finalSingleItem.evalLogLocation);
     } else {
-      this.warnNoEvalLog();
+      this.warnNoEvalLogs();
     }
   }
 
@@ -910,16 +920,43 @@ export class QueryHistoryManager extends DisposableObject {
 
     if (finalSingleItem.evalLogSummaryLocation) {
       await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
+      return;
     }
+
     // Summary log file doesn't exist.
-    else {
-      if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
-        // If raw log does exist, then the summary log is still being generated.
-        this.warnInProgressEvalLogSummary();
-      } else {
-        this.warnNoEvalLogSummary();
-      }
+    if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
+      // If raw log does exist, then the summary log is still being generated.
+      this.warnInProgressEvalLogSummary();
+    } else {
+      this.warnNoEvalLogs();
     }
+  }
+
+  async handleShowEvalLogViewer(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[],
+  ) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+    // Only applicable to an individual local query
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'local') {
+      return;
+    }
+
+    // If the JSON summary file location wasn't saved, display error
+    if (finalSingleItem.jsonEvalLogSummaryLocation == undefined) {
+      this.warnInProgressEvalLogViewer();
+      return;
+    }
+
+    // TODO(angelapwen): Stream the file in. 
+    void fs.readFile(finalSingleItem.jsonEvalLogSummaryLocation, async (err, buffer) => {
+      if (err) {
+        throw new Error(`Could not read evaluator log summary JSON file to generate viewer data at ${finalSingleItem.jsonEvalLogSummaryLocation}.`);
+      }
+      const evalLogData: EvalLogData[] = parseViewerData(buffer.toString());
+      const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.getQueryName(), evalLogData);
+      this.evalLogViewer.updateRoots(await evalLogTreeBuilder.getRoots());
+    });
   }
 
   async handleCancel(
