@@ -26,7 +26,7 @@ export default class EvalLogTreeBuilder {
     };
 
     // Display descriptive message when no data exists 
-    if (this.evalLogDataItems.length == 0) {
+    if (this.evalLogDataItems.length === 0) {
       const noResultsItem: ChildEvalLogTreeItem = {
         label: 'No predicates evaluated in this query run.',
         parent: queryItem,

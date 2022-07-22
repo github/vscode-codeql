@@ -204,7 +204,7 @@ export class QueryEvaluationInfo {
         if (await this.hasEvalLog()) {
           this.displayHumanReadableLogSummary(queryInfo, qs);
           if (config.isCanary()) { // Generate JSON summary for viewer.
-            void qs.cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath);
+            await qs.cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath);
             queryInfo.jsonEvalLogSummaryLocation = this.jsonEvalLogSummaryPath;
           }
         } else {
