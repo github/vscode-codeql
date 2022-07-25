@@ -46,10 +46,12 @@ export class HistoryItemLabelProvider {
 
 
   private interpolate(rawLabel: string, replacements: InterpolateReplacements): string {
-    return rawLabel.replace(/%(.)/g, (match, key: keyof InterpolateReplacements) => {
+    const label = rawLabel.replace(/%(.)/g, (match, key: keyof InterpolateReplacements) => {
       const replacement = replacements[key];
       return replacement !== undefined ? replacement : match;
     });
+
+    return label.replace(/\s+/g, ' ');
   }
 
   private getLocalInterpolateReplacements(item: LocalQueryInfo): InterpolateReplacements {

@@ -138,7 +138,31 @@ describe('HistoryItemLabelProvider', () => {
       it('should skip displaying them', () => {
         const fqi = createMockRemoteQueryInfo({ resultCount: 0, repositoryCount: 2 });
         config.format = '%t %q %d %s %f %r %%';
-        expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql  %`);
+        expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql %`);
+      });
+    });
+
+    describe('when extra whitespace is present in the middle of the label', () => {
+      it('should squash it down to a single whitespace', () => {
+        const fqi = createMockRemoteQueryInfo({ resultCount: 0, repositoryCount: 2 });
+        config.format = '%t   %q        %d %s   %f   %r %%';
+        expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql %`);
+      });
+    });
+
+    describe('when extra whitespace is present at the start of the label', () => {
+      it('should squash it down to a single whitespace', () => {
+        const fqi = createMockRemoteQueryInfo({ resultCount: 0, repositoryCount: 2 });
+        config.format = '   %t %q %d %s %f %r %%';
+        expect(labelProvider.getLabel(fqi)).to.eq(` ${dateStr} query-name (javascript) 2 repositories in progress query-file.ql %`);
+      });
+    });
+
+    describe('when extra whitespace is present at the end of the label', () => {
+      it('should squash it down to a single whitespace', () => {
+        const fqi = createMockRemoteQueryInfo({ resultCount: 0, repositoryCount: 2 });
+        config.format = '%t %q %d %s %f %r %%   ';
+        expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql % `);
       });
     });
 
