@@ -2,7 +2,7 @@ import { env } from 'vscode';
 import { expect } from 'chai';
 import { QueryHistoryConfig } from '../../config';
 import { HistoryItemLabelProvider } from '../../history-item-label-provider';
-import { CompletedLocalQueryInfo, CompletedQueryInfo, InitialQueryInfo } from '../../query-results';
+import { CompletedLocalQueryInfo, CompletedQueryInfo, InitialQueryInfo, QueryHistoryInfo } from '../../query-results';
 import { RemoteQueryHistoryItem } from '../../remote-queries/remote-query-history-item';
 
 
@@ -84,7 +84,7 @@ describe('HistoryItemLabelProvider', () => {
 
   describe('remote queries', () => {
     it('should interpolate query when user specified', () => {
-      const fqi = createMockRemoteQueryInfo('xxx');
+      const fqi = createMockRemoteQueryInfo({ userSpecifiedLabel: 'xxx' });
 
       expect(labelProvider.getLabel(fqi)).to.eq('xxx');
 
@@ -95,8 +95,8 @@ describe('HistoryItemLabelProvider', () => {
       expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress %::${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress %`);
     });
 
-    it('should interpolate query when not user specified', () => {
-      const fqi = createMockRemoteQueryInfo();
+    it('should interpolate query when not user-specified', () => {
+      const fqi = createMockRemoteQueryInfo({});
 
       expect(labelProvider.getLabel(fqi)).to.eq('xxx query-name (javascript) xxx');
 
@@ -109,14 +109,14 @@ describe('HistoryItemLabelProvider', () => {
     });
 
     it('should use number of repositories instead of controller repo if available', () => {
-      const fqi = createMockRemoteQueryInfo(undefined, 2);
+      const fqi = createMockRemoteQueryInfo({ repositoryCount: 2 });
 
       config.format = '%t %q %d %s %f %r %%';
       expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql (16 results) %`);
     });
 
     it('should get query short label', () => {
-      const fqi = createMockRemoteQueryInfo('xxx');
+      const fqi = createMockRemoteQueryInfo({ userSpecifiedLabel: 'xxx' });
 
       // fall back on user specified if one exists.
       expect(labelProvider.getShortLabel(fqi)).to.eq('xxx');
@@ -126,7 +126,55 @@ describe('HistoryItemLabelProvider', () => {
       expect(labelProvider.getShortLabel(fqi)).to.eq('query-name');
     });
 
-    function createMockRemoteQueryInfo(userSpecifiedLabel?: string, repositoryCount?: number) {
+    describe('when results are present', () => {
+      it('should display results if there are any', () => {
+        const fqi = createMockRemoteQueryInfo({ resultCount: 16, repositoryCount: 2 });
+        config.format = '%t %q %d %s %f %r %%';
+        expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql (16 results) %`);
+      });
+    });
+
+    describe('when results are not present', () => {
+      it('should skip displaying them', () => {
+        const fqi = createMockRemoteQueryInfo({ resultCount: 0, repositoryCount: 2 });
+        config.format = '%t %q %d %s %f %r %%';
+        expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql %`);
+      });
+    });
+
+    describe('when extra whitespace is present in the middle of the label', () => {
+      it('should squash it down to a single whitespace', () => {
+        const fqi = createMockRemoteQueryInfo({ resultCount: 0, repositoryCount: 2 });
+        config.format = '%t   %q        %d %s   %f   %r %%';
+        expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql %`);
+      });
+    });
+
+    describe('when extra whitespace is present at the start of the label', () => {
+      it('should squash it down to a single whitespace', () => {
+        const fqi = createMockRemoteQueryInfo({ resultCount: 0, repositoryCount: 2 });
+        config.format = '   %t %q %d %s %f %r %%';
+        expect(labelProvider.getLabel(fqi)).to.eq(` ${dateStr} query-name (javascript) 2 repositories in progress query-file.ql %`);
+      });
+    });
+
+    describe('when extra whitespace is present at the end of the label', () => {
+      it('should squash it down to a single whitespace', () => {
+        const fqi = createMockRemoteQueryInfo({ resultCount: 0, repositoryCount: 2 });
+        config.format = '%t %q %d %s %f %r %%   ';
+        expect(labelProvider.getLabel(fqi)).to.eq(`${dateStr} query-name (javascript) 2 repositories in progress query-file.ql % `);
+      });
+    });
+
+    function createMockRemoteQueryInfo({
+      resultCount = 16,
+      userSpecifiedLabel = undefined,
+      repositoryCount = 0
+    }: {
+      resultCount?: number;
+      userSpecifiedLabel?: string;
+      repositoryCount?: number;
+    }): QueryHistoryInfo {
       return {
         t: 'remote',
         userSpecifiedLabel,
@@ -142,7 +190,7 @@ describe('HistoryItemLabelProvider', () => {
           repositoryCount,
         },
         status: 'in progress',
-        resultCount: 16,
+        resultCount,
       } as unknown as RemoteQueryHistoryItem;
     }
   });

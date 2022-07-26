@@ -46,10 +46,12 @@ export class HistoryItemLabelProvider {
 
 
   private interpolate(rawLabel: string, replacements: InterpolateReplacements): string {
-    return rawLabel.replace(/%(.)/g, (match, key: keyof InterpolateReplacements) => {
+    const label = rawLabel.replace(/%(.)/g, (match, key: keyof InterpolateReplacements) => {
       const replacement = replacements[key];
       return replacement !== undefined ? replacement : match;
     });
+
+    return label.replace(/\s+/g, ' ');
   }
 
   private getLocalInterpolateReplacements(item: LocalQueryInfo): InterpolateReplacements {
@@ -77,11 +79,12 @@ export class HistoryItemLabelProvider {
   }
 
   private getRemoteInterpolateReplacements(item: RemoteQueryHistoryItem): InterpolateReplacements {
+    const resultCount = item.resultCount ? `(${pluralize(item.resultCount, 'result', 'results')})` : '';
     return {
       t: new Date(item.remoteQuery.executionStartTime).toLocaleString(env.language),
       q: `${item.remoteQuery.queryName} (${item.remoteQuery.language})`,
       d: this.buildRepoLabel(item),
-      r: `(${pluralize(item.resultCount, 'result', 'results')})`,
+      r: resultCount,
       s: item.status,
       f: path.basename(item.remoteQuery.queryFilePath),
       '%': '%'
