@@ -99,6 +99,10 @@ import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { exportRemoteQueryResults } from './remote-queries/export-results';
 import { RemoteQuery } from './remote-queries/remote-query';
 import { EvalLogViewer } from './eval-log-viewer';
+import { DatabaseConfigStore } from './database-config-store';
+import { DbPanel } from './databases/db-panel';
+import { IconProvider } from './icon-provider';
+import { DbItem } from './databases/db-item';
 
 /**
  * extension.ts
@@ -856,6 +860,49 @@ async function activateWithInstalledDistribution(
 
 
   registerRemoteQueryTextProvider();
+
+  // Read config
+  const dbConfigStore = new DatabaseConfigStore(ctx);
+  await dbConfigStore.initialize();
+
+  // Register command
+  ctx.subscriptions.push(
+    commandRunner('codeQL.charisDbs.addNewDb', async () => {
+      const quickPickItems = [
+        {
+          label: '$(cloud) Remote',
+          description: 'Add a remote database from GitHub'
+
+        },
+        {
+          label: '$(database) Local',
+          description: 'Import a database from the cloud or a local file'
+        }
+      ];
+
+      const options = {
+        placeHolder: 'Add a new database'
+      };
+
+      const selection = await window.showQuickPick(quickPickItems, options);
+      void logger.log('Selected to add ' + selection?.label);
+    })
+  );
+
+  // TODO: Consider introducing a container of services for the 
+  // extension a bit like a context?
+  const iconProvider = new IconProvider(ctx.extensionPath);
+
+  // DB panel
+  new DbPanel(dbConfigStore, iconProvider);
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.charisDBs.selectDb', async (dbItem: DbItem) => {
+      // TODO: Update the UI? Also store this state somewhere e.g. the
+      // db config store? Or is UI state retained somehow?
+      void logger.log('Selected ' + dbItem.label);
+    })
+  );
 
   // The "runVariantAnalysis" command is internal-only.
   ctx.subscriptions.push(

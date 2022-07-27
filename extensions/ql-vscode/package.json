@@ -287,6 +287,22 @@
     },
     "commands": [
       {
+        "command": "codeQL.charisDbs.addNewDb",
+        "title": "Add new database",
+        "icon": {
+          "light": "media/light/plus.svg",
+          "dark": "media/dark/plus.svg"
+        }
+      },
+      {
+        "command": "codeQL.charisDBs.selectDb",
+        "title": "Select database",
+        "icon": {
+          "light": "media/light/check.svg",
+          "dark": "media/dark/check.svg"
+        }
+      },
+      {
         "command": "codeQL.authenticateToGitHub",
         "title": "CodeQL: Authenticate to GitHub"
       },
@@ -626,6 +642,10 @@
     "menus": {
       "view/title": [
         {
+          "command": "codeQL.charisDbs.addNewDb",
+          "group": "navigation"
+        },
+        {
           "command": "codeQLDatabases.sortByName",
           "when": "view == codeQLDatabases",
           "group": "navigation"
@@ -702,6 +722,10 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "codeQL.charisDBs.selectDb",
+          "group": "inline"
+        },
         {
           "command": "codeQLDatabases.setCurrentDatabase",
           "group": "inline",
@@ -1132,6 +1156,10 @@
         {
           "id": "codeQLDatabases",
           "name": "Databases"
+        },
+        {
+          "id": "codeQLCharisDatabases",
+          "name": "Charis Databases"
         },
         {
           "id": "codeQLQueryHistory",
