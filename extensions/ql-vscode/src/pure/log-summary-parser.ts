@@ -10,7 +10,7 @@ export interface EvalLogData {
 
 /**
  * A pure method that parses a string of evaluator log summaries into
- * an array of EvaluatorLogData objects.
+ * an array of EvalLogData objects.
  *
  */
 export function parseViewerData(logSummary: string): EvalLogData[] {
