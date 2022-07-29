@@ -1,0 +1,2946 @@
+[2022-07-21 17:56:30] Summary of a CodeQL evaluation that started at 2022-07-21T21:56:30.645Z
+[2022-07-21 17:56:30] 
+[2022-07-21 17:56:30] Found predicate ResolveClass::Cached::isType#eb2868f4#f@c036858v in the relation cache (size: 4447)
+[2022-07-21 17:56:31] Evaluated non-recursive predicate usertypes_0#antijoin_rhs@03a80ecr in 58ms (size: 793).
+Tuple counts for usertypes_0#antijoin_rhs@03a80ecr:
+        793  ~0%    {1} r1 = SCAN usertypes OUTPUT In.0
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate type_decls_10#join_rhs@6a0241ro in 20ms (size: 829).
+Tuple counts for type_decls_10#join_rhs@6a0241ro:
+        829  ~3%    {2} r1 = SCAN type_decls OUTPUT In.1, In.0
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate File::Container::toString#f0820431#ff@a90db0du in 58ms (size: 323).
+Tuple counts for File::Container::toString#f0820431#ff@a90db0du:
+        323  ~0%    {2} r1 = files UNION folders
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate iscall_0#antijoin_rhs@8a021dri in 59ms (size: 11571).
+Tuple counts for iscall_0#antijoin_rhs@8a021dri:
+        11571  ~4%    {1} r1 = SCAN iscall OUTPUT In.0
+                      return r1
+
+[2022-07-21 17:56:31] Found predicate ResolveClass::Cached::resolveClass#eb2868f4#ff@6df429oj in the relation cache (size: 793)
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Type::BuiltInType::getName#dispred#f0820431#ff@2a05afs3 in 66ms (size: 47).
+Tuple counts for Type::BuiltInType::getName#dispred#f0820431#ff@2a05afs3:
+        47  ~2%    {2} r1 = JOIN builtintypes WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+                   return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate UserType::UserType#class#f5951597#f@adc456n7 in 12ms (size: 791).
+Tuple counts for UserType::UserType#class#f5951597#f@adc456n7:
+        791  ~0%    {1} r1 = JOIN usertypes_0#antijoin_rhs WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.0
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Type::RoutineType#class#2e8eb3ef#f@cfd0f0fc in 70ms (size: 1260).
+Tuple counts for Type::RoutineType#class#2e8eb3ef#f@cfd0f0fc:
+        1260  ~0%    {1} r1 = JOIN routinetypes WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate UserType::UserType::getName#dispred#f0820431#ff@c72b23f1 in 3ms (size: 791).
+Tuple counts for UserType::UserType::getName#dispred#f0820431#ff@c72b23f1:
+        791  ~1%    {2} r1 = JOIN usertypes WITH UserType::UserType#class#f5951597#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+                    return r1
+
+[2022-07-21 17:56:31] Found predicate ResolveClass::Cached::isClass#eb2868f4#f@d4f730at in the relation cache (size: 252)
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Type::DerivedType::getName#dispred#f0820431#ff@c13f47oq in 74ms (size: 2349).
+Tuple counts for Type::DerivedType::getName#dispred#f0820431#ff@c13f47oq:
+        2349  ~6%    {2} r1 = JOIN derivedtypes WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Class::Class#bacd9b46#f@bf20ddlv in 4ms (size: 250).
+Tuple counts for Class::Class#bacd9b46#f@bf20ddlv:
+        250  ~1%    {1} r1 = JOIN ResolveClass::Cached::isClass#eb2868f4#f WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.0
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate attribute_args_10#join_rhs@c0ae91qv in 3ms (size: 902).
+Tuple counts for attribute_args_10#join_rhs@c0ae91qv:
+        902  ~2%    {2} r1 = SCAN attribute_args OUTPUT In.1, In.0
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate param_decl_bind_0#antijoin_rhs@1eba1ftv in 5ms (size: 9233).
+Tuple counts for param_decl_bind_0#antijoin_rhs@1eba1ftv:
+        9233  ~0%    {1} r1 = SCAN param_decl_bind OUTPUT In.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#2@8896302r in 4ms (size: 0).
+Tuple counts for Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#2@8896302r:
+        1  ~0%    {1} r1 = CONSTANT(unique int)[3]
+        0  ~0%    {1} r2 = JOIN r1 WITH attribute_args_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#3@b45147jv in 4ms (size: 0).
+Tuple counts for Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#3@b45147jv:
+        1  ~0%    {1} r1 = CONSTANT(unique int)[0]
+        0  ~0%    {1} r2 = JOIN r1 WITH attribute_args_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate NameQualifiers::NameQualifyingElement::getName#dispred#f0820431#ff@86ba0cvv in 2ms (size: 793).
+Tuple counts for NameQualifiers::NameQualifyingElement::getName#dispred#f0820431#ff@86ba0cvv:
+          2   ~0%    {2} r1 = namespaces UNION specialnamequalifyingelements
+                 
+        793   ~0%    {2} r2 = UserType::UserType::getName#dispred#f0820431#ff UNION r1
+                     return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Element::ElementBase::toString#dispred#f0820431#ff#shared#1@d0ec3c7p in 11ms (size: 3963).
+Tuple counts for Element::ElementBase::toString#dispred#f0820431#ff#shared#1@d0ec3c7p:
+        3963  ~0%    {1} r1 = param_decl_bind_0#antijoin_rhs AND NOT var_def(Lhs.0)
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate UserType::TypeDeclarationEntry::getType#dispred#f0820431#ff@4e9e860r in 42ms (size: 829).
+Tuple counts for UserType::TypeDeclarationEntry::getType#dispred#f0820431#ff@4e9e860r:
+        829   ~3%    {2} r1 = JOIN type_decls_10#join_rhs WITH ResolveClass::Cached::resolveClass#eb2868f4#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.1
+        829   ~2%    {2} r2 = JOIN r1 WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+                 
+        829   ~0%    {3} r3 = SCAN type_decls OUTPUT In.1, In.0, In.1
+        827   ~3%    {3} r4 = JOIN r3 WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.1, Lhs.2, Lhs.0
+          0   ~0%    {3} r5 = r4 AND NOT usertypes_0#antijoin_rhs(Lhs.2)
+          0   ~0%    {2} r6 = SCAN r5 OUTPUT In.0, In.2
+                 
+        829   ~2%    {2} r7 = r2 UNION r6
+                     return r7
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Type::Type::getName#dispred#f0820431#ff@d39c59gn in 33ms (size: 4447).
+Tuple counts for Type::Type::getName#dispred#f0820431#ff@d39c59gn:
+        3140   ~0%    {2} r1 = UserType::UserType::getName#dispred#f0820431#ff UNION Type::DerivedType::getName#dispred#f0820431#ff
+                  
+           0   ~0%    {2} r2 = SCAN Type::PointerToMemberType#class#2e8eb3ef#f OUTPUT In.0, "..:: *"
+                  
+        1260   ~2%    {2} r3 = SCAN Type::RoutineType#class#2e8eb3ef#f OUTPUT In.0, "..()(..)"
+                  
+        1260   ~2%    {2} r4 = r2 UNION r3
+                  
+        1307   ~2%    {2} r5 = Type::BuiltInType::getName#dispred#f0820431#ff UNION r4
+        4447   ~3%    {2} r6 = r1 UNION r5
+                      return r6
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Declaration::DeclarationEntry::isDefinition#dispred#f0820431#f@403f39vd in 36ms (size: 15855).
+Tuple counts for Declaration::DeclarationEntry::isDefinition#dispred#f0820431#f@403f39vd:
+        13369   ~0%    {1} r1 = var_def UNION type_def
+                   
+        15855   ~0%    {1} r2 = fun_def UNION r1
+                       return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Cast::SizeofTypeOperator::getTypeOperand#dispred#f0820431#ff@272d207f in 16ms (size: 742).
+Tuple counts for Cast::SizeofTypeOperator::getTypeOperand#dispred#f0820431#ff@272d207f:
+        742   ~4%    {3} r1 = SCAN sizeof_bind OUTPUT In.0, 93, In.1
+        742   ~0%    {2} r2 = JOIN r1 WITH exprs ON FIRST 2 OUTPUT Lhs.0, Lhs.2
+                 
+        742   ~0%    {2} r3 = JOIN r2 WITH sizeof_bind ON FIRST 2 OUTPUT Lhs.1, Lhs.0
+        585   ~0%    {2} r4 = JOIN r3 WITH ResolveClass::Cached::resolveClass#eb2868f4#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.1
+        585   ~0%    {2} r5 = JOIN r4 WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+                 
+        742   ~0%    {3} r6 = JOIN r2 WITH sizeof_bind ON FIRST 2 OUTPUT Lhs.1, Lhs.0, Lhs.1
+        742   ~0%    {3} r7 = JOIN r6 WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.1, Lhs.2, Lhs.0
+        157   ~0%    {3} r8 = r7 AND NOT usertypes_0#antijoin_rhs(Lhs.2)
+        157   ~3%    {2} r9 = SCAN r8 OUTPUT In.0, In.2
+                 
+        742   ~0%    {2} r10 = r5 UNION r9
+                     return r10
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate attributes_10#join_rhs@69da9bit in 3ms (size: 3270).
+Tuple counts for attributes_10#join_rhs@69da9bit:
+        3270  ~0%    {2} r1 = SCAN attributes OUTPUT In.1, In.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#1@f551felc in 0ms (size: 0).
+Tuple counts for Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#1@f551felc:
+        1  ~0%    {1} r1 = CONSTANT(unique int)[4]
+        0  ~0%    {1} r2 = JOIN r1 WITH attributes_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate preprocdirects_10#join_rhs@5c6e7dqh in 26ms (size: 14765).
+Tuple counts for preprocdirects_10#join_rhs@5c6e7dqh:
+        14765  ~0%    {2} r1 = SCAN preprocdirects OUTPUT In.1, In.0
+                      return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate files_0#antijoin_rhs@107ccctn in 1ms (size: 301).
+Tuple counts for files_0#antijoin_rhs@107ccctn:
+        301  ~0%    {1} r1 = SCAN files OUTPUT In.0
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Include::Include#class#feab3531#f#antijoin_rhs@d5be187f in 2ms (size: 0).
+Tuple counts for Include::Include#class#feab3531#f#antijoin_rhs@d5be187f:
+        1  ~0%    {1} r1 = CONSTANT(unique int)[12]
+        0  ~0%    {1} r2 = JOIN r1 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Include::Include#class#feab3531#f#antijoin_rhs#1@e622b60i in 2ms (size: 3).
+Tuple counts for Include::Include#class#feab3531#f#antijoin_rhs#1@e622b60i:
+        1  ~0%    {1} r1 = CONSTANT(unique int)[13]
+        3  ~0%    {1} r2 = JOIN r1 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate namespaces_10#join_rhs@0b8b9e7b in 2ms (size: 1).
+Tuple counts for namespaces_10#join_rhs@0b8b9e7b:
+        1  ~0%    {2} r1 = SCAN namespaces OUTPUT In.1, In.0
+                  return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Variable::VariableDeclarationEntry::getName#dispred#f0820431#ff@a9d11e5h in 87ms (size: 16895).
+Tuple counts for Variable::VariableDeclarationEntry::getName#dispred#f0820431#ff@a9d11e5h:
+        17096  ~7%    {5} r1 = SELECT var_decls ON In.3 != ""
+        17096  ~4%    {2} r2 = SCAN r1 OUTPUT In.0, In.3
+                      return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Namespace::Namespace_not_GlobalNamespace#f#antijoin_rhs@2ee76ali in 1ms (size: 1).
+Tuple counts for Namespace::Namespace_not_GlobalNamespace#f#antijoin_rhs@2ee76ali:
+        1  ~0%    {1} r1 = CONSTANT(unique string)[""]
+        1  ~0%    {1} r2 = JOIN r1 WITH namespaces_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Include::Include#class#feab3531#f@c2f2f8hq in 3ms (size: 1206).
+Tuple counts for Include::Include#class#feab3531#f@c2f2f8hq:
+           1   ~0%    {1} r1 = CONSTANT(unique int)[6]
+        1203   ~0%    {1} r2 = JOIN r1 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+        1206   ~0%    {1} r3 = Include::Include#class#feab3531#f#antijoin_rhs#1 UNION r2
+                  
+        1206   ~0%    {1} r4 = Include::Include#class#feab3531#f#antijoin_rhs UNION r3
+                      return r4
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Namespace::Namespace_not_GlobalNamespace#f@e2897d8u in 1ms (size: 0).
+Tuple counts for Namespace::Namespace_not_GlobalNamespace#f@e2897d8u:
+        1  ~0%    {1} r1 = SCAN namespaces OUTPUT In.0
+        0  ~0%    {1} r2 = r1 AND NOT Namespace::Namespace_not_GlobalNamespace#f#antijoin_rhs(Lhs.0)
+                  return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff#antijoin_rhs@bbe05cai in 49ms (size: 16895).
+Tuple counts for Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff#antijoin_rhs@bbe05cai:
+        17096  ~7%    {5} r1 = SELECT var_decls ON In.3 != ""
+        17096  ~0%    {1} r2 = SCAN r1 OUTPUT In.0
+        16895  ~0%    {1} r3 = STREAM DEDUP r2
+                      return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Macro::Macro::getHead#dispred#f0820431#ff@72540a9h in 10ms (size: 5201).
+Tuple counts for Macro::Macro::getHead#dispred#f0820431#ff@72540a9h:
+           1  ~0%    {1} r1 = CONSTANT(unique int)[7]
+        5201  ~6%    {1} r2 = JOIN r1 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+        5201  ~0%    {2} r3 = JOIN r2 WITH preproctext ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                     return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Macro::Macro::getBody#dispred#f0820431#ff@f2352fid in 11ms (size: 5201).
+Tuple counts for Macro::Macro::getBody#dispred#f0820431#ff@f2352fid:
+           1  ~0%    {1} r1 = CONSTANT(unique int)[7]
+        5201  ~6%    {1} r2 = JOIN r1 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+        5201  ~4%    {2} r3 = JOIN r2 WITH preproctext ON FIRST 1 OUTPUT Lhs.0, Rhs.2
+                     return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Macro::Macro::getBody#dispred#f0820431#ff_10#join_rhs@a6db215l in 7ms (size: 5201).
+Tuple counts for Macro::Macro::getBody#dispred#f0820431#ff_10#join_rhs@a6db215l:
+        5201  ~5%    {2} r1 = SCAN Macro::Macro::getBody#dispred#f0820431#ff OUTPUT In.1, In.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate m#Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf@c1b739e9 in 18ms (size: 5388).
+Tuple counts for m#Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf@c1b739e9:
+           1   ~0%    {1} r1 = CONSTANT(unique int)[0]
+        1670   ~0%    {1} r2 = JOIN r1 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+        2876   ~0%    {1} r3 = Include::Include#class#feab3531#f UNION r2
+                  
+           1   ~0%    {1} r4 = CONSTANT(unique int)[1]
+        1200   ~0%    {1} r5 = JOIN r4 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r6 = CONSTANT(unique int)[2]
+         518   ~3%    {1} r7 = JOIN r6 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r8 = CONSTANT(unique int)[3]
+         246   ~0%    {1} r9 = JOIN r8 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+         764   ~6%    {1} r10 = r7 UNION r9
+        1964   ~5%    {1} r11 = r5 UNION r10
+        4840   ~0%    {1} r12 = r3 UNION r11
+                  
+           1   ~0%    {1} r13 = CONSTANT(unique int)[8]
+         270   ~3%    {1} r14 = JOIN r13 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r15 = CONSTANT(unique int)[9]
+         278   ~0%    {1} r16 = JOIN r15 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+         548   ~0%    {1} r17 = r14 UNION r16
+                  
+           1   ~0%    {1} r18 = CONSTANT(unique int)[10]
+           0   ~0%    {1} r19 = JOIN r18 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r20 = CONSTANT(unique int)[11]
+           0   ~0%    {1} r21 = JOIN r20 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r22 = CONSTANT(unique int)[18]
+           0   ~0%    {1} r23 = JOIN r22 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           0   ~0%    {1} r24 = r21 UNION r23
+           0   ~0%    {1} r25 = r19 UNION r24
+         548   ~0%    {1} r26 = r17 UNION r25
+        5388   ~0%    {1} r27 = r12 UNION r26
+                      return r27
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate stmts_10#join_rhs@2c4298i2 in 71ms (size: 46015).
+Tuple counts for stmts_10#join_rhs@2c4298i2:
+        46015  ~0%    {2} r1 = SCAN stmts OUTPUT In.1, In.0
+                      return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#7@a1ffaejg in 2ms (size: 441).
+Tuple counts for Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#7@a1ffaejg:
+          1  ~0%    {1} r1 = CONSTANT(unique string)[""]
+        441  ~0%    {1} r2 = JOIN r1 WITH Macro::Macro::getBody#dispred#f0820431#ff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                    return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate m#Stmt::Stmt::getChild#dispred#f0820431#bff@90d3ef09 in 1ms (size: 1650).
+Tuple counts for m#Stmt::Stmt::getChild#dispred#f0820431#bff@90d3ef09:
+           1   ~0%    {1} r1 = CONSTANT(unique int)[10]
+        1650   ~4%    {1} r2 = JOIN r1 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r3 = CONSTANT(unique int)[16]
+           0   ~0%    {1} r4 = JOIN r3 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+        1650   ~4%    {1} r5 = r2 UNION r4
+                      return r5
+
+[2022-07-21 17:56:31] Found predicate #select#query#fff@e4093fth in the relation cache (size: 215686)
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf@19a33342 in 6ms (size: 5388).
+Tuple counts for Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf@19a33342:
+        5388  ~0%    {2} r1 = JOIN m#Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf WITH preproctext ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf_0#antijoin_rhs@cb19efl6 in 3ms (size: 5388).
+Tuple counts for Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf_0#antijoin_rhs@cb19efl6:
+        5388  ~0%    {1} r1 = SCAN Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf OUTPUT In.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate var_decls_10#join_rhs@0cf0b3lm in 26ms (size: 17039).
+Tuple counts for var_decls_10#join_rhs@0cf0b3lm:
+        17240  ~6%    {2} r1 = SCAN var_decls OUTPUT In.1, In.0
+                      return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Include::Include::getIncludeText#dispred#f0820431#ff@a5385e4f in 1ms (size: 1206).
+Tuple counts for Include::Include::getIncludeText#dispred#f0820431#ff@a5385e4f:
+        1206  ~2%    {2} r1 = JOIN Include::Include#class#feab3531#f WITH Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Declaration::DeclarationEntry::getName#dispred#f0820431#ff@24f968kq in 33ms (size: 22226).
+Tuple counts for Declaration::DeclarationEntry::getName#dispred#f0820431#ff@24f968kq:
+         4514   ~5%    {2} r1 = SCAN fun_decls OUTPUT In.0, In.3
+                   
+          829   ~3%    {2} r2 = SCAN UserType::TypeDeclarationEntry::getType#dispred#f0820431#ff OUTPUT In.1, In.0
+          829   ~2%    {2} r3 = JOIN r2 WITH Type::Type::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                   
+         5343   ~5%    {2} r4 = r1 UNION r3
+                   
+        22238   ~3%    {2} r5 = Variable::VariableDeclarationEntry::getName#dispred#f0820431#ff UNION r4
+                       return r5
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate params_120#join_rhs@425598jp in 11ms (size: 7660).
+Tuple counts for params_120#join_rhs@425598jp:
+        7866  ~2%    {3} r1 = SCAN params OUTPUT In.1, In.2, In.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate fun_decls_10#join_rhs@16474d6l in 9ms (size: 4502).
+Tuple counts for fun_decls_10#join_rhs@16474d6l:
+        4514  ~2%    {2} r1 = SCAN fun_decls OUTPUT In.1, In.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate fun_decls_1#join_rhs@3242a355 in 10ms (size: 3782).
+Tuple counts for fun_decls_1#join_rhs@3242a355:
+        4514  ~19%    {1} r1 = SCAN fun_decls OUTPUT In.1
+                      return r1
+
+[2022-07-21 17:56:31] Completed evaluation of a recursive layer containing 1 different predicates (took 32ms). Predicates evaluated:
+Namespace::Namespace::getQualifiedName#f0820431#ff@c0078wua (took 3ms) (size: 1)
+
+Evaluated recursive predicate Namespace::Namespace::getQualifiedName#f0820431#ff@c0078wua in 1ms on iteration 1 (delta size: 1).
+Tuple counts for Namespace::Namespace::getQualifiedName#f0820431#ff@c0078wua on iteration 1 running pipeline base:
+        1  ~0%    {2} r1 = namespaces AND NOT project#Namespace::Namespace::getParentName#dispred#f0820431#ff(Lhs.0)
+                  return r1
+
+Evaluated recursive predicate Namespace::Namespace::getQualifiedName#f0820431#ff@c0078wua in 2ms on iteration 2 (delta size: 0).
+Tuple counts for Namespace::Namespace::getQualifiedName#f0820431#ff@c0078wua on iteration 2 running pipeline order_500000:
+        0  ~0%    {2} r1 = JOIN Namespace::Namespace::getQualifiedName#f0820431#ff#prev_delta WITH Namespace::Namespace::getParentNamespace#dispred#f0820431#ff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.1
+        0  ~0%    {2} r2 = JOIN r1 WITH project#Namespace::Namespace::getParentName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+        0  ~0%    {2} r3 = JOIN r2 WITH namespaces ON FIRST 1 OUTPUT Lhs.0, (Lhs.1 ++ "::" ++ Rhs.1)
+        0  ~0%    {2} r4 = r3 AND NOT Namespace::Namespace::getQualifiedName#f0820431#ff#prev(Lhs.0, Lhs.1)
+                  return r4
+
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Function::Function::declEntry#dispred#f0820431#fb@cf69784u in 9ms (size: 2486).
+Tuple counts for Function::Function::declEntry#dispred#f0820431#fb@cf69784u:
+        2486   ~0%    {2} r1 = JOIN fun_def WITH fun_decls ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                  
+        2486   ~0%    {2} r2 = r1 AND NOT Function::Function::isSpecialization#dispred#f0820431#f(Lhs.1)
+        2486   ~0%    {2} r3 = SCAN r2 OUTPUT In.1, In.0
+                  
+           0   ~0%    {2} r4 = JOIN r1 WITH fun_specialized ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+                  
+        2486   ~0%    {2} r5 = r3 UNION r4
+                      return r5
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Namespace::Namespace::getFriendlyName#dispred#f0820431#ff@e0f7b7no in 7ms (size: 1).
+Tuple counts for Namespace::Namespace::getFriendlyName#dispred#f0820431#ff@e0f7b7no:
+         0   ~0%    {2} r1 = JOIN Namespace::Namespace_not_GlobalNamespace#f WITH Namespace::Namespace::getQualifiedName#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                
+         1   ~0%    {2} r2 = CONSTANT(string, unique string)["","(global namespace)"]
+         1   ~0%    {2} r3 = JOIN r2 WITH namespaces_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "(global namespace)"
+                
+         1   ~0%    {2} r4 = r1 UNION r3
+                    return r4
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Class::Class::getCanonicalMember#dispred#f0820431#fff@450b2dte in 10ms (size: 1406).
+Tuple counts for Class::Class::getCanonicalMember#dispred#f0820431#fff@450b2dte:
+        1406  ~1%    {3} r1 = JOIN Class::Class#bacd9b46#f WITH member ON FIRST 1 OUTPUT Lhs.0, Rhs.1, Rhs.2
+        1406  ~1%    {3} r2 = r1 AND NOT usertypes_0#antijoin_rhs(Lhs.2)
+                     return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Function::Function::getADeclarationEntry#dispred#f0820431#fb@d8f5613g in 17ms (size: 2486).
+Tuple counts for Function::Function::getADeclarationEntry#dispred#f0820431#fb@d8f5613g:
+        2486   ~0%    {2} r1 = SCAN Function::Function::declEntry#dispred#f0820431#fb OUTPUT In.1, In.0
+        2486   ~0%    {2} r2 = JOIN r1 WITH fun_def ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+        2486   ~0%    {2} r3 = JOIN r2 WITH fun_decls_1#join_rhs ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+                  
+           0   ~0%    {2} r4 = function_instantiation AND NOT fun_decls_1#join_rhs(Lhs.0)
+           0   ~0%    {2} r5 = SCAN r4 OUTPUT In.1, In.0
+           0   ~0%    {2} r6 = JOIN r5 WITH fun_decls_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.1
+           0   ~0%    {2} r7 = JOIN r6 WITH fun_def ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+                  
+        2486   ~0%    {2} r8 = r3 UNION r7
+                      return r8
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate type_decls_1#join_rhs@16253f9c in 1ms (size: 791).
+Tuple counts for type_decls_1#join_rhs@16253f9c:
+        829  ~5%    {1} r1 = SCAN type_decls OUTPUT In.1
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Element::ElementBase::toString#dispred#f0820431#ff#shared@9c502b1h in 26ms (size: 6371).
+Tuple counts for Element::ElementBase::toString#dispred#f0820431#ff#shared@9c502b1h:
+        6371  ~3%    {2} r1 = Declaration::DeclarationEntry::getName#dispred#f0820431#ff AND NOT Declaration::DeclarationEntry::isDefinition#dispred#f0820431#f(Lhs.0)
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate ResolveClass::Cached::resolveClass#eb2868f4#ff_10#join_rhs@c8b737mn in 1ms (size: 793).
+Tuple counts for ResolveClass::Cached::resolveClass#eb2868f4#ff_10#join_rhs@c8b737mn:
+        793  ~1%    {2} r1 = SCAN ResolveClass::Cached::resolveClass#eb2868f4#ff OUTPUT In.1, In.0
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Class::Class::getCanonicalMember#dispred#f0820431#fff_201#join_rhs@d002bfse in 10ms (size: 1406).
+Tuple counts for Class::Class::getCanonicalMember#dispred#f0820431#fff_201#join_rhs@d002bfse:
+        1406  ~1%    {3} r1 = SCAN Class::Class::getCanonicalMember#dispred#f0820431#fff OUTPUT In.2, In.0, In.1
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff@fd7a5dhb in 32ms (size: 9233).
+Tuple counts for Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff@fd7a5dhb:
+        7866   ~1%    {1} r1 = SCAN params OUTPUT In.0
+        7660   ~0%    {1} r2 = STREAM DEDUP r1
+        7660   ~0%    {1} r3 = r2 AND NOT Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff#antijoin_rhs(Lhs.0)
+        9233   ~5%    {2} r4 = JOIN r3 WITH var_decls_10#join_rhs ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                  
+           0   ~0%    {2} r5 = SCAN Parameter::Parameter::getFunction#dispred#f0820431#fb OUTPUT In.1, In.0
+           0   ~0%    {2} r6 = JOIN r5 WITH function_instantiation ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+           0   ~0%    {3} r7 = JOIN r6 WITH Parameter::Parameter::getFunction#dispred#f0820431#fb ON FIRST 1 OUTPUT Rhs.1, Lhs.1, Lhs.0
+           0   ~0%    {2} r8 = JOIN r7 WITH function_instantiation ON FIRST 1 OUTPUT Lhs.2, Lhs.1
+           0   ~0%    {3} r9 = JOIN r8 WITH params ON FIRST 1 OUTPUT Lhs.1, Rhs.2, Lhs.0
+           0   ~0%    {2} r10 = JOIN r9 WITH params_120#join_rhs ON FIRST 2 OUTPUT Rhs.2, Lhs.2
+           0   ~0%    {2} r11 = JOIN r10 WITH var_decls_10#join_rhs ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                  
+        9233   ~5%    {2} r12 = r4 UNION r11
+                      return r12
+
+[2022-07-21 17:56:31] Completed evaluation of a recursive layer containing 1 different predicates (took 11ms). Predicates evaluated:
+UserType::UserType::getADeclarationEntry#f0820431#ff@7fbf8wql (took 9ms) (size: 829)
+
+Evaluated recursive predicate UserType::UserType::getADeclarationEntry#f0820431#ff@7fbf8wql in 4ms on iteration 1 (delta size: 829).
+Tuple counts for UserType::UserType::getADeclarationEntry#f0820431#ff@7fbf8wql on iteration 1 running pipeline base:
+        791  ~0%    {1} r1 = JOIN type_decls_1#join_rhs WITH ResolveClass::Cached::resolveClass#eb2868f4#ff ON FIRST 1 OUTPUT Rhs.1
+        790  ~0%    {1} r2 = JOIN r1 WITH UserType::UserType#class#f5951597#f ON FIRST 1 OUTPUT Lhs.0
+        793  ~2%    {2} r3 = JOIN r2 WITH ResolveClass::Cached::resolveClass#eb2868f4#ff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+        829  ~3%    {2} r4 = JOIN r3 WITH type_decls_10#join_rhs ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                    return r4
+
+Evaluated recursive predicate UserType::UserType::getADeclarationEntry#f0820431#ff@7fbf8wql in 5ms on iteration 2 (delta size: 0).
+Tuple counts for UserType::UserType::getADeclarationEntry#f0820431#ff@7fbf8wql on iteration 2 running pipeline order_500000:
+         0   ~0%    {2} r1 = JOIN UserType::UserType::getADeclarationEntry#f0820431#ff#prev_delta WITH Class::Class::isConstructedFrom#dispred#f0820431#ff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.1
+         0   ~0%    {2} r2 = JOIN r1 WITH UserType::UserType#class#f5951597#f ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+                
+         0   ~0%    {2} r3 = r2 AND NOT UserType::UserType::getADeclarationEntry#f0820431#ff#prev(Lhs.1, Lhs.0)
+                
+         0   ~0%    {2} r4 = r2 AND NOT UserType::UserType::getADeclarationEntry#f0820431#ff#prev(Lhs.1, Lhs.0)
+                
+         0   ~0%    {2} r5 = r4 AND NOT usertypes_0#antijoin_rhs(Lhs.1)
+         0   ~0%    {2} r6 = SCAN r5 OUTPUT In.1, In.0
+         0   ~0%    {2} r7 = JOIN r6 WITH type_decls_1#join_rhs ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+                
+         0   ~0%    {2} r8 = SCAN r4 OUTPUT In.1, In.0
+         0   ~0%    {3} r9 = JOIN r8 WITH ResolveClass::Cached::resolveClass#eb2868f4#ff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.1, Lhs.0
+         0   ~0%    {2} r10 = JOIN r9 WITH type_decls_1#join_rhs ON FIRST 1 OUTPUT Lhs.1, Lhs.2
+                
+         0   ~0%    {2} r11 = r7 UNION r10
+                    {2} r12 = MATERIALIZE r11 AS unknown
+                
+         0   ~0%    {2} r13 = r3 AND NOT r12(Lhs.0, Lhs.1)
+         0   ~0%    {2} r14 = SCAN r13 OUTPUT In.1, In.0
+                    return r14
+
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Declaration::DeclarationEntry::getDeclaration#dispred#f0820431#ff@f6b4f5en in 42ms (size: 22370).
+Tuple counts for Declaration::DeclarationEntry::getDeclaration#dispred#f0820431#ff@f6b4f5en:
+          829   ~3%    {2} r1 = SCAN UserType::TypeDeclarationEntry::getType#dispred#f0820431#ff OUTPUT In.1, In.0
+          829   ~2%    {2} r2 = JOIN r1 WITH UserType::UserType#class#f5951597#f ON FIRST 1 OUTPUT Lhs.1, Rhs.0
+                   
+         4514   ~0%    {2} r3 = SCAN fun_decls OUTPUT In.0, In.1
+         4502   ~0%    {2} r4 = STREAM DEDUP r3
+                   
+        17240   ~3%    {2} r5 = SCAN var_decls OUTPUT In.0, In.1
+        17039   ~2%    {2} r6 = STREAM DEDUP r5
+                   
+        21541   ~2%    {2} r7 = r4 UNION r6
+        22370   ~3%    {2} r8 = r2 UNION r7
+                       return r8
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff_10#join_rhs@08d615l6 in 7ms (size: 9233).
+Tuple counts for Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff_10#join_rhs@08d615l6:
+        9233  ~2%    {2} r1 = SCAN Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff OUTPUT In.1, In.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff@152ff6m6 in 12ms (size: 9089).
+Tuple counts for Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff@152ff6m6:
+        9089  ~5%    {2} r1 = JOIN Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff#antijoin_rhs WITH Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate project#Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff@89b805nb in 5ms (size: 7465).
+Tuple counts for project#Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff@89b805nb:
+        9089  ~19%    {1} r1 = SCAN Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff OUTPUT In.0
+        7465   ~0%    {1} r2 = STREAM DEDUP r1
+                      return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Declaration::Declaration::getDefinition#dispred#f0820431#ff@09cbb4dq in 24ms (size: 15855).
+Tuple counts for Declaration::Declaration::getDefinition#dispred#f0820431#ff@09cbb4dq:
+         2486   ~0%    {2} r1 = SCAN Function::Function::getADeclarationEntry#dispred#f0820431#fb OUTPUT In.1, In.0
+         2486   ~0%    {2} r2 = JOIN r1 WITH fun_def ON FIRST 1 OUTPUT Lhs.1, Rhs.0
+                   
+          829   ~2%    {2} r3 = SCAN UserType::UserType::getADeclarationEntry#f0820431#ff OUTPUT In.1, In.0
+          334   ~4%    {2} r4 = JOIN r3 WITH type_def ON FIRST 1 OUTPUT Lhs.1, Rhs.0
+                   
+        13035   ~1%    {2} r5 = JOIN var_def WITH var_decls ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+                   
+        13369   ~0%    {2} r6 = r4 UNION r5
+        15855   ~1%    {2} r7 = r2 UNION r6
+                       return r7
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff_10#join_rhs@cd0013st in 9ms (size: 9089).
+Tuple counts for Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff_10#join_rhs@cd0013st:
+        9089  ~2%    {2} r1 = SCAN Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff OUTPUT In.1, In.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate project#Declaration::Declaration::getDefinition#dispred#f0820431#ff@db9a6bgg in 6ms (size: 15823).
+Tuple counts for project#Declaration::Declaration::getDefinition#dispred#f0820431#ff@db9a6bgg:
+        15855  ~0%    {1} r1 = SCAN Declaration::Declaration::getDefinition#dispred#f0820431#ff OUTPUT In.0
+        15823  ~0%    {1} r2 = STREAM DEDUP r1
+                      return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Variable::Variable::getName#dispred#f0820431#ff#antijoin_rhs@cb4d83dj in 33ms (size: 6824).
+Tuple counts for Variable::Variable::getName#dispred#f0820431#ff#antijoin_rhs@cb4d83dj:
+         9089  ~0%    {3} r1 = JOIN Variable::VariableDeclarationEntry::getName#dispred#f0820431#ff WITH Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.0, Lhs.1
+        12361  ~0%    {4} r2 = JOIN r1 WITH Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.1, Lhs.2, Lhs.0
+         6824  ~1%    {3} r3 = JOIN r2 WITH var_def ON FIRST 1 OUTPUT Lhs.1, Lhs.2, Lhs.3
+                      return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Stmt::Stmt::getChild#dispred#f0820431#bff@b947b7mm in 133ms (size: 1476).
+Tuple counts for Stmt::Stmt::getChild#dispred#f0820431#bff@b947b7mm:
+        215686  ~0%    {3} r1 = SCAN #select#query#fff OUTPUT In.2, In.0, In.1
+          1476  ~2%    {3} r2 = JOIN r1 WITH m#Stmt::Stmt::getChild#dispred#f0820431#bff ON FIRST 1 OUTPUT Rhs.0, Lhs.2, Lhs.1
+                       return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff#antijoin_rhs@48a760o8 in 36ms (size: 18113).
+Tuple counts for Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff#antijoin_rhs@48a760o8:
+        22226  ~0%    {3} r1 = JOIN Declaration::DeclarationEntry::getName#dispred#f0820431#ff WITH Declaration::DeclarationEntry::getDeclaration#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0, Lhs.1
+        18113  ~0%    {2} r2 = JOIN r1 WITH project#Declaration::Declaration::getDefinition#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Lhs.2
+                      return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Stmt::Stmt::getChild#dispred#f0820431#bff_10#join_rhs@3b80a5vk in 1ms (size: 1476).
+Tuple counts for Stmt::Stmt::getChild#dispred#f0820431#bff_10#join_rhs@3b80a5vk:
+        1476  ~1%    {2} r1 = SCAN Stmt::Stmt::getChild#dispred#f0820431#bff OUTPUT In.1, In.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate project#Stmt::Stmt::getChild#dispred#f0820431#bff#2@a3c3a9o6 in 2ms (size: 0).
+Tuple counts for project#Stmt::Stmt::getChild#dispred#f0820431#bff#2@a3c3a9o6:
+        1  ~0%    {1} r1 = CONSTANT(unique int)[1]
+        0  ~0%    {1} r2 = JOIN r1 WITH Stmt::Stmt::getChild#dispred#f0820431#bff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate project#Stmt::Stmt::getChild#dispred#f0820431#bff@e00901ks in 2ms (size: 1476).
+Tuple counts for project#Stmt::Stmt::getChild#dispred#f0820431#bff@e00901ks:
+           1  ~0%    {1} r1 = CONSTANT(unique int)[0]
+        1476  ~3%    {1} r2 = JOIN r1 WITH Stmt::Stmt::getChild#dispred#f0820431#bff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                     return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Stmt::DefaultCase#class#af82e98b#f#antijoin_rhs@31af938a in 4ms (size: 1476).
+Tuple counts for Stmt::DefaultCase#class#af82e98b#f#antijoin_rhs@31af938a:
+           1  ~0%    {1} r1 = CONSTANT(unique int)[10]
+        1650  ~0%    {2} r2 = JOIN r1 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, 10
+        1650  ~4%    {1} r3 = JOIN r2 WITH stmts ON FIRST 2 OUTPUT Lhs.0
+        1476  ~3%    {1} r4 = JOIN r3 WITH project#Stmt::Stmt::getChild#dispred#f0820431#bff ON FIRST 1 OUTPUT Lhs.0
+                     return r4
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Stmt::DefaultCase#class#af82e98b#f@cefff50g in 2ms (size: 174).
+Tuple counts for Stmt::DefaultCase#class#af82e98b#f@cefff50g:
+           1  ~0%    {1} r1 = CONSTANT(unique int)[10]
+        1650  ~4%    {1} r2 = JOIN r1 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+         174  ~3%    {1} r3 = r2 AND NOT Stmt::DefaultCase#class#af82e98b#f#antijoin_rhs(Lhs.0)
+                     return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff@0c9abafu in 46ms (size: 22231).
+Tuple counts for Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff@0c9abafu:
+         4113   ~6%    {2} r1 = Declaration::DeclarationEntry::getName#dispred#f0820431#ff AND NOT Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff#antijoin_rhs(Lhs.0, Lhs.1)
+                   
+        22370   ~5%    {2} r2 = SCAN Declaration::DeclarationEntry::getDeclaration#dispred#f0820431#ff OUTPUT In.1, In.0
+        18118   ~0%    {1} r3 = JOIN r2 WITH project#Declaration::Declaration::getDefinition#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1
+        18118   ~2%    {2} r4 = JOIN r3 WITH Declaration::DeclarationEntry::getDeclaration#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+        18184   ~0%    {2} r5 = JOIN r4 WITH Declaration::Declaration::getDefinition#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.1
+        18184   ~0%    {2} r6 = JOIN r5 WITH Declaration::DeclarationEntry::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                   
+        22297   ~3%    {2} r7 = r1 UNION r6
+                       return r7
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#5@0bb387f9 in 6ms (size: 3703).
+Tuple counts for Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#5@0bb387f9:
+        3819  ~4%    {2} r1 = JOIN Element::ElementBase::toString#dispred#f0820431#ff#shared#1 WITH Variable::VariableDeclarationEntry::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+        3703  ~0%    {1} r2 = JOIN r1 WITH Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff ON FIRST 2 OUTPUT Lhs.0
+                     return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate project#Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff@4702c1u2 in 5ms (size: 22231).
+Tuple counts for project#Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff@4702c1u2:
+        22231  ~0%    {1} r1 = SCAN Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff OUTPUT In.0
+        22231  ~0%    {1} r2 = STREAM DEDUP r1
+                      return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#4@a64a77tp in 16ms (size: 6255).
+Tuple counts for Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#4@a64a77tp:
+        6371  ~0%    {3} r1 = JOIN Element::ElementBase::toString#dispred#f0820431#ff#shared WITH Declaration::DeclarationEntry::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, Rhs.1, Lhs.1
+        6255  ~3%    {2} r2 = JOIN r1 WITH Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff ON FIRST 2 OUTPUT Lhs.0, Lhs.2
+                     return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Variable::ParameterDeclarationEntry::getAnonymousParameterDescription#dispred#f0820431#ff@905973i1 in 11ms (size: 144).
+Tuple counts for Variable::ParameterDeclarationEntry::getAnonymousParameterDescription#dispred#f0820431#ff@905973i1:
+        9233   ~0%    {2} r1 = SCAN param_decl_bind OUTPUT In.0, In.1
+         144   ~0%    {2} r2 = r1 AND NOT Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff#antijoin_rhs(Lhs.0)
+         144   ~0%    {2} r3 = SCAN r2 OUTPUT In.0, replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(replaceAll((toString((In.1 + 1)) ++ "th")["1th"->"1st"])["2th"->"2nd"])["3th"->"3rd"])["11st"->"11th"])["12nd"->"12th"])["13rd"->"13th"])
+         139   ~0%    {2} r4 = r3 AND NOT project#Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff(Lhs.0)
+         139   ~0%    {2} r5 = SCAN r4 OUTPUT In.0, ("declaration of " ++ In.1 ++ " parameter")
+                  
+        9233   ~0%    {2} r6 = SCAN param_decl_bind OUTPUT In.0, In.1
+         144   ~0%    {2} r7 = r6 AND NOT Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff#antijoin_rhs(Lhs.0)
+           5   ~0%    {2} r8 = JOIN r7 WITH Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, ("declaration of " ++ Rhs.1 ++ " as anonymous " ++ replaceAll(replaceAll(replaceAll(replaceAll(replaceAll(replaceAll((toString((Lhs.1 + 1)) ++ "th")["1th"->"1st"])["2th"->"2nd"])["3th"->"3rd"])["11st"->"11th"])["12nd"->"12th"])["13rd"->"13th"]) ++ " parameter")
+                  
+         144   ~0%    {2} r9 = r5 UNION r8
+                      return r9
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate exprs_10#join_rhs@6d0aeb5h in 305ms (size: 324197).
+Tuple counts for exprs_10#join_rhs@6d0aeb5h:
+        324197  ~3%    {2} r1 = SCAN exprs OUTPUT In.1, In.0
+                       return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate m#Expr::Expr::getChild#dispred#f0820431#bff@3ec4c3hq in 1ms (size: 1115).
+Tuple counts for m#Expr::Expr::getChild#dispred#f0820431#bff@3ec4c3hq:
+           1   ~0%    {1} r1 = CONSTANT(unique int)[93]
+        1115   ~1%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r3 = CONSTANT(unique int)[94]
+           0   ~0%    {1} r4 = JOIN r3 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r5 = CONSTANT(unique int)[132]
+           0   ~0%    {1} r6 = JOIN r5 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           0   ~0%    {1} r7 = r4 UNION r6
+        1115   ~1%    {1} r8 = r2 UNION r7
+                      return r8
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate @access#f#antijoin_rhs@a0bf62eh in 4ms (size: 12277).
+Tuple counts for @access#f#antijoin_rhs@a0bf62eh:
+            1  ~0%    {1} r1 = CONSTANT(unique int)[97]
+        12277  ~4%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                      return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Cast::AlignofTypeOperator::getTypeOperand#dispred#f0820431#ff@d2be8b0s in 3ms (size: 0).
+Tuple counts for Cast::AlignofTypeOperator::getTypeOperand#dispred#f0820431#ff@d2be8b0s:
+         1   ~0%    {1} r1 = CONSTANT(unique int)[94]
+         0   ~0%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+         0   ~0%    {2} r3 = JOIN r2 WITH sizeof_bind ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                
+         0   ~0%    {2} r4 = JOIN r3 WITH sizeof_bind ON FIRST 2 OUTPUT Lhs.1, Lhs.0
+         0   ~0%    {2} r5 = JOIN r4 WITH ResolveClass::Cached::resolveClass#eb2868f4#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.1
+         0   ~0%    {2} r6 = JOIN r5 WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+                
+         0   ~0%    {3} r7 = JOIN r3 WITH sizeof_bind ON FIRST 2 OUTPUT Lhs.1, Lhs.0, Lhs.1
+         0   ~0%    {3} r8 = JOIN r7 WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.1, Lhs.2, Lhs.0
+         0   ~0%    {3} r9 = r8 AND NOT usertypes_0#antijoin_rhs(Lhs.2)
+         0   ~0%    {2} r10 = SCAN r9 OUTPUT In.0, In.2
+                
+         0   ~0%    {2} r11 = r6 UNION r10
+                    return r11
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate builtintypes_02#join_rhs@5c05e02c in 0ms (size: 47).
+Tuple counts for builtintypes_02#join_rhs@5c05e02c:
+        47  ~0%    {2} r1 = SCAN builtintypes OUTPUT In.0, In.2
+                   return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Assignment::AssignOperation#class#9d5edc7a#f@fd9c210s in 5ms (size: 1129).
+Tuple counts for Assignment::AssignOperation#class#9d5edc7a#f@fd9c210s:
+           1   ~0%    {1} r1 = CONSTANT(unique int)[53]
+         222   ~0%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r3 = CONSTANT(unique int)[54]
+         138   ~0%    {1} r4 = JOIN r3 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r5 = CONSTANT(unique int)[55]
+          20   ~0%    {1} r6 = JOIN r5 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+         158   ~0%    {1} r7 = r4 UNION r6
+         380   ~0%    {1} r8 = r2 UNION r7
+                  
+           1   ~0%    {1} r9 = CONSTANT(unique int)[56]
+           5   ~0%    {1} r10 = JOIN r9 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r11 = CONSTANT(unique int)[57]
+           0   ~0%    {1} r12 = JOIN r11 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r13 = CONSTANT(unique int)[58]
+          15   ~0%    {1} r14 = JOIN r13 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+          15   ~0%    {1} r15 = r12 UNION r14
+          20   ~4%    {1} r16 = r10 UNION r15
+         400   ~0%    {1} r17 = r8 UNION r16
+                  
+           1   ~0%    {1} r18 = CONSTANT(unique int)[59]
+          24   ~0%    {1} r19 = JOIN r18 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r20 = CONSTANT(unique int)[60]
+         172   ~0%    {1} r21 = JOIN r20 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r22 = CONSTANT(unique int)[61]
+         256   ~0%    {1} r23 = JOIN r22 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+         428   ~0%    {1} r24 = r21 UNION r23
+         452   ~0%    {1} r25 = r19 UNION r24
+                  
+           1   ~0%    {1} r26 = CONSTANT(unique int)[62]
+          54   ~0%    {1} r27 = JOIN r26 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r28 = CONSTANT(unique int)[63]
+         145   ~0%    {1} r29 = JOIN r28 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+           1   ~0%    {1} r30 = CONSTANT(unique int)[64]
+          78   ~3%    {1} r31 = JOIN r30 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  
+         223   ~0%    {1} r32 = r29 UNION r31
+         277   ~0%    {1} r33 = r27 UNION r32
+         729   ~0%    {1} r34 = r25 UNION r33
+        1129   ~0%    {1} r35 = r17 UNION r34
+                      return r35
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate locations_expr_23450#join_rhs@3d73f31f in 207ms (size: 151608).
+Tuple counts for locations_expr_23450#join_rhs@3d73f31f:
+        151608  ~1%    {5} r1 = SCAN locations_expr OUTPUT In.2, In.3, In.4, In.5, In.0
+                       return r1
+
+[2022-07-21 17:56:31] Found predicate Expr::Expr::getType#dispred#f0820431#ff@4ad069jg in the relation cache (size: 324197)
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::ReThrowExpr#class#ef463c5d#f@eaefe12m in 2ms (size: 0).
+Tuple counts for Expr::ReThrowExpr#class#ef463c5d#f@eaefe12m:
+        1  ~0%    {1} r1 = CONSTANT(unique int)[89]
+        0  ~0%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+        0  ~0%    {3} r3 = JOIN r2 WITH Expr::Expr::getType#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, 3, Lhs.0
+        0  ~0%    {1} r4 = JOIN r3 WITH builtintypes_02#join_rhs ON FIRST 2 OUTPUT Lhs.2
+                  return r4
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Lambda::Closure#class#ea6054ce#f@ae3946t8 in 4ms (size: 0).
+Tuple counts for Lambda::Closure#class#ea6054ce#f@ae3946t8:
+        1  ~0%    {1} r1 = CONSTANT(unique int)[215]
+        0  ~0%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+        0  ~0%    {1} r3 = JOIN r2 WITH Expr::Expr::getType#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1
+        0  ~0%    {1} r4 = JOIN r3 WITH Class::Class#bacd9b46#f ON FIRST 1 OUTPUT Lhs.0
+                  return r4
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Call::Call#39248e3c#f@1235cd9h in 14ms (size: 11605).
+Tuple counts for Call::Call#39248e3c#f@1235cd9h:
+            1   ~0%    {1} r1 = CONSTANT(unique int)[74]
+           34   ~0%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+        11605   ~4%    {1} r3 = iscall_0#antijoin_rhs UNION r2
+                       return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate files_10#join_rhs@2fb45401 in 5ms (size: 301).
+Tuple counts for files_10#join_rhs@2fb45401:
+        301  ~0%    {2} r1 = SCAN files OUTPUT In.1, In.0
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Call::FunctionCall#39248e3c#f@a727ef8f in 5ms (size: 11571).
+Tuple counts for Call::FunctionCall#39248e3c#f@a727ef8f:
+        11571  ~4%    {1} r1 = JOIN iscall_0#antijoin_rhs WITH Call::Call#39248e3c#f ON FIRST 1 OUTPUT Lhs.0
+                      return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Call::FunctionCall::getTarget#f0820431#ff@215e705k in 5ms (size: 11571).
+Tuple counts for Call::FunctionCall::getTarget#f0820431#ff@215e705k:
+        11571  ~0%    {2} r1 = JOIN Call::FunctionCall#39248e3c#f WITH funbind ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                      return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate @access#f@59ec21u1 in 28ms (size: 111265).
+Tuple counts for @access#f@59ec21u1:
+             1   ~0%    {1} r1 = CONSTANT(unique int)[84]
+         98988   ~7%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                    
+        111265   ~7%    {1} r3 = @access#f#antijoin_rhs UNION r2
+                        return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate project#Call::FunctionCall::getTarget#f0820431#ff@6cc015cm in 12ms (size: 1993).
+Tuple counts for project#Call::FunctionCall::getTarget#f0820431#ff@6cc015cm:
+        11571  ~507%    {1} r1 = SCAN Call::FunctionCall::getTarget#f0820431#ff OUTPUT In.1
+                        return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::UnaryOperation#class#ef463c5d#f@b4c49eki in 31ms (size: 12864).
+Tuple counts for Expr::UnaryOperation#class#ef463c5d#f@b4c49eki:
+            1   ~0%    {1} r1 = CONSTANT(unique int)[2]
+         4132   ~0%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r3 = CONSTANT(unique int)[4]
+         2122   ~0%    {1} r4 = JOIN r3 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+         6254   ~0%    {1} r5 = r2 UNION r4
+                   
+            1   ~0%    {1} r6 = CONSTANT(unique int)[13]
+         1230   ~0%    {1} r7 = JOIN r6 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r8 = CONSTANT(unique int)[14]
+           14   ~0%    {1} r9 = JOIN r8 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+         1244   ~1%    {1} r10 = r7 UNION r9
+         7498   ~0%    {1} r11 = r5 UNION r10
+                   
+            1   ~0%    {1} r12 = CONSTANT(unique int)[15]
+         1951   ~2%    {1} r13 = JOIN r12 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r14 = CONSTANT(unique int)[16]
+         1654   ~0%    {1} r15 = JOIN r14 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+         3605   ~0%    {1} r16 = r13 UNION r15
+                   
+            1   ~0%    {1} r17 = CONSTANT(unique int)[17]
+            0   ~0%    {1} r18 = JOIN r17 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r19 = CONSTANT(unique int)[18]
+            0   ~0%    {1} r20 = JOIN r19 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            0   ~0%    {1} r21 = r18 UNION r20
+         3605   ~0%    {1} r22 = r16 UNION r21
+        11103   ~0%    {1} r23 = r11 UNION r22
+                   
+            1   ~0%    {1} r24 = CONSTANT(unique int)[19]
+            0   ~0%    {1} r25 = JOIN r24 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r26 = CONSTANT(unique int)[20]
+         1236   ~0%    {1} r27 = JOIN r26 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+         1236   ~0%    {1} r28 = r25 UNION r27
+                   
+            1   ~0%    {1} r29 = CONSTANT(unique int)[21]
+          310   ~1%    {1} r30 = JOIN r29 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r31 = CONSTANT(unique int)[22]
+           91   ~0%    {1} r32 = JOIN r31 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+          401   ~1%    {1} r33 = r30 UNION r32
+         1637   ~0%    {1} r34 = r28 UNION r33
+                   
+            1   ~0%    {1} r35 = CONSTANT(unique int)[23]
+          124   ~1%    {1} r36 = JOIN r35 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r37 = CONSTANT(unique int)[322]
+            0   ~0%    {1} r38 = JOIN r37 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+          124   ~1%    {1} r39 = r36 UNION r38
+                   
+            1   ~0%    {1} r40 = CONSTANT(unique int)[323]
+            0   ~0%    {1} r41 = JOIN r40 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r42 = CONSTANT(unique int)[327]
+            0   ~0%    {1} r43 = JOIN r42 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r44 = CONSTANT(unique int)[328]
+            0   ~0%    {1} r45 = JOIN r44 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            0   ~0%    {1} r46 = r43 UNION r45
+            0   ~0%    {1} r47 = r41 UNION r46
+          124   ~1%    {1} r48 = r39 UNION r47
+         1761   ~0%    {1} r49 = r34 UNION r48
+        12864   ~0%    {1} r50 = r23 UNION r49
+                       return r50
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate m#Declaration::Declaration::isMember#dispred#f0820431#b@ac6001fv in 4ms (size: 3399).
+Tuple counts for m#Declaration::Declaration::isMember#dispred#f0820431#b@ac6001fv:
+        1412   ~6%    {1} r1 = SCAN membervariables OUTPUT In.0
+        1406   ~6%    {1} r2 = STREAM DEDUP r1
+                  
+        3399   ~4%    {1} r3 = project#Call::FunctionCall::getTarget#f0820431#ff UNION r2
+                      return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate valuebind_10#join_rhs@b8c48fi7 in 22ms (size: 114499).
+Tuple counts for valuebind_10#join_rhs@b8c48fi7:
+        114499  ~0%    {2} r1 = SCAN valuebind OUTPUT In.1, In.0
+                       return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Class::Class::getAMember#dispred#f0820431#2#ffb@e3df51re in 2ms (size: 1406).
+Tuple counts for Class::Class::getAMember#dispred#f0820431#2#ffb@e3df51re:
+        1406   ~1%    {3} r1 = JOIN Class::Class::getCanonicalMember#dispred#f0820431#fff_201#join_rhs WITH m#Declaration::Declaration::isMember#dispred#f0820431#b ON FIRST 1 OUTPUT Lhs.1, Lhs.2, Rhs.0
+                  
+           0   ~0%    {2} r2 = SCAN Function::TemplateFunction::getAnInstantiation#dispred#f0820431#fb OUTPUT In.1, In.0
+           0   ~0%    {2} r3 = JOIN r2 WITH m#Declaration::Declaration::isMember#dispred#f0820431#b ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+           0   ~0%    {3} r4 = JOIN r3 WITH Class::Class::getCanonicalMember#dispred#f0820431#fff_201#join_rhs ON FIRST 1 OUTPUT Rhs.1, Rhs.2, Lhs.1
+                  
+           0   ~0%    {2} r5 = SCAN variable_instantiation OUTPUT In.1, In.0
+           0   ~0%    {2} r6 = JOIN r5 WITH is_variable_template ON FIRST 1 OUTPUT Lhs.1, Rhs.0
+           0   ~0%    {2} r7 = JOIN r6 WITH m#Declaration::Declaration::isMember#dispred#f0820431#b ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+           0   ~0%    {3} r8 = JOIN r7 WITH Class::Class::getCanonicalMember#dispred#f0820431#fff_201#join_rhs ON FIRST 1 OUTPUT Rhs.1, Rhs.2, Lhs.1
+                  
+           0   ~0%    {3} r9 = r4 UNION r8
+        1406   ~1%    {3} r10 = r1 UNION r9
+                      return r10
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate project#Class::Class::getAMember#dispred#f0820431#2#ffb@7dcedcj1 in 2ms (size: 1406).
+Tuple counts for project#Class::Class::getAMember#dispred#f0820431#2#ffb@7dcedcj1:
+        1406  ~6%    {1} r1 = SCAN Class::Class::getAMember#dispred#f0820431#2#ffb OUTPUT In.2
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Declaration::Declaration::isMember#dispred#f0820431#b@95fa7bqt in 1ms (size: 1406).
+Tuple counts for Declaration::Declaration::isMember#dispred#f0820431#b@95fa7bqt:
+        1406  ~6%    {1} r1 = JOIN m#Declaration::Declaration::isMember#dispred#f0820431#b WITH project#Class::Class::getAMember#dispred#f0820431#2#ffb ON FIRST 1 OUTPUT Lhs.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate MemberFunction::MemberFunction#5d715d12#b@e3fd883s in 1ms (size: 0).
+Tuple counts for MemberFunction::MemberFunction#5d715d12#b@e3fd883s:
+        0  ~0%    {1} r1 = JOIN project#Call::FunctionCall::getTarget#f0820431#ff WITH Declaration::Declaration::isMember#dispred#f0820431#b ON FIRST 1 OUTPUT Lhs.0
+                  return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Variable::MemberVariable#7a968d4e#f@434d39mf in 1ms (size: 1406).
+Tuple counts for Variable::MemberVariable#7a968d4e#f@434d39mf:
+        1412  ~6%    {1} r1 = SCAN membervariables OUTPUT In.0
+        1406  ~6%    {1} r2 = STREAM DEDUP r1
+        1406  ~6%    {1} r3 = JOIN r2 WITH Declaration::Declaration::isMember#dispred#f0820431#b ON FIRST 1 OUTPUT Lhs.0
+                     return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Field::Field#class#1b3cf47e#f@d1726dem in 3ms (size: 1406).
+Tuple counts for Field::Field#class#1b3cf47e#f@d1726dem:
+        1406  ~6%    {1} r1 = JOIN Variable::MemberVariable#7a968d4e#f WITH fieldoffsets ON FIRST 1 OUTPUT Lhs.0
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Variable::MemberVariable::getName#dispred#f0820431#ff@8ac58ckj in 2ms (size: 1406).
+Tuple counts for Variable::MemberVariable::getName#dispred#f0820431#ff@8ac58ckj:
+        1412  ~3%    {2} r1 = JOIN membervariables WITH Variable::MemberVariable#7a968d4e#f ON FIRST 1 OUTPUT Lhs.0, Lhs.2
+                     return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::BinaryOperation#class#ef463c5d#f@c59f24or in 69ms (size: 35571).
+Tuple counts for Expr::BinaryOperation#class#ef463c5d#f@c59f24or:
+            1   ~0%    {1} r1 = CONSTANT(unique int)[25]
+         3342   ~3%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r3 = CONSTANT(unique int)[26]
+         3540   ~0%    {1} r4 = JOIN r3 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r5 = CONSTANT(unique int)[27]
+          877   ~1%    {1} r6 = JOIN r5 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+         4417   ~0%    {1} r7 = r4 UNION r6
+         7759   ~0%    {1} r8 = r2 UNION r7
+                   
+            1   ~0%    {1} r9 = CONSTANT(unique int)[28]
+          218   ~0%    {1} r10 = JOIN r9 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r11 = CONSTANT(unique int)[29]
+           19   ~0%    {1} r12 = JOIN r11 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+          237   ~0%    {1} r13 = r10 UNION r12
+                   
+            1   ~0%    {1} r14 = CONSTANT(unique int)[30]
+            0   ~0%    {1} r15 = JOIN r14 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r16 = CONSTANT(unique int)[31]
+            0   ~0%    {1} r17 = JOIN r16 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            0   ~0%    {1} r18 = r15 UNION r17
+          237   ~0%    {1} r19 = r13 UNION r18
+         7996   ~0%    {1} r20 = r8 UNION r19
+                   
+            1   ~0%    {1} r21 = CONSTANT(unique int)[32]
+            0   ~0%    {1} r22 = JOIN r21 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r23 = CONSTANT(unique int)[33]
+            0   ~0%    {1} r24 = JOIN r23 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            0   ~0%    {1} r25 = r22 UNION r24
+                   
+            1   ~0%    {1} r26 = CONSTANT(unique int)[34]
+            0   ~0%    {1} r27 = JOIN r26 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r28 = CONSTANT(unique int)[35]
+            0   ~0%    {1} r29 = JOIN r28 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            0   ~0%    {1} r30 = r27 UNION r29
+            0   ~0%    {1} r31 = r25 UNION r30
+                   
+            1   ~0%    {1} r32 = CONSTANT(unique int)[36]
+         1429   ~0%    {1} r33 = JOIN r32 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r34 = CONSTANT(unique int)[37]
+          877   ~0%    {1} r35 = JOIN r34 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+         2306   ~0%    {1} r36 = r33 UNION r35
+                   
+            1   ~0%    {1} r37 = CONSTANT(unique int)[38]
+          313   ~2%    {1} r38 = JOIN r37 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r39 = CONSTANT(unique int)[39]
+         5868   ~0%    {1} r40 = JOIN r39 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+         6181   ~0%    {1} r41 = r38 UNION r40
+         8487   ~0%    {1} r42 = r36 UNION r41
+         8487   ~0%    {1} r43 = r31 UNION r42
+        16483   ~0%    {1} r44 = r20 UNION r43
+                   
+            1   ~0%    {1} r45 = CONSTANT(unique int)[40]
+         1719   ~0%    {1} r46 = JOIN r45 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r47 = CONSTANT(unique int)[41]
+         3607   ~1%    {1} r48 = JOIN r47 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r49 = CONSTANT(unique int)[42]
+         3530   ~1%    {1} r50 = JOIN r49 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+         7137   ~6%    {1} r51 = r48 UNION r50
+         8856   ~2%    {1} r52 = r46 UNION r51
+                   
+            1   ~0%    {1} r53 = CONSTANT(unique int)[43]
+          150   ~0%    {1} r54 = JOIN r53 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r55 = CONSTANT(unique int)[44]
+         4105   ~1%    {1} r56 = JOIN r55 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+         4255   ~1%    {1} r57 = r54 UNION r56
+                   
+            1   ~0%    {1} r58 = CONSTANT(unique int)[45]
+          785   ~0%    {1} r59 = JOIN r58 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r60 = CONSTANT(unique int)[46]
+          704   ~0%    {1} r61 = JOIN r60 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+         1489   ~2%    {1} r62 = r59 UNION r61
+         5744   ~5%    {1} r63 = r57 UNION r62
+        14600   ~2%    {1} r64 = r52 UNION r63
+                   
+            1   ~0%    {1} r65 = CONSTANT(unique int)[47]
+         1079   ~6%    {1} r66 = JOIN r65 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r67 = CONSTANT(unique int)[48]
+          520   ~0%    {1} r68 = JOIN r67 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+         1599   ~5%    {1} r69 = r66 UNION r68
+                   
+            1   ~0%    {1} r70 = CONSTANT(unique int)[49]
+          474   ~3%    {1} r71 = JOIN r70 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r72 = CONSTANT(unique int)[50]
+            0   ~0%    {1} r73 = JOIN r72 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+          474   ~3%    {1} r74 = r71 UNION r73
+         2073   ~4%    {1} r75 = r69 UNION r74
+                   
+            1   ~0%    {1} r76 = CONSTANT(unique int)[51]
+            0   ~0%    {1} r77 = JOIN r76 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r78 = CONSTANT(unique int)[65]
+         1623   ~0%    {1} r79 = JOIN r78 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+         1623   ~0%    {1} r80 = r77 UNION r79
+                   
+            1   ~0%    {1} r81 = CONSTANT(unique int)[66]
+          792   ~5%    {1} r82 = JOIN r81 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+            1   ~0%    {1} r83 = CONSTANT(unique int)[326]
+            0   ~0%    {1} r84 = JOIN r83 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                   
+          792   ~5%    {1} r85 = r82 UNION r84
+         2415   ~0%    {1} r86 = r80 UNION r85
+         4488   ~0%    {1} r87 = r75 UNION r86
+        19088   ~1%    {1} r88 = r64 UNION r87
+        35571   ~0%    {1} r89 = r44 UNION r88
+                       return r89
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::Expr::getChild#dispred#f0820431#bff@6a0ef6ca in 73ms (size: 373).
+Tuple counts for Expr::Expr::getChild#dispred#f0820431#bff@6a0ef6ca:
+        215686  ~0%    {3} r1 = SCAN #select#query#fff OUTPUT In.2, In.0, In.1
+           373  ~0%    {3} r2 = JOIN r1 WITH m#Expr::Expr::getChild#dispred#f0820431#bff ON FIRST 1 OUTPUT Rhs.0, Lhs.2, Lhs.1
+                       return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::Expr::getChild#dispred#f0820431#bff_02#count_range@e388cdjc in 0ms (size: 373).
+Tuple counts for Expr::Expr::getChild#dispred#f0820431#bff_02#count_range@e388cdjc:
+        373  ~0%    {2} r1 = SCAN Expr::Expr::getChild#dispred#f0820431#bff OUTPUT In.0, In.2
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::Expr::getChild#dispred#f0820431#bff_10#join_rhs@321808id in 0ms (size: 373).
+Tuple counts for Expr::Expr::getChild#dispred#f0820431#bff_10#join_rhs@321808id:
+        373  ~0%    {2} r1 = SCAN Expr::Expr::getChild#dispred#f0820431#bff OUTPUT In.1, In.0
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate project#Expr::Expr::getChild#dispred#f0820431#bff#2@1d1a85v6 in 1ms (size: 373).
+Tuple counts for project#Expr::Expr::getChild#dispred#f0820431#bff#2@1d1a85v6:
+          1  ~0%    {1} r1 = CONSTANT(unique int)[0]
+        373  ~0%    {1} r2 = JOIN r1 WITH Expr::Expr::getChild#dispred#f0820431#bff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                    return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Call::FunctionCall::getTarget#dispred#f0820431#ff@116e01os in 24ms (size: 11571).
+Tuple counts for Call::FunctionCall::getTarget#dispred#f0820431#ff@116e01os:
+        11571   ~0%    {2} r1 = Call::FunctionCall::getTarget#f0820431#ff AND NOT Call::ConstructorCall#class#39248e3c#f(Lhs.0)
+        11571   ~0%    {2} r2 = r1 AND NOT Call::DestructorCall#class#39248e3c#f(Lhs.0)
+                   
+        11571   ~0%    {2} r3 = SCAN Call::FunctionCall::getTarget#f0820431#ff OUTPUT In.1, In.0
+                   
+            0   ~0%    {2} r4 = JOIN r3 WITH MemberFunction::Constructor#class#5d715d12#b ON FIRST 1 OUTPUT Lhs.1, Rhs.0
+            0   ~0%    {2} r5 = JOIN r4 WITH Call::ConstructorCall#class#39248e3c#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+                   
+            0   ~0%    {2} r6 = JOIN r3 WITH MemberFunction::Destructor#class#5d715d12#b ON FIRST 1 OUTPUT Lhs.1, Rhs.0
+            0   ~0%    {2} r7 = JOIN r6 WITH Call::DestructorCall#class#39248e3c#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+                   
+            0   ~0%    {2} r8 = r5 UNION r7
+        11571   ~0%    {2} r9 = r2 UNION r8
+                       return r9
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate project#Call::FunctionCall::getTarget#dispred#f0820431#ff@4b5ae4hp in 2ms (size: 11571).
+Tuple counts for project#Call::FunctionCall::getTarget#dispred#f0820431#ff@4b5ae4hp:
+        11571  ~4%    {1} r1 = SCAN Call::FunctionCall::getTarget#dispred#f0820431#ff OUTPUT In.0
+        11571  ~4%    {1} r2 = STREAM DEDUP r1
+                      return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::FoldExpr::isUnaryFold#dispred#f0820431#f#join_rhs@1711d3sj in 21ms (size: 373).
+Tuple counts for Expr::FoldExpr::isUnaryFold#dispred#f0820431#f#join_rhs@1711d3sj:
+        373  ~0%    {2} r1 = AGGREGATE Expr::Expr::getChild#dispred#f0820431#bff_02#count_range, Expr::Expr::getChild#dispred#f0820431#bff_02#count_range ON  WITH COUNT OUTPUT In.0, Agg.0
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::FoldExpr::isUnaryFold#dispred#f0820431#f@7e2ded98 in 2ms (size: 0).
+Tuple counts for Expr::FoldExpr::isUnaryFold#dispred#f0820431#f@7e2ded98:
+        1  ~0%    {1} r1 = CONSTANT(unique int)[132]
+        0  ~0%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+        0  ~0%    {2} r3 = JOIN r2 WITH Expr::FoldExpr::isUnaryFold#dispred#f0820431#f#join_rhs ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+        0  ~0%    {2} r4 = SELECT r3 ON In.1 = 1
+        0  ~0%    {1} r5 = SCAN r4 OUTPUT In.0
+                  return r5
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Variable::Variable::getName#dispred#f0820431#ff@eb34f1qd in 37ms (size: 15437).
+Tuple counts for Variable::Variable::getName#dispred#f0820431#ff@eb34f1qd:
+         6212   ~0%    {2} r1 = SCAN localvariables OUTPUT In.0, In.2
+                   
+          159   ~0%    {2} r2 = SCAN globalvariables OUTPUT In.0, In.2
+                   
+         6371   ~0%    {2} r3 = r1 UNION r2
+                   
+         7777   ~2%    {2} r4 = Variable::MemberVariable::getName#dispred#f0820431#ff UNION r3
+                   
+         9089   ~0%    {3} r5 = JOIN Variable::VariableDeclarationEntry::getName#dispred#f0820431#ff WITH Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff_10#join_rhs ON FIRST 1 OUTPUT Lhs.0, Lhs.1, Rhs.1
+                   
+         5270   ~0%    {2} r6 = JOIN r5 WITH var_def ON FIRST 1 OUTPUT Lhs.2, Lhs.1
+                   
+         2265   ~3%    {3} r7 = r5 AND NOT Variable::Variable::getName#dispred#f0820431#ff#antijoin_rhs(Lhs.0, Lhs.1, Lhs.2)
+         2265   ~2%    {2} r8 = SCAN r7 OUTPUT In.2, In.1
+                   
+         7866   ~0%    {2} r9 = SCAN params OUTPUT In.0, In.2
+          195   ~0%    {2} r10 = r9 AND NOT project#Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff(Lhs.0)
+          195   ~0%    {2} r11 = SCAN r10 OUTPUT In.0, ("(unnamed parameter " ++ toString(In.1) ++ ")")
+                   
+         2460   ~2%    {2} r12 = r8 UNION r11
+         7730   ~3%    {2} r13 = r6 UNION r12
+        15507   ~6%    {2} r14 = r4 UNION r13
+                       return r14
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Declaration::Declaration::getName#dispred#f0820431#ff@19f2b31a in 21ms (size: 22356).
+Tuple counts for Declaration::Declaration::getName#dispred#f0820431#ff@19f2b31a:
+        16228   ~0%    {2} r1 = UserType::UserType::getName#dispred#f0820431#ff UNION Variable::Variable::getName#dispred#f0820431#ff
+                   
+         3803   ~0%    {2} r2 = SCAN functions OUTPUT In.0, In.1
+                   
+         2325   ~0%    {2} r3 = SCAN enumconstants OUTPUT In.0, In.4
+                   
+            0   ~0%    {2} r4 = SCAN frienddecls OUTPUT In.1, In.0
+            0   ~0%    {2} r5 = JOIN r4 WITH ResolveClass::Cached::resolveClass#eb2868f4#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.1
+            0   ~0%    {2} r6 = JOIN r5 WITH Class::Class#bacd9b46#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+            0   ~0%    {2} r7 = JOIN r6 WITH UserType::UserType::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, (Rhs.1 ++ "'s friend")
+                   
+         2325   ~0%    {2} r8 = r3 UNION r7
+         6128   ~0%    {2} r9 = r2 UNION r8
+        22356   ~0%    {2} r10 = r1 UNION r9
+                       return r10
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::Operation::getOperator#dispred#f0820431#ff@dd7b683s in 118ms (size: 48018).
+Tuple counts for Expr::Operation::getOperator#dispred#f0820431#ff@dd7b683s:
+            1   ~0%    {2} r1 = CONSTANT(int, unique string)[2,"&"]
+         4132   ~0%    {2} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "&"
+                   
+            1   ~0%    {2} r3 = CONSTANT(int, unique string)[4,"*"]
+         2122   ~2%    {2} r4 = JOIN r3 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "*"
+                   
+            1   ~0%    {2} r5 = CONSTANT(int, unique string)[13,"-"]
+         1230   ~4%    {2} r6 = JOIN r5 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "-"
+                   
+         3352   ~2%    {2} r7 = r4 UNION r6
+         7484   ~0%    {2} r8 = r2 UNION r7
+                   
+            1   ~0%    {2} r9 = CONSTANT(int, unique string)[14,"+"]
+           14   ~0%    {2} r10 = JOIN r9 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "+"
+                   
+            1   ~0%    {2} r11 = CONSTANT(int, unique string)[15,"~"]
+         1951   ~0%    {2} r12 = JOIN r11 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "~"
+                   
+         1965   ~0%    {2} r13 = r10 UNION r12
+                   
+            1   ~0%    {2} r14 = CONSTANT(int, unique string)[16,"!"]
+         1654   ~0%    {2} r15 = JOIN r14 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "!"
+                   
+            1   ~0%    {2} r16 = CONSTANT(int, unique string)[17,"~"]
+            0   ~0%    {2} r17 = JOIN r16 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "~"
+                   
+         1654   ~0%    {2} r18 = r15 UNION r17
+         3619   ~0%    {2} r19 = r13 UNION r18
+        11103   ~0%    {2} r20 = r8 UNION r19
+                   
+            1   ~0%    {2} r21 = CONSTANT(int, unique string)[25,"+"]
+         3342   ~0%    {2} r22 = JOIN r21 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "+"
+                   
+            1   ~0%    {2} r23 = CONSTANT(int, unique string)[26,"-"]
+         3540   ~2%    {2} r24 = JOIN r23 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "-"
+                   
+            1   ~0%    {2} r25 = CONSTANT(int, unique string)[27,"*"]
+          877   ~7%    {2} r26 = JOIN r25 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "*"
+                   
+         4417   ~2%    {2} r27 = r24 UNION r26
+         7759   ~0%    {2} r28 = r22 UNION r27
+                   
+            1   ~0%    {2} r29 = CONSTANT(int, unique string)[28,"/"]
+          218   ~0%    {2} r30 = JOIN r29 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "/"
+                   
+            1   ~0%    {2} r31 = CONSTANT(int, unique string)[29,"%"]
+           19   ~5%    {2} r32 = JOIN r31 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "%"
+                   
+          237   ~1%    {2} r33 = r30 UNION r32
+                   
+            1   ~0%    {2} r34 = CONSTANT(int, unique string)[30,"*"]
+            0   ~0%    {2} r35 = JOIN r34 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "*"
+                   
+            1   ~0%    {2} r36 = CONSTANT(int, unique string)[31,"/"]
+            0   ~0%    {2} r37 = JOIN r36 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "/"
+                   
+            0   ~0%    {2} r38 = r35 UNION r37
+          237   ~1%    {2} r39 = r33 UNION r38
+         7996   ~0%    {2} r40 = r28 UNION r39
+        19099   ~0%    {2} r41 = r20 UNION r40
+                   
+            1   ~0%    {2} r42 = CONSTANT(int, unique string)[32,"+"]
+            0   ~0%    {2} r43 = JOIN r42 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "+"
+                   
+            1   ~0%    {2} r44 = CONSTANT(int, unique string)[33,"+"]
+            0   ~0%    {2} r45 = JOIN r44 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "+"
+                   
+            1   ~0%    {2} r46 = CONSTANT(int, unique string)[34,"-"]
+            0   ~0%    {2} r47 = JOIN r46 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "-"
+                   
+            0   ~0%    {2} r48 = r45 UNION r47
+            0   ~0%    {2} r49 = r43 UNION r48
+                   
+            1   ~0%    {2} r50 = CONSTANT(int, unique string)[35,"-"]
+            0   ~0%    {2} r51 = JOIN r50 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "-"
+                   
+            1   ~0%    {2} r52 = CONSTANT(int, unique string)[36,"+"]
+         1429   ~0%    {2} r53 = JOIN r52 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "+"
+                   
+         1429   ~0%    {2} r54 = r51 UNION r53
+                   
+            1   ~0%    {2} r55 = CONSTANT(int, unique string)[37,"-"]
+          877   ~7%    {2} r56 = JOIN r55 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "-"
+                   
+            1   ~0%    {2} r57 = CONSTANT(int, unique string)[38,"-"]
+          313   ~0%    {2} r58 = JOIN r57 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "-"
+                   
+         1190   ~2%    {2} r59 = r56 UNION r58
+         2619   ~0%    {2} r60 = r54 UNION r59
+         2619   ~0%    {2} r61 = r49 UNION r60
+                   
+            1   ~0%    {2} r62 = CONSTANT(int, unique string)[41,"&"]
+         3607   ~0%    {2} r63 = JOIN r62 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "&"
+                   
+            1   ~0%    {2} r64 = CONSTANT(int, unique string)[42,"|"]
+         3530   ~0%    {2} r65 = JOIN r64 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "|"
+                   
+            1   ~0%    {2} r66 = CONSTANT(int, unique string)[43,"^"]
+          150   ~0%    {2} r67 = JOIN r66 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "^"
+                   
+         3680   ~0%    {2} r68 = r65 UNION r67
+         7287   ~0%    {2} r69 = r63 UNION r68
+                   
+            1   ~0%    {2} r70 = CONSTANT(int, unique string)[46,">"]
+          704   ~1%    {2} r71 = JOIN r70 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, ">"
+                   
+            1   ~0%    {2} r72 = CONSTANT(int, unique string)[47,"<"]
+         1079   ~0%    {2} r73 = JOIN r72 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "<"
+                   
+         1783   ~0%    {2} r74 = r71 UNION r73
+                   
+            1   ~0%    {2} r75 = CONSTANT(int, unique string)[22,"++"]
+           91   ~0%    {2} r76 = JOIN r75 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "++"
+                   
+            1   ~0%    {2} r77 = CONSTANT(int, unique string)[23,"--"]
+          124   ~3%    {2} r78 = JOIN r77 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "--"
+                   
+          215   ~1%    {2} r79 = r76 UNION r78
+         1998   ~0%    {2} r80 = r74 UNION r79
+         9285   ~1%    {2} r81 = r69 UNION r80
+        11904   ~3%    {2} r82 = r61 UNION r81
+        31003   ~0%    {2} r83 = r41 UNION r82
+                   
+            1   ~0%    {2} r84 = CONSTANT(int, unique string)[39,"<<"]
+         5868   ~2%    {2} r85 = JOIN r84 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "<<"
+                   
+            1   ~0%    {2} r86 = CONSTANT(int, unique string)[40,">>"]
+         1719   ~0%    {2} r87 = JOIN r86 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, ">>"
+                   
+            1   ~0%    {2} r88 = CONSTANT(int, unique string)[44,"=="]
+         4105   ~0%    {2} r89 = JOIN r88 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "=="
+                   
+         5824   ~0%    {2} r90 = r87 UNION r89
+        11692   ~0%    {2} r91 = r85 UNION r90
+                   
+            1   ~0%    {2} r92 = CONSTANT(int, unique string)[45,"!="]
+          785   ~0%    {2} r93 = JOIN r92 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "!="
+                   
+            1   ~0%    {2} r94 = CONSTANT(int, unique string)[48,">="]
+          520   ~0%    {2} r95 = JOIN r94 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, ">="
+                   
+         1305   ~2%    {2} r96 = r93 UNION r95
+                   
+            1   ~0%    {2} r97 = CONSTANT(int, unique string)[49,"<="]
+          474   ~2%    {2} r98 = JOIN r97 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "<="
+                   
+            1   ~0%    {2} r99 = CONSTANT(int, unique string)[50,"<?"]
+            0   ~0%    {2} r100 = JOIN r99 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "<?"
+                   
+          474   ~2%    {2} r101 = r98 UNION r100
+         1779   ~6%    {2} r102 = r96 UNION r101
+        13471   ~0%    {2} r103 = r91 UNION r102
+                   
+            1   ~0%    {2} r104 = CONSTANT(int, unique string)[51,">?"]
+            0   ~0%    {2} r105 = JOIN r104 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, ">?"
+                   
+            1   ~0%    {2} r106 = CONSTANT(int, unique string)[53,"+="]
+          222   ~0%    {2} r107 = JOIN r106 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "+="
+                   
+            1   ~0%    {2} r108 = CONSTANT(int, unique string)[54,"-="]
+          138   ~0%    {2} r109 = JOIN r108 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "-="
+                   
+          360   ~1%    {2} r110 = r107 UNION r109
+          360   ~1%    {2} r111 = r105 UNION r110
+                   
+            1   ~0%    {2} r112 = CONSTANT(int, unique string)[55,"*="]
+           20   ~4%    {2} r113 = JOIN r112 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "*="
+                   
+            1   ~0%    {2} r114 = CONSTANT(int, unique string)[56,"/="]
+            5   ~0%    {2} r115 = JOIN r114 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "/="
+                   
+           25   ~3%    {2} r116 = r113 UNION r115
+                   
+            1   ~0%    {2} r117 = CONSTANT(int, unique string)[57,"%="]
+            0   ~0%    {2} r118 = JOIN r117 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "%="
+                   
+            1   ~0%    {2} r119 = CONSTANT(int, unique string)[60,"&="]
+          172   ~0%    {2} r120 = JOIN r119 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "&="
+                   
+          172   ~0%    {2} r121 = r118 UNION r120
+          197   ~0%    {2} r122 = r116 UNION r121
+          557   ~1%    {2} r123 = r111 UNION r122
+        14028   ~1%    {2} r124 = r103 UNION r123
+                   
+            1   ~0%    {2} r125 = CONSTANT(int, unique string)[61,"|="]
+          256   ~2%    {2} r126 = JOIN r125 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "|="
+                   
+            1   ~0%    {2} r127 = CONSTANT(int, unique string)[62,"^="]
+           54   ~1%    {2} r128 = JOIN r127 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "^="
+                   
+            1   ~0%    {2} r129 = CONSTANT(int, unique string)[63,"+="]
+          145   ~0%    {2} r130 = JOIN r129 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "+="
+                   
+          199   ~0%    {2} r131 = r128 UNION r130
+          455   ~1%    {2} r132 = r126 UNION r131
+                   
+            1   ~0%    {2} r133 = CONSTANT(int, unique string)[64,"-="]
+           78   ~2%    {2} r134 = JOIN r133 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "-="
+                   
+            1   ~0%    {2} r135 = CONSTANT(int, unique string)[65,"&&"]
+         1623   ~3%    {2} r136 = JOIN r135 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "&&"
+                   
+         1701   ~5%    {2} r137 = r134 UNION r136
+                   
+            1   ~0%    {2} r138 = CONSTANT(int, unique string)[66,"||"]
+          792   ~0%    {2} r139 = JOIN r138 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "||"
+                   
+            1   ~0%    {2} r140 = CONSTANT(int, unique string)[58,"<<="]
+           15   ~0%    {2} r141 = JOIN r140 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "<<="
+                   
+          807   ~1%    {2} r142 = r139 UNION r141
+         2508   ~2%    {2} r143 = r137 UNION r142
+         2963   ~0%    {2} r144 = r132 UNION r143
+                   
+            1   ~0%    {2} r145 = CONSTANT(int, unique string)[59,">>="]
+           24   ~0%    {2} r146 = JOIN r145 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, ">>="
+                   
+            1   ~0%    {2} r147 = CONSTANT(int, unique string)[326,"<=>"]
+            0   ~0%    {2} r148 = JOIN r147 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "<=>"
+                   
+           24   ~0%    {2} r149 = r146 UNION r148
+                   
+            1   ~0%    {2} r150 = CONSTANT(int, unique string)[18,"__real"]
+            0   ~0%    {2} r151 = JOIN r150 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__real"
+                   
+            1   ~0%    {2} r152 = CONSTANT(int, unique string)[19,"__imag"]
+            0   ~0%    {2} r153 = JOIN r152 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__imag"
+                   
+            0   ~0%    {2} r154 = r151 UNION r153
+           24   ~0%    {2} r155 = r149 UNION r154
+                   
+            1   ~0%    {2} r156 = CONSTANT(int, unique string)[327,"co_await"]
+            0   ~0%    {2} r157 = JOIN r156 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "co_await"
+                   
+            1   ~0%    {2} r158 = CONSTANT(int, unique string)[328,"co_yield"]
+            0   ~0%    {2} r159 = JOIN r158 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "co_yield"
+                   
+            0   ~0%    {2} r160 = r157 UNION r159
+                   
+            1   ~0%    {2} r161 = CONSTANT(int, unique string)[323,"(vector fill)"]
+            0   ~0%    {2} r162 = JOIN r161 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "(vector fill)"
+                   
+            1   ~0%    {2} r163 = CONSTANT(int, unique string)[322,"__builtin_addressof"]
+            0   ~0%    {2} r164 = JOIN r163 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__builtin_addressof"
+                   
+            0   ~0%    {2} r165 = r162 UNION r164
+            0   ~0%    {2} r166 = r160 UNION r165
+           24   ~0%    {2} r167 = r155 UNION r166
+         2987   ~0%    {2} r168 = r144 UNION r167
+        17015   ~0%    {2} r169 = r124 UNION r168
+        48018   ~0%    {2} r170 = r83 UNION r169
+                       return r170
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::Expr::getValue#dispred#f0820431#bf@dff23bjs in 52ms (size: 38851).
+Tuple counts for Expr::Expr::getValue#dispred#f0820431#bf@dff23bjs:
+            1  ~0%    {1} r1 = CONSTANT(unique int)[123]
+        38851  ~5%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+        38851  ~0%    {2} r3 = JOIN r2 WITH valuebind_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+        38851  ~3%    {2} r4 = JOIN r3 WITH values ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                      return r4
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Element::ElementBase::toString#dispred#f0820431#ff#max_term@2ff259m6 in 10ms (size: 7512).
+Tuple counts for Element::ElementBase::toString#dispred#f0820431#ff#max_term@2ff259m6:
+        7512  ~2%    {2} r1 = SCAN initialisers OUTPUT In.1, In.0
+        7512  ~0%    {3} r2 = JOIN r1 WITH Declaration::Declaration::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Rhs.1, Rhs.1
+                     return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Element::ElementBase::toString#dispred#f0820431#ff#max_range@dcbcadpj in 11ms (size: 7512).
+Tuple counts for Element::ElementBase::toString#dispred#f0820431#ff#max_range@dcbcadpj:
+        7512  ~2%    {2} r1 = SCAN initialisers OUTPUT In.1, In.0
+        7512  ~0%    {2} r2 = JOIN r1 WITH Declaration::Declaration::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                     return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::Expr::getValue#dispred#f0820431#bf_0#antijoin_rhs@5e11ceqa in 5ms (size: 38851).
+Tuple counts for Expr::Expr::getValue#dispred#f0820431#bf_0#antijoin_rhs@5e11ceqa:
+        38851  ~5%    {1} r1 = SCAN Expr::Expr::getValue#dispred#f0820431#bf OUTPUT In.0
+                      return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Declaration::Declaration::getDescription#dispred#f0820431#ff@e33d1egs in 17ms (size: 22356).
+Tuple counts for Declaration::Declaration::getDescription#dispred#f0820431#ff@e33d1egs:
+        22356   ~0%    {2} r1 = Declaration::Declaration::getName#dispred#f0820431#ff AND NOT Lambda::Closure#class#ea6054ce#f(Lhs.0)
+                   
+            0   ~0%    {2} r2 = SCAN Lambda::Closure#class#ea6054ce#f OUTPUT In.0, "decltype([...](...){...})"
+                   
+        22356   ~0%    {2} r3 = r1 UNION r2
+                       return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Location::Location::fullLocationInfo#dispred#f0820431#bfffff@55da434h in 127ms (size: 286635).
+Tuple counts for Location::Location::fullLocationInfo#dispred#f0820431#bfffff@55da434h:
+        135027   ~0%    {6} r1 = locations_stmt UNION locations_default
+                    
+        286635   ~0%    {6} r2 = locations_expr UNION r1
+                        return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Access::Access#8878f617#f@1a1adasm in 113ms (size: 99694).
+Tuple counts for Access::Access#8878f617#f@1a1adasm:
+         99694    ~7%    {1} r1 = @access#f AND NOT iscall_0#antijoin_rhs(Lhs.0)
+                     
+         98988    ~7%    {1} r2 = @access#f AND NOT @access#f#antijoin_rhs(Lhs.0)
+                     
+        198682  ~112%    {1} r3 = r1 UNION r2
+                         return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Access::FunctionAccess#class#8878f617#f@92723cvo in 2ms (size: 706).
+Tuple counts for Access::FunctionAccess#class#8878f617#f@92723cvo:
+        706  ~0%    {1} r1 = JOIN @access#f#antijoin_rhs WITH Access::Access#8878f617#f ON FIRST 1 OUTPUT Lhs.0
+        706  ~0%    {1} r2 = r1 AND NOT iscall_0#antijoin_rhs(Lhs.0)
+                    return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Access::FunctionAccess::getTarget#dispred#f0820431#ff@a3b66deu in 0ms (size: 706).
+Tuple counts for Access::FunctionAccess::getTarget#dispred#f0820431#ff@a3b66deu:
+        706  ~2%    {2} r1 = JOIN Access::FunctionAccess#class#8878f617#f WITH funbind ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                    return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Access::FunctionAccess::getTarget#dispred#f0820431#ff_0#antijoin_rhs@bbc494rq in 0ms (size: 706).
+Tuple counts for Access::FunctionAccess::getTarget#dispred#f0820431#ff_0#antijoin_rhs@bbc494rq:
+        706  ~0%    {1} r1 = SCAN Access::FunctionAccess::getTarget#dispred#f0820431#ff OUTPUT In.0
+        706  ~0%    {1} r2 = STREAM DEDUP r1
+                    return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Access::VariableAccess#8878f617#f#shared@95c55fkj in 16ms (size: 98988).
+Tuple counts for Access::VariableAccess#8878f617#f#shared@95c55fkj:
+            1  ~0%    {1} r1 = CONSTANT(unique int)[84]
+        98988  ~7%    {1} r2 = JOIN r1 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+        98988  ~7%    {1} r3 = JOIN r2 WITH Access::Access#8878f617#f ON FIRST 1 OUTPUT Lhs.0
+                      return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate varbind_10#join_rhs@ffc1a5ba in 23ms (size: 98988).
+Tuple counts for varbind_10#join_rhs@ffc1a5ba:
+        98988  ~0%    {2} r1 = SCAN varbind OUTPUT In.1, In.0
+                      return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Access::VariableAccess#8878f617#f#antijoin_rhs@cf64fdju in 40ms (size: 11864).
+Tuple counts for Access::VariableAccess#8878f617#f#antijoin_rhs@cf64fdju:
+        98988  ~0%    {2} r1 = JOIN Access::VariableAccess#8878f617#f#shared WITH varbind ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+        11864  ~5%    {1} r2 = JOIN r1 WITH enumconstants ON FIRST 1 OUTPUT Lhs.1
+                      return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Access::VariableAccess#8878f617#f@b19b644t in 4ms (size: 87124).
+Tuple counts for Access::VariableAccess#8878f617#f@b19b644t:
+        87124  ~4%    {1} r1 = Access::VariableAccess#8878f617#f#shared AND NOT Access::VariableAccess#8878f617#f#antijoin_rhs(Lhs.0)
+                      return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Variable::Variable#class#7a968d4e#b@f2dec1e8 in 6ms (size: 15437).
+Tuple counts for Variable::Variable#class#7a968d4e#b@f2dec1e8:
+         7866   ~1%    {1} r1 = SCAN params OUTPUT In.0
+         7660   ~0%    {1} r2 = STREAM DEDUP r1
+                   
+         6212   ~0%    {1} r3 = SCAN localvariables OUTPUT In.0
+         6212   ~0%    {1} r4 = STREAM DEDUP r3
+                   
+        13872   ~0%    {1} r5 = r2 UNION r4
+                   
+          159   ~0%    {1} r6 = SCAN globalvariables OUTPUT In.0
+          159   ~0%    {1} r7 = STREAM DEDUP r6
+                   
+         1412   ~6%    {1} r8 = SCAN membervariables OUTPUT In.0
+         1406   ~6%    {1} r9 = STREAM DEDUP r8
+                   
+         1565   ~6%    {1} r10 = r7 UNION r9
+        15437   ~0%    {1} r11 = r5 UNION r10
+                       return r11
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Location::Location::fullLocationInfo#dispred#f0820431#bfffff_10#join_rhs@62d5adda in 64ms (size: 286635).
+Tuple counts for Location::Location::fullLocationInfo#dispred#f0820431#bfffff_10#join_rhs@62d5adda:
+        286635  ~0%    {2} r1 = SCAN Location::Location::fullLocationInfo#dispred#f0820431#bfffff OUTPUT In.1, In.0
+                       return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Location::UnknownLocation#bd5c7591#b@197df29a in 1ms (size: 3).
+Tuple counts for Location::UnknownLocation#bd5c7591#b@197df29a:
+        1  ~0%    {1} r1 = CONSTANT(unique string)[""]
+        1  ~0%    {1} r2 = JOIN r1 WITH files_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+        3  ~0%    {1} r3 = JOIN r2 WITH Location::Location::fullLocationInfo#dispred#f0820431#bfffff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                  return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Location::UnknownExprLocation#class#bd5c7591#f@317659dv in 1ms (size: 1).
+Tuple counts for Location::UnknownExprLocation#class#bd5c7591#f@317659dv:
+        1  ~0%    {4} r1 = CONSTANT(unique int, int, int, int)[0,0,0,0]
+        1  ~0%    {1} r2 = JOIN r1 WITH locations_expr_23450#join_rhs ON FIRST 4 OUTPUT Rhs.4
+        1  ~0%    {1} r3 = JOIN r2 WITH Location::UnknownLocation#bd5c7591#b ON FIRST 1 OUTPUT Lhs.0
+                  return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Access::FieldAccess#class#8878f617#f@242a2940 in 35ms (size: 30745).
+Tuple counts for Access::FieldAccess#class#8878f617#f@242a2940:
+        30745  ~3%    {1} r1 = JOIN varbind_10#join_rhs WITH Field::Field#class#1b3cf47e#f ON FIRST 1 OUTPUT Lhs.1
+        30745  ~3%    {1} r2 = JOIN r1 WITH Access::VariableAccess#8878f617#f ON FIRST 1 OUTPUT Lhs.0
+                      return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Access::VariableAccess::getTarget#f0820431#ff@72614801 in 78ms (size: 87124).
+Tuple counts for Access::VariableAccess::getTarget#f0820431#ff@72614801:
+        87124  ~2%    {2} r1 = JOIN varbind WITH Access::VariableAccess#8878f617#f ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+        87124  ~0%    {2} r2 = JOIN r1 WITH @variable#f ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+                      return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::Expr::getParent#dispred#f0820431#ff@c6b9245u in 76ms (size: 215686).
+Tuple counts for Expr::Expr::getParent#dispred#f0820431#ff@c6b9245u:
+        215686  ~0%    {2} r1 = SCAN #select#query#fff OUTPUT In.0, In.2
+        215686  ~0%    {2} r2 = r1 AND NOT usertypes_0#antijoin_rhs(Lhs.1)
+                       return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Access::Access::getTarget#dispred#f0820431#ff@622b44ik in 45ms (size: 98988).
+Tuple counts for Access::Access::getTarget#dispred#f0820431#ff@622b44ik:
+        56379   ~0%    {2} r1 = Access::VariableAccess::getTarget#f0820431#ff AND NOT Access::FieldAccess#class#8878f617#f(Lhs.0)
+                   
+        87124   ~2%    {2} r2 = SCAN Access::VariableAccess::getTarget#f0820431#ff OUTPUT In.1, In.0
+        30745   ~4%    {2} r3 = JOIN r2 WITH Field::Field#class#1b3cf47e#f ON FIRST 1 OUTPUT Lhs.1, Rhs.0
+        30745   ~4%    {2} r4 = JOIN r3 WITH Access::FieldAccess#class#8878f617#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+                   
+         2325   ~0%    {1} r5 = SCAN enumconstants OUTPUT In.0
+        11864   ~1%    {2} r6 = JOIN r5 WITH varbind_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+        11864   ~1%    {2} r7 = JOIN r6 WITH Access::Access#8878f617#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+        11864   ~6%    {3} r8 = JOIN r7 WITH varbind ON FIRST 1 OUTPUT Rhs.1, Lhs.1, Lhs.0
+        11864   ~1%    {2} r9 = JOIN r8 WITH enumconstants ON FIRST 1 OUTPUT Lhs.2, Lhs.1
+                   
+        42609   ~1%    {2} r10 = r4 UNION r9
+        98988   ~0%    {2} r11 = r1 UNION r10
+                       return r11
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::Expr::getExprLocationOverride#f0820431#bf#join_rhs@867169e3 in 24ms (size: 6617).
+Tuple counts for Expr::Expr::getExprLocationOverride#f0820431#bf#join_rhs@867169e3:
+        324197  ~0%    {2} r1 = SCAN exprs OUTPUT In.2, In.0
+          6617  ~0%    {1} r2 = JOIN r1 WITH Location::UnknownExprLocation#class#bd5c7591#f ON FIRST 1 OUTPUT Lhs.1
+          6617  ~3%    {2} r3 = JOIN r2 WITH Expr::Expr::getParent#dispred#f0820431#bf ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+                       return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Access::Access::getTarget#dispred#f0820431#ff_10#join_rhs@51aa74qu in 22ms (size: 98988).
+Tuple counts for Access::Access::getTarget#dispred#f0820431#ff_10#join_rhs@51aa74qu:
+        98988  ~0%    {2} r1 = SCAN Access::Access::getTarget#dispred#f0820431#ff OUTPUT In.1, In.0
+                      return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs@f2693337 in 37ms (size: 87124).
+Tuple counts for Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs@f2693337:
+        87124  ~2%    {2} r1 = JOIN Access::VariableAccess#8878f617#f WITH Access::Access::getTarget#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+        87124  ~4%    {1} r2 = JOIN r1 WITH @variable#f ON FIRST 1 OUTPUT Lhs.1
+                      return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::Expr::getParent#dispred#f0820431#ff_10#join_rhs@472b33sv in 29ms (size: 215686).
+Tuple counts for Expr::Expr::getParent#dispred#f0820431#ff_10#join_rhs@472b33sv:
+        215686  ~0%    {2} r1 = SCAN Expr::Expr::getParent#dispred#f0820431#ff OUTPUT In.1, In.0
+                       return r1
+
+[2022-07-21 17:56:31] Completed evaluation of a recursive layer containing 1 different predicates (took 8ms). Predicates evaluated:
+Expr::Expr::getExprLocationOverride#f0820431#bf@0c60cw33 (took 6ms) (size: 4039)
+
+Evaluated recursive predicate Expr::Expr::getExprLocationOverride#f0820431#bf@0c60cw33 in 3ms on iteration 1 (delta size: 3462).
+Tuple counts for Expr::Expr::getExprLocationOverride#f0820431#bf@0c60cw33 on iteration 1 running pipeline base:
+        4039  ~1%    {2} r1 = JOIN Expr::Expr::getExprLocationOverride#f0820431#bf#join_rhs WITH exprs ON FIRST 1 OUTPUT Lhs.1, Rhs.2
+        3462  ~0%    {2} r2 = r1 AND NOT Location::UnknownLocation#bd5c7591#b(Lhs.1)
+                     return r2
+
+Evaluated recursive predicate Expr::Expr::getExprLocationOverride#f0820431#bf@0c60cw33 in 1ms on iteration 2 (delta size: 571).
+Tuple counts for Expr::Expr::getExprLocationOverride#f0820431#bf@0c60cw33 on iteration 2 running pipeline standard:
+        571  ~3%    {2} r1 = JOIN Expr::Expr::getExprLocationOverride#f0820431#bf#prev_delta WITH Expr::Expr::getExprLocationOverride#f0820431#bf#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.1
+        571  ~3%    {2} r2 = r1 AND NOT Expr::Expr::getExprLocationOverride#f0820431#bf#prev(Lhs.0, Lhs.1)
+                    return r2
+
+Evaluated recursive predicate Expr::Expr::getExprLocationOverride#f0820431#bf@0c60cw33 in 1ms on iteration 3 (delta size: 6).
+Tuple counts for Expr::Expr::getExprLocationOverride#f0820431#bf@0c60cw33 on iteration 3 running pipeline standard:
+        6  ~0%    {2} r1 = JOIN Expr::Expr::getExprLocationOverride#f0820431#bf#prev_delta WITH Expr::Expr::getExprLocationOverride#f0820431#bf#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.1
+        6  ~0%    {2} r2 = r1 AND NOT Expr::Expr::getExprLocationOverride#f0820431#bf#prev(Lhs.0, Lhs.1)
+                  return r2
+
+Evaluated recursive predicate Expr::Expr::getExprLocationOverride#f0820431#bf@0c60cw33 in 1ms on iteration 4 (delta size: 0).
+Tuple counts for Expr::Expr::getExprLocationOverride#f0820431#bf@0c60cw33 on iteration 4 running pipeline order_317:
+        0  ~0%    {2} r1 = JOIN Expr::Expr::getExprLocationOverride#f0820431#bf#prev_delta WITH Expr::Expr::getParent#dispred#f0820431#bf_10#join_rhs ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+        0  ~0%    {2} r2 = r1 AND NOT Expr::Expr::getExprLocationOverride#f0820431#bf#prev(Lhs.1, Lhs.0)
+        0  ~0%    {2} r3 = SCAN r2 OUTPUT In.1, In.0
+        0  ~0%    {3} r4 = JOIN r3 WITH exprs ON FIRST 1 OUTPUT Rhs.2, Lhs.1, Lhs.0
+        0  ~0%    {2} r5 = JOIN r4 WITH Location::UnknownExprLocation#class#bd5c7591#f ON FIRST 1 OUTPUT Lhs.2, Lhs.1
+                  return r5
+
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate project#Expr::Expr::getExprLocationOverride#f0820431#bf@3d6cfd9i in 1ms (size: 4039).
+Tuple counts for project#Expr::Expr::getExprLocationOverride#f0820431#bf@3d6cfd9i:
+        4039  ~1%    {1} r1 = SCAN Expr::Expr::getExprLocationOverride#f0820431#bf OUTPUT In.0
+        4039  ~1%    {1} r2 = STREAM DEDUP r1
+                     return r2
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Expr::Expr::getLocation#dispred#f0820431#bf@5f1545os in 62ms (size: 324197).
+Tuple counts for Expr::Expr::getLocation#dispred#f0820431#bf@5f1545os:
+        324197   ~0%    {2} r1 = SCAN exprs OUTPUT In.0, In.2
+        320158   ~0%    {2} r2 = r1 AND NOT project#Expr::Expr::getExprLocationOverride#f0820431#bf(Lhs.0)
+                    
+        324197   ~0%    {2} r3 = Expr::Expr::getExprLocationOverride#f0820431#bf UNION r2
+                        return r3
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Location::Location::fullLocationInfo#dispred#f0820431#bfffff_20#join_rhs@1f42cakj in 52ms (size: 286635).
+Tuple counts for Location::Location::fullLocationInfo#dispred#f0820431#bfffff_20#join_rhs@1f42cakj:
+        286635  ~4%    {2} r1 = SCAN Location::Location::fullLocationInfo#dispred#f0820431#bfffff OUTPUT In.2, In.0
+                       return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate project#varbind@fad4cbmk in 14ms (size: 13913).
+Tuple counts for project#varbind@fad4cbmk:
+        98988  ~604%    {1} r1 = SCAN varbind OUTPUT In.1
+                        return r1
+
+[2022-07-21 17:56:31] Evaluated non-recursive predicate Variable::Variable#class#7a968d4e#b@69eb1098 in 3ms (size: 12617).
+Tuple counts for Variable::Variable#class#7a968d4e#b@69eb1098:
+         5370   ~3%    {1} r1 = JOIN project#varbind WITH params ON FIRST 1 OUTPUT Lhs.0
+                   
+         1005   ~6%    {1} r2 = JOIN project#varbind WITH membervariables ON FIRST 1 OUTPUT Lhs.0
+                   
+         6375   ~1%    {1} r3 = r1 UNION r2
+                   
+         6212   ~0%    {1} r4 = SCAN localvariables OUTPUT In.0
+         6212   ~0%    {1} r5 = STREAM DEDUP r4
+         6212   ~0%    {1} r6 = JOIN r5 WITH project#varbind ON FIRST 1 OUTPUT Lhs.0
+                   
+          159   ~0%    {1} r7 = SCAN globalvariables OUTPUT In.0
+          159   ~0%    {1} r8 = STREAM DEDUP r7
+          136   ~0%    {1} r9 = JOIN r8 WITH project#varbind ON FIRST 1 OUTPUT Lhs.0
+                   
+         6348   ~0%    {1} r10 = r6 UNION r9
+        12723   ~0%    {1} r11 = r3 UNION r10
+                       return r11
+
+[2022-07-21 17:56:32] Evaluated non-recursive predicate Access::VariableAccess::getTarget#f0820431#ff@73b638sj in 44ms (size: 87124).
+Tuple counts for Access::VariableAccess::getTarget#f0820431#ff@73b638sj:
+        98988  ~0%    {2} r1 = SCAN varbind OUTPUT In.1, In.0
+        87124  ~0%    {2} r2 = JOIN r1 WITH Variable::Variable#class#7a968d4e#b ON FIRST 1 OUTPUT Lhs.1, Rhs.0
+        87124  ~0%    {2} r3 = JOIN r2 WITH Access::VariableAccess#8878f617#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+                      return r3
+
+[2022-07-21 17:56:32] Evaluated non-recursive predicate m#Class::Class::getCanonicalMember#dispred#f0820431#ffb@e29c87q4 in 1ms (size: 1406).
+Tuple counts for m#Class::Class::getCanonicalMember#dispred#f0820431#ffb@e29c87q4:
+        1412   ~6%    {1} r1 = SCAN membervariables OUTPUT In.0
+        1406   ~6%    {1} r2 = STREAM DEDUP r1
+                  
+           0   ~0%    {1} r3 = JOIN variable_instantiation WITH membervariables ON FIRST 1 OUTPUT Lhs.1
+                  
+        1406   ~6%    {1} r4 = r2 UNION r3
+                      return r4
+
+[2022-07-21 17:56:32] Evaluated non-recursive predicate Class::Class::getCanonicalMember#dispred#f0820431#ffb@baccf0fa in 1ms (size: 1406).
+Tuple counts for Class::Class::getCanonicalMember#dispred#f0820431#ffb@baccf0fa:
+        1406  ~1%    {3} r1 = SCAN member OUTPUT In.2, In.0, In.1
+        1406  ~6%    {3} r2 = JOIN r1 WITH m#Class::Class::getCanonicalMember#dispred#f0820431#ffb ON FIRST 1 OUTPUT Lhs.1, Rhs.0, Lhs.2
+        1406  ~6%    {3} r3 = JOIN r2 WITH ResolveClass::Cached::isClass#eb2868f4#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1, Lhs.2
+        1406  ~1%    {3} r4 = JOIN r3 WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.0, Lhs.2, Lhs.1
+                     return r4
+
+[2022-07-21 17:56:32] Found predicate Class::Class::getCanonicalMember#dispred#f0820431#ffb_201#join_rhs@d0ddce2j by cachaca (size: 1406)
+[2022-07-21 17:56:32] Evaluated non-recursive predicate Class::Class::getAMember#dispred#f0820431#2#ffb@5634d9h2 in 1ms (size: 1406).
+Tuple counts for Class::Class::getAMember#dispred#f0820431#2#ffb@5634d9h2:
+           0   ~0%    {2} r1 = SCAN variable_instantiation OUTPUT In.1, In.0
+           0   ~0%    {2} r2 = JOIN r1 WITH is_variable_template ON FIRST 1 OUTPUT Lhs.1, Rhs.0
+           0   ~0%    {2} r3 = JOIN r2 WITH membervariables ON FIRST 1 OUTPUT Lhs.1, Lhs.0
+           0   ~0%    {3} r4 = JOIN r3 WITH Class::Class::getCanonicalMember#dispred#f0820431#ffb_201#join_rhs ON FIRST 1 OUTPUT Rhs.1, Rhs.2, Lhs.1
+                  
+        1406   ~1%    {3} r5 = Class::Class::getCanonicalMember#dispred#f0820431#ffb UNION r4
+                      return r5
+
+[2022-07-21 17:56:32] Evaluated non-recursive predicate Class::Class::getAMember#dispred#f0820431#2#ffb_2#join_rhs@ad99c8sh in 1ms (size: 1406).
+Tuple counts for Class::Class::getAMember#dispred#f0820431#2#ffb_2#join_rhs@ad99c8sh:
+        1406  ~6%    {1} r1 = SCAN Class::Class::getAMember#dispred#f0820431#2#ffb OUTPUT In.2
+                     return r1
+
+[2022-07-21 17:56:32] Evaluated non-recursive predicate Field::Field#class#1b3cf47e#f@bdd6290e in 1ms (size: 1406).
+Tuple counts for Field::Field#class#1b3cf47e#f@bdd6290e:
+        1406  ~6%    {1} r1 = JOIN fieldoffsets WITH Class::Class::getAMember#dispred#f0820431#2#ffb_2#join_rhs ON FIRST 1 OUTPUT Lhs.0
+                     return r1
+
+[2022-07-21 17:56:32] Evaluated non-recursive predicate Access::FieldAccess#class#8878f617#f@78396e9f in 24ms (size: 30745).
+Tuple counts for Access::FieldAccess#class#8878f617#f@78396e9f:
+        98988  ~0%    {2} r1 = SCAN varbind OUTPUT In.1, In.0
+        30745  ~3%    {1} r2 = JOIN r1 WITH Field::Field#class#1b3cf47e#f ON FIRST 1 OUTPUT Lhs.1
+        30745  ~3%    {1} r3 = JOIN r2 WITH Access::VariableAccess#8878f617#f ON FIRST 1 OUTPUT Lhs.0
+                      return r3
+
+[2022-07-21 17:56:32] Evaluated non-recursive predicate Access::Access::getTarget#dispred#f0820431#ff@64648ctc in 31ms (size: 87124).
+Tuple counts for Access::Access::getTarget#dispred#f0820431#ff@64648ctc:
+        56379   ~0%    {2} r1 = Access::VariableAccess::getTarget#f0820431#ff AND NOT Access::FieldAccess#class#8878f617#f(Lhs.0)
+                   
+        87124   ~2%    {2} r2 = SCAN Access::VariableAccess::getTarget#f0820431#ff OUTPUT In.1, In.0
+        30745   ~4%    {2} r3 = JOIN r2 WITH Field::Field#class#1b3cf47e#f ON FIRST 1 OUTPUT Lhs.1, Rhs.0
+        30745   ~4%    {2} r4 = JOIN r3 WITH Access::FieldAccess#class#8878f617#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+                   
+        87124   ~0%    {2} r5 = r1 UNION r4
+                       return r5
+
+[2022-07-21 17:56:32] Evaluated non-recursive predicate Access::Access::getTarget#dispred#f0820431#ff_10#join_rhs@b61f9a2q in 20ms (size: 87124).
+Tuple counts for Access::Access::getTarget#dispred#f0820431#ff_10#join_rhs@b61f9a2q:
+        87124  ~2%    {2} r1 = SCAN Access::Access::getTarget#dispred#f0820431#ff OUTPUT In.1, In.0
+                      return r1
+
+[2022-07-21 17:56:32] Found predicate Enclosing::exprEnclosingElement#c50c5fbf#ff@4216253e in the relation cache (size: 321754)
+[2022-07-21 17:56:32] Evaluated non-recursive predicate Enclosing::exprEnclosingElement#c50c5fbf#ff_10#join_rhs@900689n9 in 63ms (size: 321754).
+Tuple counts for Enclosing::exprEnclosingElement#c50c5fbf#ff_10#join_rhs@900689n9:
+        321754  ~4%    {2} r1 = SCAN Enclosing::exprEnclosingElement#c50c5fbf#ff OUTPUT In.1, In.0
+                       return r1
+
+[2022-07-21 17:56:32] Evaluated non-recursive predicate Expr::Expr::getEnclosingFunction#dispred#f0820431#ff@66bbbcif in 42ms (size: 304526).
+Tuple counts for Expr::Expr::getEnclosingFunction#dispred#f0820431#ff@66bbbcif:
+        304526  ~4%    {2} r1 = JOIN functions WITH Enclosing::exprEnclosingElement#c50c5fbf#ff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+                       return r1
+
+[2022-07-21 17:56:32] Evaluated non-recursive predicate Element::ElementBase::toString#dispred#f0820431#ff@fa7e15do in 448ms (size: 529724).
+Tuple counts for Element::ElementBase::toString#dispred#f0820431#ff@fa7e15do:
+         22403   ~0%    {2} r1 = Type::BuiltInType::getName#dispred#f0820431#ff UNION Declaration::Declaration::getDescription#dispred#f0820431#ff
+                    
+         24752   ~0%    {2} r2 = Type::DerivedType::getName#dispred#f0820431#ff UNION r1
+                    
+            22   ~0%    {2} r3 = File::Container::toString#f0820431#ff AND NOT files_0#antijoin_rhs(Lhs.0)
+                    
+             0   ~0%    {2} r4 = SCAN Type::PointerToMemberType#class#2e8eb3ef#f OUTPUT In.0, "..:: *"
+                    
+            22   ~0%    {2} r5 = r3 UNION r4
+                    
+            23   ~0%    {2} r6 = Namespace::Namespace::getFriendlyName#dispred#f0820431#ff UNION r5
+         24775   ~2%    {2} r7 = r2 UNION r6
+                    
+          1260   ~2%    {2} r8 = SCAN Type::RoutineType#class#2e8eb3ef#f OUTPUT In.0, "..()(..)"
+                    
+           144   ~0%    {2} r9 = JOIN param_decl_bind_0#antijoin_rhs WITH Variable::ParameterDeclarationEntry::getAnonymousParameterDescription#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                    
+          1404   ~0%    {2} r10 = r8 UNION r9
+                    
+          1457   ~0%    {2} r11 = specifiers UNION r10
+                    
+           174   ~0%    {2} r12 = SCAN Stmt::DefaultCase#class#af82e98b#f OUTPUT In.0, "default: "
+                    
+         14697   ~2%    {2} r13 = SCAN comments OUTPUT In.0, In.1
+                    
+             0   ~0%    {2} r14 = JOIN XML::XMLFile#class#cb4732a3#f WITH files ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                    
+         14697   ~2%    {2} r15 = r13 UNION r14
+         14871   ~2%    {2} r16 = r12 UNION r15
+         16328   ~2%    {2} r17 = r11 UNION r16
+         41103   ~0%    {2} r18 = r7 UNION r17
+                    
+         11318   ~1%    {2} r19 = JOIN Expr::UnaryOperation#class#ef463c5d#f WITH Expr::Operation::getOperator#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, (Rhs.1 ++ " ...")
+                    
+             0   ~0%    {2} r20 = SCAN diagnostics OUTPUT In.0, In.3
+                    
+             1   ~0%    {2} r21 = CONSTANT(int, unique string)[26,";"]
+           593   ~0%    {2} r22 = JOIN r21 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, ";"
+                    
+           593   ~0%    {2} r23 = r20 UNION r22
+         11911   ~0%    {2} r24 = r19 UNION r23
+                    
+           301   ~0%    {1} r25 = files_0#antijoin_rhs AND NOT XML::XMLFile#class#cb4732a3#f(Lhs.0)
+           301   ~0%    {2} r26 = JOIN r25 WITH File::Container::toString#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                    
+             1   ~0%    {2} r27 = CONSTANT(int, unique string)[87,"new"]
+             0   ~0%    {2} r28 = JOIN r27 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "new"
+                    
+             0   ~0%    {2} r29 = JOIN Include::Include#class#feab3531#f#antijoin_rhs WITH Include::Include::getIncludeText#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, ("#import " ++ Rhs.1)
+                    
+             0   ~0%    {2} r30 = r28 UNION r29
+           301   ~0%    {2} r31 = r26 UNION r30
+         12212   ~1%    {2} r32 = r24 UNION r31
+                    
+             0   ~0%    {2} r33 = SCAN Expr::ReThrowExpr#class#ef463c5d#f OUTPUT In.0, "re-throw exception "
+                    
+             1   ~0%    {2} r34 = CONSTANT(int, unique string)[85,"this"]
+             0   ~0%    {2} r35 = JOIN r34 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "this"
+                    
+             1   ~0%    {2} r36 = CONSTANT(int, unique string)[127,"{...}"]
+           368   ~0%    {2} r37 = JOIN r36 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "{...}"
+                    
+           368   ~0%    {2} r38 = r35 UNION r37
+           368   ~0%    {2} r39 = r33 UNION r38
+                    
+             1   ~0%    {2} r40 = CONSTANT(int, unique string)[4,"#else"]
+           788   ~2%    {2} r41 = JOIN r40 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "#else"
+                    
+             1   ~0%    {2} r42 = CONSTANT(int, unique string)[12,"(...)"]
+         59459   ~2%    {2} r43 = JOIN r42 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "(...)"
+                    
+             0   ~0%    {2} r44 = JOIN project#decltypes WITH ResolveClass::Cached::isType#eb2868f4#f ON FIRST 1 OUTPUT Lhs.0, "decltype(...)"
+                    
+         59459   ~2%    {2} r45 = r43 UNION r44
+         60247   ~2%    {2} r46 = r41 UNION r45
+         60615   ~2%    {2} r47 = r39 UNION r46
+         72827   ~4%    {2} r48 = r32 UNION r47
+        113930   ~6%    {2} r49 = r18 UNION r48
+                    
+         87124   ~2%    {2} r50 = JOIN Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs WITH Access::Access::getTarget#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+         87124   ~0%    {2} r51 = JOIN r50 WITH Variable::Variable::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                    
+             0   ~0%    {2} r52 = SCAN code_block OUTPUT In.0, "^ { ... }"
+                    
+             1   ~0%    {2} r53 = CONSTANT(unique int, unique string)[20,"... ++"]
+          1236   ~0%    {2} r54 = JOIN r53 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "... ++"
+                    
+          1236   ~0%    {2} r55 = r52 UNION r54
+         88360   ~0%    {2} r56 = r51 UNION r55
+                    
+             1   ~0%    {2} r57 = CONSTANT(unique int, unique string)[21,"... --"]
+           310   ~2%    {2} r58 = JOIN r57 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "... --"
+                    
+             1   ~0%    {2} r59 = CONSTANT(int, unique string)[88,"delete"]
+             0   ~0%    {2} r60 = JOIN r59 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "delete"
+                    
+             1   ~0%    {2} r61 = CONSTANT(int, unique string)[129,"new[]"]
+             0   ~0%    {2} r62 = JOIN r61 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "new[]"
+                    
+             0   ~0%    {2} r63 = r60 UNION r62
+           310   ~2%    {2} r64 = r58 UNION r63
+         88670   ~0%    {2} r65 = r56 UNION r64
+                    
+             1   ~0%    {2} r66 = CONSTANT(int, unique string)[5,"#endif"]
+          3388   ~0%    {2} r67 = JOIN r66 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "#endif"
+                    
+             1   ~0%    {2} r68 = CONSTANT(int, unique string)[28,"break;"]
+          1001   ~5%    {2} r69 = JOIN r68 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "break;"
+                    
+             1   ~0%    {2} r70 = CONSTANT(int, unique string)[91,"({...})"]
+             0   ~0%    {2} r71 = JOIN r70 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "({...})"
+                    
+          1001   ~5%    {2} r72 = r69 UNION r71
+          4389   ~3%    {2} r73 = r67 UNION r72
+                    
+             1   ~0%    {2} r74 = CONSTANT(int, unique string)[217,"__noop"]
+             0   ~0%    {2} r75 = JOIN r74 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__noop"
+                    
+             1   ~0%    {2} r76 = CONSTANT(int, unique string)[7,"{ ... }"]
+          8545   ~0%    {2} r77 = JOIN r76 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "{ ... }"
+                    
+          1129   ~0%    {2} r78 = JOIN Assignment::AssignOperation#class#9d5edc7a#f WITH Expr::Operation::getOperator#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, ("... " ++ Rhs.1 ++ " ...")
+                    
+          9674   ~0%    {2} r79 = r77 UNION r78
+          9674   ~0%    {2} r80 = r75 UNION r79
+         14063   ~5%    {2} r81 = r73 UNION r80
+        102733   ~0%    {2} r82 = r65 UNION r81
+                    
+         35571   ~0%    {2} r83 = JOIN Expr::BinaryOperation#class#ef463c5d#f WITH Expr::Operation::getOperator#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, ("... " ++ Rhs.1 ++ " ...")
+                    
+             0   ~0%    {2} r84 = SCAN Namespace::UsingDeclarationEntry::getDeclaration#dispred#f0820431#ff OUTPUT In.1, In.0
+             0   ~0%    {2} r85 = JOIN r84 WITH Declaration::Declaration::getDescription#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, ("using " ++ Rhs.1)
+                    
+             1   ~0%    {2} r86 = CONSTANT(int, unique string)[116,"__is_pod"]
+             0   ~0%    {2} r87 = JOIN r86 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_pod"
+                    
+             0   ~0%    {2} r88 = r85 UNION r87
+         35571   ~0%    {2} r89 = r83 UNION r88
+                    
+             1   ~0%    {2} r90 = CONSTANT(int, unique string)[1,"ExprStmt"]
+         16060   ~0%    {2} r91 = JOIN r90 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "ExprStmt"
+                    
+             1   ~0%    {2} r92 = CONSTANT(int, unique string)[4,"goto ..."]
+           287   ~0%    {2} r93 = JOIN r92 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "goto ..."
+                    
+             1   ~0%    {2} r94 = CONSTANT(int, unique string)[115,"__is_enum"]
+             0   ~0%    {2} r95 = JOIN r94 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_enum"
+                    
+           287   ~0%    {2} r96 = r93 UNION r95
+         16347   ~0%    {2} r97 = r91 UNION r96
+         51918   ~0%    {2} r98 = r89 UNION r97
+                    
+             1   ~0%    {2} r99 = CONSTANT(int, unique string)[128,"delete[]"]
+             0   ~0%    {2} r100 = JOIN r99 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "delete[]"
+                    
+             1   ~0%    {2} r101 = CONSTANT(int, unique string)[27,"continue;"]
+           135   ~0%    {2} r102 = JOIN r101 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "continue;"
+                    
+             1   ~0%    {2} r103 = CONSTANT(int, unique string)[33,"<handler>"]
+             0   ~0%    {2} r104 = JOIN r103 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "<handler>"
+                    
+           135   ~0%    {2} r105 = r102 UNION r104
+           135   ~0%    {2} r106 = r100 UNION r105
+                    
+             1   ~0%    {2} r107 = CONSTANT(int, unique string)[52,"... = ..."]
+          8683   ~0%    {2} r108 = JOIN r107 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "... = ..."
+                    
+             1   ~0%    {2} r109 = CONSTANT(int, unique string)[67,"... , ..."]
+           755   ~0%    {2} r110 = JOIN r109 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "... , ..."
+                    
+             3   ~0%    {2} r111 = JOIN Include::Include#class#feab3531#f#antijoin_rhs#1 WITH Include::Include::getIncludeText#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, ("#include_next " ++ Rhs.1)
+                    
+           758   ~0%    {2} r112 = r110 UNION r111
+          9441   ~0%    {2} r113 = r108 UNION r112
+          9576   ~0%    {2} r114 = r106 UNION r113
+         61494   ~0%    {2} r115 = r98 UNION r114
+        164227   ~0%    {2} r116 = r82 UNION r115
+        278157   ~0%    {2} r117 = r49 UNION r116
+                    
+          3270   ~2%    {2} r118 = SCAN attributes OUTPUT In.0, In.2
+          3270   ~2%    {2} r119 = r118 AND NOT Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#1(Lhs.0)
+                    
+             1   ~0%    {2} r120 = CONSTANT(int, unique string)[92,"typeid ..."]
+             0   ~0%    {2} r121 = JOIN r120 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "typeid ..."
+                    
+             1   ~0%    {2} r122 = specialnamequalifyingelements UNION r121
+          3271   ~2%    {2} r123 = r119 UNION r122
+                    
+             1   ~0%    {2} r124 = CONSTANT(int, unique string)[101,"__has_copy"]
+             0   ~0%    {2} r125 = JOIN r124 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_copy"
+                    
+             1   ~0%    {2} r126 = CONSTANT(int, unique string)[112,"__is_class"]
+             0   ~0%    {2} r127 = JOIN r126 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_class"
+                    
+             1   ~0%    {2} r128 = CONSTANT(int, unique string)[114,"__is_empty"]
+             0   ~0%    {2} r129 = JOIN r128 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_empty"
+                    
+             0   ~0%    {2} r130 = r127 UNION r129
+             0   ~0%    {2} r131 = r125 UNION r130
+          3271   ~2%    {2} r132 = r123 UNION r131
+                    
+             1   ~0%    {2} r133 = CONSTANT(int, unique string)[118,"__is_union"]
+             0   ~0%    {2} r134 = JOIN r133 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_union"
+                    
+             1   ~0%    {2} r135 = CONSTANT(int, unique string)[5,"label ...:"]
+           472   ~1%    {2} r136 = JOIN r135 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "label ...:"
+                    
+             1   ~0%    {2} r137 = CONSTANT(int, unique string)[6,"return ..."]
+          4166   ~1%    {2} r138 = JOIN r137 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "return ..."
+                    
+          4638   ~1%    {2} r139 = r136 UNION r138
+          4638   ~1%    {2} r140 = r134 UNION r139
+                    
+             0   ~0%    {1} r141 = Access::FunctionAccess#class#8878f617#f AND NOT Access::FunctionAccess::getTarget#dispred#f0820431#ff_0#antijoin_rhs(Lhs.0)
+             0   ~0%    {2} r142 = SCAN r141 OUTPUT In.0, "function access"
+                    
+             0   ~0%    {1} r143 = Access::VariableAccess#8878f617#f AND NOT Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs(Lhs.0)
+             0   ~0%    {2} r144 = SCAN r143 OUTPUT In.0, "variable access"
+                    
+          5201   ~0%    {3} r145 = SCAN Macro::Macro::getHead#dispred#f0820431#ff OUTPUT In.0, "", In.1
+           441   ~2%    {2} r146 = JOIN r145 WITH Macro::Macro::getBody#dispred#f0820431#ff ON FIRST 2 OUTPUT Lhs.0, ("#define " ++ Lhs.2)
+                    
+           441   ~2%    {2} r147 = r144 UNION r146
+           441   ~2%    {2} r148 = r142 UNION r147
+          5079   ~1%    {2} r149 = r140 UNION r148
+          8350   ~0%    {2} r150 = r132 UNION r149
+                    
+             0   ~0%    {2} r151 = SCAN derivations OUTPUT In.0, "derivation"
+                    
+             1   ~0%    {2} r152 = CONSTANT(int, unique string)[120,"__INTADDR__"]
+             0   ~0%    {2} r153 = JOIN r152 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__INTADDR__"
+                    
+             1   ~0%    {2} r154 = CONSTANT(int, unique string)[317,"__is_final"]
+             0   ~0%    {2} r155 = JOIN r154 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_final"
+                    
+             0   ~0%    {2} r156 = r153 UNION r155
+             0   ~0%    {2} r157 = r151 UNION r156
+                    
+             1   ~0%    {2} r158 = CONSTANT(int, unique string)[15,"try { ... }"]
+             0   ~0%    {2} r159 = JOIN r158 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "try { ... }"
+                    
+             1   ~0%    {2} r160 = CONSTANT(int, unique string)[17,"declaration"]
+          5742   ~0%    {2} r161 = JOIN r160 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "declaration"
+                    
+         11864  ~10%    {2} r162 = JOIN enumconstants WITH Access::Access::getTarget#dispred#f0820431#ff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.4
+                    
+         17606   ~2%    {2} r163 = r161 UNION r162
+         17606   ~2%    {2} r164 = r159 UNION r163
+         17606   ~2%    {2} r165 = r157 UNION r164
+                    
+             1   ~0%    {2} r166 = CONSTANT(int, unique string)[100,"__has_assign"]
+             0   ~0%    {2} r167 = JOIN r166 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_assign"
+                    
+             1   ~0%    {2} r168 = CONSTANT(int, unique string)[111,"__is_base_of"]
+             0   ~0%    {2} r169 = JOIN r168 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_base_of"
+                    
+             1   ~0%    {2} r170 = CONSTANT(int, unique string)[314,"__is_sealed"]
+             0   ~0%    {2} r171 = JOIN r170 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_sealed"
+                    
+             0   ~0%    {2} r172 = r169 UNION r171
+             0   ~0%    {2} r173 = r167 UNION r172
+                    
+             1   ~0%    {2} r174 = CONSTANT(int, unique string)[1,"<error expr>"]
+             0   ~0%    {2} r175 = JOIN r174 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "<error expr>"
+                    
+             1   ~0%    {2} r176 = CONSTANT(int, unique string)[4,"alignas(...)"]
+             0   ~0%    {2} r177 = JOIN r176 WITH attributes_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "alignas(...)"
+                    
+             1   ~0%    {2} r178 = CONSTANT(int, unique string)[8,"do (...) ..."]
+           128   ~1%    {2} r179 = JOIN r178 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "do (...) ..."
+                    
+           128   ~1%    {2} r180 = r177 UNION r179
+           128   ~1%    {2} r181 = r175 UNION r180
+           128   ~1%    {2} r182 = r173 UNION r181
+         17734   ~3%    {2} r183 = r165 UNION r182
+         26084   ~4%    {2} r184 = r150 UNION r183
+                    
+             1   ~0%    {2} r185 = CONSTANT(int, unique string)[110,"__is_abstract"]
+             0   ~0%    {2} r186 = JOIN r185 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_abstract"
+                    
+             1   ~0%    {2} r187 = CONSTANT(int, unique string)[216,"param access"]
+             0   ~0%    {2} r188 = JOIN r187 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "param access"
+                    
+             1   ~0%    {2} r189 = CONSTANT(int, unique string)[2,"if (...) ... "]
+          6173   ~0%    {2} r190 = JOIN r189 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "if (...) ... "
+                    
+          6173   ~0%    {2} r191 = r188 UNION r190
+          6173   ~0%    {2} r192 = r186 UNION r191
+                    
+             1   ~0%    {2} r193 = CONSTANT(int, unique string)[11,"__assume(...)"]
+             0   ~0%    {2} r194 = JOIN r193 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__assume(...)"
+                    
+             1   ~0%    {2} r195 = CONSTANT(int, unique string)[13,"asm statement"]
+             0   ~0%    {2} r196 = JOIN r195 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "asm statement"
+                    
+             1   ~0%    {2} r197 = CONSTANT(int, unique string)[37,"co_return ..."]
+             0   ~0%    {2} r198 = JOIN r197 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "co_return ..."
+                    
+             0   ~0%    {2} r199 = r196 UNION r198
+             0   ~0%    {2} r200 = r194 UNION r199
+          6173   ~0%    {2} r201 = r192 UNION r200
+                    
+           742   ~0%    {2} r202 = SCAN Cast::SizeofTypeOperator::getTypeOperand#dispred#f0820431#ff OUTPUT In.1, In.0
+           742   ~0%    {2} r203 = JOIN r202 WITH Type::Type::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, ("sizeof(" ++ Rhs.1 ++ ")")
+                    
+             1   ~0%    {1} r204 = CONSTANT(unique int)[0]
+          1670   ~0%    {1} r205 = JOIN r204 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+          1670   ~0%    {2} r206 = JOIN r205 WITH Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf ON FIRST 1 OUTPUT Lhs.0, ("#if " ++ Rhs.1)
+                    
+         13797   ~0%    {2} r207 = SCAN type_mentions OUTPUT In.0, "type mention"
+                    
+         15467   ~0%    {2} r208 = r206 UNION r207
+         16209   ~0%    {2} r209 = r203 UNION r208
+                    
+             1   ~0%    {2} r210 = CONSTANT(int, unique string)[95,"sizeof...(...)"]
+             0   ~0%    {2} r211 = JOIN r210 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "sizeof...(...)"
+                    
+             1   ~0%    {2} r212 = CONSTANT(int, unique string)[310,"__is_delegate"]
+             0   ~0%    {2} r213 = JOIN r212 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_delegate"
+                    
+             1   ~0%    {2} r214 = CONSTANT(int, unique string)[319,"noexcept(...)"]
+             0   ~0%    {2} r215 = JOIN r214 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "noexcept(...)"
+                    
+             0   ~0%    {2} r216 = r213 UNION r215
+             0   ~0%    {2} r217 = r211 UNION r216
+         16209   ~0%    {2} r218 = r209 UNION r217
+         22382   ~4%    {2} r219 = r201 UNION r218
+                    
+             1   ~0%    {2} r220 = CONSTANT(int, unique string)[0,"empty argument"]
+             0   ~0%    {2} r221 = JOIN r220 WITH attribute_args_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "empty argument"
+                    
+             1   ~0%    {2} r222 = CONSTANT(int, unique string)[3,"(reference to)"]
+             0   ~0%    {2} r223 = JOIN r222 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "(reference to)"
+                    
+             0   ~0%    {2} r224 = SCAN Cast::AlignofTypeOperator::getTypeOperand#dispred#f0820431#ff OUTPUT In.1, In.0
+             0   ~0%    {2} r225 = JOIN r224 WITH Type::Type::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, ("alignof(" ++ Rhs.1 ++ ")")
+                    
+             0   ~0%    {2} r226 = r223 UNION r225
+             0   ~0%    {2} r227 = r221 UNION r226
+                    
+           706   ~2%    {2} r228 = JOIN Access::FunctionAccess#class#8878f617#f WITH Access::FunctionAccess::getTarget#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+           706   ~0%    {2} r229 = JOIN r228 WITH functions ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                    
+             1   ~0%    {2} r230 = CONSTANT(int, unique string)[312,"__is_ref_array"]
+             0   ~0%    {2} r231 = JOIN r230 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_ref_array"
+                    
+             1   ~0%    {2} r232 = CONSTANT(int, unique string)[313,"__is_ref_class"]
+             0   ~0%    {2} r233 = JOIN r232 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_ref_class"
+                    
+             0   ~0%    {2} r234 = r231 UNION r233
+           706   ~0%    {2} r235 = r229 UNION r234
+           706   ~0%    {2} r236 = r227 UNION r235
+                    
+             1   ~0%    {2} r237 = CONSTANT(int, unique string)[3,"while (...) ..."]
+           348   ~1%    {2} r238 = JOIN r237 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "while (...) ..."
+                    
+             1   ~0%    {2} r239 = CONSTANT(int, unique string)[19,"VLA declaration"]
+             0   ~0%    {2} r240 = JOIN r239 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "VLA declaration"
+                    
+             1   ~0%    {2} r241 = CONSTANT(int, unique string)[24,"... ? ... : ..."]
+          1090   ~3%    {2} r242 = JOIN r241 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "... ? ... : ..."
+                    
+          1090   ~3%    {2} r243 = r240 UNION r242
+          1438   ~2%    {2} r244 = r238 UNION r243
+                    
+             1   ~0%    {2} r245 = CONSTANT(int, unique string)[68,"access to array"]
+          3643   ~2%    {2} r246 = JOIN r245 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "access to array"
+                    
+             1   ~0%    {1} r247 = CONSTANT(unique int)[3]
+           246   ~0%    {1} r248 = JOIN r247 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+           246   ~3%    {2} r249 = JOIN r248 WITH Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf ON FIRST 1 OUTPUT Lhs.0, ("#elif " ++ Rhs.1)
+                    
+          3889   ~1%    {2} r250 = r246 UNION r249
+                    
+             1   ~0%    {1} r251 = CONSTANT(unique int)[9]
+           278   ~0%    {1} r252 = JOIN r251 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+           278   ~0%    {2} r253 = JOIN r252 WITH Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf ON FIRST 1 OUTPUT Lhs.0, ("#line " ++ Rhs.1)
+                    
+             1   ~0%    {2} r254 = CONSTANT(int, unique string)[80,"__builtin_va_arg"]
+            16   ~0%    {2} r255 = JOIN r254 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__builtin_va_arg"
+                    
+           294   ~0%    {2} r256 = r253 UNION r255
+          4183   ~3%    {2} r257 = r250 UNION r256
+          5621   ~2%    {2} r258 = r244 UNION r257
+          6327   ~5%    {2} r259 = r236 UNION r258
+         28709   ~6%    {2} r260 = r219 UNION r259
+         54793   ~2%    {2} r261 = r184 UNION r260
+        332950   ~0%    {2} r262 = r117 UNION r261
+                    
+             1   ~0%    {2} r263 = CONSTANT(int, unique string)[81,"__builtin_va_end"]
+            14   ~0%    {2} r264 = JOIN r263 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__builtin_va_end"
+                    
+             1   ~0%    {2} r265 = CONSTANT(int, unique string)[90,"(condition decl)"]
+             0   ~0%    {2} r266 = JOIN r265 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "(condition decl)"
+                    
+             1   ~0%    {2} r267 = CONSTANT(int, unique string)[117,"__is_polymorphic"]
+             0   ~0%    {2} r268 = JOIN r267 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_polymorphic"
+                    
+             0   ~0%    {2} r269 = r266 UNION r268
+            14   ~0%    {2} r270 = r264 UNION r269
+                    
+             1   ~0%    {2} r271 = CONSTANT(int, unique string)[215,"[...](...){...}"]
+             0   ~0%    {2} r272 = JOIN r271 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "[...](...){...}"
+                    
+             1   ~0%    {2} r273 = CONSTANT(int, unique string)[309,"__has_finalizer"]
+             0   ~0%    {2} r274 = JOIN r273 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_finalizer"
+                    
+             1   ~0%    {2} r275 = CONSTANT(int, unique string)[29,"for(...:...) ..."]
+             0   ~0%    {2} r276 = JOIN r275 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "for(...:...) ..."
+                    
+             0   ~0%    {2} r277 = r274 UNION r276
+             0   ~0%    {2} r278 = r272 UNION r277
+            14   ~0%    {2} r279 = r270 UNION r278
+                    
+         55809   ~2%    {2} r280 = SCAN macroinvocations OUTPUT In.1, In.0
+         55809   ~2%    {2} r281 = JOIN r280 WITH Macro::Macro::getHead#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                    
+             0   ~0%    {2} r282 = SCAN namespace_decls OUTPUT In.1, In.0
+             0   ~0%    {2} r283 = JOIN r282 WITH Namespace::Namespace::getFriendlyName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                    
+             1   ~0%    {1} r284 = CONSTANT(unique int)[1]
+          1200   ~0%    {1} r285 = JOIN r284 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+          1200   ~5%    {2} r286 = JOIN r285 WITH Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf ON FIRST 1 OUTPUT Lhs.0, ("#ifdef " ++ Rhs.1)
+                    
+          1200   ~5%    {2} r287 = r283 UNION r286
+         57009   ~1%    {2} r288 = r281 UNION r287
+                    
+             1   ~0%    {1} r289 = CONSTANT(unique int)[8]
+           270   ~3%    {1} r290 = JOIN r289 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+           270   ~0%    {2} r291 = JOIN r290 WITH Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf ON FIRST 1 OUTPUT Lhs.0, ("#undef " ++ Rhs.1)
+                    
+             1   ~0%    {1} r292 = CONSTANT(unique int)[10]
+             0   ~0%    {1} r293 = JOIN r292 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+             0   ~0%    {2} r294 = JOIN r293 WITH Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf ON FIRST 1 OUTPUT Lhs.0, ("#error " ++ Rhs.1)
+                    
+             1   ~0%    {1} r295 = CONSTANT(unique int)[123]
+         38851   ~5%    {1} r296 = JOIN r295 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                    
+         38851   ~5%    {1} r297 = r296 AND NOT code_block_0#antijoin_rhs(Lhs.0)
+         38851   ~3%    {2} r298 = JOIN r297 WITH Expr::Expr::getValue#dispred#f0820431#bf ON FIRST 1 OUTPUT Lhs.0, Rhs.1
+                    
+         38851   ~3%    {2} r299 = r294 UNION r298
+         39121   ~3%    {2} r300 = r291 UNION r299
+         96130   ~1%    {2} r301 = r288 UNION r300
+         96144   ~1%    {2} r302 = r279 UNION r301
+                    
+             1   ~0%    {2} r303 = CONSTANT(int, unique string)[82,"__builtin_va_copy"]
+             0   ~0%    {2} r304 = JOIN r303 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__builtin_va_copy"
+                    
+             1   ~0%    {2} r305 = CONSTANT(int, unique string)[316,"__is_value_class"]
+             0   ~0%    {2} r306 = JOIN r305 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_value_class"
+                    
+             1   ~0%    {2} r307 = CONSTANT(int, unique string)[329,"temporary object"]
+             0   ~0%    {2} r308 = JOIN r307 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "temporary object"
+                    
+             0   ~0%    {2} r309 = r306 UNION r308
+             0   ~0%    {2} r310 = r304 UNION r309
+                    
+             1   ~0%    {2} r311 = CONSTANT(int, unique string)[11,"switch (...) ... "]
+           193   ~4%    {2} r312 = JOIN r311 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "switch (...) ... "
+                    
+             1   ~0%    {2} r313 = CONSTANT(int, unique string)[25,"computed goto ..."]
+             0   ~0%    {2} r314 = JOIN r313 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "computed goto ..."
+                    
+             0   ~0%    {2} r315 = SCAN Namespace::UsingDirectiveEntry::getNamespace#dispred#f0820431#ff OUTPUT In.1, In.0
+             0   ~0%    {2} r316 = JOIN r315 WITH Namespace::Namespace::getFriendlyName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, ("using namespace " ++ Rhs.1)
+                    
+             0   ~0%    {2} r317 = r314 UNION r316
+           193   ~4%    {2} r318 = r312 UNION r317
+           193   ~4%    {2} r319 = r310 UNION r318
+                    
+             0   ~0%    {2} r320 = SCAN lambda_capture OUTPUT In.3, In.0
+             0   ~0%    {2} r321 = JOIN r320 WITH Variable::MemberVariable::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                    
+             1   ~0%    {1} r322 = CONSTANT(unique int)[2]
+           518   ~3%    {1} r323 = JOIN r322 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+           518   ~0%    {2} r324 = JOIN r323 WITH Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf ON FIRST 1 OUTPUT Lhs.0, ("#ifndef " ++ Rhs.1)
+                    
+             1   ~0%    {1} r325 = CONSTANT(unique int)[11]
+             0   ~0%    {1} r326 = JOIN r325 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                    
+             0   ~0%    {1} r327 = r326 AND NOT Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf_0#antijoin_rhs(Lhs.0)
+             0   ~0%    {2} r328 = SCAN r327 OUTPUT In.0, "#pragma"
+                    
+           518   ~0%    {2} r329 = r324 UNION r328
+           518   ~0%    {2} r330 = r321 UNION r329
+                    
+             0   ~0%    {2} r331 = JOIN r326 WITH Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf ON FIRST 1 OUTPUT Lhs.0, ("#pragma " ++ Rhs.1)
+                    
+          1206   ~2%    {2} r332 = Include::Include::getIncludeText#dispred#f0820431#ff AND NOT Include::Include#class#feab3531#f#antijoin_rhs(Lhs.0)
+          1203   ~2%    {2} r333 = r332 AND NOT Include::Include#class#feab3531#f#antijoin_rhs#1(Lhs.0)
+          1203   ~0%    {2} r334 = SCAN r333 OUTPUT In.0, ("#include " ++ In.1)
+                    
+             1   ~0%    {2} r335 = CONSTANT(int, unique string)[99,"__builtin_offsetof"]
+           555   ~0%    {2} r336 = JOIN r335 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__builtin_offsetof"
+                    
+          1758   ~0%    {2} r337 = r334 UNION r336
+          1758   ~0%    {2} r338 = r331 UNION r337
+          2276   ~0%    {2} r339 = r330 UNION r338
+          2469   ~0%    {2} r340 = r319 UNION r339
+         98613   ~0%    {2} r341 = r302 UNION r340
+                    
+             1   ~0%    {2} r342 = CONSTANT(int, unique string)[104,"__has_nothrow_copy"]
+             0   ~0%    {2} r343 = JOIN r342 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_nothrow_copy"
+                    
+             1   ~0%    {2} r344 = CONSTANT(int, unique string)[107,"__has_trivial_copy"]
+             0   ~0%    {2} r345 = JOIN r344 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_trivial_copy"
+                    
+             1   ~0%    {2} r346 = CONSTANT(int, unique string)[295,"__is_destructible"]
+             0   ~0%    {2} r347 = JOIN r346 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_destructible"
+                    
+             0   ~0%    {2} r348 = r345 UNION r347
+             0   ~0%    {2} r349 = r343 UNION r348
+                    
+             1   ~0%    {2} r350 = CONSTANT(int, unique string)[303,"__is_literal_type"]
+             0   ~0%    {2} r351 = JOIN r350 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_literal_type"
+                    
+             1   ~0%    {2} r352 = CONSTANT(int, unique string)[325,"__builtin_complex"]
+             0   ~0%    {2} r353 = JOIN r352 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__builtin_complex"
+                    
+             1   ~0%    {2} r354 = CONSTANT(int, unique string)[18,"VLA dimension size"]
+             0   ~0%    {2} r355 = JOIN r354 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "VLA dimension size"
+                    
+             0   ~0%    {2} r356 = r353 UNION r355
+             0   ~0%    {2} r357 = r351 UNION r356
+             0   ~0%    {2} r358 = r349 UNION r357
+                    
+             1   ~0%    {2} r359 = CONSTANT(int, unique string)[79,"__builtin_va_start"]
+            14   ~0%    {2} r360 = JOIN r359 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__builtin_va_start"
+                    
+             0   ~0%    {1} r361 = Call::FunctionCall#39248e3c#f AND NOT project#Call::FunctionCall::getTarget#dispred#f0820431#ff(Lhs.0)
+             0   ~0%    {2} r362 = SCAN r361 OUTPUT In.0, "call to unknown function"
+                    
+             1   ~0%    {1} r363 = CONSTANT(unique int)[18]
+             0   ~0%    {1} r364 = JOIN r363 WITH preprocdirects_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+             0   ~0%    {2} r365 = JOIN r364 WITH Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf ON FIRST 1 OUTPUT Lhs.0, ("#warning " ++ Rhs.1)
+                    
+             0   ~0%    {2} r366 = r362 UNION r365
+            14   ~0%    {2} r367 = r360 UNION r366
+                    
+             1   ~0%    {2} r368 = CONSTANT(int, unique string)[113,"__is_convertible_to"]
+             0   ~0%    {2} r369 = JOIN r368 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_convertible_to"
+                    
+             1   ~0%    {2} r370 = CONSTANT(int, unique string)[307,"__is_constructible"]
+             0   ~0%    {2} r371 = JOIN r370 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_constructible"
+                    
+          4760   ~0%    {2} r372 = Macro::Macro::getHead#dispred#f0820431#ff AND NOT Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#7(Lhs.0)
+          4760   ~0%    {2} r373 = JOIN r372 WITH Macro::Macro::getBody#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, ("#define " ++ Lhs.1 ++ " " ++ Rhs.1)
+                    
+          4760   ~0%    {2} r374 = r371 UNION r373
+          4760   ~0%    {2} r375 = r369 UNION r374
+          4774   ~0%    {2} r376 = r367 UNION r375
+          4774   ~0%    {2} r377 = r358 UNION r376
+                    
+             1   ~0%    {2} r378 = CONSTANT(int, unique string)[102,"__has_nothrow_assign"]
+             0   ~0%    {2} r379 = JOIN r378 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_nothrow_assign"
+                    
+             1   ~0%    {2} r380 = CONSTANT(int, unique string)[105,"__has_trivial_assign"]
+             0   ~0%    {2} r381 = JOIN r380 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_trivial_assign"
+                    
+             1   ~0%    {2} r382 = CONSTANT(int, unique string)[9,"for(...;...;...) ..."]
+           522   ~0%    {2} r383 = JOIN r382 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "for(...;...;...) ..."
+                    
+           522   ~0%    {2} r384 = r381 UNION r383
+           522   ~0%    {2} r385 = r379 UNION r384
+                    
+             1   ~0%    {1} r386 = CONSTANT(unique int)[124]
+             0   ~0%    {1} r387 = JOIN r386 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+                    
+             0   ~0%    {1} r388 = r387 AND NOT project#Cast::UuidofOperator::getTypeOperand#dispred#f0820431#ff(Lhs.0)
+             0   ~0%    {2} r389 = SCAN r388 OUTPUT In.0, "__uuidof(0)"
+                    
+             1   ~0%    {1} r390 = CONSTANT(unique int)[98]
+           555   ~0%    {1} r391 = JOIN r390 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+           555   ~0%    {2} r392 = JOIN r391 WITH Expr::Expr::getType#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+           555   ~0%    {2} r393 = JOIN r392 WITH Type::Type::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                    
+             1   ~0%    {2} r394 = CONSTANT(int, unique string)[108,"__has_user_destructor"]
+             0   ~0%    {2} r395 = JOIN r394 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_user_destructor"
+                    
+           555   ~0%    {2} r396 = r393 UNION r395
+           555   ~0%    {2} r397 = r389 UNION r396
+          1077   ~0%    {2} r398 = r385 UNION r397
+                    
+             1   ~0%    {2} r399 = CONSTANT(int, unique string)[301,"__is_standard_layout"]
+             0   ~0%    {2} r400 = JOIN r399 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_standard_layout"
+                    
+             1   ~0%    {2} r401 = CONSTANT(int, unique string)[311,"__is_interface_class"]
+             0   ~0%    {2} r402 = JOIN r401 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_interface_class"
+                    
+             1   ~0%    {2} r403 = CONSTANT(int, unique string)[96,"(statement expression)"]
+             3   ~0%    {2} r404 = JOIN r403 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "(statement expression)"
+                    
+             3   ~0%    {2} r405 = r402 UNION r404
+             3   ~0%    {2} r406 = r400 UNION r405
+                    
+             1   ~0%    {2} r407 = CONSTANT(int, unique string)[321,"__builtin_choose_expr"]
+             0   ~0%    {2} r408 = JOIN r407 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__builtin_choose_expr"
+                    
+          7512   ~0%    {2} r409 = AGGREGATE Element::ElementBase::toString#dispred#f0820431#ff#max_range, Element::ElementBase::toString#dispred#f0820431#ff#max_term ON In.2 WITH MAX<0 ASC> OUTPUT In.0, Agg.0
+          7512   ~2%    {2} r410 = SCAN r409 OUTPUT In.0, ("initializer for " ++ In.1)
+                    
+          7512   ~2%    {2} r411 = r408 UNION r410
+                    
+             1   ~0%    {2} r412 = CONSTANT(int, unique string)[5,"(reference dereference)"]
+             0   ~0%    {2} r413 = JOIN r412 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "(reference dereference)"
+                    
+             1   ~0%    {2} r414 = CONSTANT(int, unique string)[35,"if constexpr (...) ... "]
+             0   ~0%    {2} r415 = JOIN r414 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "if constexpr (...) ... "
+                    
+             0   ~0%    {2} r416 = r413 UNION r415
+          7512   ~2%    {2} r417 = r411 UNION r416
+          7515   ~2%    {2} r418 = r406 UNION r417
+          8592   ~3%    {2} r419 = r398 UNION r418
+         13366   ~0%    {2} r420 = r377 UNION r419
+        111979   ~0%    {2} r421 = r341 UNION r420
+                    
+             1   ~0%    {2} r422 = CONSTANT(int, unique string)[109,"__has_virtual_destructor"]
+             0   ~0%    {2} r423 = JOIN r422 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_virtual_destructor"
+                    
+             1   ~0%    {2} r424 = CONSTANT(int, unique string)[122,"__has_trivial_destructor"]
+             0   ~0%    {2} r425 = JOIN r424 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_trivial_destructor"
+                    
+             1   ~0%    {2} r426 = CONSTANT(int, unique string)[299,"__is_nothrow_assignable"]
+             0   ~0%    {2} r427 = JOIN r426 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_nothrow_assignable"
+                    
+             0   ~0%    {2} r428 = r425 UNION r427
+             0   ~0%    {2} r429 = r423 UNION r428
+                    
+             1   ~0%    {2} r430 = CONSTANT(int, unique string)[302,"__is_trivially_copyable"]
+             0   ~0%    {2} r431 = JOIN r430 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_trivially_copyable"
+                    
+             1   ~0%    {2} r432 = CONSTANT(int, unique string)[315,"__is_simple_value_class"]
+             0   ~0%    {2} r433 = JOIN r432 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_simple_value_class"
+                    
+             1   ~0%    {2} r434 = CONSTANT(int, unique string)[320,"__builtin_shufflevector"]
+             0   ~0%    {2} r435 = JOIN r434 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__builtin_shufflevector"
+                    
+             0   ~0%    {2} r436 = r433 UNION r435
+             0   ~0%    {2} r437 = r431 UNION r436
+             0   ~0%    {2} r438 = r429 UNION r437
+                    
+             1   ~0%    {2} r439 = CONSTANT(int, unique string)[324,"__builtin_convertvector"]
+             0   ~0%    {2} r440 = JOIN r439 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__builtin_convertvector"
+                    
+             1   ~0%    {2} r441 = CONSTANT(int, unique string)[89,"throw ..."]
+             0   ~0%    {2} r442 = JOIN r441 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT "throw ...", Rhs.1
+             0   ~0%    {2} r443 = r442 AND NOT Expr::ReThrowExpr#class#ef463c5d#f(Lhs.1)
+             0   ~0%    {2} r444 = SCAN r443 OUTPUT In.1, "throw ..."
+                    
+             1   ~0%    {2} r445 = CONSTANT(int, unique string)[10,"case ...:"]
+          1650   ~0%    {2} r446 = JOIN r445 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT "case ...:", Rhs.1
+          1476   ~0%    {2} r447 = r446 AND NOT Stmt::DefaultCase#class#af82e98b#f(Lhs.1)
+          1476   ~1%    {2} r448 = SCAN r447 OUTPUT In.1, "case ...:"
+                    
+          1476   ~1%    {2} r449 = r444 UNION r448
+          1476   ~1%    {2} r450 = r440 UNION r449
+                    
+             1   ~0%    {2} r451 = CONSTANT(int, unique string)[103,"__has_nothrow_constructor"]
+             0   ~0%    {2} r452 = JOIN r451 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_nothrow_constructor"
+                    
+             1   ~0%    {2} r453 = CONSTANT(int, unique string)[106,"__has_trivial_constructor"]
+             0   ~0%    {2} r454 = JOIN r453 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_trivial_constructor"
+                    
+             1   ~0%    {2} r455 = CONSTANT(int, unique string)[9,"(vacuous destructor call)"]
+             0   ~0%    {2} r456 = JOIN r455 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "(vacuous destructor call)"
+                    
+             0   ~0%    {2} r457 = r454 UNION r456
+             0   ~0%    {2} r458 = r452 UNION r457
+          1476   ~1%    {2} r459 = r450 UNION r458
+          1476   ~1%    {2} r460 = r438 UNION r459
+                    
+         11571   ~0%    {2} r461 = JOIN Call::FunctionCall#39248e3c#f WITH Call::FunctionCall::getTarget#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+         11571   ~0%    {2} r462 = JOIN r461 WITH functions ON FIRST 1 OUTPUT Lhs.1, ("call to " ++ Rhs.1)
+                    
+             1   ~0%    {2} r463 = CONSTANT(int, unique string)[296,"__is_nothrow_destructible"]
+             0   ~0%    {2} r464 = JOIN r463 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_nothrow_destructible"
+                    
+             1   ~0%    {2} r465 = CONSTANT(int, unique string)[298,"__is_trivially_assignable"]
+             0   ~0%    {2} r466 = JOIN r465 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_trivially_assignable"
+                    
+             0   ~0%    {2} r467 = r464 UNION r466
+         11571   ~0%    {2} r468 = r462 UNION r467
+                    
+             1   ~0%    {2} r469 = CONSTANT(int, unique string)[305,"__has_trivial_move_assign"]
+             0   ~0%    {2} r470 = JOIN r469 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_trivial_move_assign"
+                    
+             1   ~0%    {2} r471 = CONSTANT(int, unique string)[306,"__has_nothrow_move_assign"]
+             0   ~0%    {2} r472 = JOIN r471 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_nothrow_move_assign"
+                    
+             1   ~0%    {2} r473 = CONSTANT(int, unique string)[93,"sizeof(<expr>)"]
+          1115   ~1%    {2} r474 = JOIN r473 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "sizeof(<expr>)"
+           373   ~2%    {2} r475 = JOIN r474 WITH project#Expr::Expr::getChild#dispred#f0820431#bff#2 ON FIRST 1 OUTPUT Lhs.0, "sizeof(<expr>)"
+                    
+           373   ~2%    {2} r476 = r472 UNION r475
+           373   ~2%    {2} r477 = r470 UNION r476
+         11944   ~0%    {2} r478 = r468 UNION r477
+                    
+             1   ~0%    {2} r479 = CONSTANT(int, unique string)[308,"__is_nothrow_constructible"]
+             0   ~0%    {2} r480 = JOIN r479 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_nothrow_constructible"
+                    
+             1   ~0%    {2} r481 = CONSTANT(int, unique string)[8,"array to pointer conversion"]
+          3682   ~0%    {2} r482 = JOIN r481 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "array to pointer conversion"
+                    
+             1   ~0%    {2} r483 = CONSTANT(int, unique string)[94,"alignof(<expr>)"]
+             0   ~0%    {2} r484 = JOIN r483 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "alignof(<expr>)"
+             0   ~0%    {2} r485 = JOIN r484 WITH project#Expr::Expr::getChild#dispred#f0820431#bff#2 ON FIRST 1 OUTPUT Lhs.0, "alignof(<expr>)"
+                    
+          3682   ~0%    {2} r486 = r482 UNION r485
+          3682   ~0%    {2} r487 = r480 UNION r486
+                    
+             1   ~0%    {2} r488 = CONSTANT(int, unique string)[119,"__builtin_types_compatible_p"]
+             0   ~0%    {2} r489 = JOIN r488 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__builtin_types_compatible_p"
+                    
+             1   ~0%    {2} r490 = CONSTANT(int, unique string)[297,"__is_trivially_destructible"]
+             0   ~0%    {2} r491 = JOIN r490 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_trivially_destructible"
+                    
+             1   ~0%    {2} r492 = CONSTANT(int, unique string)[294,"__is_trivially_constructible"]
+             0   ~0%    {2} r493 = JOIN r492 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__is_trivially_constructible"
+                    
+             0   ~0%    {2} r494 = r491 UNION r493
+             0   ~0%    {2} r495 = r489 UNION r494
+          3682   ~0%    {2} r496 = r487 UNION r495
+         15626   ~0%    {2} r497 = r478 UNION r496
+         17102   ~0%    {2} r498 = r460 UNION r497
+                    
+             1   ~0%    {2} r499 = CONSTANT(int, unique string)[74,"call to expression"]
+            34   ~0%    {2} r500 = JOIN r499 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "call to expression"
+            34   ~0%    {2} r501 = JOIN r500 WITH Call::Call#39248e3c#f ON FIRST 1 OUTPUT Lhs.0, "call to expression"
+                    
+             1   ~0%    {2} r502 = CONSTANT(int, unique string)[304,"__has_trivial_move_constructor"]
+             0   ~0%    {2} r503 = JOIN r502 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__has_trivial_move_constructor"
+                    
+             0   ~0%    {2} r504 = SCAN static_asserts OUTPUT In.0, ("static_assert(..., \"" ++ In.2 ++ "\")")
+                    
+             0   ~0%    {2} r505 = r503 UNION r504
+            34   ~0%    {2} r506 = r501 UNION r505
+                    
+             1   ~0%    {1} r507 = CONSTANT(unique int)[214]
+         44531   ~0%    {1} r508 = JOIN r507 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+         44531   ~4%    {2} r509 = JOIN r508 WITH Expr::Expr::getType#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+         44531   ~0%    {2} r510 = JOIN r509 WITH Type::Type::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, ("(" ++ Rhs.1 ++ ")...")
+                    
+         38851   ~5%    {1} r511 = r296 AND NOT code_block_0#antijoin_rhs(Lhs.0)
+             0   ~0%    {1} r512 = r511 AND NOT Expr::Expr::getValue#dispred#f0820431#bf_0#antijoin_rhs(Lhs.0)
+             0   ~0%    {2} r513 = SCAN r512 OUTPUT In.0, "Unknown literal"
+                    
+             0   ~0%    {2} r514 = JOIN r387 WITH Cast::UuidofOperator::getTypeOperand#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+             0   ~0%    {2} r515 = JOIN r514 WITH Type::Type::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, ("__uuidof(" ++ Rhs.1 ++ ")")
+                    
+             0   ~0%    {2} r516 = r513 UNION r515
+         44531   ~0%    {2} r517 = r510 UNION r516
+         44565   ~0%    {2} r518 = r506 UNION r517
+                    
+             1   ~0%    {1} r519 = CONSTANT(unique int)[212]
+             0   ~0%    {1} r520 = JOIN r519 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+             0   ~0%    {2} r521 = JOIN r520 WITH Expr::Expr::getType#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+             0   ~0%    {2} r522 = JOIN r521 WITH Type::Type::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, ("const_cast<" ++ Rhs.1 ++ ">...")
+                    
+             1   ~0%    {1} r523 = CONSTANT(unique int)[210]
+             0   ~0%    {1} r524 = JOIN r523 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+             0   ~0%    {2} r525 = JOIN r524 WITH Expr::Expr::getType#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+             0   ~0%    {2} r526 = JOIN r525 WITH Type::Type::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, ("static_cast<" ++ Rhs.1 ++ ">...")
+                    
+             1   ~0%    {1} r527 = CONSTANT(unique int)[213]
+             0   ~0%    {1} r528 = JOIN r527 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+             0   ~0%    {2} r529 = JOIN r528 WITH Expr::Expr::getType#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+             0   ~0%    {2} r530 = JOIN r529 WITH Type::Type::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, ("dynamic_cast<" ++ Rhs.1 ++ ">...")
+                    
+             0   ~0%    {2} r531 = r526 UNION r530
+             0   ~0%    {2} r532 = r522 UNION r531
+                    
+             1   ~0%    {2} r533 = CONSTANT(int, unique string)[16,"__try { ... } __finally { ... }"]
+             0   ~0%    {2} r534 = JOIN r533 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT "__try { ... } __finally { ... }", Rhs.1
+             0   ~0%    {2} r535 = r534 AND NOT project#Stmt::Stmt::getChild#dispred#f0820431#bff#2(Lhs.1)
+             0   ~0%    {2} r536 = SCAN r535 OUTPUT In.1, "__try { ... } __finally { ... }"
+                    
+             0   ~0%    {2} r537 = SCAN fold OUTPUT In.0, In.1
+             0   ~0%    {2} r538 = STREAM DEDUP r537
+                    
+             0   ~0%    {2} r539 = JOIN r538 WITH Expr::FoldExpr::isUnaryFold#dispred#f0820431#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+                    
+             0   ~0%    {2} r540 = JOIN r539 WITH fold ON FIRST 2 OUTPUT Lhs.0, Lhs.1
+             0   ~0%    {2} r541 = r540 AND NOT Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#6(Lhs.0)
+             0   ~0%    {2} r542 = SCAN r541 OUTPUT In.0, ("( pack " ++ In.1 ++ " ... )")
+                    
+             0   ~0%    {3} r543 = JOIN r539 WITH fold ON FIRST 2 OUTPUT Lhs.0, true, Lhs.1
+             0   ~0%    {2} r544 = JOIN r543 WITH fold_02#join_rhs ON FIRST 2 OUTPUT Lhs.0, ("( ... " ++ Lhs.2 ++ " pack )")
+                    
+             0   ~0%    {2} r545 = r542 UNION r544
+             0   ~0%    {2} r546 = r536 UNION r545
+             0   ~0%    {2} r547 = r532 UNION r546
+         44565   ~0%    {2} r548 = r518 UNION r547
+                    
+             1   ~0%    {2} r549 = CONSTANT(int, unique string)[16,"__try { ... } __except( ... ) { ... }"]
+             0   ~0%    {2} r550 = JOIN r549 WITH stmts_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, "__try { ... } __except( ... ) { ... }"
+             0   ~0%    {2} r551 = JOIN r550 WITH project#Stmt::Stmt::getChild#dispred#f0820431#bff#2 ON FIRST 1 OUTPUT Lhs.0, "__try { ... } __except( ... ) { ... }"
+                    
+             1   ~0%    {1} r552 = CONSTANT(unique int)[211]
+             0   ~0%    {1} r553 = JOIN r552 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+             0   ~0%    {2} r554 = JOIN r553 WITH Expr::Expr::getType#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+             0   ~0%    {2} r555 = JOIN r554 WITH Type::Type::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, ("reinterpret_cast<" ++ Rhs.1 ++ ">...")
+                    
+             0   ~0%    {2} r556 = r538 AND NOT Expr::FoldExpr::isUnaryFold#dispred#f0820431#f(Lhs.0)
+                    
+             0   ~0%    {2} r557 = JOIN r556 WITH fold ON FIRST 2 OUTPUT Lhs.0, Lhs.1
+             0   ~0%    {2} r558 = r557 AND NOT Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#6(Lhs.0)
+             0   ~0%    {2} r559 = SCAN r558 OUTPUT In.0, ("( pack " ++ In.1 ++ " ... " ++ In.1 ++ " init )")
+                    
+             0   ~0%    {2} r560 = r555 UNION r559
+             0   ~0%    {2} r561 = r551 UNION r560
+                    
+             0   ~0%    {3} r562 = JOIN r556 WITH fold ON FIRST 2 OUTPUT Lhs.0, true, Lhs.1
+             0   ~0%    {2} r563 = JOIN r562 WITH fold_02#join_rhs ON FIRST 2 OUTPUT Lhs.0, ("( init " ++ Lhs.2 ++ " ... " ++ Lhs.2 ++ " pack )")
+                    
+             0   ~0%    {2} r564 = SCAN namequalifiers OUTPUT In.2, In.0
+             0   ~0%    {2} r565 = JOIN r564 WITH ResolveClass::Cached::resolveClass#eb2868f4#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.1
+                    
+             0   ~0%    {3} r566 = SCAN namequalifiers OUTPUT In.0, In.2, In.2
+             0   ~0%    {3} r567 = r566 AND NOT usertypes_0#antijoin_rhs(Lhs.2)
+             0   ~0%    {2} r568 = SCAN r567 OUTPUT In.2, In.0
+                    
+             0   ~0%    {2} r569 = r565 UNION r568
+             0   ~0%    {2} r570 = JOIN r569 WITH NameQualifiers::NameQualifyingElement::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, (Rhs.1 ++ "::")
+                    
+           260   ~0%    {1} r571 = Element::ElementBase::toString#dispred#f0820431#ff#shared#1 AND NOT Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#5(Lhs.0)
+           262   ~0%    {5} r572 = JOIN r571 WITH var_decls ON FIRST 1 OUTPUT Lhs.0, Rhs.1, Rhs.2, Rhs.3, Rhs.4
+           118   ~0%    {5} r573 = SELECT r572 ON In.3 != ""
+           118   ~0%    {2} r574 = JOIN r573 WITH Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, ("declaration of " ++ Rhs.1 ++ " as " ++ Lhs.3)
+                    
+           118   ~0%    {2} r575 = r570 UNION r574
+           118   ~0%    {2} r576 = r563 UNION r575
+           118   ~0%    {2} r577 = r561 UNION r576
+                    
+             0   ~0%    {2} r578 = JOIN Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#2 WITH Specifier::AttributeArgument::getValueType#dispred#f0820431#ff ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+             0   ~0%    {2} r579 = JOIN r578 WITH Type::Type::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Rhs.1
+                    
+           902   ~0%    {2} r580 = attribute_arg_value AND NOT Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#2(Lhs.0)
+                    
+           902   ~0%    {2} r581 = r579 UNION r580
+           902   ~0%    {2} r582 = r581 AND NOT Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#3(Lhs.0)
+           902   ~0%    {2} r583 = r582 AND NOT attribute_arg_name_0#antijoin_rhs(Lhs.0)
+           902   ~0%    {2} r584 = SCAN r583 OUTPUT In.0, ("" ++ In.1)
+                    
+             1   ~0%    {1} r585 = CONSTANT(unique int)[202]
+             0   ~0%    {1} r586 = JOIN r585 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+             0   ~0%    {2} r587 = JOIN r586 WITH varbind ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+             0   ~0%    {2} r588 = JOIN r587 WITH Field::Field#class#1b3cf47e#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+             0   ~0%    {2} r589 = JOIN r588 WITH Variable::MemberVariable::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, ("constructor init of field " ++ Rhs.1)
+                    
+          5270   ~0%    {1} r590 = JOIN var_def WITH param_decl_bind ON FIRST 1 OUTPUT Lhs.0
+          5270   ~0%    {5} r591 = JOIN r590 WITH var_decls ON FIRST 1 OUTPUT Lhs.0, Rhs.1, Rhs.2, Rhs.3, Rhs.4
+          5270   ~0%    {5} r592 = SELECT r591 ON In.3 != ""
+          5270   ~2%    {2} r593 = SCAN r592 OUTPUT In.0, ("definition of " ++ In.3)
+                    
+          5270   ~2%    {2} r594 = r589 UNION r593
+          6172   ~3%    {2} r595 = r584 UNION r594
+                    
+          4164   ~4%    {5} r596 = JOIN Element::ElementBase::toString#dispred#f0820431#ff#shared#1 WITH var_decls ON FIRST 1 OUTPUT Lhs.0, Rhs.1, Rhs.2, Rhs.3, Rhs.4
+          4020   ~4%    {5} r597 = SELECT r596 ON In.3 != ""
+          4020  ~10%    {2} r598 = SCAN r597 OUTPUT In.0, In.3
+          4022   ~0%    {6} r599 = JOIN r598 WITH var_decls ON FIRST 1 OUTPUT Lhs.0, Lhs.1, Rhs.1, Rhs.2, Rhs.3, Rhs.4
+          4022   ~0%    {6} r600 = SELECT r599 ON In.4 != ""
+          4022  ~10%    {3} r601 = SCAN r600 OUTPUT In.0, In.4, In.1
+          3704   ~0%    {2} r602 = JOIN r601 WITH Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff ON FIRST 2 OUTPUT Lhs.0, ("declaration of " ++ Lhs.2)
+                    
+             1   ~0%    {1} r603 = CONSTANT(unique int)[206]
+             0   ~0%    {1} r604 = JOIN r603 WITH exprs_10#join_rhs ON FIRST 1 OUTPUT Rhs.1
+             0   ~0%    {2} r605 = JOIN r604 WITH varbind ON FIRST 1 OUTPUT Rhs.1, Lhs.0
+             0   ~0%    {2} r606 = JOIN r605 WITH Field::Field#class#1b3cf47e#f ON FIRST 1 OUTPUT Lhs.0, Lhs.1
+             0   ~0%    {2} r607 = JOIN r606 WITH Variable::MemberVariable::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, ("destructor field destruction of " ++ Rhs.1)
+                    
+          3704   ~0%    {2} r608 = r602 UNION r607
+                    
+           902   ~0%    {2} r609 = attribute_arg_value AND NOT Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#2(Lhs.0)
+                    
+           902   ~0%    {2} r610 = r579 UNION r609
+           902   ~0%    {2} r611 = r610 AND NOT Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#3(Lhs.0)
+             0   ~0%    {2} r612 = JOIN r611 WITH attribute_arg_name ON FIRST 1 OUTPUT Lhs.0, ((Rhs.1 ++ "=") ++ Lhs.1)
+                    
+         15855   ~6%    {2} r613 = JOIN Declaration::DeclarationEntry::isDefinition#dispred#f0820431#f WITH Declaration::DeclarationEntry::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, ("definition of " ++ Rhs.1)
+                    
+          6371   ~1%    {2} r614 = SCAN Element::ElementBase::toString#dispred#f0820431#ff#shared OUTPUT In.0, ("declaration of " ++ In.1)
+          6371   ~0%    {3} r615 = JOIN r614 WITH Declaration::DeclarationEntry::getName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, Rhs.1, Lhs.1
+          6255   ~1%    {2} r616 = JOIN r615 WITH Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff ON FIRST 2 OUTPUT Lhs.0, Lhs.2
+                    
+           116   ~1%    {2} r617 = Element::ElementBase::toString#dispred#f0820431#ff#shared AND NOT Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#4(Lhs.0, Lhs.1)
+           116   ~0%    {2} r618 = JOIN r617 WITH Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, ("declaration of " ++ Rhs.1 ++ " as " ++ Lhs.1)
+                    
+          6371   ~0%    {2} r619 = r616 UNION r618
+         22226   ~2%    {2} r620 = r613 UNION r619
+         13137   ~0%    {2} r621 = r620 AND NOT param_decl_bind_0#antijoin_rhs(Lhs.0)
+                    
+         13137   ~0%    {2} r622 = r612 UNION r621
+         16841   ~1%    {2} r623 = r608 UNION r622
+         23013   ~4%    {2} r624 = r595 UNION r623
+         23131   ~4%    {2} r625 = r577 UNION r624
+         67696   ~0%    {2} r626 = r548 UNION r625
+         84798   ~1%    {2} r627 = r498 UNION r626
+        196777   ~0%    {2} r628 = r421 UNION r627
+        529727   ~0%    {2} r629 = r262 UNION r628
+                        return r629
+
+[2022-07-21 17:59:15] Evaluated non-recursive predicate #select#ff@e74ed8iq in 162987ms (size: 139364).
+Tuple counts for #select#ff@e74ed8iq:
+             87124  ~0%    {3} r1 = JOIN Access::Access::getTarget#dispred#f0820431#ff WITH Expr::Expr::getLocation#dispred#f0820431#bf ON FIRST 1 OUTPUT Rhs.1, Lhs.0, Lhs.1
+             87124  ~5%    {3} r2 = JOIN r1 WITH Location::Location::fullLocationInfo#dispred#f0820431#bfffff ON FIRST 1 OUTPUT Rhs.2, Lhs.1, Lhs.2
+          13435037  ~8%    {3} r3 = JOIN r2 WITH Location::Location::fullLocationInfo#dispred#f0820431#bfffff_20#join_rhs ON FIRST 1 OUTPUT Lhs.2, Lhs.1, Rhs.1
+        1608611830  ~0%    {3} r4 = JOIN r3 WITH Access::Access::getTarget#dispred#f0820431#ff_10#join_rhs ON FIRST 1 OUTPUT Rhs.1, Lhs.2, Lhs.1
+            144186  ~0%    {2} r5 = JOIN r4 WITH Expr::Expr::getLocation#dispred#f0820431#bf ON FIRST 2 OUTPUT Lhs.2, Lhs.0
+            144074  ~0%    {3} r6 = JOIN r5 WITH Expr::Expr::getEnclosingFunction#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Rhs.1, Lhs.0
+            139364  ~0%    {2} r7 = JOIN r6 WITH Expr::Expr::getEnclosingFunction#dispred#f0820431#ff ON FIRST 2 OUTPUT Lhs.2, Lhs.0
+                           return r7
+
+[2022-07-21 17:59:15] Evaluated non-recursive predicate project#Expr::Expr::getLocation#dispred#f0820431#bf@33dd68ek in 16ms (size: 154067).
+Tuple counts for project#Expr::Expr::getLocation#dispred#f0820431#bf@33dd68ek:
+        324197  ~117%    {1} r1 = SCAN Expr::Expr::getLocation#dispred#f0820431#bf OUTPUT In.1
+                         return r1
+
+[2022-07-21 17:59:15] Evaluated non-recursive predicate #select#query#ffffffffffffff#shared@573fbdtm in 32ms (size: 139364).
+Tuple counts for #select#query#ffffffffffffff#shared@573fbdtm:
+        139364  ~0%    {2} r1 = SCAN #select#ff OUTPUT In.1, In.0
+        139364  ~3%    {3} r2 = JOIN r1 WITH Expr::Expr::getLocation#dispred#f0820431#bf ON FIRST 1 OUTPUT Rhs.1, Lhs.1, Lhs.0
+                       return r2
+
+[2022-07-21 17:59:15] Evaluated non-recursive predicate Location::Location::hasLocationInfo#dispred#f0820431#bfffff@660cb131 in 29ms (size: 147949).
+Tuple counts for Location::Location::hasLocationInfo#dispred#f0820431#bfffff@660cb131:
+        147949  ~3%    {6} r1 = JOIN project#Expr::Expr::getLocation#dispred#f0820431#bf WITH Location::Location::fullLocationInfo#dispred#f0820431#bfffff ON FIRST 1 OUTPUT Rhs.1, Lhs.0, Rhs.2, Rhs.3, Rhs.4, Rhs.5
+        147949  ~7%    {6} r2 = JOIN r1 WITH File::Container::getAbsolutePath#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Rhs.1, Lhs.2, Lhs.3, Lhs.4, Lhs.5
+                       return r2
+
+[2022-07-21 17:59:15] Evaluated non-recursive predicate #select#query#ffffffffffffff#antijoin_rhs@6a36af0l in 22ms (size: 139364).
+Tuple counts for #select#query#ffffffffffffff#antijoin_rhs@6a36af0l:
+        139364  ~0%    {2} r1 = JOIN #select#query#ffffffffffffff#shared WITH Location::Location::hasLocationInfo#dispred#f0820431#bfffff ON FIRST 1 OUTPUT Lhs.1, Lhs.2
+                       return r1
+
+[2022-07-21 17:59:15] Evaluated non-recursive predicate #select#query#ffffffffffffff#shared#1@9a9661km in 39ms (size: 139364).
+Tuple counts for #select#query#ffffffffffffff#shared#1@9a9661km:
+        139364   ~1%    {7} r1 = JOIN #select#query#ffffffffffffff#shared WITH Location::Location::hasLocationInfo#dispred#f0820431#bfffff ON FIRST 1 OUTPUT Lhs.1, Lhs.2, Rhs.1, Rhs.2, Rhs.3, Rhs.4, Rhs.5
+                    
+             0   ~0%    {2} r2 = #select#ff AND NOT #select#query#ffffffffffffff#antijoin_rhs(Lhs.0, Lhs.1)
+             0   ~0%    {7} r3 = SCAN r2 OUTPUT In.0, In.1, "", 0, 0, 0, 0
+                    
+        139364   ~1%    {7} r4 = r1 UNION r3
+                        return r4
+
+[2022-07-21 17:59:15] Evaluated non-recursive predicate project#Element::ElementBase::toString#dispred#f0820431@de9175j3 in 18ms (size: 529724).
+Tuple counts for project#Element::ElementBase::toString#dispred#f0820431@de9175j3:
+        529724  ~0%    {1} r1 = SCAN Element::ElementBase::toString#dispred#f0820431#ff OUTPUT In.0
+        529724  ~0%    {1} r2 = STREAM DEDUP r1
+                       return r2
+
+[2022-07-21 17:59:15] Evaluated non-recursive predicate #select#query#ffffffffffffff#shared#2@c5dd573l in 21ms (size: 139364).
+Tuple counts for #select#query#ffffffffffffff#shared#2@c5dd573l:
+        139364  ~7%    {8} r1 = JOIN #select#query#ffffffffffffff#shared#1 WITH Expr::Expr::getLocation#dispred#f0820431#bf ON FIRST 1 OUTPUT Rhs.1, Lhs.0, Lhs.1, Lhs.2, Lhs.3, Lhs.4, Lhs.5, Lhs.6
+                       return r1
+
+[2022-07-21 17:59:15] Evaluated non-recursive predicate #select#query#ffffffffffffff#antijoin_rhs#1@c488f04q in 21ms (size: 139364).
+Tuple counts for #select#query#ffffffffffffff#antijoin_rhs#1@c488f04q:
+        139364  ~1%    {7} r1 = JOIN #select#query#ffffffffffffff#shared#2 WITH Location::Location::hasLocationInfo#dispred#f0820431#bfffff ON FIRST 1 OUTPUT Lhs.1, Lhs.2, Lhs.3, Lhs.4, Lhs.5, Lhs.6, Lhs.7
+                       return r1
+
+[2022-07-21 17:59:15] Evaluated non-recursive predicate #select#query#ffffffffffffff@40b6519d in 161ms (size: 139364).
+Tuple counts for #select#query#ffffffffffffff@40b6519d:
+        139364   ~0%    {12} r1 = JOIN #select#query#ffffffffffffff#shared#2 WITH Location::Location::hasLocationInfo#dispred#f0820431#bfffff ON FIRST 1 OUTPUT Lhs.1, Lhs.2, Lhs.3, Lhs.4, Lhs.5, Lhs.6, Lhs.7, Rhs.1, Rhs.2, Rhs.3, Rhs.4, Rhs.5
+                    
+             0   ~0%    {7} r2 = #select#query#ffffffffffffff#shared#1 AND NOT #select#query#ffffffffffffff#antijoin_rhs#1(Lhs.0, Lhs.1, Lhs.2, Lhs.3, Lhs.4, Lhs.5, Lhs.6)
+             0   ~0%    {12} r3 = SCAN r2 OUTPUT In.0, In.1, In.2, In.3, In.4, In.5, In.6, "", 0, 0, 0, 0
+                    
+        139364   ~0%    {12} r4 = r1 UNION r3
+                    
+        139364   ~0%    {13} r5 = JOIN r4 WITH Element::ElementBase::toString#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Lhs.0, Lhs.2, Lhs.3, Lhs.4, Lhs.5, Lhs.6, Lhs.7, Lhs.8, Lhs.9, Lhs.10, Lhs.11, Rhs.1
+                    
+             0   ~0%    {12} r6 = r4 AND NOT project#Element::ElementBase::toString#dispred#f0820431(Lhs.0)
+             0   ~0%    {13} r7 = SCAN r6 OUTPUT In.1, In.0, In.2, In.3, In.4, In.5, In.6, In.7, In.8, In.9, In.10, In.11, "(no string representation)"
+                    
+        139364   ~0%    {13} r8 = r5 UNION r7
+        139364   ~0%    {14} r9 = JOIN r8 WITH Element::ElementBase::toString#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.1, Lhs.12, Lhs.7, Lhs.8, Lhs.9, Lhs.10, Lhs.11, Lhs.0, Rhs.1, Lhs.2, Lhs.3, Lhs.4, Lhs.5, Lhs.6
+                    
+        139364   ~2%    {13} r10 = JOIN r4 WITH Element::ElementBase::toString#dispred#f0820431#ff ON FIRST 1 OUTPUT Lhs.0, Lhs.1, Lhs.2, Lhs.3, Lhs.4, Lhs.5, Lhs.6, Lhs.7, Lhs.8, Lhs.9, Lhs.10, Lhs.11, Rhs.1
+                    
+             0   ~0%    {7} r11 = #select#query#ffffffffffffff#shared#1 AND NOT #select#query#ffffffffffffff#antijoin_rhs#1(Lhs.0, Lhs.1, Lhs.2, Lhs.3, Lhs.4, Lhs.5, Lhs.6)
+             0   ~0%    {12} r12 = SCAN r11 OUTPUT In.0, In.1, In.2, In.3, In.4, In.5, In.6, "", 0, 0, 0, 0
+                    
+        139364   ~0%    {12} r13 = r1 UNION r12
+             0   ~0%    {12} r14 = r13 AND NOT project#Element::ElementBase::toString#dispred#f0820431(Lhs.0)
+             0   ~0%    {13} r15 = SCAN r14 OUTPUT In.0, In.1, In.2, In.3, In.4, In.5, In.6, In.7, In.8, In.9, In.10, In.11, "(no string representation)"
+                    
+        139364   ~2%    {13} r16 = r10 UNION r15
+             0   ~0%    {13} r17 = r16 AND NOT project#Element::ElementBase::toString#dispred#f0820431(Lhs.1)
+             0   ~0%    {14} r18 = SCAN r17 OUTPUT In.0, In.12, In.7, In.8, In.9, In.10, In.11, In.1, "(no string representation)", In.2, In.3, In.4, In.5, In.6
+                    
+        139364   ~0%    {14} r19 = r9 UNION r18
+                        return r19
+
+[2022-07-21 17:59:15] Found predicate #select#query#fff@b7b7c5da in the relation cache (size: 43528)
+[2022-07-21 17:59:15] Found predicate Enclosing::stmtEnclosingElement#c50c5fbf#ff@a6cf7ead in the relation cache (size: 46015)
+[2022-07-21 17:59:15] Completed evaluation of query BadAdditionOverflowCheck.ql.
+Most expensive predicates for stage 3 of completed query BadAdditionOverflowCheck.ql:
+        time  | predicate
+        ------|----------
+        305ms | exprs_10#join_rhs@6d0aeb5h
+         76ms | Expr::Expr::getParent#dispred#f0820431#ff@c6b9245u
+         58ms | usertypes_0#antijoin_rhs@03a80ecr
+         29ms | Expr::Expr::getParent#dispred#f0820431#ff_10#join_rhs@472b33sv
+          6ms | Variable::Variable#class#7a968d4e#b@f2dec1e8
+
+Most expensive predicates for stage 4 of completed query BadAdditionOverflowCheck.ql:
+        time  | predicate
+        ------|----------
+        305ms | exprs_10#join_rhs@6d0aeb5h
+         70ms | Type::RoutineType#class#2e8eb3ef#f@cfd0f0fc
+         58ms | usertypes_0#antijoin_rhs@03a80ecr
+
+Most expensive predicates for stage 5 of completed query BadAdditionOverflowCheck.ql:
+        time  | predicate
+        ------|----------
+        448ms | Element::ElementBase::toString#dispred#f0820431#ff@fa7e15do
+        305ms | exprs_10#join_rhs@6d0aeb5h
+        133ms | Stmt::Stmt::getChild#dispred#f0820431#bff@b947b7mm
+        118ms | Expr::Operation::getOperator#dispred#f0820431#ff@dd7b683s
+        113ms | Access::Access#8878f617#f@1a1adasm
+         87ms | Variable::VariableDeclarationEntry::getName#dispred#f0820431#ff@a9d11e5h
+         78ms | Access::VariableAccess::getTarget#f0820431#ff@72614801
+         74ms | Type::DerivedType::getName#dispred#f0820431#ff@c13f47oq
+         73ms | Expr::Expr::getChild#dispred#f0820431#bff@6a0ef6ca
+         71ms | stmts_10#join_rhs@2c4298i2
+         70ms | Type::RoutineType#class#2e8eb3ef#f@cfd0f0fc
+         69ms | Expr::BinaryOperation#class#ef463c5d#f@c59f24or
+         66ms | Type::BuiltInType::getName#dispred#f0820431#ff@2a05afs3
+         59ms | iscall_0#antijoin_rhs@8a021dri
+         58ms | usertypes_0#antijoin_rhs@03a80ecr
+         58ms | File::Container::toString#f0820431#ff@a90db0du
+         52ms | Expr::Expr::getValue#dispred#f0820431#bf@dff23bjs
+         49ms | Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff#antijoin_rhs@bbe05cai
+         46ms | Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff@0c9abafu
+         45ms | Access::Access::getTarget#dispred#f0820431#ff@622b44ik
+         42ms | UserType::TypeDeclarationEntry::getType#dispred#f0820431#ff@4e9e860r
+         42ms | Declaration::DeclarationEntry::getDeclaration#dispred#f0820431#ff@f6b4f5en
+         40ms | Access::VariableAccess#8878f617#f#antijoin_rhs@cf64fdju
+         37ms | Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs@f2693337
+         37ms | Variable::Variable::getName#dispred#f0820431#ff@eb34f1qd
+         36ms | Declaration::DeclarationEntry::isDefinition#dispred#f0820431#f@403f39vd
+         36ms | Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff#antijoin_rhs@48a760o8
+         35ms | Access::FieldAccess#class#8878f617#f@242a2940
+         33ms | Variable::Variable::getName#dispred#f0820431#ff#antijoin_rhs@cb4d83dj
+         33ms | Type::Type::getName#dispred#f0820431#ff@d39c59gn
+         33ms | Declaration::DeclarationEntry::getName#dispred#f0820431#ff@24f968kq
+         32ms | Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff@fd7a5dhb
+         31ms | Expr::UnaryOperation#class#ef463c5d#f@b4c49eki
+         28ms | @access#f@59ec21u1
+         26ms | var_decls_10#join_rhs@0cf0b3lm
+         26ms | preprocdirects_10#join_rhs@5c6e7dqh
+         26ms | Element::ElementBase::toString#dispred#f0820431#ff#shared@9c502b1h
+         24ms | Call::FunctionCall::getTarget#dispred#f0820431#ff@116e01os
+         24ms | Declaration::Declaration::getDefinition#dispred#f0820431#ff@09cbb4dq
+         23ms | varbind_10#join_rhs@ffc1a5ba
+         22ms | valuebind_10#join_rhs@b8c48fi7
+         22ms | Access::Access::getTarget#dispred#f0820431#ff_10#join_rhs@51aa74qu
+         21ms | Declaration::Declaration::getName#dispred#f0820431#ff@19f2b31a
+         21ms | Expr::FoldExpr::isUnaryFold#dispred#f0820431#f#join_rhs@1711d3sj
+         20ms | type_decls_10#join_rhs@6a0241ro
+         18ms | m#Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf@c1b739e9
+         17ms | Declaration::Declaration::getDescription#dispred#f0820431#ff@e33d1egs
+         17ms | Function::Function::getADeclarationEntry#dispred#f0820431#fb@d8f5613g
+         16ms | Cast::SizeofTypeOperator::getTypeOperand#dispred#f0820431#ff@272d207f
+         16ms | Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#4@a64a77tp
+
+Most expensive predicates for stage 6 of completed query BadAdditionOverflowCheck.ql:
+        time  | evals | max @ iter | predicate
+        ------|-------|------------|----------
+        2m43s |       |            | #select#ff@e74ed8iq
+        305ms |       |            | exprs_10#join_rhs@6d0aeb5h
+        207ms |       |            | locations_expr_23450#join_rhs@3d73f31f
+        161ms |       |            | #select#query#ffffffffffffff@40b6519d
+        127ms |       |            | Location::Location::fullLocationInfo#dispred#f0820431#bfffff@55da434h
+        113ms |       |            | Access::Access#8878f617#f@1a1adasm
+         76ms |       |            | Expr::Expr::getParent#dispred#f0820431#bf@c6b9245u
+         64ms |       |            | Location::Location::fullLocationInfo#dispred#f0820431#bfffff_10#join_rhs@62d5adda
+         63ms |       |            | Enclosing::exprEnclosingElement#c50c5fbf#ff_10#join_rhs@900689n9
+         62ms |       |            | Expr::Expr::getLocation#dispred#f0820431#bf@5f1545os
+         59ms |       |            | iscall_0#antijoin_rhs@8a021dri
+         58ms |       |            | usertypes_0#antijoin_rhs@03a80ecr
+         58ms |       |            | File::Container::getAbsolutePath#dispred#f0820431#ff@a90db0du
+         52ms |       |            | Location::Location::fullLocationInfo#dispred#f0820431#bfffff_20#join_rhs@1f42cakj
+         44ms |       |            | Access::VariableAccess::getTarget#f0820431#ff@73b638sj
+         42ms |       |            | Expr::Expr::getEnclosingFunction#dispred#f0820431#ff@66bbbcif
+         40ms |       |            | Access::VariableAccess#8878f617#f#antijoin_rhs@cf64fdju
+         39ms |       |            | #select#query#ffffffffffffff#shared#1@9a9661km
+         32ms |       |            | #select#query#ffffffffffffff#shared@573fbdtm
+         31ms |       |            | Access::Access::getTarget#dispred#f0820431#ff@64648ctc
+         29ms |       |            | Expr::Expr::getParent#dispred#f0820431#bf_10#join_rhs@472b33sv
+         29ms |       |            | Location::Location::hasLocationInfo#dispred#f0820431#bfffff@660cb131
+         28ms |       |            | @access#f@59ec21u1
+         24ms |       |            | Access::FieldAccess#class#8878f617#f@78396e9f
+         24ms |       |            | Expr::Expr::getExprLocationOverride#f0820431#bf#join_rhs@867169e3
+         22ms |       |            | #select#query#ffffffffffffff#antijoin_rhs@6a36af0l
+         21ms |       |            | #select#query#ffffffffffffff#antijoin_rhs#1@c488f04q
+         21ms |       |            | #select#query#ffffffffffffff#shared#2@c5dd573l
+         20ms |       |            | Access::Access::getTarget#dispred#f0820431#ff_10#join_rhs@b61f9a2q
+         18ms |       |            | project#Element::ElementBase::toString#dispred#f0820431@de9175j3
+         16ms |       |            | Access::VariableAccess#8878f617#f#shared@95c55fkj
+         16ms |       |            | project#Expr::Expr::getLocation#dispred#f0820431#bf@33dd68ek
+         14ms |       |            | project#varbind@fad4cbmk
+          6ms |     4 | 3ms @ 1    | Expr::Expr::getExprLocationOverride#f0820431#bf@0c60cw33
+          5ms |       |            | files_10#join_rhs@2fb45401
+          4ms |       |            | @access#f#antijoin_rhs@a0bf62eh
+          4ms |       |            | Access::VariableAccess#8878f617#f@b19b644t
+          3ms |       |            | Variable::Variable#class#7a968d4e#b@69eb1098
+          1ms |       |            | Class::Class::getAMember#dispred#f0820431#2#ffb@5634d9h2
+          1ms |       |            | Location::UnknownLocation#bd5c7591#b@197df29a
+          1ms |       |            | Class::Class::getAMember#dispred#f0820431#2#ffb_2#join_rhs@ad99c8sh
+          1ms |       |            | project#Expr::Expr::getExprLocationOverride#f0820431#bf@3d6cfd9i
+          1ms |       |            | Class::Class::getCanonicalMember#dispred#f0820431#ffb@baccf0fa
+          1ms |       |            | m#Class::Class::getCanonicalMember#dispred#f0820431#ffb@e29c87q4
+          1ms |       |            | Field::Field#class#1b3cf47e#f@bdd6290e
+          1ms |       |            | Location::UnknownExprLocation#class#bd5c7591#f@317659dv
+
+Most expensive predicates for completed query BadAdditionOverflowCheck.ql:
+        time  | predicate
+        ------|----------
+        2m43s | #select#ff@e74ed8iq
+        448ms | Element::ElementBase::toString#dispred#f0820431#ff@fa7e15do
+        305ms | exprs_10#join_rhs@6d0aeb5h
+        207ms | locations_expr_23450#join_rhs@3d73f31f
+        161ms | #select#query#ffffffffffffff@40b6519d
+        133ms | Stmt::Stmt::getChild#dispred#f0820431#bff@b947b7mm
+        127ms | Location::Location::fullLocationInfo#dispred#f0820431#bfffff@55da434h
+        118ms | Expr::Operation::getOperator#dispred#f0820431#ff@dd7b683s
+        113ms | Access::Access#8878f617#f@1a1adasm
+         87ms | Variable::VariableDeclarationEntry::getName#dispred#f0820431#ff@a9d11e5h
+         78ms | Access::VariableAccess::getTarget#f0820431#ff@72614801
+         76ms | Expr::Expr::getParent#dispred#f0820431#ff@c6b9245u
+         74ms | Type::DerivedType::getName#dispred#f0820431#ff@c13f47oq
+         73ms | Expr::Expr::getChild#dispred#f0820431#bff@6a0ef6ca
+         71ms | stmts_10#join_rhs@2c4298i2
+         70ms | Type::RoutineType#class#2e8eb3ef#f@cfd0f0fc
+         69ms | Expr::BinaryOperation#class#ef463c5d#f@c59f24or
+         66ms | Type::BuiltInType::getName#dispred#f0820431#ff@2a05afs3
+         64ms | Location::Location::fullLocationInfo#dispred#f0820431#bfffff_10#join_rhs@62d5adda
+         63ms | Enclosing::exprEnclosingElement#c50c5fbf#ff_10#join_rhs@900689n9
+         62ms | Expr::Expr::getLocation#dispred#f0820431#bf@5f1545os
+         59ms | iscall_0#antijoin_rhs@8a021dri
+         58ms | File::Container::toString#f0820431#ff@a90db0du
+         58ms | usertypes_0#antijoin_rhs@03a80ecr
+         52ms | Expr::Expr::getValue#dispred#f0820431#bf@dff23bjs
+         52ms | Location::Location::fullLocationInfo#dispred#f0820431#bfffff_20#join_rhs@1f42cakj
+         49ms | Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff#antijoin_rhs@bbe05cai
+         46ms | Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff@0c9abafu
+         45ms | Access::Access::getTarget#dispred#f0820431#ff@622b44ik
+         44ms | Access::VariableAccess::getTarget#f0820431#ff@73b638sj
+         42ms | UserType::TypeDeclarationEntry::getType#dispred#f0820431#ff@4e9e860r
+         42ms | Expr::Expr::getEnclosingFunction#dispred#f0820431#ff@66bbbcif
+         42ms | Declaration::DeclarationEntry::getDeclaration#dispred#f0820431#ff@f6b4f5en
+         40ms | Access::VariableAccess#8878f617#f#antijoin_rhs@cf64fdju
+         39ms | #select#query#ffffffffffffff#shared#1@9a9661km
+         37ms | Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs@f2693337
+         37ms | Variable::Variable::getName#dispred#f0820431#ff@eb34f1qd
+         36ms | Declaration::DeclarationEntry::isDefinition#dispred#f0820431#f@403f39vd
+         36ms | Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff#antijoin_rhs@48a760o8
+         35ms | Access::FieldAccess#class#8878f617#f@242a2940
+         33ms | Type::Type::getName#dispred#f0820431#ff@d39c59gn
+         33ms | Variable::Variable::getName#dispred#f0820431#ff#antijoin_rhs@cb4d83dj
+         33ms | Declaration::DeclarationEntry::getName#dispred#f0820431#ff@24f968kq
+         32ms | #select#query#ffffffffffffff#shared@573fbdtm
+         32ms | Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff@fd7a5dhb
+         31ms | Access::Access::getTarget#dispred#f0820431#ff@64648ctc
+         31ms | Expr::UnaryOperation#class#ef463c5d#f@b4c49eki
+         29ms | Expr::Expr::getParent#dispred#f0820431#ff_10#join_rhs@472b33sv
+         29ms | Location::Location::hasLocationInfo#dispred#f0820431#bfffff@660cb131
+         28ms | @access#f@59ec21u1
+
+[2022-07-21 17:59:15] Total evaluation times for this run:
+        * Wall-clock duration of evaluation run: 165.1 seconds
+        * Total time spent evaluating predicates: 168.6 seconds

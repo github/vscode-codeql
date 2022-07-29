@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as determiningSelectedQueryTest from './determining-selected-query-test';
+import * as sourcemapTest from './sourcemap.test';
 
 describe('launching with a minimal workspace', async () => {
 
@@ -38,3 +39,4 @@ describe('launching with a minimal workspace', async () => {
 });
 
 determiningSelectedQueryTest.run();
+sourcemapTest.run();
