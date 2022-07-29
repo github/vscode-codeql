@@ -130,7 +130,13 @@ function getLaunchArgs(dir: TestDir) {
 
     case TestDir.MinimalWorksspace:
       return [
-        '--disable-extensions',
+        // explicitly disable extensions that are known to interfere with the CLI integration tests
+        '--disable-extension',
+        'eamodio.gitlens',
+        '--disable-extension',
+        'github.codespaces',
+        '--disable-extension',
+        'github.copilot',
         '--disable-gpu',
         '--user-data-dir=' + path.join(tmpDir.name, dir, 'user-data'),
         path.resolve(__dirname, '../../test/data')
