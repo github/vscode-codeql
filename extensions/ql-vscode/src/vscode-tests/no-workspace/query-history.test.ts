@@ -20,6 +20,7 @@ import { getErrorMessage } from '../../pure/helpers-pure';
 import { HistoryItemLabelProvider } from '../../history-item-label-provider';
 import { RemoteQueriesManager } from '../../remote-queries/remote-queries-manager';
 import { InterfaceManager } from '../../interface';
+import { EvalLogViewer } from '../../eval-log-viewer';
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -799,6 +800,7 @@ describe('query-history', () => {
       {} as DatabaseManager,
       localQueriesInterfaceManagerStub,
       remoteQueriesManagerStub,
+      {} as EvalLogViewer,
       'xxx',
       {
         globalStorageUri: vscode.Uri.file(mockExtensionLocation),

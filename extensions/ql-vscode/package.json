@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.6.9",
+  "version": "1.6.10",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -39,6 +39,7 @@
     "onView:codeQLDatabases",
     "onView:codeQLQueryHistory",
     "onView:codeQLAstViewer",
+    "onView:codeQLEvalLogViewer",
     "onView:test-explorer",
     "onCommand:codeQL.checkForUpdatesToCLI",
     "onCommand:codeQL.authenticateToGitHub",
@@ -534,11 +535,15 @@
       },
       {
         "command": "codeQLQueryHistory.showEvalLog",
-        "title": "Show Evaluator Log (Raw)"
+        "title": "Show Evaluator Log (Raw JSON)"
       },
       {
         "command": "codeQLQueryHistory.showEvalLogSummary",
-        "title": "Show Evaluator Log (Summary)"
+        "title": "Show Evaluator Log (Summary Text)"
+      },
+      {
+        "command": "codeQLQueryHistory.showEvalLogViewer",
+        "title": "Show Evaluator Log (UI)"
       },
       {
         "command": "codeQLQueryHistory.cancel",
@@ -611,6 +616,14 @@
       {
         "command": "codeQLAstViewer.clear",
         "title": "Clear AST",
+        "icon": {
+          "light": "media/light/clear-all.svg",
+          "dark": "media/dark/clear-all.svg"
+        }
+      },
+      {
+        "command": "codeQLEvalLogViewer.clear",
+        "title": "Clear Viewer",
         "icon": {
           "light": "media/light/clear-all.svg",
           "dark": "media/dark/clear-all.svg"
@@ -693,6 +706,11 @@
           "command": "codeQLAstViewer.clear",
           "when": "view == codeQLAstViewer",
           "group": "navigation"
+        },
+        {
+          "command": "codeQLEvalLogViewer.clear",
+          "when": "view == codeQLEvalLogViewer",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -765,6 +783,11 @@
           "command": "codeQLQueryHistory.showEvalLogSummary",
           "group": "9_qlCommands",
           "when": "codeql.supportsEvalLog && viewItem == rawResultsItem || codeql.supportsEvalLog && viewItem == interpretedResultsItem || codeql.supportsEvalLog && viewItem == cancelledResultsItem"
+        },
+        {
+          "command": "codeQLQueryHistory.showEvalLogViewer",
+          "group": "9_qlCommands",
+          "when": "config.codeQL.canary && codeql.supportsEvalLog && viewItem == rawResultsItem || config.codeQL.canary && codeql.supportsEvalLog && viewItem == interpretedResultsItem || config.codeQL.canary && codeql.supportsEvalLog && viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLQueryHistory.showQueryText",
@@ -988,6 +1011,10 @@
           "when": "false"
         },
         {
+          "command": "codeQLQueryHistory.showEvalLogViewer",
+          "when": "false"
+        },
+        {
           "command": "codeQLQueryHistory.openQueryDirectory",
           "when": "false"
         },
@@ -1053,6 +1080,10 @@
         },
         {
           "command": "codeQLAstViewer.clear",
+          "when": "false"
+        },
+        {
+          "command": "codeQLEvalLogViewer.clear",
           "when": "false"
         },
         {
@@ -1125,6 +1156,11 @@
         {
           "id": "codeQLAstViewer",
           "name": "AST Viewer"
+        },
+        {
+          "id": "codeQLEvalLogViewer",
+          "name": "Evaluator Log Viewer",
+          "when": "config.codeQL.canary"
         }
       ]
     },
@@ -1140,6 +1176,10 @@
       {
         "view": "codeQLDatabases",
         "contents": "Add a CodeQL database:\n[From a folder](command:codeQLDatabases.chooseDatabaseFolder)\n[From an archive](command:codeQLDatabases.chooseDatabaseArchive)\n[From a URL (as a zip file)](command:codeQLDatabases.chooseDatabaseInternet)\n[From LGTM](command:codeQLDatabases.chooseDatabaseLgtm)"
+      },
+      {
+        "view": "codeQLEvalLogViewer",
+        "contents": "Run the 'Show Evaluator Log (UI)' command on a CodeQL query run in the Query History view."
       }
     ]
   },
@@ -1246,7 +1286,7 @@
     "gulp-replace": "^1.1.3",
     "gulp-sourcemaps": "^3.0.0",
     "gulp-typescript": "^5.0.1",
-    "husky": "~4.2.5",
+    "husky": "~4.3.8",
     "lint-staged": "~10.2.2",
     "mocha": "^10.0.0",
     "mocha-sinon": "~2.1.2",
