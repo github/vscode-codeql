@@ -19,7 +19,7 @@ describe('launching with a minimal workspace', async () => {
   });
 
   it('should activate the extension when a .ql file is opened', async function() {
-    this.timeout(60000);
+    this.timeout(600000);
     await delay();
 
     const folders = vscode.workspace.workspaceFolders;
@@ -34,7 +34,7 @@ describe('launching with a minimal workspace', async () => {
   });
 
   async function delay() {
-    await new Promise(resolve => setTimeout(resolve, 4000));
+    await new Promise(resolve => setTimeout(resolve, 40000));
   }
 });
 
