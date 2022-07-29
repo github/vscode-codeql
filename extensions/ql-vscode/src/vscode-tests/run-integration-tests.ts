@@ -76,7 +76,7 @@ async function main() {
     const testDirsString = process.argv[2];
     const dirs = testDirsString.split(',').map(dir => dir.trim().toLocaleLowerCase());
     const extensionTestsEnv: Record<string, string> = {};
-    if (dirs.includes(TestDir.CliIntegration)) {
+    /*if (dirs.includes(TestDir.CliIntegration))*/ {
       console.log('Installing required extensions');
       const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
       cp.spawnSync(
