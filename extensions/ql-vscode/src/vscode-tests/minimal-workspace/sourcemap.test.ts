@@ -1,5 +1,5 @@
 import { fail } from 'assert';
-import { commands, Selection, window, workspace } from 'vscode';
+import { commands, extensions, Selection, window, workspace } from 'vscode';
 import * as path from 'path';
 import * as assert from 'assert';
 import { expect } from 'chai';
@@ -16,6 +16,8 @@ export function run() {
     it('should jump to QL code', async () => {
       try {
         this.timeout(60000);
+        const ext = extensions.getExtension('GitHub.vscode-codeql');
+        await ext?.activate();
 
         const root = workspace.workspaceFolders![0].uri.fsPath;
         const srcFiles = {
