@@ -1,5 +1,5 @@
 /**
- * Provides classes for modeling namespaces, `using` directives and `using` declarations.
+ * This code isn't compiled. It's just the target for the sourcemap tests that jump from RA to QL.
  */
 
 import semmle.code.cpp.Element
