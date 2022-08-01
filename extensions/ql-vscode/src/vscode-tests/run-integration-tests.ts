@@ -76,6 +76,7 @@ async function main() {
     const testDirsString = process.argv[2];
     const dirs = testDirsString.split(',').map(dir => dir.trim().toLocaleLowerCase());
     const extensionTestsEnv: Record<string, string> = {};
+    if (dirs.includes(TestDir.CliIntegration)) {
       console.log('Installing required extensions');
       const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
       cp.spawnSync(
@@ -91,7 +92,6 @@ async function main() {
           stdio: 'inherit',
         }
       );
-    if (dirs.includes(TestDir.CliIntegration)) {
       extensionTestsEnv.INTEGRATION_TEST_MODE = 'true';
     }
 
@@ -130,13 +130,7 @@ function getLaunchArgs(dir: TestDir) {
 
     case TestDir.MinimalWorksspace:
       return [
-        // explicitly disable extensions that are known to interfere with the CLI integration tests
-        '--disable-extension',
-        'eamodio.gitlens',
-        '--disable-extension',
-        'github.codespaces',
-        '--disable-extension',
-        'github.copilot',
+        '--disable-extensions',
         '--disable-gpu',
         '--user-data-dir=' + path.join(tmpDir.name, dir, 'user-data'),
         path.resolve(__dirname, '../../test/data')

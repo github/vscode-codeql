@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as determiningSelectedQueryTest from './determining-selected-query-test';
-import * as sourcemapTest from './sourcemap.test';
 
 describe('launching with a minimal workspace', async () => {
 
@@ -19,7 +18,7 @@ describe('launching with a minimal workspace', async () => {
   });
 
   it('should activate the extension when a .ql file is opened', async function() {
-    this.timeout(600000);
+    this.timeout(60000);
     await delay();
 
     const folders = vscode.workspace.workspaceFolders;
@@ -34,9 +33,8 @@ describe('launching with a minimal workspace', async () => {
   });
 
   async function delay() {
-    await new Promise(resolve => setTimeout(resolve, 40000));
+    await new Promise(resolve => setTimeout(resolve, 4000));
   }
 });
 
 determiningSelectedQueryTest.run();
-sourcemapTest.run();
