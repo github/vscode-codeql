@@ -55,8 +55,7 @@ describe('SourceMap', function() {
     const tempDir = path.join(tmpDir.name, 'log-summary');
     await fs.ensureDir(tempDir);
     const result: Record<string, string> = {};
-    for (const key in files) {
-      const srcPath = files[key];
+    for (const [key, srcPath] of Object.entries(files)) {
       const destPath = path.join(tempDir, path.basename(srcPath));
       await fs.copy(srcPath, destPath);
       result[key] = destPath;
