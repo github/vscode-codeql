@@ -1,10 +1,10 @@
 // TODO(angelapwen): Only load in necessary information and
-// location in bytes for this log to save memory. 
+// location in bytes for this log to save memory.
 export interface EvalLogData {
   predicateName: string;
   millis: number;
   resultSize: number;
-  // Key: pipeline identifier; Value: array of pipeline steps 
+  // Key: pipeline identifier; Value: array of pipeline steps
   ra: Record<string, string[]>;
 }
 

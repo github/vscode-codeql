@@ -99,6 +99,7 @@ import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { exportRemoteQueryResults } from './remote-queries/export-results';
 import { RemoteQuery } from './remote-queries/remote-query';
 import { EvalLogViewer } from './eval-log-viewer';
+import { SummaryLanguageSupport } from './log-insights/summary-language-support';
 
 /**
  * extension.ts
@@ -1050,6 +1051,8 @@ async function activateWithInstalledDistribution(
       logger.show();
     })
   );
+
+  ctx.subscriptions.push(new SummaryLanguageSupport());
 
   void logger.log('Starting language server.');
   ctx.subscriptions.push(client.start());

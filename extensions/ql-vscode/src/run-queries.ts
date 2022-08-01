@@ -241,7 +241,8 @@ export class QueryEvaluationInfo {
           localChecking: false,
           noComputeGetUrl: false,
           noComputeToString: false,
-          computeDefaultStrings: true
+          computeDefaultStrings: true,
+          emitDebugInfo: true
         },
         extraOptions: {
           timeoutSecs: qs.config.timeoutSecs

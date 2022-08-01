@@ -171,7 +171,8 @@ describe('run-queries', () => {
             localChecking: false,
             noComputeGetUrl: false,
             noComputeToString: false,
-            computeDefaultStrings: true
+            computeDefaultStrings: true,
+            emitDebugInfo: true,
           },
           extraOptions: {
             timeoutSecs: 5
