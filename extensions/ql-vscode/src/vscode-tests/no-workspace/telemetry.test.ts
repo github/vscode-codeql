@@ -249,6 +249,9 @@ describe('telemetry reporting', function() {
 
     await telemetryListener.initialize();
 
+    // Wait 50 ms for user's selection to propagate in settings.
+    await wait(50);
+
     // Dialog opened, user clicks "yes" and telemetry enabled
     expect(window.showInformationMessage).to.have.been.calledOnce;
     expect(ENABLE_TELEMETRY.getValue()).to.eq(true);
