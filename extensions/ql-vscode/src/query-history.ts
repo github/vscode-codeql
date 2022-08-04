@@ -560,7 +560,7 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   private registerToRemoteQueriesEvents() {
-    const queryAddedSubscription = this.remoteQueriesManager.onRemoteQueryAdded(event => {
+    const queryAddedSubscription = this.remoteQueriesManager.onRemoteQueryAdded(async (event) => {
       this.addQuery({
         t: 'remote',
         status: QueryStatus.InProgress,
@@ -568,6 +568,8 @@ export class QueryHistoryManager extends DisposableObject {
         queryId: event.queryId,
         remoteQuery: event.query,
       });
+
+      await this.refreshTreeView();
     });
 
     const queryRemovedSubscription = this.remoteQueriesManager.onRemoteQueryRemoved(async (event) => {
