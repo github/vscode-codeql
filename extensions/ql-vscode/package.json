@@ -530,10 +530,6 @@
         "title": "Show Evaluator Log (Summary)"
       },
       {
-        "command": "codeQLQueryHistory.scanEvalLog",
-        "title": "Scan Evaluator Log"
-      },
-      {
         "command": "codeQLQueryHistory.cancel",
         "title": "Cancel"
       },
@@ -951,10 +947,6 @@
         },
         {
           "command": "codeQLQueryHistory.showEvalLogSummary",
-          "when": "false"
-        },
-        {
-          "command": "codeQLQueryHistory.scanEvalLog",
           "when": "false"
         },
         {
