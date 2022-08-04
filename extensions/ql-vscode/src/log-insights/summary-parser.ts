@@ -28,9 +28,9 @@ export interface SummarySymbols {
 }
 
 // Tuple counts for Expr::Expr::getParent#dispred#f0820431#ff@76d6745o:
-const NON_RECURSIVE_TUPLE_COUNT_REGEXP = /^Tuple counts for (?<predicateName>\S+):$/;
+const NON_RECURSIVE_TUPLE_COUNT_REGEXP = /^Evaluated relational algebra for predicate (?<predicateName>\S+) with tuple counts:$/;
 // Tuple counts for Expr::Expr::getEnclosingStmt#f0820431#bf@923ddwj9 on iteration 0 running pipeline base:
-const RECURSIVE_TUPLE_COUNT_REGEXP = /^Tuple counts for (?<predicateName>\S+) on iteration (?<iteration>\d+) /;
+const RECURSIVE_TUPLE_COUNT_REGEXP = /^Evaluated relational algebra for predicate (?<predicateName>\S+) on iteration (?<iteration>\d+) running pipeline (?<pipeline>\S+) with tuple counts:$/;
 const RETURN_REGEXP = /^\s*return /;
 
 /**
