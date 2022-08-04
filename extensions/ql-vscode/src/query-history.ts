@@ -1067,10 +1067,9 @@ export class QueryHistoryManager extends DisposableObject {
     this.nextScannerProviderId++;
 
     this.scannerProviders.set(id, provider);
-    const manager = this;
     return {
-      dispose(): void {
-        manager.scannerProviders.delete(id);
+      dispose: () => {
+        this.scannerProviders.delete(id);
       }
     };
   }

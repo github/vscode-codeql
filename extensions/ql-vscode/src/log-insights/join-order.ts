@@ -176,7 +176,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
         break;
       }
       case 'COMPUTE_RECURSIVE':
-      case 'IN_LAYER':
+      case 'IN_LAYER': {
         this.predicateSizes.set(event.raHash, event.resultSize);
         // layerEvents are indexed by the mainHash.
         const hash = getMainHash(event);
@@ -185,6 +185,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
         }
         this.layerEvents.get(hash)!.push(event);
         break;
+      }
     }
   }
 
@@ -203,7 +204,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
       return; // Skip any evaluation that wasn't successful
     }
     switch (event.evaluationStrategy) {
-      case 'COMPUTE_SIMPLE':
+      case 'COMPUTE_SIMPLE': {
         if (!event.pipelineRuns) {
           // skip if the optional pipelineRuns field is not present.
           break;
@@ -230,7 +231,9 @@ class JoinOrderScanner implements EvaluationLogScanner {
           this.reportProblemIfNecessary(event, 0, metric);
         }
         break;
-      case 'COMPUTE_RECURSIVE':
+      }
+
+      case 'COMPUTE_RECURSIVE': {
         // Compute the badness metric for a recursive predicate for each ordering.
         // See https://github.com/github/codeql-coreql-team/issues/1289#issuecomment-1007237055 for
         // the definition.
@@ -268,6 +271,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
           });
         });
         break;
+      }
     }
   }
 
@@ -449,9 +453,6 @@ class JoinOrderScanner implements EvaluationLogScanner {
 }
 
 export class JoinOrderScannerProvider implements EvaluationLogScannerProvider {
-  constructor() {
-  }
-
   public createScanner(problemReporter: EvaluationLogProblemReporter): EvaluationLogScanner {
     return new JoinOrderScanner(problemReporter, DEFAULT_WARNING_THRESHOLD);
   }
