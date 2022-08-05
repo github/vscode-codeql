@@ -18,7 +18,6 @@ import {
   window,
   workspace,
 } from 'vscode';
-import * as JsonlParser from 'stream-json/jsonl/Parser';
 import { QueryHistoryConfig } from './config';
 import {
   showAndLogErrorMessage,
@@ -53,6 +52,7 @@ import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
 import { PipelineInfo, SummarySymbols } from './log-insights/summary-parser';
 import { DiagnosticSeverity } from 'vscode-languageclient';
 import { EvaluationLogProblemReporter, EvaluationLogScannerProvider } from './log-insights/log-scanner';
+import { readJsonlFile } from './log-insights/jsonl-reader';
 
 /**
  * query-history.ts
@@ -983,7 +983,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     // Summary log file doesn't exist.
-    if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
+    if (finalSingleItem.evalLogLocation && await fs.pathExists(finalSingleItem.evalLogLocation)) {
       // If raw log does exist, then the summary log is still being generated.
       this.warnInProgressEvalLogSummary();
     } else {
@@ -1008,14 +1008,13 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     // TODO(angelapwen): Stream the file in.
-    void fs.readFile(finalSingleItem.jsonEvalLogSummaryLocation, async (err, buffer) => {
-      if (err) {
-        throw new Error(`Could not read evaluator log summary JSON file to generate viewer data at ${finalSingleItem.jsonEvalLogSummaryLocation}.`);
-      }
-      const evalLogData: EvalLogData[] = parseViewerData(buffer.toString());
+    try {
+      const evalLogData: EvalLogData[] = await parseViewerData(finalSingleItem.jsonEvalLogSummaryLocation);
       const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.getQueryName(), evalLogData);
       this.evalLogViewer.updateRoots(await evalLogTreeBuilder.getRoots());
-    });
+    } catch (e) {
+      throw new Error(`Could not read evaluator log summary JSON file to generate viewer data at ${finalSingleItem.jsonEvalLogSummaryLocation}.`);
+    }
   }
 
   /**
@@ -1027,12 +1026,12 @@ export class QueryHistoryManager extends DisposableObject {
     query: LocalQueryInfo
   ): Promise<void> {
     this.diagnosticCollection.clear();
-    if (query.evalLogJsonSummaryLocation) {
-      const diagnostics = await this.scanLog(query.evalLogJsonSummaryLocation, query.evalLogSummarySymbolsLocation);
+    if (query.jsonEvalLogSummaryLocation) {
+      const diagnostics = await this.scanLog(query.jsonEvalLogSummaryLocation, query.evalLogSummarySymbolsLocation);
       const uri = Uri.file(query.evalLogSummaryLocation!);
       this.diagnosticCollection.set(uri, diagnostics);
     } else {
-      this.warnNoEvalLog();
+      this.warnNoEvalLogs();
     }
   }
 
@@ -1244,17 +1243,10 @@ export class QueryHistoryManager extends DisposableObject {
 
     const scanners = [...this.scannerProviders.values()].map(p => p.createScanner(problemReporter));
 
-    const stream = fs.createReadStream(jsonSummaryLocation)
-      .pipe(JsonlParser.parser())
-      .on('data', ({ value }) => {
-        scanners.forEach(scanner => {
-          scanner.onEvent(value);
-        });
+    await readJsonlFile(jsonSummaryLocation, async obj => {
+      scanners.forEach(scanner => {
+        scanner.onEvent(obj);
       });
-
-    await new Promise(function(resolve, reject) {
-      stream.on('end', resolve);
-      stream.on('error', reject);
     });
 
     scanners.forEach(scanner => scanner.onDone());
