@@ -37,7 +37,6 @@ import { ensureMetadataIsComplete } from './query-results';
 import { SELECT_QUERY_NAME } from './contextual/locationFinder';
 import { DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { getErrorMessage } from './pure/helpers-pure';
-import { generateSummarySymbols } from './log-insights/summary-parser';
 
 /**
  * run-queries.ts
@@ -217,16 +216,6 @@ export class QueryEvaluationInfo {
             void qs.logger.log(' --- Evaluator Log Summary --- ');
             void qs.logger.log(buffer.toString());
           });
-
-          // Create the symbol table for the summary file, so we know where each predicate and iteration
-          // is located. We use this info for jumping to the RA for a specific predicate and iteration.
-          // TODO: Move this into the CLI once we're more sure of the format.
-          const symbols = await generateSummarySymbols(this.evalLogSummaryPath);
-          await fs.writeFile(this.evalLogSummarySymbolsPath, JSON.stringify(symbols));
-          queryInfo.evalLogSummarySymbolsLocation = this.evalLogSummarySymbolsPath;
-
-          await qs.cliServer.generateJsonLogSummary(this.evalLogPath, this.evalLogJsonSummaryPath);
-          queryInfo.evalLogJsonSummaryLocation = this.evalLogJsonSummaryPath;
         } else {
           void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);
         }

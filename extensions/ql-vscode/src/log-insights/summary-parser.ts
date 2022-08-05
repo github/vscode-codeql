@@ -41,11 +41,23 @@ const RETURN_REGEXP = /^\s*return /;
  * generates the human-readabe summary to avoid having to rely on regular expression matching of the
  * human-readable text.
  *
+ * @param summaryPath The path to the summary file.
+ * @param symbolsPath The path to the symbols file to generate.
+ */
+export async function generateSummarySymbolsFile(summaryPath: string, symbolsPath: string): Promise<void> {
+  const symbols = await generateSummarySymbols(summaryPath);
+  await fs.writeFile(symbolsPath, JSON.stringify(symbols));
+}
+
+/**
+ * Parse a human-readable evaluation log summary to find the location of the RA for each pipeline
+ * run.
+ *
  * @param fileLocation The path to the summary file.
  * @returns Symbol information for the summary file.
  */
-export async function generateSummarySymbols(fileLocation: string): Promise<SummarySymbols> {
-  const summary = await fs.promises.readFile(fileLocation, { encoding: 'utf-8' });
+async function generateSummarySymbols(summaryPath: string): Promise<SummarySymbols> {
+  const summary = await fs.promises.readFile(summaryPath, { encoding: 'utf-8' });
   const symbols: SummarySymbols = {
     predicates: {}
   };
