@@ -1,18 +1,29 @@
+import { CellValue } from '../pure/bqrs-cli-types';
+import { tryGetRemoteLocation } from '../pure/bqrs-utils';
 import { createRemoteFileRef } from '../pure/location-link-utils';
 import { parseHighlightedLine, shouldHighlightLine } from '../pure/sarif-utils';
+import { convertNonPrintableChars } from '../text-utils';
 import { RemoteQuery } from './remote-query';
-import { AnalysisAlert, AnalysisResults, CodeSnippet, FileLink, getAnalysisResultCount, HighlightedRegion } from './shared/analysis-result';
+import { AnalysisAlert, AnalysisRawResults, AnalysisResults, CodeSnippet, FileLink, getAnalysisResultCount, HighlightedRegion } from './shared/analysis-result';
 
-// Each array item is a line of the markdown file.
-export type MarkdownFile = string[];
+export type MarkdownLinkType = 'local' | 'gist';
+
+export interface MarkdownFile {
+  fileName: string;
+  content: string[]; // Each array item is a line of the markdown file.
+}
 
 /**
  * Generates markdown files with variant analysis results.
  */
-export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisResults[]): MarkdownFile[] {
-  const files: MarkdownFile[] = [];
+export function generateMarkdown(
+  query: RemoteQuery,
+  analysesResults: AnalysisResults[],
+  linkType: MarkdownLinkType
+): MarkdownFile[] {
+  const resultsFiles: MarkdownFile[] = [];
   // Generate summary file with links to individual files
-  const summaryLines: MarkdownFile = generateMarkdownSummary(query);
+  const summaryFile: MarkdownFile = generateMarkdownSummary(query);
   for (const analysisResult of analysesResults) {
     const resultsCount = getAnalysisResultCount(analysisResult);
     if (resultsCount === 0) {
@@ -21,28 +32,33 @@ export function generateMarkdown(query: RemoteQuery, analysesResults: AnalysisRe
 
     // Append nwo and results count to the summary table
     const nwo = analysisResult.nwo;
-    const link = createGistRelativeLink(nwo);
-    summaryLines.push(`| ${nwo} | [${resultsCount} result(s)](${link}) |`);
+    const fileName = createFileName(nwo);
+    const link = createRelativeLink(fileName, linkType);
+    summaryFile.content.push(`| ${nwo} | [${resultsCount} result(s)](${link}) |`);
 
     // Generate individual markdown file for each repository
-    const lines = [
+    const resultsFileContent = [
       `### ${analysisResult.nwo}`,
       ''
     ];
     for (const interpretedResult of analysisResult.interpretedResults) {
       const individualResult = generateMarkdownForInterpretedResult(interpretedResult, query.language);
-      lines.push(...individualResult);
+      resultsFileContent.push(...individualResult);
     }
     if (analysisResult.rawResults) {
-      // TODO: Generate markdown table for raw results
+      const rawResultTable = generateMarkdownForRawResults(analysisResult.rawResults);
+      resultsFileContent.push(...rawResultTable);
     }
-    files.push(lines);
+    resultsFiles.push({
+      fileName: fileName,
+      content: resultsFileContent,
+    });
   }
-  return [summaryLines, ...files];
+  return [summaryFile, ...resultsFiles];
 }
 
 export function generateMarkdownSummary(query: RemoteQuery): MarkdownFile {
-  const lines: MarkdownFile = [];
+  const lines: string[] = [];
   // Title
   lines.push(
     `### Results for "${query.queryName}"`,
@@ -73,11 +89,14 @@ export function generateMarkdownSummary(query: RemoteQuery): MarkdownFile {
     '| --- | --- |',
   );
   // nwo and result count will be appended to this table
-  return lines;
+  return {
+    fileName: '_summary',
+    content: lines
+  };
 }
 
-function generateMarkdownForInterpretedResult(interpretedResult: AnalysisAlert, language: string): MarkdownFile {
-  const lines: MarkdownFile = [];
+function generateMarkdownForInterpretedResult(interpretedResult: AnalysisAlert, language: string): string[] {
+  const lines: string[] = [];
   lines.push(createMarkdownRemoteFileRef(
     interpretedResult.fileLink,
     interpretedResult.highlightedRegion?.startLine,
@@ -113,8 +132,8 @@ function generateMarkdownForCodeSnippet(
   codeSnippet: CodeSnippet,
   language: string,
   highlightedRegion?: HighlightedRegion
-): MarkdownFile {
-  const lines: MarkdownFile = [];
+): string[] {
+  const lines: string[] = [];
   const snippetStartLine = codeSnippet.startLine || 0;
   const codeLines = codeSnippet.text
     .split('\n')
@@ -173,11 +192,13 @@ function generateMarkdownForAlertMessage(
 function generateMarkdownForPathResults(
   interpretedResult: AnalysisAlert,
   language: string
-): MarkdownFile {
-  const pathLines: MarkdownFile = [];
+): string[] {
+  const lines: string[] = [];
+  lines.push('#### Paths', '');
   for (const codeFlow of interpretedResult.codeFlows) {
+    const pathLines: string[] = [];
     const stepCount = codeFlow.threadFlows.length;
-    pathLines.push(`#### Path with ${stepCount} steps`);
+    const title = `Path with ${stepCount} steps`;
     for (let i = 0; i < stepCount; i++) {
       const threadFlow = codeFlow.threadFlows[i];
       const link = createMarkdownRemoteFileRef(
@@ -194,9 +215,63 @@ function generateMarkdownForPathResults(
       const codeSnippetIndented = codeSnippet.map((line) => `    ${line}`);
       pathLines.push(`${i + 1}. ${link}`, ...codeSnippetIndented);
     }
+    lines.push(
+      ...buildExpandableMarkdownSection(title, pathLines)
+    );
   }
-  return buildExpandableMarkdownSection('Show paths', pathLines);
+  return lines;
 }
+
+function generateMarkdownForRawResults(
+  analysisRawResults: AnalysisRawResults
+): string[] {
+  const tableRows: string[] = [];
+  const columnCount = analysisRawResults.schema.columns.length;
+  // Table headers are the column names if they exist, and empty otherwise
+  const headers = analysisRawResults.schema.columns.map(
+    (column) => column.name || ''
+  );
+  const tableHeader = `| ${headers.join(' | ')} |`;
+
+  tableRows.push(tableHeader);
+  tableRows.push('|' + ' --- |'.repeat(columnCount));
+
+  for (const row of analysisRawResults.resultSet.rows) {
+    const cells = row.map((cell) =>
+      generateMarkdownForRawTableCell(cell, analysisRawResults.fileLinkPrefix, analysisRawResults.sourceLocationPrefix)
+    );
+    tableRows.push(`| ${cells.join(' | ')} |`);
+  }
+  return tableRows;
+}
+
+function generateMarkdownForRawTableCell(
+  value: CellValue,
+  fileLinkPrefix: string,
+  sourceLocationPrefix: string
+) {
+  let cellValue: string;
+  switch (typeof value) {
+    case 'string':
+    case 'number':
+    case 'boolean':
+      cellValue = `\`${convertNonPrintableChars(value.toString())}\``;
+      break;
+    case 'object':
+      {
+        const url = tryGetRemoteLocation(value.url, fileLinkPrefix, sourceLocationPrefix);
+        if (url) {
+          cellValue = `[\`${convertNonPrintableChars(value.label)}\`](${url})`;
+        } else {
+          cellValue = `\`${convertNonPrintableChars(value.label)}\``;
+        }
+      }
+      break;
+  }
+  // `|` characters break the table, so we need to escape them
+  return cellValue.replaceAll('|', '\\|');
+}
+
 
 /**
  * Creates a markdown link to a remote file.
@@ -221,8 +296,8 @@ export function createMarkdownRemoteFileRef(
  * 
  * </details>
  */
-function buildExpandableMarkdownSection(title: string, contents: MarkdownFile): MarkdownFile {
-  const expandableLines: MarkdownFile = [];
+function buildExpandableMarkdownSection(title: string, contents: string[]): string[] {
+  const expandableLines: string[] = [];
   expandableLines.push(
     '<details>',
     `<summary>${title}</summary>`,
@@ -235,13 +310,23 @@ function buildExpandableMarkdownSection(title: string, contents: MarkdownFile): 
   return expandableLines;
 }
 
+function createRelativeLink(fileName: string, linkType: MarkdownLinkType): string {
+  switch (linkType) {
+    case 'local':
+      return `./${fileName}.md`;
+
+    case 'gist':
+      // Creates an anchor link to a file in the gist. This is of the form:
+      // '#file-<name>-<file-extension>'
+      return `#file-${fileName}-md`;
+  }
+}
+
 /**
- * Creates anchor link to a file in the gist. This is of the form:
- * '#file-<name>-<file-extension>'
- * 
- * TODO: Make sure these names align with the actual file names once we upload them to a gist.
+ * Creates the name of the markdown file for a given repository nwo.
+ * This name doesn't include the file extension.
  */
-function createGistRelativeLink(nwo: string): string {
+function createFileName(nwo: string) {
   const [owner, repo] = nwo.split('/');
-  return `#file-${owner}-${repo}-md`;
+  return `${owner}-${repo}`;
 }

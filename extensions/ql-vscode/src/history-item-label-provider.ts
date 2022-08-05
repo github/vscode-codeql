@@ -3,6 +3,7 @@ import * as path from 'path';
 import { QueryHistoryConfig } from './config';
 import { LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
+import { pluralize } from './helpers';
 
 interface InterpolateReplacements {
   t: string; // Start time
@@ -45,10 +46,12 @@ export class HistoryItemLabelProvider {
 
 
   private interpolate(rawLabel: string, replacements: InterpolateReplacements): string {
-    return rawLabel.replace(/%(.)/g, (match, key: keyof InterpolateReplacements) => {
+    const label = rawLabel.replace(/%(.)/g, (match, key: keyof InterpolateReplacements) => {
       const replacement = replacements[key];
       return replacement !== undefined ? replacement : match;
     });
+
+    return label.replace(/\s+/g, ' ');
   }
 
   private getLocalInterpolateReplacements(item: LocalQueryInfo): InterpolateReplacements {
@@ -57,23 +60,31 @@ export class HistoryItemLabelProvider {
       t: item.startTime,
       q: item.getQueryName(),
       d: item.initialInfo.databaseInfo.name,
-      r: `${resultCount} results`,
+      r: `(${resultCount} results)`,
       s: statusString,
       f: item.getQueryFileName(),
       '%': '%',
     };
   }
 
+  // Return the number of repositories queried if available. Otherwise, use the controller repository name.
+  private buildRepoLabel(item: RemoteQueryHistoryItem): string {
+    const repositoryCount = item.remoteQuery.repositoryCount;
+
+    if (repositoryCount) {
+      return pluralize(repositoryCount, 'repository', 'repositories');
+    }
+
+    return `${item.remoteQuery.controllerRepository.owner}/${item.remoteQuery.controllerRepository.name}`;
+  }
+
   private getRemoteInterpolateReplacements(item: RemoteQueryHistoryItem): InterpolateReplacements {
+    const resultCount = item.resultCount ? `(${pluralize(item.resultCount, 'result', 'results')})` : '';
     return {
       t: new Date(item.remoteQuery.executionStartTime).toLocaleString(env.language),
-      q: item.remoteQuery.queryName,
-
-      // There is no database name for remote queries. Instead use the controller repository name.
-      d: `${item.remoteQuery.controllerRepository.owner}/${item.remoteQuery.controllerRepository.name}`,
-
-      // There is no synchronous way to get the results count.
-      r: '',
+      q: `${item.remoteQuery.queryName} (${item.remoteQuery.language})`,
+      d: this.buildRepoLabel(item),
+      r: resultCount,
       s: item.status,
       f: path.basename(item.remoteQuery.queryFilePath),
       '%': '%'

@@ -7,12 +7,16 @@ export interface AnalysisResults {
   status: AnalysisResultStatus;
   interpretedResults: AnalysisAlert[];
   rawResults?: AnalysisRawResults;
+  resultCount: number,
+  starCount?: number,
+  lastUpdated?: number,
 }
 
 export interface AnalysisRawResults {
   schema: ResultSetSchema;
   resultSet: RawResultSet;
   fileLinkPrefix: string;
+  sourceLocationPrefix: string;
   capped: boolean;
 }
 
@@ -86,3 +90,9 @@ export const getAnalysisResultCount = (analysisResults: AnalysisResults): number
   const rawResultCount = analysisResults.rawResults?.resultSet.rows.length || 0;
   return analysisResults.interpretedResults.length + rawResultCount;
 };
+
+/**
+ * Returns the total number of results for an analysis by adding all individual repo results.
+ */
+export const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
+  analysesResults.reduce((acc, curr) => acc + getAnalysisResultCount(curr), 0);

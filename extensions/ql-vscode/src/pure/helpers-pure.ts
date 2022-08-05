@@ -31,17 +31,18 @@ export const asyncFilter = async function <T>(arr: T[], predicate: (arg0: T) => 
   return arr.filter((_, index) => results[index]);
 };
 
-export const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
-export const ONE_HOUR_IN_MS = 1000 * 60 * 60;
-export const TWO_HOURS_IN_MS = 1000 * 60 * 60 * 2;
-export const THREE_HOURS_IN_MS = 1000 * 60 * 60 * 3;
-
 /**
  * This regex matches strings of the form `owner/repo` where:
- * - `owner` is made up of alphanumeric characters or single hyphens, starting and ending in an alphanumeric character
- * - `repo` is made up of alphanumeric characters, hyphens, or underscores
+ * - `owner` is made up of alphanumeric characters, hyphens, underscores, or periods
+ * - `repo` is made up of alphanumeric characters, hyphens, underscores, or periods
  */
-export const REPO_REGEX = /^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+\/[a-zA-Z0-9-_]+$/;
+export const REPO_REGEX = /^[a-zA-Z0-9-_\.]+\/[a-zA-Z0-9-_\.]+$/;
+
+/**
+ * This regex matches GiHub organization and user strings. These are made up for alphanumeric 
+ * characters, hyphens, underscores or periods.
+ */
+export const OWNER_REGEX = /^[a-zA-Z0-9-_\.]+$/;
 
 export function getErrorMessage(e: any) {
   return e instanceof Error ? e.message : String(e);

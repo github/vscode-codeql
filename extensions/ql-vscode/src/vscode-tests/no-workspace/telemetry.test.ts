@@ -6,6 +6,7 @@ import { TelemetryListener, telemetryListener as globalTelemetryListener } from 
 import { UserCancellationException } from '../../commandRunner';
 import { fail } from 'assert';
 import { ENABLE_TELEMETRY } from '../../config';
+import { createMockExtensionContext } from './index';
 
 const sandbox = sinon.createSandbox();
 
@@ -249,6 +250,9 @@ describe('telemetry reporting', function() {
 
     await telemetryListener.initialize();
 
+    // Wait 50 ms for user's selection to propagate in settings.
+    await wait(50);
+
     // Dialog opened, user clicks "yes" and telemetry enabled
     expect(window.showInformationMessage).to.have.been.calledOnce;
     expect(ENABLE_TELEMETRY.getValue()).to.eq(true);
@@ -338,22 +342,6 @@ describe('telemetry reporting', function() {
     expect(ctx.globalState.get('telemetry-request-viewed')).to.be.false;
     expect(window.showInformationMessage).to.have.been.calledOnce;
   });
-
-  function createMockExtensionContext(): ExtensionContext {
-    return {
-      globalState: {
-        _state: {
-          'telemetry-request-viewed': true
-        } as Record<string, any>,
-        get(key: string) {
-          return this._state[key];
-        },
-        update(key: string, val: any) {
-          this._state[key] = val;
-        }
-      }
-    } as any;
-  }
 
   async function enableTelemetry(section: string, value: boolean | undefined) {
     await workspace.getConfiguration(section).update(

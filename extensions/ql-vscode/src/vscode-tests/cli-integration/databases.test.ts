@@ -9,7 +9,7 @@ import { CodeQLCliServer } from '../../cli';
 import { DatabaseManager } from '../../databases';
 import { promptImportLgtmDatabase, importArchiveDatabase, promptImportInternetDatabase } from '../../databaseFetcher';
 import { ProgressCallback } from '../../commandRunner';
-import { dbLoc, DB_URL, storagePath } from './global.helper';
+import { cleanDatabases, dbLoc, DB_URL, storagePath } from './global.helper';
 
 /**
  * Run various integration tests for databases
@@ -27,6 +27,14 @@ describe('Databases', function() {
 
   beforeEach(async () => {
     try {
+      sandbox = sinon.createSandbox();
+      // the uri.fsPath function on windows returns a lowercase drive letter
+      // so, force the storage path string to be lowercase, too.
+      progressCallback = sandbox.spy();
+      inputBoxStub = sandbox.stub(window, 'showInputBox');
+      sandbox.stub(window, 'showErrorMessage');
+      sandbox.stub(window, 'showInformationMessage');
+
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
       if ('databaseManager' in extension) {
         databaseManager = extension.databaseManager;
@@ -34,19 +42,16 @@ describe('Databases', function() {
         throw new Error('Extension not initialized. Make sure cli is downloaded and installed properly.');
       }
 
-      sandbox = sinon.createSandbox();
-      // the uri.fsPath function on windows returns a lowercase drive letter
-      // so, force the storage path string to be lowercase, too.
-      progressCallback = sandbox.spy();
-      inputBoxStub = sandbox.stub(window, 'showInputBox');
+      await cleanDatabases(databaseManager);
     } catch (e) {
       fail(e as Error);
     }
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     try {
       sandbox.restore();
+      await cleanDatabases(databaseManager);
     } catch (e) {
       fail(e as Error);
     }

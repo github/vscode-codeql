@@ -8,7 +8,7 @@ import * as yaml from 'js-yaml';
 
 import { DatabaseItem, DatabaseManager } from '../../databases';
 import { CodeQLExtensionInterface } from '../../extension';
-import { dbLoc, storagePath } from './global.helper';
+import { cleanDatabases, dbLoc, storagePath } from './global.helper';
 import { importArchiveDatabase } from '../../databaseFetcher';
 import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo } from '../../run-queries';
 import { CodeQLCliServer } from '../../cli';
@@ -38,6 +38,8 @@ describe('Queries', function() {
   let ctx: ExtensionContext;
 
   let qlpackFile: string;
+  let qlpackLockFile: string;
+  let oldQlpackLockFile: string; // codeql v2.6.3 and earlier
   let qlFile: string;
 
 
@@ -52,16 +54,23 @@ describe('Queries', function() {
         qs = extension.qs;
         cli.quiet = true;
         ctx = extension.ctx;
-        qlpackFile = `${ctx.storagePath}/quick-queries/qlpack.yml`;
-        qlFile = `${ctx.storagePath}/quick-queries/quick-query.ql`;
+        qlpackFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack.yml`;
+        qlpackLockFile = `${ctx.storageUri?.fsPath}/quick-queries/codeql-pack.lock.yml`;
+        oldQlpackLockFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack.lock.yml`;
+        qlFile = `${ctx.storageUri?.fsPath}/quick-queries/quick-query.ql`;
       } else {
         throw new Error('Extension not initialized. Make sure cli is downloaded and installed properly.');
       }
 
+      // Ensure we are starting from a clean slate.
+      safeDel(qlFile);
+      safeDel(qlpackFile);
+
       progress = sandbox.spy();
       token = {} as CancellationToken;
 
-      // Add a database
+      // Add a database, but make sure the database manager is empty first
+      await cleanDatabases(databaseManager);
       const uri = Uri.file(dbLoc);
       const maybeDbItem = await importArchiveDatabase(
         uri.toString(true),
@@ -81,9 +90,12 @@ describe('Queries', function() {
     }
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     try {
       sandbox.restore();
+      safeDel(qlpackFile);
+      safeDel(qlFile);
+      await cleanDatabases(databaseManager);
     } catch (e) {
       fail(e as Error);
     }
@@ -135,27 +147,34 @@ describe('Queries', function() {
   });
 
   it('should create a quick query', async () => {
-    safeDel(qlFile);
-    safeDel(qlpackFile);
-
     await commands.executeCommand('codeQL.quickQuery');
 
     // should have created the quick query file and query pack file
     expect(fs.pathExistsSync(qlFile)).to.be.true;
     expect(fs.pathExistsSync(qlpackFile)).to.be.true;
 
-    const qlpackContents: any = await yaml.safeLoad(
+    const qlpackContents: any = await yaml.load(
       fs.readFileSync(qlpackFile, 'utf8')
     );
     // Should have chosen the js libraries
-    expect(qlpackContents.libraryPathDependencies[0]).to.include('javascript');
+    expect(qlpackContents.dependencies['codeql/javascript-all']).to.eq('*');
+
+    // Should also have a codeql-pack.lock.yml file
+    const packFileToUse = fs.pathExistsSync(qlpackLockFile) ? qlpackLockFile : oldQlpackLockFile;
+    const qlpackLock: any = await yaml.load(
+      fs.readFileSync(packFileToUse, 'utf8')
+    );
+    expect(!!qlpackLock.dependencies['codeql/javascript-all'].version).to.be.true;
   });
 
   it('should avoid creating a quick query', async () => {
-    fs.writeFileSync(qlpackFile, yaml.safeDump({
+    fs.mkdirpSync(path.dirname(qlpackFile));
+    fs.writeFileSync(qlpackFile, yaml.dump({
       name: 'quick-query',
       version: '1.0.0',
-      libraryPathDependencies: ['codeql-javascript']
+      dependencies: {
+        'codeql/javascript-all': '*'
+      }
     }));
     fs.writeFileSync(qlFile, 'xxx');
     await commands.executeCommand('codeQL.quickQuery');

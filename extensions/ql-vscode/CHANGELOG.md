@@ -2,6 +2,25 @@
 
 ## [UNRELEASED]
 
+## 1.6.9 - 20 July 2022
+
+No user facing changes.
+
+## 1.6.8 - 29 June 2022
+
+- Fix a bug where quick queries cannot be compiled if the core libraries are not in the workspace. [#1411](https://github.com/github/vscode-codeql/pull/1411)
+- Fix a bug where quick evaluation of library files would display an error message when using CodeQL CLI v2.10.0. [#1412](https://github.com/github/vscode-codeql/pull/1412)
+
+## 1.6.7 - 15 June 2022
+
+- Prints end-of-query evaluator log summaries to the Query Log. [#1349](https://github.com/github/vscode-codeql/pull/1349)
+- Be consistent about casing in Query History menu. [#1369](https://github.com/github/vscode-codeql/pull/1369)
+- Fix quoting string columns in exported CSV results. [#1379](https://github.com/github/vscode-codeql/pull/1379)
+
+## 1.6.6 - 17 May 2022
+
+No user facing changes.
+
 ## 1.6.5 - 25 April 2022
 
 - Re-enable publishing to open-vsx. [#1285](https://github.com/github/vscode-codeql/pull/1285)

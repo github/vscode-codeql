@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { generateMarkdown } from '../../../../src/remote-queries/remote-queries-markdown-generation';
+import { generateMarkdown, MarkdownFile } from '../../../../src/remote-queries/remote-queries-markdown-generation';
 
 describe('markdown generation', async function() {
   describe('for path-problem query', async function() {
@@ -13,23 +13,10 @@ describe('markdown generation', async function() {
       const analysesResults = JSON.parse(
         await fs.readFile(path.join(__dirname, 'data/interpreted-results/path-problem/analyses-results.json'), 'utf8')
       );
-      const markdownFiles = generateMarkdown(pathProblemQuery, analysesResults);
 
-      // Check that query has results for two repositories, plus a summary file
-      expect(markdownFiles.length).to.equal(3);
+      const actualFiles = generateMarkdown(pathProblemQuery, analysesResults, 'gist');
 
-      const markdownFile0 = markdownFiles[0]; // summary file
-      const markdownFile1 = markdownFiles[1]; // results for github/codeql repo
-      const markdownFile2 = markdownFiles[2]; // results for meteor/meteor repo
-
-      const expectedSummaryFile = await readTestOutputFile('data/interpreted-results/path-problem/summary.md');
-      const expectedTestOutput1 = await readTestOutputFile('data/interpreted-results/path-problem/results-repo1.md');
-      const expectedTestOutput2 = await readTestOutputFile('data/interpreted-results/path-problem/results-repo2.md');
-
-      // Check that markdown output is correct, after making line endings consistent
-      expect(markdownFile0.join('\n')).to.equal(expectedSummaryFile);
-      expect(markdownFile1.join('\n')).to.equal(expectedTestOutput1);
-      expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2);
+      await checkGeneratedMarkdown(actualFiles, 'data/interpreted-results/path-problem/expected');
     });
   });
 
@@ -42,23 +29,9 @@ describe('markdown generation', async function() {
       const analysesResults = JSON.parse(
         await fs.readFile(path.join(__dirname, 'data/interpreted-results/problem/analyses-results.json'), 'utf8')
       );
-      const markdownFiles = generateMarkdown(problemQuery, analysesResults);
+      const actualFiles = generateMarkdown(problemQuery, analysesResults, 'gist');
 
-      // Check that query has results for two repositories, plus a summary file
-      expect(markdownFiles.length).to.equal(3);
-
-      const markdownFile0 = markdownFiles[0]; // summary file
-      const markdownFile1 = markdownFiles[1]; // results for github/codeql repo
-      const markdownFile2 = markdownFiles[2]; // results for meteor/meteor repo
-
-      const expectedSummaryFile = await readTestOutputFile('data/interpreted-results/problem/summary.md');
-      const expectedTestOutput1 = await readTestOutputFile('data/interpreted-results/problem/results-repo1.md');
-      const expectedTestOutput2 = await readTestOutputFile('data/interpreted-results/problem/results-repo2.md');
-
-      // Check that markdown output is correct, after making line endings consistent
-      expect(markdownFile0.join('\n')).to.equal(expectedSummaryFile);
-      expect(markdownFile1.join('\n')).to.equal(expectedTestOutput1);
-      expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2);
+      await checkGeneratedMarkdown(actualFiles, 'data/interpreted-results/problem/expected');
     });
   });
 
@@ -71,23 +44,9 @@ describe('markdown generation', async function() {
         await fs.readFile(path.join(__dirname, 'data/raw-results/analyses-results.json'), 'utf8')
       );
 
-      const markdownFiles = generateMarkdown(query, analysesResults);
+      const actualFiles = generateMarkdown(query, analysesResults, 'gist');
 
-      // Check that query has results for two repositories, plus a summary file
-      expect(markdownFiles.length).to.equal(3);
-
-      const markdownFile0 = markdownFiles[0]; // summary file
-      const markdownFile1 = markdownFiles[1]; // results for github/codeql repo
-      const markdownFile2 = markdownFiles[2]; // results for meteor/meteor repo
-
-      const expectedSummaryFile = await readTestOutputFile('data/raw-results/summary.md');
-      const expectedTestOutput1 = await readTestOutputFile('data/raw-results/results-repo1.md');
-      const expectedTestOutput2 = await readTestOutputFile('data/raw-results/results-repo2.md');
-
-      // Check that markdown output is correct, after making line endings consistent
-      expect(markdownFile0.join('\n')).to.equal(expectedSummaryFile);
-      expect(markdownFile1.join('\n')).to.equal(expectedTestOutput1);
-      expect(markdownFile2.join('\n')).to.equal(expectedTestOutput2);
+      await checkGeneratedMarkdown(actualFiles, 'data/raw-results/expected');
     });
   });
 });
@@ -99,4 +58,22 @@ describe('markdown generation', async function() {
 async function readTestOutputFile(relativePath: string): Promise<string> {
   const file = await fs.readFile(path.join(__dirname, relativePath), 'utf8');
   return file.replace(/\r?\n/g, '\n');
+}
+
+/**
+ * Compares the generated (actual) markdown files to the expected markdown files and
+ * checks whether the names and contents are the same.  
+ */
+async function checkGeneratedMarkdown(actualFiles: MarkdownFile[], testDataBasePath: string) {
+  const expectedDir = path.join(__dirname, testDataBasePath);
+  const expectedFiles = await fs.readdir(expectedDir);
+
+  expect(actualFiles.length).to.equal(expectedFiles.length);
+
+  for (const expectedFile of expectedFiles) {
+    const actualFile = actualFiles.find(f => `${f.fileName}.md` === expectedFile);
+    expect(actualFile).to.not.be.undefined;
+    const expectedContent = await readTestOutputFile(path.join(testDataBasePath, expectedFile));
+    expect(actualFile!.content.join('\n')).to.equal(expectedContent);
+  }
 }

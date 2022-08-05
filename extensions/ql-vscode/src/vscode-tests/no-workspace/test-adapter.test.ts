@@ -1,4 +1,3 @@
-import 'vscode-test';
 import * as sinon from 'sinon';
 import * as fs from 'fs-extra';
 import { Uri, WorkspaceFolder } from 'vscode';

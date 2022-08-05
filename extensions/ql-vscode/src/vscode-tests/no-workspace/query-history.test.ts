@@ -14,10 +14,13 @@ import { QueryServerClient } from '../../queryserver-client';
 import { LocalQueryInfo, InitialQueryInfo } from '../../query-results';
 import { DatabaseManager } from '../../databases';
 import * as tmp from 'tmp-promise';
-import { ONE_DAY_IN_MS, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, THREE_HOURS_IN_MS } from '../../pure/helpers-pure';
+import { ONE_DAY_IN_MS, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, THREE_HOURS_IN_MS } from '../../pure/time';
 import { tmpDir } from '../../helpers';
 import { getErrorMessage } from '../../pure/helpers-pure';
 import { HistoryItemLabelProvider } from '../../history-item-label-provider';
+import { RemoteQueriesManager } from '../../remote-queries/remote-queries-manager';
+import { InterfaceManager } from '../../interface';
+import { EvalLogViewer } from '../../eval-log-viewer';
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -27,8 +30,10 @@ describe('query-history', () => {
   let executeCommandSpy: sinon.SinonStub;
   let showQuickPickSpy: sinon.SinonStub;
   let queryHistoryManager: QueryHistoryManager | undefined;
-  let selectedCallback: sinon.SinonStub;
   let doCompareCallback: sinon.SinonStub;
+
+  let localQueriesInterfaceManagerStub: InterfaceManager;
+  let remoteQueriesManagerStub: RemoteQueriesManager;
 
   let tryOpenExternalFile: Function;
   let sandbox: sinon.SinonSandbox;
@@ -49,8 +54,15 @@ describe('query-history', () => {
     sandbox.stub(logger, 'log');
     tryOpenExternalFile = (QueryHistoryManager.prototype as any).tryOpenExternalFile;
     configListener = new QueryHistoryConfigListener();
-    selectedCallback = sandbox.stub();
     doCompareCallback = sandbox.stub();
+    localQueriesInterfaceManagerStub = {
+      showResults: sandbox.stub()
+    } as any as InterfaceManager;
+    remoteQueriesManagerStub = {
+      onRemoteQueryAdded: sandbox.stub(),
+      onRemoteQueryRemoved: sandbox.stub(),
+      onRemoteQueryStatusUpdate: sandbox.stub()
+    } as any as RemoteQueriesManager;
   });
 
   afterEach(async () => {
@@ -190,22 +202,28 @@ describe('query-history', () => {
   describe('handleItemClicked', () => {
     it('should call the selectedCallback when an item is clicked', async () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
+
       await queryHistoryManager.handleItemClicked(allHistory[0], [allHistory[0]]);
-      expect(selectedCallback).to.have.been.calledOnceWith(allHistory[0]);
+
+      expect(localQueriesInterfaceManagerStub.showResults).to.have.been.calledOnceWith(allHistory[0]);
       expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(allHistory[0]);
     });
 
     it('should do nothing if there is a multi-selection', async () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
+
       await queryHistoryManager.handleItemClicked(allHistory[0], [allHistory[0], allHistory[1]]);
-      expect(selectedCallback).not.to.have.been.called;
+
+      expect(localQueriesInterfaceManagerStub.showResults).not.to.have.been.called;
       expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
     });
 
     it('should do nothing if there is no selection', async () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
+
       await queryHistoryManager.handleItemClicked(undefined!, []);
-      expect(selectedCallback).not.to.have.been.called;
+
+      expect(localQueriesInterfaceManagerStub.showResults).not.to.have.been.called;
       expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
     });
   });
@@ -234,7 +252,7 @@ describe('query-history', () => {
     expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
 
     // the same item should be selected
-    expect(selectedCallback).to.have.been.calledOnceWith(selected);
+    expect(localQueriesInterfaceManagerStub.showResults).to.have.been.calledOnceWith(selected);
   });
 
   it('should remove an item and select a new one', async () => {
@@ -254,7 +272,7 @@ describe('query-history', () => {
     expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
 
     // the current item should have been selected
-    expect(selectedCallback).to.have.been.calledOnceWith(newSelected);
+    expect(localQueriesInterfaceManagerStub.showResults).to.have.been.calledOnceWith(newSelected);
   });
 
   describe('Compare callback', () => {
@@ -404,12 +422,26 @@ describe('query-history', () => {
 
     it('should get the selection from the treeView when both selections are empty', async () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
-      await queryHistoryManager.treeView.reveal(allHistory[1], { select: true });
-      const selection = (queryHistoryManager as any).determineSelection(undefined, undefined);
-      expect(selection).to.deep.eq({
-        finalSingleItem: allHistory[1],
-        finalMultiSelect: [allHistory[1]]
+      const p = new Promise<void>(done => {
+        queryHistoryManager!.treeView.onDidChangeSelection(s => {
+          if (s.selection[0] !== allHistory[1]) {
+            return;
+          }
+          const selection = (queryHistoryManager as any).determineSelection(undefined, undefined);
+          expect(selection).to.deep.eq({
+            finalSingleItem: allHistory[1],
+            finalMultiSelect: [allHistory[1]]
+          });
+          done();
+        });
       });
+
+      // I can't explain why, but the first time the onDidChangeSelection event fires, the selection is
+      // not correct (it is inexplicably allHistory[2]). So we fire the event a second time to get the
+      // correct selection.
+      await queryHistoryManager.treeView.reveal(allHistory[0], { select: true });
+      await queryHistoryManager.treeView.reveal(allHistory[1], { select: true });
+      await p;
     });
 
     it('should get the selection from the treeDataProvider when both selections and the treeView are empty', async () => {
@@ -425,11 +457,11 @@ describe('query-history', () => {
 
   describe('getChildren', () => {
     const history = [
-      item('a', 2, 'remote'),
+      item('a', 2, 'remote', 24),
       item('b', 10, 'local', 20),
       item('c', 5, 'local', 30),
       item('d', 1, 'local', 25),
-      item('e', 6, 'remote'),
+      item('e', 6, 'remote', 5),
     ];
     let treeDataProvider: HistoryTreeDataProvider;
 
@@ -472,7 +504,7 @@ describe('query-history', () => {
     });
 
     it('should get children for result count ascending', async () => {
-      const expected = [history[0], history[4], history[1], history[3], history[2]];
+      const expected = [history[4], history[1], history[0], history[3], history[2]];
       treeDataProvider.sortOrder = SortOrder.CountAsc;
 
       const children = await treeDataProvider.getChildren();
@@ -480,7 +512,7 @@ describe('query-history', () => {
     });
 
     it('should get children for result count descending', async () => {
-      const expected = [history[0], history[4], history[1], history[3], history[2]].reverse();
+      const expected = [history[4], history[1], history[0], history[3], history[2]].reverse();
       treeDataProvider.sortOrder = SortOrder.CountDesc;
 
       const children = await treeDataProvider.getChildren();
@@ -542,6 +574,7 @@ describe('query-history', () => {
             },
             repositories: []
           },
+          resultCount,
           t
         };
       }
@@ -731,6 +764,9 @@ describe('query-history', () => {
         TWO_HOURS_IN_MS,
         LESS_THAN_ONE_DAY,
         dir,
+        {
+          removeDeletedQueries: () => { return Promise.resolve(); }
+        } as QueryHistoryManager,
         mockCtx,
         {
           increment: () => runCount++
@@ -762,6 +798,9 @@ describe('query-history', () => {
     const qhm = new QueryHistoryManager(
       {} as QueryServerClient,
       {} as DatabaseManager,
+      localQueriesInterfaceManagerStub,
+      remoteQueriesManagerStub,
+      {} as EvalLogViewer,
       'xxx',
       {
         globalStorageUri: vscode.Uri.file(mockExtensionLocation),
@@ -771,7 +810,6 @@ describe('query-history', () => {
       new HistoryItemLabelProvider({} as QueryHistoryConfig),
       doCompareCallback
     );
-    qhm.onWillOpenQueryItem(selectedCallback);
     (qhm.treeDataProvider as any).history = [...allHistory];
     await vscode.workspace.saveAll();
     await qhm.refreshTreeView();

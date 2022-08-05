@@ -4,12 +4,22 @@ import * as fs from 'fs-extra';
 import fetch from 'node-fetch';
 
 import { fail } from 'assert';
-import { ConfigurationTarget, extensions, workspace } from 'vscode';
+import { commands, ConfigurationTarget, extensions, workspace } from 'vscode';
 import { CodeQLExtensionInterface } from '../../extension';
+import { DatabaseManager } from '../../databases';
 
 // This file contains helpers shared between actual tests.
 
 export const DB_URL = 'https://github.com/github/vscode-codeql/files/5586722/simple-db.zip';
+
+process.addListener('unhandledRejection', (reason) => {
+  if (reason instanceof Error && reason.message === 'Canceled') {
+    console.log('Cancellation requested after the test has ended.');
+    process.exit(0);
+  } else {
+    fail(String(reason));
+  }
+});
 
 // We need to resolve the path, but the final three segments won't exist until later, so we only resolve the
 // first portion of the path.
@@ -65,7 +75,7 @@ export default function(mocha: Mocha) {
     }
   );
 
-  // ensure etension is cleaned up.
+  // ensure extension is cleaned up.
   (mocha.options as any).globalTeardown.push(
     async () => {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
@@ -83,4 +93,25 @@ export default function(mocha: Mocha) {
       removeStorage?.();
     }
   );
+
+  // check that the codeql folder is found in the workspace
+  (mocha.options as any).globalSetup.push(
+    async () => {
+      const folders = workspace.workspaceFolders;
+      if (!folders) {
+        fail('\n\n\nNo workspace folders found.\nYou will need a local copy of the codeql repo.\nMake sure you specify the path to it in launch.json.\nIt should be something along the lines of "${workspaceRoot}/../codeql" depending on where you have your local copy of the codeql repo.\n\n\n');
+      } else {
+        const codeqlFolder = folders.find(folder => folder.name === 'codeql');
+        if (!codeqlFolder) {
+          fail('\n\n\nNo workspace folders found.\nYou will need a local copy of the codeql repo.\nMake sure you specify the path to it in launch.json.\nIt should be something along the lines of "${workspaceRoot}/../codeql" depending on where you have your local copy of the codeql repo.\n\n\n');
+        }
+      }
+    }
+  );
+}
+
+export async function cleanDatabases(databaseManager: DatabaseManager) {
+  for (const item of databaseManager.databaseItems) {
+    await commands.executeCommand('codeQLDatabases.removeDatabase', item);
+  }
 }

@@ -267,14 +267,14 @@ export function findQueryEvalLogSummaryFile(resultPath: string): string {
   return path.join(resultPath, 'evaluator-log.summary');
 }
 
+export function findJsonQueryEvalLogSummaryFile(resultPath: string): string {
+  return path.join(resultPath, 'evaluator-log.summary.jsonl');
+}
+
 export function findQueryEvalLogSummarySymbolsFile(resultPath: string): string {
   return path.join(resultPath, 'evaluator-log.summary.symbols.json');
 }
 
 export function findQueryEvalLogEndSummaryFile(resultPath: string): string {
   return path.join(resultPath, 'evaluator-log-end.summary');
-}
-
-export function findQueryEvalJsonLogSummaryFile(resultPath: string): string {
-  return path.join(resultPath, 'evaluator-log.summary.jsonl');
 }

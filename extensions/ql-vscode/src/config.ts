@@ -2,7 +2,7 @@ import { DisposableObject } from './pure/disposable-object';
 import { workspace, Event, EventEmitter, ConfigurationChangeEvent, ConfigurationTarget } from 'vscode';
 import { DistributionManager } from './distribution';
 import { logger } from './logging';
-import { ONE_DAY_IN_MS } from './pure/helpers-pure';
+import { ONE_DAY_IN_MS } from './pure/time';
 
 /** Helper class to look up a labelled (and possibly nested) setting. */
 export class Setting {
@@ -59,7 +59,7 @@ const PERSONAL_ACCESS_TOKEN_SETTING = new Setting('personalAccessToken', DISTRIB
 // Query History configuration
 const QUERY_HISTORY_SETTING = new Setting('queryHistory', ROOT_SETTING);
 const QUERY_HISTORY_FORMAT_SETTING = new Setting('format', QUERY_HISTORY_SETTING);
-const QUERY_HISTORY_TTL = new Setting('format', QUERY_HISTORY_SETTING);
+const QUERY_HISTORY_TTL = new Setting('ttl', QUERY_HISTORY_SETTING);
 
 /** When these settings change, the distribution should be updated. */
 const DISTRIBUTION_CHANGE_SETTINGS = [CUSTOM_CODEQL_PATH_SETTING, INCLUDE_PRERELEASE_SETTING, PERSONAL_ACCESS_TOKEN_SETTING];
@@ -343,6 +343,21 @@ export async function setRemoteRepositoryLists(lists: Record<string, string[]> |
 }
 
 /**
+ * Path to a file that contains lists of GitHub repositories that you want to query remotely via 
+ * the "Run Variant Analysis" command.
+ * Note: This command is only available for internal users.
+ * 
+ * This setting should be a path to a JSON file that contains a JSON object where each key is a
+ * user-specified name (string), and the value is an array of GitHub repositories 
+ * (of the form `<owner>/<repo>`).
+ */
+const REPO_LISTS_PATH = new Setting('repositoryListsPath', REMOTE_QUERIES_SETTING);
+
+export function getRemoteRepositoryListsPath(): string | undefined {
+  return REPO_LISTS_PATH.getValue<string>() || undefined;
+}
+
+/**
  * The name of the "controller" repository that you want to use with the "Run Variant Analysis" command.
  * Note: This command is only available for internal users.
  *
@@ -367,4 +382,8 @@ const ACTION_BRANCH = new Setting('actionBranch', REMOTE_QUERIES_SETTING);
 
 export function getActionBranch(): string {
   return ACTION_BRANCH.getValue<string>() || 'main';
+}
+
+export function isIntegrationTestMode() {
+  return process.env.INTEGRATION_TEST_MODE === 'true';
 }

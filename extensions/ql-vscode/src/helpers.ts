@@ -289,7 +289,7 @@ interface QlPackWithPath {
 async function findDbschemePack(packs: QlPackWithPath[], dbschemePath: string): Promise<{ name: string; isLibraryPack: boolean; }> {
   for (const { packDir, packName } of packs) {
     if (packDir !== undefined) {
-      const qlpack = yaml.safeLoad(await fs.readFile(path.join(packDir, 'qlpack.yml'), 'utf8')) as { dbscheme?: string; library?: boolean; };
+      const qlpack = yaml.load(await fs.readFile(path.join(packDir, 'qlpack.yml'), 'utf8')) as { dbscheme?: string; library?: boolean; };
       if (qlpack.dbscheme !== undefined && path.basename(qlpack.dbscheme) === path.basename(dbschemePath)) {
         return {
           name: packName,
@@ -580,4 +580,12 @@ export async function* walkDirectory(dir: string): AsyncIterableIterator<string>
       yield entry;
     }
   }
+}
+
+/**
+ * Pluralizes a word.
+ * Example: Returns "N repository" if N is one, "N repositories" otherwise.
+ */
+export function pluralize(numItems: number | undefined, singular: string, plural: string): string {
+  return numItems ? `${numItems} ${numItems === 1 ? singular : plural}` : '';
 }

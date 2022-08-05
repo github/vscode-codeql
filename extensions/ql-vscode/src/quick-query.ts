@@ -121,13 +121,20 @@ export async function displayQuickQuery(
       const quickQueryQlpackYaml: any = {
         name: 'vscode/quick-query',
         version: '1.0.0',
-        libraryPathDependencies: [qlpack]
+        dependencies: {
+          [qlpack]: '*'
+        }
       };
-      await fs.writeFile(qlPackFile, QLPACK_FILE_HEADER + yaml.safeDump(quickQueryQlpackYaml), 'utf8');
+      await fs.writeFile(qlPackFile, QLPACK_FILE_HEADER + yaml.dump(quickQueryQlpackYaml), 'utf8');
     }
 
     if (shouldRewrite || !(await fs.pathExists(qlFile))) {
       await fs.writeFile(qlFile, getInitialQueryContents(dbItem.language, dbscheme), 'utf8');
+    }
+
+    if (shouldRewrite) {
+      await cliServer.clearCache();
+      await cliServer.packInstall(queriesDir, true);
     }
 
     await Window.showTextDocument(await workspace.openTextDocument(qlFile));
@@ -144,6 +151,6 @@ async function checkShouldRewrite(qlPackFile: string, newDependency: string) {
   if (!(await fs.pathExists(qlPackFile))) {
     return true;
   }
-  const qlPackContents: any = yaml.safeLoad(await fs.readFile(qlPackFile, 'utf8'));
-  return qlPackContents.libraryPathDependencies?.[0] !== newDependency;
+  const qlPackContents: any = yaml.load(await fs.readFile(qlPackFile, 'utf8'));
+  return !qlPackContents.dependencies?.[newDependency];
 }

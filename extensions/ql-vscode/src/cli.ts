@@ -604,10 +604,14 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /** Resolves the ML models that should be available when evaluating a query. */
-  async resolveMlModels(additionalPacks: string[]): Promise<MlModelsInfo> {
+  async resolveMlModels(additionalPacks: string[], queryPath: string): Promise<MlModelsInfo> {
+    const args = await this.cliConstraints.supportsPreciseResolveMlModels()
+      // use the dirname of the path so that we can handle query libraries
+      ? [...this.getAdditionalPacksArg(additionalPacks), path.dirname(queryPath)]
+      : this.getAdditionalPacksArg(additionalPacks);
     return await this.runJsonCodeQlCliCommand<MlModelsInfo>(
       ['resolve', 'ml-models'],
-      this.getAdditionalPacksArg(additionalPacks),
+      args,
       'Resolving ML models',
       false
     );
@@ -679,10 +683,28 @@ export class CodeQLCliServer implements Disposable {
     const subcommandArgs = [
       '--format=text',
       `--end-summary=${endSummaryPath}`,
+      '--sourcemap',
       inputPath,
       outputPath
     ];
     return await this.runCodeQlCliCommand(['generate', 'log-summary'], subcommandArgs, 'Generating log summary');
+  }
+
+  /**
+  * Generate a JSON summary of an evaluation log.
+  * @param inputPath The path of an evaluation event log.
+  * @param outputPath The path to write a JSON summary of it to.
+  */
+  async generateJsonLogSummary(
+    inputPath: string,
+    outputPath: string,
+  ): Promise<string> {
+    const subcommandArgs = [
+      '--format=predicates',
+      inputPath,
+      outputPath
+    ];
+    return await this.runCodeQlCliCommand(['generate', 'log-summary'], subcommandArgs, 'Generating JSON log summary');
   }
 
   /**
@@ -914,8 +936,12 @@ export class CodeQLCliServer implements Disposable {
     return this.runJsonCodeQlCliCommand(['pack', 'download'], packs, 'Downloading packs');
   }
 
-  async packInstall(dir: string) {
-    return this.runJsonCodeQlCliCommand(['pack', 'install'], [dir], 'Installing pack dependencies');
+  async packInstall(dir: string, forceUpdate = false) {
+    const args = [dir];
+    if (forceUpdate) {
+      args.push('--mode', 'update');
+    }
+    return this.runJsonCodeQlCliCommand(['pack', 'install'], args, 'Installing pack dependencies');
   }
 
   async packBundle(dir: string, workspaceFolders: string[], outputPath: string, precompile = true): Promise<void> {
@@ -1265,6 +1291,11 @@ export class CliVersionConstraint {
   public static CLI_VERSION_WITH_RESOLVE_ML_MODELS = new SemVer('2.7.3');
 
   /**
+   * CLI version where the `resolve ml-models` subcommand was enhanced to work with packaging.
+   */
+  public static CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS = new SemVer('2.10.0');
+
+  /**
    * CLI version where the `--old-eval-stats` option to the query server was introduced.
    */
   public static CLI_VERSION_WITH_OLD_EVAL_STATS = new SemVer('2.7.4');
@@ -1337,6 +1368,10 @@ export class CliVersionConstraint {
 
   async supportsResolveMlModels() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_ML_MODELS);
+  }
+
+  async supportsPreciseResolveMlModels() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS);
   }
 
   async supportsOldEvalStats() {

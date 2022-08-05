@@ -131,7 +131,7 @@ describe('AstViewer', () => {
   }
 
   async function buildAst() {
-    const astRoots = yaml.safeLoad(await fs.readFile(`${__dirname}/data/astViewer.yml`, 'utf8')) as AstItem[];
+    const astRoots = yaml.load(await fs.readFile(`${__dirname}/data/astViewer.yml`, 'utf8')) as AstItem[];
 
     // convert range properties into vscode.Range instances
     function convertToRangeInstances(obj: any) {

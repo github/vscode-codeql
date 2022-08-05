@@ -31,7 +31,8 @@ import { URLSearchParams } from 'url';
 import { QueryServerClient } from './queryserver-client';
 import { DisposableObject } from './pure/disposable-object';
 import { commandRunner } from './commandRunner';
-import { assertNever, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, getErrorMessage, getErrorStack } from './pure/helpers-pure';
+import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
+import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo as LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { DatabaseManager } from './databases';
 import { registerQueryHistoryScubber } from './query-history-scrubber';
@@ -42,6 +43,13 @@ import { CliVersionConstraint } from './cli';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { Credentials } from './authentication';
 import { cancelRemoteQuery } from './remote-queries/gh-actions-api-client';
+import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
+import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
+import { InterfaceManager } from './interface';
+import { WebviewReveal } from './interface-utils';
+import { EvalLogViewer } from './eval-log-viewer';
+import EvalLogTreeBuilder from './eval-log-tree-builder';
+import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
 import { PipelineInfo, SummarySymbols } from './log-insights/summary-parser';
 import { DiagnosticSeverity } from 'vscode-languageclient';
 import { EvaluationLogProblemReporter, EvaluationLogScannerProvider } from './log-insights/log-scanner';
@@ -206,13 +214,12 @@ export class HistoryTreeDataProvider extends DisposableObject {
         ? h2.initialInfo.start.getTime()
         : h2.remoteQuery?.executionStartTime;
 
-      // result count for remote queries is not available here.
       const resultCount1 = h1.t === 'local'
         ? h1.completedQuery?.resultCount ?? -1
-        : -1;
+        : h1.resultCount ?? -1;
       const resultCount2 = h2.t === 'local'
         ? h2.completedQuery?.resultCount ?? -1
-        : -1;
+        : h2.resultCount ?? -1;
 
       switch (this.sortOrder) {
         case SortOrder.NameAsc:
@@ -366,6 +373,9 @@ export class QueryHistoryManager extends DisposableObject {
   constructor(
     private readonly qs: QueryServerClient,
     private readonly dbm: DatabaseManager,
+    private readonly localQueriesInterfaceManager: InterfaceManager,
+    private readonly remoteQueriesManager: RemoteQueriesManager,
+    private readonly evalLogViewer: EvalLogViewer,
     private readonly queryStorageDir: string,
     private readonly ctx: ExtensionContext,
     private readonly queryHistoryConfigListener: QueryHistoryConfig,
@@ -485,6 +495,12 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
+        'codeQLQueryHistory.showEvalLogViewer',
+        this.handleShowEvalLogViewer.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
         'codeQLQueryHistory.cancel',
         this.handleCancel.bind(this)
       )
@@ -493,6 +509,12 @@ export class QueryHistoryManager extends DisposableObject {
       commandRunner(
         'codeQLQueryHistory.showQueryText',
         this.handleShowQueryText.bind(this)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.exportResults',
+        this.handleExportResults.bind(this)
       )
     );
     this.push(
@@ -535,6 +557,12 @@ export class QueryHistoryManager extends DisposableObject {
         }
       )
     );
+    this.push(
+      commandRunner(
+        'codeQLQueryHistory.copyRepoList',
+        this.handleCopyRepoList.bind(this)
+      )
+    );
 
     // There are two configuration items that affect the query history:
     // 1. The ttl for query history items.
@@ -543,7 +571,7 @@ export class QueryHistoryManager extends DisposableObject {
     this.push(
       queryHistoryConfigListener.onDidChangeConfiguration(() => {
         this.treeDataProvider.refresh();
-        this.registerQueryHistoryScrubber(queryHistoryConfigListener, ctx);
+        this.registerQueryHistoryScrubber(queryHistoryConfigListener, this, ctx);
       })
     );
 
@@ -562,7 +590,8 @@ export class QueryHistoryManager extends DisposableObject {
       },
     }));
 
-    this.registerQueryHistoryScrubber(queryHistoryConfigListener, ctx);
+    this.registerQueryHistoryScrubber(queryHistoryConfigListener, this, ctx);
+    this.registerToRemoteQueriesEvents();
   }
 
   private getCredentials() {
@@ -572,7 +601,7 @@ export class QueryHistoryManager extends DisposableObject {
   /**
    * Register and create the history scrubber.
    */
-  private registerQueryHistoryScrubber(queryHistoryConfigListener: QueryHistoryConfig, ctx: ExtensionContext) {
+  private registerQueryHistoryScrubber(queryHistoryConfigListener: QueryHistoryConfig, qhm: QueryHistoryManager, ctx: ExtensionContext) {
     this.queryHistoryScrubber?.dispose();
     // Every hour check if we need to re-run the query history scrubber.
     this.queryHistoryScrubber = this.push(
@@ -581,17 +610,61 @@ export class QueryHistoryManager extends DisposableObject {
         TWO_HOURS_IN_MS,
         queryHistoryConfigListener.ttlInMillis,
         this.queryStorageDir,
+        qhm,
         ctx
       )
     );
+  }
+
+  private registerToRemoteQueriesEvents() {
+    const queryAddedSubscription = this.remoteQueriesManager.onRemoteQueryAdded(async (event) => {
+      this.addQuery({
+        t: 'remote',
+        status: QueryStatus.InProgress,
+        completed: false,
+        queryId: event.queryId,
+        remoteQuery: event.query,
+      });
+
+      await this.refreshTreeView();
+    });
+
+    const queryRemovedSubscription = this.remoteQueriesManager.onRemoteQueryRemoved(async (event) => {
+      const item = this.treeDataProvider.allHistory.find(i => i.t === 'remote' && i.queryId === event.queryId);
+      if (item) {
+        await this.removeRemoteQuery(item as RemoteQueryHistoryItem);
+      }
+    });
+
+    const queryStatusUpdateSubscription = this.remoteQueriesManager.onRemoteQueryStatusUpdate(async (event) => {
+      const item = this.treeDataProvider.allHistory.find(i => i.t === 'remote' && i.queryId === event.queryId);
+      if (item) {
+        const remoteQueryHistoryItem = item as RemoteQueryHistoryItem;
+        remoteQueryHistoryItem.status = event.status;
+        remoteQueryHistoryItem.failureReason = event.failureReason;
+        remoteQueryHistoryItem.resultCount = event.resultCount;
+        if (event.status === QueryStatus.Completed) {
+          remoteQueryHistoryItem.completed = true;
+        }
+        await this.refreshTreeView();
+      } else {
+        void logger.log('Variant analysis status update event received for unknown variant analysis');
+      }
+    });
+
+    this.push(queryAddedSubscription);
+    this.push(queryRemovedSubscription);
+    this.push(queryStatusUpdateSubscription);
   }
 
   async readQueryHistory(): Promise<void> {
     void logger.log(`Reading cached query history from '${this.queryMetadataStorageLocation}'.`);
     const history = await slurpQueryHistory(this.queryMetadataStorageLocation);
     this.treeDataProvider.allHistory = history;
-    this.treeDataProvider.allHistory.forEach((item) => {
-      this._onDidAddQueryItem.fire(item);
+    this.treeDataProvider.allHistory.forEach(async (item) => {
+      if (item.t === 'remote') {
+        await this.remoteQueriesManager.rehydrateRemoteQuery(item.queryId, item.remoteQuery, item.status);
+      }
     });
   }
 
@@ -635,6 +708,19 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
+  getCurrentQueryHistoryItem(): QueryHistoryInfo | undefined {
+    return this.treeDataProvider.getCurrent();
+  }
+
+  async removeDeletedQueries() {
+    await Promise.all(this.treeDataProvider.allHistory.map(async (item) => {
+      if (item.t == 'local' && item.completedQuery && !(await fs.pathExists(item.completedQuery?.query.querySaveDir))) {
+        this.treeDataProvider.remove(item);
+        item.completedQuery?.dispose();
+      }
+    }));
+  }
+
   async handleRemoveHistoryItem(
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] = []
@@ -653,24 +739,28 @@ export class QueryHistoryManager extends DisposableObject {
           await item.completedQuery?.query.deleteQuery();
         }
       } else {
-        // Remote queries can be removed locally, but not remotely.
-        // The user must cancel the query on GitHub Actions explicitly.
-        this.treeDataProvider.remove(item);
-        void logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
-        if (item.status === QueryStatus.InProgress) {
-          void logger.log('The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.');
-        }
-
-        this._onDidRemoveQueryItem.fire(item);
+        await this.removeRemoteQuery(item);
       }
-
     }));
+
     await this.writeQueryHistory();
     const current = this.treeDataProvider.getCurrent();
     if (current !== undefined) {
       await this.treeView.reveal(current, { select: true });
-      this._onWillOpenQueryItem.fire(current);
+      await this.openQueryResults(current);
     }
+  }
+
+  private async removeRemoteQuery(item: RemoteQueryHistoryItem): Promise<void> {
+    // Remote queries can be removed locally, but not remotely.
+    // The user must cancel the query on GitHub Actions explicitly.
+    this.treeDataProvider.remove(item);
+    void logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
+    if (item.status === QueryStatus.InProgress) {
+      void logger.log('The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.');
+    }
+
+    await this.remoteQueriesManager.removeRemoteQuery(item.queryId);
   }
 
   async handleSortByName() {
@@ -773,7 +863,7 @@ export class QueryHistoryManager extends DisposableObject {
     } else {
       // show results on single click only if query is completed successfully.
       if (finalSingleItem.status === QueryStatus.Completed) {
-        await this._onWillOpenQueryItem.fire(finalSingleItem);
+        await this.openQueryResults(finalSingleItem);
       }
     }
   }
@@ -796,6 +886,18 @@ export class QueryHistoryManager extends DisposableObject {
     } else {
       void showAndLogWarningMessage('No log file available');
     }
+  }
+
+  async getQueryHistoryItemDirectory(queryHistoryItem: QueryHistoryInfo): Promise<string> {
+    if (queryHistoryItem.t === 'local') {
+      if (queryHistoryItem.completedQuery) {
+        return queryHistoryItem.completedQuery.query.querySaveDir;
+      }
+    } else if (queryHistoryItem.t === 'remote') {
+      return path.join(this.queryStorageDir, queryHistoryItem.queryId);
+    }
+
+    throw new Error('Unable to get query directory');
   }
 
   async handleOpenQueryDirectory(
@@ -834,14 +936,17 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  private warnNoEvalLog() {
-    void showAndLogWarningMessage('No evaluator log is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG + '?');
+  private warnNoEvalLogs() {
+    void showAndLogWarningMessage(`Evaluator log, summary, and viewer are not available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
   }
 
-  private warnNoEvalLogSummary() {
-    void showAndLogWarningMessage(`No evaluator log summary is available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`);
+  private warnInProgressEvalLogSummary() {
+    void showAndLogWarningMessage('The evaluator log summary is still being generated for this run. Please try again later. The summary generation process is tracked in the "CodeQL Extension Log" view.');
   }
 
+  private warnInProgressEvalLogViewer() {
+    void showAndLogWarningMessage('The viewer\'s data is still being generated for this run. Please try again or re-run the query.');
+  }
 
   async handleShowEvalLog(
     singleItem: QueryHistoryInfo,
@@ -857,7 +962,7 @@ export class QueryHistoryManager extends DisposableObject {
     if (finalSingleItem.evalLogLocation) {
       await this.tryOpenExternalFile(finalSingleItem.evalLogLocation);
     } else {
-      this.warnNoEvalLog();
+      this.warnNoEvalLogs();
     }
   }
 
@@ -874,9 +979,43 @@ export class QueryHistoryManager extends DisposableObject {
 
     if (finalSingleItem.evalLogSummaryLocation) {
       await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
-    } else {
-      this.warnNoEvalLogSummary();
+      return;
     }
+
+    // Summary log file doesn't exist.
+    if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
+      // If raw log does exist, then the summary log is still being generated.
+      this.warnInProgressEvalLogSummary();
+    } else {
+      this.warnNoEvalLogs();
+    }
+  }
+
+  async handleShowEvalLogViewer(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[],
+  ) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+    // Only applicable to an individual local query
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'local') {
+      return;
+    }
+
+    // If the JSON summary file location wasn't saved, display error
+    if (finalSingleItem.jsonEvalLogSummaryLocation == undefined) {
+      this.warnInProgressEvalLogViewer();
+      return;
+    }
+
+    // TODO(angelapwen): Stream the file in.
+    void fs.readFile(finalSingleItem.jsonEvalLogSummaryLocation, async (err, buffer) => {
+      if (err) {
+        throw new Error(`Could not read evaluator log summary JSON file to generate viewer data at ${finalSingleItem.jsonEvalLogSummaryLocation}.`);
+      }
+      const evalLogData: EvalLogData[] = parseViewerData(buffer.toString());
+      const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.getQueryName(), evalLogData);
+      this.evalLogViewer.updateRoots(await evalLogTreeBuilder.getRoots());
+    });
   }
 
   /**
@@ -901,8 +1040,6 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
   ) {
-    // Local queries only
-    // In the future, we may support cancelling remote queries, but this is not a short term plan.
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
     const selected = finalMultiSelect || [finalSingleItem];
@@ -986,11 +1123,11 @@ export class QueryHistoryManager extends DisposableObject {
       void this.tryOpenExternalFile(query.csvPath);
       return;
     }
-    await query.exportCsvResults(this.qs, query.csvPath, () => {
+    if (await query.exportCsvResults(this.qs, query.csvPath)) {
       void this.tryOpenExternalFile(
         query.csvPath
       );
-    });
+    }
   }
 
   async handleViewCsvAlerts(
@@ -1044,16 +1181,33 @@ export class QueryHistoryManager extends DisposableObject {
     );
   }
 
+  async handleCopyRepoList(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[],
+  ) {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    // Remote queries only
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'remote') {
+      return;
+    }
+
+    await commands.executeCommand('codeQL.copyRepoList', finalSingleItem.queryId);
+  }
+
   async getQueryText(item: QueryHistoryInfo): Promise<string> {
     return item.t === 'local'
       ? item.initialInfo.queryText
       : item.remoteQuery.queryText;
   }
 
+  async handleExportResults(): Promise<void> {
+    await commands.executeCommand('codeQL.exportVariantAnalysisResults');
+  }
+
   addQuery(item: QueryHistoryInfo) {
     this.treeDataProvider.pushQuery(item);
     this.updateTreeViewSelectionIfVisible();
-    this._onDidAddQueryItem.fire(item);
   }
 
   /**
@@ -1305,5 +1459,14 @@ the file in the file explorer and dragging it into the workspace.`
   async refreshTreeView(): Promise<void> {
     this.treeDataProvider.refresh();
     await this.writeQueryHistory();
+  }
+
+  private async openQueryResults(item: QueryHistoryInfo) {
+    if (item.t === 'local') {
+      await this.localQueriesInterfaceManager.showResults(item as CompletedLocalQueryInfo, WebviewReveal.Forced, false);
+    }
+    else if (item.t === 'remote') {
+      await this.remoteQueriesManager.openRemoteQueryResults(item.queryId);
+    }
   }
 }

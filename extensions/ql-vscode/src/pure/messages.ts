@@ -155,6 +155,10 @@ export interface CompilationOptions {
    * get reported anyway. Useful for universal compilation options.
    */
   computeDefaultStrings: boolean;
+  /**
+   * Emit debug information in compiled query.
+   */
+  emitDebugInfo: boolean;
 }
 
 /**

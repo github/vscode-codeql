@@ -6,11 +6,10 @@ import { ToRemoteQueriesMessage } from '../../pure/interface-types';
 import { AnalysisSummary, RemoteQueryResult } from '../shared/remote-query-result';
 import { MAX_RAW_RESULTS } from '../shared/result-limits';
 import { vscode } from '../../view/vscode-api';
-
+import { VSCodeBadge, VSCodeButton } from '@vscode/webview-ui-toolkit/react';
 import SectionTitle from './SectionTitle';
 import VerticalSpace from './VerticalSpace';
 import HorizontalSpace from './HorizontalSpace';
-import Badge from './Badge';
 import ViewTitle from './ViewTitle';
 import DownloadButton from './DownloadButton';
 import { AnalysisResults, getAnalysisResultCount } from '../shared/analysis-result';
@@ -20,10 +19,15 @@ import { AlertIcon, CodeSquareIcon, FileCodeIcon, RepoIcon, TerminalIcon } from 
 import AnalysisAlertResult from './AnalysisAlertResult';
 import RawResultsTable from './RawResultsTable';
 import RepositoriesSearch from './RepositoriesSearch';
+import StarCount from './StarCount';
+import SortRepoFilter, { Sort, sorter } from './SortRepoFilter';
+import LastUpdated from './LastUpdated';
+import RepoListCopyButton from './RepoListCopyButton';
 
 const numOfReposInContractedMode = 10;
 
 const emptyQueryResult: RemoteQueryResult = {
+  queryId: '',
   queryTitle: '',
   queryFileName: '',
   queryFilePath: '',
@@ -67,14 +71,18 @@ const openQueryTextVirtualFile = (queryResult: RemoteQueryResult) => {
   });
 };
 
+function createResultsDescription(queryResult: RemoteQueryResult) {
+  const reposCount = `${queryResult.totalRepositoryCount} ${queryResult.totalRepositoryCount === 1 ? 'repository' : 'repositories'}`;
+  return `${queryResult.totalResultCount} results from running against ${reposCount} (${queryResult.executionDuration}), ${queryResult.executionTimestamp}`;
+}
+
 const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
   analysesResults.reduce((acc, curr) => acc + getAnalysisResultCount(curr), 0);
 
 const QueryInfo = (queryResult: RemoteQueryResult) => (
   <>
     <VerticalSpace size={1} />
-    {queryResult.totalResultCount} results from running against {queryResult.totalRepositoryCount} repositories
-    ({queryResult.executionDuration}), {queryResult.executionTimestamp}
+    {createResultsDescription(queryResult)}
     <VerticalSpace size={1} />
     <span>
       <a className="vscode-codeql__query-info-link" href="#" onClick={() => openQueryFile(queryResult)}>
@@ -124,10 +132,14 @@ const Failures = (queryResult: RemoteQueryResult) => {
 
 const SummaryTitleWithResults = ({
   queryResult,
-  analysesResults
+  analysesResults,
+  sort,
+  setSort
 }: {
   queryResult: RemoteQueryResult,
-  analysesResults: AnalysisResults[]
+  analysesResults: AnalysisResults[],
+  sort: Sort,
+  setSort: (sort: Sort) => void
 }) => {
   const showDownloadButton = queryResult.totalResultCount !== sumAnalysesResults(analysesResults);
 
@@ -139,6 +151,14 @@ const SummaryTitleWithResults = ({
           text="Download all"
           onClick={() => downloadAllAnalysesResults(queryResult)} />
       }
+      <div style={{ flexGrow: 2, textAlign: 'right' }}>
+        <RepoListCopyButton queryResult={queryResult} />
+        <HorizontalSpace size={1} />
+        <SortRepoFilter
+          sort={sort}
+          setSort={setSort}
+        />
+      </div>
     </div>
   );
 };
@@ -179,24 +199,33 @@ const SummaryItem = ({
   analysisSummary: AnalysisSummary,
   analysisResults: AnalysisResults | undefined
 }) => (
-  <span>
+  <>
     <span className="vscode-codeql__analysis-item"><RepoIcon size={16} /></span>
     <span className="vscode-codeql__analysis-item">{analysisSummary.nwo}</span>
-    <span className="vscode-codeql__analysis-item"><Badge text={analysisSummary.resultCount.toString()} /></span>
+    <HorizontalSpace size={1} />
+    <span className="vscode-codeql__analysis-item">
+      <VSCodeBadge>{analysisSummary.resultCount.toString()}</VSCodeBadge>
+    </span>
     <span className="vscode-codeql__analysis-item">
       <SummaryItemDownload
         analysisSummary={analysisSummary}
         analysisResults={analysisResults} />
     </span>
-  </span>
+    <StarCount starCount={analysisSummary.starCount} />
+    <LastUpdated lastUpdated={analysisSummary.lastUpdated} />
+  </>
 );
 
 const Summary = ({
   queryResult,
-  analysesResults
+  analysesResults,
+  sort,
+  setSort
 }: {
   queryResult: RemoteQueryResult,
-  analysesResults: AnalysisResults[]
+  analysesResults: AnalysisResults[],
+  sort: Sort,
+  setSort: (sort: Sort) => void
 }) => {
   const [repoListExpanded, setRepoListExpanded] = useState(false);
   const numOfReposToShow = repoListExpanded ? queryResult.analysisSummaries.length : numOfReposInContractedMode;
@@ -208,17 +237,21 @@ const Summary = ({
           ? <SummaryTitleNoResults />
           : <SummaryTitleWithResults
             queryResult={queryResult}
-            analysesResults={analysesResults} />
+            analysesResults={analysesResults}
+            sort={sort}
+            setSort={setSort} />
       }
 
       <ul className="vscode-codeql__flat-list">
-        {queryResult.analysisSummaries.slice(0, numOfReposToShow).map((summary, i) =>
-          <li key={summary.nwo} className="vscode-codeql__analysis-summaries-list-item">
-            <SummaryItem
-              analysisSummary={summary}
-              analysisResults={analysesResults.find(a => a.nwo === summary.nwo)} />
-          </li>
-        )}
+        {queryResult.analysisSummaries.slice(0, numOfReposToShow)
+          .sort(sorter(sort))
+          .map((summary, i) =>
+            <li key={summary.nwo} className="vscode-codeql__analysis-summaries-list-item">
+              <SummaryItem
+                analysisSummary={summary}
+                analysisResults={analysesResults.find(a => a.nwo === summary.nwo)} />
+            </li>
+          )}
       </ul>
       {
         queryResult.analysisSummaries.length > numOfReposInContractedMode &&
@@ -236,6 +269,12 @@ const AnalysesResultsTitle = ({ totalAnalysesResults, totalResults }: { totalAna
   }
 
   return <SectionTitle>{totalAnalysesResults}/{totalResults} results</SectionTitle>;
+};
+
+const exportResults = () => {
+  vscode.postMessage({
+    t: 'remoteQueryExportResults',
+  });
 };
 
 const AnalysesResultsDescription = ({
@@ -272,7 +311,8 @@ const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
   const numOfResults = getAnalysisResultCount(analysisResults);
   const title = <>
     {analysisResults.nwo}
-    <Badge text={numOfResults.toString()} />
+    <HorizontalSpace size={1} />
+    <VSCodeBadge>{numOfResults.toString()}</VSCodeBadge>
   </>;
 
   return (
@@ -288,7 +328,8 @@ const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
         <RawResultsTable
           schema={analysisResults.rawResults.schema}
           results={analysisResults.rawResults.resultSet}
-          fileLinkPrefix={analysisResults.rawResults.fileLinkPrefix} />
+          fileLinkPrefix={analysisResults.rawResults.fileLinkPrefix}
+          sourceLocationPrefix={analysisResults.rawResults.sourceLocationPrefix} />
       }
     </CollapsibleItem>
   );
@@ -297,11 +338,13 @@ const RepoAnalysisResults = (analysisResults: AnalysisResults) => {
 const AnalysesResults = ({
   queryResult,
   analysesResults,
-  totalResults
+  totalResults,
+  sort,
 }: {
   queryResult: RemoteQueryResult,
   analysesResults: AnalysisResults[],
-  totalResults: number
+  totalResults: number,
+  sort: Sort
 }) => {
   const totalAnalysesResults = sumAnalysesResults(analysesResults);
   const [filterValue, setFilterValue] = React.useState('');
@@ -313,9 +356,16 @@ const AnalysesResults = ({
   return (
     <>
       <VerticalSpace size={2} />
-      <AnalysesResultsTitle
-        totalAnalysesResults={totalAnalysesResults}
-        totalResults={totalResults} />
+      <div style={{ display: 'flex' }}>
+        <div style={{ flexGrow: 1 }}>
+          <AnalysesResultsTitle
+            totalAnalysesResults={totalAnalysesResults}
+            totalResults={totalResults} />
+        </div>
+        <div>
+          <VSCodeButton onClick={exportResults}>Export all</VSCodeButton>
+        </div>
+      </div>
       <AnalysesResultsDescription
         queryResult={queryResult}
         analysesResults={analysesResults} />
@@ -329,6 +379,7 @@ const AnalysesResults = ({
         {analysesResults
           .filter(a => a.interpretedResults.length > 0 || a.rawResults)
           .filter(a => a.nwo.toLowerCase().includes(filterValue.toLowerCase()))
+          .sort(sorter(sort))
           .map(r =>
             <li key={r.nwo} className="vscode-codeql__analyses-results-list-item">
               <RepoAnalysisResults {...r} />
@@ -341,6 +392,7 @@ const AnalysesResults = ({
 export function RemoteQueries(): JSX.Element {
   const [queryResult, setQueryResult] = useState<RemoteQueryResult>(emptyQueryResult);
   const [analysesResults, setAnalysesResults] = useState<AnalysisResults[]>([]);
+  const [sort, setSort] = useState<Sort>('name');
 
   useEffect(() => {
     window.addEventListener('message', (evt: MessageEvent) => {
@@ -370,11 +422,16 @@ export function RemoteQueries(): JSX.Element {
           <ViewTitle>{queryResult.queryTitle}</ViewTitle>
           <QueryInfo {...queryResult} />
           <Failures {...queryResult} />
-          <Summary queryResult={queryResult} analysesResults={analysesResults} />
+          <Summary
+            queryResult={queryResult}
+            analysesResults={analysesResults}
+            sort={sort}
+            setSort={setSort} />
           <AnalysesResults
             queryResult={queryResult}
             analysesResults={analysesResults}
-            totalResults={queryResult.totalResultCount} />
+            totalResults={queryResult.totalResultCount}
+            sort={sort} />
         </ThemeProvider>
       </div>
     );

@@ -4,7 +4,8 @@ import {
   window as Window,
   ViewColumn,
   Uri,
-  workspace
+  workspace,
+  commands
 } from 'vscode';
 import * as path from 'path';
 
@@ -17,15 +18,22 @@ import {
 import { Logger } from '../logging';
 import { getHtmlForWebview } from '../interface-utils';
 import { assertNever } from '../pure/helpers-pure';
-import { AnalysisSummary, RemoteQueryResult } from './remote-query-result';
+import {
+  AnalysisSummary,
+  RemoteQueryResult,
+  sumAnalysisSummariesResults
+} from './remote-query-result';
 import { RemoteQuery } from './remote-query';
-import { RemoteQueryResult as RemoteQueryResultViewModel } from './shared/remote-query-result';
-import { AnalysisSummary as AnalysisResultViewModel } from './shared/remote-query-result';
+import {
+  AnalysisSummary as AnalysisResultViewModel,
+  RemoteQueryResult as RemoteQueryResultViewModel
+} from './shared/remote-query-result';
 import { showAndLogWarningMessage } from '../helpers';
 import { URLSearchParams } from 'url';
 import { SHOW_QUERY_TEXT_MSG } from '../query-history';
 import { AnalysesResultsManager } from './analyses-results-manager';
 import { AnalysisResults } from './shared/analysis-result';
+import { humanizeUnit } from '../pure/time';
 
 export class RemoteQueriesInterfaceManager {
   private panel: WebviewPanel | undefined;
@@ -71,13 +79,14 @@ export class RemoteQueriesInterfaceManager {
    */
   private buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
     const queryFileName = path.basename(query.queryFilePath);
-    const totalResultCount = queryResult.analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
+    const totalResultCount = sumAnalysisSummariesResults(queryResult.analysisSummaries);
     const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);
     const analysisSummaries = this.buildAnalysisSummaries(queryResult.analysisSummaries);
     const totalRepositoryCount = queryResult.analysisSummaries.length;
     const affectedRepositories = queryResult.analysisSummaries.filter(r => r.resultCount > 0);
 
     return {
+      queryId: queryResult.queryId,
       queryTitle: query.queryName,
       queryFileName: queryFileName,
       queryFilePath: query.queryFilePath,
@@ -108,6 +117,7 @@ export class RemoteQueriesInterfaceManager {
           localResourceRoots: [
             Uri.file(this.analysesResultsManager.storagePath),
             Uri.file(path.join(this.ctx.extensionPath, 'out')),
+            Uri.file(path.join(this.ctx.extensionPath, 'node_modules/@vscode/codicons/dist')),
           ],
         }
       ));
@@ -132,10 +142,16 @@ export class RemoteQueriesInterfaceManager {
         ctx.asAbsolutePath('out/remote-queries/view/remoteQueries.css')
       );
 
+      // Allows use of the VS Code "codicons" icon set.
+      // See https://github.com/microsoft/vscode-codicons
+      const codiconsPathOnDisk = Uri.file(
+        ctx.asAbsolutePath('node_modules/@vscode/codicons/dist/codicon.css')
+      );
+
       panel.webview.html = getHtmlForWebview(
         panel.webview,
         scriptPathOnDisk,
-        [baseStylesheetUriOnDisk, stylesheetPathOnDisk],
+        [baseStylesheetUriOnDisk, stylesheetPathOnDisk, codiconsPathOnDisk],
         true
       );
       ctx.subscriptions.push(
@@ -204,11 +220,17 @@ export class RemoteQueriesInterfaceManager {
       case 'openVirtualFile':
         await this.openVirtualFile(msg.queryText);
         break;
+      case 'copyRepoList':
+        await commands.executeCommand('codeQL.copyRepoList', msg.queryId);
+        break;
       case 'remoteQueryDownloadAnalysisResults':
         await this.downloadAnalysisResults(msg);
         break;
       case 'remoteQueryDownloadAllAnalysesResults':
         await this.downloadAllAnalysesResults(msg);
+        break;
+      case 'remoteQueryExportResults':
+        await commands.executeCommand('codeQL.exportVariantAnalysisResults');
         break;
       default:
         assertNever(msg);
@@ -245,23 +267,7 @@ export class RemoteQueriesInterfaceManager {
 
   private getDuration(startTime: number, endTime: number): string {
     const diffInMs = startTime - endTime;
-    return this.formatDuration(diffInMs);
-  }
-
-  private formatDuration(ms: number): string {
-    const seconds = ms / 1000;
-    const minutes = seconds / 60;
-    const hours = minutes / 60;
-    const days = hours / 24;
-    if (days > 1) {
-      return `${days.toFixed(2)} days`;
-    } else if (hours > 1) {
-      return `${hours.toFixed(2)} hours`;
-    } else if (minutes > 1) {
-      return `${minutes.toFixed(2)} minutes`;
-    } else {
-      return `${seconds.toFixed(2)} seconds`;
-    }
+    return humanizeUnit(diffInMs);
   }
 
   private formatDate = (millis: number): string => {
@@ -302,7 +308,10 @@ export class RemoteQueriesInterfaceManager {
       databaseSha: analysisResult.databaseSha || 'HEAD',
       resultCount: analysisResult.resultCount,
       downloadLink: analysisResult.downloadLink,
-      fileSize: this.formatFileSize(analysisResult.fileSizeInBytes)
+      sourceLocationPrefix: analysisResult.sourceLocationPrefix,
+      fileSize: this.formatFileSize(analysisResult.fileSizeInBytes),
+      starCount: analysisResult.starCount,
+      lastUpdated: analysisResult.lastUpdated
     }));
   }
 }

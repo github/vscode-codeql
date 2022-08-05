@@ -37,6 +37,7 @@ import { ensureMetadataIsComplete } from './query-results';
 import { SELECT_QUERY_NAME } from './contextual/locationFinder';
 import { DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { getErrorMessage } from './pure/helpers-pure';
+import { generateSummarySymbolsFile } from './log-insights/summary-parser';
 
 /**
  * run-queries.ts
@@ -103,16 +104,16 @@ export class QueryEvaluationInfo {
     return qsClient.findQueryEvalLogSummaryFile(this.querySaveDir);
   }
 
+  get jsonEvalLogSummaryPath() {
+    return qsClient.findJsonQueryEvalLogSummaryFile(this.querySaveDir);
+  }
+
   get evalLogSummarySymbolsPath() {
     return qsClient.findQueryEvalLogSummarySymbolsFile(this.querySaveDir);
   }
 
   get evalLogEndSummaryPath() {
     return qsClient.findQueryEvalLogEndSummaryFile(this.querySaveDir);
-  }
-
-  get evalLogJsonSummaryPath() {
-    return qsClient.findQueryEvalJsonLogSummaryFile(this.querySaveDir);
   }
 
   get resultsPaths() {
@@ -206,16 +207,13 @@ export class QueryEvaluationInfo {
           logPath: this.evalLogPath,
         });
         if (await this.hasEvalLog()) {
-          queryInfo.evalLogLocation = this.evalLogPath;
-          await qs.cliServer.generateLogSummary(this.evalLogPath, this.evalLogSummaryPath, this.evalLogEndSummaryPath);
-          queryInfo.evalLogSummaryLocation = this.evalLogSummaryPath;
-          fs.readFile(this.evalLogEndSummaryPath, (err, buffer) => {
-            if (err) {
-              throw new Error(`Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`);
-            }
-            void qs.logger.log(' --- Evaluator Log Summary --- ');
-            void qs.logger.log(buffer.toString());
-          });
+          this.displayHumanReadableLogSummary(queryInfo, qs);
+          if (config.isCanary()) { // Generate JSON summary for viewer.
+            await qs.cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath);
+            queryInfo.jsonEvalLogSummaryLocation = this.jsonEvalLogSummaryPath;
+            await generateSummarySymbolsFile(this.evalLogSummaryPath, this.evalLogSummarySymbolsPath);
+            queryInfo.evalLogSummarySymbolsLocation = this.evalLogSummarySymbolsPath;
+          }
         } else {
           void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);
         }
@@ -250,7 +248,8 @@ export class QueryEvaluationInfo {
           localChecking: false,
           noComputeGetUrl: false,
           noComputeToString: false,
-          computeDefaultStrings: true
+          computeDefaultStrings: true,
+          emitDebugInfo: true
         },
         extraOptions: {
           timeoutSecs: qs.config.timeoutSecs
@@ -341,33 +340,91 @@ export class QueryEvaluationInfo {
   }
 
   /**
+   * Calls the appropriate CLI command to generate a human-readable log summary
+   * and logs to the Query Server console and query log file.
+   */
+  displayHumanReadableLogSummary(queryInfo: LocalQueryInfo, qs: qsClient.QueryServerClient): void {
+    queryInfo.evalLogLocation = this.evalLogPath;
+    void qs.cliServer.generateLogSummary(this.evalLogPath, this.evalLogSummaryPath, this.evalLogEndSummaryPath)
+      .then(() => {
+        queryInfo.evalLogSummaryLocation = this.evalLogSummaryPath;
+        fs.readFile(this.evalLogEndSummaryPath, (err, buffer) => {
+          if (err) {
+            throw new Error(`Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`);
+          }
+          void qs.logger.log(' --- Evaluator Log Summary --- ', { additionalLogLocation: this.logPath });
+          void qs.logger.log(buffer.toString(), { additionalLogLocation: this.logPath });
+        });
+      })
+      .catch(err => {
+        void showAndLogWarningMessage(`Failed to generate human-readable structured evaluator log summary. Reason: ${err.message}`);
+      });
+  }
+
+  /**
    * Creates the CSV file containing the results of this query. This will only be called if the query
    * does not have interpreted results and the CSV file does not already exist.
+   *
+   * @return Promise<true> if the operation creates the file. Promise<false> if the operation does
+   * not create the file.
+   *
+   * @throws Error if the operation fails.
    */
-  async exportCsvResults(qs: qsClient.QueryServerClient, csvPath: string, onFinish: () => void): Promise<void> {
+  async exportCsvResults(qs: qsClient.QueryServerClient, csvPath: string): Promise<boolean> {
+    const resultSet = await this.chooseResultSet(qs);
+    if (!resultSet) {
+      void showAndLogWarningMessage('Query has no result set.');
+      return false;
+    }
     let stopDecoding = false;
     const out = fs.createWriteStream(csvPath);
-    out.on('finish', onFinish);
-    out.on('error', () => {
-      if (!stopDecoding) {
-        stopDecoding = true;
-        void showAndLogErrorMessage(`Failed to write CSV results to ${csvPath}`);
-      }
+
+    const promise: Promise<boolean> = new Promise((resolve, reject) => {
+      out.on('finish', () => resolve(true));
+      out.on('error', () => {
+        if (!stopDecoding) {
+          stopDecoding = true;
+          reject(new Error(`Failed to write CSV results to ${csvPath}`));
+        }
+      });
     });
+
     let nextOffset: number | undefined = 0;
-    while (nextOffset !== undefined && !stopDecoding) {
-      const chunk: DecodedBqrsChunk = await qs.cliServer.bqrsDecode(this.resultsPaths.resultsPath, SELECT_QUERY_NAME, {
+    do {
+      const chunk: DecodedBqrsChunk = await qs.cliServer.bqrsDecode(this.resultsPaths.resultsPath, resultSet, {
         pageSize: 100,
         offset: nextOffset,
       });
-      for (const tuple of chunk.tuples) {
-        out.write(tuple.join(',') + '\n');
-      }
+      chunk.tuples.forEach((tuple) => {
+        out.write(tuple.map((v, i) =>
+          chunk.columns[i].kind === 'String'
+            ? `"${typeof v === 'string' ? v.replaceAll('"', '""') : v}"`
+            : v
+        ).join(',') + '\n');
+      });
       nextOffset = chunk.next;
-    }
+    } while (nextOffset && !stopDecoding);
     out.end();
+
+    return promise;
   }
 
+  /**
+   * Choose the name of the result set to run. If the `#select` set exists, use that. Otherwise,
+   * arbitrarily choose the first set. Most of the time, this will be correct.
+   *
+   * If the query has no result sets, then return undefined.
+   */
+  async chooseResultSet(qs: qsClient.QueryServerClient) {
+    const resultSets = (await qs.cliServer.bqrsInfo(this.resultsPaths.resultsPath, 0))['result-sets'];
+    if (!resultSets.length) {
+      return undefined;
+    }
+    if (resultSets.find(r => r.name === SELECT_QUERY_NAME)) {
+      return SELECT_QUERY_NAME;
+    }
+    return resultSets[0].name;
+  }
   /**
    * Returns the path to the CSV alerts interpretation of this query results. If CSV results have
    * not yet been produced, this will return first create the CSV results and then return the path.
@@ -755,10 +812,16 @@ export async function compileAndRunQueryAgainstDatabase(
   const metadata = await tryGetQueryMetadata(cliServer, qlProgram.queryPath);
 
   let availableMlModels: cli.MlModelInfo[] = [];
-  if (await cliServer.cliConstraints.supportsResolveMlModels()) {
+  if (!await cliServer.cliConstraints.supportsResolveMlModels()) {
+    void logger.log('Resolving ML models is unsupported by this version of the CLI. Running the query without any ML models.');
+  } else {
     try {
-      availableMlModels = (await cliServer.resolveMlModels(diskWorkspaceFolders)).models;
-      void logger.log(`Found available ML models at the following paths: ${availableMlModels.map(x => `'${x.path}'`).join(', ')}.`);
+      availableMlModels = (await cliServer.resolveMlModels(diskWorkspaceFolders, initialInfo.queryPath)).models;
+      if (availableMlModels.length) {
+        void logger.log(`Found available ML models at the following paths: ${availableMlModels.map(x => `'${x.path}'`).join(', ')}.`);
+      } else {
+        void logger.log('Did not find any available ML models.');
+      }
     } catch (e) {
       const message = `Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the ` +
         `query without any ML models: ${e}.`;

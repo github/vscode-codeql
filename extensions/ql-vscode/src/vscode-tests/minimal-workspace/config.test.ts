@@ -1,4 +1,3 @@
-import 'vscode-test';
 import * as Sinon from 'sinon';
 import { expect } from 'chai';
 import { workspace } from 'vscode';

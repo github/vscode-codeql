@@ -1,6 +1,6 @@
 import { ConfigurationTarget, Extension, ExtensionContext, ConfigurationChangeEvent } from 'vscode';
 import TelemetryReporter from 'vscode-extension-telemetry';
-import { ConfigListener, CANARY_FEATURES, ENABLE_TELEMETRY, GLOBAL_ENABLE_TELEMETRY, LOG_TELEMETRY } from './config';
+import { ConfigListener, CANARY_FEATURES, ENABLE_TELEMETRY, GLOBAL_ENABLE_TELEMETRY, LOG_TELEMETRY, isIntegrationTestMode } from './config';
 import * as appInsights from 'applicationinsights';
 import { logger } from './logging';
 import { UserCancellationException } from './commandRunner';
@@ -162,7 +162,11 @@ export class TelemetryListener extends ConfigListener {
     if (!this.wasTelemetryRequested()) {
       // if global telemetry is disabled, avoid showing the dialog or making any changes
       let result = undefined;
-      if (GLOBAL_ENABLE_TELEMETRY.getValue()) {
+      if (
+        GLOBAL_ENABLE_TELEMETRY.getValue() &&
+        // Avoid showing the dialog if we are in integration test mode.
+        !isIntegrationTestMode()
+      ) {
         // Extension won't start until this completes.
         result = await showBinaryChoiceWithUrlDialog(
           'Does the CodeQL Extension by GitHub have your permission to collect usage data and metrics to help us improve CodeQL for VSCode?',

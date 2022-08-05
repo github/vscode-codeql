@@ -1,4 +1,3 @@
-import 'vscode-test';
 import * as sinon from 'sinon';
 import * as tmp from 'tmp';
 import * as fs from 'fs-extra';

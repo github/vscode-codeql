@@ -12,7 +12,6 @@
         // Add a reference to a workspace to open. Eg-
         // "${workspaceRoot}/../vscode-codeql-starter/vscode-codeql-starter.code-workspace"
       ],
-      "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [
         "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
@@ -46,7 +45,6 @@
         "ts-node/register",
         "test/pure-tests/**/*.ts"
       ],
-      "port": 9229,
       "stopOnEntry": false,
       "sourceMaps": true,
       "console": "integratedTerminal",
@@ -60,10 +58,10 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
         "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index",
+        "--disable-workspace-trust",
         "--disable-extensions",
         "--disable-gpu"
       ],
-      "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [
         "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
@@ -77,11 +75,11 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
         "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/minimal-workspace/index",
+        "--disable-workspace-trust",
         "--disable-extensions",
         "--disable-gpu",
         "${workspaceRoot}/extensions/ql-vscode/test/data"
       ],
-      "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [
         "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
@@ -95,6 +93,7 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
         "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/cli-integration/index",
+        "--disable-workspace-trust",
         "--disable-gpu",
         "--disable-extension",
         "eamodio.gitlens",
@@ -121,7 +120,6 @@
         // This option overrides the CLI_VERSION option.
         // "CLI_PATH": "${workspaceRoot}/../semmle-code/target/intree/codeql/codeql",
       },
-      "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [
         "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",

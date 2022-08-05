@@ -45,7 +45,7 @@ async function resolveQueriesFromPacks(cli: CodeQLCliServer, qlpacks: string[], 
       }
     });
   }
-  await fs.writeFile(suiteFile, yaml.safeDump(suiteYaml), 'utf8');
+  await fs.writeFile(suiteFile, yaml.dump(suiteYaml), 'utf8');
 
   const queries = await cli.resolveQueriesInSuite(suiteFile, helpers.getOnDiskWorkspaceFolders());
   return queries;
