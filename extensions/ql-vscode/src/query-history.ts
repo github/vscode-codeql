@@ -9,6 +9,7 @@ import {
   ProviderResult,
   Range,
   ThemeIcon,
+  TreeDataProvider,
   TreeItem,
   TreeView,
   Uri,
@@ -80,30 +81,6 @@ const SHOW_QUERY_TEXT_QUICK_EVAL_MSG = `\
 `;
 
 /**
- * Path to icon to display next to a failed query history item.
- */
-const FAILED_QUERY_HISTORY_ITEM_ICON = 'media/red-x.svg';
-
-/**
- * Path to icon to display next to a successful local run.
- */
-const LOCAL_SUCCESS_QUERY_HISTORY_ITEM_ICON = 'media/drive.svg';
-
-/**
- * Path to icon to display next to a successful remote run.
- */
-const REMOTE_SUCCESS_QUERY_HISTORY_ITEM_ICON = 'media/globe.svg';
-
-export enum SortOrder {
-  NameAsc = 'NameAsc',
-  NameDesc = 'NameDesc',
-  DateAsc = 'DateAsc',
-  DateDesc = 'DateDesc',
-  CountAsc = 'CountAsc',
-  CountDesc = 'CountDesc',
-}
-
-/**
  * Number of milliseconds two clicks have to arrive apart to be
  * considered a double-click.
  */
@@ -111,203 +88,7 @@ const DOUBLE_CLICK_TIME = 500;
 
 const WORKSPACE_QUERY_HISTORY_FILE = 'workspace-query-history.json';
 
-/**
- * Tree data provider for the query history view.
- */
-export class HistoryTreeDataProvider extends DisposableObject {
-  private _sortOrder = SortOrder.DateAsc;
-
-  private _onDidChangeTreeData = super.push(new EventEmitter<QueryHistoryInfo | undefined>());
-
-  readonly onDidChangeTreeData: Event<QueryHistoryInfo | undefined> = this
-    ._onDidChangeTreeData.event;
-
-  private history: QueryHistoryInfo[] = [];
-
-  private failedIconPath: string;
-
-  private localSuccessIconPath: string;
-
-  private remoteSuccessIconPath: string;
-
-  private current: QueryHistoryInfo | undefined;
-
-  constructor(
-    extensionPath: string,
-    private readonly labelProvider: HistoryItemLabelProvider,
-  ) {
-    super();
-    this.failedIconPath = path.join(
-      extensionPath,
-      FAILED_QUERY_HISTORY_ITEM_ICON
-    );
-    this.localSuccessIconPath = path.join(
-      extensionPath,
-      LOCAL_SUCCESS_QUERY_HISTORY_ITEM_ICON
-    );
-    this.remoteSuccessIconPath = path.join(
-      extensionPath,
-      REMOTE_SUCCESS_QUERY_HISTORY_ITEM_ICON
-    );
-  }
-
-  async getTreeItem(element: QueryHistoryInfo): Promise<TreeItem> {
-    const treeItem = new TreeItem(this.labelProvider.getLabel(element));
-
-    treeItem.command = {
-      title: 'Query History Item',
-      command: 'codeQLQueryHistory.itemClicked',
-      arguments: [element],
-      tooltip: element.failureReason || this.labelProvider.getLabel(element)
-    };
-
-    // Populate the icon and the context value. We use the context value to
-    // control which commands are visible in the context menu.
-    let hasResults;
-    switch (element.status) {
-      case QueryStatus.InProgress:
-        treeItem.iconPath = new ThemeIcon('sync~spin');
-        treeItem.contextValue = element.t === 'local' ? 'inProgressResultsItem' : 'inProgressRemoteResultsItem';
-        break;
-      case QueryStatus.Completed:
-        if (element.t === 'local') {
-          hasResults = await element.completedQuery?.query.hasInterpretedResults();
-          treeItem.iconPath = this.localSuccessIconPath;
-          treeItem.contextValue = hasResults
-            ? 'interpretedResultsItem'
-            : 'rawResultsItem';
-        } else {
-          treeItem.iconPath = this.remoteSuccessIconPath;
-          treeItem.contextValue = 'remoteResultsItem';
-        }
-        break;
-      case QueryStatus.Failed:
-        treeItem.iconPath = this.failedIconPath;
-        treeItem.contextValue = 'cancelledResultsItem';
-        break;
-      default:
-        assertNever(element.status);
-    }
-
-    return treeItem;
-  }
-
-  getChildren(
-    element?: QueryHistoryInfo
-  ): ProviderResult<QueryHistoryInfo[]> {
-    return element ? [] : this.history.sort((h1, h2) => {
-
-      const h1Label = this.labelProvider.getLabel(h1).toLowerCase();
-      const h2Label = this.labelProvider.getLabel(h2).toLowerCase();
-
-      const h1Date = h1.t === 'local'
-        ? h1.initialInfo.start.getTime()
-        : h1.remoteQuery?.executionStartTime;
-
-      const h2Date = h2.t === 'local'
-        ? h2.initialInfo.start.getTime()
-        : h2.remoteQuery?.executionStartTime;
-
-      const resultCount1 = h1.t === 'local'
-        ? h1.completedQuery?.resultCount ?? -1
-        : h1.resultCount ?? -1;
-      const resultCount2 = h2.t === 'local'
-        ? h2.completedQuery?.resultCount ?? -1
-        : h2.resultCount ?? -1;
-
-      switch (this.sortOrder) {
-        case SortOrder.NameAsc:
-          return h1Label.localeCompare(h2Label, env.language);
-
-        case SortOrder.NameDesc:
-          return h2Label.localeCompare(h1Label, env.language);
-
-        case SortOrder.DateAsc:
-          return h1Date - h2Date;
-
-        case SortOrder.DateDesc:
-          return h2Date - h1Date;
-
-        case SortOrder.CountAsc:
-          // If the result counts are equal, sort by name.
-          return resultCount1 - resultCount2 === 0
-            ? h1Label.localeCompare(h2Label, env.language)
-            : resultCount1 - resultCount2;
-
-        case SortOrder.CountDesc:
-          // If the result counts are equal, sort by name.
-          return resultCount2 - resultCount1 === 0
-            ? h2Label.localeCompare(h1Label, env.language)
-            : resultCount2 - resultCount1;
-        default:
-          assertNever(this.sortOrder);
-      }
-    });
-  }
-
-  getParent(_element: QueryHistoryInfo): ProviderResult<QueryHistoryInfo> {
-    return null;
-  }
-
-  getCurrent(): QueryHistoryInfo | undefined {
-    return this.current;
-  }
-
-  pushQuery(item: QueryHistoryInfo): void {
-    this.history.push(item);
-    this.setCurrentItem(item);
-    this.refresh();
-  }
-
-  setCurrentItem(item?: QueryHistoryInfo) {
-    this.current = item;
-  }
-
-  remove(item: QueryHistoryInfo) {
-    const isCurrent = this.current === item;
-    if (isCurrent) {
-      this.setCurrentItem();
-    }
-    const index = this.history.findIndex((i) => i === item);
-    if (index >= 0) {
-      this.history.splice(index, 1);
-      if (isCurrent && this.history.length > 0) {
-        // Try to keep a current item, near the deleted item if there
-        // are any available.
-        this.setCurrentItem(this.history[Math.min(index, this.history.length - 1)]);
-      }
-      this.refresh();
-    }
-  }
-
-  get allHistory(): QueryHistoryInfo[] {
-    return this.history;
-  }
-
-  set allHistory(history: QueryHistoryInfo[]) {
-    this.history = history;
-    this.current = history[0];
-    this.refresh();
-  }
-
-  refresh() {
-    this._onDidChangeTreeData.fire(undefined);
-  }
-
-  public get sortOrder() {
-    return this._sortOrder;
-  }
-
-  public set sortOrder(newSortOrder: SortOrder) {
-    this._sortOrder = newSortOrder;
-    this._onDidChangeTreeData.fire(undefined);
-  }
-}
-
 export class QueryHistoryManager extends DisposableObject {
-
-  treeDataProvider: HistoryTreeDataProvider;
-  treeView: TreeView<QueryHistoryInfo>;
   lastItemClick: { time: Date; item: QueryHistoryInfo } | undefined;
   compareWithItem: LocalQueryInfo | undefined;
   queryHistoryScrubber: Disposable | undefined;
@@ -335,39 +116,6 @@ export class QueryHistoryManager extends DisposableObject {
     // For situations where `ctx.storageUri` is undefined (i.e., there is no workspace),
     // we default to global storage.
     this.queryMetadataStorageLocation = path.join((ctx.storageUri || ctx.globalStorageUri).fsPath, WORKSPACE_QUERY_HISTORY_FILE);
-
-    this.treeDataProvider = this.push(new HistoryTreeDataProvider(
-      ctx.extensionPath,
-      this.labelProvider
-    ));
-    this.treeView = this.push(window.createTreeView('codeQLQueryHistory', {
-      treeDataProvider: this.treeDataProvider,
-      canSelectMany: true,
-    }));
-
-    // Lazily update the tree view selection due to limitations of TreeView API (see
-    // `updateTreeViewSelectionIfVisible` doc for details)
-    this.push(
-      this.treeView.onDidChangeVisibility(async (_ev) =>
-        this.updateTreeViewSelectionIfVisible()
-      )
-    );
-    this.push(
-      this.treeView.onDidChangeSelection(async (ev) => {
-        if (ev.selection.length === 0) {
-          // Don't allow the selection to become empty
-          this.updateTreeViewSelectionIfVisible();
-        } else {
-          this.treeDataProvider.setCurrentItem(ev.selection[0]);
-        }
-        if (ev.selection.some(item => item.t !== 'local')) {
-          // Don't allow comparison of non-local items
-          this.updateCompareWith([]);
-        } else {
-          this.updateCompareWith([...ev.selection] as LocalQueryInfo[]);
-        }
-      })
-    );
 
     void logger.log('Registering query history panel commands.');
     this.push(
@@ -950,7 +698,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    // TODO(angelapwen): Stream the file in. 
+    // TODO(angelapwen): Stream the file in.
     void fs.readFile(finalSingleItem.jsonEvalLogSummaryLocation, async (err, buffer) => {
       if (err) {
         throw new Error(`Could not read evaluator log summary JSON file to generate viewer data at ${finalSingleItem.jsonEvalLogSummaryLocation}.`);
