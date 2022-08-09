@@ -283,7 +283,7 @@ export class LocalQueryInfo {
     return !!this.completedQuery;
   }
 
-  completeThisQuery(info: QueryWithResults) {
+  completeThisQuery(info: QueryWithResults): void {
     this.completedQuery = new CompletedQueryInfo(info);
 
     // dispose of the cancellation token source and also ensure the source is not serialized as JSON
