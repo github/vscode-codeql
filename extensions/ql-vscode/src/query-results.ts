@@ -20,6 +20,7 @@ import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-it
 import { sarifParser } from './sarif-parser';
 import { QueryEvaluationInfo, QueryWithResults } from './run-queries-shared';
 import { formatLegacyMessage } from './legacy-query-server/run-queries';
+import { sarifParser } from './sarif-parser';
 
 /**
  * query-results.ts
