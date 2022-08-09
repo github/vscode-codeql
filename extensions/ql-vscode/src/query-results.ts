@@ -17,6 +17,7 @@ import {
 import { DatabaseInfo } from './pure/interface-types';
 import { QueryStatus } from './query-status';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
+import { sarifParser } from './sarif-parser';
 
 /**
  * query-results.ts
@@ -160,10 +161,12 @@ export async function interpretResultsSarif(
   sourceInfo?: cli.SourceInfo
 ): Promise<SarifInterpretationData> {
   const { resultsPath, interpretedResultsPath } = resultsPaths;
+  let res;
   if (await fs.pathExists(interpretedResultsPath)) {
-    return { ...JSON.parse(await fs.readFile(interpretedResultsPath, 'utf8')), t: 'SarifInterpretationData' };
+    res = await sarifParser(interpretedResultsPath);
+  } else {
+    res = await cli.interpretBqrsSarif(ensureMetadataIsComplete(metadata), resultsPath, interpretedResultsPath, sourceInfo);
   }
-  const res = await cli.interpretBqrsSarif(ensureMetadataIsComplete(metadata), resultsPath, interpretedResultsPath, sourceInfo);
   return { ...res, t: 'SarifInterpretationData' };
 }
 
