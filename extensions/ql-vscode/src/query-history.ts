@@ -322,18 +322,6 @@ export class QueryHistoryManager extends DisposableObject {
   queryHistoryScrubber: Disposable | undefined;
   private queryMetadataStorageLocation;
 
-  private readonly _onDidAddQueryItem = super.push(new EventEmitter<QueryHistoryInfo>());
-  readonly onDidAddQueryItem: Event<QueryHistoryInfo> = this
-    ._onDidAddQueryItem.event;
-
-  private readonly _onDidRemoveQueryItem = super.push(new EventEmitter<QueryHistoryInfo>());
-  readonly onDidRemoveQueryItem: Event<QueryHistoryInfo> = this
-    ._onDidRemoveQueryItem.event;
-
-  private readonly _onWillOpenQueryItem = super.push(new EventEmitter<QueryHistoryInfo>());
-  readonly onWillOpenQueryItem: Event<QueryHistoryInfo> = this
-    ._onWillOpenQueryItem.event;
-
   private readonly _onDidChangeCurrentQueryItem = super.push(new EventEmitter<QueryHistoryInfo | undefined>());
   readonly onDidChangeCurrentQueryItem = this._onDidChangeCurrentQueryItem.event;
 

@@ -13,7 +13,6 @@ export interface EvalLogData {
 /**
  * A pure method that parses a string of evaluator log summaries into
  * an array of EvalLogData objects.
- *
  */
 export async function parseViewerData(jsonSummaryPath: string): Promise<EvalLogData[]> {
   const viewerData: EvalLogData[] = [];
