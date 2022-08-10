@@ -1,11 +1,10 @@
-import { Diagnostic, DiagnosticSeverity, Disposable, languages, Range, Uri } from 'vscode';
+import { Diagnostic, DiagnosticSeverity, languages, Range, Uri } from 'vscode';
 import { DisposableObject } from '../pure/disposable-object';
 import { QueryHistoryManager } from '../query-history';
 import { QueryHistoryInfo } from '../query-results';
-import { EvaluationLogProblemReporter, EvaluationLogScannerProvider } from './log-scanner';
+import { EvaluationLogProblemReporter, EvaluationLogScannerSet } from './log-scanner';
 import { PipelineInfo, SummarySymbols } from './summary-parser';
 import * as fs from 'fs-extra';
-import { readJsonlFile } from './jsonl-reader';
 
 /**
  * Compute the key used to find a predicate in the summary symbols.
@@ -43,8 +42,7 @@ class ProblemReporter implements EvaluationLogProblemReporter {
 }
 
 export class LogScannerService extends DisposableObject {
-  private readonly scannerProviders = new Map<number, EvaluationLogScannerProvider>();
-  private nextScannerProviderId = 0;
+  public readonly scanners = new EvaluationLogScannerSet();
   private readonly diagnosticCollection = this.push(languages.createDiagnosticCollection('ql-eval-log'));
   private currentItem: QueryHistoryInfo | undefined = undefined;
 
@@ -85,24 +83,6 @@ export class LogScannerService extends DisposableObject {
   }
 
   /**
-   * Register a provider that can create instances of `EvaluationLogScanner` to scan evaluation logs
-   * for problems.
-   * @param provider The provider.
-   * @returns A `Disposable` that, when disposed, will unregister the provider.
-   */
-  public registerLogScannerProvider(provider: EvaluationLogScannerProvider): Disposable {
-    const id = this.nextScannerProviderId;
-    this.nextScannerProviderId++;
-
-    this.scannerProviders.set(id, provider);
-    return {
-      dispose: () => {
-        this.scannerProviders.delete(id);
-      }
-    };
-  }
-
-  /**
    * Scan the evaluator summary log for problems, using the scanners for all registered providers.
    * @param jsonSummaryLocation The file path of the JSON summary log.
    * @param symbolsLocation The file path of the symbols file for the human-readable log summary.
@@ -113,18 +93,9 @@ export class LogScannerService extends DisposableObject {
     if (symbolsLocation !== undefined) {
       symbols = JSON.parse(await fs.readFile(symbolsLocation, { encoding: 'utf-8' }));
     }
-
     const problemReporter = new ProblemReporter(symbols);
 
-    const scanners = [...this.scannerProviders.values()].map(p => p.createScanner(problemReporter));
-
-    await readJsonlFile(jsonSummaryLocation, async obj => {
-      scanners.forEach(scanner => {
-        scanner.onEvent(obj);
-      });
-    });
-
-    scanners.forEach(scanner => scanner.onDone());
+    await this.scanners.scanLog(jsonSummaryLocation, problemReporter);
 
     return problemReporter.diagnostics;
   }

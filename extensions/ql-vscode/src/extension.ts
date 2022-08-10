@@ -488,7 +488,7 @@ async function activateWithInstalledDistribution(
   void logger.log('Initializing evaluation log scanners.');
   const logScannerService = new LogScannerService(qhm);
   ctx.subscriptions.push(logScannerService);
-  ctx.subscriptions.push(logScannerService.registerLogScannerProvider(new JoinOrderScannerProvider()));
+  ctx.subscriptions.push(logScannerService.scanners.registerLogScannerProvider(new JoinOrderScannerProvider()));
 
   void logger.log('Reading query history');
   await qhm.readQueryHistory();

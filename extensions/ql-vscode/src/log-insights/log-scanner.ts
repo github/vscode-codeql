@@ -1,4 +1,5 @@
 import { SummaryEvent } from './log-summary';
+import { readJsonlFile } from './jsonl-reader';
 
 /**
  * Callback interface used to report diagnostics from a log scanner.
@@ -46,4 +47,51 @@ export interface EvaluationLogScannerProvider {
    * @param problemReporter Callback interface for reporting any problems discovered.
    */
   createScanner(problemReporter: EvaluationLogProblemReporter): EvaluationLogScanner;
+}
+
+/**
+ * Same as VSCode's `Disposable`, but avoids a dependency on VS Code.
+ */
+export interface Disposable {
+  dispose(): void;
+}
+
+export class EvaluationLogScannerSet {
+  private readonly scannerProviders = new Map<number, EvaluationLogScannerProvider>();
+  private nextScannerProviderId = 0;
+
+  /**
+   * Register a provider that can create instances of `EvaluationLogScanner` to scan evaluation logs
+   * for problems.
+   * @param provider The provider.
+   * @returns A `Disposable` that, when disposed, will unregister the provider.
+   */
+  public registerLogScannerProvider(provider: EvaluationLogScannerProvider): Disposable {
+    const id = this.nextScannerProviderId;
+    this.nextScannerProviderId++;
+
+    this.scannerProviders.set(id, provider);
+    return {
+      dispose: () => {
+        this.scannerProviders.delete(id);
+      }
+    };
+  }
+
+  /**
+   * Scan the evaluator summary log for problems, using the scanners for all registered providers.
+   * @param jsonSummaryLocation The file path of the JSON summary log.
+   * @param problemReporter Callback interface for reporting any problems discovered.
+   */
+  public async scanLog(jsonSummaryLocation: string, problemReporter: EvaluationLogProblemReporter): Promise<void> {
+    const scanners = [...this.scannerProviders.values()].map(p => p.createScanner(problemReporter));
+
+    await readJsonlFile(jsonSummaryLocation, async obj => {
+      scanners.forEach(scanner => {
+        scanner.onEvent(obj);
+      });
+    });
+
+    scanners.forEach(scanner => scanner.onDone());
+  }
 }
