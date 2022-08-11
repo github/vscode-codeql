@@ -192,7 +192,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
   private reportProblemIfNecessary(event: SummaryEvent, iteration: number, metric: number): void {
     if (metric >= this.warningThreshold) {
       this.problemReporter.reportProblem(event.predicateName, event.raHash, iteration,
-        `Relation '${event.predicateName}' has an inefficient join order. Its join order metric is ${metric}, which is larger than the threshold of ${this.warningThreshold}.`);
+        `Relation '${event.predicateName}' has an inefficient join order. Its join order metric is ${metric.toFixed(2)}, which is larger than the threshold of ${this.warningThreshold.toFixed(2)}.`);
     }
   }
 

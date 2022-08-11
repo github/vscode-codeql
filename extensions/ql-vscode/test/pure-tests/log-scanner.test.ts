@@ -36,6 +36,6 @@ describe('log scanners', function() {
     expect(problemReporter.problems[0].predicateName).to.equal('#select#ff');
     expect(problemReporter.problems[0].raHash).to.equal('1bb43c97jpmuh8r2v0f9hktim63');
     expect(problemReporter.problems[0].iteration).to.equal(0);
-    expect(problemReporter.problems[0].message).to.equal('Relation \'#select#ff\' has an inefficient join order. Its join order metric is 4961.834409325194, which is larger than the threshold of 50.');
+    expect(problemReporter.problems[0].message).to.equal('Relation \'#select#ff\' has an inefficient join order. Its join order metric is 4961.83, which is larger than the threshold of 50.00.');
   });
 });
