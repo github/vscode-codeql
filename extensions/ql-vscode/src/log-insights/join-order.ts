@@ -248,7 +248,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
             const key = makeKey(
               event.queryCausingWork,
               predicate,
-              '(' + raReference + ')'
+              `(${raReference})`
             );
             const maxTupleCount = Math.max(...bucket.tupleCounts);
             const resultSize = bucket.resultSize;
