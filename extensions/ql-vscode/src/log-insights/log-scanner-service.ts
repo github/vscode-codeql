@@ -73,12 +73,14 @@ export class LogScannerService extends DisposableObject {
   ): Promise<void> {
     this.diagnosticCollection.clear();
 
-    if (query?.t !== 'local' || query.jsonEvalLogSummaryLocation === undefined) {
+    if ((query?.t !== 'local')
+      || (query.evalLogSummaryLocation === undefined)
+      || (query.jsonEvalLogSummaryLocation === undefined)) {
       return;
     }
 
     const diagnostics = await this.scanLog(query.jsonEvalLogSummaryLocation, query.evalLogSummarySymbolsLocation);
-    const uri = Uri.file(query.evalLogSummaryLocation!);
+    const uri = Uri.file(query.evalLogSummaryLocation);
     this.diagnosticCollection.set(uri, diagnostics);
   }
 
