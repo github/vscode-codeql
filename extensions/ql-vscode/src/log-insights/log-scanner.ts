@@ -15,6 +15,12 @@ export interface EvaluationLogProblemReporter {
    * @param message The problem message.
    */
   reportProblem(predicateName: string, raHash: string, iteration: number, message: string): void;
+
+  /**
+   * Log a message about a problem in the implementation of the scanner. These will typically be
+   * displayed separate from any problems reported via `reportProblem()`.
+   */
+  log(message: string): void;
 }
 
 /**

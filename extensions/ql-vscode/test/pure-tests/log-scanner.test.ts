@@ -22,6 +22,10 @@ class TestProblemReporter implements EvaluationLogProblemReporter {
       message
     });
   }
+
+  public log(message: string): void {
+    console.log(message);
+  }
 }
 
 describe('log scanners', function() {

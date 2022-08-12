@@ -5,6 +5,7 @@ import { QueryHistoryInfo } from '../query-results';
 import { EvaluationLogProblemReporter, EvaluationLogScannerSet } from './log-scanner';
 import { PipelineInfo, SummarySymbols } from './summary-parser';
 import * as fs from 'fs-extra';
+import { logger } from '../logging';
 
 /**
  * Compute the key used to find a predicate in the summary symbols.
@@ -38,6 +39,10 @@ class ProblemReporter implements EvaluationLogProblemReporter {
       const range = new Range(predicateInfo.raStartLine, 0, predicateInfo.raEndLine + 1, 0);
       this.diagnostics.push(new Diagnostic(range, message, DiagnosticSeverity.Error));
     }
+  }
+
+  public log(message: string): void {
+    void logger.log(message);
   }
 }
 

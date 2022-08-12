@@ -76,15 +76,15 @@ function getMainHash(event: InLayer | ComputeRecursive): string {
 /**
  * Sum arrays a and b element-wise. The shorter array is padded with 0s if the arrays are not the same length.
  */
-function pointwiseSum(a: Int32Array, b: Int32Array): Int32Array {
+function pointwiseSum(a: Int32Array, b: Int32Array, problemReporter: EvaluationLogProblemReporter): Int32Array {
   function reportIfInconsistent(ai: number, bi: number) {
     if (ai === -1 && bi !== -1) {
-      console.warn(
+      problemReporter.log(
         `Operation was not evaluated in the first pipeline, but it was evaluated in the accumulated pipeline (with tuple count ${bi}).`
       );
     }
     if (ai !== -1 && bi === -1) {
-      console.warn(
+      problemReporter.log(
         `Operation was evaluated in the first pipeline (with tuple count ${ai}), but it was not evaluated in the accumulated pipeline.`
       );
     }
@@ -436,7 +436,8 @@ class JoinOrderScanner implements EvaluationLogScanner {
       // Pointwise sum the tuple counts
       const newTupleCounts = pointwiseSum(
         bucket.tupleCounts,
-        new Int32Array(run.counts)
+        new Int32Array(run.counts),
+        this.problemReporter
       );
       const newResultSizes = bucket.resultSize + resultSizes!;
       // Pointwise sum the deltas.
