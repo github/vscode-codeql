@@ -74,7 +74,7 @@ function getMainHash(event: InLayer | ComputeRecursive): string {
 }
 
 /**
- * Sum arrays a and b element-wise, and pad with 0s if the arrays are not the same length.
+ * Sum arrays a and b element-wise. The shorter array is padded with 0s if the arrays are not the same length.
  */
 function pointwiseSum(a: Int32Array, b: Int32Array): Int32Array {
   function reportIfInconsistent(ai: number, bi: number) {
