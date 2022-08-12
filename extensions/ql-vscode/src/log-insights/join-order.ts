@@ -29,7 +29,7 @@ function makeKey(
   return `${queryCausingWork}:${predicate}${suffix ? ' ' + suffix : ''}`;
 }
 
-function getDependentPredicates(operations: string[]): I.List<string> {
+const DEPENDENT_PREDICATES_REGEXP = (() => {
   const regexps = [
     // SCAN id
     String.raw`SCAN\s+([0-9a-zA-Z:#_]+)\s`,
@@ -44,16 +44,23 @@ function getDependentPredicates(operations: string[]): I.List<string> {
     // SELECT id
     String.raw`SELECT\s+([0-9a-zA-Z:#_]+)`
   ];
-  const r = new RegExp(
+  return new RegExp(
     `${String.raw`\{[0-9]+\}\s+[0-9a-zA-Z]+\s=\s(?:` + regexps.join('|')})`
   );
+})();
+
+function getDependentPredicates(operations: string[]): I.List<string> {
   return I.List(operations).flatMap(operation => {
-    const matches = r.exec(operation.trim());
-    return I.List(matches!)
-      .rest() // Skip the first group as it's just the entire string
-      .filter(x => !x?.match('r[0-9]+|PRIMITIVE')) // Only keep the references to predicates.
-      .flatMap(x => x.split(',')) // Group 2 in the INVOKE HIGHER_ORDER RELATION case is a comma-separated list of identifiers.
-      .filter(x => !!x); // Remove empty strings
+    const matches = DEPENDENT_PREDICATES_REGEXP.exec(operation.trim());
+    if (matches !== null) {
+      return I.List(matches)
+        .rest() // Skip the first group as it's just the entire string
+        .filter(x => !!x && !x.match('r[0-9]+|PRIMITIVE')) // Only keep the references to predicates.
+        .flatMap(x => x.split(',')) // Group 2 in the INVOKE HIGHER_ORDER RELATION case is a comma-separated list of identifiers.
+        .filter(x => !!x); // Remove empty strings
+    } else {
+      return I.List();
+    }
   });
 }
 
