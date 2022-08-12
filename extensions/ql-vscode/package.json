@@ -1213,7 +1213,7 @@
     "glob-promise": "^5.0.0",
     "js-yaml": "^4.1.0",
     "minimist": "~1.2.6",
-    "nanoid": "^3.2.0",
+    "nanoid": "^4.0.0",
     "node-fetch": "~3.2.10",
     "path-browserify": "^1.0.1",
     "react": "^17.0.2",
