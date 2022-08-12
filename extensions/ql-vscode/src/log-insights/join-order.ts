@@ -237,8 +237,6 @@ class JoinOrderScanner implements EvaluationLogScanner {
 
       case 'COMPUTE_RECURSIVE': {
         // Compute the badness metric for a recursive predicate for each ordering.
-        // See https://github.com/github/codeql-coreql-team/issues/1289#issuecomment-1007237055 for
-        // the definition.
         const sccMetricInput = this.badnessInputsForRecursiveDelta(event);
         // Loop through each predicate in the SCC
         sccMetricInput.forEach((buckets, predicate) => {
@@ -398,8 +396,8 @@ class JoinOrderScanner implements EvaluationLogScanner {
       );
     }
 
-    const resultSizes = inLayerEvent.resultSize;
-    return { dependentPredicateSizes, resultSizes };
+    const deltaSize = inLayerEvent.deltaSizes[iteration];
+    return { dependentPredicateSizes, deltaSize };
   }
 
   /**
@@ -425,7 +423,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
         });
       }
 
-      const { resultSizes, dependentPredicateSizes } = this.badnessInputsForLayer(
+      const { dependentPredicateSizes, deltaSize } = this.badnessInputsForLayer(
         event,
         inLayerEvent,
         raReference,
@@ -439,7 +437,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
         new Int32Array(run.counts),
         this.problemReporter
       );
-      const newResultSizes = bucket.resultSize + resultSizes!;
+      const resultSize = bucket.resultSize + deltaSize;
       // Pointwise sum the deltas.
       const newDependentPredicateSizes = bucket.dependentPredicateSizes.mergeWith(
         (oldSize, newSize) => oldSize + newSize,
@@ -447,7 +445,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
       );
       orderTobucket.set(raReference, {
         tupleCounts: newTupleCounts,
-        resultSize: newResultSizes,
+        resultSize: resultSize,
         dependentPredicateSizes: newDependentPredicateSizes
       });
     });
