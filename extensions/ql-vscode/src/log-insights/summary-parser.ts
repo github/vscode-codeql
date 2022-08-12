@@ -75,9 +75,9 @@ async function generateSummarySymbols(summaryPath: string): Promise<SummarySymbo
       predicateName = nonRecursiveMatch.groups!.predicateName;
     } else {
       const recursiveMatch = startLine.match(RECURSIVE_TUPLE_COUNT_REGEXP);
-      if (recursiveMatch) {
-        predicateName = recursiveMatch.groups!.predicateName;
-        iteration = parseInt(recursiveMatch.groups!.iteration);
+      if (recursiveMatch?.groups) {
+        predicateName = recursiveMatch.groups.predicateName;
+        iteration = parseInt(recursiveMatch.groups.iteration);
       }
     }
 
@@ -92,21 +92,20 @@ async function generateSummarySymbols(summaryPath: string): Promise<SummarySymbo
         }
         lineNumber++;
       }
-      if (raEndLine === undefined) {
-        raEndLine = lineNumber - 1;
-      }
-      let symbol = symbols.predicates[predicateName];
-      if (symbol === undefined) {
-        symbol = {
-          iterations: {}
+      if (raEndLine !== undefined) {
+        let symbol = symbols.predicates[predicateName];
+        if (symbol === undefined) {
+          symbol = {
+            iterations: {}
+          };
+          symbols.predicates[predicateName] = symbol;
+        }
+        symbol.iterations[iteration] = {
+          startLine: lineNumber,
+          raStartLine: raStartLine,
+          raEndLine: raEndLine
         };
-        symbols.predicates[predicateName] = symbol;
       }
-      symbol.iterations[iteration] = {
-        startLine: lineNumber,
-        raStartLine: raStartLine,
-        raEndLine: raEndLine
-      };
     }
   }
 
