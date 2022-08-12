@@ -73,7 +73,7 @@ export class LogScannerService extends DisposableObject {
   ): Promise<void> {
     this.diagnosticCollection.clear();
 
-    if ((query === undefined) || (query.t !== 'local') || (query.jsonEvalLogSummaryLocation === undefined)) {
+    if (query?.t !== 'local' || query.jsonEvalLogSummaryLocation === undefined) {
       return;
     }
 
