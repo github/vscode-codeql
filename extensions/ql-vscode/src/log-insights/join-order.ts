@@ -51,7 +51,7 @@ function getDependentPredicates(operations: string[]): I.List<string> {
     const matches = r.exec(operation.trim());
     return I.List(matches!)
       .rest() // Skip the first group as it's just the entire string
-      .filter(x => !!x && !x.match('r[0-9]+|PRIMITIVE')) // Only keep the references to predicates.
+      .filter(x => !x?.match('r[0-9]+|PRIMITIVE')) // Only keep the references to predicates.
       .flatMap(x => x.split(',')) // Group 2 in the INVOKE HIGHER_ORDER RELATION case is a comma-separated list of identifiers.
       .filter(x => !!x); // Remove empty strings
   });
