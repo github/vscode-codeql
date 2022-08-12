@@ -320,7 +320,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
     event: ComputeSimple
   ): { maxTupleCount: number; maxDependentPredicateSize: number } {
     const dependentPredicateSizes = Object.values(event.dependencies).map(hash =>
-      this.predicateSizes.get(hash)!  // REVIEW: '!'
+      this.predicateSizes.get(hash) ?? 0  // Should always be present, but zero is a safe default.
     );
     const maxDependentPredicateSize = safeMax(dependentPredicateSizes);
     return {
@@ -339,7 +339,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
     // If an iteration isn't present in the map it means it was skipped because the optimizer
     // inferred that it was empty. So its size is 0.
     return (
-      this.layerEvents.get(event.raHash)!.find(x => x.predicateName === predicate)?.deltaSizes[i] || 0
+      this.layerEvents.get(event.raHash)?.find(x => x.predicateName === predicate)?.deltaSizes[i] ?? 0
     );
   }
 
