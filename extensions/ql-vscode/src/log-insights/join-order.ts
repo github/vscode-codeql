@@ -405,7 +405,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
   /**
    * Compute the metric input for all the events in a SCC that starts with main node `event`
    */
-  private badnessInputsForRecursiveDelta(event: ComputeRecursive) {
+  private badnessInputsForRecursiveDelta(event: ComputeRecursive): Map<string, Map<string, Bucket>> {
     // nameToOrderToBucket : predicate name -> ordering (i.e., standard, order_500000, etc.) -> bucket
     const nameToOrderToBucket = new Map<string, Map<string, Bucket>>();
 
