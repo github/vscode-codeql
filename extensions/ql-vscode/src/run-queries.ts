@@ -37,6 +37,7 @@ import { ensureMetadataIsComplete } from './query-results';
 import { SELECT_QUERY_NAME } from './contextual/locationFinder';
 import { DecodedBqrsChunk } from './pure/bqrs-cli-types';
 import { getErrorMessage } from './pure/helpers-pure';
+import { generateSummarySymbolsFile } from './log-insights/summary-parser';
 
 /**
  * run-queries.ts
@@ -105,6 +106,10 @@ export class QueryEvaluationInfo {
 
   get jsonEvalLogSummaryPath() {
     return qsClient.findJsonQueryEvalLogSummaryFile(this.querySaveDir);
+  }
+
+  get evalLogSummarySymbolsPath() {
+    return qsClient.findQueryEvalLogSummarySymbolsFile(this.querySaveDir);
   }
 
   get evalLogEndSummaryPath() {
@@ -206,6 +211,8 @@ export class QueryEvaluationInfo {
           if (config.isCanary()) { // Generate JSON summary for viewer.
             await qs.cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath);
             queryInfo.jsonEvalLogSummaryLocation = this.jsonEvalLogSummaryPath;
+            await generateSummarySymbolsFile(this.evalLogSummaryPath, this.evalLogSummarySymbolsPath);
+            queryInfo.evalLogSummarySymbolsLocation = this.evalLogSummarySymbolsPath;
           }
         } else {
           void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.evalLogPath}.`);
@@ -333,8 +340,8 @@ export class QueryEvaluationInfo {
   }
 
   /**
-   * Calls the appropriate CLI command to generate a human-readable log summary 
-   * and logs to the Query Server console and query log file. 
+   * Calls the appropriate CLI command to generate a human-readable log summary
+   * and logs to the Query Server console and query log file.
    */
   displayHumanReadableLogSummary(queryInfo: LocalQueryInfo, qs: qsClient.QueryServerClient): void {
     queryInfo.evalLogLocation = this.evalLogPath;

@@ -9,6 +9,7 @@ import {
   ProviderResult,
   Range,
   ThemeIcon,
+  TreeDataProvider,
   TreeItem,
   TreeView,
   Uri,
@@ -47,6 +48,7 @@ import { WebviewReveal } from './interface-utils';
 import { EvalLogViewer } from './eval-log-viewer';
 import EvalLogTreeBuilder from './eval-log-tree-builder';
 import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
+import { QueryWithResults } from './run-queries';
 
 /**
  * query-history.ts
@@ -114,13 +116,17 @@ const WORKSPACE_QUERY_HISTORY_FILE = 'workspace-query-history.json';
 /**
  * Tree data provider for the query history view.
  */
-export class HistoryTreeDataProvider extends DisposableObject {
+export class HistoryTreeDataProvider extends DisposableObject implements TreeDataProvider<QueryHistoryInfo> {
   private _sortOrder = SortOrder.DateAsc;
 
   private _onDidChangeTreeData = super.push(new EventEmitter<QueryHistoryInfo | undefined>());
 
   readonly onDidChangeTreeData: Event<QueryHistoryInfo | undefined> = this
     ._onDidChangeTreeData.event;
+
+  private _onDidChangeCurrentQueryItem = super.push(new EventEmitter<QueryHistoryInfo | undefined>());
+
+  public readonly onDidChangeCurrentQueryItem = this._onDidChangeCurrentQueryItem.event;
 
   private history: QueryHistoryInfo[] = [];
 
@@ -260,7 +266,10 @@ export class HistoryTreeDataProvider extends DisposableObject {
   }
 
   setCurrentItem(item?: QueryHistoryInfo) {
-    this.current = item;
+    if (item !== this.current) {
+      this.current = item;
+      this._onDidChangeCurrentQueryItem.fire(item);
+    }
   }
 
   remove(item: QueryHistoryInfo) {
@@ -286,7 +295,7 @@ export class HistoryTreeDataProvider extends DisposableObject {
 
   set allHistory(history: QueryHistoryInfo[]) {
     this.history = history;
-    this.current = history[0];
+    this.setCurrentItem(history[0]);
     this.refresh();
   }
 
@@ -312,6 +321,12 @@ export class QueryHistoryManager extends DisposableObject {
   compareWithItem: LocalQueryInfo | undefined;
   queryHistoryScrubber: Disposable | undefined;
   private queryMetadataStorageLocation;
+
+  private readonly _onDidChangeCurrentQueryItem = super.push(new EventEmitter<QueryHistoryInfo | undefined>());
+  readonly onDidChangeCurrentQueryItem = this._onDidChangeCurrentQueryItem.event;
+
+  private readonly _onDidCompleteQuery = super.push(new EventEmitter<LocalQueryInfo>());
+  readonly onDidCompleteQuery = this._onDidCompleteQuery.event;
 
   constructor(
     private readonly qs: QueryServerClient,
@@ -343,6 +358,11 @@ export class QueryHistoryManager extends DisposableObject {
     this.treeView = this.push(window.createTreeView('codeQLQueryHistory', {
       treeDataProvider: this.treeDataProvider,
       canSelectMany: true,
+    }));
+
+    // Forward any change of current history item from the tree data.
+    this.push(this.treeDataProvider.onDidChangeCurrentQueryItem((item) => {
+      this._onDidChangeCurrentQueryItem.fire(item);
     }));
 
     // Lazily update the tree view selection due to limitations of TreeView API (see
@@ -535,6 +555,11 @@ export class QueryHistoryManager extends DisposableObject {
 
     this.registerQueryHistoryScrubber(queryHistoryConfigListener, this, ctx);
     this.registerToRemoteQueriesEvents();
+  }
+
+  public completeQuery(info: LocalQueryInfo, results: QueryWithResults): void {
+    info.completeThisQuery(results);
+    this._onDidCompleteQuery.fire(info);
   }
 
   private getCredentials() {
@@ -926,7 +951,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     // Summary log file doesn't exist.
-    if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
+    if (finalSingleItem.evalLogLocation && await fs.pathExists(finalSingleItem.evalLogLocation)) {
       // If raw log does exist, then the summary log is still being generated.
       this.warnInProgressEvalLogSummary();
     } else {
@@ -950,15 +975,14 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    // TODO(angelapwen): Stream the file in. 
-    void fs.readFile(finalSingleItem.jsonEvalLogSummaryLocation, async (err, buffer) => {
-      if (err) {
-        throw new Error(`Could not read evaluator log summary JSON file to generate viewer data at ${finalSingleItem.jsonEvalLogSummaryLocation}.`);
-      }
-      const evalLogData: EvalLogData[] = parseViewerData(buffer.toString());
+    // TODO(angelapwen): Stream the file in.
+    try {
+      const evalLogData: EvalLogData[] = await parseViewerData(finalSingleItem.jsonEvalLogSummaryLocation);
       const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.getQueryName(), evalLogData);
       this.evalLogViewer.updateRoots(await evalLogTreeBuilder.getRoots());
-    });
+    } catch (e) {
+      throw new Error(`Could not read evaluator log summary JSON file to generate viewer data at ${finalSingleItem.jsonEvalLogSummaryLocation}.`);
+    }
   }
 
   async handleCancel(

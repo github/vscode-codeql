@@ -100,6 +100,8 @@ import { exportRemoteQueryResults } from './remote-queries/export-results';
 import { RemoteQuery } from './remote-queries/remote-query';
 import { EvalLogViewer } from './eval-log-viewer';
 import { SummaryLanguageSupport } from './log-insights/summary-language-support';
+import { JoinOrderScannerProvider } from './log-insights/join-order';
+import { LogScannerService } from './log-insights/log-scanner-service';
 
 /**
  * extension.ts
@@ -483,6 +485,11 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(qhm);
 
+  void logger.log('Initializing evaluation log scanners.');
+  const logScannerService = new LogScannerService(qhm);
+  ctx.subscriptions.push(logScannerService);
+  ctx.subscriptions.push(logScannerService.scanners.registerLogScannerProvider(new JoinOrderScannerProvider()));
+
   void logger.log('Reading query history');
   await qhm.readQueryHistory();
 
@@ -556,7 +563,7 @@ async function activateWithInstalledDistribution(
           undefined,
           item,
         );
-        item.completeThisQuery(completedQueryInfo);
+        qhm.completeQuery(item, completedQueryInfo);
         await showResultsForCompletedQuery(item as CompletedLocalQueryInfo, WebviewReveal.NotForced);
         // Note we must update the query history view after showing results as the
         // display and sorting might depend on the number of results

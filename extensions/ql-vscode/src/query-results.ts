@@ -218,6 +218,7 @@ export class LocalQueryInfo {
   public evalLogLocation: string | undefined;
   public evalLogSummaryLocation: string | undefined;
   public jsonEvalLogSummaryLocation: string | undefined;
+  public evalLogSummarySymbolsLocation: string | undefined;
 
   /**
    * Note that in the {@link slurpQueryHistory} method, we create a FullQueryInfo instance
@@ -282,7 +283,7 @@ export class LocalQueryInfo {
     return !!this.completedQuery;
   }
 
-  completeThisQuery(info: QueryWithResults) {
+  completeThisQuery(info: QueryWithResults): void {
     this.completedQuery = new CompletedQueryInfo(info);
 
     // dispose of the cancellation token source and also ensure the source is not serialized as JSON
