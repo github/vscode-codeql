@@ -138,7 +138,7 @@ function generateMarkdownForCodeSnippet(
   const codeLines = codeSnippet.text
     .split('\n')
     .map((line, index) =>
-      highlightCodeLines(line, index + snippetStartLine, highlightedRegion)
+      highlightAndEscapeCodeLines(line, index + snippetStartLine, highlightedRegion)
     );
 
   // Make sure there are no extra newlines before or after the <code> block:
@@ -153,20 +153,25 @@ function generateMarkdownForCodeSnippet(
   return lines;
 }
 
-function highlightCodeLines(
+function highlightAndEscapeCodeLines(
   line: string,
   lineNumber: number,
   highlightedRegion?: HighlightedRegion
 ): string {
   if (!highlightedRegion || !shouldHighlightLine(lineNumber, highlightedRegion)) {
-    return line;
+    return escapeHtmlCharacters(line);
   }
   const partiallyHighlightedLine = parseHighlightedLine(
     line,
     lineNumber,
     highlightedRegion
   );
-  return `${partiallyHighlightedLine.plainSection1}<strong>${partiallyHighlightedLine.highlightedSection}</strong>${partiallyHighlightedLine.plainSection2}`;
+
+  const plainSection1 = escapeHtmlCharacters(partiallyHighlightedLine.plainSection1);
+  const highlightedSection = escapeHtmlCharacters(partiallyHighlightedLine.highlightedSection);
+  const plainSection2 = escapeHtmlCharacters(partiallyHighlightedLine.plainSection2);
+
+  return `${plainSection1}<strong>${highlightedSection}</strong>${plainSection2}`;
 }
 
 function generateMarkdownForAlertMessage(
@@ -329,4 +334,11 @@ function createRelativeLink(fileName: string, linkType: MarkdownLinkType): strin
 function createFileName(nwo: string) {
   const [owner, repo] = nwo.split('/');
   return `${owner}-${repo}`;
+}
+
+/**
+ * Escape characters that could be interpreted as HTML instead of raw code.
+ */
+function escapeHtmlCharacters(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
