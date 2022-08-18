@@ -243,15 +243,16 @@ describe('telemetry reporting', function() {
     });
   });
 
-  it('should request permission if popup has never been seen before', async () => {
+  it('should request permission if popup has never been seen before', async function() {
+    this.timeout(3000);
     sandbox.stub(window, 'showInformationMessage').resolvesArg(3 /* "yes" item */);
     await ctx.globalState.update('telemetry-request-viewed', false);
     await enableTelemetry('codeQL.telemetry', false);
 
     await telemetryListener.initialize();
 
-    // Wait 50 ms for user's selection to propagate in settings.
-    await wait(50);
+    // Wait for user's selection to propagate in settings.
+    await wait(500);
 
     // Dialog opened, user clicks "yes" and telemetry enabled
     expect(window.showInformationMessage).to.have.been.calledOnce;
