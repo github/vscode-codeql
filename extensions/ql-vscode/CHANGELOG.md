@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Add ability for users to download databases directly from GitHub. [#1466](https://github.com/github/vscode-codeql/pull/1466)
+
 ## 1.6.10 - 9 August 2022
 
 No user facing changes.
