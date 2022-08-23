@@ -564,6 +564,11 @@ repository:
       keyword: 'query'
     name: storage.modifier.query.ql
 
+  signature:
+    match:
+      keyword: 'signature'
+    name: storage.modifier.signature.ql
+
   transient:
     match:
       keyword: 'transient'
@@ -583,7 +588,13 @@ repository:
     - include: '#pragma'
     - include: '#private'
     - include: '#query'
+    - include: '#signature'
     - include: '#transient'
+
+  implements:
+    match:
+      keyword: 'implements'
+    name: keyword.other.implements.ql
 
   # A QL comment, regardless of form.
   comment:
@@ -668,6 +679,19 @@ repository:
     - match: '(?#simple-id)'
       name: entity.name.type.namespace.ql
 
+  # The `extends` clause of a class definition.
+  implements-clause:
+    beginPattern: '#implements'
+    # Ends at the first `{`.
+    # REVIEW: This could be any token not allowed in a type.
+    end: '(?= \{ )'
+    name: meta.block.implements-clause.ql
+    patterns:
+    - include: '#non-context-sensitive'
+    - match: '(?#simple-id)|(?#at-lower-id)'
+      name: entity.name.type.ql
+
+
   # A `module` declaration, whether a module definition or an alias declaration.
   module-declaration:
     # Starts with the `module` keyword.
@@ -677,6 +701,7 @@ repository:
     name: meta.block.module-declaration.ql
     patterns:
     - include: '#module-body'
+    - include: '#implements-clause'
     - include: '#non-context-sensitive'
       # Any simple-id within a module head is part of a module name.
     - match: '(?#simple-id)'
