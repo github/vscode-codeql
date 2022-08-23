@@ -1018,19 +1018,16 @@ async function activateWithInstalledDistribution(
     }
   };
 
-  // The "authenticateToGitHub" command is internal-only.
   ctx.subscriptions.push(
     commandRunner('codeQL.authenticateToGitHub', async () => {
-      if (isCanary()) {
-        /**
-         * Credentials for authenticating to GitHub.
-         * These are used when making API calls.
-         */
-        const credentials = await Credentials.initialize(ctx);
-        const octokit = await credentials.getOctokit();
-        const userInfo = await octokit.users.getAuthenticated();
-        void showAndLogInformationMessage(`Authenticated to GitHub as user: ${userInfo.data.login}`);
-      }
+      /**
+       * Credentials for authenticating to GitHub.
+       * These are used when making API calls.
+       */
+      const credentials = await Credentials.initialize(ctx);
+      const octokit = await credentials.getOctokit();
+      const userInfo = await octokit.users.getAuthenticated();
+      void showAndLogInformationMessage(`Authenticated to GitHub as user: ${userInfo.data.login}`);
     }));
 
   ctx.subscriptions.push(
