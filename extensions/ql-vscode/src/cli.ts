@@ -168,7 +168,7 @@ export class CodeQLCliServer implements Disposable {
   nullBuffer: Buffer;
 
   /** Version of current cli, lazily computed by the `getVersion()` method */
-  private _version: SemVer | undefined;
+  private _version: Promise<SemVer> | undefined;
 
   /**
    * The languages supported by the current version of the CLI, computed by `getSupportedLanguages()`.
@@ -985,13 +985,13 @@ export class CodeQLCliServer implements Disposable {
 
   public async getVersion() {
     if (!this._version) {
-      this._version = await this.refreshVersion();
+      this._version = this.refreshVersion();
       // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
       await commands.executeCommand(
         'setContext', 'codeql.supportsEvalLog', await this.cliConstraints.supportsPerQueryEvalLog()
       );
     }
-    return this._version;
+    return await this._version;
   }
 
   private async refreshVersion() {
