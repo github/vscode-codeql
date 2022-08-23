@@ -679,7 +679,7 @@ repository:
     - match: '(?#simple-id)'
       name: entity.name.type.namespace.ql
 
-  # The `extends` clause of a class definition.
+  # The `implements` clause of a module definition.
   implements-clause:
     beginPattern: '#implements'
     # Ends at the first `{`.
