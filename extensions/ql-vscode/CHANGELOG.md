@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Add ability for users to download databases directly from GitHub. [#1466](https://github.com/github/vscode-codeql/pull/1466)
 - Remove ability to download databases from LGTM. [#1467](https://github.com/github/vscode-codeql/pull/1467)
 
 ## 1.6.10 - 9 August 2022
