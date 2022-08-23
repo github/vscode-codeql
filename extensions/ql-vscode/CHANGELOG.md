@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Remove ability to download databases from LGTM. [#1467](https://github.com/github/vscode-codeql/pull/1467)
+
 ## 1.6.10 - 9 August 2022
 
 No user facing changes.
