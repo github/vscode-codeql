@@ -1196,7 +1196,7 @@
     "@primer/octicons-react": "^16.3.0",
     "@primer/react": "^35.0.0",
     "@vscode/codicons": "^0.0.31",
-    "@vscode/webview-ui-toolkit": "^1.0.0",
+    "@vscode/webview-ui-toolkit": "^1.0.1",
     "child-process-promise": "^2.2.1",
     "classnames": "~2.2.6",
     "d3": "^6.3.1",
