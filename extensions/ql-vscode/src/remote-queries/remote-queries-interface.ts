@@ -125,6 +125,7 @@ export class RemoteQueriesInterfaceManager {
         () => {
           this.panel = undefined;
           this.currentQueryId = undefined;
+          this.panelLoaded = false;
         },
         null,
         ctx.subscriptions
