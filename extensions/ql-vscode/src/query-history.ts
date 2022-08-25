@@ -26,7 +26,6 @@ import {
 } from './helpers';
 import { logger } from './logging';
 import { URLSearchParams } from 'url';
-import { QueryServerClient } from './queryserver-client';
 import { DisposableObject } from './pure/disposable-object';
 import { commandRunner } from './commandRunner';
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
@@ -48,7 +47,8 @@ import { WebviewReveal } from './interface-utils';
 import { EvalLogViewer } from './eval-log-viewer';
 import EvalLogTreeBuilder from './eval-log-tree-builder';
 import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
-import { QueryWithResults } from './run-queries';
+import { QueryWithResults } from './run-queries-shared';
+import { QueryRunner } from './queryRunner';
 
 /**
  * query-history.ts
@@ -329,7 +329,7 @@ export class QueryHistoryManager extends DisposableObject {
   readonly onDidCompleteQuery = this._onDidCompleteQuery.event;
 
   constructor(
-    private readonly qs: QueryServerClient,
+    private readonly qs: QueryRunner,
     private readonly dbm: DatabaseManager,
     private readonly localQueriesInterfaceManager: InterfaceManager,
     private readonly remoteQueriesManager: RemoteQueriesManager,
@@ -791,7 +791,7 @@ export class QueryHistoryManager extends DisposableObject {
         throw new Error('Please select a local query.');
       }
 
-      if (!finalSingleItem.completedQuery?.didRunSuccessfully) {
+      if (!finalSingleItem.completedQuery?.sucessful) {
         throw new Error('Please select a query that has completed successfully.');
       }
 
@@ -1072,7 +1072,7 @@ export class QueryHistoryManager extends DisposableObject {
       void this.tryOpenExternalFile(query.csvPath);
       return;
     }
-    if (await query.exportCsvResults(this.qs, query.csvPath)) {
+    if (await query.exportCsvResults(this.qs.cliServer, query.csvPath)) {
       void this.tryOpenExternalFile(
         query.csvPath
       );
@@ -1091,7 +1091,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     await this.tryOpenExternalFile(
-      await finalSingleItem.completedQuery.query.ensureCsvAlerts(this.qs, this.dbm)
+      await finalSingleItem.completedQuery.query.ensureCsvAlerts(this.qs.cliServer, this.dbm)
     );
   }
 
@@ -1107,7 +1107,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     await this.tryOpenExternalFile(
-      await finalSingleItem.completedQuery.query.ensureDilPath(this.qs)
+      await finalSingleItem.completedQuery.query.ensureDilPath(this.qs.cliServer)
     );
   }
 
@@ -1232,7 +1232,7 @@ the file in the file explorer and dragging it into the workspace.`
       if (!otherQuery.completedQuery) {
         throw new Error('Please select a completed query.');
       }
-      if (!otherQuery.completedQuery.didRunSuccessfully) {
+      if (!otherQuery.completedQuery.sucessful) {
         throw new Error('Please select a successful query.');
       }
       if (otherQuery.initialInfo.databaseInfo.name !== dbName) {
@@ -1252,7 +1252,7 @@ the file in the file explorer and dragging it into the workspace.`
           otherQuery !== singleItem &&
           otherQuery.t === 'local' &&
           otherQuery.completedQuery &&
-          otherQuery.completedQuery.didRunSuccessfully &&
+          otherQuery.completedQuery.sucessful &&
           otherQuery.initialInfo.databaseInfo.name === dbName
       )
       .map((item) => ({

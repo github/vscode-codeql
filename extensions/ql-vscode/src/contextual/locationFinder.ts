@@ -3,13 +3,12 @@ import { ColumnKindCode, EntityValue, getResultSetSchema, ResultSetSchema } from
 import { CodeQLCliServer } from '../cli';
 import { DatabaseManager, DatabaseItem } from '../databases';
 import fileRangeFromURI from './fileRangeFromURI';
-import * as messages from '../pure/messages';
-import { QueryServerClient } from '../queryserver-client';
-import { QueryWithResults, compileAndRunQueryAgainstDatabase, createInitialQueryInfo } from '../run-queries';
 import { ProgressCallback } from '../commandRunner';
 import { KeyType } from './keyType';
 import { qlpackOfDatabase, resolveQueries } from './queryResolver';
 import { CancellationToken, LocationLink, Uri } from 'vscode';
+import { createInitialQueryInfo, QueryWithResults } from '../run-queries-shared';
+import { QueryRunner } from '../queryRunner';
 
 export const SELECT_QUERY_NAME = '#select';
 export const TEMPLATE_NAME = 'selectedSourceFile';
@@ -35,7 +34,7 @@ export interface FullLocationLink extends LocationLink {
  */
 export async function getLocationsForUriString(
   cli: CodeQLCliServer,
-  qs: QueryServerClient,
+  qs: QueryRunner,
   dbm: DatabaseManager,
   uriString: string,
   keyType: KeyType,
@@ -65,19 +64,8 @@ export async function getLocationsForUriString(
       },
       false
     );
-
-    const results = await compileAndRunQueryAgainstDatabase(
-      cli,
-      qs,
-      db,
-      initialInfo,
-      queryStorageDir,
-      progress,
-      token,
-      templates
-    );
-
-    if (results.result.resultType == messages.QueryResultType.SUCCESS) {
+    const results = await qs.compileAndRunQueryAgainstDatabase(db, initialInfo, queryStorageDir, progress, token, templates);
+    if (results.sucessful) {
       links.push(...await getLinksFromResults(results, cli, db, filter));
     }
   }
@@ -114,15 +102,9 @@ async function getLinksFromResults(
   return localLinks;
 }
 
-function createTemplates(path: string): messages.TemplateDefinitions {
+function createTemplates(path: string): Record<string, string> {
   return {
-    [TEMPLATE_NAME]: {
-      values: {
-        tuples: [[{
-          stringValue: path
-        }]]
-      }
-    }
+    [TEMPLATE_NAME]: path
   };
 }
 

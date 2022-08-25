@@ -29,10 +29,9 @@ import {
   RawResultsSortState,
 } from './pure/interface-types';
 import { Logger } from './logging';
-import * as messages from './pure/messages';
 import { commandRunner } from './commandRunner';
 import { CompletedQueryInfo, interpretResultsSarif, interpretGraphResults } from './query-results';
-import { QueryEvaluationInfo } from './run-queries';
+import { QueryEvaluationInfo } from './run-queries-shared';
 import { parseSarifLocation, parseSarifPlainTextMessage } from './pure/sarif-utils';
 import {
   WebviewReveal,
@@ -327,7 +326,7 @@ export class InterfaceManager extends AbstractInterfaceManager<IntoResultsViewMs
     forceReveal: WebviewReveal,
     shouldKeepOldResultsWhileRendering = false
   ): Promise<void> {
-    if (fullQuery.completedQuery.result.resultType !== messages.QueryResultType.SUCCESS) {
+    if (!fullQuery.completedQuery.sucessful) {
       return;
     }
 
