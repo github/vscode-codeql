@@ -16,9 +16,6 @@ import { CodeQLCliServer } from '../cli';
 import { DatabaseManager } from '../databases';
 import { CachedOperation } from '../helpers';
 import { ProgressCallback, withProgress } from '../commandRunner';
-import * as messages from '../pure/messages';
-import { QueryServerClient } from '../queryserver-client';
-import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo, QueryWithResults } from '../run-queries';
 import AstBuilder from './astBuilder';
 import {
   KeyType,
@@ -26,6 +23,8 @@ import {
 import { FullLocationLink, getLocationsForUriString, TEMPLATE_NAME } from './locationFinder';
 import { qlpackOfDatabase, resolveQueries } from './queryResolver';
 import { isCanary, NO_CACHE_AST_VIEWER } from '../config';
+import { createInitialQueryInfo, QueryWithResults } from '../run-queries-shared';
+import { QueryRunner } from '../queryRunner';
 
 /**
  * Run templated CodeQL queries to find definitions and references in
@@ -39,7 +38,7 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
 
   constructor(
     private cli: CodeQLCliServer,
-    private qs: QueryServerClient,
+    private qs: QueryRunner,
     private dbm: DatabaseManager,
     private queryStorageDir: string,
   ) {
@@ -83,7 +82,7 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
 
   constructor(
     private cli: CodeQLCliServer,
-    private qs: QueryServerClient,
+    private qs: QueryRunner,
     private dbm: DatabaseManager,
     private queryStorageDir: string,
   ) {
@@ -137,7 +136,7 @@ export class TemplatePrintAstProvider {
 
   constructor(
     private cli: CodeQLCliServer,
-    private qs: QueryServerClient,
+    private qs: QueryRunner,
     private dbm: DatabaseManager,
     private queryStorageDir: string,
   ) {
@@ -195,14 +194,9 @@ export class TemplatePrintAstProvider {
     }
 
     const query = queries[0];
-    const templates: messages.TemplateDefinitions = {
-      [TEMPLATE_NAME]: {
-        values: {
-          tuples: [[{
-            stringValue: zippedArchive.pathWithinSourceArchive
-          }]]
-        }
-      }
+    const templates: Record<string, string> = {
+      [TEMPLATE_NAME]:
+        zippedArchive.pathWithinSourceArchive
     };
 
     const initialInfo = await createInitialQueryInfo(
@@ -215,9 +209,7 @@ export class TemplatePrintAstProvider {
     );
 
     return {
-      query: await compileAndRunQueryAgainstDatabase(
-        this.cli,
-        this.qs,
+      query: await this.qs.compileAndRunQueryAgainstDatabase(
         db,
         initialInfo,
         this.queryStorageDir,
@@ -231,23 +223,23 @@ export class TemplatePrintAstProvider {
 }
 
 export class TemplatePrintCfgProvider {
-  private cache: CachedOperation<[Uri, messages.TemplateDefinitions] | undefined>;
+  private cache: CachedOperation<[Uri, Record<string, string>] | undefined>;
 
   constructor(
     private cli: CodeQLCliServer,
     private dbm: DatabaseManager,
   ) {
-    this.cache = new CachedOperation<[Uri, messages.TemplateDefinitions] | undefined>(this.getCfgUri.bind(this));
+    this.cache = new CachedOperation<[Uri, Record<string, string>] | undefined>(this.getCfgUri.bind(this));
   }
 
-  async provideCfgUri(document?: TextDocument): Promise<[Uri, messages.TemplateDefinitions] | undefined> {
+  async provideCfgUri(document?: TextDocument): Promise<[Uri, Record<string, string>] | undefined> {
     if (!document) {
       return;
     }
     return await this.cache.get(document.uri.toString());
   }
 
-  private async getCfgUri(uriString: string): Promise<[Uri, messages.TemplateDefinitions]> {
+  private async getCfgUri(uriString: string): Promise<[Uri, Record<string, string>]> {
     const uri = Uri.parse(uriString, true);
     if (uri.scheme !== zipArchiveScheme) {
       throw new Error('CFG Viewing is only available for databases with zipped source archives.');
@@ -275,14 +267,8 @@ export class TemplatePrintCfgProvider {
 
     const queryUri = Uri.file(queries[0]);
 
-    const templates: messages.TemplateDefinitions = {
-      [TEMPLATE_NAME]: {
-        values: {
-          tuples: [[{
-            stringValue: zippedArchive.pathWithinSourceArchive
-          }]]
-        }
-      }
+    const templates: Record<string, string> = {
+      [TEMPLATE_NAME]: zippedArchive.pathWithinSourceArchive
     };
 
     return [queryUri, templates];
