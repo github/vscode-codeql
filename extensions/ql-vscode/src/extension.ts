@@ -70,12 +70,11 @@ import { asError, assertNever, getErrorMessage } from './pure/helpers-pure';
 import { spawnIdeServer } from './ide-server';
 import { InterfaceManager } from './interface';
 import { WebviewReveal } from './interface-utils';
-import { ideServerLogger, logger, queryServerLogger } from './logging';
+import { ideServerLogger, logger, ProgressReporter, queryServerLogger } from './logging';
 import { QueryHistoryManager } from './query-history';
 import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
-import * as qsClient from './queryserver-client';
+import * as qsClient from './legacy-query-server/queryserver-client';
 import { displayQuickQuery } from './quick-query';
-import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo } from './run-queries';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
 import { CompareInterfaceManager } from './compare/compare-interface';
@@ -102,6 +101,9 @@ import { EvalLogViewer } from './eval-log-viewer';
 import { SummaryLanguageSupport } from './log-insights/summary-language-support';
 import { JoinOrderScannerProvider } from './log-insights/join-order';
 import { LogScannerService } from './log-insights/log-scanner-service';
+import { createInitialQueryInfo } from './run-queries-shared';
+import { LegacyQueryRunner } from './legacy-query-server/legacyRunner';
+import { QueryRunner } from './queryRunner';
 
 /**
  * extension.ts
@@ -164,7 +166,7 @@ function registerErrorStubs(excludedCommands: string[], stubGenerator: (command:
 export interface CodeQLExtensionInterface {
   readonly ctx: ExtensionContext;
   readonly cliServer: CodeQLCliServer;
-  readonly qs: qsClient.QueryServerClient;
+  readonly qs: QueryRunner;
   readonly distributionManager: DistributionManager;
   readonly databaseManager: DatabaseManager;
   readonly databaseUI: DatabaseUI;
@@ -416,21 +418,7 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(statusBar);
 
   void logger.log('Initializing query server client.');
-  const qs = new qsClient.QueryServerClient(
-    qlConfigurationListener,
-    cliServer,
-    {
-      logger: queryServerLogger,
-      contextStoragePath: getContextStoragePath(ctx),
-    },
-    (task) =>
-      Window.withProgress(
-        { title: 'CodeQL query server', location: ProgressLocation.Window },
-        task
-      )
-  );
-  ctx.subscriptions.push(qs);
-  await qs.startQueryServer();
+  const qs = await createQueryServer(qlConfigurationListener, cliServer, ctx);
 
   void logger.log('Initializing database manager.');
   const dbm = new DatabaseManager(ctx, qs, cliServer, logger);
@@ -552,9 +540,7 @@ async function activateWithInstalledDistribution(
       const item = new LocalQueryInfo(initialInfo, source);
       qhm.addQuery(item);
       try {
-        const completedQueryInfo = await compileAndRunQueryAgainstDatabase(
-          cliServer,
-          qs,
+        const completedQueryInfo = await qs.compileAndRunQueryAgainstDatabase(
           databaseItem,
           initialInfo,
           queryStorageDir,
@@ -788,6 +774,7 @@ async function activateWithInstalledDistribution(
           // requests for each query to run.
           // Only do it if running multiple queries since this check is
           // performed on each query run anyway.
+          // Don't do this with non destructive upgrades as the user won't see anything anyway.
           await databaseUI.tryUpgradeCurrentDatabase(progress, token);
         }
 
@@ -1137,6 +1124,26 @@ async function activateWithInstalledDistribution(
       ctx.subscriptions.forEach(d => d.dispose());
     }
   };
+}
+
+async function createQueryServer(qlConfigurationListener: QueryServerConfigListener, cliServer: CodeQLCliServer, ctx: ExtensionContext): Promise<QueryRunner> {
+  const qsOpts = {
+    logger: queryServerLogger,
+    contextStoragePath: getContextStoragePath(ctx),
+  };
+  const progressCallback = (task: (progress: ProgressReporter, token: CancellationToken) => Thenable<void>) => Window.withProgress(
+    { title: 'CodeQL query server', location: ProgressLocation.Window },
+    task
+  );
+  const qs = new qsClient.QueryServerClient(
+    qlConfigurationListener,
+    cliServer,
+    qsOpts,
+    progressCallback
+  );
+  ctx.subscriptions.push(qs);
+  await qs.startQueryServer();
+  return new LegacyQueryRunner(qs);
 }
 
 function getContextStoragePath(ctx: ExtensionContext) {

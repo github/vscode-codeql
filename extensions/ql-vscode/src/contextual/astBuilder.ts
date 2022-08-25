@@ -1,10 +1,10 @@
-import { QueryWithResults } from '../run-queries';
 import { CodeQLCliServer } from '../cli';
 import { DecodedBqrsChunk, BqrsId, EntityValue } from '../pure/bqrs-cli-types';
 import { DatabaseItem } from '../databases';
 import { ChildAstItem, AstItem } from '../astViewer';
 import fileRangeFromURI from './fileRangeFromURI';
 import { Uri } from 'vscode';
+import { QueryWithResults } from '../run-queries-shared';
 
 /**
  * A class that wraps a tree of QL results from a query that

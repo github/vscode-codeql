@@ -10,12 +10,11 @@ import { DatabaseItem, DatabaseManager } from '../../databases';
 import { CodeQLExtensionInterface } from '../../extension';
 import { cleanDatabases, dbLoc, storagePath } from './global.helper';
 import { importArchiveDatabase } from '../../databaseFetcher';
-import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo } from '../../run-queries';
 import { CodeQLCliServer } from '../../cli';
-import { QueryServerClient } from '../../queryserver-client';
 import { skipIfNoCodeQL } from '../ensureCli';
-import { QueryResultType } from '../../pure/messages';
 import { tmpDir } from '../../helpers';
+import { createInitialQueryInfo } from '../../run-queries-shared';
+import { QueryRunner } from '../../queryRunner';
 
 
 /**
@@ -31,7 +30,7 @@ describe('Queries', function() {
   let dbItem: DatabaseItem;
   let databaseManager: DatabaseManager;
   let cli: CodeQLCliServer;
-  let qs: QueryServerClient;
+  let qs: QueryRunner;
   let sandbox: sinon.SinonSandbox;
   let progress: sinon.SinonSpy;
   let token: CancellationToken;
@@ -104,9 +103,7 @@ describe('Queries', function() {
   it('should run a query', async () => {
     try {
       const queryPath = path.join(__dirname, 'data', 'simple-query.ql');
-      const result = await compileAndRunQueryAgainstDatabase(
-        cli,
-        qs,
+      const result = qs.compileAndRunQueryAgainstDatabase(
         dbItem,
         await mockInitialQueryInfo(queryPath),
         path.join(tmpDir.name, 'mock-storage-path'),
@@ -115,7 +112,7 @@ describe('Queries', function() {
       );
 
       // just check that the query was successful
-      expect(result.result.resultType).to.eq(QueryResultType.SUCCESS);
+      expect((await result).sucessful).to.eq(true);
     } catch (e) {
       console.error('Test Failed');
       fail(e as Error);
@@ -127,9 +124,7 @@ describe('Queries', function() {
     try {
       await commands.executeCommand('codeQL.restartQueryServer');
       const queryPath = path.join(__dirname, 'data', 'simple-query.ql');
-      const result = await compileAndRunQueryAgainstDatabase(
-        cli,
-        qs,
+      const result = await qs.compileAndRunQueryAgainstDatabase(
         dbItem,
         await mockInitialQueryInfo(queryPath),
         path.join(tmpDir.name, 'mock-storage-path'),
@@ -137,9 +132,7 @@ describe('Queries', function() {
         token
       );
 
-      // this message would indicate that the databases were not properly reregistered
-      expect(result.result.message).not.to.eq('No result from server');
-      expect(result.result.resultType).to.eq(QueryResultType.SUCCESS);
+      expect(result.sucessful).to.eq(true);
     } catch (e) {
       console.error('Test Failed');
       fail(e as Error);
