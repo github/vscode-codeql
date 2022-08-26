@@ -1,11 +1,11 @@
 import * as React from 'react';
 
 import { SetComparisonsMessage } from '../../pure/interface-types';
-import RawTableHeader from '../../view/RawTableHeader';
-import { className } from '../../view/result-table-utils';
+import RawTableHeader from '../results/RawTableHeader';
+import { className } from '../results/result-table-utils';
 import { ResultRow } from '../../pure/bqrs-cli-types';
-import RawTableRow from '../../view/RawTableRow';
-import { vscode } from '../../view/vscode-api';
+import RawTableRow from '../results/RawTableRow';
+import { vscode } from '../vscode-api';
 
 interface Props {
   comparison: SetComparisonsMessage;

@@ -4,6 +4,7 @@ import {
   Uri,
   Location,
   Range,
+  ExtensionContext,
   WebviewPanel,
   Webview,
   workspace,
@@ -116,11 +117,38 @@ export function tryResolveLocation(
  * Uses a content security policy that only loads the given script.
  */
 export function getHtmlForWebview(
+  ctx: ExtensionContext,
   webview: Webview,
-  scriptUriOnDisk: Uri,
-  stylesheetUrisOnDisk: Uri[],
-  allowInlineStyles: boolean
+  view: 'results' | 'compare' | 'remote-queries',
+  {
+    allowInlineStyles,
+    includeCodicons
+  }: {
+    allowInlineStyles?: boolean;
+    includeCodicons?: boolean;
+  } = {
+      allowInlineStyles: false,
+      includeCodicons: false
+    }
 ): string {
+  const scriptUriOnDisk = Uri.file(
+    ctx.asAbsolutePath('out/webview.js')
+  );
+
+  const stylesheetUrisOnDisk = [
+    Uri.file(ctx.asAbsolutePath('out/webview.css'))
+  ];
+
+  if (includeCodicons) {
+    // Allows use of the VS Code "codicons" icon set.
+    // See https://github.com/microsoft/vscode-codicons
+    const codiconsPathOnDisk = Uri.file(
+      ctx.asAbsolutePath('node_modules/@vscode/codicons/dist/codicon.css')
+    );
+
+    stylesheetUrisOnDisk.push(codiconsPathOnDisk);
+  }
+
   // Convert the on-disk URIs into webview URIs.
   const scriptWebviewUri = webview.asWebviewUri(scriptUriOnDisk);
   const stylesheetWebviewUris = stylesheetUrisOnDisk.map(stylesheetUriOnDisk =>
@@ -155,7 +183,7 @@ export function getHtmlForWebview(
         ${stylesheetsHtmlLines.join(`    ${os.EOL}`)}
   </head>
   <body>
-    <div id=root>
+    <div id=root data-view="${view}">
     </div>
       <script nonce="${nonce}" src="${scriptWebviewUri}">
     </script>

@@ -129,19 +129,10 @@ export class CompareInterfaceManager extends DisposableObject {
         ctx.subscriptions
       ));
 
-      const scriptPathOnDisk = Uri.file(
-        ctx.asAbsolutePath('out/compareView.js')
-      );
-
-      const stylesheetPathOnDisk = Uri.file(
-        ctx.asAbsolutePath('out/view/resultsView.css')
-      );
-
       panel.webview.html = getHtmlForWebview(
+        ctx,
         panel.webview,
-        scriptPathOnDisk,
-        [stylesheetPathOnDisk],
-        false
+        'compare'
       );
       this.push(panel.webview.onDidReceiveMessage(
         async (e) => this.handleMsgFromView(e),

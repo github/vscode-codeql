@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { ResultTableProps, className, emptyQueryResultsMessage } from './result-table-utils';
-import { RAW_RESULTS_LIMIT, RawResultsSortState } from '../pure/interface-types';
-import { RawTableResultSet } from '../pure/interface-types';
+import { RAW_RESULTS_LIMIT, RawResultsSortState } from '../../pure/interface-types';
+import { RawTableResultSet } from '../../pure/interface-types';
 import RawTableHeader from './RawTableHeader';
 import RawTableRow from './RawTableRow';
-import { ResultRow } from '../pure/bqrs-cli-types';
+import { ResultRow } from '../../pure/bqrs-cli-types';
 
 export type RawTableProps = ResultTableProps & {
   resultSet: RawTableResultSet;

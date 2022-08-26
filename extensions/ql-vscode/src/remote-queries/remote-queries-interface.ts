@@ -131,29 +131,14 @@ export class RemoteQueriesInterfaceManager {
         ctx.subscriptions
       );
 
-      const scriptPathOnDisk = Uri.file(
-        ctx.asAbsolutePath('out/remoteQueriesView.js')
-      );
-
-      const baseStylesheetUriOnDisk = Uri.file(
-        ctx.asAbsolutePath('out/remote-queries/view/baseStyles.css')
-      );
-
-      const stylesheetPathOnDisk = Uri.file(
-        ctx.asAbsolutePath('out/remote-queries/view/remoteQueries.css')
-      );
-
-      // Allows use of the VS Code "codicons" icon set.
-      // See https://github.com/microsoft/vscode-codicons
-      const codiconsPathOnDisk = Uri.file(
-        ctx.asAbsolutePath('node_modules/@vscode/codicons/dist/codicon.css')
-      );
-
       panel.webview.html = getHtmlForWebview(
+        ctx,
         panel.webview,
-        scriptPathOnDisk,
-        [baseStylesheetUriOnDisk, stylesheetPathOnDisk, codiconsPathOnDisk],
-        true
+        'remote-queries',
+        {
+          includeCodicons: true,
+          allowInlineStyles: true,
+        }
       );
       ctx.subscriptions.push(
         panel.webview.onDidReceiveMessage(

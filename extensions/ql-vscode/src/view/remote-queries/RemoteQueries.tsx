@@ -1,18 +1,17 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import * as Rdom from 'react-dom';
 import { Flash, ThemeProvider } from '@primer/react';
 import { ToRemoteQueriesMessage } from '../../pure/interface-types';
-import { AnalysisSummary, RemoteQueryResult } from '../shared/remote-query-result';
-import { MAX_RAW_RESULTS } from '../shared/result-limits';
-import { vscode } from '../../view/vscode-api';
+import { AnalysisSummary, RemoteQueryResult } from '../../remote-queries/shared/remote-query-result';
+import { MAX_RAW_RESULTS } from '../../remote-queries/shared/result-limits';
+import { vscode } from '../vscode-api';
 import { VSCodeBadge, VSCodeButton } from '@vscode/webview-ui-toolkit/react';
 import SectionTitle from './SectionTitle';
 import VerticalSpace from './VerticalSpace';
 import HorizontalSpace from './HorizontalSpace';
 import ViewTitle from './ViewTitle';
 import DownloadButton from './DownloadButton';
-import { AnalysisResults, getAnalysisResultCount } from '../shared/analysis-result';
+import { AnalysisResults, getAnalysisResultCount } from '../../remote-queries/shared/analysis-result';
 import DownloadSpinner from './DownloadSpinner';
 import CollapsibleItem from './CollapsibleItem';
 import { AlertIcon, CodeSquareIcon, FileCodeIcon, RepoIcon, TerminalIcon } from '@primer/octicons-react';
@@ -23,6 +22,9 @@ import StarCount from './StarCount';
 import SortRepoFilter, { Sort, sorter } from './SortRepoFilter';
 import LastUpdated from './LastUpdated';
 import RepoListCopyButton from './RepoListCopyButton';
+
+import './baseStyles.css';
+import './remoteQueries.css';
 
 const numOfReposInContractedMode = 10;
 
@@ -440,10 +442,3 @@ export function RemoteQueries(): JSX.Element {
     return <div>There was an error displaying the view.</div>;
   }
 }
-
-Rdom.render(
-  <RemoteQueries />,
-  document.getElementById('root'),
-  // Post a message to the extension when fully loaded.
-  () => vscode.postMessage({ t: 'remoteQueryLoaded' })
-);
