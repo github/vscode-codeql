@@ -288,7 +288,7 @@
           "default": "",
           "pattern": "^$|^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+/[a-zA-Z0-9-_]+$",
           "patternErrorMessage": "Please enter a valid GitHub repository",
-          "markdownDescription": "[For internal use only] The name of the GitHub repository where you can view the progress and results of the \"Run Variant Analysis\" command. The repository should be of the form `<owner>/<repo>`)."
+          "markdownDescription": "[For internal use only] The name of the GitHub repository in which the GitHub Actions workflow is run when using the \"Run Variant Analysis\" command. The repository should be of the form `<owner>/<repo>`)."
         }
       }
     },
