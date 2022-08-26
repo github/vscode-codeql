@@ -112,6 +112,8 @@ export function tryResolveLocation(
   }
 }
 
+export type WebviewView = 'results' | 'compare' | 'remote-queries';
+
 /**
  * Returns HTML to populate the given webview.
  * Uses a content security policy that only loads the given script.
@@ -119,35 +121,29 @@ export function tryResolveLocation(
 export function getHtmlForWebview(
   ctx: ExtensionContext,
   webview: Webview,
-  view: 'results' | 'compare' | 'remote-queries',
+  view: WebviewView,
   {
     allowInlineStyles,
-    includeCodicons
   }: {
     allowInlineStyles?: boolean;
-    includeCodicons?: boolean;
   } = {
       allowInlineStyles: false,
-      includeCodicons: false
     }
 ): string {
   const scriptUriOnDisk = Uri.file(
     ctx.asAbsolutePath('out/webview.js')
   );
 
+  // Allows use of the VS Code "codicons" icon set.
+  // See https://github.com/microsoft/vscode-codicons
+  const codiconsPathOnDisk = Uri.file(
+    ctx.asAbsolutePath('node_modules/@vscode/codicons/dist/codicon.css')
+  );
+
   const stylesheetUrisOnDisk = [
-    Uri.file(ctx.asAbsolutePath('out/webview.css'))
+    Uri.file(ctx.asAbsolutePath('out/webview.css')),
+    codiconsPathOnDisk
   ];
-
-  if (includeCodicons) {
-    // Allows use of the VS Code "codicons" icon set.
-    // See https://github.com/microsoft/vscode-codicons
-    const codiconsPathOnDisk = Uri.file(
-      ctx.asAbsolutePath('node_modules/@vscode/codicons/dist/codicon.css')
-    );
-
-    stylesheetUrisOnDisk.push(codiconsPathOnDisk);
-  }
 
   // Convert the on-disk URIs into webview URIs.
   const scriptWebviewUri = webview.asWebviewUri(scriptUriOnDisk);
