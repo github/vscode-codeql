@@ -55,6 +55,19 @@ export const config: webpack.Configuration = {
             loader: 'css-loader'
           }
         ]
+      },
+      {
+        test: /\.(woff(2)?|ttf|eot|svg)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'fonts/',
+              esModule: false
+            }
+          },
+        ],
       }
     ]
   },

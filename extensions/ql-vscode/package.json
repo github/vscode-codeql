@@ -1282,6 +1282,7 @@
     "del": "^6.0.0",
     "eslint": "~6.8.0",
     "eslint-plugin-react": "~7.19.0",
+    "file-loader": "^6.2.0",
     "glob": "^7.1.4",
     "gulp": "^4.0.2",
     "gulp-replace": "^1.1.3",

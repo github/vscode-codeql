@@ -3,6 +3,9 @@ import { vscode } from './vscode-api';
 
 import { WebviewDefinition } from './webview-interface';
 
+// Allow all views to use Codicons
+import '@vscode/codicons/dist/codicon.css';
+
 const render = () => {
   const element = document.getElementById('root');
 

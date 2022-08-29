@@ -116,8 +116,7 @@ export class RemoteQueriesInterfaceManager {
           retainContextWhenHidden: true,
           localResourceRoots: [
             Uri.file(this.analysesResultsManager.storagePath),
-            Uri.file(path.join(this.ctx.extensionPath, 'out')),
-            Uri.file(path.join(this.ctx.extensionPath, 'node_modules/@vscode/codicons/dist')),
+            Uri.file(path.join(this.ctx.extensionPath, 'out'))
           ],
         }
       ));
@@ -136,7 +135,6 @@ export class RemoteQueriesInterfaceManager {
         panel.webview,
         'remote-queries',
         {
-          includeCodicons: true,
           allowInlineStyles: true,
         }
       );

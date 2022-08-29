@@ -121,14 +121,11 @@ export function getHtmlForWebview(
   webview: Webview,
   view: 'results' | 'compare' | 'remote-queries',
   {
-    allowInlineStyles,
-    includeCodicons
+    allowInlineStyles
   }: {
     allowInlineStyles?: boolean;
-    includeCodicons?: boolean;
   } = {
-      allowInlineStyles: false,
-      includeCodicons: false
+      allowInlineStyles: false
     }
 ): string {
   const scriptUriOnDisk = Uri.file(
@@ -138,16 +135,6 @@ export function getHtmlForWebview(
   const stylesheetUrisOnDisk = [
     Uri.file(ctx.asAbsolutePath('out/webview.css'))
   ];
-
-  if (includeCodicons) {
-    // Allows use of the VS Code "codicons" icon set.
-    // See https://github.com/microsoft/vscode-codicons
-    const codiconsPathOnDisk = Uri.file(
-      ctx.asAbsolutePath('node_modules/@vscode/codicons/dist/codicon.css')
-    );
-
-    stylesheetUrisOnDisk.push(codiconsPathOnDisk);
-  }
 
   // Convert the on-disk URIs into webview URIs.
   const scriptWebviewUri = webview.asWebviewUri(scriptUriOnDisk);
