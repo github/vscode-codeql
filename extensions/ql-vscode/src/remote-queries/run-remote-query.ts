@@ -217,7 +217,7 @@ export async function runRemoteQuery(
     if (!controllerRepo || !REPO_REGEX.test(controllerRepo)) {
       void logger.log(controllerRepo ? 'Invalid controller repository name.' : 'No controller repository defined.');
       controllerRepo = await window.showInputBox({
-        title: 'Controller repository in which to display progress and results of variant analysis',
+        title: 'Controller repository in which to run the GitHub Actions workflow for this variant analysis',
         placeHolder: '<owner>/<repo>',
         prompt: 'Enter the name of a GitHub repository in the format <owner>/<repo>',
         ignoreFocusOut: true,
