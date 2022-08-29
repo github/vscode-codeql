@@ -4,6 +4,8 @@ import esbuild from 'gulp-esbuild';
 import ts from 'gulp-typescript';
 import del from 'del';
 
+import packageJSON from '../package.json';
+
 function goodReporter(): ts.reporter.Reporter {
   return {
     error: (error, typescript) => {
@@ -40,11 +42,13 @@ export function compileEsbuild() {
 }
 
 export function compileEsbuildTests() {
+  const external = ['vscode', ...Object.keys(packageJSON.dependencies), ...Object.keys(packageJSON.devDependencies)];
+
   return gulp.src('./src/vscode-tests/**/*.ts')
     .pipe(esbuild({
       outdir: 'vscode-tests',
       bundle: true,
-      external: ['vscode'],
+      external,
       format: 'cjs',
       platform: 'node',
       target: 'es2020',
