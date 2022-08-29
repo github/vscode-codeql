@@ -1,7 +1,7 @@
 import * as gulp from 'gulp';
 import * as jsYaml from 'js-yaml';
 import * as through from 'through2';
-import * as PluginError from 'plugin-error';
+import PluginError from 'plugin-error';
 import * as Vinyl from 'vinyl';
 
 /**

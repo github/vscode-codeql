@@ -1,5 +1,5 @@
 import 'mocha';
-import * as chaiAsPromised from 'chai-as-promised';
+import chaiAsPromised from 'chai-as-promised';
 import * as chai from 'chai';
 import * as sarif from 'sarif';
 import { extractAnalysisAlerts, tryGetRule, tryGetSeverity } from '../../src/remote-queries/sarif-processing';

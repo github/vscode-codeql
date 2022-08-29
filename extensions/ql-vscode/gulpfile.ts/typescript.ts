@@ -1,8 +1,8 @@
 import * as colors from 'ansi-colors';
 import * as gulp from 'gulp';
-import * as sourcemaps from 'gulp-sourcemaps';
-import * as ts from 'gulp-typescript';
-import * as del from 'del';
+import esbuild from 'gulp-esbuild';
+import ts from 'gulp-typescript';
+import del from 'del';
 
 function goodReporter(): ts.reporter.Reporter {
   return {
@@ -25,19 +25,51 @@ export function cleanOutput() {
   return tsProject.projectDirectory ? del(tsProject.projectDirectory + '/out/*') : Promise.resolve();
 }
 
-export function compileTypeScript() {
-  return tsProject.src()
-    .pipe(sourcemaps.init())
-    .pipe(tsProject(goodReporter()))
-    .pipe(sourcemaps.write('.', {
-      includeContent: false,
-      sourceRoot: '.',
+export function compileEsbuild() {
+  return gulp.src('./src/extension.ts')
+    .pipe(esbuild({
+      outfile: 'extension.js',
+      bundle: true,
+      external: ['vscode'],
+      format: 'cjs',
+      platform: 'node',
+      target: 'es2020',
+      sourcemap: 'linked',
     }))
     .pipe(gulp.dest('out'));
 }
 
-export function watchTypeScript() {
-  gulp.watch('src/**/*.ts', compileTypeScript);
+export function compileEsbuildTests() {
+  return gulp.src('./src/vscode-tests/**/*.ts')
+    .pipe(esbuild({
+      outdir: 'vscode-tests',
+      bundle: true,
+      external: ['vscode'],
+      format: 'cjs',
+      platform: 'node',
+      target: 'es2020',
+      sourcemap: 'linked',
+    }))
+    .pipe(gulp.dest('out'));
+}
+
+export function watchEsbuild() {
+  gulp.watch('src/**/*.ts', compileEsbuild);
+}
+
+export function watchEsbuildTests() {
+  gulp.watch('src/**/*.ts', compileEsbuildTests);
+}
+
+export function checkTypeScript() {
+  // This doesn't actually output the TypeScript files, it just
+  // runs the TypeScript compiler and reports any errors.
+  return tsProject.src()
+    .pipe(tsProject(goodReporter()));
+}
+
+export function watchCheckTypeScript() {
+  gulp.watch('src/**/*.ts', checkTypeScript);
 }
 
 export function watchCss() {

@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import 'chai/register-should';
-import * as sinonChai from 'sinon-chai';
+import sinonChai from 'sinon-chai';
 import 'mocha';
 import * as path from 'path';
 

@@ -1,8 +1,8 @@
 import 'source-map-support/register';
 import 'vscode-test';
-import * as sinonChai from 'sinon-chai';
+import sinonChai from 'sinon-chai';
 import * as chai from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
+import chaiAsPromised from 'chai-as-promised';
 import 'chai/register-should';
 import { ExtensionContext } from 'vscode';
 

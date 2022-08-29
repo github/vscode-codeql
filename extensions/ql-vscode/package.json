@@ -1199,8 +1199,8 @@
     "format-staged": "lint-staged"
   },
   "dependencies": {
-    "@octokit/rest": "^18.5.6",
     "@octokit/plugin-retry": "^3.0.9",
+    "@octokit/rest": "^18.5.6",
     "@primer/octicons-react": "^16.3.0",
     "@primer/react": "^35.0.0",
     "@vscode/codicons": "^0.0.31",
@@ -1280,12 +1280,13 @@
     "chai-as-promised": "~7.1.1",
     "css-loader": "~3.1.0",
     "del": "^6.0.0",
+    "esbuild": "^0.15.5",
     "eslint": "~6.8.0",
     "eslint-plugin-react": "~7.19.0",
     "glob": "^7.1.4",
     "gulp": "^4.0.2",
+    "gulp-esbuild": "^0.10.5",
     "gulp-replace": "^1.1.3",
-    "gulp-sourcemaps": "^3.0.0",
     "gulp-typescript": "^5.0.1",
     "husky": "~4.3.8",
     "lint-staged": "~10.2.2",
@@ -1325,5 +1326,11 @@
   },
   "resolutions": {
     "glob-parent": "6.0.0"
+  },
+  "__metadata": {
+    "id": "56d1e1f8-892a-4abc-b402-c473b832e324",
+    "publisherDisplayName": "GitHub",
+    "publisherId": "7c1c19cd-78eb-4dfb-8999-99caf7679002",
+    "isPreReleaseVersion": false
   }
 }

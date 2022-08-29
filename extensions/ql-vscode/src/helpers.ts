@@ -1,5 +1,5 @@
 import * as fs from 'fs-extra';
-import * as glob from 'glob-promise';
+import { promise as glob } from 'glob-promise';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
 import * as tmp from 'tmp-promise';
