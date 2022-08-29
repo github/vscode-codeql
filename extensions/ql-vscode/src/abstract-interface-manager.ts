@@ -11,7 +11,7 @@ import * as path from 'path';
 
 import { DisposableObject } from './pure/disposable-object';
 import { tmpDir } from './helpers';
-import { getHtmlForWebview, WebviewView } from './interface-utils';
+import { getHtmlForWebview, WebviewMessage, WebviewView } from './interface-utils';
 
 export type InterfacePanelConfig = {
   viewId: string;
@@ -22,7 +22,7 @@ export type InterfacePanelConfig = {
   additionalOptions?: WebviewPanelOptions & WebviewOptions;
 }
 
-export abstract class AbstractInterfaceManager<ToMessage extends { t: string }, FromMessage extends { t: string }> extends DisposableObject {
+export abstract class AbstractInterfaceManager<ToMessage extends WebviewMessage, FromMessage extends WebviewMessage> extends DisposableObject {
   protected panel: WebviewPanel | undefined;
   protected panelLoaded = false;
   protected panelLoadedCallBacks: (() => void)[] = [];
@@ -43,7 +43,7 @@ export abstract class AbstractInterfaceManager<ToMessage extends { t: string }, 
 
       const config = this.getPanelConfig();
 
-      const panel = (this.panel = Window.createWebviewPanel(
+      this.panel = Window.createWebviewPanel(
         config.viewId,
         config.title,
         { viewColumn: ViewColumn.Active, preserveFocus: true },
@@ -59,7 +59,7 @@ export abstract class AbstractInterfaceManager<ToMessage extends { t: string }, 
             Uri.file(path.join(ctx.extensionPath, 'node_modules/@vscode/codicons/dist')),
           ],
         }
-      ));
+      );
       this.push(
         this.panel.onDidDispose(
           () => {
@@ -72,16 +72,16 @@ export abstract class AbstractInterfaceManager<ToMessage extends { t: string }, 
         )
       );
 
-      panel.webview.html = getHtmlForWebview(
+      this.panel.webview.html = getHtmlForWebview(
         ctx,
-        panel.webview,
+        this.panel.webview,
         config.view,
         {
           allowInlineStyles: true,
         }
       );
       this.push(
-        panel.webview.onDidReceiveMessage(
+        this.panel.webview.onDidReceiveMessage(
           async (e) => this.onMessage(e),
           undefined,
           ctx.subscriptions

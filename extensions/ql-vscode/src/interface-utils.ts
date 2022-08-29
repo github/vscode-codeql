@@ -114,6 +114,10 @@ export function tryResolveLocation(
 
 export type WebviewView = 'results' | 'compare' | 'remote-queries';
 
+export interface WebviewMessage {
+  t: string;
+}
+
 /**
  * Returns HTML to populate the given webview.
  * Uses a content security policy that only loads the given script.
