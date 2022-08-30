@@ -1405,4 +1405,9 @@ export class CliVersionConstraint {
   async supportsSourceMap() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_SOURCEMAP);
   }
+
+  async supportsNewQueryServer() {
+    //  return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NEW_QUERY_SERVER);
+    return true;
+  }
 }

@@ -45,4 +45,6 @@ export abstract class QueryRunner {
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void>
+
+  abstract clearPackCache(): Promise<void>
 }
