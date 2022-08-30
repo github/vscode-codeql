@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AnalysisAlert } from '../shared/analysis-result';
+import { AnalysisAlert } from '../../remote-queries/shared/analysis-result';
 import CodePaths from './CodePaths';
 import FileCodeSnippet from './FileCodeSnippet';
 

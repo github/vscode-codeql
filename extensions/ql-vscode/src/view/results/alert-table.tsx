@@ -1,19 +1,19 @@
 import * as path from 'path';
 import * as React from 'react';
 import * as Sarif from 'sarif';
-import * as Keys from '../pure/result-keys';
+import * as Keys from '../../pure/result-keys';
 import * as octicons from './octicons';
 import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection, emptyQueryResultsMessage } from './result-table-utils';
 import { onNavigation, NavigationEvent } from './results';
-import { InterpretedResultSet, SarifInterpretationData } from '../pure/interface-types';
+import { InterpretedResultSet, SarifInterpretationData } from '../../pure/interface-types';
 import {
   parseSarifPlainTextMessage,
   parseSarifLocation,
   isNoLocation
-} from '../pure/sarif-utils';
-import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortState } from '../pure/interface-types';
-import { vscode } from './vscode-api';
-import { isWholeFileLoc, isLineColumnLoc } from '../pure/bqrs-utils';
+} from '../../pure/sarif-utils';
+import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortState } from '../../pure/interface-types';
+import { vscode } from '../vscode-api';
+import { isWholeFileLoc, isLineColumnLoc } from '../../pure/bqrs-utils';
 
 export type PathTableProps = ResultTableProps & { resultSet: InterpretedResultSet<SarifInterpretationData> };
 export interface PathTableState {

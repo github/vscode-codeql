@@ -13,7 +13,7 @@ import {
   getDefaultResultSetName,
   ParsedResultSets,
   IntoResultsViewMsg,
-} from '../pure/interface-types';
+} from '../../pure/interface-types';
 import { PathTable } from './alert-table';
 import { Graph } from './graph';
 import { RawTable } from './raw-results-table';
@@ -25,7 +25,7 @@ import {
   alertExtrasClassName,
   openFile
 } from './result-table-utils';
-import { vscode } from './vscode-api';
+import { vscode } from '../vscode-api';
 
 
 const FILE_PATH_REGEX = /^(?:.+[\\/])*(.+)$/;

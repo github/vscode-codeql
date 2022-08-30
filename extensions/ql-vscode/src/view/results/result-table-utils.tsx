@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { UrlValue, ResolvableLocationValue } from '../pure/bqrs-cli-types';
-import { isStringLoc, tryGetResolvableLocation } from '../pure/bqrs-utils';
-import { RawResultsSortState, QueryMetadata, SortDirection } from '../pure/interface-types';
-import { assertNever } from '../pure/helpers-pure';
-import { ResultSet } from '../pure/interface-types';
-import { vscode } from './vscode-api';
-import { convertNonPrintableChars } from '../text-utils';
+import { UrlValue, ResolvableLocationValue } from '../../pure/bqrs-cli-types';
+import { isStringLoc, tryGetResolvableLocation } from '../../pure/bqrs-utils';
+import { RawResultsSortState, QueryMetadata, SortDirection } from '../../pure/interface-types';
+import { assertNever } from '../../pure/helpers-pure';
+import { ResultSet } from '../../pure/interface-types';
+import { vscode } from '../vscode-api';
+import { convertNonPrintableChars } from '../../text-utils';
 
 export interface ResultTableProps {
   resultSet: ResultSet;
