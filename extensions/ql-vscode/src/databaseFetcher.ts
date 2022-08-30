@@ -10,6 +10,7 @@ import {
 import { CodeQLCliServer } from './cli';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as Octokit from '@octokit/rest';
 
 import { DatabaseManager, DatabaseItem } from './databases';
 import {
@@ -23,6 +24,7 @@ import { logger } from './logging';
 import { tmpDir } from './helpers';
 import { Credentials } from './authentication';
 import { REPO_REGEX, getErrorMessage } from './pure/helpers-pure';
+import { isCanary } from './config';
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -99,14 +101,16 @@ export async function promptImportGithubDatabase(
     throw new Error(`Invalid GitHub repository: ${githubRepo}`);
   }
 
-  const result = await convertGithubNwoToDatabaseUrl(githubRepo, credentials, progress);
+  // Only require authentication if we are running with the canary flag enabled
+  const octokit = await credentials.getOctokit(isCanary());
+
+  const result = await convertGithubNwoToDatabaseUrl(githubRepo, octokit, progress);
   if (!result) {
     return;
   }
 
   const { databaseUrl, name, owner } = result;
 
-  const octokit = await credentials.getOctokit();
   /**
    * The 'token' property of the token object returned by `octokit.auth()`.
    * The object is undocumented, but looks something like this:
@@ -118,14 +122,9 @@ export async function promptImportGithubDatabase(
    * We only need the actual token string.
    */
   const octokitToken = (await octokit.auth() as { token: string })?.token;
-  if (!octokitToken) {
-    // Just print a generic error message for now. Ideally we could show more debugging info, like the
-    // octokit object, but that would expose a user token.
-    throw new Error('Unable to get GitHub token.');
-  }
   const item = await databaseArchiveFetcher(
     databaseUrl,
-    { 'Accept': 'application/zip', 'Authorization': `Bearer ${octokitToken}` },
+    { 'Accept': 'application/zip', 'Authorization': octokitToken ? `Bearer ${octokitToken}` : '' },
     databaseManager,
     storagePath,
     `${owner}/${name}`,
@@ -523,7 +522,7 @@ function convertGitHubUrlToNwo(githubUrl: string): string | undefined {
 
 export async function convertGithubNwoToDatabaseUrl(
   githubRepo: string,
-  credentials: Credentials,
+  octokit: Octokit.Octokit,
   progress: ProgressCallback): Promise<{
     databaseUrl: string,
     owner: string,
@@ -533,7 +532,6 @@ export async function convertGithubNwoToDatabaseUrl(
     const nwo = convertGitHubUrlToNwo(githubRepo) || githubRepo;
     const [owner, repo] = nwo.split('/');
 
-    const octokit = await credentials.getOctokit();
     const response = await octokit.request('GET /repos/:owner/:repo/code-scanning/codeql/databases', { owner, repo });
 
     const languages = response.data.map((db: any) => db.language);
