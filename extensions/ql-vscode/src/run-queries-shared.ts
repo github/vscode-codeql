@@ -194,9 +194,17 @@ export class QueryEvaluationInfo {
     }
     const compiledQuery = path.join(this.querySaveDir, 'compiledQuery.qlo');
     if (!(await fs.pathExists(compiledQuery))) {
-      throw new Error(
-        `Cannot create DIL because compiled query is missing. ${compiledQuery}`
-      );
+      if (await cliServer.cliConstraints.supportsNewQueryServer()) {
+        // This could be from the new query server
+        // in which case we expect the qlo to be missing so we should ignore it
+        throw new Error(
+          `DIL was not found. ${compiledQuery}`
+        );
+      } else {
+        throw new Error(
+          `Cannot create DIL because compiled query is missing. ${compiledQuery}`
+        );
+      }
     }
 
     await cliServer.generateDil(compiledQuery, this.dilPath);
@@ -210,6 +218,9 @@ export class QueryEvaluationInfo {
     return fs.pathExists(this.evalLogPath);
   }
 
+  /**
+   * Add the structured evaluator log to the query evaluation info.
+   */
   async addQueryLogs(queryInfo: LocalQueryInfo, cliServer: CodeQLCliServer, logger: Logger) {
     queryInfo.evalLogLocation = this.evalLogPath;
     queryInfo.evalLogSummaryLocation = await this.generateHumanReadableLogSummary(cliServer);

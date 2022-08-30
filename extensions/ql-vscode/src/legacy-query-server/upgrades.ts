@@ -3,7 +3,7 @@ import { getOnDiskWorkspaceFolders, showAndLogErrorMessage, tmpDir } from '../he
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { logger } from '../logging';
 import * as messages from '../pure/legacy-messages';
-import * as qsClient from '../legacy-query-server/queryserver-client';
+import * as qsClient from './queryserver-client';
 import * as tmp from 'tmp-promise';
 import * as path from 'path';
 import { DatabaseItem } from '../databases';
