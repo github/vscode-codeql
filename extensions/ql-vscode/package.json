@@ -879,6 +879,10 @@
       ],
       "commandPalette": [
         {
+          "command": "codeQL.authenticateToGitHub",
+          "when": "config.codeQL.canary"
+        },
+        {
           "command": "codeQL.runQuery",
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },

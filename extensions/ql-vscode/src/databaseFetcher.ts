@@ -11,6 +11,7 @@ import { CodeQLCliServer } from './cli';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as Octokit from '@octokit/rest';
+import { retry } from '@octokit/plugin-retry';
 
 import { DatabaseManager, DatabaseItem } from './databases';
 import {
@@ -24,7 +25,6 @@ import { logger } from './logging';
 import { tmpDir } from './helpers';
 import { Credentials } from './authentication';
 import { REPO_REGEX, getErrorMessage } from './pure/helpers-pure';
-import { isCanary } from './config';
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -78,7 +78,7 @@ export async function promptImportInternetDatabase(
 export async function promptImportGithubDatabase(
   databaseManager: DatabaseManager,
   storagePath: string,
-  credentials: Credentials,
+  credentials: Credentials | undefined,
   progress: ProgressCallback,
   token: CancellationToken,
   cli?: CodeQLCliServer
@@ -101,8 +101,7 @@ export async function promptImportGithubDatabase(
     throw new Error(`Invalid GitHub repository: ${githubRepo}`);
   }
 
-  // Only require authentication if we are running with the canary flag enabled
-  const octokit = await credentials.getOctokit(isCanary());
+  const octokit = credentials ? await credentials.getOctokit(true) : new Octokit.Octokit({ retry });
 
   const result = await convertGithubNwoToDatabaseUrl(githubRepo, octokit, progress);
   if (!result) {

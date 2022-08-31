@@ -970,7 +970,7 @@ async function activateWithInstalledDistribution(
       progress: ProgressCallback,
       token: CancellationToken
     ) => {
-      const credentials = await Credentials.initialize(ctx);
+      const credentials = isCanary() ? await Credentials.initialize(ctx) : undefined;
       await databaseUI.handleChooseDatabaseGithub(credentials, progress, token);
     },
       {
