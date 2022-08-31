@@ -75,6 +75,8 @@ export class RemoteQueriesManager extends DisposableObject {
     this.onRemoteQueryAdded = this.remoteQueryAddedEventEmitter.event;
     this.onRemoteQueryRemoved = this.remoteQueryRemovedEventEmitter.event;
     this.onRemoteQueryStatusUpdate = this.remoteQueryStatusUpdateEventEmitter.event;
+
+    this.push(this.interfaceManager);
   }
 
   public async rehydrateRemoteQuery(queryId: string, query: RemoteQuery, status: QueryStatus) {

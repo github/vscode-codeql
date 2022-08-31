@@ -1,6 +1,4 @@
-import * as path from 'path';
 import * as Sarif from 'sarif';
-import { DisposableObject } from './pure/disposable-object';
 import * as vscode from 'vscode';
 import {
   Diagnostic,
@@ -14,7 +12,7 @@ import {
 import * as cli from './cli';
 import { CodeQLCliServer } from './cli';
 import { DatabaseEventKind, DatabaseItem, DatabaseManager } from './databases';
-import { showAndLogErrorMessage, tmpDir } from './helpers';
+import { showAndLogErrorMessage } from './helpers';
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import {
   FromResultsViewMsg,
@@ -40,13 +38,13 @@ import {
   WebviewReveal,
   fileUriToWebviewUri,
   tryResolveLocation,
-  getHtmlForWebview,
   shownLocationDecoration,
   shownLocationLineDecoration,
   jumpToLocation,
 } from './interface-utils';
 import { getDefaultResultSetName, ParsedResultSets } from './pure/interface-types';
 import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './pure/bqrs-cli-types';
+import { AbstractInterfaceManager, InterfacePanelConfig } from './abstract-interface-manager';
 import { PAGE_SIZE } from './config';
 import { CompletedLocalQueryInfo } from './query-results';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
@@ -122,12 +120,9 @@ function numInterpretedPages(interpretation: Interpretation | undefined): number
   return Math.ceil(n / pageSize);
 }
 
-export class InterfaceManager extends DisposableObject {
+export class InterfaceManager extends AbstractInterfaceManager<IntoResultsViewMsg, FromResultsViewMsg> {
   private _displayedQuery?: CompletedLocalQueryInfo;
   private _interpretation?: Interpretation;
-  private _panel: vscode.WebviewPanel | undefined;
-  private _panelLoaded = false;
-  private _panelLoadedCallBacks: (() => void)[] = [];
 
   private readonly _diagnosticCollection = languages.createDiagnosticCollection(
     'codeql-query-results'
@@ -140,7 +135,7 @@ export class InterfaceManager extends DisposableObject {
     public logger: Logger,
     private labelProvider: HistoryItemLabelProvider
   ) {
-    super();
+    super(ctx);
     this.push(this._diagnosticCollection);
     this.push(
       vscode.window.onDidChangeTextEditorSelection(
@@ -165,7 +160,7 @@ export class InterfaceManager extends DisposableObject {
       this.databaseManager.onDidChangeDatabaseItem(({ kind }) => {
         if (kind === DatabaseEventKind.Remove) {
           this._diagnosticCollection.clear();
-          if (this.isShowingPanel()) {
+          if (this.isShowingPanel) {
             void this.postMessage({
               t: 'untoggleShowProblems'
             });
@@ -179,52 +174,81 @@ export class InterfaceManager extends DisposableObject {
     await this.postMessage({ t: 'navigatePath', direction });
   }
 
-  private isShowingPanel() {
-    return !!this._panel;
+  protected getPanelConfig(): InterfacePanelConfig {
+    return {
+      viewId: 'resultsView',
+      title: 'CodeQL Query Results',
+      viewColumn: this.chooseColumnForWebview(),
+      preserveFocus: true,
+      view: 'results',
+    };
   }
 
-  // Returns the webview panel, creating it if it doesn't already
-  // exist.
-  getPanel(): vscode.WebviewPanel {
-    if (this._panel == undefined) {
-      const { ctx } = this;
-      const webViewColumn = this.chooseColumnForWebview();
-      const panel = (this._panel = Window.createWebviewPanel(
-        'resultsView', // internal name
-        'CodeQL Query Results', // user-visible name
-        { viewColumn: webViewColumn, preserveFocus: true },
-        {
-          enableScripts: true,
-          enableFindWidget: true,
-          retainContextWhenHidden: true,
-          localResourceRoots: [
-            vscode.Uri.file(tmpDir.name),
-            vscode.Uri.file(path.join(this.ctx.extensionPath, 'out'))
-          ]
-        }
-      ));
+  protected onPanelDispose(): void {
+    this._displayedQuery = undefined;
+  }
 
-      this.push(this._panel.onDidDispose(
-        () => {
-          this._panel = undefined;
-          this._displayedQuery = undefined;
-          this._panelLoaded = false;
-        },
-        null,
-        ctx.subscriptions
-      ));
-      panel.webview.html = getHtmlForWebview(
-        ctx,
-        panel.webview,
-        'results'
-      );
-      this.push(panel.webview.onDidReceiveMessage(
-        async (e) => this.handleMsgFromView(e),
-        undefined,
-        ctx.subscriptions
-      ));
+  protected async onMessage(msg: FromResultsViewMsg): Promise<void> {
+    try {
+      switch (msg.t) {
+        case 'resultViewLoaded':
+          this.onWebViewLoaded();
+          break;
+        case 'viewSourceFile': {
+          await jumpToLocation(msg, this.databaseManager, this.logger);
+          break;
+        }
+        case 'toggleDiagnostics': {
+          if (msg.visible) {
+            const databaseItem = this.databaseManager.findDatabaseItem(
+              Uri.parse(msg.databaseUri)
+            );
+            if (databaseItem !== undefined) {
+              await this.showResultsAsDiagnostics(
+                msg.origResultsPaths,
+                msg.metadata,
+                databaseItem
+              );
+            }
+          } else {
+            // TODO: Only clear diagnostics on the same database.
+            this._diagnosticCollection.clear();
+          }
+          break;
+        }
+        case 'changeSort':
+          await this.changeRawSortState(msg.resultSetName, msg.sortState);
+          break;
+        case 'changeInterpretedSort':
+          await this.changeInterpretedSortState(msg.sortState);
+          break;
+        case 'changePage':
+          if (msg.selectedTable === ALERTS_TABLE_NAME || msg.selectedTable === GRAPH_TABLE_NAME) {
+            await this.showPageOfInterpretedResults(msg.pageNumber);
+          }
+          else {
+            await this.showPageOfRawResults(
+              msg.selectedTable,
+              msg.pageNumber,
+              // When we are in an unsorted state, we guarantee that
+              // sortedResultsInfo doesn't have an entry for the current
+              // result set. Use this to determine whether or not we use
+              // the sorted bqrs file.
+              !!this._displayedQuery?.completedQuery.sortedResultsInfo[msg.selectedTable]
+            );
+          }
+          break;
+        case 'openFile':
+          await this.openFile(msg.filePath);
+          break;
+        default:
+          assertNever(msg);
+      }
+    } catch (e) {
+      void showAndLogErrorMessage(getErrorMessage(e), {
+        fullMessage: getErrorStack(e)
+      });
     }
-    return this._panel;
   }
 
   /**
@@ -287,85 +311,6 @@ export class InterfaceManager extends DisposableObject {
     // was previously viewing and the contents of the nth page in a
     // new sorted order.
     await this.showPageOfRawResults(resultSetName, 0, true);
-  }
-
-  private async handleMsgFromView(msg: FromResultsViewMsg): Promise<void> {
-    try {
-      switch (msg.t) {
-        case 'viewSourceFile': {
-          await jumpToLocation(msg, this.databaseManager, this.logger);
-          break;
-        }
-        case 'toggleDiagnostics': {
-          if (msg.visible) {
-            const databaseItem = this.databaseManager.findDatabaseItem(
-              Uri.parse(msg.databaseUri)
-            );
-            if (databaseItem !== undefined) {
-              await this.showResultsAsDiagnostics(
-                msg.origResultsPaths,
-                msg.metadata,
-                databaseItem
-              );
-            }
-          } else {
-            // TODO: Only clear diagnostics on the same database.
-            this._diagnosticCollection.clear();
-          }
-          break;
-        }
-        case 'resultViewLoaded':
-          this._panelLoaded = true;
-          this._panelLoadedCallBacks.forEach((cb) => cb());
-          this._panelLoadedCallBacks = [];
-          break;
-        case 'changeSort':
-          await this.changeRawSortState(msg.resultSetName, msg.sortState);
-          break;
-        case 'changeInterpretedSort':
-          await this.changeInterpretedSortState(msg.sortState);
-          break;
-        case 'changePage':
-          if (msg.selectedTable === ALERTS_TABLE_NAME || msg.selectedTable === GRAPH_TABLE_NAME) {
-            await this.showPageOfInterpretedResults(msg.pageNumber);
-          }
-          else {
-            await this.showPageOfRawResults(
-              msg.selectedTable,
-              msg.pageNumber,
-              // When we are in an unsorted state, we guarantee that
-              // sortedResultsInfo doesn't have an entry for the current
-              // result set. Use this to determine whether or not we use
-              // the sorted bqrs file.
-              !!this._displayedQuery?.completedQuery.sortedResultsInfo[msg.selectedTable]
-            );
-          }
-          break;
-        case 'openFile':
-          await this.openFile(msg.filePath);
-          break;
-        default:
-          assertNever(msg);
-      }
-    } catch (e) {
-      void showAndLogErrorMessage(getErrorMessage(e), {
-        fullMessage: getErrorStack(e)
-      });
-    }
-  }
-
-  postMessage(msg: IntoResultsViewMsg): Thenable<boolean> {
-    return this.getPanel().webview.postMessage(msg);
-  }
-
-  private waitForPanelLoaded(): Promise<void> {
-    return new Promise((resolve) => {
-      if (this._panelLoaded) {
-        resolve();
-      } else {
-        this._panelLoadedCallBacks.push(resolve);
-      }
-    });
   }
 
   /**
