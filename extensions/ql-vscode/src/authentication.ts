@@ -79,7 +79,7 @@ export class Credentials {
   /**
    * Creates or returns an instance of Octokit.
    *
-   * @param requireAuthentication Whether the Octokit instance needs to be authentication as user.
+   * @param requireAuthentication Whether the Octokit instance needs to be authenticated as user.
    * @returns An instance of Octokit.
    */
   async getOctokit(requireAuthentication = true): Promise<Octokit.Octokit> {
