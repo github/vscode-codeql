@@ -6,15 +6,14 @@ import { expect } from 'chai';
 import { window } from 'vscode';
 
 import {
+  convertGithubNwoToDatabaseUrl,
   convertLgtmUrlToDatabaseUrl,
   looksLikeLgtmUrl,
   findDirWithFile,
   looksLikeGithubRepo,
 } from '../../databaseFetcher';
 import { ProgressCallback } from '../../commandRunner';
-import * as pq from 'proxyquire';
-
-const proxyquire = pq.noPreserveCache();
+import * as Octokit from '@octokit/rest';
 
 describe('databaseFetcher', function() {
   // These tests make API calls and may need extra time to complete.
@@ -25,20 +24,16 @@ describe('databaseFetcher', function() {
     let quickPickSpy: sinon.SinonStub;
     let progressSpy: ProgressCallback;
     let mockRequest: sinon.SinonStub;
-    let mod: any;
-
-    const credentials = getMockCredentials(0);
+    let octokit: Octokit.Octokit;
 
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       quickPickSpy = sandbox.stub(window, 'showQuickPick');
       progressSpy = sandbox.spy();
       mockRequest = sandbox.stub();
-      mod = proxyquire('../../databaseFetcher', {
-        './authentication': {
-          Credentials: credentials,
-        },
-      });
+      octokit = ({
+        request: mockRequest,
+      }) as unknown as Octokit.Octokit;
     });
 
     afterEach(() => {
@@ -90,11 +85,17 @@ describe('databaseFetcher', function() {
       mockRequest.resolves(mockApiResponse);
       quickPickSpy.resolves('javascript');
       const githubRepo = 'github/codeql';
-      const { databaseUrl, name, owner } = await mod.convertGithubNwoToDatabaseUrl(
+      const result = await convertGithubNwoToDatabaseUrl(
         githubRepo,
-        credentials,
+        octokit,
         progressSpy
       );
+      expect(result).not.to.be.undefined;
+      if (result === undefined) {
+        return;
+      }
+
+      const { databaseUrl, name, owner } = result;
 
       expect(databaseUrl).to.equal(
         'https://api.github.com/repos/github/codeql/code-scanning/codeql/databases/javascript'
@@ -119,7 +120,7 @@ describe('databaseFetcher', function() {
       mockRequest.resolves(mockApiResponse);
       const githubRepo = 'foo/bar-not-real';
       await expect(
-        mod.convertGithubNwoToDatabaseUrl(githubRepo, credentials, progressSpy)
+        convertGithubNwoToDatabaseUrl(githubRepo, octokit, progressSpy)
       ).to.be.rejectedWith(/Unable to get database/);
       expect(progressSpy).to.have.callCount(0);
     });
@@ -133,19 +134,10 @@ describe('databaseFetcher', function() {
       mockRequest.resolves(mockApiResponse);
       const githubRepo = 'foo/bar-with-no-dbs';
       await expect(
-        mod.convertGithubNwoToDatabaseUrl(githubRepo, credentials, progressSpy)
+        convertGithubNwoToDatabaseUrl(githubRepo, octokit, progressSpy)
       ).to.be.rejectedWith(/Unable to get database/);
       expect(progressSpy).to.have.been.calledOnce;
     });
-
-    function getMockCredentials(response: any) {
-      mockRequest = sinon.stub().resolves(response);
-      return {
-        getOctokit: () => ({
-          request: mockRequest,
-        }),
-      };
-    }
   });
 
   describe('convertLgtmUrlToDatabaseUrl', () => {

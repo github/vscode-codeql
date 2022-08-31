@@ -40,6 +40,7 @@ import {
 import { CancellationToken } from 'vscode';
 import { asyncFilter, getErrorMessage } from './pure/helpers-pure';
 import { Credentials } from './authentication';
+import { isCanary } from './config';
 
 type ThemableIconPath = { light: string; dark: string } | string;
 
@@ -301,7 +302,7 @@ export class DatabaseUI extends DisposableObject {
           progress: ProgressCallback,
           token: CancellationToken
         ) => {
-          const credentials = await this.getCredentials();
+          const credentials = isCanary() ? await this.getCredentials() : undefined;
           await this.handleChooseDatabaseGithub(credentials, progress, token);
         },
         {
@@ -480,7 +481,7 @@ export class DatabaseUI extends DisposableObject {
   };
 
   handleChooseDatabaseGithub = async (
-    credentials: Credentials,
+    credentials: Credentials | undefined,
     progress: ProgressCallback,
     token: CancellationToken
   ): Promise<DatabaseItem | undefined> => {
