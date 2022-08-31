@@ -4,7 +4,7 @@ import { VSCodeDropdown, VSCodeLink, VSCodeOption, VSCodeTag } from '@vscode/web
 import * as React from 'react';
 import { ChangeEvent, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { CodeFlow, AnalysisMessage, ResultSeverity } from '../shared/analysis-result';
+import { CodeFlow, AnalysisMessage, ResultSeverity } from '../../remote-queries/shared/analysis-result';
 import FileCodeSnippet from './FileCodeSnippet';
 import SectionTitle from './SectionTitle';
 import VerticalSpace from './VerticalSpace';

@@ -1,11 +1,10 @@
 import {
-  WebviewPanel,
   ExtensionContext,
   window as Window,
   ViewColumn,
   Uri,
   workspace,
-  commands
+  commands,
 } from 'vscode';
 import * as path from 'path';
 
@@ -16,7 +15,6 @@ import {
   RemoteQueryDownloadAllAnalysesResultsMessage
 } from '../pure/interface-types';
 import { Logger } from '../logging';
-import { getHtmlForWebview } from '../interface-utils';
 import { assertNever } from '../pure/helpers-pure';
 import {
   AnalysisSummary,
@@ -34,18 +32,17 @@ import { SHOW_QUERY_TEXT_MSG } from '../query-history';
 import { AnalysesResultsManager } from './analyses-results-manager';
 import { AnalysisResults } from './shared/analysis-result';
 import { humanizeUnit } from '../pure/time';
+import { AbstractInterfaceManager, InterfacePanelConfig } from '../abstract-interface-manager';
 
-export class RemoteQueriesInterfaceManager {
-  private panel: WebviewPanel | undefined;
-  private panelLoaded = false;
+export class RemoteQueriesInterfaceManager extends AbstractInterfaceManager<ToRemoteQueriesMessage, FromRemoteQueriesMessage> {
   private currentQueryId: string | undefined;
-  private panelLoadedCallBacks: (() => void)[] = [];
 
   constructor(
-    private readonly ctx: ExtensionContext,
+    ctx: ExtensionContext,
     private readonly logger: Logger,
     private readonly analysesResultsManager: AnalysesResultsManager
   ) {
+    super(ctx);
     this.panelLoadedCallBacks.push(() => {
       void logger.log('Variant analysis results view loaded');
     });
@@ -103,112 +100,29 @@ export class RemoteQueriesInterfaceManager {
     };
   }
 
-  getPanel(): WebviewPanel {
-    if (this.panel == undefined) {
-      const { ctx } = this;
-      const panel = (this.panel = Window.createWebviewPanel(
-        'remoteQueriesView',
-        'CodeQL Query Results',
-        { viewColumn: ViewColumn.Active, preserveFocus: true },
-        {
-          enableScripts: true,
-          enableFindWidget: true,
-          retainContextWhenHidden: true,
-          localResourceRoots: [
-            Uri.file(this.analysesResultsManager.storagePath),
-            Uri.file(path.join(this.ctx.extensionPath, 'out')),
-            Uri.file(path.join(this.ctx.extensionPath, 'node_modules/@vscode/codicons/dist')),
-          ],
-        }
-      ));
-      this.panel.onDidDispose(
-        () => {
-          this.panel = undefined;
-          this.currentQueryId = undefined;
-          this.panelLoaded = false;
-        },
-        null,
-        ctx.subscriptions
-      );
-
-      const scriptPathOnDisk = Uri.file(
-        ctx.asAbsolutePath('out/remoteQueriesView.js')
-      );
-
-      const baseStylesheetUriOnDisk = Uri.file(
-        ctx.asAbsolutePath('out/remote-queries/view/baseStyles.css')
-      );
-
-      const stylesheetPathOnDisk = Uri.file(
-        ctx.asAbsolutePath('out/remote-queries/view/remoteQueries.css')
-      );
-
-      // Allows use of the VS Code "codicons" icon set.
-      // See https://github.com/microsoft/vscode-codicons
-      const codiconsPathOnDisk = Uri.file(
-        ctx.asAbsolutePath('node_modules/@vscode/codicons/dist/codicon.css')
-      );
-
-      panel.webview.html = getHtmlForWebview(
-        panel.webview,
-        scriptPathOnDisk,
-        [baseStylesheetUriOnDisk, stylesheetPathOnDisk, codiconsPathOnDisk],
-        true
-      );
-      ctx.subscriptions.push(
-        panel.webview.onDidReceiveMessage(
-          async (e) => this.handleMsgFromView(e),
-          undefined,
-          ctx.subscriptions
-        )
-      );
-    }
-    return this.panel;
-  }
-
-  private waitForPanelLoaded(): Promise<void> {
-    return new Promise((resolve) => {
-      if (this.panelLoaded) {
-        resolve();
-      } else {
-        this.panelLoadedCallBacks.push(resolve);
+  protected getPanelConfig(): InterfacePanelConfig {
+    return {
+      viewId: 'remoteQueriesView',
+      title: 'CodeQL Query Results',
+      viewColumn: ViewColumn.Active,
+      preserveFocus: true,
+      view: 'remote-queries',
+      additionalOptions: {
+        localResourceRoots: [
+          Uri.file(this.analysesResultsManager.storagePath)
+        ]
       }
-    });
+    };
   }
 
-  private async openFile(filePath: string) {
-    try {
-      const textDocument = await workspace.openTextDocument(filePath);
-      await Window.showTextDocument(textDocument, ViewColumn.One);
-    } catch (error) {
-      void showAndLogWarningMessage(`Could not open file: ${filePath}`);
-    }
+  protected onPanelDispose(): void {
+    this.currentQueryId = undefined;
   }
 
-  private async openVirtualFile(text: string) {
-    try {
-      const params = new URLSearchParams({
-        queryText: encodeURIComponent(SHOW_QUERY_TEXT_MSG + text)
-      });
-      const uri = Uri.parse(
-        `remote-query:query-text.ql?${params.toString()}`,
-        true
-      );
-      const doc = await workspace.openTextDocument(uri);
-      await Window.showTextDocument(doc, { preview: false });
-    } catch (error) {
-      void showAndLogWarningMessage('Could not open query text');
-    }
-  }
-
-  private async handleMsgFromView(
-    msg: FromRemoteQueriesMessage
-  ): Promise<void> {
+  protected async onMessage(msg: FromRemoteQueriesMessage): Promise<void> {
     switch (msg.t) {
       case 'remoteQueryLoaded':
-        this.panelLoaded = true;
-        this.panelLoadedCallBacks.forEach((cb) => cb());
-        this.panelLoadedCallBacks = [];
+        this.onWebViewLoaded();
         break;
       case 'remoteQueryError':
         void this.logger.log(
@@ -238,6 +152,31 @@ export class RemoteQueriesInterfaceManager {
     }
   }
 
+  private async openFile(filePath: string) {
+    try {
+      const textDocument = await workspace.openTextDocument(filePath);
+      await Window.showTextDocument(textDocument, ViewColumn.One);
+    } catch (error) {
+      void showAndLogWarningMessage(`Could not open file: ${filePath}`);
+    }
+  }
+
+  private async openVirtualFile(text: string) {
+    try {
+      const params = new URLSearchParams({
+        queryText: encodeURIComponent(SHOW_QUERY_TEXT_MSG + text)
+      });
+      const uri = Uri.parse(
+        `remote-query:query-text.ql?${params.toString()}`,
+        true
+      );
+      const doc = await workspace.openTextDocument(uri);
+      await Window.showTextDocument(doc, { preview: false });
+    } catch (error) {
+      void showAndLogWarningMessage('Could not open query text');
+    }
+  }
+
   private async downloadAnalysisResults(msg: RemoteQueryDownloadAnalysisResultsMessage): Promise<void> {
     const queryId = this.currentQueryId;
     await this.analysesResultsManager.downloadAnalysisResults(
@@ -260,10 +199,6 @@ export class RemoteQueriesInterfaceManager {
         analysesResults
       });
     }
-  }
-
-  private postMessage(msg: ToRemoteQueriesMessage): Thenable<boolean> {
-    return this.getPanel().webview.postMessage(msg);
   }
 
   private getDuration(startTime: number, endTime: number): string {

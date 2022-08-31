@@ -240,7 +240,7 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Restart the server when the current command terminates
    */
-  private restartCliServer(): void {
+  restartCliServer(): void {
     const callback = (): void => {
       try {
         this.killProcessIfRunning();

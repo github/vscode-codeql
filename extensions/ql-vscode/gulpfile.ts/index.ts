@@ -1,5 +1,5 @@
 import * as gulp from 'gulp';
-import { compileEsbuild, watchEsbuild, copyViewCss, cleanOutput, watchCss, checkTypeScript, watchCheckTypeScript, compileEsbuildTests, watchEsbuildTests } from './typescript';
+import { compileEsbuild, watchEsbuild, cleanOutput, checkTypeScript, watchCheckTypeScript, compileEsbuildTests, watchEsbuildTests } from './typescript';
 import { compileTextMateGrammar } from './textmate';
 import { copyTestData } from './tests';
 import { compileView, watchView } from './webpack';
@@ -10,7 +10,7 @@ export const buildWithoutPackage =
   gulp.series(
     cleanOutput,
     gulp.parallel(
-      compileEsbuild, compileTextMateGrammar, compileView, copyTestData, copyViewCss, checkTypeScript, compileEsbuildTests
+      compileEsbuild, compileTextMateGrammar, compileView, copyTestData, checkTypeScript, compileEsbuildTests
     )
   );
 
@@ -23,7 +23,6 @@ export {
   copyTestData,
   injectAppInsightsKey,
   compileView,
-  watchCss,
   checkTypeScript,
   watchCheckTypeScript,
   compileEsbuildTests,

@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { vscode } from '../../view/vscode-api';
-import { RemoteQueryResult } from '../shared/remote-query-result';
+import { vscode } from '../vscode-api';
+import { RemoteQueryResult } from '../../remote-queries/shared/remote-query-result';
 import { CopyIcon } from '@primer/octicons-react';
 import { IconButton } from '@primer/react';
 

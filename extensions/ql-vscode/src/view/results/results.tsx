@@ -1,6 +1,5 @@
 import * as React from 'react';
-import * as Rdom from 'react-dom';
-import { assertNever } from '../pure/helpers-pure';
+import { assertNever } from '../../pure/helpers-pure';
 import {
   DatabaseInfo,
   Interpretation,
@@ -13,11 +12,12 @@ import {
   ALERTS_TABLE_NAME,
   GRAPH_TABLE_NAME,
   ParsedResultSets,
-} from '../pure/interface-types';
+} from '../../pure/interface-types';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 import { ResultTables } from './result-tables';
-import { ResultSet } from '../pure/interface-types';
-import { vscode } from './vscode-api';
+import { ResultSet } from '../../pure/interface-types';
+
+import './resultsView.css';
 
 /**
  * results.tsx
@@ -72,7 +72,7 @@ export const onNavigation = new EventHandlerList<NavigationEvent>();
 /**
  * A minimal state container for displaying results.
  */
-class App extends React.Component<Record<string, never>, ResultsViewState> {
+export class ResultsApp extends React.Component<Record<string, never>, ResultsViewState> {
   constructor(props: any) {
     super(props);
     this.state = {
@@ -302,7 +302,6 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
   componentDidMount(): void {
     this.vscodeMessageHandler = this.vscodeMessageHandler.bind(this);
     window.addEventListener('message', this.vscodeMessageHandler);
-    vscode.postMessage({ t: 'resultViewLoaded' });
   }
 
   componentWillUnmount(): void {
@@ -319,5 +318,3 @@ class App extends React.Component<Record<string, never>, ResultsViewState> {
       : console.error(`Invalid event origin ${origin}`);
   }
 }
-
-Rdom.render(<App />, document.getElementById('root'));

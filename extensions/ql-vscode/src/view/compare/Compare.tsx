@@ -1,14 +1,15 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import * as Rdom from 'react-dom';
 
 import {
   ToCompareViewMessage,
   SetComparisonsMessage,
 } from '../../pure/interface-types';
 import CompareSelector from './CompareSelector';
-import { vscode } from '../../view/vscode-api';
+import { vscode } from '../vscode-api';
 import CompareTable from './CompareTable';
+
+import '../results/resultsView.css';
 
 const emptyComparison: SetComparisonsMessage = {
   t: 'setComparisons',
@@ -75,10 +76,3 @@ export function Compare(_: Record<string, never>): JSX.Element {
     return <div>Error!</div>;
   }
 }
-
-Rdom.render(
-  <Compare />,
-  document.getElementById('root'),
-  // Post a message to the extension when fully loaded.
-  () => vscode.postMessage({ t: 'compareViewLoaded' })
-);
