@@ -11,7 +11,7 @@ export function injectAppInsightsKey() {
   }
 
   // replace the key
-  return gulp.src(['out/telemetry.js'])
+  return gulp.src(['out/extension.js'])
     .pipe(replace(/REPLACE-APP-INSIGHTS-KEY/, process.env.APP_INSIGHTS_KEY))
     .pipe(gulp.dest('out/'));
 }
