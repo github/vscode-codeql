@@ -36,7 +36,7 @@ import { compileDatabaseUpgradeSequence, hasNondestructiveUpgradeCapabilities, u
 import { ensureMetadataIsComplete } from './query-results';
 import { SELECT_QUERY_NAME } from './contextual/locationFinder';
 import { DecodedBqrsChunk } from './pure/bqrs-cli-types';
-import { getErrorMessage } from './pure/helpers-pure';
+import { asError, getErrorMessage } from './pure/helpers-pure';
 import { generateSummarySymbolsFile } from './log-insights/summary-parser';
 
 /**
@@ -207,7 +207,10 @@ export class QueryEvaluationInfo {
           logPath: this.evalLogPath,
         });
         if (await this.hasEvalLog()) {
-          this.displayHumanReadableLogSummary(queryInfo, qs);
+          queryInfo.evalLogLocation = this.evalLogPath;
+          queryInfo.evalLogSummaryLocation = await this.generateHumanReadableLogSummary(qs);
+          void this.logEndSummary(queryInfo.evalLogSummaryLocation, qs);  // Logged asynchrnously
+
           if (config.isCanary()) { // Generate JSON summary for viewer.
             await qs.cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath);
             queryInfo.jsonEvalLogSummaryLocation = this.jsonEvalLogSummaryPath;
@@ -340,25 +343,40 @@ export class QueryEvaluationInfo {
   }
 
   /**
-   * Calls the appropriate CLI command to generate a human-readable log summary
-   * and logs to the Query Server console and query log file.
+   * Calls the appropriate CLI command to generate a human-readable log summary.
+   * @param qs The query server client.
+   * @returns The path to the log summary, or `undefined` if the summary could not be generated.
    */
-  displayHumanReadableLogSummary(queryInfo: LocalQueryInfo, qs: qsClient.QueryServerClient): void {
-    queryInfo.evalLogLocation = this.evalLogPath;
-    void qs.cliServer.generateLogSummary(this.evalLogPath, this.evalLogSummaryPath, this.evalLogEndSummaryPath)
-      .then(() => {
-        queryInfo.evalLogSummaryLocation = this.evalLogSummaryPath;
-        fs.readFile(this.evalLogEndSummaryPath, (err, buffer) => {
-          if (err) {
-            throw new Error(`Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`);
-          }
-          void qs.logger.log(' --- Evaluator Log Summary --- ', { additionalLogLocation: this.logPath });
-          void qs.logger.log(buffer.toString(), { additionalLogLocation: this.logPath });
-        });
-      })
-      .catch(err => {
-        void showAndLogWarningMessage(`Failed to generate human-readable structured evaluator log summary. Reason: ${err.message}`);
-      });
+  private async generateHumanReadableLogSummary(qs: qsClient.QueryServerClient): Promise<string | undefined> {
+    try {
+      await qs.cliServer.generateLogSummary(this.evalLogPath, this.evalLogSummaryPath, this.evalLogEndSummaryPath);
+      return this.evalLogSummaryPath;
+
+    } catch (e) {
+      const err = asError(e);
+      void showAndLogWarningMessage(`Failed to generate human-readable structured evaluator log summary. Reason: ${err.message}`);
+      return undefined;
+    }
+  }
+
+  /**
+   * Logs the end summary to the Output window and log file.
+   * @param logSummaryPath Path to the human-readable log summary
+   * @param qs The query server client.
+   */
+  private async logEndSummary(logSummaryPath: string | undefined, qs: qsClient.QueryServerClient): Promise<void> {
+    if (logSummaryPath === undefined) {
+      // Failed to generate the log, so we don't expect an end summary either.
+      return;
+    }
+
+    try {
+      const endSummaryContent = await fs.readFile(this.evalLogEndSummaryPath, 'utf-8');
+      void qs.logger.log(' --- Evaluator Log Summary --- ', { additionalLogLocation: this.logPath });
+      void qs.logger.log(endSummaryContent, { additionalLogLocation: this.logPath });
+    } catch (e) {
+      void showAndLogWarningMessage(`Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`);
+    }
   }
 
   /**
