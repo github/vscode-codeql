@@ -5,7 +5,7 @@ import * as semver from 'semver';
 import * as sinon from 'sinon';
 import * as pq from 'proxyquire';
 
-import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer } from '../../distribution';
+import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer } from './distribution';
 
 const proxyquire = pq.noPreserveCache();
 
@@ -303,7 +303,7 @@ describe('Launcher path', () => {
     fsSpy = sandbox.stub().callsFake(arg => arg.endsWith(launcherThatExists) ? true : false);
     platformSpy = sandbox.stub().returns('win32');
 
-    return proxyquire('../../distribution', {
+    return proxyquire('./distribution', {
       './helpers': {
         showAndLogWarningMessage: warnSpy,
         showAndLogErrorMessage: errorSpy

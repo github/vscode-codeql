@@ -1326,11 +1326,5 @@
   },
   "resolutions": {
     "glob-parent": "6.0.0"
-  },
-  "__metadata": {
-    "id": "56d1e1f8-892a-4abc-b402-c473b832e324",
-    "publisherDisplayName": "GitHub",
-    "publisherId": "7c1c19cd-78eb-4dfb-8999-99caf7679002",
-    "isPreReleaseVersion": false
   }
 }

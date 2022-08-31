@@ -2,6 +2,7 @@ import * as yaml from 'js-yaml';
 import * as sinon from 'sinon';
 import { expect } from 'chai';
 import * as pq from 'proxyquire';
+import { ensureDirSync } from 'fs-extra';
 import { KeyType } from '../../../contextual/keyType';
 import { getErrorMessage } from '../../../pure/helpers-pure';
 
@@ -91,17 +92,17 @@ describe('queryResolver', () => {
     writeFileSpy = sinon.spy();
     getQlPackForDbschemeSpy = sinon.stub();
     getPrimaryDbschemeSpy = sinon.stub();
-    return proxyquire('../../../contextual/queryResolver', {
+    const mod = proxyquire('./queryResolver', {
       'fs-extra': {
+        ensureDirSync,
         writeFile: writeFileSpy
       },
-
-      '../helpers': {
-        getQlPackForDbscheme: getQlPackForDbschemeSpy,
-        getPrimaryDbscheme: getPrimaryDbschemeSpy,
-        getOnDiskWorkspaceFolders: () => ({}),
-        showAndLogErrorMessage: () => ({})
-      }
+      getQlPackForDbscheme: getQlPackForDbschemeSpy,
+      getPrimaryDbscheme: getPrimaryDbschemeSpy,
+      getOnDiskWorkspaceFolders: () => () => ({}),
+      showAndLogErrorMessage: () => ({}),
     });
+
+    return mod;
   }
 });

@@ -2,15 +2,11 @@ import { expect } from 'chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as sinon from 'sinon';
-import * as pq from 'proxyquire';
 import { ExtensionContext } from 'vscode';
 import { createMockExtensionContext } from '../index';
 import { Credentials } from '../../../authentication';
-import { MarkdownFile } from '../../../remote-queries/remote-queries-markdown-generation';
 import * as actionsApiClient from '../../../remote-queries/gh-actions-api-client';
 import { exportResultsToGist } from '../../../remote-queries/export-results';
-
-const proxyquire = pq.noPreserveCache();
 
 describe('export results', async function() {
   describe('exportResultsToGist', async function() {
@@ -29,11 +25,6 @@ describe('export results', async function() {
         })
       } as unknown as Credentials;
       sandbox.stub(Credentials, 'initialize').resolves(mockCredentials);
-
-      const resultFiles = [] as MarkdownFile[];
-      proxyquire('../../../remote-queries/remote-queries-markdown-generation', {
-        'generateMarkdown': sinon.stub().returns(resultFiles)
-      });
     });
 
     afterEach(() => {
