@@ -138,15 +138,8 @@ export function getHtmlForWebview(
     ctx.asAbsolutePath('out/webview.js')
   );
 
-  // Allows use of the VS Code "codicons" icon set.
-  // See https://github.com/microsoft/vscode-codicons
-  const codiconsPathOnDisk = Uri.file(
-    ctx.asAbsolutePath('node_modules/@vscode/codicons/dist/codicon.css')
-  );
-
   const stylesheetUrisOnDisk = [
-    Uri.file(ctx.asAbsolutePath('out/webview.css')),
-    codiconsPathOnDisk
+    Uri.file(ctx.asAbsolutePath('out/webview.css'))
   ];
 
   // Convert the on-disk URIs into webview URIs.

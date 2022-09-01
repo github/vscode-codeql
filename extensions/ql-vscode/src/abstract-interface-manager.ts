@@ -55,8 +55,7 @@ export abstract class AbstractInterfaceManager<ToMessage extends WebviewMessage,
           localResourceRoots: [
             ...(config.additionalOptions?.localResourceRoots ?? []),
             Uri.file(tmpDir.name),
-            Uri.file(path.join(ctx.extensionPath, 'out')),
-            Uri.file(path.join(ctx.extensionPath, 'node_modules/@vscode/codicons/dist')),
+            Uri.file(path.join(ctx.extensionPath, 'out'))
           ],
         }
       );
