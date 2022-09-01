@@ -43,8 +43,7 @@ export async function getRemoteQueryIndex(
   const workflowUri = `https://github.com/${owner}/${repoName}/actions/runs/${workflowRunId}`;
   const artifactsUrlPath = `/repos/${owner}/${repoName}/actions/artifacts`;
 
-  const artifactList = await listWorkflowRunArtifacts(credentials, owner, repoName, workflowRunId);
-  const resultIndexArtifactId = tryGetArtifactIDfromName('result-index', artifactList);
+  const [artifactList, resultIndexArtifactId] = await waitForArtifact(credentials, owner, repoName, workflowRunId, 'result-indx');
   if (!resultIndexArtifactId) {
     return undefined;
   }
@@ -253,6 +252,44 @@ function tryGetArtifactIDfromName(
   const artifact = artifacts.find(a => a.name === artifactName);
 
   return artifact?.id;
+}
+
+/**
+ * Wait for an artifact to be available in a workflow run.
+ * @param credentials Credentials for authenticating to the GitHub API.
+ * @param owner
+ * @param repo
+ * @param workflowRunId The ID of the workflow run to get the artifact for.
+ * @param artifactName The artifact name, as a string.
+ * @param maxAttempts The maximum number of attempts to download the artifact.
+ * @returns An array containing the full list of artifacts and the ID of the artifact with the given name.
+ */
+async function waitForArtifact(
+  credentials: Credentials,
+  owner: string,
+  repo: string,
+  workflowRunId: number,
+  artifactName: string,
+  maxAttempts = 10,
+  intervalBetweenAttempts = 1000
+): Promise<[Awaited<ReturnType<typeof listWorkflowRunArtifacts>>, number | undefined]> {
+  let attemptCount = 0;
+  let artifactList: Awaited<ReturnType<typeof listWorkflowRunArtifacts>> = [];
+
+  while (attemptCount < maxAttempts) {
+    artifactList = await listWorkflowRunArtifacts(credentials, owner, repo, workflowRunId);
+
+    const resultIndexArtifactId = tryGetArtifactIDfromName(artifactName, artifactList);
+    if (resultIndexArtifactId) {
+      return [artifactList, resultIndexArtifactId];
+    }
+
+    await new Promise(resolve => setTimeout(resolve, intervalBetweenAttempts));
+
+    attemptCount++;
+  }
+
+  return [artifactList, undefined];
 }
 
 /**
