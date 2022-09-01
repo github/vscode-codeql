@@ -1,8 +1,10 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.6.12 - 1 September 2022
 
 - Add ability for users to download databases directly from GitHub. [#1485](https://github.com/github/vscode-codeql/pull/1485)
+- Fix a race condition that could cause a failure to open the evaluator log when running a query. [#1490](https://github.com/github/vscode-codeql/pull/1490)
+- Fix an error when running a query with an older version of the CodeQL CLI. [#1490](https://github.com/github/vscode-codeql/pull/1490)
 
 ## 1.6.11 - 25 August 2022
 
