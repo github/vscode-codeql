@@ -4,8 +4,6 @@ import esbuild from 'gulp-esbuild';
 import ts from 'gulp-typescript';
 import del from 'del';
 
-import packageJSON from '../package.json';
-
 function goodReporter(): ts.reporter.Reporter {
   return {
     error: (error, typescript) => {
@@ -22,6 +20,9 @@ function goodReporter(): ts.reporter.Reporter {
 }
 
 const tsProject = ts.createProject('tsconfig.json');
+const testsTsProject = ts.createProject('tsconfig.json', {
+  esModuleInterop: false,
+});
 
 export function cleanOutput() {
   return tsProject.projectDirectory ? del(tsProject.projectDirectory + '/out/*') : Promise.resolve();
@@ -41,35 +42,28 @@ export function compileEsbuild() {
     .pipe(gulp.dest('out'));
 }
 
-export function compileEsbuildTests() {
-  const external = ['vscode', ...Object.keys(packageJSON.dependencies), ...Object.keys(packageJSON.devDependencies)];
-
-  return gulp.src('./src/vscode-tests/**/*.ts')
-    .pipe(esbuild({
-      outdir: 'vscode-tests',
-      bundle: true,
-      external,
-      format: 'cjs',
-      platform: 'node',
-      target: 'es2020',
-      sourcemap: 'linked',
-    }))
-    .pipe(gulp.dest('out'));
+export function compileTypeScriptTests() {
+  // Unfortunately we cannot use ESBuild for the test compilation because it compiles
+  // to ES6 modules which have additional restrictions compared to the code generated
+  // by the TypeScript compiler.
+  return testsTsProject.src()
+    .pipe(testsTsProject(goodReporter()))
+    .pipe(gulp.dest('out/test-run'));
 }
 
 export function watchEsbuild() {
   gulp.watch('src/**/*.ts', compileEsbuild);
 }
 
-export function watchEsbuildTests() {
-  gulp.watch('src/**/*.ts', compileEsbuildTests);
+export function watchTypeScriptTests() {
+  gulp.watch('src/**/*.ts', compileTypeScriptTests);
 }
 
 export function checkTypeScript() {
   // This doesn't actually output the TypeScript files, it just
   // runs the TypeScript compiler and reports any errors.
-  return tsProject.src()
-    .pipe(tsProject(goodReporter()));
+  return tsProject.src();
+  // .pipe(tsProject(goodReporter()));
 }
 
 export function watchCheckTypeScript() {

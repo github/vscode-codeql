@@ -71,7 +71,6 @@ async function main() {
     const extensionDevelopmentPath = path.resolve(__dirname, '../..');
     const vscodeExecutablePath = await downloadAndUnzipVSCode(VSCODE_VERSION);
 
-
     // Which tests to run. Use a comma-separated list of directories.
     const testDirsString = process.argv[2];
     const dirs = testDirsString.split(',').map(dir => dir.trim().toLocaleLowerCase());

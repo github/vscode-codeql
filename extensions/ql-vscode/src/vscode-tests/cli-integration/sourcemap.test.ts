@@ -1,7 +1,7 @@
 import { fail } from 'assert';
 import { commands, Selection, window, workspace } from 'vscode';
 import * as path from 'path';
-import assert from 'assert';
+import * as assert from 'assert';
 import { expect } from 'chai';
 import { tmpDir } from '../../helpers';
 import * as fs from 'fs-extra';

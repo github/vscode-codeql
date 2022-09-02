@@ -92,17 +92,17 @@ describe('queryResolver', () => {
     writeFileSpy = sinon.spy();
     getQlPackForDbschemeSpy = sinon.stub();
     getPrimaryDbschemeSpy = sinon.stub();
-    const mod = proxyquire('./queryResolver', {
+    return proxyquire('../../../contextual/queryResolver', {
       'fs-extra': {
         ensureDirSync,
         writeFile: writeFileSpy
       },
-      getQlPackForDbscheme: getQlPackForDbschemeSpy,
-      getPrimaryDbscheme: getPrimaryDbschemeSpy,
-      getOnDiskWorkspaceFolders: () => () => ({}),
-      showAndLogErrorMessage: () => ({}),
+      '../helpers': {
+        getQlPackForDbscheme: getQlPackForDbschemeSpy,
+        getPrimaryDbscheme: getPrimaryDbschemeSpy,
+        getOnDiskWorkspaceFolders: () => ({}),
+        showAndLogErrorMessage: () => ({})
+      }
     });
-
-    return mod;
   }
 });

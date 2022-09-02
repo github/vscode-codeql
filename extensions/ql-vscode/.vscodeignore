@@ -3,7 +3,7 @@
 .vscode-test/**
 typings/**
 out/test/**
-out/vscode-tests/**
+out/test-run/**
 **/@types/**
 **/*.ts
 test/**

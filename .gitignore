@@ -3,6 +3,7 @@
 
 # Generated files
 /dist/
+/dist-test/
 out/
 build/
 server/

@@ -56,15 +56,15 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
-        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index",
+        "--extensionDevelopmentPath=${workspaceRoot}/dist-test/vscode-codeql",
+        "--extensionTestsPath=${workspaceRoot}/dist-test/vscode-codeql/out/vscode-tests/no-workspace/index",
         "--disable-workspace-trust",
         "--disable-extensions",
         "--disable-gpu"
       ],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
+        "${workspaceRoot}/dist-test/vscode-codeql/out/**/*.js",
       ],
     },
     {
@@ -73,16 +73,16 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
-        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/minimal-workspace/index",
+        "--extensionDevelopmentPath=${workspaceRoot}/dist-test/vscode-codeql",
+        "--extensionTestsPath=${workspaceRoot}/dist-test/vscode-codeql/out/vscode-tests/minimal-workspace/index",
         "--disable-workspace-trust",
         "--disable-extensions",
         "--disable-gpu",
-        "${workspaceRoot}/extensions/ql-vscode/test/data"
+        "${workspaceRoot}/dist-test/vscode-codeql/test/data"
       ],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
+        "${workspaceRoot}/dist-test/vscode-codeql/out/**/*.js",
       ],
     },
     {
@@ -91,8 +91,8 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
-        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/cli-integration/index",
+        "--extensionDevelopmentPath=${workspaceRoot}/dist-test/vscode-codeql",
+        "--extensionTestsPath=${workspaceRoot}/dist-test/vscode-codeql/out/vscode-tests/cli-integration/index",
         "--disable-workspace-trust",
         "--disable-gpu",
         "--disable-extension",
@@ -101,7 +101,7 @@
         "github.codespaces",
         "--disable-extension",
         "github.copilot",
-        "${workspaceRoot}/extensions/ql-vscode/src/vscode-tests/cli-integration/data",
+        "${workspaceRoot}/dist-test/vscode-codeql/out/vscode-tests/cli-integration/data",
         // Uncomment the last line and modify the path to a checked out 
         // instance of the codeql repository so the libraries are
         // available in the workspace for the tests.
@@ -122,7 +122,7 @@
       },
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
+        "${workspaceRoot}/dist-test/vscode-codeql/out/**/*.js",
       ],
     }
   ]

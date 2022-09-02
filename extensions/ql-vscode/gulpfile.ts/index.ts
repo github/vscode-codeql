@@ -1,7 +1,7 @@
 import * as gulp from 'gulp';
-import { compileEsbuild, watchEsbuild, cleanOutput, checkTypeScript, watchCheckTypeScript, compileEsbuildTests, watchEsbuildTests } from './typescript';
+import { compileEsbuild, watchEsbuild, cleanOutput, checkTypeScript, watchCheckTypeScript, compileTypeScriptTests, watchTypeScriptTests } from './typescript';
 import { compileTextMateGrammar } from './textmate';
-import { copyTestData } from './tests';
+import { copyTestData, copyTests, watchCopyTests } from './tests';
 import { compileView, watchView } from './webpack';
 import { packageExtension } from './package';
 import { injectAppInsightsKey } from './appInsights';
@@ -9,10 +9,17 @@ import { injectAppInsightsKey } from './appInsights';
 export const buildWithoutPackage =
   gulp.series(
     cleanOutput,
-    gulp.parallel(
-      compileEsbuild, compileTextMateGrammar, compileView, copyTestData, checkTypeScript, compileEsbuildTests
-    )
+    gulp.parallel(compileEsbuild, compileTextMateGrammar, compileView, copyTestData, checkTypeScript, compileTypeScriptTests)
   );
+
+export const watch = gulp.parallel(
+  watchEsbuild, watchTypeScriptTests, watchCheckTypeScript, watchView, watchCopyTests
+);
+
+export const buildTests = gulp.series(
+  buildWithoutPackage,
+  copyTests
+);
 
 export {
   cleanOutput,
@@ -25,7 +32,7 @@ export {
   compileView,
   checkTypeScript,
   watchCheckTypeScript,
-  compileEsbuildTests,
-  watchEsbuildTests,
+  compileTypeScriptTests,
+  watchTypeScriptTests,
 };
-export default gulp.series(buildWithoutPackage, injectAppInsightsKey, packageExtension);
+export default gulp.series(buildWithoutPackage, injectAppInsightsKey, packageExtension, copyTests);

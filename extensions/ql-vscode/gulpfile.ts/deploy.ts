@@ -14,15 +14,16 @@ const packageFiles = [
   'language-configuration.json',
   'snippets.json',
   'media',
-  'node_modules',
-  'out'
+  'out',
 ];
 
+async function copyDirectory(sourcePath: string, destPath: string): Promise<void> {
+  console.log(`copying ${sourcePath} to ${destPath}`);
+  await fs.copy(sourcePath, destPath);
+}
+
 async function copyPackage(sourcePath: string, destPath: string): Promise<void> {
-  for (const file of packageFiles) {
-    console.log(`copying ${path.resolve(sourcePath, file)} to ${path.resolve(destPath, file)}`);
-    await fs.copy(path.resolve(sourcePath, file), path.resolve(destPath, file));
-  }
+  await Promise.all(packageFiles.map(file => copyDirectory(path.resolve(sourcePath, file), path.resolve(destPath, file))));
 }
 
 export async function deployPackage(packageJsonPath: string): Promise<DeployedPackage> {
@@ -58,6 +59,7 @@ export async function deployPackage(packageJsonPath: string): Promise<DeployedPa
     const sourcePath = path.join(__dirname, '..');
     console.log(`Copying package '${packageJson.name}' and its dependencies to '${distPath}'...`);
     await copyPackage(sourcePath, distPath);
+    await copyDirectory(path.resolve(sourcePath, 'node_modules'), path.resolve(distPath, 'node_modules'));
 
     return {
       distPath: distPath,
@@ -69,4 +71,28 @@ export async function deployPackage(packageJsonPath: string): Promise<DeployedPa
     console.error(e);
     throw e;
   }
+}
+
+export async function copyTestPackageToDist(distDir: string, packageJsonPath: string, copyNodeModules = true) {
+  const packageJson: any = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
+
+  const now = new Date();
+  packageJson.version = packageJson.version +
+    `-test.${now.getUTCFullYear()}.${now.getUTCMonth() + 1}.${now.getUTCDate()}` +
+    `.${now.getUTCHours()}.${now.getUTCMinutes()}.${now.getUTCSeconds()}`;
+
+  const distPath = path.join(distDir, packageJson.name);
+  await fs.mkdirs(distPath);
+
+  await fs.writeFile(path.join(distPath, 'package.json'), JSON.stringify(packageJson, null, 2));
+
+  const sourcePath = path.join(__dirname, '..');
+  console.log(`Copying package '${packageJson.name}' and its dependencies to '${distPath}'...`);
+  await Promise.all([
+    copyPackage(sourcePath, distPath),
+    copyNodeModules ? copyDirectory(path.resolve(sourcePath, 'node_modules'), path.resolve(distPath, 'node_modules')) : Promise.resolve(),
+    copyDirectory(path.resolve(sourcePath, 'test', 'data'), path.resolve(distPath, 'test', 'data'))
+  ]);
+
+  await copyDirectory(path.resolve(sourcePath, 'out', 'test-run'), path.resolve(distPath, 'out'));
 }
