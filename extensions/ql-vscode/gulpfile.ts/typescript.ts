@@ -2,6 +2,7 @@ import * as colors from 'ansi-colors';
 import * as gulp from 'gulp';
 import esbuild from 'gulp-esbuild';
 import ts from 'gulp-typescript';
+import sourcemaps from 'gulp-sourcemaps';
 import del from 'del';
 
 function goodReporter(): ts.reporter.Reporter {
@@ -47,7 +48,12 @@ export function compileTypeScriptTests() {
   // to ES6 modules which have additional restrictions compared to the code generated
   // by the TypeScript compiler.
   return testsTsProject.src()
+    .pipe(sourcemaps.init())
     .pipe(testsTsProject(goodReporter()))
+    .pipe(sourcemaps.write('.', {
+      includeContent: false,
+      sourceRoot: '.',
+    }))
     .pipe(gulp.dest('out/test-run'));
 }
 
