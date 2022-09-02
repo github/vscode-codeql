@@ -1185,7 +1185,7 @@
     "test": "mocha --exit -r ts-node/register test/pure-tests/**/*.ts",
     "preintegration": "rm -rf ./out/vscode-tests && gulp buildTests",
     "integration": "node ../../dist-test/vscode-codeql/out/vscode-tests/run-integration-tests.js no-workspace,minimal-workspace",
-    "cli-integration": "npm run preintegration && node ./out/test-run/vscode-tests/run-integration-tests.js cli-integration",
+    "cli-integration": "npm run preintegration && node ../../dist-test/vscode-codeql/out/vscode-tests/run-integration-tests.js cli-integration",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "format": "tsfmt -r && eslint src test --ext .ts,.tsx --fix",
     "lint": "eslint src test --ext .ts,.tsx --max-warnings=0",
