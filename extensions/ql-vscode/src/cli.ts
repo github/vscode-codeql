@@ -683,7 +683,7 @@ export class CodeQLCliServer implements Disposable {
     const subcommandArgs = [
       '--format=text',
       `--end-summary=${endSummaryPath}`,
-      '--sourcemap',
+      ...(await this.cliConstraints.supportsSourceMap() ? ['--sourcemap'] : []),
       inputPath,
       outputPath
     ];
@@ -1322,6 +1322,11 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_PER_QUERY_EVAL_LOG = new SemVer('2.9.0');
 
+  /**
+   * CLI version that supports the `--sourcemap` option for log generation.
+   */
+  public static CLI_VERSION_WITH_SOURCEMAP = new SemVer('2.10.3');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1388,5 +1393,9 @@ export class CliVersionConstraint {
 
   async supportsPerQueryEvalLog() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG);
+  }
+
+  async supportsSourceMap() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_SOURCEMAP);
   }
 }

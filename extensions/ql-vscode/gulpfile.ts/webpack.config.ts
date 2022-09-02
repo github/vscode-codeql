@@ -55,6 +55,21 @@ export const config: webpack.Configuration = {
             loader: 'css-loader'
           }
         ]
+      },
+      {
+        test: /\.(woff(2)?|ttf|eot)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'fonts/',
+              // We need this to make Webpack use the correct path for the fonts.
+              // Without this, the CSS file will use `url([object Module])`
+              esModule: false
+            }
+          },
+        ],
       }
     ]
   },

@@ -15,4 +15,3 @@ tsconfig.json
 tsfmt.json
 vsc-extension-quickstart.md
 node_modules/**
-!node_modules/@vscode/codicons/**

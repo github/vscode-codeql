@@ -13,7 +13,7 @@ import {
   looksLikeGithubRepo,
 } from '../../databaseFetcher';
 import { ProgressCallback } from '../../commandRunner';
-import { Credentials } from '../../authentication';
+import * as Octokit from '@octokit/rest';
 
 describe('databaseFetcher', function() {
   // These tests make API calls and may need extra time to complete.
@@ -24,14 +24,16 @@ describe('databaseFetcher', function() {
     let quickPickSpy: sinon.SinonStub;
     let progressSpy: ProgressCallback;
     let mockRequest: sinon.SinonStub;
-
-    const credentials = getMockCredentials(0);
+    let octokit: Octokit.Octokit;
 
     beforeEach(() => {
       sandbox = sinon.createSandbox();
       quickPickSpy = sandbox.stub(window, 'showQuickPick');
       progressSpy = sandbox.spy();
       mockRequest = sandbox.stub();
+      octokit = ({
+        request: mockRequest,
+      }) as unknown as Octokit.Octokit;
     });
 
     afterEach(() => {
@@ -85,13 +87,14 @@ describe('databaseFetcher', function() {
       const githubRepo = 'github/codeql';
       const result = await convertGithubNwoToDatabaseUrl(
         githubRepo,
-        credentials,
+        octokit,
         progressSpy
       );
       expect(result).not.to.be.undefined;
       if (result === undefined) {
         return;
       }
+
       const { databaseUrl, name, owner } = result;
 
       expect(databaseUrl).to.equal(
@@ -117,7 +120,7 @@ describe('databaseFetcher', function() {
       mockRequest.resolves(mockApiResponse);
       const githubRepo = 'foo/bar-not-real';
       await expect(
-        convertGithubNwoToDatabaseUrl(githubRepo, credentials, progressSpy)
+        convertGithubNwoToDatabaseUrl(githubRepo, octokit, progressSpy)
       ).to.be.rejectedWith(/Unable to get database/);
       expect(progressSpy).to.have.callCount(0);
     });
@@ -131,19 +134,10 @@ describe('databaseFetcher', function() {
       mockRequest.resolves(mockApiResponse);
       const githubRepo = 'foo/bar-with-no-dbs';
       await expect(
-        convertGithubNwoToDatabaseUrl(githubRepo, credentials, progressSpy)
+        convertGithubNwoToDatabaseUrl(githubRepo, octokit, progressSpy)
       ).to.be.rejectedWith(/Unable to get database/);
       expect(progressSpy).to.have.been.calledOnce;
     });
-
-    function getMockCredentials(response: any): Credentials {
-      mockRequest = sinon.stub().resolves(response);
-      return {
-        getOctokit: () => ({
-          request: mockRequest,
-        }),
-      } as unknown as Credentials;
-    }
   });
 
   describe('convertLgtmUrlToDatabaseUrl', () => {
