@@ -17,8 +17,8 @@ function copyNoWorkspaceData() {
 }
 
 function copyCliIntegrationData() {
-  return gulp.src('src/vscode-tests/cli-integration/data/**/*')
-    .pipe(gulp.dest('out/test-run/vscode-tests/cli-integration/data'));
+  return gulp.src('src/vscode-tests/cli-integration/data*/**/*')
+    .pipe(gulp.dest('out/test-run/vscode-tests/cli-integration'));
 }
 
 function cleanTestsOutput() {

@@ -15,7 +15,7 @@ import { UserCancellationException } from '../../../commandRunner';
 import { lte } from 'semver';
 
 describe('Remote queries', function() {
-  const baseDir = path.join(__dirname, '../../../../src/vscode-tests/cli-integration');
+  const baseDir = path.join(__dirname, '../../../../out/vscode-tests/cli-integration');
 
   let sandbox: sinon.SinonSandbox;
 

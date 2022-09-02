@@ -93,7 +93,7 @@ describe('Packaging commands', function() {
   });
 
   it('should install valid workspace pack', async () => {
-    const rootDir = path.join(__dirname, '../../../src/vscode-tests/cli-integration/data');
+    const rootDir = path.join(__dirname, '../../../out/vscode-tests/cli-integration/data');
     quickPickSpy.resolves([
       {
         label: 'integration-test-queries-javascript',
@@ -108,7 +108,7 @@ describe('Packaging commands', function() {
   });
 
   it('should throw an error when installing invalid workspace pack', async () => {
-    const rootDir = path.join(__dirname, '../../../src/vscode-tests/cli-integration/data-invalid-pack');
+    const rootDir = path.join(__dirname, '../../../out/vscode-tests/cli-integration/data-invalid-pack');
     quickPickSpy.resolves([
       {
         label: 'foo/bar',

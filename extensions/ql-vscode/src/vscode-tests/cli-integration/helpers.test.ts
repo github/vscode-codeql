@@ -7,7 +7,7 @@ import { tryGetQueryMetadata } from '../../helpers';
 import { expect } from 'chai';
 
 describe('helpers (with CLI)', function() {
-  const baseDir = path.join(__dirname, '../../../src/vscode-tests/cli-integration');
+  const baseDir = path.join(__dirname, '../../../out/vscode-tests/cli-integration');
 
   // up to 3 minutes per test
   this.timeout(3 * 60 * 1000);
