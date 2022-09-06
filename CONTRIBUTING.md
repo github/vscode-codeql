@@ -77,6 +77,18 @@ $ vscode/scripts/code-cli.sh --install-extension dist/vscode-codeql-*.vsix # if 
 
 You can use VS Code to debug the extension without explicitly installing it. Just open this directory as a workspace in VS Code, and hit `F5` to start a debugging session.
 
+### Storybook
+
+You can use [Storybook](https://storybook.js.org/) to preview React components outside VSCode. Inside the `extensions/ql-vscode` directory, run:
+
+```shell
+npm run storybook
+```
+
+Your browser should automatically open to the Storybook UI. Stories live in the `src/stories` directory.
+
+Alternatively, you can start Storybook inside of VSCode. There is a VSCode launch configuration for starting Storybook. It can be found in the debug view.
+
 ### Running the unit tests and integration tests that do not require a CLI instance
 
 Unit tests and many integration tests do not require a copy of the CodeQL CLI.
