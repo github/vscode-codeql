@@ -6,7 +6,6 @@ import * as messages from './pure/messages';
 import * as qsClient from './queryserver-client';
 import * as tmp from 'tmp-promise';
 import * as path from 'path';
-import * as semver from 'semver';
 import { DatabaseItem } from './databases';
 
 /**
@@ -16,16 +15,6 @@ import { DatabaseItem } from './databases';
  */
 const MAX_UPGRADE_MESSAGE_LINES = 10;
 
-/**
- * Check that we support non-destructive upgrades.
- *
- * This requires 3 features. The ability to compile an upgrade sequence; The ability to
- * run a non-destructive upgrades as a query; the ability to specify a target when
- * resolving upgrades. We check for a version of codeql that has all three features.
- */
-export async function hasNondestructiveUpgradeCapabilities(qs: qsClient.QueryServerClient): Promise<boolean> {
-  return semver.gte(await qs.cliServer.getVersion(), '2.4.2');
-}
 
 
 /**
@@ -43,7 +32,7 @@ export async function compileDatabaseUpgradeSequence(
   if (dbItem.contents === undefined || dbItem.contents.dbSchemeUri === undefined) {
     throw new Error('Database is invalid, and cannot be upgraded.');
   }
-  if (!await hasNondestructiveUpgradeCapabilities(qs)) {
+  if (!await qs.cliServer.cliConstraints.supportsNonDestructiveUpgrades()) {
     throw new Error('The version of codeql is too old to run non-destructive upgrades.');
   }
   // If possible just compile the upgrade sequence
