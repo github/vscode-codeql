@@ -5,7 +5,7 @@ import { ComponentMeta } from '@storybook/react';
 import RepositoriesSearchComponent from '../../view/remote-queries/RepositoriesSearch';
 
 export default {
-  title: 'MRVA/Repositories Search',
+  title: 'Repositories Search',
   component: RepositoriesSearchComponent,
   argTypes: {
     filterValue: {

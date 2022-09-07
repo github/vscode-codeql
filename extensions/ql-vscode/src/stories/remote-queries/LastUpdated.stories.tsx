@@ -5,7 +5,7 @@ import { ComponentStory, ComponentMeta } from '@storybook/react';
 import LastUpdatedComponent from '../../view/remote-queries/LastUpdated';
 
 export default {
-  title: 'MRVA/Last Updated',
+  title: 'Last Updated',
   component: LastUpdatedComponent,
 } as ComponentMeta<typeof LastUpdatedComponent>;
 

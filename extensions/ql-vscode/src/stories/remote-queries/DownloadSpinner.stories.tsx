@@ -5,7 +5,7 @@ import { ComponentMeta } from '@storybook/react';
 import DownloadSpinnerComponent from '../../view/remote-queries/DownloadSpinner';
 
 export default {
-  title: 'MRVA/Download Spinner',
+  title: 'Download Spinner',
   component: DownloadSpinnerComponent,
 } as ComponentMeta<typeof DownloadSpinnerComponent>;
 

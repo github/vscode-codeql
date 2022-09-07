@@ -6,7 +6,7 @@ import AnalysisAlertResult from '../../view/remote-queries/AnalysisAlertResult';
 import type { AnalysisAlert } from '../../remote-queries/shared/analysis-result';
 
 export default {
-  title: 'MRVA/Analysis Alert Result',
+  title: 'Analysis Alert Result',
   component: AnalysisAlertResult,
 } as ComponentMeta<typeof AnalysisAlertResult>;
 

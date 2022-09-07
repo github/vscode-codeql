@@ -5,7 +5,7 @@ import { ComponentStory, ComponentMeta } from '@storybook/react';
 import DownloadButtonComponent from '../../view/remote-queries/DownloadButton';
 
 export default {
-  title: 'MRVA/Download Button',
+  title: 'Download Button',
   component: DownloadButtonComponent,
   argTypes: {
     onClick: {

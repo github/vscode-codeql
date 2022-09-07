@@ -5,7 +5,7 @@ import { ComponentStory, ComponentMeta } from '@storybook/react';
 import TextButtonComponent from '../../view/remote-queries/TextButton';
 
 export default {
-  title: 'MRVA/Text Button',
+  title: 'Text Button',
   component: TextButtonComponent,
   argTypes: {
     onClick: {

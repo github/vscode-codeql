@@ -5,7 +5,7 @@ import { ComponentStory, ComponentMeta } from '@storybook/react';
 import FileCodeSnippet from '../../view/remote-queries/FileCodeSnippet';
 
 export default {
-  title: 'MRVA/File Code Snippet',
+  title: 'File Code Snippet',
   component: FileCodeSnippet
 } as ComponentMeta<typeof FileCodeSnippet>;
 

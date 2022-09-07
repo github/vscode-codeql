@@ -5,7 +5,7 @@ import { ComponentStory, ComponentMeta } from '@storybook/react';
 import StarCountComponent from '../../view/remote-queries/StarCount';
 
 export default {
-  title: 'MRVA/Star Count',
+  title: 'Star Count',
   component: StarCountComponent,
 } as ComponentMeta<typeof StarCountComponent>;
 

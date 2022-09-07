@@ -7,7 +7,7 @@ import CodePaths from '../../view/remote-queries/CodePaths';
 import type { CodeFlow } from '../../remote-queries/shared/analysis-result';
 
 export default {
-  title: 'MRVA/Code Paths',
+  title: 'Code Paths',
   component: CodePaths,
   decorators: [
     (Story) => (
