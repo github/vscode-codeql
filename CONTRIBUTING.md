@@ -89,6 +89,8 @@ Your browser should automatically open to the Storybook UI. Stories live in the 
 
 Alternatively, you can start Storybook inside of VSCode. There is a VSCode launch configuration for starting Storybook. It can be found in the debug view.
 
+More information about Storybook can be found inside the **Overview** page once you have launched Storybook.
+
 ### Running the unit tests and integration tests that do not require a CLI instance
 
 Unit tests and many integration tests do not require a copy of the CodeQL CLI.
