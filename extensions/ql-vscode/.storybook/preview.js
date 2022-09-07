@@ -1,4 +1,5 @@
 import { themes } from '@storybook/theming';
+import { action } from '@storybook/addon-actions';
 
 // Allow all stories/components to use Codicons
 import '@vscode/codicons/dist/codicon.css';
@@ -31,3 +32,7 @@ export const parameters = {
     },
   },
 };
+
+window.acquireVsCodeApi = () => ({
+  postMessage: action('post-vscode-message')
+});
