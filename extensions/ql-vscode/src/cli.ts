@@ -1261,8 +1261,16 @@ export class CliVersionConstraint {
 
   /**
    * CLI version where database registration was introduced
-  */
+   */
   public static CLI_VERSION_WITH_DB_REGISTRATION = new SemVer('2.4.1');
+
+  /**
+   * CLI version where non destructive upgrades were introduced.
+   *
+   * This was landed in multiple parts so this is the version where all necessary feature were supported.
+   */
+  public static CLI_VERSION_WITH_NON_DESTRUCTIVE_UPGRADES = new SemVer('2.4.2');
+
 
   /**
    * CLI version where the `--allow-library-packs` option to `codeql resolve queries` was
@@ -1357,6 +1365,10 @@ export class CliVersionConstraint {
 
   async supportsDatabaseRegistration() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DB_REGISTRATION);
+  }
+
+  async supportsNonDestructiveUpgrades(): Promise<boolean> {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NON_DESTRUCTIVE_UPGRADES);
   }
 
   async supportsDatabaseUnbundle() {

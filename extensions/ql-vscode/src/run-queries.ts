@@ -32,7 +32,7 @@ import * as messages from './pure/messages';
 import { InitialQueryInfo, LocalQueryInfo } from './query-results';
 import * as qsClient from './queryserver-client';
 import { isQuickQueryPath } from './quick-query';
-import { compileDatabaseUpgradeSequence, hasNondestructiveUpgradeCapabilities, upgradeDatabaseExplicit } from './upgrades';
+import { compileDatabaseUpgradeSequence, upgradeDatabaseExplicit } from './upgrades';
 import { ensureMetadataIsComplete } from './query-results';
 import { SELECT_QUERY_NAME } from './contextual/locationFinder';
 import { DecodedBqrsChunk } from './pure/bqrs-cli-types';
@@ -862,7 +862,7 @@ export async function compileAndRunQueryAgainstDatabase(
   let upgradeDir: tmp.DirectoryResult | undefined;
   try {
     let upgradeQlo;
-    if (await hasNondestructiveUpgradeCapabilities(qs)) {
+    if (await qs.cliServer.cliConstraints.supportsNonDestructiveUpgrades()) {
       upgradeDir = await tmp.dir({ dir: upgradesTmpDir, unsafeCleanup: true });
       upgradeQlo = await compileNonDestructiveUpgrade(qs, upgradeDir, query, qlProgram, dbItem, progress, token);
     } else {

@@ -782,7 +782,7 @@ async function activateWithInstalledDistribution(
           });
         }
 
-        if (queryUris.length > 1) {
+        if (queryUris.length > 1 && !await cliServer.cliConstraints.supportsNonDestructiveUpgrades()) {
           // Try to upgrade the current database before running any queries
           // so that the user isn't confronted with multiple upgrade
           // requests for each query to run.
