@@ -32,6 +32,6 @@ export const parameters = {
   }
 };
 
-window.acquireVsCodeApi = () => ({
+(window as any).acquireVsCodeApi = () => ({
   postMessage: action('post-vscode-message')
 });
