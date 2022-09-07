@@ -725,11 +725,6 @@
           "when": "view == codeQLDatabases"
         },
         {
-          "command": "codeQLDatabases.upgradeDatabase",
-          "group": "9_qlCommands",
-          "when": "view == codeQLDatabases"
-        },
-        {
           "command": "codeQLDatabases.renameDatabase",
           "group": "9_qlCommands",
           "when": "view == codeQLDatabases"
