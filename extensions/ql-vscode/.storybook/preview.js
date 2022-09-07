@@ -29,12 +29,7 @@ export const parameters = {
         value: '#1e1e1e',
       },
     ],
-  },
-  options: {
-    storySort: {
-      order: ['WebView UI Toolkit', 'MRVA'],
-    },
-  },
+  }
 };
 
 window.acquireVsCodeApi = () => ({
