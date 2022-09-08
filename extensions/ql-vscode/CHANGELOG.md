@@ -2,8 +2,8 @@
 
 ## [UNRELEASED]
 
-- Removed the ability to manaully upgrade databases from the context menu on databases. Databases are non-destructively upgraded automatically so 
-  for most users this was not needed. For advanced users this is still available in the command pallette. [#1501](https://github.com/github/vscode-codeql/pull/1501)
+- Removed the ability to manually upgrade databases from the context menu on databases. Databases are non-destructively upgraded automatically so 
+  for most users this was not needed. For advanced users this is still available in the Command Palette. [#1501](https://github.com/github/vscode-codeql/pull/1501)
 
 ## 1.6.12 - 1 September 2022
 
