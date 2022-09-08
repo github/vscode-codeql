@@ -752,7 +752,7 @@
         {
           "command": "codeQLQueryHistory.removeHistoryItem",
           "group": "9_qlCommands",
-          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem"
+          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         },
         {
           "command": "codeQLQueryHistory.setLabel",
@@ -827,7 +827,7 @@
         {
           "command": "codeQLQueryHistory.openOnGithub",
           "group": "9_qlCommands",
-          "when": "viewItem == remoteResultsItem || viewItem == inProgressRemoteResultsItem || viewItem == cancelledResultsItem"
+          "when": "viewItem == remoteResultsItem || viewItem == inProgressRemoteResultsItem || viewItem == cancelledRemoteResultsItem"
         },
         {
           "command": "codeQLQueryHistory.copyRepoList",
