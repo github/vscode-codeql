@@ -1,0 +1,55 @@
+import { Canvas, Meta, Story } from '@storybook/addon-docs';
+
+import { VSCodeButton } from '@vscode/webview-ui-toolkit/react';
+
+import iframeImage from './images/update-css-variables-iframe.png';
+import stylesImage from './images/update-css-variables-styles.png';
+import bodyImage from './images/update-css-variables-body.png';
+
+<Meta title="Overview" />
+
+Welcome to the Storybook for **CodeQL for Visual Studio Code**! This Storybook contains stories for components and pages in the extension.
+
+### Writing stories
+
+To create new stories, copy an existing story in the `src/stories` directory and modify it to use your component or page. Please note that
+you are not able to access any VSCode specific APIs or receive messages from VSCode so an ideal component would use generic props. The
+`vscode.postMessage` API is mocked but no message will be sent.
+
+You are able to use all VSCode CSS variables; these are injected into the Storybook preview. However, only the Dark+ theme is supported. It
+is currently not possible to preview your component in another theme.
+
+For more information about how to write stories and how to add controls, please see the
+[Storybook documentation](https://storybook.js.org/docs/react/writing-stories/introduction).
+
+### WebView UI Toolkit
+
+As much as possible, we try to make use of the [WebView UI Toolkit](https://github.com/microsoft/vscode-webview-ui-toolkit). The Storybook
+for the WebView UI Toolkit can be found [here](https://microsoft.github.io/vscode-webview-ui-toolkit/).
+
+### Updating VSCode CSS variables
+
+The VSCode CSS variables that are injected into the Storybook preview are defined in the `src/stories/vscode-theme.css` file. They need to be
+updated manually if new variables are added to VSCode. It can also be updated if you would like to manually preview a different theme. To update
+these variables, follow these steps:
+
+1. Make sure you have selected the correct theme. If you want to use a variable which is currently not available and will be committed, please
+select the **Dark+** theme. You can use **Preferences: Color Theme** in the *Command Palette* to select the theme.
+2. Open a WebView in VSCode (for example the results of a query)
+3. Open the *Command Palette* (Ctrl/Cmd+Shift+P)
+4. Select **Developer: Open WebView Developer Tools**
+5. Now, you will need to find the `<html>` element in the lowest-level `<iframe>`. See the image below:
+
+<img src={iframeImage} />
+
+6. Once you have selected the `<html>` element as in the image above, click on **Show All Properties (... more)** (see image below). This will
+expand all CSS variables.
+
+<img src={stylesImage} />
+
+7. Copy all variables to the `src/stories/vscode-theme.css` file.
+8. Now, select the `<body>` element which is a direct child of the `<html>` element.
+9. This time, you do not need to copy the variables. Instead, copy the styles on the `<body>` element to the `src/stories/vscode-theme.css` file.
+See the image below for which styles need to be copied.
+
+<img src={bodyImage} />
