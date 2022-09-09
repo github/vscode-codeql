@@ -189,7 +189,7 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
         break;
       case QueryStatus.Failed:
         treeItem.iconPath = this.failedIconPath;
-        treeItem.contextValue = 'cancelledResultsItem';
+        treeItem.contextValue = element.t === 'local' ? 'cancelledResultsItem' : 'cancelledRemoteResultsItem';
         break;
       default:
         assertNever(element.status);
