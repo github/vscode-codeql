@@ -393,7 +393,6 @@ export class DatabaseUI extends DisposableObject {
       await this.chooseAndSetDatabase(true, progress, token);
     } catch (e) {
       void showAndLogErrorMessage(getErrorMessage(e));
-      return undefined;
     }
   };
 
@@ -461,7 +460,6 @@ export class DatabaseUI extends DisposableObject {
       await this.chooseAndSetDatabase(false, progress, token);
     } catch (e) {
       void showAndLogErrorMessage(getErrorMessage(e));
-      return undefined;
     }
   };
 

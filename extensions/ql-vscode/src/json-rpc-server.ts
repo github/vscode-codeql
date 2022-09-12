@@ -10,14 +10,14 @@ export class ServerProcess implements Disposable {
   connection: MessageConnection;
   logger: Logger;
 
-  constructor(child: cp.ChildProcess, connection: MessageConnection, logger: Logger) {
+  constructor(child: cp.ChildProcess, connection: MessageConnection, private name: string, logger: Logger) {
     this.child = child;
     this.connection = connection;
     this.logger = logger;
   }
 
   dispose(): void {
-    void this.logger.log('Stopping query server...');
+    void this.logger.log(`Stopping ${this.name}...`);
     this.connection.dispose();
     this.child.stdin!.end();
     this.child.stderr!.destroy();
@@ -25,6 +25,6 @@ export class ServerProcess implements Disposable {
 
     // On Windows, we usually have to terminate the process before closing its stdout.
     this.child.stdout!.destroy();
-    void this.logger.log('Stopped query server.');
+    void this.logger.log(`Stopped ${this.name}.`);
   }
 }
