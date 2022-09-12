@@ -75,7 +75,7 @@ export class CompletedQueryInfo implements QueryWithResults {
   interpretedResultsSortState: InterpretedResultsSortState | undefined;
 
   /**
-   * Note that in the {@link FullQueryInfo.slurp} method, we create a CompletedQueryInfo instance
+   * Note that in the {@link slurpQueryHistory} method, we create a CompletedQueryInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(

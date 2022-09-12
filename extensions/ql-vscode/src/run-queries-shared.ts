@@ -62,7 +62,7 @@ function findQueryEvalLogEndSummaryFile(resultPath: string): string {
 export class QueryEvaluationInfo {
 
   /**
-   * Note that in the {@link FullQueryInfo.slurp} method, we create a QueryEvaluationInfo instance
+   * Note that in the {@link slurpQueryHistory} method, we create a QueryEvaluationInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(
@@ -213,7 +213,7 @@ export class QueryEvaluationInfo {
   async addQueryLogs(queryInfo: LocalQueryInfo, cliServer: CodeQLCliServer, logger: Logger) {
     queryInfo.evalLogLocation = this.evalLogPath;
     queryInfo.evalLogSummaryLocation = await this.generateHumanReadableLogSummary(cliServer);
-    void this.logEndSummary(queryInfo.evalLogSummaryLocation, logger);  // Logged asynchrnously   
+    void this.logEndSummary(queryInfo.evalLogSummaryLocation, logger);  // Logged asynchrnously
     if (config.isCanary()) { // Generate JSON summary for viewer.
       await cliServer.generateJsonLogSummary(this.evalLogPath, this.jsonEvalLogSummaryPath);
       queryInfo.jsonEvalLogSummaryLocation = this.jsonEvalLogSummaryPath;
@@ -582,4 +582,3 @@ export async function createInitialQueryInfo(
     })
   };
 }
-

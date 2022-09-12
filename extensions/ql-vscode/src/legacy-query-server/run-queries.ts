@@ -37,7 +37,7 @@ export class QueryInProgress {
 
   public queryEvalInfo: QueryEvaluationInfo;
   /**
-   * Note that in the {@link FullQueryInfo.slurp} method, we create a QueryEvaluationInfo instance
+   * Note that in the {@link slurpQueryHistory} method, we create a QueryEvaluationInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(
@@ -515,4 +515,3 @@ function createSimpleTemplates(templates: Record<string, string> | undefined): m
   }
   return result;
 }
-
