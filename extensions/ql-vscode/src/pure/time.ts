@@ -76,6 +76,10 @@ export function humanizeUnit(millis?: number): string {
   return createFormatter(unit).format(unitDiff);
 }
 
+export async function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function createFormatter(unit: string) {
   return Intl.NumberFormat('en-US', {
     style: 'unit',

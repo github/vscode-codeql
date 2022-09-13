@@ -1,4 +1,4 @@
-import { CancellationToken, Uri, window } from 'vscode';
+import { CancellationToken, commands, Uri, window } from 'vscode';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
@@ -17,7 +17,7 @@ import {
 import { Credentials } from '../authentication';
 import * as cli from '../cli';
 import { logger } from '../logging';
-import { getActionBranch, getRemoteControllerRepo, setRemoteControllerRepo } from '../config';
+import { getActionBranch, getRemoteControllerRepo, isVariantAnalysisLiveResultsEnabled, setRemoteControllerRepo } from '../config';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { OctokitResponse } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
@@ -25,6 +25,8 @@ import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
 import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
 import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
+import * as ghApiClient from '../gh-api/gh-api-client';
+import { VariantAnalysisSubmission } from './shared/variant-analysis';
 
 export interface QlPack {
   name: string;
@@ -212,29 +214,30 @@ export async function runRemoteQuery(
 
     // Get the controller repo from the config, if it exists.
     // If it doesn't exist, prompt the user to enter it, and save that value to the config.
-    let controllerRepo: string | undefined;
-    controllerRepo = getRemoteControllerRepo();
-    if (!controllerRepo || !REPO_REGEX.test(controllerRepo)) {
-      void logger.log(controllerRepo ? 'Invalid controller repository name.' : 'No controller repository defined.');
-      controllerRepo = await window.showInputBox({
+    let controllerRepoNwo: string | undefined;
+    controllerRepoNwo = getRemoteControllerRepo();
+    if (!controllerRepoNwo || !REPO_REGEX.test(controllerRepoNwo)) {
+      void logger.log(controllerRepoNwo ? 'Invalid controller repository name.' : 'No controller repository defined.');
+      controllerRepoNwo = await window.showInputBox({
         title: 'Controller repository in which to run the GitHub Actions workflow for this variant analysis',
         placeHolder: '<owner>/<repo>',
         prompt: 'Enter the name of a GitHub repository in the format <owner>/<repo>',
         ignoreFocusOut: true,
       });
-      if (!controllerRepo) {
+      if (!controllerRepoNwo) {
         void showAndLogErrorMessage('No controller repository entered.');
         return;
-      } else if (!REPO_REGEX.test(controllerRepo)) { // Check if user entered invalid input
+      } else if (!REPO_REGEX.test(controllerRepoNwo)) { // Check if user entered invalid input
         void showAndLogErrorMessage('Invalid repository format. Must be a valid GitHub repository in the format <owner>/<repo>.');
         return;
       }
-      void logger.log(`Setting the controller repository as: ${controllerRepo}`);
-      await setRemoteControllerRepo(controllerRepo);
+      void logger.log(`Setting the controller repository as: ${controllerRepoNwo}`);
+      await setRemoteControllerRepo(controllerRepoNwo);
     }
 
-    void logger.log(`Using controller repository: ${controllerRepo}`);
-    const [owner, repo] = controllerRepo.split('/');
+    void logger.log(`Using controller repository: ${controllerRepoNwo}`);
+    const [owner, repo] = controllerRepoNwo.split('/');
+    const controllerRepoId = await ghApiClient.getRepositoryIdFromNwo(credentials, owner, repo);
 
     progress({
       maxStep: 4,
@@ -259,9 +262,34 @@ export async function runRemoteQuery(
     });
 
     const actionBranch = getActionBranch();
-    const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, owner, repo, base64Pack, dryRun);
-    const queryStartTime = Date.now();
     const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
+    const queryStartTime = Date.now();
+
+    if (isVariantAnalysisLiveResultsEnabled()) {
+      const queryName = getQueryName(queryMetadata, queryFile);
+
+      const variantAnalysisSubmission: VariantAnalysisSubmission = {
+        startTime: queryStartTime,
+        actionRepoRef: actionBranch,
+        controllerRepoId: controllerRepoId,
+        query: {
+          name: queryName,
+          filePath: queryFile,
+          pack: base64Pack,
+          language: language,
+        },
+        databases: {
+          repositories: repoSelection.repositories,
+          repositoryLists: repoSelection.repositoryLists,
+          repositoryOwners: repoSelection.owners
+        }
+      };
+
+      void commands.executeCommand('codeQL.submitVariantAnalysis', variantAnalysisSubmission);
+      return;
+    }
+
+    const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, owner, repo, base64Pack, dryRun);
 
     if (dryRun) {
       return { queryDirPath: remoteQueryDir.path };
@@ -432,9 +460,7 @@ async function buildRemoteQueryEntity(
   language: string,
   repositoryCount: number
 ): Promise<RemoteQuery> {
-  // The query name is either the name as specified in the query metadata, or the file name.
-  const queryName = queryMetadata?.name ?? path.basename(queryFilePath);
-
+  const queryName = getQueryName(queryMetadata, queryFilePath);
   const queryText = await fs.readFile(queryFilePath, 'utf8');
 
   return {
@@ -450,4 +476,9 @@ async function buildRemoteQueryEntity(
     actionsWorkflowRunId: workflowRunId,
     repositoryCount,
   };
+}
+
+function getQueryName(queryMetadata: QueryMetadata | undefined, queryFilePath: string): string {
+  // The query name is either the name as specified in the query metadata, or the file name.
+  return queryMetadata?.name ?? path.basename(queryFilePath);
 }

@@ -325,6 +325,10 @@ export const NO_CACHE_AST_VIEWER = new Setting('disableCache', AST_VIEWER_SETTIN
 // Settings for variant analysis
 const REMOTE_QUERIES_SETTING = new Setting('variantAnalysis', ROOT_SETTING);
 
+export function isVariantAnalysisLiveResultsEnabled() {
+  return true;
+}
+
 /**
  * Lists of GitHub repositories that you want to query remotely via the "Run Variant Analysis" command.
  * Note: This command is only available for internal users.

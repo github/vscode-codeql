@@ -102,6 +102,9 @@ import { EvalLogViewer } from './eval-log-viewer';
 import { SummaryLanguageSupport } from './log-insights/summary-language-support';
 import { JoinOrderScannerProvider } from './log-insights/join-order';
 import { LogScannerService } from './log-insights/log-scanner-service';
+import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
+import { VariantAnalysisSubmission } from './remote-queries/shared/variant-analysis';
+import { VariantAnalysis } from './gh-api/variant-analysis-models';
 
 /**
  * extension.ts
@@ -899,6 +902,25 @@ async function activateWithInstalledDistribution(
       token: CancellationToken) => {
       await rqm.monitorRemoteQuery(queryId, query, token);
     }));
+
+  const variantAnalysisManager = new VariantAnalysisManager(ctx);
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.submitVariantAnalysis', async (
+      submissionDetails: VariantAnalysisSubmission
+    ) => {
+      await variantAnalysisManager.submitVariantAnalysis(submissionDetails);
+    })
+  );
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.monitorVariantAnalysis', async (
+      variantAnalysis: VariantAnalysis
+    ) => {
+      // TODO: Cancellation token
+      await variantAnalysisManager.monitorVariantAnalysis(variantAnalysis);
+    })
+  );
 
   ctx.subscriptions.push(
     commandRunner('codeQL.copyRepoList', async (queryId: string) => {
