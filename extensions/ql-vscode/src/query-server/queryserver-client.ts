@@ -158,7 +158,7 @@ export class QueryServerClient extends DisposableObject {
         callback(res);
       }
     });
-    this.serverProcess = new ServerProcess(child, connection, this.logger);
+    this.serverProcess = new ServerProcess(child, connection, 'Query Server 2', this.logger);
     // Ensure the server process is disposed together with this client.
     this.track(this.serverProcess);
     connection.listen();
@@ -201,4 +201,3 @@ export class QueryServerClient extends DisposableObject {
     }
   }
 }
-
