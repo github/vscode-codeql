@@ -314,6 +314,10 @@
         "title": "CodeQL: Export Variant Analysis Results"
       },
       {
+        "command": "codeQL.mockVariantAnalysisView",
+        "title": "CodeQL: Variant Analysis mock view"
+      },
+      {
         "command": "codeQL.runQueries",
         "title": "CodeQL: Run Queries in Selected Files"
       },
@@ -892,6 +896,10 @@
         {
           "command": "codeQL.exportVariantAnalysisResults",
           "when": "config.codeQL.canary"
+        },
+        {
+          "command": "codeQL.mockVariantAnalysisView",
+          "when": "config.codeQL.canary && config.codeQL.variantAnalysis.liveResults"
         },
         {
           "command": "codeQL.runQueries",
