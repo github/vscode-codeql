@@ -418,7 +418,8 @@ export async function compileAndRunQueryAgainstDatabase(
 
       return {
         query: query.queryEvalInfo,
-        message: message,
+        message,
+        result,
         sucessful: result.resultType == messages.QueryResultType.SUCCESS,
         logFileLocation: result.logFileLocation,
         dispose: () => {

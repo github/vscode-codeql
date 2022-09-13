@@ -83,6 +83,9 @@ export class CompletedQueryInfo implements QueryWithResults {
   ) {
     this.query = evaluation.query;
     this.logFileLocation = evaluation.logFileLocation;
+    if (evaluation.result) {
+      this.result = evaluation.result;
+    }
     this.message = evaluation.message;
     this.sucessful = evaluation.sucessful;
     // Use the dispose method from the evaluation.
