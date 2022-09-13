@@ -240,7 +240,7 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Restart the server when the current command terminates
    */
-  private restartCliServer(): void {
+  restartCliServer(): void {
     const callback = (): void => {
       try {
         this.killProcessIfRunning();
@@ -683,7 +683,7 @@ export class CodeQLCliServer implements Disposable {
     const subcommandArgs = [
       '--format=text',
       `--end-summary=${endSummaryPath}`,
-      '--sourcemap',
+      ...(await this.cliConstraints.supportsSourceMap() ? ['--sourcemap'] : []),
       inputPath,
       outputPath
     ];
@@ -1261,8 +1261,16 @@ export class CliVersionConstraint {
 
   /**
    * CLI version where database registration was introduced
-  */
+   */
   public static CLI_VERSION_WITH_DB_REGISTRATION = new SemVer('2.4.1');
+
+  /**
+   * CLI version where non destructive upgrades were introduced.
+   *
+   * This was landed in multiple parts so this is the version where all necessary feature were supported.
+   */
+  public static CLI_VERSION_WITH_NON_DESTRUCTIVE_UPGRADES = new SemVer('2.4.2');
+
 
   /**
    * CLI version where the `--allow-library-packs` option to `codeql resolve queries` was
@@ -1322,6 +1330,11 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_PER_QUERY_EVAL_LOG = new SemVer('2.9.0');
 
+  /**
+   * CLI version that supports the `--sourcemap` option for log generation.
+   */
+  public static CLI_VERSION_WITH_SOURCEMAP = new SemVer('2.10.3');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1352,6 +1365,10 @@ export class CliVersionConstraint {
 
   async supportsDatabaseRegistration() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DB_REGISTRATION);
+  }
+
+  async supportsNonDestructiveUpgrades(): Promise<boolean> {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NON_DESTRUCTIVE_UPGRADES);
   }
 
   async supportsDatabaseUnbundle() {
@@ -1388,5 +1405,9 @@ export class CliVersionConstraint {
 
   async supportsPerQueryEvalLog() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG);
+  }
+
+  async supportsSourceMap() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_SOURCEMAP);
   }
 }

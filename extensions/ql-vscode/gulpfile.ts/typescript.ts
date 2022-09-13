@@ -39,13 +39,3 @@ export function compileTypeScript() {
 export function watchTypeScript() {
   gulp.watch('src/**/*.ts', compileTypeScript);
 }
-
-export function watchCss() {
-  gulp.watch('src/**/*.css', copyViewCss);
-}
-
-/** Copy CSS files for the results view into the output directory. */
-export function copyViewCss() {
-  return gulp.src('src/**/view/*.css')
-    .pipe(gulp.dest('out'));
-}

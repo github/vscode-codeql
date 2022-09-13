@@ -1,14 +1,8 @@
-import { DisposableObject } from '../pure/disposable-object';
 import {
-  WebviewPanel,
   ExtensionContext,
-  window as Window,
   ViewColumn,
-  Uri,
 } from 'vscode';
-import * as path from 'path';
 
-import { tmpDir } from '../helpers';
 import {
   FromCompareViewMessage,
   ToCompareViewMessage,
@@ -17,26 +11,24 @@ import {
 import { Logger } from '../logging';
 import { CodeQLCliServer } from '../cli';
 import { DatabaseManager } from '../databases';
-import { getHtmlForWebview, jumpToLocation } from '../interface-utils';
+import { jumpToLocation } from '../interface-utils';
 import { transformBqrsResultSet, RawResultSet, BQRSInfo } from '../pure/bqrs-cli-types';
 import resultsDiff from './resultsDiff';
 import { CompletedLocalQueryInfo } from '../query-results';
 import { getErrorMessage } from '../pure/helpers-pure';
 import { HistoryItemLabelProvider } from '../history-item-label-provider';
+import { AbstractInterfaceManager, InterfacePanelConfig } from '../abstract-interface-manager';
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
   to: CompletedLocalQueryInfo;
 }
 
-export class CompareInterfaceManager extends DisposableObject {
+export class CompareInterfaceManager extends AbstractInterfaceManager<ToCompareViewMessage, FromCompareViewMessage> {
   private comparePair: ComparePair | undefined;
-  private panel: WebviewPanel | undefined;
-  private panelLoaded = false;
-  private panelLoadedCallBacks: (() => void)[] = [];
 
   constructor(
-    private ctx: ExtensionContext,
+    ctx: ExtensionContext,
     private databaseManager: DatabaseManager,
     private cliServer: CodeQLCliServer,
     private logger: Logger,
@@ -45,7 +37,7 @@ export class CompareInterfaceManager extends DisposableObject {
       item: CompletedLocalQueryInfo
     ) => Promise<void>
   ) {
-    super();
+    super(ctx);
   }
 
   async showResults(
@@ -103,73 +95,24 @@ export class CompareInterfaceManager extends DisposableObject {
     }
   }
 
-  getPanel(): WebviewPanel {
-    if (this.panel == undefined) {
-      const { ctx } = this;
-      const panel = (this.panel = Window.createWebviewPanel(
-        'compareView',
-        'Compare CodeQL Query Results',
-        { viewColumn: ViewColumn.Active, preserveFocus: true },
-        {
-          enableScripts: true,
-          enableFindWidget: true,
-          retainContextWhenHidden: true,
-          localResourceRoots: [
-            Uri.file(tmpDir.name),
-            Uri.file(path.join(this.ctx.extensionPath, 'out')),
-          ],
-        }
-      ));
-      this.push(this.panel.onDidDispose(
-        () => {
-          this.panel = undefined;
-          this.comparePair = undefined;
-        },
-        null,
-        ctx.subscriptions
-      ));
-
-      const scriptPathOnDisk = Uri.file(
-        ctx.asAbsolutePath('out/compareView.js')
-      );
-
-      const stylesheetPathOnDisk = Uri.file(
-        ctx.asAbsolutePath('out/view/resultsView.css')
-      );
-
-      panel.webview.html = getHtmlForWebview(
-        panel.webview,
-        scriptPathOnDisk,
-        [stylesheetPathOnDisk],
-        false
-      );
-      this.push(panel.webview.onDidReceiveMessage(
-        async (e) => this.handleMsgFromView(e),
-        undefined,
-        ctx.subscriptions
-      ));
-    }
-    return this.panel;
+  protected getPanelConfig(): InterfacePanelConfig {
+    return {
+      viewId: 'compareView',
+      title: 'Compare CodeQL Query Results',
+      viewColumn: ViewColumn.Active,
+      preserveFocus: true,
+      view: 'compare',
+    };
   }
 
-  private waitForPanelLoaded(): Promise<void> {
-    return new Promise((resolve) => {
-      if (this.panelLoaded) {
-        resolve();
-      } else {
-        this.panelLoadedCallBacks.push(resolve);
-      }
-    });
+  protected onPanelDispose(): void {
+    this.comparePair = undefined;
   }
 
-  private async handleMsgFromView(
-    msg: FromCompareViewMessage
-  ): Promise<void> {
+  protected async onMessage(msg: FromCompareViewMessage): Promise<void> {
     switch (msg.t) {
       case 'compareViewLoaded':
-        this.panelLoaded = true;
-        this.panelLoadedCallBacks.forEach((cb) => cb());
-        this.panelLoadedCallBacks = [];
+        this.onWebViewLoaded();
         break;
 
       case 'changeCompare':
@@ -184,10 +127,6 @@ export class CompareInterfaceManager extends DisposableObject {
         await this.openQuery(msg.kind);
         break;
     }
-  }
-
-  private postMessage(msg: ToCompareViewMessage): Thenable<boolean> {
-    return this.getPanel().webview.postMessage(msg);
   }
 
   private async findCommonResultSetNames(

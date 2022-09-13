@@ -75,6 +75,8 @@ export class RemoteQueriesManager extends DisposableObject {
     this.onRemoteQueryAdded = this.remoteQueryAddedEventEmitter.event;
     this.onRemoteQueryRemoved = this.remoteQueryRemovedEventEmitter.event;
     this.onRemoteQueryStatusUpdate = this.remoteQueryStatusUpdateEventEmitter.event;
+
+    this.push(this.interfaceManager);
   }
 
   public async rehydrateRemoteQuery(queryId: string, query: RemoteQuery, status: QueryStatus) {
@@ -125,7 +127,7 @@ export class RemoteQueriesManager extends DisposableObject {
 
     if (querySubmission?.query) {
       const query = querySubmission.query;
-      const queryId = this.createQueryId(query.queryName);
+      const queryId = this.createQueryId();
 
       await this.prepareStorageDirectory(queryId);
       await this.storeJsonFile(queryId, 'query.json', query);
@@ -262,11 +264,10 @@ export class RemoteQueriesManager extends DisposableObject {
 
   /**
    * Generates a unique id for this query, suitable for determining the storage location for the downloaded query artifacts.
-   * @param queryName
-   * @returns
+   * @returns A unique id for this query.
    */
-  private createQueryId(queryName: string): string {
-    return `${queryName}-${nanoid()}`;
+  private createQueryId(): string {
+    return nanoid();
   }
 
   /**

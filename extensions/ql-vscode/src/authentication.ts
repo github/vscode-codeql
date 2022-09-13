@@ -76,16 +76,27 @@ export class Credentials {
     }));
   }
 
-  async getOctokit(): Promise<Octokit.Octokit> {
+  /**
+   * Creates or returns an instance of Octokit.
+   *
+   * @param requireAuthentication Whether the Octokit instance needs to be authenticated as user.
+   * @returns An instance of Octokit.
+   */
+  async getOctokit(requireAuthentication = true): Promise<Octokit.Octokit> {
     if (this.octokit) {
       return this.octokit;
     }
 
-    this.octokit = await this.createOctokit(true);
-    // octokit shouldn't be undefined, since we've set "createIfNone: true".
-    // The following block is mainly here to prevent a compiler error.
+    this.octokit = await this.createOctokit(requireAuthentication);
+
     if (!this.octokit) {
-      throw new Error('Did not initialize Octokit.');
+      if (requireAuthentication) {
+        throw new Error('Did not initialize Octokit.');
+      }
+
+      // We don't want to set this in this.octokit because that would prevent
+      // authenticating when requireCredentials is true.
+      return new Octokit.Octokit({ retry });
     }
     return this.octokit;
   }

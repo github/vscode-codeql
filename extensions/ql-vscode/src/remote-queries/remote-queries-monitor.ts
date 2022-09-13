@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
-import { getWorkflowStatus } from './gh-actions-api-client';
+import { getWorkflowStatus, isArtifactAvailable, RESULT_INDEX_ARTIFACT_NAME } from './gh-actions-api-client';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryWorkflowResult } from './remote-query-workflow-result';
 
@@ -42,7 +42,25 @@ export class RemoteQueriesMonitor {
         remoteQuery.controllerRepository.name,
         remoteQuery.actionsWorkflowRunId);
 
-      if (workflowStatus.status !== 'InProgress') {
+      // Even if the workflow indicates it has completed, artifacts
+      // might still take a while to become available. So we need to
+      // check for the artifact before we can declare the workflow
+      // as having completed.
+      if (workflowStatus.status === 'CompletedSuccessfully') {
+        const resultIndexAvailable = await isArtifactAvailable(
+          credentials,
+          remoteQuery.controllerRepository.owner,
+          remoteQuery.controllerRepository.name,
+          remoteQuery.actionsWorkflowRunId,
+          RESULT_INDEX_ARTIFACT_NAME
+        );
+
+        if (resultIndexAvailable) {
+          return workflowStatus;
+        }
+
+        // We don't have a result-index yet, so we'll keep monitoring.
+      } else if (workflowStatus.status !== 'InProgress') {
         return workflowStatus;
       }
 

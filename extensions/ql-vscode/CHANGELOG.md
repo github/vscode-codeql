@@ -2,8 +2,19 @@
 
 ## [UNRELEASED]
 
-- Add ability for users to download databases directly from GitHub. [#1466](https://github.com/github/vscode-codeql/pull/1466)
 - Remove ability to download databases from LGTM. [#1467](https://github.com/github/vscode-codeql/pull/1467)
+- Removed the ability to manually upgrade databases from the context menu on databases. Databases are non-destructively upgraded automatically so 
+  for most users this was not needed. For advanced users this is still available in the Command Palette. [#1501](https://github.com/github/vscode-codeql/pull/1501)
+
+## 1.6.12 - 1 September 2022
+
+- Add ability for users to download databases directly from GitHub. [#1485](https://github.com/github/vscode-codeql/pull/1485)
+- Fix a race condition that could cause a failure to open the evaluator log when running a query. [#1490](https://github.com/github/vscode-codeql/pull/1490)
+- Fix an error when running a query with an older version of the CodeQL CLI. [#1490](https://github.com/github/vscode-codeql/pull/1490)
+
+## 1.6.11 - 25 August 2022
+
+No user facing changes.
 
 ## 1.6.10 - 9 August 2022
 

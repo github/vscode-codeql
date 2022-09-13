@@ -10,6 +10,8 @@ import { RemoteQuery } from './remote-query';
 import { RemoteQueryFailureIndexItem, RemoteQueryResultIndex, RemoteQuerySuccessIndexItem } from './remote-query-result-index';
 import { getErrorMessage } from '../pure/helpers-pure';
 
+export const RESULT_INDEX_ARTIFACT_NAME = 'result-index';
+
 interface ApiSuccessIndexItem {
   nwo: string;
   id: string;
@@ -44,7 +46,7 @@ export async function getRemoteQueryIndex(
   const artifactsUrlPath = `/repos/${owner}/${repoName}/actions/artifacts`;
 
   const artifactList = await listWorkflowRunArtifacts(credentials, owner, repoName, workflowRunId);
-  const resultIndexArtifactId = tryGetArtifactIDfromName('result-index', artifactList);
+  const resultIndexArtifactId = tryGetArtifactIDfromName(RESULT_INDEX_ARTIFACT_NAME, artifactList);
   if (!resultIndexArtifactId) {
     return undefined;
   }
@@ -114,6 +116,27 @@ export async function downloadArtifactFromLink(
     await unzipFile(zipFilePath, extractedPath);
   }
   return path.join(extractedPath, downloadLink.innerFilePath || '');
+}
+
+/**
+ * Checks whether a specific artifact is present in the list of artifacts of a workflow run.
+ * @param credentials Credentials for authenticating to the GitHub API.
+ * @param owner
+ * @param repo
+ * @param workflowRunId The ID of the workflow run to get the artifact for.
+ * @param artifactName The artifact name, as a string.
+ * @returns A boolean indicating if the artifact is available.
+ */
+export async function isArtifactAvailable(
+  credentials: Credentials,
+  owner: string,
+  repo: string,
+  workflowRunId: number,
+  artifactName: string,
+): Promise<boolean> {
+  const artifactList = await listWorkflowRunArtifacts(credentials, owner, repo, workflowRunId);
+
+  return tryGetArtifactIDfromName(artifactName, artifactList) !== undefined;
 }
 
 /**

@@ -782,7 +782,7 @@ async function activateWithInstalledDistribution(
           });
         }
 
-        if (queryUris.length > 1) {
+        if (queryUris.length > 1 && !await cliServer.cliConstraints.supportsNonDestructiveUpgrades()) {
           // Try to upgrade the current database before running any queries
           // so that the user isn't confronted with multiple upgrade
           // requests for each query to run.
@@ -938,6 +938,8 @@ async function activateWithInstalledDistribution(
       progress: ProgressCallback,
       token: CancellationToken
     ) => {
+      // We restart the CLI server too, to ensure they are the same version
+      cliServer.restartCliServer();
       await qs.restartQueryServer(progress, token);
       void showAndLogInformationMessage('CodeQL Query Server restarted.', {
         outputLogger: queryServerLogger,
@@ -970,7 +972,7 @@ async function activateWithInstalledDistribution(
       progress: ProgressCallback,
       token: CancellationToken
     ) => {
-      const credentials = await Credentials.initialize(ctx);
+      const credentials = isCanary() ? await Credentials.initialize(ctx) : undefined;
       await databaseUI.handleChooseDatabaseGithub(credentials, progress, token);
     },
       {
