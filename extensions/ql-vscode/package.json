@@ -315,7 +315,7 @@
       },
       {
         "command": "codeQL.mockVariantAnalysisView",
-        "title": "CodeQL: Variant Analysis mock view"
+        "title": "CodeQL: Variant Analysis Mock View"
       },
       {
         "command": "codeQL.runQueries",
