@@ -7,7 +7,7 @@ import { VariantAnalysisHeader } from '../../view/variant-analysis/VariantAnalys
 import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
 
 export default {
-  title: 'Variant Analysis Header',
+  title: 'Variant Analysis/Variant Analysis Header',
   component: VariantAnalysisHeader,
   decorators: [
     (Story) => (
