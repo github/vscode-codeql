@@ -3,7 +3,7 @@ import { WebviewBase, InterfacePanelConfig } from '../webview-base';
 import { WebviewMessage } from '../interface-utils';
 import { logger } from '../logging';
 
-export class VariantAnalysisInterfaceManager extends WebviewBase<WebviewMessage, WebviewMessage> {
+export class VariantAnalysisView extends WebviewBase<WebviewMessage, WebviewMessage> {
   public openView() {
     this.getPanel().reveal(undefined, true);
   }
