@@ -191,7 +191,7 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
   protected async onMessage(msg: FromResultsViewMsg): Promise<void> {
     try {
       switch (msg.t) {
-        case 'resultViewLoaded':
+        case 'viewLoaded':
           this.onWebViewLoaded();
           break;
         case 'viewSourceFile': {

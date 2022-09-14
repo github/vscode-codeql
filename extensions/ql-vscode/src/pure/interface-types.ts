@@ -174,7 +174,7 @@ export type FromResultsViewMsg =
   | ToggleDiagnostics
   | ChangeRawResultsSortMsg
   | ChangeInterpretedResultsSortMsg
-  | ResultViewLoaded
+  | ViewLoadedMsg
   | ChangePage
   | OpenFileMsg;
 
@@ -216,11 +216,11 @@ interface ToggleDiagnostics {
 }
 
 /**
- * Message from the results view to signal that loading the results
- * is complete.
+ * Message from a view signal that loading is complete.
  */
-interface ResultViewLoaded {
-  t: 'resultViewLoaded';
+interface ViewLoadedMsg {
+  t: 'viewLoaded';
+  viewName: string;
 }
 
 /**
@@ -279,17 +279,10 @@ interface ChangeInterpretedResultsSortMsg {
  * Message from the compare view to the extension.
  */
 export type FromCompareViewMessage =
-  | CompareViewLoadedMessage
+  | ViewLoadedMsg
   | ChangeCompareMessage
   | ViewSourceFileMsg
   | OpenQueryMessage;
-
-/**
- * Message from the compare view to signal the completion of loading results.
- */
-interface CompareViewLoadedMessage {
-  t: 'compareViewLoaded';
-}
 
 /**
  * Message from the compare view to request opening a query.
@@ -389,7 +382,7 @@ export interface ParsedResultSets {
 }
 
 export type FromRemoteQueriesMessage =
-  | RemoteQueryLoadedMessage
+  | ViewLoadedMsg
   | RemoteQueryErrorMessage
   | OpenFileMsg
   | OpenVirtualFileMsg
@@ -401,10 +394,6 @@ export type FromRemoteQueriesMessage =
 export type ToRemoteQueriesMessage =
   | SetRemoteQueryResultMessage
   | SetAnalysesResultsMessage;
-
-export interface RemoteQueryLoadedMessage {
-  t: 'remoteQueryLoaded';
-}
 
 export interface SetRemoteQueryResultMessage {
   t: 'setRemoteQueryResult';

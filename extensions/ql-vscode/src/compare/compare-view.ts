@@ -111,7 +111,7 @@ export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompa
 
   protected async onMessage(msg: FromCompareViewMessage): Promise<void> {
     switch (msg.t) {
-      case 'compareViewLoaded':
+      case 'viewLoaded':
         this.onWebViewLoaded();
         break;
 

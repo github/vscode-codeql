@@ -121,7 +121,7 @@ export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, F
 
   protected async onMessage(msg: FromRemoteQueriesMessage): Promise<void> {
     switch (msg.t) {
-      case 'remoteQueryLoaded':
+      case 'viewLoaded':
         this.onWebViewLoaded();
         break;
       case 'remoteQueryError':
