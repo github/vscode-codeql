@@ -32,9 +32,9 @@ import { SHOW_QUERY_TEXT_MSG } from '../query-history';
 import { AnalysesResultsManager } from './analyses-results-manager';
 import { AnalysisResults } from './shared/analysis-result';
 import { humanizeUnit } from '../pure/time';
-import { WebviewBase, InterfacePanelConfig } from '../webview-base';
+import { AbstractWebview, InterfacePanelConfig } from '../abstract-webview';
 
-export class RemoteQueriesView extends WebviewBase<ToRemoteQueriesMessage, FromRemoteQueriesMessage> {
+export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, FromRemoteQueriesMessage> {
   private currentQueryId: string | undefined;
 
   constructor(

@@ -44,7 +44,7 @@ import {
 } from './interface-utils';
 import { getDefaultResultSetName, ParsedResultSets } from './pure/interface-types';
 import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './pure/bqrs-cli-types';
-import { WebviewBase, InterfacePanelConfig } from './webview-base';
+import { AbstractWebview, InterfacePanelConfig } from './abstract-webview';
 import { PAGE_SIZE } from './config';
 import { CompletedLocalQueryInfo } from './query-results';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
@@ -120,7 +120,7 @@ function numInterpretedPages(interpretation: Interpretation | undefined): number
   return Math.ceil(n / pageSize);
 }
 
-export class ResultsView extends WebviewBase<IntoResultsViewMsg, FromResultsViewMsg> {
+export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResultsViewMsg> {
   private _displayedQuery?: CompletedLocalQueryInfo;
   private _interpretation?: Interpretation;
 
