@@ -19,6 +19,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "jest.config.ts"],
   "exclude": ["node_modules", "test", "**/view"]
 }
