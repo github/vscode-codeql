@@ -35,5 +35,6 @@
   "editor.formatOnSave": false,
   "typescript.preferences.quoteStyle": "single",
   "javascript.preferences.quoteStyle": "single",
-  "editor.wordWrapColumn": 100
+  "editor.wordWrapColumn": 100,
+  "jest.rootPath": "./extensions/ql-vscode"
 }
