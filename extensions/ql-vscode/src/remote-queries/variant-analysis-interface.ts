@@ -1,9 +1,9 @@
 import { ViewColumn } from 'vscode';
-import { AbstractInterfaceManager, InterfacePanelConfig } from '../abstract-interface-manager';
+import { WebviewBase, InterfacePanelConfig } from '../webview-base';
 import { WebviewMessage } from '../interface-utils';
 import { logger } from '../logging';
 
-export class VariantAnalysisInterfaceManager extends AbstractInterfaceManager<WebviewMessage, WebviewMessage> {
+export class VariantAnalysisInterfaceManager extends WebviewBase<WebviewMessage, WebviewMessage> {
   public openView() {
     this.getPanel().reveal(undefined, true);
   }
