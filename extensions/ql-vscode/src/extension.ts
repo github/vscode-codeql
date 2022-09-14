@@ -102,6 +102,7 @@ import { EvalLogViewer } from './eval-log-viewer';
 import { SummaryLanguageSupport } from './log-insights/summary-language-support';
 import { JoinOrderScannerProvider } from './log-insights/join-order';
 import { LogScannerService } from './log-insights/log-scanner-service';
+import { VariantAnalysisInterfaceManager } from './remote-queries/variant-analysis-interface';
 
 /**
  * extension.ts
@@ -916,6 +917,13 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(
     commandRunner('codeQL.exportVariantAnalysisResults', async () => {
       await exportRemoteQueryResults(qhm, rqm, ctx);
+    })
+  );
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.mockVariantAnalysisView', async () => {
+      const variantAnalysisView = new VariantAnalysisInterfaceManager(ctx);
+      variantAnalysisView.openView();
     })
   );
 

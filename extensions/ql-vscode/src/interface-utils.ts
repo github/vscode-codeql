@@ -112,7 +112,7 @@ export function tryResolveLocation(
   }
 }
 
-export type WebviewView = 'results' | 'compare' | 'remote-queries';
+export type WebviewView = 'results' | 'compare' | 'remote-queries' | 'variant-analysis';
 
 export interface WebviewMessage {
   t: string;
