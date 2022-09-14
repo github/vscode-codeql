@@ -68,7 +68,7 @@ import {
 } from './helpers';
 import { asError, assertNever, getErrorMessage } from './pure/helpers-pure';
 import { spawnIdeServer } from './ide-server';
-import { InterfaceManager } from './interface';
+import { ResultsView } from './interface';
 import { WebviewReveal } from './interface-utils';
 import { ideServerLogger, logger, queryServerLogger } from './logging';
 import { QueryHistoryManager } from './query-history';
@@ -461,8 +461,8 @@ async function activateWithInstalledDistribution(
   const labelProvider = new HistoryItemLabelProvider(queryHistoryConfigurationListener);
 
   void logger.log('Initializing results panel interface.');
-  const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger, labelProvider);
-  ctx.subscriptions.push(intm);
+  const localQueryResultsView = new ResultsView(ctx, dbm, cliServer, queryServerLogger, labelProvider);
+  ctx.subscriptions.push(localQueryResultsView);
 
   void logger.log('Initializing variant analysis manager.');
   const rqm = new RemoteQueriesManager(ctx, cliServer, queryStorageDir, logger);
@@ -472,7 +472,7 @@ async function activateWithInstalledDistribution(
   const qhm = new QueryHistoryManager(
     qs,
     dbm,
-    intm,
+    localQueryResultsView,
     rqm,
     evalLogViewer,
     queryStorageDir,
@@ -523,7 +523,7 @@ async function activateWithInstalledDistribution(
     query: CompletedLocalQueryInfo,
     forceReveal: WebviewReveal
   ): Promise<void> {
-    await intm.showResults(query, forceReveal, false);
+    await localQueryResultsView.showResults(query, forceReveal, false);
   }
 
   async function compileAndRunQuery(

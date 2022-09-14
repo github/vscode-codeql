@@ -120,7 +120,7 @@ function numInterpretedPages(interpretation: Interpretation | undefined): number
   return Math.ceil(n / pageSize);
 }
 
-export class InterfaceManager extends WebviewBase<IntoResultsViewMsg, FromResultsViewMsg> {
+export class ResultsView extends WebviewBase<IntoResultsViewMsg, FromResultsViewMsg> {
   private _displayedQuery?: CompletedLocalQueryInfo;
   private _interpretation?: Interpretation;
 
