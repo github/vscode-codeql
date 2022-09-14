@@ -78,7 +78,7 @@ import { displayQuickQuery } from './quick-query';
 import { compileAndRunQueryAgainstDatabase, createInitialQueryInfo } from './run-queries';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
-import { CompareInterfaceManager } from './compare/compare-interface';
+import { CompareView } from './compare/compare-view';
 import { gatherQlFiles } from './pure/files';
 import { initializeTelemetry } from './telemetry';
 import {
@@ -494,8 +494,8 @@ async function activateWithInstalledDistribution(
   void logger.log('Reading query history');
   await qhm.readQueryHistory();
 
-  void logger.log('Initializing compare panel interface.');
-  const cmpm = new CompareInterfaceManager(
+  void logger.log('Initializing compare view.');
+  const compareView = new CompareView(
     ctx,
     dbm,
     cliServer,
@@ -503,7 +503,7 @@ async function activateWithInstalledDistribution(
     labelProvider,
     showResults
   );
-  ctx.subscriptions.push(cmpm);
+  ctx.subscriptions.push(compareView);
 
   void logger.log('Initializing source archive filesystem provider.');
   archiveFilesystemProvider.activate(ctx);
@@ -513,7 +513,7 @@ async function activateWithInstalledDistribution(
     to: CompletedLocalQueryInfo
   ): Promise<void> {
     try {
-      await cmpm.showResults(from, to);
+      await compareView.showResults(from, to);
     } catch (e) {
       void showAndLogErrorMessage(getErrorMessage(e));
     }

@@ -24,7 +24,7 @@ interface ComparePair {
   to: CompletedLocalQueryInfo;
 }
 
-export class CompareInterfaceManager extends WebviewBase<ToCompareViewMessage, FromCompareViewMessage> {
+export class CompareView extends WebviewBase<ToCompareViewMessage, FromCompareViewMessage> {
   private comparePair: ComparePair | undefined;
 
   constructor(
