@@ -1,5 +1,5 @@
 import { ViewColumn } from 'vscode';
-import { AbstractWebview, InterfacePanelConfig } from '../abstract-webview';
+import { AbstractWebview, WebviewPanelConfig } from '../abstract-webview';
 import { WebviewMessage } from '../interface-utils';
 import { logger } from '../logging';
 
@@ -8,7 +8,7 @@ export class VariantAnalysisView extends AbstractWebview<WebviewMessage, Webview
     this.getPanel().reveal(undefined, true);
   }
 
-  protected getPanelConfig(): InterfacePanelConfig {
+  protected getPanelConfig(): WebviewPanelConfig {
     return {
       viewId: 'variantAnalysisView',
       title: 'CodeQL Query Results',

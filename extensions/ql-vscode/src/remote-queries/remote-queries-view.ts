@@ -32,7 +32,7 @@ import { SHOW_QUERY_TEXT_MSG } from '../query-history';
 import { AnalysesResultsManager } from './analyses-results-manager';
 import { AnalysisResults } from './shared/analysis-result';
 import { humanizeUnit } from '../pure/time';
-import { AbstractWebview, InterfacePanelConfig } from '../abstract-webview';
+import { AbstractWebview, WebviewPanelConfig } from '../abstract-webview';
 
 export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, FromRemoteQueriesMessage> {
   private currentQueryId: string | undefined;
@@ -100,7 +100,7 @@ export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, F
     };
   }
 
-  protected getPanelConfig(): InterfacePanelConfig {
+  protected getPanelConfig(): WebviewPanelConfig {
     return {
       viewId: 'remoteQueriesView',
       title: 'CodeQL Query Results',

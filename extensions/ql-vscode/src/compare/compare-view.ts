@@ -17,7 +17,7 @@ import resultsDiff from './resultsDiff';
 import { CompletedLocalQueryInfo } from '../query-results';
 import { getErrorMessage } from '../pure/helpers-pure';
 import { HistoryItemLabelProvider } from '../history-item-label-provider';
-import { AbstractWebview, InterfacePanelConfig } from '../abstract-webview';
+import { AbstractWebview, WebviewPanelConfig } from '../abstract-webview';
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
@@ -95,7 +95,7 @@ export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompa
     }
   }
 
-  protected getPanelConfig(): InterfacePanelConfig {
+  protected getPanelConfig(): WebviewPanelConfig {
     return {
       viewId: 'compareView',
       title: 'Compare CodeQL Query Results',
