@@ -34,7 +34,7 @@ import { AnalysisResults } from './shared/analysis-result';
 import { humanizeUnit } from '../pure/time';
 import { WebviewBase, InterfacePanelConfig } from '../webview-base';
 
-export class RemoteQueriesInterfaceManager extends WebviewBase<ToRemoteQueriesMessage, FromRemoteQueriesMessage> {
+export class RemoteQueriesView extends WebviewBase<ToRemoteQueriesMessage, FromRemoteQueriesMessage> {
   private currentQueryId: string | undefined;
 
   constructor(
