@@ -6,7 +6,7 @@ import { LinkIconButton } from './LinkIconButton';
 import styled from 'styled-components';
 import { VSCodeButton } from '@vscode/webview-ui-toolkit/react';
 
-type Props = {
+export type VariantAnalysisHeaderProps = {
   queryName: string;
   queryFileName: string;
   status: VariantAnalysisStatus;
@@ -48,7 +48,7 @@ export const VariantAnalysisHeader = ({
   onStopQueryClick,
   onCopyRepositoryListClick,
   onExportResultsClick
-}: Props) => {
+}: VariantAnalysisHeaderProps) => {
   return (
     <Wrapper>
       <HeaderWrapper>
