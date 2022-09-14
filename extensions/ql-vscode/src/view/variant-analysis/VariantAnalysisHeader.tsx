@@ -29,6 +29,11 @@ const HeaderWrapper = styled.div`
   max-width: 100%;
 `;
 
+const HeaderButtons = styled.div`
+  display: flex;
+  gap: 1em;
+`;
+
 const ActionsWrapper = styled.div`
   margin-left: auto;
   display: flex;
@@ -53,14 +58,16 @@ export const VariantAnalysisHeader = ({
     <Wrapper>
       <HeaderWrapper>
         <ViewTitle>{queryName}</ViewTitle>
-        <LinkIconButton onClick={onOpenQueryClick}>
-          <FileCodeIcon size={16} />
-          {queryFileName}
-        </LinkIconButton>
-        <LinkIconButton onClick={onViewQueryClick}>
-          <CodeSquareIcon size={16} />
-          View query
-        </LinkIconButton>
+        <HeaderButtons>
+          <LinkIconButton onClick={onOpenQueryClick}>
+            <FileCodeIcon size={16} />
+            {queryFileName}
+          </LinkIconButton>
+          <LinkIconButton onClick={onViewQueryClick}>
+            <CodeSquareIcon size={16} />
+            View query
+          </LinkIconButton>
+        </HeaderButtons>
       </HeaderWrapper>
       <ActionsWrapper>
         {status === VariantAnalysisStatus.InProgress && (

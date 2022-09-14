@@ -1,7 +1,7 @@
+import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
 import styled from 'styled-components';
-import { LinkButton } from './LinkButton';
 
-export const LinkIconButton = styled(LinkButton)`
+export const LinkIconButton = styled(VSCodeLink)`
   svg {
     margin-right: 0.3em;
   }
