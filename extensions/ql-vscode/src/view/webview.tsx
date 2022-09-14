@@ -29,7 +29,7 @@ const render = () => {
     view.component,
     document.getElementById('root'),
     // Post a message to the extension when fully loaded.
-    () => vscode.postMessage({ t: view.loadedMessage })
+    () => vscode.postMessage({ t: 'viewLoaded', viewName })
   );
 };
 

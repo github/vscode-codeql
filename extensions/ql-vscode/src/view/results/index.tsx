@@ -3,8 +3,7 @@ import { WebviewDefinition } from '../webview-interface';
 import { ResultsApp } from './results';
 
 const definition: WebviewDefinition = {
-  component: <ResultsApp />,
-  loadedMessage: 'resultViewLoaded'
+  component: <ResultsApp />
 };
 
 export default definition;
