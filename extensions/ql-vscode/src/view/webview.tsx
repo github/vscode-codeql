@@ -1,7 +1,7 @@
 import * as ReactDOM from 'react-dom';
 import { vscode } from './vscode-api';
 
-import { WebviewDefinition } from './webview-interface';
+import { WebviewDefinition } from './webview-definition';
 
 // Allow all views to use Codicons
 import '@vscode/codicons/dist/codicon.css';
