@@ -33,7 +33,7 @@ describe('Remote queries and query history manager', function() {
 
   let sandbox: sinon.SinonSandbox;
   let qhm: QueryHistoryManager;
-  let localQueriesResutsViewStub: ResultsView;
+  let localQueriesResultsViewStub: ResultsView;
   let remoteQueriesManagerStub: RemoteQueriesManager;
   let rawQueryHistory: any;
   let remoteQueryResult0: RemoteQueryResult;
@@ -57,7 +57,7 @@ describe('Remote queries and query history manager', function() {
 
     sandbox = sinon.createSandbox();
 
-    localQueriesResutsViewStub = {
+    localQueriesResultsViewStub = {
       showResults: sandbox.stub()
     } as any as ResultsView;
 
@@ -92,7 +92,7 @@ describe('Remote queries and query history manager', function() {
     qhm = new QueryHistoryManager(
       {} as QueryServerClient,
       {} as DatabaseManager,
-      localQueriesResutsViewStub,
+      localQueriesResultsViewStub,
       remoteQueriesManagerStub,
       {} as EvalLogViewer,
       STORAGE_DIR,
