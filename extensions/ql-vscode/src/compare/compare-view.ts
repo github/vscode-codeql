@@ -17,14 +17,14 @@ import resultsDiff from './resultsDiff';
 import { CompletedLocalQueryInfo } from '../query-results';
 import { getErrorMessage } from '../pure/helpers-pure';
 import { HistoryItemLabelProvider } from '../history-item-label-provider';
-import { AbstractInterfaceManager, InterfacePanelConfig } from '../abstract-interface-manager';
+import { AbstractWebview, InterfacePanelConfig } from '../abstract-webview';
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
   to: CompletedLocalQueryInfo;
 }
 
-export class CompareInterfaceManager extends AbstractInterfaceManager<ToCompareViewMessage, FromCompareViewMessage> {
+export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompareViewMessage> {
   private comparePair: ComparePair | undefined;
 
   constructor(

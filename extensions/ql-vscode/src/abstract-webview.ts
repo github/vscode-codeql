@@ -22,7 +22,7 @@ export type InterfacePanelConfig = {
   additionalOptions?: WebviewPanelOptions & WebviewOptions;
 }
 
-export abstract class AbstractInterfaceManager<ToMessage extends WebviewMessage, FromMessage extends WebviewMessage> extends DisposableObject {
+export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMessage extends WebviewMessage> extends DisposableObject {
   protected panel: WebviewPanel | undefined;
   protected panelLoaded = false;
   protected panelLoadedCallBacks: (() => void)[] = [];

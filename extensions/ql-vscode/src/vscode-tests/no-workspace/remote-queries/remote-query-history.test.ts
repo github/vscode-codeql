@@ -18,7 +18,7 @@ import { walkDirectory } from '../../../helpers';
 import { getErrorMessage } from '../../../pure/helpers-pure';
 import { HistoryItemLabelProvider } from '../../../history-item-label-provider';
 import { RemoteQueriesManager } from '../../../remote-queries/remote-queries-manager';
-import { InterfaceManager } from '../../../interface';
+import { ResultsView } from '../../../interface';
 import { EvalLogViewer } from '../../../eval-log-viewer';
 
 /**
@@ -33,7 +33,7 @@ describe('Remote queries and query history manager', function() {
 
   let sandbox: sinon.SinonSandbox;
   let qhm: QueryHistoryManager;
-  let localQueriesInterfaceManagerStub: InterfaceManager;
+  let localQueriesResultsViewStub: ResultsView;
   let remoteQueriesManagerStub: RemoteQueriesManager;
   let rawQueryHistory: any;
   let remoteQueryResult0: RemoteQueryResult;
@@ -57,9 +57,9 @@ describe('Remote queries and query history manager', function() {
 
     sandbox = sinon.createSandbox();
 
-    localQueriesInterfaceManagerStub = {
+    localQueriesResultsViewStub = {
       showResults: sandbox.stub()
-    } as any as InterfaceManager;
+    } as any as ResultsView;
 
     rehydrateRemoteQueryStub = sandbox.stub();
     removeRemoteQueryStub = sandbox.stub();
@@ -92,7 +92,7 @@ describe('Remote queries and query history manager', function() {
     qhm = new QueryHistoryManager(
       {} as QueryServerClient,
       {} as DatabaseManager,
-      localQueriesInterfaceManagerStub,
+      localQueriesResultsViewStub,
       remoteQueriesManagerStub,
       {} as EvalLogViewer,
       STORAGE_DIR,
