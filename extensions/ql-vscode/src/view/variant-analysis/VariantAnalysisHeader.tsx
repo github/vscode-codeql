@@ -20,21 +20,21 @@ export type VariantAnalysisHeaderProps = {
   onExportResultsClick: () => void;
 };
 
-const Wrapper = styled.div`
+const Container = styled.div`
   display: flex;
   align-items: center;
 `;
 
-const HeaderWrapper = styled.div`
+const TopRow = styled.div`
   max-width: 100%;
 `;
 
-const HeaderButtons = styled.div`
+const TopLinkButtons = styled.div`
   display: flex;
   gap: 1em;
 `;
 
-const ActionsWrapper = styled.div`
+const BottomButtons = styled.div`
   margin-left: auto;
   display: flex;
   gap: 1em;
@@ -55,10 +55,10 @@ export const VariantAnalysisHeader = ({
   onExportResultsClick
 }: VariantAnalysisHeaderProps) => {
   return (
-    <Wrapper>
-      <HeaderWrapper>
+    <Container>
+      <TopRow>
         <ViewTitle>{queryName}</ViewTitle>
-        <HeaderButtons>
+        <TopLinkButtons>
           <LinkIconButton onClick={onOpenQueryClick}>
             <FileCodeIcon size={16} />
             {queryFileName}
@@ -67,9 +67,9 @@ export const VariantAnalysisHeader = ({
             <CodeSquareIcon size={16} />
             View query
           </LinkIconButton>
-        </HeaderButtons>
-      </HeaderWrapper>
-      <ActionsWrapper>
+        </TopLinkButtons>
+      </TopRow>
+      <BottomButtons>
         {status === VariantAnalysisStatus.InProgress && (
           <VSCodeButton appearance="secondary" onClick={onStopQueryClick}>
             Stop query
@@ -85,7 +85,7 @@ export const VariantAnalysisHeader = ({
             </Button>
           </>
         )}
-      </ActionsWrapper>
-    </Wrapper>
+      </BottomButtons>
+    </Container>
   );
 };
