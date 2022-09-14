@@ -44,7 +44,7 @@ import {
 } from './interface-utils';
 import { getDefaultResultSetName, ParsedResultSets } from './pure/interface-types';
 import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './pure/bqrs-cli-types';
-import { AbstractWebview, InterfacePanelConfig } from './abstract-webview';
+import { AbstractWebview, WebviewPanelConfig } from './abstract-webview';
 import { PAGE_SIZE } from './config';
 import { CompletedLocalQueryInfo } from './query-results';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
@@ -174,7 +174,7 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     await this.postMessage({ t: 'navigatePath', direction });
   }
 
-  protected getPanelConfig(): InterfacePanelConfig {
+  protected getPanelConfig(): WebviewPanelConfig {
     return {
       viewId: 'resultsView',
       title: 'CodeQL Query Results',
