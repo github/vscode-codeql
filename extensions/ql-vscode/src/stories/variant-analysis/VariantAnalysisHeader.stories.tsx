@@ -17,14 +17,14 @@ export default {
     )
   ],
   argTypes: {
-    onOpenQueryClick: {
-      action: 'open-query-clicked',
+    onOpenQueryFileClick: {
+      action: 'open-query-file-clicked',
       table: {
         disable: true,
       },
     },
-    onViewQueryClick: {
-      action: 'view-query-clicked',
+    onViewQueryTextClick: {
+      action: 'view-query-text-clicked',
       table: {
         disable: true,
       },
@@ -58,17 +58,17 @@ export const InProgress = Template.bind({});
 InProgress.args = {
   queryName: 'Query name',
   queryFileName: 'example.ql',
-  status: VariantAnalysisStatus.InProgress,
+  variantAnalysisStatus: VariantAnalysisStatus.InProgress,
 };
 
 export const Succeeded = Template.bind({});
 Succeeded.args = {
   ...InProgress.args,
-  status: VariantAnalysisStatus.Succeeded,
+  variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
 };
 
 export const Failed = Template.bind({});
 Failed.args = {
   ...InProgress.args,
-  status: VariantAnalysisStatus.Failed,
+  variantAnalysisStatus: VariantAnalysisStatus.Failed,
 };

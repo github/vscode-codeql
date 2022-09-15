@@ -5,15 +5,15 @@ import { VariantAnalysisStatus } from '../../../remote-queries/shared/variant-an
 import { userEvent } from '@storybook/testing-library';
 
 describe(VariantAnalysisHeader.name, () => {
-  const onOpenQueryClick = jest.fn();
-  const onViewQueryClick = jest.fn();
+  const onOpenQueryFileClick = jest.fn();
+  const onViewQueryTextClick = jest.fn();
   const onStopQueryClick = jest.fn();
   const onCopyRepositoryListClick = jest.fn();
   const onExportResultsClick = jest.fn();
 
   afterEach(() => {
-    onOpenQueryClick.mockReset();
-    onViewQueryClick.mockReset();
+    onOpenQueryFileClick.mockReset();
+    onViewQueryTextClick.mockReset();
     onStopQueryClick.mockReset();
     onCopyRepositoryListClick.mockReset();
     onExportResultsClick.mockReset();
@@ -24,9 +24,9 @@ describe(VariantAnalysisHeader.name, () => {
       <VariantAnalysisHeader
         queryName="Query name"
         queryFileName="example.ql"
-        status={VariantAnalysisStatus.InProgress}
-        onOpenQueryClick={onOpenQueryClick}
-        onViewQueryClick={onViewQueryClick}
+        variantAnalysisStatus={VariantAnalysisStatus.InProgress}
+        onOpenQueryFileClick={onOpenQueryFileClick}
+        onViewQueryTextClick={onViewQueryTextClick}
         onStopQueryClick={onStopQueryClick}
         onCopyRepositoryListClick={onCopyRepositoryListClick}
         onExportResultsClick={onExportResultsClick}
@@ -44,39 +44,39 @@ describe(VariantAnalysisHeader.name, () => {
     render();
 
     userEvent.click(screen.getByText('example.ql'));
-    expect(onOpenQueryClick).toHaveBeenCalledTimes(1);
+    expect(onOpenQueryFileClick).toHaveBeenCalledTimes(1);
   });
 
   it('renders a view query button', () => {
     render();
 
     userEvent.click(screen.getByText('View query'));
-    expect(onViewQueryClick).toHaveBeenCalledTimes(1);
+    expect(onViewQueryTextClick).toHaveBeenCalledTimes(1);
   });
 
   it('renders the stop query button when in progress', () => {
-    render({ status: VariantAnalysisStatus.InProgress });
+    render({ variantAnalysisStatus: VariantAnalysisStatus.InProgress });
 
     userEvent.click(screen.getByText('Stop query'));
     expect(onStopQueryClick).toHaveBeenCalledTimes(1);
   });
 
   it('renders the copy repository list button when succeeded', () => {
-    render({ status: VariantAnalysisStatus.Succeeded });
+    render({ variantAnalysisStatus: VariantAnalysisStatus.Succeeded });
 
     userEvent.click(screen.getByText('Copy repository list'));
     expect(onCopyRepositoryListClick).toHaveBeenCalledTimes(1);
   });
 
   it('renders the export results button when succeeded', () => {
-    render({ status: VariantAnalysisStatus.Succeeded });
+    render({ variantAnalysisStatus: VariantAnalysisStatus.Succeeded });
 
     userEvent.click(screen.getByText('Export results'));
     expect(onExportResultsClick).toHaveBeenCalledTimes(1);
   });
 
   it('does not render any buttons when failed', () => {
-    const { container } = render({ status: VariantAnalysisStatus.Failed });
+    const { container } = render({ variantAnalysisStatus: VariantAnalysisStatus.Failed });
 
     expect(container.querySelectorAll('vscode-button').length).toEqual(0);
   });

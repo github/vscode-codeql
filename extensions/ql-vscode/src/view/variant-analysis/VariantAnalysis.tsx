@@ -9,12 +9,12 @@ export function VariantAnalysis(): JSX.Element {
       <VariantAnalysisHeader
         queryName="Example query"
         queryFileName="example.ql"
-        status={VariantAnalysisStatus.InProgress}
-        onOpenQueryClick={() => void 0}
-        onViewQueryClick={() => void 0}
-        onStopQueryClick={() => void 0}
-        onCopyRepositoryListClick={() => void 0}
-        onExportResultsClick={() => void 0}
+        variantAnalysisStatus={VariantAnalysisStatus.InProgress}
+        onOpenQueryFileClick={() => console.log('Open query')}
+        onViewQueryTextClick={() => console.log('View query')}
+        onStopQueryClick={() => console.log('Stop query')}
+        onCopyRepositoryListClick={() => console.log('Copy repository list')}
+        onExportResultsClick={() => console.log('Export results')}
       />
     </VariantAnalysisContainer>
   );

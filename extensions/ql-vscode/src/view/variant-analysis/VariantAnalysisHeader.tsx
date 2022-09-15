@@ -1,18 +1,17 @@
 import * as React from 'react';
+import styled from 'styled-components';
 import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
 import ViewTitle from '../remote-queries/ViewTitle';
-import { CodeSquareIcon, FileCodeIcon } from '@primer/octicons-react';
 import { LinkIconButton } from './LinkIconButton';
-import styled from 'styled-components';
-import { VSCodeButton } from '@vscode/webview-ui-toolkit/react';
+import { VariantAnalysisHeaderActions } from './VariantAnalysisHeaderActions';
 
 export type VariantAnalysisHeaderProps = {
   queryName: string;
   queryFileName: string;
-  status: VariantAnalysisStatus;
+  variantAnalysisStatus: VariantAnalysisStatus;
 
-  onOpenQueryClick: () => void;
-  onViewQueryClick: () => void;
+  onOpenQueryFileClick: () => void;
+  onViewQueryTextClick: () => void;
 
   onStopQueryClick: () => void;
 
@@ -25,67 +24,46 @@ const Container = styled.div`
   align-items: center;
 `;
 
-const TopRow = styled.div`
+const QueryDetails = styled.div`
   max-width: 100%;
 `;
 
-const TopLinkButtons = styled.div`
+const QueryActions = styled.div`
   display: flex;
   gap: 1em;
-`;
-
-const BottomButtons = styled.div`
-  margin-left: auto;
-  display: flex;
-  gap: 1em;
-`;
-
-const Button = styled(VSCodeButton)`
-  white-space: nowrap;
 `;
 
 export const VariantAnalysisHeader = ({
   queryName,
   queryFileName,
-  status,
-  onOpenQueryClick,
-  onViewQueryClick,
+  variantAnalysisStatus,
+  onOpenQueryFileClick,
+  onViewQueryTextClick,
   onStopQueryClick,
   onCopyRepositoryListClick,
   onExportResultsClick
 }: VariantAnalysisHeaderProps) => {
   return (
     <Container>
-      <TopRow>
+      <QueryDetails>
         <ViewTitle>{queryName}</ViewTitle>
-        <TopLinkButtons>
-          <LinkIconButton onClick={onOpenQueryClick}>
-            <FileCodeIcon size={16} />
+        <QueryActions>
+          <LinkIconButton onClick={onOpenQueryFileClick}>
+            <span slot="start" className="codicon codicon-file-code"></span>
             {queryFileName}
           </LinkIconButton>
-          <LinkIconButton onClick={onViewQueryClick}>
-            <CodeSquareIcon size={16} />
+          <LinkIconButton onClick={onViewQueryTextClick}>
+            <span slot="start" className="codicon codicon-code"></span>
             View query
           </LinkIconButton>
-        </TopLinkButtons>
-      </TopRow>
-      <BottomButtons>
-        {status === VariantAnalysisStatus.InProgress && (
-          <VSCodeButton appearance="secondary" onClick={onStopQueryClick}>
-            Stop query
-          </VSCodeButton>
-        )}
-        {status === VariantAnalysisStatus.Succeeded && (
-          <>
-            <Button appearance="secondary" onClick={onCopyRepositoryListClick}>
-              Copy repository list
-            </Button>
-            <Button appearance="primary" onClick={onExportResultsClick}>
-              Export results
-            </Button>
-          </>
-        )}
-      </BottomButtons>
+        </QueryActions>
+      </QueryDetails>
+      <VariantAnalysisHeaderActions
+        variantAnalysisStatus={variantAnalysisStatus}
+        onStopQueryClick={onStopQueryClick}
+        onCopyRepositoryListClick={onCopyRepositoryListClick}
+        onExportResultsClick={onExportResultsClick}
+      />
     </Container>
   );
 };
