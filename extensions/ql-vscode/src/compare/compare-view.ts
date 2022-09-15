@@ -17,14 +17,14 @@ import resultsDiff from './resultsDiff';
 import { CompletedLocalQueryInfo } from '../query-results';
 import { getErrorMessage } from '../pure/helpers-pure';
 import { HistoryItemLabelProvider } from '../history-item-label-provider';
-import { AbstractInterfaceManager, InterfacePanelConfig } from '../abstract-interface-manager';
+import { AbstractWebview, WebviewPanelConfig } from '../abstract-webview';
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
   to: CompletedLocalQueryInfo;
 }
 
-export class CompareInterfaceManager extends AbstractInterfaceManager<ToCompareViewMessage, FromCompareViewMessage> {
+export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompareViewMessage> {
   private comparePair: ComparePair | undefined;
 
   constructor(
@@ -95,7 +95,7 @@ export class CompareInterfaceManager extends AbstractInterfaceManager<ToCompareV
     }
   }
 
-  protected getPanelConfig(): InterfacePanelConfig {
+  protected getPanelConfig(): WebviewPanelConfig {
     return {
       viewId: 'compareView',
       title: 'Compare CodeQL Query Results',
@@ -111,7 +111,7 @@ export class CompareInterfaceManager extends AbstractInterfaceManager<ToCompareV
 
   protected async onMessage(msg: FromCompareViewMessage): Promise<void> {
     switch (msg.t) {
-      case 'compareViewLoaded':
+      case 'viewLoaded':
         this.onWebViewLoaded();
         break;
 

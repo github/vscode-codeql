@@ -68,7 +68,7 @@ import {
 } from './helpers';
 import { asError, assertNever, getErrorMessage } from './pure/helpers-pure';
 import { spawnIdeServer } from './ide-server';
-import { InterfaceManager } from './interface';
+import { ResultsView } from './interface';
 import { WebviewReveal } from './interface-utils';
 import { ideServerLogger, logger, ProgressReporter, queryServerLogger } from './logging';
 import { QueryHistoryManager } from './query-history';
@@ -77,7 +77,7 @@ import * as qsClient from './legacy-query-server/queryserver-client';
 import { displayQuickQuery } from './quick-query';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
-import { CompareInterfaceManager } from './compare/compare-interface';
+import { CompareView } from './compare/compare-view';
 import { gatherQlFiles } from './pure/files';
 import { initializeTelemetry } from './telemetry';
 import {
@@ -104,6 +104,7 @@ import { LogScannerService } from './log-insights/log-scanner-service';
 import { createInitialQueryInfo } from './run-queries-shared';
 import { LegacyQueryRunner } from './legacy-query-server/legacyRunner';
 import { QueryRunner } from './queryRunner';
+import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
 
 /**
  * extension.ts
@@ -448,8 +449,8 @@ async function activateWithInstalledDistribution(
   const labelProvider = new HistoryItemLabelProvider(queryHistoryConfigurationListener);
 
   void logger.log('Initializing results panel interface.');
-  const intm = new InterfaceManager(ctx, dbm, cliServer, queryServerLogger, labelProvider);
-  ctx.subscriptions.push(intm);
+  const localQueryResultsView = new ResultsView(ctx, dbm, cliServer, queryServerLogger, labelProvider);
+  ctx.subscriptions.push(localQueryResultsView);
 
   void logger.log('Initializing variant analysis manager.');
   const rqm = new RemoteQueriesManager(ctx, cliServer, queryStorageDir, logger);
@@ -459,7 +460,7 @@ async function activateWithInstalledDistribution(
   const qhm = new QueryHistoryManager(
     qs,
     dbm,
-    intm,
+    localQueryResultsView,
     rqm,
     evalLogViewer,
     queryStorageDir,
@@ -481,8 +482,8 @@ async function activateWithInstalledDistribution(
   void logger.log('Reading query history');
   await qhm.readQueryHistory();
 
-  void logger.log('Initializing compare panel interface.');
-  const cmpm = new CompareInterfaceManager(
+  void logger.log('Initializing compare view.');
+  const compareView = new CompareView(
     ctx,
     dbm,
     cliServer,
@@ -490,7 +491,7 @@ async function activateWithInstalledDistribution(
     labelProvider,
     showResults
   );
-  ctx.subscriptions.push(cmpm);
+  ctx.subscriptions.push(compareView);
 
   void logger.log('Initializing source archive filesystem provider.');
   archiveFilesystemProvider.activate(ctx);
@@ -500,7 +501,7 @@ async function activateWithInstalledDistribution(
     to: CompletedLocalQueryInfo
   ): Promise<void> {
     try {
-      await cmpm.showResults(from, to);
+      await compareView.showResults(from, to);
     } catch (e) {
       void showAndLogErrorMessage(getErrorMessage(e));
     }
@@ -510,7 +511,7 @@ async function activateWithInstalledDistribution(
     query: CompletedLocalQueryInfo,
     forceReveal: WebviewReveal
   ): Promise<void> {
-    await intm.showResults(query, forceReveal, false);
+    await localQueryResultsView.showResults(query, forceReveal, false);
   }
 
   async function compileAndRunQuery(
@@ -903,6 +904,13 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(
     commandRunner('codeQL.exportVariantAnalysisResults', async () => {
       await exportRemoteQueryResults(qhm, rqm, ctx);
+    })
+  );
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.mockVariantAnalysisView', async () => {
+      const variantAnalysisView = new VariantAnalysisView(ctx);
+      variantAnalysisView.openView();
     })
   );
 

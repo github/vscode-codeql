@@ -30,10 +30,8 @@
     "typescript",
     "typescriptreact"
   ],
-  "eslint.options": {
-    // This is necessary so that eslint can properly resolve its plugins
-    "resolvePluginsRelativeTo": "./extensions/ql-vscode"
-  },
+  // This is necessary to ensure that ESLint can find the correct configuration files and plugins.
+  "eslint.workingDirectories": ["./extensions/ql-vscode"],
   "editor.formatOnSave": false,
   "typescript.preferences.quoteStyle": "single",
   "javascript.preferences.quoteStyle": "single",

@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { WebviewDefinition } from '../webview-definition';
-import { RemoteQueries } from './RemoteQueries';
+import { VariantAnalysis } from './VariantAnalysis';
 
 const definition: WebviewDefinition = {
-  component: <RemoteQueries />
+  component: <VariantAnalysis />
 };
 
 export default definition;

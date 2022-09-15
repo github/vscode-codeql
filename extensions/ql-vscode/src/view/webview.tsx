@@ -1,7 +1,7 @@
 import * as ReactDOM from 'react-dom';
 import { vscode } from './vscode-api';
 
-import { WebviewDefinition } from './webview-interface';
+import { WebviewDefinition } from './webview-definition';
 
 // Allow all views to use Codicons
 import '@vscode/codicons/dist/codicon.css';
@@ -29,7 +29,7 @@ const render = () => {
     view.component,
     document.getElementById('root'),
     // Post a message to the extension when fully loaded.
-    () => vscode.postMessage({ t: view.loadedMessage })
+    () => vscode.postMessage({ t: 'viewLoaded', viewName })
   );
 };
 
