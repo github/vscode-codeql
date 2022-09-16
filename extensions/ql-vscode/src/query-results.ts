@@ -84,7 +84,7 @@ export class CompletedQueryInfo implements QueryWithResults {
     this.query = evaluation.query;
     this.logFileLocation = evaluation.logFileLocation;
     if (evaluation.result) {
-      this.result = evaluation.result;
+      this.result = evaluation.result as legacyMessages.EvaluationResult;
     }
     this.message = evaluation.message;
     this.sucessful = evaluation.sucessful;

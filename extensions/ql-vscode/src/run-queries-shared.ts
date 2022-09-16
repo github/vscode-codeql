@@ -1,5 +1,6 @@
 import * as messages from './pure/messages-shared';
 import * as legacyMessages from './pure/legacy-messages';
+import * as newMessages from './pure/new-messages';
 import { DatabaseInfo, QueryMetadata } from './pure/interface-types';
 import * as path from 'path';
 import { createTimestampFile, showAndLogWarningMessage } from './helpers';
@@ -375,7 +376,7 @@ export interface QueryWithResults {
   readonly dispose: () => void;
   readonly sucessful?: boolean;
   readonly message?: string;
-  readonly result?: legacyMessages.EvaluationResult
+  readonly result?: legacyMessages.EvaluationResult | newMessages.RunQueryResult
 }
 
 

@@ -81,7 +81,7 @@ export async function compileAndRunQueryAgainstDatabase(
     target,
   };
   await query.createTimestampFile();
-  let result;
+  let result: messages.RunQueryResult | undefined;
   try {
     result = await qs.sendRequest(messages.runQuery, queryToRun, token, progress);
     if (qs.config.customLogDirectory) {
@@ -126,6 +126,7 @@ export async function compileAndRunQueryAgainstDatabase(
 
   return {
     query,
+    result,
     message,
     sucessful: result.resultType === messages.QueryResultType.SUCCESS,
     dispose: () => {
