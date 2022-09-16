@@ -10,6 +10,7 @@ describe(VariantAnalysisHeader.name, () => {
   const onStopQueryClick = jest.fn();
   const onCopyRepositoryListClick = jest.fn();
   const onExportResultsClick = jest.fn();
+  const onViewLogsClick = jest.fn();
 
   afterEach(() => {
     onOpenQueryFileClick.mockReset();
@@ -17,6 +18,7 @@ describe(VariantAnalysisHeader.name, () => {
     onStopQueryClick.mockReset();
     onCopyRepositoryListClick.mockReset();
     onExportResultsClick.mockReset();
+    onViewLogsClick.mockReset();
   });
 
   const render = (props: Partial<VariantAnalysisHeaderProps> = {}) =>
@@ -25,11 +27,13 @@ describe(VariantAnalysisHeader.name, () => {
         queryName="Query name"
         queryFileName="example.ql"
         variantAnalysisStatus={VariantAnalysisStatus.InProgress}
+        totalRepositoryCount={10}
         onOpenQueryFileClick={onOpenQueryFileClick}
         onViewQueryTextClick={onViewQueryTextClick}
         onStopQueryClick={onStopQueryClick}
         onCopyRepositoryListClick={onCopyRepositoryListClick}
         onExportResultsClick={onExportResultsClick}
+        onViewLogsClick={onViewLogsClick}
         {...props}
       />
     );
@@ -79,5 +83,15 @@ describe(VariantAnalysisHeader.name, () => {
     const { container } = render({ variantAnalysisStatus: VariantAnalysisStatus.Failed });
 
     expect(container.querySelectorAll('vscode-button').length).toEqual(0);
+  });
+
+  it('renders the view logs link when succeeded', async () => {
+    render({
+      variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
+      completedAt: new Date()
+    });
+
+    await userEvent.click(screen.getByText('View logs'));
+    expect(onViewLogsClick).toHaveBeenCalledTimes(1);
   });
 });
