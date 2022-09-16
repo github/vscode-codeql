@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { VSCodeButton } from '@vscode/webview-ui-toolkit/react';
 import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
 
-export type Props = {
+type Props = {
   variantAnalysisStatus: VariantAnalysisStatus;
 
   onStopQueryClick: () => void;
@@ -22,7 +22,7 @@ const Button = styled(VSCodeButton)`
   white-space: nowrap;
 `;
 
-export const VariantAnalysisHeaderActions = ({
+export const VariantAnalysisActions = ({
   variantAnalysisStatus,
   onStopQueryClick,
   onCopyRepositoryListClick,
@@ -31,9 +31,9 @@ export const VariantAnalysisHeaderActions = ({
   return (
     <Container>
       {variantAnalysisStatus === VariantAnalysisStatus.InProgress && (
-        <VSCodeButton appearance="secondary" onClick={onStopQueryClick}>
+        <Button appearance="secondary" onClick={onStopQueryClick}>
           Stop query
-        </VSCodeButton>
+        </Button>
       )}
       {variantAnalysisStatus === VariantAnalysisStatus.Succeeded && (
         <>

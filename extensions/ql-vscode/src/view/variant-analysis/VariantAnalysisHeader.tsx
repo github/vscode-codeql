@@ -1,9 +1,8 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
-import ViewTitle from '../remote-queries/ViewTitle';
-import { LinkIconButton } from './LinkIconButton';
-import { VariantAnalysisHeaderActions } from './VariantAnalysisHeaderActions';
+import { QueryDetails } from './QueryDetails';
+import { VariantAnalysisActions } from './VariantAnalysisActions';
 
 export type VariantAnalysisHeaderProps = {
   queryName: string;
@@ -24,15 +23,6 @@ const Container = styled.div`
   align-items: center;
 `;
 
-const QueryDetails = styled.div`
-  max-width: 100%;
-`;
-
-const QueryActions = styled.div`
-  display: flex;
-  gap: 1em;
-`;
-
 export const VariantAnalysisHeader = ({
   queryName,
   queryFileName,
@@ -45,20 +35,13 @@ export const VariantAnalysisHeader = ({
 }: VariantAnalysisHeaderProps) => {
   return (
     <Container>
-      <QueryDetails>
-        <ViewTitle>{queryName}</ViewTitle>
-        <QueryActions>
-          <LinkIconButton onClick={onOpenQueryFileClick}>
-            <span slot="start" className="codicon codicon-file-code"></span>
-            {queryFileName}
-          </LinkIconButton>
-          <LinkIconButton onClick={onViewQueryTextClick}>
-            <span slot="start" className="codicon codicon-code"></span>
-            View query
-          </LinkIconButton>
-        </QueryActions>
-      </QueryDetails>
-      <VariantAnalysisHeaderActions
+      <QueryDetails
+        queryName={queryName}
+        queryFileName={queryFileName}
+        onOpenQueryFileClick={onOpenQueryFileClick}
+        onViewQueryTextClick={onViewQueryTextClick}
+      />
+      <VariantAnalysisActions
         variantAnalysisStatus={variantAnalysisStatus}
         onStopQueryClick={onStopQueryClick}
         onCopyRepositoryListClick={onCopyRepositoryListClick}

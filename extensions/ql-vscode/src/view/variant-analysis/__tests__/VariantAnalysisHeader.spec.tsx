@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { VariantAnalysisHeader, VariantAnalysisHeaderProps } from '../VariantAnalysisHeader';
 import { render as reactRender, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
-import { userEvent } from '@storybook/testing-library';
 
 describe(VariantAnalysisHeader.name, () => {
   const onOpenQueryFileClick = jest.fn();
@@ -40,42 +40,42 @@ describe(VariantAnalysisHeader.name, () => {
     expect(screen.getByText('Query name')).toBeInTheDocument();
   });
 
-  it('renders the query file name as a button', () => {
+  it('renders the query file name as a button', async () => {
     render();
 
-    userEvent.click(screen.getByText('example.ql'));
+    await userEvent.click(screen.getByText('example.ql'));
     expect(onOpenQueryFileClick).toHaveBeenCalledTimes(1);
   });
 
-  it('renders a view query button', () => {
+  it('renders a view query button', async () => {
     render();
 
-    userEvent.click(screen.getByText('View query'));
+    await userEvent.click(screen.getByText('View query'));
     expect(onViewQueryTextClick).toHaveBeenCalledTimes(1);
   });
 
-  it('renders the stop query button when in progress', () => {
+  it('renders the stop query button when in progress', async () => {
     render({ variantAnalysisStatus: VariantAnalysisStatus.InProgress });
 
-    userEvent.click(screen.getByText('Stop query'));
+    await userEvent.click(screen.getByText('Stop query'));
     expect(onStopQueryClick).toHaveBeenCalledTimes(1);
   });
 
-  it('renders the copy repository list button when succeeded', () => {
+  it('renders the copy repository list button when succeeded', async () => {
     render({ variantAnalysisStatus: VariantAnalysisStatus.Succeeded });
 
-    userEvent.click(screen.getByText('Copy repository list'));
+    await userEvent.click(screen.getByText('Copy repository list'));
     expect(onCopyRepositoryListClick).toHaveBeenCalledTimes(1);
   });
 
-  it('renders the export results button when succeeded', () => {
+  it('renders the export results button when succeeded', async () => {
     render({ variantAnalysisStatus: VariantAnalysisStatus.Succeeded });
 
-    userEvent.click(screen.getByText('Export results'));
+    await userEvent.click(screen.getByText('Export results'));
     expect(onExportResultsClick).toHaveBeenCalledTimes(1);
   });
 
-  it('does not render any buttons when failed', () => {
+  it('does not render any buttons when failed', async () => {
     const { container } = render({ variantAnalysisStatus: VariantAnalysisStatus.Failed });
 
     expect(container.querySelectorAll('vscode-button').length).toEqual(0);
