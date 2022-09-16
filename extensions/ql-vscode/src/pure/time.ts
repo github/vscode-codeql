@@ -2,7 +2,8 @@
  * Contains an assortment of helper constants and functions for working with time, dates, and durations.
  */
 
-export const ONE_MINUTE_IN_MS = 1000 * 60;
+export const ONE_SECOND_IN_MS = 1000;
+export const ONE_MINUTE_IN_MS = ONE_SECOND_IN_MS * 60;
 export const ONE_HOUR_IN_MS = ONE_MINUTE_IN_MS * 60;
 export const TWO_HOURS_IN_MS = ONE_HOUR_IN_MS * 2;
 export const THREE_HOURS_IN_MS = ONE_HOUR_IN_MS * 3;
@@ -43,20 +44,23 @@ export function humanizeRelativeTime(relativeTimeMillis?: number) {
 
 /**
  * Converts a number of milliseconds into a human-readable string with units, indicating an amount of time.
- * Negative numbers have no meaning and are considered to be "Less than a minute".
+ * Negative numbers have no meaning and are considered to be "Less than a second".
  *
  * @param millis The number of milliseconds to convert.
- * @returns A humanized duration. For example, "2 minutes", "2 hours", "2 days", or "2 months".
+ * @returns A humanized duration. For example, "2 seconds", "2 minutes", "2 hours", "2 days", or "2 months".
  */
 export function humanizeUnit(millis?: number): string {
   // assume a blank or empty string is a zero
   // assume anything less than 0 is a zero
-  if (!millis || millis < ONE_MINUTE_IN_MS) {
-    return 'Less than a minute';
+  if (!millis || millis < ONE_SECOND_IN_MS) {
+    return 'Less than a second';
   }
   let unit: string;
   let unitDiff: number;
-  if (millis < ONE_HOUR_IN_MS) {
+  if (millis < ONE_MINUTE_IN_MS) {
+    unit = 'second';
+    unitDiff = Math.floor(millis / ONE_SECOND_IN_MS);
+  } else if (millis < ONE_HOUR_IN_MS) {
     unit = 'minute';
     unitDiff = Math.floor(millis / ONE_MINUTE_IN_MS);
   } else if (millis < ONE_DAY_IN_MS) {
