@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import ViewTitle from '../remote-queries/ViewTitle';
 import { LinkIconButton } from './LinkIconButton';
 
-type Props = {
+export type QueryDetailsProps = {
   queryName: string;
   queryFileName: string;
 
@@ -25,7 +25,7 @@ export const QueryDetails = ({
   queryFileName,
   onOpenQueryFileClick,
   onViewQueryTextClick,
-}: Props) => {
+}: QueryDetailsProps) => {
   return (
     <Container>
       <ViewTitle>{queryName}</ViewTitle>
