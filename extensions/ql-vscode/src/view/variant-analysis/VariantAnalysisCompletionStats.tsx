@@ -1,6 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
+import { formatDate } from '../../pure/date';
 
 type Props = {
   completedAt?: Date | undefined;
@@ -8,13 +9,15 @@ type Props = {
   onViewLogsClick: () => void;
 };
 
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+`;
+
 const Icon = styled.span`
   font-size: 1em !important;
   vertical-align: text-bottom;
-`;
-
-const ViewLogsLink = styled(VSCodeLink)`
-  margin-top: 0.2em;
 `;
 
 export const VariantAnalysisCompletionStats = ({
@@ -26,9 +29,9 @@ export const VariantAnalysisCompletionStats = ({
   }
 
   return (
-    <>
-      {completedAt.toLocaleString()}
-      <ViewLogsLink onClick={onViewLogsClick}>View logs</ViewLogsLink>
-    </>
+    <Container>
+      <span>{formatDate(completedAt)}</span>
+      <VSCodeLink onClick={onViewLogsClick}>View logs</VSCodeLink>
+    </Container>
   );
 };
