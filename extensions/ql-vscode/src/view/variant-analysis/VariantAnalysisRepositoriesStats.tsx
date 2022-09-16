@@ -10,8 +10,6 @@ type Props = {
   completedRepositoryCount?: number | undefined;
 
   queryResult?: 'warning' | 'stopped';
-
-  completedAt?: Date | undefined;
 };
 
 const Icon = styled.span`
@@ -36,12 +34,11 @@ export const VariantAnalysisRepositoriesStats = ({
   totalRepositoryCount,
   completedRepositoryCount = 0,
   queryResult,
-  completedAt,
 }: Props) => {
   if (variantAnalysisStatus === VariantAnalysisStatus.Failed) {
     return (
       <>
-        0<ErrorIcon className="codicon codicon-error" />
+        0<ErrorIcon role="img" aria-label="Error" className="codicon codicon-error" />
       </>
     );
   }
@@ -49,9 +46,9 @@ export const VariantAnalysisRepositoriesStats = ({
   return (
     <>
       {formatDecimal(completedRepositoryCount)}/{formatDecimal(totalRepositoryCount)}
-      {queryResult && <WarningIcon className="codicon codicon-warning" />}
-      {completedAt && !queryResult && variantAnalysisStatus === VariantAnalysisStatus.Succeeded &&
-        <SuccessIcon className="codicon codicon-pass" />}
+      {queryResult && <WarningIcon role="img" aria-label="Warning" className="codicon codicon-warning" />}
+      {!queryResult && variantAnalysisStatus === VariantAnalysisStatus.Succeeded &&
+        <SuccessIcon role="img" aria-label="Completed" className="codicon codicon-pass" />}
     </>
   );
 };

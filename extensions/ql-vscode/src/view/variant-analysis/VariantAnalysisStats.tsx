@@ -70,7 +70,6 @@ export const VariantAnalysisStats = ({
           totalRepositoryCount={totalRepositoryCount}
           completedRepositoryCount={completedRepositoryCount}
           queryResult={queryResult}
-          completedAt={completedAt}
         />
       </StatItem>
       <StatItem title="Duration">
