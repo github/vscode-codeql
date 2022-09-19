@@ -51,6 +51,18 @@
       "internalConsoleOptions": "neverOpen"
     },
     {
+      "name": "Launch Unit Tests - React (vscode-codeql)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/.bin/jest",
+      "showAsyncStacks": true,
+      "cwd": "${workspaceFolder}/extensions/ql-vscode",
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
       "name": "Launch Integration Tests - No Workspace (vscode-codeql)",
       "type": "extensionHost",
       "request": "launch",
