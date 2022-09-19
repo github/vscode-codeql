@@ -5,9 +5,8 @@ import * as React from 'react';
 import { ChangeEvent, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { CodeFlow, AnalysisMessage, ResultSeverity } from '../../remote-queries/shared/analysis-result';
+import { SectionTitle, VerticalSpace } from '../common';
 import FileCodeSnippet from './FileCodeSnippet';
-import SectionTitle from './SectionTitle';
-import VerticalSpace from './VerticalSpace';
 
 const StyledCloseButton = styled.button`
   position: absolute;
