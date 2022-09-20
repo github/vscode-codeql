@@ -194,7 +194,14 @@ export async function upgradeDatabaseExplicit(
       void qs.logger.log('Running the following database upgrade:');
 
       getUpgradeDescriptions(compileUpgradeResult.compiledUpgrades).map(s => s.description).join('\n');
-      return await runDatabaseUpgrade(qs, dbItem, compileUpgradeResult.compiledUpgrades, progress, token);
+      const result = await runDatabaseUpgrade(qs, dbItem, compileUpgradeResult.compiledUpgrades, progress, token);
+
+      // TODO Can remove the next lines when https://github.com/github/codeql-team/issues/1241 is fixed
+      // restart the query server to avoid a bug in the CLI where the upgrade is applied, but the old dbscheme
+      // is still cached in memory.
+
+      await qs.restartQueryServer(progress, token);
+      return result;
     }
     catch (e) {
       void showAndLogErrorMessage(`Database upgrade failed: ${e}`);
