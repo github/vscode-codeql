@@ -66,7 +66,7 @@ export interface VariantAnalysisSkippedRepositories {
 }
 
 export interface VariantAnalysisSkippedRepositoryGroup {
-  repoCount: number,
+  repositoryCount: number,
   repositories: Array<{
     id?: number,
     fullName: string
