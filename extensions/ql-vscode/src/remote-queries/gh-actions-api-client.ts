@@ -1,4 +1,3 @@
-import * as unzipper from 'unzipper';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import { showAndLogErrorMessage, showAndLogWarningMessage, tmpDir } from '../helpers';
@@ -9,6 +8,7 @@ import { DownloadLink, createDownloadPath } from './download-link';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryFailureIndexItem, RemoteQueryResultIndex, RemoteQuerySuccessIndexItem } from './remote-query-result-index';
 import { getErrorMessage } from '../pure/helpers-pure';
+import { unzipFile } from '../pure/zip';
 
 export const RESULT_INDEX_ARTIFACT_NAME = 'result-index';
 
@@ -110,10 +110,8 @@ export async function downloadArtifactFromLink(
     const response = await octokit.request(`GET ${downloadLink.urlPath}/zip`, {});
 
     const zipFilePath = createDownloadPath(storagePath, downloadLink, 'zip');
-    await saveFile(`${zipFilePath}`, response.data as ArrayBuffer);
 
-    // Extract the zipped artifact.
-    await unzipFile(zipFilePath, extractedPath);
+    await unzipBuffer(response.data as ArrayBuffer, zipFilePath, extractedPath);
   }
   return path.join(extractedPath, downloadLink.innerFilePath || '');
 }
@@ -300,20 +298,16 @@ async function downloadArtifact(
     archive_format: 'zip',
   });
   const artifactPath = path.join(tmpDir.name, `${artifactId}`);
-  await saveFile(`${artifactPath}.zip`, response.data as ArrayBuffer);
-  await unzipFile(`${artifactPath}.zip`, artifactPath);
+  await unzipBuffer(response.data as ArrayBuffer, `${artifactPath}.zip`, artifactPath);
   return artifactPath;
 }
 
-async function saveFile(filePath: string, data: ArrayBuffer): Promise<void> {
+async function unzipBuffer(data: ArrayBuffer, filePath: string, destinationPath: string): Promise<void> {
   void logger.log(`Saving file to ${filePath}`);
   await fs.writeFile(filePath, Buffer.from(data));
-}
 
-async function unzipFile(sourcePath: string, destinationPath: string) {
   void logger.log(`Unzipping file to ${destinationPath}`);
-  const file = await unzipper.Open.file(sourcePath);
-  await file.extract({ path: destinationPath });
+  await unzipFile(filePath, destinationPath);
 }
 
 function getWorkflowError(conclusion: string | null): string {
