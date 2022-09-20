@@ -6,10 +6,7 @@ import { AnalysisSummary, RemoteQueryResult } from '../../remote-queries/shared/
 import { MAX_RAW_RESULTS } from '../../remote-queries/shared/result-limits';
 import { vscode } from '../vscode-api';
 import { VSCodeBadge, VSCodeButton } from '@vscode/webview-ui-toolkit/react';
-import SectionTitle from './SectionTitle';
-import VerticalSpace from './VerticalSpace';
-import HorizontalSpace from './HorizontalSpace';
-import ViewTitle from './ViewTitle';
+import { HorizontalSpace, SectionTitle, VerticalSpace, ViewTitle } from '../common';
 import DownloadButton from './DownloadButton';
 import { AnalysisResults, getAnalysisResultCount } from '../../remote-queries/shared/analysis-result';
 import DownloadSpinner from './DownloadSpinner';
