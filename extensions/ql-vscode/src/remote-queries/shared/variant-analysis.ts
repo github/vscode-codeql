@@ -1,24 +1,5 @@
 import { Repository } from './repository';
 
-export interface VariantAnalysisSubmission {
-  startTime: number,
-  controllerRepoId: number,
-  actionRepoRef: string,
-  query: {
-    name: string,
-    filePath: string,
-    language: VariantAnalysisQueryLanguage,
-
-    // Base64 encoded query pack.
-    pack: string,
-  },
-  databases: {
-    repositories?: string[],
-    repositoryLists?: string[],
-    repositoryOwners?: string[],
-  }
-}
-
 export interface VariantAnalysis {
   id: number,
   controllerRepoId: number,
@@ -42,8 +23,9 @@ export interface VariantAnalysis {
 export enum VariantAnalysisQueryLanguage {
   CSharp = 'csharp',
   Cpp = 'cpp',
-  Javascript = 'javascript',
   Go = 'go',
+  Java = 'java',
+  Javascript = 'javascript',
   Python = 'python',
   Ruby = 'ruby'
 }
@@ -79,14 +61,14 @@ export interface VariantAnalysisScannedRepository {
 export interface VariantAnalysisSkippedRepositories {
   accessMismatchRepos?: VariantAnalysisSkippedRepositoryGroup,
   notFoundRepos?: VariantAnalysisSkippedRepositoryGroup,
-  noCodeql_dbRepos?: VariantAnalysisSkippedRepositoryGroup,
+  noCodeqlDbRepos?: VariantAnalysisSkippedRepositoryGroup,
   overLimitRepos?: VariantAnalysisSkippedRepositoryGroup
 }
 
 export interface VariantAnalysisSkippedRepositoryGroup {
   repoCount: number,
   repositories: Array<{
-    id: number,
+    id?: number,
     fullName: string
   }>
 }
