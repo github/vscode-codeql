@@ -13,7 +13,7 @@ import { runRemoteQuery } from './run-remote-query';
 import { RemoteQueriesView } from './remote-queries-view';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueriesMonitor } from './remote-queries-monitor';
-import { getRemoteQueryIndex, getRepositoriesMetadata, RepositoriesMetadata } from './gh-actions-api-client';
+import { getRemoteQueryIndex, getRepositoriesMetadata, RepositoriesMetadata } from './gh-api/gh-actions-api-client';
 import { RemoteQueryResultIndex } from './remote-query-result-index';
 import { RemoteQueryResult, sumAnalysisSummariesResults } from './remote-query-result';
 import { DownloadLink } from './download-link';

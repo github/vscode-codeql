@@ -40,7 +40,7 @@ import * as fs from 'fs-extra';
 import { CliVersionConstraint } from './cli';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { Credentials } from './authentication';
-import { cancelRemoteQuery } from './remote-queries/gh-actions-api-client';
+import { cancelRemoteQuery } from './remote-queries/gh-api/gh-actions-api-client';
 import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { ResultsView } from './interface';

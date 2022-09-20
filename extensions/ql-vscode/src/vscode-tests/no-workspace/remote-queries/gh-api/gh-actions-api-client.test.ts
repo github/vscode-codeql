@@ -1,9 +1,9 @@
 import { fail } from 'assert';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import { Credentials } from '../../../authentication';
-import { cancelRemoteQuery, getRepositoriesMetadata } from '../../../remote-queries/gh-actions-api-client';
-import { RemoteQuery } from '../../../remote-queries/remote-query';
+import { Credentials } from '../../../../authentication';
+import { cancelRemoteQuery, getRepositoriesMetadata } from '../../../../remote-queries/gh-api/gh-actions-api-client';
+import { RemoteQuery } from '../../../../remote-queries/remote-query';
 
 describe('gh-actions-api-client mock responses', () => {
   let sandbox: sinon.SinonSandbox;

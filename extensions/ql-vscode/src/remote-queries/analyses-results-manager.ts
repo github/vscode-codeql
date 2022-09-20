@@ -5,7 +5,7 @@ import { CancellationToken, ExtensionContext } from 'vscode';
 
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
-import { downloadArtifactFromLink } from './gh-actions-api-client';
+import { downloadArtifactFromLink } from './gh-api/gh-actions-api-client';
 import { AnalysisSummary } from './shared/remote-query-result';
 import { AnalysisResults, AnalysisAlert, AnalysisRawResults } from './shared/analysis-result';
 import { UserCancellationException } from '../commandRunner';
