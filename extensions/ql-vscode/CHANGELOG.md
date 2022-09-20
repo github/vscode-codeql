@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.7.0 - 20 September 2022
 
 - Remove ability to download databases from LGTM. [#1467](https://github.com/github/vscode-codeql/pull/1467)
 - Removed the ability to manually upgrade databases from the context menu on databases. Databases are non-destructively upgraded automatically so 
