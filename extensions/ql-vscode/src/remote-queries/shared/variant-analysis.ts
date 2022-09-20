@@ -72,3 +72,26 @@ export interface VariantAnalysisSkippedRepositoryGroup {
     fullName: string
   }>
 }
+
+/**
+ * Captures information needed to submit a variant
+ * analysis for processing.
+ */
+export interface VariantAnalysisSubmission {
+  startTime: number,
+  controllerRepoId: number,
+  actionRepoRef: string,
+  query: {
+    name: string,
+    filePath: string,
+    language: VariantAnalysisQueryLanguage,
+
+    // Base64 encoded query pack.
+    pack: string,
+  },
+  databases: {
+    repositories?: string[],
+    repositoryLists?: string[],
+    repositoryOwners?: string[],
+  }
+}
