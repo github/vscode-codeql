@@ -2,6 +2,13 @@ import * as React from 'react';
 import styled from 'styled-components';
 import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
 import { formatDecimal } from '../../pure/number';
+import { CodiconIcon, ErrorIcon, SuccessIcon, WarningIcon } from '../common';
+
+const Container = styled.div`
+  ${CodiconIcon} {
+    margin-left: 0.3em;
+  }
+`;
 
 type Props = {
   variantAnalysisStatus: VariantAnalysisStatus;
@@ -12,23 +19,6 @@ type Props = {
   queryResult?: 'warning' | 'stopped';
 };
 
-const Icon = styled.span`
-  vertical-align: text-bottom;
-  margin-left: 0.3em;
-`;
-
-const WarningIcon = styled(Icon)`
-  color: var(--vscode-problemsWarningIcon-foreground);
-`;
-
-const ErrorIcon = styled(Icon)`
-  color: var(--vscode-problemsErrorIcon-foreground);
-`;
-
-const SuccessIcon = styled(Icon)`
-  color: var(--vscode-testing-iconPassed);
-`;
-
 export const VariantAnalysisRepositoriesStats = ({
   variantAnalysisStatus,
   totalRepositoryCount,
@@ -38,17 +28,17 @@ export const VariantAnalysisRepositoriesStats = ({
   if (variantAnalysisStatus === VariantAnalysisStatus.Failed) {
     return (
       <>
-        0<ErrorIcon role="img" aria-label="Error" className="codicon codicon-error" />
+        0<ErrorIcon />
       </>
     );
   }
 
   return (
-    <>
+    <Container>
       {formatDecimal(completedRepositoryCount)}/{formatDecimal(totalRepositoryCount)}
-      {queryResult && <WarningIcon role="img" aria-label="Warning" className="codicon codicon-warning" />}
+      {queryResult && <WarningIcon />}
       {!queryResult && variantAnalysisStatus === VariantAnalysisStatus.Succeeded &&
-        <SuccessIcon role="img" aria-label="Completed" className="codicon codicon-pass" />}
-    </>
+        <SuccessIcon label="Completed" />}
+    </Container>
   );
 };
