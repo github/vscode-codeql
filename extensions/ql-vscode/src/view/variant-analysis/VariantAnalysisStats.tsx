@@ -6,7 +6,7 @@ import { StatItem } from './StatItem';
 import { formatDecimal } from '../../pure/number';
 import { humanizeUnit } from '../../pure/time';
 import { VariantAnalysisRepositoriesStats } from './VariantAnalysisRepositoriesStats';
-import { VariantAnalysisCompletionStats } from './VariantAnalysisCompletionStats';
+import { VariantAnalysisStatusStats } from './VariantAnalysisStatusStats';
 
 export type VariantAnalysisStatsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;
@@ -76,7 +76,7 @@ export const VariantAnalysisStats = ({
         {duration !== undefined ? humanizeUnit(duration) : '-'}
       </StatItem>
       <StatItem title={completionHeaderName}>
-        <VariantAnalysisCompletionStats
+        <VariantAnalysisStatusStats
           completedAt={completedAt}
           onViewLogsClick={onViewLogsClick}
         />

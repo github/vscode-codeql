@@ -20,7 +20,7 @@ const Icon = styled.span`
   vertical-align: text-bottom;
 `;
 
-export const VariantAnalysisCompletionStats = ({
+export const VariantAnalysisStatusStats = ({
   completedAt,
   onViewLogsClick,
 }: Props) => {
