@@ -19,12 +19,9 @@ const Header = styled.div`
   margin-bottom: 0.6em;
 `;
 
-const Content = styled.div`
-`;
-
 export const StatItem = ({ title, children }: Props) => (
   <Container>
     <Header>{title}</Header>
-    <Content>{children}</Content>
+    <div>{children}</div>
   </Container>
 );
