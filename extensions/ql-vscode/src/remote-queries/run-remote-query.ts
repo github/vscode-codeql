@@ -19,11 +19,12 @@ import * as cli from '../cli';
 import { logger } from '../logging';
 import { getActionBranch, getRemoteControllerRepo, setRemoteControllerRepo } from '../config';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
-import { OctokitResponse } from '@octokit/types/dist-types';
+import { OctokitResponse, RequestError } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
 import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
+import * as ghApiClient from './gh-api/gh-api-client';
 import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
 
 export interface QlPack {
@@ -212,29 +213,31 @@ export async function runRemoteQuery(
 
     // Get the controller repo from the config, if it exists.
     // If it doesn't exist, prompt the user to enter it, and save that value to the config.
-    let controllerRepo: string | undefined;
-    controllerRepo = getRemoteControllerRepo();
-    if (!controllerRepo || !REPO_REGEX.test(controllerRepo)) {
-      void logger.log(controllerRepo ? 'Invalid controller repository name.' : 'No controller repository defined.');
-      controllerRepo = await window.showInputBox({
+    let controllerRepoNwo: string | undefined;
+    controllerRepoNwo = getRemoteControllerRepo();
+    if (!controllerRepoNwo || !REPO_REGEX.test(controllerRepoNwo)) {
+      void logger.log(controllerRepoNwo ? 'Invalid controller repository name.' : 'No controller repository defined.');
+      controllerRepoNwo = await window.showInputBox({
         title: 'Controller repository in which to run the GitHub Actions workflow for this variant analysis',
         placeHolder: '<owner>/<repo>',
         prompt: 'Enter the name of a GitHub repository in the format <owner>/<repo>',
         ignoreFocusOut: true,
       });
-      if (!controllerRepo) {
+      if (!controllerRepoNwo) {
         void showAndLogErrorMessage('No controller repository entered.');
         return;
-      } else if (!REPO_REGEX.test(controllerRepo)) { // Check if user entered invalid input
+      } else if (!REPO_REGEX.test(controllerRepoNwo)) { // Check if user entered invalid input
         void showAndLogErrorMessage('Invalid repository format. Must be a valid GitHub repository in the format <owner>/<repo>.');
         return;
       }
-      void logger.log(`Setting the controller repository as: ${controllerRepo}`);
-      await setRemoteControllerRepo(controllerRepo);
+      void logger.log(`Setting the controller repository as: ${controllerRepoNwo}`);
+      await setRemoteControllerRepo(controllerRepoNwo);
     }
 
-    void logger.log(`Using controller repository: ${controllerRepo}`);
-    const [owner, repo] = controllerRepo.split('/');
+    void logger.log(`Using controller repository: ${controllerRepoNwo}`);
+    const [owner, repo] = controllerRepoNwo.split('/');
+    const controllerRepoId = await getControllerRepoId(credentials, owner, repo);
+    void logger.log(`Controller repository ID: ${controllerRepoId}`);
 
     progress({
       maxStep: 4,
@@ -450,4 +453,16 @@ async function buildRemoteQueryEntity(
     actionsWorkflowRunId: workflowRunId,
     repositoryCount,
   };
+}
+
+async function getControllerRepoId(credentials: Credentials, owner: string, repo: string): Promise<number> {
+  try {
+    return await ghApiClient.getRepositoryIdFromNwo(credentials, owner, repo);
+  } catch (e: any) {
+    if ((e as RequestError).status === 404) {
+      throw new Error(`Controller repository "${owner}/${repo}" not found`);
+    } else {
+      throw new Error(`Error getting controller repository "${owner}/${repo}": ${e.message}`);
+    }
+  }
 }
