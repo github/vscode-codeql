@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
-import { getWorkflowStatus, isArtifactAvailable, RESULT_INDEX_ARTIFACT_NAME } from './gh-actions-api-client';
+import { getWorkflowStatus, isArtifactAvailable, RESULT_INDEX_ARTIFACT_NAME } from './gh-api/gh-actions-api-client';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryWorkflowResult } from './remote-query-workflow-result';
 

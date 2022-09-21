@@ -44,7 +44,7 @@ import {
 } from './interface-utils';
 import { getDefaultResultSetName, ParsedResultSets } from './pure/interface-types';
 import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './pure/bqrs-cli-types';
-import { AbstractInterfaceManager, InterfacePanelConfig } from './abstract-interface-manager';
+import { AbstractWebview, WebviewPanelConfig } from './abstract-webview';
 import { PAGE_SIZE } from './config';
 import { CompletedLocalQueryInfo } from './query-results';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
@@ -120,7 +120,7 @@ function numInterpretedPages(interpretation: Interpretation | undefined): number
   return Math.ceil(n / pageSize);
 }
 
-export class InterfaceManager extends AbstractInterfaceManager<IntoResultsViewMsg, FromResultsViewMsg> {
+export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResultsViewMsg> {
   private _displayedQuery?: CompletedLocalQueryInfo;
   private _interpretation?: Interpretation;
 
@@ -174,7 +174,7 @@ export class InterfaceManager extends AbstractInterfaceManager<IntoResultsViewMs
     await this.postMessage({ t: 'navigatePath', direction });
   }
 
-  protected getPanelConfig(): InterfacePanelConfig {
+  protected getPanelConfig(): WebviewPanelConfig {
     return {
       viewId: 'resultsView',
       title: 'CodeQL Query Results',
@@ -191,7 +191,7 @@ export class InterfaceManager extends AbstractInterfaceManager<IntoResultsViewMs
   protected async onMessage(msg: FromResultsViewMsg): Promise<void> {
     try {
       switch (msg.t) {
-        case 'resultViewLoaded':
+        case 'viewLoaded':
           this.onWebViewLoaded();
           break;
         case 'viewSourceFile': {

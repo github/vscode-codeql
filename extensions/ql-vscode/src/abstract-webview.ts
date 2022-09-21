@@ -13,7 +13,7 @@ import { DisposableObject } from './pure/disposable-object';
 import { tmpDir } from './helpers';
 import { getHtmlForWebview, WebviewMessage, WebviewView } from './interface-utils';
 
-export type InterfacePanelConfig = {
+export type WebviewPanelConfig = {
   viewId: string;
   title: string;
   viewColumn: ViewColumn;
@@ -22,7 +22,7 @@ export type InterfacePanelConfig = {
   additionalOptions?: WebviewPanelOptions & WebviewOptions;
 }
 
-export abstract class AbstractInterfaceManager<ToMessage extends WebviewMessage, FromMessage extends WebviewMessage> extends DisposableObject {
+export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMessage extends WebviewMessage> extends DisposableObject {
   protected panel: WebviewPanel | undefined;
   protected panelLoaded = false;
   protected panelLoadedCallBacks: (() => void)[] = [];
@@ -90,7 +90,7 @@ export abstract class AbstractInterfaceManager<ToMessage extends WebviewMessage,
     return this.panel;
   }
 
-  protected abstract getPanelConfig(): InterfacePanelConfig;
+  protected abstract getPanelConfig(): WebviewPanelConfig;
 
   protected abstract onPanelDispose(): void;
 
