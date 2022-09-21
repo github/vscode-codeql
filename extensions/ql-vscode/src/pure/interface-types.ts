@@ -422,6 +422,7 @@ export interface RemoteQueryDownloadAllAnalysesResultsMessage {
 
 export interface RemoteQueryExportResultsMessage {
   t: 'remoteQueryExportResults';
+  queryId: string;
 }
 
 export interface CopyRepoListMessage {

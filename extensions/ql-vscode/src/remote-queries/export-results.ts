@@ -15,26 +15,40 @@ import { RemoteQueriesManager } from './remote-queries-manager';
 import { generateMarkdown } from './remote-queries-markdown-generation';
 import { RemoteQuery } from './remote-query';
 import { AnalysisResults, sumAnalysesResults } from './shared/analysis-result';
+import { RemoteQueryHistoryItem } from './remote-query-history-item';
 
 /**
- * Exports the results of the currently-selected remote query.
+ * Exports the results of the given or currently-selected remote query.
  * The user is prompted to select the export format.
  */
 export async function exportRemoteQueryResults(
   queryHistoryManager: QueryHistoryManager,
   remoteQueriesManager: RemoteQueriesManager,
   ctx: ExtensionContext,
+  queryId?: string,
 ): Promise<void> {
-  const queryHistoryItem = queryHistoryManager.getCurrentQueryHistoryItem();
-  if (!queryHistoryItem || queryHistoryItem.t !== 'remote') {
-    throw new Error('No variant analysis results currently open. To open results, click an item in the query history view.');
-  } else if (!queryHistoryItem.completed) {
+  let queryHistoryItem: RemoteQueryHistoryItem;
+  if (queryId) {
+    const query = queryHistoryManager.getQueryById(queryId);
+    if (!query) {
+      throw new Error(`Could not find query with id ${queryId}`);
+    }
+    queryHistoryItem = query;
+  } else {
+    const query = queryHistoryManager.getCurrentQueryHistoryItem();
+    if (!query || query.t !== 'remote') {
+      throw new Error('No variant analysis results currently open. To open results, click an item in the query history view.');
+    }
+    queryHistoryItem = query;
+  }
+
+  if (!queryHistoryItem.completed) {
     throw new Error('Variant analysis results are not yet available.');
   }
-  const queryId = queryHistoryItem.queryId;
-  void logger.log(`Exporting variant analysis results for query: ${queryId}`);
+
+  void logger.log(`Exporting variant analysis results for query: ${queryHistoryItem.queryId}`);
   const query = queryHistoryItem.remoteQuery;
-  const analysesResults = remoteQueriesManager.getAnalysesResults(queryId);
+  const analysesResults = remoteQueriesManager.getAnalysesResults(queryHistoryItem.queryId);
 
   const gistOption = {
     label: '$(ports-open-browser-icon) Create Gist (GitHub)',
