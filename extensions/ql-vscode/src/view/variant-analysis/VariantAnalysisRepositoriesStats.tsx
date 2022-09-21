@@ -1,14 +1,7 @@
 import * as React from 'react';
-import styled from 'styled-components';
 import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
 import { formatDecimal } from '../../pure/number';
-import { CodiconIcon, ErrorIcon, SuccessIcon, WarningIcon } from '../common';
-
-const Container = styled.div`
-  ${CodiconIcon} {
-    margin-left: 0.3em;
-  }
-`;
+import { ErrorIcon, HorizontalSpace, SuccessIcon, WarningIcon } from '../common';
 
 type Props = {
   variantAnalysisStatus: VariantAnalysisStatus;
@@ -28,17 +21,17 @@ export const VariantAnalysisRepositoriesStats = ({
   if (variantAnalysisStatus === VariantAnalysisStatus.Failed) {
     return (
       <>
-        0<ErrorIcon />
+        0<HorizontalSpace size={2} /><ErrorIcon />
       </>
     );
   }
 
   return (
-    <Container>
+    <>
       {formatDecimal(completedRepositoryCount)}/{formatDecimal(totalRepositoryCount)}
-      {queryResult && <WarningIcon />}
+      {queryResult && <><HorizontalSpace size={2} /><WarningIcon /></>}
       {!queryResult && variantAnalysisStatus === VariantAnalysisStatus.Succeeded &&
-        <SuccessIcon label="Completed" />}
-    </Container>
+        <><HorizontalSpace size={2} /><SuccessIcon label="Completed" /></>}
+    </>
   );
 };

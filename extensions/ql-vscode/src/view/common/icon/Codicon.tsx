@@ -8,7 +8,7 @@ type Props = {
   className?: string;
 };
 
-export const CodiconIcon = styled.span`
+const CodiconIcon = styled.span`
   vertical-align: text-bottom;
 `;
 
