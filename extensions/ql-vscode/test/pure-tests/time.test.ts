@@ -5,10 +5,13 @@ import { humanizeRelativeTime, humanizeUnit } from '../../src/pure/time';
 
 describe('Time', () => {
   it('should return a humanized unit', () => {
-    expect(humanizeUnit(undefined)).to.eq('Less than a minute');
-    expect(humanizeUnit(0)).to.eq('Less than a minute');
-    expect(humanizeUnit(-1)).to.eq('Less than a minute');
-    expect(humanizeUnit(1000 * 60 - 1)).to.eq('Less than a minute');
+    expect(humanizeUnit(undefined)).to.eq('Less than a second');
+    expect(humanizeUnit(0)).to.eq('Less than a second');
+    expect(humanizeUnit(-1)).to.eq('Less than a second');
+    expect(humanizeUnit(1000 - 1)).to.eq('Less than a second');
+    expect(humanizeUnit(1000)).to.eq('1 second');
+    expect(humanizeUnit(1000 * 2)).to.eq('2 seconds');
+    expect(humanizeUnit(1000 * 60 - 1)).to.eq('59 seconds');
     expect(humanizeUnit(1000 * 60)).to.eq('1 minute');
     expect(humanizeUnit(1000 * 60 * 2 - 1)).to.eq('1 minute');
     expect(humanizeUnit(1000 * 60 * 2)).to.eq('2 minutes');

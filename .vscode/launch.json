@@ -35,6 +35,9 @@
       "runtimeArgs": [
         "--inspect=9229"
       ],
+      "env": {
+        "LANG": "en-US"
+      },
       "args": [
         "--exit",
         "-u",
@@ -43,6 +46,8 @@
         "--diff",
         "-r",
         "ts-node/register",
+        "-r",
+        "test/mocha.setup.js",
         "test/pure-tests/**/*.ts"
       ],
       "stopOnEntry": false,

@@ -2,9 +2,11 @@
 
 ## [UNRELEASED]
 
+## 1.7.0 - 20 September 2022
+
 - Remove ability to download databases from LGTM. [#1467](https://github.com/github/vscode-codeql/pull/1467)
-- Removed the ability to manually upgrade databases from the context menu on databases. Databases are non-destructively upgraded automatically so 
-  for most users this was not needed. For advanced users this is still available in the Command Palette. [#1501](https://github.com/github/vscode-codeql/pull/1501)
+- Removed the ability to manually upgrade databases from the context menu on databases. Databases are non-destructively upgraded automatically so for most users this was not needed. For advanced users this is still available in the Command Palette. [#1501](https://github.com/github/vscode-codeql/pull/1501)
+- Always restart the query server after a manual database upgrade. This avoids a bug in the query server where an invalid dbscheme was being retained in memory after an upgrade. [#1519](https://github.com/github/vscode-codeql/pull/1519)
 
 ## 1.6.12 - 1 September 2022
 
@@ -20,7 +22,7 @@ No user facing changes.
 
 No user facing changes.
 
-## 1.6.9 - 20 July 2022 
+## 1.6.9 - 20 July 2022
 
 No user facing changes.
 

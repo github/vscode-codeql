@@ -47,6 +47,12 @@ export default {
         disable: true,
       },
     },
+    onViewLogsClick: {
+      action: 'view-logs-clicked',
+      table: {
+        disable: true,
+      }
+    },
   }
 } as ComponentMeta<typeof VariantAnalysisHeader>;
 
@@ -59,16 +65,25 @@ InProgress.args = {
   queryName: 'Query name',
   queryFileName: 'example.ql',
   variantAnalysisStatus: VariantAnalysisStatus.InProgress,
+  totalRepositoryCount: 10,
+  completedRepositoryCount: 2,
+  resultCount: 99_999,
 };
 
 export const Succeeded = Template.bind({});
 Succeeded.args = {
   ...InProgress.args,
   variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
+  totalRepositoryCount: 1000,
+  completedRepositoryCount: 1000,
+  duration: 720_000,
+  completedAt: new Date(1661263446000),
 };
 
 export const Failed = Template.bind({});
 Failed.args = {
   ...InProgress.args,
   variantAnalysisStatus: VariantAnalysisStatus.Failed,
+  duration: 10_000,
+  completedAt: new Date(1661263446000),
 };

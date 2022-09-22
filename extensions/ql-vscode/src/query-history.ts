@@ -680,6 +680,10 @@ export class QueryHistoryManager extends DisposableObject {
     return this.treeDataProvider.getCurrent();
   }
 
+  getRemoteQueryById(queryId: string): RemoteQueryHistoryItem | undefined {
+    return this.treeDataProvider.allHistory.find(i => i.t === 'remote' && i.queryId === queryId) as RemoteQueryHistoryItem;
+  }
+
   async removeDeletedQueries() {
     await Promise.all(this.treeDataProvider.allHistory.map(async (item) => {
       if (item.t == 'local' && item.completedQuery && !(await fs.pathExists(item.completedQuery?.query.querySaveDir))) {
