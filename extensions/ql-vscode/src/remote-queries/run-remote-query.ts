@@ -17,7 +17,7 @@ import {
 import { Credentials } from '../authentication';
 import * as cli from '../cli';
 import { logger } from '../logging';
-import { getActionBranch, getRemoteControllerRepo, setRemoteControllerRepo } from '../config';
+import { getActionBranch, getRemoteControllerRepo, isVariantAnalysisLiveResultsEnabled, setRemoteControllerRepo } from '../config';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { OctokitResponse, RequestError } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
@@ -26,6 +26,7 @@ import { QueryMetadata } from '../pure/interface-types';
 import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
 import * as ghApiClient from './gh-api/gh-api-client';
 import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
+import { VariantAnalysisQueryLanguage, VariantAnalysisSubmission } from './shared/variant-analysis';
 
 export interface QlPack {
   name: string;
@@ -262,31 +263,61 @@ export async function runRemoteQuery(
     });
 
     const actionBranch = getActionBranch();
-    const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, owner, repo, base64Pack, dryRun);
     const queryStartTime = Date.now();
     const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
 
-    if (dryRun) {
-      return { queryDirPath: remoteQueryDir.path };
+    if (isVariantAnalysisLiveResultsEnabled()) {
+      const queryName = getQueryName(queryMetadata, queryFile);
+      const variantAnalysisSubmission: VariantAnalysisSubmission = {
+        startTime: queryStartTime,
+        actionRepoRef: actionBranch,
+        controllerRepoId: controllerRepoId,
+        query: {
+          name: queryName,
+          filePath: queryFile,
+          pack: base64Pack,
+          language: language as VariantAnalysisQueryLanguage,
+        },
+        databases: {
+          repositories: repoSelection.repositories,
+          repositoryLists: repoSelection.repositoryLists,
+          repositoryOwners: repoSelection.owners
+        }
+      };
+
+      const variantAnalysisResponse = await ghApiClient.submitVariantAnalysis(
+        credentials,
+        variantAnalysisSubmission
+      );
+      await showAndLogInformationMessage('Variant analysis submitted for processing');
+      void logger.log(`Variant analysis result:\n${JSON.stringify(variantAnalysisResponse)}`);
+      return;
+
     } else {
-      if (!apiResponse) {
-        return;
+      const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, owner, repo, base64Pack, dryRun);
+
+      if (dryRun) {
+        return { queryDirPath: remoteQueryDir.path };
+      } else {
+        if (!apiResponse) {
+          return;
+        }
+
+        const workflowRunId = apiResponse.workflow_run_id;
+        const repositoryCount = apiResponse.repositories_queried.length;
+        const remoteQuery = await buildRemoteQueryEntity(
+          queryFile,
+          queryMetadata,
+          owner,
+          repo,
+          queryStartTime,
+          workflowRunId,
+          language,
+          repositoryCount);
+
+        // don't return the path because it has been deleted
+        return { query: remoteQuery };
       }
-
-      const workflowRunId = apiResponse.workflow_run_id;
-      const repositoryCount = apiResponse.repositories_queried.length;
-      const remoteQuery = await buildRemoteQueryEntity(
-        queryFile,
-        queryMetadata,
-        owner,
-        repo,
-        queryStartTime,
-        workflowRunId,
-        language,
-        repositoryCount);
-
-      // don't return the path because it has been deleted
-      return { query: remoteQuery };
     }
 
   } finally {
@@ -435,9 +466,7 @@ async function buildRemoteQueryEntity(
   language: string,
   repositoryCount: number
 ): Promise<RemoteQuery> {
-  // The query name is either the name as specified in the query metadata, or the file name.
-  const queryName = queryMetadata?.name ?? path.basename(queryFilePath);
-
+  const queryName = getQueryName(queryMetadata, queryFilePath);
   const queryText = await fs.readFile(queryFilePath, 'utf8');
 
   return {
@@ -453,6 +482,11 @@ async function buildRemoteQueryEntity(
     actionsWorkflowRunId: workflowRunId,
     repositoryCount,
   };
+}
+
+function getQueryName(queryMetadata: QueryMetadata | undefined, queryFilePath: string): string {
+  // The query name is either the name as specified in the query metadata, or the file name.
+  return queryMetadata?.name ?? path.basename(queryFilePath);
 }
 
 async function getControllerRepoId(credentials: Credentials, owner: string, repo: string): Promise<number> {
