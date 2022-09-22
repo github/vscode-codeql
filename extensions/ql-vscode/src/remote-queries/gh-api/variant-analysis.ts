@@ -57,12 +57,13 @@ export interface VariantAnalysisScannedRepository {
 
 export interface VariantAnalysisSkippedRepositoryGroup {
   repository_count: number,
-  repositories: Array<{
-    id?: number,
-    full_name: string
-  }>
+  repositories: Repository[]
 }
 
+export interface VariantAnalysisNotFoundRepositoryGroup {
+  repository_count: number,
+  repository_nwos: string[]
+}
 export interface VariantAnalysisRepoTask {
   repository: Repository,
   analysis_status: VariantAnalysisRepoStatus,
@@ -76,7 +77,7 @@ export interface VariantAnalysisRepoTask {
 
 export interface VariantAnalysisSkippedRepositories {
   access_mismatch_repos: VariantAnalysisSkippedRepositoryGroup,
-  not_found_repos: VariantAnalysisSkippedRepositoryGroup,
+  not_found_repo_nwos: VariantAnalysisNotFoundRepositoryGroup,
   no_codeql_db_repos: VariantAnalysisSkippedRepositoryGroup,
   over_limit_repos: VariantAnalysisSkippedRepositoryGroup
 }
