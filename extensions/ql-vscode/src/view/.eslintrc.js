@@ -3,7 +3,8 @@ module.exports = {
     browser: true
   },
   extends: [
-    "plugin:react/recommended"
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
   ],
   settings: {
     react: {
