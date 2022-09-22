@@ -1,7 +1,11 @@
 import * as React from 'react';
 import { useMemo } from 'react';
 import styled from 'styled-components';
-import { VariantAnalysis, VariantAnalysisRepoStatus } from '../../remote-queries/shared/variant-analysis';
+import {
+  getSkippedRepoCount, getTotalResultCount,
+  hasRepoScanCompleted,
+  VariantAnalysis,
+} from '../../remote-queries/shared/variant-analysis';
 import { QueryDetails } from './QueryDetails';
 import { VariantAnalysisActions } from './VariantAnalysisActions';
 import { VariantAnalysisStats } from './VariantAnalysisStats';
@@ -45,31 +49,17 @@ export const VariantAnalysisHeader = ({
   onExportResultsClick,
   onViewLogsClick,
 }: VariantAnalysisHeaderProps) => {
-  const totalRepositoryCount = useMemo(() => {
+  const totalScannedRepositoryCount = useMemo(() => {
     return variantAnalysis.scannedRepos?.length ?? 0;
   }, [variantAnalysis.scannedRepos]);
   const completedRepositoryCount = useMemo(() => {
-    return variantAnalysis.scannedRepos?.filter(repo => [
-      // All states that indicates the repository has been scanned and cannot
-      // change status anymore.
-      VariantAnalysisRepoStatus.Succeeded, VariantAnalysisRepoStatus.Failed,
-      VariantAnalysisRepoStatus.Canceled, VariantAnalysisRepoStatus.TimedOut,
-    ].includes(repo.analysisStatus))?.length ?? 0;
+    return variantAnalysis.scannedRepos?.filter(repo => hasRepoScanCompleted(repo))?.length ?? 0;
   }, [variantAnalysis.scannedRepos]);
   const resultCount = useMemo(() => {
-    const reposWithResultCounts = variantAnalysis.scannedRepos?.filter(repo => repo.resultCount !== undefined);
-    if (reposWithResultCounts === undefined || reposWithResultCounts.length === 0) {
-      return undefined;
-    }
-
-    return reposWithResultCounts.map(repo => repo.resultCount ?? 0).reduce((a, b) => a + b, 0);
+    return getTotalResultCount(variantAnalysis.scannedRepos);
   }, [variantAnalysis.scannedRepos]);
   const hasSkippedRepos = useMemo(() => {
-    if (!variantAnalysis.skippedRepos) {
-      return false;
-    }
-
-    return Object.values(variantAnalysis.skippedRepos).some(skippedRepos => skippedRepos.length > 0);
+    return getSkippedRepoCount(variantAnalysis.skippedRepos) > 0;
   }, [variantAnalysis.skippedRepos]);
 
   return (
@@ -90,7 +80,7 @@ export const VariantAnalysisHeader = ({
       </Row>
       <VariantAnalysisStats
         variantAnalysisStatus={variantAnalysis.status}
-        totalRepositoryCount={totalRepositoryCount}
+        totalRepositoryCount={totalScannedRepositoryCount}
         completedRepositoryCount={completedRepositoryCount}
         resultCount={resultCount}
         hasWarnings={hasSkippedRepos}

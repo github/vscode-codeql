@@ -96,3 +96,41 @@ export interface VariantAnalysisSubmission {
     repositoryOwners?: string[],
   }
 }
+
+/**
+ * @param repo
+ * @returns whether the repo scan is in a completed state, i.e. it cannot normally change state anymore
+ */
+export function hasRepoScanCompleted(repo: VariantAnalysisScannedRepository): boolean {
+  return [
+    // All states that indicates the repository has been scanned and cannot
+    // change status anymore.
+    VariantAnalysisRepoStatus.Succeeded, VariantAnalysisRepoStatus.Failed,
+    VariantAnalysisRepoStatus.Canceled, VariantAnalysisRepoStatus.TimedOut,
+  ].includes(repo.analysisStatus);
+}
+
+/**
+ * @param repos
+ * @returns the total number of results. Will be `undefined` when there are no repos with results.
+ */
+export function getTotalResultCount(repos: VariantAnalysisScannedRepository[] | undefined): number | undefined {
+  const reposWithResultCounts = repos?.filter(repo => repo.resultCount !== undefined);
+  if (reposWithResultCounts === undefined || reposWithResultCounts.length === 0) {
+    return undefined;
+  }
+
+  return reposWithResultCounts.reduce((acc, repo) => acc + (repo.resultCount ?? 0), 0);
+}
+
+/**
+ * @param skippedRepos
+ * @returns the total number of skipped repositories.
+ */
+export function getSkippedRepoCount(skippedRepos: VariantAnalysisSkippedRepositories | undefined): number {
+  if (!skippedRepos) {
+    return 0;
+  }
+
+  return Object.values(skippedRepos).reduce((acc, group) => acc + group.repositoryCount, 0);
+}
