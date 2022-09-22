@@ -3,7 +3,6 @@ import { OctokitResponse } from '@octokit/types/dist-types';
 import { VariantAnalysisSubmission } from '../shared/variant-analysis';
 import {
   VariantAnalysis,
-  VariantAnalysisQueryLanguage,
   VariantAnalysisRepoTask,
   VariantAnalysisSubmissionRequest
 } from './variant-analysis';
@@ -18,14 +17,14 @@ export async function submitVariantAnalysis(
 
   const data: VariantAnalysisSubmissionRequest = {
     action_repo_ref: actionRepoRef,
-    language: query.language as VariantAnalysisQueryLanguage,
+    language: query.language,
     query_pack: query.pack,
     repositories: databases.repositories,
     repository_lists: databases.repositoryLists,
     repository_owners: databases.repositoryOwners,
   };
 
-  const response: OctokitResponse<VariantAnalysis, number> = await octokit.request(
+  const response: OctokitResponse<VariantAnalysis> = await octokit.request(
     'POST /repositories/:controllerRepoId/code-scanning/codeql/variant-analyses',
     {
       controllerRepoId,
@@ -43,7 +42,7 @@ export async function getVariantAnalysis(
 ): Promise<VariantAnalysis> {
   const octokit = await credentials.getOctokit();
 
-  const response: OctokitResponse<VariantAnalysis, number> = await octokit.request(
+  const response: OctokitResponse<VariantAnalysis> = await octokit.request(
     'GET /repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId',
     {
       controllerRepoId,
@@ -62,7 +61,7 @@ export async function getVariantAnalysisRepo(
 ): Promise<VariantAnalysisRepoTask> {
   const octokit = await credentials.getOctokit();
 
-  const response: OctokitResponse<VariantAnalysisRepoTask, number> = await octokit.request(
+  const response: OctokitResponse<VariantAnalysisRepoTask> = await octokit.request(
     'GET /repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/:repoId',
     {
       controllerRepoId,
