@@ -9,14 +9,14 @@ type Props = {
   totalRepositoryCount: number;
   completedRepositoryCount?: number | undefined;
 
-  queryResult?: 'warning' | 'stopped';
+  showWarning?: boolean;
 };
 
 export const VariantAnalysisRepositoriesStats = ({
   variantAnalysisStatus,
   totalRepositoryCount,
   completedRepositoryCount = 0,
-  queryResult,
+  showWarning,
 }: Props) => {
   if (variantAnalysisStatus === VariantAnalysisStatus.Failed) {
     return (
@@ -29,8 +29,8 @@ export const VariantAnalysisRepositoriesStats = ({
   return (
     <>
       {formatDecimal(completedRepositoryCount)}/{formatDecimal(totalRepositoryCount)}
-      {queryResult && <><HorizontalSpace size={2} /><WarningIcon /></>}
-      {!queryResult && variantAnalysisStatus === VariantAnalysisStatus.Succeeded &&
+      {showWarning && <><HorizontalSpace size={2} /><WarningIcon /></>}
+      {!showWarning && variantAnalysisStatus === VariantAnalysisStatus.Succeeded &&
         <><HorizontalSpace size={2} /><SuccessIcon label="Completed" /></>}
     </>
   );

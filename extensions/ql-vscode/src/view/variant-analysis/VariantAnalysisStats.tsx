@@ -14,7 +14,7 @@ export type VariantAnalysisStatsProps = {
   totalRepositoryCount: number;
   completedRepositoryCount?: number | undefined;
 
-  queryResult?: 'warning' | 'stopped';
+  hasWarnings?: boolean;
 
   resultCount?: number | undefined;
   duration?: number | undefined;
@@ -33,7 +33,7 @@ export const VariantAnalysisStats = ({
   variantAnalysisStatus,
   totalRepositoryCount,
   completedRepositoryCount = 0,
-  queryResult,
+  hasWarnings,
   resultCount,
   duration,
   completedAt,
@@ -48,16 +48,16 @@ export const VariantAnalysisStats = ({
       return 'Failed';
     }
 
-    if (queryResult === 'warning') {
-      return 'Succeeded warnings';
-    }
-
-    if (queryResult === 'stopped') {
+    if (variantAnalysisStatus === VariantAnalysisStatus.Canceled) {
       return 'Stopped';
     }
 
+    if (variantAnalysisStatus === VariantAnalysisStatus.Succeeded && hasWarnings) {
+      return 'Succeeded warnings';
+    }
+
     return 'Succeeded';
-  }, [variantAnalysisStatus, queryResult]);
+  }, [variantAnalysisStatus, hasWarnings]);
 
   return (
     <Row>
@@ -69,7 +69,7 @@ export const VariantAnalysisStats = ({
           variantAnalysisStatus={variantAnalysisStatus}
           totalRepositoryCount={totalRepositoryCount}
           completedRepositoryCount={completedRepositoryCount}
-          queryResult={queryResult}
+          showWarning={hasWarnings}
         />
       </StatItem>
       <StatItem title="Duration">
