@@ -2,7 +2,7 @@ import React from 'react';
 
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
-import FileCodeSnippet from '../../view/remote-queries/FileCodeSnippet';
+import { FileCodeSnippet } from '../../view/common';
 
 export default {
   title: 'File Code Snippet',
