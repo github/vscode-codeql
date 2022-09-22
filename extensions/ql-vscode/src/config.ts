@@ -397,3 +397,7 @@ const LIVE_RESULTS = new Setting('liveResults', REMOTE_QUERIES_SETTING);
 export function isVariantAnalysisLiveResultsEnabled(): boolean {
   return !!LIVE_RESULTS.getValue<boolean>();
 }
+
+export async function setVariantAnalysisLiveResultsEnabled(enabled: boolean) {
+  await LIVE_RESULTS.updateValue(enabled, ConfigurationTarget.Global);
+}

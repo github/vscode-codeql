@@ -10,9 +10,11 @@ import { QlPack, runRemoteQuery } from '../../../remote-queries/run-remote-query
 import { Credentials } from '../../../authentication';
 import { CliVersionConstraint, CodeQLCliServer } from '../../../cli';
 import { CodeQLExtensionInterface } from '../../../extension';
-import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../../config';
+import { setRemoteControllerRepo, setRemoteRepositoryLists, setVariantAnalysisLiveResultsEnabled } from '../../../config';
 import { UserCancellationException } from '../../../commandRunner';
+import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { lte } from 'semver';
+import { VariantAnalysis } from '../../../remote-queries/gh-api/variant-analysis';
 
 describe('Remote queries', function() {
   const baseDir = path.join(__dirname, '../../../../src/vscode-tests/cli-integration');
@@ -58,6 +60,9 @@ describe('Remote queries', function() {
     // always run in the vscode-codeql repo
     await setRemoteControllerRepo('github/vscode-codeql');
     await setRemoteRepositoryLists({ 'vscode-codeql': ['github/vscode-codeql'] });
+
+    // Consider live results disabled unless specifically enabled in a test
+    await setVariantAnalysisLiveResultsEnabled(false);
   });
 
   afterEach(() => {
@@ -245,6 +250,101 @@ describe('Remote queries', function() {
   });
 
   it('should cancel a run before uploading', async () => {
+    const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
+
+    const promise = runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+
+    token.isCancellationRequested = true;
+
+    try {
+      await promise;
+      assert.fail('should have thrown');
+    } catch (e) {
+      expect(e).to.be.instanceof(UserCancellationException);
+    }
+  });
+
+  it('should run a variant analysis that is part of a qlpack', async () => {
+    await setVariantAnalysisLiveResultsEnabled(true);
+
+    const dummyVariantAnalysis: VariantAnalysis = {
+      id: 123,
+      controller_repo: {
+        id: 64,
+        name: 'pickles',
+        full_name: 'github/pickles',
+        private: false,
+      },
+      actor_id: 27,
+      query_language: 'javascript',
+      query_pack_url: 'https://example.com/foo',
+      status: 'in_progress',
+    };
+    const submitVariantAnalysisStub = sandbox.stub(ghApiClient, 'submitVariantAnalysis').resolves(dummyVariantAnalysis);
+
+    const fileUri = getFile('data-remote-qlpack/in-pack.ql');
+
+    const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+    expect(querySubmissionResult).to.be.ok;
+
+    expect(submitVariantAnalysisStub).to.have.been.calledOnce;
+  });
+
+  it('should run a remote query that is not part of a qlpack', async () => {
+    await setVariantAnalysisLiveResultsEnabled(true);
+
+    const dummyVariantAnalysis: VariantAnalysis = {
+      id: 123,
+      controller_repo: {
+        id: 64,
+        name: 'pickles',
+        full_name: 'github/pickles',
+        private: false,
+      },
+      actor_id: 27,
+      query_language: 'javascript',
+      query_pack_url: 'https://example.com/foo',
+      status: 'in_progress',
+    };
+    const submitVariantAnalysisStub = sandbox.stub(ghApiClient, 'submitVariantAnalysis').resolves(dummyVariantAnalysis);
+
+    const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
+
+    const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+    expect(querySubmissionResult).to.be.ok;
+
+    expect(submitVariantAnalysisStub).to.have.been.calledOnce;
+  });
+
+  it('should run a remote query that is nested inside a qlpack', async () => {
+    await setVariantAnalysisLiveResultsEnabled(true);
+
+    const dummyVariantAnalysis: VariantAnalysis = {
+      id: 123,
+      controller_repo: {
+        id: 64,
+        name: 'pickles',
+        full_name: 'github/pickles',
+        private: false,
+      },
+      actor_id: 27,
+      query_language: 'javascript',
+      query_pack_url: 'https://example.com/foo',
+      status: 'in_progress',
+    };
+    const submitVariantAnalysisStub = sandbox.stub(ghApiClient, 'submitVariantAnalysis').resolves(dummyVariantAnalysis);
+
+    const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
+
+    const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+    expect(querySubmissionResult).to.be.ok;
+
+    expect(submitVariantAnalysisStub).to.have.been.calledOnce;
+  });
+
+  it('should cancel a run before uploading', async () => {
+    await setVariantAnalysisLiveResultsEnabled(true);
+
     const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
     const promise = runRemoteQuery(cli, credentials, fileUri, true, progress, token);
