@@ -29,7 +29,7 @@ export async function exportRemoteQueryResults(
 ): Promise<void> {
   let queryHistoryItem: RemoteQueryHistoryItem;
   if (queryId) {
-    const query = queryHistoryManager.getQueryById(queryId);
+    const query = queryHistoryManager.getRemoteQueryById(queryId);
     if (!query) {
       void logger.log(`Could not find query with id ${queryId}`);
       throw new Error('There was an error when trying to retrieve variant analysis information');

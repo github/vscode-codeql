@@ -680,7 +680,7 @@ export class QueryHistoryManager extends DisposableObject {
     return this.treeDataProvider.getCurrent();
   }
 
-  getQueryById(queryId: string): RemoteQueryHistoryItem | undefined {
+  getRemoteQueryById(queryId: string): RemoteQueryHistoryItem | undefined {
     return this.treeDataProvider.allHistory.find(i => i.t === 'remote' && i.queryId === queryId) as RemoteQueryHistoryItem;
   }
 
