@@ -1,10 +1,10 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { CodeSnippet, FileLink, HighlightedRegion, AnalysisMessage, ResultSeverity } from '../../remote-queries/shared/analysis-result';
-import { createRemoteFileRef } from '../../pure/location-link-utils';
-import { parseHighlightedLine, shouldHighlightLine } from '../../pure/sarif-utils';
+import { CodeSnippet, FileLink, HighlightedRegion, AnalysisMessage, ResultSeverity } from '../../../remote-queries/shared/analysis-result';
+import { createRemoteFileRef } from '../../../pure/location-link-utils';
+import { parseHighlightedLine, shouldHighlightLine } from '../../../pure/sarif-utils';
 import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
-import { VerticalSpace } from '../common';
+import { VerticalSpace } from '../VerticalSpace';
 
 const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
 const warningColor = '#966C23';
@@ -193,7 +193,7 @@ const Line = ({
   </div>;
 };
 
-const FileCodeSnippet = ({
+export const FileCodeSnippet = ({
   fileLink,
   codeSnippet,
   highlightedRegion,
@@ -257,5 +257,3 @@ const FileCodeSnippet = ({
     </Container>
   );
 };
-
-export default FileCodeSnippet;

@@ -4,9 +4,10 @@ import { VSCodeDropdown, VSCodeLink, VSCodeOption, VSCodeTag } from '@vscode/web
 import * as React from 'react';
 import { ChangeEvent, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { CodeFlow, AnalysisMessage, ResultSeverity } from '../../remote-queries/shared/analysis-result';
-import { SectionTitle, VerticalSpace } from '../common';
-import FileCodeSnippet from './FileCodeSnippet';
+import { CodeFlow, AnalysisMessage, ResultSeverity } from '../../../remote-queries/shared/analysis-result';
+import { SectionTitle } from '../SectionTitle';
+import { VerticalSpace } from '../VerticalSpace';
+import { FileCodeSnippet } from '../FileCodeSnippet';
 
 const StyledCloseButton = styled.button`
   position: absolute;
@@ -111,7 +112,7 @@ const Menu = ({
   </VSCodeDropdown>;
 };
 
-const CodePaths = ({
+export const CodePaths = ({
   codeFlows,
   ruleDescription,
   message,
@@ -173,5 +174,3 @@ const CodePaths = ({
     </div>
   );
 };
-
-export default CodePaths;
