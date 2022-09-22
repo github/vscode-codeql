@@ -57,7 +57,7 @@ export const VariantAnalysisStats = ({
     }
 
     return 'Succeeded';
-  }, [variantAnalysisStatus]);
+  }, [variantAnalysisStatus, hasWarnings]);
 
   return (
     <Row>
