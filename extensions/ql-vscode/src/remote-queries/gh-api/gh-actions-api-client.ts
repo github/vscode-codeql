@@ -1,14 +1,14 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { showAndLogErrorMessage, showAndLogWarningMessage, tmpDir } from '../helpers';
-import { Credentials } from '../authentication';
-import { logger } from '../logging';
-import { RemoteQueryWorkflowResult } from './remote-query-workflow-result';
-import { DownloadLink, createDownloadPath } from './download-link';
-import { RemoteQuery } from './remote-query';
-import { RemoteQueryFailureIndexItem, RemoteQueryResultIndex, RemoteQuerySuccessIndexItem } from './remote-query-result-index';
-import { getErrorMessage } from '../pure/helpers-pure';
-import { unzipFile } from '../pure/zip';
+import { showAndLogErrorMessage, showAndLogWarningMessage, tmpDir } from '../../helpers';
+import { Credentials } from '../../authentication';
+import { logger } from '../../logging';
+import { RemoteQueryWorkflowResult } from '../remote-query-workflow-result';
+import { DownloadLink, createDownloadPath } from '../download-link';
+import { RemoteQuery } from '../remote-query';
+import { RemoteQueryFailureIndexItem, RemoteQueryResultIndex, RemoteQuerySuccessIndexItem } from '../remote-query-result-index';
+import { getErrorMessage } from '../../pure/helpers-pure';
+import { unzipFile } from '../../pure/zip';
 
 export const RESULT_INDEX_ARTIFACT_NAME = 'result-index';
 

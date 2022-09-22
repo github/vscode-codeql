@@ -3,7 +3,7 @@ import React from 'react';
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 import { ThemeProvider } from '@primer/react';
 
-import { CodePaths } from '../../view/remote-queries/CodePaths';
+import { CodePaths } from '../../view/common';
 import type { CodeFlow } from '../../remote-queries/shared/analysis-result';
 
 export default {

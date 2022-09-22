@@ -160,6 +160,7 @@ From inside of VSCode, open the `launch.json` file and in the _Launch Integratio
     * **IMPORTANT** Make sure you are on the `main` branch and your local checkout is fully updated when you add the tag.
     * If you accidentally add the tag to the wrong ref, you can just force push it to the right one later.
 1. Monitor the status of the release build in the `Release` workflow in the Actions tab.
+    * DO NOT approve the "publish" stages of the workflow yet.
 1. Download the VSIX from the draft GitHub release at the top of [the releases page](https://github.com/github/vscode-codeql/releases) that is created when the release build finishes.
 1. Unzip the `.vsix` and inspect its `package.json` to make sure the version is what you expect,
    or look at the source if there's any doubt the right code is being shipped.

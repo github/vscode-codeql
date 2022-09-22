@@ -915,8 +915,8 @@ async function activateWithInstalledDistribution(
     }));
 
   ctx.subscriptions.push(
-    commandRunner('codeQL.exportVariantAnalysisResults', async () => {
-      await exportRemoteQueryResults(qhm, rqm, ctx);
+    commandRunner('codeQL.exportVariantAnalysisResults', async (queryId?: string) => {
+      await exportRemoteQueryResults(qhm, rqm, ctx, queryId);
     })
   );
 

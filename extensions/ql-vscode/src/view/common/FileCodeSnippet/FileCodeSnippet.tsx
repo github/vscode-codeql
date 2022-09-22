@@ -7,10 +7,10 @@ import {
   FileLink,
   HighlightedRegion,
   ResultSeverity
-} from '../../remote-queries/shared/analysis-result';
-import { createRemoteFileRef } from '../../pure/location-link-utils';
-import { parseHighlightedLine, shouldHighlightLine } from '../../pure/sarif-utils';
-import { VerticalSpace } from '../common';
+} from '../../../remote-queries/shared/analysis-result';
+import { createRemoteFileRef } from '../../../pure/location-link-utils';
+import { parseHighlightedLine, shouldHighlightLine } from '../../../pure/sarif-utils';
+import { VerticalSpace } from '../VerticalSpace';
 
 const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
 
