@@ -1,10 +1,16 @@
 import React from 'react';
 
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import { VariantAnalysisContainer } from '../../view/variant-analysis/VariantAnalysisContainer';
 import { VariantAnalysisHeader } from '../../view/variant-analysis/VariantAnalysisHeader';
-import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
+import {
+  VariantAnalysis,
+  VariantAnalysisQueryLanguage,
+  VariantAnalysisRepoStatus,
+  VariantAnalysisScannedRepository,
+  VariantAnalysisStatus
+} from '../../remote-queries/shared/variant-analysis';
 
 export default {
   title: 'Variant Analysis/Variant Analysis Header',
@@ -60,22 +66,65 @@ const Template: ComponentStory<typeof VariantAnalysisHeader> = (args) => (
   <VariantAnalysisHeader {...args} />
 );
 
+const buildVariantAnalysis = (data: Partial<VariantAnalysis>) => ({
+  id: 1,
+  controllerRepoId: 1,
+  query: {
+    name: 'Query name',
+    filePath: 'example.ql',
+    language: VariantAnalysisQueryLanguage.Javascript,
+  },
+  databases: {},
+  status: VariantAnalysisStatus.InProgress,
+  ...data,
+});
+
+const buildScannedRepo = (id: number, data?: Partial<VariantAnalysisScannedRepository>): VariantAnalysisScannedRepository => ({
+  repository: {
+    id: id,
+    fullName: `octodemo/hello-world-${id}`,
+    private: false,
+  },
+  analysisStatus: VariantAnalysisRepoStatus.Pending,
+  ...data,
+});
+
 export const InProgress = Template.bind({});
 InProgress.args = {
-  queryName: 'Query name',
-  queryFileName: 'example.ql',
-  variantAnalysisStatus: VariantAnalysisStatus.InProgress,
-  totalRepositoryCount: 10,
-  completedRepositoryCount: 2,
-  resultCount: 99_999,
+  variantAnalysis: buildVariantAnalysis({
+    scannedRepos: [
+      buildScannedRepo(1, {
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+        resultCount: 99_999,
+      }),
+      buildScannedRepo(2, {
+        analysisStatus: VariantAnalysisRepoStatus.Failed,
+      }),
+      buildScannedRepo(3, {
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+        resultCount: 0,
+      }),
+      buildScannedRepo(4),
+      buildScannedRepo(5),
+      buildScannedRepo(6),
+      buildScannedRepo(7),
+      buildScannedRepo(8),
+      buildScannedRepo(9),
+      buildScannedRepo(10),
+    ]
+  }),
 };
 
 export const Succeeded = Template.bind({});
 Succeeded.args = {
   ...InProgress.args,
-  variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
-  totalRepositoryCount: 1000,
-  completedRepositoryCount: 1000,
+  variantAnalysis: buildVariantAnalysis({
+    status: VariantAnalysisStatus.Succeeded,
+    scannedRepos: Array.from({ length: 1000 }, (_, i) => buildScannedRepo(i + 1, {
+      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+      resultCount: 100,
+    }))
+  }),
   duration: 720_000,
   completedAt: new Date(1661263446000),
 };
@@ -83,7 +132,9 @@ Succeeded.args = {
 export const Failed = Template.bind({});
 Failed.args = {
   ...InProgress.args,
-  variantAnalysisStatus: VariantAnalysisStatus.Failed,
+  variantAnalysis: buildVariantAnalysis({
+    status: VariantAnalysisStatus.Failed,
+  }),
   duration: 10_000,
   completedAt: new Date(1661263446000),
 };

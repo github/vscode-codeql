@@ -46,7 +46,7 @@ Started.args = {
 export const StartedWithWarnings = Template.bind({});
 StartedWithWarnings.args = {
   ...Starting.args,
-  queryResult: 'warning',
+  hasWarnings: true,
 };
 
 export const Succeeded = Template.bind({});
@@ -64,7 +64,7 @@ SucceededWithWarnings.args = {
   ...Succeeded.args,
   totalRepositoryCount: 10,
   completedRepositoryCount: 2,
-  queryResult: 'warning',
+  hasWarnings: true,
 };
 
 export const Failed = Template.bind({});
@@ -78,5 +78,5 @@ Failed.args = {
 export const Stopped = Template.bind({});
 Stopped.args = {
   ...SucceededWithWarnings.args,
-  queryResult: 'stopped',
+  variantAnalysisStatus: VariantAnalysisStatus.Canceled,
 };

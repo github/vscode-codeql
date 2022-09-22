@@ -39,16 +39,8 @@ describe(VariantAnalysisStats.name, () => {
     expect(screen.getByText('654,321/123,456')).toBeInTheDocument();
   });
 
-  it('renders a warning icon when the query result is a warning', () => {
-    render({ queryResult: 'warning' });
-
-    expect(screen.getByRole('img', {
-      name: 'Warning',
-    })).toBeInTheDocument();
-  });
-
-  it('renders a warning icon when the query result is stopped', () => {
-    render({ queryResult: 'stopped' });
+  it('renders a warning icon when has warnings is set', () => {
+    render({ hasWarnings: true });
 
     expect(screen.getByRole('img', {
       name: 'Warning',
@@ -76,5 +68,36 @@ describe(VariantAnalysisStats.name, () => {
 
     userEvent.click(screen.getByText('View logs'));
     expect(onViewLogsClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders a running text when the variant analysis status is in progress', () => {
+    render({ variantAnalysisStatus: VariantAnalysisStatus.InProgress });
+
+    expect(screen.getByText('Running')).toBeInTheDocument();
+  });
+
+  it('renders a failed text when the variant analysis status is failed', () => {
+    render({ variantAnalysisStatus: VariantAnalysisStatus.Failed });
+
+    expect(screen.getByText('Failed')).toBeInTheDocument();
+  });
+
+  it('renders a stopped text when the variant analysis status is canceled', () => {
+    render({ variantAnalysisStatus: VariantAnalysisStatus.Canceled });
+
+    expect(screen.getByText('Stopped')).toBeInTheDocument();
+  });
+
+  it('renders a succeeded warnings text when the variant analysis status is succeeded and has warnings', () => {
+    render({ variantAnalysisStatus: VariantAnalysisStatus.Succeeded, hasWarnings: true });
+
+    expect(screen.getByText('Succeeded warnings')).toBeInTheDocument();
+  });
+
+  it('renders a succeeded text when the variant analysis status is succeeded', () => {
+    render({ variantAnalysisStatus: VariantAnalysisStatus.Succeeded });
+
+    expect(screen.getByText('Succeeded')).toBeInTheDocument();
+    expect(screen.queryByText('Succeeded warnings')).not.toBeInTheDocument();
   });
 });
