@@ -1,23 +1,27 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { CodeSnippet, FileLink, HighlightedRegion, AnalysisMessage, ResultSeverity } from '../../../remote-queries/shared/analysis-result';
+import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
+import {
+  AnalysisMessage,
+  CodeSnippet,
+  FileLink,
+  HighlightedRegion,
+  ResultSeverity
+} from '../../../remote-queries/shared/analysis-result';
 import { createRemoteFileRef } from '../../../pure/location-link-utils';
 import { parseHighlightedLine, shouldHighlightLine } from '../../../pure/sarif-utils';
-import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
 import { VerticalSpace } from '../VerticalSpace';
 
 const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
-const warningColor = '#966C23';
-const highlightColor = 'var(--vscode-editor-findMatchHighlightBackground)';
 
 const getSeverityColor = (severity: ResultSeverity) => {
   switch (severity) {
     case 'Recommendation':
-      return 'blue';
+      return 'var(--vscode-editorInfo-foreground)';
     case 'Warning':
-      return warningColor;
+      return 'var(--vscode-editorWarning-foreground)';
     case 'Error':
-      return 'red';
+      return 'var(--vscode-editorError-foreground)';
   }
 };
 
@@ -55,61 +59,106 @@ const MessageContainer = styled.div`
   padding-bottom: 0.5em;
 `;
 
+const HighlightedSpan = styled.span`
+  background-color: var(--vscode-editor-findMatchHighlightBackground);
+`;
+
+const LineContainer = styled.div`
+  display: flex;
+`;
+
+const LineNumberContainer = styled.div`
+  border-style: none;
+  padding: 0.01em 0.5em 0.2em;
+`;
+
+const CodeSnippetLineCodeContainer = styled.div`
+  flex-grow: 1;
+  border-style: none;
+  padding: 0.01em 0.5em 0.2em 1.5em;
+  word-break: break-word;
+`;
+
+type CodeSnippetMessageContainerProps = {
+  severity: ResultSeverity;
+};
+
+const CodeSnippetMessageContainer = styled.div<CodeSnippetMessageContainerProps>`
+  border-color: var(--vscode-editor-snippetFinalTabstopHighlightBorder);
+  border-width: 0.1em;
+  border-style: solid;
+  border-left-color: ${props => getSeverityColor(props.severity)};
+  border-left-width: 0.3em;
+  padding-top: 1em;
+  padding-bottom: 1em;
+`;
+
+const LocationLink = styled(VSCodeLink)`
+  font-family: var(--vscode-editor-font-family)
+`;
+
 const PlainCode = ({ text }: { text: string }) => {
   return <span>{replaceSpaceAndTabChar(text)}</span>;
 };
 
 const HighlightedCode = ({ text }: { text: string }) => {
-  return <span style={{ backgroundColor: highlightColor }}>{replaceSpaceAndTabChar(text)}</span>;
+  return <HighlightedSpan>{replaceSpaceAndTabChar(text)}</HighlightedSpan>;
 };
 
-const Message = ({
-  message,
-  borderLeftColor,
-  children
-}: {
+
+type CodeSnippetMessageProps = {
   message: AnalysisMessage,
-  borderLeftColor: string,
+  severity: ResultSeverity,
   children: React.ReactNode
-}) => {
-  return <div style={{
-    borderColor: borderColor,
-    borderWidth: '0.1em',
-    borderStyle: 'solid',
-    borderLeftColor: borderLeftColor,
-    borderLeftWidth: '0.3em',
-    paddingTop: '1em',
-    paddingBottom: '1em'
-  }}>
-    <MessageText>
-      {message.tokens.map((token, index) => {
-        switch (token.t) {
-          case 'text':
-            return <span key={`token-${index}`}>{token.text}</span>;
-          case 'location':
-            return <VSCodeLink
-              style={{ fontFamily: 'var(--vscode-editor-font-family)' }}
-              key={`token-${index}`}
-              href={createRemoteFileRef(
-                token.location.fileLink,
-                token.location.highlightedRegion?.startLine,
-                token.location.highlightedRegion?.endLine)}>
-              {token.text}
-            </VSCodeLink>;
-          default:
-            return <></>;
-        }
-      })}
-      {children && <>
-        <VerticalSpace size={2} />
-        {children}
-      </>
-      }
-    </MessageText>
-  </div>;
 };
 
-const Code = ({
+const CodeSnippetMessage = ({
+  message,
+  severity,
+  children
+}: CodeSnippetMessageProps) => {
+  return (
+    <CodeSnippetMessageContainer
+      severity={severity}
+    >
+      <MessageText>
+        {message.tokens.map((token, index) => {
+          switch (token.t) {
+            case 'text':
+              return <span key={index}>{token.text}</span>;
+            case 'location':
+              return (
+                <LocationLink
+                  key={index}
+                  href={
+                    createRemoteFileRef(
+                      token.location.fileLink,
+                      token.location.highlightedRegion?.startLine,
+                      token.location.highlightedRegion?.endLine
+                    )
+                  }
+                >
+                  {token.text}
+                </LocationLink>
+              );
+            default:
+              return <></>;
+          }
+        })}
+        {
+          children && (
+            <>
+              <VerticalSpace size={2} />
+              {children}
+            </>
+          )
+        }
+      </MessageText>
+    </CodeSnippetMessageContainer>
+  );
+};
+
+const CodeSnippetCode = ({
   line,
   lineNumber,
   highlightedRegion
@@ -133,15 +182,7 @@ const Code = ({
   );
 };
 
-const Line = ({
-  line,
-  lineIndex,
-  startingLineIndex,
-  highlightedRegion,
-  severity,
-  message,
-  messageChildren
-}: {
+type CodeSnippetLineProps = {
   line: string,
   lineIndex: number,
   startingLineIndex: number,
@@ -149,48 +190,55 @@ const Line = ({
   severity?: ResultSeverity,
   message?: AnalysisMessage,
   messageChildren?: React.ReactNode,
-}) => {
+};
+
+const CodeSnippetLine = ({
+  line,
+  lineIndex,
+  startingLineIndex,
+  highlightedRegion,
+  severity,
+  message,
+  messageChildren
+}: CodeSnippetLineProps) => {
   const shouldShowMessage = message &&
     severity &&
     highlightedRegion &&
     highlightedRegion.endLine == startingLineIndex + lineIndex;
 
-  return <div>
-    <div style={{ display: 'flex' }} >
-      <div style={{
-        borderStyle: 'none',
-        paddingTop: '0.01em',
-        paddingLeft: '0.5em',
-        paddingRight: '0.5em',
-        paddingBottom: '0.2em'
-      }}>
-        {startingLineIndex + lineIndex}
-      </div>
-      <div style={{
-        flexGrow: 1,
-        borderStyle: 'none',
-        paddingTop: '0.01em',
-        paddingLeft: '1.5em',
-        paddingRight: '0.5em',
-        paddingBottom: '0.2em',
-        wordBreak: 'break-word'
-      }}>
-        <Code
-          line={line}
-          lineNumber={startingLineIndex + lineIndex}
-          highlightedRegion={highlightedRegion} />
-      </div>
+  return (
+    <div>
+      <LineContainer>
+        <LineNumberContainer>{startingLineIndex + lineIndex}</LineNumberContainer>
+        <CodeSnippetLineCodeContainer>
+          <CodeSnippetCode
+            line={line}
+            lineNumber={startingLineIndex + lineIndex}
+            highlightedRegion={highlightedRegion}
+          />
+        </CodeSnippetLineCodeContainer>
+      </LineContainer>
+      {shouldShowMessage &&
+        <MessageContainer>
+          <CodeSnippetMessage
+            message={message}
+            severity={severity}
+          >
+            {messageChildren}
+          </CodeSnippetMessage>
+        </MessageContainer>
+      }
     </div>
-    {shouldShowMessage &&
-      <MessageContainer>
-        <Message
-          message={message}
-          borderLeftColor={getSeverityColor(severity)}>
-          {messageChildren}
-        </Message>
-      </MessageContainer>
-    }
-  </div>;
+  );
+};
+
+type Props = {
+  fileLink: FileLink,
+  codeSnippet?: CodeSnippet,
+  highlightedRegion?: HighlightedRegion,
+  severity?: ResultSeverity,
+  message?: AnalysisMessage,
+  messageChildren?: React.ReactNode,
 };
 
 export const FileCodeSnippet = ({
@@ -200,14 +248,7 @@ export const FileCodeSnippet = ({
   severity,
   message,
   messageChildren,
-}: {
-  fileLink: FileLink,
-  codeSnippet?: CodeSnippet,
-  highlightedRegion?: HighlightedRegion,
-  severity?: ResultSeverity,
-  message?: AnalysisMessage,
-  messageChildren?: React.ReactNode,
-}) => {
+}: Props) => {
 
   const startingLine = codeSnippet?.startLine || 0;
   const endingLine = codeSnippet?.endLine || 0;
@@ -224,11 +265,12 @@ export const FileCodeSnippet = ({
           <VSCodeLink href={titleFileUri}>{fileLink.filePath}</VSCodeLink>
         </TitleContainer>
         {message && severity &&
-          <Message
+          <CodeSnippetMessage
             message={message}
-            borderLeftColor={getSeverityColor(severity)}>
+            severity={severity}
+          >
             {messageChildren}
-          </Message>}
+          </CodeSnippetMessage>}
       </Container>
     );
   }
@@ -242,8 +284,8 @@ export const FileCodeSnippet = ({
       </TitleContainer>
       <CodeContainer>
         {code.map((line, index) => (
-          <Line
-            key={`line-${index}`}
+          <CodeSnippetLine
+            key={index}
             line={line}
             lineIndex={index}
             startingLineIndex={startingLine}

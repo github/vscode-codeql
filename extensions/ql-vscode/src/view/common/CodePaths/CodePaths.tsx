@@ -1,10 +1,11 @@
-import { XCircleIcon } from '@primer/octicons-react';
-import { Overlay } from '@primer/react';
-import { VSCodeDropdown, VSCodeLink, VSCodeOption, VSCodeTag } from '@vscode/webview-ui-toolkit/react';
 import * as React from 'react';
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, SetStateAction, useCallback, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { CodeFlow, AnalysisMessage, ResultSeverity } from '../../../remote-queries/shared/analysis-result';
+import { VSCodeDropdown, VSCodeLink, VSCodeOption, VSCodeTag } from '@vscode/webview-ui-toolkit/react';
+
+import { Overlay } from '@primer/react';
+
+import { CodeFlow, AnalysisMessage, ResultSeverity, ThreadFlow } from '../../../remote-queries/shared/analysis-result';
 import { SectionTitle } from '../SectionTitle';
 import { VerticalSpace } from '../VerticalSpace';
 import { FileCodeSnippet } from '../FileCodeSnippet';
@@ -16,13 +17,14 @@ const StyledCloseButton = styled.button`
   background-color: var(--vscode-editor-background);
   color: var(--vscode-editor-foreground);
   border: none;
+  cursor: pointer;
+
   &:focus-visible {
     outline: none
   }
 `;
 
 const OverlayContainer = styled.div`
-  padding: 1em;
   height: 100%;
   width: 100%;
   padding: 2em;
@@ -35,81 +37,208 @@ const OverlayContainer = styled.div`
 `;
 
 const CloseButton = ({ onClick }: { onClick: () => void }) => (
-  <StyledCloseButton onClick={onClick} tabIndex={-1} >
-    <XCircleIcon size={24} />
+  <StyledCloseButton onClick={onClick} tabIndex={-1}>
+    <span className="codicon codicon-chrome-close" />
   </StyledCloseButton>
 );
+
+const PathsContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const PathDetailsContainer = styled.div`
+  padding: 0;
+  border: 0;
+`;
+
+const PathDropdownContainer = styled.div`
+  flex-grow: 1;
+  padding: 0 0 0 0.2em;
+  border: none;
+`;
+
+const Container = styled.div`
+  max-width: 55em;
+  margin-bottom: 1.5em;
+`;
+
+const HeaderContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1em;
+`;
+
+const TitleContainer = styled.div`
+  flex-grow: 1;
+  padding: 0;
+  border: none;
+`;
+
+const TagContainer = styled.div`
+  padding: 0;
+  border: none;
+`;
+
+const ShowPathsLink = styled(VSCodeLink)`
+  cursor: pointer;
+`;
+
+type ThreadPathProps = {
+  threadFlow: ThreadFlow;
+  step: number;
+  message: AnalysisMessage;
+  severity: ResultSeverity;
+  isSource?: boolean;
+  isSink?: boolean;
+}
+
+const ThreadPath = ({
+  threadFlow,
+  step,
+  message,
+  severity,
+  isSource,
+  isSink,
+}: ThreadPathProps) => (
+  <Container>
+    <HeaderContainer>
+      <TitleContainer>
+        <SectionTitle>Step {step}</SectionTitle>
+      </TitleContainer>
+      {isSource &&
+        <TagContainer>
+          <VSCodeTag>Source</VSCodeTag>
+        </TagContainer>
+      }
+      {isSink &&
+        <TagContainer>
+          <VSCodeTag>Sink</VSCodeTag>
+        </TagContainer>
+      }
+    </HeaderContainer>
+
+    <FileCodeSnippet
+      fileLink={threadFlow.fileLink}
+      codeSnippet={threadFlow.codeSnippet}
+      highlightedRegion={threadFlow.highlightedRegion}
+      severity={severity}
+      message={isSink ? message : threadFlow.message}
+    />
+  </Container>
+);
+
+type CodePathProps = {
+  codeFlow: CodeFlow;
+  message: AnalysisMessage;
+  severity: ResultSeverity;
+}
 
 const CodePath = ({
   codeFlow,
   message,
   severity
-}: {
-  codeFlow: CodeFlow;
-  message: AnalysisMessage;
-  severity: ResultSeverity;
-}) => {
-  return <>
+}: CodePathProps) => (
+  <>
     {codeFlow.threadFlows.map((threadFlow, index) =>
-      <div key={`thread-flow-${index}`} style={{ maxWidth: '55em' }}>
-        {index !== 0 && <VerticalSpace size={3} />}
-
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ flexGrow: 1, padding: 0, border: 'none' }}>
-            <SectionTitle>Step {index + 1}</SectionTitle>
-          </div>
-          {index === 0 &&
-            <div style={{ padding: 0, border: 'none' }}>
-              <VSCodeTag>Source</VSCodeTag>
-            </div>
-          }
-          {index === codeFlow.threadFlows.length - 1 &&
-            <div style={{ padding: 0, border: 'none' }}>
-              <VSCodeTag>Sink</VSCodeTag>
-            </div>
-          }
-        </div>
-
-        <VerticalSpace size={2} />
-        <FileCodeSnippet
-          fileLink={threadFlow.fileLink}
-          codeSnippet={threadFlow.codeSnippet}
-          highlightedRegion={threadFlow.highlightedRegion}
-          severity={severity}
-          message={index === codeFlow.threadFlows.length - 1 ? message : threadFlow.message} />
-      </div>
+      <ThreadPath
+        key={index}
+        threadFlow={threadFlow}
+        step={index + 1}
+        message={message}
+        severity={severity}
+        isSource={index === 0}
+        isSink={index === codeFlow.threadFlows.length - 1}
+      />
     )}
-  </>;
-};
+  </>
+);
 
 const getCodeFlowName = (codeFlow: CodeFlow) => {
   const filePath = codeFlow.threadFlows[codeFlow.threadFlows.length - 1].fileLink.filePath;
   return filePath.substring(filePath.lastIndexOf('/') + 1);
 };
 
-const Menu = ({
+type CodeFlowsDropdownProps = {
+  codeFlows: CodeFlow[];
+  setSelectedCodeFlow: (value: SetStateAction<CodeFlow>) => void;
+}
+
+const CodeFlowsDropdown = ({
   codeFlows,
   setSelectedCodeFlow
-}: {
+}: CodeFlowsDropdownProps) => {
+  const handleChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
+    const selectedOption = e.target;
+    const selectedIndex = selectedOption.value as unknown as number;
+    setSelectedCodeFlow(codeFlows[selectedIndex]);
+  }, [setSelectedCodeFlow, codeFlows]);
+
+  return (
+    <VSCodeDropdown onChange={handleChange}>
+      {codeFlows.map((codeFlow, index) =>
+        <VSCodeOption
+          key={index}
+          value={index}
+        >
+          {getCodeFlowName(codeFlow)}
+        </VSCodeOption>
+      )}
+    </VSCodeDropdown>
+  );
+};
+
+type CodePathsOverlayProps = {
+  codeFlows: CodeFlow[];
+  ruleDescription: string;
+  message: AnalysisMessage;
+  severity: ResultSeverity;
+  onClose: () => void;
+}
+
+const CodePathsOverlay = ({
+  codeFlows,
+  ruleDescription,
+  message,
+  severity,
+  onClose,
+}: CodePathsOverlayProps) => {
+  const [selectedCodeFlow, setSelectedCodeFlow] = useState(codeFlows[0]);
+
+  return (
+    <OverlayContainer>
+      <CloseButton onClick={onClose} />
+
+      <SectionTitle>{ruleDescription}</SectionTitle>
+      <VerticalSpace size={2} />
+
+      <PathsContainer>
+        <PathDetailsContainer>
+          {codeFlows.length} paths available: {selectedCodeFlow.threadFlows.length} steps in
+        </PathDetailsContainer>
+        <PathDropdownContainer>
+          <CodeFlowsDropdown codeFlows={codeFlows} setSelectedCodeFlow={setSelectedCodeFlow} />
+        </PathDropdownContainer>
+      </PathsContainer>
+
+      <VerticalSpace size={2} />
+      <CodePath
+        codeFlow={selectedCodeFlow}
+        severity={severity}
+        message={message}
+      />
+      <VerticalSpace size={3} />
+    </OverlayContainer>
+  );
+};
+
+type Props = {
   codeFlows: CodeFlow[],
-  setSelectedCodeFlow: (value: React.SetStateAction<CodeFlow>) => void
-}) => {
-  return <VSCodeDropdown
-    onChange={(event: ChangeEvent<HTMLSelectElement>) => {
-      const selectedOption = event.target;
-      const selectedIndex = selectedOption.value as unknown as number;
-      setSelectedCodeFlow(codeFlows[selectedIndex]);
-    }}
-  >
-    {codeFlows.map((codeFlow, index) =>
-      <VSCodeOption
-        key={`codeflow-${index}'`}
-        value={index}
-      >
-        {getCodeFlowName(codeFlow)}
-      </VSCodeOption>
-    )}
-  </VSCodeDropdown>;
+  ruleDescription: string,
+  message: AnalysisMessage,
+  severity: ResultSeverity
 };
 
 export const CodePaths = ({
@@ -117,60 +246,37 @@ export const CodePaths = ({
   ruleDescription,
   message,
   severity
-}: {
-  codeFlows: CodeFlow[],
-  ruleDescription: string,
-  message: AnalysisMessage,
-  severity: ResultSeverity
-}) => {
+}: Props) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedCodeFlow, setSelectedCodeFlow] = useState(codeFlows[0]);
 
-  const anchorRef = useRef<HTMLDivElement>(null);
   const linkRef = useRef<HTMLAnchorElement>(null);
 
   const closeOverlay = () => setIsOpen(false);
 
   return (
-    <div ref={anchorRef}>
-      <VSCodeLink
+    <>
+      <ShowPathsLink
         onClick={() => setIsOpen(true)}
         ref={linkRef}
-        sx={{ cursor: 'pointer' }}>
+      >
         Show paths
-      </VSCodeLink>
+      </ShowPathsLink>
       {isOpen && (
         <Overlay
           returnFocusRef={linkRef}
           onEscape={closeOverlay}
           onClickOutside={closeOverlay}
-          anchorSide="outside-top">
-          <OverlayContainer>
-            <CloseButton onClick={closeOverlay} />
-
-            <SectionTitle>{ruleDescription}</SectionTitle>
-            <VerticalSpace size={2} />
-
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <div style={{ padding: 0, border: 0 }}>
-                {codeFlows.length} paths available: {selectedCodeFlow.threadFlows.length} steps in
-              </div>
-              <div style={{ flexGrow: 1, padding: 0, paddingLeft: '0.2em', border: 'none' }}>
-                <Menu codeFlows={codeFlows} setSelectedCodeFlow={setSelectedCodeFlow} />
-              </div>
-            </div>
-
-            <VerticalSpace size={2} />
-            <CodePath
-              codeFlow={selectedCodeFlow}
-              severity={severity}
-              message={message} />
-
-            <VerticalSpace size={3} />
-
-          </OverlayContainer>
+          anchorSide="outside-top"
+        >
+          <CodePathsOverlay
+            codeFlows={codeFlows}
+            ruleDescription={ruleDescription}
+            message={message}
+            severity={severity}
+            onClose={closeOverlay}
+          />
         </Overlay>
       )}
-    </div>
+    </>
   );
 };
