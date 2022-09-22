@@ -31,7 +31,8 @@ export async function exportRemoteQueryResults(
   if (queryId) {
     const query = queryHistoryManager.getQueryById(queryId);
     if (!query) {
-      throw new Error(`Could not find query with id ${queryId}`);
+      void logger.log(`Could not find query with id ${queryId}`);
+      throw new Error('There was an error when trying to retrieve variant analysis information');
     }
     queryHistoryItem = query;
   } else {
