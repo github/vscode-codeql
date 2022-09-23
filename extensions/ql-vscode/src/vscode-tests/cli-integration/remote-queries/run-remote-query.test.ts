@@ -10,7 +10,8 @@ import { QlPack, runRemoteQuery } from '../../../remote-queries/run-remote-query
 import { Credentials } from '../../../authentication';
 import { CliVersionConstraint, CodeQLCliServer } from '../../../cli';
 import { CodeQLExtensionInterface } from '../../../extension';
-import { setRemoteControllerRepo, setRemoteRepositoryLists, setVariantAnalysisLiveResultsEnabled } from '../../../config';
+import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../../config';
+import * as config from '../../../config';
 import { UserCancellationException } from '../../../commandRunner';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { lte } from 'semver';
@@ -31,6 +32,7 @@ describe('Remote queries', function() {
   let progress: sinon.SinonSpy;
   let showQuickPickSpy: sinon.SinonStub;
   let getRepositoryFromNwoStub: sinon.SinonStub;
+  let liveResultsStub: sinon.SinonStub;
 
   // use `function` so we have access to `this`
   beforeEach(async function() {
@@ -70,6 +72,8 @@ describe('Remote queries', function() {
     // always run in the vscode-codeql repo
     await setRemoteControllerRepo('github/vscode-codeql');
     await setRemoteRepositoryLists({ 'vscode-codeql': ['github/vscode-codeql'] });
+
+    liveResultsStub = sandbox.stub(config, 'isVariantAnalysisLiveResultsEnabled').returns(false);
   });
 
   afterEach(async () => {
@@ -281,11 +285,7 @@ describe('Remote queries', function() {
 
   describe('when live results are enabled', () => {
     beforeEach(async () => {
-      await setVariantAnalysisLiveResultsEnabled(true);
-    });
-
-    afterEach(async () => {
-      await setVariantAnalysisLiveResultsEnabled(false);
+      liveResultsStub.returns(true);
     });
 
     it('should run a variant analysis that is part of a qlpack', async () => {
