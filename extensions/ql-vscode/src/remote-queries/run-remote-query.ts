@@ -243,8 +243,8 @@ export async function runRemoteQuery(
 
     if (isVariantAnalysisLiveResultsEnabled()) {
       const queryName = getQueryName(queryMetadata, queryFile);
-      const variantAnalysisLangauge = parseVariantAnalysisQueryLanguage(language);
-      if (variantAnalysisLangauge === undefined) {
+      const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(language);
+      if (variantAnalysisLanguage === undefined) {
         throw new UserCancellationException(`Found unsupported language: ${language}`);
       }
 
@@ -256,7 +256,7 @@ export async function runRemoteQuery(
           name: queryName,
           filePath: queryFile,
           pack: base64Pack,
-          language: variantAnalysisLangauge,
+          language: variantAnalysisLanguage,
         },
         databases: {
           repositories: repoSelection.repositories,
