@@ -65,8 +65,11 @@ describe('Remote queries', function() {
     await setVariantAnalysisLiveResultsEnabled(false);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     sandbox.restore();
+
+    // Always set this option to false so we leave a consistent state for the next test (which might not be from this file)
+    await setVariantAnalysisLiveResultsEnabled(false);
   });
 
   it('should run a remote query that is part of a qlpack', async () => {
