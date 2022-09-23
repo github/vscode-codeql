@@ -207,7 +207,7 @@ export const upgradeDatabase = new rpc.RequestType<
   UpgradeResult,
   void,
   void
->('evaluation/upgrade');
+>('evaluation/runUpgrade');
 
 /**
  * A notification that the progress has been changed.
