@@ -15,6 +15,7 @@ import { UserCancellationException } from '../../../commandRunner';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { lte } from 'semver';
 import { VariantAnalysis } from '../../../remote-queries/gh-api/variant-analysis';
+import { Repository } from '../../../remote-queries/gh-api/repository';
 
 describe('Remote queries', function() {
   const baseDir = path.join(__dirname, '../../../../src/vscode-tests/cli-integration');
@@ -29,6 +30,7 @@ describe('Remote queries', function() {
   let token: CancellationToken;
   let progress: sinon.SinonSpy;
   let showQuickPickSpy: sinon.SinonStub;
+  let getRepositoryFromNwoStub: sinon.SinonStub;
 
   // use `function` so we have access to `this`
   beforeEach(async function() {
@@ -57,6 +59,14 @@ describe('Remote queries', function() {
       .onFirstCall().resolves({ repositories: ['github/vscode-codeql'] } as unknown as QuickPickItem)
       .onSecondCall().resolves('javascript' as unknown as QuickPickItem);
 
+    const dummyRepository: Repository = {
+      id: 123,
+      name: 'vscode-codeql',
+      full_name: 'github/vscode-codeql',
+      private: false,
+    };
+    getRepositoryFromNwoStub = sandbox.stub(ghApiClient, 'getRepositoryFromNwo').resolves(dummyRepository);
+
     // always run in the vscode-codeql repo
     await setRemoteControllerRepo('github/vscode-codeql');
     await setRemoteRepositoryLists({ 'vscode-codeql': ['github/vscode-codeql'] });
@@ -77,6 +87,8 @@ describe('Remote queries', function() {
 
       // to retrieve the list of repositories
       expect(showQuickPickSpy).to.have.been.calledOnce;
+
+      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
       // check a few files that we know should exist and others that we know should not
 
@@ -137,6 +149,8 @@ describe('Remote queries', function() {
       // and a second time to ask for the language
       expect(showQuickPickSpy).to.have.been.calledTwice;
 
+      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
+
       // check a few files that we know should exist and others that we know should not
 
       // the tarball to deliver to the server
@@ -196,6 +210,8 @@ describe('Remote queries', function() {
 
       // to retrieve the list of repositories
       expect(showQuickPickSpy).to.have.been.calledOnce;
+
+      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
       // check a few files that we know should exist and others that we know should not
 
@@ -293,6 +309,8 @@ describe('Remote queries', function() {
       const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
       expect(querySubmissionResult).to.be.ok;
 
+      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
+
       expect(submitVariantAnalysisStub).to.have.been.calledOnce;
     });
 
@@ -317,6 +335,8 @@ describe('Remote queries', function() {
       const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
       expect(querySubmissionResult).to.be.ok;
 
+      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
+
       expect(submitVariantAnalysisStub).to.have.been.calledOnce;
     });
 
@@ -340,6 +360,8 @@ describe('Remote queries', function() {
 
       const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
       expect(querySubmissionResult).to.be.ok;
+
+      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
       expect(submitVariantAnalysisStub).to.have.been.calledOnce;
     });
