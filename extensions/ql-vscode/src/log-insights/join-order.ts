@@ -7,8 +7,8 @@ const DEFAULT_WARNING_THRESHOLD = 50;
 /**
  * Like `max`, but returns 0 if no meaningful maximum can be computed.
  */
-function safeMax(it: Iterable<number>) {
-  const m = Math.max(...it);
+function safeMax(it?: Iterable<number>) {
+  const m = Math.max(...(it || []));
   return Number.isFinite(m) ? m : 0;
 }
 
