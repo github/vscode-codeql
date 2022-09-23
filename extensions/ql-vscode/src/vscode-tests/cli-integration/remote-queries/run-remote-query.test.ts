@@ -288,20 +288,21 @@ describe('Remote queries', function() {
       liveResultsStub.returns(true);
     });
 
+    const dummyVariantAnalysis: VariantAnalysis = {
+      id: 123,
+      controller_repo: {
+        id: 64,
+        name: 'pickles',
+        full_name: 'github/pickles',
+        private: false,
+      },
+      actor_id: 27,
+      query_language: 'javascript',
+      query_pack_url: 'https://example.com/foo',
+      status: 'in_progress',
+    };
+
     it('should run a variant analysis that is part of a qlpack', async () => {
-      const dummyVariantAnalysis: VariantAnalysis = {
-        id: 123,
-        controller_repo: {
-          id: 64,
-          name: 'pickles',
-          full_name: 'github/pickles',
-          private: false,
-        },
-        actor_id: 27,
-        query_language: 'javascript',
-        query_pack_url: 'https://example.com/foo',
-        status: 'in_progress',
-      };
       const submitVariantAnalysisStub = sandbox.stub(ghApiClient, 'submitVariantAnalysis').resolves(dummyVariantAnalysis);
 
       const fileUri = getFile('data-remote-qlpack/in-pack.ql');
@@ -315,19 +316,6 @@ describe('Remote queries', function() {
     });
 
     it('should run a remote query that is not part of a qlpack', async () => {
-      const dummyVariantAnalysis: VariantAnalysis = {
-        id: 123,
-        controller_repo: {
-          id: 64,
-          name: 'pickles',
-          full_name: 'github/pickles',
-          private: false,
-        },
-        actor_id: 27,
-        query_language: 'javascript',
-        query_pack_url: 'https://example.com/foo',
-        status: 'in_progress',
-      };
       const submitVariantAnalysisStub = sandbox.stub(ghApiClient, 'submitVariantAnalysis').resolves(dummyVariantAnalysis);
 
       const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
@@ -341,19 +329,6 @@ describe('Remote queries', function() {
     });
 
     it('should run a remote query that is nested inside a qlpack', async () => {
-      const dummyVariantAnalysis: VariantAnalysis = {
-        id: 123,
-        controller_repo: {
-          id: 64,
-          name: 'pickles',
-          full_name: 'github/pickles',
-          private: false,
-        },
-        actor_id: 27,
-        query_language: 'javascript',
-        query_pack_url: 'https://example.com/foo',
-        status: 'in_progress',
-      };
       const submitVariantAnalysisStub = sandbox.stub(ghApiClient, 'submitVariantAnalysis').resolves(dummyVariantAnalysis);
 
       const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
