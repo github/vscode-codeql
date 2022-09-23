@@ -4,14 +4,16 @@ import * as path from 'path';
 import * as tmp from 'tmp';
 import * as url from 'url';
 import { CancellationTokenSource } from 'vscode-jsonrpc';
-import * as messages from '../../pure/messages';
-import * as qsClient from '../../queryserver-client';
+import * as messages from '../../pure/legacy-messages';
+import * as qsClient from '../../legacy-query-server/queryserver-client';
 import * as cli from '../../cli';
 import { CellValue } from '../../pure/bqrs-cli-types';
 import { extensions } from 'vscode';
 import { CodeQLExtensionInterface } from '../../extension';
 import { fail } from 'assert';
 import { skipIfNoCodeQL } from '../ensureCli';
+import { QueryServerClient } from '../../legacy-query-server/queryserver-client';
+import { logger, ProgressReporter } from '../../logging';
 
 
 const baseDir = path.join(__dirname, '../../../test/data');
@@ -88,7 +90,7 @@ const db: messages.Dataset = {
   workingSet: 'default',
 };
 
-describe('using the query server', function() {
+describe('using the legacy query server', function() {
   before(function() {
     skipIfNoCodeQL(this);
   });
@@ -97,28 +99,37 @@ describe('using the query server', function() {
   // ensure they are all written with standard anonymous functions.
   this.timeout(20000);
 
+  const nullProgressReporter: ProgressReporter = { report: () => { /** ignore */ } };
+
   let qs: qsClient.QueryServerClient;
   let cliServer: cli.CodeQLCliServer;
-  const queryServerStarted = new Checkpoint<void>();
 
-  beforeEach(async () => {
+  before(async () => {
     try {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
-      if ('cliServer' in extension && 'qs' in extension) {
+      if ('cliServer' in extension) {
         cliServer = extension.cliServer;
-        qs = extension.qs;
         cliServer.quiet = true;
+
+        qs = new QueryServerClient({
+          codeQlPath: (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) || '',
+          debug: false,
+          cacheSize: 0,
+          numThreads: 1,
+          saveCache: false,
+          timeoutSecs: 0
+        }, cliServer, {
+          contextStoragePath: tmpDir.name,
+          logger
+        }, task => task(nullProgressReporter, new CancellationTokenSource().token));
+        await qs.startQueryServer();
       } else {
         throw new Error('Extension not initialized. Make sure cli is downloaded and installed properly.');
       }
     } catch (e) {
       fail(e as Error);
     }
-  });
 
-  it('should be able to start the query server', async function() {
-    await qs.startQueryServer();
-    await queryServerStarted.resolve();
   });
 
   for (const queryTestCase of queryTestCases) {
@@ -134,7 +145,6 @@ describe('using the query server', function() {
     });
 
     it(`should be able to compile query ${queryName}`, async function() {
-      await queryServerStarted.done();
       expect(fs.existsSync(queryTestCase.queryPath)).to.be.true;
       try {
         const qlProgram: messages.QlProgram = {

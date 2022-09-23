@@ -16,7 +16,7 @@ import { DistributionProvider, FindDistributionResultKind } from './distribution
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { QueryMetadata, SortDirection } from './pure/interface-types';
 import { Logger, ProgressReporter } from './logging';
-import { CompilationMessage } from './pure/messages';
+import { CompilationMessage } from './pure/legacy-messages';
 import { sarifParser } from './sarif-parser';
 import { dbSchemeToLanguage, walkDirectory } from './helpers';
 
@@ -1248,6 +1248,9 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_LANGUAGE = new SemVer('2.4.1');
 
+
+  public static CLI_VERSION_WITH_NONDESTURCTIVE_UPGRADES = new SemVer('2.4.2');
+
   /**
    * CLI version where `codeql resolve upgrades` supports
    * the `--allow-downgrades` flag
@@ -1263,14 +1266,6 @@ export class CliVersionConstraint {
    * CLI version where database registration was introduced
    */
   public static CLI_VERSION_WITH_DB_REGISTRATION = new SemVer('2.4.1');
-
-  /**
-   * CLI version where non destructive upgrades were introduced.
-   *
-   * This was landed in multiple parts so this is the version where all necessary feature were supported.
-   */
-  public static CLI_VERSION_WITH_NON_DESTRUCTIVE_UPGRADES = new SemVer('2.4.2');
-
 
   /**
    * CLI version where the `--allow-library-packs` option to `codeql resolve queries` was
@@ -1351,6 +1346,10 @@ export class CliVersionConstraint {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_LANGUAGE);
   }
 
+  public async supportsNonDestructiveUpgrades() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NONDESTURCTIVE_UPGRADES);
+  }
+
   public async supportsDowngrades() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DOWNGRADES);
   }
@@ -1365,10 +1364,6 @@ export class CliVersionConstraint {
 
   async supportsDatabaseRegistration() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_DB_REGISTRATION);
-  }
-
-  async supportsNonDestructiveUpgrades(): Promise<boolean> {
-    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NON_DESTRUCTIVE_UPGRADES);
   }
 
   async supportsDatabaseUnbundle() {

@@ -17,9 +17,8 @@ import {
 import { zipArchiveScheme, encodeArchiveBasePath, decodeSourceArchiveUri, encodeSourceArchiveUri } from './archive-filesystem-provider';
 import { DisposableObject } from './pure/disposable-object';
 import { Logger, logger } from './logging';
-import { registerDatabases, Dataset, deregisterDatabases } from './pure/messages';
-import { QueryServerClient } from './queryserver-client';
 import { getErrorMessage } from './pure/helpers-pure';
+import { QueryRunner } from './queryRunner';
 
 /**
  * databases.ts
@@ -555,13 +554,13 @@ export class DatabaseManager extends DisposableObject {
 
   constructor(
     private readonly ctx: ExtensionContext,
-    private readonly qs: QueryServerClient,
+    private readonly qs: QueryRunner,
     private readonly cli: cli.CodeQLCliServer,
     public logger: Logger
   ) {
     super();
 
-    qs.onDidStartQueryServer(this.reregisterDatabases.bind(this));
+    qs.onStart(this.reregisterDatabases.bind(this));
 
     // Let this run async.
     void this.loadPersistedState();
@@ -860,27 +859,14 @@ export class DatabaseManager extends DisposableObject {
     token: vscode.CancellationToken,
     dbItem: DatabaseItem,
   ) {
-    if (dbItem.contents && (await this.cli.cliConstraints.supportsDatabaseRegistration())) {
-      const databases: Dataset[] = [{
-        dbDir: dbItem.contents.datasetUri.fsPath,
-        workingSet: 'default'
-      }];
-      await this.qs.sendRequest(deregisterDatabases, { databases }, token, progress);
-    }
+    await this.qs.deregisterDatabase(progress, token, dbItem);
   }
-
   private async registerDatabase(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     dbItem: DatabaseItem,
   ) {
-    if (dbItem.contents && (await this.cli.cliConstraints.supportsDatabaseRegistration())) {
-      const databases: Dataset[] = [{
-        dbDir: dbItem.contents.datasetUri.fsPath,
-        workingSet: 'default'
-      }];
-      await this.qs.sendRequest(registerDatabases, { databases }, token, progress);
-    }
+    await this.qs.registerDatabase(progress, token, dbItem);
   }
 
   private updatePersistedCurrentDatabaseItem(): void {

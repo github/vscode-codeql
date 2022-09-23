@@ -3,13 +3,14 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as sinon from 'sinon';
 import { LocalQueryInfo, InitialQueryInfo, interpretResultsSarif } from '../../query-results';
-import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries';
-import { EvaluationResult, QueryResultType } from '../../pure/messages';
+import { QueryWithResults } from '../../run-queries-shared';
 import { DatabaseInfo, SortDirection, SortedResultSetInfo } from '../../pure/interface-types';
 import { CodeQLCliServer, SourceInfo } from '../../cli';
 import { CancellationTokenSource, Uri } from 'vscode';
 import { tmpDir } from '../../helpers';
 import { slurpQueryHistory, splatQueryHistory } from '../../query-serialization';
+import { formatLegacyMessage, QueryInProgress } from '../../legacy-query-server/run-queries';
+import { EvaluationResult, QueryResultType } from '../../pure/legacy-messages';
 
 describe('query-results', () => {
   let disposeSpy: sinon.SinonSpy;
@@ -87,30 +88,34 @@ describe('query-results', () => {
       expect(completedQuery.getResultsPath('zxa')).to.eq('bxa');
     });
 
-    it('should get the statusString', () => {
-      const fqi = createMockFullQueryInfo('a', createMockQueryWithResults(queryPath, false));
-      const completedQuery = fqi.completedQuery!;
+    it('should format the statusString', () => {
 
-      completedQuery.result.message = 'Tremendously';
-      expect(completedQuery.statusString).to.eq('failed: Tremendously');
+      const evalResult: EvaluationResult = {
+        resultType: QueryResultType.OTHER_ERROR,
+        evaluationTime: 12340,
+        queryId: 3,
+        runId: 1,
+      };
 
-      completedQuery.result.resultType = QueryResultType.OTHER_ERROR;
-      expect(completedQuery.statusString).to.eq('failed: Tremendously');
+      evalResult.message = 'Tremendously';
+      expect(formatLegacyMessage(evalResult)).to.eq('failed: Tremendously');
 
-      completedQuery.result.resultType = QueryResultType.CANCELLATION;
-      completedQuery.result.evaluationTime = 2345;
-      expect(completedQuery.statusString).to.eq('cancelled after 2 seconds');
+      evalResult.resultType = QueryResultType.OTHER_ERROR;
+      expect(formatLegacyMessage(evalResult)).to.eq('failed: Tremendously');
 
-      completedQuery.result.resultType = QueryResultType.OOM;
-      expect(completedQuery.statusString).to.eq('out of memory');
+      evalResult.resultType = QueryResultType.CANCELLATION;
+      evalResult.evaluationTime = 2345;
+      expect(formatLegacyMessage(evalResult)).to.eq('cancelled after 2 seconds');
 
-      completedQuery.result.resultType = QueryResultType.SUCCESS;
-      expect(completedQuery.statusString).to.eq('finished in 2 seconds');
+      evalResult.resultType = QueryResultType.OOM;
+      expect(formatLegacyMessage(evalResult)).to.eq('out of memory');
 
-      completedQuery.result.resultType = QueryResultType.TIMEOUT;
-      expect(completedQuery.statusString).to.eq('timed out after 2 seconds');
+      evalResult.resultType = QueryResultType.SUCCESS;
+      expect(formatLegacyMessage(evalResult)).to.eq('finished in 2 seconds');
+
+      evalResult.resultType = QueryResultType.TIMEOUT;
+      expect(formatLegacyMessage(evalResult)).to.eq('timed out after 2 seconds');
     });
-
     it('should updateSortState', async () => {
       // setup
       const fqi = createMockFullQueryInfo('a', createMockQueryWithResults(queryPath));
@@ -267,9 +272,6 @@ describe('query-results', () => {
           if (!('quickEvalPosition' in query)) {
             (query as any).quickEvalPosition = undefined;
           }
-          if (!('templates' in query)) {
-            (query as any).templates = undefined;
-          }
         }
       });
       expectedHistory.forEach(info => {
@@ -310,7 +312,7 @@ describe('query-results', () => {
     fs.mkdirpSync(queryPath);
     fs.writeFileSync(resultsPath, '', 'utf8');
 
-    const query = new QueryEvaluationInfo(
+    const query = new QueryInProgress(
       queryPath,
       Uri.file(dbPath).fsPath,
       true,
@@ -321,14 +323,10 @@ describe('query-results', () => {
       },
     );
 
-    const result = {
-      query,
-      result: {
-        evaluationTime: 12340,
-        resultType: didRunSuccessfully
-          ? QueryResultType.SUCCESS
-          : QueryResultType.OTHER_ERROR
-      } as EvaluationResult,
+    const result: QueryWithResults = {
+      query: query.queryEvalInfo,
+      sucessful: didRunSuccessfully,
+      message: 'foo',
       dispose: disposeSpy,
     };
 
