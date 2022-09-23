@@ -273,8 +273,6 @@ describe('Remote queries', function() {
     });
 
     it('should run a variant analysis that is part of a qlpack', async () => {
-      await setVariantAnalysisLiveResultsEnabled(true);
-
       const dummyVariantAnalysis: VariantAnalysis = {
         id: 123,
         controller_repo: {
@@ -299,8 +297,6 @@ describe('Remote queries', function() {
     });
 
     it('should run a remote query that is not part of a qlpack', async () => {
-      await setVariantAnalysisLiveResultsEnabled(true);
-
       const dummyVariantAnalysis: VariantAnalysis = {
         id: 123,
         controller_repo: {
@@ -325,8 +321,6 @@ describe('Remote queries', function() {
     });
 
     it('should run a remote query that is nested inside a qlpack', async () => {
-      await setVariantAnalysisLiveResultsEnabled(true);
-
       const dummyVariantAnalysis: VariantAnalysis = {
         id: 123,
         controller_repo: {
@@ -351,8 +345,6 @@ describe('Remote queries', function() {
     });
 
     it('should cancel a run before uploading', async () => {
-      await setVariantAnalysisLiveResultsEnabled(true);
-
       const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
       const promise = runRemoteQuery(cli, credentials, fileUri, true, progress, token);
