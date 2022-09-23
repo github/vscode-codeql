@@ -1,0 +1,98 @@
+import * as React from 'react';
+import { ReactNode } from 'react';
+import styled from 'styled-components';
+
+type ContainerProps = {
+  type: 'warning' | 'error';
+  inverse?: boolean;
+};
+
+const getBackgroundColor = ({ type, inverse }: ContainerProps): string => {
+  if (!inverse) {
+    return 'var(--vscode-notifications-background)';
+  }
+
+  switch (type) {
+    case 'warning':
+      return 'var(--vscode-editorWarning-foreground)';
+    case 'error':
+      return 'var(--vscode-debugExceptionWidget-border)';
+  }
+};
+
+const getTextColor = ({ type, inverse }: ContainerProps): string => {
+  if (!inverse) {
+    return 'var(--vscode-tab-activeForeground)';
+  }
+
+  switch (type) {
+    case 'warning':
+      return 'var(--vscode-panel-background)';
+    case 'error':
+      return 'var(--vscode-list-activeSelectionForeground)';
+  }
+};
+
+const getBorderColor = ({ type, inverse }: ContainerProps): string => {
+  if (inverse) {
+    switch (type) {
+      case 'warning':
+        return 'var(--vscode-inputValidation-warningBorder)';
+      case 'error':
+        return 'var(--vscode-inputValidation-errorBorder)';
+    }
+  } else {
+    switch (type) {
+      case 'warning':
+        return 'var(--vscode-notificationsWarningIcon-foreground)';
+      case 'error':
+        return 'var(--vscode-notificationsErrorIcon-foreground)';
+    }
+  }
+};
+
+const Container = styled.div<ContainerProps>`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1em;
+  padding: 1em;
+
+  color: ${props => getTextColor(props)};
+  background-color: ${props => getBackgroundColor(props)};
+  border: 1px solid ${props => getBorderColor(props)};
+`;
+
+const Title = styled.div`
+  font-size: 0.85em;
+  font-weight: 800;
+  text-transform: uppercase;
+`;
+
+const ActionsContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 0.75em;
+  margin-left: auto;
+`;
+
+type Props = {
+  type: 'warning' | 'error';
+  title: string;
+  message: ReactNode;
+
+  actions?: ReactNode;
+
+  // Inverse the color scheme
+  inverse?: boolean;
+};
+
+export const Alert = ({ type, title, message, actions, inverse }: Props) => {
+  return (
+    <Container type={type} inverse={inverse}>
+      <Title>{type}: {title}</Title>
+      <span>{message}</span>
+      {actions && <ActionsContainer>{actions}</ActionsContainer>}
+    </Container>
+  );
+};
