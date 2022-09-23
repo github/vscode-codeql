@@ -284,7 +284,7 @@ describe('Remote queries', function() {
   });
 
   describe('when live results are enabled', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
       liveResultsStub.returns(true);
     });
 
