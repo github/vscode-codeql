@@ -26,7 +26,7 @@ import { QueryMetadata } from '../pure/interface-types';
 import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
 import * as ghApiClient from './gh-api/gh-api-client';
 import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
-import { VariantAnalysisQueryLanguage, VariantAnalysisSubmission } from './shared/variant-analysis';
+import { parseVariantAnalysisQueryLanguage, VariantAnalysisSubmission } from './shared/variant-analysis';
 import { Repository } from './shared/repository';
 
 export interface QlPack {
@@ -243,6 +243,11 @@ export async function runRemoteQuery(
 
     if (isVariantAnalysisLiveResultsEnabled()) {
       const queryName = getQueryName(queryMetadata, queryFile);
+      const variantAnalysisLangauge = parseVariantAnalysisQueryLanguage(language);
+      if (variantAnalysisLangauge === undefined) {
+        throw new UserCancellationException(`Found unsupported language: ${language}`);
+      }
+
       const variantAnalysisSubmission: VariantAnalysisSubmission = {
         startTime: queryStartTime,
         actionRepoRef: actionBranch,
@@ -251,7 +256,7 @@ export async function runRemoteQuery(
           name: queryName,
           filePath: queryFile,
           pack: base64Pack,
-          language: language as VariantAnalysisQueryLanguage,
+          language: variantAnalysisLangauge,
         },
         databases: {
           repositories: repoSelection.repositories,

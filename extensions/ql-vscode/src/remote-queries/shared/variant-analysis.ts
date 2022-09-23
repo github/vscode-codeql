@@ -30,6 +30,10 @@ export enum VariantAnalysisQueryLanguage {
   Ruby = 'ruby'
 }
 
+export function parseVariantAnalysisQueryLanguage(language: string): VariantAnalysisQueryLanguage | undefined {
+  return Object.values(VariantAnalysisQueryLanguage).find(x => x === language);
+}
+
 export enum VariantAnalysisStatus {
   InProgress = 'inProgress',
   Succeeded = 'succeeded',
