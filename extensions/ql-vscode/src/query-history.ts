@@ -39,10 +39,10 @@ import * as fs from 'fs-extra';
 import { CliVersionConstraint } from './cli';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { Credentials } from './authentication';
-import { cancelRemoteQuery } from './remote-queries/gh-actions-api-client';
+import { cancelRemoteQuery } from './remote-queries/gh-api/gh-actions-api-client';
 import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
-import { InterfaceManager } from './interface';
+import { ResultsView } from './interface';
 import { WebviewReveal } from './interface-utils';
 import { EvalLogViewer } from './eval-log-viewer';
 import EvalLogTreeBuilder from './eval-log-tree-builder';
@@ -331,7 +331,7 @@ export class QueryHistoryManager extends DisposableObject {
   constructor(
     private readonly qs: QueryRunner,
     private readonly dbm: DatabaseManager,
-    private readonly localQueriesInterfaceManager: InterfaceManager,
+    private readonly localQueriesResultsView: ResultsView,
     private readonly remoteQueriesManager: RemoteQueriesManager,
     private readonly evalLogViewer: EvalLogViewer,
     private readonly queryStorageDir: string,
@@ -678,6 +678,10 @@ export class QueryHistoryManager extends DisposableObject {
 
   getCurrentQueryHistoryItem(): QueryHistoryInfo | undefined {
     return this.treeDataProvider.getCurrent();
+  }
+
+  getRemoteQueryById(queryId: string): RemoteQueryHistoryItem | undefined {
+    return this.treeDataProvider.allHistory.find(i => i.t === 'remote' && i.queryId === queryId) as RemoteQueryHistoryItem;
   }
 
   async removeDeletedQueries() {
@@ -1360,7 +1364,7 @@ the file in the file explorer and dragging it into the workspace.`
 
   private async openQueryResults(item: QueryHistoryInfo) {
     if (item.t === 'local') {
-      await this.localQueriesInterfaceManager.showResults(item as CompletedLocalQueryInfo, WebviewReveal.Forced, false);
+      await this.localQueriesResultsView.showResults(item as CompletedLocalQueryInfo, WebviewReveal.Forced, false);
     }
     else if (item.t === 'remote') {
       await this.remoteQueriesManager.openRemoteQueryResults(item.queryId);

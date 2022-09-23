@@ -7,7 +7,7 @@ import { ExtensionContext } from 'vscode';
 import { createMockExtensionContext } from '../index';
 import { Credentials } from '../../../authentication';
 import { MarkdownFile } from '../../../remote-queries/remote-queries-markdown-generation';
-import * as actionsApiClient from '../../../remote-queries/gh-actions-api-client';
+import * as actionsApiClient from '../../../remote-queries/gh-api/gh-actions-api-client';
 import { exportResultsToGist } from '../../../remote-queries/export-results';
 
 const proxyquire = pq.noPreserveCache();

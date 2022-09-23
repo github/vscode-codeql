@@ -6,10 +6,7 @@ import { AnalysisSummary, RemoteQueryResult } from '../../remote-queries/shared/
 import { MAX_RAW_RESULTS } from '../../remote-queries/shared/result-limits';
 import { vscode } from '../vscode-api';
 import { VSCodeBadge, VSCodeButton } from '@vscode/webview-ui-toolkit/react';
-import SectionTitle from './SectionTitle';
-import VerticalSpace from './VerticalSpace';
-import HorizontalSpace from './HorizontalSpace';
-import ViewTitle from './ViewTitle';
+import { HorizontalSpace, SectionTitle, VerticalSpace, ViewTitle } from '../common';
 import DownloadButton from './DownloadButton';
 import { AnalysisResults, getAnalysisResultCount } from '../../remote-queries/shared/analysis-result';
 import DownloadSpinner from './DownloadSpinner';
@@ -273,9 +270,10 @@ const AnalysesResultsTitle = ({ totalAnalysesResults, totalResults }: { totalAna
   return <SectionTitle>{totalAnalysesResults}/{totalResults} results</SectionTitle>;
 };
 
-const exportResults = () => {
+const exportResults = (queryResult: RemoteQueryResult) => {
   vscode.postMessage({
     t: 'remoteQueryExportResults',
+    queryId: queryResult.queryId,
   });
 };
 
@@ -365,7 +363,7 @@ const AnalysesResults = ({
             totalResults={totalResults} />
         </div>
         <div>
-          <VSCodeButton onClick={exportResults}>Export all</VSCodeButton>
+          <VSCodeButton onClick={() => exportResults(queryResult)}>Export all</VSCodeButton>
         </div>
       </div>
       <AnalysesResultsDescription
