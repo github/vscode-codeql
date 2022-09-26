@@ -22,32 +22,23 @@ const getBackgroundColor = ({ type, inverse }: ContainerProps): string => {
 
 const getTextColor = ({ type, inverse }: ContainerProps): string => {
   if (!inverse) {
-    return 'var(--vscode-tab-activeForeground)';
+    return 'var(--vscode-editor-foreground)';
   }
 
   switch (type) {
     case 'warning':
-      return 'var(--vscode-panel-background)';
+      return 'var(--vscode-editor-background)';
     case 'error':
       return 'var(--vscode-list-activeSelectionForeground)';
   }
 };
 
-const getBorderColor = ({ type, inverse }: ContainerProps): string => {
-  if (inverse) {
-    switch (type) {
-      case 'warning':
-        return 'var(--vscode-inputValidation-warningBorder)';
-      case 'error':
-        return 'var(--vscode-inputValidation-errorBorder)';
-    }
-  } else {
-    switch (type) {
-      case 'warning':
-        return 'var(--vscode-notificationsWarningIcon-foreground)';
-      case 'error':
-        return 'var(--vscode-notificationsErrorIcon-foreground)';
-    }
+const getBorderColor = ({ type }: ContainerProps): string => {
+  switch (type) {
+    case 'warning':
+      return 'var(--vscode-editorWarning-foreground)';
+    case 'error':
+      return 'var(--vscode-editorError-foreground)';
   }
 };
 
