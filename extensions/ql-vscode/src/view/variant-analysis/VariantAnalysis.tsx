@@ -8,6 +8,7 @@ import {
 } from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisContainer } from './VariantAnalysisContainer';
 import { VariantAnalysisHeader } from './VariantAnalysisHeader';
+import { VariantAnalysisLoading } from './VariantAnalysisLoading';
 
 const variantAnalysis: VariantAnalysisDomainModel = {
   id: 1,
@@ -19,6 +20,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
   },
   databases: {},
   status: VariantAnalysisStatus.InProgress,
+  actionsWorkflowRunId: 123,
   scannedRepos: [
     {
       repository: {
@@ -103,18 +105,28 @@ const variantAnalysis: VariantAnalysisDomainModel = {
   ]
 };
 
+function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
+  if (variantAnalysis.actionsWorkflowRunId === undefined) {
+    return <VariantAnalysisLoading />;
+  }
+
+  return (
+    <VariantAnalysisHeader
+      variantAnalysis={variantAnalysis}
+      onOpenQueryFileClick={() => console.log('Open query')}
+      onViewQueryTextClick={() => console.log('View query')}
+      onStopQueryClick={() => console.log('Stop query')}
+      onCopyRepositoryListClick={() => console.log('Copy repository list')}
+      onExportResultsClick={() => console.log('Export results')}
+      onViewLogsClick={() => console.log('View logs')}
+    />
+  );
+}
+
 export function VariantAnalysis(): JSX.Element {
   return (
     <VariantAnalysisContainer>
-      <VariantAnalysisHeader
-        variantAnalysis={variantAnalysis}
-        onOpenQueryFileClick={() => console.log('Open query')}
-        onViewQueryTextClick={() => console.log('View query')}
-        onStopQueryClick={() => console.log('Stop query')}
-        onCopyRepositoryListClick={() => console.log('Copy repository list')}
-        onExportResultsClick={() => console.log('Export results')}
-        onViewLogsClick={() => console.log('View logs')}
-      />
+      {getContainerContents(variantAnalysis)}
     </VariantAnalysisContainer>
   );
 }
