@@ -308,7 +308,7 @@ describe('Remote queries', function() {
       const fileUri = getFile('data-remote-qlpack/in-pack.ql');
 
       const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
-      expect(querySubmissionResult).to.be.ok;
+      expect(querySubmissionResult).to.be.undefined;
 
       expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
@@ -321,7 +321,7 @@ describe('Remote queries', function() {
       const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
       const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
-      expect(querySubmissionResult).to.be.ok;
+      expect(querySubmissionResult).to.be.undefined;
 
       expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
@@ -334,7 +334,7 @@ describe('Remote queries', function() {
       const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
 
       const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
-      expect(querySubmissionResult).to.be.ok;
+      expect(querySubmissionResult).to.be.undefined;
 
       expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
