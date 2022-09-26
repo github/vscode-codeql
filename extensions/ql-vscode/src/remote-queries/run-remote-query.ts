@@ -269,7 +269,7 @@ export async function runRemoteQuery(
         credentials,
         variantAnalysisSubmission
       );
-      await showAndLogInformationMessage('Variant analysis submitted for processing');
+      void showAndLogInformationMessage('Variant analysis submitted for processing');
       void logger.log(`Variant analysis result:\n${JSON.stringify(variantAnalysisResponse)}`);
       return;
 
