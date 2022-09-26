@@ -1,38 +1,28 @@
-import { faker } from '@faker-js/faker';
 import { expect } from 'chai';
 import {
-  VariantAnalysis as VariantAnalysisApiResponse,
-  VariantAnalysisRepoStatus as ApiVariantAnalysisRepoStatus,
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository,
   VariantAnalysisSkippedRepositories as ApiVariantAnalysisSkippedRepositories,
   VariantAnalysisSkippedRepositoryGroup as ApiVariantAnalysisSkippedRepositoryGroup,
   VariantAnalysisNotFoundRepositoryGroup as ApiVariantAnalysisNotFoundRepositoryGroup
 } from '../../../remote-queries/gh-api/variant-analysis';
 import {
-  VariantAnalysisSubmission,
   VariantAnalysisQueryLanguage,
   VariantAnalysisSkippedRepositories,
-  VariantAnalysisSkippedRepositoryGroup
+  VariantAnalysisSkippedRepositoryGroup,
+  VariantAnalysisScannedRepository,
+  VariantAnalysisRepoStatus
 } from '../../../remote-queries/shared/variant-analysis';
 import { processVariantAnalysis } from '../../../remote-queries/variant-analysis-processor';
+import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/scanned-repositories';
+import { createMockSkippedRepos } from '../../factories/remote-queries/gh-api/skipped-repositories';
+import { createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
+import { createMockSubmission } from '../../factories/remote-queries/shared/variant-analysis-submission';
 
 describe('Variant Analysis processor', function() {
-  let mockApiResponse: VariantAnalysisApiResponse;
-  let mockSubmission: VariantAnalysisSubmission;
-  let scannedRepo1: ApiVariantAnalysisScannedRepository;
-  let scannedRepo2: ApiVariantAnalysisScannedRepository;
-  let scannedRepo3: ApiVariantAnalysisScannedRepository;
-  let skippedRepos: ApiVariantAnalysisSkippedRepositories;
-
-  beforeEach(() => {
-    scannedRepo1 = createMockScannedRepo('mona1', false, 'succeeded');
-    scannedRepo2 = createMockScannedRepo('mona2', false, 'pending');
-    scannedRepo3 = createMockScannedRepo('mona3', false, 'in_progress');
-    skippedRepos = createMockSkippedRepos();
-
-    mockApiResponse = createMockApiResponse();
-    mockSubmission = createMockSubmission();
-  });
+  const scannedRepos = createMockScannedRepos();
+  const skippedRepos = createMockSkippedRepos();
+  const mockApiResponse = createMockApiResponse(scannedRepos, skippedRepos);
+  const mockSubmission = createMockSubmission();
 
   it('should process an API response and return a variant analysis', () => {
     const result = processVariantAnalysis(mockSubmission, mockApiResponse);
@@ -42,7 +32,7 @@ describe('Variant Analysis processor', function() {
       'controllerRepoId': 456,
       'query': {
         'filePath': 'query-file-path',
-        'language': 'javascript',
+        'language': VariantAnalysisQueryLanguage.Javascript,
         'name': 'query-name',
       },
       'databases': {
@@ -52,142 +42,29 @@ describe('Variant Analysis processor', function() {
       },
       'status': 'succeeded',
       'actionsWorkflowRunId': 456,
-      'failureReason': 'internal_error',
       'scannedRepos': [
-        {
-          'analysisStatus': 'succeeded',
-          'artifactSizeInBytes': scannedRepo1.artifact_size_in_bytes,
-          'failureMessage': '',
-          'repository': {
-            'fullName': scannedRepo1.repository.full_name,
-            'id': scannedRepo1.repository.id,
-            'private': scannedRepo1.repository.private,
-          },
-          'resultCount': scannedRepo1.result_count
-        },
-        {
-          'analysisStatus': 'pending',
-          'artifactSizeInBytes': scannedRepo2.artifact_size_in_bytes,
-          'failureMessage': '',
-          'repository': {
-            'fullName': scannedRepo2.repository.full_name,
-            'id': scannedRepo2.repository.id,
-            'private': scannedRepo2.repository.private,
-          },
-          'resultCount': scannedRepo2.result_count
-        },
-        {
-          'analysisStatus': 'inProgress',
-          'artifactSizeInBytes': scannedRepo3.artifact_size_in_bytes,
-          'failureMessage': '',
-          'repository': {
-            'fullName': scannedRepo3.repository.full_name,
-            'id': scannedRepo3.repository.id,
-            'private': scannedRepo3.repository.private,
-          },
-          'resultCount': scannedRepo3.result_count
-        }
+        transformScannedRepo(VariantAnalysisRepoStatus.Succeeded, scannedRepos[0]),
+        transformScannedRepo(VariantAnalysisRepoStatus.Pending, scannedRepos[1]),
+        transformScannedRepo(VariantAnalysisRepoStatus.InProgress, scannedRepos[2]),
       ],
       'skippedRepos': transformSkippedRepos(skippedRepos)
     });
   });
 
-  function createMockApiResponse(): VariantAnalysisApiResponse {
-    const variantAnalysis: VariantAnalysisApiResponse = {
-      id: 123,
-      controller_repo: {
-        id: 456,
-        name: 'pickles',
-        full_name: 'github/pickles',
-        private: false,
+  function transformScannedRepo(
+    status: VariantAnalysisRepoStatus,
+    scannedRepo: ApiVariantAnalysisScannedRepository
+  ): VariantAnalysisScannedRepository {
+    return {
+      'analysisStatus': status,
+      'artifactSizeInBytes': scannedRepo.artifact_size_in_bytes,
+      'failureMessage': scannedRepo.failure_message,
+      'repository': {
+        'fullName': scannedRepo.repository.full_name,
+        'id': scannedRepo.repository.id,
+        'private': scannedRepo.repository.private,
       },
-      actor_id: 123,
-      query_language: 'javascript',
-      query_pack_url: 'https://example.com/foo',
-      status: 'in_progress',
-      actions_workflow_run_id: 456,
-      failure_reason: 'internal_error',
-      scanned_repositories: [scannedRepo1, scannedRepo2, scannedRepo3],
-      skipped_repositories: skippedRepos
-    };
-
-    return variantAnalysis;
-  }
-
-  function createMockScannedRepo(
-    name: string,
-    isPrivate: boolean,
-    analysisStatus: ApiVariantAnalysisRepoStatus,
-  ): ApiVariantAnalysisScannedRepository {
-    return {
-      repository: {
-        id: faker.datatype.number(),
-        name: name,
-        full_name: 'github/' + name,
-        private: isPrivate,
-      },
-      analysis_status: analysisStatus,
-      result_count: faker.datatype.number(),
-      artifact_size_in_bytes: faker.datatype.number(),
-      failure_message: ''
-    };
-  }
-
-  function createMockSubmission(): VariantAnalysisSubmission {
-    return {
-      startTime: 1234,
-      controllerRepoId: 5678,
-      actionRepoRef: 'repo-ref',
-      query: {
-        name: 'query-name',
-        filePath: 'query-file-path',
-        language: VariantAnalysisQueryLanguage.Javascript,
-        pack: 'base64-encoded-string',
-      },
-      databases: {
-        repositories: ['1', '2', '3'],
-        repositoryLists: ['top10', 'top100'],
-        repositoryOwners: ['mona', 'lisa'],
-      }
-    };
-  }
-
-  function createMockSkippedRepos(): ApiVariantAnalysisSkippedRepositories {
-    return {
-      access_mismatch_repos: createMockSkippedRepoGroup(),
-      no_codeql_db_repos: createMockSkippedRepoGroup(),
-      not_found_repo_nwos: createMockNotFoundSkippedRepoGroup(),
-      over_limit_repos: createMockSkippedRepoGroup()
-    };
-  }
-
-  function createMockSkippedRepoGroup(): ApiVariantAnalysisSkippedRepositoryGroup {
-    return {
-      repository_count: 2,
-      repositories: [
-        {
-          id: faker.datatype.number(),
-          name: faker.random.word(),
-          full_name: 'github/' + faker.random.word(),
-          private: true
-        },
-        {
-          id: faker.datatype.number(),
-          name: faker.random.word(),
-          full_name: 'github/' + faker.random.word(),
-          private: false
-        }
-      ]
-    };
-  }
-
-  function createMockNotFoundSkippedRepoGroup(): ApiVariantAnalysisNotFoundRepositoryGroup {
-    const repoName1 = 'github' + faker.random.word();
-    const repoName2 = 'github' + faker.random.word();
-
-    return {
-      repository_count: 2,
-      repository_nwos: [repoName1, repoName2]
+      'resultCount': scannedRepo.result_count
     };
   }
 
