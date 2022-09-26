@@ -42,6 +42,15 @@ const getBorderColor = ({ type }: ContainerProps): string => {
   }
 };
 
+const getTypeText = (type: ContainerProps['type']): string => {
+  switch (type) {
+    case 'warning':
+      return 'Warning';
+    case 'error':
+      return 'Error';
+  }
+};
+
 const Container = styled.div<ContainerProps>`
   display: flex;
   flex-direction: column;
@@ -81,7 +90,7 @@ type Props = {
 export const Alert = ({ type, title, message, actions, inverse }: Props) => {
   return (
     <Container type={type} inverse={inverse}>
-      <Title>{type}: {title}</Title>
+      <Title>{getTypeText(type)}: {title}</Title>
       <span>{message}</span>
       {actions && <ActionsContainer>{actions}</ActionsContainer>}
     </Container>
