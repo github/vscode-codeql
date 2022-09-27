@@ -4,6 +4,7 @@ import * as sinon from 'sinon';
 import { Credentials } from '../../../../authentication';
 import { cancelRemoteQuery, getRepositoriesMetadata } from '../../../../remote-queries/gh-api/gh-actions-api-client';
 import { RemoteQuery } from '../../../../remote-queries/remote-query';
+import { createMockCredentials } from '../../../utils/credentials';
 
 describe('gh-actions-api-client mock responses', () => {
   let sandbox: sinon.SinonSandbox;
@@ -12,11 +13,7 @@ describe('gh-actions-api-client mock responses', () => {
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
-    mockCredentials = {
-      getOctokit: () => Promise.resolve({
-        request: mockResponse
-      })
-    } as unknown as Credentials;
+    createMockCredentials(sandbox);
   });
 
   afterEach(() => {

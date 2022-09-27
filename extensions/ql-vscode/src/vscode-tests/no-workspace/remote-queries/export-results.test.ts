@@ -5,30 +5,23 @@ import * as sinon from 'sinon';
 import * as pq from 'proxyquire';
 import { ExtensionContext } from 'vscode';
 import { createMockExtensionContext } from '../index';
-import { Credentials } from '../../../authentication';
 import { MarkdownFile } from '../../../remote-queries/remote-queries-markdown-generation';
 import * as actionsApiClient from '../../../remote-queries/gh-api/gh-actions-api-client';
 import { exportResultsToGist } from '../../../remote-queries/export-results';
+import { createMockCredentials } from '../../utils/credentials';
 
 const proxyquire = pq.noPreserveCache();
 
 describe('export results', async function() {
   describe('exportResultsToGist', async function() {
     let sandbox: sinon.SinonSandbox;
-    let mockCredentials: Credentials;
-    let mockResponse: sinon.SinonStub<any, Promise<{ status: number }>>;
     let mockCreateGist: sinon.SinonStub;
     let ctx: ExtensionContext;
 
     beforeEach(() => {
       sandbox = sinon.createSandbox();
 
-      mockCredentials = {
-        getOctokit: () => Promise.resolve({
-          request: mockResponse
-        })
-      } as unknown as Credentials;
-      sandbox.stub(Credentials, 'initialize').resolves(mockCredentials);
+      createMockCredentials(sandbox);
 
       const resultFiles = [] as MarkdownFile[];
       proxyquire('../../../remote-queries/remote-queries-markdown-generation', {
