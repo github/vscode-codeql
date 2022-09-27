@@ -8,7 +8,6 @@ import { QueryHistoryConfig } from '../../../config';
 import { DatabaseManager } from '../../../databases';
 import { tmpDir } from '../../../helpers';
 import { QueryHistoryManager } from '../../../query-history';
-import { QueryServerClient } from '../../../queryserver-client';
 import { Credentials } from '../../../authentication';
 import { AnalysesResultsManager } from '../../../remote-queries/analyses-results-manager';
 import { RemoteQueryResult } from '../../../remote-queries/shared/remote-query-result';
@@ -20,6 +19,7 @@ import { HistoryItemLabelProvider } from '../../../history-item-label-provider';
 import { RemoteQueriesManager } from '../../../remote-queries/remote-queries-manager';
 import { ResultsView } from '../../../interface';
 import { EvalLogViewer } from '../../../eval-log-viewer';
+import { QueryRunner } from '../../../queryRunner';
 
 /**
  * Tests for remote queries and how they interact with the query history manager.
@@ -90,7 +90,7 @@ describe('Remote queries and query history manager', function() {
     remoteQueryResult1 = fs.readJSONSync(path.join(STORAGE_DIR, 'queries', rawQueryHistory[1].queryId, 'query-result.json'));
 
     qhm = new QueryHistoryManager(
-      {} as QueryServerClient,
+      {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
       remoteQueriesManagerStub,

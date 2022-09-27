@@ -11,8 +11,13 @@ import { Credentials } from '../../../authentication';
 import { CliVersionConstraint, CodeQLCliServer } from '../../../cli';
 import { CodeQLExtensionInterface } from '../../../extension';
 import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../../config';
+import * as config from '../../../config';
 import { UserCancellationException } from '../../../commandRunner';
+import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { lte } from 'semver';
+import { VariantAnalysis } from '../../../remote-queries/gh-api/variant-analysis';
+import { Repository } from '../../../remote-queries/gh-api/repository';
+import { VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
 
 describe('Remote queries', function() {
   const baseDir = path.join(__dirname, '../../../../src/vscode-tests/cli-integration');
@@ -27,6 +32,8 @@ describe('Remote queries', function() {
   let token: CancellationToken;
   let progress: sinon.SinonSpy;
   let showQuickPickSpy: sinon.SinonStub;
+  let getRepositoryFromNwoStub: sinon.SinonStub;
+  let liveResultsStub: sinon.SinonStub;
 
   // use `function` so we have access to `this`
   beforeEach(async function() {
@@ -55,208 +62,309 @@ describe('Remote queries', function() {
       .onFirstCall().resolves({ repositories: ['github/vscode-codeql'] } as unknown as QuickPickItem)
       .onSecondCall().resolves('javascript' as unknown as QuickPickItem);
 
+    const dummyRepository: Repository = {
+      id: 123,
+      name: 'vscode-codeql',
+      full_name: 'github/vscode-codeql',
+      private: false,
+    };
+    getRepositoryFromNwoStub = sandbox.stub(ghApiClient, 'getRepositoryFromNwo').resolves(dummyRepository);
+
     // always run in the vscode-codeql repo
     await setRemoteControllerRepo('github/vscode-codeql');
     await setRemoteRepositoryLists({ 'vscode-codeql': ['github/vscode-codeql'] });
+
+    liveResultsStub = sandbox.stub(config, 'isVariantAnalysisLiveResultsEnabled').returns(false);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     sandbox.restore();
   });
 
-  it('should run a remote query that is part of a qlpack', async () => {
-    const fileUri = getFile('data-remote-qlpack/in-pack.ql');
+  describe('when live results are not enabled', () => {
+    it('should run a remote query that is part of a qlpack', async () => {
+      const fileUri = getFile('data-remote-qlpack/in-pack.ql');
 
-    const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
-    expect(querySubmissionResult).to.be.ok;
-    const queryPackRootDir = querySubmissionResult!.queryDirPath!;
-    printDirectoryContents(queryPackRootDir);
+      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      expect(querySubmissionResult).to.be.ok;
+      const queryPackRootDir = querySubmissionResult!.queryDirPath!;
+      printDirectoryContents(queryPackRootDir);
 
-    // to retrieve the list of repositories
-    expect(showQuickPickSpy).to.have.been.calledOnce;
+      // to retrieve the list of repositories
+      expect(showQuickPickSpy).to.have.been.calledOnce;
 
-    // check a few files that we know should exist and others that we know should not
+      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
-    // the tarball to deliver to the server
-    expect(fs.readdirSync(queryPackRootDir).find(f => f.startsWith('qlpack-') && f.endsWith('-generated.tgz'))).not.to.be.undefined;
+      // check a few files that we know should exist and others that we know should not
 
-    const queryPackDir = path.join(queryPackRootDir, 'query-pack');
-    printDirectoryContents(queryPackDir);
+      // the tarball to deliver to the server
+      expect(fs.readdirSync(queryPackRootDir).find(f => f.startsWith('qlpack-') && f.endsWith('-generated.tgz'))).not.to.be.undefined;
 
-    expect(fs.existsSync(path.join(queryPackDir, 'in-pack.ql'))).to.be.true;
-    expect(fs.existsSync(path.join(queryPackDir, 'lib.qll'))).to.be.true;
-    expect(fs.existsSync(path.join(queryPackDir, 'qlpack.yml'))).to.be.true;
+      const queryPackDir = path.join(queryPackRootDir, 'query-pack');
+      printDirectoryContents(queryPackDir);
 
-    // depending on the cli version, we should have one of these files
-    expect(
-      fs.existsSync(path.join(queryPackDir, 'qlpack.lock.yml')) ||
-      fs.existsSync(path.join(queryPackDir, 'codeql-pack.lock.yml'))
-    ).to.be.true;
-    expect(fs.existsSync(path.join(queryPackDir, 'not-in-pack.ql'))).to.be.false;
+      expect(fs.existsSync(path.join(queryPackDir, 'in-pack.ql'))).to.be.true;
+      expect(fs.existsSync(path.join(queryPackDir, 'lib.qll'))).to.be.true;
+      expect(fs.existsSync(path.join(queryPackDir, 'qlpack.yml'))).to.be.true;
 
-    // the compiled pack
-    const compiledPackDir = path.join(queryPackDir, '.codeql/pack/codeql-remote/query/0.0.0/');
-    printDirectoryContents(compiledPackDir);
+      // depending on the cli version, we should have one of these files
+      expect(
+        fs.existsSync(path.join(queryPackDir, 'qlpack.lock.yml')) ||
+        fs.existsSync(path.join(queryPackDir, 'codeql-pack.lock.yml'))
+      ).to.be.true;
+      expect(fs.existsSync(path.join(queryPackDir, 'not-in-pack.ql'))).to.be.false;
 
-    expect(fs.existsSync(path.join(compiledPackDir, 'in-pack.ql'))).to.be.true;
-    expect(fs.existsSync(path.join(compiledPackDir, 'lib.qll'))).to.be.true;
-    expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
-    // should have generated a correct qlpack file
-    const qlpackContents: any = yaml.load(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
-    expect(qlpackContents.name).to.equal('codeql-remote/query');
+      // the compiled pack
+      const compiledPackDir = path.join(queryPackDir, '.codeql/pack/codeql-remote/query/0.0.0/');
+      printDirectoryContents(compiledPackDir);
 
-    // depending on the cli version, we should have one of these files
-    expect(
-      fs.existsSync(path.join(compiledPackDir, 'qlpack.lock.yml')) ||
-      fs.existsSync(path.join(compiledPackDir, 'codeql-pack.lock.yml'))
-    ).to.be.true;
-    expect(fs.existsSync(path.join(compiledPackDir, 'not-in-pack.ql'))).to.be.false;
-    verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'in-pack.ql', '0.0.0', await pathSerializationBroken());
+      expect(fs.existsSync(path.join(compiledPackDir, 'in-pack.ql'))).to.be.true;
+      expect(fs.existsSync(path.join(compiledPackDir, 'lib.qll'))).to.be.true;
+      expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
+      // should have generated a correct qlpack file
+      const qlpackContents: any = yaml.load(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
+      expect(qlpackContents.name).to.equal('codeql-remote/query');
 
-    const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
-    const packNames = fs.readdirSync(libraryDir).sort();
+      // depending on the cli version, we should have one of these files
+      expect(
+        fs.existsSync(path.join(compiledPackDir, 'qlpack.lock.yml')) ||
+        fs.existsSync(path.join(compiledPackDir, 'codeql-pack.lock.yml'))
+      ).to.be.true;
+      expect(fs.existsSync(path.join(compiledPackDir, 'not-in-pack.ql'))).to.be.false;
+      verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'in-pack.ql', '0.0.0', await pathSerializationBroken());
 
-    // check dependencies.
-    // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
-    // later only have ['javascript-all']. ensure this test can handle either
-    expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
-    expect(packNames[0]).to.deep.equal('javascript-all');
+      const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
+      const packNames = fs.readdirSync(libraryDir).sort();
+
+      // check dependencies.
+      // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
+      // later only have ['javascript-all']. ensure this test can handle either
+      expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
+      expect(packNames[0]).to.deep.equal('javascript-all');
+    });
+
+    it('should run a remote query that is not part of a qlpack', async () => {
+      const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
+
+      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      expect(querySubmissionResult).to.be.ok;
+      const queryPackRootDir = querySubmissionResult!.queryDirPath!;
+
+      // to retrieve the list of repositories
+      // and a second time to ask for the language
+      expect(showQuickPickSpy).to.have.been.calledTwice;
+
+      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
+
+      // check a few files that we know should exist and others that we know should not
+
+      // the tarball to deliver to the server
+      printDirectoryContents(queryPackRootDir);
+      expect(fs.readdirSync(queryPackRootDir).find(f => f.startsWith('qlpack-') && f.endsWith('-generated.tgz'))).not.to.be.undefined;
+
+      const queryPackDir = path.join(queryPackRootDir, 'query-pack');
+      printDirectoryContents(queryPackDir);
+
+      expect(fs.existsSync(path.join(queryPackDir, 'in-pack.ql'))).to.be.true;
+      expect(fs.existsSync(path.join(queryPackDir, 'qlpack.yml'))).to.be.true;
+      // depending on the cli version, we should have one of these files
+      expect(
+        fs.existsSync(path.join(queryPackDir, 'qlpack.lock.yml')) ||
+        fs.existsSync(path.join(queryPackDir, 'codeql-pack.lock.yml'))
+      ).to.be.true;
+      expect(fs.existsSync(path.join(queryPackDir, 'lib.qll'))).to.be.false;
+      expect(fs.existsSync(path.join(queryPackDir, 'not-in-pack.ql'))).to.be.false;
+
+      // the compiled pack
+      const compiledPackDir = path.join(queryPackDir, '.codeql/pack/codeql-remote/query/0.0.0/');
+      printDirectoryContents(compiledPackDir);
+      expect(fs.existsSync(path.join(compiledPackDir, 'in-pack.ql'))).to.be.true;
+      expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
+      verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'in-pack.ql', '0.0.0', await pathSerializationBroken());
+
+      // depending on the cli version, we should have one of these files
+      expect(
+        fs.existsSync(path.join(compiledPackDir, 'qlpack.lock.yml')) ||
+        fs.existsSync(path.join(compiledPackDir, 'codeql-pack.lock.yml'))
+      ).to.be.true;
+      expect(fs.existsSync(path.join(compiledPackDir, 'lib.qll'))).to.be.false;
+      expect(fs.existsSync(path.join(compiledPackDir, 'not-in-pack.ql'))).to.be.false;
+      // should have generated a correct qlpack file
+      const qlpackContents: any = yaml.load(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
+      expect(qlpackContents.name).to.equal('codeql-remote/query');
+      expect(qlpackContents.version).to.equal('0.0.0');
+      expect(qlpackContents.dependencies?.['codeql/javascript-all']).to.equal('*');
+
+      const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
+      printDirectoryContents(libraryDir);
+      const packNames = fs.readdirSync(libraryDir).sort();
+
+      // check dependencies.
+      // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
+      // later only have ['javascript-all']. ensure this test can handle either
+      expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
+      expect(packNames[0]).to.deep.equal('javascript-all');
+    });
+
+    it('should run a remote query that is nested inside a qlpack', async () => {
+      const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
+
+      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      expect(querySubmissionResult).to.be.ok;
+      const queryPackRootDir = querySubmissionResult!.queryDirPath!;
+
+      // to retrieve the list of repositories
+      expect(showQuickPickSpy).to.have.been.calledOnce;
+
+      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
+
+      // check a few files that we know should exist and others that we know should not
+
+      // the tarball to deliver to the server
+      printDirectoryContents(queryPackRootDir);
+      expect(fs.readdirSync(queryPackRootDir).find(f => f.startsWith('qlpack-') && f.endsWith('-generated.tgz'))).not.to.be.undefined;
+
+      const queryPackDir = path.join(queryPackRootDir, 'query-pack');
+      printDirectoryContents(queryPackDir);
+
+      expect(fs.existsSync(path.join(queryPackDir, 'subfolder/in-pack.ql'))).to.be.true;
+      expect(fs.existsSync(path.join(queryPackDir, 'qlpack.yml'))).to.be.true;
+      // depending on the cli version, we should have one of these files
+      expect(
+        fs.existsSync(path.join(queryPackDir, 'qlpack.lock.yml')) ||
+        fs.existsSync(path.join(queryPackDir, 'codeql-pack.lock.yml'))
+      ).to.be.true;
+      expect(fs.existsSync(path.join(queryPackDir, 'otherfolder/lib.qll'))).to.be.true;
+      expect(fs.existsSync(path.join(queryPackDir, 'not-in-pack.ql'))).to.be.false;
+
+      // the compiled pack
+      const compiledPackDir = path.join(queryPackDir, '.codeql/pack/codeql-remote/query/0.0.0/');
+      printDirectoryContents(compiledPackDir);
+      expect(fs.existsSync(path.join(compiledPackDir, 'otherfolder/lib.qll'))).to.be.true;
+      expect(fs.existsSync(path.join(compiledPackDir, 'subfolder/in-pack.ql'))).to.be.true;
+      expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
+      verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'subfolder/in-pack.ql', '0.0.0', await pathSerializationBroken());
+
+      // depending on the cli version, we should have one of these files
+      expect(
+        fs.existsSync(path.join(compiledPackDir, 'qlpack.lock.yml')) ||
+        fs.existsSync(path.join(compiledPackDir, 'codeql-pack.lock.yml'))
+      ).to.be.true;
+      expect(fs.existsSync(path.join(compiledPackDir, 'not-in-pack.ql'))).to.be.false;
+      // should have generated a correct qlpack file
+      const qlpackContents: any = yaml.load(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
+      expect(qlpackContents.name).to.equal('codeql-remote/query');
+      expect(qlpackContents.version).to.equal('0.0.0');
+      expect(qlpackContents.dependencies?.['codeql/javascript-all']).to.equal('*');
+
+      const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
+      printDirectoryContents(libraryDir);
+      const packNames = fs.readdirSync(libraryDir).sort();
+
+      // check dependencies.
+      // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
+      // later only have ['javascript-all']. ensure this test can handle either
+      expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
+      expect(packNames[0]).to.deep.equal('javascript-all');
+    });
+
+    it('should cancel a run before uploading', async () => {
+      const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
+
+      const promise = runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+
+      token.isCancellationRequested = true;
+
+      try {
+        await promise;
+        assert.fail('should have thrown');
+      } catch (e) {
+        expect(e).to.be.instanceof(UserCancellationException);
+      }
+    });
   });
 
-  it('should run a remote query that is not part of a qlpack', async () => {
-    const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
+  describe('when live results are enabled', () => {
+    beforeEach(() => {
+      liveResultsStub.returns(true);
+    });
 
-    const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
-    expect(querySubmissionResult).to.be.ok;
-    const queryPackRootDir = querySubmissionResult!.queryDirPath!;
+    const dummyVariantAnalysis: VariantAnalysis = {
+      id: 123,
+      controller_repo: {
+        id: 64,
+        name: 'pickles',
+        full_name: 'github/pickles',
+        private: false,
+      },
+      actor_id: 27,
+      query_language: 'javascript',
+      query_pack_url: 'https://example.com/foo',
+      status: 'in_progress',
+    };
 
-    // to retrieve the list of repositories
-    // and a second time to ask for the language
-    expect(showQuickPickSpy).to.have.been.calledTwice;
+    it('should run a variant analysis that is part of a qlpack', async () => {
+      const submitVariantAnalysisStub = sandbox.stub(ghApiClient, 'submitVariantAnalysis').resolves(dummyVariantAnalysis);
 
-    // check a few files that we know should exist and others that we know should not
+      const fileUri = getFile('data-remote-qlpack/in-pack.ql');
 
-    // the tarball to deliver to the server
-    printDirectoryContents(queryPackRootDir);
-    expect(fs.readdirSync(queryPackRootDir).find(f => f.startsWith('qlpack-') && f.endsWith('-generated.tgz'))).not.to.be.undefined;
+      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      expect(querySubmissionResult).to.be.ok;
+      const variantAnalysis = querySubmissionResult!.variantAnalysis!;
+      expect(variantAnalysis.id).to.be.equal(dummyVariantAnalysis.id);
+      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
 
-    const queryPackDir = path.join(queryPackRootDir, 'query-pack');
-    printDirectoryContents(queryPackDir);
+      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
-    expect(fs.existsSync(path.join(queryPackDir, 'in-pack.ql'))).to.be.true;
-    expect(fs.existsSync(path.join(queryPackDir, 'qlpack.yml'))).to.be.true;
-    // depending on the cli version, we should have one of these files
-    expect(
-      fs.existsSync(path.join(queryPackDir, 'qlpack.lock.yml')) ||
-      fs.existsSync(path.join(queryPackDir, 'codeql-pack.lock.yml'))
-    ).to.be.true;
-    expect(fs.existsSync(path.join(queryPackDir, 'lib.qll'))).to.be.false;
-    expect(fs.existsSync(path.join(queryPackDir, 'not-in-pack.ql'))).to.be.false;
+      expect(submitVariantAnalysisStub).to.have.been.calledOnce;
+    });
 
-    // the compiled pack
-    const compiledPackDir = path.join(queryPackDir, '.codeql/pack/codeql-remote/query/0.0.0/');
-    printDirectoryContents(compiledPackDir);
-    expect(fs.existsSync(path.join(compiledPackDir, 'in-pack.ql'))).to.be.true;
-    expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
-    verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'in-pack.ql', '0.0.0', await pathSerializationBroken());
+    it('should run a remote query that is not part of a qlpack', async () => {
+      const submitVariantAnalysisStub = sandbox.stub(ghApiClient, 'submitVariantAnalysis').resolves(dummyVariantAnalysis);
 
-    // depending on the cli version, we should have one of these files
-    expect(
-      fs.existsSync(path.join(compiledPackDir, 'qlpack.lock.yml')) ||
-      fs.existsSync(path.join(compiledPackDir, 'codeql-pack.lock.yml'))
-    ).to.be.true;
-    expect(fs.existsSync(path.join(compiledPackDir, 'lib.qll'))).to.be.false;
-    expect(fs.existsSync(path.join(compiledPackDir, 'not-in-pack.ql'))).to.be.false;
-    // should have generated a correct qlpack file
-    const qlpackContents: any = yaml.load(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
-    expect(qlpackContents.name).to.equal('codeql-remote/query');
-    expect(qlpackContents.version).to.equal('0.0.0');
-    expect(qlpackContents.dependencies?.['codeql/javascript-all']).to.equal('*');
+      const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
-    const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
-    printDirectoryContents(libraryDir);
-    const packNames = fs.readdirSync(libraryDir).sort();
+      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      expect(querySubmissionResult).to.be.ok;
+      const variantAnalysis = querySubmissionResult!.variantAnalysis!;
+      expect(variantAnalysis.id).to.be.equal(dummyVariantAnalysis.id);
+      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
 
-    // check dependencies.
-    // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
-    // later only have ['javascript-all']. ensure this test can handle either
-    expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
-    expect(packNames[0]).to.deep.equal('javascript-all');
-  });
+      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
-  it('should run a remote query that is nested inside a qlpack', async () => {
-    const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
+      expect(submitVariantAnalysisStub).to.have.been.calledOnce;
+    });
 
-    const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
-    expect(querySubmissionResult).to.be.ok;
-    const queryPackRootDir = querySubmissionResult!.queryDirPath!;
+    it('should run a remote query that is nested inside a qlpack', async () => {
+      const submitVariantAnalysisStub = sandbox.stub(ghApiClient, 'submitVariantAnalysis').resolves(dummyVariantAnalysis);
 
-    // to retrieve the list of repositories
-    expect(showQuickPickSpy).to.have.been.calledOnce;
+      const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
 
-    // check a few files that we know should exist and others that we know should not
+      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      expect(querySubmissionResult).to.be.ok;
+      const variantAnalysis = querySubmissionResult!.variantAnalysis!;
+      expect(variantAnalysis.id).to.be.equal(dummyVariantAnalysis.id);
+      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
 
-    // the tarball to deliver to the server
-    printDirectoryContents(queryPackRootDir);
-    expect(fs.readdirSync(queryPackRootDir).find(f => f.startsWith('qlpack-') && f.endsWith('-generated.tgz'))).not.to.be.undefined;
+      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
-    const queryPackDir = path.join(queryPackRootDir, 'query-pack');
-    printDirectoryContents(queryPackDir);
+      expect(submitVariantAnalysisStub).to.have.been.calledOnce;
+    });
 
-    expect(fs.existsSync(path.join(queryPackDir, 'subfolder/in-pack.ql'))).to.be.true;
-    expect(fs.existsSync(path.join(queryPackDir, 'qlpack.yml'))).to.be.true;
-    // depending on the cli version, we should have one of these files
-    expect(
-      fs.existsSync(path.join(queryPackDir, 'qlpack.lock.yml')) ||
-      fs.existsSync(path.join(queryPackDir, 'codeql-pack.lock.yml'))
-    ).to.be.true;
-    expect(fs.existsSync(path.join(queryPackDir, 'otherfolder/lib.qll'))).to.be.true;
-    expect(fs.existsSync(path.join(queryPackDir, 'not-in-pack.ql'))).to.be.false;
+    it('should cancel a run before uploading', async () => {
+      const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
-    // the compiled pack
-    const compiledPackDir = path.join(queryPackDir, '.codeql/pack/codeql-remote/query/0.0.0/');
-    printDirectoryContents(compiledPackDir);
-    expect(fs.existsSync(path.join(compiledPackDir, 'otherfolder/lib.qll'))).to.be.true;
-    expect(fs.existsSync(path.join(compiledPackDir, 'subfolder/in-pack.ql'))).to.be.true;
-    expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
-    verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'subfolder/in-pack.ql', '0.0.0', await pathSerializationBroken());
+      const promise = runRemoteQuery(cli, credentials, fileUri, true, progress, token);
 
-    // depending on the cli version, we should have one of these files
-    expect(
-      fs.existsSync(path.join(compiledPackDir, 'qlpack.lock.yml')) ||
-      fs.existsSync(path.join(compiledPackDir, 'codeql-pack.lock.yml'))
-    ).to.be.true;
-    expect(fs.existsSync(path.join(compiledPackDir, 'not-in-pack.ql'))).to.be.false;
-    // should have generated a correct qlpack file
-    const qlpackContents: any = yaml.load(fs.readFileSync(path.join(compiledPackDir, 'qlpack.yml'), 'utf8'));
-    expect(qlpackContents.name).to.equal('codeql-remote/query');
-    expect(qlpackContents.version).to.equal('0.0.0');
-    expect(qlpackContents.dependencies?.['codeql/javascript-all']).to.equal('*');
+      token.isCancellationRequested = true;
 
-    const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
-    printDirectoryContents(libraryDir);
-    const packNames = fs.readdirSync(libraryDir).sort();
-
-    // check dependencies.
-    // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
-    // later only have ['javascript-all']. ensure this test can handle either
-    expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
-    expect(packNames[0]).to.deep.equal('javascript-all');
-  });
-
-  it('should cancel a run before uploading', async () => {
-    const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
-
-    const promise = runRemoteQuery(cli, credentials, fileUri, true, progress, token);
-
-    token.isCancellationRequested = true;
-
-    try {
-      await promise;
-      assert.fail('should have thrown');
-    } catch (e) {
-      expect(e).to.be.instanceof(UserCancellationException);
-    }
+      try {
+        await promise;
+        assert.fail('should have thrown');
+      } catch (e) {
+        expect(e).to.be.instanceof(UserCancellationException);
+      }
+    });
   });
 
   function verifyQlPack(qlpackPath: string, queryPath: string, packVersion: string, pathSerializationBroken: boolean) {

@@ -7,10 +7,8 @@ import * as sinon from 'sinon';
 import { logger } from '../../logging';
 import { registerQueryHistoryScubber } from '../../query-history-scrubber';
 import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
-import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries';
+import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries-shared';
 import { QueryHistoryConfig, QueryHistoryConfigListener } from '../../config';
-import * as messages from '../../pure/messages';
-import { QueryServerClient } from '../../queryserver-client';
 import { LocalQueryInfo, InitialQueryInfo } from '../../query-results';
 import { DatabaseManager } from '../../databases';
 import * as tmp from 'tmp-promise';
@@ -21,6 +19,7 @@ import { HistoryItemLabelProvider } from '../../history-item-label-provider';
 import { RemoteQueriesManager } from '../../remote-queries/remote-queries-manager';
 import { ResultsView } from '../../interface';
 import { EvalLogViewer } from '../../eval-log-viewer';
+import { QueryRunner } from '../../queryRunner';
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -785,18 +784,15 @@ describe('query-history', () => {
         hasInterpretedResults: () => Promise.resolve(hasInterpretedResults),
         deleteQuery: sandbox.stub(),
       } as unknown as QueryEvaluationInfo,
-      result: {
-        resultType: didRunSuccessfully
-          ? messages.QueryResultType.SUCCESS
-          : messages.QueryResultType.OTHER_ERROR
-      } as messages.EvaluationResult,
+      sucessful: didRunSuccessfully,
+      message: 'foo',
       dispose: sandbox.spy()
     };
   }
 
   async function createMockQueryHistory(allHistory: LocalQueryInfo[]) {
     const qhm = new QueryHistoryManager(
-      {} as QueryServerClient,
+      {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
       remoteQueriesManagerStub,

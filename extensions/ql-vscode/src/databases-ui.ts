@@ -28,9 +28,6 @@ import {
   showAndLogErrorMessage
 } from './helpers';
 import { logger } from './logging';
-import { clearCacheInDatabase } from './run-queries';
-import * as qsClient from './queryserver-client';
-import { upgradeDatabaseExplicit } from './upgrades';
 import {
   importArchiveDatabase,
   promptImportGithubDatabase,
@@ -40,6 +37,7 @@ import {
 import { CancellationToken } from 'vscode';
 import { asyncFilter, getErrorMessage } from './pure/helpers-pure';
 import { Credentials } from './authentication';
+import { QueryRunner } from './queryRunner';
 import { isCanary } from './config';
 
 type ThemableIconPath = { light: string; dark: string } | string;
@@ -220,7 +218,7 @@ export class DatabaseUI extends DisposableObject {
 
   public constructor(
     private databaseManager: DatabaseManager,
-    private readonly queryServer: qsClient.QueryServerClient | undefined,
+    private readonly queryServer: QueryRunner | undefined,
     private readonly storagePath: string,
     readonly extensionPath: string,
     private readonly getCredentials: () => Promise<Credentials>
@@ -390,12 +388,11 @@ export class DatabaseUI extends DisposableObject {
   handleChooseDatabaseFolder = async (
     progress: ProgressCallback,
     token: CancellationToken
-  ): Promise<DatabaseItem | undefined> => {
+  ): Promise<void> => {
     try {
-      return await this.chooseAndSetDatabase(true, progress, token);
+      await this.chooseAndSetDatabase(true, progress, token);
     } catch (e) {
       void showAndLogErrorMessage(getErrorMessage(e));
-      return undefined;
     }
   };
 
@@ -458,12 +455,11 @@ export class DatabaseUI extends DisposableObject {
   handleChooseDatabaseArchive = async (
     progress: ProgressCallback,
     token: CancellationToken
-  ): Promise<DatabaseItem | undefined> => {
+  ): Promise<void> => {
     try {
-      return await this.chooseAndSetDatabase(false, progress, token);
+      await this.chooseAndSetDatabase(false, progress, token);
     } catch (e) {
       void showAndLogErrorMessage(getErrorMessage(e));
-      return undefined;
     }
   };
 
@@ -576,8 +572,7 @@ export class DatabaseUI extends DisposableObject {
 
     // Search for upgrade scripts in any workspace folders available
 
-    await upgradeDatabaseExplicit(
-      this.queryServer,
+    await this.queryServer.upgradeDatabaseExplicit(
       databaseItem,
       progress,
       token
@@ -592,8 +587,7 @@ export class DatabaseUI extends DisposableObject {
       this.queryServer !== undefined &&
       this.databaseManager.currentDatabaseItem !== undefined
     ) {
-      await clearCacheInDatabase(
-        this.queryServer,
+      await this.queryServer.clearCacheInDatabase(
         this.databaseManager.currentDatabaseItem,
         progress,
         token

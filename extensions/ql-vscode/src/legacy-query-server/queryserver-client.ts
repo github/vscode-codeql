@@ -1,48 +1,24 @@
-import * as cp from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 
-import { DisposableObject } from './pure/disposable-object';
-import { Disposable, CancellationToken, commands } from 'vscode';
-import { createMessageConnection, MessageConnection, RequestType } from 'vscode-jsonrpc';
-import * as cli from './cli';
-import { QueryServerConfig } from './config';
-import { Logger, ProgressReporter } from './logging';
-import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from './pure/messages';
-import * as messages from './pure/messages';
-import { ProgressCallback, ProgressTask } from './commandRunner';
+import { DisposableObject } from '../pure/disposable-object';
+import { CancellationToken, commands } from 'vscode';
+import { createMessageConnection, RequestType } from 'vscode-jsonrpc';
+import * as cli from '../cli';
+import { QueryServerConfig } from '../config';
+import { Logger, ProgressReporter } from '../logging';
+import { completeQuery, EvaluationResult, progress, ProgressMessage, WithProgressId } from '../pure/legacy-messages';
+import * as messages from '../pure/legacy-messages';
+import { ProgressCallback, ProgressTask } from '../commandRunner';
+import { findQueryLogFile } from '../run-queries-shared';
+import { ServerProcess } from '../json-rpc-server';
+
+type WithProgressReporting = (task: (progress: ProgressReporter, token: CancellationToken) => Thenable<void>) => Thenable<void>;
 
 type ServerOpts = {
   logger: Logger;
   contextStoragePath: string;
 }
-
-/** A running query server process and its associated message connection. */
-class ServerProcess implements Disposable {
-  child: cp.ChildProcess;
-  connection: MessageConnection;
-  logger: Logger;
-
-  constructor(child: cp.ChildProcess, connection: MessageConnection, logger: Logger) {
-    this.child = child;
-    this.connection = connection;
-    this.logger = logger;
-  }
-
-  dispose(): void {
-    void this.logger.log('Stopping query server...');
-    this.connection.dispose();
-    this.child.stdin!.end();
-    this.child.stderr!.destroy();
-    // TODO kill the process if it doesn't terminate after a certain time limit.
-
-    // On Windows, we usually have to terminate the process before closing its stdout.
-    this.child.stdout!.destroy();
-    void this.logger.log('Stopped query server.');
-  }
-}
-
-type WithProgressReporting = (task: (progress: ProgressReporter, token: CancellationToken) => Thenable<void>) => Thenable<void>;
 
 /**
  * Client that manages a query server process.
@@ -200,7 +176,7 @@ export class QueryServerClient extends DisposableObject {
         callback(res);
       }
     });
-    this.serverProcess = new ServerProcess(child, connection, this.logger);
+    this.serverProcess = new ServerProcess(child, connection, 'Query server', this.logger);
     // Ensure the server process is disposed together with this client.
     this.track(this.serverProcess);
     connection.listen();
@@ -253,28 +229,4 @@ export class QueryServerClient extends DisposableObject {
       this.activeQueryLogFile = findQueryLogFile(path.dirname(parameter.resultPath));
     }
   }
-}
-
-export function findQueryLogFile(resultPath: string): string {
-  return path.join(resultPath, 'query.log');
-}
-
-export function findQueryEvalLogFile(resultPath: string): string {
-  return path.join(resultPath, 'evaluator-log.jsonl');
-}
-
-export function findQueryEvalLogSummaryFile(resultPath: string): string {
-  return path.join(resultPath, 'evaluator-log.summary');
-}
-
-export function findJsonQueryEvalLogSummaryFile(resultPath: string): string {
-  return path.join(resultPath, 'evaluator-log.summary.jsonl');
-}
-
-export function findQueryEvalLogSummarySymbolsFile(resultPath: string): string {
-  return path.join(resultPath, 'evaluator-log.summary.symbols.json');
-}
-
-export function findQueryEvalLogEndSummaryFile(resultPath: string): string {
-  return path.join(resultPath, 'evaluator-log-end.summary');
 }

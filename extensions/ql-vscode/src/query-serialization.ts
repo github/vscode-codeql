@@ -5,7 +5,7 @@ import { showAndLogErrorMessage } from './helpers';
 import { asyncFilter, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedQueryInfo, LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { QueryStatus } from './query-status';
-import { QueryEvaluationInfo } from './run-queries';
+import { QueryEvaluationInfo } from './run-queries-shared';
 
 export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInfo[]> {
   try {

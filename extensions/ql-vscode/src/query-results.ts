@@ -1,7 +1,7 @@
 import { CancellationTokenSource, env } from 'vscode';
 
-import { QueryWithResults, QueryEvaluationInfo } from './run-queries';
-import * as messages from './pure/messages';
+import * as messages from './pure/messages-shared';
+import * as legacyMessages from './pure/legacy-messages';
 import * as cli from './cli';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -17,6 +17,8 @@ import {
 import { DatabaseInfo } from './pure/interface-types';
 import { QueryStatus } from './query-status';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
+import { QueryEvaluationInfo, QueryWithResults } from './run-queries-shared';
+import { formatLegacyMessage } from './legacy-query-server/run-queries';
 
 /**
  * query-results.ts
@@ -44,7 +46,12 @@ export interface InitialQueryInfo {
 
 export class CompletedQueryInfo implements QueryWithResults {
   readonly query: QueryEvaluationInfo;
-  readonly result: messages.EvaluationResult;
+  readonly message?: string;
+  readonly sucessful?: boolean;
+  /**
+   * The legacy result. This is only set when loading from the query history.
+   */
+  readonly result?: legacyMessages.EvaluationResult;
   readonly logFileLocation?: string;
   resultCount: number;
 
@@ -68,16 +75,19 @@ export class CompletedQueryInfo implements QueryWithResults {
   interpretedResultsSortState: InterpretedResultsSortState | undefined;
 
   /**
-   * Note that in the {@link FullQueryInfo.slurp} method, we create a CompletedQueryInfo instance
+   * Note that in the {@link slurpQueryHistory} method, we create a CompletedQueryInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(
     evaluation: QueryWithResults,
   ) {
     this.query = evaluation.query;
-    this.result = evaluation.result;
     this.logFileLocation = evaluation.logFileLocation;
-
+    if (evaluation.result) {
+      this.result = evaluation.result;
+    }
+    this.message = evaluation.message;
+    this.sucessful = evaluation.sucessful;
     // Use the dispose method from the evaluation.
     // The dispose will clean up any additional log locations that this
     // query may have created.
@@ -92,18 +102,12 @@ export class CompletedQueryInfo implements QueryWithResults {
   }
 
   get statusString(): string {
-    switch (this.result.resultType) {
-      case messages.QueryResultType.CANCELLATION:
-        return `cancelled after ${Math.round(this.result.evaluationTime / 1000)} seconds`;
-      case messages.QueryResultType.OOM:
-        return 'out of memory';
-      case messages.QueryResultType.SUCCESS:
-        return `finished in ${Math.round(this.result.evaluationTime / 1000)} seconds`;
-      case messages.QueryResultType.TIMEOUT:
-        return `timed out after ${Math.round(this.result.evaluationTime / 1000)} seconds`;
-      case messages.QueryResultType.OTHER_ERROR:
-      default:
-        return this.result.message ? `failed: ${this.result.message}` : 'failed';
+    if (this.message) {
+      return this.message;
+    } else if (this.result) {
+      return formatLegacyMessage(this.result);
+    } else {
+      throw new Error('No status available');
     }
   }
 
@@ -113,10 +117,6 @@ export class CompletedQueryInfo implements QueryWithResults {
     }
     return this.sortedResultsInfo[selectedTable]?.resultsPath
       || this.query.resultsPaths.resultsPath;
-  }
-
-  get didRunSuccessfully(): boolean {
-    return this.result.resultType === messages.QueryResultType.SUCCESS;
   }
 
   async updateSortState(
@@ -302,7 +302,7 @@ export class LocalQueryInfo {
       return QueryStatus.Failed;
     } else if (!this.completedQuery) {
       return QueryStatus.InProgress;
-    } else if (this.completedQuery.didRunSuccessfully) {
+    } else if (this.completedQuery.sucessful) {
       return QueryStatus.Completed;
     } else {
       return QueryStatus.Failed;

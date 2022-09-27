@@ -15,38 +15,7 @@
  */
 
 import * as rpc from 'vscode-jsonrpc';
-
-/**
- * A position within a QL file.
- */
-export interface Position {
-  /**
-   * The one-based index of the start line
-   */
-  line: number;
-  /**
-   * The one-based offset of the start column within
-   * the start line in UTF-16 code-units
-   */
-  column: number;
-  /**
-   * The one-based index of the end line line
-   */
-  endLine: number;
-
-  /**
-   * The one-based offset of the end column within
-   * the end line in UTF-16 code-units
-   */
-  endColumn: number;
-  /**
-   * The path of the file.
-   * If the file name is "Compiler Generated" the
-   * the position is not a real position but
-   * arises from compiler generated code.
-   */
-  fileName: string;
-}
+import * as shared from './messages-shared';
 
 /**
  * A query that should be checked for any errors or warnings
@@ -256,28 +225,6 @@ export interface DILQuery {
    * The dil source
    */
   dilSource: string;
-}
-
-/**
- * The way of compiling the query, as a normal query
- * or a subset of it. Note that precisely one of the two options should be set.
- */
-export interface CompilationTarget {
-  /**
-   * Compile as a normal query
-   */
-  query?: Record<string, never>;
-  /**
-   * Compile as a quick evaluation
-   */
-  quickEval?: QuickEvalOptions;
-}
-
-/**
- * Options for quick evaluation
- */
-export interface QuickEvalOptions {
-  quickEvalPos?: Position;
 }
 
 /**
@@ -1012,37 +959,20 @@ export type DeregisterDatabasesResult = {
 };
 
 /**
- * Type for any action that could have progress messages.
+ * A position within a QL file.
  */
-export interface WithProgressId<T> {
-  /**
-   * The main body
-   */
-  body: T;
-  /**
-   * The id used to report progress updates
-   */
-  progressId: number;
-}
+export type Position = shared.Position;
 
-export interface ProgressMessage {
-  /**
-   * The id of the operation that is running
-   */
-  id: number;
-  /**
-   * The current step
-   */
-  step: number;
-  /**
-   * The maximum step. This *should* be constant for a single job.
-   */
-  maxStep: number;
-  /**
-   * The current progress message
-   */
-  message: string;
-}
+/**
+ * The way of compiling the query, as a normal query
+ * or a subset of it. Note that precisely one of the two options should be set.
+ */
+export type CompilationTarget = shared.CompilationTarget;
+
+export type QuickEvalOptions = shared.QuickEvalOptions;
+
+export type WithProgressId<T> = shared.WithProgressId<T>;
+export type ProgressMessage = shared.ProgressMessage;
 
 /**
  * Check a Ql query for errors without compiling it
@@ -1120,7 +1050,4 @@ export const deregisterDatabases = new rpc.RequestType<
  */
 export const completeQuery = new rpc.RequestType<EvaluationResult, Record<string, any>, void, void>('evaluation/queryCompleted');
 
-/**
- * A notification that the progress has been changed.
- */
-export const progress = new rpc.NotificationType<ProgressMessage, void>('ql/progressUpdated');
+export const progress = shared.progress;

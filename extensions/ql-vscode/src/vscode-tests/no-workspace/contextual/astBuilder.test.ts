@@ -3,10 +3,10 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 
 import AstBuilder from '../../../contextual/astBuilder';
-import { QueryWithResults } from '../../../run-queries';
 import { CodeQLCliServer } from '../../../cli';
 import { DatabaseItem } from '../../../databases';
 import { Uri } from 'vscode';
+import { QueryWithResults } from '../../../run-queries-shared';
 
 /**
  *

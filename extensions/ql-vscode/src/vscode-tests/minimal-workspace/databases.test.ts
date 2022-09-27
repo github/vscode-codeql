@@ -14,12 +14,11 @@ import {
   findSourceArchive
 } from '../../databases';
 import { Logger } from '../../logging';
-import { QueryServerClient } from '../../queryserver-client';
-import { registerDatabases } from '../../pure/messages';
 import { ProgressCallback } from '../../commandRunner';
 import { CodeQLCliServer } from '../../cli';
 import { encodeArchiveBasePath, encodeSourceArchiveUri } from '../../archive-filesystem-provider';
 import { testDisposeHandler } from '../test-dispose-handler';
+import { QueryRunner } from '../../queryRunner';
 
 describe('databases', () => {
 
@@ -33,7 +32,8 @@ describe('databases', () => {
   let updateSpy: sinon.SinonSpy;
   let getSpy: sinon.SinonStub;
   let dbChangedHandler: sinon.SinonSpy;
-  let sendRequestSpy: sinon.SinonSpy;
+  let registerSpy: sinon.SinonSpy;
+  let deregisterSpy: sinon.SinonSpy;
   let supportsDatabaseRegistrationSpy: sinon.SinonStub;
   let supportsLanguageNameSpy: sinon.SinonStub;
   let resolveDatabaseSpy: sinon.SinonStub;
@@ -48,7 +48,8 @@ describe('databases', () => {
     updateSpy = sandbox.spy();
     getSpy = sandbox.stub();
     getSpy.returns([]);
-    sendRequestSpy = sandbox.stub();
+    registerSpy = sandbox.stub();
+    deregisterSpy = sandbox.stub();
     dbChangedHandler = sandbox.spy();
     supportsDatabaseRegistrationSpy = sandbox.stub();
     supportsDatabaseRegistrationSpy.resolves(true);
@@ -65,9 +66,10 @@ describe('databases', () => {
         storagePath: dir.name
       } as unknown as ExtensionContext,
       {
-        sendRequest: sendRequestSpy,
-        onDidStartQueryServer: () => { /**/ }
-      } as unknown as QueryServerClient,
+        registerDatabase: registerSpy,
+        deregisterDatabase: deregisterSpy,
+        onStart: () => { /**/ }
+      } as unknown as QueryRunner,
       {
         cliConstraints: {
           supportsLanguageName: supportsLanguageNameSpy,
@@ -259,12 +261,6 @@ describe('databases', () => {
       // similar test as above, but also check the call to sendRequestSpy to make sure they send the
       // registration messages.
       const mockDbItem = createMockDB();
-      const registration = {
-        databases: [{
-          dbDir: mockDbItem.contents!.datasetUri.fsPath,
-          workingSet: 'default'
-        }]
-      };
 
       sandbox.stub(fs, 'remove').resolves();
 
@@ -274,7 +270,7 @@ describe('databases', () => {
         mockDbItem
       );
       // Should have registered this database
-      expect(sendRequestSpy).to.have.been.calledWith(registerDatabases, registration, {}, {});
+      expect(registerSpy).to.have.been.calledWith({}, {}, mockDbItem);
 
       await databaseManager.removeDatabaseItem(
         {} as ProgressCallback,
@@ -283,31 +279,7 @@ describe('databases', () => {
       );
 
       // Should have deregistered this database
-      expect(sendRequestSpy).to.have.been.calledWith(registerDatabases, registration, {}, {});
-    });
-
-    it('should avoid registration when query server does not support it', async () => {
-      // similar test as above, but now pretend query server doesn't support registration
-      supportsDatabaseRegistrationSpy.resolves(false);
-      const mockDbItem = createMockDB();
-      sandbox.stub(fs, 'remove').resolves();
-
-      await (databaseManager as any).addDatabaseItem(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem
-      );
-      // Should NOT have registered this database
-      expect(sendRequestSpy).not.to.have.been.called;
-
-      await databaseManager.removeDatabaseItem(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem
-      );
-
-      // Should NOT have deregistered this database
-      expect(sendRequestSpy).not.to.have.been.called;
+      expect(deregisterSpy).to.have.been.calledWith({}, {}, mockDbItem);
     });
   });
 

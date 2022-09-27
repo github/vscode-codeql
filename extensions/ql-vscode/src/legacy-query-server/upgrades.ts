@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
-import { getOnDiskWorkspaceFolders, showAndLogErrorMessage, tmpDir } from './helpers';
-import { ProgressCallback, UserCancellationException } from './commandRunner';
-import { logger } from './logging';
-import * as messages from './pure/messages';
-import * as qsClient from './queryserver-client';
+import { getOnDiskWorkspaceFolders, showAndLogErrorMessage, tmpDir } from '../helpers';
+import { ProgressCallback, UserCancellationException } from '../commandRunner';
+import { logger } from '../logging';
+import * as messages from '../pure/legacy-messages';
+import * as qsClient from '../legacy-query-server/queryserver-client';
 import * as tmp from 'tmp-promise';
 import * as path from 'path';
-import { DatabaseItem } from './databases';
+import { DatabaseItem } from '../databases';
 
 /**
  * Maximum number of lines to include from database upgrade message,
@@ -14,7 +14,6 @@ import { DatabaseItem } from './databases';
  * box for it when displaying in dialog boxes.
  */
 const MAX_UPGRADE_MESSAGE_LINES = 10;
-
 
 
 /**

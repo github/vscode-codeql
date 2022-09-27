@@ -9,6 +9,7 @@ import {
 import { VariantAnalysisContainer } from './VariantAnalysisContainer';
 import { VariantAnalysisHeader } from './VariantAnalysisHeader';
 import { VariantAnalysisOutcomePanels } from './VariantAnalysisOutcomePanels';
+import { VariantAnalysisLoading } from './VariantAnalysisLoading';
 
 const variantAnalysis: VariantAnalysisDomainModel = {
   id: 1,
@@ -157,9 +158,13 @@ const variantAnalysis: VariantAnalysisDomainModel = {
   },
 };
 
-export function VariantAnalysis(): JSX.Element {
+function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
+  if (variantAnalysis.actionsWorkflowRunId === undefined) {
+    return <VariantAnalysisLoading />;
+  }
+
   return (
-    <VariantAnalysisContainer>
+    <>
       <VariantAnalysisHeader
         variantAnalysis={variantAnalysis}
         onOpenQueryFileClick={() => console.log('Open query')}
@@ -170,6 +175,14 @@ export function VariantAnalysis(): JSX.Element {
         onViewLogsClick={() => console.log('View logs')}
       />
       <VariantAnalysisOutcomePanels variantAnalysis={variantAnalysis} />
+    </>
+  );
+}
+
+export function VariantAnalysis(): JSX.Element {
+  return (
+    <VariantAnalysisContainer>
+      {getContainerContents(variantAnalysis)}
     </VariantAnalysisContainer>
   );
 }
