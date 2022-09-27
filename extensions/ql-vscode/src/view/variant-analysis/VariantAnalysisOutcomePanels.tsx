@@ -2,7 +2,7 @@ import * as React from 'react';
 import styled from 'styled-components';
 import { VSCodeBadge, VSCodePanels, VSCodePanelTab, VSCodePanelView } from '@vscode/webview-ui-toolkit/react';
 import { formatDecimal } from '../../pure/number';
-import { VariantAnalysis } from '../../remote-queries/shared/variant-analysis';
+import { VariantAnalysis, VariantAnalysisScannedRepositoryResult } from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
 import { VariantAnalysisNotFoundRepos } from './VariantAnalysisNotFoundRepos';
 import { VariantAnalysisNoCodeqlDbRepos } from './VariantAnalysisNoCodeqlDbRepos';
@@ -10,6 +10,7 @@ import { Alert } from '../common';
 
 export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
+  repositoryResults?: VariantAnalysisScannedRepositoryResult[];
 };
 
 const Tab = styled(VSCodePanelTab)`
@@ -33,7 +34,8 @@ const WarningsContainer = styled.div`
 `;
 
 export const VariantAnalysisOutcomePanels = ({
-  variantAnalysis
+  variantAnalysis,
+  repositoryResults,
 }: VariantAnalysisOutcomePanelProps) => {
   const noCodeqlDbRepositoryCount = variantAnalysis.skippedRepos?.noCodeqlDbRepos?.repositoryCount ?? 0;
   const notFoundRepositoryCount = variantAnalysis.skippedRepos?.notFoundRepos?.repositoryCount ?? 0;
@@ -63,7 +65,7 @@ export const VariantAnalysisOutcomePanels = ({
     return (
       <>
         {warnings}
-        <VariantAnalysisAnalyzedRepos />
+        <VariantAnalysisAnalyzedRepos variantAnalysis={variantAnalysis} repositoryResults={repositoryResults} />
       </>
     );
   }
@@ -88,7 +90,7 @@ export const VariantAnalysisOutcomePanels = ({
             <VSCodeBadge appearance="secondary">{formatDecimal(noCodeqlDbRepositoryCount)}</VSCodeBadge>
           </Tab>
         )}
-        <VSCodePanelView><VariantAnalysisAnalyzedRepos /></VSCodePanelView>
+        <VSCodePanelView><VariantAnalysisAnalyzedRepos variantAnalysis={variantAnalysis} repositoryResults={repositoryResults} /></VSCodePanelView>
         {notFoundRepositoryCount > 0 && <VSCodePanelView><VariantAnalysisNotFoundRepos /></VSCodePanelView>}
         {noCodeqlDbRepositoryCount > 0 && <VSCodePanelView><VariantAnalysisNoCodeqlDbRepos /></VSCodePanelView>}
       </VSCodePanels>
