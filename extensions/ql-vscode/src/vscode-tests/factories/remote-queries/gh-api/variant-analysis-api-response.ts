@@ -2,14 +2,18 @@ import {
   VariantAnalysis as VariantAnalysisApiResponse,
   VariantAnalysisScannedRepository,
   VariantAnalysisSkippedRepositories,
+  VariantAnalysisStatus,
 } from '../../../../remote-queries/gh-api/variant-analysis';
 import {
   VariantAnalysisQueryLanguage
 } from '../../../../remote-queries/shared/variant-analysis';
+import { createMockScannedRepos } from './scanned-repositories';
+import { createMockSkippedRepos } from './skipped-repositories';
 
 export function createMockApiResponse(
-  scannedRepos: VariantAnalysisScannedRepository[],
-  skippedRepos: VariantAnalysisSkippedRepositories
+  status = 'in_progress',
+  scannedRepos: VariantAnalysisScannedRepository[] = createMockScannedRepos(),
+  skippedRepos: VariantAnalysisSkippedRepositories = createMockSkippedRepos()
 ): VariantAnalysisApiResponse {
   const variantAnalysis: VariantAnalysisApiResponse = {
     id: 123,
@@ -22,7 +26,7 @@ export function createMockApiResponse(
     actor_id: 123,
     query_language: VariantAnalysisQueryLanguage.Javascript,
     query_pack_url: 'https://example.com/foo',
-    status: 'in_progress',
+    status: status as VariantAnalysisStatus,
     actions_workflow_run_id: 456,
     scanned_repositories: scannedRepos,
     skipped_repositories: skippedRepos
@@ -32,11 +36,12 @@ export function createMockApiResponse(
 }
 
 export function createFailedMockApiResponse(
-  scannedRepos: VariantAnalysisScannedRepository[],
-  skippedRepos: VariantAnalysisSkippedRepositories
+  status = 'in_progress',
+  scannedRepos: VariantAnalysisScannedRepository[] = createMockScannedRepos(),
+  skippedRepos: VariantAnalysisSkippedRepositories = createMockSkippedRepos(),
 ): VariantAnalysisApiResponse {
-  const variantAnalysis = createMockApiResponse(scannedRepos, skippedRepos);
-  variantAnalysis.status = 'completed';
+  const variantAnalysis = createMockApiResponse(status, scannedRepos, skippedRepos);
+  variantAnalysis.status = status as VariantAnalysisStatus;
   variantAnalysis.failure_reason = 'internal_error';
 
   return variantAnalysis;

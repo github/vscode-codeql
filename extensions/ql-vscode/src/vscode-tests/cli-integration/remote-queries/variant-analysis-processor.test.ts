@@ -21,7 +21,7 @@ import { createMockSubmission } from '../../factories/remote-queries/shared/vari
 describe('Variant Analysis processor', function() {
   const scannedRepos = createMockScannedRepos();
   const skippedRepos = createMockSkippedRepos();
-  const mockApiResponse = createMockApiResponse(scannedRepos, skippedRepos);
+  const mockApiResponse = createMockApiResponse('completed', scannedRepos, skippedRepos);
   const mockSubmission = createMockSubmission();
 
   it('should process an API response and return a variant analysis', () => {
