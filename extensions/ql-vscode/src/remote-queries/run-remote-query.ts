@@ -17,14 +17,17 @@ import {
 import { Credentials } from '../authentication';
 import * as cli from '../cli';
 import { logger } from '../logging';
-import { getActionBranch, getRemoteControllerRepo, setRemoteControllerRepo } from '../config';
+import { getActionBranch, getRemoteControllerRepo, isVariantAnalysisLiveResultsEnabled, setRemoteControllerRepo } from '../config';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
-import { OctokitResponse } from '@octokit/types/dist-types';
+import { OctokitResponse, RequestError } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
 import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
+import * as ghApiClient from './gh-api/gh-api-client';
 import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
+import { parseVariantAnalysisQueryLanguage, VariantAnalysis, VariantAnalysisStatus, VariantAnalysisSubmission } from './shared/variant-analysis';
+import { Repository } from './shared/repository';
 
 export interface QlPack {
   name: string;
@@ -210,31 +213,7 @@ export async function runRemoteQuery(
       message: 'Determining controller repo'
     });
 
-    // Get the controller repo from the config, if it exists.
-    // If it doesn't exist, prompt the user to enter it, and save that value to the config.
-    let controllerRepo: string | undefined;
-    controllerRepo = getRemoteControllerRepo();
-    if (!controllerRepo || !REPO_REGEX.test(controllerRepo)) {
-      void logger.log(controllerRepo ? 'Invalid controller repository name.' : 'No controller repository defined.');
-      controllerRepo = await window.showInputBox({
-        title: 'Controller repository in which to run the GitHub Actions workflow for this variant analysis',
-        placeHolder: '<owner>/<repo>',
-        prompt: 'Enter the name of a GitHub repository in the format <owner>/<repo>',
-        ignoreFocusOut: true,
-      });
-      if (!controllerRepo) {
-        void showAndLogErrorMessage('No controller repository entered.');
-        return;
-      } else if (!REPO_REGEX.test(controllerRepo)) { // Check if user entered invalid input
-        void showAndLogErrorMessage('Invalid repository format. Must be a valid GitHub repository in the format <owner>/<repo>.');
-        return;
-      }
-      void logger.log(`Setting the controller repository as: ${controllerRepo}`);
-      await setRemoteControllerRepo(controllerRepo);
-    }
-
-    void logger.log(`Using controller repository: ${controllerRepo}`);
-    const [owner, repo] = controllerRepo.split('/');
+    const controllerRepo = await getControllerRepo(credentials);
 
     progress({
       maxStep: 4,
@@ -259,31 +238,84 @@ export async function runRemoteQuery(
     });
 
     const actionBranch = getActionBranch();
-    const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, owner, repo, base64Pack, dryRun);
     const queryStartTime = Date.now();
     const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
 
-    if (dryRun) {
-      return { queryDirPath: remoteQueryDir.path };
-    } else {
-      if (!apiResponse) {
-        return;
+    if (isVariantAnalysisLiveResultsEnabled()) {
+      const queryName = getQueryName(queryMetadata, queryFile);
+      const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(language);
+      if (variantAnalysisLanguage === undefined) {
+        throw new UserCancellationException(`Found unsupported language: ${language}`);
       }
 
-      const workflowRunId = apiResponse.workflow_run_id;
-      const repositoryCount = apiResponse.repositories_queried.length;
-      const remoteQuery = await buildRemoteQueryEntity(
-        queryFile,
-        queryMetadata,
-        owner,
-        repo,
-        queryStartTime,
-        workflowRunId,
-        language,
-        repositoryCount);
+      const variantAnalysisSubmission: VariantAnalysisSubmission = {
+        startTime: queryStartTime,
+        actionRepoRef: actionBranch,
+        controllerRepoId: controllerRepo.id,
+        query: {
+          name: queryName,
+          filePath: queryFile,
+          pack: base64Pack,
+          language: variantAnalysisLanguage,
+        },
+        databases: {
+          repositories: repoSelection.repositories,
+          repositoryLists: repoSelection.repositoryLists,
+          repositoryOwners: repoSelection.owners
+        }
+      };
 
-      // don't return the path because it has been deleted
-      return { query: remoteQuery };
+      const variantAnalysisResponse = await ghApiClient.submitVariantAnalysis(
+        credentials,
+        variantAnalysisSubmission
+      );
+
+      const variantAnalysis: VariantAnalysis = {
+        id: variantAnalysisResponse.id,
+        controllerRepoId: variantAnalysisResponse.controller_repo.id,
+        query: {
+          name: variantAnalysisSubmission.query.name,
+          filePath: variantAnalysisSubmission.query.filePath,
+          language: variantAnalysisSubmission.query.language,
+        },
+        databases: {
+          repositories: variantAnalysisSubmission.databases.repositories,
+          repositoryLists: variantAnalysisSubmission.databases.repositoryLists,
+          repositoryOwners: variantAnalysisSubmission.databases.repositoryOwners,
+        },
+        status: VariantAnalysisStatus.InProgress,
+      };
+
+      // TODO: Remove once we have a proper notification
+      void showAndLogInformationMessage('Variant analysis submitted for processing');
+      void logger.log(`Variant analysis:\n${JSON.stringify(variantAnalysis, null, 2)}`);
+
+      return { variantAnalysis };
+
+    } else {
+      const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, controllerRepo, base64Pack, dryRun);
+
+      if (dryRun) {
+        return { queryDirPath: remoteQueryDir.path };
+      } else {
+        if (!apiResponse) {
+          return;
+        }
+
+        const workflowRunId = apiResponse.workflow_run_id;
+        const repositoryCount = apiResponse.repositories_queried.length;
+        const remoteQuery = await buildRemoteQueryEntity(
+          queryFile,
+          queryMetadata,
+          controllerRepo,
+          queryStartTime,
+          workflowRunId,
+          language,
+          repositoryCount);
+
+        // don't return the path because it has been deleted
+        return { query: remoteQuery };
+      }
     }
 
   } finally {
@@ -301,8 +333,7 @@ async function runRemoteQueriesApiRequest(
   ref: string,
   language: string,
   repoSelection: RepositorySelection,
-  owner: string,
-  repo: string,
+  controllerRepo: Repository,
   queryPackBase64: string,
   dryRun = false
 ): Promise<void | QueriesResponse> {
@@ -318,8 +349,7 @@ async function runRemoteQueriesApiRequest(
   if (dryRun) {
     void showAndLogInformationMessage('[DRY RUN] Would have sent request. See extension log for the payload.');
     void logger.log(JSON.stringify({
-      owner,
-      repo,
+      controllerRepo,
       data: {
         ...data,
         queryPackBase64: queryPackBase64.substring(0, 100) + '... ' + queryPackBase64.length + ' bytes'
@@ -331,14 +361,13 @@ async function runRemoteQueriesApiRequest(
   try {
     const octokit = await credentials.getOctokit();
     const response: OctokitResponse<QueriesResponse, number> = await octokit.request(
-      'POST /repos/:owner/:repo/code-scanning/codeql/queries',
+      'POST /repos/:controllerRepo/code-scanning/codeql/queries',
       {
-        owner,
-        repo,
+        controllerRepo: controllerRepo.fullName,
         data
       }
     );
-    const { popupMessage, logMessage } = parseResponse(owner, repo, response.data);
+    const { popupMessage, logMessage } = parseResponse(controllerRepo, response.data);
     void showAndLogInformationMessage(popupMessage, { fullMessage: logMessage });
     return response.data;
   } catch (error: any) {
@@ -354,14 +383,14 @@ const eol = os.EOL;
 const eol2 = os.EOL + os.EOL;
 
 // exported for testing only
-export function parseResponse(owner: string, repo: string, response: QueriesResponse) {
+export function parseResponse(controllerRepo: Repository, response: QueriesResponse) {
   const repositoriesQueried = response.repositories_queried;
   const repositoryCount = repositoriesQueried.length;
 
-  const popupMessage = `Successfully scheduled runs on ${pluralize(repositoryCount, 'repository', 'repositories')}. [Click here to see the progress](https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}).`
+  const popupMessage = `Successfully scheduled runs on ${pluralize(repositoryCount, 'repository', 'repositories')}. [Click here to see the progress](https://github.com/${controllerRepo.fullName}/actions/runs/${response.workflow_run_id}).`
     + (response.errors ? `${eol2}Some repositories could not be scheduled. See extension log for details.` : '');
 
-  let logMessage = `Successfully scheduled runs on ${pluralize(repositoryCount, 'repository', 'repositories')}. See https://github.com/${owner}/${repo}/actions/runs/${response.workflow_run_id}.`;
+  let logMessage = `Successfully scheduled runs on ${pluralize(repositoryCount, 'repository', 'repositories')}. See https://github.com/${controllerRepo.fullName}/actions/runs/${response.workflow_run_id}.`;
   logMessage += `${eol2}Repositories queried:${eol}${repositoriesQueried.join(', ')}`;
   if (response.errors) {
     const { invalid_repositories, repositories_without_database, private_repositories, cutoff_repositories, cutoff_repositories_count } = response.errors;
@@ -425,17 +454,15 @@ async function ensureNameAndSuite(queryPackDir: string, packRelativePath: string
 async function buildRemoteQueryEntity(
   queryFilePath: string,
   queryMetadata: QueryMetadata | undefined,
-  controllerRepoOwner: string,
-  controllerRepoName: string,
+  controllerRepo: Repository,
   queryStartTime: number,
   workflowRunId: number,
   language: string,
   repositoryCount: number
 ): Promise<RemoteQuery> {
-  // The query name is either the name as specified in the query metadata, or the file name.
-  const queryName = queryMetadata?.name ?? path.basename(queryFilePath);
-
+  const queryName = getQueryName(queryMetadata, queryFilePath);
   const queryText = await fs.readFile(queryFilePath, 'utf8');
+  const [owner, name] = controllerRepo.fullName.split('/');
 
   return {
     queryName,
@@ -443,11 +470,59 @@ async function buildRemoteQueryEntity(
     queryText,
     language,
     controllerRepository: {
-      owner: controllerRepoOwner,
-      name: controllerRepoName,
+      owner,
+      name,
     },
     executionStartTime: queryStartTime,
     actionsWorkflowRunId: workflowRunId,
     repositoryCount,
   };
+}
+
+function getQueryName(queryMetadata: QueryMetadata | undefined, queryFilePath: string): string {
+  // The query name is either the name as specified in the query metadata, or the file name.
+  return queryMetadata?.name ?? path.basename(queryFilePath);
+}
+
+async function getControllerRepo(credentials: Credentials): Promise<Repository> {
+  // Get the controller repo from the config, if it exists.
+  // If it doesn't exist, prompt the user to enter it, and save that value to the config.
+  let controllerRepoNwo: string | undefined;
+  controllerRepoNwo = getRemoteControllerRepo();
+  if (!controllerRepoNwo || !REPO_REGEX.test(controllerRepoNwo)) {
+    void logger.log(controllerRepoNwo ? 'Invalid controller repository name.' : 'No controller repository defined.');
+    controllerRepoNwo = await window.showInputBox({
+      title: 'Controller repository in which to run the GitHub Actions workflow for this variant analysis',
+      placeHolder: '<owner>/<repo>',
+      prompt: 'Enter the name of a GitHub repository in the format <owner>/<repo>',
+      ignoreFocusOut: true,
+    });
+    if (!controllerRepoNwo) {
+      throw new UserCancellationException('No controller repository entered.');
+    } else if (!REPO_REGEX.test(controllerRepoNwo)) { // Check if user entered invalid input
+      throw new UserCancellationException('Invalid repository format. Must be a valid GitHub repository in the format <owner>/<repo>.');
+    }
+    void logger.log(`Setting the controller repository as: ${controllerRepoNwo}`);
+    await setRemoteControllerRepo(controllerRepoNwo);
+  }
+
+  void logger.log(`Using controller repository: ${controllerRepoNwo}`);
+  const [owner, repo] = controllerRepoNwo.split('/');
+
+  try {
+    const controllerRepo = await ghApiClient.getRepositoryFromNwo(credentials, owner, repo);
+    void logger.log(`Controller repository ID: ${controllerRepo.id}`);
+    return {
+      id: controllerRepo.id,
+      fullName: controllerRepo.full_name,
+      private: controllerRepo.private,
+    };
+
+  } catch (e: any) {
+    if ((e as RequestError).status === 404) {
+      throw new Error(`Controller repository "${owner}/${repo}" not found`);
+    } else {
+      throw new Error(`Error getting controller repository "${owner}/${repo}": ${e.message}`);
+    }
+  }
 }

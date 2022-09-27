@@ -6,6 +6,7 @@ import {
   VariantAnalysisRepoTask,
   VariantAnalysisSubmissionRequest
 } from './variant-analysis';
+import { Repository } from './repository';
 
 export async function submitVariantAnalysis(
   credentials: Credentials,
@@ -73,13 +74,13 @@ export async function getVariantAnalysisRepo(
   return response.data;
 }
 
-export async function getRepositoryIdFromNwo(
+export async function getRepositoryFromNwo(
   credentials: Credentials,
   owner: string,
   repo: string
-): Promise<number> {
+): Promise<Repository> {
   const octokit = await credentials.getOctokit();
 
   const response = await octokit.rest.repos.get({ owner, repo });
-  return response.data.id;
+  return response.data as Repository;
 }

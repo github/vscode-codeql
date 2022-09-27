@@ -1,11 +1,18 @@
 import { expect } from 'chai';
 import * as os from 'os';
 import { parseResponse } from '../../../remote-queries/run-remote-query';
+import { Repository } from '../../../remote-queries/shared/repository';
 
 describe('run-remote-query', () => {
   describe('parseResponse', () => {
+    const controllerRepository: Repository = {
+      id: 123,
+      fullName: 'org/name',
+      private: true
+    };
+
     it('should parse a successful response', () => {
-      const result = parseResponse('org', 'name', {
+      const result = parseResponse(controllerRepository, {
         workflow_run_id: 123,
         repositories_queried: ['a/b', 'c/d'],
       });
@@ -20,7 +27,7 @@ describe('run-remote-query', () => {
     });
 
     it('should parse a response with invalid repos', () => {
-      const result = parseResponse('org', 'name', {
+      const result = parseResponse(controllerRepository, {
         workflow_run_id: 123,
         repositories_queried: ['a/b', 'c/d'],
         errors: {
@@ -47,7 +54,7 @@ describe('run-remote-query', () => {
     });
 
     it('should parse a response with repos w/o databases', () => {
-      const result = parseResponse('org', 'name', {
+      const result = parseResponse(controllerRepository, {
         workflow_run_id: 123,
         repositories_queried: ['a/b', 'c/d'],
         errors: {
@@ -75,7 +82,7 @@ describe('run-remote-query', () => {
     });
 
     it('should parse a response with private repos', () => {
-      const result = parseResponse('org', 'name', {
+      const result = parseResponse(controllerRepository, {
         workflow_run_id: 123,
         repositories_queried: ['a/b', 'c/d'],
         errors: {
@@ -103,7 +110,7 @@ describe('run-remote-query', () => {
     });
 
     it('should parse a response with cutoff repos and cutoff repos count', () => {
-      const result = parseResponse('org', 'name', {
+      const result = parseResponse(controllerRepository, {
         workflow_run_id: 123,
         repositories_queried: ['a/b', 'c/d'],
         errors: {
@@ -132,7 +139,7 @@ describe('run-remote-query', () => {
     });
 
     it('should parse a response with cutoff repos count but not cutoff repos', () => {
-      const result = parseResponse('org', 'name', {
+      const result = parseResponse(controllerRepository, {
         workflow_run_id: 123,
         repositories_queried: ['a/b', 'c/d'],
         errors: {
@@ -159,7 +166,7 @@ describe('run-remote-query', () => {
     });
 
     it('should parse a response with invalid repos and repos w/o databases', () => {
-      const result = parseResponse('org', 'name', {
+      const result = parseResponse(controllerRepository, {
         workflow_run_id: 123,
         repositories_queried: ['a/b', 'c/d'],
         errors: {
@@ -191,7 +198,7 @@ describe('run-remote-query', () => {
     });
 
     it('should parse a response with one repo of each category, and not pluralize "repositories"', () => {
-      const result = parseResponse('org', 'name', {
+      const result = parseResponse(controllerRepository, {
         workflow_run_id: 123,
         repositories_queried: ['a/b'],
         errors: {
