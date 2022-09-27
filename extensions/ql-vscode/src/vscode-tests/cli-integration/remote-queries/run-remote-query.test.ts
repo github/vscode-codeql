@@ -17,6 +17,7 @@ import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { lte } from 'semver';
 import { VariantAnalysis } from '../../../remote-queries/gh-api/variant-analysis';
 import { Repository } from '../../../remote-queries/gh-api/repository';
+import { VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
 
 describe('Remote queries', function() {
   const baseDir = path.join(__dirname, '../../../../src/vscode-tests/cli-integration');
@@ -308,7 +309,10 @@ describe('Remote queries', function() {
       const fileUri = getFile('data-remote-qlpack/in-pack.ql');
 
       const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
-      expect(querySubmissionResult).to.be.undefined;
+      expect(querySubmissionResult).to.be.ok;
+      const variantAnalysis = querySubmissionResult!.variantAnalysis!;
+      expect(variantAnalysis.id).to.be.equal(dummyVariantAnalysis.id);
+      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
 
       expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
@@ -321,7 +325,10 @@ describe('Remote queries', function() {
       const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
       const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
-      expect(querySubmissionResult).to.be.undefined;
+      expect(querySubmissionResult).to.be.ok;
+      const variantAnalysis = querySubmissionResult!.variantAnalysis!;
+      expect(variantAnalysis.id).to.be.equal(dummyVariantAnalysis.id);
+      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
 
       expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
@@ -334,7 +341,10 @@ describe('Remote queries', function() {
       const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
 
       const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
-      expect(querySubmissionResult).to.be.undefined;
+      expect(querySubmissionResult).to.be.ok;
+      const variantAnalysis = querySubmissionResult!.variantAnalysis!;
+      expect(variantAnalysis.id).to.be.equal(dummyVariantAnalysis.id);
+      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
 
       expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
 
