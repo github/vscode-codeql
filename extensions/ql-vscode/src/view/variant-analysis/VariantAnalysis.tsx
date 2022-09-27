@@ -8,11 +8,13 @@ import {
 } from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisContainer } from './VariantAnalysisContainer';
 import { VariantAnalysisHeader } from './VariantAnalysisHeader';
+import { VariantAnalysisOutcomePanels } from './VariantAnalysisOutcomePanels';
 import { VariantAnalysisLoading } from './VariantAnalysisLoading';
 
 const variantAnalysis: VariantAnalysisDomainModel = {
   id: 1,
   controllerRepoId: 1,
+  actionsWorkflowRunId: 789263,
   query: {
     name: 'Example query',
     filePath: 'example.ql',
@@ -20,7 +22,6 @@ const variantAnalysis: VariantAnalysisDomainModel = {
   },
   databases: {},
   status: VariantAnalysisStatus.InProgress,
-  actionsWorkflowRunId: 123,
   scannedRepos: [
     {
       repository: {
@@ -102,7 +103,59 @@ const variantAnalysis: VariantAnalysisDomainModel = {
       },
       analysisStatus: VariantAnalysisRepoStatus.Pending,
     },
-  ]
+  ],
+  skippedRepos: {
+    notFoundRepos: {
+      repositoryCount: 2,
+      repositories: [
+        {
+          fullName: 'octodemo/hello-globe'
+        },
+        {
+          fullName: 'octodemo/hello-planet'
+        }
+      ]
+    },
+    noCodeqlDbRepos: {
+      repositoryCount: 4,
+      repositories: [
+        {
+          id: 100,
+          fullName: 'octodemo/no-db-1'
+        },
+        {
+          id: 101,
+          fullName: 'octodemo/no-db-2'
+        },
+        {
+          id: 102,
+          fullName: 'octodemo/no-db-3'
+        },
+        {
+          id: 103,
+          fullName: 'octodemo/no-db-4'
+        }
+      ]
+    },
+    overLimitRepos: {
+      repositoryCount: 1,
+      repositories: [
+        {
+          id: 201,
+          fullName: 'octodemo/over-limit-1'
+        }
+      ]
+    },
+    accessMismatchRepos: {
+      repositoryCount: 1,
+      repositories: [
+        {
+          id: 205,
+          fullName: 'octodemo/private'
+        }
+      ]
+    }
+  },
 };
 
 function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
@@ -111,15 +164,18 @@ function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
   }
 
   return (
-    <VariantAnalysisHeader
-      variantAnalysis={variantAnalysis}
-      onOpenQueryFileClick={() => console.log('Open query')}
-      onViewQueryTextClick={() => console.log('View query')}
-      onStopQueryClick={() => console.log('Stop query')}
-      onCopyRepositoryListClick={() => console.log('Copy repository list')}
-      onExportResultsClick={() => console.log('Export results')}
-      onViewLogsClick={() => console.log('View logs')}
-    />
+    <>
+      <VariantAnalysisHeader
+        variantAnalysis={variantAnalysis}
+        onOpenQueryFileClick={() => console.log('Open query')}
+        onViewQueryTextClick={() => console.log('View query')}
+        onStopQueryClick={() => console.log('Stop query')}
+        onCopyRepositoryListClick={() => console.log('Copy repository list')}
+        onExportResultsClick={() => console.log('Export results')}
+        onViewLogsClick={() => console.log('View logs')}
+      />
+      <VariantAnalysisOutcomePanels variantAnalysis={variantAnalysis} />
+    </>
   );
 }
 
