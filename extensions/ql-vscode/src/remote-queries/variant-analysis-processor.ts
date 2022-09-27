@@ -1,7 +1,8 @@
 import {
   VariantAnalysis as ApiVariantAnalysis,
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository,
-  VariantAnalysisRepoStatus as ApiVariantAnalysisRepoStatus
+  VariantAnalysisRepoStatus as ApiVariantAnalysisRepoStatus,
+  VariantAnalysisFailureReason as ApiVariantAnalysisFailureReason
 } from './gh-api/variant-analysis';
 import {
   VariantAnalysis,
@@ -81,5 +82,14 @@ function processApiAnalysisStatus(analysisStatus: ApiVariantAnalysisRepoStatus):
       return VariantAnalysisRepoStatus.Canceled;
     case 'timed_out':
       return VariantAnalysisRepoStatus.TimedOut;
+  }
+}
+
+export function processFailureReason(failureReason: ApiVariantAnalysisFailureReason): VariantAnalysisFailureReason {
+  switch (failureReason) {
+    case 'no_repos_queried':
+      return VariantAnalysisFailureReason.NoReposQueried;
+    case 'internal_error':
+      return VariantAnalysisFailureReason.InternalError;
   }
 }

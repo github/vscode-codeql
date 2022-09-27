@@ -4,9 +4,12 @@ import { Logger } from '../logging';
 import * as ghApiClient from './gh-api/gh-api-client';
 import * as path from 'path';
 
-import { VariantAnalysis } from './shared/variant-analysis';
+import { VariantAnalysis, VariantAnalysisStatus } from './shared/variant-analysis';
 import { VariantAnalysis as VariantAnalysisApiResponse } from './gh-api/variant-analysis';
+import { Repository as ApiRepository } from './gh-api/repository';
 import { VariantAnalysisMonitorResult } from './shared/variant-analysis-monitor-result';
+import { getErrorMessage } from '../pure/helpers-pure';
+import { processFailureReason } from './variant-analysis-processor';
 
 export class VariantAnalysisMonitor {
   // With a sleep of 5 seconds, the maximum number of attempts takes
@@ -31,7 +34,7 @@ export class VariantAnalysisMonitor {
     }
 
     let variantAnalysisSummary: VariantAnalysisApiResponse;
-    let attemptCount = 1;
+    let attemptCount = 0;
     const scannedReposDownloaded: number[] = [];
 
     while (attemptCount <= VariantAnalysisMonitor.maxAttemptCount) {
@@ -49,14 +52,18 @@ export class VariantAnalysisMonitor {
 
       // If a failure has occurred, mark as failed locally and stop monitoring until the user says to try again
       if (variantAnalysisSummary.status == 'in_progress' && variantAnalysisSummary.failure_reason) {
-        return { status: 'Failed', error: `Variant Analysis has failed: ${variantAnalysisSummary.failure_reason}` };
+        variantAnalysis.status = VariantAnalysisStatus.Failed;
+        variantAnalysis.failureReason = processFailureReason(variantAnalysisSummary.failure_reason);
+        return {
+          status: 'Failed',
+          error: `Variant Analysis has failed: ${variantAnalysisSummary.failure_reason}`,
+          variantAnalysis: variantAnalysis
+        };
       }
 
       // TODO: Raise event to update the UI
 
       void this.logger.log('****** Retrieved variant analysis' + JSON.stringify(variantAnalysisSummary));
-
-      const storagePath = path.join(this.extensionContext.globalStorageUri.fsPath, 'variant-analyses');
 
       // TODO: Think about batching when we download new repositories. Max 10??
       // At the moment we're batching 3 (?)
@@ -68,8 +75,7 @@ export class VariantAnalysisMonitor {
             await this.downloadRepoResults(
               credentials,
               variantAnalysisSummary,
-              scannedRepo.repository.id,
-              storagePath
+              scannedRepo.repository
             );
             scannedReposDownloaded.push(scannedRepo.repository.id);
           }
@@ -79,17 +85,17 @@ export class VariantAnalysisMonitor {
       attemptCount++;
     }
 
-    // TODO: set "Downloading...(0/20MB)" - see screenshot
+    // TODO: update UI to show how much is being downloaded: "Downloading...(0/20MB)"
 
-    // TODO: Decide if we want to finish and update UI
+    // TODO: Update UI to show finished state
     // if (variantAnalysisSummary.status == 'completed' && variantAnalysisSummary.failure_reason) {
     //   return { status: 'CompletedUnsuccessfully', error: `Variant Analysis completed unsuccessfully: ${variantAnalysis.failure_reason}` };
     // }
 
-    if (attemptCount == VariantAnalysisMonitor.maxAttemptCount && variantAnalysisSummary.status == 'in_progress') {
-      void this.logger.log('Variant analysis monitoring timed out after 2 days');
-      return { status: 'TimedOut', };
-    }
+    // if (attemptCount == VariantAnalysisMonitor.maxAttemptCount && variantAnalysisSummary.status == 'in_progress') {
+    //   void this.logger.log('Variant analysis monitoring timed out after 2 days');
+    //   return { status: 'TimedOut', };
+    // }
 
     return { status: 'CompletedSuccessfully', scannedReposDownloaded: scannedReposDownloaded };
   }
@@ -97,16 +103,35 @@ export class VariantAnalysisMonitor {
   private async downloadRepoResults(
     credentials: Credentials,
     variantAnalysisSummary: VariantAnalysisApiResponse,
-    repositoryId: number,
-    storagePath: string
+    repo: ApiRepository
   ) {
-    // let resultFilePath;
-    // try {
-    //   resultFilePath = await downloadResultFromLink(credentials, storagePath, variantAnalysisSummary.query_pack_url);
-    // }
-    // catch (e) {
-    //   throw new Error(`Could not download the variant analysis results for ${variantAnalysisSummary.id}: ${getErrorMessage(e)}`);
-    // }
+
+    let response;
+    try {
+      response = await ghApiClient.getVariantAnalysisRepo(
+        credentials,
+        variantAnalysisSummary.controller_repo.id,
+        variantAnalysisSummary.id,
+        repo.id
+      );
+    }
+    catch (e) {
+      throw new Error(`Could not download the results for variant analysis with id: ${variantAnalysisSummary.id}. Error: ${getErrorMessage(e)}`);
+    }
+
+    const storagePath = path.join(
+      this.extensionContext.globalStorageUri.fsPath,
+      'variant-analyses',
+      `${variantAnalysisSummary.actions_workflow_run_id}`,
+      repo.full_name
+    );
+
+    // Download the result from Azure
+    // Save it in the storagePath
+
+    console.log(storagePath);
+
+    return response;
   }
 
   private async sleep(ms: number) {

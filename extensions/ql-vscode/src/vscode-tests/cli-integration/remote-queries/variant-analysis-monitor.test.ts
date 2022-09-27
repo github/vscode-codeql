@@ -6,9 +6,11 @@ import { logger } from '../../../logging';
 
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { VariantAnalysisMonitor } from '../../../remote-queries/variant-analysis-monitor';
-import { VariantAnalysis as VariantAnalysisApiResponse } from '../../../remote-queries/gh-api/variant-analysis';
+import { VariantAnalysis as VariantAnalysisApiResponse, VariantAnalysisFailureReason } from '../../../remote-queries/gh-api/variant-analysis';
 import { createFailedMockApiResponse, createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
 import { createMockCredentials } from '../../utils/credentials';
+import { VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
+import { processFailureReason } from '../../../remote-queries/variant-analysis-processor';
 
 describe('Variant Analysis Monitor', async function() {
   let sandbox: sinon.SinonSandbox;
@@ -81,9 +83,13 @@ describe('Variant Analysis Monitor', async function() {
 
       it('should mark as failed locally and stop monitoring', async () => {
         const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
+        variantAnalysis = result.variantAnalysis;
 
         expect(mockGetVariantAnalysis.calledOnce).to.be.true;
-        expect(result).to.eql({ status: 'Failed', error: `Variant Analysis has failed: ${mockFailedApiResponse.failure_reason}` });
+        expect(result.status).to.eql('Failed');
+        expect(result.error).to.eql(`Variant Analysis has failed: ${mockFailedApiResponse.failure_reason}`);
+        expect(variantAnalysis.status).to.equal(VariantAnalysisStatus.Failed);
+        expect(variantAnalysis.failureReason).to.equal(processFailureReason(mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason));
       });
     });
 
