@@ -361,9 +361,9 @@ async function runRemoteQueriesApiRequest(
   try {
     const octokit = await credentials.getOctokit();
     const response: OctokitResponse<QueriesResponse, number> = await octokit.request(
-      'POST /repos/:controllerRepo/code-scanning/codeql/queries',
+      'POST /repositories/:controllerRepoId/code-scanning/codeql/queries',
       {
-        controllerRepo: controllerRepo.fullName,
+        controllerRepoId: controllerRepo.id,
         data
       }
     );
