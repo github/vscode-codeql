@@ -13,8 +13,6 @@ export function createMockSubmission(): VariantAnalysisSubmission {
     },
     databases: {
       repositories: ['1', '2', '3'],
-      repositoryLists: ['top10', 'top100'],
-      repositoryOwners: ['mona', 'lisa'],
     }
   };
 }

@@ -34,8 +34,6 @@ describe('Variant Analysis processor', function() {
       },
       'databases': {
         'repositories': ['1', '2', '3'],
-        'repositoryLists': ['top10', 'top100'],
-        'repositoryOwners': ['mona', 'lisa']
       },
       'status': 'succeeded',
       'actionsWorkflowRunId': 456,
