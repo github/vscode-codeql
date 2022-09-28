@@ -11,7 +11,7 @@ import { createMockScannedRepos } from './scanned-repositories';
 import { createMockSkippedRepos } from './skipped-repositories';
 
 export function createMockApiResponse(
-  status = 'in_progress',
+  status: VariantAnalysisStatus = 'in_progress',
   scannedRepos: VariantAnalysisScannedRepository[] = createMockScannedRepos(),
   skippedRepos: VariantAnalysisSkippedRepositories = createMockSkippedRepos()
 ): VariantAnalysisApiResponse {
@@ -26,7 +26,7 @@ export function createMockApiResponse(
     actor_id: 123,
     query_language: VariantAnalysisQueryLanguage.Javascript,
     query_pack_url: 'https://example.com/foo',
-    status: status as VariantAnalysisStatus,
+    status: status,
     actions_workflow_run_id: 456,
     scanned_repositories: scannedRepos,
     skipped_repositories: skippedRepos
@@ -36,12 +36,12 @@ export function createMockApiResponse(
 }
 
 export function createFailedMockApiResponse(
-  status = 'in_progress',
+  status: VariantAnalysisStatus = 'in_progress',
   scannedRepos: VariantAnalysisScannedRepository[] = createMockScannedRepos(),
   skippedRepos: VariantAnalysisSkippedRepositories = createMockSkippedRepos(),
 ): VariantAnalysisApiResponse {
   const variantAnalysis = createMockApiResponse(status, scannedRepos, skippedRepos);
-  variantAnalysis.status = status as VariantAnalysisStatus;
+  variantAnalysis.status = status;
   variantAnalysis.failure_reason = 'internal_error';
 
   return variantAnalysis;
