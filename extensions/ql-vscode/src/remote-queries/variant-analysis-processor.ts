@@ -51,7 +51,7 @@ export function processVariantAnalysis(
   };
 
   if (response.failure_reason) {
-    variantAnalysis.failureReason = response.failure_reason as VariantAnalysisFailureReason;
+    variantAnalysis.failureReason = processFailureReason(response.failure_reason);
   }
 
   return variantAnalysis;
