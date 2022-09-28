@@ -102,7 +102,7 @@ function processRepoGroup(repoGroup: ApiVariantAnalysisSkippedRepositoryGroup): 
 }
 
 function processNotFoundRepoGroup(repoGroup: ApiVariantAnalysisNotFoundRepositoryGroup): VariantAnalysisSkippedRepositoryGroup {
-  const repo_nwos = repoGroup.repository_nwos.map(nwo => {
+  const repo_full_names = repoGroup.repository_full_names.map(nwo => {
     return {
       fullName: nwo
     };
@@ -110,7 +110,7 @@ function processNotFoundRepoGroup(repoGroup: ApiVariantAnalysisNotFoundRepositor
 
   return {
     repositoryCount: repoGroup.repository_count,
-    repositories: repo_nwos
+    repositories: repo_full_names
   };
 }
 

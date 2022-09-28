@@ -40,6 +40,6 @@ export function createMockNotFoundSkippedRepoGroup(): VariantAnalysisNotFoundRep
 
   return {
     repository_count: 2,
-    repository_nwos: [repoName1, repoName2]
+    repository_full_names: [repoName1, repoName2]
   };
 }

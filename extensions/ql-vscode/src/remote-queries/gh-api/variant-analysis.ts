@@ -62,7 +62,7 @@ export interface VariantAnalysisSkippedRepositoryGroup {
 
 export interface VariantAnalysisNotFoundRepositoryGroup {
   repository_count: number,
-  repository_nwos: string[]
+  repository_full_names: string[]
 }
 export interface VariantAnalysisRepoTask {
   repository: Repository,
