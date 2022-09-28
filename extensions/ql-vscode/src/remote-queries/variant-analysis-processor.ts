@@ -60,11 +60,8 @@ export function processVariantAnalysis(
 function processScannedRepositories(
   scannedRepos: ApiVariantAnalysisScannedRepository[]
 ): VariantAnalysisScannedRepository[] {
-
-  const result: VariantAnalysisScannedRepository[] = [];
-
-  scannedRepos.forEach(function(scannedRepo) {
-    const parsedRepo: VariantAnalysisScannedRepository = {
+  return scannedRepos.map(scannedRepo => {
+    return {
       repository: {
         id: scannedRepo.repository.id,
         fullName: scannedRepo.repository.full_name,
@@ -75,11 +72,7 @@ function processScannedRepositories(
       artifactSizeInBytes: scannedRepo.artifact_size_in_bytes,
       failureMessage: scannedRepo.failure_message
     };
-
-    result.push(parsedRepo);
   });
-
-  return result;
 }
 
 function processSkippedRepositories(
