@@ -18,8 +18,7 @@ export function createMockScannedRepo(
     },
     analysis_status: analysisStatus,
     result_count: faker.datatype.number(),
-    artifact_size_in_bytes: faker.datatype.number(),
-    failure_message: ''
+    artifact_size_in_bytes: faker.datatype.number()
   };
 }
 
