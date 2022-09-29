@@ -91,13 +91,15 @@ export const VariantAnalysisOutcomePanels = ({
         {notFoundRepos?.repositoryCount &&
           <VSCodePanelView>
             <VariantAnalysisSkippedRepositoriesTab
-              reason='no_access'
+              alertTitle='No access'
+              alertMessage='The following repositories could not be scanned because you do not have read access.'
               skippedRepositoryGroup={notFoundRepos} />
           </VSCodePanelView>}
         {noCodeqlDbRepos?.repositoryCount &&
           <VSCodePanelView>
             <VariantAnalysisSkippedRepositoriesTab
-              reason='no_database'
+              alertTitle='No database'
+              alertMessage='The following repositories could not be scanned because they do not have an available CodeQL database.'
               skippedRepositoryGroup={noCodeqlDbRepos} />
           </VSCodePanelView>}
       </VSCodePanels>

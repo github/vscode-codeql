@@ -23,7 +23,8 @@ const Template: ComponentStory<typeof VariantAnalysisSkippedRepositoriesTab> = (
 
 export const NoAccessNoOmissions = Template.bind({});
 NoAccessNoOmissions.args = {
-  reason: 'no_access',
+  alertTitle: 'No access',
+  alertMessage: 'The following repositories could not be scanned because you do not have read access.',
   skippedRepositoryGroup: {
     repositoryCount: 2,
     repositories: [
@@ -39,7 +40,7 @@ NoAccessNoOmissions.args = {
 
 export const NoAccessWithOmissions = Template.bind({});
 NoAccessWithOmissions.args = {
-  reason: 'no_access',
+  ...NoAccessNoOmissions.args,
   skippedRepositoryGroup: {
     repositoryCount: 12345,
     repositories: [
@@ -58,7 +59,8 @@ NoAccessWithOmissions.args = {
 
 export const NoDatabaseNoOmissions = Template.bind({});
 NoDatabaseNoOmissions.args = {
-  reason: 'no_database',
+  alertTitle: 'No database',
+  alertMessage: 'The following repositories could not be scanned because they do not have an available CodeQL database.',
   skippedRepositoryGroup: {
     repositoryCount: 2,
     repositories: [
@@ -78,7 +80,7 @@ NoDatabaseNoOmissions.args = {
 
 export const NoDatabaseWithOmissions = Template.bind({});
 NoDatabaseWithOmissions.args = {
-  reason: 'no_database',
+  ...NoDatabaseNoOmissions.args,
   skippedRepositoryGroup: {
     repositoryCount: 12345,
     repositories: [

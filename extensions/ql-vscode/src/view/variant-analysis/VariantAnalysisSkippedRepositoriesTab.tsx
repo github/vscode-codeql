@@ -4,47 +4,26 @@ import { VariantAnalysisSkippedRepositoryGroup } from '../../remote-queries/shar
 import { Alert } from '../common';
 import { VariantAnalysisSkippedRepositoryRow } from './VariantAnalysisSkippedRepositoryRow';
 
-export type SkippedRepositoriesReason = 'no_access' | 'no_database';
-
 export type VariantAnalysisSkippedRepositoriesTabProps = {
-  reason: SkippedRepositoriesReason,
+  alertTitle: string,
+  alertMessage: string,
   skippedRepositoryGroup: VariantAnalysisSkippedRepositoryGroup,
 };
 
-function getSkipReasonAlertTitle(reason: SkippedRepositoriesReason): string {
-  switch (reason) {
-    case 'no_access':
-      return 'No access';
-    case 'no_database':
-      return 'No database';
-  }
-}
-
-function getSkipReasonAlertMessage(
-  reason: SkippedRepositoriesReason,
+function getSkipReasonAlert(
+  title: string,
+  message: string,
   repos: VariantAnalysisSkippedRepositoryGroup
-): string {
+) {
   const repositoriesOmittedText = repos.repositoryCount > repos.repositories.length
     ? ` (Only the first ${repos.repositories.length} ${repos.repositories.length > 1 ? 'repositories are' : 'repository is'} shown.)`
     : '';
-  switch (reason) {
-    case 'no_access':
-      return `The following repositories could not be scanned because you do not have read access.${repositoriesOmittedText}`;
-    case 'no_database':
-      return `The following repositories could not be scanned because they do not have an available CodeQL database.${repositoriesOmittedText}`;
-  }
-}
-
-function getSkipReasonAlert(
-  reason: SkippedRepositoriesReason,
-  repos: VariantAnalysisSkippedRepositoryGroup
-) {
   return (
     <Alert
       key='alert'
       type='warning'
-      title={getSkipReasonAlertTitle(reason)}
-      message={getSkipReasonAlertMessage(reason, repos)}
+      title={title}
+      message={message + repositoriesOmittedText}
     />
   );
 }
@@ -57,12 +36,13 @@ const Container = styled.div`
 `;
 
 export const VariantAnalysisSkippedRepositoriesTab = ({
-  reason,
+  alertTitle,
+  alertMessage,
   skippedRepositoryGroup,
 }: VariantAnalysisSkippedRepositoriesTabProps) => {
   return (
     <Container>
-      {getSkipReasonAlert(reason, skippedRepositoryGroup)}
+      {getSkipReasonAlert(alertTitle, alertMessage, skippedRepositoryGroup)}
       {skippedRepositoryGroup.repositories.map((repo) =>
         <VariantAnalysisSkippedRepositoryRow key={`repo/${repo.fullName}`} repository={repo} />
       )}
