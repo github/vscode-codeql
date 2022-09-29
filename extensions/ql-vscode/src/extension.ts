@@ -909,7 +909,15 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.mockVariantAnalysisView', async () => {
-      const variantAnalysisView = new VariantAnalysisView(ctx);
+      const variantAnalysisView = new VariantAnalysisView(ctx, 1);
+      variantAnalysisView.openView();
+    })
+  );
+
+  // The "openVariantAnalysisView" command is internal-only.
+  ctx.subscriptions.push(
+    commandRunner('codeQL.openVariantAnalysisView', async (variantAnalysisId: number) => {
+      const variantAnalysisView = new VariantAnalysisView(ctx, variantAnalysisId);
       variantAnalysisView.openView();
     })
   );

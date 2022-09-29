@@ -1,4 +1,4 @@
-import { CancellationToken, Uri, window } from 'vscode';
+import { CancellationToken, commands, Uri, window } from 'vscode';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
@@ -12,7 +12,7 @@ import {
   showAndLogInformationMessage,
   tryGetQueryMetadata,
   pluralize,
-  tmpDir
+  tmpDir,
 } from '../helpers';
 import { Credentials } from '../authentication';
 import * as cli from '../cli';
@@ -286,9 +286,11 @@ export async function runRemoteQuery(
         status: VariantAnalysisStatus.InProgress,
       };
 
-      // TODO: Remove once we have a proper notification
-      void showAndLogInformationMessage('Variant analysis submitted for processing');
       void logger.log(`Variant analysis:\n${JSON.stringify(variantAnalysis, null, 2)}`);
+
+      void showAndLogInformationMessage(`Variant analysis ${variantAnalysis.query.name} submitted for processing`);
+
+      void commands.executeCommand('codeQL.openVariantAnalysisView', variantAnalysis.id);
 
       return { variantAnalysis };
 
