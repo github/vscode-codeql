@@ -63,6 +63,7 @@
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
     "onWebviewPanel:resultsView",
+    "onWebviewPanel:codeQL.variantAnalysis",
     "onFileSystem:codeql-zip-archive"
   ],
   "main": "./out/extension",

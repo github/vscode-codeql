@@ -105,6 +105,7 @@ import { createInitialQueryInfo } from './run-queries-shared';
 import { LegacyQueryRunner } from './legacy-query-server/legacyRunner';
 import { QueryRunner } from './queryRunner';
 import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
+import { VariantAnalysisViewSerializer } from './remote-queries/variant-analysis-view-serializer';
 
 /**
  * extension.ts
@@ -381,7 +382,10 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     allowAutoUpdating: true
   })));
 
-  return await installOrUpdateThenTryActivate({
+  const variantAnalysisViewSerializer = new VariantAnalysisViewSerializer(ctx);
+  Window.registerWebviewPanelSerializer(VariantAnalysisView.viewType, variantAnalysisViewSerializer);
+
+  const codeQlExtension = await installOrUpdateThenTryActivate({
     isUserInitiated: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
     shouldDisplayMessageWhenNoUpdates: false,
 
@@ -389,6 +393,10 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     // otherwise, ask user to accept the update
     allowAutoUpdating: !!ctx.globalState.get(shouldUpdateOnNextActivationKey)
   });
+
+  variantAnalysisViewSerializer.onExtensionLoaded();
+
+  return codeQlExtension;
 }
 
 async function activateWithInstalledDistribution(
@@ -909,8 +917,11 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.mockVariantAnalysisView', async () => {
-      const variantAnalysisView = new VariantAnalysisView(ctx);
-      variantAnalysisView.openView();
+      // Generate a random variant analysis ID for testing
+      const variantAnalysisId: number = Math.floor(Math.random() * 1000000);
+
+      const variantAnalysisView = new VariantAnalysisView(ctx, variantAnalysisId);
+      void variantAnalysisView.openView();
     })
   );
 

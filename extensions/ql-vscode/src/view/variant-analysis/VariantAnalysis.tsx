@@ -1,162 +1,13 @@
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 
-import {
-  VariantAnalysis as VariantAnalysisDomainModel,
-  VariantAnalysisQueryLanguage,
-  VariantAnalysisRepoStatus,
-  VariantAnalysisStatus
-} from '../../remote-queries/shared/variant-analysis';
+import { VariantAnalysis as VariantAnalysisDomainModel } from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisContainer } from './VariantAnalysisContainer';
 import { VariantAnalysisHeader } from './VariantAnalysisHeader';
 import { VariantAnalysisOutcomePanels } from './VariantAnalysisOutcomePanels';
 import { VariantAnalysisLoading } from './VariantAnalysisLoading';
-
-const variantAnalysis: VariantAnalysisDomainModel = {
-  id: 1,
-  controllerRepoId: 1,
-  actionsWorkflowRunId: 789263,
-  query: {
-    name: 'Example query',
-    filePath: 'example.ql',
-    language: VariantAnalysisQueryLanguage.Javascript,
-  },
-  databases: {},
-  status: VariantAnalysisStatus.InProgress,
-  scannedRepos: [
-    {
-      repository: {
-        id: 1,
-        fullName: 'octodemo/hello-world-1',
-        private: false,
-      },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-    {
-      repository: {
-        id: 2,
-        fullName: 'octodemo/hello-world-2',
-        private: false,
-      },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-    {
-      repository: {
-        id: 3,
-        fullName: 'octodemo/hello-world-3',
-        private: false,
-      },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-    {
-      repository: {
-        id: 4,
-        fullName: 'octodemo/hello-world-4',
-        private: false,
-      },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-    {
-      repository: {
-        id: 5,
-        fullName: 'octodemo/hello-world-5',
-        private: false,
-      },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-    {
-      repository: {
-        id: 6,
-        fullName: 'octodemo/hello-world-6',
-        private: false,
-      },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-    {
-      repository: {
-        id: 7,
-        fullName: 'octodemo/hello-world-7',
-        private: false,
-      },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-    {
-      repository: {
-        id: 8,
-        fullName: 'octodemo/hello-world-8',
-        private: false,
-      },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-    {
-      repository: {
-        id: 9,
-        fullName: 'octodemo/hello-world-9',
-        private: false,
-      },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-    {
-      repository: {
-        id: 10,
-        fullName: 'octodemo/hello-world-10',
-        private: false,
-      },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-  ],
-  skippedRepos: {
-    notFoundRepos: {
-      repositoryCount: 2,
-      repositories: [
-        {
-          fullName: 'octodemo/hello-globe'
-        },
-        {
-          fullName: 'octodemo/hello-planet'
-        }
-      ]
-    },
-    noCodeqlDbRepos: {
-      repositoryCount: 4,
-      repositories: [
-        {
-          id: 100,
-          fullName: 'octodemo/no-db-1'
-        },
-        {
-          id: 101,
-          fullName: 'octodemo/no-db-2'
-        },
-        {
-          id: 102,
-          fullName: 'octodemo/no-db-3'
-        },
-        {
-          id: 103,
-          fullName: 'octodemo/no-db-4'
-        }
-      ]
-    },
-    overLimitRepos: {
-      repositoryCount: 1,
-      repositories: [
-        {
-          id: 201,
-          fullName: 'octodemo/over-limit-1'
-        }
-      ]
-    },
-    accessMismatchRepos: {
-      repositoryCount: 1,
-      repositories: [
-        {
-          id: 205,
-          fullName: 'octodemo/private'
-        }
-      ]
-    }
-  },
-};
+import { ToVariantAnalysisMessage } from '../../pure/interface-types';
+import { vscode } from '../vscode-api';
 
 function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
   if (variantAnalysis.actionsWorkflowRunId === undefined) {
@@ -179,7 +30,37 @@ function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
   );
 }
 
-export function VariantAnalysis(): JSX.Element {
+type Props = {
+  variantAnalysis?: VariantAnalysisDomainModel;
+}
+
+export function VariantAnalysis({
+  variantAnalysis: initialVariantAnalysis,
+}: Props): JSX.Element {
+  const [variantAnalysis, setVariantAnalysis] = useState<VariantAnalysisDomainModel | undefined>(initialVariantAnalysis);
+
+  useEffect(() => {
+    window.addEventListener('message', (evt: MessageEvent) => {
+      if (evt.origin === window.origin) {
+        const msg: ToVariantAnalysisMessage = evt.data;
+        if (msg.t === 'setVariantAnalysis') {
+          setVariantAnalysis(msg.variantAnalysis);
+          vscode.setState({
+            variantAnalysisId: msg.variantAnalysis.id,
+          });
+        }
+      } else {
+        // sanitize origin
+        const origin = evt.origin.replace(/\n|\r/g, '');
+        console.error(`Invalid event origin ${origin}`);
+      }
+    });
+  });
+
+  if (!variantAnalysis) {
+    return <VariantAnalysisLoading />;
+  }
+
   return (
     <VariantAnalysisContainer>
       {getContainerContents(variantAnalysis)}
