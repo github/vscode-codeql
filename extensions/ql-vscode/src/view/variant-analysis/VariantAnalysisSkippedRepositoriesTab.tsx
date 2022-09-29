@@ -16,7 +16,7 @@ function getSkipReasonAlert(
   repos: VariantAnalysisSkippedRepositoryGroup
 ) {
   const repositoriesOmittedText = repos.repositoryCount > repos.repositories.length
-    ? ` (Only the first ${repos.repositories.length} ${repos.repositories.length > 1 ? 'repositories are' : 'repository is'} shown.)`
+    ? ` (Only the first ${repos.repositories.length > 1 ? `${repos.repositories.length} repositories are` : 'repository is'} shown.)`
     : '';
   return (
     <Alert

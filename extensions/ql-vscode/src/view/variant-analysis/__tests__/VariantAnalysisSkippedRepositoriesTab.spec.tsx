@@ -50,7 +50,7 @@ describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
       }
     });
 
-    expect(screen.getByText('The following repositories could not be scanned because you do not have read access. (Only the first 1 repository is shown.)')).toBeInTheDocument();
+    expect(screen.getByText('The following repositories could not be scanned because you do not have read access. (Only the first repository is shown.)')).toBeInTheDocument();
   });
 
   it('renders warning message when there are repositories omitted and multiple shown', async () => {
