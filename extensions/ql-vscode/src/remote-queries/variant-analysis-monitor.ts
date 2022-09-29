@@ -49,7 +49,7 @@ export class VariantAnalysisMonitor {
         variantAnalysis.id
       );
 
-      if (variantAnalysisSummary.status == 'in_progress' && variantAnalysisSummary.failure_reason) {
+      if (variantAnalysisSummary.failure_reason) {
         variantAnalysis.status = VariantAnalysisStatus.Failed;
         variantAnalysis.failureReason = processFailureReason(variantAnalysisSummary.failure_reason);
         return {
