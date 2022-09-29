@@ -377,7 +377,7 @@ const AnalysesResults = ({
 
       <ul className="vscode-codeql__flat-list">
         {analysesResults
-          .filter(a => a.interpretedResults.length > 0 || (a.rawResults?.resultSet.rows && a.rawResults.resultSet.rows.length > 0))
+          .filter(a => a.interpretedResults.length || a.rawResults?.resultSet?.rows?.length)
           .filter(a => a.nwo.toLowerCase().includes(filterValue.toLowerCase()))
           .sort(sorter(sort))
           .map(r =>
