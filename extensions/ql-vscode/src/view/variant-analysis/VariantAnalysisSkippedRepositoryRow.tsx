@@ -1,7 +1,7 @@
 import { VSCodeBadge, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
 import * as React from 'react';
 import styled from 'styled-components';
-import { WarningIcon } from '../common';
+import { Codicon, WarningIcon } from '../common';
 import { VariantAnalysisSkippedRepository as SkippedRepo } from '../../remote-queries/shared/variant-analysis';
 
 export type VariantAnalysisSkippedRepositoryRowProps = {
@@ -15,8 +15,8 @@ const Row = styled.div`
   align-items: center;
 `;
 
-const ChevronIcon = styled.span`
-  color: var(--vscode-descriptionForeground);
+const ChevronIcon = styled(Codicon)`
+  color: var(--vscode-disabledForeground);
 `;
 
 const PrivacyText = styled.span`
@@ -38,7 +38,7 @@ export const VariantAnalysisSkippedRepositoryRow = ({
   return (
     <Row>
       <VSCodeCheckbox />
-      <ChevronIcon className="codicon codicon-chevron-right" />
+      <ChevronIcon name='chevron-right' label='Expand' />
       <VSCodeBadge>-</VSCodeBadge>
       <span>{repository.fullName}</span>
       {getPrivacyElement(repository.private)}
