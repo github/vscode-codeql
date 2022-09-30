@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import { ExtensionContext, CancellationToken } from 'vscode';
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import * as ghApiClient from './gh-api/gh-api-client';
@@ -17,14 +17,14 @@ export class VariantAnalysisMonitor {
   public static sleepTime = 5000;
 
   constructor(
-    private readonly extensionContext: vscode.ExtensionContext,
+    private readonly extensionContext: ExtensionContext,
     private readonly logger: Logger
   ) {
   }
 
   public async monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
-    cancellationToken: vscode.CancellationToken
+    cancellationToken: CancellationToken
   ): Promise<VariantAnalysisMonitorResult> {
 
     const credentials = await Credentials.initialize(this.extensionContext);
