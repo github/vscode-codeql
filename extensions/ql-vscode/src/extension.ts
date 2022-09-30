@@ -106,6 +106,10 @@ import { LegacyQueryRunner } from './legacy-query-server/legacyRunner';
 import { QueryRunner } from './queryRunner';
 import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
 import { VariantAnalysis } from './remote-queries/shared/variant-analysis';
+import {
+  VariantAnalysis as VariantAnalysisApiResponse,
+  VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
+} from './remote-queries/gh-api/variant-analysis';
 import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
 
 /**
@@ -903,6 +907,16 @@ async function activateWithInstalledDistribution(
       token: CancellationToken
     ) => {
       await variantAnalysisManager.monitorVariantAnalysis(variantAnalysis, token);
+    })
+  );
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.autoDownloadVariantAnalysisResult', async (
+      scannedRepo: ApiVariantAnalysisScannedRepository,
+      variantAnalysisSummary: VariantAnalysisApiResponse,
+      token: CancellationToken
+    ) => {
+      await variantAnalysisManager.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysisSummary, token);
     })
   );
 

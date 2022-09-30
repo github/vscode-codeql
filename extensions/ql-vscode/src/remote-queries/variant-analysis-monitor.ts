@@ -1,4 +1,4 @@
-import { ExtensionContext, CancellationToken } from 'vscode';
+import { ExtensionContext, CancellationToken, commands } from 'vscode';
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import * as ghApiClient from './gh-api/gh-api-client';
@@ -64,6 +64,7 @@ export class VariantAnalysisMonitor {
       if (variantAnalysisSummary.scanned_repositories) {
         variantAnalysisSummary.scanned_repositories.forEach(scannedRepo => {
           if (!scannedReposDownloaded.includes(scannedRepo.repository.id) && scannedRepo.analysis_status === 'succeeded') {
+            void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResult', scannedRepo);
             scannedReposDownloaded.push(scannedRepo.repository.id);
           }
         });
