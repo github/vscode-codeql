@@ -4,9 +4,8 @@ import { VSCodeBadge, VSCodePanels, VSCodePanelTab, VSCodePanelView } from '@vsc
 import { formatDecimal } from '../../pure/number';
 import { VariantAnalysis, VariantAnalysisScannedRepositoryResult } from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
-import { VariantAnalysisNotFoundRepos } from './VariantAnalysisNotFoundRepos';
-import { VariantAnalysisNoCodeqlDbRepos } from './VariantAnalysisNoCodeqlDbRepos';
 import { Alert } from '../common';
+import { VariantAnalysisSkippedRepositoriesTab } from './VariantAnalysisSkippedRepositoriesTab';
 
 export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
@@ -37,8 +36,8 @@ export const VariantAnalysisOutcomePanels = ({
   variantAnalysis,
   repositoryResults,
 }: VariantAnalysisOutcomePanelProps) => {
-  const noCodeqlDbRepositoryCount = variantAnalysis.skippedRepos?.noCodeqlDbRepos?.repositoryCount ?? 0;
-  const notFoundRepositoryCount = variantAnalysis.skippedRepos?.notFoundRepos?.repositoryCount ?? 0;
+  const noCodeqlDbRepos = variantAnalysis.skippedRepos?.noCodeqlDbRepos;
+  const notFoundRepos = variantAnalysis.skippedRepos?.notFoundRepos;
   const overLimitRepositoryCount = variantAnalysis.skippedRepos?.overLimitRepos?.repositoryCount ?? 0;
   const accessMismatchRepositoryCount = variantAnalysis.skippedRepos?.accessMismatchRepos?.repositoryCount ?? 0;
 
@@ -61,7 +60,7 @@ export const VariantAnalysisOutcomePanels = ({
     </WarningsContainer>
   );
 
-  if (noCodeqlDbRepositoryCount === 0 && notFoundRepositoryCount === 0) {
+  if (!noCodeqlDbRepos?.repositoryCount && !notFoundRepos?.repositoryCount) {
     return (
       <>
         {warnings}
@@ -78,21 +77,33 @@ export const VariantAnalysisOutcomePanels = ({
           Analyzed
           <VSCodeBadge appearance="secondary">{formatDecimal(variantAnalysis.scannedRepos?.length ?? 0)}</VSCodeBadge>
         </Tab>
-        {notFoundRepositoryCount > 0 && (
+        {notFoundRepos?.repositoryCount && (
           <Tab>
             No access
-            <VSCodeBadge appearance="secondary">{formatDecimal(notFoundRepositoryCount)}</VSCodeBadge>
+            <VSCodeBadge appearance="secondary">{formatDecimal(notFoundRepos.repositoryCount)}</VSCodeBadge>
           </Tab>
         )}
-        {noCodeqlDbRepositoryCount > 0 && (
+        {noCodeqlDbRepos?.repositoryCount && (
           <Tab>
             No database
-            <VSCodeBadge appearance="secondary">{formatDecimal(noCodeqlDbRepositoryCount)}</VSCodeBadge>
+            <VSCodeBadge appearance="secondary">{formatDecimal(noCodeqlDbRepos.repositoryCount)}</VSCodeBadge>
           </Tab>
         )}
         <VSCodePanelView><VariantAnalysisAnalyzedRepos variantAnalysis={variantAnalysis} repositoryResults={repositoryResults} /></VSCodePanelView>
-        {notFoundRepositoryCount > 0 && <VSCodePanelView><VariantAnalysisNotFoundRepos /></VSCodePanelView>}
-        {noCodeqlDbRepositoryCount > 0 && <VSCodePanelView><VariantAnalysisNoCodeqlDbRepos /></VSCodePanelView>}
+        {notFoundRepos?.repositoryCount &&
+          <VSCodePanelView>
+            <VariantAnalysisSkippedRepositoriesTab
+              alertTitle='No access'
+              alertMessage='The following repositories could not be scanned because you do not have read access.'
+              skippedRepositoryGroup={notFoundRepos} />
+          </VSCodePanelView>}
+        {noCodeqlDbRepos?.repositoryCount &&
+          <VSCodePanelView>
+            <VariantAnalysisSkippedRepositoriesTab
+              alertTitle='No database'
+              alertMessage='The following repositories could not be scanned because they do not have an available CodeQL database.'
+              skippedRepositoryGroup={noCodeqlDbRepos} />
+          </VSCodePanelView>}
       </VSCodePanels>
     </>
   );

@@ -106,7 +106,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
   ],
   skippedRepos: {
     notFoundRepos: {
-      repositoryCount: 2,
+      repositoryCount: 9999,
       repositories: [
         {
           fullName: 'octodemo/hello-globe'
@@ -121,19 +121,23 @@ const variantAnalysis: VariantAnalysisDomainModel = {
       repositories: [
         {
           id: 100,
-          fullName: 'octodemo/no-db-1'
+          fullName: 'octodemo/no-db-1',
+          private: false,
         },
         {
           id: 101,
-          fullName: 'octodemo/no-db-2'
+          fullName: 'octodemo/no-db-2',
+          private: true,
         },
         {
           id: 102,
-          fullName: 'octodemo/no-db-3'
+          fullName: 'octodemo/no-db-3',
+          private: true,
         },
         {
           id: 103,
-          fullName: 'octodemo/no-db-4'
+          fullName: 'octodemo/no-db-4',
+          private: false,
         }
       ]
     },
