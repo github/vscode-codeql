@@ -105,8 +105,8 @@ import { createInitialQueryInfo } from './run-queries-shared';
 import { LegacyQueryRunner } from './legacy-query-server/legacyRunner';
 import { QueryRunner } from './queryRunner';
 import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
-import { VariantAnalysisMonitor } from './remote-queries/variant-analysis-monitor';
 import { VariantAnalysis } from './remote-queries/shared/variant-analysis';
+import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
 
 /**
  * extension.ts
@@ -896,13 +896,13 @@ async function activateWithInstalledDistribution(
     })
   );
 
-  const variantAnalysisMonitor = new VariantAnalysisMonitor(ctx, logger);
+  const variantAnalysisManager = new VariantAnalysisManager(ctx, logger);
   ctx.subscriptions.push(
     commandRunner('codeQL.monitorVariantAnalysis', async (
       variantAnalysis: VariantAnalysis,
       token: CancellationToken
     ) => {
-      await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, token);
+      await variantAnalysisManager.monitorVariantAnalysis(variantAnalysis, token);
     })
   );
 
