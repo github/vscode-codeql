@@ -69,6 +69,10 @@ export class VariantAnalysisMonitor {
         });
       }
 
+      if (variantAnalysisSummary.status === 'completed') {
+        break;
+      }
+
       attemptCount++;
     }
 
