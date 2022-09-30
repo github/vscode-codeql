@@ -107,6 +107,7 @@ import { QueryRunner } from './queryRunner';
 import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
 import { VariantAnalysisMonitor } from './remote-queries/variant-analysis-monitor';
 import { VariantAnalysis } from './remote-queries/shared/variant-analysis';
+import { VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository } from './remote-queries/gh-api/variant-analysis';
 
 /**
  * extension.ts
@@ -900,6 +901,15 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(
     commandRunner('codeQL.monitorVariantAnalysis', async (
       variantAnalysis: VariantAnalysis,
+      token: CancellationToken
+    ) => {
+      await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, token);
+    })
+  );
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.autoDownloadVariantAnalysisResult', async (
+      scannedRepo: ApiVariantAnalysisScannedRepository,
       token: CancellationToken
     ) => {
       await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, token);
