@@ -105,6 +105,8 @@ import { createInitialQueryInfo } from './run-queries-shared';
 import { LegacyQueryRunner } from './legacy-query-server/legacyRunner';
 import { QueryRunner } from './queryRunner';
 import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
+import { VariantAnalysisMonitor } from './remote-queries/variant-analysis-monitor';
+import { VariantAnalysis } from './remote-queries/shared/variant-analysis';
 
 /**
  * extension.ts
@@ -891,6 +893,16 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(
     commandRunner('codeQL.copyRepoList', async (queryId: string) => {
       await rqm.copyRemoteQueryRepoListToClipboard(queryId);
+    })
+  );
+
+  const variantAnalysisMonitor = new VariantAnalysisMonitor(ctx, logger);
+  ctx.subscriptions.push(
+    commandRunner('codeQL.monitorVariantAnalysis', async (
+      variantAnalysis: VariantAnalysis,
+      token: CancellationToken
+    ) => {
+      await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, token);
     })
   );
 

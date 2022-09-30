@@ -3,7 +3,7 @@ import * as React from 'react';
 import {
   VariantAnalysis as VariantAnalysisDomainModel,
   VariantAnalysisQueryLanguage,
-  VariantAnalysisRepoStatus,
+  VariantAnalysisRepoStatus, VariantAnalysisScannedRepositoryResult,
   VariantAnalysisStatus
 } from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisContainer } from './VariantAnalysisContainer';
@@ -29,7 +29,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
         fullName: 'octodemo/hello-world-1',
         private: false,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
+      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
     },
     {
       repository: {
@@ -37,7 +37,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
         fullName: 'octodemo/hello-world-2',
         private: false,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
+      analysisStatus: VariantAnalysisRepoStatus.Canceled,
     },
     {
       repository: {
@@ -45,7 +45,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
         fullName: 'octodemo/hello-world-3',
         private: false,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
+      analysisStatus: VariantAnalysisRepoStatus.TimedOut,
     },
     {
       repository: {
@@ -53,7 +53,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
         fullName: 'octodemo/hello-world-4',
         private: false,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
+      analysisStatus: VariantAnalysisRepoStatus.Failed,
     },
     {
       repository: {
@@ -61,7 +61,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
         fullName: 'octodemo/hello-world-5',
         private: false,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
+      analysisStatus: VariantAnalysisRepoStatus.InProgress,
     },
     {
       repository: {
@@ -69,7 +69,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
         fullName: 'octodemo/hello-world-6',
         private: false,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
+      analysisStatus: VariantAnalysisRepoStatus.InProgress,
     },
     {
       repository: {
@@ -106,7 +106,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
   ],
   skippedRepos: {
     notFoundRepos: {
-      repositoryCount: 2,
+      repositoryCount: 9999,
       repositories: [
         {
           fullName: 'octodemo/hello-globe'
@@ -121,19 +121,23 @@ const variantAnalysis: VariantAnalysisDomainModel = {
       repositories: [
         {
           id: 100,
-          fullName: 'octodemo/no-db-1'
+          fullName: 'octodemo/no-db-1',
+          private: false,
         },
         {
           id: 101,
-          fullName: 'octodemo/no-db-2'
+          fullName: 'octodemo/no-db-2',
+          private: true,
         },
         {
           id: 102,
-          fullName: 'octodemo/no-db-3'
+          fullName: 'octodemo/no-db-3',
+          private: true,
         },
         {
           id: 103,
-          fullName: 'octodemo/no-db-4'
+          fullName: 'octodemo/no-db-4',
+          private: false,
         }
       ]
     },
@@ -158,6 +162,42 @@ const variantAnalysis: VariantAnalysisDomainModel = {
   },
 };
 
+const repositoryResults: VariantAnalysisScannedRepositoryResult[] = [
+  {
+    repositoryId: 1,
+    rawResults: {
+      schema: {
+        name: '#select',
+        rows: 1,
+        columns: [
+          {
+            kind: 'i'
+          }
+        ]
+      },
+      resultSet: {
+        schema: {
+          name: '#select',
+          rows: 1,
+          columns: [
+            {
+              kind: 'i'
+            }
+          ]
+        },
+        rows: [
+          [
+            60688
+          ]
+        ]
+      },
+      fileLinkPrefix: 'https://github.com/octodemo/hello-world-1/blob/59a2a6c7d9dde7a6ecb77c2f7e8197d6925c143b',
+      sourceLocationPrefix: '/home/runner/work/bulk-builder/bulk-builder',
+      capped: false
+    }
+  }
+];
+
 function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
   if (variantAnalysis.actionsWorkflowRunId === undefined) {
     return <VariantAnalysisLoading />;
@@ -174,7 +214,10 @@ function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
         onExportResultsClick={() => console.log('Export results')}
         onViewLogsClick={() => console.log('View logs')}
       />
-      <VariantAnalysisOutcomePanels variantAnalysis={variantAnalysis} />
+      <VariantAnalysisOutcomePanels
+        variantAnalysis={variantAnalysis}
+        repositoryResults={repositoryResults}
+      />
     </>
   );
 }
