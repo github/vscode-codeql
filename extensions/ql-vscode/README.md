@@ -22,7 +22,7 @@ For information about other configurations, see the separate [CodeQL help](https
 
 ### Quick start: Using CodeQL
 
-1. [Import a database from LGTM](#importing-a-database-from-lgtm).
+1. [Import a database from GitHub](#importing-a-database-from-github).
 1. [Run a query](#running-a-query).
 
 ---
@@ -73,17 +73,18 @@ If you're using your own clone of the CodeQL standard libraries, you can do a `g
 
 You can find all the commands contributed by the extension in the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**) by typing `CodeQL`, many of them are also accessible through the interface, and via keyboard shortcuts.
 
-### Importing a database from LGTM
+### Importing a database from GitHub
 
-While you can use the [CodeQL CLI to create your own databases](https://codeql.github.com/docs/codeql-cli/creating-codeql-databases/), the simplest way to start is by downloading a database from LGTM.com.
+While you can use the [CodeQL CLI to create your own databases](https://codeql.github.com/docs/codeql-cli/creating-codeql-databases/), the simplest way to start is by downloading a database from GitHub.com.
 
-1. Open [LGTM.com](https://lgtm.com/#explore) in your browser.
-1. Search for a project you're interested in, for example [Apache Kafka](https://lgtm.com/projects/g/apache/kafka).
-1. Copy the link to that project, for example `https://lgtm.com/projects/g/apache/kafka`.
-1. In VS Code, open the Command Palette and choose the **CodeQL: Download Database from LGTM** command.
+1. Find a project that you're interested in on GitHub.com, for example [Apache Kafka](https://github.com/apache/kafka).
+1. Copy the link to that project, for example `https://github.com/apache/kafka`.
+1. In VS Code, open the Command Palette and choose the **CodeQL: Download Database from GitHub** command.
 1. Paste the link you copied earlier.
 1. Select the language for the database you want to download (only required if the project has databases for multiple languages).
 1. Once the CodeQL database has been imported, it is displayed in the Databases view.
+
+For more information, see [Choosing a database](https://codeql.github.com/docs/codeql-for-visual-studio-code/analyzing-your-projects/#choosing-a-database) on codeql.github.com.
 
 ### Running a query
 
