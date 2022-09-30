@@ -13,17 +13,18 @@ import {
   VariantAnalysisFailureReason
 } from '../../../remote-queries/gh-api/variant-analysis';
 import { createFailedMockApiResponse, createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
-import { VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
+import { VariantAnalysis, VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
 import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/scanned-repositories';
 import { processFailureReason } from '../../../remote-queries/variant-analysis-processor';
 import { Credentials } from '../../../authentication';
+import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
 
 describe('Variant Analysis Monitor', async function() {
   let sandbox: sinon.SinonSandbox;
   let mockGetVariantAnalysis: sinon.SinonStub;
   let cancellationToken: CancellationToken;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
-  let variantAnalysis: any;
+  let variantAnalysis: VariantAnalysis;
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
@@ -34,10 +35,7 @@ describe('Variant Analysis Monitor', async function() {
       isCancellationRequested: false
     } as unknown as CancellationToken;
 
-    variantAnalysis = {
-      id: 123,
-      controllerRepoId: 1,
-    };
+    variantAnalysis = createMockVariantAnalysis();
 
     try {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
@@ -93,13 +91,12 @@ describe('Variant Analysis Monitor', async function() {
 
       it('should mark as failed locally and stop monitoring', async () => {
         const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
-        variantAnalysis = result.variantAnalysis;
 
         expect(mockGetVariantAnalysis.calledOnce).to.be.true;
         expect(result.status).to.eql('Failed');
         expect(result.error).to.eql(`Variant Analysis has failed: ${mockFailedApiResponse.failure_reason}`);
-        expect(variantAnalysis.status).to.equal(VariantAnalysisStatus.Failed);
-        expect(variantAnalysis.failureReason).to.equal(processFailureReason(mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason));
+        expect(result?.variantAnalysis?.status).to.equal(VariantAnalysisStatus.Failed);
+        expect(result?.variantAnalysis?.failureReason).to.equal(processFailureReason(mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason));
       });
     });
 
