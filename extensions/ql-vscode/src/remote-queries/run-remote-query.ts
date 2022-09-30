@@ -1,4 +1,4 @@
-import { CancellationToken, Uri, window } from 'vscode';
+import { CancellationToken, commands, Uri, window } from 'vscode';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
@@ -26,8 +26,9 @@ import { QueryMetadata } from '../pure/interface-types';
 import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
 import * as ghApiClient from './gh-api/gh-api-client';
 import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
-import { parseVariantAnalysisQueryLanguage, VariantAnalysis, VariantAnalysisStatus, VariantAnalysisSubmission } from './shared/variant-analysis';
+import { parseVariantAnalysisQueryLanguage, VariantAnalysisSubmission } from './shared/variant-analysis';
 import { Repository } from './shared/repository';
+import { processVariantAnalysis } from './variant-analysis-processor';
 
 export interface QlPack {
   name: string;
@@ -270,28 +271,15 @@ export async function runRemoteQuery(
         variantAnalysisSubmission
       );
 
-      const variantAnalysis: VariantAnalysis = {
-        id: variantAnalysisResponse.id,
-        controllerRepoId: variantAnalysisResponse.controller_repo.id,
-        query: {
-          name: variantAnalysisSubmission.query.name,
-          filePath: variantAnalysisSubmission.query.filePath,
-          language: variantAnalysisSubmission.query.language,
-        },
-        databases: {
-          repositories: variantAnalysisSubmission.databases.repositories,
-          repositoryLists: variantAnalysisSubmission.databases.repositoryLists,
-          repositoryOwners: variantAnalysisSubmission.databases.repositoryOwners,
-        },
-        status: VariantAnalysisStatus.InProgress,
-      };
+      const processedVariantAnalysis = processVariantAnalysis(variantAnalysisSubmission, variantAnalysisResponse);
 
       // TODO: Remove once we have a proper notification
       void showAndLogInformationMessage('Variant analysis submitted for processing');
-      void logger.log(`Variant analysis:\n${JSON.stringify(variantAnalysis, null, 2)}`);
+      void logger.log(`Variant analysis:\n${JSON.stringify(processedVariantAnalysis, null, 2)}`);
 
-      return { variantAnalysis };
+      void commands.executeCommand('codeQL.monitorVariantAnalysis', processedVariantAnalysis);
 
+      return { variantAnalysis: processedVariantAnalysis };
     } else {
       const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, controllerRepo, base64Pack, dryRun);
 
@@ -361,9 +349,9 @@ async function runRemoteQueriesApiRequest(
   try {
     const octokit = await credentials.getOctokit();
     const response: OctokitResponse<QueriesResponse, number> = await octokit.request(
-      'POST /repos/:controllerRepo/code-scanning/codeql/queries',
+      'POST /repositories/:controllerRepoId/code-scanning/codeql/queries',
       {
-        controllerRepo: controllerRepo.fullName,
+        controllerRepoId: controllerRepo.id,
         data
       }
     );

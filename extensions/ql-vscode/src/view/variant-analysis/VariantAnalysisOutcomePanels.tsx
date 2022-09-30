@@ -2,13 +2,14 @@ import * as React from 'react';
 import styled from 'styled-components';
 import { VSCodeBadge, VSCodePanels, VSCodePanelTab, VSCodePanelView } from '@vscode/webview-ui-toolkit/react';
 import { formatDecimal } from '../../pure/number';
-import { VariantAnalysis } from '../../remote-queries/shared/variant-analysis';
+import { VariantAnalysis, VariantAnalysisScannedRepositoryResult } from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
 import { Alert } from '../common';
 import { VariantAnalysisSkippedRepositoriesTab } from './VariantAnalysisSkippedRepositoriesTab';
 
 export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
+  repositoryResults?: VariantAnalysisScannedRepositoryResult[];
 };
 
 const Tab = styled(VSCodePanelTab)`
@@ -32,7 +33,8 @@ const WarningsContainer = styled.div`
 `;
 
 export const VariantAnalysisOutcomePanels = ({
-  variantAnalysis
+  variantAnalysis,
+  repositoryResults,
 }: VariantAnalysisOutcomePanelProps) => {
   const noCodeqlDbRepos = variantAnalysis.skippedRepos?.noCodeqlDbRepos;
   const notFoundRepos = variantAnalysis.skippedRepos?.notFoundRepos;
@@ -62,7 +64,7 @@ export const VariantAnalysisOutcomePanels = ({
     return (
       <>
         {warnings}
-        <VariantAnalysisAnalyzedRepos />
+        <VariantAnalysisAnalyzedRepos variantAnalysis={variantAnalysis} repositoryResults={repositoryResults} />
       </>
     );
   }
@@ -87,7 +89,7 @@ export const VariantAnalysisOutcomePanels = ({
             <VSCodeBadge appearance="secondary">{formatDecimal(noCodeqlDbRepos.repositoryCount)}</VSCodeBadge>
           </Tab>
         )}
-        <VSCodePanelView><VariantAnalysisAnalyzedRepos /></VSCodePanelView>
+        <VSCodePanelView><VariantAnalysisAnalyzedRepos variantAnalysis={variantAnalysis} repositoryResults={repositoryResults} /></VSCodePanelView>
         {notFoundRepos?.repositoryCount &&
           <VSCodePanelView>
             <VariantAnalysisSkippedRepositoriesTab
