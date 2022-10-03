@@ -95,8 +95,8 @@ describe('Variant Analysis Monitor', async function() {
         expect(mockGetVariantAnalysis.calledOnce).to.be.true;
         expect(result.status).to.eql('Failed');
         expect(result.error).to.eql(`Variant Analysis has failed: ${mockFailedApiResponse.failure_reason}`);
-        expect(result?.variantAnalysis?.status).to.equal(VariantAnalysisStatus.Failed);
-        expect(result?.variantAnalysis?.failureReason).to.equal(processFailureReason(mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason));
+        expect(result.variantAnalysis?.status).to.equal(VariantAnalysisStatus.Failed);
+        expect(result.variantAnalysis?.failureReason).to.equal(processFailureReason(mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason));
       });
     });
 
