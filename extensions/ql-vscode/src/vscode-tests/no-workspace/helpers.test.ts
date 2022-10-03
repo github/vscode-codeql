@@ -154,7 +154,7 @@ describe('helpers', () => {
 
   });
 
-  describe('likely tests', () => {
+  describe('likely database tests', () => {
     let dir: tmp.DirResult;
     beforeEach(() => {
       dir = tmp.dirSync();
