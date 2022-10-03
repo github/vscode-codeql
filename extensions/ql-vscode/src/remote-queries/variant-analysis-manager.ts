@@ -32,7 +32,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   public async showView(variantAnalysisId: number): Promise<void> {
     if (!this.views.has(variantAnalysisId)) {
       // The view will register itself with the manager, so we don't need to do anything here.
-      new VariantAnalysisView(this.ctx, variantAnalysisId, this);
+      this.push(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
     }
 
     const variantAnalysisView = this.views.get(variantAnalysisId)!;
