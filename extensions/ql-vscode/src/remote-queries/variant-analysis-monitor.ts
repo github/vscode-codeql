@@ -1,4 +1,4 @@
-import { ExtensionContext, CancellationToken, commands } from 'vscode';
+import { ExtensionContext, CancellationToken, commands, EventEmitter } from 'vscode';
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import * as ghApiClient from './gh-api/gh-api-client';
@@ -9,17 +9,22 @@ import {
 } from './gh-api/variant-analysis';
 import { VariantAnalysisMonitorResult } from './shared/variant-analysis-monitor-result';
 import { processFailureReason, processUpdatedVariantAnalysis } from './variant-analysis-processor';
+import { DisposableObject } from '../pure/disposable-object';
 
-export class VariantAnalysisMonitor {
+export class VariantAnalysisMonitor extends DisposableObject {
   // With a sleep of 5 seconds, the maximum number of attempts takes
   // us to just over 2 days worth of monitoring.
   public static maxAttemptCount = 17280;
   public static sleepTime = 5000;
 
+  private readonly _onVariantAnalysisChange = this.push(new EventEmitter<VariantAnalysis | undefined>());
+  readonly onVariantAnalysisChange = this._onVariantAnalysisChange.event;
+
   constructor(
     private readonly extensionContext: ExtensionContext,
     private readonly logger: Logger
   ) {
+    super();
   }
 
   public async monitorVariantAnalysis(
@@ -60,6 +65,8 @@ export class VariantAnalysisMonitor {
       }
 
       variantAnalysis = processUpdatedVariantAnalysis(variantAnalysis, variantAnalysisSummary);
+
+      this._onVariantAnalysisChange.fire(variantAnalysis);
 
       void this.logger.log('****** Retrieved variant analysis' + JSON.stringify(variantAnalysisSummary));
 

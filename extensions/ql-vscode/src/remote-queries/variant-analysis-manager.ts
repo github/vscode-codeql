@@ -25,7 +25,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     logger: Logger,
   ) {
     super();
-    this.variantAnalysisMonitor = new VariantAnalysisMonitor(ctx, logger);
+    this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx, logger));
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
