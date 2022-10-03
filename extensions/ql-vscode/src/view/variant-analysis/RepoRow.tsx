@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { useCallback, useState } from 'react';
 import styled from 'styled-components';
-import { VSCodeBadge } from '@vscode/webview-ui-toolkit/react';
+import { VSCodeBadge, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
 import { isCompletedAnalysisRepoStatus, VariantAnalysisRepoStatus } from '../../remote-queries/shared/variant-analysis';
 import { formatDecimal } from '../../pure/number';
-import { Codicon, ErrorIcon, LoadingIcon, SuccessIcon } from '../common';
+import { Codicon, ErrorIcon, LoadingIcon, SuccessIcon, WarningIcon } from '../common';
 import { Repository } from '../../remote-queries/shared/repository';
 import { AnalysisAlert, AnalysisRawResults } from '../../remote-queries/shared/analysis-result';
 import { AnalyzedRepoItemContent } from './AnalyzedRepoItemContent';
@@ -31,19 +31,21 @@ const TitleContainer = styled.button`
   }
 `;
 
-const Visibility = styled.span`
+const VisibilityText = styled.span`
   font-size: 0.85em;
   color: var(--vscode-descriptionForeground);
 `;
 
-export type VariantAnalysisAnalyzedRepoItemProps = {
-  repository: Repository;
-  status: VariantAnalysisRepoStatus;
-  resultCount?: number;
-
-  interpretedResults?: AnalysisAlert[];
-  rawResults?: AnalysisRawResults;
+type VisibilityProps = {
+  isPrivate?: boolean;
 }
+
+const Visibility = ({ isPrivate }: VisibilityProps) => {
+  if (isPrivate === undefined) {
+    return null;
+  }
+  return <VisibilityText>{isPrivate ? 'private' : 'public'}</VisibilityText>;
+};
 
 const getErrorLabel = (status: VariantAnalysisRepoStatus.Failed | VariantAnalysisRepoStatus.TimedOut | VariantAnalysisRepoStatus.Canceled): string => {
   switch (status) {
@@ -56,35 +58,50 @@ const getErrorLabel = (status: VariantAnalysisRepoStatus.Failed | VariantAnalysi
   }
 };
 
-export const VariantAnalysisAnalyzedRepoItem = ({
+export type RepoRowProps = {
+  // Only fullName is required
+  repository: Partial<Repository> & Pick<Repository, 'fullName'>;
+  status?: VariantAnalysisRepoStatus;
+  resultCount?: number;
+
+  interpretedResults?: AnalysisAlert[];
+  rawResults?: AnalysisRawResults;
+}
+
+export const RepoRow = ({
   repository,
   status,
   resultCount,
   interpretedResults,
   rawResults,
-}: VariantAnalysisAnalyzedRepoItemProps) => {
+}: RepoRowProps) => {
   const [isExpanded, setExpanded] = useState(false);
 
   const toggleExpanded = useCallback(() => {
     setExpanded(oldIsExpanded => !oldIsExpanded);
   }, []);
 
-  const disabled = !isCompletedAnalysisRepoStatus(status);
+  const disabled = !status || !isCompletedAnalysisRepoStatus(status);
 
   return (
     <div>
       <TitleContainer onClick={toggleExpanded} disabled={disabled} aria-expanded={isExpanded}>
-        {isExpanded ? <ExpandCollapseCodicon name="chevron-down" label="Collapse" /> : <ExpandCollapseCodicon name="chevron-right" label="Expand" />}
+        <VSCodeCheckbox disabled />
+        {isExpanded ? <ExpandCollapseCodicon name="chevron-down" label="Collapse" /> :
+          <ExpandCollapseCodicon name="chevron-right" label="Expand" />}
         <VSCodeBadge>{resultCount === undefined ? '-' : formatDecimal(resultCount)}</VSCodeBadge>
         <span>{repository.fullName}</span>
-        <Visibility>{repository.private ? 'private' : 'public'}</Visibility>
+        <Visibility isPrivate={repository.private} />
         <span>
           {status === VariantAnalysisRepoStatus.Succeeded && <SuccessIcon />}
-          {(status === VariantAnalysisRepoStatus.Failed || status === VariantAnalysisRepoStatus.TimedOut || status === VariantAnalysisRepoStatus.Canceled) && <ErrorIcon label={getErrorLabel(status)} />}
+          {(status === VariantAnalysisRepoStatus.Failed || status === VariantAnalysisRepoStatus.TimedOut || status === VariantAnalysisRepoStatus.Canceled) &&
+            <ErrorIcon label={getErrorLabel(status)} />}
           {status === VariantAnalysisRepoStatus.InProgress && <LoadingIcon label="In progress" />}
+          {!status && <WarningIcon />}
         </span>
       </TitleContainer>
-      {isExpanded && <AnalyzedRepoItemContent status={status} interpretedResults={interpretedResults} rawResults={rawResults} />}
+      {isExpanded && status &&
+        <AnalyzedRepoItemContent status={status} interpretedResults={interpretedResults} rawResults={rawResults} />}
     </div>
   );
 };

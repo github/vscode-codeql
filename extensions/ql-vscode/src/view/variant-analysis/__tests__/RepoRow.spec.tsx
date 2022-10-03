@@ -1,16 +1,13 @@
 import * as React from 'react';
 import { render as reactRender, screen } from '@testing-library/react';
 import { VariantAnalysisRepoStatus } from '../../../remote-queries/shared/variant-analysis';
-import {
-  VariantAnalysisAnalyzedRepoItem,
-  VariantAnalysisAnalyzedRepoItemProps
-} from '../VariantAnalysisAnalyzedRepoItem';
 import userEvent from '@testing-library/user-event';
+import { RepoRow, RepoRowProps } from '../RepoRow';
 
-describe(VariantAnalysisAnalyzedRepoItem.name, () => {
-  const render = (props: Partial<VariantAnalysisAnalyzedRepoItemProps> = {}) => {
+describe(RepoRow.name, () => {
+  const render = (props: Partial<RepoRowProps> = {}) => {
     return reactRender(
-      <VariantAnalysisAnalyzedRepoItem
+      <RepoRow
         repository={{
           id: 1,
           fullName: 'octodemo/hello-world-1',
@@ -105,7 +102,17 @@ describe(VariantAnalysisAnalyzedRepoItem.name, () => {
     })).toBeEnabled();
   });
 
-  it('shows the repo as public', () => {
+  it('shows repository name', async () => {
+    render({
+      repository: {
+        fullName: 'octodemo/hello-world',
+      }
+    });
+
+    expect(screen.getByText('octodemo/hello-world')).toBeInTheDocument();
+  });
+
+  it('shows visibility when public', () => {
     render({
       repository: {
         id: 1,
@@ -117,7 +124,7 @@ describe(VariantAnalysisAnalyzedRepoItem.name, () => {
     expect(screen.getByText('public')).toBeInTheDocument();
   });
 
-  it('shows the repo as private', () => {
+  it('shows visibility when private', () => {
     render({
       repository: {
         id: 1,
@@ -127,6 +134,19 @@ describe(VariantAnalysisAnalyzedRepoItem.name, () => {
     });
 
     expect(screen.getByText('private')).toBeInTheDocument();
+  });
+
+  it('does not show visibility when unknown', () => {
+    render({
+      repository: {
+        id: undefined,
+        fullName: 'octodemo/hello-world-1',
+        private: undefined,
+      }
+    });
+
+    expect(screen.queryByText('public')).not.toBeInTheDocument();
+    expect(screen.queryByText('private')).not.toBeInTheDocument();
   });
 
   it('can expand the repo item', async () => {
@@ -142,5 +162,15 @@ describe(VariantAnalysisAnalyzedRepoItem.name, () => {
       expanded: true,
     });
     screen.getByText('Error: Timed out');
+  });
+
+  it('does not allow expanding the repo item when status is undefined', async () => {
+    render({
+      status: undefined,
+    });
+
+    expect(screen.getByRole('button', {
+      expanded: false
+    })).toBeDisabled();
   });
 });

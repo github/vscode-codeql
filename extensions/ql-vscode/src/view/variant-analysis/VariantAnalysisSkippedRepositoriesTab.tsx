@@ -2,7 +2,7 @@ import * as React from 'react';
 import styled from 'styled-components';
 import { VariantAnalysisSkippedRepositoryGroup } from '../../remote-queries/shared/variant-analysis';
 import { Alert } from '../common';
-import { VariantAnalysisSkippedRepositoryRow } from './VariantAnalysisSkippedRepositoryRow';
+import { RepoRow } from './RepoRow';
 
 export type VariantAnalysisSkippedRepositoriesTabProps = {
   alertTitle: string,
@@ -44,7 +44,7 @@ export const VariantAnalysisSkippedRepositoriesTab = ({
     <Container>
       {getSkipReasonAlert(alertTitle, alertMessage, skippedRepositoryGroup)}
       {skippedRepositoryGroup.repositories.map((repo) =>
-        <VariantAnalysisSkippedRepositoryRow key={`repo/${repo.fullName}`} repository={repo} />
+        <RepoRow key={`repo/${repo.fullName}`} repository={repo} />
       )}
     </Container>
   );

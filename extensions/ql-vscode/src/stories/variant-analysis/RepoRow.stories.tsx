@@ -3,16 +3,16 @@ import React from 'react';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import { VariantAnalysisContainer } from '../../view/variant-analysis/VariantAnalysisContainer';
-import { VariantAnalysisAnalyzedRepoItem } from '../../view/variant-analysis/VariantAnalysisAnalyzedRepoItem';
 import { VariantAnalysisRepoStatus } from '../../remote-queries/shared/variant-analysis';
 import { AnalysisAlert, AnalysisRawResults } from '../../remote-queries/shared/analysis-result';
 
 import analysesResults from '../remote-queries/data/analysesResultsMessage.json';
 import rawResults from '../remote-queries/data/rawResults.json';
+import { RepoRow } from '../../view/variant-analysis/RepoRow';
 
 export default {
-  title: 'Variant Analysis/Analyzed Repo Item',
-  component: VariantAnalysisAnalyzedRepoItem,
+  title: 'Variant Analysis/Repo Row',
+  component: RepoRow,
   decorators: [
     (Story) => (
       <VariantAnalysisContainer>
@@ -20,10 +20,10 @@ export default {
       </VariantAnalysisContainer>
     )
   ],
-} as ComponentMeta<typeof VariantAnalysisAnalyzedRepoItem>;
+} as ComponentMeta<typeof RepoRow>;
 
-const Template: ComponentStory<typeof VariantAnalysisAnalyzedRepoItem> = (args) => (
-  <VariantAnalysisAnalyzedRepoItem {...args} />
+const Template: ComponentStory<typeof RepoRow> = (args) => (
+  <RepoRow {...args} />
 );
 
 export const Pending = Template.bind({});
@@ -76,4 +76,27 @@ RawResults.args = {
   interpretedResults: undefined,
   resultCount: 1,
   rawResults: rawResults as unknown as AnalysisRawResults,
+};
+
+export const SkippedOnlyFullName = Template.bind({});
+SkippedOnlyFullName.args = {
+  repository: {
+    fullName: 'octodemo/hello-globe',
+  }
+};
+
+export const SkippedPublic = Template.bind({});
+SkippedPublic.args = {
+  repository: {
+    fullName: 'octodemo/hello-globe',
+    private: false,
+  }
+};
+
+export const SkippedPrivate = Template.bind({});
+SkippedPrivate.args = {
+  repository: {
+    fullName: 'octodemo/hello-globe',
+    private: true,
+  }
 };
