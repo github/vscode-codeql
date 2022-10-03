@@ -23,7 +23,20 @@ export function processVariantAnalysis(
   submission: VariantAnalysisSubmission,
   response: ApiVariantAnalysis
 ): VariantAnalysis {
+  return processUpdatedVariantAnalysis({
+    query: {
+      name: submission.query.name,
+      filePath: submission.query.filePath,
+      language: submission.query.language
+    },
+    databases: submission.databases,
+  }, response);
+}
 
+export function processUpdatedVariantAnalysis(
+  previousVariantAnalysis: Pick<VariantAnalysis, 'query' | 'databases'>,
+  response: ApiVariantAnalysis
+): VariantAnalysis {
   let scannedRepos: VariantAnalysisScannedRepository[] = [];
   let skippedRepos: VariantAnalysisSkippedRepositories = {};
 
@@ -39,11 +52,11 @@ export function processVariantAnalysis(
     id: response.id,
     controllerRepoId: response.controller_repo.id,
     query: {
-      name: submission.query.name,
-      filePath: submission.query.filePath,
-      language: submission.query.language
+      name: previousVariantAnalysis.query.name,
+      filePath: previousVariantAnalysis.query.filePath,
+      language: previousVariantAnalysis.query.language
     },
-    databases: submission.databases,
+    databases: previousVariantAnalysis.databases,
     status: processApiStatus(response.status),
     actionsWorkflowRunId: response.actions_workflow_run_id,
     scannedRepos: scannedRepos,

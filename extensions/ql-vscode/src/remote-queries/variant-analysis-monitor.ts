@@ -8,7 +8,7 @@ import {
   VariantAnalysis as VariantAnalysisApiResponse
 } from './gh-api/variant-analysis';
 import { VariantAnalysisMonitorResult } from './shared/variant-analysis-monitor-result';
-import { processFailureReason } from './variant-analysis-processor';
+import { processFailureReason, processUpdatedVariantAnalysis } from './variant-analysis-processor';
 
 export class VariantAnalysisMonitor {
   // With a sleep of 5 seconds, the maximum number of attempts takes
@@ -58,6 +58,8 @@ export class VariantAnalysisMonitor {
           variantAnalysis: variantAnalysis
         };
       }
+
+      variantAnalysis = processUpdatedVariantAnalysis(variantAnalysis, variantAnalysisSummary);
 
       void this.logger.log('****** Retrieved variant analysis' + JSON.stringify(variantAnalysisSummary));
 
