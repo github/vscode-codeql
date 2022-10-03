@@ -8,7 +8,7 @@ export function createMockSkippedRepos(): VariantAnalysisSkippedRepositories {
   return {
     accessMismatchRepos: createMockSkippedRepoGroup(),
     noCodeqlDbRepos: createMockSkippedRepoGroup(),
-    notFoundRepos: createMockSkippedRepoGroup(),
+    notFoundRepos: createMockNotFoundRepoGroup(),
     overLimitRepos: createMockSkippedRepoGroup()
   };
 }
@@ -23,6 +23,20 @@ export function createMockSkippedRepoGroup(): VariantAnalysisSkippedRepositoryGr
       },
       {
         id: faker.datatype.number(),
+        fullName: 'github/' + faker.random.word(),
+      }
+    ]
+  };
+}
+
+export function createMockNotFoundRepoGroup(): VariantAnalysisSkippedRepositoryGroup {
+  return {
+    repositoryCount: 2,
+    repositories: [
+      {
+        fullName: 'github/' + faker.random.word(),
+      },
+      {
         fullName: 'github/' + faker.random.word(),
       }
     ]
