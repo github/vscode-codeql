@@ -46,25 +46,25 @@ describe('Variant Analysis processor', function() {
         'accessMismatchRepos': {
           'repositories': [
             {
-              'fullName': access_mismatch_repos.repositories[0].full_name,
-              'id': access_mismatch_repos.repositories[0].id
+              'fullName': access_mismatch_repos?.repositories[0].full_name,
+              'id': access_mismatch_repos?.repositories[0].id
             },
             {
-              'fullName': access_mismatch_repos.repositories[1].full_name,
-              'id': access_mismatch_repos.repositories[1].id
+              'fullName': access_mismatch_repos?.repositories[1].full_name,
+              'id': access_mismatch_repos?.repositories[1].id
             }
           ],
-          'repositoryCount': access_mismatch_repos.repository_count
+          'repositoryCount': access_mismatch_repos?.repository_count
         },
         'noCodeqlDbRepos': {
           'repositories': [
             {
-              'fullName': no_codeql_db_repos.repositories[0].full_name,
-              'id': no_codeql_db_repos.repositories[0].id
+              'fullName': no_codeql_db_repos?.repositories[0].full_name,
+              'id': no_codeql_db_repos?.repositories[0].id
             },
             {
-              'fullName': no_codeql_db_repos.repositories[1].full_name,
-              'id': no_codeql_db_repos.repositories[1].id,
+              'fullName': no_codeql_db_repos?.repositories[1].full_name,
+              'id': no_codeql_db_repos?.repositories[1].id,
             }
           ],
           'repositoryCount': 2
@@ -72,26 +72,26 @@ describe('Variant Analysis processor', function() {
         'notFoundRepos': {
           'repositories': [
             {
-              'fullName': not_found_repo_nwos.repository_full_names[0]
+              'fullName': not_found_repo_nwos?.repository_full_names[0]
             },
             {
-              'fullName': not_found_repo_nwos.repository_full_names[1]
+              'fullName': not_found_repo_nwos?.repository_full_names[1]
             }
           ],
-          'repositoryCount': not_found_repo_nwos.repository_count
+          'repositoryCount': not_found_repo_nwos?.repository_count
         },
         'overLimitRepos': {
           'repositories': [
             {
-              'fullName': over_limit_repos.repositories[0].full_name,
-              'id': over_limit_repos.repositories[0].id
+              'fullName': over_limit_repos?.repositories[0].full_name,
+              'id': over_limit_repos?.repositories[0].id
             },
             {
-              'fullName': over_limit_repos.repositories[1].full_name,
-              'id': over_limit_repos.repositories[1].id
+              'fullName': over_limit_repos?.repositories[1].full_name,
+              'id': over_limit_repos?.repositories[1].id
             }
           ],
-          'repositoryCount': over_limit_repos.repository_count
+          'repositoryCount': over_limit_repos?.repository_count
         }
       }
     });

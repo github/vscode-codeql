@@ -100,7 +100,11 @@ function processSkippedRepositories(
   };
 }
 
-function processRepoGroup(repoGroup: ApiVariantAnalysisSkippedRepositoryGroup): VariantAnalysisSkippedRepositoryGroup {
+function processRepoGroup(repoGroup: ApiVariantAnalysisSkippedRepositoryGroup | undefined): VariantAnalysisSkippedRepositoryGroup | undefined {
+  if (!repoGroup) {
+    return undefined;
+  }
+
   const repos = repoGroup.repositories.map(repo => {
     return {
       id: repo.id,
@@ -114,7 +118,11 @@ function processRepoGroup(repoGroup: ApiVariantAnalysisSkippedRepositoryGroup): 
   };
 }
 
-function processNotFoundRepoGroup(repoGroup: ApiVariantAnalysisNotFoundRepositoryGroup): VariantAnalysisSkippedRepositoryGroup {
+function processNotFoundRepoGroup(repoGroup: ApiVariantAnalysisNotFoundRepositoryGroup | undefined): VariantAnalysisSkippedRepositoryGroup | undefined {
+  if (!repoGroup) {
+    return undefined;
+  }
+
   const repo_full_names = repoGroup.repository_full_names.map(nwo => {
     return {
       fullName: nwo

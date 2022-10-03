@@ -76,8 +76,8 @@ export interface VariantAnalysisRepoTask {
 }
 
 export interface VariantAnalysisSkippedRepositories {
-  access_mismatch_repos: VariantAnalysisSkippedRepositoryGroup,
-  not_found_repo_nwos: VariantAnalysisNotFoundRepositoryGroup,
-  no_codeql_db_repos: VariantAnalysisSkippedRepositoryGroup,
-  over_limit_repos: VariantAnalysisSkippedRepositoryGroup
+  access_mismatch_repos?: VariantAnalysisSkippedRepositoryGroup,
+  not_found_repo_nwos?: VariantAnalysisNotFoundRepositoryGroup,
+  no_codeql_db_repos?: VariantAnalysisSkippedRepositoryGroup,
+  over_limit_repos?: VariantAnalysisSkippedRepositoryGroup
 }
