@@ -26,6 +26,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   ) {
     super();
     this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx, logger));
+    this.variantAnalysisMonitor.onVariantAnalysisChange(this.onVariantAnalysisUpdated.bind(this));
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
@@ -49,6 +50,19 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
   public unregisterView(view: VariantAnalysisView): void {
     this.views.delete(view.variantAnalysisId);
+  }
+
+  private async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
+    if (!variantAnalysis) {
+      return;
+    }
+
+    const view = this.views.get(variantAnalysis.id);
+    if (!view) {
+      return;
+    }
+
+    await view.updateView(variantAnalysis);
   }
 
   public async monitorVariantAnalysis(
