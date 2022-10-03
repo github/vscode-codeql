@@ -750,7 +750,7 @@ export class DatabaseUI extends DisposableObject {
    * Perform some heuristics to ensure a proper database location is chosen.
    *
    * 1. If the selected URI to add is a file, choose the containing directory
-   * 2. If the selected URI is a directory matching db-*, choose the containing directory
+   * 2. If the selected URI appears to be a db language folder, choose the containing directory
    * 3. choose the current directory
    *
    * @param uri a URI that is a database folder or inside it
@@ -763,7 +763,7 @@ export class DatabaseUI extends DisposableObject {
       dbPath = path.dirname(dbPath);
     }
 
-    if (isLikelyDbLanguageFolder(dbPath)) {
+    if (await isLikelyDbLanguageFolder(dbPath)) {
       dbPath = path.dirname(dbPath);
     }
     return Uri.file(dbPath);

@@ -21,6 +21,7 @@ import { DirResult } from 'tmp';
 import {
   getInitialQueryContents,
   InvocationRateLimiter,
+  isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
   showBinaryChoiceDialog,
   showBinaryChoiceWithUrlDialog,
@@ -150,11 +151,65 @@ describe('helpers', () => {
     it('should get initial query contents when nothing is known', () => {
       expect(getInitialQueryContents('', 'hucairz')).to.eq('select ""');
     });
+
   });
 
-  it('should find likely db language folders', () => {
-    expect(isLikelyDbLanguageFolder('db-javascript')).to.be.true;
-    expect(isLikelyDbLanguageFolder('dbnot-a-db')).to.be.false;
+  describe('likely tests', () => {
+    let dir: tmp.DirResult;
+    beforeEach(() => {
+      dir = tmp.dirSync();
+    });
+
+    afterEach(() => {
+      dir.removeCallback();
+    });
+
+    it('should likely be a database root: codeql-database.yml', async () => {
+      const dbFolder = path.join(dir.name, 'db');
+      fs.mkdirSync(dbFolder);
+      fs.mkdirSync(path.join(dbFolder, 'db-python'));
+      fs.writeFileSync(path.join(dbFolder, 'codeql-database.yml'), '', 'utf8');
+
+      expect(await isLikelyDatabaseRoot(dbFolder)).to.be.true;
+    });
+
+    it('should likely be a database root: .dbinfo', async () => {
+      const dbFolder = path.join(dir.name, 'db');
+      fs.mkdirSync(dbFolder);
+      fs.mkdirSync(path.join(dbFolder, 'db-python'));
+      fs.writeFileSync(path.join(dbFolder, '.dbinfo'), '', 'utf8');
+
+      expect(await isLikelyDatabaseRoot(dbFolder)).to.be.true;
+    });
+
+    it('should likely NOT be a database root: empty dir', async () => {
+      const dbFolder = path.join(dir.name, 'db');
+      fs.mkdirSync(dbFolder);
+      fs.mkdirSync(path.join(dbFolder, 'db-python'));
+
+      expect(await isLikelyDatabaseRoot(dbFolder)).to.be.false;
+    });
+
+    it('should likely NOT be a database root: no db language folder', async () => {
+      const dbFolder = path.join(dir.name, 'db');
+      fs.mkdirSync(dbFolder);
+      fs.writeFileSync(path.join(dbFolder, '.dbinfo'), '', 'utf8');
+
+      expect(await isLikelyDatabaseRoot(dbFolder)).to.be.false;
+    });
+
+    it('should find likely db language folder', async () => {
+      const dbFolder = path.join(dir.name, 'db-python');
+      fs.mkdirSync(dbFolder);
+      fs.mkdirSync(path.join(dbFolder, 'db-python'));
+      fs.writeFileSync(path.join(dbFolder, 'codeql-database.yml'), '', 'utf8');
+
+      // not a db folder since there is a db-python folder inside this one
+      expect(await isLikelyDbLanguageFolder(dbFolder)).to.be.false;
+
+      const nestedDbPythonFolder = path.join(dbFolder, 'db-python');
+      expect(await isLikelyDbLanguageFolder(nestedDbPythonFolder)).to.be.true;
+    });
   });
 
   class MockExtensionContext implements ExtensionContext {
