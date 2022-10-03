@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
   VariantAnalysisScannedRepository,
@@ -15,19 +16,20 @@ export function createMockApiResponse(
   scannedRepos: VariantAnalysisScannedRepository[] = createMockScannedRepos(),
   skippedRepos: VariantAnalysisSkippedRepositories = createMockSkippedRepos()
 ): VariantAnalysisApiResponse {
+
   const variantAnalysis: VariantAnalysisApiResponse = {
-    id: 123,
+    id: faker.datatype.number(),
     controller_repo: {
-      id: 456,
+      id: faker.datatype.number(),
       name: 'pickles',
       full_name: 'github/pickles',
       private: false,
     },
-    actor_id: 123,
+    actor_id: faker.datatype.number(),
     query_language: VariantAnalysisQueryLanguage.Javascript,
     query_pack_url: 'https://example.com/foo',
     status: status,
-    actions_workflow_run_id: 456,
+    actions_workflow_run_id: faker.datatype.number(),
     scanned_repositories: scannedRepos,
     skipped_repositories: skippedRepos
   };

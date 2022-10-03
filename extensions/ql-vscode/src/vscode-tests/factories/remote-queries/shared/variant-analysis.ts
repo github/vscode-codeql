@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import {
   VariantAnalysis,
   VariantAnalysisQueryLanguage,
@@ -14,8 +15,8 @@ export function createMockVariantAnalysis(
   skippedRepos: VariantAnalysisSkippedRepositories = createMockSkippedRepos()
 ): VariantAnalysis {
   const variantAnalysis: VariantAnalysis = {
-    id: 123,
-    controllerRepoId: 456,
+    id: faker.datatype.number(),
+    controllerRepoId: faker.datatype.number(),
     query: {
       name: 'a-query-name',
       filePath: 'a-query-file-path',
@@ -25,7 +26,7 @@ export function createMockVariantAnalysis(
       repositories: ['1', '2', '3'],
     },
     status: status,
-    actionsWorkflowRunId: 789,
+    actionsWorkflowRunId: faker.datatype.number(),
     scannedRepos: scannedRepos,
     skippedRepos: skippedRepos
   };
