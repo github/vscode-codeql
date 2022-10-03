@@ -2,16 +2,20 @@ import { ExtensionContext, ViewColumn } from 'vscode';
 import { AbstractWebview, WebviewPanelConfig } from '../abstract-webview';
 import { WebviewMessage } from '../interface-utils';
 import { logger } from '../logging';
+import { VariantAnalysisViewInterface, VariantAnalysisViewManager } from './variant-analysis-view-manager';
 
-export class VariantAnalysisView extends AbstractWebview<WebviewMessage, WebviewMessage> {
+export class VariantAnalysisView extends AbstractWebview<WebviewMessage, WebviewMessage> implements VariantAnalysisViewInterface {
   public constructor(
     ctx: ExtensionContext,
-    private readonly variantAnalysisId: number,
+    public readonly variantAnalysisId: number,
+    private readonly manager: VariantAnalysisViewManager<VariantAnalysisView>,
   ) {
     super(ctx);
+
+    manager.registerView(this);
   }
 
-  public openView() {
+  public async openView() {
     this.getPanel().reveal(undefined, true);
   }
 
@@ -26,7 +30,7 @@ export class VariantAnalysisView extends AbstractWebview<WebviewMessage, Webview
   }
 
   protected onPanelDispose(): void {
-    // Nothing to dispose currently.
+    this.manager.unregisterView(this);
   }
 
   protected async onMessage(msg: WebviewMessage): Promise<void> {
