@@ -12,7 +12,7 @@ import {
   showAndLogInformationMessage,
   tryGetQueryMetadata,
   pluralize,
-  tmpDir
+  tmpDir,
 } from '../helpers';
 import { Credentials } from '../authentication';
 import * as cli from '../cli';
@@ -273,10 +273,11 @@ export async function runRemoteQuery(
 
       const processedVariantAnalysis = processVariantAnalysis(variantAnalysisSubmission, variantAnalysisResponse);
 
-      // TODO: Remove once we have a proper notification
-      void showAndLogInformationMessage('Variant analysis submitted for processing');
       void logger.log(`Variant analysis:\n${JSON.stringify(processedVariantAnalysis, null, 2)}`);
 
+      void showAndLogInformationMessage(`Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`);
+
+      void commands.executeCommand('codeQL.openVariantAnalysisView', processedVariantAnalysis.id);
       void commands.executeCommand('codeQL.monitorVariantAnalysis', processedVariantAnalysis);
 
       return { variantAnalysis: processedVariantAnalysis };
