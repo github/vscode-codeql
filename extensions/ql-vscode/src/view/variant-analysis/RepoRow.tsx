@@ -76,6 +76,7 @@ export type RepoRowProps = {
 export const RepoRow = ({
   repository,
   status,
+  downloadStatus,
   resultCount,
   interpretedResults,
   rawResults,
@@ -104,6 +105,7 @@ export const RepoRow = ({
           {status === VariantAnalysisRepoStatus.InProgress && <LoadingIcon label="In progress" />}
           {!status && <WarningIcon />}
         </span>
+        {downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.InProgress && <LoadingIcon label="Downloading" />}
       </TitleContainer>
       {isExpanded && status &&
         <AnalyzedRepoItemContent status={status} interpretedResults={interpretedResults} rawResults={rawResults} />}
