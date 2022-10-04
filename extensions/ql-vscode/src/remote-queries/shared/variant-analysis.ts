@@ -82,6 +82,18 @@ export interface VariantAnalysisSkippedRepository {
   private?: boolean,
 }
 
+export enum VariantAnalysisScannedRepositoryDownloadStatus {
+  Pending = 'pending',
+  InProgress = 'inProgress',
+  Succeeded = 'succeeded',
+  Failed = 'failed',
+}
+
+export interface VariantAnalysisScannedRepositoryState {
+  repositoryId: number;
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus;
+}
+
 export interface VariantAnalysisScannedRepositoryResult {
   repositoryId: number;
   interpretedResults?: AnalysisAlert[];

@@ -11,7 +11,11 @@ import {
   VariantAnalysisRepoTask,
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
 } from './gh-api/variant-analysis';
-import { VariantAnalysis } from './shared/variant-analysis';
+import {
+  VariantAnalysis,
+  VariantAnalysisScannedRepositoryDownloadStatus,
+  VariantAnalysisScannedRepositoryState
+} from './shared/variant-analysis';
 import { getErrorMessage } from '../pure/helpers-pure';
 import { VariantAnalysisView } from './variant-analysis-view';
 import { VariantAnalysisViewManager } from './variant-analysis-view-manager';
@@ -52,17 +56,20 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.views.delete(view.variantAnalysisId);
   }
 
+  public getView(variantAnalysisId: number): VariantAnalysisView | undefined {
+    return this.views.get(variantAnalysisId);
+  }
+
   private async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
     if (!variantAnalysis) {
       return;
     }
 
-    const view = this.views.get(variantAnalysis.id);
-    if (!view) {
-      return;
-    }
+    await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
+  }
 
-    await view.updateView(variantAnalysis);
+  private async onRepoStateUpdated(variantAnalysisId: number, repoState: VariantAnalysisScannedRepositoryState): Promise<void> {
+    await this.getView(variantAnalysisId)?.updateRepoState(repoState);
   }
 
   public async monitorVariantAnalysis(
@@ -77,11 +84,19 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     variantAnalysisSummary: VariantAnalysisApiResponse,
     cancellationToken: CancellationToken
   ): Promise<void> {
+    const repoState = {
+      repositoryId: scannedRepo.repository.id,
+      downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Pending,
+    };
+
+    await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
 
     const credentials = await Credentials.initialize(this.ctx);
     if (!credentials) { throw Error('Error authenticating with GitHub'); }
 
     if (cancellationToken && cancellationToken.isCancellationRequested) {
+      repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Failed;
+      await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
       return;
     }
 
@@ -93,10 +108,16 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
         variantAnalysisSummary.id,
         scannedRepo.repository.id
       );
+    } catch (e) {
+      repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Failed;
+      await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
+      throw new Error(`Could not download the results for variant analysis with id: ${variantAnalysisSummary.id}. Error: ${getErrorMessage(e)}`);
     }
-    catch (e) { throw new Error(`Could not download the results for variant analysis with id: ${variantAnalysisSummary.id}. Error: ${getErrorMessage(e)}`); }
 
     if (repoTask.artifact_url) {
+      repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.InProgress;
+      await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
+
       const resultDirectory = path.join(
         this.ctx.globalStorageUri.fsPath,
         'variant-analyses',
@@ -117,5 +138,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       fs.mkdirSync(resultDirectory, { recursive: true });
       await fs.writeFile(storagePath, JSON.stringify(result, null, 2), 'utf8');
     }
+
+    repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
+    await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
   }
 }
