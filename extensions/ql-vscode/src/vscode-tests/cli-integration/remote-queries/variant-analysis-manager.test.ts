@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { CancellationToken, extensions } from 'vscode';
+import { CancellationTokenSource, extensions } from 'vscode';
 import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
@@ -19,7 +19,7 @@ import { createMockVariantAnalysisRepoTask } from '../../factories/remote-querie
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
-  let cancellationToken: CancellationToken;
+  let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
   let variantAnalysis: VariantAnalysisApiResponse;
   let scannedRepos: ApiVariantAnalysisScannedRepository[];
@@ -33,9 +33,14 @@ describe('Variant Analysis Manager', async function() {
     sandbox.stub(fs, 'mkdirSync');
     sandbox.stub(fs, 'writeFile');
 
-    cancellationToken = {
-      isCancellationRequested: false
-    } as unknown as CancellationToken;
+    cancellationTokenSource = {
+      token: {
+        isCancellationRequested: false,
+        onCancellationRequested: sandbox.stub()
+      },
+      cancel: sandbox.stub(),
+      dispose: sandbox.stub()
+    };
 
     scannedRepos = createMockScannedRepos();
     variantAnalysis = createMockApiResponse('in_progress', scannedRepos);
@@ -60,7 +65,7 @@ describe('Variant Analysis Manager', async function() {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationToken
+          cancellationTokenSource.token
         );
       } catch (error: any) {
         expect(error.message).to.equal('Error authenticating with GitHub');
@@ -94,7 +99,7 @@ describe('Variant Analysis Manager', async function() {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationToken
+          cancellationTokenSource.token
         );
 
         expect(getVariantAnalysisRepoResultStub.notCalled).to.be.true;
@@ -111,12 +116,12 @@ describe('Variant Analysis Manager', async function() {
       });
 
       it('should return early if variant analysis is cancelled', async () => {
-        cancellationToken.isCancellationRequested = true;
+        cancellationTokenSource.token.isCancellationRequested = true;
 
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationToken
+          cancellationTokenSource.token
         );
 
         expect(getVariantAnalysisRepoStub.notCalled).to.be.true;
@@ -126,7 +131,7 @@ describe('Variant Analysis Manager', async function() {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationToken
+          cancellationTokenSource.token
         );
 
         expect(getVariantAnalysisRepoStub.calledOnce).to.be.true;
@@ -136,7 +141,7 @@ describe('Variant Analysis Manager', async function() {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationToken
+          cancellationTokenSource.token
         );
 
         expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
@@ -146,7 +151,7 @@ describe('Variant Analysis Manager', async function() {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationToken
+          cancellationTokenSource.token
         );
 
         expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;

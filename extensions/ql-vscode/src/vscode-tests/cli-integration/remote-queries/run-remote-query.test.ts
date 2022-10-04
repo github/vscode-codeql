@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai';
 import * as path from 'path';
 import * as sinon from 'sinon';
-import { CancellationToken, extensions, QuickPickItem, Uri, window } from 'vscode';
+import { CancellationTokenSource, extensions, QuickPickItem, Uri, window } from 'vscode';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import * as yaml from 'js-yaml';
@@ -32,7 +32,7 @@ describe('Remote queries', function() {
 
   let cli: CodeQLCliServer;
   let credentials: Credentials = {} as unknown as Credentials;
-  let token: CancellationToken;
+  let cancellationTokenSource: CancellationTokenSource;
   let progress: sinon.SinonSpy;
   let showQuickPickSpy: sinon.SinonStub;
   let getRepositoryFromNwoStub: sinon.SinonStub;
@@ -55,9 +55,15 @@ describe('Remote queries', function() {
       this.skip();
     }
     credentials = {} as unknown as Credentials;
-    token = {
-      isCancellationRequested: false
-    } as unknown as CancellationToken;
+
+    cancellationTokenSource = {
+      token: {
+        isCancellationRequested: false,
+        onCancellationRequested: sandbox.stub()
+      },
+      cancel: sandbox.stub(),
+      dispose: sandbox.stub()
+    };
 
     progress = sandbox.spy();
     // Should not have asked for a language
@@ -88,7 +94,7 @@ describe('Remote queries', function() {
     it('should run a remote query that is part of a qlpack', async () => {
       const fileUri = getFile('data-remote-qlpack/in-pack.ql');
 
-      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, cancellationTokenSource.token);
       expect(querySubmissionResult).to.be.ok;
       const queryPackRootDir = querySubmissionResult!.queryDirPath!;
       printDirectoryContents(queryPackRootDir);
@@ -149,7 +155,7 @@ describe('Remote queries', function() {
     it('should run a remote query that is not part of a qlpack', async () => {
       const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
-      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, cancellationTokenSource.token);
       expect(querySubmissionResult).to.be.ok;
       const queryPackRootDir = querySubmissionResult!.queryDirPath!;
 
@@ -212,7 +218,7 @@ describe('Remote queries', function() {
     it('should run a remote query that is nested inside a qlpack', async () => {
       const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
 
-      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, cancellationTokenSource.token);
       expect(querySubmissionResult).to.be.ok;
       const queryPackRootDir = querySubmissionResult!.queryDirPath!;
 
@@ -274,9 +280,9 @@ describe('Remote queries', function() {
     it('should cancel a run before uploading', async () => {
       const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
-      const promise = runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      const promise = runRemoteQuery(cli, credentials, fileUri, true, progress, cancellationTokenSource.token);
 
-      token.isCancellationRequested = true;
+      cancellationTokenSource.token.isCancellationRequested = true;
 
       try {
         await promise;
@@ -300,7 +306,7 @@ describe('Remote queries', function() {
     it('should run a variant analysis that is part of a qlpack', async () => {
       const fileUri = getFile('data-remote-qlpack/in-pack.ql');
 
-      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, cancellationTokenSource.token);
       expect(querySubmissionResult).to.be.ok;
       const variantAnalysis = querySubmissionResult!.variantAnalysis!;
       expect(variantAnalysis.id).to.be.equal(mockApiResponse.id);
@@ -313,7 +319,7 @@ describe('Remote queries', function() {
     it('should run a remote query that is not part of a qlpack', async () => {
       const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
-      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, cancellationTokenSource.token);
       expect(querySubmissionResult).to.be.ok;
       const variantAnalysis = querySubmissionResult!.variantAnalysis!;
       expect(variantAnalysis.id).to.be.equal(mockApiResponse.id);
@@ -326,7 +332,7 @@ describe('Remote queries', function() {
     it('should run a remote query that is nested inside a qlpack', async () => {
       const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
 
-      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, cancellationTokenSource.token);
       expect(querySubmissionResult).to.be.ok;
       const variantAnalysis = querySubmissionResult!.variantAnalysis!;
       expect(variantAnalysis.id).to.be.equal(mockApiResponse.id);
@@ -339,9 +345,9 @@ describe('Remote queries', function() {
     it('should cancel a run before uploading', async () => {
       const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
-      const promise = runRemoteQuery(cli, credentials, fileUri, true, progress, token);
+      const promise = runRemoteQuery(cli, credentials, fileUri, true, progress, cancellationTokenSource.token);
 
-      token.isCancellationRequested = true;
+      cancellationTokenSource.token.isCancellationRequested = true;
 
       try {
         await promise;

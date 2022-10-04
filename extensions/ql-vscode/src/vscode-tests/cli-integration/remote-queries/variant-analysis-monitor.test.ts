@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { CancellationToken, extensions } from 'vscode';
+import { CancellationTokenSource, extensions } from 'vscode';
 import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
@@ -22,7 +22,7 @@ import { createMockVariantAnalysis } from '../../factories/remote-queries/shared
 describe('Variant Analysis Monitor', async function() {
   let sandbox: sinon.SinonSandbox;
   let mockGetVariantAnalysis: sinon.SinonStub;
-  let cancellationToken: CancellationToken;
+  let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
   let variantAnalysis: VariantAnalysis;
 
@@ -31,9 +31,14 @@ describe('Variant Analysis Monitor', async function() {
     sandbox.stub(logger, 'log');
     sandbox.stub(config, 'isVariantAnalysisLiveResultsEnabled').returns(false);
 
-    cancellationToken = {
-      isCancellationRequested: false
-    } as unknown as CancellationToken;
+    cancellationTokenSource = {
+      token: {
+        isCancellationRequested: false,
+        onCancellationRequested: sandbox.stub()
+      },
+      cancel: sandbox.stub(),
+      dispose: sandbox.stub()
+    };
 
     variantAnalysis = createMockVariantAnalysis();
 
@@ -56,7 +61,7 @@ describe('Variant Analysis Monitor', async function() {
 
     it('should return early if credentials are wrong', async () => {
       try {
-        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
+        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
       } catch (error: any) {
         expect(error.message).to.equal('Error authenticating with GitHub');
       }
@@ -74,9 +79,9 @@ describe('Variant Analysis Monitor', async function() {
     });
 
     it('should return early if variant analysis is cancelled', async () => {
-      cancellationToken.isCancellationRequested = true;
+      cancellationTokenSource.token.isCancellationRequested = true;
 
-      const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
+      const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
       expect(result).to.eql({ status: 'Cancelled', error: 'Variant Analysis was canceled.' });
     });
@@ -90,7 +95,7 @@ describe('Variant Analysis Monitor', async function() {
       });
 
       it('should mark as failed locally and stop monitoring', async () => {
-        const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
+        const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
         expect(mockGetVariantAnalysis.calledOnce).to.be.true;
         expect(result.status).to.eql('Failed');
@@ -112,7 +117,7 @@ describe('Variant Analysis Monitor', async function() {
         });
 
         it('should succeed and return a list of scanned repo ids', async () => {
-          const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
+          const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
           const scannedRepoIds = scannedRepos.filter(r => r.analysis_status == 'succeeded').map(r => r.repository.id);
 
           expect(result.status).to.equal('CompletedSuccessfully');
@@ -130,7 +135,7 @@ describe('Variant Analysis Monitor', async function() {
         });
 
         it('should succeed and return an empty list of scanned repo ids', async () => {
-          const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
+          const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
           expect(result.status).to.equal('CompletedSuccessfully');
           expect(result.scannedReposDownloaded).to.eql([]);
@@ -145,7 +150,7 @@ describe('Variant Analysis Monitor', async function() {
         });
 
         it('should succeed and return an empty list of scanned repo ids', async () => {
-          const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
+          const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
           expect(result.status).to.equal('CompletedSuccessfully');
           expect(result.scannedReposDownloaded).to.eql([]);
