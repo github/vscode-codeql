@@ -1,4 +1,5 @@
 import { Repository } from './repository';
+import { AnalysisAlert, AnalysisRawResults } from './analysis-result';
 
 export interface VariantAnalysis {
   id: number,
@@ -28,6 +29,10 @@ export enum VariantAnalysisQueryLanguage {
   Javascript = 'javascript',
   Python = 'python',
   Ruby = 'ruby'
+}
+
+export function parseVariantAnalysisQueryLanguage(language: string): VariantAnalysisQueryLanguage | undefined {
+  return Object.values(VariantAnalysisQueryLanguage).find(x => x === language);
 }
 
 export enum VariantAnalysisStatus {
@@ -68,10 +73,19 @@ export interface VariantAnalysisSkippedRepositories {
 
 export interface VariantAnalysisSkippedRepositoryGroup {
   repositoryCount: number,
-  repositories: Array<{
-    id?: number,
-    fullName: string
-  }>
+  repositories: VariantAnalysisSkippedRepository[],
+}
+
+export interface VariantAnalysisSkippedRepository {
+  id?: number,
+  fullName: string,
+  private?: boolean,
+}
+
+export interface VariantAnalysisScannedRepositoryResult {
+  repositoryId: number;
+  interpretedResults?: AnalysisAlert[];
+  rawResults?: AnalysisRawResults;
 }
 
 /**
@@ -98,16 +112,24 @@ export interface VariantAnalysisSubmission {
 }
 
 /**
- * @param repo
- * @returns whether the repo scan is in a completed state, i.e. it cannot normally change state anymore
+ * @param status
+ * @returns whether the status is in a completed state, i.e. it cannot normally change state anymore
  */
-export function hasRepoScanCompleted(repo: VariantAnalysisScannedRepository): boolean {
+export function isCompletedAnalysisRepoStatus(status: VariantAnalysisRepoStatus): boolean {
   return [
     // All states that indicates the repository has been scanned and cannot
     // change status anymore.
     VariantAnalysisRepoStatus.Succeeded, VariantAnalysisRepoStatus.Failed,
     VariantAnalysisRepoStatus.Canceled, VariantAnalysisRepoStatus.TimedOut,
-  ].includes(repo.analysisStatus);
+  ].includes(status);
+}
+
+/**
+ * @param repo
+ * @returns whether the repo scan is in a completed state, i.e. it cannot normally change state anymore
+ */
+export function hasRepoScanCompleted(repo: VariantAnalysisScannedRepository): boolean {
+  return isCompletedAnalysisRepoStatus(repo.analysisStatus);
 }
 
 /**

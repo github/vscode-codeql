@@ -104,9 +104,11 @@ import { JoinOrderScannerProvider } from './log-insights/join-order';
 import { LogScannerService } from './log-insights/log-scanner-service';
 import { createInitialQueryInfo } from './run-queries-shared';
 import { LegacyQueryRunner } from './legacy-query-server/legacyRunner';
+import { NewQueryRunner } from './query-server/query-runner';
 import { QueryRunner } from './queryRunner';
 import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
-import { NewQueryRunner } from './query-server/query-runner';
+import { VariantAnalysisMonitor } from './remote-queries/variant-analysis-monitor';
+import { VariantAnalysis } from './remote-queries/shared/variant-analysis';
 
 /**
  * extension.ts
@@ -564,7 +566,7 @@ async function activateWithInstalledDistribution(
           item,
         );
         qhm.completeQuery(item, completedQueryInfo);
-        await showResultsForCompletedQuery(item as CompletedLocalQueryInfo, WebviewReveal.NotForced);
+        await showResultsForCompletedQuery(item as CompletedLocalQueryInfo, WebviewReveal.Forced);
         // Note we must update the query history view after showing results as the
         // display and sorting might depend on the number of results
       } catch (e) {
@@ -907,6 +909,16 @@ async function activateWithInstalledDistribution(
     })
   );
 
+  const variantAnalysisMonitor = new VariantAnalysisMonitor(ctx, logger);
+  ctx.subscriptions.push(
+    commandRunner('codeQL.monitorVariantAnalysis', async (
+      variantAnalysis: VariantAnalysis,
+      token: CancellationToken
+    ) => {
+      await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, token);
+    })
+  );
+
   ctx.subscriptions.push(
     commandRunner('codeQL.autoDownloadRemoteQueryResults', async (
       queryResult: RemoteQueryResult,
@@ -922,7 +934,15 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.mockVariantAnalysisView', async () => {
-      const variantAnalysisView = new VariantAnalysisView(ctx);
+      const variantAnalysisView = new VariantAnalysisView(ctx, 1);
+      variantAnalysisView.openView();
+    })
+  );
+
+  // The "openVariantAnalysisView" command is internal-only.
+  ctx.subscriptions.push(
+    commandRunner('codeQL.openVariantAnalysisView', async (variantAnalysisId: number) => {
+      const variantAnalysisView = new VariantAnalysisView(ctx, variantAnalysisId);
       variantAnalysisView.openView();
     })
   );

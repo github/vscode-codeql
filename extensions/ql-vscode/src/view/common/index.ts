@@ -1,4 +1,5 @@
 export * from './icon';
+export * from './Alert';
 export * from './CodePaths';
 export * from './FileCodeSnippet';
 export * from './HorizontalSpace';

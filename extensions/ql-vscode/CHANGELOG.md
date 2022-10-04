@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix a bug where it was not possible to add a database folder if the folder name starts with `db-`. [#1565](https://github.com/github/vscode-codeql/pull/1565)
+
 ## 1.7.0 - 20 September 2022
 
 - Remove ability to download databases from LGTM. [#1467](https://github.com/github/vscode-codeql/pull/1467)
