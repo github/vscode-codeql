@@ -1,5 +1,5 @@
 import * as ghApiClient from './gh-api/gh-api-client';
-import { CancellationToken, ExtensionContext } from 'vscode';
+import { CancellationToken, EventEmitter, ExtensionContext } from 'vscode';
 import { DisposableObject } from '../pure/disposable-object';
 import { Logger } from '../logging';
 import { Credentials } from '../authentication';
@@ -21,6 +21,9 @@ import { VariantAnalysisResultsManager } from './variant-analysis-results-manage
 import { CodeQLCliServer } from '../cli';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
+  private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis | undefined>());
+  readonly onVariantAnalysisAdded = this._onVariantAnalysisAdded.event;
+
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
   private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
   private readonly views = new Map<number, VariantAnalysisView>();
@@ -71,6 +74,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     }
 
     await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
+  }
+
+  public onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): void {
+    this._onVariantAnalysisAdded.fire(variantAnalysis);
   }
 
   private async onRepoStateUpdated(variantAnalysisId: number, repoState: VariantAnalysisScannedRepositoryState): Promise<void> {
