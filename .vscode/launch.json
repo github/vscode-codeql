@@ -59,7 +59,7 @@
       "name": "Launch Unit Tests - React (vscode-codeql)",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/.bin/jest",
+      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "stopOnEntry": false,
