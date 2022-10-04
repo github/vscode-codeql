@@ -1,13 +1,13 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import { VariantAnalysis, VariantAnalysisScannedRepositoryResult } from '../../remote-queries/shared/variant-analysis';
-import { VariantAnalysisAnalyzedRepoItem } from './VariantAnalysisAnalyzedRepoItem';
+import { RepoRow } from './RepoRow';
 import { useMemo } from 'react';
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1em;
+  gap: 0.5em;
 `;
 
 export type VariantAnalysisAnalyzedReposProps = {
@@ -33,7 +33,7 @@ export const VariantAnalysisAnalyzedRepos = ({
         const results = repositoryResultsById.get(repository.repository.id);
 
         return (
-          <VariantAnalysisAnalyzedRepoItem
+          <RepoRow
             key={repository.repository.id}
             repository={repository.repository}
             status={repository.analysisStatus}
