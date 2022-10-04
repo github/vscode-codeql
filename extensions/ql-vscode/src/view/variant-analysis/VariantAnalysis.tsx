@@ -200,7 +200,7 @@ const repositoryResults: VariantAnalysisScannedRepositoryResult[] = [
   }
 ];
 
-function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
+function getContainerContents(variantAnalysis: VariantAnalysisDomainModel, repoResults: VariantAnalysisScannedRepositoryResult[]) {
   if (variantAnalysis.actionsWorkflowRunId === undefined) {
     return <VariantAnalysisLoading />;
   }
@@ -218,7 +218,7 @@ function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
       />
       <VariantAnalysisOutcomePanels
         variantAnalysis={variantAnalysis}
-        repositoryResults={repositoryResults}
+        repositoryResults={repoResults}
       />
     </>
   );
@@ -226,12 +226,15 @@ function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
 
 type Props = {
   variantAnalysis?: VariantAnalysisDomainModel;
+  repoResults?: VariantAnalysisScannedRepositoryResult[];
 }
 
 export function VariantAnalysis({
   variantAnalysis: initialVariantAnalysis = variantAnalysis,
+  repoResults: initialRepoResults = repositoryResults,
 }: Props): JSX.Element {
   const [variantAnalysis, setVariantAnalysis] = useState<VariantAnalysisDomainModel>(initialVariantAnalysis);
+  const [repoResults, setRepoResults] = useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
 
   useEffect(() => {
     window.addEventListener('message', (evt: MessageEvent) => {
@@ -239,6 +242,11 @@ export function VariantAnalysis({
         const msg: ToVariantAnalysisMessage = evt.data;
         if (msg.t === 'setVariantAnalysis') {
           setVariantAnalysis(msg.variantAnalysis);
+        } else if (msg.t === 'setRepoResults') {
+          setRepoResults(oldRepoResults => {
+            const newRepoIds = msg.repoResults.map(r => r.repositoryId);
+            return [...oldRepoResults.filter(v => !newRepoIds.includes(v.repositoryId)), ...msg.repoResults];
+          });
         }
       } else {
         // sanitize origin
@@ -250,7 +258,7 @@ export function VariantAnalysis({
 
   return (
     <VariantAnalysisContainer>
-      {getContainerContents(variantAnalysis)}
+      {getContainerContents(variantAnalysis, repoResults)}
     </VariantAnalysisContainer>
   );
 }
