@@ -64,7 +64,7 @@ export class VariantAnalysisMonitor {
       if (variantAnalysisSummary.scanned_repositories) {
         variantAnalysisSummary.scanned_repositories.forEach(scannedRepo => {
           if (!scannedReposDownloaded.includes(scannedRepo.repository.id) && scannedRepo.analysis_status === 'succeeded') {
-            void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResult', scannedRepo);
+            void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResult', scannedRepo, variantAnalysisSummary);
             scannedReposDownloaded.push(scannedRepo.repository.id);
           }
         });
