@@ -344,7 +344,12 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
       jumpToLocation(loc, this.props.databaseUri);
       const newSelection = { ...selectedPath, pathNodeIndex: nextIndex };
-      return { ...prevState, selectedItem: newSelection };
+      const newExpanded = new Set(prevState.expanded);
+      // In case we're jumping from the main alert row to its first path step, expand the enclosing nodes so the selected
+      // node is actually visible.
+      newExpanded.add(Keys.keyToString({ resultIndex: newSelection.resultIndex }));
+      newExpanded.add(Keys.keyToString({ resultIndex: newSelection.resultIndex, pathIndex: newSelection.pathIndex }));
+      return { ...prevState, selectedItem: newSelection, expanded: newExpanded };
     });
   }
 
