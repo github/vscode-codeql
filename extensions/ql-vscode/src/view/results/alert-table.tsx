@@ -17,14 +17,14 @@ import { isWholeFileLoc, isLineColumnLoc } from '../../pure/bqrs-utils';
 
 export type PathTableProps = ResultTableProps & { resultSet: InterpretedResultSet<SarifInterpretationData> };
 export interface PathTableState {
-  expanded: { [k: string]: boolean };
+  expanded: Set<number>;
   selectedItem: undefined | Keys.PathNode | Keys.Result;
 }
 
 export class PathTable extends React.Component<PathTableProps, PathTableState> {
   constructor(props: PathTableProps) {
     super(props);
-    this.state = { expanded: {}, selectedItem: undefined };
+    this.state = { expanded: new Set<number>(), selectedItem: undefined };
     this.handleNavigationEvent = this.handleNavigationEvent.bind(this);
   }
 
@@ -35,16 +35,15 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
    */
   toggle(e: React.MouseEvent, indices: number[]) {
     this.setState(previousState => {
-      if (previousState.expanded[indices[0]]) {
-        return { expanded: { ...previousState.expanded, [indices[0]]: false } };
-      }
-      else {
-        const expanded = { ...previousState.expanded };
+      const expanded = new Set(previousState.expanded);
+      if (previousState.expanded.has(indices[0])) {
+        expanded.delete(indices[0]);
+      } else {
         for (const index of indices) {
-          expanded[index] = true;
+          expanded.add(index);
         }
-        return { expanded };
       }
+      return { expanded };
     });
     e.stopPropagation();
     e.preventDefault();
@@ -202,7 +201,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           [<span key="0">{text}</span>] :
           renderRelatedLocations(text, result.relatedLocations, resultKey);
 
-      const currentResultExpanded = this.state.expanded[expansionIndex];
+      const currentResultExpanded = this.state.expanded.has(expansionIndex);
       const indicator = currentResultExpanded ? octicons.chevronDown : octicons.chevronRight;
       const location = result.locations !== undefined && result.locations.length > 0 &&
         renderSarifLocation(result.locations[0], resultKey);
@@ -246,7 +245,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
         paths.forEach((path, pathIndex) => {
           const pathKey = { resultIndex, pathIndex };
-          const currentPathExpanded = this.state.expanded[expansionIndex];
+          const currentPathExpanded = this.state.expanded.has(expansionIndex);
           if (currentResultExpanded) {
             const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
             rows.push(
