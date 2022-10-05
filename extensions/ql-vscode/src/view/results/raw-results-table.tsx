@@ -12,9 +12,22 @@ export type RawTableProps = ResultTableProps & {
   offset: number;
 };
 
-export class RawTable extends React.Component<RawTableProps, Record<string, never>> {
+interface RawTableState {
+  selectedItem?: { row: number, column: number };
+}
+
+export class RawTable extends React.Component<RawTableProps, RawTableState> {
   constructor(props: RawTableProps) {
     super(props);
+    this.setSelection = this.setSelection.bind(this);
+    this.state = {};
+  }
+
+  private setSelection(row: number, column: number) {
+    this.setState(prev => ({
+      ...prev,
+      selectedItem: { row, column }
+    }));
   }
 
   render(): React.ReactNode {
@@ -37,6 +50,8 @@ export class RawTable extends React.Component<RawTableProps, Record<string, neve
         rowIndex={rowIndex + this.props.offset}
         row={row}
         databaseUri={databaseUri}
+        isSelected={this.state.selectedItem?.row === rowIndex}
+        onSelected={this.setSelection}
       />
     );
 
