@@ -1,13 +1,52 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
-import { VariantAnalysis as VariantAnalysisDomainModel } from '../../remote-queries/shared/variant-analysis';
+import {
+  VariantAnalysis as VariantAnalysisDomainModel,
+  VariantAnalysisScannedRepositoryResult,
+} from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisContainer } from './VariantAnalysisContainer';
 import { VariantAnalysisHeader } from './VariantAnalysisHeader';
 import { VariantAnalysisOutcomePanels } from './VariantAnalysisOutcomePanels';
 import { VariantAnalysisLoading } from './VariantAnalysisLoading';
 import { ToVariantAnalysisMessage } from '../../pure/interface-types';
 import { vscode } from '../vscode-api';
+
+const repositoryResults: VariantAnalysisScannedRepositoryResult[] = [
+  {
+    repositoryId: 1,
+    rawResults: {
+      schema: {
+        name: '#select',
+        rows: 1,
+        columns: [
+          {
+            kind: 'i'
+          }
+        ]
+      },
+      resultSet: {
+        schema: {
+          name: '#select',
+          rows: 1,
+          columns: [
+            {
+              kind: 'i'
+            }
+          ]
+        },
+        rows: [
+          [
+            60688
+          ]
+        ]
+      },
+      fileLinkPrefix: 'https://github.com/octodemo/hello-world-1/blob/59a2a6c7d9dde7a6ecb77c2f7e8197d6925c143b',
+      sourceLocationPrefix: '/home/runner/work/bulk-builder/bulk-builder',
+      capped: false
+    }
+  }
+];
 
 function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
   if (variantAnalysis.actionsWorkflowRunId === undefined) {
@@ -25,7 +64,10 @@ function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
         onExportResultsClick={() => console.log('Export results')}
         onViewLogsClick={() => console.log('View logs')}
       />
-      <VariantAnalysisOutcomePanels variantAnalysis={variantAnalysis} />
+      <VariantAnalysisOutcomePanels
+        variantAnalysis={variantAnalysis}
+        repositoryResults={repositoryResults}
+      />
     </>
   );
 }

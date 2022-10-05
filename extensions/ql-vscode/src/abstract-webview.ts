@@ -51,7 +51,7 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
       this.panel = Window.createWebviewPanel(
         config.viewId,
         config.title,
-        { viewColumn: ViewColumn.Active, preserveFocus: true },
+        { viewColumn: config.viewColumn, preserveFocus: config.preserveFocus },
         {
           enableScripts: true,
           enableFindWidget: true,

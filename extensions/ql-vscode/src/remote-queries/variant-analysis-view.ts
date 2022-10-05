@@ -29,7 +29,7 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
   protected getPanelConfig(): WebviewPanelConfig {
     return {
       viewId: VariantAnalysisView.viewType,
-      title: `CodeQL query results for query ${this.variantAnalysisId}`,
+      title: `CodeQL Query Results for ${this.variantAnalysisId}`,
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
       view: 'variant-analysis',

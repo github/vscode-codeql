@@ -1,0 +1,26 @@
+{
+  "schema": {
+    "name": "#select",
+    "rows": 1,
+    "columns": [
+      {
+        "kind": "i"
+      }
+    ]
+  },
+  "resultSet": {
+    "schema": {
+      "name": "#select",
+      "rows": 1,
+      "columns": [
+        {
+          "kind": "i"
+        }
+      ]
+    },
+    "rows": [[60688]]
+  },
+  "fileLinkPrefix": "https://github.com/facebook/create-react-app/blob/d960b9e38c062584ff6cfb1a70e1512509a966e7",
+  "sourceLocationPrefix": "/home/runner/work/bulk-builder/bulk-builder",
+  "capped": false
+}

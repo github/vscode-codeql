@@ -106,6 +106,12 @@ import { LegacyQueryRunner } from './legacy-query-server/legacyRunner';
 import { QueryRunner } from './queryRunner';
 import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
 import { VariantAnalysisViewSerializer } from './remote-queries/variant-analysis-view-serializer';
+import { VariantAnalysis } from './remote-queries/shared/variant-analysis';
+import {
+  VariantAnalysis as VariantAnalysisApiResponse,
+  VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
+} from './remote-queries/gh-api/variant-analysis';
+import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
 
 /**
  * extension.ts
@@ -559,7 +565,7 @@ async function activateWithInstalledDistribution(
           item,
         );
         qhm.completeQuery(item, completedQueryInfo);
-        await showResultsForCompletedQuery(item as CompletedLocalQueryInfo, WebviewReveal.NotForced);
+        await showResultsForCompletedQuery(item as CompletedLocalQueryInfo, WebviewReveal.Forced);
         // Note we must update the query history view after showing results as the
         // display and sorting might depend on the number of results
       } catch (e) {
@@ -902,6 +908,26 @@ async function activateWithInstalledDistribution(
     })
   );
 
+  const variantAnalysisManager = new VariantAnalysisManager(ctx, logger);
+  ctx.subscriptions.push(
+    commandRunner('codeQL.monitorVariantAnalysis', async (
+      variantAnalysis: VariantAnalysis,
+      token: CancellationToken
+    ) => {
+      await variantAnalysisManager.monitorVariantAnalysis(variantAnalysis, token);
+    })
+  );
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.autoDownloadVariantAnalysisResult', async (
+      scannedRepo: ApiVariantAnalysisScannedRepository,
+      variantAnalysisSummary: VariantAnalysisApiResponse,
+      token: CancellationToken
+    ) => {
+      await variantAnalysisManager.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysisSummary, token);
+    })
+  );
+
   ctx.subscriptions.push(
     commandRunner('codeQL.autoDownloadRemoteQueryResults', async (
       queryResult: RemoteQueryResult,
@@ -920,6 +946,14 @@ async function activateWithInstalledDistribution(
       // Generate a random variant analysis ID for testing
       const variantAnalysisId: number = Math.floor(Math.random() * 1000000);
 
+      const variantAnalysisView = new VariantAnalysisView(ctx, variantAnalysisId);
+      void variantAnalysisView.openView();
+    })
+  );
+
+  // The "openVariantAnalysisView" command is internal-only.
+  ctx.subscriptions.push(
+    commandRunner('codeQL.openVariantAnalysisView', async (variantAnalysisId: number) => {
       const variantAnalysisView = new VariantAnalysisView(ctx, variantAnalysisId);
       void variantAnalysisView.openView();
     })
