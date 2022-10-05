@@ -7,6 +7,7 @@ import {
   SortedResultSetInfo,
   RawResultsSortState,
   NavigatePathMsg,
+  NavigateAlertMsg,
   QueryMetadata,
   ResultsPaths,
   ALERTS_TABLE_NAME,
@@ -62,7 +63,7 @@ interface ResultsViewState {
   isExpectingResultsUpdate: boolean;
 }
 
-export type NavigationEvent = NavigatePathMsg;
+export type NavigationEvent = NavigatePathMsg | NavigateAlertMsg;
 
 /**
  * Event handlers to be notified of navigation events coming from outside the webview.
@@ -146,6 +147,7 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
         });
         break;
       case 'navigatePath':
+      case 'navigateAlert':
         onNavigation.fire(msg);
         break;
 

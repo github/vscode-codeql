@@ -602,6 +602,14 @@
         "title": "CodeQL: Show Previous Step on Path"
       },
       {
+        "command": "codeQLQueryResults.nextAlert",
+        "title": "CodeQL: Show Next Alert"
+      },
+      {
+        "command": "codeQLQueryResults.previousAlert",
+        "title": "CodeQL: Show Previous Alert"
+      },
+      {
         "command": "codeQL.restartQueryServer",
         "title": "CodeQL: Restart Query Server"
       },

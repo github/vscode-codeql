@@ -154,6 +154,18 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
         this.navigatePathStep.bind(this, -1)
       )
     );
+    this.push(
+      commandRunner(
+        'codeQLQueryResults.nextAlert',
+        this.navigateAlert.bind(this, 1)
+      )
+    );
+    this.push(
+      commandRunner(
+        'codeQLQueryResults.previousAlert',
+        this.navigateAlert.bind(this, -1)
+      )
+    );
 
     this.push(
       this.databaseManager.onDidChangeDatabaseItem(({ kind }) => {
@@ -171,6 +183,10 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
 
   async navigatePathStep(direction: number): Promise<void> {
     await this.postMessage({ t: 'navigatePath', direction });
+  }
+
+  async navigateAlert(direction: number): Promise<void> {
+    await this.postMessage({ t: 'navigateAlert', direction });
   }
 
   protected getPanelConfig(): WebviewPanelConfig {

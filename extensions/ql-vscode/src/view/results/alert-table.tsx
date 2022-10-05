@@ -5,7 +5,7 @@ import * as Keys from '../../pure/result-keys';
 import * as octicons from './octicons';
 import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection, emptyQueryResultsMessage } from './result-table-utils';
 import { onNavigation, NavigationEvent } from './results';
-import { InterpretedResultSet, SarifInterpretationData } from '../../pure/interface-types';
+import { InterpretedResultSet, NavigateAlertMsg, NavigatePathMsg, SarifInterpretationData } from '../../pure/interface-types';
 import {
   parseSarifPlainTextMessage,
   parseSarifLocation,
@@ -18,13 +18,13 @@ import { isWholeFileLoc, isLineColumnLoc } from '../../pure/bqrs-utils';
 export type PathTableProps = ResultTableProps & { resultSet: InterpretedResultSet<SarifInterpretationData> };
 export interface PathTableState {
   expanded: { [k: string]: boolean };
-  selectedPathNode: undefined | Keys.PathNode;
+  selectedItem: undefined | Keys.PathNode | Keys.Result;
 }
 
 export class PathTable extends React.Component<PathTableProps, PathTableState> {
   constructor(props: PathTableProps) {
     super(props);
-    this.state = { expanded: {}, selectedPathNode: undefined };
+    this.state = { expanded: {}, selectedItem: undefined };
     this.handleNavigationEvent = this.handleNavigationEvent.bind(this);
   }
 
@@ -96,7 +96,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     const rows: JSX.Element[] = [];
     const { numTruncatedResults, sourceLocationPrefix } = resultSet.interpretation;
 
-    function renderRelatedLocations(msg: string, relatedLocations: Sarif.Location[]): JSX.Element[] {
+    function renderRelatedLocations(msg: string, relatedLocations: Sarif.Location[], resultKey: Keys.PathNode | Keys.Result | undefined): JSX.Element[] {
       const relatedLocationsById: { [k: string]: Sarif.Location } = {};
       for (const loc of relatedLocations) {
         relatedLocationsById[loc.id!] = loc;
@@ -110,7 +110,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           return <span key={i}>{part}</span>;
         } else {
           const renderedLocation = renderSarifLocationWithText(part.text, relatedLocationsById[part.dest],
-            undefined);
+            resultKey);
           return <span key={i}>{renderedLocation}</span>;
         }
       });
@@ -122,16 +122,16 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return <span title={locationHint}>{msg}</span>;
     }
 
-    const updateSelectionCallback = (pathNodeKey: Keys.PathNode | undefined) => {
+    const updateSelectionCallback = (resultKey: Keys.PathNode | Keys.Result | undefined) => {
       return () => {
         this.setState(previousState => ({
           ...previousState,
-          selectedPathNode: pathNodeKey
+          selectedItem: resultKey
         }));
       };
     };
 
-    function renderSarifLocationWithText(text: string | undefined, loc: Sarif.Location, pathNodeKey: Keys.PathNode | undefined): JSX.Element | undefined {
+    function renderSarifLocationWithText(text: string | undefined, loc: Sarif.Location, resultKey: Keys.PathNode | Keys.Result | undefined): JSX.Element | undefined {
       const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
       if ('hint' in parsedLoc) {
         return renderNonLocation(text, parsedLoc.hint);
@@ -141,7 +141,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           text,
           databaseUri,
           undefined,
-          updateSelectionCallback(pathNodeKey)
+          updateSelectionCallback(resultKey)
         );
       } else {
         return undefined;
@@ -154,7 +154,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
      */
     function renderSarifLocation(
       loc: Sarif.Location,
-      pathNodeKey: Keys.PathNode | undefined
+      pathNodeKey: Keys.PathNode | Keys.Result | undefined
     ): JSX.Element | undefined {
       const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
       if ('hint' in parsedLoc) {
@@ -195,21 +195,25 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     let expansionIndex = 0;
 
     resultSet.interpretation.data.runs[0].results.forEach((result, resultIndex) => {
+      const resultKey: Keys.Result = { resultIndex };
       const text = result.message.text || '[no text]';
       const msg: JSX.Element[] =
         result.relatedLocations === undefined ?
           [<span key="0">{text}</span>] :
-          renderRelatedLocations(text, result.relatedLocations);
+          renderRelatedLocations(text, result.relatedLocations, resultKey);
 
       const currentResultExpanded = this.state.expanded[expansionIndex];
       const indicator = currentResultExpanded ? octicons.chevronDown : octicons.chevronRight;
       const location = result.locations !== undefined && result.locations.length > 0 &&
-        renderSarifLocation(result.locations[0], Keys.none);
+        renderSarifLocation(result.locations[0], resultKey);
       const locationCells = <td className="vscode-codeql__location-cell">{location}</td>;
+
+      const selectedItem = this.state.selectedItem;
+      const resultRowIsSelected = selectedItem?.resultIndex === resultIndex && selectedItem.pathIndex === undefined;
 
       if (result.codeFlows === undefined) {
         rows.push(
-          <tr key={resultIndex} {...zebraStripe(resultIndex)}>
+          <tr key={resultIndex} {...selectableZebraStripe(resultRowIsSelected, resultIndex)}>
             <td className="vscode-codeql__icon-cell">{octicons.info}</td>
             <td colSpan={3}>{msg}</td>
             {locationCells}
@@ -225,7 +229,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           [expansionIndex];
 
         rows.push(
-          <tr {...zebraStripe(resultIndex)} key={resultIndex}>
+          <tr {...selectableZebraStripe(resultRowIsSelected, resultIndex)} key={resultIndex}>
             <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(indices)}>
               {indicator}
             </td>
@@ -268,7 +272,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
               const additionalMsg = step.location !== undefined ?
                 renderSarifLocation(step.location, pathNodeKey) :
                 '';
-              const isSelected = Keys.equalsNotUndefined(this.state.selectedPathNode, pathNodeKey);
+              const isSelected = Keys.equalsNotUndefined(this.state.selectedItem, pathNodeKey);
               const stepIndex = pathNodeIndex + 1; // Convert to 1-based
               const zebraIndex = resultIndex + stepIndex;
               rows.push(
@@ -303,14 +307,33 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
   }
 
   private handleNavigationEvent(event: NavigationEvent) {
-    this.setState(prevState => {
-      const { selectedPathNode } = prevState;
-      if (selectedPathNode === undefined) return prevState;
+    switch (event.t) {
+      case 'navigatePath': {
+        this.handleNavigatePathStepEvent(event);
+        break;
+      }
+      case 'navigateAlert': {
+        this.handleNavigateAlertEvent(event);
+        break;
+      }
+    }
+  }
 
-      const path = Keys.getPath(this.props.resultSet.interpretation.data, selectedPathNode);
+  private handleNavigatePathStepEvent(event: NavigatePathMsg) {
+    this.setState(prevState => {
+      const { selectedItem } = prevState;
+      if (selectedItem === undefined) return prevState;
+
+      const selectedPath = selectedItem.pathIndex !== undefined
+        ? selectedItem
+        : { ...selectedItem, pathIndex: 0 };
+
+      const path = Keys.getPath(this.props.resultSet.interpretation.data, selectedPath);
       if (path === undefined) return prevState;
 
-      const nextIndex = selectedPathNode.pathNodeIndex + event.direction;
+      const nextIndex = selectedItem.pathNodeIndex !== undefined
+        ? (selectedItem.pathNodeIndex + event.direction)
+        : 0;
       if (nextIndex < 0 || nextIndex >= path.locations.length) return prevState;
 
       const sarifLoc = path.locations[nextIndex].location;
@@ -324,8 +347,35 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       }
 
       jumpToLocation(loc, this.props.databaseUri);
-      const newSelection = { ...selectedPathNode, pathNodeIndex: nextIndex };
-      return { ...prevState, selectedPathNode: newSelection };
+      const newSelection = { ...selectedPath, pathNodeIndex: nextIndex };
+      return { ...prevState, selectedItem: newSelection };
+    });
+  }
+
+  private handleNavigateAlertEvent(event: NavigateAlertMsg) {
+    this.setState(prevState => {
+      const { selectedItem } = prevState;
+      if (selectedItem === undefined) return prevState;
+
+      const nextIndex = selectedItem.resultIndex + event.direction;
+      const nextSelection = { resultIndex: nextIndex };
+      const result = Keys.getResult(this.props.resultSet.interpretation.data, nextSelection);
+      if (result === undefined) {
+        return prevState;
+      }
+
+      const sarifLoc = result.locations?.[0];
+      if (sarifLoc === undefined) {
+        return prevState;
+      }
+
+      const loc = parseSarifLocation(sarifLoc, this.props.resultSet.interpretation.sourceLocationPrefix);
+      if (isNoLocation(loc)) {
+        return prevState;
+      }
+
+      jumpToLocation(loc, this.props.databaseUri);
+      return { ...prevState, selectedItem: nextSelection };
     });
   }
 
