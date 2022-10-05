@@ -1,9 +1,10 @@
+import { faker } from '@faker-js/faker';
 import { VariantAnalysisQueryLanguage, VariantAnalysisSubmission } from '../../../../remote-queries/shared/variant-analysis';
 
 export function createMockSubmission(): VariantAnalysisSubmission {
   return {
-    startTime: 1234,
-    controllerRepoId: 5678,
+    startTime: faker.datatype.number(),
+    controllerRepoId: faker.datatype.number(),
     actionRepoRef: 'repo-ref',
     query: {
       name: 'query-name',

@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { CancellationToken, extensions } from 'vscode';
+import { CancellationTokenSource, extensions } from 'vscode';
 import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
@@ -13,31 +13,34 @@ import {
   VariantAnalysisFailureReason
 } from '../../../remote-queries/gh-api/variant-analysis';
 import { createFailedMockApiResponse, createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
-import { VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
+import { VariantAnalysis, VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
 import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/scanned-repositories';
 import { processFailureReason } from '../../../remote-queries/variant-analysis-processor';
 import { Credentials } from '../../../authentication';
+import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
 
 describe('Variant Analysis Monitor', async function() {
   let sandbox: sinon.SinonSandbox;
   let mockGetVariantAnalysis: sinon.SinonStub;
-  let cancellationToken: CancellationToken;
+  let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
-  let variantAnalysis: any;
+  let variantAnalysis: VariantAnalysis;
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
     sandbox.stub(logger, 'log');
     sandbox.stub(config, 'isVariantAnalysisLiveResultsEnabled').returns(false);
 
-    cancellationToken = {
-      isCancellationRequested: false
-    } as unknown as CancellationToken;
-
-    variantAnalysis = {
-      id: 123,
-      controllerRepoId: 1,
+    cancellationTokenSource = {
+      token: {
+        isCancellationRequested: false,
+        onCancellationRequested: sandbox.stub()
+      },
+      cancel: sandbox.stub(),
+      dispose: sandbox.stub()
     };
+
+    variantAnalysis = createMockVariantAnalysis();
 
     try {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
@@ -58,7 +61,7 @@ describe('Variant Analysis Monitor', async function() {
 
     it('should return early if credentials are wrong', async () => {
       try {
-        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
+        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
       } catch (error: any) {
         expect(error.message).to.equal('Error authenticating with GitHub');
       }
@@ -76,9 +79,9 @@ describe('Variant Analysis Monitor', async function() {
     });
 
     it('should return early if variant analysis is cancelled', async () => {
-      cancellationToken.isCancellationRequested = true;
+      cancellationTokenSource.token.isCancellationRequested = true;
 
-      const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
+      const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
       expect(result).to.eql({ status: 'Cancelled', error: 'Variant Analysis was canceled.' });
     });
@@ -92,14 +95,13 @@ describe('Variant Analysis Monitor', async function() {
       });
 
       it('should mark as failed locally and stop monitoring', async () => {
-        const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
-        variantAnalysis = result.variantAnalysis;
+        const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
         expect(mockGetVariantAnalysis.calledOnce).to.be.true;
         expect(result.status).to.eql('Failed');
         expect(result.error).to.eql(`Variant Analysis has failed: ${mockFailedApiResponse.failure_reason}`);
-        expect(variantAnalysis.status).to.equal(VariantAnalysisStatus.Failed);
-        expect(variantAnalysis.failureReason).to.equal(processFailureReason(mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason));
+        expect(result.variantAnalysis?.status).to.equal(VariantAnalysisStatus.Failed);
+        expect(result.variantAnalysis?.failureReason).to.equal(processFailureReason(mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason));
       });
     });
 
@@ -115,7 +117,7 @@ describe('Variant Analysis Monitor', async function() {
         });
 
         it('should succeed and return a list of scanned repo ids', async () => {
-          const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
+          const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
           const scannedRepoIds = scannedRepos.filter(r => r.analysis_status == 'succeeded').map(r => r.repository.id);
 
           expect(result.status).to.equal('CompletedSuccessfully');
@@ -133,7 +135,7 @@ describe('Variant Analysis Monitor', async function() {
         });
 
         it('should succeed and return an empty list of scanned repo ids', async () => {
-          const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
+          const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
           expect(result.status).to.equal('CompletedSuccessfully');
           expect(result.scannedReposDownloaded).to.eql([]);
@@ -148,7 +150,7 @@ describe('Variant Analysis Monitor', async function() {
         });
 
         it('should succeed and return an empty list of scanned repo ids', async () => {
-          const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
+          const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
           expect(result.status).to.equal('CompletedSuccessfully');
           expect(result.scannedReposDownloaded).to.eql([]);

@@ -25,8 +25,8 @@ describe('Variant Analysis processor', function() {
     const { access_mismatch_repos, no_codeql_db_repos, not_found_repo_nwos, over_limit_repos } = skippedRepos;
 
     expect(result).to.eql({
-      'id': 123,
-      'controllerRepoId': 456,
+      'id': mockApiResponse.id,
+      'controllerRepoId': mockApiResponse.controller_repo.id,
       'query': {
         'filePath': 'query-file-path',
         'language': VariantAnalysisQueryLanguage.Javascript,
@@ -36,7 +36,7 @@ describe('Variant Analysis processor', function() {
         'repositories': ['1', '2', '3'],
       },
       'status': 'succeeded',
-      'actionsWorkflowRunId': 456,
+      'actionsWorkflowRunId': mockApiResponse.actions_workflow_run_id,
       'scannedRepos': [
         transformScannedRepo(VariantAnalysisRepoStatus.Succeeded, scannedRepos[0]),
         transformScannedRepo(VariantAnalysisRepoStatus.Pending, scannedRepos[1]),
