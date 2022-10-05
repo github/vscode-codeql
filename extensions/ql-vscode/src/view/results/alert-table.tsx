@@ -17,30 +17,31 @@ import { isWholeFileLoc, isLineColumnLoc } from '../../pure/bqrs-utils';
 
 export type PathTableProps = ResultTableProps & { resultSet: InterpretedResultSet<SarifInterpretationData> };
 export interface PathTableState {
-  expanded: Set<number>;
+  expanded: Set<string>;
   selectedItem: undefined | Keys.PathNode | Keys.Result;
 }
 
 export class PathTable extends React.Component<PathTableProps, PathTableState> {
   constructor(props: PathTableProps) {
     super(props);
-    this.state = { expanded: new Set<number>(), selectedItem: undefined };
+    this.state = { expanded: new Set<string>(), selectedItem: undefined };
     this.handleNavigationEvent = this.handleNavigationEvent.bind(this);
   }
 
   /**
-   * Given a list of `indices`, toggle the first, and if we 'open' the
+   * Given a list of `ids`, toggle the first, and if we 'open' the
    * first item, open all the rest as well. This mimics vscode's file
    * explorer tree view behavior.
    */
-  toggle(e: React.MouseEvent, indices: number[]) {
+  toggle(e: React.MouseEvent, keys: Keys.ResultKey[]) {
+    const keyStrings = keys.map(Keys.keyToString);
     this.setState(previousState => {
       const expanded = new Set(previousState.expanded);
-      if (previousState.expanded.has(indices[0])) {
-        expanded.delete(indices[0]);
+      if (previousState.expanded.has(keyStrings[0])) {
+        expanded.delete(keyStrings[0]);
       } else {
-        for (const index of indices) {
-          expanded.add(index);
+        for (const str of keyStrings) {
+          expanded.add(str);
         }
       }
       return { expanded };
@@ -183,15 +184,13 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       }
     }
 
-    const toggler: (indices: number[]) => (e: React.MouseEvent) => void = (indices) => {
+    const toggler: (keys: Keys.ResultKey[]) => (e: React.MouseEvent) => void = (indices) => {
       return (e) => this.toggle(e, indices);
     };
 
     if (!resultSet.interpretation.data.runs?.[0]?.results?.length) {
       return this.renderNoResults();
     }
-
-    let expansionIndex = 0;
 
     resultSet.interpretation.data.runs[0].results.forEach((result, resultIndex) => {
       const resultKey: Keys.Result = { resultIndex };
@@ -201,7 +200,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           [<span key="0">{text}</span>] :
           renderRelatedLocations(text, result.relatedLocations, resultKey);
 
-      const currentResultExpanded = this.state.expanded.has(expansionIndex);
+      const currentResultExpanded = this.state.expanded.has(Keys.keyToString(resultKey));
       const indicator = currentResultExpanded ? octicons.chevronDown : octicons.chevronRight;
       const location = result.locations !== undefined && result.locations.length > 0 &&
         renderSarifLocation(result.locations[0], resultKey);
@@ -223,9 +222,9 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         const paths: Sarif.ThreadFlow[] = Keys.getAllPaths(result);
 
         const indices = paths.length == 1 ?
-          [expansionIndex, expansionIndex + 1] : /* if there's exactly one path, auto-expand
-                                                  * the path when expanding the result */
-          [expansionIndex];
+          [resultKey, { ...resultKey, pathIndex: 0 }] : /* if there's exactly one path, auto-expand
+                                                         * the path when expanding the result */
+          [resultKey];
 
         rows.push(
           <tr {...selectableZebraStripe(resultRowIsSelected, resultIndex)} key={resultIndex}>
@@ -241,24 +240,22 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
             {locationCells}
           </tr >
         );
-        expansionIndex++;
 
         paths.forEach((path, pathIndex) => {
           const pathKey = { resultIndex, pathIndex };
-          const currentPathExpanded = this.state.expanded.has(expansionIndex);
+          const currentPathExpanded = this.state.expanded.has(Keys.keyToString(pathKey));
           if (currentResultExpanded) {
             const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
             rows.push(
               <tr {...zebraStripe(resultIndex)} key={`${resultIndex}-${pathIndex}`}>
                 <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
-                <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler([expansionIndex])}>{indicator}</td>
+                <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler([pathKey])}>{indicator}</td>
                 <td className="vscode-codeql__text-center" colSpan={3}>
                   Path
                 </td>
               </tr>
             );
           }
-          expansionIndex++;
 
           if (currentResultExpanded && currentPathExpanded) {
             const pathNodes = path.locations;

@@ -108,3 +108,11 @@ export function getAllPaths(result: sarif.Result): sarif.ThreadFlow[] {
   }
   return paths;
 }
+
+/**
+ * Creates a unique string representation of the given key, suitable for use
+ * as the key in a map or set.
+ */
+export function keyToString(key: ResultKey) {
+  return key.resultIndex + '-' + (key.pathIndex ?? '') + '-' + (key.pathNodeIndex ?? '');
+}
