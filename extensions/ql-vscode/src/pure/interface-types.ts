@@ -2,6 +2,7 @@ import * as sarif from 'sarif';
 import { AnalysisResults } from '../remote-queries/shared/analysis-result';
 import { AnalysisSummary, RemoteQueryResult } from '../remote-queries/shared/remote-query-result';
 import { RawResultSet, ResultRow, ResultSetSchema, Column, ResolvableLocationValue } from './bqrs-cli-types';
+import { VariantAnalysis } from '../remote-queries/shared/variant-analysis';
 
 /**
  * This module contains types and code that are shared between
@@ -429,3 +430,14 @@ export interface CopyRepoListMessage {
   t: 'copyRepoList';
   queryId: string;
 }
+
+export interface SetVariantAnalysisMessage {
+  t: 'setVariantAnalysis';
+  variantAnalysis: VariantAnalysis;
+}
+
+export type ToVariantAnalysisMessage =
+  | SetVariantAnalysisMessage;
+
+export type FromVariantAnalysisMessage =
+  | ViewLoadedMsg;

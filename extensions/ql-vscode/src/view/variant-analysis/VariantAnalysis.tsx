@@ -1,5 +1,7 @@
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 
+import { ToVariantAnalysisMessage } from '../../pure/interface-types';
 import {
   VariantAnalysis as VariantAnalysisDomainModel,
   VariantAnalysisQueryLanguage,
@@ -222,7 +224,30 @@ function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
   );
 }
 
-export function VariantAnalysis(): JSX.Element {
+type Props = {
+  variantAnalysis?: VariantAnalysisDomainModel;
+}
+
+export function VariantAnalysis({
+  variantAnalysis: initialVariantAnalysis = variantAnalysis,
+}: Props): JSX.Element {
+  const [variantAnalysis, setVariantAnalysis] = useState<VariantAnalysisDomainModel>(initialVariantAnalysis);
+
+  useEffect(() => {
+    window.addEventListener('message', (evt: MessageEvent) => {
+      if (evt.origin === window.origin) {
+        const msg: ToVariantAnalysisMessage = evt.data;
+        if (msg.t === 'setVariantAnalysis') {
+          setVariantAnalysis(msg.variantAnalysis);
+        }
+      } else {
+        // sanitize origin
+        const origin = evt.origin.replace(/\n|\r/g, '');
+        console.error(`Invalid event origin ${origin}`);
+      }
+    });
+  });
+
   return (
     <VariantAnalysisContainer>
       {getContainerContents(variantAnalysis)}

@@ -104,7 +104,6 @@ import { LogScannerService } from './log-insights/log-scanner-service';
 import { createInitialQueryInfo } from './run-queries-shared';
 import { LegacyQueryRunner } from './legacy-query-server/legacyRunner';
 import { QueryRunner } from './queryRunner';
-import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
 import { VariantAnalysis } from './remote-queries/shared/variant-analysis';
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
@@ -935,16 +934,14 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.mockVariantAnalysisView', async () => {
-      const variantAnalysisView = new VariantAnalysisView(ctx, 1);
-      variantAnalysisView.openView();
+      await variantAnalysisManager.showView(1);
     })
   );
 
   // The "openVariantAnalysisView" command is internal-only.
   ctx.subscriptions.push(
     commandRunner('codeQL.openVariantAnalysisView', async (variantAnalysisId: number) => {
-      const variantAnalysisView = new VariantAnalysisView(ctx, variantAnalysisId);
-      variantAnalysisView.openView();
+      await variantAnalysisManager.showView(variantAnalysisId);
     })
   );
 

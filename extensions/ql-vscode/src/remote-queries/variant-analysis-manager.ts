@@ -13,16 +13,56 @@ import {
 } from './gh-api/variant-analysis';
 import { VariantAnalysis } from './shared/variant-analysis';
 import { getErrorMessage } from '../pure/helpers-pure';
+import { VariantAnalysisView } from './variant-analysis-view';
+import { VariantAnalysisViewManager } from './variant-analysis-view-manager';
 
-export class VariantAnalysisManager extends DisposableObject {
+export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
+  private readonly views = new Map<number, VariantAnalysisView>();
 
   constructor(
     private readonly ctx: ExtensionContext,
     logger: Logger,
   ) {
     super();
-    this.variantAnalysisMonitor = new VariantAnalysisMonitor(ctx, logger);
+    this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx, logger));
+    this.variantAnalysisMonitor.onVariantAnalysisChange(this.onVariantAnalysisUpdated.bind(this));
+  }
+
+  public async showView(variantAnalysisId: number): Promise<void> {
+    if (!this.views.has(variantAnalysisId)) {
+      // The view will register itself with the manager, so we don't need to do anything here.
+      this.push(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
+    }
+
+    const variantAnalysisView = this.views.get(variantAnalysisId)!;
+    await variantAnalysisView.openView();
+    return;
+  }
+
+  public registerView(view: VariantAnalysisView): void {
+    if (this.views.has(view.variantAnalysisId)) {
+      throw new Error(`View for variant analysis with id: ${view.variantAnalysisId} already exists`);
+    }
+
+    this.views.set(view.variantAnalysisId, view);
+  }
+
+  public unregisterView(view: VariantAnalysisView): void {
+    this.views.delete(view.variantAnalysisId);
+  }
+
+  private async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
+    if (!variantAnalysis) {
+      return;
+    }
+
+    const view = this.views.get(variantAnalysis.id);
+    if (!view) {
+      return;
+    }
+
+    await view.updateView(variantAnalysis);
   }
 
   public async monitorVariantAnalysis(
