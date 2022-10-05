@@ -54,7 +54,7 @@ export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInf
     // most likely another workspace has deleted them because the
     // queries aged out.
     return asyncFilter(parsedQueries, async (q) => {
-      if (q.t === 'remote') {
+      if (q.t === 'remote' || q.t === 'variant-analysis') {
         // the slurper doesn't know where the remote queries are stored
         // so we need to assume here that they exist. Later, we check to
         // see if they exist on disk.
