@@ -165,6 +165,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
 
 const repositoryResults: VariantAnalysisScannedRepositoryResult[] = [
   {
+    variantAnalysisId: 1,
     repositoryId: 1,
     rawResults: {
       schema: {

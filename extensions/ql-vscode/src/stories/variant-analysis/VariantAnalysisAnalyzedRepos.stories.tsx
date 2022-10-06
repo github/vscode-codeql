@@ -100,14 +100,17 @@ Example.args = {
   },
   repositoryResults: [
     {
+      variantAnalysisId: 1,
       repositoryId: 63537249,
       interpretedResults: interpretedResultsForRepo('facebook/create-react-app'),
     },
     {
+      variantAnalysisId: 1,
       repositoryId: 167174,
       interpretedResults: interpretedResultsForRepo('jquery/jquery'),
     },
     {
+      variantAnalysisId: 1,
       repositoryId: 237159,
       interpretedResults: interpretedResultsForRepo('expressjs/express'),
     }

@@ -95,6 +95,7 @@ export interface VariantAnalysisScannedRepositoryState {
 }
 
 export interface VariantAnalysisScannedRepositoryResult {
+  variantAnalysisId: number;
   repositoryId: number;
   interpretedResults?: AnalysisAlert[];
   rawResults?: AnalysisRawResults;

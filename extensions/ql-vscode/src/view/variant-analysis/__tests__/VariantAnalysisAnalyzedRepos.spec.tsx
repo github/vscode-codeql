@@ -78,6 +78,7 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
     render({
       repositoryResults: [
         {
+          variantAnalysisId: 1,
           repositoryId: 2,
           interpretedResults: [
             {

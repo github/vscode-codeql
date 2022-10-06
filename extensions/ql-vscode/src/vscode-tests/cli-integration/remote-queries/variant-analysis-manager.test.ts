@@ -16,9 +16,12 @@ import {
 import { createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
 import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/scanned-repositories';
 import { createMockVariantAnalysisRepoTask } from '../../factories/remote-queries/gh-api/variant-analysis-repo-task';
+import { CodeQLCliServer } from '../../../cli';
+import { storagePath } from '../global.helper';
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
+  let cli: CodeQLCliServer;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
   let variantAnalysis: VariantAnalysisApiResponse;
@@ -47,7 +50,8 @@ describe('Variant Analysis Manager', async function() {
 
     try {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
-      variantAnalysisManager = new VariantAnalysisManager(extension.ctx, logger);
+      cli = extension.cliServer;
+      variantAnalysisManager = new VariantAnalysisManager(extension.ctx, cli, storagePath, logger);
     } catch (e) {
       fail(e as Error);
     }
