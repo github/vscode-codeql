@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import {
   VariantAnalysis as VariantAnalysisDomainModel,
   VariantAnalysisScannedRepositoryResult,
+  VariantAnalysisScannedRepositoryState,
 } from '../../remote-queries/shared/variant-analysis';
-import { VariantAnalysisContainer } from './VariantAnalysisContainer';
 import { VariantAnalysisHeader } from './VariantAnalysisHeader';
 import { VariantAnalysisOutcomePanels } from './VariantAnalysisOutcomePanels';
 import { VariantAnalysisLoading } from './VariantAnalysisLoading';
@@ -48,8 +48,50 @@ const repositoryResults: VariantAnalysisScannedRepositoryResult[] = [
   }
 ];
 
-function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
-  if (variantAnalysis.actionsWorkflowRunId === undefined) {
+type Props = {
+  variantAnalysis?: VariantAnalysisDomainModel;
+  repoStates?: VariantAnalysisScannedRepositoryState[];
+  repoResults?: VariantAnalysisScannedRepositoryResult[];
+}
+
+export function VariantAnalysis({
+  variantAnalysis: initialVariantAnalysis,
+  repoStates: initialRepoStates = [],
+  repoResults: initialRepoResults = repositoryResults,
+}: Props): JSX.Element {
+  const [variantAnalysis, setVariantAnalysis] = useState<VariantAnalysisDomainModel | undefined>();
+  const [repoStates, setRepoStates] = useState<VariantAnalysisScannedRepositoryState[]>(initialRepoStates);
+  const [repoResults, setRepoResults] = useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
+
+  useEffect(() => {
+    window.addEventListener('message', (evt: MessageEvent) => {
+      if (evt.origin === window.origin) {
+        const msg: ToVariantAnalysisMessage = evt.data;
+        if (msg.t === 'setVariantAnalysis') {
+          setVariantAnalysis(msg.variantAnalysis);
+          vscode.setState({
+            variantAnalysisId: msg.variantAnalysis.id,
+          });
+        } else if (msg.t === 'setRepoResults') {
+          setRepoResults(oldRepoResults => {
+            const newRepoIds = msg.repoResults.map(r => r.repositoryId);
+            return [...oldRepoResults.filter(v => !newRepoIds.includes(v.repositoryId)), ...msg.repoResults];
+          });
+        } else if (msg.t === 'setRepoStates') {
+          setRepoStates(oldRepoStates => {
+            const newRepoIds = msg.repoStates.map(r => r.repositoryId);
+            return [...oldRepoStates.filter(v => !newRepoIds.includes(v.repositoryId)), ...msg.repoStates];
+          });
+        }
+      } else {
+        // sanitize origin
+        const origin = evt.origin.replace(/\n|\r/g, '');
+        console.error(`Invalid event origin ${origin}`);
+      }
+    });
+  });
+
+  if (variantAnalysis?.actionsWorkflowRunId === undefined) {
     return <VariantAnalysisLoading />;
   }
 
@@ -66,46 +108,9 @@ function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
       />
       <VariantAnalysisOutcomePanels
         variantAnalysis={variantAnalysis}
-        repositoryResults={repositoryResults}
+        repositoryStates={repoStates}
+        repositoryResults={repoResults}
       />
     </>
-  );
-}
-
-type Props = {
-  variantAnalysis?: VariantAnalysisDomainModel;
-}
-
-export function VariantAnalysis({
-  variantAnalysis: initialVariantAnalysis,
-}: Props): JSX.Element {
-  const [variantAnalysis, setVariantAnalysis] = useState<VariantAnalysisDomainModel | undefined>(initialVariantAnalysis);
-
-  useEffect(() => {
-    window.addEventListener('message', (evt: MessageEvent) => {
-      if (evt.origin === window.origin) {
-        const msg: ToVariantAnalysisMessage = evt.data;
-        if (msg.t === 'setVariantAnalysis') {
-          setVariantAnalysis(msg.variantAnalysis);
-          vscode.setState({
-            variantAnalysisId: msg.variantAnalysis.id,
-          });
-        }
-      } else {
-        // sanitize origin
-        const origin = evt.origin.replace(/\n|\r/g, '');
-        console.error(`Invalid event origin ${origin}`);
-      }
-    });
-  });
-
-  if (!variantAnalysis) {
-    return <VariantAnalysisLoading />;
-  }
-
-  return (
-    <VariantAnalysisContainer>
-      {getContainerContents(variantAnalysis)}
-    </VariantAnalysisContainer>
   );
 }

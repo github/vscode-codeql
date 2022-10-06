@@ -23,7 +23,20 @@ export function processVariantAnalysis(
   submission: VariantAnalysisSubmission,
   response: ApiVariantAnalysis
 ): VariantAnalysis {
+  return processUpdatedVariantAnalysis({
+    query: {
+      name: submission.query.name,
+      filePath: submission.query.filePath,
+      language: submission.query.language
+    },
+    databases: submission.databases,
+  }, response);
+}
 
+export function processUpdatedVariantAnalysis(
+  previousVariantAnalysis: Pick<VariantAnalysis, 'query' | 'databases'>,
+  response: ApiVariantAnalysis
+): VariantAnalysis {
   let scannedRepos: VariantAnalysisScannedRepository[] = [];
   let skippedRepos: VariantAnalysisSkippedRepositories = {};
 
@@ -39,11 +52,11 @@ export function processVariantAnalysis(
     id: response.id,
     controllerRepoId: response.controller_repo.id,
     query: {
-      name: submission.query.name,
-      filePath: submission.query.filePath,
-      language: submission.query.language
+      name: previousVariantAnalysis.query.name,
+      filePath: previousVariantAnalysis.query.filePath,
+      language: previousVariantAnalysis.query.language
     },
-    databases: submission.databases,
+    databases: previousVariantAnalysis.databases,
     status: processApiStatus(response.status),
     actionsWorkflowRunId: response.actions_workflow_run_id,
     scannedRepos: scannedRepos,
@@ -87,7 +100,11 @@ function processSkippedRepositories(
   };
 }
 
-function processRepoGroup(repoGroup: ApiVariantAnalysisSkippedRepositoryGroup): VariantAnalysisSkippedRepositoryGroup {
+function processRepoGroup(repoGroup: ApiVariantAnalysisSkippedRepositoryGroup | undefined): VariantAnalysisSkippedRepositoryGroup | undefined {
+  if (!repoGroup) {
+    return undefined;
+  }
+
   const repos = repoGroup.repositories.map(repo => {
     return {
       id: repo.id,
@@ -101,7 +118,11 @@ function processRepoGroup(repoGroup: ApiVariantAnalysisSkippedRepositoryGroup): 
   };
 }
 
-function processNotFoundRepoGroup(repoGroup: ApiVariantAnalysisNotFoundRepositoryGroup): VariantAnalysisSkippedRepositoryGroup {
+function processNotFoundRepoGroup(repoGroup: ApiVariantAnalysisNotFoundRepositoryGroup | undefined): VariantAnalysisSkippedRepositoryGroup | undefined {
+  if (!repoGroup) {
+    return undefined;
+  }
+
   const repo_full_names = repoGroup.repository_full_names.map(nwo => {
     return {
       fullName: nwo

@@ -178,6 +178,7 @@ export interface CodeQLExtensionInterface {
   readonly distributionManager: DistributionManager;
   readonly databaseManager: DatabaseManager;
   readonly databaseUI: DatabaseUI;
+  readonly variantAnalysisManager: VariantAnalysisManager;
   readonly dispose: () => void;
 }
 
@@ -400,7 +401,7 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     allowAutoUpdating: !!ctx.globalState.get(shouldUpdateOnNextActivationKey)
   });
 
-  variantAnalysisViewSerializer.onExtensionLoaded();
+  variantAnalysisViewSerializer.onExtensionLoaded(codeQlExtension.variantAnalysisManager);
 
   return codeQlExtension;
 }
@@ -946,16 +947,14 @@ async function activateWithInstalledDistribution(
       // Generate a random variant analysis ID for testing
       const variantAnalysisId: number = Math.floor(Math.random() * 1000000);
 
-      const variantAnalysisView = new VariantAnalysisView(ctx, variantAnalysisId);
-      void variantAnalysisView.openView();
+      await variantAnalysisManager.showView(variantAnalysisId);
     })
   );
 
   // The "openVariantAnalysisView" command is internal-only.
   ctx.subscriptions.push(
     commandRunner('codeQL.openVariantAnalysisView', async (variantAnalysisId: number) => {
-      const variantAnalysisView = new VariantAnalysisView(ctx, variantAnalysisId);
-      void variantAnalysisView.openView();
+      await variantAnalysisManager.showView(variantAnalysisId);
     })
   );
 
@@ -1173,6 +1172,7 @@ async function activateWithInstalledDistribution(
     distributionManager,
     databaseManager: dbm,
     databaseUI,
+    variantAnalysisManager,
     dispose: () => {
       ctx.subscriptions.forEach(d => d.dispose());
     }

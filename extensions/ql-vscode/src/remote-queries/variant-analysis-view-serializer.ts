@@ -1,18 +1,22 @@
 import { ExtensionContext, WebviewPanel, WebviewPanelSerializer } from 'vscode';
 import { VariantAnalysisView } from './variant-analysis-view';
 import { VariantAnalysisState } from '../pure/interface-types';
+import { VariantAnalysisViewManager } from './variant-analysis-view-manager';
 
 export class VariantAnalysisViewSerializer implements WebviewPanelSerializer {
-  private extensionLoaded = false;
-  private readonly resolvePromises: (() => void)[] = [];
+  private resolvePromises: ((value: VariantAnalysisViewManager<VariantAnalysisView>) => void)[] = [];
+
+  private manager?: VariantAnalysisViewManager<VariantAnalysisView>;
 
   public constructor(
-    private readonly ctx: ExtensionContext
+    private readonly ctx: ExtensionContext,
   ) { }
 
-  onExtensionLoaded(): void {
-    this.extensionLoaded = true;
-    this.resolvePromises.forEach((resolve) => resolve());
+  onExtensionLoaded(manager: VariantAnalysisViewManager<VariantAnalysisView>): void {
+    this.manager = manager;
+
+    this.resolvePromises.forEach((resolve) => resolve(manager));
+    this.resolvePromises = [];
   }
 
   async deserializeWebviewPanel(webviewPanel: WebviewPanel, state: unknown): Promise<void> {
@@ -26,18 +30,18 @@ export class VariantAnalysisViewSerializer implements WebviewPanelSerializer {
 
     const variantAnalysisState: VariantAnalysisState = state as VariantAnalysisState;
 
-    await this.waitForExtensionFullyLoaded();
+    const manager = await this.waitForExtensionFullyLoaded();
 
-    const view = new VariantAnalysisView(this.ctx, variantAnalysisState.variantAnalysisId);
+    const view = new VariantAnalysisView(this.ctx, variantAnalysisState.variantAnalysisId, manager);
     await view.restoreView(webviewPanel);
   }
 
-  private waitForExtensionFullyLoaded(): Promise<void> {
-    if (this.extensionLoaded) {
-      return Promise.resolve();
+  private waitForExtensionFullyLoaded(): Promise<VariantAnalysisViewManager<VariantAnalysisView>> {
+    if (this.manager) {
+      return Promise.resolve(this.manager);
     }
 
-    return new Promise((resolve) => {
+    return new Promise<VariantAnalysisViewManager<VariantAnalysisView>>((resolve) => {
       this.resolvePromises.push(resolve);
     });
   }

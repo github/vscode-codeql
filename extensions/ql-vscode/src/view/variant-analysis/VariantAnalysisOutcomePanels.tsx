@@ -2,13 +2,18 @@ import * as React from 'react';
 import styled from 'styled-components';
 import { VSCodeBadge, VSCodePanels, VSCodePanelTab, VSCodePanelView } from '@vscode/webview-ui-toolkit/react';
 import { formatDecimal } from '../../pure/number';
-import { VariantAnalysis, VariantAnalysisScannedRepositoryResult } from '../../remote-queries/shared/variant-analysis';
+import {
+  VariantAnalysis,
+  VariantAnalysisScannedRepositoryResult,
+  VariantAnalysisScannedRepositoryState
+} from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
 import { Alert } from '../common';
 import { VariantAnalysisSkippedRepositoriesTab } from './VariantAnalysisSkippedRepositoriesTab';
 
 export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
+  repositoryStates?: VariantAnalysisScannedRepositoryState[];
   repositoryResults?: VariantAnalysisScannedRepositoryResult[];
 };
 
@@ -34,6 +39,7 @@ const WarningsContainer = styled.div`
 
 export const VariantAnalysisOutcomePanels = ({
   variantAnalysis,
+  repositoryStates,
   repositoryResults,
 }: VariantAnalysisOutcomePanelProps) => {
   const noCodeqlDbRepos = variantAnalysis.skippedRepos?.noCodeqlDbRepos;
@@ -64,7 +70,11 @@ export const VariantAnalysisOutcomePanels = ({
     return (
       <>
         {warnings}
-        <VariantAnalysisAnalyzedRepos variantAnalysis={variantAnalysis} repositoryResults={repositoryResults} />
+        <VariantAnalysisAnalyzedRepos
+          variantAnalysis={variantAnalysis}
+          repositoryStates={repositoryStates}
+          repositoryResults={repositoryResults}
+        />
       </>
     );
   }
@@ -89,7 +99,13 @@ export const VariantAnalysisOutcomePanels = ({
             <VSCodeBadge appearance="secondary">{formatDecimal(noCodeqlDbRepos.repositoryCount)}</VSCodeBadge>
           </Tab>
         )}
-        <VSCodePanelView><VariantAnalysisAnalyzedRepos variantAnalysis={variantAnalysis} repositoryResults={repositoryResults} /></VSCodePanelView>
+        <VSCodePanelView>
+          <VariantAnalysisAnalyzedRepos
+            variantAnalysis={variantAnalysis}
+            repositoryStates={repositoryStates}
+            repositoryResults={repositoryResults}
+          />
+        </VSCodePanelView>
         {notFoundRepos?.repositoryCount &&
           <VSCodePanelView>
             <VariantAnalysisSkippedRepositoriesTab

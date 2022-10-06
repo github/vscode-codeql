@@ -7,23 +7,50 @@ import {
   VariantAnalysis,
   VariantAnalysisQueryLanguage,
   VariantAnalysisRepoStatus,
+  VariantAnalysisScannedRepositoryState,
   VariantAnalysisStatus
 } from './shared/variant-analysis';
+import { VariantAnalysisViewInterface, VariantAnalysisViewManager } from './variant-analysis-view-manager';
 
-export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage> {
+export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage> implements VariantAnalysisViewInterface {
   public static readonly viewType = 'codeQL.variantAnalysis';
 
   public constructor(
     ctx: ExtensionContext,
-    private readonly variantAnalysisId: number
+    public readonly variantAnalysisId: number,
+    private readonly manager: VariantAnalysisViewManager<VariantAnalysisView>,
   ) {
     super(ctx);
+
+    manager.registerView(this);
   }
 
   public async openView() {
     this.getPanel().reveal(undefined, true);
 
     await this.waitForPanelLoaded();
+  }
+
+  public async updateView(variantAnalysis: VariantAnalysis): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: 'setVariantAnalysis',
+      variantAnalysis,
+    });
+  }
+
+  public async updateRepoState(repoState: VariantAnalysisScannedRepositoryState): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: 'setRepoStates',
+      repoStates: [repoState],
+    });
   }
 
   protected getPanelConfig(): WebviewPanelConfig {
@@ -37,7 +64,7 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
   }
 
   protected onPanelDispose(): void {
-    // Nothing to dispose currently.
+    this.manager.unregisterView(this);
   }
 
   protected async onMessage(msg: FromVariantAnalysisMessage): Promise<void> {
