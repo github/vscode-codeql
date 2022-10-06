@@ -27,6 +27,7 @@ import {
   ALERTS_TABLE_NAME,
   GRAPH_TABLE_NAME,
   RawResultsSortState,
+  NavigationDirection,
 } from './pure/interface-types';
 import { Logger } from './logging';
 import { commandRunner } from './commandRunner';
@@ -144,26 +145,26 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     void logger.log('Registering path-step navigation commands.');
     this.push(
       commandRunner(
-        'codeQLQueryResults.nextPathStep',
-        this.navigatePathStep.bind(this, 1)
+        'codeQLQueryResults.nextPathStep', // TODO: deprecate the old commands and make them forward to new commands named 'up/down'
+        this.navigateResultView.bind(this, NavigationDirection.down)
       )
     );
     this.push(
       commandRunner(
         'codeQLQueryResults.previousPathStep',
-        this.navigatePathStep.bind(this, -1)
+        this.navigateResultView.bind(this, NavigationDirection.up)
       )
     );
     this.push(
       commandRunner(
-        'codeQLQueryResults.nextAlert',
-        this.navigateAlert.bind(this, 1)
+        'codeQLQueryResults.right',
+        this.navigateResultView.bind(this, NavigationDirection.right)
       )
     );
     this.push(
       commandRunner(
-        'codeQLQueryResults.previousAlert',
-        this.navigateAlert.bind(this, -1)
+        'codeQLQueryResults.left',
+        this.navigateResultView.bind(this, NavigationDirection.left)
       )
     );
 
@@ -181,12 +182,8 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     );
   }
 
-  async navigatePathStep(direction: number): Promise<void> {
-    await this.postMessage({ t: 'navigatePath', direction });
-  }
-
-  async navigateAlert(direction: number): Promise<void> {
-    await this.postMessage({ t: 'navigateAlert', direction });
+  async navigateResultView(direction: NavigationDirection): Promise<void> {
+    await this.postMessage({ t: 'navigate', direction });
   }
 
   protected getPanelConfig(): WebviewPanelConfig {

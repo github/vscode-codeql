@@ -3,9 +3,9 @@ import * as React from 'react';
 import * as Sarif from 'sarif';
 import * as Keys from '../../pure/result-keys';
 import * as octicons from './octicons';
-import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection, emptyQueryResultsMessage } from './result-table-utils';
-import { onNavigation, NavigationEvent } from './results';
-import { InterpretedResultSet, NavigateAlertMsg, NavigatePathMsg, SarifInterpretationData } from '../../pure/interface-types';
+import { className, renderLocation, ResultTableProps, selectableZebraStripe, jumpToLocation, nextSortDirection, emptyQueryResultsMessage } from './result-table-utils';
+import { onNavigation } from './results';
+import { InterpretedResultSet, NavigateMsg, NavigationDirection, SarifInterpretationData } from '../../pure/interface-types';
 import {
   parseSarifPlainTextMessage,
   parseSarifLocation,
@@ -18,7 +18,7 @@ import { isWholeFileLoc, isLineColumnLoc } from '../../pure/bqrs-utils';
 export type PathTableProps = ResultTableProps & { resultSet: InterpretedResultSet<SarifInterpretationData> };
 export interface PathTableState {
   expanded: Set<string>;
-  selectedItem: undefined | Keys.PathNode | Keys.Result;
+  selectedItem: undefined | Keys.ResultKey;
 }
 
 export class PathTable extends React.Component<PathTableProps, PathTableState> {
@@ -246,8 +246,9 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           const currentPathExpanded = this.state.expanded.has(Keys.keyToString(pathKey));
           if (currentResultExpanded) {
             const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
+            const isPathSpecificallySelected = Keys.equalsNotUndefined(pathKey, selectedItem);
             rows.push(
-              <tr {...zebraStripe(resultIndex)} key={`${resultIndex}-${pathIndex}`}>
+              <tr {...selectableZebraStripe(isPathSpecificallySelected, resultIndex)} key={`${resultIndex}-${pathIndex}`}>
                 <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                 <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler([pathKey])}>{indicator}</td>
                 <td className="vscode-codeql__text-center" colSpan={3}>
@@ -302,82 +303,89 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     </table>;
   }
 
-  private handleNavigationEvent(event: NavigationEvent) {
-    switch (event.t) {
-      case 'navigatePath': {
-        this.handleNavigatePathStepEvent(event);
-        break;
+  private handleNavigationEvent(event: NavigateMsg) {
+    this.setState(prevState => {
+      const key = this.getNewSelection(prevState.selectedItem, event.direction);
+      const data = this.props.resultSet.interpretation.data;
+
+      // Check if the selected node actually exists (bounds check) and get its location if relevant
+      let jumpLocation: Sarif.Location | undefined;
+      if (key.pathNodeIndex != null) {
+        jumpLocation = Keys.getPathNode(data, key);
+        if (jumpLocation == null) {
+          return prevState; // Result does not exist
+        }
+      } else if (key.pathIndex != null) {
+        if (Keys.getPath(data, key) == null) {
+          return prevState; // Path does not exist
+        }
+        jumpLocation = undefined; // When selecting a 'path', don't jump anywhere.
+      } else {
+        jumpLocation = Keys.getResult(data, key)?.locations?.[0];
+        if (jumpLocation == null) {
+          return prevState; // Path step does not exist.
+        }
       }
-      case 'navigateAlert': {
-        this.handleNavigateAlertEvent(event);
-        break;
+      if (jumpLocation !== undefined) {
+        const parsedLocation = parseSarifLocation(jumpLocation, this.props.resultSet.interpretation.sourceLocationPrefix);
+        if (!isNoLocation(parsedLocation)) {
+          jumpToLocation(parsedLocation, this.props.databaseUri);
+        }
       }
+
+      const expanded = new Set(prevState.expanded);
+      if (event.direction === NavigationDirection.right) {
+        // When stepping right, expand to ensure the selected node is visible
+        expanded.add(Keys.keyToString({ resultIndex: key.resultIndex }));
+        if (key.pathIndex != null) {
+          expanded.add(Keys.keyToString({ resultIndex: key.resultIndex, pathIndex: key.pathIndex }));
+        }
+      } else if (event.direction === NavigationDirection.left) {
+        // When stepping left, collapse immediately
+        expanded.delete(Keys.keyToString(key));
+      }
+      return {
+        ...prevState,
+        expanded,
+        selectedItem: key
+      };
+    });
+  }
+
+  private getNewSelection(key: Keys.ResultKey | undefined, direction: NavigationDirection): Keys.ResultKey {
+    if (key === undefined) {
+      return { resultIndex: 0 };
     }
-  }
-
-  private handleNavigatePathStepEvent(event: NavigatePathMsg) {
-    this.setState(prevState => {
-      const { selectedItem } = prevState;
-      if (selectedItem === undefined) return prevState;
-
-      const selectedPath = selectedItem.pathIndex !== undefined
-        ? selectedItem
-        : { ...selectedItem, pathIndex: 0 };
-
-      const path = Keys.getPath(this.props.resultSet.interpretation.data, selectedPath);
-      if (path === undefined) return prevState;
-
-      const nextIndex = selectedItem.pathNodeIndex !== undefined
-        ? (selectedItem.pathNodeIndex + event.direction)
-        : 0;
-      if (nextIndex < 0 || nextIndex >= path.locations.length) return prevState;
-
-      const sarifLoc = path.locations[nextIndex].location;
-      if (sarifLoc === undefined) {
-        return prevState;
+    const { resultIndex, pathIndex, pathNodeIndex } = key;
+    switch (direction) {
+      case NavigationDirection.up:
+      case NavigationDirection.down: {
+        const delta = direction === NavigationDirection.up ? -1 : 1;
+        if (key.pathNodeIndex !== undefined) {
+          return { resultIndex, pathIndex: key.pathIndex, pathNodeIndex: key.pathNodeIndex + delta };
+        } else if (pathIndex !== undefined) {
+          return { resultIndex, pathIndex: pathIndex + delta };
+        } else {
+          return { resultIndex: resultIndex + delta };
+        }
       }
-
-      const loc = parseSarifLocation(sarifLoc, this.props.resultSet.interpretation.sourceLocationPrefix);
-      if (isNoLocation(loc)) {
-        return prevState;
-      }
-
-      jumpToLocation(loc, this.props.databaseUri);
-      const newSelection = { ...selectedPath, pathNodeIndex: nextIndex };
-      const newExpanded = new Set(prevState.expanded);
-      // In case we're jumping from the main alert row to its first path step, expand the enclosing nodes so the selected
-      // node is actually visible.
-      newExpanded.add(Keys.keyToString({ resultIndex: newSelection.resultIndex }));
-      newExpanded.add(Keys.keyToString({ resultIndex: newSelection.resultIndex, pathIndex: newSelection.pathIndex }));
-      return { ...prevState, selectedItem: newSelection, expanded: newExpanded };
-    });
-  }
-
-  private handleNavigateAlertEvent(event: NavigateAlertMsg) {
-    this.setState(prevState => {
-      const { selectedItem } = prevState;
-      if (selectedItem === undefined) return prevState;
-
-      const nextIndex = selectedItem.resultIndex + event.direction;
-      const nextSelection = { resultIndex: nextIndex };
-      const result = Keys.getResult(this.props.resultSet.interpretation.data, nextSelection);
-      if (result === undefined) {
-        return prevState;
-      }
-
-      const sarifLoc = result.locations?.[0];
-      if (sarifLoc === undefined) {
-        return prevState;
-      }
-
-      const loc = parseSarifLocation(sarifLoc, this.props.resultSet.interpretation.sourceLocationPrefix);
-      if (isNoLocation(loc)) {
-        return prevState;
-      }
-
-      jumpToLocation(loc, this.props.databaseUri);
-      return { ...prevState, selectedItem: nextSelection };
-    });
+      case NavigationDirection.left:
+        if (key.pathNodeIndex !== undefined) {
+          return { resultIndex, pathIndex: key.pathIndex };
+        } else if (pathIndex !== undefined) {
+          return { resultIndex };
+        } else {
+          return key;
+        }
+      case NavigationDirection.right:
+        if (pathIndex === undefined) {
+          return { resultIndex, pathIndex: 0 };
+        } else if (pathNodeIndex === undefined) {
+          return { resultIndex, pathIndex, pathNodeIndex: 0 };
+        } else {
+          return key;
+        }
+    }
   }
 
   componentDidMount() {

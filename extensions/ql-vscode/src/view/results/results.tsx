@@ -6,13 +6,12 @@ import {
   IntoResultsViewMsg,
   SortedResultSetInfo,
   RawResultsSortState,
-  NavigatePathMsg,
-  NavigateAlertMsg,
   QueryMetadata,
   ResultsPaths,
   ALERTS_TABLE_NAME,
   GRAPH_TABLE_NAME,
   ParsedResultSets,
+  NavigateMsg,
 } from '../../pure/interface-types';
 import { EventHandlers as EventHandlerList } from './event-handler-list';
 import { ResultTables } from './result-tables';
@@ -63,12 +62,10 @@ interface ResultsViewState {
   isExpectingResultsUpdate: boolean;
 }
 
-export type NavigationEvent = NavigatePathMsg | NavigateAlertMsg;
-
 /**
  * Event handlers to be notified of navigation events coming from outside the webview.
  */
-export const onNavigation = new EventHandlerList<NavigationEvent>();
+export const onNavigation = new EventHandlerList<NavigateMsg>();
 
 /**
  * A minimal state container for displaying results.
@@ -146,8 +143,7 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
           isExpectingResultsUpdate: true,
         });
         break;
-      case 'navigatePath':
-      case 'navigateAlert':
+      case 'navigate':
         onNavigation.fire(msg);
         break;
 

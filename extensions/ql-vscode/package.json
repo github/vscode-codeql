@@ -595,19 +595,19 @@
       },
       {
         "command": "codeQLQueryResults.nextPathStep",
-        "title": "CodeQL: Show Next Step on Path"
+        "title": "CodeQL: Navigate down in result viewer"
       },
       {
         "command": "codeQLQueryResults.previousPathStep",
-        "title": "CodeQL: Show Previous Step on Path"
+        "title": "CodeQL: Navigate up in result viewer"
       },
       {
-        "command": "codeQLQueryResults.nextAlert",
-        "title": "CodeQL: Show Next Alert"
+        "command": "codeQLQueryResults.right",
+        "title": "CodeQL: Navigate right in result viewer"
       },
       {
-        "command": "codeQLQueryResults.previousAlert",
-        "title": "CodeQL: Show Previous Alert"
+        "command": "codeQLQueryResults.left",
+        "title": "CodeQL: Navigate left in result viewer"
       },
       {
         "command": "codeQL.restartQueryServer",
