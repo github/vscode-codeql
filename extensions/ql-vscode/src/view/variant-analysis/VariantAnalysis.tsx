@@ -5,10 +5,9 @@ import { ToVariantAnalysisMessage } from '../../pure/interface-types';
 import {
   VariantAnalysis as VariantAnalysisDomainModel,
   VariantAnalysisQueryLanguage,
-  VariantAnalysisRepoStatus, VariantAnalysisScannedRepositoryResult,
+  VariantAnalysisRepoStatus, VariantAnalysisScannedRepositoryResult, VariantAnalysisScannedRepositoryState,
   VariantAnalysisStatus
 } from '../../remote-queries/shared/variant-analysis';
-import { VariantAnalysisContainer } from './VariantAnalysisContainer';
 import { VariantAnalysisHeader } from './VariantAnalysisHeader';
 import { VariantAnalysisOutcomePanels } from './VariantAnalysisOutcomePanels';
 import { VariantAnalysisLoading } from './VariantAnalysisLoading';
@@ -200,7 +199,46 @@ const repositoryResults: VariantAnalysisScannedRepositoryResult[] = [
   }
 ];
 
-function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
+type Props = {
+  variantAnalysis?: VariantAnalysisDomainModel;
+  repoStates?: VariantAnalysisScannedRepositoryState[];
+  repoResults?: VariantAnalysisScannedRepositoryResult[];
+}
+
+export function VariantAnalysis({
+  variantAnalysis: initialVariantAnalysis = variantAnalysis,
+  repoStates: initialRepoStates = [],
+  repoResults: initialRepoResults = repositoryResults,
+}: Props): JSX.Element {
+  const [variantAnalysis, setVariantAnalysis] = useState<VariantAnalysisDomainModel>(initialVariantAnalysis);
+  const [repoStates, setRepoStates] = useState<VariantAnalysisScannedRepositoryState[]>(initialRepoStates);
+  const [repoResults, setRepoResults] = useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
+
+  useEffect(() => {
+    window.addEventListener('message', (evt: MessageEvent) => {
+      if (evt.origin === window.origin) {
+        const msg: ToVariantAnalysisMessage = evt.data;
+        if (msg.t === 'setVariantAnalysis') {
+          setVariantAnalysis(msg.variantAnalysis);
+        } else if (msg.t === 'setRepoResults') {
+          setRepoResults(oldRepoResults => {
+            const newRepoIds = msg.repoResults.map(r => r.repositoryId);
+            return [...oldRepoResults.filter(v => !newRepoIds.includes(v.repositoryId)), ...msg.repoResults];
+          });
+        } else if (msg.t === 'setRepoStates') {
+          setRepoStates(oldRepoStates => {
+            const newRepoIds = msg.repoStates.map(r => r.repositoryId);
+            return [...oldRepoStates.filter(v => !newRepoIds.includes(v.repositoryId)), ...msg.repoStates];
+          });
+        }
+      } else {
+        // sanitize origin
+        const origin = evt.origin.replace(/\n|\r/g, '');
+        console.error(`Invalid event origin ${origin}`);
+      }
+    });
+  });
+
   if (variantAnalysis.actionsWorkflowRunId === undefined) {
     return <VariantAnalysisLoading />;
   }
@@ -218,39 +256,9 @@ function getContainerContents(variantAnalysis: VariantAnalysisDomainModel) {
       />
       <VariantAnalysisOutcomePanels
         variantAnalysis={variantAnalysis}
-        repositoryResults={repositoryResults}
+        repositoryStates={repoStates}
+        repositoryResults={repoResults}
       />
     </>
-  );
-}
-
-type Props = {
-  variantAnalysis?: VariantAnalysisDomainModel;
-}
-
-export function VariantAnalysis({
-  variantAnalysis: initialVariantAnalysis = variantAnalysis,
-}: Props): JSX.Element {
-  const [variantAnalysis, setVariantAnalysis] = useState<VariantAnalysisDomainModel>(initialVariantAnalysis);
-
-  useEffect(() => {
-    window.addEventListener('message', (evt: MessageEvent) => {
-      if (evt.origin === window.origin) {
-        const msg: ToVariantAnalysisMessage = evt.data;
-        if (msg.t === 'setVariantAnalysis') {
-          setVariantAnalysis(msg.variantAnalysis);
-        }
-      } else {
-        // sanitize origin
-        const origin = evt.origin.replace(/\n|\r/g, '');
-        console.error(`Invalid event origin ${origin}`);
-      }
-    });
-  });
-
-  return (
-    <VariantAnalysisContainer>
-      {getContainerContents(variantAnalysis)}
-    </VariantAnalysisContainer>
   );
 }

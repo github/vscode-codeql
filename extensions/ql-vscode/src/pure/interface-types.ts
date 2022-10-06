@@ -2,7 +2,11 @@ import * as sarif from 'sarif';
 import { AnalysisResults } from '../remote-queries/shared/analysis-result';
 import { AnalysisSummary, RemoteQueryResult } from '../remote-queries/shared/remote-query-result';
 import { RawResultSet, ResultRow, ResultSetSchema, Column, ResolvableLocationValue } from './bqrs-cli-types';
-import { VariantAnalysis } from '../remote-queries/shared/variant-analysis';
+import {
+  VariantAnalysis,
+  VariantAnalysisScannedRepositoryResult,
+  VariantAnalysisScannedRepositoryState,
+} from '../remote-queries/shared/variant-analysis';
 
 /**
  * This module contains types and code that are shared between
@@ -436,8 +440,20 @@ export interface SetVariantAnalysisMessage {
   variantAnalysis: VariantAnalysis;
 }
 
+export interface SetRepoResultsMessage {
+  t: 'setRepoResults';
+  repoResults: VariantAnalysisScannedRepositoryResult[];
+}
+
+export interface SetRepoStatesMessage {
+  t: 'setRepoStates';
+  repoStates: VariantAnalysisScannedRepositoryState[];
+}
+
 export type ToVariantAnalysisMessage =
-  | SetVariantAnalysisMessage;
+  | SetVariantAnalysisMessage
+  | SetRepoResultsMessage
+  | SetRepoStatesMessage;
 
 export type FromVariantAnalysisMessage =
   | ViewLoadedMsg;

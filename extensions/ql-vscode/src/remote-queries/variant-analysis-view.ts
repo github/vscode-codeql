@@ -3,7 +3,7 @@ import { AbstractWebview, WebviewPanelConfig } from '../abstract-webview';
 import { WebviewMessage } from '../interface-utils';
 import { logger } from '../logging';
 import { VariantAnalysisViewInterface, VariantAnalysisViewManager } from './variant-analysis-view-manager';
-import { VariantAnalysis } from './shared/variant-analysis';
+import { VariantAnalysis, VariantAnalysisScannedRepositoryState } from './shared/variant-analysis';
 import { FromVariantAnalysisMessage, ToVariantAnalysisMessage } from '../pure/interface-types';
 
 export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage> implements VariantAnalysisViewInterface {
@@ -29,6 +29,17 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
     await this.postMessage({
       t: 'setVariantAnalysis',
       variantAnalysis,
+    });
+  }
+
+  public async updateRepoState(repoState: VariantAnalysisScannedRepositoryState): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: 'setRepoStates',
+      repoStates: [repoState],
     });
   }
 

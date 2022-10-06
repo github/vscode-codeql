@@ -2,7 +2,11 @@ import * as React from 'react';
 import { useCallback, useState } from 'react';
 import styled from 'styled-components';
 import { VSCodeBadge, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
-import { isCompletedAnalysisRepoStatus, VariantAnalysisRepoStatus } from '../../remote-queries/shared/variant-analysis';
+import {
+  isCompletedAnalysisRepoStatus,
+  VariantAnalysisRepoStatus,
+  VariantAnalysisScannedRepositoryDownloadStatus
+} from '../../remote-queries/shared/variant-analysis';
 import { formatDecimal } from '../../pure/number';
 import { Codicon, ErrorIcon, LoadingIcon, SuccessIcon, WarningIcon } from '../common';
 import { Repository } from '../../remote-queries/shared/repository';
@@ -62,6 +66,7 @@ export type RepoRowProps = {
   // Only fullName is required
   repository: Partial<Repository> & Pick<Repository, 'fullName'>;
   status?: VariantAnalysisRepoStatus;
+  downloadStatus?: VariantAnalysisScannedRepositoryDownloadStatus;
   resultCount?: number;
 
   interpretedResults?: AnalysisAlert[];
@@ -71,6 +76,7 @@ export type RepoRowProps = {
 export const RepoRow = ({
   repository,
   status,
+  downloadStatus,
   resultCount,
   interpretedResults,
   rawResults,
@@ -99,6 +105,7 @@ export const RepoRow = ({
           {status === VariantAnalysisRepoStatus.InProgress && <LoadingIcon label="In progress" />}
           {!status && <WarningIcon />}
         </span>
+        {downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.InProgress && <LoadingIcon label="Downloading" />}
       </TitleContainer>
       {isExpanded && status &&
         <AnalyzedRepoItemContent status={status} interpretedResults={interpretedResults} rawResults={rawResults} />}
