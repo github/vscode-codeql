@@ -956,6 +956,12 @@ async function activateWithInstalledDistribution(
     })
   );
 
+  ctx.subscriptions.push(
+    commandRunner('codeQL.loadVariantAnalysisRepoResults', async (variantAnalysisId: number, repositoryFullName: string) => {
+      await variantAnalysisManager.loadResults(variantAnalysisId, repositoryFullName);
+    })
+  );
+
   // The "openVariantAnalysisView" command is internal-only.
   ctx.subscriptions.push(
     commandRunner('codeQL.openVariantAnalysisView', async (variantAnalysisId: number) => {
