@@ -91,7 +91,7 @@ export const RepoRow = ({
       return;
     }
 
-    if (resultsLoaded) {
+    if (resultsLoaded || status !== VariantAnalysisRepoStatus.Succeeded) {
       setExpanded(oldIsExpanded => !oldIsExpanded);
       return;
     }
@@ -102,15 +102,17 @@ export const RepoRow = ({
     });
 
     setResultsLoading(true);
-  }, [resultsLoading, resultsLoaded, repository.fullName]);
+  }, [resultsLoading, resultsLoaded, repository.fullName, status]);
 
   useEffect(() => {
-    if (resultsLoaded) {
+    if (resultsLoaded && resultsLoading) {
       setResultsLoading(false);
+      setExpanded(true);
     }
-  }, [resultsLoaded]);
+  }, [resultsLoaded, resultsLoading]);
 
   const disabled = !status || !isCompletedAnalysisRepoStatus(status);
+  const expandableContentLoaded = status && (status !== VariantAnalysisRepoStatus.Succeeded || resultsLoaded);
 
   return (
     <div>
@@ -130,7 +132,7 @@ export const RepoRow = ({
         </span>
         {downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.InProgress && <LoadingIcon label="Downloading" />}
       </TitleContainer>
-      {isExpanded && resultsLoaded && status &&
+      {isExpanded && expandableContentLoaded &&
         <AnalyzedRepoItemContent status={status} interpretedResults={interpretedResults} rawResults={rawResults} />}
     </div>
   );

@@ -164,6 +164,56 @@ describe(RepoRow.name, () => {
     screen.getByText('Error: Timed out');
   });
 
+  it('can expand the repo item when succeeded and loaded', async () => {
+    render({
+      status: VariantAnalysisRepoStatus.Succeeded,
+      interpretedResults: [],
+    });
+
+    await userEvent.click(screen.getByRole('button', {
+      expanded: false
+    }));
+
+    expect(screen.getByRole('button', {
+      expanded: true,
+    })).toBeInTheDocument();
+  });
+
+  it('can expand the repo item when succeeded and not loaded', async () => {
+    const { rerender } = render({
+      status: VariantAnalysisRepoStatus.Succeeded,
+    });
+
+    await userEvent.click(screen.getByRole('button', {
+      expanded: false
+    }));
+
+    expect((window as any).vsCodeApi.postMessage).toHaveBeenCalledWith({
+      t: 'requestRepositoryResults',
+      repositoryFullName: 'octodemo/hello-world-1',
+    });
+
+    expect(screen.getByRole('button', {
+      expanded: false,
+    })).toBeInTheDocument();
+
+    rerender(
+      <RepoRow
+        repository={{
+          id: 1,
+          fullName: 'octodemo/hello-world-1',
+          private: false,
+        }}
+        status={VariantAnalysisRepoStatus.Succeeded}
+        interpretedResults={[]}
+      />
+    );
+
+    expect(screen.getByRole('button', {
+      expanded: true,
+    })).toBeInTheDocument();
+  });
+
   it('does not allow expanding the repo item when status is undefined', async () => {
     render({
       status: undefined,

@@ -14,3 +14,11 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Store this on the window so we can mock it
+(window as any).vsCodeApi = {
+  postMessage: jest.fn(),
+  setState: jest.fn(),
+};
+
+(window as any).acquireVsCodeApi = () => (window as any).vsCodeApi;
