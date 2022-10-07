@@ -73,7 +73,7 @@ export function getPath(sarif: sarif.Log, key: Path | PathNode): sarif.ThreadFlo
 export function getPathNode(sarif: sarif.Log, key: PathNode): sarif.Location | undefined {
   const path = getPath(sarif, key);
   if (path === undefined) return undefined;
-  return path.locations[key.pathNodeIndex];
+  return path.locations[key.pathNodeIndex]?.location;
 }
 
 /**
