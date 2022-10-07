@@ -17,7 +17,7 @@ import { EventEmitter } from 'vscode';
 
 type CacheKey = `${number}/${string}`;
 
-const createCacheKey = (variantAnalysisId: number, repoTask: VariantAnalysisRepoTask): CacheKey => `${variantAnalysisId}/${repoTask.repository.full_name}`;
+const createCacheKey = (variantAnalysisId: number, repositoryFullName: string): CacheKey => `${variantAnalysisId}/${repositoryFullName}`;
 
 export type ResultDownloadedEvent = {
   variantAnalysisId: number;
@@ -69,28 +69,28 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   public async loadResults(
     variantAnalysisId: number,
-    repoTask: VariantAnalysisRepoTask
+    repositoryFullName: string
   ): Promise<VariantAnalysisScannedRepositoryResult> {
-    const result = this.cachedResults.get(createCacheKey(variantAnalysisId, repoTask));
+    const result = this.cachedResults.get(createCacheKey(variantAnalysisId, repositoryFullName));
 
-    return result ?? await this.loadResultsIntoMemory(variantAnalysisId, repoTask);
+    return result ?? await this.loadResultsIntoMemory(variantAnalysisId, repositoryFullName);
   }
 
   private async loadResultsIntoMemory(
     variantAnalysisId: number,
-    repoTask: VariantAnalysisRepoTask,
+    repositoryFullName: string,
   ): Promise<VariantAnalysisScannedRepositoryResult> {
-    const result = await this.loadResultsFromStorage(variantAnalysisId, repoTask);
-    this.cachedResults.set(createCacheKey(variantAnalysisId, repoTask), result);
+    const result = await this.loadResultsFromStorage(variantAnalysisId, repositoryFullName);
+    this.cachedResults.set(createCacheKey(variantAnalysisId, repositoryFullName), result);
     this._onResultLoaded.fire(result);
     return result;
   }
 
   private async loadResultsFromStorage(
     variantAnalysisId: number,
-    repoTask: VariantAnalysisRepoTask,
+    repositoryFullName: string,
   ): Promise<VariantAnalysisScannedRepositoryResult> {
-    if (!(await this.isVariantAnalysisRepoDownloaded(variantAnalysisId, repoTask))) {
+    if (!(await this.isVariantAnalysisRepoDownloaded(variantAnalysisId, repositoryFullName))) {
       throw new Error('Variant analysis results not downloaded');
     }
 
@@ -100,7 +100,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
     const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(repoTask.repository.full_name, repoTask.database_commit_sha);
 
-    const storageDirectory = this.getRepoStorageDirectory(variantAnalysisId, repoTask.repository.full_name);
+    const storageDirectory = this.getRepoStorageDirectory(variantAnalysisId, repositoryFullName);
 
     const sarifPath = path.join(storageDirectory, 'results.sarif');
     const bqrsPath = path.join(storageDirectory, 'results.bqrs');
@@ -129,9 +129,9 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   private async isVariantAnalysisRepoDownloaded(
     variantAnalysisId: number,
-    repoTask: VariantAnalysisRepoTask,
+    repositoryFullName: string,
   ): Promise<boolean> {
-    return await fs.pathExists(this.getRepoStorageDirectory(variantAnalysisId, repoTask.repository.full_name));
+    return await fs.pathExists(this.getRepoStorageDirectory(variantAnalysisId, repositoryFullName));
   }
 
   private async readBqrsResults(filePath: string, fileLinkPrefix: string, sourceLocationPrefix: string): Promise<AnalysisRawResults> {
