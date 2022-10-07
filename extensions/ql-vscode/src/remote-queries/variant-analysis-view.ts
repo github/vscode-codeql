@@ -7,6 +7,7 @@ import {
   VariantAnalysis,
   VariantAnalysisQueryLanguage,
   VariantAnalysisRepoStatus,
+  VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisStatus
 } from './shared/variant-analysis';
@@ -50,6 +51,17 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
     await this.postMessage({
       t: 'setRepoStates',
       repoStates: [repoState],
+    });
+  }
+
+  public async sendRepositoryResults(repositoryResult: VariantAnalysisScannedRepositoryResult[]): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: 'setRepoResults',
+      repoResults: repositoryResult,
     });
   }
 

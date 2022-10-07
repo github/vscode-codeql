@@ -12,6 +12,7 @@ import {
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryDownloadStatus,
+  VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState
 } from './shared/variant-analysis';
 import { getErrorMessage } from '../pure/helpers-pure';
@@ -37,6 +38,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.variantAnalysisMonitor.onVariantAnalysisChange(this.onVariantAnalysisUpdated.bind(this));
 
     this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, storagePath, logger));
+    this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
@@ -83,6 +85,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
 
     await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
+  }
+
+  private async onRepoResultLoaded(repositoryResult: VariantAnalysisScannedRepositoryResult): Promise<void> {
+    await this.getView(repositoryResult.variantAnalysisId)?.sendRepositoryResults([repositoryResult]);
   }
 
   private async onRepoStateUpdated(variantAnalysisId: number, repoState: VariantAnalysisScannedRepositoryState): Promise<void> {
