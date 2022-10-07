@@ -72,11 +72,8 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     repoTask: VariantAnalysisRepoTask
   ): Promise<VariantAnalysisScannedRepositoryResult> {
     const result = this.cachedResults.get(createCacheKey(variantAnalysisId, repoTask));
-    if (result) {
-      return result;
-    }
 
-    return this.loadResultsIntoMemory(variantAnalysisId, repoTask);
+    return result ?? await this.loadResultsIntoMemory(variantAnalysisId, repoTask);
   }
 
   private async loadResultsIntoMemory(
