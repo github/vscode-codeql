@@ -36,9 +36,6 @@ export interface PathNode extends ResultKeyBase {
 
 export type ResultKey = Result | Path | PathNode;
 
-/** Alias for `undefined` but more readable in some cases */
-export const none: PathNode | undefined = undefined;
-
 /**
  * Looks up a specific result in a result set.
  */
@@ -74,15 +71,6 @@ export function getPathNode(sarif: sarif.Log, key: PathNode): sarif.Location | u
   const path = getPath(sarif, key);
   if (path === undefined) return undefined;
   return path.locations[key.pathNodeIndex]?.location;
-}
-
-/**
- * Returns true if the two keys are both `undefined` or contain the same set of indices.
- */
-export function equals(key1: Partial<PathNode> | undefined, key2: Partial<PathNode> | undefined): boolean {
-  if (key1 === key2) return true;
-  if (key1 === undefined || key2 === undefined) return false;
-  return key1.resultIndex === key2.resultIndex && key1.pathIndex === key2.pathIndex && key1.pathNodeIndex === key2.pathNodeIndex;
 }
 
 /**
