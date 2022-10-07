@@ -33,5 +33,6 @@ export const parameters = {
 };
 
 (window as any).acquireVsCodeApi = () => ({
-  postMessage: action('post-vscode-message')
+  postMessage: action('post-vscode-message'),
+  setState: action('set-vscode-state'),
 });
