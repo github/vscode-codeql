@@ -104,6 +104,8 @@ import { LogScannerService } from './log-insights/log-scanner-service';
 import { createInitialQueryInfo } from './run-queries-shared';
 import { LegacyQueryRunner } from './legacy-query-server/legacyRunner';
 import { QueryRunner } from './queryRunner';
+import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
+import { VariantAnalysisViewSerializer } from './remote-queries/variant-analysis-view-serializer';
 import { VariantAnalysis } from './remote-queries/shared/variant-analysis';
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
@@ -176,6 +178,7 @@ export interface CodeQLExtensionInterface {
   readonly distributionManager: DistributionManager;
   readonly databaseManager: DatabaseManager;
   readonly databaseUI: DatabaseUI;
+  readonly variantAnalysisManager: VariantAnalysisManager;
   readonly dispose: () => void;
 }
 
@@ -386,7 +389,10 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     allowAutoUpdating: true
   })));
 
-  return await installOrUpdateThenTryActivate({
+  const variantAnalysisViewSerializer = new VariantAnalysisViewSerializer(ctx);
+  Window.registerWebviewPanelSerializer(VariantAnalysisView.viewType, variantAnalysisViewSerializer);
+
+  const codeQlExtension = await installOrUpdateThenTryActivate({
     isUserInitiated: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
     shouldDisplayMessageWhenNoUpdates: false,
 
@@ -394,6 +400,10 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     // otherwise, ask user to accept the update
     allowAutoUpdating: !!ctx.globalState.get(shouldUpdateOnNextActivationKey)
   });
+
+  variantAnalysisViewSerializer.onExtensionLoaded(codeQlExtension.variantAnalysisManager);
+
+  return codeQlExtension;
 }
 
 async function activateWithInstalledDistribution(
@@ -934,7 +944,10 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.mockVariantAnalysisView', async () => {
-      await variantAnalysisManager.showView(1);
+      // Generate a random variant analysis ID for testing
+      const variantAnalysisId: number = Math.floor(Math.random() * 1000000);
+
+      await variantAnalysisManager.showView(variantAnalysisId);
     })
   );
 
@@ -1159,6 +1172,7 @@ async function activateWithInstalledDistribution(
     distributionManager,
     databaseManager: dbm,
     databaseUI,
+    variantAnalysisManager,
     dispose: () => {
       ctx.subscriptions.forEach(d => d.dispose());
     }

@@ -33,6 +33,11 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
     super();
   }
 
+  public async restoreView(panel: WebviewPanel): Promise<void> {
+    this.panel = panel;
+    this.setupPanel(panel);
+  }
+
   protected get isShowingPanel() {
     return !!this.panel;
   }
@@ -59,35 +64,41 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
           ],
         }
       );
-      this.push(
-        this.panel.onDidDispose(
-          () => {
-            this.panel = undefined;
-            this.panelLoaded = false;
-            this.onPanelDispose();
-          },
-          null,
-          ctx.subscriptions
-        )
-      );
-
-      this.panel.webview.html = getHtmlForWebview(
-        ctx,
-        this.panel.webview,
-        config.view,
-        {
-          allowInlineStyles: true,
-        }
-      );
-      this.push(
-        this.panel.webview.onDidReceiveMessage(
-          async (e) => this.onMessage(e),
-          undefined,
-          ctx.subscriptions
-        )
-      );
+      this.setupPanel(this.panel);
     }
     return this.panel;
+  }
+
+  protected setupPanel(panel: WebviewPanel): void {
+    const config = this.getPanelConfig();
+
+    this.push(
+      panel.onDidDispose(
+        () => {
+          this.panel = undefined;
+          this.panelLoaded = false;
+          this.onPanelDispose();
+        },
+        null,
+        this.ctx.subscriptions
+      )
+    );
+
+    panel.webview.html = getHtmlForWebview(
+      this.ctx,
+      panel.webview,
+      config.view,
+      {
+        allowInlineStyles: true,
+      }
+    );
+    this.push(
+      panel.webview.onDidReceiveMessage(
+        async (e) => this.onMessage(e),
+        undefined,
+        this.ctx.subscriptions
+      )
+    );
   }
 
   protected abstract getPanelConfig(): WebviewPanelConfig;

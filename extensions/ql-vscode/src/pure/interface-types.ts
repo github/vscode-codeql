@@ -440,6 +440,15 @@ export interface SetVariantAnalysisMessage {
   variantAnalysis: VariantAnalysis;
 }
 
+export type StopVariantAnalysisMessage = {
+  t: 'stopVariantAnalysis';
+  variantAnalysisId: number;
+}
+
+export type VariantAnalysisState = {
+  variantAnalysisId: number;
+}
+
 export interface SetRepoResultsMessage {
   t: 'setRepoResults';
   repoResults: VariantAnalysisScannedRepositoryResult[];
@@ -456,4 +465,5 @@ export type ToVariantAnalysisMessage =
   | SetRepoStatesMessage;
 
 export type FromVariantAnalysisMessage =
-  | ViewLoadedMsg;
+  | ViewLoadedMsg
+  | StopVariantAnalysisMessage;
