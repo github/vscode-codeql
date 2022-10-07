@@ -68,6 +68,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return this.views.get(variantAnalysisId);
   }
 
+  public async getVariantAnalysis(variantAnalysisId: number): Promise<VariantAnalysis | undefined> {
+    return this.variantAnalyses.get(variantAnalysisId);
+  }
+
   public async loadResults(variantAnalysisId: number, repositoryFullName: string): Promise<void> {
     const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
     if (!variantAnalysis) {
