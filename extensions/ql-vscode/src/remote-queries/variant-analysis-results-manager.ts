@@ -25,6 +25,8 @@ export type ResultDownloadedEvent = {
 }
 
 export class VariantAnalysisResultsManager extends DisposableObject {
+  private static readonly REPO_TASK_FILENAME = 'repo_task.json';
+
   private readonly cachedResults: Map<CacheKey, VariantAnalysisScannedRepositoryResult>;
 
   private readonly _onResultDownloaded = this.push(new EventEmitter<ResultDownloadedEvent>());
@@ -59,6 +61,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     );
 
     fs.mkdirSync(resultDirectory, { recursive: true });
+    await fs.outputJson(path.join(resultDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME), repoTask);
     await fs.writeFile(path.join(resultDirectory, 'results.zip'), JSON.stringify(result, null, 2), 'utf8');
 
     this._onResultDownloaded.fire({
@@ -94,13 +97,15 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       throw new Error('Variant analysis results not downloaded');
     }
 
+    const storageDirectory = this.getRepoStorageDirectory(variantAnalysisId, repositoryFullName);
+
+    const repoTask: VariantAnalysisRepoTask = await fs.readJson(path.join(storageDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME));
+
     if (!repoTask.database_commit_sha || !repoTask.source_location_prefix) {
       throw new Error('Missing database commit SHA');
     }
 
     const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(repoTask.repository.full_name, repoTask.database_commit_sha);
-
-    const storageDirectory = this.getRepoStorageDirectory(variantAnalysisId, repositoryFullName);
 
     const sarifPath = path.join(storageDirectory, 'results.sarif');
     const bqrsPath = path.join(storageDirectory, 'results.bqrs');
