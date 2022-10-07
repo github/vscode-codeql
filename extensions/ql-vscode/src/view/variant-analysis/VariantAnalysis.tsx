@@ -14,6 +14,7 @@ import { vscode } from '../vscode-api';
 
 const repositoryResults: VariantAnalysisScannedRepositoryResult[] = [
   {
+    variantAnalysisId: 1,
     repositoryId: 1,
     rawResults: {
       schema: {

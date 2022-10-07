@@ -1,6 +1,4 @@
 import * as ghApiClient from './gh-api/gh-api-client';
-import * as path from 'path';
-import * as fs from 'fs-extra';
 import { CancellationToken, ExtensionContext } from 'vscode';
 import { DisposableObject } from '../pure/disposable-object';
 import { Logger } from '../logging';
@@ -19,18 +17,25 @@ import {
 import { getErrorMessage } from '../pure/helpers-pure';
 import { VariantAnalysisView } from './variant-analysis-view';
 import { VariantAnalysisViewManager } from './variant-analysis-view-manager';
+import { VariantAnalysisResultsManager } from './variant-analysis-results-manager';
+import { CodeQLCliServer } from '../cli';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
+  private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
   private readonly views = new Map<number, VariantAnalysisView>();
 
   constructor(
     private readonly ctx: ExtensionContext,
+    cliServer: CodeQLCliServer,
+    storagePath: string,
     logger: Logger,
   ) {
     super();
     this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx, logger));
     this.variantAnalysisMonitor.onVariantAnalysisChange(this.onVariantAnalysisUpdated.bind(this));
+
+    this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, storagePath, logger));
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
@@ -118,25 +123,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.InProgress;
       await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
 
-      const resultDirectory = path.join(
-        this.ctx.globalStorageUri.fsPath,
-        'variant-analyses',
-        `${variantAnalysisSummary.id}`,
-        scannedRepo.repository.full_name
-      );
-
-      const storagePath = path.join(
-        resultDirectory,
-        scannedRepo.repository.full_name
-      );
-
-      const result = await ghApiClient.getVariantAnalysisRepoResult(
-        credentials,
-        repoTask.artifact_url
-      );
-
-      fs.mkdirSync(resultDirectory, { recursive: true });
-      await fs.writeFile(storagePath, JSON.stringify(result, null, 2), 'utf8');
+      await this.variantAnalysisResultsManager.download(credentials, variantAnalysisSummary.id, repoTask);
     }
 
     repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
