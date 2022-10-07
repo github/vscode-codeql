@@ -948,15 +948,6 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner('codeQL.mockVariantAnalysisView', async () => {
-      // Generate a random variant analysis ID for testing
-      const variantAnalysisId: number = Math.floor(Math.random() * 1000000);
-
-      await variantAnalysisManager.showView(variantAnalysisId);
-    })
-  );
-
-  ctx.subscriptions.push(
     commandRunner('codeQL.loadVariantAnalysisRepoResults', async (variantAnalysisId: number, repositoryFullName: string) => {
       await variantAnalysisManager.loadResults(variantAnalysisId, repositoryFullName);
     })
