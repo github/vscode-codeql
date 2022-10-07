@@ -36,14 +36,7 @@ describe('Variant Analysis Manager', async function() {
     sandbox.stub(fs, 'mkdirSync');
     sandbox.stub(fs, 'writeFile');
 
-    cancellationTokenSource = {
-      token: {
-        isCancellationRequested: false,
-        onCancellationRequested: sandbox.stub()
-      },
-      cancel: sandbox.stub(),
-      dispose: sandbox.stub()
-    };
+    cancellationTokenSource = new CancellationTokenSource();
 
     scannedRepos = createMockScannedRepos();
     variantAnalysis = createMockApiResponse('in_progress', scannedRepos);
@@ -120,7 +113,7 @@ describe('Variant Analysis Manager', async function() {
       });
 
       it('should return early if variant analysis is cancelled', async () => {
-        cancellationTokenSource.token.isCancellationRequested = true;
+        cancellationTokenSource.cancel();
 
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
