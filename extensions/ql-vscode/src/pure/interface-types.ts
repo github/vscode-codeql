@@ -459,6 +459,11 @@ export interface SetRepoStatesMessage {
   repoStates: VariantAnalysisScannedRepositoryState[];
 }
 
+export interface RequestRepositoryResultsMessage {
+  t: 'requestRepositoryResults';
+  repositoryFullName: string;
+}
+
 export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
   | SetRepoResultsMessage
@@ -466,4 +471,5 @@ export type ToVariantAnalysisMessage =
 
 export type FromVariantAnalysisMessage =
   | ViewLoadedMsg
-  | StopVariantAnalysisMessage;
+  | StopVariantAnalysisMessage
+  | RequestRepositoryResultsMessage;

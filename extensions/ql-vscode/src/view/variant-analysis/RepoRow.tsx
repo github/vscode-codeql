@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { VSCodeBadge, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
 import {
@@ -11,6 +11,7 @@ import { formatDecimal } from '../../pure/number';
 import { Codicon, ErrorIcon, LoadingIcon, SuccessIcon, WarningIcon } from '../common';
 import { Repository } from '../../remote-queries/shared/repository';
 import { AnalysisAlert, AnalysisRawResults } from '../../remote-queries/shared/analysis-result';
+import { vscode } from '../vscode-api';
 import { AnalyzedRepoItemContent } from './AnalyzedRepoItemContent';
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
@@ -82,10 +83,32 @@ export const RepoRow = ({
   rawResults,
 }: RepoRowProps) => {
   const [isExpanded, setExpanded] = useState(false);
+  const resultsLoaded = !!interpretedResults || !!rawResults;
+  const [resultsLoading, setResultsLoading] = useState(false);
 
-  const toggleExpanded = useCallback(() => {
-    setExpanded(oldIsExpanded => !oldIsExpanded);
-  }, []);
+  const toggleExpanded = useCallback(async () => {
+    if (resultsLoading) {
+      return;
+    }
+
+    if (resultsLoaded) {
+      setExpanded(oldIsExpanded => !oldIsExpanded);
+      return;
+    }
+
+    vscode.postMessage({
+      t: 'requestRepositoryResults',
+      repositoryFullName: repository.fullName,
+    });
+
+    setResultsLoading(true);
+  }, [resultsLoading, resultsLoaded, repository.fullName]);
+
+  useEffect(() => {
+    if (resultsLoaded) {
+      setResultsLoading(false);
+    }
+  }, [resultsLoaded]);
 
   const disabled = !status || !isCompletedAnalysisRepoStatus(status);
 
@@ -107,7 +130,7 @@ export const RepoRow = ({
         </span>
         {downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.InProgress && <LoadingIcon label="Downloading" />}
       </TitleContainer>
-      {isExpanded && status &&
+      {isExpanded && resultsLoaded && status &&
         <AnalyzedRepoItemContent status={status} interpretedResults={interpretedResults} rawResults={rawResults} />}
     </div>
   );
