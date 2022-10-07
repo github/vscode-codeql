@@ -142,31 +142,24 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
         this.handleSelectionChange.bind(this)
       )
     );
-    void logger.log('Registering path-step navigation commands.');
-    this.push(
-      commandRunner(
-        'codeQLQueryResults.nextPathStep', // TODO: deprecate the old commands and make them forward to new commands named 'up/down'
-        this.navigateResultView.bind(this, NavigationDirection.down)
-      )
-    );
-    this.push(
-      commandRunner(
-        'codeQLQueryResults.previousPathStep',
-        this.navigateResultView.bind(this, NavigationDirection.up)
-      )
-    );
-    this.push(
-      commandRunner(
-        'codeQLQueryResults.right',
-        this.navigateResultView.bind(this, NavigationDirection.right)
-      )
-    );
-    this.push(
-      commandRunner(
-        'codeQLQueryResults.left',
-        this.navigateResultView.bind(this, NavigationDirection.left)
-      )
-    );
+    const navigationCommands = {
+      'codeQLQueryResults.up': NavigationDirection.up,
+      'codeQLQueryResults.down': NavigationDirection.down,
+      'codeQLQueryResults.left': NavigationDirection.left,
+      'codeQLQueryResults.right': NavigationDirection.right,
+      // For backwards compatibility with keybindings set using an earlier version of the extension.
+      'codeQLQueryResults.nextPathStep': NavigationDirection.down,
+      'codeQLQueryResults.previousPathStep': NavigationDirection.up,
+    };
+    void logger.log('Registering result view navigation commands.');
+    for (const [commandId, direction] of Object.entries(navigationCommands)) {
+      this.push(
+        commandRunner(
+          commandId,
+          this.navigateResultView.bind(this, direction)
+        )
+      );
+    }
 
     this.push(
       this.databaseManager.onDidChangeDatabaseItem(({ kind }) => {

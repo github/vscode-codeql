@@ -594,11 +594,11 @@
         "title": "Copy Repository List"
       },
       {
-        "command": "codeQLQueryResults.nextPathStep",
+        "command": "codeQLQueryResults.down",
         "title": "CodeQL: Navigate down in result viewer"
       },
       {
-        "command": "codeQLQueryResults.previousPathStep",
+        "command": "codeQLQueryResults.up",
         "title": "CodeQL: Navigate up in result viewer"
       },
       {
