@@ -23,6 +23,7 @@ import { CodeQLCliServer } from '../cli';
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
   private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
+  private readonly variantAnalyses = new Map<number, VariantAnalysis>();
   private readonly views = new Map<number, VariantAnalysisView>();
 
   constructor(
@@ -69,6 +70,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     if (!variantAnalysis) {
       return;
     }
+
+    this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
 
     await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
   }

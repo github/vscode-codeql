@@ -41,6 +41,8 @@ export class VariantAnalysisMonitor extends DisposableObject {
     let attemptCount = 0;
     const scannedReposDownloaded: number[] = [];
 
+    this._onVariantAnalysisChange.fire(variantAnalysis);
+
     while (attemptCount <= VariantAnalysisMonitor.maxAttemptCount) {
       await this.sleep(VariantAnalysisMonitor.sleepTime);
 
