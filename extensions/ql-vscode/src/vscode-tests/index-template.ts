@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as Mocha from 'mocha';
-import * as glob from 'glob';
+import * as glob from 'glob-promise';
 import { ensureCli } from './ensureCli';
 import { env } from 'vscode';
 
@@ -57,44 +57,39 @@ export async function runTestsInDirectory(testsRoot: string, useCli = false): Pr
 
   await ensureCli(useCli);
 
+  console.log(`Adding test cases and helpers from ${testsRoot}`);
+
+  const files = await glob('**/**.js', { cwd: testsRoot });
+
+  // Add test files to the test suite
+  files
+    .filter(f => f.endsWith('.test.js'))
+    .forEach(f => {
+      console.log(`Adding test file ${f}`);
+      mocha.addFile(path.resolve(testsRoot, f));
+    });
+
+
+  // Add helpers. Helper files add global setup and teardown blocks
+  // for a test run.
+  files
+    .filter(f => f.endsWith('.helper.js'))
+    .forEach(f => {
+      console.log(`Executing helper ${f}`);
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const helper = require(path.resolve(testsRoot, f)).default;
+      helper(mocha);
+    });
+
   return new Promise((resolve, reject) => {
-    console.log(`Adding test cases and helpers from ${testsRoot}`);
-    glob('**/**.js', { cwd: testsRoot }, (err, files) => {
-      if (err) {
-        return reject(err);
+    // Run the mocha test
+    mocha.run(failures => {
+      if (failures > 0) {
+        reject(new Error(`${failures} tests failed.`));
+        return;
       }
 
-      try {
-        // Add test files to the test suite
-        files
-          .filter(f => f.endsWith('.test.js'))
-          .forEach(f => {
-            console.log(`Adding test file ${f}`);
-            mocha.addFile(path.resolve(testsRoot, f));
-          });
-
-        // Add helpers. Helper files add global setup and teardown blocks
-        // for a test run.
-        files
-          .filter(f => f.endsWith('.helper.js'))
-          .forEach(f => {
-            console.log(`Executing helper ${f}`);
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const helper = require(path.resolve(testsRoot, f)).default;
-            helper(mocha);
-          });
-
-        // Run the mocha test
-        mocha.run(failures => {
-          if (failures > 0) {
-            reject(new Error(`${failures} tests failed.`));
-          } else {
-            resolve();
-          }
-        });
-      } catch (err) {
-        reject(err);
-      }
+      resolve();
     });
   });
 }
