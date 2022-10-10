@@ -35,7 +35,6 @@ export class Setting {
     }
     return workspace.getConfiguration(this.parent.qualifiedName).update(this.name, value, target);
   }
-
 }
 
 const ROOT_SETTING = new Setting('codeQL');
@@ -338,17 +337,13 @@ export function getRemoteRepositoryLists(): Record<string, string[]> | undefined
   return REMOTE_REPO_LISTS.getValue<Record<string, string[]>>() || undefined;
 }
 
-export async function setRemoteRepositoryLists(lists: Record<string, string[]> | undefined) {
-  await REMOTE_REPO_LISTS.updateValue(lists, ConfigurationTarget.Global);
-}
-
 /**
- * Path to a file that contains lists of GitHub repositories that you want to query remotely via 
+ * Path to a file that contains lists of GitHub repositories that you want to query remotely via
  * the "Run Variant Analysis" command.
  * Note: This command is only available for internal users.
- * 
+ *
  * This setting should be a path to a JSON file that contains a JSON object where each key is a
- * user-specified name (string), and the value is an array of GitHub repositories 
+ * user-specified name (string), and the value is an array of GitHub repositories
  * (of the form `<owner>/<repo>`).
  */
 const REPO_LISTS_PATH = new Setting('repositoryListsPath', REMOTE_QUERIES_SETTING);

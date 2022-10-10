@@ -4,9 +4,10 @@ import * as fs from 'fs-extra';
 import fetch from 'node-fetch';
 
 import { fail } from 'assert';
-import { commands, ConfigurationTarget, extensions, workspace } from 'vscode';
+import { commands, extensions, workspace } from 'vscode';
 import { CodeQLExtensionInterface } from '../../extension';
 import { DatabaseManager } from '../../databases';
+import { testConfig } from '../test-config';
 
 // This file contains helpers shared between actual tests.
 
@@ -58,7 +59,7 @@ export default function(mocha: Mocha) {
   // Set the CLI version here before activation to ensure we don't accidentally try to download a cli
   (mocha.options as any).globalSetup.push(
     async () => {
-      await workspace.getConfiguration().update('codeQL.cli.executablePath', process.env.CLI_PATH, ConfigurationTarget.Global);
+      await testConfig.cliExecutablePath.setInitialTestValue(process.env.CLI_PATH);
     }
   );
 

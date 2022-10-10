@@ -10,7 +10,6 @@ import { QlPack, runRemoteQuery } from '../../../remote-queries/run-remote-query
 import { Credentials } from '../../../authentication';
 import { CliVersionConstraint, CodeQLCliServer } from '../../../cli';
 import { CodeQLExtensionInterface } from '../../../extension';
-import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../../config';
 import * as config from '../../../config';
 import { UserCancellationException } from '../../../commandRunner';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
@@ -24,6 +23,7 @@ import { createMockApiResponse } from '../../factories/remote-queries/gh-api/var
 import { createMockExtensionContext } from '../../no-workspace';
 import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
 import { OutputChannelLogger } from '../../../logging';
+import { testConfig } from '../../test-config';
 
 describe('Remote queries', function() {
   const baseDir = path.join(__dirname, '../../../../src/vscode-tests/cli-integration');
@@ -83,8 +83,8 @@ describe('Remote queries', function() {
     getRepositoryFromNwoStub = sandbox.stub(ghApiClient, 'getRepositoryFromNwo').resolves(dummyRepository);
 
     // always run in the vscode-codeql repo
-    await setRemoteControllerRepo('github/vscode-codeql');
-    await setRemoteRepositoryLists({ 'vscode-codeql': ['github/vscode-codeql'] });
+    await testConfig.remoteControllerRepo.set('github/vscode-codeql');
+    await testConfig.remoteRepoLists.set({ 'vscode-codeql': ['github/vscode-codeql'] });
 
     liveResultsStub = sandbox.stub(config, 'isVariantAnalysisLiveResultsEnabled').returns(false);
   });
