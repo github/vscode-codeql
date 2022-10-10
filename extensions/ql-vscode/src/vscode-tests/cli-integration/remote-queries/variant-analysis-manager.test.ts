@@ -143,16 +143,6 @@ describe('Variant Analysis Manager', async function() {
 
         expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
       });
-
-      it('should save the result to disk', async () => {
-        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-          scannedRepos[0],
-          variantAnalysis,
-          cancellationTokenSource.token
-        );
-
-        expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
-      });
     });
   });
 });
