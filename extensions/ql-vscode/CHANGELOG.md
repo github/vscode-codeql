@@ -3,6 +3,7 @@
 ## [UNRELEASED]
 
 - Fix a bug where it was not possible to add a database folder if the folder name starts with `db-`. [#1565](https://github.com/github/vscode-codeql/pull/1565)
+- Added commands for navigating up, down, left, or right in the result viewer. Previously there were only commands for moving up and down the currently-selected path. We suggest binding keyboard shortcuts to these commands, for navigating the result viewer using the keyboard.
 
 ## 1.7.0 - 20 September 2022
 
