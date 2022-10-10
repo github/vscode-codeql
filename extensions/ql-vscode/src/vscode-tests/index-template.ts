@@ -3,6 +3,7 @@ import * as Mocha from 'mocha';
 import * as glob from 'glob-promise';
 import { ensureCli } from './ensureCli';
 import { env } from 'vscode';
+import { testConfigHelper } from './test-config';
 
 
 // Use this handler to avoid swallowing unhandled rejections.
@@ -69,6 +70,9 @@ export async function runTestsInDirectory(testsRoot: string, useCli = false): Pr
       mocha.addFile(path.resolve(testsRoot, f));
     });
 
+  // Setup the config helper. This needs to run before other helpers so any config they setup
+  // is restored.
+  await testConfigHelper(mocha);
 
   // Add helpers. Helper files add global setup and teardown blocks
   // for a test run.
