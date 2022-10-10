@@ -66,14 +66,7 @@ describe('Remote queries', function() {
     }
     credentials = {} as unknown as Credentials;
 
-    cancellationTokenSource = {
-      token: {
-        isCancellationRequested: false,
-        onCancellationRequested: sandbox.stub()
-      },
-      cancel: sandbox.stub(),
-      dispose: sandbox.stub()
-    };
+    cancellationTokenSource = new CancellationTokenSource();
 
     progress = sandbox.spy();
     // Should not have asked for a language
@@ -292,7 +285,7 @@ describe('Remote queries', function() {
 
       const promise = runRemoteQuery(cli, credentials, fileUri, true, progress, cancellationTokenSource.token, variantAnalysisManager);
 
-      cancellationTokenSource.token.isCancellationRequested = true;
+      cancellationTokenSource.cancel();
 
       try {
         await promise;
@@ -357,7 +350,7 @@ describe('Remote queries', function() {
 
       const promise = runRemoteQuery(cli, credentials, fileUri, true, progress, cancellationTokenSource.token, variantAnalysisManager);
 
-      cancellationTokenSource.token.isCancellationRequested = true;
+      cancellationTokenSource.cancel();
 
       try {
         await promise;
