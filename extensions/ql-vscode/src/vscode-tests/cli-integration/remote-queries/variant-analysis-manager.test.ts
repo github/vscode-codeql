@@ -88,7 +88,7 @@ describe('Variant Analysis Manager', async function() {
         delete dummyRepoTask.artifact_url;
         getVariantAnalysisRepoStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepo').resolves(dummyRepoTask);
 
-        const dummyResult = 'this-is-a-repo-result';
+        const dummyResult = new ArrayBuffer(24);
         getVariantAnalysisRepoResultStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepoResult').resolves(dummyResult);
       });
 
@@ -108,7 +108,7 @@ describe('Variant Analysis Manager', async function() {
         const dummyRepoTask = createMockVariantAnalysisRepoTask();
         getVariantAnalysisRepoStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepo').resolves(dummyRepoTask);
 
-        const dummyResult = 'this-is-a-repo-result';
+        const dummyResult = new ArrayBuffer(24);
         getVariantAnalysisRepoResultStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepoResult').resolves(dummyResult);
       });
 
