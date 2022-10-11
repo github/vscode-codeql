@@ -20,6 +20,7 @@ import { RemoteQueriesManager } from '../../remote-queries/remote-queries-manage
 import { ResultsView } from '../../interface';
 import { EvalLogViewer } from '../../eval-log-viewer';
 import { QueryRunner } from '../../queryRunner';
+import { QueryResultType } from '../../pure/legacy-messages';
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -786,7 +787,13 @@ describe('query-history', () => {
       } as unknown as QueryEvaluationInfo,
       sucessful: didRunSuccessfully,
       message: 'foo',
-      dispose: sandbox.spy()
+      dispose: sandbox.spy(),
+      result: {
+        evaluationTime: 1,
+        queryId: 0,
+        runId: 0,
+        resultType: QueryResultType.SUCCESS,
+      }
     };
   }
 

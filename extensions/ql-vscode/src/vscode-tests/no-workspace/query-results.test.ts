@@ -328,6 +328,12 @@ describe('query-results', () => {
       sucessful: didRunSuccessfully,
       message: 'foo',
       dispose: disposeSpy,
+      result: {
+        evaluationTime: 1,
+        queryId: 0,
+        runId: 0,
+        resultType: QueryResultType.SUCCESS,
+      }
     };
 
     if (includeSpies) {

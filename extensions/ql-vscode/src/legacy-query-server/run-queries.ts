@@ -497,10 +497,18 @@ function createSyntheticResult(
   return {
     query: query.queryEvalInfo,
     message,
+    result:{
+      evaluationTime:0,
+      queryId: 0,
+      resultType: messages.QueryResultType.OTHER_ERROR,
+      message,
+      runId: 0,
+    },
     sucessful: false,
     dispose: () => { /**/ },
   };
 }
+
 
 function createSimpleTemplates(templates: Record<string, string> | undefined): messages.TemplateDefinitions | undefined {
   if (!templates) {

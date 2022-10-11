@@ -13,6 +13,7 @@ import {
 } from '../helpers';
 import { logger } from '../logging';
 import * as messages from '../pure/new-messages';
+import * as legacyMessages from '../pure/legacy-messages';
 import { InitialQueryInfo, LocalQueryInfo } from '../query-results';
 import { QueryEvaluationInfo, QueryWithResults } from '../run-queries-shared';
 import * as qsClient from './queryserver-client';
@@ -123,12 +124,18 @@ export async function compileAndRunQueryAgainstDatabase(
       message = result.message ? `failed: ${result.message}` : 'failed';
       break;
   }
-
+  const sucessful = result.resultType === messages.QueryResultType.SUCCESS;
   return {
     query,
-    result,
+    result: {
+      evaluationTime: result.evaluationTime,
+      queryId: 0,
+      resultType: sucessful ? legacyMessages.QueryResultType.SUCCESS : legacyMessages.QueryResultType.OTHER_ERROR,
+      runId: 0,
+      message
+    },
     message,
-    sucessful: result.resultType === messages.QueryResultType.SUCCESS,
+    sucessful,
     dispose: () => {
       qs.logger.removeAdditionalLogLocation(undefined);
     }

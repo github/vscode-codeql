@@ -51,7 +51,7 @@ export class CompletedQueryInfo implements QueryWithResults {
   /**
    * The legacy result. This is only set when loading from the query history.
    */
-  readonly result?: legacyMessages.EvaluationResult;
+  readonly result: legacyMessages.EvaluationResult;
   readonly logFileLocation?: string;
   resultCount: number;
 
@@ -83,9 +83,8 @@ export class CompletedQueryInfo implements QueryWithResults {
   ) {
     this.query = evaluation.query;
     this.logFileLocation = evaluation.logFileLocation;
-    if (evaluation.result) {
-      this.result = evaluation.result as legacyMessages.EvaluationResult;
-    }
+    this.result = evaluation.result;
+
     this.message = evaluation.message;
     this.sucessful = evaluation.sucessful;
     // Use the dispose method from the evaluation.
