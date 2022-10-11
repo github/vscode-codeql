@@ -5,7 +5,8 @@ import * as ghApiClient from './gh-api/gh-api-client';
 
 import { VariantAnalysis, VariantAnalysisStatus } from './shared/variant-analysis';
 import {
-  VariantAnalysis as VariantAnalysisApiResponse
+  VariantAnalysis as VariantAnalysisApiResponse,
+  VariantAnalysisScannedRepository
 } from './gh-api/variant-analysis';
 import { VariantAnalysisMonitorResult } from './shared/variant-analysis-monitor-result';
 import { processFailureReason, processUpdatedVariantAnalysis } from './variant-analysis-processor';
@@ -78,6 +79,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
       if (variantAnalysisSummary.scanned_repositories) {
         variantAnalysisSummary.scanned_repositories.forEach(scannedRepo => {
           if (!scannedReposDownloaded.includes(scannedRepo.repository.id) && scannedRepo.analysis_status === 'succeeded') {
+            this.scheduleForDownload(scannedRepo, variantAnalysisSummary);
             void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResult', scannedRepo, variantAnalysisSummary);
             scannedReposDownloaded.push(scannedRepo.repository.id);
           }
@@ -92,6 +94,13 @@ export class VariantAnalysisMonitor extends DisposableObject {
     }
 
     return { status: 'CompletedSuccessfully', scannedReposDownloaded: scannedReposDownloaded };
+  }
+
+  private scheduleForDownload(
+    scannedRepo: VariantAnalysisScannedRepository,
+    variantAnalysisSummary: VariantAnalysisApiResponse
+  ) {
+    void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResult', scannedRepo, variantAnalysisSummary);
   }
 
   private async sleep(ms: number) {
