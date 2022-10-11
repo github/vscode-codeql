@@ -17,7 +17,6 @@ import {
 import { DatabaseInfo } from './pure/interface-types';
 import { QueryStatus } from './query-status';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
-import { sarifParser } from './sarif-parser';
 import { QueryEvaluationInfo, QueryWithResults } from './run-queries-shared';
 import { formatLegacyMessage } from './legacy-query-server/run-queries';
 import { sarifParser } from './sarif-parser';
