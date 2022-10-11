@@ -1,4 +1,4 @@
-import { ExtensionContext, ViewColumn } from 'vscode';
+import { commands, ExtensionContext, ViewColumn } from 'vscode';
 import { AbstractWebview, WebviewPanelConfig } from '../abstract-webview';
 import { logger } from '../logging';
 import { FromVariantAnalysisMessage, ToVariantAnalysisMessage } from '../pure/interface-types';
@@ -7,6 +7,7 @@ import {
   VariantAnalysis,
   VariantAnalysisQueryLanguage,
   VariantAnalysisRepoStatus,
+  VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisStatus
 } from './shared/variant-analysis';
@@ -53,6 +54,17 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
     });
   }
 
+  public async sendRepositoryResults(repositoryResult: VariantAnalysisScannedRepositoryResult[]): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: 'setRepoResults',
+      repoResults: repositoryResult,
+    });
+  }
+
   protected getPanelConfig(): WebviewPanelConfig {
     return {
       viewId: VariantAnalysisView.viewType,
@@ -82,6 +94,9 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
         break;
       case 'stopVariantAnalysis':
         void logger.log(`Stop variant analysis: ${msg.variantAnalysisId}`);
+        break;
+      case 'requestRepositoryResults':
+        void commands.executeCommand('codeQL.loadVariantAnalysisRepoResults', this.variantAnalysisId, msg.repositoryFullName);
         break;
       default:
         assertNever(msg);

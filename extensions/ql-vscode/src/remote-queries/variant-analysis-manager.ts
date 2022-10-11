@@ -12,6 +12,7 @@ import {
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryDownloadStatus,
+  VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState
 } from './shared/variant-analysis';
 import { getErrorMessage } from '../pure/helpers-pure';
@@ -26,6 +27,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
   private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
+  private readonly variantAnalyses = new Map<number, VariantAnalysis>();
   private readonly views = new Map<number, VariantAnalysisView>();
 
   constructor(
@@ -39,6 +41,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.variantAnalysisMonitor.onVariantAnalysisChange(this.onVariantAnalysisUpdated.bind(this));
 
     this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, storagePath, logger));
+    this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
@@ -68,16 +71,31 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return this.views.get(variantAnalysisId);
   }
 
+  public async loadResults(variantAnalysisId: number, repositoryFullName: string): Promise<void> {
+    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+    if (!variantAnalysis) {
+      throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
+
+    await this.variantAnalysisResultsManager.loadResults(variantAnalysisId, repositoryFullName);
+  }
+
   private async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
     if (!variantAnalysis) {
       return;
     }
+
+    this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
 
     await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
   }
 
   public onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): void {
     this._onVariantAnalysisAdded.fire(variantAnalysis);
+  }
+
+  private async onRepoResultLoaded(repositoryResult: VariantAnalysisScannedRepositoryResult): Promise<void> {
+    await this.getView(repositoryResult.variantAnalysisId)?.sendRepositoryResults([repositoryResult]);
   }
 
   private async onRepoStateUpdated(variantAnalysisId: number, repoState: VariantAnalysisScannedRepositoryState): Promise<void> {

@@ -18,7 +18,7 @@ import { unzipFile } from '../pure/zip';
 
 type CacheKey = `${number}/${string}`;
 
-const createCacheKey = (variantAnalysisId: number, repoTask: VariantAnalysisRepoTask): CacheKey => `${variantAnalysisId}/${repoTask.repository.full_name}`;
+const createCacheKey = (variantAnalysisId: number, repositoryFullName: string): CacheKey => `${variantAnalysisId}/${repositoryFullName}`;
 
 export type ResultDownloadedEvent = {
   variantAnalysisId: number;
@@ -26,6 +26,9 @@ export type ResultDownloadedEvent = {
 }
 
 export class VariantAnalysisResultsManager extends DisposableObject {
+  private static readonly REPO_TASK_FILENAME = 'repo_task.json';
+  private static readonly RESULTS_DIRECTORY = 'results';
+
   private readonly cachedResults: Map<CacheKey, VariantAnalysisScannedRepositoryResult>;
 
   private readonly _onResultDownloaded = this.push(new EventEmitter<ResultDownloadedEvent>());
@@ -63,8 +66,10 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       await fs.mkdir(resultDirectory, { recursive: true });
     }
 
+    await fs.outputJson(path.join(resultDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME), repoTask);
+
     const zipFilePath = path.join(resultDirectory, 'results.zip');
-    const unzippedFilesDirectory = path.join(resultDirectory, 'results');
+    const unzippedFilesDirectory = path.join(resultDirectory, VariantAnalysisResultsManager.RESULTS_DIRECTORY);
 
     fs.writeFileSync(zipFilePath, Buffer.from(result));
     await unzipFile(zipFilePath, unzippedFilesDirectory);
@@ -77,30 +82,34 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   public async loadResults(
     variantAnalysisId: number,
-    repoTask: VariantAnalysisRepoTask
+    repositoryFullName: string
   ): Promise<VariantAnalysisScannedRepositoryResult> {
-    const result = this.cachedResults.get(createCacheKey(variantAnalysisId, repoTask));
+    const result = this.cachedResults.get(createCacheKey(variantAnalysisId, repositoryFullName));
 
-    return result ?? await this.loadResultsIntoMemory(variantAnalysisId, repoTask);
+    return result ?? await this.loadResultsIntoMemory(variantAnalysisId, repositoryFullName);
   }
 
   private async loadResultsIntoMemory(
     variantAnalysisId: number,
-    repoTask: VariantAnalysisRepoTask,
+    repositoryFullName: string,
   ): Promise<VariantAnalysisScannedRepositoryResult> {
-    const result = await this.loadResultsFromStorage(variantAnalysisId, repoTask);
-    this.cachedResults.set(createCacheKey(variantAnalysisId, repoTask), result);
+    const result = await this.loadResultsFromStorage(variantAnalysisId, repositoryFullName);
+    this.cachedResults.set(createCacheKey(variantAnalysisId, repositoryFullName), result);
     this._onResultLoaded.fire(result);
     return result;
   }
 
   private async loadResultsFromStorage(
     variantAnalysisId: number,
-    repoTask: VariantAnalysisRepoTask,
+    repositoryFullName: string,
   ): Promise<VariantAnalysisScannedRepositoryResult> {
-    if (!(await this.isVariantAnalysisRepoDownloaded(variantAnalysisId, repoTask))) {
+    if (!(await this.isVariantAnalysisRepoDownloaded(variantAnalysisId, repositoryFullName))) {
       throw new Error('Variant analysis results not downloaded');
     }
+
+    const storageDirectory = this.getRepoStorageDirectory(variantAnalysisId, repositoryFullName);
+
+    const repoTask: VariantAnalysisRepoTask = await fs.readJson(path.join(storageDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME));
 
     if (!repoTask.database_commit_sha || !repoTask.source_location_prefix) {
       throw new Error('Missing database commit SHA');
@@ -108,10 +117,9 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
     const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(repoTask.repository.full_name, repoTask.database_commit_sha);
 
-    const storageDirectory = this.getRepoStorageDirectory(variantAnalysisId, repoTask.repository.full_name);
-
-    const sarifPath = path.join(storageDirectory, 'results.sarif');
-    const bqrsPath = path.join(storageDirectory, 'results.bqrs');
+    const resultsDirectory = path.join(storageDirectory, VariantAnalysisResultsManager.RESULTS_DIRECTORY);
+    const sarifPath = path.join(resultsDirectory, 'results.sarif');
+    const bqrsPath = path.join(resultsDirectory, 'results.bqrs');
     if (await fs.pathExists(sarifPath)) {
       const interpretedResults = await this.readSarifResults(sarifPath, fileLinkPrefix);
 
@@ -137,9 +145,9 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   private async isVariantAnalysisRepoDownloaded(
     variantAnalysisId: number,
-    repoTask: VariantAnalysisRepoTask,
+    repositoryFullName: string,
   ): Promise<boolean> {
-    return await fs.pathExists(this.getRepoStorageDirectory(variantAnalysisId, repoTask.repository.full_name));
+    return await fs.pathExists(this.getRepoStorageDirectory(variantAnalysisId, repositoryFullName));
   }
 
   private async readBqrsResults(filePath: string, fileLinkPrefix: string, sourceLocationPrefix: string): Promise<AnalysisRawResults> {
