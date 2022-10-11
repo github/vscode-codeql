@@ -7,10 +7,12 @@ import * as config from '../../../config';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { Credentials } from '../../../authentication';
 import * as fs from 'fs-extra';
+import * as path from 'path';
 
 import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
+  VariantAnalysisRepoTask,
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
 } from '../../../remote-queries/gh-api/variant-analysis';
 import { createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
@@ -72,6 +74,7 @@ describe('Variant Analysis Manager', async function() {
 
   describe('when credentials are valid', async () => {
     let getOctokitStub: sinon.SinonStub;
+    let arrayBuffer: ArrayBuffer;
 
     beforeEach(async () => {
       const mockCredentials = {
@@ -80,16 +83,18 @@ describe('Variant Analysis Manager', async function() {
         })
       } as unknown as Credentials;
       sandbox.stub(Credentials, 'initialize').resolves(mockCredentials);
+
+      const sourceFilePath = path.join(__dirname, '../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip');
+      arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
     });
 
     describe('when the artifact_url is missing', async () => {
       beforeEach(async () => {
         const dummyRepoTask = createMockVariantAnalysisRepoTask();
         delete dummyRepoTask.artifact_url;
-        getVariantAnalysisRepoStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepo').resolves(dummyRepoTask);
 
-        const dummyResult = 'this-is-a-repo-result';
-        getVariantAnalysisRepoResultStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepoResult').resolves(dummyResult);
+        getVariantAnalysisRepoStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepo').resolves(dummyRepoTask);
+        getVariantAnalysisRepoResultStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepoResult').resolves(arrayBuffer);
       });
 
       it('should not try to download the result', async () => {
@@ -104,12 +109,13 @@ describe('Variant Analysis Manager', async function() {
     });
 
     describe('when the artifact_url is present', async () => {
-      beforeEach(async () => {
-        const dummyRepoTask = createMockVariantAnalysisRepoTask();
-        getVariantAnalysisRepoStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepo').resolves(dummyRepoTask);
+      let dummyRepoTask: VariantAnalysisRepoTask;
 
-        const dummyResult = 'this-is-a-repo-result';
-        getVariantAnalysisRepoResultStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepoResult').resolves(dummyResult);
+      beforeEach(async () => {
+        dummyRepoTask = createMockVariantAnalysisRepoTask();
+
+        getVariantAnalysisRepoStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepo').resolves(dummyRepoTask);
+        getVariantAnalysisRepoResultStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepoResult').resolves(arrayBuffer);
       });
 
       it('should return early if variant analysis is cancelled', async () => {
@@ -135,16 +141,6 @@ describe('Variant Analysis Manager', async function() {
       });
 
       it('should fetch a repo result', async () => {
-        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-          scannedRepos[0],
-          variantAnalysis,
-          cancellationTokenSource.token
-        );
-
-        expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
-      });
-
-      it('should save the result to disk', async () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
