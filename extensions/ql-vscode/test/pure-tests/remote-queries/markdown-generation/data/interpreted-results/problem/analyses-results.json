@@ -148,6 +148,34 @@
           "endColumn": 57
         },
         "codeFlows": []
+      },
+      {
+        "message": {
+          "tokens": [
+            {
+              "t": "text",
+              "text": "This component is implicitly exported."
+            }
+          ]
+        },
+        "shortDescription": "This component is implicitly exported.",
+        "fileLink": {
+          "fileLinkPrefix": "https://github.com/AlexRogalskiy/android-nrf-toolbox/blob/034cf3aa7d2a3a4145177de32546ca518a462a66",
+          "filePath": "app/src/main/AndroidManifest.xml"
+        },
+        "severity": "Warning",
+        "codeSnippet": {
+          "startLine": 237,
+          "endLine": 251,
+          "text": "\t\t</service>\n\n\t\t<activity\n\t\t\tandroid:name=\"no.nordicsemi.android.nrftoolbox.dfu.DfuInitiatorActivity\"\n\t\t\tandroid:label=\"@string/dfu_service_title\"\n\t\t\tandroid:noHistory=\"true\"\n\t\t\tandroid:theme=\"@style/AppTheme.Translucent\" >\n\t\t\t<intent-filter>\n\t\t\t\t<action android:name=\"no.nordicsemi.android.action.DFU_UPLOAD\" />\n\n\t\t\t\t<category android:name=\"android.intent.category.DEFAULT\" />\n\t\t\t</intent-filter>\n\t\t</activity>\n\n\t\t<service\n"
+        },
+        "highlightedRegion": {
+          "startLine": 239,
+          "startColumn": 3,
+          "endLine": 249,
+          "endColumn": 15
+        },
+        "codeFlows": []
       }
     ]
   }

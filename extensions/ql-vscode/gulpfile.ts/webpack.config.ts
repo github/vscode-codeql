@@ -1,12 +1,11 @@
 import * as path from 'path';
 import * as webpack from 'webpack';
+import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 export const config: webpack.Configuration = {
   mode: 'development',
   entry: {
-    resultsView: './src/view/results.tsx',
-    compareView: './src/compare/view/Compare.tsx',
-    remoteQueriesView: './src/remote-queries/view/RemoteQueries.tsx',
+    webview: './src/view/webview.tsx'
   },
   output: {
     path: path.resolve(__dirname, '..', 'out'),
@@ -31,9 +30,7 @@ export const config: webpack.Configuration = {
       {
         test: /\.less$/,
         use: [
-          {
-            loader: 'style-loader'
-          },
+          MiniCssExtractPlugin.loader,
           {
             loader: 'css-loader',
             options: {
@@ -53,17 +50,31 @@ export const config: webpack.Configuration = {
       {
         test: /\.css$/,
         use: [
-          {
-            loader: 'style-loader'
-          },
+          MiniCssExtractPlugin.loader,
           {
             loader: 'css-loader'
           }
         ]
+      },
+      {
+        test: /\.(woff(2)?|ttf|eot)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'fonts/',
+              // We need this to make Webpack use the correct path for the fonts.
+              // Without this, the CSS file will use `url([object Module])`
+              esModule: false
+            }
+          },
+        ],
       }
     ]
   },
   performance: {
     hints: false
-  }
+  },
+  plugins: [new MiniCssExtractPlugin()],
 };

@@ -10,10 +10,10 @@ import { ProgressCallback } from '../commandRunner';
 import { createTimestampFile, showAndLogErrorMessage, showAndLogInformationMessage, showInformationMessageWithAction } from '../helpers';
 import { Logger } from '../logging';
 import { runRemoteQuery } from './run-remote-query';
-import { RemoteQueriesInterfaceManager } from './remote-queries-interface';
+import { RemoteQueriesView } from './remote-queries-view';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueriesMonitor } from './remote-queries-monitor';
-import { getRemoteQueryIndex, getRepositoriesMetadata, RepositoriesMetadata } from './gh-actions-api-client';
+import { getRemoteQueryIndex, getRepositoriesMetadata, RepositoriesMetadata } from './gh-api/gh-actions-api-client';
 import { RemoteQueryResultIndex } from './remote-query-result-index';
 import { RemoteQueryResult, sumAnalysisSummariesResults } from './remote-query-result';
 import { DownloadLink } from './download-link';
@@ -22,6 +22,7 @@ import { assertNever } from '../pure/helpers-pure';
 import { QueryStatus } from '../query-status';
 import { DisposableObject } from '../pure/disposable-object';
 import { AnalysisResults } from './shared/analysis-result';
+import { VariantAnalysisManager } from './variant-analysis-manager';
 
 const autoDownloadMaxSize = 300 * 1024;
 const autoDownloadMaxCount = 100;
@@ -56,18 +57,21 @@ export class RemoteQueriesManager extends DisposableObject {
 
   private readonly remoteQueriesMonitor: RemoteQueriesMonitor;
   private readonly analysesResultsManager: AnalysesResultsManager;
-  private readonly interfaceManager: RemoteQueriesInterfaceManager;
+  private readonly variantAnalysisManager: VariantAnalysisManager;
+  private readonly view: RemoteQueriesView;
 
   constructor(
     private readonly ctx: ExtensionContext,
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     logger: Logger,
+    variantAnalysisManager: VariantAnalysisManager,
   ) {
     super();
     this.analysesResultsManager = new AnalysesResultsManager(ctx, cliServer, storagePath, logger);
-    this.interfaceManager = new RemoteQueriesInterfaceManager(ctx, logger, this.analysesResultsManager);
+    this.view = new RemoteQueriesView(ctx, logger, this.analysesResultsManager);
     this.remoteQueriesMonitor = new RemoteQueriesMonitor(ctx, logger);
+    this.variantAnalysisManager = variantAnalysisManager;
 
     this.remoteQueryAddedEventEmitter = this.push(new EventEmitter<NewQueryEvent>());
     this.remoteQueryRemovedEventEmitter = this.push(new EventEmitter<RemovedQueryEvent>());
@@ -75,6 +79,8 @@ export class RemoteQueriesManager extends DisposableObject {
     this.onRemoteQueryAdded = this.remoteQueryAddedEventEmitter.event;
     this.onRemoteQueryRemoved = this.remoteQueryRemovedEventEmitter.event;
     this.onRemoteQueryStatusUpdate = this.remoteQueryStatusUpdateEventEmitter.event;
+
+    this.push(this.view);
   }
 
   public async rehydrateRemoteQuery(queryId: string, query: RemoteQuery, status: QueryStatus) {
@@ -121,11 +127,12 @@ export class RemoteQueriesManager extends DisposableObject {
       credentials, uri || window.activeTextEditor?.document.uri,
       false,
       progress,
-      token);
+      token,
+      this.variantAnalysisManager);
 
     if (querySubmission?.query) {
       const query = querySubmission.query;
-      const queryId = this.createQueryId(query.queryName);
+      const queryId = this.createQueryId();
 
       await this.prepareStorageDirectory(queryId);
       await this.storeJsonFile(queryId, 'query.json', query);
@@ -190,7 +197,7 @@ export class RemoteQueriesManager extends DisposableObject {
     await this.analysesResultsManager.loadAnalysesResults(
       analysesToDownload,
       token,
-      results => this.interfaceManager.setAnalysisResults(results, queryResult.queryId));
+      results => this.view.setAnalysisResults(results, queryResult.queryId));
   }
 
   public async copyRemoteQueryRepoListToClipboard(queryId: string) {
@@ -246,7 +253,7 @@ export class RemoteQueriesManager extends DisposableObject {
   }
 
   public async openResults(query: RemoteQuery, queryResult: RemoteQueryResult) {
-    await this.interfaceManager.showResults(query, queryResult);
+    await this.view.showResults(query, queryResult);
   }
 
   private async askToOpenResults(query: RemoteQuery, queryResult: RemoteQueryResult): Promise<void> {
@@ -262,11 +269,10 @@ export class RemoteQueriesManager extends DisposableObject {
 
   /**
    * Generates a unique id for this query, suitable for determining the storage location for the downloaded query artifacts.
-   * @param queryName
-   * @returns
+   * @returns A unique id for this query.
    */
-  private createQueryId(queryName: string): string {
-    return `${queryName}-${nanoid()}`;
+  private createQueryId(): string {
+    return nanoid();
   }
 
   /**

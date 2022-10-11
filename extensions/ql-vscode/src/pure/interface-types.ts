@@ -2,6 +2,11 @@ import * as sarif from 'sarif';
 import { AnalysisResults } from '../remote-queries/shared/analysis-result';
 import { AnalysisSummary, RemoteQueryResult } from '../remote-queries/shared/remote-query-result';
 import { RawResultSet, ResultRow, ResultSetSchema, Column, ResolvableLocationValue } from './bqrs-cli-types';
+import {
+  VariantAnalysis,
+  VariantAnalysisScannedRepositoryResult,
+  VariantAnalysisScannedRepositoryState,
+} from '../remote-queries/shared/variant-analysis';
 
 /**
  * This module contains types and code that are shared between
@@ -174,7 +179,7 @@ export type FromResultsViewMsg =
   | ToggleDiagnostics
   | ChangeRawResultsSortMsg
   | ChangeInterpretedResultsSortMsg
-  | ResultViewLoaded
+  | ViewLoadedMsg
   | ChangePage
   | OpenFileMsg;
 
@@ -216,11 +221,11 @@ interface ToggleDiagnostics {
 }
 
 /**
- * Message from the results view to signal that loading the results
- * is complete.
+ * Message from a view signal that loading is complete.
  */
-interface ResultViewLoaded {
-  t: 'resultViewLoaded';
+interface ViewLoadedMsg {
+  t: 'viewLoaded';
+  viewName: string;
 }
 
 /**
@@ -279,17 +284,10 @@ interface ChangeInterpretedResultsSortMsg {
  * Message from the compare view to the extension.
  */
 export type FromCompareViewMessage =
-  | CompareViewLoadedMessage
+  | ViewLoadedMsg
   | ChangeCompareMessage
   | ViewSourceFileMsg
   | OpenQueryMessage;
-
-/**
- * Message from the compare view to signal the completion of loading results.
- */
-interface CompareViewLoadedMessage {
-  t: 'compareViewLoaded';
-}
 
 /**
  * Message from the compare view to request opening a query.
@@ -389,7 +387,7 @@ export interface ParsedResultSets {
 }
 
 export type FromRemoteQueriesMessage =
-  | RemoteQueryLoadedMessage
+  | ViewLoadedMsg
   | RemoteQueryErrorMessage
   | OpenFileMsg
   | OpenVirtualFileMsg
@@ -401,10 +399,6 @@ export type FromRemoteQueriesMessage =
 export type ToRemoteQueriesMessage =
   | SetRemoteQueryResultMessage
   | SetAnalysesResultsMessage;
-
-export interface RemoteQueryLoadedMessage {
-  t: 'remoteQueryLoaded';
-}
 
 export interface SetRemoteQueryResultMessage {
   t: 'setRemoteQueryResult';
@@ -433,9 +427,49 @@ export interface RemoteQueryDownloadAllAnalysesResultsMessage {
 
 export interface RemoteQueryExportResultsMessage {
   t: 'remoteQueryExportResults';
+  queryId: string;
 }
 
 export interface CopyRepoListMessage {
   t: 'copyRepoList';
   queryId: string;
 }
+
+export interface SetVariantAnalysisMessage {
+  t: 'setVariantAnalysis';
+  variantAnalysis: VariantAnalysis;
+}
+
+export type StopVariantAnalysisMessage = {
+  t: 'stopVariantAnalysis';
+  variantAnalysisId: number;
+}
+
+export type VariantAnalysisState = {
+  variantAnalysisId: number;
+}
+
+export interface SetRepoResultsMessage {
+  t: 'setRepoResults';
+  repoResults: VariantAnalysisScannedRepositoryResult[];
+}
+
+export interface SetRepoStatesMessage {
+  t: 'setRepoStates';
+  repoStates: VariantAnalysisScannedRepositoryState[];
+}
+
+export interface RequestRepositoryResultsMessage {
+  t: 'requestRepositoryResults';
+  repositoryFullName: string;
+}
+
+export type ToVariantAnalysisMessage =
+  | SetVariantAnalysisMessage
+  | SetRepoResultsMessage
+  | SetRepoStatesMessage;
+
+export type FromVariantAnalysisMessage =
+  | ViewLoadedMsg
+  | StopVariantAnalysisMessage
+  | RequestRepositoryResultsMessage;

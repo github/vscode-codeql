@@ -35,11 +35,11 @@ export class SummaryLanguageSupport extends DisposableObject {
    * The last `TextDocument` (with language `ql-summary`) for which we tried to find a sourcemap, or
    * `undefined` if we have not seen such a document yet.
    */
-  private lastDocument : TextDocument | undefined = undefined;
+  private lastDocument: TextDocument | undefined = undefined;
   /**
    * The sourcemap for `lastDocument`, or `undefined` if there was no such sourcemap or document.
    */
-  private sourceMap : SourceMapConsumer | undefined = undefined;
+  private sourceMap: SourceMapConsumer | undefined = undefined;
 
   constructor() {
     super();

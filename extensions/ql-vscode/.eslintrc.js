@@ -10,7 +10,7 @@ module.exports = {
     node: true,
     es6: true,
   },
-  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:jest-dom/recommended"],
   rules: {
     "@typescript-eslint/no-use-before-define": 0,
     "@typescript-eslint/no-unused-vars": [

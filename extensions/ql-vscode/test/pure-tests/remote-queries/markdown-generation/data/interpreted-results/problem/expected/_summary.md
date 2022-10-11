@@ -41,4 +41,4 @@ select t,
 | Repository | Results |
 | --- | --- |
 | github/codeql | [1 result(s)](#file-github-codeql-md) |
-| meteor/meteor | [4 result(s)](#file-meteor-meteor-md) |
+| meteor/meteor | [5 result(s)](#file-meteor-meteor-md) |

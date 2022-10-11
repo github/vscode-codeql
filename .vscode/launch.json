@@ -35,6 +35,9 @@
       "runtimeArgs": [
         "--inspect=9229"
       ],
+      "env": {
+        "LANG": "en-US"
+      },
       "args": [
         "--exit",
         "-u",
@@ -43,8 +46,22 @@
         "--diff",
         "-r",
         "ts-node/register",
+        "-r",
+        "test/mocha.setup.js",
         "test/pure-tests/**/*.ts"
       ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Launch Unit Tests - React (vscode-codeql)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "showAsyncStacks": true,
+      "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "stopOnEntry": false,
       "sourceMaps": true,
       "console": "integratedTerminal",
@@ -124,6 +141,14 @@
       "outFiles": [
         "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
       ],
+    },
+    {
+      "name": "Launch Storybook",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/extensions/ql-vscode",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "storybook"]
     }
   ]
 }

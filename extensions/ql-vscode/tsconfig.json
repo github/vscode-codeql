@@ -10,6 +10,7 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "rootDir": "src",
+    "skipLibCheck": true,
     "strictNullChecks": true,
     "noFallthroughCasesInSwitch": true,
     "preserveWatchOutput": true,

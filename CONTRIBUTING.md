@@ -77,6 +77,20 @@ $ vscode/scripts/code-cli.sh --install-extension dist/vscode-codeql-*.vsix # if 
 
 You can use VS Code to debug the extension without explicitly installing it. Just open this directory as a workspace in VS Code, and hit `F5` to start a debugging session.
 
+### Storybook
+
+You can use [Storybook](https://storybook.js.org/) to preview React components outside VSCode. Inside the `extensions/ql-vscode` directory, run:
+
+```shell
+npm run storybook
+```
+
+Your browser should automatically open to the Storybook UI. Stories live in the `src/stories` directory.
+
+Alternatively, you can start Storybook inside of VSCode. There is a VSCode launch configuration for starting Storybook. It can be found in the debug view.
+
+More information about Storybook can be found inside the **Overview** page once you have launched Storybook.
+
 ### Running the unit tests and integration tests that do not require a CLI instance
 
 Unit tests and many integration tests do not require a copy of the CodeQL CLI.
@@ -146,6 +160,7 @@ From inside of VSCode, open the `launch.json` file and in the _Launch Integratio
     * **IMPORTANT** Make sure you are on the `main` branch and your local checkout is fully updated when you add the tag.
     * If you accidentally add the tag to the wrong ref, you can just force push it to the right one later.
 1. Monitor the status of the release build in the `Release` workflow in the Actions tab.
+    * DO NOT approve the "publish" stages of the workflow yet.
 1. Download the VSIX from the draft GitHub release at the top of [the releases page](https://github.com/github/vscode-codeql/releases) that is created when the release build finishes.
 1. Unzip the `.vsix` and inspect its `package.json` to make sure the version is what you expect,
    or look at the source if there's any doubt the right code is being shipped.

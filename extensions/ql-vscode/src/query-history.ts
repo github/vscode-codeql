@@ -9,6 +9,7 @@ import {
   ProviderResult,
   Range,
   ThemeIcon,
+  TreeDataProvider,
   TreeItem,
   TreeView,
   Uri,
@@ -25,7 +26,6 @@ import {
 } from './helpers';
 import { logger } from './logging';
 import { URLSearchParams } from 'url';
-import { QueryServerClient } from './queryserver-client';
 import { DisposableObject } from './pure/disposable-object';
 import { commandRunner } from './commandRunner';
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
@@ -39,14 +39,16 @@ import * as fs from 'fs-extra';
 import { CliVersionConstraint } from './cli';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { Credentials } from './authentication';
-import { cancelRemoteQuery } from './remote-queries/gh-actions-api-client';
+import { cancelRemoteQuery } from './remote-queries/gh-api/gh-actions-api-client';
 import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
-import { InterfaceManager } from './interface';
+import { ResultsView } from './interface';
 import { WebviewReveal } from './interface-utils';
 import { EvalLogViewer } from './eval-log-viewer';
 import EvalLogTreeBuilder from './eval-log-tree-builder';
 import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
+import { QueryWithResults } from './run-queries-shared';
+import { QueryRunner } from './queryRunner';
 
 /**
  * query-history.ts
@@ -114,13 +116,17 @@ const WORKSPACE_QUERY_HISTORY_FILE = 'workspace-query-history.json';
 /**
  * Tree data provider for the query history view.
  */
-export class HistoryTreeDataProvider extends DisposableObject {
+export class HistoryTreeDataProvider extends DisposableObject implements TreeDataProvider<QueryHistoryInfo> {
   private _sortOrder = SortOrder.DateAsc;
 
   private _onDidChangeTreeData = super.push(new EventEmitter<QueryHistoryInfo | undefined>());
 
   readonly onDidChangeTreeData: Event<QueryHistoryInfo | undefined> = this
     ._onDidChangeTreeData.event;
+
+  private _onDidChangeCurrentQueryItem = super.push(new EventEmitter<QueryHistoryInfo | undefined>());
+
+  public readonly onDidChangeCurrentQueryItem = this._onDidChangeCurrentQueryItem.event;
 
   private history: QueryHistoryInfo[] = [];
 
@@ -183,7 +189,7 @@ export class HistoryTreeDataProvider extends DisposableObject {
         break;
       case QueryStatus.Failed:
         treeItem.iconPath = this.failedIconPath;
-        treeItem.contextValue = 'cancelledResultsItem';
+        treeItem.contextValue = element.t === 'local' ? 'cancelledResultsItem' : 'cancelledRemoteResultsItem';
         break;
       default:
         assertNever(element.status);
@@ -260,7 +266,10 @@ export class HistoryTreeDataProvider extends DisposableObject {
   }
 
   setCurrentItem(item?: QueryHistoryInfo) {
-    this.current = item;
+    if (item !== this.current) {
+      this.current = item;
+      this._onDidChangeCurrentQueryItem.fire(item);
+    }
   }
 
   remove(item: QueryHistoryInfo) {
@@ -286,7 +295,7 @@ export class HistoryTreeDataProvider extends DisposableObject {
 
   set allHistory(history: QueryHistoryInfo[]) {
     this.history = history;
-    this.current = history[0];
+    this.setCurrentItem(history[0]);
     this.refresh();
   }
 
@@ -313,10 +322,16 @@ export class QueryHistoryManager extends DisposableObject {
   queryHistoryScrubber: Disposable | undefined;
   private queryMetadataStorageLocation;
 
+  private readonly _onDidChangeCurrentQueryItem = super.push(new EventEmitter<QueryHistoryInfo | undefined>());
+  readonly onDidChangeCurrentQueryItem = this._onDidChangeCurrentQueryItem.event;
+
+  private readonly _onDidCompleteQuery = super.push(new EventEmitter<LocalQueryInfo>());
+  readonly onDidCompleteQuery = this._onDidCompleteQuery.event;
+
   constructor(
-    private readonly qs: QueryServerClient,
+    private readonly qs: QueryRunner,
     private readonly dbm: DatabaseManager,
-    private readonly localQueriesInterfaceManager: InterfaceManager,
+    private readonly localQueriesResultsView: ResultsView,
     private readonly remoteQueriesManager: RemoteQueriesManager,
     private readonly evalLogViewer: EvalLogViewer,
     private readonly queryStorageDir: string,
@@ -343,6 +358,11 @@ export class QueryHistoryManager extends DisposableObject {
     this.treeView = this.push(window.createTreeView('codeQLQueryHistory', {
       treeDataProvider: this.treeDataProvider,
       canSelectMany: true,
+    }));
+
+    // Forward any change of current history item from the tree data.
+    this.push(this.treeDataProvider.onDidChangeCurrentQueryItem((item) => {
+      this._onDidChangeCurrentQueryItem.fire(item);
     }));
 
     // Lazily update the tree view selection due to limitations of TreeView API (see
@@ -537,6 +557,11 @@ export class QueryHistoryManager extends DisposableObject {
     this.registerToRemoteQueriesEvents();
   }
 
+  public completeQuery(info: LocalQueryInfo, results: QueryWithResults): void {
+    info.completeThisQuery(results);
+    this._onDidCompleteQuery.fire(info);
+  }
+
   private getCredentials() {
     return Credentials.initialize(this.ctx);
   }
@@ -560,7 +585,7 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   private registerToRemoteQueriesEvents() {
-    const queryAddedSubscription = this.remoteQueriesManager.onRemoteQueryAdded(event => {
+    const queryAddedSubscription = this.remoteQueriesManager.onRemoteQueryAdded(async (event) => {
       this.addQuery({
         t: 'remote',
         status: QueryStatus.InProgress,
@@ -568,6 +593,8 @@ export class QueryHistoryManager extends DisposableObject {
         queryId: event.queryId,
         remoteQuery: event.query,
       });
+
+      await this.refreshTreeView();
     });
 
     const queryRemovedSubscription = this.remoteQueriesManager.onRemoteQueryRemoved(async (event) => {
@@ -651,6 +678,10 @@ export class QueryHistoryManager extends DisposableObject {
 
   getCurrentQueryHistoryItem(): QueryHistoryInfo | undefined {
     return this.treeDataProvider.getCurrent();
+  }
+
+  getRemoteQueryById(queryId: string): RemoteQueryHistoryItem | undefined {
+    return this.treeDataProvider.allHistory.find(i => i.t === 'remote' && i.queryId === queryId) as RemoteQueryHistoryItem;
   }
 
   async removeDeletedQueries() {
@@ -764,7 +795,7 @@ export class QueryHistoryManager extends DisposableObject {
         throw new Error('Please select a local query.');
       }
 
-      if (!finalSingleItem.completedQuery?.didRunSuccessfully) {
+      if (!finalSingleItem.completedQuery?.sucessful) {
         throw new Error('Please select a query that has completed successfully.');
       }
 
@@ -924,7 +955,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     // Summary log file doesn't exist.
-    if (finalSingleItem.evalLogLocation && fs.pathExists(finalSingleItem.evalLogLocation)) {
+    if (finalSingleItem.evalLogLocation && await fs.pathExists(finalSingleItem.evalLogLocation)) {
       // If raw log does exist, then the summary log is still being generated.
       this.warnInProgressEvalLogSummary();
     } else {
@@ -948,23 +979,20 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    // TODO(angelapwen): Stream the file in. 
-    void fs.readFile(finalSingleItem.jsonEvalLogSummaryLocation, async (err, buffer) => {
-      if (err) {
-        throw new Error(`Could not read evaluator log summary JSON file to generate viewer data at ${finalSingleItem.jsonEvalLogSummaryLocation}.`);
-      }
-      const evalLogData: EvalLogData[] = parseViewerData(buffer.toString());
+    // TODO(angelapwen): Stream the file in.
+    try {
+      const evalLogData: EvalLogData[] = await parseViewerData(finalSingleItem.jsonEvalLogSummaryLocation);
       const evalLogTreeBuilder = new EvalLogTreeBuilder(finalSingleItem.getQueryName(), evalLogData);
       this.evalLogViewer.updateRoots(await evalLogTreeBuilder.getRoots());
-    });
+    } catch (e) {
+      throw new Error(`Could not read evaluator log summary JSON file to generate viewer data at ${finalSingleItem.jsonEvalLogSummaryLocation}.`);
+    }
   }
 
   async handleCancel(
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[]
   ) {
-    // Local queries only
-    // In the future, we may support cancelling remote queries, but this is not a short term plan.
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
     const selected = finalMultiSelect || [finalSingleItem];
@@ -1048,7 +1076,7 @@ export class QueryHistoryManager extends DisposableObject {
       void this.tryOpenExternalFile(query.csvPath);
       return;
     }
-    if (await query.exportCsvResults(this.qs, query.csvPath)) {
+    if (await query.exportCsvResults(this.qs.cliServer, query.csvPath)) {
       void this.tryOpenExternalFile(
         query.csvPath
       );
@@ -1067,7 +1095,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     await this.tryOpenExternalFile(
-      await finalSingleItem.completedQuery.query.ensureCsvAlerts(this.qs, this.dbm)
+      await finalSingleItem.completedQuery.query.ensureCsvAlerts(this.qs.cliServer, this.dbm)
     );
   }
 
@@ -1083,7 +1111,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     await this.tryOpenExternalFile(
-      await finalSingleItem.completedQuery.query.ensureDilPath(this.qs)
+      await finalSingleItem.completedQuery.query.ensureDilPath(this.qs.cliServer)
     );
   }
 
@@ -1208,7 +1236,7 @@ the file in the file explorer and dragging it into the workspace.`
       if (!otherQuery.completedQuery) {
         throw new Error('Please select a completed query.');
       }
-      if (!otherQuery.completedQuery.didRunSuccessfully) {
+      if (!otherQuery.completedQuery.sucessful) {
         throw new Error('Please select a successful query.');
       }
       if (otherQuery.initialInfo.databaseInfo.name !== dbName) {
@@ -1228,7 +1256,7 @@ the file in the file explorer and dragging it into the workspace.`
           otherQuery !== singleItem &&
           otherQuery.t === 'local' &&
           otherQuery.completedQuery &&
-          otherQuery.completedQuery.didRunSuccessfully &&
+          otherQuery.completedQuery.sucessful &&
           otherQuery.initialInfo.databaseInfo.name === dbName
       )
       .map((item) => ({
@@ -1336,7 +1364,7 @@ the file in the file explorer and dragging it into the workspace.`
 
   private async openQueryResults(item: QueryHistoryInfo) {
     if (item.t === 'local') {
-      await this.localQueriesInterfaceManager.showResults(item as CompletedLocalQueryInfo, WebviewReveal.Forced, false);
+      await this.localQueriesResultsView.showResults(item as CompletedLocalQueryInfo, WebviewReveal.Forced, false);
     }
     else if (item.t === 'remote') {
       await this.remoteQueriesManager.openRemoteQueryResults(item.queryId);

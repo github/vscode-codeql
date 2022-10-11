@@ -16,7 +16,7 @@ import { DistributionProvider, FindDistributionResultKind } from './distribution
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { QueryMetadata, SortDirection } from './pure/interface-types';
 import { Logger, ProgressReporter } from './logging';
-import { CompilationMessage } from './pure/messages';
+import { CompilationMessage } from './pure/legacy-messages';
 import { sarifParser } from './sarif-parser';
 import { dbSchemeToLanguage, walkDirectory } from './helpers';
 
@@ -168,7 +168,7 @@ export class CodeQLCliServer implements Disposable {
   nullBuffer: Buffer;
 
   /** Version of current cli, lazily computed by the `getVersion()` method */
-  private _version: SemVer | undefined;
+  private _version: Promise<SemVer> | undefined;
 
   /**
    * The languages supported by the current version of the CLI, computed by `getSupportedLanguages()`.
@@ -240,7 +240,7 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Restart the server when the current command terminates
    */
-  private restartCliServer(): void {
+  restartCliServer(): void {
     const callback = (): void => {
       try {
         this.killProcessIfRunning();
@@ -683,7 +683,7 @@ export class CodeQLCliServer implements Disposable {
     const subcommandArgs = [
       '--format=text',
       `--end-summary=${endSummaryPath}`,
-      '--sourcemap',
+      ...(await this.cliConstraints.supportsSourceMap() ? ['--sourcemap'] : []),
       inputPath,
       outputPath
     ];
@@ -695,7 +695,7 @@ export class CodeQLCliServer implements Disposable {
   * @param inputPath The path of an evaluation event log.
   * @param outputPath The path to write a JSON summary of it to.
   */
-   async generateJsonLogSummary(
+  async generateJsonLogSummary(
     inputPath: string,
     outputPath: string,
   ): Promise<string> {
@@ -985,13 +985,13 @@ export class CodeQLCliServer implements Disposable {
 
   public async getVersion() {
     if (!this._version) {
-      this._version = await this.refreshVersion();
+      this._version = this.refreshVersion();
       // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
       await commands.executeCommand(
         'setContext', 'codeql.supportsEvalLog', await this.cliConstraints.supportsPerQueryEvalLog()
       );
     }
-    return this._version;
+    return await this._version;
   }
 
   private async refreshVersion() {
@@ -1248,6 +1248,9 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_LANGUAGE = new SemVer('2.4.1');
 
+
+  public static CLI_VERSION_WITH_NONDESTURCTIVE_UPGRADES = new SemVer('2.4.2');
+
   /**
    * CLI version where `codeql resolve upgrades` supports
    * the `--allow-downgrades` flag
@@ -1261,7 +1264,7 @@ export class CliVersionConstraint {
 
   /**
    * CLI version where database registration was introduced
-  */
+   */
   public static CLI_VERSION_WITH_DB_REGISTRATION = new SemVer('2.4.1');
 
   /**
@@ -1322,6 +1325,11 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_PER_QUERY_EVAL_LOG = new SemVer('2.9.0');
 
+  /**
+   * CLI version that supports the `--sourcemap` option for log generation.
+   */
+  public static CLI_VERSION_WITH_SOURCEMAP = new SemVer('2.10.3');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1336,6 +1344,10 @@ export class CliVersionConstraint {
 
   public async supportsLanguageName() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_LANGUAGE);
+  }
+
+  public async supportsNonDestructiveUpgrades() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NONDESTURCTIVE_UPGRADES);
   }
 
   public async supportsDowngrades() {
@@ -1388,5 +1400,9 @@ export class CliVersionConstraint {
 
   async supportsPerQueryEvalLog() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG);
+  }
+
+  async supportsSourceMap() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_SOURCEMAP);
   }
 }

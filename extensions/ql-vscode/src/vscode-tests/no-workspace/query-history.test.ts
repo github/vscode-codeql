@@ -7,10 +7,8 @@ import * as sinon from 'sinon';
 import { logger } from '../../logging';
 import { registerQueryHistoryScubber } from '../../query-history-scrubber';
 import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
-import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries';
+import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries-shared';
 import { QueryHistoryConfig, QueryHistoryConfigListener } from '../../config';
-import * as messages from '../../pure/messages';
-import { QueryServerClient } from '../../queryserver-client';
 import { LocalQueryInfo, InitialQueryInfo } from '../../query-results';
 import { DatabaseManager } from '../../databases';
 import * as tmp from 'tmp-promise';
@@ -19,8 +17,9 @@ import { tmpDir } from '../../helpers';
 import { getErrorMessage } from '../../pure/helpers-pure';
 import { HistoryItemLabelProvider } from '../../history-item-label-provider';
 import { RemoteQueriesManager } from '../../remote-queries/remote-queries-manager';
-import { InterfaceManager } from '../../interface';
+import { ResultsView } from '../../interface';
 import { EvalLogViewer } from '../../eval-log-viewer';
+import { QueryRunner } from '../../queryRunner';
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -32,7 +31,7 @@ describe('query-history', () => {
   let queryHistoryManager: QueryHistoryManager | undefined;
   let doCompareCallback: sinon.SinonStub;
 
-  let localQueriesInterfaceManagerStub: InterfaceManager;
+  let localQueriesResultsViewStub: ResultsView;
   let remoteQueriesManagerStub: RemoteQueriesManager;
 
   let tryOpenExternalFile: Function;
@@ -55,9 +54,9 @@ describe('query-history', () => {
     tryOpenExternalFile = (QueryHistoryManager.prototype as any).tryOpenExternalFile;
     configListener = new QueryHistoryConfigListener();
     doCompareCallback = sandbox.stub();
-    localQueriesInterfaceManagerStub = {
+    localQueriesResultsViewStub = {
       showResults: sandbox.stub()
-    } as any as InterfaceManager;
+    } as any as ResultsView;
     remoteQueriesManagerStub = {
       onRemoteQueryAdded: sandbox.stub(),
       onRemoteQueryRemoved: sandbox.stub(),
@@ -205,7 +204,7 @@ describe('query-history', () => {
 
       await queryHistoryManager.handleItemClicked(allHistory[0], [allHistory[0]]);
 
-      expect(localQueriesInterfaceManagerStub.showResults).to.have.been.calledOnceWith(allHistory[0]);
+      expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(allHistory[0]);
       expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(allHistory[0]);
     });
 
@@ -214,7 +213,7 @@ describe('query-history', () => {
 
       await queryHistoryManager.handleItemClicked(allHistory[0], [allHistory[0], allHistory[1]]);
 
-      expect(localQueriesInterfaceManagerStub.showResults).not.to.have.been.called;
+      expect(localQueriesResultsViewStub.showResults).not.to.have.been.called;
       expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
     });
 
@@ -223,7 +222,7 @@ describe('query-history', () => {
 
       await queryHistoryManager.handleItemClicked(undefined!, []);
 
-      expect(localQueriesInterfaceManagerStub.showResults).not.to.have.been.called;
+      expect(localQueriesResultsViewStub.showResults).not.to.have.been.called;
       expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
     });
   });
@@ -252,7 +251,7 @@ describe('query-history', () => {
     expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
 
     // the same item should be selected
-    expect(localQueriesInterfaceManagerStub.showResults).to.have.been.calledOnceWith(selected);
+    expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(selected);
   });
 
   it('should remove an item and select a new one', async () => {
@@ -272,7 +271,7 @@ describe('query-history', () => {
     expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
 
     // the current item should have been selected
-    expect(localQueriesInterfaceManagerStub.showResults).to.have.been.calledOnceWith(newSelected);
+    expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(newSelected);
   });
 
   describe('Compare callback', () => {
@@ -785,20 +784,17 @@ describe('query-history', () => {
         hasInterpretedResults: () => Promise.resolve(hasInterpretedResults),
         deleteQuery: sandbox.stub(),
       } as unknown as QueryEvaluationInfo,
-      result: {
-        resultType: didRunSuccessfully
-          ? messages.QueryResultType.SUCCESS
-          : messages.QueryResultType.OTHER_ERROR
-      } as messages.EvaluationResult,
+      sucessful: didRunSuccessfully,
+      message: 'foo',
       dispose: sandbox.spy()
     };
   }
 
   async function createMockQueryHistory(allHistory: LocalQueryInfo[]) {
     const qhm = new QueryHistoryManager(
-      {} as QueryServerClient,
+      {} as QueryRunner,
       {} as DatabaseManager,
-      localQueriesInterfaceManagerStub,
+      localQueriesResultsViewStub,
       remoteQueriesManagerStub,
       {} as EvalLogViewer,
       'xxx',
