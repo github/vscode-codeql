@@ -1,12 +1,8 @@
-import { ConfigurationTarget, workspace } from 'vscode';
-import { CUSTOM_CODEQL_PATH_SETTING, REMOTE_CONTROLLER_REPO, REMOTE_REPO_LISTS, Setting } from '../config';
+import { ConfigurationTarget } from 'vscode';
+import { CUSTOM_CODEQL_PATH_SETTING, InspectionResult, REMOTE_CONTROLLER_REPO, REMOTE_REPO_LISTS, Setting } from '../config';
 
 class TestSetting<T> {
-  private settingState: {
-    globalValue?: T;
-    workspaceValue?: T,
-    workspaceFolderValue?: T,
-  } | undefined;
+  private settingState: InspectionResult<T> | undefined;
 
   constructor(
     public readonly setting: Setting,
@@ -14,11 +10,11 @@ class TestSetting<T> {
   ) { }
 
   public async get(): Promise<T | undefined> {
-    return this.section.get(this.setting.name);
+    return this.setting.getValue();
   }
 
   public async set(value: T | undefined, target: ConfigurationTarget = ConfigurationTarget.Global): Promise<void> {
-    await this.section.update(this.setting.name, value, target);
+    await this.setting.updateValue(value, target);
   }
 
   public async setInitialTestValue(value: T | undefined) {
@@ -26,7 +22,7 @@ class TestSetting<T> {
   }
 
   public async initialSetup() {
-    this.settingState = this.section.inspect(this.setting.name);
+    this.settingState = this.setting.inspect();
 
     // Unfortunately it's not well-documented how to check whether we can write to a workspace
     // configuration. This is the best I could come up with. It only fails for initial test values
@@ -46,7 +42,7 @@ class TestSetting<T> {
   }
 
   public async restoreToInitialValues() {
-    const state = this.section.inspect(this.setting.name);
+    const state = this.setting.inspect();
 
     // We need to check the state of the setting before we restore it. This is less important for the global
     // configuration target, but the workspace/workspace folder configuration might not even exist. If they
@@ -60,13 +56,6 @@ class TestSetting<T> {
     if (state?.workspaceFolderValue !== this.settingState?.workspaceFolderValue) {
       await this.set(this.settingState?.workspaceFolderValue, ConfigurationTarget.WorkspaceFolder);
     }
-  }
-
-  private get section() {
-    if (this.setting.parent === undefined) {
-      throw new Error('Cannot get the value of a root setting.');
-    }
-    return workspace.getConfiguration(this.setting.parent.qualifiedName);
   }
 }
 

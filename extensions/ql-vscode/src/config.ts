@@ -35,6 +35,19 @@ export class Setting {
     }
     return workspace.getConfiguration(this.parent.qualifiedName).update(this.name, value, target);
   }
+
+  inspect<T>(): InspectionResult<T> | undefined {
+    if (this.parent === undefined) {
+      throw new Error('Cannot update the value of a root setting.');
+    }
+    return workspace.getConfiguration(this.parent.qualifiedName).inspect(this.name);
+  }
+}
+
+export interface InspectionResult<T> {
+  globalValue?: T;
+  workspaceValue?: T,
+  workspaceFolderValue?: T,
 }
 
 const ROOT_SETTING = new Setting('codeQL');
