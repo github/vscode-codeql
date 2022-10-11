@@ -343,6 +343,11 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       } else if (event.direction === NavigationDirection.left) {
         // When stepping left, collapse immediately
         expanded.delete(Keys.keyToString(key));
+      } else {
+        // When stepping up or down, collapse the previous node
+        if (prevState.selectedItem != null) {
+          expanded.delete(Keys.keyToString(prevState.selectedItem));
+        }
       }
       return {
         ...prevState,
