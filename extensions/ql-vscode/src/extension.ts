@@ -467,15 +467,15 @@ async function activateWithInstalledDistribution(
   const localQueryResultsView = new ResultsView(ctx, dbm, cliServer, queryServerLogger, labelProvider);
   ctx.subscriptions.push(localQueryResultsView);
 
-  void logger.log('Initializing remote queries manager.');
-  const rqm = new RemoteQueriesManager(ctx, cliServer, queryStorageDir, logger);
-  ctx.subscriptions.push(rqm);
-
   void logger.log('Initializing variant analysis manager.');
   const variantAnalysisStorageDir = path.join(ctx.globalStorageUri.fsPath, 'variant-analyses');
   await fs.ensureDir(variantAnalysisStorageDir);
   const variantAnalysisManager = new VariantAnalysisManager(ctx, cliServer, variantAnalysisStorageDir, logger);
   ctx.subscriptions.push(variantAnalysisManager);
+
+  void logger.log('Initializing remote queries manager.');
+  const rqm = new RemoteQueriesManager(ctx, cliServer, queryStorageDir, logger, variantAnalysisManager);
+  ctx.subscriptions.push(rqm);
 
   void logger.log('Initializing query history.');
   const qhm = new QueryHistoryManager(

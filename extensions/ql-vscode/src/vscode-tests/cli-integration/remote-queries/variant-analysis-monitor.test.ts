@@ -31,14 +31,7 @@ describe('Variant Analysis Monitor', async function() {
     sandbox.stub(logger, 'log');
     sandbox.stub(config, 'isVariantAnalysisLiveResultsEnabled').returns(false);
 
-    cancellationTokenSource = {
-      token: {
-        isCancellationRequested: false,
-        onCancellationRequested: sandbox.stub()
-      },
-      cancel: sandbox.stub(),
-      dispose: sandbox.stub()
-    };
+    cancellationTokenSource = new CancellationTokenSource();
 
     variantAnalysis = createMockVariantAnalysis();
 
@@ -79,7 +72,7 @@ describe('Variant Analysis Monitor', async function() {
     });
 
     it('should return early if variant analysis is cancelled', async () => {
-      cancellationTokenSource.token.isCancellationRequested = true;
+      cancellationTokenSource.cancel();
 
       const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 

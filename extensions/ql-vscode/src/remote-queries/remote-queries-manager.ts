@@ -22,6 +22,7 @@ import { assertNever } from '../pure/helpers-pure';
 import { QueryStatus } from '../query-status';
 import { DisposableObject } from '../pure/disposable-object';
 import { AnalysisResults } from './shared/analysis-result';
+import { VariantAnalysisManager } from './variant-analysis-manager';
 
 const autoDownloadMaxSize = 300 * 1024;
 const autoDownloadMaxCount = 100;
@@ -56,6 +57,7 @@ export class RemoteQueriesManager extends DisposableObject {
 
   private readonly remoteQueriesMonitor: RemoteQueriesMonitor;
   private readonly analysesResultsManager: AnalysesResultsManager;
+  private readonly variantAnalysisManager: VariantAnalysisManager;
   private readonly view: RemoteQueriesView;
 
   constructor(
@@ -63,11 +65,13 @@ export class RemoteQueriesManager extends DisposableObject {
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     logger: Logger,
+    variantAnalysisManager: VariantAnalysisManager,
   ) {
     super();
     this.analysesResultsManager = new AnalysesResultsManager(ctx, cliServer, storagePath, logger);
     this.view = new RemoteQueriesView(ctx, logger, this.analysesResultsManager);
     this.remoteQueriesMonitor = new RemoteQueriesMonitor(ctx, logger);
+    this.variantAnalysisManager = variantAnalysisManager;
 
     this.remoteQueryAddedEventEmitter = this.push(new EventEmitter<NewQueryEvent>());
     this.remoteQueryRemovedEventEmitter = this.push(new EventEmitter<RemovedQueryEvent>());
@@ -123,7 +127,8 @@ export class RemoteQueriesManager extends DisposableObject {
       credentials, uri || window.activeTextEditor?.document.uri,
       false,
       progress,
-      token);
+      token,
+      this.variantAnalysisManager);
 
     if (querySubmission?.query) {
       const query = querySubmission.query;

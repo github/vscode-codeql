@@ -5,6 +5,7 @@ import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import { Credentials } from '../../../authentication';
 import * as fs from 'fs-extra';
+import * as path from 'path';
 
 import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
 import { createMockVariantAnalysisRepoTask } from '../../factories/remote-queries/gh-api/variant-analysis-repo-task';
@@ -12,6 +13,7 @@ import { CodeQLCliServer } from '../../../cli';
 import { storagePath } from '../global.helper';
 import { faker } from '@faker-js/faker';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
+import { VariantAnalysisRepoTask } from '../../../remote-queries/gh-api/variant-analysis';
 
 describe(VariantAnalysisResultsManager.name, () => {
   let sandbox: sinon.SinonSandbox;
@@ -69,12 +71,29 @@ describe(VariantAnalysisResultsManager.name, () => {
     });
 
     describe('when the artifact_url is present', async () => {
-      it('should save the result to disk', async () => {
-        const dummyRepoTask = createMockVariantAnalysisRepoTask();
+      let dummyRepoTask: VariantAnalysisRepoTask;
+      let storageDirectory: string;
+      let arrayBuffer: ArrayBuffer;
 
-        const dummyResult = 'this-is-a-repo-result';
-        getVariantAnalysisRepoResultStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepoResult').withArgs(mockCredentials, dummyRepoTask.artifact_url as string).resolves(dummyResult);
+      beforeEach(async () => {
+        dummyRepoTask = createMockVariantAnalysisRepoTask();
 
+        storageDirectory = variantAnalysisResultsManager.getRepoStorageDirectory(variantAnalysisId, dummyRepoTask.repository.full_name);
+        const sourceFilePath = path.join(__dirname, '../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip');
+        arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
+
+        getVariantAnalysisRepoResultStub = sandbox
+          .stub(ghApiClient, 'getVariantAnalysisRepoResult')
+          .withArgs(mockCredentials, dummyRepoTask.artifact_url as string)
+          .resolves(arrayBuffer);
+      });
+
+      afterEach(async () => {
+        fs.removeSync(`${storageDirectory}/results.zip`);
+        fs.removeSync(`${storageDirectory}/results`);
+      });
+
+      it('should call the API to download the results', async () => {
         await variantAnalysisResultsManager.download(
           mockCredentials,
           variantAnalysisId,
@@ -82,6 +101,26 @@ describe(VariantAnalysisResultsManager.name, () => {
         );
 
         expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
+      });
+
+      it('should save the results zip file to disk', async () => {
+        await variantAnalysisResultsManager.download(
+          mockCredentials,
+          variantAnalysisId,
+          dummyRepoTask
+        );
+
+        expect(fs.existsSync(`${storageDirectory}/results.zip`)).to.be.true;
+      });
+
+      it('should unzip the results in a `results/` folder', async () => {
+        await variantAnalysisResultsManager.download(
+          mockCredentials,
+          variantAnalysisId,
+          dummyRepoTask
+        );
+
+        expect(fs.existsSync(`${storageDirectory}/results/results.sarif`)).to.be.true;
       });
     });
   });

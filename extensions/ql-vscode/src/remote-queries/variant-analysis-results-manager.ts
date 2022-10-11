@@ -14,6 +14,7 @@ import { DisposableObject, DisposeHandler } from '../pure/disposable-object';
 import { VariantAnalysisRepoTask } from './gh-api/variant-analysis';
 import * as ghApiClient from './gh-api/gh-api-client';
 import { EventEmitter } from 'vscode';
+import { unzipFile } from '../pure/zip';
 
 type CacheKey = `${number}/${string}`;
 
@@ -26,6 +27,7 @@ export type ResultDownloadedEvent = {
 
 export class VariantAnalysisResultsManager extends DisposableObject {
   private static readonly REPO_TASK_FILENAME = 'repo_task.json';
+  private static readonly RESULTS_DIRECTORY = 'results';
 
   private readonly cachedResults: Map<CacheKey, VariantAnalysisScannedRepositoryResult>;
 
@@ -60,9 +62,17 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       repoTask.artifact_url
     );
 
-    fs.mkdirSync(resultDirectory, { recursive: true });
+    if (!(await fs.pathExists(resultDirectory))) {
+      await fs.mkdir(resultDirectory, { recursive: true });
+    }
+
     await fs.outputJson(path.join(resultDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME), repoTask);
-    await fs.writeFile(path.join(resultDirectory, 'results.zip'), JSON.stringify(result, null, 2), 'utf8');
+
+    const zipFilePath = path.join(resultDirectory, 'results.zip');
+    const unzippedFilesDirectory = path.join(resultDirectory, VariantAnalysisResultsManager.RESULTS_DIRECTORY);
+
+    fs.writeFileSync(zipFilePath, Buffer.from(result));
+    await unzipFile(zipFilePath, unzippedFilesDirectory);
 
     this._onResultDownloaded.fire({
       variantAnalysisId,
@@ -107,8 +117,9 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
     const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(repoTask.repository.full_name, repoTask.database_commit_sha);
 
-    const sarifPath = path.join(storageDirectory, 'results.sarif');
-    const bqrsPath = path.join(storageDirectory, 'results.bqrs');
+    const resultsDirectory = path.join(storageDirectory, VariantAnalysisResultsManager.RESULTS_DIRECTORY);
+    const sarifPath = path.join(resultsDirectory, 'results.sarif');
+    const bqrsPath = path.join(resultsDirectory, 'results.bqrs');
     if (await fs.pathExists(sarifPath)) {
       const interpretedResults = await this.readSarifResults(sarifPath, fileLinkPrefix);
 
@@ -161,7 +172,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     );
   }
 
-  private getRepoStorageDirectory(variantAnalysisId: number, fullName: string): string {
+  public getRepoStorageDirectory(variantAnalysisId: number, fullName: string): string {
     return path.join(
       this.getStorageDirectory(variantAnalysisId),
       fullName
