@@ -76,12 +76,8 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
       void this.logger.log('****** Retrieved variant analysis' + JSON.stringify(variantAnalysisSummary));
 
-      const repoResultsToDownload = this.getReposToDownload(variantAnalysisSummary, scannedReposDownloaded);
-
-      repoResultsToDownload.forEach(scannedRepo => {
-        scannedReposDownloaded.push(scannedRepo.repository.id);
-        this.scheduleForDownload(scannedRepo, variantAnalysisSummary);
-      });
+      const downloadedRepos = this.downloadVariantAnalysisResults(variantAnalysisSummary, scannedReposDownloaded);
+      scannedReposDownloaded.push(...downloadedRepos);
 
       if (variantAnalysisSummary.status === 'completed') {
         break;
@@ -116,6 +112,21 @@ export class VariantAnalysisMonitor extends DisposableObject {
     } else {
       return [];
     }
+  }
+
+  private downloadVariantAnalysisResults(
+    variantAnalysisSummary: VariantAnalysisApiResponse,
+    scannedReposDownloaded: number[]
+  ): number[] {
+    const repoResultsToDownload = this.getReposToDownload(variantAnalysisSummary, scannedReposDownloaded);
+    const downloadedRepos: number[] = [];
+
+    repoResultsToDownload.forEach(scannedRepo => {
+      downloadedRepos.push(scannedRepo.repository.id);
+      this.scheduleForDownload(scannedRepo, variantAnalysisSummary);
+    });
+
+    return downloadedRepos;
   }
 
   private async sleep(ms: number) {
