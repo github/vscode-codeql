@@ -90,7 +90,7 @@ export function VariantAnalysis({
         console.error(`Invalid event origin ${origin}`);
       }
     });
-  });
+  }, []);
 
   if (variantAnalysis?.actionsWorkflowRunId === undefined) {
     return <VariantAnalysisLoading />;
