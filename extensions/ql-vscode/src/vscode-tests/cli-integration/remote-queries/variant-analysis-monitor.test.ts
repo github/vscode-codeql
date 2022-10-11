@@ -20,6 +20,8 @@ import { Credentials } from '../../../authentication';
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
 
 describe('Variant Analysis Monitor', async function() {
+  this.timeout(60000);
+
   let sandbox: sinon.SinonSandbox;
   let mockGetVariantAnalysis: sinon.SinonStub;
   let cancellationTokenSource: CancellationTokenSource;
