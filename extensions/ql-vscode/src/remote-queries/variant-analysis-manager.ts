@@ -188,9 +188,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     }, variantAnalysisResponse);
 
     void commands.executeCommand('codeQL.openVariantAnalysisView', processedVariantAnalysis.id);
-    if (variantAnalysisResponse.status !== 'completed') {
-      void commands.executeCommand('codeQL.monitorVariantAnalysis', processedVariantAnalysis);
-    }
+    void commands.executeCommand('codeQL.monitorVariantAnalysis', processedVariantAnalysis);
 
     this._onVariantAnalysisAdded.fire(processedVariantAnalysis);
   }
