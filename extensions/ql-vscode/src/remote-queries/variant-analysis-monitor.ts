@@ -76,15 +76,12 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
       void this.logger.log('****** Retrieved variant analysis' + JSON.stringify(variantAnalysisSummary));
 
-      if (variantAnalysisSummary.scanned_repositories) {
-        variantAnalysisSummary.scanned_repositories.forEach(scannedRepo => {
-          if (this.shouldDownload(scannedRepo, scannedReposDownloaded)) {
-            this.scheduleForDownload(scannedRepo, variantAnalysisSummary);
-            void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResult', scannedRepo, variantAnalysisSummary);
-            scannedReposDownloaded.push(scannedRepo.repository.id);
-          }
-        });
-      }
+      const repoResultsToDownload = this.getReposToDownload(variantAnalysisSummary, scannedReposDownloaded);
+
+      repoResultsToDownload.forEach(scannedRepo => {
+        scannedReposDownloaded.push(scannedRepo.repository.id);
+        this.scheduleForDownload(scannedRepo, variantAnalysisSummary);
+      });
 
       if (variantAnalysisSummary.status === 'completed') {
         break;
@@ -108,6 +105,17 @@ export class VariantAnalysisMonitor extends DisposableObject {
     alreadyDownloaded: number[]
   ): boolean {
     return (!alreadyDownloaded.includes(scannedRepo.repository.id) && scannedRepo.analysis_status === 'succeeded');
+  }
+
+  private getReposToDownload(
+    variantAnalysisSummary: VariantAnalysisApiResponse,
+    alreadyDownloaded: number[]
+  ): VariantAnalysisScannedRepository[] {
+    if (variantAnalysisSummary.scanned_repositories) {
+      return variantAnalysisSummary.scanned_repositories.filter(scannedRepo => this.shouldDownload(scannedRepo, alreadyDownloaded));
+    } else {
+      return [];
+    }
   }
 
   private async sleep(ms: number) {
