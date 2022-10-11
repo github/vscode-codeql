@@ -27,6 +27,7 @@ export type ResultDownloadedEvent = {
 
 export class VariantAnalysisResultsManager extends DisposableObject {
   private static readonly REPO_TASK_FILENAME = 'repo_task.json';
+  private static readonly RESULTS_DIRECTORY = 'results';
 
   private readonly cachedResults: Map<CacheKey, VariantAnalysisScannedRepositoryResult>;
 
@@ -68,7 +69,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     await fs.outputJson(path.join(resultDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME), repoTask);
 
     const zipFilePath = path.join(resultDirectory, 'results.zip');
-    const unzippedFilesDirectory = path.join(resultDirectory, 'results');
+    const unzippedFilesDirectory = path.join(resultDirectory, VariantAnalysisResultsManager.RESULTS_DIRECTORY);
 
     fs.writeFileSync(zipFilePath, Buffer.from(result));
     await unzipFile(zipFilePath, unzippedFilesDirectory);
@@ -116,8 +117,9 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
     const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(repoTask.repository.full_name, repoTask.database_commit_sha);
 
-    const sarifPath = path.join(storageDirectory, 'results.sarif');
-    const bqrsPath = path.join(storageDirectory, 'results.bqrs');
+    const resultsDirectory = path.join(storageDirectory, VariantAnalysisResultsManager.RESULTS_DIRECTORY);
+    const sarifPath = path.join(resultsDirectory, 'results.sarif');
+    const bqrsPath = path.join(resultsDirectory, 'results.bqrs');
     if (await fs.pathExists(sarifPath)) {
       const interpretedResults = await this.readSarifResults(sarifPath, fileLinkPrefix);
 
