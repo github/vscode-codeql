@@ -78,7 +78,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
       if (variantAnalysisSummary.scanned_repositories) {
         variantAnalysisSummary.scanned_repositories.forEach(scannedRepo => {
-          if (!scannedReposDownloaded.includes(scannedRepo.repository.id) && scannedRepo.analysis_status === 'succeeded') {
+          if (this.shouldDownload(scannedRepo, scannedReposDownloaded)) {
             this.scheduleForDownload(scannedRepo, variantAnalysisSummary);
             void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResult', scannedRepo, variantAnalysisSummary);
             scannedReposDownloaded.push(scannedRepo.repository.id);
@@ -101,6 +101,13 @@ export class VariantAnalysisMonitor extends DisposableObject {
     variantAnalysisSummary: VariantAnalysisApiResponse
   ) {
     void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResult', scannedRepo, variantAnalysisSummary);
+  }
+
+  private shouldDownload(
+    scannedRepo: VariantAnalysisScannedRepository,
+    alreadyDownloaded: number[]
+  ): boolean {
+    return (!alreadyDownloaded.includes(scannedRepo.repository.id) && scannedRepo.analysis_status === 'succeeded');
   }
 
   private async sleep(ms: number) {
