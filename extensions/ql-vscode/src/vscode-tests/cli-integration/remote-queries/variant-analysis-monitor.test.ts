@@ -103,9 +103,9 @@ describe('Variant Analysis Monitor', async function() {
         const spy = sandbox.spy();
         variantAnalysisMonitor.onVariantAnalysisChange(spy);
 
-        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
+        const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
-        expect(spy).to.have.been.calledOnce;
+        expect(spy).to.have.been.calledWith(result.variantAnalysis);
       });
     });
 
