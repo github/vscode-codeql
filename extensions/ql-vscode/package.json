@@ -315,6 +315,10 @@
         "title": "CodeQL: Export Variant Analysis Results"
       },
       {
+        "command": "codeQL.openVariantAnalysis",
+        "title": "CodeQL: Open Variant Analysis"
+      },
+      {
         "command": "codeQL.runQueries",
         "title": "CodeQL: Run Queries in Selected Files"
       },
@@ -889,6 +893,10 @@
         {
           "command": "codeQL.runVariantAnalysis",
           "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.openVariantAnalysis",
+          "when": "config.codeQL.canary && config.codeQL.variantAnalysis.liveResults"
         },
         {
           "command": "codeQL.exportVariantAnalysisResults",
