@@ -1,4 +1,3 @@
 **/* @github/codeql-vscode-reviewers
-/extensions/ql-vscode/src/remote-queries/ @github/code-scanning-secexp-reviewers
-/extensions/ql-vscode/src/view/remote-queries/ @github/code-scanning-secexp-reviewers
-/extensions/ql-vscode/src/view/variant-analysis/ @github/code-scanning-secexp-reviewers
+**/remote-queries/ @github/code-scanning-secexp-reviewers
+**/variant-analysis/ @github/code-scanning-secexp-reviewers
