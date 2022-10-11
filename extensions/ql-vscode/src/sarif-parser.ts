@@ -1,31 +1,32 @@
 import * as Sarif from 'sarif';
 import * as fs from 'fs-extra';
-import { parser } from 'stream-json';
-import { pick } from 'stream-json/filters/Pick';
 import Assembler = require('stream-json/Assembler');
-import { chain } from 'stream-chain';
 import { getErrorMessage } from './pure/helpers-pure';
+import Pick = require('stream-json/filters/Pick');
 
 const DUMMY_TOOL: Sarif.Tool = { driver: { name: '' } };
 
 export async function sarifParser(interpretedResultsPath: string): Promise<Sarif.Log> {
   try {
     // Parse the SARIF file into token streams, filtering out only the results array.
-    const p = parser();
-    const pipeline = chain([
-      fs.createReadStream(interpretedResultsPath),
-      p,
-      pick({ filter: 'runs.0.results' })
-    ]);
+    const pipeline = fs.createReadStream(interpretedResultsPath).pipe(Pick.withParser({ filter: 'runs.0.results' }));
 
     // Creates JavaScript objects from the token stream
     const asm = Assembler.connectTo(pipeline);
 
-    // Returns a constructed Log object with the results or an empty array if no results were found.
+    // Returns a constructed Log object with the results of an empty array if no results were found.
     // If the parser fails for any reason, it will reject the promise.
     return await new Promise((resolve, reject) => {
+      let alreadyDone = false;
       pipeline.on('error', (error) => {
         reject(error);
+      });
+
+      // If the parser pipeline completes before the assembler, we've reached end of file and have not found any results.
+      pipeline.on('end', () => {
+        if (!alreadyDone) {
+          reject(new Error('Invalid SARIF file: expecting at least one run with result.'));
+        }
       });
 
       asm.on('done', (asm) => {
@@ -41,6 +42,7 @@ export async function sarifParser(interpretedResultsPath: string): Promise<Sarif
         };
 
         resolve(log);
+        alreadyDone = true;
       });
     });
   } catch (e) {
