@@ -156,8 +156,8 @@ describe('query-results', () => {
   });
 
   it('should interpretResultsSarif', async function() {
-    // up to 5 minutes per test
-    this.timeout(5 * 60 * 1000);
+    // up to 2 minutes per test
+    this.timeout(2 * 60 * 1000);
 
     const spy = sandbox.mock();
     spy.returns({ a: '1234' });
