@@ -76,7 +76,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
       void this.logger.log('****** Retrieved variant analysis' + JSON.stringify(variantAnalysisSummary));
 
-      const downloadedRepos = this.downloadVariantAnalysisResults(variantAnalysisSummary, scannedReposDownloaded);
+      const downloadedRepos = await this.downloadVariantAnalysisResults(variantAnalysisSummary, scannedReposDownloaded);
       scannedReposDownloaded.push(...downloadedRepos);
 
       if (variantAnalysisSummary.status === 'completed') {
@@ -89,10 +89,10 @@ export class VariantAnalysisMonitor extends DisposableObject {
     return { status: 'CompletedSuccessfully', scannedReposDownloaded: scannedReposDownloaded };
   }
 
-  private scheduleForDownload(
+  private async scheduleForDownload(
     scannedRepo: VariantAnalysisScannedRepository,
     variantAnalysisSummary: VariantAnalysisApiResponse
-  ) {
+  ): Promise<void> {
     void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResult', scannedRepo, variantAnalysisSummary);
   }
 
@@ -114,17 +114,28 @@ export class VariantAnalysisMonitor extends DisposableObject {
     }
   }
 
-  private downloadVariantAnalysisResults(
+  private async downloadVariantAnalysisResults(
     variantAnalysisSummary: VariantAnalysisApiResponse,
     scannedReposDownloaded: number[]
-  ): number[] {
+  ): Promise<number[]> {
     const repoResultsToDownload = this.getReposToDownload(variantAnalysisSummary, scannedReposDownloaded);
     const downloadedRepos: number[] = [];
 
-    repoResultsToDownload.forEach(scannedRepo => {
-      downloadedRepos.push(scannedRepo.repository.id);
-      this.scheduleForDownload(scannedRepo, variantAnalysisSummary);
-    });
+    const batchSize = 3;
+    const numOfBatches = Math.ceil(repoResultsToDownload.length / batchSize);
+
+    for (let i = 0; i < repoResultsToDownload.length; i += batchSize) {
+      const batch = repoResultsToDownload.slice(i, i + batchSize);
+
+      const nwos = batch.map(s => s.repository.full_name).join(', ');
+      const batchTasks = batch.map(scannedRepo => this.scheduleForDownload(scannedRepo, variantAnalysisSummary));
+
+      void this.logger.log(`Downloading batch ${Math.floor(i / batchSize) + 1} of ${numOfBatches} (${nwos})`);
+
+      await Promise.allSettled(batchTasks);
+
+      batch.map(scannedRepo => downloadedRepos.push(scannedRepo.repository.id));
+    }
 
     return downloadedRepos;
   }
