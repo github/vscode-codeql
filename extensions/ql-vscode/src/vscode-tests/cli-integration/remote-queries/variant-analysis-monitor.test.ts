@@ -98,6 +98,15 @@ describe('Variant Analysis Monitor', async function() {
         expect(result.variantAnalysis?.status).to.equal(VariantAnalysisStatus.Failed);
         expect(result.variantAnalysis?.failureReason).to.equal(processFailureReason(mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason));
       });
+
+      it('should emit `onVariantAnalysisChange`', async () => {
+        const spy = sandbox.spy();
+        variantAnalysisMonitor.onVariantAnalysisChange(spy);
+
+        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
+
+        expect(spy).to.have.been.calledOnce;
+      });
     });
 
     describe('when the variant analysis completes', async () => {
