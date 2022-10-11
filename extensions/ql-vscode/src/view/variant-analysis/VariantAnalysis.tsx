@@ -65,7 +65,7 @@ export function VariantAnalysis({
   const [repoResults, setRepoResults] = useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
 
   useEffect(() => {
-    window.addEventListener('message', (evt: MessageEvent) => {
+    const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
         const msg: ToVariantAnalysisMessage = evt.data;
         if (msg.t === 'setVariantAnalysis') {
@@ -89,8 +89,13 @@ export function VariantAnalysis({
         const origin = evt.origin.replace(/\n|\r/g, '');
         console.error(`Invalid event origin ${origin}`);
       }
-    });
-  });
+    };
+    window.addEventListener('message', listener);
+
+    return () => {
+      window.removeEventListener('message', listener);
+    };
+  }, []);
 
   if (variantAnalysis?.actionsWorkflowRunId === undefined) {
     return <VariantAnalysisLoading />;
