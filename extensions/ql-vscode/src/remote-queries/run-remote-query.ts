@@ -29,6 +29,7 @@ import { getRepositorySelection, isValidSelection, RepositorySelection } from '.
 import { parseVariantAnalysisQueryLanguage, VariantAnalysisSubmission } from './shared/variant-analysis';
 import { Repository } from './shared/repository';
 import { processVariantAnalysis } from './variant-analysis-processor';
+import { VariantAnalysisManager } from './variant-analysis-manager';
 
 export interface QlPack {
   name: string;
@@ -182,7 +183,8 @@ export async function runRemoteQuery(
   uri: Uri | undefined,
   dryRun: boolean,
   progress: ProgressCallback,
-  token: CancellationToken
+  token: CancellationToken,
+  variantAnalysisManager: VariantAnalysisManager
 ): Promise<void | RemoteQuerySubmissionResult> {
   if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
     throw new Error(`Variant analysis is not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
@@ -272,6 +274,8 @@ export async function runRemoteQuery(
       );
 
       const processedVariantAnalysis = processVariantAnalysis(variantAnalysisSubmission, variantAnalysisResponse);
+
+      variantAnalysisManager.onVariantAnalysisSubmitted(processedVariantAnalysis);
 
       void logger.log(`Variant analysis:\n${JSON.stringify(processedVariantAnalysis, null, 2)}`);
 

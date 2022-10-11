@@ -14,6 +14,7 @@ import { DisposableObject, DisposeHandler } from '../pure/disposable-object';
 import { VariantAnalysisRepoTask } from './gh-api/variant-analysis';
 import * as ghApiClient from './gh-api/gh-api-client';
 import { EventEmitter } from 'vscode';
+import { unzipFile } from '../pure/zip';
 
 type CacheKey = `${number}/${string}`;
 
@@ -60,9 +61,17 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       repoTask.artifact_url
     );
 
-    fs.mkdirSync(resultDirectory, { recursive: true });
+    if (!(await fs.pathExists(resultDirectory))) {
+      await fs.mkdir(resultDirectory, { recursive: true });
+    }
+
     await fs.outputJson(path.join(resultDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME), repoTask);
-    await fs.writeFile(path.join(resultDirectory, 'results.zip'), JSON.stringify(result, null, 2), 'utf8');
+
+    const zipFilePath = path.join(resultDirectory, 'results.zip');
+    const unzippedFilesDirectory = path.join(resultDirectory, 'results');
+
+    fs.writeFileSync(zipFilePath, Buffer.from(result));
+    await unzipFile(zipFilePath, unzippedFilesDirectory);
 
     this._onResultDownloaded.fire({
       variantAnalysisId,
@@ -161,7 +170,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     );
   }
 
-  private getRepoStorageDirectory(variantAnalysisId: number, fullName: string): string {
+  public getRepoStorageDirectory(variantAnalysisId: number, fullName: string): string {
     return path.join(
       this.getStorageDirectory(variantAnalysisId),
       fullName
