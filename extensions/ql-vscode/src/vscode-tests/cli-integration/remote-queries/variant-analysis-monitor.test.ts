@@ -109,7 +109,7 @@ describe('Variant Analysis Monitor', async function() {
       });
     });
 
-    describe('when the variant analysis is being monitored', async () => {
+    describe('when the variant analysis is in progress', async () => {
       let mockApiResponse: VariantAnalysisApiResponse;
       let scannedRepos: ApiVariantAnalysisScannedRepository[];
 
