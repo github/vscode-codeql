@@ -18,6 +18,12 @@ type Props = {
   repoResults?: VariantAnalysisScannedRepositoryResult[];
 }
 
+const openQueryFile = () => {
+  vscode.postMessage({
+    t: 'openQueryFile',
+  });
+};
+
 export function VariantAnalysis({
   variantAnalysis: initialVariantAnalysis,
   repoStates: initialRepoStates = [],
@@ -68,7 +74,7 @@ export function VariantAnalysis({
     <>
       <VariantAnalysisHeader
         variantAnalysis={variantAnalysis}
-        onOpenQueryFileClick={() => console.log('Open query')}
+        onOpenQueryFileClick={openQueryFile}
         onViewQueryTextClick={() => console.log('View query')}
         onStopQueryClick={() => console.log('Stop query')}
         onCopyRepositoryListClick={() => console.log('Copy repository list')}
