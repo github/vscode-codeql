@@ -134,7 +134,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
       await Promise.allSettled(batchTasks);
 
-      batch.map(scannedRepo => downloadedRepos.push(scannedRepo.repository.id));
+      downloadedRepos.push(...batch.map(scannedRepo => scannedRepo.repository.id));
     }
 
     return downloadedRepos;
