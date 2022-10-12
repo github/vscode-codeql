@@ -20,7 +20,8 @@ export function createMockVariantAnalysis(
     query: {
       name: 'a-query-name',
       filePath: 'a-query-file-path',
-      language: VariantAnalysisQueryLanguage.Javascript
+      language: VariantAnalysisQueryLanguage.Javascript,
+      queryText: 'a-query-text',
     },
     databases: {
       repositories: ['1', '2', '3'],

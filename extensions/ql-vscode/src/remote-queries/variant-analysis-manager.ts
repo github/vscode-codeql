@@ -183,6 +183,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
         name: `Variant analysis ${variantAnalysisId}`,
         filePath: `variant_analysis_${variantAnalysisId}.ql`,
         language: variantAnalysisResponse.query_language as VariantAnalysisQueryLanguage,
+        queryText: '',
       },
       databases: {}
     }, variantAnalysisResponse);
