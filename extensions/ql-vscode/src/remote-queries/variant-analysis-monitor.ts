@@ -2,6 +2,7 @@ import { ExtensionContext, CancellationToken, commands, EventEmitter } from 'vsc
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import * as ghApiClient from './gh-api/gh-api-client';
+import * as pLimit from 'p-limit';
 
 import { VariantAnalysis, VariantAnalysisStatus } from './shared/variant-analysis';
 import {
@@ -17,6 +18,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
   // us to just over 2 days worth of monitoring.
   public static maxAttemptCount = 17280;
   public static sleepTime = 5000;
+  public static maxConcurrentTasks = 3;
 
   private readonly _onVariantAnalysisChange = this.push(new EventEmitter<VariantAnalysis | undefined>());
   readonly onVariantAnalysisChange = this._onVariantAnalysisChange.event;
@@ -93,6 +95,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
     scannedRepo: VariantAnalysisScannedRepository,
     variantAnalysisSummary: VariantAnalysisApiResponse
   ): Promise<void> {
+    void this.logger.log(`📥 Downloading ${scannedRepo.repository.full_name}...`);
     void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResult', scannedRepo, variantAnalysisSummary);
   }
 
@@ -119,25 +122,17 @@ export class VariantAnalysisMonitor extends DisposableObject {
     scannedReposDownloaded: number[]
   ): Promise<number[]> {
     const repoResultsToDownload = this.getReposToDownload(variantAnalysisSummary, scannedReposDownloaded);
-    const downloadedRepos: number[] = [];
 
-    const batchSize = 3;
-    const numOfBatches = Math.ceil(repoResultsToDownload.length / batchSize);
+    const limit = pLimit(VariantAnalysisMonitor.maxConcurrentTasks);
 
-    for (let i = 0; i < repoResultsToDownload.length; i += batchSize) {
-      const batch = repoResultsToDownload.slice(i, i + batchSize);
+    const input = repoResultsToDownload.map(async (scannedRepo) => {
+      await limit(() => this.scheduleForDownload(scannedRepo, variantAnalysisSummary));
+    });
 
-      const nwos = batch.map(s => s.repository.full_name).join(', ');
-      const batchTasks = batch.map(scannedRepo => this.scheduleForDownload(scannedRepo, variantAnalysisSummary));
+    // Only `maxConcurrentTasks` will be running at a time.
+    await Promise.all(input);
 
-      void this.logger.log(`Downloading batch ${Math.floor(i / batchSize) + 1} of ${numOfBatches} (${nwos})`);
-
-      await Promise.allSettled(batchTasks);
-
-      downloadedRepos.push(...batch.map(scannedRepo => scannedRepo.repository.id));
-    }
-
-    return downloadedRepos;
+    return repoResultsToDownload.map(scannedRepo => scannedRepo.repository.id);
   }
 
   private async sleep(ms: number) {
