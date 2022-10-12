@@ -35,6 +35,7 @@ describe('Variant Analysis processor', function() {
       'databases': {
         'repositories': ['1', '2', '3'],
       },
+      'executionStartTime': mockSubmission.startTime,
       'status': 'succeeded',
       'actionsWorkflowRunId': mockApiResponse.actions_workflow_run_id,
       'scannedRepos': [
