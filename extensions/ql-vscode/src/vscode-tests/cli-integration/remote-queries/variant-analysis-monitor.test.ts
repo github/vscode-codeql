@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { CancellationTokenSource, extensions } from 'vscode';
+import { CancellationTokenSource, commands, extensions } from 'vscode';
 import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
@@ -115,7 +115,7 @@ describe('Variant Analysis Monitor', async function() {
 
       describe('when there are successfully scanned repos', async () => {
         beforeEach(async function() {
-          scannedRepos = createMockScannedRepos(['pending', 'in_progress', 'succeeded']);
+          scannedRepos = createMockScannedRepos(['pending', 'pending', 'in_progress', 'in_progress', 'succeeded', 'succeeded', 'succeeded']);
           mockApiResponse = createMockApiResponse('completed', scannedRepos);
           mockGetVariantAnalysis = sandbox.stub(ghApiClient, 'getVariantAnalysis').resolves(mockApiResponse);
         });
@@ -126,6 +126,21 @@ describe('Variant Analysis Monitor', async function() {
 
           expect(result.status).to.equal('CompletedSuccessfully');
           expect(result.scannedReposDownloaded).to.eql(scannedRepoIds);
+        });
+
+        it('should trigger a download extension command for each repo', async () => {
+          const succeededRepos = scannedRepos.filter(r => r.analysis_status === 'succeeded');
+          const commandSpy = sandbox.spy(commands, 'executeCommand');
+
+          await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
+
+          expect(commandSpy).to.have.callCount(succeededRepos.length);
+
+          succeededRepos.forEach((succeededRepo, index) => {
+            expect(commandSpy.getCall(index).args[0]).to.eq('codeQL.autoDownloadVariantAnalysisResult');
+            expect(commandSpy.getCall(index).args[1]).to.eq(succeededRepo);
+            expect(commandSpy.getCall(index).args[2]).to.eq(mockApiResponse);
+          });
         });
       });
 
