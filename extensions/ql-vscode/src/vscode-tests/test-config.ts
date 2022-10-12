@@ -2,7 +2,7 @@ import { ConfigurationTarget } from 'vscode';
 import { CUSTOM_CODEQL_PATH_SETTING, InspectionResult, REMOTE_CONTROLLER_REPO, REMOTE_REPO_LISTS, Setting } from '../config';
 
 class TestSetting<T> {
-  private settingState: InspectionResult<T> | undefined;
+  private initialSettingState: InspectionResult<T> | undefined;
 
   constructor(
     public readonly setting: Setting,
@@ -22,15 +22,15 @@ class TestSetting<T> {
   }
 
   public async initialSetup() {
-    this.settingState = this.setting.inspect();
+    this.initialSettingState = this.setting.inspect();
 
     // Unfortunately it's not well-documented how to check whether we can write to a workspace
     // configuration. This is the best I could come up with. It only fails for initial test values
     // which are not undefined.
-    if (this.settingState?.workspaceValue !== undefined) {
+    if (this.initialSettingState?.workspaceValue !== undefined) {
       await this.set(this.initialTestValue, ConfigurationTarget.Workspace);
     }
-    if (this.settingState?.workspaceFolderValue !== undefined) {
+    if (this.initialSettingState?.workspaceFolderValue !== undefined) {
       await this.set(this.initialTestValue, ConfigurationTarget.WorkspaceFolder);
     }
 
@@ -47,14 +47,14 @@ class TestSetting<T> {
     // We need to check the state of the setting before we restore it. This is less important for the global
     // configuration target, but the workspace/workspace folder configuration might not even exist. If they
     // don't exist, VSCode will error when trying to write the new value (even if that value is undefined).
-    if (state?.globalValue !== this.settingState?.globalValue) {
-      await this.set(this.settingState?.globalValue, ConfigurationTarget.Global);
+    if (state?.globalValue !== this.initialSettingState?.globalValue) {
+      await this.set(this.initialSettingState?.globalValue, ConfigurationTarget.Global);
     }
-    if (state?.workspaceValue !== this.settingState?.workspaceValue) {
-      await this.set(this.settingState?.workspaceValue, ConfigurationTarget.Workspace);
+    if (state?.workspaceValue !== this.initialSettingState?.workspaceValue) {
+      await this.set(this.initialSettingState?.workspaceValue, ConfigurationTarget.Workspace);
     }
-    if (state?.workspaceFolderValue !== this.settingState?.workspaceFolderValue) {
-      await this.set(this.settingState?.workspaceFolderValue, ConfigurationTarget.WorkspaceFolder);
+    if (state?.workspaceFolderValue !== this.initialSettingState?.workspaceFolderValue) {
+      await this.set(this.initialSettingState?.workspaceFolderValue, ConfigurationTarget.WorkspaceFolder);
     }
   }
 }
