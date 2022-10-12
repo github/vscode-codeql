@@ -11,7 +11,7 @@ import { promisify } from 'util';
 import { CancellationToken, commands, Disposable, Uri } from 'vscode';
 
 import { BQRSInfo, DecodedBqrsChunk } from './pure/bqrs-cli-types';
-import { CliConfig } from './config';
+import { allowCanaryQueryServer, CliConfig } from './config';
 import { DistributionProvider, FindDistributionResultKind } from './distribution';
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { QueryMetadata, SortDirection } from './pure/interface-types';
@@ -1330,6 +1330,11 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_SOURCEMAP = new SemVer('2.10.3');
 
+  /**
+   * CLI version that supports the new query server.
+   */
+  public static CLI_VERSION_WITH_NEW_QUERY_SERVER = new SemVer('2.11.0');
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1404,5 +1409,13 @@ export class CliVersionConstraint {
 
   async supportsSourceMap() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_SOURCEMAP);
+  }
+
+  async supportsNewQueryServer() {
+    // TODO while under development, users _must_ opt-in to the new query server
+    // by setting the `codeql.canaryQueryServer` setting to `true`.
+    // Ignore the version check for now.
+    return allowCanaryQueryServer();
+    // return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NEW_QUERY_SERVER);
   }
 }

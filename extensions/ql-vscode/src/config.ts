@@ -318,6 +318,17 @@ export function isCanary() {
 }
 
 /**
+ * Enables the experimental query server
+ */
+export const CANARY_QUERY_SERVER = new Setting('canaryQueryServer', ROOT_SETTING);
+
+
+export function allowCanaryQueryServer() {
+  return !!CANARY_QUERY_SERVER.getValue<boolean>();
+}
+
+
+/**
  * Avoids caching in the AST viewer if the user is also a canary user.
  */
 export const NO_CACHE_AST_VIEWER = new Setting('disableCache', AST_VIEWER_SETTING);
@@ -343,12 +354,12 @@ export async function setRemoteRepositoryLists(lists: Record<string, string[]> |
 }
 
 /**
- * Path to a file that contains lists of GitHub repositories that you want to query remotely via 
+ * Path to a file that contains lists of GitHub repositories that you want to query remotely via
  * the "Run Variant Analysis" command.
  * Note: This command is only available for internal users.
- * 
+ *
  * This setting should be a path to a JSON file that contains a JSON object where each key is a
- * user-specified name (string), and the value is an array of GitHub repositories 
+ * user-specified name (string), and the value is an array of GitHub repositories
  * (of the form `<owner>/<repo>`).
  */
 const REPO_LISTS_PATH = new Setting('repositoryListsPath', REMOTE_QUERIES_SETTING);

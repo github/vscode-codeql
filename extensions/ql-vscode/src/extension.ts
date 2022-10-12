@@ -73,7 +73,8 @@ import { WebviewReveal } from './interface-utils';
 import { ideServerLogger, logger, ProgressReporter, queryServerLogger } from './logging';
 import { QueryHistoryManager } from './query-history';
 import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
-import * as qsClient from './legacy-query-server/queryserver-client';
+import * as legacyQueryServer from './legacy-query-server/queryserver-client';
+import * as newQueryServer from './query-server/queryserver-client';
 import { displayQuickQuery } from './quick-query';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
@@ -103,6 +104,7 @@ import { JoinOrderScannerProvider } from './log-insights/join-order';
 import { LogScannerService } from './log-insights/log-scanner-service';
 import { createInitialQueryInfo } from './run-queries-shared';
 import { LegacyQueryRunner } from './legacy-query-server/legacyRunner';
+import { NewQueryRunner } from './query-server/query-runner';
 import { QueryRunner } from './queryRunner';
 import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
 import { VariantAnalysisViewSerializer } from './remote-queries/variant-analysis-view-serializer';
@@ -406,6 +408,8 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
   return codeQlExtension;
 }
 
+const PACK_GLOBS = ['**/codeql-pack.yml', '**/qlpack.yml', '**/queries.xml', '**/codeql-pack.lock.yml', '**/qlpack.lock.yml', '.codeqlmanifest.json', 'codeql-workspace.yml'];
+
 async function activateWithInstalledDistribution(
   ctx: ExtensionContext,
   distributionManager: DistributionManager,
@@ -435,6 +439,15 @@ async function activateWithInstalledDistribution(
 
   void logger.log('Initializing query server client.');
   const qs = await createQueryServer(qlConfigurationListener, cliServer, ctx);
+
+
+  for (const glob of PACK_GLOBS) {
+    const fsWatcher = workspace.createFileSystemWatcher(glob);
+    ctx.subscriptions.push(fsWatcher);
+    fsWatcher.onDidChange(async (_uri) => {
+      await qs.clearPackCache();
+    });
+  }
 
   void logger.log('Initializing database manager.');
   const dbm = new DatabaseManager(ctx, qs, cliServer, logger);
@@ -1199,15 +1212,28 @@ async function createQueryServer(qlConfigurationListener: QueryServerConfigListe
     { title: 'CodeQL query server', location: ProgressLocation.Window },
     task
   );
-  const qs = new qsClient.QueryServerClient(
-    qlConfigurationListener,
-    cliServer,
-    qsOpts,
-    progressCallback
-  );
-  ctx.subscriptions.push(qs);
-  await qs.startQueryServer();
-  return new LegacyQueryRunner(qs);
+  if (await cliServer.cliConstraints.supportsNewQueryServer()) {
+    const qs = new newQueryServer.QueryServerClient(
+      qlConfigurationListener,
+      cliServer,
+      qsOpts,
+      progressCallback
+    );
+    ctx.subscriptions.push(qs);
+    await qs.startQueryServer();
+    return new NewQueryRunner(qs);
+
+  } else {
+    const qs = new legacyQueryServer.QueryServerClient(
+      qlConfigurationListener,
+      cliServer,
+      qsOpts,
+      progressCallback
+    );
+    ctx.subscriptions.push(qs);
+    await qs.startQueryServer();
+    return new LegacyQueryRunner(qs);
+  }
 }
 
 function getContextStoragePath(ctx: ExtensionContext) {
