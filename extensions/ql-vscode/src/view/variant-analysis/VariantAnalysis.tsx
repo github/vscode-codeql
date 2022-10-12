@@ -12,43 +12,6 @@ import { VariantAnalysisLoading } from './VariantAnalysisLoading';
 import { ToVariantAnalysisMessage } from '../../pure/interface-types';
 import { vscode } from '../vscode-api';
 
-const repositoryResults: VariantAnalysisScannedRepositoryResult[] = [
-  {
-    variantAnalysisId: 1,
-    repositoryId: 1,
-    rawResults: {
-      schema: {
-        name: '#select',
-        rows: 1,
-        columns: [
-          {
-            kind: 'i'
-          }
-        ]
-      },
-      resultSet: {
-        schema: {
-          name: '#select',
-          rows: 1,
-          columns: [
-            {
-              kind: 'i'
-            }
-          ]
-        },
-        rows: [
-          [
-            60688
-          ]
-        ]
-      },
-      fileLinkPrefix: 'https://github.com/octodemo/hello-world-1/blob/59a2a6c7d9dde7a6ecb77c2f7e8197d6925c143b',
-      sourceLocationPrefix: '/home/runner/work/bulk-builder/bulk-builder',
-      capped: false
-    }
-  }
-];
-
 type Props = {
   variantAnalysis?: VariantAnalysisDomainModel;
   repoStates?: VariantAnalysisScannedRepositoryState[];
@@ -58,9 +21,9 @@ type Props = {
 export function VariantAnalysis({
   variantAnalysis: initialVariantAnalysis,
   repoStates: initialRepoStates = [],
-  repoResults: initialRepoResults = repositoryResults,
+  repoResults: initialRepoResults = [],
 }: Props): JSX.Element {
-  const [variantAnalysis, setVariantAnalysis] = useState<VariantAnalysisDomainModel | undefined>();
+  const [variantAnalysis, setVariantAnalysis] = useState<VariantAnalysisDomainModel | undefined>(initialVariantAnalysis);
   const [repoStates, setRepoStates] = useState<VariantAnalysisScannedRepositoryState[]>(initialRepoStates);
   const [repoResults, setRepoResults] = useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
 
