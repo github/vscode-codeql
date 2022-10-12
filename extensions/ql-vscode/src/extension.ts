@@ -111,7 +111,7 @@ import { VariantAnalysisViewSerializer } from './remote-queries/variant-analysis
 import { VariantAnalysis } from './remote-queries/shared/variant-analysis';
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
-  VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
+  VariantAnalysisScannedRepository
 } from './remote-queries/gh-api/variant-analysis';
 import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
 
@@ -938,12 +938,12 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner('codeQL.autoDownloadVariantAnalysisResult', async (
-      scannedRepo: ApiVariantAnalysisScannedRepository,
+    commandRunner('codeQL.autoDownloadVariantAnalysisResults', async (
       variantAnalysisSummary: VariantAnalysisApiResponse,
+      reposToDownload: VariantAnalysisScannedRepository[],
       token: CancellationToken
     ) => {
-      await variantAnalysisManager.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysisSummary, token);
+      await variantAnalysisManager.autoDownloadVariantAnalysisResults(variantAnalysisSummary, reposToDownload, token);
     })
   );
 

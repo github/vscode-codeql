@@ -3,11 +3,13 @@ import { CancellationToken, commands, EventEmitter, ExtensionContext, window } f
 import { DisposableObject } from '../pure/disposable-object';
 import { Logger } from '../logging';
 import { Credentials } from '../authentication';
+import * as pLimit from 'p-limit';
+
 import { VariantAnalysisMonitor } from './variant-analysis-monitor';
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
   VariantAnalysisRepoTask,
-  VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
+  VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository,
 } from './gh-api/variant-analysis';
 import {
   VariantAnalysis, VariantAnalysisQueryLanguage,
@@ -31,6 +33,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
   private readonly variantAnalyses = new Map<number, VariantAnalysis>();
   private readonly views = new Map<number, VariantAnalysisView>();
+  private readonly logger: Logger;
 
   constructor(
     private readonly ctx: ExtensionContext,
@@ -44,6 +47,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, storagePath, logger));
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
+
+    this.logger = logger;
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
@@ -115,6 +120,21 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     await this.variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationToken);
   }
 
+  public async autoDownloadVariantAnalysisResults(
+    variantAnalysisSummary: VariantAnalysisApiResponse,
+    repoResultsToDownload: ApiVariantAnalysisScannedRepository[],
+    token: CancellationToken
+  ): Promise<void> {
+    const limit = pLimit(VariantAnalysisMonitor.maxConcurrentTasks);
+
+    const input = repoResultsToDownload.map(async (repo) => {
+      await limit(() => this.autoDownloadVariantAnalysisResult(repo, variantAnalysisSummary, token));
+    });
+
+    // Only `maxConcurrentTasks` will be running at a time.
+    await Promise.all(input);
+  }
+
   public async autoDownloadVariantAnalysisResult(
     scannedRepo: ApiVariantAnalysisScannedRepository,
     variantAnalysisSummary: VariantAnalysisApiResponse,
@@ -135,6 +155,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
       return;
     }
+
+    void this.logger.log(`📥 Downloading ${scannedRepo.repository.full_name}...`);
 
     let repoTask: VariantAnalysisRepoTask;
     try {

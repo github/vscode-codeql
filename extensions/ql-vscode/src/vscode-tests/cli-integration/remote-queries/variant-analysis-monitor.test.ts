@@ -115,7 +115,7 @@ describe('Variant Analysis Monitor', async function() {
 
       describe('when there are successfully scanned repos', async () => {
         beforeEach(async function() {
-          scannedRepos = createMockScannedRepos(['pending', 'pending', 'in_progress', 'in_progress', 'succeeded', 'succeeded', 'succeeded']);
+          scannedRepos = createMockScannedRepos(['pending', 'in_progress', 'succeeded', 'succeeded']);
           mockApiResponse = createMockApiResponse('completed', scannedRepos);
           mockGetVariantAnalysis = sandbox.stub(ghApiClient, 'getVariantAnalysis').resolves(mockApiResponse);
         });
@@ -128,19 +128,18 @@ describe('Variant Analysis Monitor', async function() {
           expect(result.scannedReposDownloaded).to.eql(scannedRepoIds);
         });
 
-        it('should skip already downloaded results', async () => {
+        it('should trigger command to download scanned repos', async () => {
           const succeededRepos = scannedRepos.filter(r => r.analysis_status === 'succeeded');
           const commandSpy = sandbox.spy(commands, 'executeCommand');
 
           await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
-          expect(commandSpy).to.have.callCount(succeededRepos.length);
+          expect(commandSpy).to.have.callCount(1);
 
-          succeededRepos.forEach((succeededRepo, index) => {
-            expect(commandSpy.getCall(index).args[0]).to.eq('codeQL.autoDownloadVariantAnalysisResult');
-            expect(commandSpy.getCall(index).args[1]).to.eq(succeededRepo);
-            expect(commandSpy.getCall(index).args[2]).to.eq(mockApiResponse);
-          });
+          expect(commandSpy.getCall(0).args[0]).to.equal('codeQL.autoDownloadVariantAnalysisResults');
+          expect(commandSpy.getCall(0).args[1]).to.equal(mockApiResponse);
+          expect(commandSpy.getCall(0).args[2][0]).to.equal(succeededRepos[0]);
+          expect(commandSpy.getCall(0).args[2][1]).to.equal(succeededRepos[1]);
         });
       });
 

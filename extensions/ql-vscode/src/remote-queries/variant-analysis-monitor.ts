@@ -1,8 +1,7 @@
-import { ExtensionContext, CancellationToken, commands, EventEmitter } from 'vscode';
+import { ExtensionContext, CancellationToken, EventEmitter, commands } from 'vscode';
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
 import * as ghApiClient from './gh-api/gh-api-client';
-import * as pLimit from 'p-limit';
 
 import { VariantAnalysis, VariantAnalysisStatus } from './shared/variant-analysis';
 import {
@@ -78,8 +77,10 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
       void this.logger.log('****** Retrieved variant analysis' + JSON.stringify(variantAnalysisSummary));
 
-      const downloadedRepos = await this.downloadVariantAnalysisResults(variantAnalysisSummary, scannedReposDownloaded);
-      scannedReposDownloaded.push(...downloadedRepos);
+      const repoResultsToDownload = this.getReposToDownload(variantAnalysisSummary, scannedReposDownloaded);
+      scannedReposDownloaded.push(...repoResultsToDownload.map(repo => repo.repository.id));
+
+      void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResults', variantAnalysisSummary, repoResultsToDownload);
 
       if (variantAnalysisSummary.status === 'completed') {
         break;
@@ -89,14 +90,6 @@ export class VariantAnalysisMonitor extends DisposableObject {
     }
 
     return { status: 'CompletedSuccessfully', scannedReposDownloaded: scannedReposDownloaded };
-  }
-
-  private async scheduleForDownload(
-    scannedRepo: VariantAnalysisScannedRepository,
-    variantAnalysisSummary: VariantAnalysisApiResponse
-  ): Promise<void> {
-    void this.logger.log(`📥 Downloading ${scannedRepo.repository.full_name}...`);
-    void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResult', scannedRepo, variantAnalysisSummary);
   }
 
   private shouldDownload(
@@ -115,24 +108,6 @@ export class VariantAnalysisMonitor extends DisposableObject {
     } else {
       return [];
     }
-  }
-
-  private async downloadVariantAnalysisResults(
-    variantAnalysisSummary: VariantAnalysisApiResponse,
-    scannedReposDownloaded: number[]
-  ): Promise<number[]> {
-    const repoResultsToDownload = this.getReposToDownload(variantAnalysisSummary, scannedReposDownloaded);
-
-    const limit = pLimit(VariantAnalysisMonitor.maxConcurrentTasks);
-
-    const input = repoResultsToDownload.map(async (scannedRepo) => {
-      await limit(() => this.scheduleForDownload(scannedRepo, variantAnalysisSummary));
-    });
-
-    // Only `maxConcurrentTasks` will be running at a time.
-    await Promise.all(input);
-
-    return repoResultsToDownload.map(scannedRepo => scannedRepo.repository.id);
   }
 
   private async sleep(ms: number) {
