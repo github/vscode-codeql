@@ -31,7 +31,7 @@ export function Compare(_: Record<string, never>): JSX.Element {
   const hasRows = comparison.rows && (comparison.rows.to.length || comparison.rows.from.length);
 
   useEffect(() => {
-    window.addEventListener('message', (evt: MessageEvent) => {
+    const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
         const msg: ToCompareViewMessage = evt.data;
         switch (msg.t) {
@@ -43,8 +43,13 @@ export function Compare(_: Record<string, never>): JSX.Element {
         const origin = evt.origin.replace(/\n|\r/g, '');
         console.error(`Invalid event origin ${origin}`);
       }
-    });
-  });
+    };
+    window.addEventListener('message', listener);
+
+    return () => {
+      window.removeEventListener('message', listener);
+    };
+  }, []);
   if (!comparison) {
     return <div>Waiting for results to load.</div>;
   }
