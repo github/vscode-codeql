@@ -14,6 +14,7 @@ export interface VariantAnalysis {
     repositoryLists?: string[],
     repositoryOwners?: string[],
   },
+  executionStartTime: number;
   status: VariantAnalysisStatus,
   actionsWorkflowRunId?: number,
   failureReason?: VariantAnalysisFailureReason,

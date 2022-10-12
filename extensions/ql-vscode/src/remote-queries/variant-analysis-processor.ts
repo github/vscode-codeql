@@ -30,11 +30,12 @@ export function processVariantAnalysis(
       language: submission.query.language
     },
     databases: submission.databases,
+    executionStartTime: submission.startTime
   }, response);
 }
 
 export function processUpdatedVariantAnalysis(
-  previousVariantAnalysis: Pick<VariantAnalysis, 'query' | 'databases'>,
+  previousVariantAnalysis: Pick<VariantAnalysis, 'query' | 'databases' | 'executionStartTime'>,
   response: ApiVariantAnalysis
 ): VariantAnalysis {
   let scannedRepos: VariantAnalysisScannedRepository[] = [];
@@ -57,6 +58,7 @@ export function processUpdatedVariantAnalysis(
       language: previousVariantAnalysis.query.language
     },
     databases: previousVariantAnalysis.databases,
+    executionStartTime: previousVariantAnalysis.executionStartTime,
     status: processApiStatus(response.status),
     actionsWorkflowRunId: response.actions_workflow_run_id,
     scannedRepos: scannedRepos,

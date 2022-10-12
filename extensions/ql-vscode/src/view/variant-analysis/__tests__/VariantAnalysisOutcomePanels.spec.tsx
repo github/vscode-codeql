@@ -18,6 +18,7 @@ describe(VariantAnalysisOutcomePanels.name, () => {
       language: VariantAnalysisQueryLanguage.Javascript,
     },
     databases: {},
+    executionStartTime: 1611234567890,
     status: VariantAnalysisStatus.InProgress,
     scannedRepos: [
       {

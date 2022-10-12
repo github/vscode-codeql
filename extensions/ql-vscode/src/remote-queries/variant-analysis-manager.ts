@@ -184,7 +184,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
         filePath: `variant_analysis_${variantAnalysisId}.ql`,
         language: variantAnalysisResponse.query_language as VariantAnalysisQueryLanguage,
       },
-      databases: {}
+      databases: {},
+      executionStartTime: 0,
     }, variantAnalysisResponse);
 
     void commands.executeCommand('codeQL.openVariantAnalysisView', processedVariantAnalysis.id);
