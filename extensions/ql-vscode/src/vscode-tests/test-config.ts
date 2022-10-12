@@ -1,5 +1,5 @@
 import { ConfigurationTarget } from 'vscode';
-import { CUSTOM_CODEQL_PATH_SETTING, InspectionResult, REMOTE_CONTROLLER_REPO, REMOTE_REPO_LISTS, Setting } from '../config';
+import { ALL_SETTINGS, InspectionResult, Setting } from '../config';
 
 class TestSetting<T> {
   private initialSettingState: InspectionResult<T> | undefined;
@@ -59,24 +59,27 @@ class TestSetting<T> {
   }
 }
 
-export const testConfig = {
-  remoteControllerRepo: new TestSetting<string>(REMOTE_CONTROLLER_REPO),
-  remoteRepoLists: new TestSetting<Record<string, string[]>>(REMOTE_REPO_LISTS),
-  cliExecutablePath: new TestSetting<string>(CUSTOM_CODEQL_PATH_SETTING),
+// The test settings are all settings in ALL_SETTINGS which don't have any children
+const TEST_SETTINGS = ALL_SETTINGS
+  .filter(setting => ALL_SETTINGS.filter(s => s.parent === setting).length === 0)
+  .map(setting => new TestSetting(setting));
+
+export const getTestSetting = (setting: Setting): TestSetting<unknown> | undefined => {
+  return TEST_SETTINGS.find(testSetting => testSetting.setting === setting);
 };
 
 export const testConfigHelper = async (mocha: Mocha) => {
   // Read in all current settings
-  await Promise.all(Object.values(testConfig).map(setting => setting.initialSetup()));
+  await Promise.all(TEST_SETTINGS.map(setting => setting.initialSetup()));
 
   mocha.rootHooks({
     async beforeEach() {
       // Reset the settings to their initial values before each test
-      await Promise.all(Object.values(testConfig).map(setting => setting.setup()));
+      await Promise.all(TEST_SETTINGS.map(setting => setting.setup()));
     },
     async afterAll() {
       // Restore all settings to their default values after each test suite
-      await Promise.all(Object.values(testConfig).map(setting => setting.restoreToInitialValues()));
+      await Promise.all(TEST_SETTINGS.map(setting => setting.restoreToInitialValues()));
     }
   });
 };

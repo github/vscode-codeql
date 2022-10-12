@@ -7,7 +7,8 @@ import { fail } from 'assert';
 import { commands, extensions, workspace } from 'vscode';
 import { CodeQLExtensionInterface } from '../../extension';
 import { DatabaseManager } from '../../databases';
-import { testConfig } from '../test-config';
+import { getTestSetting } from '../test-config';
+import { CUSTOM_CODEQL_PATH_SETTING } from '../../config';
 
 // This file contains helpers shared between actual tests.
 
@@ -59,7 +60,7 @@ export default function(mocha: Mocha) {
   // Set the CLI version here before activation to ensure we don't accidentally try to download a cli
   (mocha.options as any).globalSetup.push(
     async () => {
-      await testConfig.cliExecutablePath.setInitialTestValue(process.env.CLI_PATH);
+      await getTestSetting(CUSTOM_CODEQL_PATH_SETTING)?.setInitialTestValue(process.env.CLI_PATH);
     }
   );
 

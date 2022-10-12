@@ -4,6 +4,8 @@ import { DistributionManager } from './distribution';
 import { logger } from './logging';
 import { ONE_DAY_IN_MS } from './pure/time';
 
+export const ALL_SETTINGS: Setting[] = [];
+
 /** Helper class to look up a labelled (and possibly nested) setting. */
 export class Setting {
   name: string;
@@ -12,6 +14,7 @@ export class Setting {
   constructor(name: string, parent?: Setting) {
     this.name = name;
     this.parent = parent;
+    ALL_SETTINGS.push(this);
   }
 
   get qualifiedName(): string {
@@ -344,10 +347,14 @@ const REMOTE_QUERIES_SETTING = new Setting('variantAnalysis', ROOT_SETTING);
  * This setting should be a JSON object where each key is a user-specified name (string),
  * and the value is an array of GitHub repositories (of the form `<owner>/<repo>`).
  */
-export const REMOTE_REPO_LISTS = new Setting('repositoryLists', REMOTE_QUERIES_SETTING);
+const REMOTE_REPO_LISTS = new Setting('repositoryLists', REMOTE_QUERIES_SETTING);
 
 export function getRemoteRepositoryLists(): Record<string, string[]> | undefined {
   return REMOTE_REPO_LISTS.getValue<Record<string, string[]>>() || undefined;
+}
+
+export async function setRemoteRepositoryLists(lists: Record<string, string[]> | undefined) {
+  await REMOTE_REPO_LISTS.updateValue(lists, ConfigurationTarget.Global);
 }
 
 /**
@@ -371,7 +378,7 @@ export function getRemoteRepositoryListsPath(): string | undefined {
  *
  * This setting should be a GitHub repository of the form `<owner>/<repo>`.
  */
-export const REMOTE_CONTROLLER_REPO = new Setting('controllerRepo', REMOTE_QUERIES_SETTING);
+const REMOTE_CONTROLLER_REPO = new Setting('controllerRepo', REMOTE_QUERIES_SETTING);
 
 export function getRemoteControllerRepo(): string | undefined {
   return REMOTE_CONTROLLER_REPO.getValue<string>() || undefined;
