@@ -464,6 +464,10 @@ export interface RequestRepositoryResultsMessage {
   repositoryFullName: string;
 }
 
+export interface OpenQueryFileMessage {
+  t: 'openQueryFile';
+}
+
 export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
   | SetRepoResultsMessage
@@ -472,4 +476,5 @@ export type ToVariantAnalysisMessage =
 export type FromVariantAnalysisMessage =
   | ViewLoadedMsg
   | StopVariantAnalysisMessage
-  | RequestRepositoryResultsMessage;
+  | RequestRepositoryResultsMessage
+  | OpenQueryFileMessage;

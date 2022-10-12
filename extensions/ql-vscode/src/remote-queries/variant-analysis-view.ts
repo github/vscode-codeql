@@ -1,4 +1,4 @@
-import { commands, ExtensionContext, ViewColumn } from 'vscode';
+import { commands, ExtensionContext, ViewColumn, window as Window, workspace } from 'vscode';
 import { AbstractWebview, WebviewPanelConfig } from '../abstract-webview';
 import { logger } from '../logging';
 import { FromVariantAnalysisMessage, ToVariantAnalysisMessage } from '../pure/interface-types';
@@ -89,6 +89,9 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
       case 'requestRepositoryResults':
         void commands.executeCommand('codeQL.loadVariantAnalysisRepoResults', this.variantAnalysisId, msg.repositoryFullName);
         break;
+      case 'openQueryFile':
+        await this.openQueryFile();
+        break;
       default:
         assertNever(msg);
     }
@@ -110,5 +113,21 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
       t: 'setVariantAnalysis',
       variantAnalysis,
     });
+  }
+
+  private async openQueryFile(): Promise<void> {
+    const variantAnalysis = await this.manager.getVariantAnalysis(this.variantAnalysisId);
+
+    if (!variantAnalysis) {
+      void showAndLogWarningMessage('Could not open variant analysis query file');
+      return;
+    }
+
+    try {
+      const textDocument = await workspace.openTextDocument(variantAnalysis.query.filePath);
+      await Window.showTextDocument(textDocument, ViewColumn.One);
+    } catch (error) {
+      void showAndLogWarningMessage(`Could not open file: ${variantAnalysis.query.filePath}`);
+    }
   }
 }
