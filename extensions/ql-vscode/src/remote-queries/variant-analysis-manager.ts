@@ -1,5 +1,5 @@
 import * as ghApiClient from './gh-api/gh-api-client';
-import { CancellationToken, EventEmitter, ExtensionContext } from 'vscode';
+import { CancellationToken, commands, EventEmitter, ExtensionContext, window } from 'vscode';
 import { DisposableObject } from '../pure/disposable-object';
 import { Logger } from '../logging';
 import { Credentials } from '../authentication';
@@ -10,7 +10,7 @@ import {
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
 } from './gh-api/variant-analysis';
 import {
-  VariantAnalysis,
+  VariantAnalysis, VariantAnalysisQueryLanguage,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState
@@ -20,6 +20,8 @@ import { VariantAnalysisView } from './variant-analysis-view';
 import { VariantAnalysisViewManager } from './variant-analysis-view-manager';
 import { VariantAnalysisResultsManager } from './variant-analysis-results-manager';
 import { CodeQLCliServer } from '../cli';
+import { getControllerRepo } from './run-remote-query';
+import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis | undefined>());
@@ -157,5 +159,37 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
     await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
+  }
+
+  public async promptOpenVariantAnalysis() {
+    const credentials = await Credentials.initialize(this.ctx);
+    if (!credentials) { throw Error('Error authenticating with GitHub'); }
+
+    const controllerRepo = await getControllerRepo(credentials);
+
+    const variantAnalysisIdString = await window.showInputBox({
+      title: 'Enter the variant analysis ID',
+    });
+    if (!variantAnalysisIdString) {
+      return;
+    }
+    const variantAnalysisId = parseInt(variantAnalysisIdString, 10);
+
+    const variantAnalysisResponse = await ghApiClient.getVariantAnalysis(credentials, controllerRepo.id, variantAnalysisId);
+
+    const processedVariantAnalysis = processUpdatedVariantAnalysis({
+      // We don't really know these values, so just fill in some placeholder values
+      query: {
+        name: `Variant analysis ${variantAnalysisId}`,
+        filePath: `variant_analysis_${variantAnalysisId}.ql`,
+        language: variantAnalysisResponse.query_language as VariantAnalysisQueryLanguage,
+      },
+      databases: {}
+    }, variantAnalysisResponse);
+
+    void commands.executeCommand('codeQL.openVariantAnalysisView', processedVariantAnalysis.id);
+    void commands.executeCommand('codeQL.monitorVariantAnalysis', processedVariantAnalysis);
+
+    this._onVariantAnalysisAdded.fire(processedVariantAnalysis);
   }
 }

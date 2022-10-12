@@ -948,6 +948,12 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
+    commandRunner('codeQL.openVariantAnalysis', async () => {
+      await variantAnalysisManager.promptOpenVariantAnalysis();
+    })
+  );
+
+  ctx.subscriptions.push(
     commandRunner('codeQL.autoDownloadRemoteQueryResults', async (
       queryResult: RemoteQueryResult,
       token: CancellationToken) => {

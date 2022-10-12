@@ -477,7 +477,7 @@ function getQueryName(queryMetadata: QueryMetadata | undefined, queryFilePath: s
   return queryMetadata?.name ?? path.basename(queryFilePath);
 }
 
-async function getControllerRepo(credentials: Credentials): Promise<Repository> {
+export async function getControllerRepo(credentials: Credentials): Promise<Repository> {
   // Get the controller repo from the config, if it exists.
   // If it doesn't exist, prompt the user to enter it, and save that value to the config.
   let controllerRepoNwo: string | undefined;
