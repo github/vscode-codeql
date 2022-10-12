@@ -113,16 +113,6 @@ describe('Variant Analysis Monitor', async function() {
       let mockApiResponse: VariantAnalysisApiResponse;
       let scannedRepos: ApiVariantAnalysisScannedRepository[];
 
-      it('should emit `onVariantAnalysisChange`', async () => {
-        mockApiResponse = createMockApiResponse('completed');
-        mockGetVariantAnalysis = sandbox.stub(ghApiClient, 'getVariantAnalysis').resolves(mockApiResponse);
-
-        const spy = sandbox.spy();
-        variantAnalysisMonitor.onVariantAnalysisChange(spy);
-        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
-        expect(spy).to.have.been.calledOnce;
-      });
-
       describe('when there are successfully scanned repos', async () => {
         beforeEach(async function() {
           scannedRepos = createMockScannedRepos(['pending', 'in_progress', 'succeeded']);
