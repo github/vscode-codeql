@@ -9,6 +9,7 @@ import {
   VariantAnalysisScannedRepositoryState,
 } from './shared/variant-analysis';
 import { VariantAnalysisViewInterface, VariantAnalysisViewManager } from './variant-analysis-view-manager';
+import { showAndLogWarningMessage } from '../helpers';
 
 export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage> implements VariantAnalysisViewInterface {
   public static readonly viewType = 'codeQL.variantAnalysis';
@@ -101,6 +102,7 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
     const variantAnalysis = await this.manager.getVariantAnalysis(this.variantAnalysisId);
 
     if (!variantAnalysis) {
+      void showAndLogWarningMessage('Unable to load variant analysis');
       return;
     }
 
