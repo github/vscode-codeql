@@ -59,6 +59,9 @@ export class VariantAnalysisMonitor extends DisposableObject {
       if (variantAnalysisSummary.failure_reason) {
         variantAnalysis.status = VariantAnalysisStatus.Failed;
         variantAnalysis.failureReason = processFailureReason(variantAnalysisSummary.failure_reason);
+
+        this._onVariantAnalysisChange.fire(variantAnalysis);
+
         return {
           status: 'Failed',
           error: `Variant Analysis has failed: ${variantAnalysisSummary.failure_reason}`,

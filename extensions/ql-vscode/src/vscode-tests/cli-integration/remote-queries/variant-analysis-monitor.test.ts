@@ -20,6 +20,8 @@ import { Credentials } from '../../../authentication';
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
 
 describe('Variant Analysis Monitor', async function() {
+  this.timeout(60000);
+
   let sandbox: sinon.SinonSandbox;
   let mockGetVariantAnalysis: sinon.SinonStub;
   let cancellationTokenSource: CancellationTokenSource;
@@ -96,9 +98,18 @@ describe('Variant Analysis Monitor', async function() {
         expect(result.variantAnalysis?.status).to.equal(VariantAnalysisStatus.Failed);
         expect(result.variantAnalysis?.failureReason).to.equal(processFailureReason(mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason));
       });
+
+      it('should emit `onVariantAnalysisChange`', async () => {
+        const spy = sandbox.spy();
+        variantAnalysisMonitor.onVariantAnalysisChange(spy);
+
+        const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
+
+        expect(spy).to.have.been.calledWith(result.variantAnalysis);
+      });
     });
 
-    describe('when the variant analysis completes', async () => {
+    describe('when the variant analysis is in progress', async () => {
       let mockApiResponse: VariantAnalysisApiResponse;
       let scannedRepos: ApiVariantAnalysisScannedRepository[];
 
