@@ -1,18 +1,18 @@
 import * as Sarif from 'sarif';
 import * as fs from 'fs-extra';
-import Assembler = require('stream-json/Assembler');
+import { connectTo } from 'stream-json/Assembler';
 import { getErrorMessage } from './pure/helpers-pure';
-import Pick = require('stream-json/filters/Pick');
+import { withParser } from 'stream-json/filters/Pick';
 
 const DUMMY_TOOL: Sarif.Tool = { driver: { name: '' } };
 
 export async function sarifParser(interpretedResultsPath: string): Promise<Sarif.Log> {
   try {
     // Parse the SARIF file into token streams, filtering out only the results array.
-    const pipeline = fs.createReadStream(interpretedResultsPath).pipe(Pick.withParser({ filter: 'runs.0.results' }));
+    const pipeline = fs.createReadStream(interpretedResultsPath).pipe(withParser({ filter: 'runs.0.results' }));
 
     // Creates JavaScript objects from the token stream
-    const asm = Assembler.connectTo(pipeline);
+    const asm = connectTo(pipeline);
 
     // Returns a constructed Log object with the results of an empty array if no results were found.
     // If the parser fails for any reason, it will reject the promise.
