@@ -581,7 +581,7 @@ describe('query-history', () => {
     }
   });
 
-  function createMockFullQueryInfo(dbName = 'a', queryWitbResults?: QueryWithResults, isFail = false): LocalQueryInfo {
+  function createMockFullQueryInfo(dbName = 'a', queryWithResults?: QueryWithResults, isFail = false): LocalQueryInfo {
     const fqi = new LocalQueryInfo(
       {
         databaseInfo: { name: dbName },
@@ -593,8 +593,8 @@ describe('query-history', () => {
       } as vscode.CancellationTokenSource
     );
 
-    if (queryWitbResults) {
-      fqi.completeThisQuery(queryWitbResults);
+    if (queryWithResults) {
+      fqi.completeThisQuery(queryWithResults);
     }
     if (isFail) {
       fqi.failureReason = 'failure reason';
