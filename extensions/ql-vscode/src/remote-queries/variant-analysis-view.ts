@@ -138,7 +138,7 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
   private async openQueryText(): Promise<void> {
     const variantAnalysis = await this.manager.getVariantAnalysis(this.variantAnalysisId);
     if (!variantAnalysis) {
-      void showAndLogWarningMessage('Could not open variant analysis query text');
+      void showAndLogWarningMessage('Could not open variant analysis query text. Variant analysis not found.');
       return;
     }
 
@@ -156,7 +156,7 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
       const doc = await workspace.openTextDocument(uri);
       await Window.showTextDocument(doc, { preview: false });
     } catch (error) {
-      void showAndLogWarningMessage('Could not open query text');
+      void showAndLogWarningMessage('Could not open variant analysis query text. Failed to open text document.');
     }
   }
 }

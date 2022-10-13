@@ -10,14 +10,14 @@ export const createVariantAnalysisContentProvider = (variantAnalysisManager: Var
 
     const variantAnalysisIdString = params.get('variantAnalysisId');
     if (!variantAnalysisIdString) {
-      void showAndLogWarningMessage('No variant analysis ID provided');
+      void showAndLogWarningMessage('Unable to show query text. No variant analysis ID provided.');
       return undefined;
     }
     const variantAnalysisId = parseInt(variantAnalysisIdString);
 
     const variantAnalysis = await variantAnalysisManager.getVariantAnalysis(variantAnalysisId);
     if (!variantAnalysis) {
-      void showAndLogWarningMessage('No variant analysis found');
+      void showAndLogWarningMessage('Unable to show query text. No variant analysis found.');
       return undefined;
     }
 
