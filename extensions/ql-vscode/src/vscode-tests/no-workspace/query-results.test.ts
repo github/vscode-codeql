@@ -273,6 +273,13 @@ describe('query-results', () => {
     expect(results5).to.have.property('t', 'SarifInterpretationData');
     expect(results5).to.have.nested.property('runs[0].results');
 
+    // Explicitly delete the large SARIF file — overwriting causes odd errors.
+    fs.unlink(interpretedResultsPath, (err) => {
+      if (err) {
+        throw err;
+      }
+    });
+
     // Try a sixth time with an invalid large SARIF file
     spy.reset();
     const invalidSarifStream = fs.createWriteStream(interpretedResultsPath, { flags: 'w' });
