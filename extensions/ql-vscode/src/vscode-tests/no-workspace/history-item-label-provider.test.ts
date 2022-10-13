@@ -2,7 +2,8 @@ import { env } from 'vscode';
 import { expect } from 'chai';
 import { QueryHistoryConfig } from '../../config';
 import { HistoryItemLabelProvider } from '../../history-item-label-provider';
-import { CompletedLocalQueryInfo, CompletedQueryInfo, InitialQueryInfo, QueryHistoryInfo } from '../../query-results';
+import { CompletedLocalQueryInfo, CompletedQueryInfo, InitialQueryInfo } from '../../query-results';
+import { QueryHistoryInfo } from '../../query-history-info';
 import { RemoteQueryHistoryItem } from '../../remote-queries/remote-query-history-item';
 
 

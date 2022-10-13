@@ -1,7 +1,8 @@
 import { env } from 'vscode';
 import * as path from 'path';
 import { QueryHistoryConfig } from './config';
-import { LocalQueryInfo, QueryHistoryInfo } from './query-results';
+import { LocalQueryInfo } from './query-results';
+import { QueryHistoryInfo } from './query-history-info';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { pluralize } from './helpers';
 import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-history-item';
