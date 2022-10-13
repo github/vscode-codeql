@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import * as del from 'del';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as sinon from 'sinon';
@@ -274,11 +275,7 @@ describe('query-results', () => {
     expect(results5).to.have.nested.property('runs[0].results');
 
     // Explicitly delete the large SARIF file — overwriting causes odd errors.
-    fs.unlink(interpretedResultsPath, (err) => {
-      if (err) {
-        throw err;
-      }
-    });
+    await del(interpretedResultsPath);
 
     // Try a sixth time with an invalid large SARIF file
     spy.reset();
