@@ -24,8 +24,8 @@ import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
-  private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis | undefined>());
-  readonly onVariantAnalysisAdded = this._onVariantAnalysisAdded.event;
+  private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis>());
+  public readonly onVariantAnalysisAdded = this._onVariantAnalysisAdded.event;
 
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
   private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
