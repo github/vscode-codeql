@@ -112,7 +112,7 @@ describe('Queries', function() {
       );
 
       // just check that the query was successful
-      expect((await result).sucessful).to.eq(true);
+      expect((await result).successful).to.eq(true);
     } catch (e) {
       console.error('Test Failed');
       fail(e as Error);
@@ -132,7 +132,7 @@ describe('Queries', function() {
         token
       );
 
-      expect(result.sucessful).to.eq(true);
+      expect(result.successful).to.eq(true);
     } catch (e) {
       console.error('Test Failed');
       fail(e as Error);

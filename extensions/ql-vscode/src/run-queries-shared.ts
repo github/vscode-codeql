@@ -373,7 +373,7 @@ export interface QueryWithResults {
   readonly query: QueryEvaluationInfo;
   readonly logFileLocation?: string;
   readonly dispose: () => void;
-  readonly sucessful?: boolean;
+  readonly successful?: boolean;
   readonly message?: string;
   readonly result: legacyMessages.EvaluationResult;
 }
