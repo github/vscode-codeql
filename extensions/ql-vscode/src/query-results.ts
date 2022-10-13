@@ -47,7 +47,7 @@ export interface InitialQueryInfo {
 export class CompletedQueryInfo implements QueryWithResults {
   readonly query: QueryEvaluationInfo;
   readonly message?: string;
-  readonly sucessful?: boolean;
+  readonly successful?: boolean;
   /**
    * The legacy result. This is only set when loading from the query history.
    */
@@ -86,7 +86,7 @@ export class CompletedQueryInfo implements QueryWithResults {
     this.result = evaluation.result;
 
     this.message = evaluation.message;
-    this.sucessful = evaluation.sucessful;
+    this.successful = evaluation.successful;
     // Use the dispose method from the evaluation.
     // The dispose will clean up any additional log locations that this
     // query may have created.
@@ -301,7 +301,7 @@ export class LocalQueryInfo {
       return QueryStatus.Failed;
     } else if (!this.completedQuery) {
       return QueryStatus.InProgress;
-    } else if (this.completedQuery.sucessful) {
+    } else if (this.completedQuery.successful) {
       return QueryStatus.Completed;
     } else {
       return QueryStatus.Failed;

@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 
 import { logger } from '../../logging';
-import { registerQueryHistoryScubber } from '../../query-history-scrubber';
+import { registerQueryHistoryScrubber } from '../../query-history-scrubber';
 import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
 import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries-shared';
 import { QueryHistoryConfig, QueryHistoryConfigListener } from '../../config';
@@ -581,7 +581,7 @@ describe('query-history', () => {
     }
   });
 
-  function createMockFullQueryInfo(dbName = 'a', queryWitbResults?: QueryWithResults, isFail = false): LocalQueryInfo {
+  function createMockFullQueryInfo(dbName = 'a', queryWithResults?: QueryWithResults, isFail = false): LocalQueryInfo {
     const fqi = new LocalQueryInfo(
       {
         databaseInfo: { name: dbName },
@@ -593,8 +593,8 @@ describe('query-history', () => {
       } as vscode.CancellationTokenSource
     );
 
-    if (queryWitbResults) {
-      fqi.completeThisQuery(queryWitbResults);
+    if (queryWithResults) {
+      fqi.completeThisQuery(queryWithResults);
     }
     if (isFail) {
       fqi.failureReason = 'failure reason';
@@ -759,7 +759,7 @@ describe('query-history', () => {
     }
 
     function registerScrubber(dir: string) {
-      deregister = registerQueryHistoryScubber(
+      deregister = registerQueryHistoryScrubber(
         ONE_HOUR_IN_MS,
         TWO_HOURS_IN_MS,
         LESS_THAN_ONE_DAY,
@@ -785,7 +785,7 @@ describe('query-history', () => {
         hasInterpretedResults: () => Promise.resolve(hasInterpretedResults),
         deleteQuery: sandbox.stub(),
       } as unknown as QueryEvaluationInfo,
-      sucessful: didRunSuccessfully,
+      successful: didRunSuccessfully,
       message: 'foo',
       dispose: sandbox.spy(),
       result: {
