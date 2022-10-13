@@ -117,7 +117,9 @@ describe('Variant Analysis Monitor', async function() {
         beforeEach(async function() {
           scannedRepos = createMockScannedRepos(['pending', 'in_progress', 'succeeded', 'succeeded']);
           mockApiResponse = createMockApiResponse('completed', scannedRepos);
-          mockGetVariantAnalysis = sandbox.stub(ghApiClient, 'getVariantAnalysis').resolves(mockApiResponse);
+          mockGetVariantAnalysis = sandbox.stub(ghApiClient, 'getVariantAnalysis')
+            .onCall(0).resolves(mockApiResponse)
+            .onCall(1).resolves(mockApiResponse2);
         });
 
         it('should succeed and return a list of scanned repo ids', async () => {

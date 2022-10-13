@@ -35,7 +35,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   private readonly views = new Map<number, VariantAnalysisView>();
   private readonly logger: Logger;
   private static readonly maxConcurrentTasks = 3;
-  private static readonly _currentDownloadQueueKey = 'downloadQueue';
+  // private static readonly _currentDownloadQueueKey = 'downloadQueue';
+  private queue: PQueue;
 
   constructor(
     private readonly ctx: ExtensionContext,
@@ -51,6 +52,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
 
     this.logger = logger;
+    this.queue = new PQueue({ concurrency: VariantAnalysisManager.maxConcurrentTasks });
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
@@ -127,23 +129,15 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     repoResultsToDownload: ApiVariantAnalysisScannedRepository[],
     token: CancellationToken
   ): Promise<void> {
-    const queue = this.getDownloadQueue();
 
     const input = repoResultsToDownload.map(async (repo) => {
-      await queue.add(async () => {
+      await this.queue.add(async () => {
         await this.autoDownloadVariantAnalysisResult(repo, variantAnalysisSummary, token);
       });
     });
 
     // Only `maxConcurrentTasks` will be running at a time.
     await Promise.all(input);
-  }
-
-  private getDownloadQueue(): PQueue {
-    return this.ctx.globalState.get(
-      VariantAnalysisManager._currentDownloadQueueKey,
-      new PQueue({ concurrency: VariantAnalysisManager.maxConcurrentTasks })
-    );
   }
 
   public async autoDownloadVariantAnalysisResult(

@@ -943,7 +943,12 @@ async function activateWithInstalledDistribution(
       reposToDownload: VariantAnalysisScannedRepository[],
       token: CancellationToken
     ) => {
-      await variantAnalysisManager.autoDownloadVariantAnalysisResults(variantAnalysisSummary, reposToDownload, token);
+      // await variantAnalysisManager.autoDownloadVariantAnalysisResults(variantAnalysisSummary, reposToDownload, token);
+      await this.queue.add(async () => {
+        await this.autoDownloadVariantAnalysisResult(repo, variantAnalysisSummary, token);
+      });
+
+      await Promise.all(input);
     })
   );
 

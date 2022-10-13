@@ -119,10 +119,10 @@
         "--disable-extension",
         "github.copilot",
         "${workspaceRoot}/extensions/ql-vscode/src/vscode-tests/cli-integration/data",
-        // Uncomment the last line and modify the path to a checked out 
+        // Uncomment the last line and modify the path to a checked out
         // instance of the codeql repository so the libraries are
         // available in the workspace for the tests.
-        // "${workspaceRoot}/../codeql"
+        "${workspaceRoot}/../codeql"
       ],
       "env": {
         // Optionally, set the version to use for the integration tests.
