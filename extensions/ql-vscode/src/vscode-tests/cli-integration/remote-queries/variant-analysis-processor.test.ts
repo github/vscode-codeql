@@ -31,7 +31,7 @@ describe('Variant Analysis processor', function() {
         'filePath': 'query-file-path',
         'language': VariantAnalysisQueryLanguage.Javascript,
         'name': 'query-name',
-        'queryText': mockSubmission.query.queryText,
+        'text': mockSubmission.query.text,
       },
       'databases': {
         'repositories': ['1', '2', '3'],

@@ -21,6 +21,6 @@ export const createVariantAnalysisContentProvider = (variantAnalysisManager: Var
       return undefined;
     }
 
-    return SHOW_QUERY_TEXT_MSG + variantAnalysis.query.queryText;
+    return SHOW_QUERY_TEXT_MSG + variantAnalysis.query.text;
   }
 });

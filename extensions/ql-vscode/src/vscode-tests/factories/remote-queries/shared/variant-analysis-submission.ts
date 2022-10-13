@@ -10,7 +10,7 @@ export function createMockSubmission(): VariantAnalysisSubmission {
       name: 'query-name',
       filePath: 'query-file-path',
       language: VariantAnalysisQueryLanguage.Javascript,
-      queryText: 'query-text',
+      text: 'query-text',
       pack: 'base64-encoded-string',
     },
     databases: {

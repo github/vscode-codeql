@@ -262,7 +262,7 @@ export async function runRemoteQuery(
           filePath: queryFile,
           pack: base64Pack,
           language: variantAnalysisLanguage,
-          queryText,
+          text: queryText,
         },
         databases: {
           repositories: repoSelection.repositories,

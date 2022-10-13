@@ -8,7 +8,7 @@ export interface VariantAnalysis {
     name: string,
     filePath: string,
     language: VariantAnalysisQueryLanguage,
-    queryText: string,
+    text: string,
   },
   databases: {
     repositories?: string[],
@@ -114,7 +114,7 @@ export interface VariantAnalysisSubmission {
     name: string,
     filePath: string,
     language: VariantAnalysisQueryLanguage,
-    queryText: string,
+    text: string,
 
     // Base64 encoded query pack.
     pack: string,
