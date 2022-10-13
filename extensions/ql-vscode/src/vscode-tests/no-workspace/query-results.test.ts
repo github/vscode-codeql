@@ -290,7 +290,7 @@ describe('query-results', () => {
     it('should handle an invalid query history version', async () => {
       const badPath = path.join(tmpDir.name, 'bad-query-history.json');
       fs.writeFileSync(badPath, JSON.stringify({
-        version: 2,
+        version: 3,
         queries: allHistory
       }), 'utf8');
 

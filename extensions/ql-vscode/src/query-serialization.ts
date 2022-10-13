@@ -15,7 +15,7 @@ export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInf
 
     const data = await fs.readFile(fsPath, 'utf8');
     const obj = JSON.parse(data);
-    if (obj.version !== 1) {
+    if (obj.version !== 1 && obj.version !== 2) {
       void showAndLogErrorMessage(`Unsupported query history format: v${obj.version}. `);
       return [];
     }
@@ -90,7 +90,7 @@ export async function splatQueryHistory(queries: QueryHistoryInfo[], fsPath: str
     // remove incomplete local queries since they cannot be recreated on restart
     const filteredQueries = queries.filter(q => q.t === 'local' ? q.completedQuery !== undefined : true);
     const data = JSON.stringify({
-      version: 1,
+      version: 2,
       queries: filteredQueries
     }, null, 2);
     await fs.writeFile(fsPath, data);
