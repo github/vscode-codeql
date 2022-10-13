@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as React from 'react';
 import { useMemo } from 'react';
 import styled from 'styled-components';
@@ -67,7 +68,7 @@ export const VariantAnalysisHeader = ({
       <Row>
         <QueryDetails
           queryName={variantAnalysis.query.name}
-          queryFileName={variantAnalysis.query.filePath}
+          queryFileName={path.basename(variantAnalysis.query.filePath)}
           onOpenQueryFileClick={onOpenQueryFileClick}
           onViewQueryTextClick={onViewQueryTextClick}
         />
