@@ -285,6 +285,7 @@ describe('query-results', () => {
         a: '6'
       }), 'utf8');
     }
+    invalidSarifStream.end();
 
     await expect(
       interpretResultsSarif(
