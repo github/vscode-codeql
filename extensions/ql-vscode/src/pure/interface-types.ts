@@ -468,6 +468,10 @@ export interface OpenQueryFileMessage {
   t: 'openQueryFile';
 }
 
+export interface OpenQueryTextMessage {
+  t: 'openQueryText';
+}
+
 export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
   | SetRepoResultsMessage
@@ -477,4 +481,5 @@ export type FromVariantAnalysisMessage =
   | ViewLoadedMsg
   | StopVariantAnalysisMessage
   | RequestRepositoryResultsMessage
-  | OpenQueryFileMessage;
+  | OpenQueryFileMessage
+  | OpenQueryTextMessage;

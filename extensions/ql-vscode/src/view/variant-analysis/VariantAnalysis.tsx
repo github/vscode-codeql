@@ -24,6 +24,12 @@ const openQueryFile = () => {
   });
 };
 
+const openQueryText = () => {
+  vscode.postMessage({
+    t: 'openQueryText',
+  });
+};
+
 export function VariantAnalysis({
   variantAnalysis: initialVariantAnalysis,
   repoStates: initialRepoStates = [],
@@ -75,7 +81,7 @@ export function VariantAnalysis({
       <VariantAnalysisHeader
         variantAnalysis={variantAnalysis}
         onOpenQueryFileClick={openQueryFile}
-        onViewQueryTextClick={() => console.log('View query')}
+        onViewQueryTextClick={openQueryText}
         onStopQueryClick={() => console.log('Stop query')}
         onCopyRepositoryListClick={() => console.log('Copy repository list')}
         onExportResultsClick={() => console.log('Export results')}

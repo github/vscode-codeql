@@ -27,7 +27,8 @@ export function processVariantAnalysis(
     query: {
       name: submission.query.name,
       filePath: submission.query.filePath,
-      language: submission.query.language
+      language: submission.query.language,
+      text: submission.query.text,
     },
     databases: submission.databases,
     executionStartTime: submission.startTime
@@ -52,11 +53,7 @@ export function processUpdatedVariantAnalysis(
   const variantAnalysis: VariantAnalysis = {
     id: response.id,
     controllerRepoId: response.controller_repo.id,
-    query: {
-      name: previousVariantAnalysis.query.name,
-      filePath: previousVariantAnalysis.query.filePath,
-      language: previousVariantAnalysis.query.language
-    },
+    query: previousVariantAnalysis.query,
     databases: previousVariantAnalysis.databases,
     executionStartTime: previousVariantAnalysis.executionStartTime,
     status: processApiStatus(response.status),
