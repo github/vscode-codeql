@@ -325,7 +325,7 @@ describe('query-results', () => {
 
     const result: QueryWithResults = {
       query: query.queryEvalInfo,
-      sucessful: didRunSuccessfully,
+      successful: didRunSuccessfully,
       message: 'foo',
       dispose: disposeSpy,
       result: {
@@ -343,7 +343,7 @@ describe('query-results', () => {
     return result;
   }
 
-  function createMockFullQueryInfo(dbName = 'a', queryWitbResults?: QueryWithResults, isFail = false): LocalQueryInfo {
+  function createMockFullQueryInfo(dbName = 'a', queryWithResults?: QueryWithResults, isFail = false): LocalQueryInfo {
     const fqi = new LocalQueryInfo(
       {
         databaseInfo: {
@@ -362,8 +362,8 @@ describe('query-results', () => {
       } as CancellationTokenSource
     );
 
-    if (queryWitbResults) {
-      fqi.completeThisQuery(queryWitbResults);
+    if (queryWithResults) {
+      fqi.completeThisQuery(queryWithResults);
     }
     if (isFail) {
       fqi.failureReason = 'failure reason';

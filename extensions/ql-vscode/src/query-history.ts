@@ -795,7 +795,7 @@ export class QueryHistoryManager extends DisposableObject {
         throw new Error('Please select a local query.');
       }
 
-      if (!finalSingleItem.completedQuery?.sucessful) {
+      if (!finalSingleItem.completedQuery?.successful) {
         throw new Error('Please select a query that has completed successfully.');
       }
 
@@ -1236,7 +1236,7 @@ the file in the file explorer and dragging it into the workspace.`
       if (!otherQuery.completedQuery) {
         throw new Error('Please select a completed query.');
       }
-      if (!otherQuery.completedQuery.sucessful) {
+      if (!otherQuery.completedQuery.successful) {
         throw new Error('Please select a successful query.');
       }
       if (otherQuery.initialInfo.databaseInfo.name !== dbName) {
@@ -1256,7 +1256,7 @@ the file in the file explorer and dragging it into the workspace.`
           otherQuery !== singleItem &&
           otherQuery.t === 'local' &&
           otherQuery.completedQuery &&
-          otherQuery.completedQuery.sucessful &&
+          otherQuery.completedQuery.successful &&
           otherQuery.initialInfo.databaseInfo.name === dbName
       )
       .map((item) => ({

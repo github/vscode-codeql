@@ -785,7 +785,7 @@ describe('query-history', () => {
         hasInterpretedResults: () => Promise.resolve(hasInterpretedResults),
         deleteQuery: sandbox.stub(),
       } as unknown as QueryEvaluationInfo,
-      sucessful: didRunSuccessfully,
+      successful: didRunSuccessfully,
       message: 'foo',
       dispose: sandbox.spy(),
       result: {
