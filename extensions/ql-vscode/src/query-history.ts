@@ -316,6 +316,8 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
         return item.remoteQuery.executionStartTime;
       case 'variant-analysis':
         return item.variantAnalysis.executionStartTime;
+      default:
+        assertNever(item);
     }
   }
 }
@@ -667,6 +669,8 @@ export class QueryHistoryManager extends DisposableObject {
       case 'variant-analysis':
         queryPath = finalSingleItem.variantAnalysis.query.filePath;
         break;
+      default:
+        assertNever(finalSingleItem);
     }
     const textDocument = await workspace.openTextDocument(
       Uri.file(queryPath)
@@ -729,6 +733,8 @@ export class QueryHistoryManager extends DisposableObject {
         await this.removeRemoteQuery(item);
       } else if (item.t === 'variant-analysis') {
         // TODO
+      } else {
+        assertNever(item);
       }
     }));
 
@@ -1178,6 +1184,8 @@ export class QueryHistoryManager extends DisposableObject {
         return item.remoteQuery.queryText;
       case 'variant-analysis':
         return 'TODO';
+      default:
+        assertNever(item);
     }
   }
 

@@ -5,6 +5,7 @@ import { LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { pluralize } from './helpers';
 import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-history-item';
+import { assertNever } from './pure/helpers-pure';
 
 interface InterpolateReplacements {
   t: string; // Start time
@@ -32,6 +33,9 @@ export class HistoryItemLabelProvider {
         break;
       case 'variant-analysis':
         replacements = this.getVariantAnalysisInterpolateReplacements(item);
+        break;
+      default:
+        assertNever(item);
     }
 
     const rawLabel = item.userSpecifiedLabel ?? (this.config.format || '%q');
@@ -56,6 +60,8 @@ export class HistoryItemLabelProvider {
           return item.remoteQuery.queryName;
         case 'variant-analysis':
           return item.variantAnalysis.query.name;
+        default:
+          assertNever(item);
       }
     }
   }
