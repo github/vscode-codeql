@@ -2,7 +2,7 @@ import { env } from 'vscode';
 import * as path from 'path';
 import { QueryHistoryConfig } from './config';
 import { LocalQueryInfo } from './query-results';
-import { QueryHistoryInfo } from './query-history-info';
+import { getRawName, QueryHistoryInfo } from './query-history-info';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { pluralize } from './helpers';
 import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-history-item';
@@ -51,20 +51,9 @@ export class HistoryItemLabelProvider {
    * @returns the name of the query, unless there is a custom label for this query.
    */
   getShortLabel(item: QueryHistoryInfo): string {
-    if (item.userSpecifiedLabel) {
-      return this.getLabel(item);
-    } else {
-      switch (item.t) {
-        case 'local':
-          return item.getQueryName();
-        case 'remote':
-          return item.remoteQuery.queryName;
-        case 'variant-analysis':
-          return item.variantAnalysis.query.name;
-        default:
-          assertNever(item);
-      }
-    }
+    return item.userSpecifiedLabel
+      ? this.getLabel(item)
+      : getRawName(item);
   }
 
 
