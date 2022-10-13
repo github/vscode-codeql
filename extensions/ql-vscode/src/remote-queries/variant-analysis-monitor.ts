@@ -17,7 +17,6 @@ export class VariantAnalysisMonitor extends DisposableObject {
   // us to just over 2 days worth of monitoring.
   public static maxAttemptCount = 17280;
   public static sleepTime = 5000;
-  public static maxConcurrentTasks = 3;
 
   private readonly _onVariantAnalysisChange = this.push(new EventEmitter<VariantAnalysis | undefined>());
   readonly onVariantAnalysisChange = this._onVariantAnalysisChange.event;
