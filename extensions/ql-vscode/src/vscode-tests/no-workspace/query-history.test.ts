@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 
 import { logger } from '../../logging';
-import { registerQueryHistoryScubber } from '../../query-history-scrubber';
+import { registerQueryHistoryScrubber } from '../../query-history-scrubber';
 import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
 import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries-shared';
 import { QueryHistoryConfig, QueryHistoryConfigListener } from '../../config';
@@ -759,7 +759,7 @@ describe('query-history', () => {
     }
 
     function registerScrubber(dir: string) {
-      deregister = registerQueryHistoryScubber(
+      deregister = registerQueryHistoryScrubber(
         ONE_HOUR_IN_MS,
         TWO_HOURS_IN_MS,
         LESS_THAN_ONE_DAY,

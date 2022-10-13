@@ -26,7 +26,7 @@ type Counter = {
  * @param queryDirectory The directory containing all queries.
  * @param ctx The extension context.
  */
-export function registerQueryHistoryScubber(
+export function registerQueryHistoryScrubber(
   wakeInterval: number,
   throttleTime: number,
   maxQueryTime: number,

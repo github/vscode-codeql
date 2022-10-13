@@ -32,7 +32,7 @@ import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo as LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { DatabaseManager } from './databases';
-import { registerQueryHistoryScubber } from './query-history-scrubber';
+import { registerQueryHistoryScrubber } from './query-history-scrubber';
 import { QueryStatus } from './query-status';
 import { slurpQueryHistory, splatQueryHistory } from './query-serialization';
 import * as fs from 'fs-extra';
@@ -573,7 +573,7 @@ export class QueryHistoryManager extends DisposableObject {
     this.queryHistoryScrubber?.dispose();
     // Every hour check if we need to re-run the query history scrubber.
     this.queryHistoryScrubber = this.push(
-      registerQueryHistoryScubber(
+      registerQueryHistoryScrubber(
         ONE_HOUR_IN_MS,
         TWO_HOURS_IN_MS,
         queryHistoryConfigListener.ttlInMillis,
