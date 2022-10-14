@@ -559,9 +559,6 @@ export class DatabaseManager extends DisposableObject {
     super();
 
     qs.onStart(this.reregisterDatabases.bind(this));
-
-    // Let this run async.
-    void this.loadPersistedState();
   }
 
   public async openDatabase(
@@ -691,7 +688,7 @@ export class DatabaseManager extends DisposableObject {
     return item;
   }
 
-  private async loadPersistedState(): Promise<void> {
+  public async loadPersistedState(): Promise<void> {
     return withProgress({
       location: vscode.ProgressLocation.Notification
     },
