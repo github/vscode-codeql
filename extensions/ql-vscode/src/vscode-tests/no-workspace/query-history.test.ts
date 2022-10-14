@@ -21,6 +21,7 @@ import { ResultsView } from '../../interface';
 import { EvalLogViewer } from '../../eval-log-viewer';
 import { QueryRunner } from '../../queryRunner';
 import { QueryResultType } from '../../pure/legacy-messages';
+import { VariantAnalysisManager } from '../../remote-queries/variant-analysis-manager';
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -34,6 +35,7 @@ describe('query-history', () => {
 
   let localQueriesResultsViewStub: ResultsView;
   let remoteQueriesManagerStub: RemoteQueriesManager;
+  let variantAnalysisManagerStub: VariantAnalysisManager;
 
   let tryOpenExternalFile: Function;
   let sandbox: sinon.SinonSandbox;
@@ -63,6 +65,10 @@ describe('query-history', () => {
       onRemoteQueryRemoved: sandbox.stub(),
       onRemoteQueryStatusUpdate: sandbox.stub()
     } as any as RemoteQueriesManager;
+
+    variantAnalysisManagerStub = {
+      onVariantAnalysisAdded: sandbox.stub()
+    } as any as VariantAnalysisManager;
   });
 
   afterEach(async () => {
@@ -803,6 +809,7 @@ describe('query-history', () => {
       {} as DatabaseManager,
       localQueriesResultsViewStub,
       remoteQueriesManagerStub,
+      variantAnalysisManagerStub,
       {} as EvalLogViewer,
       'xxx',
       {

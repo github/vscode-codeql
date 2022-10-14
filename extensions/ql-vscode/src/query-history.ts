@@ -49,6 +49,7 @@ import EvalLogTreeBuilder from './eval-log-tree-builder';
 import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
 import { QueryWithResults } from './run-queries-shared';
 import { QueryRunner } from './queryRunner';
+import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
 
 /**
  * query-history.ts
@@ -342,6 +343,7 @@ export class QueryHistoryManager extends DisposableObject {
     private readonly dbm: DatabaseManager,
     private readonly localQueriesResultsView: ResultsView,
     private readonly remoteQueriesManager: RemoteQueriesManager,
+    private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly evalLogViewer: EvalLogViewer,
     private readonly queryStorageDir: string,
     private readonly ctx: ExtensionContext,
@@ -564,6 +566,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     this.registerQueryHistoryScrubber(queryHistoryConfigListener, this, ctx);
     this.registerToRemoteQueriesEvents();
+    this.registerToVariantAnalysisEvents();
   }
 
   public completeQuery(info: LocalQueryInfo, results: QueryWithResults): void {
@@ -591,6 +594,21 @@ export class QueryHistoryManager extends DisposableObject {
         ctx
       )
     );
+  }
+
+  private registerToVariantAnalysisEvents() {
+    const variantAnalysisAddedSubscription = this.variantAnalysisManager.onVariantAnalysisAdded(async (variantAnalysis) => {
+      this.addQuery({
+        t: 'variant-analysis',
+        status: QueryStatus.InProgress,
+        completed: false,
+        variantAnalysis,
+      });
+
+      await this.refreshTreeView();
+    });
+
+    this.push(variantAnalysisAddedSubscription);
   }
 
   private registerToRemoteQueriesEvents() {

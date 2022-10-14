@@ -498,6 +498,7 @@ async function activateWithInstalledDistribution(
     dbm,
     localQueryResultsView,
     rqm,
+    variantAnalysisManager,
     evalLogViewer,
     queryStorageDir,
     ctx,
