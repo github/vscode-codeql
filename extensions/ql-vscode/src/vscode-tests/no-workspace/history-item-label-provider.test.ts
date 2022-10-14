@@ -2,9 +2,9 @@ import { env } from 'vscode';
 import { expect } from 'chai';
 import { QueryHistoryConfig } from '../../config';
 import { HistoryItemLabelProvider } from '../../history-item-label-provider';
-import { CompletedLocalQueryInfo, CompletedQueryInfo, InitialQueryInfo } from '../../query-results';
 import { QueryHistoryInfo } from '../../query-history-info';
 import { RemoteQueryHistoryItem } from '../../remote-queries/remote-query-history-item';
+import { createMockLocalQueryInfo } from '../factories/local-queries/local-query-history-item';
 
 
 describe('HistoryItemLabelProvider', () => {
@@ -23,7 +23,7 @@ describe('HistoryItemLabelProvider', () => {
 
   describe('local queries', () => {
     it('should interpolate query when user specified', () => {
-      const fqi = createMockLocalQueryInfo('xxx');
+      const fqi = createMockLocalQueryInfo(dateStr, 'xxx');
 
       expect(labelProvider.getLabel(fqi)).to.eq('xxx');
 
@@ -35,7 +35,7 @@ describe('HistoryItemLabelProvider', () => {
     });
 
     it('should interpolate query when not user specified', () => {
-      const fqi = createMockLocalQueryInfo();
+      const fqi = createMockLocalQueryInfo(dateStr);
 
       expect(labelProvider.getLabel(fqi)).to.eq('xxx query-name xxx');
 
@@ -48,7 +48,7 @@ describe('HistoryItemLabelProvider', () => {
     });
 
     it('should get query short label', () => {
-      const fqi = createMockLocalQueryInfo('xxx');
+      const fqi = createMockLocalQueryInfo(dateStr, 'xxx');
 
       // fall back on user specified if one exists.
       expect(labelProvider.getShortLabel(fqi)).to.eq('xxx');
@@ -57,30 +57,6 @@ describe('HistoryItemLabelProvider', () => {
       delete (fqi as any).userSpecifiedLabel;
       expect(labelProvider.getShortLabel(fqi)).to.eq('query-name');
     });
-
-    function createMockLocalQueryInfo(userSpecifiedLabel?: string) {
-      return {
-        t: 'local',
-        userSpecifiedLabel,
-        startTime: date.toLocaleString(env.language),
-        getQueryFileName() {
-          return 'query-file.ql';
-        },
-        getQueryName() {
-          return 'query-name';
-        },
-        initialInfo: {
-          databaseInfo: {
-            databaseUri: 'unused',
-            name: 'db-name'
-          }
-        } as unknown as InitialQueryInfo,
-        completedQuery: {
-          resultCount: 456,
-          statusString: 'in progress',
-        } as unknown as CompletedQueryInfo,
-      } as unknown as CompletedLocalQueryInfo;
-    }
   });
 
   describe('remote queries', () => {
