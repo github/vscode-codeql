@@ -10,12 +10,10 @@ import {
 import { QueryDetails } from './QueryDetails';
 import { VariantAnalysisActions } from './VariantAnalysisActions';
 import { VariantAnalysisStats } from './VariantAnalysisStats';
+import { parseDate } from '../../pure/date';
 
 export type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;
-
-  duration?: number | undefined;
-  completedAt?: Date | undefined;
 
   onOpenQueryFileClick: () => void;
   onViewQueryTextClick: () => void;
@@ -41,8 +39,6 @@ const Row = styled.div`
 
 export const VariantAnalysisHeader = ({
   variantAnalysis,
-  duration,
-  completedAt,
   onOpenQueryFileClick,
   onViewQueryTextClick,
   onStopQueryClick,
@@ -62,6 +58,16 @@ export const VariantAnalysisHeader = ({
   const hasSkippedRepos = useMemo(() => {
     return getSkippedRepoCount(variantAnalysis.skippedRepos) > 0;
   }, [variantAnalysis.skippedRepos]);
+
+  const duration = useMemo(() => {
+    if (!variantAnalysis?.completedAt) {
+      return undefined;
+    }
+
+    const createdAt = parseDate(variantAnalysis.createdAt);
+    const completedAt = parseDate(variantAnalysis.completedAt);
+    return completedAt.getTime() - createdAt.getTime();
+  }, [variantAnalysis?.completedAt, variantAnalysis?.createdAt]);
 
   return (
     <Container>
@@ -86,7 +92,7 @@ export const VariantAnalysisHeader = ({
         resultCount={resultCount}
         hasWarnings={hasSkippedRepos}
         duration={duration}
-        completedAt={completedAt}
+        completedAt={parseDate(variantAnalysis.completedAt)}
         onViewLogsClick={onViewLogsClick}
       />
     </Container>
