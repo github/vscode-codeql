@@ -17,6 +17,7 @@ describe(VariantAnalysisStats.name, () => {
         variantAnalysisStatus={VariantAnalysisStatus.InProgress}
         totalRepositoryCount={10}
         onViewLogsClick={onViewLogsClick}
+        createdAt={new Date()}
         {...props}
       />
     );
@@ -99,5 +100,23 @@ describe(VariantAnalysisStats.name, () => {
 
     expect(screen.getByText('Succeeded')).toBeInTheDocument();
     expect(screen.queryByText('Succeeded warnings')).not.toBeInTheDocument();
+  });
+
+  it('renders the duration when it is less than a second', () => {
+    render({ createdAt: new Date('2021-05-01T00:00:00Z'), completedAt: new Date('2021-05-01T00:00:00Z') });
+
+    expect(screen.getByText('Less than a second')).toBeInTheDocument();
+  });
+
+  it('renders the duration when it is less than a minute', () => {
+    render({ createdAt: new Date('2021-05-01T00:00:00Z'), completedAt: new Date('2021-05-01T00:00:34Z') });
+
+    expect(screen.getByText('34 seconds')).toBeInTheDocument();
+  });
+
+  it('renders the duration when it is more than a minute', () => {
+    render({ createdAt: new Date('2021-05-01T00:00:00Z'), completedAt: new Date('2021-05-01T00:10:22Z') });
+
+    expect(screen.getByText('10 minutes')).toBeInTheDocument();
   });
 });

@@ -17,7 +17,7 @@ export type VariantAnalysisStatsProps = {
   hasWarnings?: boolean;
 
   resultCount?: number | undefined;
-  duration?: number | undefined;
+  createdAt: Date;
   completedAt?: Date | undefined;
 
   onViewLogsClick: () => void;
@@ -35,7 +35,7 @@ export const VariantAnalysisStats = ({
   completedRepositoryCount = 0,
   hasWarnings,
   resultCount,
-  duration,
+  createdAt,
   completedAt,
   onViewLogsClick,
 }: VariantAnalysisStatsProps) => {
@@ -58,6 +58,14 @@ export const VariantAnalysisStats = ({
 
     return 'Succeeded';
   }, [variantAnalysisStatus, hasWarnings]);
+
+  const duration = useMemo(() => {
+    if (!completedAt) {
+      return undefined;
+    }
+
+    return completedAt.getTime() - createdAt.getTime();
+  }, [completedAt, createdAt]);
 
   return (
     <Row>

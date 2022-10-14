@@ -59,16 +59,6 @@ export const VariantAnalysisHeader = ({
     return getSkippedRepoCount(variantAnalysis.skippedRepos) > 0;
   }, [variantAnalysis.skippedRepos]);
 
-  const duration = useMemo(() => {
-    if (!variantAnalysis?.completedAt) {
-      return undefined;
-    }
-
-    const createdAt = parseDate(variantAnalysis.createdAt);
-    const completedAt = parseDate(variantAnalysis.completedAt);
-    return completedAt.getTime() - createdAt.getTime();
-  }, [variantAnalysis?.completedAt, variantAnalysis?.createdAt]);
-
   return (
     <Container>
       <Row>
@@ -91,7 +81,7 @@ export const VariantAnalysisHeader = ({
         completedRepositoryCount={completedRepositoryCount}
         resultCount={resultCount}
         hasWarnings={hasSkippedRepos}
-        duration={duration}
+        createdAt={parseDate(variantAnalysis.createdAt)}
         completedAt={parseDate(variantAnalysis.completedAt)}
         onViewLogsClick={onViewLogsClick}
       />
