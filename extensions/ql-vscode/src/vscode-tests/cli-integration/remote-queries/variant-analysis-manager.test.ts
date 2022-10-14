@@ -149,6 +149,41 @@ describe('Variant Analysis Manager', async function() {
 
         expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
       });
+
+      it('should pop download tasks off the queue', async () => {
+        const getResultsSpy = sandbox.spy(variantAnalysisManager, 'autoDownloadVariantAnalysisResult');
+
+        const input = [
+          variantAnalysisManager.queue.add(async () => {
+            await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+              scannedRepos[0],
+              variantAnalysis,
+              cancellationTokenSource.token
+            );
+          }),
+          variantAnalysisManager.queue.add(async () => {
+            await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+              scannedRepos[0],
+              variantAnalysis,
+              cancellationTokenSource.token
+            );
+          }),
+          variantAnalysisManager.queue.add(async () => {
+            await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+              scannedRepos[0],
+              variantAnalysis,
+              cancellationTokenSource.token
+            );
+          })
+        ];
+
+        expect(variantAnalysisManager.queue.pending).to.equal(3);
+
+        await Promise.all(input);
+
+        expect(variantAnalysisManager.queue.pending).to.equal(0);
+        expect(getResultsSpy).to.have.been.calledThrice;
+      });
     });
   });
 });

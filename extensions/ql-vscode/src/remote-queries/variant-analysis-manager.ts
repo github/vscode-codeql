@@ -22,6 +22,7 @@ import { VariantAnalysisResultsManager } from './variant-analysis-results-manage
 import { CodeQLCliServer } from '../cli';
 import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
+import PQueue from 'p-queue';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis>());
@@ -31,6 +32,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
   private readonly variantAnalyses = new Map<number, VariantAnalysis>();
   private readonly views = new Map<number, VariantAnalysisView>();
+  private static readonly maxConcurrentTasks = 3;
+  public queue: PQueue;
 
   constructor(
     private readonly ctx: ExtensionContext,
@@ -44,6 +47,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, storagePath, logger));
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
+
+    this.queue = new PQueue({ concurrency: VariantAnalysisManager.maxConcurrentTasks });
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
