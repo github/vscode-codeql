@@ -32,6 +32,7 @@ describe(VariantAnalysisStats.name, () => {
     render({ resultCount: 123456 });
 
     expect(screen.getByText('123,456')).toBeInTheDocument();
+    expect(screen.queryAllByText('-').length).toBe(1);
   });
 
   it('renders the number of repositories as a formatted number', () => {
@@ -102,10 +103,18 @@ describe(VariantAnalysisStats.name, () => {
     expect(screen.queryByText('Succeeded warnings')).not.toBeInTheDocument();
   });
 
+  it('does not render the duration when the completedAt is not set', () => {
+    render({ createdAt: new Date('2021-05-01T00:00:00Z') });
+
+    expect(screen.queryAllByText('-').length).toBe(2);
+    expect(screen.queryByText('Less than a second')).not.toBeInTheDocument();
+  });
+
   it('renders the duration when it is less than a second', () => {
     render({ createdAt: new Date('2021-05-01T00:00:00Z'), completedAt: new Date('2021-05-01T00:00:00Z') });
 
     expect(screen.getByText('Less than a second')).toBeInTheDocument();
+    expect(screen.queryAllByText('-').length).toBe(1);
   });
 
   it('renders the duration when it is less than a minute', () => {
