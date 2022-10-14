@@ -17,3 +17,16 @@ export function getRawQueryName(item: QueryHistoryInfo): string {
       assertNever(item);
   }
 }
+
+export function getQueryId(item: QueryHistoryInfo): string {
+  switch (item.t) {
+    case 'local':
+      return item.initialInfo.id;
+    case 'remote':
+      return item.queryId;
+    case 'variant-analysis':
+      return item.variantAnalysis.id.toString();
+    default:
+      assertNever(item);
+  }
+}
