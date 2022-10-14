@@ -101,6 +101,14 @@ export class CompletedQueryInfo implements QueryWithResults {
     this.resultCount = value;
   }
 
+  ranSucessfully(): boolean {
+    if(this.successful !== undefined) {
+      return this.successful; 
+    } else {
+      return this.result.resultType == legacyMessages.QueryResultType.SUCCESS;
+    }
+  }
+
   get statusString(): string {
     if (this.message) {
       return this.message;
@@ -302,7 +310,7 @@ export class LocalQueryInfo {
       return QueryStatus.Failed;
     } else if (!this.completedQuery) {
       return QueryStatus.InProgress;
-    } else if (this.completedQuery.successful) {
+    } else if (this.completedQuery.ranSucessfully()) {
       return QueryStatus.Completed;
     } else {
       return QueryStatus.Failed;
