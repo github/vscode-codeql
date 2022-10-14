@@ -124,18 +124,18 @@ export async function compileAndRunQueryAgainstDatabase(
       message = result.message ? `failed: ${result.message}` : 'failed';
       break;
   }
-  const sucessful = result.resultType === messages.QueryResultType.SUCCESS;
+  const successful = result.resultType === messages.QueryResultType.SUCCESS;
   return {
     query,
     result: {
       evaluationTime: result.evaluationTime,
       queryId: 0,
-      resultType: sucessful ? legacyMessages.QueryResultType.SUCCESS : legacyMessages.QueryResultType.OTHER_ERROR,
+      resultType: successful ? legacyMessages.QueryResultType.SUCCESS : legacyMessages.QueryResultType.OTHER_ERROR,
       runId: 0,
       message
     },
     message,
-    sucessful,
+    successful,
     dispose: () => {
       qs.logger.removeAdditionalLogLocation(undefined);
     }

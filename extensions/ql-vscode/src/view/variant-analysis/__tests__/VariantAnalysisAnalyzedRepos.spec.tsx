@@ -17,6 +17,7 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
       name: 'Example query',
       filePath: 'example.ql',
       language: VariantAnalysisQueryLanguage.Javascript,
+      text: 'import javascript\nselect 1',
     },
     databases: {},
     executionStartTime: 1611234567890,

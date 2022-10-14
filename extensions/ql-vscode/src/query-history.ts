@@ -32,7 +32,7 @@ import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo as LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { DatabaseManager } from './databases';
-import { registerQueryHistoryScubber } from './query-history-scrubber';
+import { registerQueryHistoryScrubber } from './query-history-scrubber';
 import { QueryStatus } from './query-status';
 import { slurpQueryHistory, splatQueryHistory } from './query-serialization';
 import * as fs from 'fs-extra';
@@ -585,7 +585,7 @@ export class QueryHistoryManager extends DisposableObject {
     this.queryHistoryScrubber?.dispose();
     // Every hour check if we need to re-run the query history scrubber.
     this.queryHistoryScrubber = this.push(
-      registerQueryHistoryScubber(
+      registerQueryHistoryScrubber(
         ONE_HOUR_IN_MS,
         TWO_HOURS_IN_MS,
         queryHistoryConfigListener.ttlInMillis,
@@ -836,7 +836,7 @@ export class QueryHistoryManager extends DisposableObject {
         throw new Error('Please select a local query.');
       }
 
-      if (!finalSingleItem.completedQuery?.sucessful) {
+      if (!finalSingleItem.completedQuery?.successful) {
         throw new Error('Please select a query that has completed successfully.');
       }
 
@@ -1289,7 +1289,7 @@ the file in the file explorer and dragging it into the workspace.`
       if (!otherQuery.completedQuery) {
         throw new Error('Please select a completed query.');
       }
-      if (!otherQuery.completedQuery.sucessful) {
+      if (!otherQuery.completedQuery.successful) {
         throw new Error('Please select a successful query.');
       }
       if (otherQuery.initialInfo.databaseInfo.name !== dbName) {
@@ -1309,7 +1309,7 @@ the file in the file explorer and dragging it into the workspace.`
           otherQuery !== singleItem &&
           otherQuery.t === 'local' &&
           otherQuery.completedQuery &&
-          otherQuery.completedQuery.sucessful &&
+          otherQuery.completedQuery.successful &&
           otherQuery.initialInfo.databaseInfo.name === dbName
       )
       .map((item) => ({

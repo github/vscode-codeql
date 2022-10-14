@@ -420,7 +420,7 @@ export async function compileAndRunQueryAgainstDatabase(
         query: query.queryEvalInfo,
         message,
         result,
-        sucessful: result.resultType == messages.QueryResultType.SUCCESS,
+        successful: result.resultType == messages.QueryResultType.SUCCESS,
         logFileLocation: result.logFileLocation,
         dispose: () => {
           qs.logger.removeAdditionalLogLocation(result.logFileLocation);
@@ -497,14 +497,14 @@ function createSyntheticResult(
   return {
     query: query.queryEvalInfo,
     message,
-    result:{
-      evaluationTime:0,
+    result: {
+      evaluationTime: 0,
       queryId: 0,
       resultType: messages.QueryResultType.OTHER_ERROR,
       message,
       runId: 0,
     },
-    sucessful: false,
+    successful: false,
     dispose: () => { /**/ },
   };
 }

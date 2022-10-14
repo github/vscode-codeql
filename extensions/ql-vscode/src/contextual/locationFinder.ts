@@ -65,7 +65,7 @@ export async function getLocationsForUriString(
       false
     );
     const results = await qs.compileAndRunQueryAgainstDatabase(db, initialInfo, queryStorageDir, progress, token, templates);
-    if (results.sucessful) {
+    if (results.successful) {
       links.push(...await getLinksFromResults(results, cli, db, filter));
     }
   }

@@ -251,6 +251,8 @@ export async function runRemoteQuery(
         throw new UserCancellationException(`Found unsupported language: ${language}`);
       }
 
+      const queryText = await fs.readFile(queryFile, 'utf8');
+
       const variantAnalysisSubmission: VariantAnalysisSubmission = {
         startTime: queryStartTime,
         actionRepoRef: actionBranch,
@@ -260,6 +262,7 @@ export async function runRemoteQuery(
           filePath: queryFile,
           pack: base64Pack,
           language: variantAnalysisLanguage,
+          text: queryText,
         },
         databases: {
           repositories: repoSelection.repositories,
