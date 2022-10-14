@@ -1,5 +1,4 @@
 import * as I from 'immutable';
-import { joinOrderWarningThreshold } from '../config';
 import { EvaluationLogProblemReporter, EvaluationLogScanner, EvaluationLogScannerProvider } from './log-scanner';
 import { InLayer, ComputeRecursive, SummaryEvent, PipelineRun, ComputeSimple } from './log-summary';
 
@@ -453,8 +452,11 @@ class JoinOrderScanner implements EvaluationLogScanner {
 }
 
 export class JoinOrderScannerProvider implements EvaluationLogScannerProvider {
+  constructor(private readonly getThreshdold: () => number) {
+  }
+
   public createScanner(problemReporter: EvaluationLogProblemReporter): EvaluationLogScanner {
-    const threshold = joinOrderWarningThreshold();
+    const threshold = this.getThreshdold();
     return new JoinOrderScanner(problemReporter, threshold);
   }
 }
