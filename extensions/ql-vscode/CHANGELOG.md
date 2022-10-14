@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix a bug where results created in older versions were thought to be unsucessful.
+
 ## 1.7.1 - 12 October 2022
 
 - Fix a bug where it was not possible to add a database folder if the folder name starts with `db-`. [#1565](https://github.com/github/vscode-codeql/pull/1565)
