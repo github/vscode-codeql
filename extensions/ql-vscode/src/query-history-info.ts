@@ -5,7 +5,7 @@ import { assertNever } from './pure/helpers-pure';
 
 export type QueryHistoryInfo = LocalQueryInfo | RemoteQueryHistoryItem | VariantAnalysisHistoryItem;
 
-export function getRawName(item: QueryHistoryInfo): string {
+export function getRawQueryName(item: QueryHistoryInfo): string {
   switch (item.t) {
     case 'local':
       return item.getQueryName();

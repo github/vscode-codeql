@@ -2,7 +2,7 @@ import { env } from 'vscode';
 import * as path from 'path';
 import { QueryHistoryConfig } from './config';
 import { LocalQueryInfo } from './query-results';
-import { getRawName, QueryHistoryInfo } from './query-history-info';
+import { getRawQueryName, QueryHistoryInfo } from './query-history-info';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { pluralize } from './helpers';
 import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-history-item';
@@ -53,7 +53,7 @@ export class HistoryItemLabelProvider {
   getShortLabel(item: QueryHistoryInfo): string {
     return item.userSpecifiedLabel
       ? this.getLabel(item)
-      : getRawName(item);
+      : getRawQueryName(item);
   }
 
 
