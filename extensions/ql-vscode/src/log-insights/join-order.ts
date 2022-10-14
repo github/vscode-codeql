@@ -1,8 +1,7 @@
 import * as I from 'immutable';
+import { joinOrderWarningThreshold } from '../config';
 import { EvaluationLogProblemReporter, EvaluationLogScanner, EvaluationLogScannerProvider } from './log-scanner';
 import { InLayer, ComputeRecursive, SummaryEvent, PipelineRun, ComputeSimple } from './log-summary';
-
-const DEFAULT_WARNING_THRESHOLD = 50;
 
 /**
  * Like `max`, but returns 0 if no meaningful maximum can be computed.
@@ -455,6 +454,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
 
 export class JoinOrderScannerProvider implements EvaluationLogScannerProvider {
   public createScanner(problemReporter: EvaluationLogProblemReporter): EvaluationLogScanner {
-    return new JoinOrderScanner(problemReporter, DEFAULT_WARNING_THRESHOLD);
+    const threshold = joinOrderWarningThreshold();
+    return new JoinOrderScanner(problemReporter, threshold);
   }
 }

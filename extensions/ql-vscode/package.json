@@ -290,6 +290,13 @@
           "pattern": "^$|^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+/[a-zA-Z0-9-_]+$",
           "patternErrorMessage": "Please enter a valid GitHub repository",
           "markdownDescription": "[For internal use only] The name of the GitHub repository in which the GitHub Actions workflow is run when using the \"Run Variant Analysis\" command. The repository should be of the form `<owner>/<repo>`)."
+        },
+        "codeQL.logInsights.joinOrderWarningThreshold": {
+          "type": "number",
+          "default": 50,
+          "scope": "window",
+          "minimum": 0,
+          "description": "Report a warning for any join order whose metric exceeds this value."
         }
       }
     },
