@@ -4,14 +4,14 @@ import * as cp from 'child_process';
 import {
   runTests,
   downloadAndUnzipVSCode,
-  resolveCliArgsFromVSCodeExecutablePath
-} from '@vscode/test-electron';
+  resolveCliPathFromVSCodeExecutablePath
+} from 'vscode-test';
 import { assertNever } from '../pure/helpers-pure';
 import * as tmp from 'tmp-promise';
 
 // For some reason, the following are not exported directly from `vscode-test`,
 // but we can be tricky and import directly from the out file.
-import { TestOptions } from '@vscode/test-electron/out/runTest';
+import { TestOptions } from 'vscode-test/out/runTest';
 
 
 // For CI purposes we want to leave this at 'stable' to catch any bugs
@@ -78,11 +78,10 @@ async function main() {
     const extensionTestsEnv: Record<string, string> = {};
     if (dirs.includes(TestDir.CliIntegration)) {
       console.log('Installing required extensions');
-      const [cli, ...args] = resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
+      const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
       cp.spawnSync(
-        cli,
+        cliPath,
         [
-          ...args,
           '--install-extension',
           'hbenl.vscode-test-explorer',
           '--install-extension',
