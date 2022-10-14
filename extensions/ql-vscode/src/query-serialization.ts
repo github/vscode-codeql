@@ -7,6 +7,7 @@ import { CompletedQueryInfo, LocalQueryInfo } from './query-results';
 import { QueryHistoryInfo } from './query-history-info';
 import { QueryStatus } from './query-status';
 import { QueryEvaluationInfo } from './run-queries-shared';
+import { QueryResultType } from './pure/legacy-messages';
 
 export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInfo[]> {
   try {
@@ -39,6 +40,17 @@ export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInf
           Object.setPrototypeOf(q.completedQuery.query, QueryEvaluationInfo.prototype);
           // slurped queries do not need to be disposed
           q.completedQuery.dispose = () => { /**/ };
+
+          // Previously, there was a typo in the completedQuery type. There was a field
+          // `sucessful` and it was renamed to `successful`. We need to handle this case.
+          if ('sucessful' in q.completedQuery) {
+            (q.completedQuery as any).successful = (q.completedQuery as any).sucessful;
+            delete (q.completedQuery as any).sucessful;
+          }
+
+          if (!('successful' in q.completedQuery)) {
+            (q.completedQuery as any).successful = q.completedQuery.result?.resultType === QueryResultType.SUCCESS;
+          }
         }
       } else if (q.t === 'remote') {
         // A bug was introduced that didn't set the completed flag in query history
@@ -91,7 +103,10 @@ export async function splatQueryHistory(queries: QueryHistoryInfo[], fsPath: str
     // remove incomplete local queries since they cannot be recreated on restart
     const filteredQueries = queries.filter(q => q.t === 'local' ? q.completedQuery !== undefined : true);
     const data = JSON.stringify({
-      version: 2, // version 2 adds the `variant-analysis` type.
+      // version 2:
+      // - adds the `variant-analysis` type
+      // - ensures a `successful` property exists on completedQuery
+      version: 2,
       queries: filteredQueries
     }, null, 2);
     await fs.writeFile(fsPath, data);

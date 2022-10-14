@@ -77,7 +77,9 @@ describe('databases', () => {
         },
         resolveDatabase: resolveDatabaseSpy
       } as unknown as CodeQLCliServer,
-      {} as Logger,
+      {
+        log: () => { /**/ }
+      } as unknown as Logger,
     );
 
     // Unfortunately, during a test it is not possible to convert from
