@@ -16,10 +16,8 @@ import {
 } from './pure/interface-types';
 import { DatabaseInfo } from './pure/interface-types';
 import { QueryStatus } from './query-status';
-import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { QueryEvaluationInfo, QueryWithResults } from './run-queries-shared';
 import { formatLegacyMessage } from './legacy-query-server/run-queries';
-import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-history-item';
 
 /**
  * query-results.ts
@@ -207,8 +205,6 @@ export function ensureMetadataIsComplete(metadata: QueryMetadata | undefined) {
 export type CompletedLocalQueryInfo = LocalQueryInfo & {
   completedQuery: CompletedQueryInfo
 };
-
-export type QueryHistoryInfo = LocalQueryInfo | RemoteQueryHistoryItem | VariantAnalysisHistoryItem;
 
 export class LocalQueryInfo {
   readonly t = 'local';

@@ -3,7 +3,8 @@ import * as path from 'path';
 
 import { showAndLogErrorMessage } from './helpers';
 import { asyncFilter, getErrorMessage, getErrorStack } from './pure/helpers-pure';
-import { CompletedQueryInfo, LocalQueryInfo, QueryHistoryInfo } from './query-results';
+import { CompletedQueryInfo, LocalQueryInfo } from './query-results';
+import { QueryHistoryInfo } from './query-history-info';
 import { QueryStatus } from './query-status';
 import { QueryEvaluationInfo } from './run-queries-shared';
 
