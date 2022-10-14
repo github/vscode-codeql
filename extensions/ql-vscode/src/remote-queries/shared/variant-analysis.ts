@@ -15,8 +15,11 @@ export interface VariantAnalysis {
     repositoryLists?: string[],
     repositoryOwners?: string[],
   },
+  createdAt: string,
+  updatedAt: string,
   executionStartTime: number;
   status: VariantAnalysisStatus,
+  completedAt?: string,
   actionsWorkflowRunId?: number,
   failureReason?: VariantAnalysisFailureReason,
   scannedRepos?: VariantAnalysisScannedRepository[],

@@ -27,6 +27,8 @@ export function createMockVariantAnalysis(
       repositories: ['1', '2', '3'],
     },
     executionStartTime: faker.datatype.number(),
+    createdAt: faker.date.recent().toISOString(),
+    updatedAt: faker.date.recent().toISOString(),
     status: status,
     actionsWorkflowRunId: faker.datatype.number(),
     scannedRepos: scannedRepos,

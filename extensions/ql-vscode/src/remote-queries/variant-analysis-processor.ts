@@ -56,7 +56,10 @@ export function processUpdatedVariantAnalysis(
     query: previousVariantAnalysis.query,
     databases: previousVariantAnalysis.databases,
     executionStartTime: previousVariantAnalysis.executionStartTime,
+    createdAt: response.created_at,
+    updatedAt: response.updated_at,
     status: processApiStatus(response.status),
+    completedAt: response.completed_at,
     actionsWorkflowRunId: response.actions_workflow_run_id,
     scannedRepos: scannedRepos,
     skippedRepos: skippedRepos

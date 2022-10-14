@@ -10,12 +10,10 @@ import {
 import { QueryDetails } from './QueryDetails';
 import { VariantAnalysisActions } from './VariantAnalysisActions';
 import { VariantAnalysisStats } from './VariantAnalysisStats';
+import { parseDate } from '../../pure/date';
 
 export type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;
-
-  duration?: number | undefined;
-  completedAt?: Date | undefined;
 
   onOpenQueryFileClick: () => void;
   onViewQueryTextClick: () => void;
@@ -41,8 +39,6 @@ const Row = styled.div`
 
 export const VariantAnalysisHeader = ({
   variantAnalysis,
-  duration,
-  completedAt,
   onOpenQueryFileClick,
   onViewQueryTextClick,
   onStopQueryClick,
@@ -85,8 +81,8 @@ export const VariantAnalysisHeader = ({
         completedRepositoryCount={completedRepositoryCount}
         resultCount={resultCount}
         hasWarnings={hasSkippedRepos}
-        duration={duration}
-        completedAt={completedAt}
+        createdAt={parseDate(variantAnalysis.createdAt)}
+        completedAt={parseDate(variantAnalysis.completedAt)}
         onViewLogsClick={onViewLogsClick}
       />
     </Container>
