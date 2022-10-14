@@ -15,8 +15,8 @@ export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInf
 
     const data = await fs.readFile(fsPath, 'utf8');
     const obj = JSON.parse(data);
-    if (obj.version !== 1) {
-      void showAndLogErrorMessage(`Unsupported query history format: v${obj.version}. `);
+    if (![1, 2].includes(obj.version)) {
+      void showAndLogErrorMessage(`Can't parse query history. Unsupported query history format: v${obj.version}. `);
       return [];
     }
 
@@ -54,7 +54,7 @@ export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInf
     // most likely another workspace has deleted them because the
     // queries aged out.
     return asyncFilter(parsedQueries, async (q) => {
-      if (q.t === 'remote') {
+      if (q.t === 'remote' || q.t === 'variant-analysis') {
         // the slurper doesn't know where the remote queries are stored
         // so we need to assume here that they exist. Later, we check to
         // see if they exist on disk.
@@ -90,7 +90,7 @@ export async function splatQueryHistory(queries: QueryHistoryInfo[], fsPath: str
     // remove incomplete local queries since they cannot be recreated on restart
     const filteredQueries = queries.filter(q => q.t === 'local' ? q.completedQuery !== undefined : true);
     const data = JSON.stringify({
-      version: 1,
+      version: 2, // version 2 adds the `variant-analysis` type.
       queries: filteredQueries
     }, null, 2);
     await fs.writeFile(fsPath, data);

@@ -4,6 +4,8 @@ import { QueryHistoryConfig } from './config';
 import { LocalQueryInfo, QueryHistoryInfo } from './query-results';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { pluralize } from './helpers';
+import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-history-item';
+import { assertNever } from './pure/helpers-pure';
 
 interface InterpolateReplacements {
   t: string; // Start time
@@ -21,9 +23,20 @@ export class HistoryItemLabelProvider {
   }
 
   getLabel(item: QueryHistoryInfo) {
-    const replacements = item.t === 'local'
-      ? this.getLocalInterpolateReplacements(item)
-      : this.getRemoteInterpolateReplacements(item);
+    let replacements: InterpolateReplacements;
+    switch (item.t) {
+      case 'local':
+        replacements = this.getLocalInterpolateReplacements(item);
+        break;
+      case 'remote':
+        replacements = this.getRemoteInterpolateReplacements(item);
+        break;
+      case 'variant-analysis':
+        replacements = this.getVariantAnalysisInterpolateReplacements(item);
+        break;
+      default:
+        assertNever(item);
+    }
 
     const rawLabel = item.userSpecifiedLabel ?? (this.config.format || '%q');
 
@@ -37,11 +50,20 @@ export class HistoryItemLabelProvider {
    * @returns the name of the query, unless there is a custom label for this query.
    */
   getShortLabel(item: QueryHistoryInfo): string {
-    return item.userSpecifiedLabel
-      ? this.getLabel(item)
-      : item.t === 'local'
-        ? item.getQueryName()
-        : item.remoteQuery.queryName;
+    if (item.userSpecifiedLabel) {
+      return this.getLabel(item);
+    } else {
+      switch (item.t) {
+        case 'local':
+          return item.getQueryName();
+        case 'remote':
+          return item.remoteQuery.queryName;
+        case 'variant-analysis':
+          return item.variantAnalysis.query.name;
+        default:
+          assertNever(item);
+      }
+    }
   }
 
 
@@ -88,6 +110,19 @@ export class HistoryItemLabelProvider {
       s: item.status,
       f: path.basename(item.remoteQuery.queryFilePath),
       '%': '%'
+    };
+  }
+
+  private getVariantAnalysisInterpolateReplacements(item: VariantAnalysisHistoryItem): InterpolateReplacements {
+    const resultCount = item.resultCount ? `(${pluralize(item.resultCount, 'result', 'results')})` : '';
+    return {
+      t: new Date(item.variantAnalysis.executionStartTime).toLocaleString(env.language),
+      q: `${item.variantAnalysis.query.name} (${item.variantAnalysis.query.language})`,
+      d: 'TODO',
+      r: resultCount,
+      s: item.status,
+      f: path.basename(item.variantAnalysis.query.filePath),
+      '%': '%',
     };
   }
 }

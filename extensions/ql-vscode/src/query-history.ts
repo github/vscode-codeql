@@ -206,13 +206,9 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
       const h1Label = this.labelProvider.getLabel(h1).toLowerCase();
       const h2Label = this.labelProvider.getLabel(h2).toLowerCase();
 
-      const h1Date = h1.t === 'local'
-        ? h1.initialInfo.start.getTime()
-        : h1.remoteQuery?.executionStartTime;
+      const h1Date = this.getItemDate(h1);
 
-      const h2Date = h2.t === 'local'
-        ? h2.initialInfo.start.getTime()
-        : h2.remoteQuery?.executionStartTime;
+      const h2Date = this.getItemDate(h2);
 
       const resultCount1 = h1.t === 'local'
         ? h1.completedQuery?.resultCount ?? -1
@@ -310,6 +306,19 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
   public set sortOrder(newSortOrder: SortOrder) {
     this._sortOrder = newSortOrder;
     this._onDidChangeTreeData.fire(undefined);
+  }
+
+  private getItemDate(item: QueryHistoryInfo) {
+    switch (item.t) {
+      case 'local':
+        return item.initialInfo.start.getTime();
+      case 'remote':
+        return item.remoteQuery.executionStartTime;
+      case 'variant-analysis':
+        return item.variantAnalysis.executionStartTime;
+      default:
+        assertNever(item);
+    }
   }
 }
 
@@ -649,10 +658,20 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    const queryPath = finalSingleItem.t === 'local'
-      ? finalSingleItem.initialInfo.queryPath
-      : finalSingleItem.remoteQuery.queryFilePath;
-
+    let queryPath: string;
+    switch (finalSingleItem.t) {
+      case 'local':
+        queryPath = finalSingleItem.initialInfo.queryPath;
+        break;
+      case 'remote':
+        queryPath = finalSingleItem.remoteQuery.queryFilePath;
+        break;
+      case 'variant-analysis':
+        queryPath = finalSingleItem.variantAnalysis.query.filePath;
+        break;
+      default:
+        assertNever(finalSingleItem);
+    }
     const textDocument = await workspace.openTextDocument(
       Uri.file(queryPath)
     );
@@ -710,8 +729,12 @@ export class QueryHistoryManager extends DisposableObject {
           // We need to delete it from disk as well.
           await item.completedQuery?.query.deleteQuery();
         }
-      } else {
+      } else if (item.t === 'remote') {
         await this.removeRemoteQuery(item);
+      } else if (item.t === 'variant-analysis') {
+        // TODO
+      } else {
+        assertNever(item);
       }
     }));
 
@@ -1025,15 +1048,20 @@ export class QueryHistoryManager extends DisposableObject {
       isQuickEval: String(!!(finalSingleItem.t === 'local' && finalSingleItem.initialInfo.quickEvalPosition)),
       queryText: encodeURIComponent(await this.getQueryText(finalSingleItem)),
     });
-    const queryId = finalSingleItem.t === 'local'
-      ? finalSingleItem.initialInfo.id
-      : finalSingleItem.queryId;
 
-    const uri = Uri.parse(
-      `codeql:${queryId}?${params.toString()}`, true
-    );
-    const doc = await workspace.openTextDocument(uri);
-    await window.showTextDocument(doc, { preview: false });
+    if (finalSingleItem.t === 'variant-analysis') {
+      // TODO
+    } else {
+      const queryId = finalSingleItem.t === 'local'
+        ? finalSingleItem.initialInfo.id
+        : finalSingleItem.queryId;
+
+      const uri = Uri.parse(
+        `codeql:${queryId}?${params.toString()}`, true
+      );
+      const doc = await workspace.openTextDocument(uri);
+      await window.showTextDocument(doc, { preview: false });
+    }
   }
 
   async handleViewSarifAlerts(
@@ -1149,9 +1177,16 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async getQueryText(item: QueryHistoryInfo): Promise<string> {
-    return item.t === 'local'
-      ? item.initialInfo.queryText
-      : item.remoteQuery.queryText;
+    switch (item.t) {
+      case 'local':
+        return item.initialInfo.queryText;
+      case 'remote':
+        return item.remoteQuery.queryText;
+      case 'variant-analysis':
+        return 'TODO';
+      default:
+        assertNever(item);
+    }
   }
 
   async handleExportResults(): Promise<void> {

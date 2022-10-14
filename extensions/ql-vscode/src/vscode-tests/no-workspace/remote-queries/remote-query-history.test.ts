@@ -164,7 +164,7 @@ describe('Remote queries and query history manager', function() {
 
     // also, both queries should be removed from on disk storage
     expect(fs.readJSONSync(path.join(STORAGE_DIR, 'workspace-query-history.json'))).to.deep.eq({
-      version: 1,
+      version: 2,
       queries: []
     });
   });
