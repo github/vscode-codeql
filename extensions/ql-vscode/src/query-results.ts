@@ -102,10 +102,10 @@ export class CompletedQueryInfo implements QueryWithResults {
   }
 
   ranSucessfully(): boolean {
-    if(this.successful !== undefined) {
-      return this.successful; 
+    if (this.successful !== undefined) {
+      return this.successful;
     } else {
-      return this.result.resultType == legacyMessages.QueryResultType.SUCCESS;
+      return this.result.resultType === legacyMessages.QueryResultType.SUCCESS;
     }
   }
 
