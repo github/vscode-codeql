@@ -60,8 +60,11 @@ class TestSetting<T> {
 }
 
 // The test settings are all settings in ALL_SETTINGS which don't have any children
+// and are also not hiddent settings like the Canary setting.
 const TEST_SETTINGS = ALL_SETTINGS
-  .filter(setting => ALL_SETTINGS.filter(s => s.parent === setting).length === 0)
+  .filter(setting => !setting.isHidden &&
+    ALL_SETTINGS.filter(s =>
+      s.parent === setting).length === 0)
   .map(setting => new TestSetting(setting));
 
 export const getTestSetting = (setting: Setting): TestSetting<unknown> | undefined => {
@@ -79,7 +82,10 @@ export const testConfigHelper = async (mocha: Mocha) => {
     },
     async afterAll() {
       // Restore all settings to their default values after each test suite
-      await Promise.all(TEST_SETTINGS.map(setting => setting.restoreToInitialValues()));
+      // Only do this outside of CI since the sometimes hangs on CI.
+      if (process.env.CI !== 'true') {
+        await Promise.all(TEST_SETTINGS.map(setting => setting.restoreToInitialValues()));
+      }
     }
   });
 };

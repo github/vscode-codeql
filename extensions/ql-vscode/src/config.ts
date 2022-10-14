@@ -11,9 +11,10 @@ export class Setting {
   name: string;
   parent?: Setting;
 
-  constructor(name: string, parent?: Setting) {
+  constructor(name: string, parent?: Setting, public readonly isHidden = false) {
     this.name = name;
     this.parent = parent;
+
     ALL_SETTINGS.push(this);
   }
 
@@ -327,7 +328,7 @@ export function isQuickEvalCodelensEnabled() {
 /**
  * Enables canary features of this extension. Recommended for all internal users.
  */
-export const CANARY_FEATURES = new Setting('canary', ROOT_SETTING);
+export const CANARY_FEATURES = new Setting('canary', ROOT_SETTING, true);
 
 export function isCanary() {
   return !!CANARY_FEATURES.getValue<boolean>();
@@ -336,7 +337,7 @@ export function isCanary() {
 /**
  * Enables the experimental query server
  */
-export const CANARY_QUERY_SERVER = new Setting('canaryQueryServer', ROOT_SETTING);
+export const CANARY_QUERY_SERVER = new Setting('canaryQueryServer', ROOT_SETTING, true);
 
 
 export function allowCanaryQueryServer() {

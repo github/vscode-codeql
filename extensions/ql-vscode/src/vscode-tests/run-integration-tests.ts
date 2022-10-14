@@ -13,7 +13,6 @@ import * as tmp from 'tmp-promise';
 // but we can be tricky and import directly from the out file.
 import { TestOptions } from 'vscode-test/out/runTest';
 
-
 // For CI purposes we want to leave this at 'stable' to catch any bugs
 // that might show up with new vscode versions released, even though
 // this makes testing not-quite-pure, but it can be changed for local
@@ -34,24 +33,21 @@ enum TestDir {
  * Run an integration test suite `suite`, retrying if it segfaults, at
  * most `tries` times.
  */
-async function runTestsWithRetryOnSegfault(suite: TestOptions, tries: number): Promise<void> {
+async function runTestsWithRetryOnSegfault(suite: TestOptions, tries: number): Promise<number> {
   for (let t = 0; t < tries; t++) {
     try {
       // Download and unzip VS Code if necessary, and run the integration test suite.
-      await runTests(suite);
-      return;
+      return await runTests(suite);
     } catch (err) {
       if (err === 'SIGSEGV') {
         console.error('Test runner segfaulted.');
         if (t < tries - 1)
           console.error('Retrying...');
-      }
-      else if (os.platform() === 'win32') {
+      } else if (os.platform() === 'win32') {
         console.error(`Test runner caught exception (${err})`);
         if (t < tries - 1)
           console.error('Retrying...');
-      }
-      else {
+      } else {
         throw err;
       }
     }
@@ -67,6 +63,7 @@ const tmpDir = tmp.dirSync({ unsafeCleanup: true });
  * See https://github.com/microsoft/vscode-test/blob/master/sample/test/runTest.ts
  */
 async function main() {
+  let exitCode = 0;
   try {
     const extensionDevelopmentPath = path.resolve(__dirname, '../..');
     const vscodeExecutablePath = await downloadAndUnzipVSCode(VSCODE_VERSION);
@@ -100,7 +97,7 @@ async function main() {
       const launchArgs = getLaunchArgs(dir as TestDir);
       console.log(`Next integration test dir: ${dir}`);
       console.log(`Launch args: ${launchArgs}`);
-      await runTestsWithRetryOnSegfault({
+      exitCode = await runTestsWithRetryOnSegfault({
         version: VSCODE_VERSION,
         vscodeExecutablePath,
         extensionDevelopmentPath,
@@ -111,8 +108,12 @@ async function main() {
     }
   } catch (err) {
     console.error(`Unexpected exception while running tests: ${err}`);
-    console.error((err as Error).stack);
-    process.exit(1);
+    if (err instanceof Error) {
+      console.error(err.stack);
+    }
+    exitCode = 1;
+  } finally {
+    process.exit(exitCode);
   }
 }
 
@@ -125,6 +126,7 @@ function getLaunchArgs(dir: TestDir) {
       return [
         '--disable-extensions',
         '--disable-gpu',
+        '--disable-workspace-trust',
         '--user-data-dir=' + path.join(tmpDir.name, dir, 'user-data')
       ];
 
@@ -132,6 +134,7 @@ function getLaunchArgs(dir: TestDir) {
       return [
         '--disable-extensions',
         '--disable-gpu',
+        '--disable-workspace-trust',
         '--user-data-dir=' + path.join(tmpDir.name, dir, 'user-data'),
         path.resolve(__dirname, '../../test/data')
       ];
@@ -139,6 +142,7 @@ function getLaunchArgs(dir: TestDir) {
     case TestDir.CliIntegration:
       // CLI integration tests requires a multi-root workspace so that the data and the QL sources are accessible.
       return [
+        '--disable-workspace-trust',
         '--disable-gpu',
         path.resolve(__dirname, '../../test/data'),
 
@@ -155,5 +159,4 @@ function getLaunchArgs(dir: TestDir) {
     default:
       assertNever(dir);
   }
-  return undefined;
 }
