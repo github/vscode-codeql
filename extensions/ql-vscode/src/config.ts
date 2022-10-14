@@ -59,6 +59,7 @@ const ROOT_SETTING = new Setting('codeQL');
 const TELEMETRY_SETTING = new Setting('telemetry', ROOT_SETTING);
 const AST_VIEWER_SETTING = new Setting('astViewer', ROOT_SETTING);
 const GLOBAL_TELEMETRY_SETTING = new Setting('telemetry');
+const LOG_INSIGHTS_SETTING = new Setting('logInsights', ROOT_SETTING);
 
 export const LOG_TELEMETRY = new Setting('logTelemetry', TELEMETRY_SETTING);
 export const ENABLE_TELEMETRY = new Setting('enableTelemetry', TELEMETRY_SETTING);
@@ -342,6 +343,11 @@ export function allowCanaryQueryServer() {
   return !!CANARY_QUERY_SERVER.getValue<boolean>();
 }
 
+export const JOIN_ORDER_WARNING_THRESHOLD = new Setting('joinOrderWarningThreshold', LOG_INSIGHTS_SETTING);
+
+export function joinOrderWarningThreshold(): number {
+  return JOIN_ORDER_WARNING_THRESHOLD.getValue<number>();
+}
 
 /**
  * Avoids caching in the AST viewer if the user is also a canary user.

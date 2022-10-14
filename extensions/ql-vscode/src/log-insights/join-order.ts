@@ -2,8 +2,6 @@ import * as I from 'immutable';
 import { EvaluationLogProblemReporter, EvaluationLogScanner, EvaluationLogScannerProvider } from './log-scanner';
 import { InLayer, ComputeRecursive, SummaryEvent, PipelineRun, ComputeSimple } from './log-summary';
 
-const DEFAULT_WARNING_THRESHOLD = 50;
-
 /**
  * Like `max`, but returns 0 if no meaningful maximum can be computed.
  */
@@ -454,7 +452,11 @@ class JoinOrderScanner implements EvaluationLogScanner {
 }
 
 export class JoinOrderScannerProvider implements EvaluationLogScannerProvider {
+  constructor(private readonly getThreshdold: () => number) {
+  }
+
   public createScanner(problemReporter: EvaluationLogProblemReporter): EvaluationLogScanner {
-    return new JoinOrderScanner(problemReporter, DEFAULT_WARNING_THRESHOLD);
+    const threshold = this.getThreshdold();
+    return new JoinOrderScanner(problemReporter, threshold);
   }
 }
