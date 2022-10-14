@@ -4,6 +4,8 @@ import { DistributionManager } from './distribution';
 import { logger } from './logging';
 import { ONE_DAY_IN_MS } from './pure/time';
 
+export const ALL_SETTINGS: Setting[] = [];
+
 /** Helper class to look up a labelled (and possibly nested) setting. */
 export class Setting {
   name: string;
@@ -12,6 +14,7 @@ export class Setting {
   constructor(name: string, parent?: Setting) {
     this.name = name;
     this.parent = parent;
+    ALL_SETTINGS.push(this);
   }
 
   get qualifiedName(): string {
@@ -36,6 +39,18 @@ export class Setting {
     return workspace.getConfiguration(this.parent.qualifiedName).update(this.name, value, target);
   }
 
+  inspect<T>(): InspectionResult<T> | undefined {
+    if (this.parent === undefined) {
+      throw new Error('Cannot update the value of a root setting.');
+    }
+    return workspace.getConfiguration(this.parent.qualifiedName).inspect(this.name);
+  }
+}
+
+export interface InspectionResult<T> {
+  globalValue?: T;
+  workspaceValue?: T,
+  workspaceFolderValue?: T,
 }
 
 const ROOT_SETTING = new Setting('codeQL');
