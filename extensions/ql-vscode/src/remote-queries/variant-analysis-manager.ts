@@ -39,7 +39,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     logger: Logger,
   ) {
     super();
-    this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx, logger));
+    this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx));
     this.variantAnalysisMonitor.onVariantAnalysisChange(this.onVariantAnalysisUpdated.bind(this));
 
     this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, storagePath, logger));
