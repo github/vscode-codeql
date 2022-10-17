@@ -2,7 +2,6 @@ import * as sinon from 'sinon';
 import { expect } from 'chai';
 import { CancellationTokenSource, extensions } from 'vscode';
 import { CodeQLExtensionInterface } from '../../../extension';
-import { logger } from '../../../logging';
 import * as config from '../../../config';
 
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
@@ -30,7 +29,6 @@ describe('Variant Analysis Monitor', async function() {
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
-    sandbox.stub(logger, 'log');
     sandbox.stub(config, 'isVariantAnalysisLiveResultsEnabled').returns(false);
 
     cancellationTokenSource = new CancellationTokenSource();
@@ -39,7 +37,7 @@ describe('Variant Analysis Monitor', async function() {
 
     try {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
-      variantAnalysisMonitor = new VariantAnalysisMonitor(extension.ctx, logger);
+      variantAnalysisMonitor = new VariantAnalysisMonitor(extension.ctx);
     } catch (e) {
       fail(e as Error);
     }
