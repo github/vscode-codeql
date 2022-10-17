@@ -169,9 +169,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     variantAnalysisSummary: VariantAnalysisApiResponse,
     token: CancellationToken
   ): Promise<void> {
-    await this.queue.add(async () => {
-      await this.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysisSummary, token);
-    });
+    await this.queue.add(() => this.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysisSummary, token));
   }
 
   public downloadsQueueSize(): number {
