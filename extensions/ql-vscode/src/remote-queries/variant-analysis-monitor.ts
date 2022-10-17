@@ -100,7 +100,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
     scannedRepo: VariantAnalysisScannedRepository,
     alreadyDownloaded: number[]
   ): boolean {
-    return (!alreadyDownloaded.includes(scannedRepo.repository.id) && scannedRepo.analysis_status === 'succeeded');
+    return !alreadyDownloaded.includes(scannedRepo.repository.id) && scannedRepo.analysis_status === 'succeeded';
   }
 
   private getReposToDownload(
