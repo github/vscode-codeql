@@ -1,6 +1,5 @@
 import { ExtensionContext, CancellationToken, commands, EventEmitter } from 'vscode';
 import { Credentials } from '../authentication';
-import { Logger } from '../logging';
 import * as ghApiClient from './gh-api/gh-api-client';
 
 import { VariantAnalysis, VariantAnalysisStatus } from './shared/variant-analysis';
@@ -23,7 +22,6 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
   constructor(
     private readonly extensionContext: ExtensionContext,
-    private readonly logger: Logger
   ) {
     super();
   }
@@ -73,8 +71,6 @@ export class VariantAnalysisMonitor extends DisposableObject {
       variantAnalysis = processUpdatedVariantAnalysis(variantAnalysis, variantAnalysisSummary);
 
       this._onVariantAnalysisChange.fire(variantAnalysis);
-
-      void this.logger.log('****** Retrieved variant analysis' + JSON.stringify(variantAnalysisSummary));
 
       const downloadedRepos = this.downloadVariantAnalysisResults(variantAnalysisSummary, scannedReposDownloaded);
       scannedReposDownloaded.push(...downloadedRepos);
