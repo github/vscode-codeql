@@ -166,6 +166,16 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
   }
 
+  public async enqueueDownload(
+    scannedRepo: ApiVariantAnalysisScannedRepository,
+    variantAnalysisSummary: VariantAnalysisApiResponse,
+    token: CancellationToken
+  ): Promise<void> {
+    await this.queue.add(async () => {
+      await this.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysisSummary, token);
+    });
+  }
+
   public async promptOpenVariantAnalysis() {
     const credentials = await Credentials.initialize(this.ctx);
     if (!credentials) { throw Error('Error authenticating with GitHub'); }

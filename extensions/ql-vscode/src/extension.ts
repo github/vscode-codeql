@@ -951,10 +951,7 @@ async function activateWithInstalledDistribution(
       variantAnalysisSummary: VariantAnalysisApiResponse,
       token: CancellationToken
     ) => {
-
-      await variantAnalysisManager.queue.add(async () => {
-        await variantAnalysisManager.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysisSummary, token);
-      });
+      await variantAnalysisManager.enqueueDownload(scannedRepo, variantAnalysisSummary, token);
     })
   );
 
