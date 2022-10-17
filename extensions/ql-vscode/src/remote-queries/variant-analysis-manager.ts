@@ -32,7 +32,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
   private readonly variantAnalyses = new Map<number, VariantAnalysis>();
   private readonly views = new Map<number, VariantAnalysisView>();
-  private static readonly maxConcurrentTasks = 3;
+  private static readonly maxConcurrentDownloads = 3;
   public queue: PQueue;
 
   constructor(
@@ -48,7 +48,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, storagePath, logger));
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
 
-    this.queue = new PQueue({ concurrency: VariantAnalysisManager.maxConcurrentTasks });
+    this.queue = new PQueue({ concurrency: VariantAnalysisManager.maxConcurrentDownloads });
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
