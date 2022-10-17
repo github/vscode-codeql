@@ -33,7 +33,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   private readonly variantAnalyses = new Map<number, VariantAnalysis>();
   private readonly views = new Map<number, VariantAnalysisView>();
   private static readonly maxConcurrentDownloads = 3;
-  public queue: PQueue;
+  private readonly queue = new PQueue({ concurrency: VariantAnalysisManager.maxConcurrentDownloads });
 
   constructor(
     private readonly ctx: ExtensionContext,
@@ -47,8 +47,6 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, storagePath, logger));
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
-
-    this.queue = new PQueue({ concurrency: VariantAnalysisManager.maxConcurrentDownloads });
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
@@ -174,6 +172,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     await this.queue.add(async () => {
       await this.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysisSummary, token);
     });
+  }
+
+  public downloadsQueueSize(): number {
+    return this.queue.pending;
   }
 
   public async promptOpenVariantAnalysis() {

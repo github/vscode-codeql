@@ -157,7 +157,7 @@ describe('Variant Analysis Manager', async function() {
         await variantAnalysisManager.enqueueDownload(scannedRepos[1], variantAnalysis, cancellationTokenSource.token);
         await variantAnalysisManager.enqueueDownload(scannedRepos[2], variantAnalysis, cancellationTokenSource.token);
 
-        expect(variantAnalysisManager.queue.pending).to.equal(0);
+        expect(variantAnalysisManager.downloadsQueueSize()).to.equal(0);
         expect(getResultsSpy).to.have.been.calledThrice;
       });
     });
