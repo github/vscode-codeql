@@ -78,6 +78,7 @@ export async function compileAndRunQueryAgainstDatabase(
     singletonExternalInputs: templates || {},
     outputPath: query.resultsPaths.resultsPath,
     queryPath: initialInfo.queryPath,
+    dilPath: query.dilPath,
     logPath,
     target,
   };
