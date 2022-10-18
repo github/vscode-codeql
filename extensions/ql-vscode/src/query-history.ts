@@ -1073,7 +1073,7 @@ export class QueryHistoryManager extends DisposableObject {
     const queryId = getQueryHistoryItemId(finalSingleItem);
 
     const uri = Uri.parse(
-      `codeql:${queryId}?${params.toString()}`, true
+      `codeql:${queryId}.ql?${params.toString()}`, true
     );
     const doc = await workspace.openTextDocument(uri);
     await window.showTextDocument(doc, { preview: false });
