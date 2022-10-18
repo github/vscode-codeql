@@ -18,7 +18,7 @@ export function getRawQueryName(item: QueryHistoryInfo): string {
   }
 }
 
-export function getQueryId(item: QueryHistoryInfo): string {
+export function getQueryHistoryItemId(item: QueryHistoryInfo): string {
   switch (item.t) {
     case 'local':
       return item.initialInfo.id;

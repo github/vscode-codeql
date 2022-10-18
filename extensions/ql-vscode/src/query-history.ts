@@ -31,7 +31,7 @@ import { commandRunner } from './commandRunner';
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
-import { getQueryId, QueryHistoryInfo } from './query-history-info';
+import { getQueryHistoryItemId, QueryHistoryInfo } from './query-history-info';
 import { DatabaseManager } from './databases';
 import { registerQueryHistoryScrubber } from './query-history-scrubber';
 import { QueryStatus } from './query-status';
@@ -1070,7 +1070,7 @@ export class QueryHistoryManager extends DisposableObject {
       queryText: encodeURIComponent(await this.getQueryText(finalSingleItem)),
     });
 
-    const queryId = getQueryId(finalSingleItem);
+    const queryId = getQueryHistoryItemId(finalSingleItem);
 
     const uri = Uri.parse(
       `codeql:${queryId}?${params.toString()}`, true

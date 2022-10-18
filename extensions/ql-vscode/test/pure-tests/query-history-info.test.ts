@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import { QueryStatus } from '../../src/query-status';
-import { getQueryId, getRawQueryName } from '../../src/query-history-info';
+import { getQueryHistoryItemId, getRawQueryName } from '../../src/query-history-info';
 import { VariantAnalysisHistoryItem } from '../../src/remote-queries/variant-analysis-history-item';
 import { createMockVariantAnalysis } from '../../src/vscode-tests/factories/remote-queries/shared/variant-analysis';
 import { createMockLocalQueryInfo } from '../../src/vscode-tests/factories/local-queries/local-query-history-item';
@@ -49,14 +49,14 @@ describe('Query history info', () => {
 
       const queryHistoryItem = createMockLocalQueryInfo(dateStr);
 
-      const queryId = getQueryId(queryHistoryItem);
+      const queryId = getQueryHistoryItemId(queryHistoryItem);
 
       expect(queryId).to.equal(queryHistoryItem.initialInfo.id);
     });
 
     it('should get the ID for remote query history items', () => {
       const queryHistoryItem = createMockRemoteQueryHistoryItem({});
-      const queryId = getQueryId(queryHistoryItem);
+      const queryId = getQueryHistoryItemId(queryHistoryItem);
 
       expect(queryId).to.equal(queryHistoryItem.queryId);
     });
@@ -70,7 +70,7 @@ describe('Query history info', () => {
         variantAnalysis: createMockVariantAnalysis()
       };
 
-      const queryId = getQueryId(queryHistoryItem);
+      const queryId = getQueryHistoryItemId(queryHistoryItem);
 
       expect(queryId).to.equal(queryHistoryItem.queryId);
     });
