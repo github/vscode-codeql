@@ -192,7 +192,7 @@ export class QueryEvaluationInfo {
     if (await this.hasDil()) {
       return this.dilPath;
     }
-    const compiledQuery = path.join(this.querySaveDir, 'compiledQuery.qlo');
+    const compiledQuery = this.compileQueryPath;
     if (!(await fs.pathExists(compiledQuery))) {
       if (await cliServer.cliConstraints.supportsNewQueryServer()) {
         // This could be from the new query server
