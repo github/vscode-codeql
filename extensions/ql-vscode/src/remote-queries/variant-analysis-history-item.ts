@@ -10,6 +10,7 @@ export interface VariantAnalysisHistoryItem {
   resultCount?: number;
   status: QueryStatus;
   completed: boolean;
+  readonly queryId: string,
   variantAnalysis: VariantAnalysis;
   userSpecifiedLabel?: string;
 }

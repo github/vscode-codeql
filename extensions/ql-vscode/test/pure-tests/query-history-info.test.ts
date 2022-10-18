@@ -32,6 +32,7 @@ describe('Query history info', () => {
         t: 'variant-analysis',
         status: QueryStatus.InProgress,
         completed: false,
+        queryId: 'abc123',
         variantAnalysis: createMockVariantAnalysis()
       };
 
@@ -65,12 +66,13 @@ describe('Query history info', () => {
         t: 'variant-analysis',
         status: QueryStatus.InProgress,
         completed: false,
+        queryId: 'abc123',
         variantAnalysis: createMockVariantAnalysis()
       };
 
       const queryId = getQueryId(queryHistoryItem);
 
-      expect(queryId).to.equal(queryHistoryItem.variantAnalysis.id.toString());
+      expect(queryId).to.equal(queryHistoryItem.queryId);
     });
   });
 });

@@ -51,6 +51,7 @@ import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
 import { QueryWithResults } from './run-queries-shared';
 import { QueryRunner } from './queryRunner';
 import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
+import { nanoid } from 'nanoid';
 
 /**
  * query-history.ts
@@ -603,6 +604,7 @@ export class QueryHistoryManager extends DisposableObject {
         t: 'variant-analysis',
         status: QueryStatus.InProgress,
         completed: false,
+        queryId: nanoid(),
         variantAnalysis,
       });
 
