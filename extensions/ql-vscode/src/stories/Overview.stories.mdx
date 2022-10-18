@@ -10,6 +10,59 @@ import bodyImage from './images/update-css-variables-body.png';
 
 Welcome to the Storybook for **CodeQL for Visual Studio Code**! This Storybook contains stories for components and pages in the extension.
 
+### Switching themes
+
+To switch between VSCode Dark+ and Light+ themes, you can make the following changes:
+
+```diff
+diff --git a/extensions/ql-vscode/.storybook/manager.ts b/extensions/ql-vscode/.storybook/manager.ts
+--- a/extensions/ql-vscode/.storybook/manager.ts
++++ b/extensions/ql-vscode/.storybook/manager.ts
+@@ -2,6 +2,6 @@ import { addons } from '@storybook/addons';
+ import { themes } from '@storybook/theming';
+
+ addons.setConfig({
+-  theme: themes.dark,
++  theme: themes.light,
+   enableShortcuts: false,
+ });
+diff --git a/extensions/ql-vscode/.storybook/preview.ts b/extensions/ql-vscode/.storybook/preview.ts
+--- a/extensions/ql-vscode/.storybook/preview.ts
++++ b/extensions/ql-vscode/.storybook/preview.ts
+@@ -4,7 +4,7 @@ import { action } from '@storybook/addon-actions';
+ // Allow all stories/components to use Codicons
+ import '@vscode/codicons/dist/codicon.css';
+
+-import '../src/stories/vscode-theme-dark.css';
++import '../src/stories/vscode-theme-light.css';
+
+ // https://storybook.js.org/docs/react/configure/overview#configure-story-rendering
+ export const parameters = {
+@@ -19,14 +19,14 @@ export const parameters = {
+   },
+-   // Use a dark theme to be aligned with VSCode
++   // Use a light theme to be aligned with VSCode
+   docs: {
+-    theme: themes.dark,
++    theme: themes.light,
+   },
+   backgrounds: {
+-    default: 'dark',
++    default: 'light',
+     values: [
+       {
+-        name: 'dark',
+-        value: '#1e1e1e',
++        name: 'light',
++        value: '#ffffff',
+       },
+     ],
+   }
+```
+
+You will need to restart Storybook to apply the theme change to the Storybook UI. The preview frame should update
+automatically.
+
 ### Writing stories
 
 To create new stories, copy an existing story in the `src/stories` directory and modify it to use your component or page. Please note that
@@ -29,7 +82,7 @@ for the WebView UI Toolkit can be found [here](https://microsoft.github.io/vscod
 
 ### Updating VSCode CSS variables
 
-The VSCode CSS variables that are injected into the Storybook preview are defined in the `src/stories/vscode-theme.css` file. They need to be
+The VSCode CSS variables that are injected into the Storybook preview are defined in the `src/stories/vscode-theme-dark.css` file. They need to be
 updated manually if new variables are added to VSCode. It can also be updated if you would like to manually preview a different theme. To update
 these variables, follow these steps:
 
@@ -47,9 +100,11 @@ expand all CSS variables.
 
 <img src={stylesImage} />
 
-7. Copy all variables to the `src/stories/vscode-theme.css` file.
+7. Copy all variables to the `src/stories/vscode-theme-dark.css` file.
 8. Now, select the `<body>` element which is a direct child of the `<html>` element.
-9. This time, you do not need to copy the variables. Instead, copy the styles on the `<body>` element to the `src/stories/vscode-theme.css` file.
+9. This time, you do not need to copy the variables. Instead, copy the styles on the `<body>` element to the `src/stories/vscode-theme-dark.css` file.
 See the image below for which styles need to be copied.
 
 <img src={bodyImage} />
+
+The same process can also be followed for updating the `src/stories/vscode-theme-light.css` file, but make sure to select the **Light+** theme.
