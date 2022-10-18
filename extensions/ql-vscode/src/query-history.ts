@@ -604,7 +604,7 @@ export class QueryHistoryManager extends DisposableObject {
         t: 'variant-analysis',
         status: QueryStatus.InProgress,
         completed: false,
-        queryId: nanoid(),
+        historyItemId: nanoid(),
         variantAnalysis,
       });
 

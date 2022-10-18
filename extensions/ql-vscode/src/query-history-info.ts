@@ -25,7 +25,7 @@ export function getQueryHistoryItemId(item: QueryHistoryInfo): string {
     case 'remote':
       return item.queryId;
     case 'variant-analysis':
-      return item.queryId;
+      return item.historyItemId;
     default:
       assertNever(item);
   }

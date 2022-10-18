@@ -32,7 +32,7 @@ describe('Query history info', () => {
         t: 'variant-analysis',
         status: QueryStatus.InProgress,
         completed: false,
-        queryId: 'abc123',
+        historyItemId: 'abc123',
         variantAnalysis: createMockVariantAnalysis()
       };
 
@@ -42,7 +42,7 @@ describe('Query history info', () => {
     });
   });
 
-  describe('getQueryId', () => {
+  describe('getQueryHistoryItemId', () => {
     it('should get the ID for local history items', () => {
       const date = new Date('2022-01-01T00:00:00.000Z');
       const dateStr = date.toLocaleString();
@@ -66,13 +66,13 @@ describe('Query history info', () => {
         t: 'variant-analysis',
         status: QueryStatus.InProgress,
         completed: false,
-        queryId: 'abc123',
+        historyItemId: 'abc123',
         variantAnalysis: createMockVariantAnalysis()
       };
 
       const queryId = getQueryHistoryItemId(queryHistoryItem);
 
-      expect(queryId).to.equal(queryHistoryItem.queryId);
+      expect(queryId).to.equal(queryHistoryItem.historyItemId);
     });
   });
 });
