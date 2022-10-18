@@ -31,7 +31,7 @@ import { commandRunner } from './commandRunner';
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
-import { getQueryHistoryItemId, QueryHistoryInfo } from './query-history-info';
+import { getQueryHistoryItemId, getQueryText, QueryHistoryInfo } from './query-history-info';
 import { DatabaseManager } from './databases';
 import { registerQueryHistoryScrubber } from './query-history-scrubber';
 import { QueryStatus } from './query-status';
@@ -1067,7 +1067,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     const params = new URLSearchParams({
       isQuickEval: String(!!(finalSingleItem.t === 'local' && finalSingleItem.initialInfo.quickEvalPosition)),
-      queryText: encodeURIComponent(await this.getQueryText(finalSingleItem)),
+      queryText: encodeURIComponent(getQueryText(finalSingleItem)),
     });
 
     const queryId = getQueryHistoryItemId(finalSingleItem);
@@ -1189,19 +1189,6 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     await commands.executeCommand('codeQL.copyRepoList', finalSingleItem.queryId);
-  }
-
-  async getQueryText(item: QueryHistoryInfo): Promise<string> {
-    switch (item.t) {
-      case 'local':
-        return item.initialInfo.queryText;
-      case 'remote':
-        return item.remoteQuery.queryText;
-      case 'variant-analysis':
-        return 'TODO';
-      default:
-        assertNever(item);
-    }
   }
 
   async handleExportResults(): Promise<void> {
