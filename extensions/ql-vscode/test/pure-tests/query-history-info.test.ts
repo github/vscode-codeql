@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import { QueryStatus } from '../../src/query-status';
-import { getQueryHistoryItemId, getRawQueryName } from '../../src/query-history-info';
+import { getQueryHistoryItemId, getQueryText, getRawQueryName } from '../../src/query-history-info';
 import { VariantAnalysisHistoryItem } from '../../src/remote-queries/variant-analysis-history-item';
 import { createMockVariantAnalysis } from '../../src/vscode-tests/factories/remote-queries/shared/variant-analysis';
 import { createMockLocalQueryInfo } from '../../src/vscode-tests/factories/local-queries/local-query-history-item';
@@ -58,6 +58,26 @@ describe('Query history info', () => {
       const historyItemId = getQueryHistoryItemId(variantAnalysisHistoryItem);
 
       expect(historyItemId).to.equal(variantAnalysisHistoryItem.historyItemId);
+    });
+  });
+
+  describe('getQueryText', () => {
+    it('should get the query text for local history items', () => {
+      const queryText = getQueryText(localQueryHistoryItem);
+
+      expect(queryText).to.equal(localQueryHistoryItem.initialInfo.queryText);
+    });
+
+    it('should get the query text for remote query history items', () => {
+      const queryText = getQueryText(remoteQueryHistoryItem);
+
+      expect(queryText).to.equal(remoteQueryHistoryItem.remoteQuery.queryText);
+    });
+
+    it('should get the query text for variant analysis history items', () => {
+      const queryText = getQueryText(variantAnalysisHistoryItem);
+
+      expect(queryText).to.equal(variantAnalysisHistoryItem.variantAnalysis.query.text);
     });
   });
 });
