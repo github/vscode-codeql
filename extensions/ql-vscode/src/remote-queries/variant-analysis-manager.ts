@@ -22,6 +22,7 @@ import { VariantAnalysisResultsManager } from './variant-analysis-results-manage
 import { CodeQLCliServer } from '../cli';
 import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
+import PQueue from 'p-queue';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis>());
@@ -31,6 +32,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
   private readonly variantAnalyses = new Map<number, VariantAnalysis>();
   private readonly views = new Map<number, VariantAnalysisView>();
+  private static readonly maxConcurrentDownloads = 3;
+  private readonly queue = new PQueue({ concurrency: VariantAnalysisManager.maxConcurrentDownloads });
 
   constructor(
     private readonly ctx: ExtensionContext,
@@ -39,7 +42,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     logger: Logger,
   ) {
     super();
-    this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx, logger));
+    this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx));
     this.variantAnalysisMonitor.onVariantAnalysisChange(this.onVariantAnalysisUpdated.bind(this));
 
     this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, storagePath, logger));
@@ -159,6 +162,18 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
     await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
+  }
+
+  public async enqueueDownload(
+    scannedRepo: ApiVariantAnalysisScannedRepository,
+    variantAnalysisSummary: VariantAnalysisApiResponse,
+    token: CancellationToken
+  ): Promise<void> {
+    await this.queue.add(() => this.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysisSummary, token));
+  }
+
+  public downloadsQueueSize(): number {
+    return this.queue.pending;
   }
 
   public async promptOpenVariantAnalysis() {

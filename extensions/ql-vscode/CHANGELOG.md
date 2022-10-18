@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.7.2 - 14 October 2022
 
 - Fix a bug where results created in older versions were thought to be unsuccessful. [#1605](https://github.com/github/vscode-codeql/pull/1605)
