@@ -49,16 +49,16 @@ describe('Query history info', () => {
 
       const queryHistoryItem = createMockLocalQueryInfo(dateStr);
 
-      const queryId = getQueryHistoryItemId(queryHistoryItem);
+      const historyItemId = getQueryHistoryItemId(queryHistoryItem);
 
-      expect(queryId).to.equal(queryHistoryItem.initialInfo.id);
+      expect(historyItemId).to.equal(queryHistoryItem.initialInfo.id);
     });
 
     it('should get the ID for remote query history items', () => {
       const queryHistoryItem = createMockRemoteQueryHistoryItem({});
-      const queryId = getQueryHistoryItemId(queryHistoryItem);
+      const historyItemId = getQueryHistoryItemId(queryHistoryItem);
 
-      expect(queryId).to.equal(queryHistoryItem.queryId);
+      expect(historyItemId).to.equal(queryHistoryItem.queryId);
     });
 
     it('should get the ID for variant analysis history items', () => {
@@ -70,9 +70,9 @@ describe('Query history info', () => {
         variantAnalysis: createMockVariantAnalysis()
       };
 
-      const queryId = getQueryHistoryItemId(queryHistoryItem);
+      const historyItemId = getQueryHistoryItemId(queryHistoryItem);
 
-      expect(queryId).to.equal(queryHistoryItem.historyItemId);
+      expect(historyItemId).to.equal(queryHistoryItem.historyItemId);
     });
   });
 });
