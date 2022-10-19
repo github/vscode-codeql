@@ -23,6 +23,7 @@ import { CodeQLCliServer } from '../cli';
 import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 import PQueue from 'p-queue';
+import { createTimestampFile } from '../helpers';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis>());
@@ -178,6 +179,16 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
   public getVariantAnalysisStorageLocation(variantAnalysisId: number): string {
     return this.variantAnalysisResultsManager.getStorageDirectory(variantAnalysisId);
+  }
+
+  /**
+   * Prepares a directory for storing results for a variant analysis.
+   * This directory contains a timestamp file, which will be
+   * used by the query history manager to determine when the directory
+   * should be deleted.
+   */
+  public async prepareStorageDirectory(variantAnalysisId: number): Promise<void> {
+    await createTimestampFile(this.getVariantAnalysisStorageLocation(variantAnalysisId));
   }
 
   public async promptOpenVariantAnalysis() {

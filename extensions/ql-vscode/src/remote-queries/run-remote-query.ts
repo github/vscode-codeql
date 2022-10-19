@@ -280,6 +280,8 @@ export async function runRemoteQuery(
 
       variantAnalysisManager.onVariantAnalysisSubmitted(processedVariantAnalysis);
 
+      await variantAnalysisManager.prepareStorageDirectory(processedVariantAnalysis.id);
+
       void logger.log(`Variant analysis:\n${JSON.stringify(processedVariantAnalysis, null, 2)}`);
 
       void showAndLogInformationMessage(`Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`);
