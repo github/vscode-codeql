@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import * as del from 'del';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as sinon from 'sinon';
@@ -160,20 +159,18 @@ describe('query-results', () => {
   describe('interpretResultsSarif', () => {
     let mockServer: CodeQLCliServer;
     let spy: Sinon.SinonExpectation;
-    let interpretedResultsPath: string;
     const metadata = {
       kind: 'my-kind',
       id: 'my-id' as string | undefined,
       scored: undefined
     };
     const resultsPath = '123';
-
+    const interpretedResultsPath = path.join(tmpDir.name, 'interpreted.json');
     const sourceInfo = {};
 
     beforeEach(() => {
       spy = sandbox.mock();
       spy.returns({ a: '1234' });
-      interpretedResultsPath = path.join(tmpDir.name, 'interpreted.json');
 
       mockServer = {
         interpretBqrsSarif: spy
@@ -182,7 +179,7 @@ describe('query-results', () => {
 
     afterEach(async () => {
       sandbox.restore();
-      await del(interpretedResultsPath);
+      await safeDel(interpretedResultsPath);
     });
 
     it('should interpretResultsSarif', async function() {
@@ -492,5 +489,13 @@ describe('query-results', () => {
       fqi.failureReason = 'failure reason';
     }
     return fqi;
+  }
+
+  function safeDel(file: string) {
+    try {
+      fs.unlinkSync(file);
+    } catch (e) {
+      // ignore
+    }
   }
 });
