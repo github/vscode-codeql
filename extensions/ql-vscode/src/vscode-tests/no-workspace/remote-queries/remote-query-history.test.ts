@@ -77,7 +77,8 @@ describe('Remote queries and query history manager', function() {
     } as any as RemoteQueriesManager;
 
     variantAnalysisManagerStub = {
-      onVariantAnalysisAdded: sandbox.stub()
+      onVariantAnalysisAdded: sandbox.stub(),
+      onVariantAnalysisStatusUpdated: sandbox.stub()
     } as any as VariantAnalysisManager;
   });
 

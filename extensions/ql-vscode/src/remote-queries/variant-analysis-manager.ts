@@ -27,6 +27,8 @@ import PQueue from 'p-queue';
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis>());
   public readonly onVariantAnalysisAdded = this._onVariantAnalysisAdded.event;
+  private readonly _onVariantAnalysisStatusUpdated = this.push(new EventEmitter<VariantAnalysis>());
+  public readonly onVariantAnalysisStatusUpdated = this._onVariantAnalysisStatusUpdated.event;
 
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
   private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
@@ -97,6 +99,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
 
     await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
+    this._onVariantAnalysisStatusUpdated.fire(variantAnalysis);
   }
 
   public onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): void {
