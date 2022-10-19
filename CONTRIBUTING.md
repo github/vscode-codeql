@@ -91,29 +91,58 @@ Alternatively, you can start Storybook inside of VSCode. There is a VSCode launc
 
 More information about Storybook can be found inside the **Overview** page once you have launched Storybook.
 
-### Running the unit tests and integration tests that do not require a CLI instance
+### Testing
 
-Unit tests and many integration tests do not require a copy of the CodeQL CLI.
+We have several types of tests:
 
-Outside of vscode, in the `extensions/ql-vscode` directory, run:
+* Unit tests: these live in the `tests/pure-tests/` directory
+* View tests: these live in `src/view/variant-analysis/__tests__/`
+* VSCode integration tests: these live in `src/vscode-tests/no-workspace` and `src/vscode-tests/minimal-workspace`
+* CLI integration tests: these live in `src/vscode-tests/cli-integration`
 
-```shell
-npm run test && npm run integration
-```
+The CLI integration tests require an instance of the CodeQL CLI to run so they will require some extra setup steps. When adding new tests to our test suite, please be mindful of whether they need to be in the cli-integration folder. If the tests don't depend on the CLI, they are better suited to being a VSCode integration test.
 
-Alternatively, you can run the tests inside of vscode. There are several vscode launch configurations defined that run the unit and integration tests. They can all be found in the debug view.
+#### Running the tests
 
-Only the _With CLI_ tests require a CLI instance to run. See below on how to do that.
+##### 1. From the terminal
 
-Running from a terminal, you _must_ set the `TEST_CODEQL_PATH` variable to point to a checkout of the `github/codeql` repository. The appropriate CLI version will be downloaded as part of the test.
+First move into the `extensions/ql-vscode` directory. Then, depending on which tests you want to run, use the appropriate command to run the tests:
 
-### Running the integration tests
+* Unit tests: `npm run test:unit`
+* View Tests: `npm test:view`
+* VSCode integration tests: `npm run integration`
 
-You will need to run CLI tests using a task from inside of VS Code called _Launch Integration Tests - With CLI_.
+###### CLI integration tests
 
 The CLI integration tests require the CodeQL standard libraries in order to run so you will need to clone a local copy of the `github/codeql` repository.
 
-From inside of VSCode, open the `launch.json` file and in the _Launch Integration Tests - With CLI_ task, uncomment the `"${workspaceRoot}/../codeql"` line. If necessary, replace value with a path to your checkout, and then run the task.
+1. Set the `TEST_CODEQL_PATH` environment variable: running from a terminal, you _must_ set the `TEST_CODEQL_PATH` variable to point to a checkout of the `github/codeql` repository. The appropriate CLI version will be downloaded as part of the test.
+
+2. Run your test command:
+
+```shell
+cd extensions/ql-vscode && npm run cli-integration
+```
+
+##### 2. From VSCode
+
+Alternatively, you can run the tests inside of VSCode. There are several VSCode launch configurations defined that run the unit and integration tests.
+
+You will need to run tests using a task from inside of VS Code, under the "Run and Debug" view:
+
+* Unit tests: run the _Launch Unit Tests - React_ task
+* View Tests: run the _Launch Unit Tests_ task
+* VSCode integration tests: run the _Launch Unit Tests - No Workspace_ and _Launch Unit Tests - Minimal Workspace_ tasks
+
+###### CLI integration tests
+
+The CLI integration tests require the CodeQL standard libraries in order to run so you will need to clone a local copy of the `github/codeql` repository.
+
+1. Set the `TEST_CODEQL_PATH` environment variable: running from a terminal, you _must_ set the `TEST_CODEQL_PATH` variable to point to a checkout of the `github/codeql` repository. The appropriate CLI version will be downloaded as part of the test.
+
+2. Set the codeql path in VSCode's launch configuration: open `launch.json` and under the _Launch Integration Tests - With CLI_ section, uncomment the `"${workspaceRoot}/../codeql"` line. If you've cloned the `github/codeql` repo to a different path, replace the value with the correct path.
+
+3. Run the VSCode task from the "Run and Debug" view called _Launch Integration Tests - With CLI_.
 
 ## Releasing (write access required)
 
@@ -137,7 +166,7 @@ From inside of VSCode, open the `launch.json` file and in the _Launch Integratio
     git tag v1.3.6
     ```
 
-   If you've accidentally created a badly named tag, you can delete it via 
+   If you've accidentally created a badly named tag, you can delete it via
     ```bash
     git tag -d badly-named-tag
     ```
@@ -148,13 +177,13 @@ From inside of VSCode, open the `launch.json` file and in the _Launch Integratio
     ```bash
     git push upstream refs/tags/v1.3.6
     ```
-   
+
    b. If you're working straight in this repo:
 
     ```bash
     git push origin refs/tags/v1.3.6
-    ``` 
-   
+    ```
+
    This will trigger [a release build](https://github.com/github/vscode-codeql/releases) on Actions.
 
     * **IMPORTANT** Make sure you are on the `main` branch and your local checkout is fully updated when you add the tag.
