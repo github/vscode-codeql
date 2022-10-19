@@ -19,7 +19,7 @@ import { createMockApiResponse } from '../../factories/remote-queries/gh-api/var
 import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/scanned-repositories';
 import { createMockVariantAnalysisRepoTask } from '../../factories/remote-queries/gh-api/variant-analysis-repo-task';
 import { CodeQLCliServer } from '../../../cli';
-import { storagePath } from '../global.helper';
+import { storagePath } from '../../cli-integration/global.helper';
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;

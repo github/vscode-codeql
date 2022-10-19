@@ -10,7 +10,7 @@ import * as path from 'path';
 import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
 import { createMockVariantAnalysisRepoTask } from '../../factories/remote-queries/gh-api/variant-analysis-repo-task';
 import { CodeQLCliServer } from '../../../cli';
-import { storagePath } from '../global.helper';
+import { storagePath } from '../../cli-integration/global.helper';
 import { faker } from '@faker-js/faker';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { VariantAnalysisRepoTask } from '../../../remote-queries/gh-api/variant-analysis';

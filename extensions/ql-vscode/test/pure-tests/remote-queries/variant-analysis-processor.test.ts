@@ -1,17 +1,17 @@
 import { expect } from 'chai';
 import {
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository,
-} from '../../../remote-queries/gh-api/variant-analysis';
+} from '../../../src/remote-queries/gh-api/variant-analysis';
 import {
   VariantAnalysisQueryLanguage,
   VariantAnalysisScannedRepository,
   VariantAnalysisRepoStatus
-} from '../../../remote-queries/shared/variant-analysis';
-import { processVariantAnalysis } from '../../../remote-queries/variant-analysis-processor';
-import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/scanned-repositories';
-import { createMockSkippedRepos } from '../../factories/remote-queries/gh-api/skipped-repositories';
-import { createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
-import { createMockSubmission } from '../../factories/remote-queries/shared/variant-analysis-submission';
+} from '../../../src/remote-queries/shared/variant-analysis';
+import { processVariantAnalysis } from '../../../src/remote-queries/variant-analysis-processor';
+import { createMockScannedRepos } from '../../../src/vscode-tests/factories/remote-queries/gh-api/scanned-repositories';
+import { createMockSkippedRepos } from '../../../src/vscode-tests/factories/remote-queries/gh-api/skipped-repositories';
+import { createMockApiResponse } from '../../../src/vscode-tests/factories/remote-queries/gh-api/variant-analysis-api-response';
+import { createMockSubmission } from '../../../src/vscode-tests/factories/remote-queries/shared/variant-analysis-submission';
 
 describe('Variant Analysis processor', function() {
   const scannedRepos = createMockScannedRepos();
