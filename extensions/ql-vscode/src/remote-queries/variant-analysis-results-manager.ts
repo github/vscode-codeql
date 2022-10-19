@@ -165,7 +165,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     return processedSarif.alerts;
   }
 
-  private getStorageDirectory(variantAnalysisId: number): string {
+  public getStorageDirectory(variantAnalysisId: number): string {
     return path.join(
       this.storagePath,
       `${variantAnalysisId}`

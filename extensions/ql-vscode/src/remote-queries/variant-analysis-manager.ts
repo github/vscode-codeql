@@ -176,6 +176,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return this.queue.pending;
   }
 
+  public getVariantAnalysisStorageLocation(variantAnalysisId: number): string {
+    return this.variantAnalysisResultsManager.getStorageDirectory(variantAnalysisId);
+  }
+
   public async promptOpenVariantAnalysis() {
     const credentials = await Credentials.initialize(this.ctx);
     if (!credentials) { throw Error('Error authenticating with GitHub'); }
