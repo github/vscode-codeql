@@ -2,6 +2,7 @@ import * as sinon from 'sinon';
 import { expect } from 'chai';
 import { CancellationTokenSource, commands } from 'vscode';
 import * as config from '../../../config';
+import * as path from 'path';
 
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { VariantAnalysisMonitor } from '../../../remote-queries/variant-analysis-monitor';
@@ -18,7 +19,6 @@ import { Credentials } from '../../../authentication';
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
 import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
 import { createMockExtensionContext } from '..';
-import * as path from 'path';
 import { CodeQLCliServer } from '../../../cli';
 import { logger } from '../../../logging';
 import { createMockCliServer } from './factories/cli';
@@ -34,10 +34,13 @@ describe('Variant Analysis Monitor', async function() {
   let variantAnalysis: VariantAnalysis;
   let variantAnalysisManager: VariantAnalysisManager;
   let mockGetDownloadResult: sinon.SinonStub;
+  let commandSpy: sinon.SinonStub;
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
     sandbox.stub(config, 'isVariantAnalysisLiveResultsEnabled').returns(false);
+
+    commandSpy = sandbox.stub(commands, 'executeCommand');
 
     cancellationTokenSource = new CancellationTokenSource();
 
@@ -153,7 +156,6 @@ describe('Variant Analysis Monitor', async function() {
 
         it('should trigger a download extension command for each repo', async () => {
           const succeededRepos = scannedRepos.filter(r => r.analysis_status === 'succeeded');
-          const commandSpy = sandbox.stub(commands, 'executeCommand');
 
           await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
@@ -163,17 +165,6 @@ describe('Variant Analysis Monitor', async function() {
             expect(commandSpy.getCall(index).args[0]).to.eq('codeQL.autoDownloadVariantAnalysisResult');
             expect(commandSpy.getCall(index).args[1]).to.eq(succeededRepo);
             expect(commandSpy.getCall(index).args[2]).to.eq(mockApiResponse);
-          });
-        });
-
-        it('should download all available results', async () => {
-          await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
-
-          expect(mockGetDownloadResult).to.have.callCount(succeededRepos.length);
-
-          succeededRepos.forEach((succeededRepo, index) => {
-            expect(mockGetDownloadResult.getCall(index).args[0]).to.eq(succeededRepo);
-            expect(mockGetDownloadResult.getCall(index).args[1]).to.eq(mockApiResponse);
           });
         });
       });
