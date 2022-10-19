@@ -116,6 +116,7 @@ import {
 } from './remote-queries/gh-api/variant-analysis';
 import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
 import { createVariantAnalysisContentProvider } from './remote-queries/variant-analysis-content-provider';
+import { MockGitHubApiServer } from './mocks/mock-gh-api-server';
 
 /**
  * extension.ts
@@ -1187,6 +1188,27 @@ async function activateWithInstalledDistribution(
         title: 'Calculating Control Flow Graph',
         cancellable: true
       }
+    )
+  );
+
+  const mockServer = new MockGitHubApiServer();
+  ctx.subscriptions.push(mockServer);
+  ctx.subscriptions.push(
+    commandRunner(
+      'codeQL.mockGitHubApiServer.startRecording',
+      async () => await mockServer.recordScenario(),
+    )
+  );
+  ctx.subscriptions.push(
+    commandRunner(
+      'codeQL.mockGitHubApiServer.saveScenario',
+      async () => await mockServer.saveScenario(),
+    )
+  );
+  ctx.subscriptions.push(
+    commandRunner(
+      'codeQL.mockGitHubApiServer.cancelRecording',
+      async () => await mockServer.cancelRecording(),
     )
   );
 
