@@ -39,7 +39,6 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   constructor(
     private readonly cliServer: CodeQLCliServer,
-    private readonly storagePath: string,
     private readonly logger: Logger,
   ) {
     super();
@@ -50,12 +49,13 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     credentials: Credentials,
     variantAnalysisId: number,
     repoTask: VariantAnalysisRepoTask,
+    variantAnalysisStoragePath: string,
   ): Promise<void> {
     if (!repoTask.artifact_url) {
       throw new Error('Missing artifact URL');
     }
 
-    const resultDirectory = this.getRepoStorageDirectory(variantAnalysisId, repoTask.repository.full_name);
+    const resultDirectory = this.getRepoStorageDirectory(variantAnalysisStoragePath, repoTask.repository.full_name);
 
     const result = await ghApiClient.getVariantAnalysisRepoResult(
       credentials,
@@ -82,18 +82,20 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   public async loadResults(
     variantAnalysisId: number,
+    variantAnalysisStoragePath: string,
     repositoryFullName: string
   ): Promise<VariantAnalysisScannedRepositoryResult> {
     const result = this.cachedResults.get(createCacheKey(variantAnalysisId, repositoryFullName));
 
-    return result ?? await this.loadResultsIntoMemory(variantAnalysisId, repositoryFullName);
+    return result ?? await this.loadResultsIntoMemory(variantAnalysisId, variantAnalysisStoragePath, repositoryFullName);
   }
 
   private async loadResultsIntoMemory(
     variantAnalysisId: number,
+    variantAnalysisStoragePath: string,
     repositoryFullName: string,
   ): Promise<VariantAnalysisScannedRepositoryResult> {
-    const result = await this.loadResultsFromStorage(variantAnalysisId, repositoryFullName);
+    const result = await this.loadResultsFromStorage(variantAnalysisId, variantAnalysisStoragePath, repositoryFullName);
     this.cachedResults.set(createCacheKey(variantAnalysisId, repositoryFullName), result);
     this._onResultLoaded.fire(result);
     return result;
@@ -101,13 +103,14 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   private async loadResultsFromStorage(
     variantAnalysisId: number,
+    variantAnalysisStoragePath: string,
     repositoryFullName: string,
   ): Promise<VariantAnalysisScannedRepositoryResult> {
-    if (!(await this.isVariantAnalysisRepoDownloaded(variantAnalysisId, repositoryFullName))) {
+    if (!(await this.isVariantAnalysisRepoDownloaded(variantAnalysisStoragePath, repositoryFullName))) {
       throw new Error('Variant analysis results not downloaded');
     }
 
-    const storageDirectory = this.getRepoStorageDirectory(variantAnalysisId, repositoryFullName);
+    const storageDirectory = this.getRepoStorageDirectory(variantAnalysisStoragePath, repositoryFullName);
 
     const repoTask: VariantAnalysisRepoTask = await fs.readJson(path.join(storageDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME));
 
@@ -144,10 +147,10 @@ export class VariantAnalysisResultsManager extends DisposableObject {
   }
 
   private async isVariantAnalysisRepoDownloaded(
-    variantAnalysisId: number,
+    variantAnalysisStoragePath: string,
     repositoryFullName: string,
   ): Promise<boolean> {
-    return await fs.pathExists(this.getRepoStorageDirectory(variantAnalysisId, repositoryFullName));
+    return await fs.pathExists(this.getRepoStorageDirectory(variantAnalysisStoragePath, repositoryFullName));
   }
 
   private async readBqrsResults(filePath: string, fileLinkPrefix: string, sourceLocationPrefix: string): Promise<AnalysisRawResults> {
@@ -165,16 +168,9 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     return processedSarif.alerts;
   }
 
-  public getStorageDirectory(variantAnalysisId: number): string {
+  public getRepoStorageDirectory(variantAnalysisStoragePath: string, fullName: string): string {
     return path.join(
-      this.storagePath,
-      `${variantAnalysisId}`
-    );
-  }
-
-  public getRepoStorageDirectory(variantAnalysisId: number, fullName: string): string {
-    return path.join(
-      this.getStorageDirectory(variantAnalysisId),
+      variantAnalysisStoragePath,
       fullName
     );
   }

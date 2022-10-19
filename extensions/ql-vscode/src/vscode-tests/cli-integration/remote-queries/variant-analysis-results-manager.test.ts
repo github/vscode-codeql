@@ -33,7 +33,7 @@ describe(VariantAnalysisResultsManager.name, () => {
     try {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
       cli = extension.cliServer;
-      variantAnalysisResultsManager = new VariantAnalysisResultsManager(cli, storagePath, logger);
+      variantAnalysisResultsManager = new VariantAnalysisResultsManager(cli, logger);
     } catch (e) {
       fail(e as Error);
     }
@@ -45,11 +45,16 @@ describe(VariantAnalysisResultsManager.name, () => {
 
   describe('download', () => {
     let getOctokitStub: sinon.SinonStub;
+    let variantAnalysisStoragePath: string;
     const mockCredentials = {
       getOctokit: () => Promise.resolve({
         request: getOctokitStub
       })
     } as unknown as Credentials;
+
+    beforeEach(async () => {
+      variantAnalysisStoragePath = path.join(storagePath, variantAnalysisId.toString());
+    });
 
     describe('when the artifact_url is missing', async () => {
       it('should not try to download the result', async () => {
@@ -60,7 +65,8 @@ describe(VariantAnalysisResultsManager.name, () => {
           await variantAnalysisResultsManager.download(
             mockCredentials,
             variantAnalysisId,
-            dummyRepoTask
+            dummyRepoTask,
+            variantAnalysisStoragePath
           );
 
           expect.fail('Expected an error to be thrown');
@@ -78,7 +84,7 @@ describe(VariantAnalysisResultsManager.name, () => {
       beforeEach(async () => {
         dummyRepoTask = createMockVariantAnalysisRepoTask();
 
-        storageDirectory = variantAnalysisResultsManager.getRepoStorageDirectory(variantAnalysisId, dummyRepoTask.repository.full_name);
+        storageDirectory = variantAnalysisResultsManager.getRepoStorageDirectory(variantAnalysisStoragePath, dummyRepoTask.repository.full_name);
         const sourceFilePath = path.join(__dirname, '../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip');
         arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
 
@@ -97,7 +103,8 @@ describe(VariantAnalysisResultsManager.name, () => {
         await variantAnalysisResultsManager.download(
           mockCredentials,
           variantAnalysisId,
-          dummyRepoTask
+          dummyRepoTask,
+          variantAnalysisStoragePath
         );
 
         expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
@@ -107,7 +114,8 @@ describe(VariantAnalysisResultsManager.name, () => {
         await variantAnalysisResultsManager.download(
           mockCredentials,
           variantAnalysisId,
-          dummyRepoTask
+          dummyRepoTask,
+          variantAnalysisStoragePath
         );
 
         expect(fs.existsSync(`${storageDirectory}/results.zip`)).to.be.true;
@@ -117,7 +125,8 @@ describe(VariantAnalysisResultsManager.name, () => {
         await variantAnalysisResultsManager.download(
           mockCredentials,
           variantAnalysisId,
-          dummyRepoTask
+          dummyRepoTask,
+          variantAnalysisStoragePath
         );
 
         expect(fs.existsSync(`${storageDirectory}/results/results.sarif`)).to.be.true;

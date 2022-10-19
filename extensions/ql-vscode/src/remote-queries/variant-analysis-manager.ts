@@ -1,3 +1,5 @@
+import * as path from 'path';
+
 import * as ghApiClient from './gh-api/gh-api-client';
 import { CancellationToken, commands, EventEmitter, ExtensionContext, window } from 'vscode';
 import { DisposableObject } from '../pure/disposable-object';
@@ -39,14 +41,14 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   constructor(
     private readonly ctx: ExtensionContext,
     cliServer: CodeQLCliServer,
-    storagePath: string,
+    private readonly storagePath: string,
     logger: Logger,
   ) {
     super();
     this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx));
     this.variantAnalysisMonitor.onVariantAnalysisChange(this.onVariantAnalysisUpdated.bind(this));
 
-    this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, storagePath, logger));
+    this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, logger));
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
   }
 
@@ -87,7 +89,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
     }
 
-    await this.variantAnalysisResultsManager.loadResults(variantAnalysisId, repositoryFullName);
+    await this.variantAnalysisResultsManager.loadResults(variantAnalysisId, this.getVariantAnalysisStorageLocation(variantAnalysisId), repositoryFullName);
   }
 
   private async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
@@ -160,7 +162,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.InProgress;
       await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
 
-      await this.variantAnalysisResultsManager.download(credentials, variantAnalysisSummary.id, repoTask);
+      await this.variantAnalysisResultsManager.download(credentials, variantAnalysisSummary.id, repoTask, this.getVariantAnalysisStorageLocation(variantAnalysisSummary.id));
     }
 
     repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
@@ -180,7 +182,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   }
 
   public getVariantAnalysisStorageLocation(variantAnalysisId: number): string {
-    return this.variantAnalysisResultsManager.getStorageDirectory(variantAnalysisId);
+    return path.join(
+      this.storagePath,
+      `${variantAnalysisId}`
+    );
   }
 
   /**
