@@ -22,6 +22,16 @@ export interface GetRepoRequest {
   }
 }
 
+export interface SubmitVariantAnalysisRequest {
+  request: {
+    kind: RequestKind.SubmitVariantAnalysis
+  },
+  response: {
+    status: number,
+    body: VariantAnalysis
+  }
+}
+
 export interface GetVariantAnalysisRequest {
   request: {
     kind: RequestKind.GetVariantAnalysis
@@ -53,3 +63,10 @@ export interface GetVariantAnalysisRepoResultRequest {
     body: ArrayBuffer
   }
 }
+
+export type GitHubApiRequest =
+  | GetRepoRequest
+  | SubmitVariantAnalysisRequest
+  | GetVariantAnalysisRequest
+  | GetVariantAnalysisRepoRequest
+  | GetVariantAnalysisRepoResultRequest;
