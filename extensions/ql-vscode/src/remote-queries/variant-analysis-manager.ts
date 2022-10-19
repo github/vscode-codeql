@@ -100,7 +100,9 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
   }
 
-  public onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): void {
+  public async onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): Promise<void> {
+    await this.prepareStorageDirectory(variantAnalysis.id);
+
     this._onVariantAnalysisAdded.fire(variantAnalysis);
   }
 
@@ -187,7 +189,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
    * used by the query history manager to determine when the directory
    * should be deleted.
    */
-  public async prepareStorageDirectory(variantAnalysisId: number): Promise<void> {
+  private async prepareStorageDirectory(variantAnalysisId: number): Promise<void> {
     await createTimestampFile(this.getVariantAnalysisStorageLocation(variantAnalysisId));
   }
 
