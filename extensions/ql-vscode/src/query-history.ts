@@ -622,6 +622,7 @@ export class QueryHistoryManager extends DisposableObject {
         variantAnalysisHistoryItem.status = status;
         variantAnalysisHistoryItem.failureReason = variantAnalysis.failureReason;
         variantAnalysisHistoryItem.resultCount = getTotalResultCount(variantAnalysis.scannedRepos);
+        variantAnalysisHistoryItem.variantAnalysis = variantAnalysis;
         if (status === QueryStatus.Completed) {
           variantAnalysisHistoryItem.completed = true;
         }
