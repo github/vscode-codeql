@@ -15,7 +15,9 @@ import { faker } from '@faker-js/faker';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { VariantAnalysisRepoTask } from '../../../remote-queries/gh-api/variant-analysis';
 
-describe(VariantAnalysisResultsManager.name, () => {
+describe(VariantAnalysisResultsManager.name, function() {
+  this.timeout(10000);
+
   let sandbox: sinon.SinonSandbox;
   let cli: CodeQLCliServer;
   let variantAnalysisId: number;
