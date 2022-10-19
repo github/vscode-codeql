@@ -614,18 +614,20 @@ export class QueryHistoryManager extends DisposableObject {
     });
 
     const variantAnalysisStatusUpdateSubscription = this.variantAnalysisManager.onVariantAnalysisStatusUpdated(async (variantAnalysis) => {
-      const item = this.treeDataProvider.allHistory.find(i => i.t === 'variant-analysis' && i.variantAnalysis.id === variantAnalysis.id);
+      const items = this.treeDataProvider.allHistory.filter(i => i.t === 'variant-analysis' && i.variantAnalysis.id === variantAnalysis.id);
       const status = variantAnalysisStatusToQueryStatus(variantAnalysis.status);
 
-      if (item) {
-        const variantAnalysisHistoryItem = item as VariantAnalysisHistoryItem;
-        variantAnalysisHistoryItem.status = status;
-        variantAnalysisHistoryItem.failureReason = variantAnalysis.failureReason;
-        variantAnalysisHistoryItem.resultCount = getTotalResultCount(variantAnalysis.scannedRepos);
-        variantAnalysisHistoryItem.variantAnalysis = variantAnalysis;
-        if (status === QueryStatus.Completed) {
-          variantAnalysisHistoryItem.completed = true;
-        }
+      if (items.length > 0) {
+        items.forEach(async (item) => {
+          const variantAnalysisHistoryItem = item as VariantAnalysisHistoryItem;
+          variantAnalysisHistoryItem.status = status;
+          variantAnalysisHistoryItem.failureReason = variantAnalysis.failureReason;
+          variantAnalysisHistoryItem.resultCount = getTotalResultCount(variantAnalysis.scannedRepos);
+          variantAnalysisHistoryItem.variantAnalysis = variantAnalysis;
+          if (status === QueryStatus.Completed) {
+            variantAnalysisHistoryItem.completed = true;
+          }
+        });
         await this.refreshTreeView();
       } else {
         void logger.log('Variant analysis status update event received for unknown variant analysis');
