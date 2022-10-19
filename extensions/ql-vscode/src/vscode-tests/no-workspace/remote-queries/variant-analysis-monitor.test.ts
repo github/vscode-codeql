@@ -1,7 +1,6 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { CancellationTokenSource, commands, extensions } from 'vscode';
-import { CodeQLExtensionInterface } from '../../../extension';
+import { CancellationTokenSource, commands } from 'vscode';
 import * as config from '../../../config';
 
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
@@ -18,12 +17,17 @@ import { processFailureReason } from '../../../remote-queries/variant-analysis-p
 import { Credentials } from '../../../authentication';
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
 import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
+import { createMockExtensionContext } from '..';
+import * as path from 'path';
+import { CodeQLCliServer } from '../../../cli';
+import { logger } from '../../../logging';
+import { createMockCliServer } from './factories/cli';
 
 describe('Variant Analysis Monitor', async function() {
   this.timeout(60000);
 
   let sandbox: sinon.SinonSandbox;
-  let extension: CodeQLExtensionInterface | Record<string, never>;
+  let cli: CodeQLCliServer;
   let mockGetVariantAnalysis: sinon.SinonStub;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
@@ -40,13 +44,26 @@ describe('Variant Analysis Monitor', async function() {
     variantAnalysis = createMockVariantAnalysis();
 
     try {
-      extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
-      variantAnalysisMonitor = new VariantAnalysisMonitor(extension.ctx);
+      const ctx = createMockExtensionContext();
+      cli = createMockCliServer({
+        bqrsInfo: [{ 'result-sets': [{ name: 'result-set-1' }, { name: 'result-set-2' }] }],
+        bqrsDecode: [{
+          columns: [{ kind: 'NotString' }, { kind: 'String' }],
+          tuples: [['a', 'b'], ['c', 'd']],
+          next: 1
+        }, {
+          columns: [{ kind: 'String' }, { kind: 'NotString' }, { kind: 'StillNotString' }],
+          tuples: [['a', 'b', 'c']]
+        }]
+      }, sandbox);
+      const storagePath = path.join(__dirname);
+
+      variantAnalysisMonitor = new VariantAnalysisMonitor(ctx);
+      variantAnalysisManager = new VariantAnalysisManager(ctx, cli, storagePath, logger);
     } catch (e) {
       fail(e as Error);
     }
 
-    variantAnalysisManager = extension.variantAnalysisManager;
     mockGetDownloadResult = sandbox.stub(variantAnalysisManager, 'autoDownloadVariantAnalysisResult');
 
     limitNumberOfAttemptsToMonitor();
@@ -136,7 +153,7 @@ describe('Variant Analysis Monitor', async function() {
 
         it('should trigger a download extension command for each repo', async () => {
           const succeededRepos = scannedRepos.filter(r => r.analysis_status === 'succeeded');
-          const commandSpy = sandbox.spy(commands, 'executeCommand');
+          const commandSpy = sandbox.stub(commands, 'executeCommand');
 
           await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 

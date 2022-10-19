@@ -13,6 +13,7 @@ import { SELECT_QUERY_NAME } from '../../contextual/locationFinder';
 import { QueryInProgress } from '../../legacy-query-server/run-queries';
 import { LegacyQueryRunner } from '../../legacy-query-server/legacyRunner';
 import { DatabaseItem } from '../../databases';
+import { createMockCliServer } from './remote-queries/factories/cli';
 
 describe('run-queries', () => {
   let sandbox: sinon.SinonSandbox;
@@ -75,7 +76,7 @@ describe('run-queries', () => {
           columns: [{ kind: 'String' }, { kind: 'NotString' }, { kind: 'StillNotString' }],
           tuples: [['a', 'b', 'c']]
         }]
-      });
+      }, sandbox);
       const info = createMockQueryInfo();
       const promise = info.queryEvalInfo.exportCsvResults(cliServer, csvLocation);
 
@@ -109,7 +110,7 @@ describe('run-queries', () => {
             [123.98, 456.99],
           ],
         }]
-      });
+      }, sandbox);
     const info = createMockQueryInfo();
     const promise = info.queryEvalInfo.exportCsvResults(cliServer, csvLocation);
 
@@ -129,7 +130,7 @@ describe('run-queries', () => {
     const cliServer =
       createMockCliServer({
         bqrsInfo: [{ 'result-sets': [] }]
-      });
+      }, sandbox);
     const info = createMockQueryInfo();
     const result = await info.queryEvalInfo.exportCsvResults(cliServer, csvLocation);
     expect(result).to.eq(false);
@@ -334,17 +335,5 @@ describe('run-queries', () => {
       },
       cliServer
     } as unknown as QueryServerClient;
-  }
-
-  function createMockCliServer(mockOperations: Record<string, any[]>): CodeQLCliServer {
-    const mockServer: Record<string, any> = {};
-    for (const [operation, returns] of Object.entries(mockOperations)) {
-      mockServer[operation] = sandbox.stub();
-      returns.forEach((returnValue, i) => {
-        mockServer[operation].onCall(i).resolves(returnValue);
-      });
-    }
-
-    return mockServer as unknown as CodeQLCliServer;
   }
 });

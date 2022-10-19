@@ -1,7 +1,5 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { extensions } from 'vscode';
-import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import { Credentials } from '../../../authentication';
 import * as fs from 'fs-extra';
@@ -10,10 +8,10 @@ import * as path from 'path';
 import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
 import { createMockVariantAnalysisRepoTask } from '../../factories/remote-queries/gh-api/variant-analysis-repo-task';
 import { CodeQLCliServer } from '../../../cli';
-import { storagePath } from '../../cli-integration/global.helper';
 import { faker } from '@faker-js/faker';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { VariantAnalysisRepoTask } from '../../../remote-queries/gh-api/variant-analysis';
+import { createMockCliServer } from './factories/cli';
 
 describe(VariantAnalysisResultsManager.name, function() {
   this.timeout(10000);
@@ -23,6 +21,7 @@ describe(VariantAnalysisResultsManager.name, function() {
   let variantAnalysisId: number;
   let variantAnalysisResultsManager: VariantAnalysisResultsManager;
   let getVariantAnalysisRepoResultStub: sinon.SinonStub;
+  let storagePath: string;
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
@@ -33,8 +32,18 @@ describe(VariantAnalysisResultsManager.name, function() {
     variantAnalysisId = faker.datatype.number();
 
     try {
-      const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
-      cli = extension.cliServer;
+      cli = createMockCliServer({
+        bqrsInfo: [{ 'result-sets': [{ name: 'result-set-1' }, { name: 'result-set-2' }] }],
+        bqrsDecode: [{
+          columns: [{ kind: 'NotString' }, { kind: 'String' }],
+          tuples: [['a', 'b'], ['c', 'd']],
+          next: 1
+        }, {
+          columns: [{ kind: 'String' }, { kind: 'NotString' }, { kind: 'StillNotString' }],
+          tuples: [['a', 'b', 'c']]
+        }]
+      }, sandbox);
+      storagePath = path.join(__dirname);
       variantAnalysisResultsManager = new VariantAnalysisResultsManager(cli, logger);
     } catch (e) {
       fail(e as Error);

@@ -1,7 +1,6 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { CancellationTokenSource, extensions } from 'vscode';
-import { CodeQLExtensionInterface } from '../../../extension';
+import { CancellationTokenSource } from 'vscode';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
@@ -19,7 +18,8 @@ import { createMockApiResponse } from '../../factories/remote-queries/gh-api/var
 import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/scanned-repositories';
 import { createMockVariantAnalysisRepoTask } from '../../factories/remote-queries/gh-api/variant-analysis-repo-task';
 import { CodeQLCliServer } from '../../../cli';
-import { storagePath } from '../../cli-integration/global.helper';
+import { createMockExtensionContext } from '..';
+import { createMockCliServer } from './factories/cli';
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
@@ -44,9 +44,21 @@ describe('Variant Analysis Manager', async function() {
     variantAnalysis = createMockApiResponse('in_progress', scannedRepos);
 
     try {
-      const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
-      cli = extension.cliServer;
-      variantAnalysisManager = new VariantAnalysisManager(extension.ctx, cli, storagePath, logger);
+      const ctx = createMockExtensionContext();
+      cli = createMockCliServer({
+        bqrsInfo: [{ 'result-sets': [{ name: 'result-set-1' }, { name: 'result-set-2' }] }],
+        bqrsDecode: [{
+          columns: [{ kind: 'NotString' }, { kind: 'String' }],
+          tuples: [['a', 'b'], ['c', 'd']],
+          next: 1
+        }, {
+          columns: [{ kind: 'String' }, { kind: 'NotString' }, { kind: 'StillNotString' }],
+          tuples: [['a', 'b', 'c']]
+        }]
+      }, sandbox);
+      const storagePath = path.join(__dirname);
+
+      variantAnalysisManager = new VariantAnalysisManager(ctx, cli, storagePath, logger);
     } catch (e) {
       fail(e as Error);
     }
