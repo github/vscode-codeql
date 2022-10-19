@@ -176,6 +176,11 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
   }
 
   async navigateResultView(direction: NavigationDirection): Promise<void> {
+    if (!this.panel?.visible) {
+      return;
+    }
+    // Reveal the panel now as the subsequent call to 'Window.showTextEditor' in 'showLocation' may destroy the webview otherwise.
+    this.panel.reveal();
     await this.postMessage({ t: 'navigate', direction });
   }
 
