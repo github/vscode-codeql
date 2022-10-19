@@ -614,7 +614,7 @@ export class QueryHistoryManager extends DisposableObject {
     });
 
     const variantAnalysisStatusUpdateSubscription = this.variantAnalysisManager.onVariantAnalysisStatusUpdated(async (variantAnalysis) => {
-      const item = this.treeDataProvider.allHistory.find(i => i.t === 'variant-analysis' && i.historyItemId === variantAnalysis.id.toString());
+      const item = this.treeDataProvider.allHistory.find(i => i.t === 'variant-analysis' && i.variantAnalysis.id === variantAnalysis.id);
       const status = variantAnalysisStatusToQueryStatus(variantAnalysis.status);
 
       if (item) {
