@@ -14,6 +14,7 @@ import {
 import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortState } from '../../pure/interface-types';
 import { vscode } from '../vscode-api';
 import { isWholeFileLoc, isLineColumnLoc } from '../../pure/bqrs-utils';
+import { ScrollIntoViewHelper } from './scroll-into-view-helper';
 
 export type PathTableProps = ResultTableProps & { resultSet: InterpretedResultSet<SarifInterpretationData> };
 export interface PathTableState {
@@ -22,6 +23,8 @@ export interface PathTableState {
 }
 
 export class PathTable extends React.Component<PathTableProps, PathTableState> {
+  private scroller = new ScrollIntoViewHelper();
+
   constructor(props: PathTableProps) {
     super(props);
     this.state = { expanded: new Set<string>(), selectedItem: undefined };
@@ -211,7 +214,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
       if (result.codeFlows === undefined) {
         rows.push(
-          <tr key={resultIndex} {...selectableZebraStripe(resultRowIsSelected, resultIndex)}>
+          <tr ref={this.scroller.ref(resultRowIsSelected)} key={resultIndex} {...selectableZebraStripe(resultRowIsSelected, resultIndex)}>
             <td className="vscode-codeql__icon-cell">{octicons.info}</td>
             <td colSpan={3}>{msg}</td>
             {locationCells}
@@ -227,7 +230,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           [resultKey];
 
         rows.push(
-          <tr {...selectableZebraStripe(resultRowIsSelected, resultIndex)} key={resultIndex}>
+          <tr ref={this.scroller.ref(resultRowIsSelected)} {...selectableZebraStripe(resultRowIsSelected, resultIndex)} key={resultIndex}>
             <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(indices)}>
               {indicator}
             </td>
@@ -248,7 +251,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
             const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
             const isPathSpecificallySelected = Keys.equalsNotUndefined(pathKey, selectedItem);
             rows.push(
-              <tr {...selectableZebraStripe(isPathSpecificallySelected, resultIndex)} key={`${resultIndex}-${pathIndex}`}>
+              <tr ref={this.scroller.ref(isPathSpecificallySelected)} {...selectableZebraStripe(isPathSpecificallySelected, resultIndex)} key={`${resultIndex}-${pathIndex}`}>
                 <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                 <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler([pathKey])}>{indicator}</td>
                 <td className="vscode-codeql__text-center" colSpan={3}>
@@ -273,7 +276,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
               const stepIndex = pathNodeIndex + 1; // Convert to 1-based
               const zebraIndex = resultIndex + stepIndex;
               rows.push(
-                <tr className={isSelected ? 'vscode-codeql__selected-path-node' : undefined} key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}>
+                <tr ref={this.scroller.ref(isSelected)} className={isSelected ? 'vscode-codeql__selected-path-node' : undefined} key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}>
                   <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                   <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                   <td {...selectableZebraStripe(isSelected, zebraIndex, 'vscode-codeql__path-index-cell')}>{stepIndex}</td>
@@ -349,6 +352,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           expanded.delete(Keys.keyToString(prevState.selectedItem));
         }
       }
+      this.scroller.scrollIntoViewOnNextUpdate();
       return {
         ...prevState,
         expanded,
@@ -393,7 +397,12 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     }
   }
 
+  componentDidUpdate() {
+    this.scroller.update();
+  }
+
   componentDidMount() {
+    this.scroller.update();
     onNavigation.addListener(this.handleNavigationEvent);
   }
 

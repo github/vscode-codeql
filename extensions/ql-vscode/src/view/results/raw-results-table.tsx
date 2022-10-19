@@ -7,6 +7,7 @@ import RawTableRow from './RawTableRow';
 import { ResultRow } from '../../pure/bqrs-cli-types';
 import { onNavigation } from './results';
 import { tryGetResolvableLocation } from '../../pure/bqrs-utils';
+import { ScrollIntoViewHelper } from './scroll-into-view-helper';
 
 export type RawTableProps = ResultTableProps & {
   resultSet: RawTableResultSet;
@@ -19,6 +20,8 @@ interface RawTableState {
 }
 
 export class RawTable extends React.Component<RawTableProps, RawTableState> {
+  private scroller = new ScrollIntoViewHelper();
+
   constructor(props: RawTableProps) {
     super(props);
     this.setSelection = this.setSelection.bind(this);
@@ -55,6 +58,7 @@ export class RawTable extends React.Component<RawTableProps, RawTableState> {
         databaseUri={databaseUri}
         selectedColumn={this.state.selectedItem?.row === rowIndex ? this.state.selectedItem?.column : undefined}
         onSelected={this.setSelection}
+        scroller={this.scroller}
       />
     );
 
@@ -127,6 +131,7 @@ export class RawTable extends React.Component<RawTableProps, RawTableState> {
           jumpToLocation(location, this.props.databaseUri);
         }
       }
+      this.scroller.scrollIntoViewOnNextUpdate();
       return {
         ...prevState,
         selectedItem: { row: nextRow, column: nextColumn }
@@ -134,7 +139,12 @@ export class RawTable extends React.Component<RawTableProps, RawTableState> {
     });
   }
 
+  componentDidUpdate() {
+    this.scroller.update();
+  }
+
   componentDidMount() {
+    this.scroller.update();
     onNavigation.addListener(this.handleNavigationEvent);
   }
 
