@@ -111,7 +111,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   }
 
   private async variantAnalysisRecordExists(variantAnalysisId: number): Promise<boolean> {
-    const filePath = path.join(this.storagePath, variantAnalysisId.toString());
+    const filePath = this.getVariantAnalysisStorageLocation(variantAnalysisId);
     return await fs.pathExists(filePath);
   }
 
