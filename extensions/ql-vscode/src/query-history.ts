@@ -612,7 +612,7 @@ export class QueryHistoryManager extends DisposableObject {
     });
 
     const variantAnalysisRemovedSubscription = this.variantAnalysisManager.onVariantAnalysisRemoved(async (variantAnalysis) => {
-      const item = this.treeDataProvider.allHistory.find(i => i.t === 'variant-analysis' && i.historyItemId === variantAnalysis.id.toString());
+      const item = this.treeDataProvider.allHistory.find(i => i.t === 'variant-analysis' && i.variantAnalysis.id === variantAnalysis.id);
       if (item) {
         await this.removeRemoteQuery(item as RemoteQueryHistoryItem);
       }
