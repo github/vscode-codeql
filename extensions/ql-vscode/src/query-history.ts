@@ -911,6 +911,8 @@ export class QueryHistoryManager extends DisposableObject {
       }
     } else if (queryHistoryItem.t === 'remote') {
       return path.join(this.queryStorageDir, queryHistoryItem.queryId);
+    } else if (queryHistoryItem.t === 'variant-analysis') {
+      return this.variantAnalysisManager.getVariantAnalysisStorageLocation(queryHistoryItem.variantAnalysis.id);
     }
 
     throw new Error('Unable to get query directory');
@@ -933,6 +935,8 @@ export class QueryHistoryManager extends DisposableObject {
       }
     } else if (finalSingleItem.t === 'remote') {
       externalFilePath = path.join(this.queryStorageDir, finalSingleItem.queryId, 'timestamp');
+    } else if (finalSingleItem.t === 'variant-analysis') {
+      externalFilePath = path.join(this.variantAnalysisManager.getVariantAnalysisStorageLocation(finalSingleItem.variantAnalysis.id), 'timestamp');
     }
 
     if (externalFilePath) {
