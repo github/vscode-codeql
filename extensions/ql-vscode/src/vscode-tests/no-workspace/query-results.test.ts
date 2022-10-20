@@ -281,12 +281,17 @@ describe('query-results', () => {
         runs: [{ results: [] }] // A run needs results to succeed.
       }), 'utf8');
 
+      validSarifStream.write('[', 'utf8');
       const iterations = 10_000_000;
       for (let i = 0; i < iterations; i++) {
         validSarifStream.write(JSON.stringify({
           a: '6'
         }), 'utf8');
+        if (i < iterations - 1) {
+          validSarifStream.write(',');
+        }
       }
+      validSarifStream.write(']', 'utf8');
       validSarifStream.end();
       await finished;
 
