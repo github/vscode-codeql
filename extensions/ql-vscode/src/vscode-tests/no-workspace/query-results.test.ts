@@ -179,6 +179,7 @@ describe('query-results', () => {
 
     afterEach(async () => {
       sandbox.restore();
+      safeDel(interpretedResultsPath);
     });
 
     it('should interpretResultsSarif', async function() {
@@ -429,6 +430,14 @@ describe('query-results', () => {
       expect(allHistoryActual).to.deep.eq([]);
     });
   });
+
+  function safeDel(file: string) {
+    try {
+      fs.unlinkSync(file);
+    } catch (e) {
+      // ignore
+    }
+  }
 
   function createMockQueryWithResults(
     queryPath: string,
