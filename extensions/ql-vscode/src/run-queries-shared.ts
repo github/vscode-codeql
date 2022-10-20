@@ -198,7 +198,7 @@ export class QueryEvaluationInfo {
         // This could be from the new query server
         // in which case we expect the qlo to be missing so we should ignore it
         throw new Error(
-          `DIL was not found. ${compiledQuery}`
+          `DIL was not found. Expected location: '${this.dilPath}'`
         );
       } else {
         throw new Error(
