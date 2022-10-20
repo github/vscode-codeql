@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix a bug where persisted databases may be lost if VS code is restarted while databases are being initialized. [#1638](https://github.com/github/vscode-codeql/pull/1638)
+
 ## 1.7.2 - 14 October 2022
 
 - Fix a bug where results created in older versions were thought to be unsuccessful. [#1605](https://github.com/github/vscode-codeql/pull/1605)
