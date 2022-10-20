@@ -179,7 +179,6 @@ describe('query-results', () => {
 
     afterEach(async () => {
       sandbox.restore();
-      await safeDel(interpretedResultsPath);
     });
 
     it('should interpretResultsSarif', async function() {
@@ -494,13 +493,5 @@ describe('query-results', () => {
       fqi.failureReason = 'failure reason';
     }
     return fqi;
-  }
-
-  function safeDel(file: string) {
-    try {
-      fs.unlinkSync(file);
-    } catch (e) {
-      // ignore
-    }
   }
 });
