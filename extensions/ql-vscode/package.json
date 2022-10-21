@@ -656,7 +656,7 @@
       },
       {
         "command": "codeQLMockGitHubApiServer.cancelRecording",
-        "title": "CodeQL Mock GitHub API Server: Cancel Scenario"
+        "title": "CodeQL Mock GitHub API Server: Cancel Scenario Recording"
       }
     ],
     "menus": {
