@@ -944,16 +944,14 @@ export class CodeQLCliServer implements Disposable {
     return this.runJsonCodeQlCliCommand(['pack', 'install'], args, 'Installing pack dependencies');
   }
 
-  async packBundle(dir: string, workspaceFolders: string[], outputPath: string, precompile = true): Promise<void> {
+  async packBundle(dir: string, workspaceFolders: string[], outputPath: string, moreOptions: string[]): Promise<void> {
     const args = [
       '-o',
       outputPath,
       dir,
+      ...moreOptions,
       ...this.getAdditionalPacksArg(workspaceFolders)
     ];
-    if (!precompile && await this.cliConstraints.supportsNoPrecompile()) {
-      args.push('--no-precompile');
-    }
 
     return this.runJsonCodeQlCliCommand(['pack', 'bundle'], args, 'Bundling pack');
   }
@@ -1289,6 +1287,13 @@ export class CliVersionConstraint {
   public static CLI_VERSION_REMOTE_QUERIES = new SemVer('2.6.3');
 
   /**
+   * CLI version where building QLX packs for remote queries is supported.
+   * (The options were _accepted_ by a few earlier versions, but only from
+   * 2.11.3 will it actually use the existing compilation cache correctly).
+   */
+  public static CLI_VERSION_QLX_REMOTE = new SemVer('2.11.3');
+
+  /**
    * CLI version where the `resolve ml-models` subcommand was introduced.
    */
   public static CLI_VERSION_WITH_RESOLVE_ML_MODELS = new SemVer('2.7.3');
@@ -1381,6 +1386,10 @@ export class CliVersionConstraint {
 
   async supportsRemoteQueries() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES);
+  }
+
+  async supportsQlxRemote() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_QLX_REMOTE);
   }
 
   async supportsResolveMlModels() {
