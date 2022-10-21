@@ -13,7 +13,7 @@ export class Recorder extends DisposableObject {
   private readonly allRequests = new Map<string, MockedRequest>();
   private currentRecordedScenario: GitHubApiRequest[] = [];
 
-  private _recording = false;
+  private _isRecording = false;
 
   constructor(
     private readonly server: SetupServerApi,
@@ -24,7 +24,7 @@ export class Recorder extends DisposableObject {
   }
 
   public get isRecording(): boolean {
-    return this._recording;
+    return this._isRecording;
   }
 
   public get anyRequestsRecorded(): boolean {
@@ -32,11 +32,11 @@ export class Recorder extends DisposableObject {
   }
 
   public start(): void {
-    if (this._recording) {
+    if (this._isRecording) {
       return;
     }
 
-    this._recording = true;
+    this._isRecording = true;
 
     this.clear();
 
@@ -45,11 +45,11 @@ export class Recorder extends DisposableObject {
   }
 
   public stop(): void {
-    if (!this._recording) {
+    if (!this._isRecording) {
       return;
     }
 
-    this._recording = false;
+    this._isRecording = false;
 
     this.server.events.removeListener('request:start', this.onRequestStart);
     this.server.events.removeListener('response:bypass', this.onResponseBypass);
