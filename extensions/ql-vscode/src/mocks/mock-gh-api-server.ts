@@ -60,7 +60,7 @@ export class MockGitHubApiServer extends DisposableObject {
 
     this.recorder.start();
     // Set a value in the context to track whether we are recording. This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand('setContext', 'codeQLMockGitHubApiServer.recording', true);
+    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', true);
 
     await window.showInformationMessage('Recording scenario. To save the scenario, use the "CodeQL Mock GitHub API Server: Save Scenario" command.');
   }
@@ -72,7 +72,7 @@ export class MockGitHubApiServer extends DisposableObject {
     }
 
     // Set a value in the context to track whether we are recording. This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand('setContext', 'codeQLMockGitHubApiServer.recording', false);
+    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', false);
 
     if (!this.recorder.isRecording) {
       void window.showErrorMessage('No scenario is currently being recorded.');
@@ -118,7 +118,7 @@ export class MockGitHubApiServer extends DisposableObject {
 
   private async stopRecording(): Promise<void> {
     // Set a value in the context to track whether we are recording. This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand('setContext', 'codeQLMockGitHubApiServer.recording', false);
+    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', false);
 
     await this.recorder.stop();
     await this.recorder.clear();

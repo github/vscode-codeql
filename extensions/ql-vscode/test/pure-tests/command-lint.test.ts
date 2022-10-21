@@ -27,9 +27,6 @@ describe('commands declared in package.json', function() {
   const scopedCmds: Set<string> = new Set<string>();
   const commandTitles: { [cmd: string]: string } = {};
 
-  // These are commands which are only used for testing/development
-  const testCmds = new Set<string>();
-
   commands.forEach((commandDecl: CmdDecl) => {
     const { command, title } = commandDecl;
     if (
@@ -48,13 +45,6 @@ describe('commands declared in package.json', function() {
       || command.match(/^codeQLTests\./)
     ) {
       scopedCmds.add(command);
-      expect(title).not.to.be.undefined;
-      commandTitles[command] = title!;
-    }
-    else if (
-      command.match(/^codeQLMockGitHubApiServer\./)
-    ) {
-      testCmds.add(command);
       expect(title).not.to.be.undefined;
       commandTitles[command] = title!;
     }
@@ -92,19 +82,10 @@ describe('commands declared in package.json', function() {
     scopedCmds.forEach(command => {
       expect(commandTitles[command], `command ${command} should not be prefixed with 'CodeQL: ', since it is accessible from an extension-controlled context`).not.to.match(/^CodeQL: /);
     });
-
-    testCmds.forEach(command => {
-      expect(commandTitles[command], `command ${command} should be prefixed with 'CodeQL ', since it is a testing/development command`).to.match(/^CodeQL /);
-      expect(commandTitles[command], `command ${command} should not be prefixed with 'CodeQL: ', since it is a testing/development command`).not.to.match(/^CodeQL: /);
-    });
   });
 
   it('should have the right commands accessible from the command palette', function() {
     paletteCmds.forEach(command => {
-      expect(disabledInPalette.has(command), `command ${command} should be enabled in the command palette`).to.be.false;
-    });
-
-    testCmds.forEach(command => {
       expect(disabledInPalette.has(command), `command ${command} should be enabled in the command palette`).to.be.false;
     });
 

@@ -1195,19 +1195,19 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(mockServer);
   ctx.subscriptions.push(
     commandRunner(
-      'codeQLMockGitHubApiServer.startRecording',
+      'codeQL.mockGitHubApiServer.startRecording',
       async () => await mockServer.startRecording(),
     )
   );
   ctx.subscriptions.push(
     commandRunner(
-      'codeQLMockGitHubApiServer.saveScenario',
+      'codeQL.mockGitHubApiServer.saveScenario',
       async () => await mockServer.saveScenario(),
     )
   );
   ctx.subscriptions.push(
     commandRunner(
-      'codeQLMockGitHubApiServer.cancelRecording',
+      'codeQL.mockGitHubApiServer.cancelRecording',
       async () => await mockServer.cancelRecording(),
     )
   );

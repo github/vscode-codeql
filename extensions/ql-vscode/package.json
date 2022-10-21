@@ -647,16 +647,16 @@
         "enablement": "codeql.hasQLSource"
       },
       {
-        "command": "codeQLMockGitHubApiServer.startRecording",
-        "title": "CodeQL Mock GitHub API Server: Start Scenario Recording"
+        "command": "codeQL.mockGitHubApiServer.startRecording",
+        "title": "CodeQL: Mock GitHub API Server: Start Scenario Recording"
       },
       {
-        "command": "codeQLMockGitHubApiServer.saveScenario",
-        "title": "CodeQL Mock GitHub API Server: Save Scenario"
+        "command": "codeQL.mockGitHubApiServer.saveScenario",
+        "title": "CodeQL: Mock GitHub API Server: Save Scenario"
       },
       {
-        "command": "codeQLMockGitHubApiServer.cancelRecording",
-        "title": "CodeQL Mock GitHub API Server: Cancel Scenario Recording"
+        "command": "codeQL.mockGitHubApiServer.cancelRecording",
+        "title": "CodeQL: Mock GitHub API Server: Cancel Scenario Recording"
       }
     ],
     "menus": {
@@ -1118,16 +1118,16 @@
           "when": "false"
         },
         {
-          "command": "codeQLMockGitHubApiServer.startRecording",
-          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && !codeQLMockGitHubApiServer.recording"
+          "command": "codeQL.mockGitHubApiServer.startRecording",
+          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && !codeQL.mockGitHubApiServer.recording"
         },
         {
-          "command": "codeQLMockGitHubApiServer.saveScenario",
-          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && codeQLMockGitHubApiServer.recording"
+          "command": "codeQL.mockGitHubApiServer.saveScenario",
+          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && codeQL.mockGitHubApiServer.recording"
         },
         {
-          "command": "codeQLMockGitHubApiServer.cancelRecording",
-          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && codeQLMockGitHubApiServer.recording"
+          "command": "codeQL.mockGitHubApiServer.cancelRecording",
+          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && codeQL.mockGitHubApiServer.recording"
         }
       ],
       "editor/context": [
