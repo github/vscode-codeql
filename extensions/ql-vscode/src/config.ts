@@ -449,3 +449,9 @@ export class MockGitHubApiConfigListener extends ConfigListener implements MockG
     return !!MOCK_GH_API_SERVER.getValue<boolean>();
   }
 }
+
+const MOCK_GH_API_SERVER_SCENARIOS_PATH = new Setting('mockGitHubApiServerScenariosPath', REMOTE_QUERIES_SETTING);
+
+export function getMockGitHubApiServerScenariosPath(): string | undefined {
+  return MOCK_GH_API_SERVER_SCENARIOS_PATH.getValue<string>();
+}
