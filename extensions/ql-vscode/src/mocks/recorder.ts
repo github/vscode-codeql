@@ -27,8 +27,8 @@ export class Recorder extends DisposableObject {
     return this._recording;
   }
 
-  public get scenarioRequestCount(): number {
-    return this.currentRecordedScenario.length;
+  public get anyRequestsRecorded(): boolean {
+    return this.currentRecordedScenario.length > 0;
   }
 
   public start(): void {
@@ -60,8 +60,8 @@ export class Recorder extends DisposableObject {
     this.allRequests.clear();
   }
 
-  public async save(scenariosDirectory: string, name: string): Promise<string> {
-    const scenarioDirectory = path.join(scenariosDirectory, name);
+  public async save(scenariosPath: string, name: string): Promise<string> {
+    const scenarioDirectory = path.join(scenariosPath, name);
 
     await fs.ensureDir(scenarioDirectory);
 

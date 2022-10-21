@@ -62,8 +62,8 @@ export class MockGitHubApiServer extends DisposableObject {
   }
 
   public async saveScenario(): Promise<void> {
-    const scenariosDirectory = await this.getScenariosDirectory();
-    if (!scenariosDirectory) {
+    const scenariosPath = await this.getScenariosPath();
+    if (!scenariosPath) {
       return;
     }
 
@@ -73,7 +73,7 @@ export class MockGitHubApiServer extends DisposableObject {
       void window.showErrorMessage('No scenario is currently being recorded.');
       return;
     }
-    if (this.recorder.scenarioRequestCount === 0) {
+    if (!this.recorder.anyRequestsRecorded) {
       void window.showWarningMessage('No requests were recorded. Cancelling scenario.');
 
       await this.stopRecording();
@@ -90,13 +90,13 @@ export class MockGitHubApiServer extends DisposableObject {
       return;
     }
 
-    const filepath = await this.recorder.save(scenariosDirectory, name);
+    const filePath = await this.recorder.save(scenariosPath, name);
 
     await this.stopRecording();
 
-    const action = await window.showInformationMessage(`Scenario saved to ${filepath}`, 'Open directory');
+    const action = await window.showInformationMessage(`Scenario saved to ${filePath}`, 'Open directory');
     if (action === 'Open directory') {
-      await env.openExternal(Uri.file(filepath));
+      await env.openExternal(Uri.file(filePath));
     }
   }
 
@@ -118,10 +118,10 @@ export class MockGitHubApiServer extends DisposableObject {
     await this.recorder.clear();
   }
 
-  private async getScenariosDirectory(): Promise<string | undefined> {
-    const scenariosDirectory = getMockGitHubApiServerScenariosPath();
-    if (scenariosDirectory) {
-      return scenariosDirectory;
+  private async getScenariosPath(): Promise<string | undefined> {
+    const scenariosPath = getMockGitHubApiServerScenariosPath();
+    if (scenariosPath) {
+      return scenariosPath;
     }
 
     const directories = await window.showOpenDialog({
