@@ -169,13 +169,16 @@ describe('query-results', () => {
     const interpretedResultsPath = path.join(tmpDir.name, 'interpreted.json');
     const sourceInfo = {};
 
-    beforeEach(() => {
+    beforeEach(function(done) {
       spy = sandbox.mock();
       spy.returns({ a: '1234' });
 
       mockServer = {
         interpretBqrsSarif: spy
       } as unknown as CodeQLCliServer;
+
+      // Time out all following tests in 2 minutes.
+      setTimeout(done, 2 * 60 * 1000);
     });
 
     afterEach(async () => {
@@ -184,9 +187,6 @@ describe('query-results', () => {
     });
 
     it('should interpretResultsSarif', async function() {
-      // up to 2 minutes per test
-      this.timeout(2 * 60 * 1000);
-
       const results = await interpretResultsSarif(
         mockServer,
         metadata,
@@ -204,9 +204,6 @@ describe('query-results', () => {
     });
 
     it('should interpretBqrsSarif without ID', async function() {
-      // up to 2 minutes per test
-      this.timeout(2 * 60 * 1000);
-
       delete metadata.id;
       const results = await interpretResultsSarif(
         mockServer,
@@ -224,9 +221,6 @@ describe('query-results', () => {
     });
 
     it('should use sarifParser on a valid small SARIF file', async function() {
-      // up to 2 minutes per test
-      this.timeout(2 * 60 * 1000);
-
       fs.writeFileSync(interpretedResultsPath, JSON.stringify({
         runs: [{ results: [] }] // A run needs results to succeed.
       }), 'utf8');
@@ -246,9 +240,6 @@ describe('query-results', () => {
     });
 
     it('should throw an error on an invalid small SARIF file', async function() {
-      // up to 2 minutes per test
-      this.timeout(2 * 60 * 1000);
-
       fs.writeFileSync(interpretedResultsPath, JSON.stringify({
         a: '6' // Invalid: no runs or results
       }), 'utf8');
@@ -268,9 +259,6 @@ describe('query-results', () => {
     });
 
     it('should use sarifParser on a valid large SARIF file', async function() {
-      // up to 2 minutes per test
-      this.timeout(2 * 60 * 1000);
-
       const validSarifStream = fs.createWriteStream(interpretedResultsPath, { flags: 'w' });
 
       const finished = new Promise((res, rej) => {
@@ -318,9 +306,6 @@ describe('query-results', () => {
     });
 
     it('should throw an error on an invalid large SARIF file', async function() {
-      // up to 2 minutes per test
-      this.timeout(2 * 60 * 1000);
-
       const invalidLargeInterpretedResultsPath = path.join(tmpDir.name, 'interpreted.json');
       const invalidSarifStream = fs.createWriteStream(invalidLargeInterpretedResultsPath, { flags: 'w' });
 
