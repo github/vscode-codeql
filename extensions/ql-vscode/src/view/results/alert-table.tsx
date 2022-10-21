@@ -313,19 +313,19 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
       // Check if the selected node actually exists (bounds check) and get its location if relevant
       let jumpLocation: Sarif.Location | undefined;
-      if (key.pathNodeIndex != null) {
+      if (key.pathNodeIndex !== undefined) {
         jumpLocation = Keys.getPathNode(data, key);
-        if (jumpLocation == null) {
+        if (jumpLocation === undefined) {
           return prevState; // Result does not exist
         }
-      } else if (key.pathIndex != null) {
-        if (Keys.getPath(data, key) == null) {
+      } else if (key.pathIndex !== undefined) {
+        if (Keys.getPath(data, key) === undefined) {
           return prevState; // Path does not exist
         }
         jumpLocation = undefined; // When selecting a 'path', don't jump anywhere.
       } else {
         jumpLocation = Keys.getResult(data, key)?.locations?.[0];
-        if (jumpLocation == null) {
+        if (jumpLocation === undefined) {
           return prevState; // Path step does not exist.
         }
       }
