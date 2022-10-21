@@ -295,6 +295,12 @@ describe('query-results', () => {
       validSarifStream.end();
       await finished;
 
+      // We need to sleep to wait for MSFT Defender to scan the file 
+      // so that it can be read by our test.  
+      if (os.platform() === 'win32') {
+        await sleep(10_000);
+      }
+
       const results = await interpretResultsSarif(
         mockServer,
         metadata,
@@ -334,6 +340,12 @@ describe('query-results', () => {
       invalidSarifStream.write(']', 'utf8');
       invalidSarifStream.end();
       await finished;
+
+      // We need to sleep to wait for MSFT Defender to scan the file 
+      // so that it can be read by our test.  
+      if (os.platform() === 'win32') {
+        await sleep(10_000);
+      }
 
       await expect(
         interpretResultsSarif(
@@ -437,6 +449,10 @@ describe('query-results', () => {
     } catch (e) {
       // ignore
     }
+  }
+
+  async function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   function createMockQueryWithResults(
