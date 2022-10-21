@@ -40,10 +40,7 @@ export type ResultKey = Result | Path | PathNode;
  * Looks up a specific result in a result set.
  */
 export function getResult(sarif: sarif.Log, key: Result | Path | PathNode): sarif.Result | undefined {
-  if (sarif.runs.length === 0) return undefined;
-  if (sarif.runs[0].results === undefined) return undefined;
-  const results = sarif.runs[0].results;
-  return results[key.resultIndex];
+  return sarif.runs[0]?.results?.[key.resultIndex];
 }
 
 /**
