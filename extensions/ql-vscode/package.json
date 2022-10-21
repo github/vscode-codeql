@@ -657,6 +657,10 @@
       {
         "command": "codeQL.mockGitHubApiServer.cancelRecording",
         "title": "CodeQL: Mock GitHub API Server: Cancel Scenario Recording"
+      },
+      {
+        "command": "codeQL.mockGitHubApiServer.loadScenario",
+        "title": "CodeQL: Mock GitHub API Server: Load Scenario"
       }
     ],
     "menus": {
@@ -1128,6 +1132,10 @@
         {
           "command": "codeQL.mockGitHubApiServer.cancelRecording",
           "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && codeQL.mockGitHubApiServer.recording"
+        },
+        {
+          "command": "codeQL.mockGitHubApiServer.loadScenario",
+          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && !codeQL.mockGitHubApiServer.recording"
         }
       ],
       "editor/context": [

@@ -1,11 +1,14 @@
+import * as path from 'path';
 import * as fs from 'fs-extra';
-import { commands, env, ExtensionContext, ExtensionMode, Uri, window } from 'vscode';
+import { commands, env, ExtensionContext, ExtensionMode, QuickPickItem, Uri, window } from 'vscode';
 import { setupServer, SetupServerApi } from 'msw/node';
 
 import { getMockGitHubApiServerScenariosPath, MockGitHubApiConfigListener } from '../config';
 import { DisposableObject } from '../pure/disposable-object';
 
 import { Recorder } from './recorder';
+import { createRequestHandlers } from './request-handlers';
+import { getDirectoryNamesInsidePath } from '../pure/files';
 
 /**
  * Enables mocking of the GitHub API server via HTTP interception, using msw.
@@ -44,12 +47,32 @@ export class MockGitHubApiServer extends DisposableObject {
     this.isListening = false;
   }
 
-  public loadScenario(): void {
-    // TODO: Implement logic to load a scenario from a directory.
-  }
+  public async loadScenario(): Promise<void> {
+    const scenariosPath = await this.getScenariosPath();
+    if (!scenariosPath) {
+      return;
+    }
 
-  public listScenarios(): void {
-    // TODO: Implement logic to list all available scenarios.
+    const scenarioNames = await getDirectoryNamesInsidePath(scenariosPath);
+    const scenarioQuickPickItems = scenarioNames.map(s => ({ label: s }));
+    const quickPickOptions = {
+      placeHolder: 'Select a scenario to load',
+    };
+    const selectedScenario = await window.showQuickPick<QuickPickItem>(
+      scenarioQuickPickItems,
+      quickPickOptions);
+    if (!selectedScenario) {
+      return;
+    }
+
+    const scenarioName = selectedScenario.label;
+    const scenarioPath = path.join(scenariosPath, scenarioName);
+
+    const handlers = await createRequestHandlers(scenarioPath);
+    this.server.resetHandlers();
+    this.server.use(...handlers);
+
+    await window.showInformationMessage(`Loaded scenario '${scenarioName}'`);
   }
 
   public async startRecording(): Promise<void> {

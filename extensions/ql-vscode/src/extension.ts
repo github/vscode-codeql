@@ -1211,6 +1211,12 @@ async function activateWithInstalledDistribution(
       async () => await mockServer.cancelRecording(),
     )
   );
+  ctx.subscriptions.push(
+    commandRunner(
+      'codeQL.mockGitHubApiServer.loadScenario',
+      async () => await mockServer.loadScenario(),
+    )
+  );
 
   await commands.executeCommand('codeQLDatabases.removeOrphanedDatabases');
 
