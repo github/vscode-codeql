@@ -4,9 +4,8 @@ import { QueryHistoryConfig } from './config';
 import { LocalQueryInfo } from './query-results';
 import { buildRepoLabel, getRawQueryName, QueryHistoryInfo } from './query-history-info';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
-import { pluralize } from './helpers';
 import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-history-item';
-import { assertNever } from './pure/helpers-pure';
+import { assertNever, pluralize } from './pure/helpers-pure';
 
 interface InterpolateReplacements {
   t: string; // Start time
