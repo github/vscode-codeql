@@ -1123,11 +1123,11 @@
         },
         {
           "command": "codeQLMockGitHubApiServer.saveScenario",
-          "when": "codeQLMockGitHubApiServer.recording"
+          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && codeQLMockGitHubApiServer.recording"
         },
         {
           "command": "codeQLMockGitHubApiServer.cancelRecording",
-          "when": "codeQLMockGitHubApiServer.recording"
+          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && codeQLMockGitHubApiServer.recording"
         }
       ],
       "editor/context": [
