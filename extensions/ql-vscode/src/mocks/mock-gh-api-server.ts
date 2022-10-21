@@ -131,7 +131,7 @@ export class MockGitHubApiServer extends DisposableObject {
     }
 
     if (this.ctx.extensionMode === ExtensionMode.Development) {
-      const developmentScenariosPath = Uri.joinPath(this.ctx.extensionUri, 'src/mocks/scenarios').toString();
+      const developmentScenariosPath = Uri.joinPath(this.ctx.extensionUri, 'src/mocks/scenarios').fsPath.toString();
       if (await fs.pathExists(developmentScenariosPath)) {
         return developmentScenariosPath;
       }
