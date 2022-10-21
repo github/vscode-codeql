@@ -1,7 +1,14 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import { DefaultBodyType, MockedRequest, rest, RestHandler } from 'msw';
-import { GetVariantAnalysisRepoRequest, GetVariantAnalysisRepoResultRequest, GitHubApiRequest, RequestKind } from './gh-api-request';
+import {
+  GitHubApiRequest,
+  isGetRepoRequest,
+  isGetVariantAnalysisRepoRequest,
+  isGetVariantAnalysisRepoResultRequest,
+  isGetVariantAnalysisRequest,
+  isSubmitVariantAnalysisRequest
+} from './gh-api-request';
 
 const baseUrl = 'https://api.github.com';
 
@@ -41,7 +48,7 @@ async function readRequestFiles(scenarioDirPath: string): Promise<GitHubApiReque
 }
 
 function createGetRepoRequestHandler(requests: GitHubApiRequest[]): RequestHandler {
-  const getRepoRequests = requests.filter(r => r.request.kind === RequestKind.GetRepo);
+  const getRepoRequests = requests.filter(isGetRepoRequest);
 
   if (getRepoRequests.length > 1) {
     throw Error('More than one get repo request found');
@@ -58,7 +65,7 @@ function createGetRepoRequestHandler(requests: GitHubApiRequest[]): RequestHandl
 }
 
 function createSubmitVariantAnalysisRequestHandler(requests: GitHubApiRequest[]): RequestHandler {
-  const submitVariantAnalysisRequests = requests.filter(r => r.request.kind === RequestKind.SubmitVariantAnalysis);
+  const submitVariantAnalysisRequests = requests.filter(isSubmitVariantAnalysisRequest);
 
   if (submitVariantAnalysisRequests.length > 1) {
     throw Error('More than one submit variant analysis request found');
@@ -75,7 +82,7 @@ function createSubmitVariantAnalysisRequestHandler(requests: GitHubApiRequest[])
 }
 
 function createGetVariantAnalysisRequestHandler(requests: GitHubApiRequest[]): RequestHandler {
-  const getVariantAnalysisRequests = requests.filter(r => r.request.kind === RequestKind.GetVariantAnalysis);
+  const getVariantAnalysisRequests = requests.filter(isGetVariantAnalysisRequest);
   let requestIndex = 0;
 
   // During the lifetime of a variant analysis run, there are multiple requests
@@ -97,7 +104,7 @@ function createGetVariantAnalysisRequestHandler(requests: GitHubApiRequest[]): R
 }
 
 function createGetVariantAnalysisRepoRequestHandlers(requests: GitHubApiRequest[]): RequestHandler[] {
-  const getVariantAnalysisRepoRequests = requests.filter(r => r.request.kind === RequestKind.GetVariantAnalysisRepo) as GetVariantAnalysisRepoRequest[];
+  const getVariantAnalysisRepoRequests = requests.filter(isGetVariantAnalysisRepoRequest);
 
   return getVariantAnalysisRepoRequests.map(request => rest.get(
     `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/${request.request.repositoryId}`,
@@ -110,7 +117,7 @@ function createGetVariantAnalysisRepoRequestHandlers(requests: GitHubApiRequest[
 }
 
 function createGetVariantAnalysisRepoResultRequestHandlers(requests: GitHubApiRequest[]): RequestHandler[] {
-  const getVariantAnalysisRepoResultRequests = requests.filter(r => r.request.kind === RequestKind.GetVariantAnalysisRepoResult) as GetVariantAnalysisRepoResultRequest[];
+  const getVariantAnalysisRepoResultRequests = requests.filter(isGetVariantAnalysisRepoResultRequest);
 
   return getVariantAnalysisRepoResultRequests.map(request => rest.get(
     `https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/:variantAnalysisId/${request.request.repositoryId}/*`,
