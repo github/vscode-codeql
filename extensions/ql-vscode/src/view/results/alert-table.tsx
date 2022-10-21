@@ -340,7 +340,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       if (event.direction === NavigationDirection.right) {
         // When stepping right, expand to ensure the selected node is visible
         expanded.add(Keys.keyToString({ resultIndex: key.resultIndex }));
-        if (key.pathIndex != null) {
+        if (key.pathIndex !== undefined) {
           expanded.add(Keys.keyToString({ resultIndex: key.resultIndex, pathIndex: key.pathIndex }));
         }
       } else if (event.direction === NavigationDirection.left) {
@@ -348,7 +348,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         expanded.delete(Keys.keyToString(key));
       } else {
         // When stepping up or down, collapse the previous node
-        if (prevState.selectedItem != null) {
+        if (prevState.selectedItem !== undefined) {
           expanded.delete(Keys.keyToString(prevState.selectedItem));
         }
       }
