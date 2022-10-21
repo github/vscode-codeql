@@ -49,7 +49,7 @@ function createGetRepoRequestHandler(requests: GitHubApiRequest[]): RequestHandl
 
   const getRepoRequest = getRepoRequests[0];
 
-  return rest.get(`${baseUrl}/repos/*`, (_req, res, ctx) => {
+  return rest.get(`${baseUrl}/repos/:owner/:name`, (_req, res, ctx) => {
     return res(
       ctx.status(getRepoRequest.response.status),
       ctx.json(getRepoRequest.response.body),
