@@ -590,5 +590,5 @@ export async function* walkDirectory(dir: string): AsyncIterableIterator<string>
  * Example: Returns "N repository" if N is one, "N repositories" otherwise.
  */
 export function pluralize(numItems: number | undefined, singular: string, plural: string): string {
-  return numItems ? `${numItems} ${numItems === 1 ? singular : plural}` : '';
+  return numItems !== undefined ? `${numItems} ${numItems === 1 ? singular : plural}` : '';
 }
