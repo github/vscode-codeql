@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import * as os from 'os';
 import * as sinon from 'sinon';
 import { LocalQueryInfo, InitialQueryInfo, interpretResultsSarif } from '../../query-results';
 import { QueryWithResults } from '../../run-queries-shared';
