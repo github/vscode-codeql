@@ -1234,7 +1234,8 @@
     "lint": "eslint src test --ext .ts,.tsx --max-warnings=0",
     "format-staged": "lint-staged",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "lint:scenarios": "ts-node scripts/lint-scenarios.ts"
   },
   "dependencies": {
     "@octokit/plugin-retry": "^3.0.9",
@@ -1329,6 +1330,7 @@
     "@types/xml2js": "~0.4.4",
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@typescript-eslint/parser": "^4.26.0",
+    "ajv": "^8.11.0",
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.3.5",
     "babel-loader": "^8.2.5",
@@ -1362,6 +1364,7 @@
     "sinon-chai": "~3.5.0",
     "through2": "^4.0.2",
     "ts-jest": "^29.0.1",
+    "ts-json-schema-generator": "^1.1.2",
     "ts-loader": "^8.1.0",
     "ts-node": "^10.7.0",
     "ts-protoc-gen": "^0.9.0",
