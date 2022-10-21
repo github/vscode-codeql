@@ -647,15 +647,15 @@
         "enablement": "codeql.hasQLSource"
       },
       {
-        "command": "codeQL.mockGitHubApiServer.startRecording",
+        "command": "codeQLMockGitHubApiServer.startRecording",
         "title": "CodeQL Mock GitHub API Server: Start Scenario Recording"
       },
       {
-        "command": "codeQL.mockGitHubApiServer.saveScenario",
+        "command": "codeQLMockGitHubApiServer.saveScenario",
         "title": "CodeQL Mock GitHub API Server: Save Scenario"
       },
       {
-        "command": "codeQL.mockGitHubApiServer.cancelRecording",
+        "command": "codeQLMockGitHubApiServer.cancelRecording",
         "title": "CodeQL Mock GitHub API Server: Cancel Scenario"
       }
     ],
@@ -1118,16 +1118,16 @@
           "when": "false"
         },
         {
-          "command": "codeQL.mockGitHubApiServer.startRecording",
-          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && !codeQL.mockGitHubApiServer.recording"
+          "command": "codeQLMockGitHubApiServer.startRecording",
+          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && !codeQLMockGitHubApiServer.recording"
         },
         {
-          "command": "codeQL.mockGitHubApiServer.saveScenario",
-          "when": "codeQL.mockGitHubApiServer.recording"
+          "command": "codeQLMockGitHubApiServer.saveScenario",
+          "when": "codeQLMockGitHubApiServer.recording"
         },
         {
-          "command": "codeQL.mockGitHubApiServer.cancelRecording",
-          "when": "codeQL.mockGitHubApiServer.recording"
+          "command": "codeQLMockGitHubApiServer.cancelRecording",
+          "when": "codeQLMockGitHubApiServer.recording"
         }
       ],
       "editor/context": [

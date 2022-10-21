@@ -56,7 +56,7 @@ export class MockGitHubApiServer extends DisposableObject {
     }
 
     this.recorder.start();
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', true);
+    await commands.executeCommand('setContext', 'codeQLMockGitHubApiServer.recording', true);
 
     await window.showInformationMessage('Recording scenario. To save the scenario, use the "CodeQL Mock GitHub API Server: Save Scenario" command.');
   }
@@ -67,7 +67,7 @@ export class MockGitHubApiServer extends DisposableObject {
       return;
     }
 
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', false);
+    await commands.executeCommand('setContext', 'codeQLMockGitHubApiServer.recording', false);
 
     if (!this.recorder.isRecording) {
       void window.showErrorMessage('No scenario is currently being recorded.');
@@ -112,7 +112,7 @@ export class MockGitHubApiServer extends DisposableObject {
   }
 
   private async stopRecording(): Promise<void> {
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', false);
+    await commands.executeCommand('setContext', 'codeQLMockGitHubApiServer.recording', false);
 
     await this.recorder.stop();
     await this.recorder.clear();
