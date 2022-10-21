@@ -49,7 +49,7 @@ export class MockGitHubApiServer extends DisposableObject {
     // TODO: Implement logic to list all available scenarios.
   }
 
-  public async recordScenario(): Promise<void> {
+  public async startRecording(): Promise<void> {
     if (this.recorder.isRecording) {
       void window.showErrorMessage('A scenario is already being recorded. Use the "Save Scenario" or "Cancel Scenario" commands to finish recording.');
       return;

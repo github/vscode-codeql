@@ -1196,7 +1196,7 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(
     commandRunner(
       'codeQLMockGitHubApiServer.startRecording',
-      async () => await mockServer.recordScenario(),
+      async () => await mockServer.startRecording(),
     )
   );
   ctx.subscriptions.push(
