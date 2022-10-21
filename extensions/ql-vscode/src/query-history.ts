@@ -31,7 +31,7 @@ import { commandRunner } from './commandRunner';
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
-import { QueryHistoryInfo } from './query-history-info';
+import { getQueryHistoryItemId, getQueryText, QueryHistoryInfo } from './query-history-info';
 import { DatabaseManager } from './databases';
 import { registerQueryHistoryScrubber } from './query-history-scrubber';
 import { QueryStatus } from './query-status';
@@ -51,6 +51,7 @@ import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
 import { QueryWithResults } from './run-queries-shared';
 import { QueryRunner } from './queryRunner';
 import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
+import { nanoid } from 'nanoid';
 
 /**
  * query-history.ts
@@ -603,6 +604,7 @@ export class QueryHistoryManager extends DisposableObject {
         t: 'variant-analysis',
         status: QueryStatus.InProgress,
         completed: false,
+        historyItemId: nanoid(),
         variantAnalysis,
       });
 
@@ -909,6 +911,8 @@ export class QueryHistoryManager extends DisposableObject {
       }
     } else if (queryHistoryItem.t === 'remote') {
       return path.join(this.queryStorageDir, queryHistoryItem.queryId);
+    } else if (queryHistoryItem.t === 'variant-analysis') {
+      return this.variantAnalysisManager.getVariantAnalysisStorageLocation(queryHistoryItem.variantAnalysis.id);
     }
 
     throw new Error('Unable to get query directory');
@@ -931,6 +935,8 @@ export class QueryHistoryManager extends DisposableObject {
       }
     } else if (finalSingleItem.t === 'remote') {
       externalFilePath = path.join(this.queryStorageDir, finalSingleItem.queryId, 'timestamp');
+    } else if (finalSingleItem.t === 'variant-analysis') {
+      externalFilePath = path.join(this.variantAnalysisManager.getVariantAnalysisStorageLocation(finalSingleItem.variantAnalysis.id), 'timestamp');
     }
 
     if (externalFilePath) {
@@ -1065,22 +1071,16 @@ export class QueryHistoryManager extends DisposableObject {
 
     const params = new URLSearchParams({
       isQuickEval: String(!!(finalSingleItem.t === 'local' && finalSingleItem.initialInfo.quickEvalPosition)),
-      queryText: encodeURIComponent(await this.getQueryText(finalSingleItem)),
+      queryText: encodeURIComponent(getQueryText(finalSingleItem)),
     });
 
-    if (finalSingleItem.t === 'variant-analysis') {
-      // TODO
-    } else {
-      const queryId = finalSingleItem.t === 'local'
-        ? finalSingleItem.initialInfo.id
-        : finalSingleItem.queryId;
+    const queryId = getQueryHistoryItemId(finalSingleItem);
 
-      const uri = Uri.parse(
-        `codeql:${queryId}?${params.toString()}`, true
-      );
-      const doc = await workspace.openTextDocument(uri);
-      await window.showTextDocument(doc, { preview: false });
-    }
+    const uri = Uri.parse(
+      `codeql:${queryId}.ql?${params.toString()}`, true
+    );
+    const doc = await workspace.openTextDocument(uri);
+    await window.showTextDocument(doc, { preview: false });
   }
 
   async handleViewSarifAlerts(
@@ -1193,19 +1193,6 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     await commands.executeCommand('codeQL.copyRepoList', finalSingleItem.queryId);
-  }
-
-  async getQueryText(item: QueryHistoryInfo): Promise<string> {
-    switch (item.t) {
-      case 'local':
-        return item.initialInfo.queryText;
-      case 'remote':
-        return item.remoteQuery.queryText;
-      case 'variant-analysis':
-        return 'TODO';
-      default:
-        assertNever(item);
-    }
   }
 
   async handleExportResults(): Promise<void> {

@@ -4,7 +4,7 @@ import { action } from '@storybook/addon-actions';
 // Allow all stories/components to use Codicons
 import '@vscode/codicons/dist/codicon.css';
 
-import '../src/stories/vscode-theme.css';
+import '../src/stories/vscode-theme-dark.css';
 
 // https://storybook.js.org/docs/react/configure/overview#configure-story-rendering
 export const parameters = {

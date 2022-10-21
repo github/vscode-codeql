@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { CancellationTokenSource, extensions } from 'vscode';
+import { CancellationTokenSource, commands, extensions } from 'vscode';
 import { CodeQLExtensionInterface } from '../../../extension';
 import * as config from '../../../config';
 
@@ -8,8 +8,8 @@ import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { VariantAnalysisMonitor } from '../../../remote-queries/variant-analysis-monitor';
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
+  VariantAnalysisFailureReason,
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository,
-  VariantAnalysisFailureReason
 } from '../../../remote-queries/gh-api/variant-analysis';
 import { createFailedMockApiResponse, createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
 import { VariantAnalysis, VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
@@ -17,15 +17,19 @@ import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/sc
 import { processFailureReason } from '../../../remote-queries/variant-analysis-processor';
 import { Credentials } from '../../../authentication';
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
+import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
 
 describe('Variant Analysis Monitor', async function() {
   this.timeout(60000);
 
   let sandbox: sinon.SinonSandbox;
+  let extension: CodeQLExtensionInterface | Record<string, never>;
   let mockGetVariantAnalysis: sinon.SinonStub;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
   let variantAnalysis: VariantAnalysis;
+  let variantAnalysisManager: VariantAnalysisManager;
+  let mockGetDownloadResult: sinon.SinonStub;
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
@@ -36,11 +40,14 @@ describe('Variant Analysis Monitor', async function() {
     variantAnalysis = createMockVariantAnalysis();
 
     try {
-      const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
+      extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
       variantAnalysisMonitor = new VariantAnalysisMonitor(extension.ctx);
     } catch (e) {
       fail(e as Error);
     }
+
+    variantAnalysisManager = extension.variantAnalysisManager;
+    mockGetDownloadResult = sandbox.stub(variantAnalysisManager, 'autoDownloadVariantAnalysisResult');
 
     limitNumberOfAttemptsToMonitor();
   });
@@ -110,20 +117,47 @@ describe('Variant Analysis Monitor', async function() {
     describe('when the variant analysis is in progress', async () => {
       let mockApiResponse: VariantAnalysisApiResponse;
       let scannedRepos: ApiVariantAnalysisScannedRepository[];
+      let succeededRepos: ApiVariantAnalysisScannedRepository[];
 
       describe('when there are successfully scanned repos', async () => {
         beforeEach(async function() {
-          scannedRepos = createMockScannedRepos(['pending', 'in_progress', 'succeeded']);
+          scannedRepos = createMockScannedRepos(['pending', 'pending', 'in_progress', 'in_progress', 'succeeded', 'succeeded', 'succeeded']);
           mockApiResponse = createMockApiResponse('completed', scannedRepos);
           mockGetVariantAnalysis = sandbox.stub(ghApiClient, 'getVariantAnalysis').resolves(mockApiResponse);
+          succeededRepos = scannedRepos.filter(r => r.analysis_status === 'succeeded');
         });
 
         it('should succeed and return a list of scanned repo ids', async () => {
           const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
-          const scannedRepoIds = scannedRepos.filter(r => r.analysis_status == 'succeeded').map(r => r.repository.id);
 
           expect(result.status).to.equal('CompletedSuccessfully');
-          expect(result.scannedReposDownloaded).to.eql(scannedRepoIds);
+          expect(result.scannedReposDownloaded).to.eql(succeededRepos.map(r => r.repository.id));
+        });
+
+        it('should trigger a download extension command for each repo', async () => {
+          const succeededRepos = scannedRepos.filter(r => r.analysis_status === 'succeeded');
+          const commandSpy = sandbox.spy(commands, 'executeCommand');
+
+          await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
+
+          expect(commandSpy).to.have.callCount(succeededRepos.length);
+
+          succeededRepos.forEach((succeededRepo, index) => {
+            expect(commandSpy.getCall(index).args[0]).to.eq('codeQL.autoDownloadVariantAnalysisResult');
+            expect(commandSpy.getCall(index).args[1]).to.eq(succeededRepo);
+            expect(commandSpy.getCall(index).args[2]).to.eq(mockApiResponse);
+          });
+        });
+
+        it('should download all available results', async () => {
+          await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
+
+          expect(mockGetDownloadResult).to.have.callCount(succeededRepos.length);
+
+          succeededRepos.forEach((succeededRepo, index) => {
+            expect(mockGetDownloadResult.getCall(index).args[0]).to.eq(succeededRepo);
+            expect(mockGetDownloadResult.getCall(index).args[1]).to.eq(mockApiResponse);
+          });
         });
       });
 
@@ -142,6 +176,12 @@ describe('Variant Analysis Monitor', async function() {
           expect(result.status).to.equal('CompletedSuccessfully');
           expect(result.scannedReposDownloaded).to.eql([]);
         });
+
+        it('should not try to download any repos', async () => {
+          await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
+
+          expect(mockGetDownloadResult).to.not.have.been.called;
+        });
       });
 
       describe('when there are no repos to scan', async () => {
@@ -156,6 +196,12 @@ describe('Variant Analysis Monitor', async function() {
 
           expect(result.status).to.equal('CompletedSuccessfully');
           expect(result.scannedReposDownloaded).to.eql([]);
+        });
+
+        it('should not try to download any repos', async () => {
+          await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
+
+          expect(mockGetDownloadResult).to.not.have.been.called;
         });
       });
     });

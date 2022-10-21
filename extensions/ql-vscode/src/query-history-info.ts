@@ -17,3 +17,29 @@ export function getRawQueryName(item: QueryHistoryInfo): string {
       assertNever(item);
   }
 }
+
+export function getQueryHistoryItemId(item: QueryHistoryInfo): string {
+  switch (item.t) {
+    case 'local':
+      return item.initialInfo.id;
+    case 'remote':
+      return item.queryId;
+    case 'variant-analysis':
+      return item.historyItemId;
+    default:
+      assertNever(item);
+  }
+}
+
+export function getQueryText(item: QueryHistoryInfo): string {
+  switch (item.t) {
+    case 'local':
+      return item.initialInfo.queryText;
+    case 'remote':
+      return item.remoteQuery.queryText;
+    case 'variant-analysis':
+      return item.variantAnalysis.query.text;
+    default:
+      assertNever(item);
+  }
+}

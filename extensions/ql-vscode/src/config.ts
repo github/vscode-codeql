@@ -437,3 +437,23 @@ const LIVE_RESULTS = new Setting('liveResults', REMOTE_QUERIES_SETTING);
 export function isVariantAnalysisLiveResultsEnabled(): boolean {
   return !!LIVE_RESULTS.getValue<boolean>();
 }
+
+/**
+ * A flag indicating whether to enable a mock GitHub API server.
+ */
+const MOCK_GH_API_SERVER = new Setting('mockGitHubApiServer', REMOTE_QUERIES_SETTING);
+
+export interface MockGitHubApiConfig {
+  mockServerEnabled: boolean;
+  onDidChangeConfiguration: Event<void>;
+}
+
+export class MockGitHubApiConfigListener extends ConfigListener implements MockGitHubApiConfig {
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+    this.handleDidChangeConfigurationForRelevantSettings([MOCK_GH_API_SERVER], e);
+  }
+
+  public get mockServerEnabled(): boolean {
+    return !!MOCK_GH_API_SERVER.getValue<boolean>();
+  }
+}

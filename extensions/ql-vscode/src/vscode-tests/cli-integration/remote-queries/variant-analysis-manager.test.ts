@@ -149,6 +149,17 @@ describe('Variant Analysis Manager', async function() {
 
         expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
       });
+
+      it('should pop download tasks off the queue', async () => {
+        const getResultsSpy = sandbox.spy(variantAnalysisManager, 'autoDownloadVariantAnalysisResult');
+
+        await variantAnalysisManager.enqueueDownload(scannedRepos[0], variantAnalysis, cancellationTokenSource.token);
+        await variantAnalysisManager.enqueueDownload(scannedRepos[1], variantAnalysis, cancellationTokenSource.token);
+        await variantAnalysisManager.enqueueDownload(scannedRepos[2], variantAnalysis, cancellationTokenSource.token);
+
+        expect(variantAnalysisManager.downloadsQueueSize()).to.equal(0);
+        expect(getResultsSpy).to.have.been.calledThrice;
+      });
     });
   });
 });

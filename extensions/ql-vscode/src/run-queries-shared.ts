@@ -192,13 +192,13 @@ export class QueryEvaluationInfo {
     if (await this.hasDil()) {
       return this.dilPath;
     }
-    const compiledQuery = path.join(this.querySaveDir, 'compiledQuery.qlo');
+    const compiledQuery = this.compileQueryPath;
     if (!(await fs.pathExists(compiledQuery))) {
       if (await cliServer.cliConstraints.supportsNewQueryServer()) {
         // This could be from the new query server
         // in which case we expect the qlo to be missing so we should ignore it
         throw new Error(
-          `DIL was not found. ${compiledQuery}`
+          `DIL was not found. Expected location: '${this.dilPath}'`
         );
       } else {
         throw new Error(
