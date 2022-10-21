@@ -99,39 +99,25 @@ function createGetVariantAnalysisRequestHandler(requests: GitHubApiRequest[]): R
 function createGetVariantAnalysisRepoRequestHandlers(requests: GitHubApiRequest[]): RequestHandler[] {
   const getVariantAnalysisRepoRequests = requests.filter(r => r.request.kind === RequestKind.GetVariantAnalysisRepo) as GetVariantAnalysisRepoRequest[];
 
-  const handlers: RequestHandler[] = [];
-  for (const request of getVariantAnalysisRepoRequests) {
-    const handler = rest.get(
-      `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/${request.request.repositoryId}`,
-      (_req, res, ctx) => {
-        return res(
-          ctx.status(request.response.status),
-          ctx.json(request.response.body),
-        );
-      });
-
-    handlers.push(handler);
-  }
-
-  return handlers;
+  return getVariantAnalysisRepoRequests.map(request => rest.get(
+    `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/${request.request.repositoryId}`,
+    (_req, res, ctx) => {
+      return res(
+        ctx.status(request.response.status),
+        ctx.json(request.response.body),
+      );
+    }));
 }
 
 function createGetVariantAnalysisRepoResultRequestHandlers(requests: GitHubApiRequest[]): RequestHandler[] {
   const getVariantAnalysisRepoResultRequests = requests.filter(r => r.request.kind === RequestKind.GetVariantAnalysisRepoResult) as GetVariantAnalysisRepoResultRequest[];
 
-  const handlers: RequestHandler[] = [];
-  for (const request of getVariantAnalysisRepoResultRequests) {
-    const handler = rest.get(
-      `https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/:variantAnalysisId/${request.request.repositoryId}/*`,
-      (_req, res, ctx) => {
-        return res(
-          ctx.status(request.response.status),
-          ctx.body(request.response.body)
-        );
-      });
-
-    handlers.push(handler);
-  }
-
-  return handlers;
+  return getVariantAnalysisRepoResultRequests.map(request => rest.get(
+    `https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/:variantAnalysisId/${request.request.repositoryId}/*`,
+    (_req, res, ctx) => {
+      return res(
+        ctx.status(request.response.status),
+        ctx.body(request.response.body)
+      );
+    }));
 }
