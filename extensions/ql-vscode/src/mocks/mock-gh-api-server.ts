@@ -1,10 +1,11 @@
-import { MockGitHubApiConfigListener } from '../config';
-
+import * as fs from 'fs-extra';
+import { commands, env, ExtensionContext, ExtensionMode, Uri, window } from 'vscode';
 import { setupServer, SetupServerApi } from 'msw/node';
-import { Recorder } from './recorder';
-import { commands, env, Uri, window } from 'vscode';
+
+import { getMockGitHubApiServerScenariosPath, MockGitHubApiConfigListener } from '../config';
 import { DisposableObject } from '../pure/disposable-object';
-import { getMockGitHubApiServerScenariosPath } from '../config';
+
+import { Recorder } from './recorder';
 
 /**
  * Enables mocking of the GitHub API server via HTTP interception, using msw.
@@ -16,7 +17,9 @@ export class MockGitHubApiServer extends DisposableObject {
   private readonly server: SetupServerApi;
   private readonly recorder: Recorder;
 
-  constructor() {
+  constructor(
+    private readonly ctx: ExtensionContext,
+  ) {
     super();
     this.isListening = false;
     this.config = new MockGitHubApiConfigListener();
@@ -125,6 +128,13 @@ export class MockGitHubApiServer extends DisposableObject {
     const scenariosPath = getMockGitHubApiServerScenariosPath();
     if (scenariosPath) {
       return scenariosPath;
+    }
+
+    if (this.ctx.extensionMode === ExtensionMode.Development) {
+      const developmentScenariosPath = Uri.joinPath(this.ctx.extensionUri, 'src/mocks/scenarios').toString();
+      if (await fs.pathExists(developmentScenariosPath)) {
+        return developmentScenariosPath;
+      }
     }
 
     const directories = await window.showOpenDialog({

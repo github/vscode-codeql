@@ -1191,7 +1191,7 @@ async function activateWithInstalledDistribution(
     )
   );
 
-  const mockServer = new MockGitHubApiServer();
+  const mockServer = new MockGitHubApiServer(ctx);
   ctx.subscriptions.push(mockServer);
   ctx.subscriptions.push(
     commandRunner(
