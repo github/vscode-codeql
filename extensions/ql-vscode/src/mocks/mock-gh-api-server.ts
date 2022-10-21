@@ -157,12 +157,17 @@ export class MockGitHubApiServer extends DisposableObject {
   }
 
   private setupConfigListener(): void {
-    this.config.onDidChangeConfiguration(() => {
-      if (this.config.mockServerEnabled && !this.isListening) {
-        this.startServer();
-      } else if (!this.config.mockServerEnabled && this.isListening) {
-        this.stopServer();
-      }
-    });
+    // The config "changes" from the default at startup, so we need to call onConfigChange() to ensure the server is
+    // started if required.
+    this.onConfigChange();
+    this.config.onDidChangeConfiguration(() => this.onConfigChange());
+  }
+
+  private onConfigChange(): void {
+    if (this.config.mockServerEnabled && !this.isListening) {
+      this.startServer();
+    } else if (!this.config.mockServerEnabled && this.isListening) {
+      this.stopServer();
+    }
   }
 }
