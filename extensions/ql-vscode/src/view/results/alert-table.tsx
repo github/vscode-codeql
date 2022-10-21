@@ -32,7 +32,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
   }
 
   /**
-   * Given a list of `ids`, toggle the first, and if we 'open' the
+   * Given a list of `keys`, toggle the first, and if we 'open' the
    * first item, open all the rest as well. This mimics vscode's file
    * explorer tree view behavior.
    */
