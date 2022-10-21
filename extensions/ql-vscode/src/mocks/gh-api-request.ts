@@ -12,13 +12,17 @@ export enum RequestKind {
   GetVariantAnalysisRepoResult = 'getVariantAnalysisRepoResult',
 }
 
+export interface BasicErorResponse {
+  message: string;
+}
+
 export interface GetRepoRequest {
   request: {
     kind: RequestKind.GetRepo
   },
   response: {
     status: number,
-    body: Repository
+    body: Repository | BasicErorResponse | undefined
   }
 }
 
@@ -28,7 +32,7 @@ export interface SubmitVariantAnalysisRequest {
   },
   response: {
     status: number,
-    body: VariantAnalysis
+    body: VariantAnalysis | BasicErorResponse | undefined
   }
 }
 
@@ -38,7 +42,7 @@ export interface GetVariantAnalysisRequest {
   },
   response: {
     status: number,
-    body: VariantAnalysis
+    body: VariantAnalysis | BasicErorResponse | undefined
   }
 }
 
@@ -49,7 +53,7 @@ export interface GetVariantAnalysisRepoRequest {
   },
   response: {
     status: number,
-    body: VariantAnalysisRepoTask
+    body: VariantAnalysisRepoTask | BasicErorResponse | undefined
   }
 }
 
@@ -60,7 +64,7 @@ export interface GetVariantAnalysisRepoResultRequest {
   },
   response: {
     status: number,
-    body: ArrayBuffer
+    body: ArrayBuffer | undefined
   }
 }
 
