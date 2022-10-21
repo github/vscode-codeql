@@ -274,7 +274,7 @@ describe('query-results', () => {
       const validSarifStream = fs.createWriteStream(interpretedResultsPath, { flags: 'w' });
 
       const finished = new Promise((res, rej) => {
-        validSarifStream.addListener('finish', res);
+        validSarifStream.addListener('close', res);
         validSarifStream.addListener('error', rej);
       });
 
@@ -324,7 +324,7 @@ describe('query-results', () => {
       const invalidSarifStream = fs.createWriteStream(interpretedResultsPath, { flags: 'w' });
 
       const finished = new Promise((res, rej) => {
-        invalidSarifStream.addListener('finish', res);
+        invalidSarifStream.addListener('close', res);
         invalidSarifStream.addListener('error', rej);
       });
 
