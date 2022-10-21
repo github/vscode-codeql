@@ -1,11 +1,13 @@
 import { expect } from 'chai';
 
 import { QueryStatus } from '../../src/query-status';
-import { getQueryHistoryItemId, getQueryText, getRawQueryName } from '../../src/query-history-info';
+import { buildRepoLabel, getQueryHistoryItemId, getQueryText, getRawQueryName } from '../../src/query-history-info';
 import { VariantAnalysisHistoryItem } from '../../src/remote-queries/variant-analysis-history-item';
 import { createMockVariantAnalysis } from '../../src/vscode-tests/factories/remote-queries/shared/variant-analysis';
+import { createMockScannedRepos } from '../../src/vscode-tests/factories/remote-queries/shared/scanned-repositories';
 import { createMockLocalQueryInfo } from '../../src/vscode-tests/factories/local-queries/local-query-history-item';
 import { createMockRemoteQueryHistoryItem } from '../../src/vscode-tests/factories/remote-queries/remote-query-history-item';
+import { VariantAnalysisRepoStatus, VariantAnalysisStatus } from '../../src/remote-queries/shared/variant-analysis';
 
 describe('Query history info', () => {
 
@@ -18,7 +20,15 @@ describe('Query history info', () => {
     status: QueryStatus.InProgress,
     completed: false,
     historyItemId: 'abc123',
-    variantAnalysis: createMockVariantAnalysis()
+    variantAnalysis: createMockVariantAnalysis(
+      VariantAnalysisStatus.InProgress,
+      createMockScannedRepos([
+        VariantAnalysisRepoStatus.Succeeded,
+        VariantAnalysisRepoStatus.Pending,
+        VariantAnalysisRepoStatus.InProgress,
+        VariantAnalysisRepoStatus.Canceled,
+      ])
+    ),
   };
 
   describe('getRawQueryName', () => {
@@ -80,4 +90,24 @@ describe('Query history info', () => {
       expect(queryText).to.equal(variantAnalysisHistoryItem.variantAnalysis.query.text);
     });
   });
+
+  describe('buildRepoLabel', () => {
+    it('should build the repo label for remote query history items', () => {
+      const repoLabel = buildRepoLabel(remoteQueryHistoryItem);
+      const expectedRepoLabel = `${remoteQueryHistoryItem.remoteQuery.controllerRepository.owner}/${remoteQueryHistoryItem.remoteQuery.controllerRepository.name}`;
+
+      expect(repoLabel).to.equal(expectedRepoLabel);
+
+      const remoteQueryHistoryItem2 = createMockRemoteQueryHistoryItem({repositoryCount: 3});
+      const repoLabel2 = buildRepoLabel(remoteQueryHistoryItem2);
+      const expectedRepoLabel2 = '3 repositories';
+
+      expect(repoLabel2).to.equal(expectedRepoLabel2);
+    });
+    it('should build the repo label for variant analysis history items', () => {
+      const repoLabel = buildRepoLabel(variantAnalysisHistoryItem);
+
+      expect(repoLabel).to.equal('2/4 repositories');
+    });
+  });  
 });
