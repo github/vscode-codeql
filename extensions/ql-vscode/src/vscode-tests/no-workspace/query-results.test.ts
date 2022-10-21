@@ -283,7 +283,7 @@ describe('query-results', () => {
       }), 'utf8');
 
       validSarifStream.write('[', 'utf8');
-      const iterations = 1000;
+      const iterations = 1_000_000;
       for (let i = 0; i < iterations; i++) {
         validSarifStream.write(JSON.stringify({
           a: '6'
@@ -329,7 +329,7 @@ describe('query-results', () => {
       });
 
       invalidSarifStream.write('[', 'utf8');
-      const iterations = 1000;
+      const iterations = 1_000_000;
       for (let i = 0; i < iterations; i++) {
         invalidSarifStream.write(JSON.stringify({
           a: '6'
