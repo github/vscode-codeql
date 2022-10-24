@@ -86,7 +86,7 @@ describe('Variant Analysis Manager', async function() {
       } as unknown as Credentials;
       sandbox.stub(Credentials, 'initialize').resolves(mockCredentials);
 
-      const sourceFilePath = path.join(__dirname, '../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip');
+      const sourceFilePath = path.join(__dirname, '../data/remote-queries/variant-analysis-results.zip');
       arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
     });
 

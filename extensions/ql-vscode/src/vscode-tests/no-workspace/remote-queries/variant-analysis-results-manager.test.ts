@@ -86,7 +86,7 @@ describe(VariantAnalysisResultsManager.name, function() {
         dummyRepoTask = createMockVariantAnalysisRepoTask();
 
         storageDirectory = variantAnalysisResultsManager.getRepoStorageDirectory(variantAnalysisStoragePath, dummyRepoTask.repository.full_name);
-        const sourceFilePath = path.join(__dirname, '../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip');
+        const sourceFilePath = path.join(__dirname, '../data/remote-queries/variant-analysis-results.zip');
         arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
 
         getVariantAnalysisRepoResultStub = sandbox
