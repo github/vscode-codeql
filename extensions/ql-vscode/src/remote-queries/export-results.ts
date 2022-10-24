@@ -4,10 +4,7 @@ import * as fs from 'fs-extra';
 import { window, commands, Uri, ExtensionContext, QuickPickItem, workspace, ViewColumn } from 'vscode';
 import { Credentials } from '../authentication';
 import { UserCancellationException } from '../commandRunner';
-import {
-  showInformationMessageWithAction,
-  pluralize
-} from '../helpers';
+import { showInformationMessageWithAction } from '../helpers';
 import { logger } from '../logging';
 import { QueryHistoryManager } from '../query-history';
 import { createGist } from './gh-api/gh-actions-api-client';
@@ -16,6 +13,7 @@ import { generateMarkdown } from './remote-queries-markdown-generation';
 import { RemoteQuery } from './remote-query';
 import { AnalysisResults, sumAnalysesResults } from './shared/analysis-result';
 import { RemoteQueryHistoryItem } from './remote-query-history-item';
+import { pluralize } from '../pure/word';
 
 /**
  * Exports the results of the given or currently-selected remote query.

@@ -26,10 +26,16 @@ import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 import PQueue from 'p-queue';
 import { createTimestampFile } from '../helpers';
+import { QueryStatus } from '../query-status';
+import * as fs from 'fs-extra';
+
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis>());
   public readonly onVariantAnalysisAdded = this._onVariantAnalysisAdded.event;
+
+  private readonly _onVariantAnalysisRemoved = this.push(new EventEmitter<VariantAnalysis>());
+  public readonly onVariantAnalysisRemoved = this._onVariantAnalysisRemoved.event;
 
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
   private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
@@ -50,6 +56,18 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, logger));
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
+  }
+
+  public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis, status: QueryStatus) {
+    if (!(await this.variantAnalysisRecordExists(variantAnalysis.id))) {
+      // In this case, the variant analysis was deleted from disk, most likely because 
+      // it was purged by another workspace.
+      this._onVariantAnalysisRemoved.fire(variantAnalysis);
+    } else if (status === QueryStatus.InProgress) {
+      // In this case, last time we checked, the query was still in progress.
+      // We need to setup the monitor to check for completion.
+      await commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
+    }
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
@@ -90,6 +108,11 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     }
 
     await this.variantAnalysisResultsManager.loadResults(variantAnalysisId, this.getVariantAnalysisStorageLocation(variantAnalysisId), repositoryFullName);
+  }
+
+  private async variantAnalysisRecordExists(variantAnalysisId: number): Promise<boolean> {
+    const filePath = this.getVariantAnalysisStorageLocation(variantAnalysisId);
+    return await fs.pathExists(filePath);
   }
 
   private async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {

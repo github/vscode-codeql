@@ -611,7 +611,15 @@ export class QueryHistoryManager extends DisposableObject {
       await this.refreshTreeView();
     });
 
+    const variantAnalysisRemovedSubscription = this.variantAnalysisManager.onVariantAnalysisRemoved(async (variantAnalysis) => {
+      const item = this.treeDataProvider.allHistory.find(i => i.t === 'variant-analysis' && i.variantAnalysis.id === variantAnalysis.id);
+      if (item) {
+        await this.removeRemoteQuery(item as RemoteQueryHistoryItem);
+      }
+    });
+
     this.push(variantAnalysisAddedSubscription);
+    this.push(variantAnalysisRemovedSubscription);
   }
 
   private registerToRemoteQueriesEvents() {
@@ -662,6 +670,9 @@ export class QueryHistoryManager extends DisposableObject {
     this.treeDataProvider.allHistory.forEach(async (item) => {
       if (item.t === 'remote') {
         await this.remoteQueriesManager.rehydrateRemoteQuery(item.queryId, item.remoteQuery, item.status);
+      }
+      if (item.t === 'variant-analysis') {
+        await this.variantAnalysisManager.rehydrateVariantAnalysis(item.variantAnalysis, item.status);
       }
     });
   }

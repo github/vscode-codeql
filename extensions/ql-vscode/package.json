@@ -1127,15 +1127,15 @@
         },
         {
           "command": "codeQL.mockGitHubApiServer.startRecording",
-          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && !codeQL.mockGitHubApiServer.recording"
+          "when": "config.codeQL.mockGitHubApiServer.enabled && !codeQL.mockGitHubApiServer.recording"
         },
         {
           "command": "codeQL.mockGitHubApiServer.saveScenario",
-          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && codeQL.mockGitHubApiServer.recording"
+          "when": "config.codeQL.mockGitHubApiServer.enabled && codeQL.mockGitHubApiServer.recording"
         },
         {
           "command": "codeQL.mockGitHubApiServer.cancelRecording",
-          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && codeQL.mockGitHubApiServer.recording"
+          "when": "config.codeQL.mockGitHubApiServer.enabled && codeQL.mockGitHubApiServer.recording"
         },
         {
           "command": "codeQL.mockGitHubApiServer.loadScenario",
@@ -1143,7 +1143,7 @@
         },
         {
           "command": "codeQL.mockGitHubApiServer.unloadScenario",
-          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && codeQL.mockGitHubApiServer.scenarioLoaded"
+          "when": "config.codeQL.mockGitHubApiServer.enabled && codeQL.mockGitHubApiServer.scenarioLoaded"
         }
       ],
       "editor/context": [
