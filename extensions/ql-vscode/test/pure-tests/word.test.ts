@@ -13,5 +13,8 @@ describe('word helpers', () => {
     it('should return the plural form if the number is greater than 1', () => {
       expect(pluralize(7, 'thing', 'things')).to.eq('7 things');
     });
+    it('should return the empty string if the number is undefined', () => {
+      expect(pluralize(undefined, 'thing', 'things')).to.eq('');
+    });
   });
 });
