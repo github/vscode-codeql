@@ -144,6 +144,7 @@ function createGetVariantAnalysisRepoResultRequestHandler(requests: GitHubApiReq
       if (scenarioRequest.response.body) {
         return res(
           ctx.status(scenarioRequest.response.status),
+          ctx.set('Content-Type', scenarioRequest.response.contentType),
           ctx.body(scenarioRequest.response.body),
         );
       } else {

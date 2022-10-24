@@ -6,6 +6,7 @@ import { SetupServerApi } from 'msw/node';
 import { IsomorphicResponse } from '@mswjs/interceptors';
 
 import { Headers } from 'headers-polyfill';
+import fetch from 'node-fetch';
 
 import { DisposableObject } from '../pure/disposable-object';
 
@@ -102,10 +103,14 @@ export class Recorder extends DisposableObject {
   }
 
   private onRequestStart(request: MockedRequest): void {
+    if (request.headers.has('x-vscode-codeql-msw-bypass')) {
+      return;
+    }
+
     this.allRequests.set(request.id, request);
   }
 
-  private onResponseBypass(response: IsomorphicResponse, requestId: string): void {
+  private async onResponseBypass(response: IsomorphicResponse, requestId: string): Promise<void> {
     const request = this.allRequests.get(requestId);
     this.allRequests.delete(requestId);
     if (!request) {
@@ -116,7 +121,7 @@ export class Recorder extends DisposableObject {
       return;
     }
 
-    const gitHubApiRequest = createGitHubApiRequest(request.url.toString(), response.status, response.body, response.headers);
+    const gitHubApiRequest = await createGitHubApiRequest(request.url.toString(), response.status, response.body, response.headers);
     if (!gitHubApiRequest) {
       return;
     }
@@ -125,7 +130,7 @@ export class Recorder extends DisposableObject {
   }
 }
 
-function createGitHubApiRequest(url: string, status: number, body: string, headers: Headers): GitHubApiRequest | undefined {
+async function createGitHubApiRequest(url: string, status: number, body: string, headers: Headers): Promise<GitHubApiRequest | undefined> {
   if (!url) {
     return undefined;
   }
@@ -183,6 +188,17 @@ function createGitHubApiRequest(url: string, status: number, body: string, heade
   // if url is a download URL for a variant analysis result, then it's a get-variant-analysis-repoResult.
   const repoDownloadMatch = url.match(/objects-origin\.githubusercontent\.com\/codeql-query-console\/codeql-variant-analysis-repo-tasks\/\d+\/(?<repositoryId>\d+)/);
   if (repoDownloadMatch?.groups?.repositoryId) {
+    // msw currently doesn't support binary response bodies, so we need to download this separately
+    // see https://github.com/mswjs/interceptors/blob/15eafa6215a328219999403e3ff110e71699b016/src/interceptors/ClientRequest/utils/getIncomingMessageBody.ts#L24-L33
+    // Essentially, mws is trying to decode a ZIP file as UTF-8 which changes the bytes and corrupts the file.
+    const response = await fetch(url, {
+      headers: {
+        // We need to ensure we don't end up in an infinite loop, since this request will also be intercepted
+        'x-vscode-codeql-msw-bypass': 'true',
+      },
+    });
+    const responseBuffer = await response.buffer();
+
     return {
       request: {
         kind: RequestKind.GetVariantAnalysisRepoResult,
@@ -190,7 +206,7 @@ function createGitHubApiRequest(url: string, status: number, body: string, heade
       },
       response: {
         status,
-        body: Buffer.from(body),
+        body: responseBuffer,
         contentType: headers.get('content-type') ?? 'application/octet-stream',
       }
     };
