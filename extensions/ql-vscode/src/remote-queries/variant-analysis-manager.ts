@@ -1,3 +1,5 @@
+import * as path from 'path';
+
 import * as ghApiClient from './gh-api/gh-api-client';
 import { CancellationToken, commands, EventEmitter, ExtensionContext, window } from 'vscode';
 import { DisposableObject } from '../pure/disposable-object';
@@ -23,12 +25,19 @@ import { CodeQLCliServer } from '../cli';
 import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 import PQueue from 'p-queue';
+import { createTimestampFile } from '../helpers';
+import { QueryStatus } from '../query-status';
+import * as fs from 'fs-extra';
+
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis>());
   public readonly onVariantAnalysisAdded = this._onVariantAnalysisAdded.event;
   private readonly _onVariantAnalysisStatusUpdated = this.push(new EventEmitter<VariantAnalysis>());
   public readonly onVariantAnalysisStatusUpdated = this._onVariantAnalysisStatusUpdated.event;
+
+  private readonly _onVariantAnalysisRemoved = this.push(new EventEmitter<VariantAnalysis>());
+  public readonly onVariantAnalysisRemoved = this._onVariantAnalysisRemoved.event;
 
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
   private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
@@ -40,15 +49,27 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   constructor(
     private readonly ctx: ExtensionContext,
     cliServer: CodeQLCliServer,
-    storagePath: string,
+    private readonly storagePath: string,
     logger: Logger,
   ) {
     super();
     this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx));
     this.variantAnalysisMonitor.onVariantAnalysisChange(this.onVariantAnalysisUpdated.bind(this));
 
-    this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, storagePath, logger));
+    this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, logger));
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
+  }
+
+  public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis, status: QueryStatus) {
+    if (!(await this.variantAnalysisRecordExists(variantAnalysis.id))) {
+      // In this case, the variant analysis was deleted from disk, most likely because 
+      // it was purged by another workspace.
+      this._onVariantAnalysisRemoved.fire(variantAnalysis);
+    } else if (status === QueryStatus.InProgress) {
+      // In this case, last time we checked, the query was still in progress.
+      // We need to setup the monitor to check for completion.
+      await commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
+    }
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
@@ -88,7 +109,12 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
     }
 
-    await this.variantAnalysisResultsManager.loadResults(variantAnalysisId, repositoryFullName);
+    await this.variantAnalysisResultsManager.loadResults(variantAnalysisId, this.getVariantAnalysisStorageLocation(variantAnalysisId), repositoryFullName);
+  }
+
+  private async variantAnalysisRecordExists(variantAnalysisId: number): Promise<boolean> {
+    const filePath = this.getVariantAnalysisStorageLocation(variantAnalysisId);
+    return await fs.pathExists(filePath);
   }
 
   private async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
@@ -102,7 +128,9 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this._onVariantAnalysisStatusUpdated.fire(variantAnalysis);
   }
 
-  public onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): void {
+  public async onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): Promise<void> {
+    await this.prepareStorageDirectory(variantAnalysis.id);
+
     this._onVariantAnalysisAdded.fire(variantAnalysis);
   }
 
@@ -160,7 +188,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.InProgress;
       await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
 
-      await this.variantAnalysisResultsManager.download(credentials, variantAnalysisSummary.id, repoTask);
+      await this.variantAnalysisResultsManager.download(credentials, variantAnalysisSummary.id, repoTask, this.getVariantAnalysisStorageLocation(variantAnalysisSummary.id));
     }
 
     repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
@@ -177,6 +205,23 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
   public downloadsQueueSize(): number {
     return this.queue.pending;
+  }
+
+  public getVariantAnalysisStorageLocation(variantAnalysisId: number): string {
+    return path.join(
+      this.storagePath,
+      `${variantAnalysisId}`
+    );
+  }
+
+  /**
+   * Prepares a directory for storing results for a variant analysis.
+   * This directory contains a timestamp file, which will be
+   * used by the query history manager to determine when the directory
+   * should be deleted.
+   */
+  private async prepareStorageDirectory(variantAnalysisId: number): Promise<void> {
+    await createTimestampFile(this.getVariantAnalysisStorageLocation(variantAnalysisId));
   }
 
   public async promptOpenVariantAnalysis() {

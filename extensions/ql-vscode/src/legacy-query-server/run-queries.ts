@@ -54,7 +54,7 @@ export class QueryInProgress {
   }
 
   get compiledQueryPath() {
-    return path.join(this.querySaveDir, 'compiledQuery.qlo');
+    return this.queryEvalInfo.compileQueryPath;
   }
 
 
