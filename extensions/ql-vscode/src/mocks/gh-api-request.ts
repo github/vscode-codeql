@@ -74,3 +74,28 @@ export type GitHubApiRequest =
   | GetVariantAnalysisRequest
   | GetVariantAnalysisRepoRequest
   | GetVariantAnalysisRepoResultRequest;
+
+export const isGetRepoRequest = (
+  request: GitHubApiRequest
+): request is GetRepoRequest =>
+  request.request.kind === RequestKind.GetRepo;
+
+export const isSubmitVariantAnalysisRequest = (
+  request: GitHubApiRequest
+): request is SubmitVariantAnalysisRequest =>
+  request.request.kind === RequestKind.SubmitVariantAnalysis;
+
+export const isGetVariantAnalysisRequest = (
+  request: GitHubApiRequest
+): request is GetVariantAnalysisRequest =>
+  request.request.kind === RequestKind.GetVariantAnalysis;
+
+export const isGetVariantAnalysisRepoRequest = (
+  request: GitHubApiRequest
+): request is GetVariantAnalysisRepoRequest =>
+  request.request.kind === RequestKind.GetVariantAnalysisRepo;
+
+export const isGetVariantAnalysisRepoResultRequest = (
+  request: GitHubApiRequest
+): request is GetVariantAnalysisRepoResultRequest =>
+  request.request.kind === RequestKind.GetVariantAnalysisRepoResult;
