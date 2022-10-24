@@ -32,7 +32,7 @@ export interface SubmitVariantAnalysisRequest {
   },
   response: {
     status: number,
-    body: VariantAnalysis | BasicErorResponse | undefined
+    body?: VariantAnalysis | BasicErorResponse
   }
 }
 
@@ -42,7 +42,7 @@ export interface GetVariantAnalysisRequest {
   },
   response: {
     status: number,
-    body: VariantAnalysis | BasicErorResponse | undefined
+    body?: VariantAnalysis | BasicErorResponse
   }
 }
 
@@ -53,7 +53,7 @@ export interface GetVariantAnalysisRepoRequest {
   },
   response: {
     status: number,
-    body: VariantAnalysisRepoTask | BasicErorResponse | undefined
+    body?: VariantAnalysisRepoTask | BasicErorResponse
   }
 }
 
@@ -64,7 +64,7 @@ export interface GetVariantAnalysisRepoResultRequest {
   },
   response: {
     status: number,
-    body: ArrayBuffer | undefined
+    body?: ArrayBuffer
   }
 }
 
