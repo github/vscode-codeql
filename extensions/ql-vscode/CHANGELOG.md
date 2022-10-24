@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Add commands for navigating up, down, left, or right in the result viewer. Previously there were only commands for moving up and down the currently-selected path. We suggest binding keyboard shortcuts to these commands, for navigating the result viewer using the keyboard. [#1568](https://github.com/github/vscode-codeql/pull/1568)
+
 ## 1.7.2 - 14 October 2022
 
 - Fix a bug where results created in older versions were thought to be unsuccessful. [#1605](https://github.com/github/vscode-codeql/pull/1605)
@@ -9,7 +11,6 @@
 ## 1.7.1 - 12 October 2022
 
 - Fix a bug where it was not possible to add a database folder if the folder name starts with `db-`. [#1565](https://github.com/github/vscode-codeql/pull/1565)
-- Add commands for navigating up, down, left, or right in the result viewer. Previously there were only commands for moving up and down the currently-selected path. We suggest binding keyboard shortcuts to these commands, for navigating the result viewer using the keyboard. [#1568](https://github.com/github/vscode-codeql/pull/1568)
 - Ensure the results view opens in an editor column beside the currently active editor. [#1557](https://github.com/github/vscode-codeql/pull/1557)
 
 ## 1.7.0 - 20 September 2022
