@@ -122,9 +122,15 @@ function createGetVariantAnalysisRepoResultRequestHandlers(requests: GitHubApiRe
   return getVariantAnalysisRepoResultRequests.map(request => rest.get(
     `https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/:variantAnalysisId/${request.request.repositoryId}/*`,
     (_req, res, ctx) => {
-      return res(
-        ctx.status(request.response.status),
-        ctx.body(request.response.body)
-      );
+      if (request.response.body) {
+        return res(
+          ctx.status(request.response.status),
+          ctx.body(request.response.body),
+        );
+      } else {
+        return res(
+          ctx.status(request.response.status),
+        );
+      }
     }));
 }
