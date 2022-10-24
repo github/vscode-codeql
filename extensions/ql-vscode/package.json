@@ -592,22 +592,19 @@
       {
         "command": "codeQLQueryHistory.copyRepoList",
         "title": "Copy Repository List"
-      },
-      {
-        "command": "codeQLQueryResults.down",
-        "title": "CodeQL: Navigate Down in Result Viewer"
+        "title": "CodeQL: Navigate Down in Local Result Viewer"
       },
       {
         "command": "codeQLQueryResults.up",
-        "title": "CodeQL: Navigate Up in Result Viewer"
+        "title": "CodeQL: Navigate Up in Local Result Viewer"
       },
       {
         "command": "codeQLQueryResults.right",
-        "title": "CodeQL: Navigate Right in Result Viewer"
+        "title": "CodeQL: Navigate Right in Local Result Viewer"
       },
       {
         "command": "codeQLQueryResults.left",
-        "title": "CodeQL: Navigate Left in Result Viewer"
+        "title": "CodeQL: Navigate Left in Local Result Viewer"
       },
       {
         "command": "codeQL.restartQueryServer",
