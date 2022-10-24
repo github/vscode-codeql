@@ -1139,7 +1139,7 @@
         },
         {
           "command": "codeQL.mockGitHubApiServer.loadScenario",
-          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && !codeQL.mockGitHubApiServer.recording"
+          "when": "config.codeQL.mockGitHubApiServer.enabled && !codeQL.mockGitHubApiServer.recording"
         },
         {
           "command": "codeQL.mockGitHubApiServer.unloadScenario",
