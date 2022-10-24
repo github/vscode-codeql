@@ -1,6 +1,6 @@
 import { CodeQLCliServer } from '../../../../cli';
 
-export function createMockCliServer(mockOperations: Record<string, any[]>, sandbox: sinon.SinonSandbox): CodeQLCliServer {
+export function createMockCliServer(sandbox: sinon.SinonSandbox, mockOperations: Record<string, any[]>): CodeQLCliServer {
   const mockServer: Record<string, any> = {};
   for (const [operation, returns] of Object.entries(mockOperations)) {
     mockServer[operation] = sandbox.stub();

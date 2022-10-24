@@ -48,17 +48,20 @@ describe('Variant Analysis Monitor', async function() {
 
     try {
       const ctx = createMockExtensionContext();
-      cli = createMockCliServer({
-        bqrsInfo: [{ 'result-sets': [{ name: 'result-set-1' }, { name: 'result-set-2' }] }],
-        bqrsDecode: [{
-          columns: [{ kind: 'NotString' }, { kind: 'String' }],
-          tuples: [['a', 'b'], ['c', 'd']],
-          next: 1
-        }, {
-          columns: [{ kind: 'String' }, { kind: 'NotString' }, { kind: 'StillNotString' }],
-          tuples: [['a', 'b', 'c']]
-        }]
-      }, sandbox);
+      cli = createMockCliServer(
+        sandbox,
+        {
+          bqrsInfo: [{ 'result-sets': [{ name: 'result-set-1' }, { name: 'result-set-2' }] }],
+          bqrsDecode: [{
+            columns: [{ kind: 'NotString' }, { kind: 'String' }],
+            tuples: [['a', 'b'], ['c', 'd']],
+            next: 1
+          }, {
+            columns: [{ kind: 'String' }, { kind: 'NotString' }, { kind: 'StillNotString' }],
+            tuples: [['a', 'b', 'c']]
+          }]
+        }
+      );
       const storagePath = path.join(__dirname);
 
       variantAnalysisMonitor = new VariantAnalysisMonitor(ctx);

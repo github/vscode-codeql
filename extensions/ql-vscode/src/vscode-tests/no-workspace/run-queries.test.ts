@@ -64,19 +64,22 @@ describe('run-queries', () => {
   [SELECT_QUERY_NAME, 'other'].forEach(resultSetName => {
     it(`should export csv results for result set ${resultSetName}`, async () => {
       const csvLocation = path.join(tmpDir.name, 'test.csv');
-      const cliServer = createMockCliServer({
-        bqrsInfo: [{ 'result-sets': [{ name: resultSetName }, { name: 'hucairz' }] }],
-        bqrsDecode: [{
-          columns: [{ kind: 'NotString' }, { kind: 'String' }],
-          tuples: [['a', 'b'], ['c', 'd']],
-          next: 1
-        }, {
-          // just for fun, give a different set of columns here
-          // this won't happen with the real CLI, but it's a good test
-          columns: [{ kind: 'String' }, { kind: 'NotString' }, { kind: 'StillNotString' }],
-          tuples: [['a', 'b', 'c']]
-        }]
-      }, sandbox);
+      const cliServer = createMockCliServer(
+        sandbox,
+        {
+          bqrsInfo: [{ 'result-sets': [{ name: resultSetName }, { name: 'hucairz' }] }],
+          bqrsDecode: [{
+            columns: [{ kind: 'NotString' }, { kind: 'String' }],
+            tuples: [['a', 'b'], ['c', 'd']],
+            next: 1
+          }, {
+            // just for fun, give a different set of columns here
+            // this won't happen with the real CLI, but it's a good test
+            columns: [{ kind: 'String' }, { kind: 'NotString' }, { kind: 'StillNotString' }],
+            tuples: [['a', 'b', 'c']]
+          }]
+        }
+      );
       const info = createMockQueryInfo();
       const promise = info.queryEvalInfo.exportCsvResults(cliServer, csvLocation);
 
@@ -95,22 +98,25 @@ describe('run-queries', () => {
   it('should export csv results with characters that need to be escaped', async () => {
     const csvLocation = path.join(tmpDir.name, 'test.csv');
     const cliServer =
-      createMockCliServer({
-        bqrsInfo: [{ 'result-sets': [{ name: SELECT_QUERY_NAME }, { name: 'hucairz' }] }],
-        bqrsDecode: [{
-          columns: [{ kind: 'NotString' }, { kind: 'String' }],
-          // We only escape string columns. In practice, we will only see quotes in strings, but
-          // it is a good test anyway.
-          tuples: [
-            ['"a"', '"b"'],
-            ['c,xxx', 'd,yyy'],
-            ['aaa " bbb', 'ccc " ddd'],
-            [true, false],
-            [123, 456],
-            [123.98, 456.99],
-          ],
-        }]
-      }, sandbox);
+      createMockCliServer(
+        sandbox,
+        {
+          bqrsInfo: [{ 'result-sets': [{ name: SELECT_QUERY_NAME }, { name: 'hucairz' }] }],
+          bqrsDecode: [{
+            columns: [{ kind: 'NotString' }, { kind: 'String' }],
+            // We only escape string columns. In practice, we will only see quotes in strings, but
+            // it is a good test anyway.
+            tuples: [
+              ['"a"', '"b"'],
+              ['c,xxx', 'd,yyy'],
+              ['aaa " bbb', 'ccc " ddd'],
+              [true, false],
+              [123, 456],
+              [123.98, 456.99],
+            ],
+          }]
+        }
+      );
     const info = createMockQueryInfo();
     const promise = info.queryEvalInfo.exportCsvResults(cliServer, csvLocation);
 
@@ -128,9 +134,10 @@ describe('run-queries', () => {
   it('should handle csv exports for a query with no result sets', async () => {
     const csvLocation = path.join(tmpDir.name, 'test.csv');
     const cliServer =
-      createMockCliServer({
-        bqrsInfo: [{ 'result-sets': [] }]
-      }, sandbox);
+      createMockCliServer(
+        sandbox,
+        { bqrsInfo: [{ 'result-sets': [] }] }
+      );
     const info = createMockQueryInfo();
     const result = await info.queryEvalInfo.exportCsvResults(cliServer, csvLocation);
     expect(result).to.eq(false);

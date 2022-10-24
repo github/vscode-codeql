@@ -32,17 +32,20 @@ describe(VariantAnalysisResultsManager.name, function() {
     variantAnalysisId = faker.datatype.number();
 
     try {
-      cli = createMockCliServer({
-        bqrsInfo: [{ 'result-sets': [{ name: 'result-set-1' }, { name: 'result-set-2' }] }],
-        bqrsDecode: [{
-          columns: [{ kind: 'NotString' }, { kind: 'String' }],
-          tuples: [['a', 'b'], ['c', 'd']],
-          next: 1
-        }, {
-          columns: [{ kind: 'String' }, { kind: 'NotString' }, { kind: 'StillNotString' }],
-          tuples: [['a', 'b', 'c']]
-        }]
-      }, sandbox);
+      cli = createMockCliServer(
+        sandbox,
+        {
+          bqrsInfo: [{ 'result-sets': [{ name: 'result-set-1' }, { name: 'result-set-2' }] }],
+          bqrsDecode: [{
+            columns: [{ kind: 'NotString' }, { kind: 'String' }],
+            tuples: [['a', 'b'], ['c', 'd']],
+            next: 1
+          }, {
+            columns: [{ kind: 'String' }, { kind: 'NotString' }, { kind: 'StillNotString' }],
+            tuples: [['a', 'b', 'c']]
+          }]
+        }
+      );
       storagePath = path.join(__dirname);
       variantAnalysisResultsManager = new VariantAnalysisResultsManager(cli, logger);
     } catch (e) {
