@@ -11,7 +11,6 @@ import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
   tryGetQueryMetadata,
-  pluralize,
   tmpDir,
 } from '../helpers';
 import { Credentials } from '../authentication';
@@ -24,6 +23,7 @@ import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
 import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
+import { pluralize } from '../pure/word';
 import * as ghApiClient from './gh-api/gh-api-client';
 import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
 import { parseVariantAnalysisQueryLanguage, VariantAnalysisSubmission } from './shared/variant-analysis';
