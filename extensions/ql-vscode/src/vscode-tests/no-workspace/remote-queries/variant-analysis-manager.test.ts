@@ -45,20 +45,7 @@ describe('Variant Analysis Manager', async function() {
 
     try {
       const ctx = createMockExtensionContext();
-      cli = createMockCliServer(
-        sandbox,
-        {
-          bqrsInfo: [{ 'result-sets': [{ name: 'result-set-1' }, { name: 'result-set-2' }] }],
-          bqrsDecode: [{
-            columns: [{ kind: 'NotString' }, { kind: 'String' }],
-            tuples: [['a', 'b'], ['c', 'd']],
-            next: 1
-          }, {
-            columns: [{ kind: 'String' }, { kind: 'NotString' }, { kind: 'StillNotString' }],
-            tuples: [['a', 'b', 'c']]
-          }]
-        }
-      );
+      cli = createMockCliServer(sandbox);
       const storagePath = path.join(__dirname);
 
       variantAnalysisManager = new VariantAnalysisManager(ctx, cli, storagePath, logger);
