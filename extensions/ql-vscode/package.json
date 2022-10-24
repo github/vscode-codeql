@@ -592,6 +592,9 @@
       {
         "command": "codeQLQueryHistory.copyRepoList",
         "title": "Copy Repository List"
+      },
+      {
+        "command": "codeQLQueryResults.down",
         "title": "CodeQL: Navigate Down in Local Result Viewer"
       },
       {
