@@ -13,7 +13,7 @@ import { generateMarkdown } from './remote-queries-markdown-generation';
 import { RemoteQuery } from './remote-query';
 import { AnalysisResults, sumAnalysesResults } from './shared/analysis-result';
 import { RemoteQueryHistoryItem } from './remote-query-history-item';
-import { pluralize } from '../pure/helpers-pure';
+import { pluralize } from '../pure/word';
 
 /**
  * Exports the results of the given or currently-selected remote query.

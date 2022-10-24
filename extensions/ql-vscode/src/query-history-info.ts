@@ -1,7 +1,8 @@
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-history-item';
 import { LocalQueryInfo } from './query-results';
-import { assertNever, pluralize } from './pure/helpers-pure';
+import { assertNever } from './pure/helpers-pure';
+import { pluralize } from './pure/word';
 import { hasRepoScanCompleted } from './remote-queries/shared/variant-analysis';
 
 export type QueryHistoryInfo = LocalQueryInfo | RemoteQueryHistoryItem | VariantAnalysisHistoryItem;
