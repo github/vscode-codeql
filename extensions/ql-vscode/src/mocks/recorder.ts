@@ -5,9 +5,11 @@ import { MockedRequest } from 'msw';
 import { SetupServerApi } from 'msw/node';
 import { IsomorphicResponse } from '@mswjs/interceptors';
 
+import { Headers } from 'headers-polyfill';
+
 import { DisposableObject } from '../pure/disposable-object';
 
-import { GitHubApiRequest, RequestKind } from './gh-api-request';
+import { GetVariantAnalysisRepoResultRequest, GitHubApiRequest, RequestKind } from './gh-api-request';
 
 export class Recorder extends DisposableObject {
   private readonly allRequests = new Map<string, MockedRequest>();
@@ -70,7 +72,28 @@ export class Recorder extends DisposableObject {
 
       const fileName = `${i}-${request.request.kind}.json`;
       const filePath = path.join(scenarioDirectory, fileName);
-      await fs.writeFile(filePath, JSON.stringify(request, null, 2));
+
+      let writtenRequest = {
+        ...request
+      };
+
+      if (shouldWriteBodyToFile(writtenRequest)) {
+        const extension = writtenRequest.response.contentType === 'application/zip' ? 'zip' : 'bin';
+
+        const bodyFileName = `${i}-${writtenRequest.request.kind}.body.${extension}`;
+        const bodyFilePath = path.join(scenarioDirectory, bodyFileName);
+        await fs.writeFile(bodyFilePath, writtenRequest.response.body);
+
+        writtenRequest = {
+          ...writtenRequest,
+          response: {
+            ...writtenRequest.response,
+            body: `file:${bodyFileName}`,
+          },
+        };
+      }
+
+      await fs.writeFile(filePath, JSON.stringify(writtenRequest, null, 2));
     }
 
     this.stop();
@@ -93,7 +116,7 @@ export class Recorder extends DisposableObject {
       return;
     }
 
-    const gitHubApiRequest = createGitHubApiRequest(request.url.toString(), response.status, response.body);
+    const gitHubApiRequest = createGitHubApiRequest(request.url.toString(), response.status, response.body, response.headers);
     if (!gitHubApiRequest) {
       return;
     }
@@ -102,7 +125,7 @@ export class Recorder extends DisposableObject {
   }
 }
 
-function createGitHubApiRequest(url: string, status: number, body: string): GitHubApiRequest | undefined {
+function createGitHubApiRequest(url: string, status: number, body: string, headers: Headers): GitHubApiRequest | undefined {
   if (!url) {
     return undefined;
   }
@@ -167,10 +190,15 @@ function createGitHubApiRequest(url: string, status: number, body: string): GitH
       },
       response: {
         status,
-        body: body as unknown as ArrayBuffer,
+        body: Buffer.from(body),
+        contentType: headers.get('content-type') ?? 'application/octet-stream',
       }
     };
   }
 
   return undefined;
+}
+
+function shouldWriteBodyToFile(request: GitHubApiRequest): request is GetVariantAnalysisRepoResultRequest {
+  return request.response.body instanceof Buffer;
 }
