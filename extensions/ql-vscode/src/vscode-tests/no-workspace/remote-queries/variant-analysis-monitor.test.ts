@@ -2,7 +2,6 @@ import * as sinon from 'sinon';
 import { expect } from 'chai';
 import { CancellationTokenSource, commands } from 'vscode';
 import * as config from '../../../config';
-import * as path from 'path';
 
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { VariantAnalysisMonitor } from '../../../remote-queries/variant-analysis-monitor';
@@ -17,47 +16,31 @@ import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/sc
 import { processFailureReason } from '../../../remote-queries/variant-analysis-processor';
 import { Credentials } from '../../../authentication';
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
-import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
 import { createMockExtensionContext } from '..';
-import { CodeQLCliServer } from '../../../cli';
-import { logger } from '../../../logging';
-import { createMockCliServer } from './factories/cli';
 
 describe('Variant Analysis Monitor', async function() {
   this.timeout(60000);
 
   let sandbox: sinon.SinonSandbox;
-  let cli: CodeQLCliServer;
   let mockGetVariantAnalysis: sinon.SinonStub;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
   let variantAnalysis: VariantAnalysis;
-  let variantAnalysisManager: VariantAnalysisManager;
-  let mockGetDownloadResult: sinon.SinonStub;
   let commandSpy: sinon.SinonStub;
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
     sandbox.stub(config, 'isVariantAnalysisLiveResultsEnabled').returns(false);
-
     commandSpy = sandbox.stub(commands, 'executeCommand');
-
     cancellationTokenSource = new CancellationTokenSource();
-
     variantAnalysis = createMockVariantAnalysis();
 
     try {
       const ctx = createMockExtensionContext();
-      cli = createMockCliServer(sandbox);
-      const storagePath = path.join(__dirname);
-
       variantAnalysisMonitor = new VariantAnalysisMonitor(ctx);
-      variantAnalysisManager = new VariantAnalysisManager(ctx, cli, storagePath, logger);
     } catch (e) {
       fail(e as Error);
     }
-
-    mockGetDownloadResult = sandbox.stub(variantAnalysisManager, 'autoDownloadVariantAnalysisResult');
 
     limitNumberOfAttemptsToMonitor();
   });
@@ -144,7 +127,7 @@ describe('Variant Analysis Monitor', async function() {
           expect(result.scannedReposDownloaded).to.eql(succeededRepos.map(r => r.repository.id));
         });
 
-        it('should trigger a download extension command for each repo', async () => {
+        it('should trigger a download command for each repo', async () => {
           const succeededRepos = scannedRepos.filter(r => r.analysis_status === 'succeeded');
 
           await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
@@ -178,7 +161,7 @@ describe('Variant Analysis Monitor', async function() {
         it('should not try to download any repos', async () => {
           await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
-          expect(mockGetDownloadResult).to.not.have.been.called;
+          expect(commandSpy).to.have.callCount(0);
         });
       });
 
@@ -199,7 +182,7 @@ describe('Variant Analysis Monitor', async function() {
         it('should not try to download any repos', async () => {
           await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
-          expect(mockGetDownloadResult).to.not.have.been.called;
+          expect(commandSpy).to.have.callCount(0);
         });
       });
     });
