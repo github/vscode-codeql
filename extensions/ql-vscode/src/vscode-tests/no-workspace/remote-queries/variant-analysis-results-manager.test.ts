@@ -33,7 +33,7 @@ describe(VariantAnalysisResultsManager.name, function() {
 
     try {
       cli = createMockCliServer(sandbox);
-      storagePath = path.join(__dirname);
+      storagePath = path.join(__dirname, '../data/remote-queries');
       variantAnalysisResultsManager = new VariantAnalysisResultsManager(cli, logger);
     } catch (e) {
       fail(e as Error);
