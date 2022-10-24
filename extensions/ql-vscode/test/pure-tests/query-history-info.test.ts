@@ -92,22 +92,59 @@ describe('Query history info', () => {
   });
 
   describe('buildRepoLabel', () => {
-    it('should build the repo label for remote query history items', () => {
-      const repoLabel = buildRepoLabel(remoteQueryHistoryItem);
-      const expectedRepoLabel = `${remoteQueryHistoryItem.remoteQuery.controllerRepository.owner}/${remoteQueryHistoryItem.remoteQuery.controllerRepository.name}`;
+    describe('repo label for remote query history items', () => {
+      it('should return controller repo when `repositoryCount` is 0', () => {
+        const repoLabel = buildRepoLabel(remoteQueryHistoryItem);
+        const expectedRepoLabel = `${remoteQueryHistoryItem.remoteQuery.controllerRepository.owner}/${remoteQueryHistoryItem.remoteQuery.controllerRepository.name}`;
 
-      expect(repoLabel).to.equal(expectedRepoLabel);
-
-      const remoteQueryHistoryItem2 = createMockRemoteQueryHistoryItem({repositoryCount: 3});
-      const repoLabel2 = buildRepoLabel(remoteQueryHistoryItem2);
-      const expectedRepoLabel2 = '3 repositories';
-
-      expect(repoLabel2).to.equal(expectedRepoLabel2);
+        expect(repoLabel).to.equal(expectedRepoLabel);
+      });
+      it('should return number of repositories when `repositoryCount` is non-zero', () => {
+        const remoteQueryHistoryItem2 = createMockRemoteQueryHistoryItem({repositoryCount: 3});
+        const repoLabel2 = buildRepoLabel(remoteQueryHistoryItem2);
+        const expectedRepoLabel2 = '3 repositories';
+  
+        expect(repoLabel2).to.equal(expectedRepoLabel2);
+      });
     });
-    it('should build the repo label for variant analysis history items', () => {
-      const repoLabel = buildRepoLabel(variantAnalysisHistoryItem);
+    describe('repo label for variant analysis history items', () => {
+      it('should return label when `totalScannedRepositoryCount` is 0', () => {
+        const variantAnalysisHistoryItem0: VariantAnalysisHistoryItem = {
+          t: 'variant-analysis',
+          status: QueryStatus.InProgress,
+          completed: false,
+          historyItemId: 'abc123',
+          variantAnalysis: createMockVariantAnalysis(
+            VariantAnalysisStatus.InProgress,
+            createMockScannedRepos([])
+          ),
+        };
+        const repoLabel0 = buildRepoLabel(variantAnalysisHistoryItem0);
 
-      expect(repoLabel).to.equal('2/4 repositories');
+        expect(repoLabel0).to.equal('0/0 repositories');
+      });
+      it('should return label when `totalScannedRepositoryCount` is 1', () => {
+        const variantAnalysisHistoryItem1: VariantAnalysisHistoryItem = {
+          t: 'variant-analysis',
+          status: QueryStatus.InProgress,
+          completed: false,
+          historyItemId: 'abc123',
+          variantAnalysis: createMockVariantAnalysis(
+            VariantAnalysisStatus.InProgress,
+            createMockScannedRepos([
+              VariantAnalysisRepoStatus.Pending,
+            ])
+          ),
+        };
+
+        const repoLabel1 = buildRepoLabel(variantAnalysisHistoryItem1);
+        expect(repoLabel1).to.equal('0/1 repository');
+      });
+      it('should return label when `totalScannedRepositoryCount` is greater than 1', () => {
+        const repoLabel = buildRepoLabel(variantAnalysisHistoryItem);
+        
+        expect(repoLabel).to.equal('2/4 repositories');
+      });
     });
   });  
 });
