@@ -28,6 +28,8 @@ export function createMockApiResponse(
     actor_id: faker.datatype.number(),
     query_language: VariantAnalysisQueryLanguage.Javascript,
     query_pack_url: 'https://example.com/foo',
+    created_at: faker.date.recent().toISOString(),
+    updated_at: faker.date.recent().toISOString(),
     status: status,
     actions_workflow_run_id: faker.datatype.number(),
     scanned_repositories: scannedRepos,

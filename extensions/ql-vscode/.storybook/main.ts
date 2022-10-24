@@ -8,7 +8,8 @@ const config: StorybookConfig = {
   addons: [
     '@storybook/addon-links',
     '@storybook/addon-essentials',
-    '@storybook/addon-interactions'
+    '@storybook/addon-interactions',
+    './vscode-theme-addon/preset.ts',
   ],
   framework: '@storybook/react',
   core: {

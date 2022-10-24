@@ -16,7 +16,6 @@ import {
 } from './pure/interface-types';
 import { DatabaseInfo } from './pure/interface-types';
 import { QueryStatus } from './query-status';
-import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { QueryEvaluationInfo, QueryWithResults } from './run-queries-shared';
 import { formatLegacyMessage } from './legacy-query-server/run-queries';
 
@@ -47,11 +46,11 @@ export interface InitialQueryInfo {
 export class CompletedQueryInfo implements QueryWithResults {
   readonly query: QueryEvaluationInfo;
   readonly message?: string;
-  readonly sucessful?: boolean;
+  readonly successful?: boolean;
   /**
    * The legacy result. This is only set when loading from the query history.
    */
-  readonly result?: legacyMessages.EvaluationResult;
+  readonly result: legacyMessages.EvaluationResult;
   readonly logFileLocation?: string;
   resultCount: number;
 
@@ -83,11 +82,10 @@ export class CompletedQueryInfo implements QueryWithResults {
   ) {
     this.query = evaluation.query;
     this.logFileLocation = evaluation.logFileLocation;
-    if (evaluation.result) {
-      this.result = evaluation.result;
-    }
+    this.result = evaluation.result;
+
     this.message = evaluation.message;
-    this.sucessful = evaluation.sucessful;
+    this.successful = evaluation.successful;
     // Use the dispose method from the evaluation.
     // The dispose will clean up any additional log locations that this
     // query may have created.
@@ -202,13 +200,11 @@ export function ensureMetadataIsComplete(metadata: QueryMetadata | undefined) {
 }
 
 /**
- * Used in Interface and Compare-Interface for queries that we know have been complated.
+ * Used in Interface and Compare-Interface for queries that we know have been completed.
  */
 export type CompletedLocalQueryInfo = LocalQueryInfo & {
   completedQuery: CompletedQueryInfo
 };
-
-export type QueryHistoryInfo = LocalQueryInfo | RemoteQueryHistoryItem;
 
 export class LocalQueryInfo {
   readonly t = 'local';
@@ -302,7 +298,7 @@ export class LocalQueryInfo {
       return QueryStatus.Failed;
     } else if (!this.completedQuery) {
       return QueryStatus.InProgress;
-    } else if (this.completedQuery.sucessful) {
+    } else if (this.completedQuery.successful) {
       return QueryStatus.Completed;
     } else {
       return QueryStatus.Failed;

@@ -192,11 +192,19 @@ export class QueryEvaluationInfo {
     if (await this.hasDil()) {
       return this.dilPath;
     }
-    const compiledQuery = path.join(this.querySaveDir, 'compiledQuery.qlo');
+    const compiledQuery = this.compileQueryPath;
     if (!(await fs.pathExists(compiledQuery))) {
-      throw new Error(
-        `Cannot create DIL because compiled query is missing. ${compiledQuery}`
-      );
+      if (await cliServer.cliConstraints.supportsNewQueryServer()) {
+        // This could be from the new query server
+        // in which case we expect the qlo to be missing so we should ignore it
+        throw new Error(
+          `DIL was not found. Expected location: '${this.dilPath}'`
+        );
+      } else {
+        throw new Error(
+          `Cannot create DIL because compiled query is missing. ${compiledQuery}`
+        );
+      }
     }
 
     await cliServer.generateDil(compiledQuery, this.dilPath);
@@ -210,6 +218,9 @@ export class QueryEvaluationInfo {
     return fs.pathExists(this.evalLogPath);
   }
 
+  /**
+   * Add the structured evaluator log to the query evaluation info.
+   */
   async addQueryLogs(queryInfo: LocalQueryInfo, cliServer: CodeQLCliServer, logger: Logger) {
     queryInfo.evalLogLocation = this.evalLogPath;
     queryInfo.evalLogSummaryLocation = await this.generateHumanReadableLogSummary(cliServer);
@@ -362,9 +373,9 @@ export interface QueryWithResults {
   readonly query: QueryEvaluationInfo;
   readonly logFileLocation?: string;
   readonly dispose: () => void;
-  readonly sucessful?: boolean;
+  readonly successful?: boolean;
   readonly message?: string;
-  readonly result?: legacyMessages.EvaluationResult
+  readonly result: legacyMessages.EvaluationResult;
 }
 
 

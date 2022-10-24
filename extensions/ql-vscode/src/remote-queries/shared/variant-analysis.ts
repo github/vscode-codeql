@@ -7,14 +7,19 @@ export interface VariantAnalysis {
   query: {
     name: string,
     filePath: string,
-    language: VariantAnalysisQueryLanguage
+    language: VariantAnalysisQueryLanguage,
+    text: string,
   },
   databases: {
     repositories?: string[],
     repositoryLists?: string[],
     repositoryOwners?: string[],
   },
+  createdAt: string,
+  updatedAt: string,
+  executionStartTime: number;
   status: VariantAnalysisStatus,
+  completedAt?: string,
   actionsWorkflowRunId?: number,
   failureReason?: VariantAnalysisFailureReason,
   scannedRepos?: VariantAnalysisScannedRepository[],
@@ -82,7 +87,20 @@ export interface VariantAnalysisSkippedRepository {
   private?: boolean,
 }
 
+export enum VariantAnalysisScannedRepositoryDownloadStatus {
+  Pending = 'pending',
+  InProgress = 'inProgress',
+  Succeeded = 'succeeded',
+  Failed = 'failed',
+}
+
+export interface VariantAnalysisScannedRepositoryState {
+  repositoryId: number;
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus;
+}
+
 export interface VariantAnalysisScannedRepositoryResult {
+  variantAnalysisId: number;
   repositoryId: number;
   interpretedResults?: AnalysisAlert[];
   rawResults?: AnalysisRawResults;
@@ -100,6 +118,7 @@ export interface VariantAnalysisSubmission {
     name: string,
     filePath: string,
     language: VariantAnalysisQueryLanguage,
+    text: string,
 
     // Base64 encoded query pack.
     pack: string,

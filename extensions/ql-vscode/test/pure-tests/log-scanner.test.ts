@@ -31,7 +31,7 @@ class TestProblemReporter implements EvaluationLogProblemReporter {
 describe('log scanners', function() {
   it('should detect bad join orders', async function() {
     const scanners = new EvaluationLogScannerSet();
-    scanners.registerLogScannerProvider(new JoinOrderScannerProvider());
+    scanners.registerLogScannerProvider(new JoinOrderScannerProvider(() => 50));
     const summaryPath = path.join(__dirname, 'evaluator-log-summaries/bad-join-order.jsonl');
     const problemReporter = new TestProblemReporter();
     await scanners.scanLog(summaryPath, problemReporter);

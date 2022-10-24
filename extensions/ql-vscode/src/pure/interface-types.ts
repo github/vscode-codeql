@@ -2,7 +2,11 @@ import * as sarif from 'sarif';
 import { AnalysisResults } from '../remote-queries/shared/analysis-result';
 import { AnalysisSummary, RemoteQueryResult } from '../remote-queries/shared/remote-query-result';
 import { RawResultSet, ResultRow, ResultSetSchema, Column, ResolvableLocationValue } from './bqrs-cli-types';
-import { VariantAnalysis } from '../remote-queries/shared/variant-analysis';
+import {
+  VariantAnalysis,
+  VariantAnalysisScannedRepositoryResult,
+  VariantAnalysisScannedRepositoryState,
+} from '../remote-queries/shared/variant-analysis';
 
 /**
  * This module contains types and code that are shared between
@@ -441,8 +445,46 @@ export interface SetVariantAnalysisMessage {
   variantAnalysis: VariantAnalysis;
 }
 
+export type StopVariantAnalysisMessage = {
+  t: 'stopVariantAnalysis';
+  variantAnalysisId: number;
+}
+
+export type VariantAnalysisState = {
+  variantAnalysisId: number;
+}
+
+export interface SetRepoResultsMessage {
+  t: 'setRepoResults';
+  repoResults: VariantAnalysisScannedRepositoryResult[];
+}
+
+export interface SetRepoStatesMessage {
+  t: 'setRepoStates';
+  repoStates: VariantAnalysisScannedRepositoryState[];
+}
+
+export interface RequestRepositoryResultsMessage {
+  t: 'requestRepositoryResults';
+  repositoryFullName: string;
+}
+
+export interface OpenQueryFileMessage {
+  t: 'openQueryFile';
+}
+
+export interface OpenQueryTextMessage {
+  t: 'openQueryText';
+}
+
 export type ToVariantAnalysisMessage =
-  | SetVariantAnalysisMessage;
+  | SetVariantAnalysisMessage
+  | SetRepoResultsMessage
+  | SetRepoStatesMessage;
 
 export type FromVariantAnalysisMessage =
-  | ViewLoadedMsg;
+  | ViewLoadedMsg
+  | StopVariantAnalysisMessage
+  | RequestRepositoryResultsMessage
+  | OpenQueryFileMessage
+  | OpenQueryTextMessage;

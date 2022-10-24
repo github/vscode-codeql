@@ -4,6 +4,8 @@ import { DistributionManager } from './distribution';
 import { logger } from './logging';
 import { ONE_DAY_IN_MS } from './pure/time';
 
+export const ALL_SETTINGS: Setting[] = [];
+
 /** Helper class to look up a labelled (and possibly nested) setting. */
 export class Setting {
   name: string;
@@ -12,6 +14,7 @@ export class Setting {
   constructor(name: string, parent?: Setting) {
     this.name = name;
     this.parent = parent;
+    ALL_SETTINGS.push(this);
   }
 
   get qualifiedName(): string {
@@ -36,6 +39,18 @@ export class Setting {
     return workspace.getConfiguration(this.parent.qualifiedName).update(this.name, value, target);
   }
 
+  inspect<T>(): InspectionResult<T> | undefined {
+    if (this.parent === undefined) {
+      throw new Error('Cannot update the value of a root setting.');
+    }
+    return workspace.getConfiguration(this.parent.qualifiedName).inspect(this.name);
+  }
+}
+
+export interface InspectionResult<T> {
+  globalValue?: T;
+  workspaceValue?: T,
+  workspaceFolderValue?: T,
 }
 
 const ROOT_SETTING = new Setting('codeQL');
@@ -44,6 +59,7 @@ const ROOT_SETTING = new Setting('codeQL');
 const TELEMETRY_SETTING = new Setting('telemetry', ROOT_SETTING);
 const AST_VIEWER_SETTING = new Setting('astViewer', ROOT_SETTING);
 const GLOBAL_TELEMETRY_SETTING = new Setting('telemetry');
+const LOG_INSIGHTS_SETTING = new Setting('logInsights', ROOT_SETTING);
 
 export const LOG_TELEMETRY = new Setting('logTelemetry', TELEMETRY_SETTING);
 export const ENABLE_TELEMETRY = new Setting('enableTelemetry', TELEMETRY_SETTING);
@@ -318,6 +334,22 @@ export function isCanary() {
 }
 
 /**
+ * Enables the experimental query server
+ */
+export const CANARY_QUERY_SERVER = new Setting('canaryQueryServer', ROOT_SETTING);
+
+
+export function allowCanaryQueryServer() {
+  return !!CANARY_QUERY_SERVER.getValue<boolean>();
+}
+
+export const JOIN_ORDER_WARNING_THRESHOLD = new Setting('joinOrderWarningThreshold', LOG_INSIGHTS_SETTING);
+
+export function joinOrderWarningThreshold(): number {
+  return JOIN_ORDER_WARNING_THRESHOLD.getValue<number>();
+}
+
+/**
  * Avoids caching in the AST viewer if the user is also a canary user.
  */
 export const NO_CACHE_AST_VIEWER = new Setting('disableCache', AST_VIEWER_SETTING);
@@ -343,12 +375,12 @@ export async function setRemoteRepositoryLists(lists: Record<string, string[]> |
 }
 
 /**
- * Path to a file that contains lists of GitHub repositories that you want to query remotely via 
+ * Path to a file that contains lists of GitHub repositories that you want to query remotely via
  * the "Run Variant Analysis" command.
  * Note: This command is only available for internal users.
- * 
+ *
  * This setting should be a path to a JSON file that contains a JSON object where each key is a
- * user-specified name (string), and the value is an array of GitHub repositories 
+ * user-specified name (string), and the value is an array of GitHub repositories
  * (of the form `<owner>/<repo>`).
  */
 const REPO_LISTS_PATH = new Setting('repositoryListsPath', REMOTE_QUERIES_SETTING);
@@ -396,4 +428,30 @@ const LIVE_RESULTS = new Setting('liveResults', REMOTE_QUERIES_SETTING);
 
 export function isVariantAnalysisLiveResultsEnabled(): boolean {
   return !!LIVE_RESULTS.getValue<boolean>();
+}
+
+/**
+ * A flag indicating whether to enable a mock GitHub API server.
+ */
+const MOCK_GH_API_SERVER = new Setting('mockGitHubApiServer', REMOTE_QUERIES_SETTING);
+
+export interface MockGitHubApiConfig {
+  mockServerEnabled: boolean;
+  onDidChangeConfiguration: Event<void>;
+}
+
+export class MockGitHubApiConfigListener extends ConfigListener implements MockGitHubApiConfig {
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+    this.handleDidChangeConfigurationForRelevantSettings([MOCK_GH_API_SERVER], e);
+  }
+
+  public get mockServerEnabled(): boolean {
+    return !!MOCK_GH_API_SERVER.getValue<boolean>();
+  }
+}
+
+const MOCK_GH_API_SERVER_SCENARIOS_PATH = new Setting('mockGitHubApiServerScenariosPath', REMOTE_QUERIES_SETTING);
+
+export function getMockGitHubApiServerScenariosPath(): string | undefined {
+  return MOCK_GH_API_SERVER_SCENARIOS_PATH.getValue<string>();
 }

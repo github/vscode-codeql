@@ -20,11 +20,15 @@ export function createMockVariantAnalysis(
     query: {
       name: 'a-query-name',
       filePath: 'a-query-file-path',
-      language: VariantAnalysisQueryLanguage.Javascript
+      language: VariantAnalysisQueryLanguage.Javascript,
+      text: 'a-query-text',
     },
     databases: {
       repositories: ['1', '2', '3'],
     },
+    executionStartTime: faker.datatype.number(),
+    createdAt: faker.date.recent().toISOString(),
+    updatedAt: faker.date.recent().toISOString(),
     status: status,
     actionsWorkflowRunId: faker.datatype.number(),
     scannedRepos: scannedRepos,

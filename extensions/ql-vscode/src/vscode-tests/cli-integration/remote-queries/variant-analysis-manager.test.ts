@@ -7,18 +7,23 @@ import * as config from '../../../config';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { Credentials } from '../../../authentication';
 import * as fs from 'fs-extra';
+import * as path from 'path';
 
 import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
+  VariantAnalysisRepoTask,
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
 } from '../../../remote-queries/gh-api/variant-analysis';
 import { createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
 import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/scanned-repositories';
 import { createMockVariantAnalysisRepoTask } from '../../factories/remote-queries/gh-api/variant-analysis-repo-task';
+import { CodeQLCliServer } from '../../../cli';
+import { storagePath } from '../global.helper';
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
+  let cli: CodeQLCliServer;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
   let variantAnalysis: VariantAnalysisApiResponse;
@@ -33,21 +38,15 @@ describe('Variant Analysis Manager', async function() {
     sandbox.stub(fs, 'mkdirSync');
     sandbox.stub(fs, 'writeFile');
 
-    cancellationTokenSource = {
-      token: {
-        isCancellationRequested: false,
-        onCancellationRequested: sandbox.stub()
-      },
-      cancel: sandbox.stub(),
-      dispose: sandbox.stub()
-    };
+    cancellationTokenSource = new CancellationTokenSource();
 
     scannedRepos = createMockScannedRepos();
     variantAnalysis = createMockApiResponse('in_progress', scannedRepos);
 
     try {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
-      variantAnalysisManager = new VariantAnalysisManager(extension.ctx, logger);
+      cli = extension.cliServer;
+      variantAnalysisManager = new VariantAnalysisManager(extension.ctx, cli, storagePath, logger);
     } catch (e) {
       fail(e as Error);
     }
@@ -75,6 +74,7 @@ describe('Variant Analysis Manager', async function() {
 
   describe('when credentials are valid', async () => {
     let getOctokitStub: sinon.SinonStub;
+    let arrayBuffer: ArrayBuffer;
 
     beforeEach(async () => {
       const mockCredentials = {
@@ -83,16 +83,18 @@ describe('Variant Analysis Manager', async function() {
         })
       } as unknown as Credentials;
       sandbox.stub(Credentials, 'initialize').resolves(mockCredentials);
+
+      const sourceFilePath = path.join(__dirname, '../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip');
+      arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
     });
 
     describe('when the artifact_url is missing', async () => {
       beforeEach(async () => {
         const dummyRepoTask = createMockVariantAnalysisRepoTask();
         delete dummyRepoTask.artifact_url;
-        getVariantAnalysisRepoStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepo').resolves(dummyRepoTask);
 
-        const dummyResult = 'this-is-a-repo-result';
-        getVariantAnalysisRepoResultStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepoResult').resolves(dummyResult);
+        getVariantAnalysisRepoStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepo').resolves(dummyRepoTask);
+        getVariantAnalysisRepoResultStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepoResult').resolves(arrayBuffer);
       });
 
       it('should not try to download the result', async () => {
@@ -107,16 +109,17 @@ describe('Variant Analysis Manager', async function() {
     });
 
     describe('when the artifact_url is present', async () => {
-      beforeEach(async () => {
-        const dummyRepoTask = createMockVariantAnalysisRepoTask();
-        getVariantAnalysisRepoStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepo').resolves(dummyRepoTask);
+      let dummyRepoTask: VariantAnalysisRepoTask;
 
-        const dummyResult = 'this-is-a-repo-result';
-        getVariantAnalysisRepoResultStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepoResult').resolves(dummyResult);
+      beforeEach(async () => {
+        dummyRepoTask = createMockVariantAnalysisRepoTask();
+
+        getVariantAnalysisRepoStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepo').resolves(dummyRepoTask);
+        getVariantAnalysisRepoResultStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepoResult').resolves(arrayBuffer);
       });
 
       it('should return early if variant analysis is cancelled', async () => {
-        cancellationTokenSource.token.isCancellationRequested = true;
+        cancellationTokenSource.cancel();
 
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
@@ -147,14 +150,15 @@ describe('Variant Analysis Manager', async function() {
         expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
       });
 
-      it('should save the result to disk', async () => {
-        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-          scannedRepos[0],
-          variantAnalysis,
-          cancellationTokenSource.token
-        );
+      it('should pop download tasks off the queue', async () => {
+        const getResultsSpy = sandbox.spy(variantAnalysisManager, 'autoDownloadVariantAnalysisResult');
 
-        expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
+        await variantAnalysisManager.enqueueDownload(scannedRepos[0], variantAnalysis, cancellationTokenSource.token);
+        await variantAnalysisManager.enqueueDownload(scannedRepos[1], variantAnalysis, cancellationTokenSource.token);
+        await variantAnalysisManager.enqueueDownload(scannedRepos[2], variantAnalysis, cancellationTokenSource.token);
+
+        expect(variantAnalysisManager.downloadsQueueSize()).to.equal(0);
+        expect(getResultsSpy).to.have.been.calledThrice;
       });
     });
   });

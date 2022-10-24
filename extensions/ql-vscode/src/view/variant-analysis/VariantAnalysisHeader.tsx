@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as React from 'react';
 import { useMemo } from 'react';
 import styled from 'styled-components';
@@ -9,12 +10,10 @@ import {
 import { QueryDetails } from './QueryDetails';
 import { VariantAnalysisActions } from './VariantAnalysisActions';
 import { VariantAnalysisStats } from './VariantAnalysisStats';
+import { parseDate } from '../../pure/date';
 
 export type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;
-
-  duration?: number | undefined;
-  completedAt?: Date | undefined;
 
   onOpenQueryFileClick: () => void;
   onViewQueryTextClick: () => void;
@@ -40,8 +39,6 @@ const Row = styled.div`
 
 export const VariantAnalysisHeader = ({
   variantAnalysis,
-  duration,
-  completedAt,
   onOpenQueryFileClick,
   onViewQueryTextClick,
   onStopQueryClick,
@@ -67,7 +64,7 @@ export const VariantAnalysisHeader = ({
       <Row>
         <QueryDetails
           queryName={variantAnalysis.query.name}
-          queryFileName={variantAnalysis.query.filePath}
+          queryFileName={path.basename(variantAnalysis.query.filePath)}
           onOpenQueryFileClick={onOpenQueryFileClick}
           onViewQueryTextClick={onViewQueryTextClick}
         />
@@ -84,8 +81,8 @@ export const VariantAnalysisHeader = ({
         completedRepositoryCount={completedRepositoryCount}
         resultCount={resultCount}
         hasWarnings={hasSkippedRepos}
-        duration={duration}
-        completedAt={completedAt}
+        createdAt={parseDate(variantAnalysis.createdAt)}
+        completedAt={parseDate(variantAnalysis.completedAt)}
         onViewLogsClick={onViewLogsClick}
       />
     </Container>

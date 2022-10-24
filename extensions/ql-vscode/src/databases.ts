@@ -358,14 +358,12 @@ export class DatabaseItemImpl implements DatabaseItem {
       try {
         this._contents = await resolveDatabaseContents(this.databaseUri);
         this._error = undefined;
-      }
-      catch (e) {
+      } catch (e) {
         this._contents = undefined;
         this._error = e instanceof Error ? e : new Error(String(e));
         throw e;
       }
-    }
-    finally {
+    } finally {
       this.onChanged({
         kind: DatabaseEventKind.Refresh,
         item: this
@@ -561,9 +559,6 @@ export class DatabaseManager extends DisposableObject {
     super();
 
     qs.onStart(this.reregisterDatabases.bind(this));
-
-    // Let this run async.
-    void this.loadPersistedState();
   }
 
   public async openDatabase(
@@ -693,7 +688,7 @@ export class DatabaseManager extends DisposableObject {
     return item;
   }
 
-  private async loadPersistedState(): Promise<void> {
+  public async loadPersistedState(): Promise<void> {
     return withProgress({
       location: vscode.ProgressLocation.Notification
     },
@@ -707,6 +702,7 @@ export class DatabaseManager extends DisposableObject {
           step
         });
         try {
+          void this.logger.log(`Found ${databases.length} persisted databases: ${databases.map(db => db.uri).join(', ')}`);
           for (const database of databases) {
             progress({
               maxStep: databases.length,
@@ -721,16 +717,19 @@ export class DatabaseManager extends DisposableObject {
               if (currentDatabaseUri === database.uri) {
                 await this.setCurrentDatabaseItem(databaseItem, true);
               }
-            }
-            catch (e) {
+              void this.logger.log(`Loaded database ${databaseItem.name} at URI ${database.uri}.`);
+            } catch (e) {
               // When loading from persisted state, leave invalid databases in the list. They will be
               // marked as invalid, and cannot be set as the current database.
+              void this.logger.log(`Error loading database ${database.uri}: ${e}.`);
             }
           }
         } catch (e) {
           // database list had an unexpected type - nothing to be done?
           void showAndLogErrorMessage(`Database list loading failed: ${getErrorMessage(e)}`);
         }
+
+        void this.logger.log('Finished loading persisted databases.');
       });
   }
 

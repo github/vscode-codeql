@@ -1,0 +1,36 @@
+import { useEffect, useGlobals } from '@storybook/addons';
+import type { AnyFramework, PartialStoryFn as StoryFunction, StoryContext } from '@storybook/csf';
+
+import { VSCodeTheme } from './theme';
+
+const themeFiles: { [key in VSCodeTheme]: string } = {
+  [VSCodeTheme.Dark]: require('!file-loader?modules!../../src/stories/vscode-theme-dark.css').default,
+  [VSCodeTheme.Light]: require('!file-loader?modules!../../src/stories/vscode-theme-light.css').default,
+}
+
+export const withTheme = (
+  StoryFn: StoryFunction<AnyFramework>,
+  context: StoryContext<AnyFramework>
+) => {
+  const [{ vscodeTheme }] = useGlobals();
+
+  useEffect(() => {
+    const styleSelectorId =
+      context.viewMode === 'docs'
+        ? `addon-vscode-theme-docs-${context.id}`
+        : `addon-vscode-theme-theme`;
+
+    const theme = Object.values(VSCodeTheme).includes(vscodeTheme) ? vscodeTheme as VSCodeTheme : VSCodeTheme.Dark;
+
+    document.getElementById(styleSelectorId)?.remove();
+
+    const link = document.createElement('link');
+    link.id = styleSelectorId;
+    link.href = themeFiles[theme];
+    link.rel = 'stylesheet';
+
+    document.head.appendChild(link);
+  }, [vscodeTheme]);
+
+  return StoryFn();
+};

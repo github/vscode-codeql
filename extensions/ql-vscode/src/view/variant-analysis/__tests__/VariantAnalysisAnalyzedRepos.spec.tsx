@@ -17,8 +17,12 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
       name: 'Example query',
       filePath: 'example.ql',
       language: VariantAnalysisQueryLanguage.Javascript,
+      text: 'import javascript\nselect 1',
     },
     databases: {},
+    executionStartTime: 1611234567890,
+    createdAt: '2021-01-21T13:09:27.890Z',
+    updatedAt: '2021-01-21T13:09:27.890Z',
     status: VariantAnalysisStatus.InProgress,
     scannedRepos: [
       {
@@ -78,6 +82,7 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
     render({
       repositoryResults: [
         {
+          variantAnalysisId: 1,
           repositoryId: 2,
           interpretedResults: [
             {

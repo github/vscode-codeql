@@ -2,13 +2,20 @@
 
 ## [UNRELEASED]
 
+## 1.7.2 - 14 October 2022
+
+- Fix a bug where results created in older versions were thought to be unsuccessful. [#1605](https://github.com/github/vscode-codeql/pull/1605)
+
+## 1.7.1 - 12 October 2022
+
 - Fix a bug where it was not possible to add a database folder if the folder name starts with `db-`. [#1565](https://github.com/github/vscode-codeql/pull/1565)
 - Add commands for navigating up, down, left, or right in the result viewer. Previously there were only commands for moving up and down the currently-selected path. We suggest binding keyboard shortcuts to these commands, for navigating the result viewer using the keyboard. [#1568](https://github.com/github/vscode-codeql/pull/1568)
+- Ensure the results view opens in an editor column beside the currently active editor. [#1557](https://github.com/github/vscode-codeql/pull/1557)
 
 ## 1.7.0 - 20 September 2022
 
 - Remove ability to download databases from LGTM. [#1467](https://github.com/github/vscode-codeql/pull/1467)
-- Removed the ability to manually upgrade databases from the context menu on databases. Databases are non-destructively upgraded automatically so for most users this was not needed. For advanced users this is still available in the Command Palette. [#1501](https://github.com/github/vscode-codeql/pull/1501)
+- Remove the ability to manually upgrade databases from the context menu on databases. Databases are non-destructively upgraded automatically so for most users this was not needed. For advanced users this is still available in the Command Palette. [#1501](https://github.com/github/vscode-codeql/pull/1501)
 - Always restart the query server after a manual database upgrade. This avoids a bug in the query server where an invalid dbscheme was being retained in memory after an upgrade. [#1519](https://github.com/github/vscode-codeql/pull/1519)
 
 ## 1.6.12 - 1 September 2022

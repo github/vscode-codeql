@@ -395,7 +395,7 @@ export function RemoteQueries(): JSX.Element {
   const [sort, setSort] = useState<Sort>('name');
 
   useEffect(() => {
-    window.addEventListener('message', (evt: MessageEvent) => {
+    const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
         const msg: ToRemoteQueriesMessage = evt.data;
         if (msg.t === 'setRemoteQueryResult') {
@@ -408,8 +408,13 @@ export function RemoteQueries(): JSX.Element {
         const origin = evt.origin.replace(/\n|\r/g, '');
         console.error(`Invalid event origin ${origin}`);
       }
-    });
-  });
+    };
+    window.addEventListener('message', listener);
+
+    return () => {
+      window.removeEventListener('message', listener);
+    };
+  }, []);
 
   if (!queryResult) {
     return <div>Waiting for results to load.</div>;

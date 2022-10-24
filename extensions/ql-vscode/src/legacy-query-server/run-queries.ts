@@ -54,7 +54,7 @@ export class QueryInProgress {
   }
 
   get compiledQueryPath() {
-    return path.join(this.querySaveDir, 'compiledQuery.qlo');
+    return this.queryEvalInfo.compileQueryPath;
   }
 
 
@@ -420,7 +420,7 @@ export async function compileAndRunQueryAgainstDatabase(
         query: query.queryEvalInfo,
         message,
         result,
-        sucessful: result.resultType == messages.QueryResultType.SUCCESS,
+        successful: result.resultType == messages.QueryResultType.SUCCESS,
         logFileLocation: result.logFileLocation,
         dispose: () => {
           qs.logger.removeAdditionalLogLocation(result.logFileLocation);
@@ -497,10 +497,18 @@ function createSyntheticResult(
   return {
     query: query.queryEvalInfo,
     message,
-    sucessful: false,
+    result: {
+      evaluationTime: 0,
+      queryId: 0,
+      resultType: messages.QueryResultType.OTHER_ERROR,
+      message,
+      runId: 0,
+    },
+    successful: false,
     dispose: () => { /**/ },
   };
 }
+
 
 function createSimpleTemplates(templates: Record<string, string> | undefined): messages.TemplateDefinitions | undefined {
   if (!templates) {

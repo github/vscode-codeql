@@ -33,6 +33,7 @@ import {
   CliConfigListener,
   DistributionConfigListener,
   isCanary,
+  joinOrderWarningThreshold,
   MAX_QUERIES,
   QueryHistoryConfigListener,
   QueryServerConfigListener
@@ -73,7 +74,8 @@ import { WebviewReveal } from './interface-utils';
 import { ideServerLogger, logger, ProgressReporter, queryServerLogger } from './logging';
 import { QueryHistoryManager } from './query-history';
 import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
-import * as qsClient from './legacy-query-server/queryserver-client';
+import * as legacyQueryServer from './legacy-query-server/queryserver-client';
+import * as newQueryServer from './query-server/queryserver-client';
 import { displayQuickQuery } from './quick-query';
 import { QLTestAdapterFactory } from './test-adapter';
 import { TestUIService } from './test-ui';
@@ -103,13 +105,18 @@ import { JoinOrderScannerProvider } from './log-insights/join-order';
 import { LogScannerService } from './log-insights/log-scanner-service';
 import { createInitialQueryInfo } from './run-queries-shared';
 import { LegacyQueryRunner } from './legacy-query-server/legacyRunner';
+import { NewQueryRunner } from './query-server/query-runner';
 import { QueryRunner } from './queryRunner';
+import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
+import { VariantAnalysisViewSerializer } from './remote-queries/variant-analysis-view-serializer';
 import { VariantAnalysis } from './remote-queries/shared/variant-analysis';
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
 } from './remote-queries/gh-api/variant-analysis';
 import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
+import { createVariantAnalysisContentProvider } from './remote-queries/variant-analysis-content-provider';
+import { MockGitHubApiServer } from './mocks/mock-gh-api-server';
 
 /**
  * extension.ts
@@ -176,6 +183,7 @@ export interface CodeQLExtensionInterface {
   readonly distributionManager: DistributionManager;
   readonly databaseManager: DatabaseManager;
   readonly databaseUI: DatabaseUI;
+  readonly variantAnalysisManager: VariantAnalysisManager;
   readonly dispose: () => void;
 }
 
@@ -386,7 +394,10 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     allowAutoUpdating: true
   })));
 
-  return await installOrUpdateThenTryActivate({
+  const variantAnalysisViewSerializer = new VariantAnalysisViewSerializer(ctx);
+  Window.registerWebviewPanelSerializer(VariantAnalysisView.viewType, variantAnalysisViewSerializer);
+
+  const codeQlExtension = await installOrUpdateThenTryActivate({
     isUserInitiated: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
     shouldDisplayMessageWhenNoUpdates: false,
 
@@ -394,7 +405,13 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     // otherwise, ask user to accept the update
     allowAutoUpdating: !!ctx.globalState.get(shouldUpdateOnNextActivationKey)
   });
+
+  variantAnalysisViewSerializer.onExtensionLoaded(codeQlExtension.variantAnalysisManager);
+
+  return codeQlExtension;
 }
+
+const PACK_GLOBS = ['**/codeql-pack.yml', '**/qlpack.yml', '**/queries.xml', '**/codeql-pack.lock.yml', '**/qlpack.lock.yml', '.codeqlmanifest.json', 'codeql-workspace.yml'];
 
 async function activateWithInstalledDistribution(
   ctx: ExtensionContext,
@@ -426,8 +443,21 @@ async function activateWithInstalledDistribution(
   void logger.log('Initializing query server client.');
   const qs = await createQueryServer(qlConfigurationListener, cliServer, ctx);
 
+
+  for (const glob of PACK_GLOBS) {
+    const fsWatcher = workspace.createFileSystemWatcher(glob);
+    ctx.subscriptions.push(fsWatcher);
+    fsWatcher.onDidChange(async (_uri) => {
+      await qs.clearPackCache();
+    });
+  }
+
   void logger.log('Initializing database manager.');
   const dbm = new DatabaseManager(ctx, qs, cliServer, logger);
+
+  // Let this run async.
+  void dbm.loadPersistedState();
+
   ctx.subscriptions.push(dbm);
   void logger.log('Initializing database panel.');
   const databaseUI = new DatabaseUI(
@@ -458,7 +488,14 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(localQueryResultsView);
 
   void logger.log('Initializing variant analysis manager.');
-  const rqm = new RemoteQueriesManager(ctx, cliServer, queryStorageDir, logger);
+  const variantAnalysisStorageDir = path.join(ctx.globalStorageUri.fsPath, 'variant-analyses');
+  await fs.ensureDir(variantAnalysisStorageDir);
+  const variantAnalysisManager = new VariantAnalysisManager(ctx, cliServer, variantAnalysisStorageDir, logger);
+  ctx.subscriptions.push(variantAnalysisManager);
+  ctx.subscriptions.push(workspace.registerTextDocumentContentProvider('codeql-variant-analysis', createVariantAnalysisContentProvider(variantAnalysisManager)));
+
+  void logger.log('Initializing remote queries manager.');
+  const rqm = new RemoteQueriesManager(ctx, cliServer, queryStorageDir, logger, variantAnalysisManager);
   ctx.subscriptions.push(rqm);
 
   void logger.log('Initializing query history.');
@@ -467,6 +504,7 @@ async function activateWithInstalledDistribution(
     dbm,
     localQueryResultsView,
     rqm,
+    variantAnalysisManager,
     evalLogViewer,
     queryStorageDir,
     ctx,
@@ -482,7 +520,7 @@ async function activateWithInstalledDistribution(
   void logger.log('Initializing evaluation log scanners.');
   const logScannerService = new LogScannerService(qhm);
   ctx.subscriptions.push(logScannerService);
-  ctx.subscriptions.push(logScannerService.scanners.registerLogScannerProvider(new JoinOrderScannerProvider()));
+  ctx.subscriptions.push(logScannerService.scanners.registerLogScannerProvider(new JoinOrderScannerProvider(() => joinOrderWarningThreshold())));
 
   void logger.log('Reading query history');
   await qhm.readQueryHistory();
@@ -899,7 +937,6 @@ async function activateWithInstalledDistribution(
     })
   );
 
-  const variantAnalysisManager = new VariantAnalysisManager(ctx, logger);
   ctx.subscriptions.push(
     commandRunner('codeQL.monitorVariantAnalysis', async (
       variantAnalysis: VariantAnalysis,
@@ -915,7 +952,13 @@ async function activateWithInstalledDistribution(
       variantAnalysisSummary: VariantAnalysisApiResponse,
       token: CancellationToken
     ) => {
-      await variantAnalysisManager.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysisSummary, token);
+      await variantAnalysisManager.enqueueDownload(scannedRepo, variantAnalysisSummary, token);
+    })
+  );
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.openVariantAnalysis', async () => {
+      await variantAnalysisManager.promptOpenVariantAnalysis();
     })
   );
 
@@ -933,8 +976,8 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner('codeQL.mockVariantAnalysisView', async () => {
-      await variantAnalysisManager.showView(1);
+    commandRunner('codeQL.loadVariantAnalysisRepoResults', async (variantAnalysisId: number, repositoryFullName: string) => {
+      await variantAnalysisManager.loadResults(variantAnalysisId, repositoryFullName);
     })
   );
 
@@ -1148,6 +1191,27 @@ async function activateWithInstalledDistribution(
     )
   );
 
+  const mockServer = new MockGitHubApiServer(ctx);
+  ctx.subscriptions.push(mockServer);
+  ctx.subscriptions.push(
+    commandRunner(
+      'codeQL.mockGitHubApiServer.startRecording',
+      async () => await mockServer.startRecording(),
+    )
+  );
+  ctx.subscriptions.push(
+    commandRunner(
+      'codeQL.mockGitHubApiServer.saveScenario',
+      async () => await mockServer.saveScenario(),
+    )
+  );
+  ctx.subscriptions.push(
+    commandRunner(
+      'codeQL.mockGitHubApiServer.cancelRecording',
+      async () => await mockServer.cancelRecording(),
+    )
+  );
+
   await commands.executeCommand('codeQLDatabases.removeOrphanedDatabases');
 
   void logger.log('Successfully finished extension initialization.');
@@ -1159,6 +1223,7 @@ async function activateWithInstalledDistribution(
     distributionManager,
     databaseManager: dbm,
     databaseUI,
+    variantAnalysisManager,
     dispose: () => {
       ctx.subscriptions.forEach(d => d.dispose());
     }
@@ -1174,15 +1239,28 @@ async function createQueryServer(qlConfigurationListener: QueryServerConfigListe
     { title: 'CodeQL query server', location: ProgressLocation.Window },
     task
   );
-  const qs = new qsClient.QueryServerClient(
-    qlConfigurationListener,
-    cliServer,
-    qsOpts,
-    progressCallback
-  );
-  ctx.subscriptions.push(qs);
-  await qs.startQueryServer();
-  return new LegacyQueryRunner(qs);
+  if (await cliServer.cliConstraints.supportsNewQueryServer()) {
+    const qs = new newQueryServer.QueryServerClient(
+      qlConfigurationListener,
+      cliServer,
+      qsOpts,
+      progressCallback
+    );
+    ctx.subscriptions.push(qs);
+    await qs.startQueryServer();
+    return new NewQueryRunner(qs);
+
+  } else {
+    const qs = new legacyQueryServer.QueryServerClient(
+      qlConfigurationListener,
+      cliServer,
+      qsOpts,
+      progressCallback
+    );
+    ctx.subscriptions.push(qs);
+    await qs.startQueryServer();
+    return new LegacyQueryRunner(qs);
+  }
 }
 
 function getContextStoragePath(ctx: ExtensionContext) {

@@ -30,9 +30,10 @@ import { DisposableObject } from './pure/disposable-object';
 import { commandRunner } from './commandRunner';
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
-import { CompletedLocalQueryInfo, LocalQueryInfo as LocalQueryInfo, QueryHistoryInfo } from './query-results';
+import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
+import { getQueryHistoryItemId, getQueryText, QueryHistoryInfo } from './query-history-info';
 import { DatabaseManager } from './databases';
-import { registerQueryHistoryScubber } from './query-history-scrubber';
+import { registerQueryHistoryScrubber } from './query-history-scrubber';
 import { QueryStatus } from './query-status';
 import { slurpQueryHistory, splatQueryHistory } from './query-serialization';
 import * as fs from 'fs-extra';
@@ -49,6 +50,8 @@ import EvalLogTreeBuilder from './eval-log-tree-builder';
 import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
 import { QueryWithResults } from './run-queries-shared';
 import { QueryRunner } from './queryRunner';
+import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
+import { nanoid } from 'nanoid';
 
 /**
  * query-history.ts
@@ -206,13 +209,9 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
       const h1Label = this.labelProvider.getLabel(h1).toLowerCase();
       const h2Label = this.labelProvider.getLabel(h2).toLowerCase();
 
-      const h1Date = h1.t === 'local'
-        ? h1.initialInfo.start.getTime()
-        : h1.remoteQuery?.executionStartTime;
+      const h1Date = this.getItemDate(h1);
 
-      const h2Date = h2.t === 'local'
-        ? h2.initialInfo.start.getTime()
-        : h2.remoteQuery?.executionStartTime;
+      const h2Date = this.getItemDate(h2);
 
       const resultCount1 = h1.t === 'local'
         ? h1.completedQuery?.resultCount ?? -1
@@ -311,6 +310,19 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
     this._sortOrder = newSortOrder;
     this._onDidChangeTreeData.fire(undefined);
   }
+
+  private getItemDate(item: QueryHistoryInfo) {
+    switch (item.t) {
+      case 'local':
+        return item.initialInfo.start.getTime();
+      case 'remote':
+        return item.remoteQuery.executionStartTime;
+      case 'variant-analysis':
+        return item.variantAnalysis.executionStartTime;
+      default:
+        assertNever(item);
+    }
+  }
 }
 
 export class QueryHistoryManager extends DisposableObject {
@@ -333,6 +345,7 @@ export class QueryHistoryManager extends DisposableObject {
     private readonly dbm: DatabaseManager,
     private readonly localQueriesResultsView: ResultsView,
     private readonly remoteQueriesManager: RemoteQueriesManager,
+    private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly evalLogViewer: EvalLogViewer,
     private readonly queryStorageDir: string,
     private readonly ctx: ExtensionContext,
@@ -555,6 +568,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     this.registerQueryHistoryScrubber(queryHistoryConfigListener, this, ctx);
     this.registerToRemoteQueriesEvents();
+    this.registerToVariantAnalysisEvents();
   }
 
   public completeQuery(info: LocalQueryInfo, results: QueryWithResults): void {
@@ -573,7 +587,7 @@ export class QueryHistoryManager extends DisposableObject {
     this.queryHistoryScrubber?.dispose();
     // Every hour check if we need to re-run the query history scrubber.
     this.queryHistoryScrubber = this.push(
-      registerQueryHistoryScubber(
+      registerQueryHistoryScrubber(
         ONE_HOUR_IN_MS,
         TWO_HOURS_IN_MS,
         queryHistoryConfigListener.ttlInMillis,
@@ -582,6 +596,22 @@ export class QueryHistoryManager extends DisposableObject {
         ctx
       )
     );
+  }
+
+  private registerToVariantAnalysisEvents() {
+    const variantAnalysisAddedSubscription = this.variantAnalysisManager.onVariantAnalysisAdded(async (variantAnalysis) => {
+      this.addQuery({
+        t: 'variant-analysis',
+        status: QueryStatus.InProgress,
+        completed: false,
+        historyItemId: nanoid(),
+        variantAnalysis,
+      });
+
+      await this.refreshTreeView();
+    });
+
+    this.push(variantAnalysisAddedSubscription);
   }
 
   private registerToRemoteQueriesEvents() {
@@ -649,10 +679,20 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    const queryPath = finalSingleItem.t === 'local'
-      ? finalSingleItem.initialInfo.queryPath
-      : finalSingleItem.remoteQuery.queryFilePath;
-
+    let queryPath: string;
+    switch (finalSingleItem.t) {
+      case 'local':
+        queryPath = finalSingleItem.initialInfo.queryPath;
+        break;
+      case 'remote':
+        queryPath = finalSingleItem.remoteQuery.queryFilePath;
+        break;
+      case 'variant-analysis':
+        queryPath = finalSingleItem.variantAnalysis.query.filePath;
+        break;
+      default:
+        assertNever(finalSingleItem);
+    }
     const textDocument = await workspace.openTextDocument(
       Uri.file(queryPath)
     );
@@ -710,8 +750,12 @@ export class QueryHistoryManager extends DisposableObject {
           // We need to delete it from disk as well.
           await item.completedQuery?.query.deleteQuery();
         }
-      } else {
+      } else if (item.t === 'remote') {
         await this.removeRemoteQuery(item);
+      } else if (item.t === 'variant-analysis') {
+        // TODO
+      } else {
+        assertNever(item);
       }
     }));
 
@@ -795,7 +839,7 @@ export class QueryHistoryManager extends DisposableObject {
         throw new Error('Please select a local query.');
       }
 
-      if (!finalSingleItem.completedQuery?.sucessful) {
+      if (!finalSingleItem.completedQuery?.successful) {
         throw new Error('Please select a query that has completed successfully.');
       }
 
@@ -867,6 +911,8 @@ export class QueryHistoryManager extends DisposableObject {
       }
     } else if (queryHistoryItem.t === 'remote') {
       return path.join(this.queryStorageDir, queryHistoryItem.queryId);
+    } else if (queryHistoryItem.t === 'variant-analysis') {
+      return this.variantAnalysisManager.getVariantAnalysisStorageLocation(queryHistoryItem.variantAnalysis.id);
     }
 
     throw new Error('Unable to get query directory');
@@ -889,6 +935,8 @@ export class QueryHistoryManager extends DisposableObject {
       }
     } else if (finalSingleItem.t === 'remote') {
       externalFilePath = path.join(this.queryStorageDir, finalSingleItem.queryId, 'timestamp');
+    } else if (finalSingleItem.t === 'variant-analysis') {
+      externalFilePath = path.join(this.variantAnalysisManager.getVariantAnalysisStorageLocation(finalSingleItem.variantAnalysis.id), 'timestamp');
     }
 
     if (externalFilePath) {
@@ -1023,14 +1071,13 @@ export class QueryHistoryManager extends DisposableObject {
 
     const params = new URLSearchParams({
       isQuickEval: String(!!(finalSingleItem.t === 'local' && finalSingleItem.initialInfo.quickEvalPosition)),
-      queryText: encodeURIComponent(await this.getQueryText(finalSingleItem)),
+      queryText: encodeURIComponent(getQueryText(finalSingleItem)),
     });
-    const queryId = finalSingleItem.t === 'local'
-      ? finalSingleItem.initialInfo.id
-      : finalSingleItem.queryId;
+
+    const queryId = getQueryHistoryItemId(finalSingleItem);
 
     const uri = Uri.parse(
-      `codeql:${queryId}?${params.toString()}`, true
+      `codeql:${queryId}.ql?${params.toString()}`, true
     );
     const doc = await workspace.openTextDocument(uri);
     await window.showTextDocument(doc, { preview: false });
@@ -1148,12 +1195,6 @@ export class QueryHistoryManager extends DisposableObject {
     await commands.executeCommand('codeQL.copyRepoList', finalSingleItem.queryId);
   }
 
-  async getQueryText(item: QueryHistoryInfo): Promise<string> {
-    return item.t === 'local'
-      ? item.initialInfo.queryText
-      : item.remoteQuery.queryText;
-  }
-
   async handleExportResults(): Promise<void> {
     await commands.executeCommand('codeQL.exportVariantAnalysisResults');
   }
@@ -1236,7 +1277,7 @@ the file in the file explorer and dragging it into the workspace.`
       if (!otherQuery.completedQuery) {
         throw new Error('Please select a completed query.');
       }
-      if (!otherQuery.completedQuery.sucessful) {
+      if (!otherQuery.completedQuery.successful) {
         throw new Error('Please select a successful query.');
       }
       if (otherQuery.initialInfo.databaseInfo.name !== dbName) {
@@ -1256,7 +1297,7 @@ the file in the file explorer and dragging it into the workspace.`
           otherQuery !== singleItem &&
           otherQuery.t === 'local' &&
           otherQuery.completedQuery &&
-          otherQuery.completedQuery.sucessful &&
+          otherQuery.completedQuery.successful &&
           otherQuery.initialInfo.databaseInfo.name === dbName
       )
       .map((item) => ({

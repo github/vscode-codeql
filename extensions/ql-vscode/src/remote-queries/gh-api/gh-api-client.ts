@@ -77,12 +77,9 @@ export async function getVariantAnalysisRepo(
 export async function getVariantAnalysisRepoResult(
   credentials: Credentials,
   downloadUrl: string,
-): Promise<unknown> {
+): Promise<ArrayBuffer> {
   const octokit = await credentials.getOctokit();
-
-  const response: OctokitResponse<VariantAnalysisRepoTask> = await octokit.request(
-    `GET ${downloadUrl}`
-  );
+  const response = await octokit.request(`GET ${downloadUrl}`);
 
   return response.data;
 }

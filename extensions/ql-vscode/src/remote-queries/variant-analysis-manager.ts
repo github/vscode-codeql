@@ -1,7 +1,7 @@
-import * as ghApiClient from './gh-api/gh-api-client';
 import * as path from 'path';
-import * as fs from 'fs-extra';
-import { CancellationToken, ExtensionContext } from 'vscode';
+
+import * as ghApiClient from './gh-api/gh-api-client';
+import { CancellationToken, commands, EventEmitter, ExtensionContext, window } from 'vscode';
 import { DisposableObject } from '../pure/disposable-object';
 import { Logger } from '../logging';
 import { Credentials } from '../authentication';
@@ -11,22 +11,45 @@ import {
   VariantAnalysisRepoTask,
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
 } from './gh-api/variant-analysis';
-import { VariantAnalysis } from './shared/variant-analysis';
+import {
+  VariantAnalysis, VariantAnalysisQueryLanguage,
+  VariantAnalysisScannedRepositoryDownloadStatus,
+  VariantAnalysisScannedRepositoryResult,
+  VariantAnalysisScannedRepositoryState
+} from './shared/variant-analysis';
 import { getErrorMessage } from '../pure/helpers-pure';
 import { VariantAnalysisView } from './variant-analysis-view';
 import { VariantAnalysisViewManager } from './variant-analysis-view-manager';
+import { VariantAnalysisResultsManager } from './variant-analysis-results-manager';
+import { CodeQLCliServer } from '../cli';
+import { getControllerRepo } from './run-remote-query';
+import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
+import PQueue from 'p-queue';
+import { createTimestampFile } from '../helpers';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
+  private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis>());
+  public readonly onVariantAnalysisAdded = this._onVariantAnalysisAdded.event;
+
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
+  private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
+  private readonly variantAnalyses = new Map<number, VariantAnalysis>();
   private readonly views = new Map<number, VariantAnalysisView>();
+  private static readonly maxConcurrentDownloads = 3;
+  private readonly queue = new PQueue({ concurrency: VariantAnalysisManager.maxConcurrentDownloads });
 
   constructor(
     private readonly ctx: ExtensionContext,
+    cliServer: CodeQLCliServer,
+    private readonly storagePath: string,
     logger: Logger,
   ) {
     super();
-    this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx, logger));
+    this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx));
     this.variantAnalysisMonitor.onVariantAnalysisChange(this.onVariantAnalysisUpdated.bind(this));
+
+    this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, logger));
+    this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
@@ -52,17 +75,45 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.views.delete(view.variantAnalysisId);
   }
 
+  public getView(variantAnalysisId: number): VariantAnalysisView | undefined {
+    return this.views.get(variantAnalysisId);
+  }
+
+  public async getVariantAnalysis(variantAnalysisId: number): Promise<VariantAnalysis | undefined> {
+    return this.variantAnalyses.get(variantAnalysisId);
+  }
+
+  public async loadResults(variantAnalysisId: number, repositoryFullName: string): Promise<void> {
+    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+    if (!variantAnalysis) {
+      throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
+
+    await this.variantAnalysisResultsManager.loadResults(variantAnalysisId, this.getVariantAnalysisStorageLocation(variantAnalysisId), repositoryFullName);
+  }
+
   private async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
     if (!variantAnalysis) {
       return;
     }
 
-    const view = this.views.get(variantAnalysis.id);
-    if (!view) {
-      return;
-    }
+    this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
 
-    await view.updateView(variantAnalysis);
+    await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
+  }
+
+  public async onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): Promise<void> {
+    await this.prepareStorageDirectory(variantAnalysis.id);
+
+    this._onVariantAnalysisAdded.fire(variantAnalysis);
+  }
+
+  private async onRepoResultLoaded(repositoryResult: VariantAnalysisScannedRepositoryResult): Promise<void> {
+    await this.getView(repositoryResult.variantAnalysisId)?.sendRepositoryResults([repositoryResult]);
+  }
+
+  private async onRepoStateUpdated(variantAnalysisId: number, repoState: VariantAnalysisScannedRepositoryState): Promise<void> {
+    await this.getView(variantAnalysisId)?.updateRepoState(repoState);
   }
 
   public async monitorVariantAnalysis(
@@ -77,11 +128,19 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     variantAnalysisSummary: VariantAnalysisApiResponse,
     cancellationToken: CancellationToken
   ): Promise<void> {
+    const repoState = {
+      repositoryId: scannedRepo.repository.id,
+      downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Pending,
+    };
+
+    await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
 
     const credentials = await Credentials.initialize(this.ctx);
     if (!credentials) { throw Error('Error authenticating with GitHub'); }
 
     if (cancellationToken && cancellationToken.isCancellationRequested) {
+      repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Failed;
+      await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
       return;
     }
 
@@ -93,29 +152,83 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
         variantAnalysisSummary.id,
         scannedRepo.repository.id
       );
+    } catch (e) {
+      repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Failed;
+      await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
+      throw new Error(`Could not download the results for variant analysis with id: ${variantAnalysisSummary.id}. Error: ${getErrorMessage(e)}`);
     }
-    catch (e) { throw new Error(`Could not download the results for variant analysis with id: ${variantAnalysisSummary.id}. Error: ${getErrorMessage(e)}`); }
 
     if (repoTask.artifact_url) {
-      const resultDirectory = path.join(
-        this.ctx.globalStorageUri.fsPath,
-        'variant-analyses',
-        `${variantAnalysisSummary.id}`,
-        scannedRepo.repository.full_name
-      );
+      repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.InProgress;
+      await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
 
-      const storagePath = path.join(
-        resultDirectory,
-        scannedRepo.repository.full_name
-      );
-
-      const result = await ghApiClient.getVariantAnalysisRepoResult(
-        credentials,
-        repoTask.artifact_url
-      );
-
-      fs.mkdirSync(resultDirectory, { recursive: true });
-      await fs.writeFile(storagePath, JSON.stringify(result, null, 2), 'utf8');
+      await this.variantAnalysisResultsManager.download(credentials, variantAnalysisSummary.id, repoTask, this.getVariantAnalysisStorageLocation(variantAnalysisSummary.id));
     }
+
+    repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
+    await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
+  }
+
+  public async enqueueDownload(
+    scannedRepo: ApiVariantAnalysisScannedRepository,
+    variantAnalysisSummary: VariantAnalysisApiResponse,
+    token: CancellationToken
+  ): Promise<void> {
+    await this.queue.add(() => this.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysisSummary, token));
+  }
+
+  public downloadsQueueSize(): number {
+    return this.queue.pending;
+  }
+
+  public getVariantAnalysisStorageLocation(variantAnalysisId: number): string {
+    return path.join(
+      this.storagePath,
+      `${variantAnalysisId}`
+    );
+  }
+
+  /**
+   * Prepares a directory for storing results for a variant analysis.
+   * This directory contains a timestamp file, which will be
+   * used by the query history manager to determine when the directory
+   * should be deleted.
+   */
+  private async prepareStorageDirectory(variantAnalysisId: number): Promise<void> {
+    await createTimestampFile(this.getVariantAnalysisStorageLocation(variantAnalysisId));
+  }
+
+  public async promptOpenVariantAnalysis() {
+    const credentials = await Credentials.initialize(this.ctx);
+    if (!credentials) { throw Error('Error authenticating with GitHub'); }
+
+    const controllerRepo = await getControllerRepo(credentials);
+
+    const variantAnalysisIdString = await window.showInputBox({
+      title: 'Enter the variant analysis ID',
+    });
+    if (!variantAnalysisIdString) {
+      return;
+    }
+    const variantAnalysisId = parseInt(variantAnalysisIdString, 10);
+
+    const variantAnalysisResponse = await ghApiClient.getVariantAnalysis(credentials, controllerRepo.id, variantAnalysisId);
+
+    const processedVariantAnalysis = processUpdatedVariantAnalysis({
+      // We don't really know these values, so just fill in some placeholder values
+      query: {
+        name: `Variant analysis ${variantAnalysisId}`,
+        filePath: `variant_analysis_${variantAnalysisId}.ql`,
+        language: variantAnalysisResponse.query_language as VariantAnalysisQueryLanguage,
+        text: '',
+      },
+      databases: {},
+      executionStartTime: 0,
+    }, variantAnalysisResponse);
+
+    void commands.executeCommand('codeQL.openVariantAnalysisView', processedVariantAnalysis.id);
+    void commands.executeCommand('codeQL.monitorVariantAnalysis', processedVariantAnalysis);
+
+    this._onVariantAnalysisAdded.fire(processedVariantAnalysis);
   }
 }

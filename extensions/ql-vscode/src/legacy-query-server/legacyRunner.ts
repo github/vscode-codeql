@@ -56,4 +56,10 @@ export class LegacyQueryRunner extends QueryRunner {
   async upgradeDatabaseExplicit(dbItem: DatabaseItem, progress: ProgressCallback, token: CancellationToken): Promise<void> {
     await upgradeDatabaseExplicit(this.qs, dbItem, progress, token);
   }
+
+  async clearPackCache(): Promise<void> {
+    /**
+     * Nothing needs to be done
+     */
+  }
 }

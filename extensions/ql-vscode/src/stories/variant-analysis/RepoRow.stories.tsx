@@ -3,7 +3,10 @@ import React from 'react';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import { VariantAnalysisContainer } from '../../view/variant-analysis/VariantAnalysisContainer';
-import { VariantAnalysisRepoStatus } from '../../remote-queries/shared/variant-analysis';
+import {
+  VariantAnalysisRepoStatus,
+  VariantAnalysisScannedRepositoryDownloadStatus,
+} from '../../remote-queries/shared/variant-analysis';
 import { AnalysisAlert, AnalysisRawResults } from '../../remote-queries/shared/analysis-result';
 
 import analysesResults from '../remote-queries/data/analysesResultsMessage.json';
@@ -60,6 +63,14 @@ export const Canceled = Template.bind({});
 Canceled.args = {
   ...Pending.args,
   status: VariantAnalysisRepoStatus.Canceled,
+};
+
+export const SucceededDownloading = Template.bind({});
+SucceededDownloading.args = {
+  ...Pending.args,
+  status: VariantAnalysisRepoStatus.Succeeded,
+  resultCount: 198,
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
 };
 
 export const InterpretedResults = Template.bind({});

@@ -20,6 +20,7 @@ import { RemoteQueriesManager } from '../../../remote-queries/remote-queries-man
 import { ResultsView } from '../../../interface';
 import { EvalLogViewer } from '../../../eval-log-viewer';
 import { QueryRunner } from '../../../queryRunner';
+import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
 
 /**
  * Tests for remote queries and how they interact with the query history manager.
@@ -35,6 +36,7 @@ describe('Remote queries and query history manager', function() {
   let qhm: QueryHistoryManager;
   let localQueriesResultsViewStub: ResultsView;
   let remoteQueriesManagerStub: RemoteQueriesManager;
+  let variantAnalysisManagerStub: VariantAnalysisManager;
   let rawQueryHistory: any;
   let remoteQueryResult0: RemoteQueryResult;
   let remoteQueryResult1: RemoteQueryResult;
@@ -73,6 +75,10 @@ describe('Remote queries and query history manager', function() {
       removeRemoteQuery: removeRemoteQueryStub,
       openRemoteQueryResults: openRemoteQueryResultsStub
     } as any as RemoteQueriesManager;
+
+    variantAnalysisManagerStub = {
+      onVariantAnalysisAdded: sandbox.stub()
+    } as any as VariantAnalysisManager;
   });
 
   afterEach(function() {
@@ -94,6 +100,7 @@ describe('Remote queries and query history manager', function() {
       {} as DatabaseManager,
       localQueriesResultsViewStub,
       remoteQueriesManagerStub,
+      variantAnalysisManagerStub,
       {} as EvalLogViewer,
       STORAGE_DIR,
       {
@@ -164,7 +171,7 @@ describe('Remote queries and query history manager', function() {
 
     // also, both queries should be removed from on disk storage
     expect(fs.readJSONSync(path.join(STORAGE_DIR, 'workspace-query-history.json'))).to.deep.eq({
-      version: 1,
+      version: 2,
       queries: []
     });
   });

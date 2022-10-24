@@ -31,11 +31,16 @@ describe('Variant Analysis processor', function() {
         'filePath': 'query-file-path',
         'language': VariantAnalysisQueryLanguage.Javascript,
         'name': 'query-name',
+        'text': mockSubmission.query.text,
       },
       'databases': {
         'repositories': ['1', '2', '3'],
       },
+      'executionStartTime': mockSubmission.startTime,
+      'createdAt': mockApiResponse.created_at,
+      'updatedAt': mockApiResponse.updated_at,
       'status': 'succeeded',
+      'completedAt': mockApiResponse.completed_at,
       'actionsWorkflowRunId': mockApiResponse.actions_workflow_run_id,
       'scannedRepos': [
         transformScannedRepo(VariantAnalysisRepoStatus.Succeeded, scannedRepos[0]),
