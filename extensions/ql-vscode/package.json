@@ -1328,7 +1328,7 @@
     "@types/webpack": "^5.28.0",
     "@types/webpack-env": "^1.18.0",
     "@types/xml2js": "~0.4.4",
-    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/eslint-plugin": "^5.40.1",
     "@typescript-eslint/parser": "^4.26.0",
     "ajv": "^8.11.0",
     "ansi-colors": "^4.1.1",
