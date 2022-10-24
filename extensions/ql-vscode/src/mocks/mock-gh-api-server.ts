@@ -72,13 +72,32 @@ export class MockGitHubApiServer extends DisposableObject {
     this.server.resetHandlers();
     this.server.use(...handlers);
 
+    // Set a value in the context to track whether we have a scenario loaded. 
+    // This allows us to use this to show/hide commands (see package.json)
+    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.scenarioLoaded', true);
+
     await window.showInformationMessage(`Loaded scenario '${scenarioName}'`);
+  }
+
+  public async unloadScenario(): Promise<void> {
+    if (!this.isScenarioLoaded()) {
+      await window.showInformationMessage('No scenario currently loaded');
+    }
+    else {
+      await this.unloadAllScenarios();
+      await window.showInformationMessage('Unloaded scenario');
+    }
   }
 
   public async startRecording(): Promise<void> {
     if (this.recorder.isRecording) {
       void window.showErrorMessage('A scenario is already being recorded. Use the "Save Scenario" or "Cancel Scenario" commands to finish recording.');
       return;
+    }
+
+    if (this.isScenarioLoaded()) {
+      await this.unloadAllScenarios();
+      void window.showInformationMessage('A scenario was loaded so it has been unloaded');
     }
 
     this.recorder.start();
@@ -177,6 +196,15 @@ export class MockGitHubApiServer extends DisposableObject {
     // is no "when" clause that would allow us to only show it to users who have enabled the feature flag.
 
     return directories[0].fsPath;
+  }
+
+  private isScenarioLoaded(): boolean {
+    return this.server.listHandlers().length > 0;
+  }
+
+  private async unloadAllScenarios(): Promise<void> {
+    this.server.resetHandlers();
+    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.scenarioLoaded', false);
   }
 
   private setupConfigListener(): void {

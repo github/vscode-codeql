@@ -661,6 +661,10 @@
       {
         "command": "codeQL.mockGitHubApiServer.loadScenario",
         "title": "CodeQL: Mock GitHub API Server: Load Scenario"
+      },
+      {
+        "command": "codeQL.mockGitHubApiServer.unloadScenario",
+        "title": "CodeQL: Mock GitHub API Server: Unload Scenario"
       }
     ],
     "menus": {
@@ -1136,6 +1140,10 @@
         {
           "command": "codeQL.mockGitHubApiServer.loadScenario",
           "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && !codeQL.mockGitHubApiServer.recording"
+        },
+        {
+          "command": "codeQL.mockGitHubApiServer.unloadScenario",
+          "when": "config.codeQL.variantAnalysis.mockGitHubApiServer && codeQL.mockGitHubApiServer.scenarioLoaded"
         }
       ],
       "editor/context": [
