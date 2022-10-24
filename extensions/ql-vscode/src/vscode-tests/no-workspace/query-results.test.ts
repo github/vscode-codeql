@@ -321,6 +321,8 @@ describe('query-results', () => {
       // up to 2 minutes per test
       this.timeout(2 * 60 * 1000);
 
+      // There is a problem on Windows where the file at the prior path isn't able
+      // to be deleted or written to, so we rename the path for this last test.
       const interpretedResultsPath = path.join(tmpDir.name, 'interpreted-invalid.json');
       const invalidSarifStream = fs.createWriteStream(interpretedResultsPath, { flags: 'w' });
 
