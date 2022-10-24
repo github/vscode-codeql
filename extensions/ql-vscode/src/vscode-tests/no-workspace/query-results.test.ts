@@ -321,8 +321,8 @@ describe('query-results', () => {
       // up to 2 minutes per test
       this.timeout(2 * 60 * 1000);
 
-      const invalidLargeInterpretedResultsPath = path.join(tmpDir.name, 'interpreted-invalid.json');
-      const invalidSarifStream = fs.createWriteStream(invalidLargeInterpretedResultsPath, { flags: 'w' });
+      const interpretedResultsPath = path.join(tmpDir.name, 'interpreted-invalid.json');
+      const invalidSarifStream = fs.createWriteStream(interpretedResultsPath, { flags: 'w' });
 
       const finished = new Promise((res, rej) => {
         invalidSarifStream.addListener('close', res);
