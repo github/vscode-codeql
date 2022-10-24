@@ -87,6 +87,8 @@ describe('Remote queries and query history manager', function() {
     // set a higher timeout since recursive delete below may take a while, expecially on Windows.
     this.timeout(120000);
     deleteHistoryState();
+    disposables.dispose(testDisposeHandler);
+    sandbox.restore();
   });
 
   beforeEach(() => {
@@ -119,11 +121,6 @@ describe('Remote queries and query history manager', function() {
 
     showTextDocumentSpy = sandbox.spy(window, 'showTextDocument');
     openTextDocumentSpy = sandbox.spy(workspace, 'openTextDocument');
-  });
-
-  afterEach(() => {
-    disposables.dispose(testDisposeHandler);
-    sandbox.restore();
   });
 
   it('should read query history', async () => {
