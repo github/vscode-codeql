@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, it, expect, jest, afterEach, beforeEach } from '@jest/globals';
 import {
   EnvironmentVariableCollection,
   EnvironmentVariableMutator,
@@ -15,7 +15,6 @@ import * as yaml from 'js-yaml';
 import * as tmp from 'tmp';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import * as sinon from 'sinon';
 import { DirResult } from 'tmp';
 
 import {
@@ -29,20 +28,8 @@ import {
   walkDirectory
 } from '../../helpers';
 import { reportStreamProgress } from '../../commandRunner';
-import Sinon = require('sinon');
-import { fail } from 'assert';
 
 describe('helpers', () => {
-  let sandbox: sinon.SinonSandbox;
-
-  beforeEach(() => {
-    sandbox = sinon.createSandbox();
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   describe('Invocation rate limiter', () => {
     // 1 January 2020
     let currentUnixTime = 1577836800;
@@ -65,7 +52,7 @@ describe('helpers', () => {
         numTimesFuncCalled++;
       });
       await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
-      expect(numTimesFuncCalled).to.equal(1);
+      expect(numTimesFuncCalled).toBe(1);
     });
 
     it('doesn\'t invoke function again if no time has passed', async () => {
@@ -75,40 +62,49 @@ describe('helpers', () => {
       });
       await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
       await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
-      expect(numTimesFuncCalled).to.equal(1);
+      expect(numTimesFuncCalled).toBe(1);
     });
 
-    it('doesn\'t invoke function again if requested time since last invocation hasn\'t passed', async () => {
-      let numTimesFuncCalled = 0;
-      const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
-        numTimesFuncCalled++;
-      });
-      await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
-      currentUnixTime += 1;
-      await invocationRateLimiter.invokeFunctionIfIntervalElapsed(2);
-      expect(numTimesFuncCalled).to.equal(1);
-    });
+    it(
+      'doesn\'t invoke function again if requested time since last invocation hasn\'t passed',
+      async () => {
+        let numTimesFuncCalled = 0;
+        const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
+          numTimesFuncCalled++;
+        });
+        await invocationRateLimiter.invokeFunctionIfIntervalElapsed(100);
+        currentUnixTime += 1;
+        await invocationRateLimiter.invokeFunctionIfIntervalElapsed(2);
+        expect(numTimesFuncCalled).toBe(1);
+      }
+    );
 
-    it('invokes function again immediately if requested time since last invocation is 0 seconds', async () => {
-      let numTimesFuncCalled = 0;
-      const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
-        numTimesFuncCalled++;
-      });
-      await invocationRateLimiter.invokeFunctionIfIntervalElapsed(0);
-      await invocationRateLimiter.invokeFunctionIfIntervalElapsed(0);
-      expect(numTimesFuncCalled).to.equal(2);
-    });
+    it(
+      'invokes function again immediately if requested time since last invocation is 0 seconds',
+      async () => {
+        let numTimesFuncCalled = 0;
+        const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
+          numTimesFuncCalled++;
+        });
+        await invocationRateLimiter.invokeFunctionIfIntervalElapsed(0);
+        await invocationRateLimiter.invokeFunctionIfIntervalElapsed(0);
+        expect(numTimesFuncCalled).toBe(2);
+      }
+    );
 
-    it('invokes function again after requested time since last invocation has elapsed', async () => {
-      let numTimesFuncCalled = 0;
-      const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
-        numTimesFuncCalled++;
-      });
-      await invocationRateLimiter.invokeFunctionIfIntervalElapsed(1);
-      currentUnixTime += 1;
-      await invocationRateLimiter.invokeFunctionIfIntervalElapsed(1);
-      expect(numTimesFuncCalled).to.equal(2);
-    });
+    it(
+      'invokes function again after requested time since last invocation has elapsed',
+      async () => {
+        let numTimesFuncCalled = 0;
+        const invocationRateLimiter = createInvocationRateLimiter('funcid', async () => {
+          numTimesFuncCalled++;
+        });
+        await invocationRateLimiter.invokeFunctionIfIntervalElapsed(1);
+        currentUnixTime += 1;
+        await invocationRateLimiter.invokeFunctionIfIntervalElapsed(1);
+        expect(numTimesFuncCalled).toBe(2);
+      }
+    );
 
     it('invokes functions with different rate limiters', async () => {
       let numTimesFuncACalled = 0;
@@ -121,8 +117,8 @@ describe('helpers', () => {
       });
       await invocationRateLimiterA.invokeFunctionIfIntervalElapsed(100);
       await invocationRateLimiterB.invokeFunctionIfIntervalElapsed(100);
-      expect(numTimesFuncACalled).to.equal(1);
-      expect(numTimesFuncBCalled).to.equal(1);
+      expect(numTimesFuncACalled).toBe(1);
+      expect(numTimesFuncBCalled).toBe(1);
     });
   });
 
@@ -141,15 +137,15 @@ describe('helpers', () => {
     });
 
     it('should get initial query contents when language is known', () => {
-      expect(getInitialQueryContents('cpp', 'hucairz')).to.eq('import cpp\n\nselect ""');
+      expect(getInitialQueryContents('cpp', 'hucairz')).toBe('import cpp\n\nselect ""');
     });
 
     it('should get initial query contents when dbscheme is known', () => {
-      expect(getInitialQueryContents('', 'semmlecode.cpp.dbscheme')).to.eq('import cpp\n\nselect ""');
+      expect(getInitialQueryContents('', 'semmlecode.cpp.dbscheme')).toBe('import cpp\n\nselect ""');
     });
 
     it('should get initial query contents when nothing is known', () => {
-      expect(getInitialQueryContents('', 'hucairz')).to.eq('select ""');
+      expect(getInitialQueryContents('', 'hucairz')).toBe('select ""');
     });
 
   });
@@ -170,7 +166,7 @@ describe('helpers', () => {
       fs.mkdirSync(path.join(dbFolder, 'db-python'));
       fs.writeFileSync(path.join(dbFolder, 'codeql-database.yml'), '', 'utf8');
 
-      expect(await isLikelyDatabaseRoot(dbFolder)).to.be.true;
+      expect(await isLikelyDatabaseRoot(dbFolder)).toBe(true);
     });
 
     it('should likely be a database root: .dbinfo', async () => {
@@ -179,7 +175,7 @@ describe('helpers', () => {
       fs.mkdirSync(path.join(dbFolder, 'db-python'));
       fs.writeFileSync(path.join(dbFolder, '.dbinfo'), '', 'utf8');
 
-      expect(await isLikelyDatabaseRoot(dbFolder)).to.be.true;
+      expect(await isLikelyDatabaseRoot(dbFolder)).toBe(true);
     });
 
     it('should likely NOT be a database root: empty dir', async () => {
@@ -187,16 +183,19 @@ describe('helpers', () => {
       fs.mkdirSync(dbFolder);
       fs.mkdirSync(path.join(dbFolder, 'db-python'));
 
-      expect(await isLikelyDatabaseRoot(dbFolder)).to.be.false;
+      expect(await isLikelyDatabaseRoot(dbFolder)).toBe(false);
     });
 
-    it('should likely NOT be a database root: no db language folder', async () => {
-      const dbFolder = path.join(dir.name, 'db');
-      fs.mkdirSync(dbFolder);
-      fs.writeFileSync(path.join(dbFolder, '.dbinfo'), '', 'utf8');
+    it(
+      'should likely NOT be a database root: no db language folder',
+      async () => {
+        const dbFolder = path.join(dir.name, 'db');
+        fs.mkdirSync(dbFolder);
+        fs.writeFileSync(path.join(dbFolder, '.dbinfo'), '', 'utf8');
 
-      expect(await isLikelyDatabaseRoot(dbFolder)).to.be.false;
-    });
+        expect(await isLikelyDatabaseRoot(dbFolder)).toBe(false);
+      }
+    );
 
     it('should find likely db language folder', async () => {
       const dbFolder = path.join(dir.name, 'db-python');
@@ -205,10 +204,10 @@ describe('helpers', () => {
       fs.writeFileSync(path.join(dbFolder, 'codeql-database.yml'), '', 'utf8');
 
       // not a db folder since there is a db-python folder inside this one
-      expect(await isLikelyDbLanguageFolder(dbFolder)).to.be.false;
+      expect(await isLikelyDbLanguageFolder(dbFolder)).toBe(false);
 
       const nestedDbPythonFolder = path.join(dbFolder, 'db-python');
-      expect(await isLikelyDbLanguageFolder(nestedDbPythonFolder)).to.be.true;
+      expect(await isLikelyDbLanguageFolder(nestedDbPythonFolder)).toBe(true);
     });
   });
 
@@ -307,32 +306,33 @@ describe('helpers', () => {
   }
 
   it('should report stream progress', () => {
-    const spy = sandbox.spy();
+    const progressSpy = jest.fn();
     const mockReadable = {
-      on: sandbox.spy()
+      on: jest.fn(),
     };
     const max = 1024 * 1024 * 4;
     const firstStep = (1024 * 1024) + (1024 * 600);
     const secondStep = 1024 * 1024 * 2;
 
-    (reportStreamProgress as any)(mockReadable, 'My prefix', max, spy);
+    (reportStreamProgress as any)(mockReadable, 'My prefix', max, progressSpy);
 
     // now pretend that we have received some messages
-    mockReadable.on.getCall(0).args[1]({ length: firstStep });
-    mockReadable.on.getCall(0).args[1]({ length: secondStep });
+    const listener = mockReadable.on.mock.calls[0][1] as (data: any) => void;
+    listener({ length: firstStep });
+    listener({ length: secondStep });
 
-    expect(spy).to.have.callCount(3);
-    expect(spy).to.have.been.calledWith({
+    expect(progressSpy).toBeCalledTimes(3);
+    expect(progressSpy).toBeCalledWith({
       step: 0,
       maxStep: max,
       message: 'My prefix [0.0 MB of 4.0 MB]',
     });
-    expect(spy).to.have.been.calledWith({
+    expect(progressSpy).toBeCalledWith({
       step: firstStep,
       maxStep: max,
       message: 'My prefix [1.6 MB of 4.0 MB]',
     });
-    expect(spy).to.have.been.calledWith({
+    expect(progressSpy).toBeCalledWith({
       step: firstStep + secondStep,
       maxStep: max,
       message: 'My prefix [3.6 MB of 4.0 MB]',
@@ -340,17 +340,17 @@ describe('helpers', () => {
   });
 
   it('should report stream progress when total bytes unknown', () => {
-    const spy = sandbox.spy();
+    const progressSpy = jest.fn();
     const mockReadable = {
-      on: sandbox.spy()
+      on: jest.fn(),
     };
-    (reportStreamProgress as any)(mockReadable, 'My prefix', undefined, spy);
+    (reportStreamProgress as any)(mockReadable, 'My prefix', undefined, progressSpy);
 
     // There are no listeners registered to this readable
-    expect(mockReadable.on).not.to.have.been.called;
+    expect(mockReadable.on).not.toBeCalled();
 
-    expect(spy).to.have.callCount(1);
-    expect(spy).to.have.been.calledWith({
+    expect(progressSpy).toBeCalledTimes(1);
+    expect(progressSpy).toBeCalledWith({
       step: 1,
       maxStep: 2,
       message: 'My prefix (Size unknown)',
@@ -358,90 +358,84 @@ describe('helpers', () => {
   });
 
   describe('open dialog', () => {
-    let showInformationMessageSpy: Sinon.SinonStub;
+    const showInformationMessageSpy = jest.spyOn(window, 'showInformationMessage');
+
     beforeEach(() => {
-      showInformationMessageSpy = sandbox.stub(window, 'showInformationMessage');
+      showInformationMessageSpy.mockClear().mockResolvedValue(undefined);
     });
 
-    it('should show a binary choice dialog and return `yes`', (done) => {
+    const resolveArg = (index: number) => (...args: any[]) => Promise.resolve(args[index]);
+
+    it('should show a binary choice dialog and return `yes`', async () => {
       // pretend user chooses 'yes'
-      showInformationMessageSpy.onCall(0).resolvesArg(2);
-      const res = showBinaryChoiceDialog('xxx');
-      res.then((val) => {
-        expect(val).to.eq(true);
-        done();
-      }).catch(e => fail(e));
+      showInformationMessageSpy.mockImplementationOnce(resolveArg(2));
+      const val = await showBinaryChoiceDialog('xxx');
+      expect(val).toBe(true);
     });
 
-    it('should show a binary choice dialog and return `no`', (done) => {
+    it('should show a binary choice dialog and return `no`', async () => {
       // pretend user chooses 'no'
-      showInformationMessageSpy.onCall(0).resolvesArg(3);
-      const res = showBinaryChoiceDialog('xxx');
-      res.then((val) => {
-        expect(val).to.eq(false);
-        done();
-      }).catch(e => fail(e));
+      showInformationMessageSpy.mockImplementationOnce(resolveArg(3));
+      const val = await showBinaryChoiceDialog('xxx');
+      expect(val).toBe(false);
     });
 
-    it('should show an info dialog and confirm the action', (done) => {
+    it('should show an info dialog and confirm the action', async () => {
       // pretend user chooses to run action
-      showInformationMessageSpy.onCall(0).resolvesArg(1);
-      const res = showInformationMessageWithAction('xxx', 'yyy');
-      res.then((val) => {
-        expect(val).to.eq(true);
-        done();
-      }).catch(e => fail(e));
+      showInformationMessageSpy.mockImplementationOnce(resolveArg(1));
+      const val = await showInformationMessageWithAction('xxx', 'yyy');
+      expect(val).toBe(true);
     });
 
-    it('should show an action dialog and avoid choosing the action', (done) => {
+    it('should show an action dialog and avoid choosing the action', async () => {
       // pretend user does not choose to run action
-      showInformationMessageSpy.onCall(0).resolves(undefined);
-      const res = showInformationMessageWithAction('xxx', 'yyy');
-      res.then((val) => {
-        expect(val).to.eq(false);
-        done();
-      }).catch(e => fail(e));
+      showInformationMessageSpy.mockResolvedValueOnce(undefined);
+      const val = await showInformationMessageWithAction('xxx', 'yyy');
+      expect(val).toBe(false);
     });
 
-    it('should show a binary choice dialog with a url and return `yes`', (done) => {
-      // pretend user clicks on the url twice and then clicks 'yes'
-      showInformationMessageSpy.onCall(0).resolvesArg(2);
-      showInformationMessageSpy.onCall(1).resolvesArg(2);
-      showInformationMessageSpy.onCall(2).resolvesArg(3);
-      const res = showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
-      res.then((val) => {
-        expect(val).to.eq(true);
-        done();
-      }).catch(e => fail(e));
-    });
+    it(
+      'should show a binary choice dialog with a url and return `yes`',
+      async () => {
+        // pretend user clicks on the url twice and then clicks 'yes'
+        showInformationMessageSpy
+          .mockImplementation(resolveArg(2))
+          .mockImplementation(resolveArg(2))
+          .mockImplementation(resolveArg(3));
+        const val = await showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
+        expect(val).toBe(true);
+      }
+    );
 
-    it('should show a binary choice dialog with a url and return `no`', (done) => {
-      // pretend user clicks on the url twice and then clicks 'no'
-      showInformationMessageSpy.onCall(0).resolvesArg(2);
-      showInformationMessageSpy.onCall(1).resolvesArg(2);
-      showInformationMessageSpy.onCall(2).resolvesArg(4);
-      const res = showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
-      res.then((val) => {
-        expect(val).to.eq(false);
-        done();
-      }).catch(e => fail(e));
-    });
+    it(
+      'should show a binary choice dialog with a url and return `no`',
+      async () => {
+        // pretend user clicks on the url twice and then clicks 'no'
+        showInformationMessageSpy
+          .mockImplementation(resolveArg(2))
+          .mockImplementation(resolveArg(2))
+          .mockImplementation(resolveArg(4));
+        const val = await showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
+        expect(val).toBe(false);
+      }
+    );
 
-    it('should show a binary choice dialog and exit after clcking `more info` 5 times', (done) => {
-      // pretend user clicks on the url twice and then clicks 'no'
-      showInformationMessageSpy.onCall(0).resolvesArg(2);
-      showInformationMessageSpy.onCall(1).resolvesArg(2);
-      showInformationMessageSpy.onCall(2).resolvesArg(2);
-      showInformationMessageSpy.onCall(3).resolvesArg(2);
-      showInformationMessageSpy.onCall(4).resolvesArg(2);
-      const res = showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
-      res.then((val) => {
+    it(
+      'should show a binary choice dialog and exit after clcking `more info` 5 times',
+      async () => {
+        // pretend user clicks on the url five times
+        showInformationMessageSpy
+          .mockImplementation(resolveArg(2))
+          .mockImplementation(resolveArg(2))
+          .mockImplementation(resolveArg(2))
+          .mockImplementation(resolveArg(2))
+          .mockImplementation(resolveArg(2));
+        const val = await showBinaryChoiceWithUrlDialog('xxx', 'invalid:url');
         // No choie was made
-        expect(val).to.eq(undefined);
-        expect(showInformationMessageSpy.getCalls().length).to.eq(5);
-        done();
-      }).catch(e => fail(e));
-    });
+        expect(val).toBeUndefined();
+        expect(showInformationMessageSpy).toHaveBeenCalledTimes(5);
+      }
+    );
   });
 });
 
@@ -506,6 +500,6 @@ describe('walkDirectory', () => {
     }
 
     // Only real files should be returned.
-    expect(files.sort()).to.deep.eq([file1, file2, file3, file4, file5, file6]);
+    expect(files.sort()).toEqual([file1, file2, file3, file4, file5, file6]);
   });
 });

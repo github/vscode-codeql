@@ -1,24 +1,20 @@
-import { expect } from 'chai';
-import sinon = require('sinon');
+import { describe, it, expect, jest, afterEach, beforeEach } from '@jest/globals';
 import { commands } from 'vscode';
 import { ChildEvalLogTreeItem, EvalLogTreeItem, EvalLogViewer } from '../../eval-log-viewer';
 import { testDisposeHandler } from '../test-dispose-handler';
+import { DisposableObject } from '../../pure/disposable-object';
 
 describe('EvalLogViewer', () => {
   let roots: EvalLogTreeItem[];
   let viewer: EvalLogViewer;
-  let sandbox: sinon.SinonSandbox;
   beforeEach(async () => {
-    sandbox = sinon.createSandbox();
-
     viewer = new EvalLogViewer();
-
-    sandbox.stub(commands, 'registerCommand');
-    sandbox.stub(commands, 'executeCommand');
   });
 
+  jest.spyOn(commands, 'registerCommand').mockReturnValue(new class extends DisposableObject { }());
+  jest.spyOn(commands, 'executeCommand').mockResolvedValue(undefined);
+
   afterEach(() => {
-    sandbox.restore();
     if (viewer) {
       viewer.dispose(testDisposeHandler);
     }
@@ -67,12 +63,12 @@ describe('EvalLogViewer', () => {
 
     viewer.updateRoots(roots);
 
-    expect((viewer as any).treeDataProvider.roots).to.eq(roots);
-    expect((viewer as any).treeView.message).to.eq('Viewer for query run:');
+    expect((viewer as any).treeDataProvider.roots).toBe(roots);
+    expect((viewer as any).treeView.message).toBe('Viewer for query run:');
   });
 
   it('should clear the viewer\'s roots', () => {
     viewer.dispose(testDisposeHandler);
-    expect((viewer as any).treeDataProvider.roots.length).to.eq(0);
+    expect((viewer as any).treeDataProvider.roots.length).toBe(0);
   });
 });

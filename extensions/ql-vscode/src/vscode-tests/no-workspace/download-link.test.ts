@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import 'mocha';
+import { describe, it, expect } from '@jest/globals';
 import * as path from 'path';
 
 import { DownloadLink, createDownloadPath } from '../../remote-queries/download-link';
@@ -16,7 +15,7 @@ describe('createDownloadPath', () => {
 
     const actualPath = createDownloadPath('storage', downloadLink);
 
-    expect(actualPath).to.equal(expectedPath);
+    expect(actualPath).toBe(expectedPath);
   });
 
   it('should return the correct path with extension', () => {
@@ -31,6 +30,6 @@ describe('createDownloadPath', () => {
 
     const actualPath = createDownloadPath('storage', downloadLink, 'zip');
 
-    expect(actualPath).to.equal(expectedPath);
+    expect(actualPath).toBe(expectedPath);
   });
 });

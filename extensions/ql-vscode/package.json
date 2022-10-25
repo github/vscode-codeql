@@ -1242,6 +1242,8 @@
     "test": "npm-run-all -p test:*",
     "test:unit": "mocha --exit -r ts-node/register -r test/mocha.setup.js test/pure-tests/**/*.ts",
     "test:view": "jest",
+    "test:integration:no-workspace": "jest --projects out/vscode-tests/no-workspace",
+    "test:integration:minimal-workspace": "jest --projects out/vscode-tests/minimal-workspace",
     "preintegration": "rm -rf ./out/vscode-tests && gulp",
     "integration": "node ./out/vscode-tests/run-integration-tests.js no-workspace,minimal-workspace",
     "cli-integration": "npm run preintegration && node ./out/vscode-tests/run-integration-tests.js cli-integration",

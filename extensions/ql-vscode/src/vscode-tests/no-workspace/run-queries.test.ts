@@ -1,7 +1,6 @@
-import { expect } from 'chai';
+import { describe, it, expect, jest } from '@jest/globals';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import * as sinon from 'sinon';
 import { Uri } from 'vscode';
 
 import { Severity, compileQuery, registerDatabases, deregisterDatabases } from '../../pure/legacy-messages';
@@ -15,49 +14,46 @@ import { LegacyQueryRunner } from '../../legacy-query-server/legacyRunner';
 import { DatabaseItem } from '../../databases';
 
 describe('run-queries', () => {
-  let sandbox: sinon.SinonSandbox;
-  beforeEach(() => {
-    sandbox = sinon.createSandbox();
-
-    sandbox.stub(config, 'isCanary').returns(false);
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
+  const isCanaryStub = jest.spyOn(config, 'isCanary').mockReturnValue(false);
 
   it('should create a QueryEvaluationInfo', () => {
     const saveDir = 'query-save-dir';
     const info = createMockQueryInfo(true, saveDir);
 
-    expect(info.compiledQueryPath).to.eq(path.join(saveDir, 'compiledQuery.qlo'));
-    expect(info.queryEvalInfo.dilPath).to.eq(path.join(saveDir, 'results.dil'));
-    expect(info.queryEvalInfo.resultsPaths.resultsPath).to.eq(path.join(saveDir, 'results.bqrs'));
-    expect(info.queryEvalInfo.resultsPaths.interpretedResultsPath).to.eq(path.join(saveDir, 'interpretedResults.sarif'));
-    expect(info.dbItemPath).to.eq(Uri.file('/abc').fsPath);
+    expect(info.compiledQueryPath).toBe(path.join(saveDir, 'compiledQuery.qlo'));
+    expect(info.queryEvalInfo.dilPath).toBe(path.join(saveDir, 'results.dil'));
+    expect(info.queryEvalInfo.resultsPaths.resultsPath).toBe(path.join(saveDir, 'results.bqrs'));
+    expect(info.queryEvalInfo.resultsPaths.interpretedResultsPath).toBe(path.join(saveDir, 'interpretedResults.sarif'));
+    expect(info.dbItemPath).toBe(Uri.file('/abc').fsPath);
   });
 
   it('should check if interpreted results can be created', async () => {
     const info = createMockQueryInfo(true);
 
-    expect(info.queryEvalInfo.canHaveInterpretedResults(), '1').to.eq(true);
+    // '1'
+    expect(info.queryEvalInfo.canHaveInterpretedResults()).toBe(true);
 
     (info.queryEvalInfo as any).databaseHasMetadataFile = false;
-    expect(info.queryEvalInfo.canHaveInterpretedResults(), '2').to.eq(false);
+    // '2'
+    expect(info.queryEvalInfo.canHaveInterpretedResults()).toBe(false);
 
     (info.queryEvalInfo as any).databaseHasMetadataFile = true;
     info.metadata!.kind = undefined;
-    expect(info.queryEvalInfo.canHaveInterpretedResults(), '3').to.eq(false);
+    // '3'
+    expect(info.queryEvalInfo.canHaveInterpretedResults()).toBe(false);
 
     info.metadata!.kind = 'table';
-    expect(info.queryEvalInfo.canHaveInterpretedResults(), '4').to.eq(false);
+    // '4'
+    expect(info.queryEvalInfo.canHaveInterpretedResults()).toBe(false);
 
     // Graphs are not interpreted unless canary is set
     info.metadata!.kind = 'graph';
-    expect(info.queryEvalInfo.canHaveInterpretedResults(), '5').to.eq(false);
+    // '5'
+    expect(info.queryEvalInfo.canHaveInterpretedResults()).toBe(false);
 
-    (config.isCanary as sinon.SinonStub).returns(true);
-    expect(info.queryEvalInfo.canHaveInterpretedResults(), '6').to.eq(true);
+    isCanaryStub.mockReturnValueOnce(true);
+    // '6'
+    expect(info.queryEvalInfo.canHaveInterpretedResults()).toBe(true);
   });
 
   [SELECT_QUERY_NAME, 'other'].forEach(resultSetName => {
@@ -80,49 +76,54 @@ describe('run-queries', () => {
       const promise = info.queryEvalInfo.exportCsvResults(cliServer, csvLocation);
 
       const result = await promise;
-      expect(result).to.eq(true);
+      expect(result).toBe(true);
 
       const csv = fs.readFileSync(csvLocation, 'utf8');
-      expect(csv).to.eq('a,"b"\nc,"d"\n"a",b,c\n');
+      expect(csv).toBe('a,"b"\nc,"d"\n"a",b,c\n');
 
       // now verify that we are using the expected result set
-      expect((cliServer.bqrsDecode as sinon.SinonStub).callCount).to.eq(2);
-      expect((cliServer.bqrsDecode as sinon.SinonStub).getCall(0).args[1]).to.eq(resultSetName);
+      expect(cliServer.bqrsDecode).toHaveBeenCalledTimes(2);
+      expect(cliServer.bqrsDecode).toHaveBeenNthCalledWith(1, expect.anything(), resultSetName, expect.anything());
     });
   });
 
-  it('should export csv results with characters that need to be escaped', async () => {
-    const csvLocation = path.join(tmpDir.name, 'test.csv');
-    const cliServer =
-      createMockCliServer({
-        bqrsInfo: [{ 'result-sets': [{ name: SELECT_QUERY_NAME }, { name: 'hucairz' }] }],
-        bqrsDecode: [{
-          columns: [{ kind: 'NotString' }, { kind: 'String' }],
-          // We only escape string columns. In practice, we will only see quotes in strings, but
-          // it is a good test anyway.
-          tuples: [
-            ['"a"', '"b"'],
-            ['c,xxx', 'd,yyy'],
-            ['aaa " bbb', 'ccc " ddd'],
-            [true, false],
-            [123, 456],
-            [123.98, 456.99],
-          ],
-        }]
-      });
-    const info = createMockQueryInfo();
-    const promise = info.queryEvalInfo.exportCsvResults(cliServer, csvLocation);
+  it(
+    'should export csv results with characters that need to be escaped',
+    async () => {
+      const csvLocation = path.join(tmpDir.name, 'test.csv');
+      const cliServer =
+        createMockCliServer({
+          bqrsInfo: [{ 'result-sets': [{ name: SELECT_QUERY_NAME }, { name: 'hucairz' }] }],
+          bqrsDecode: [{
+            columns: [{ kind: 'NotString' }, { kind: 'String' }],
+            // We only escape string columns. In practice, we will only see quotes in strings, but
+            // it is a good test anyway.
+            tuples: [
+              ['"a"', '"b"'],
+              ['c,xxx', 'd,yyy'],
+              ['aaa " bbb', 'ccc " ddd'],
+              [true, false],
+              [123, 456],
+              [123.98, 456.99],
+            ],
+          }]
+        });
+      const info = createMockQueryInfo();
+      const promise = info.queryEvalInfo.exportCsvResults(cliServer, csvLocation);
 
-    const result = await promise;
-    expect(result).to.eq(true);
+      const result = await promise;
+      expect(result).toBe(true);
 
-    const csv = fs.readFileSync(csvLocation, 'utf8');
-    expect(csv).to.eq('"a","""b"""\nc,xxx,"d,yyy"\naaa " bbb,"ccc "" ddd"\ntrue,"false"\n123,"456"\n123.98,"456.99"\n');
+      const csv = fs.readFileSync(csvLocation, 'utf8');
+      expect(csv).toBe(
+        '"a","""b"""\nc,xxx,"d,yyy"\naaa " bbb,"ccc "" ddd"\ntrue,"false"\n123,"456"\n123.98,"456.99"\n'
+      );
 
-    // now verify that we are using the expected result set
-    expect((cliServer.bqrsDecode as sinon.SinonStub).callCount).to.eq(1);
-    expect((cliServer.bqrsDecode as sinon.SinonStub).getCall(0).args[1]).to.eq(SELECT_QUERY_NAME);
-  });
+      // now verify that we are using the expected result set
+      expect(cliServer.bqrsDecode).toHaveBeenCalledTimes(1);
+      expect(cliServer.bqrsDecode).toHaveBeenCalledWith(expect.anything(), SELECT_QUERY_NAME, expect.anything());
+    }
+  );
 
   it('should handle csv exports for a query with no result sets', async () => {
     const csvLocation = path.join(tmpDir.name, 'test.csv');
@@ -132,7 +133,7 @@ describe('run-queries', () => {
       });
     const info = createMockQueryInfo();
     const result = await info.queryEvalInfo.exportCsvResults(cliServer, csvLocation);
-    expect(result).to.eq(false);
+    expect(result).toBe(false);
   });
 
   describe('compile', () => {
@@ -154,11 +155,12 @@ describe('run-queries', () => {
         mockCancel as any
       );
 
-      expect(results).to.deep.eq([
+      expect(results).toEqual([
         { message: 'err', severity: Severity.ERROR }
       ]);
 
-      expect(qs.sendRequest).to.have.been.calledOnceWith(
+      expect(qs.sendRequest).toHaveBeenCalledTimes(1);
+      expect(qs.sendRequest).toHaveBeenCalledWith(
         compileQuery,
         {
           compilationOptions: {
@@ -207,7 +209,8 @@ describe('run-queries', () => {
 
       await runner.registerDatabase(mockProgress as any, mockCancel as any, dbItem);
 
-      expect(qs.sendRequest).to.have.been.calledOnceWith(
+      expect(qs.sendRequest).toHaveBeenCalledTimes(1);
+      expect(qs.sendRequest).toHaveBeenCalledWith(
         registerDatabases,
         {
           databases: [
@@ -242,7 +245,8 @@ describe('run-queries', () => {
 
       await runner.deregisterDatabase(mockProgress as any, mockCancel as any, dbItem);
 
-      expect(qs.sendRequest).to.have.been.calledOnceWith(
+      expect(qs.sendRequest).toHaveBeenCalledTimes(1);
+      expect(qs.sendRequest).toHaveBeenCalledWith(
         deregisterDatabases,
         {
           databases: [
@@ -275,7 +279,7 @@ describe('run-queries', () => {
         }
       } as any;
       await runner.registerDatabase(mockProgress as any, mockCancel as any, dbItem);
-      expect(qs.sendRequest).not.to.have.been.called;
+      expect(qs.sendRequest).not.toBeCalled();
     });
 
     it('should not deregister if unsupported', async () => {
@@ -296,7 +300,7 @@ describe('run-queries', () => {
         }
       } as any;
       await runner.registerDatabase(mockProgress as any, mockCancel as any, dbItem);
-      expect(qs.sendRequest).not.to.have.been.called;
+      expect(qs.sendRequest).not.toBeCalled();
     });
 
   });
@@ -321,7 +325,7 @@ describe('run-queries', () => {
       config: {
         timeoutSecs: 5
       },
-      sendRequest: sandbox.stub().returns(new Promise(resolve => {
+      sendRequest: jest.fn().mockImplementation(() => new Promise(resolve => {
         resolve({
           messages: [
             { message: 'err', severity: Severity.ERROR },
@@ -330,7 +334,7 @@ describe('run-queries', () => {
         });
       })),
       logger: {
-        log: sandbox.spy()
+        log: jest.fn(),
       },
       cliServer
     } as unknown as QueryServerClient;
@@ -339,9 +343,9 @@ describe('run-queries', () => {
   function createMockCliServer(mockOperations: Record<string, any[]>): CodeQLCliServer {
     const mockServer: Record<string, any> = {};
     for (const [operation, returns] of Object.entries(mockOperations)) {
-      mockServer[operation] = sandbox.stub();
-      returns.forEach((returnValue, i) => {
-        mockServer[operation].onCall(i).resolves(returnValue);
+      mockServer[operation] = jest.fn();
+      returns.forEach((returnValue) => {
+        mockServer[operation].mockResolvedValueOnce(returnValue);
       });
     }
 

@@ -1,9 +1,9 @@
-import { afterEach, jest } from '@jest/globals';
+import { afterAll, jest } from '@jest/globals';
 
-// import { env } from 'vscode';
+import { env } from 'vscode';
 
-// (env as any).openExternal = () => { /**/ };
+(env as any).openExternal = () => { /**/ };
 
-afterEach(() => {
+afterAll(() => {
   jest.restoreAllMocks();
 });

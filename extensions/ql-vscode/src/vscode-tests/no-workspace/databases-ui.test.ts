@@ -1,7 +1,7 @@
+import { describe, it, expect } from '@jest/globals';
 import * as tmp from 'tmp';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { expect } from 'chai';
 import { Uri } from 'vscode';
 
 import { DatabaseUI } from '../../databases-ui';
@@ -14,13 +14,13 @@ describe('databases-ui', () => {
     it('should choose current directory direcory normally', async () => {
       const dir = tmp.dirSync().name;
       const uri = await fixDbUri(Uri.file(dir));
-      expect(uri.toString()).to.eq(Uri.file(dir).toString());
+      expect(uri.toString()).toBe(Uri.file(dir).toString());
     });
 
     it('should choose parent direcory when file is selected', async () => {
       const file = tmp.fileSync().name;
       const uri = await fixDbUri(Uri.file(file));
-      expect(uri.toString()).to.eq(Uri.file(path.dirname(file)).toString());
+      expect(uri.toString()).toBe(Uri.file(path.dirname(file)).toString());
     });
 
     it('should choose parent direcory when db-* is selected', async () => {
@@ -29,19 +29,22 @@ describe('databases-ui', () => {
       await fs.mkdirs(dbDir);
 
       const uri = await fixDbUri(Uri.file(dbDir));
-      expect(uri.toString()).to.eq(Uri.file(dir).toString());
+      expect(uri.toString()).toBe(Uri.file(dir).toString());
     });
 
-    it('should choose parent\'s parent direcory when file selected is in db-*', async () => {
-      const dir = tmp.dirSync().name;
-      const dbDir = path.join(dir, 'db-javascript');
-      const file = path.join(dbDir, 'nested');
-      await fs.mkdirs(dbDir);
-      await fs.createFile(file);
+    it(
+      'should choose parent\'s parent direcory when file selected is in db-*',
+      async () => {
+        const dir = tmp.dirSync().name;
+        const dbDir = path.join(dir, 'db-javascript');
+        const file = path.join(dbDir, 'nested');
+        await fs.mkdirs(dbDir);
+        await fs.createFile(file);
 
-      const uri = await fixDbUri(Uri.file(file));
-      expect(uri.toString()).to.eq(Uri.file(dir).toString());
-    });
+        const uri = await fixDbUri(Uri.file(file));
+        expect(uri.toString()).toBe(Uri.file(dir).toString());
+      }
+    );
 
     it('should handle a parent whose name is db-*', async () => {
       // fixes https://github.com/github/vscode-codeql/issues/482
@@ -53,7 +56,7 @@ describe('databases-ui', () => {
       fs.createFileSync(file);
 
       const uri = await fixDbUri(Uri.file(file));
-      expect(uri.toString()).to.eq(Uri.file(parentDir).toString());
+      expect(uri.toString()).toBe(Uri.file(parentDir).toString());
     });
   });
 
@@ -83,12 +86,12 @@ describe('databases-ui', () => {
 
     await databaseUI.handleRemoveOrphanedDatabases();
 
-    expect(fs.pathExistsSync(db1)).to.be.true;
-    expect(fs.pathExistsSync(db2)).to.be.true;
-    expect(fs.pathExistsSync(db3)).to.be.true;
+    expect(fs.pathExistsSync(db1)).toBe(true);
+    expect(fs.pathExistsSync(db2)).toBe(true);
+    expect(fs.pathExistsSync(db3)).toBe(true);
 
-    expect(fs.pathExistsSync(db4)).to.be.false;
-    expect(fs.pathExistsSync(db5)).to.be.false;
+    expect(fs.pathExistsSync(db4)).toBe(false);
+    expect(fs.pathExistsSync(db5)).toBe(false);
 
     databaseUI.dispose(testDisposeHandler);
   });

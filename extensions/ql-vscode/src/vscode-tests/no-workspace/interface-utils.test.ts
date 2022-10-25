@@ -1,18 +1,18 @@
-import { expect } from 'chai';
+import { describe, it, expect, jest, afterEach } from '@jest/globals';
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as sinon from 'sinon';
 import * as tmp from 'tmp';
-import { window, ViewColumn, Uri } from 'vscode';
+import { window, ViewColumn, Uri, WebviewPanel } from 'vscode';
 import {
   fileUriToWebviewUri,
   tryResolveLocation,
 } from '../../interface-utils';
 import { getDefaultResultSetName } from '../../pure/interface-types';
 import { DatabaseItem } from '../../databases';
+import { FileResult } from 'tmp';
 
 describe('interface-utils', () => {
-  describe('webview uri conversion', function() {
+  describe('webview uri conversion', () => {
     const fileSuffix = '.bqrs';
 
     function setupWebview(filePrefix: string) {
@@ -32,81 +32,79 @@ describe('interface-utils', () => {
         }
       );
 
-      after(function() {
-        panel.dispose();
-        tmpFile.removeCallback();
-      });
-
       // CSP allowing nothing, to prevent warnings.
       const html = '<html><head><meta http-equiv="Content-Security-Policy" content="default-src \'none\';"></head></html>';
       panel.webview.html = html;
       return {
         fileUriOnDisk,
         panel,
+        tmpFile,
       };
     }
 
-    it('does not double-encode # in URIs', function() {
-      const { fileUriOnDisk, panel } = setupWebview('#');
+    let webview: {
+      fileUriOnDisk: Uri,
+      panel: WebviewPanel,
+      tmpFile: FileResult,
+    };
+
+    afterEach(() => {
+      webview?.panel.dispose();
+      webview?.tmpFile?.removeCallback();
+    });
+
+    it('does not double-encode # in URIs', () => {
+      webview = setupWebview('#');
+      const { fileUriOnDisk, panel } = webview;
       const webviewUri = fileUriToWebviewUri(panel, fileUriOnDisk);
       const parsedUri = Uri.parse(webviewUri);
-      expect(path.basename(parsedUri.path, fileSuffix)).to.equal(
-        path.basename(fileUriOnDisk.path, fileSuffix)
-      );
+      expect(path.basename(parsedUri.path, fileSuffix)).toBe(path.basename(fileUriOnDisk.path, fileSuffix));
     });
   });
 
   describe('getDefaultResultSetName', () => {
     it('should get the default name', () => {
-      expect(getDefaultResultSetName(['a', 'b', '#select', 'alerts'])).to.equal(
-        'alerts'
-      );
-      expect(getDefaultResultSetName(['a', 'b', '#select'])).to.equal(
-        '#select'
-      );
-      expect(getDefaultResultSetName(['a', 'b'])).to.equal('a');
-      expect(getDefaultResultSetName([])).to.be.undefined;
+      expect(getDefaultResultSetName(['a', 'b', '#select', 'alerts'])).toBe('alerts');
+      expect(getDefaultResultSetName(['a', 'b', '#select'])).toBe('#select');
+      expect(getDefaultResultSetName(['a', 'b'])).toBe('a');
+      expect(getDefaultResultSetName([])).toBeUndefined();
     });
   });
 
   describe('resolveWholeFileLocation', () => {
     it('should resolve a whole file location', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.file('abc')),
+        resolveSourceFile: () => vscode.Uri.file('abc'),
       } as unknown) as DatabaseItem;
       expect(
         tryResolveLocation(
           'file://hucairz:0:0:0:0',
           mockDatabaseItem
         )
-      ).to.deep.equal(
-        new vscode.Location(
-          vscode.Uri.file('abc'),
-          new vscode.Range(0, 0, 0, 0)
-        )
-      );
+      ).toEqual(new vscode.Location(
+        vscode.Uri.file('abc'),
+        new vscode.Range(0, 0, 0, 0)
+      ));
     });
 
     it('should resolve a five-part location edge case', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.file('abc')),
+        resolveSourceFile: () => vscode.Uri.file('abc'),
       } as unknown) as DatabaseItem;
       expect(
         tryResolveLocation(
           'file://hucairz:1:1:1:1',
           mockDatabaseItem
         )
-      ).to.deep.equal(
-        new vscode.Location(
-          vscode.Uri.file('abc'),
-          new vscode.Range(0, 0, 0, 1)
-        )
-      );
+      ).toEqual(new vscode.Location(
+        vscode.Uri.file('abc'),
+        new vscode.Range(0, 0, 0, 1)
+      ));
     });
 
     it('should resolve a five-part location', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.parse('abc')),
+        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.parse('abc')),
       } as unknown) as DatabaseItem;
 
       expect(
@@ -120,20 +118,19 @@ describe('interface-utils', () => {
           },
           mockDatabaseItem
         )
-      ).to.deep.equal(
-        new vscode.Location(
-          vscode.Uri.parse('abc'),
-          new vscode.Range(new vscode.Position(4, 3), new vscode.Position(3, 0))
-        )
-      );
-      expect(mockDatabaseItem.resolveSourceFile).to.have.been.calledOnceWith(
+      ).toEqual(new vscode.Location(
+        vscode.Uri.parse('abc'),
+        new vscode.Range(new vscode.Position(4, 3), new vscode.Position(3, 0))
+      ));
+      expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledWith(
         'hucairz'
       );
+      expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledTimes(1);
     });
 
     it('should resolve a five-part location with an empty path', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.parse('abc')),
+        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.parse('abc')),
       } as unknown) as DatabaseItem;
 
       expect(
@@ -147,12 +144,12 @@ describe('interface-utils', () => {
           },
           mockDatabaseItem
         )
-      ).to.be.undefined;
+      ).toBeUndefined();
     });
 
     it('should resolve a string location for whole file', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.parse('abc')),
+        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.parse('abc')),
       } as unknown) as DatabaseItem;
 
       expect(
@@ -160,20 +157,19 @@ describe('interface-utils', () => {
           'file://hucairz:0:0:0:0',
           mockDatabaseItem
         )
-      ).to.deep.equal(
-        new vscode.Location(
-          vscode.Uri.parse('abc'),
-          new vscode.Range(0, 0, 0, 0)
-        )
-      );
-      expect(mockDatabaseItem.resolveSourceFile).to.have.been.calledOnceWith(
+      ).toEqual(new vscode.Location(
+        vscode.Uri.parse('abc'),
+        new vscode.Range(0, 0, 0, 0)
+      ));
+      expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledWith(
         'hucairz'
       );
+      expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledTimes(1);
     });
 
     it('should resolve a string location for five-part location', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.parse('abc')),
+        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.parse('abc')),
       } as unknown) as DatabaseItem;
 
       expect(
@@ -181,20 +177,19 @@ describe('interface-utils', () => {
           'file://hucairz:5:4:3:2',
           mockDatabaseItem
         )
-      ).to.deep.equal(
-        new vscode.Location(
-          vscode.Uri.parse('abc'),
-          new vscode.Range(new vscode.Position(4, 3), new vscode.Position(2, 2))
-        )
-      );
-      expect(mockDatabaseItem.resolveSourceFile).to.have.been.calledOnceWith(
+      ).toEqual(new vscode.Location(
+        vscode.Uri.parse('abc'),
+        new vscode.Range(new vscode.Position(4, 3), new vscode.Position(2, 2))
+      ));
+      expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledWith(
         'hucairz'
       );
+      expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledTimes(1);
     });
 
     it('should resolve a string location for invalid string', () => {
       const mockDatabaseItem: DatabaseItem = ({
-        resolveSourceFile: sinon.stub().returns(vscode.Uri.parse('abc')),
+        resolveSourceFile: () => vscode.Uri.parse('abc'),
       } as unknown) as DatabaseItem;
 
       expect(
@@ -202,7 +197,7 @@ describe('interface-utils', () => {
           'file://hucairz:x:y:z:a',
           mockDatabaseItem
         )
-      ).to.be.undefined;
+      ).toBeUndefined();
     });
   });
 });

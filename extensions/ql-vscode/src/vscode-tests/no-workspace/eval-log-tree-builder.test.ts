@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, it, expect } from '@jest/globals';
 import EvalLogTreeBuilder from '../../eval-log-tree-builder';
 import { EvalLogData } from '../../pure/log-summary-parser';
 
@@ -61,49 +61,52 @@ describe('EvalLogTreeBuilder', () => {
     const builder = new EvalLogTreeBuilder('test-query.ql', evalLogDataItems);
     const roots = await builder.getRoots();
 
-    // Force children, parent to be undefined for ease of testing. 
+    // Force children, parent to be undefined for ease of testing.
     expect(roots.map(
       r => ({ ...r, children: undefined })
-    )).to.deep.eq(expectedRoots);
+    )).toEqual(expectedRoots);
 
     expect((roots[0].children.map(
       pred => ({ ...pred, children: undefined, parent: undefined })
-    ))).to.deep.eq(expectedPredicate);
+    ))).toEqual(expectedPredicate);
 
     expect((roots[0].children[0].children.map(
       ra => ({ ...ra, children: undefined, parent: undefined })
-    ))).to.deep.eq(expectedRA);
+    ))).toEqual(expectedRA);
 
-    // Pipeline steps' children should be empty so do not force undefined children here. 
+    // Pipeline steps' children should be empty so do not force undefined children here.
     expect(roots[0].children[0].children[0].children.map(
       step => ({ ...step, parent: undefined })
-    )).to.deep.eq(expectedPipelineSteps);
+    )).toEqual(expectedPipelineSteps);
   });
 
-  it('should build the tree with descriptive message when no data exists', async () => {
-    // Force children, parent to be undefined for ease of testing. 
-    const expectedRoots = [
-      {
-        label: 'test-query-cached.ql',
-        children: undefined
-      }
-    ];
-    const expectedNoPredicates = [
-      {
-        label: 'No predicates evaluated in this query run.',
-        children: [], // Should be empty so do not force empty here. 
-        parent: undefined
-      }
-    ];
-    const builder = new EvalLogTreeBuilder('test-query-cached.ql', []);
-    const roots = await builder.getRoots();
+  it(
+    'should build the tree with descriptive message when no data exists',
+    async () => {
+      // Force children, parent to be undefined for ease of testing.
+      const expectedRoots = [
+        {
+          label: 'test-query-cached.ql',
+          children: undefined
+        }
+      ];
+      const expectedNoPredicates = [
+        {
+          label: 'No predicates evaluated in this query run.',
+          children: [], // Should be empty so do not force empty here.
+          parent: undefined
+        }
+      ];
+      const builder = new EvalLogTreeBuilder('test-query-cached.ql', []);
+      const roots = await builder.getRoots();
 
-    expect(roots.map(
-      r => ({ ...r, children: undefined })
-    )).to.deep.eq(expectedRoots);
+      expect(roots.map(
+        r => ({ ...r, children: undefined })
+      )).toEqual(expectedRoots);
 
-    expect(roots[0].children.map(
-      noPreds => ({ ...noPreds, parent: undefined })
-    )).to.deep.eq(expectedNoPredicates);
-  });
+      expect(roots[0].children.map(
+        noPreds => ({ ...noPreds, parent: undefined })
+      )).toEqual(expectedNoPredicates);
+    }
+  );
 });

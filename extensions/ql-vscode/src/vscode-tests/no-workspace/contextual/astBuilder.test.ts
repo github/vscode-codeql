@@ -1,6 +1,6 @@
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+
 import * as fs from 'fs-extra';
-import { expect } from 'chai';
-import * as sinon from 'sinon';
 
 import AstBuilder from '../../../contextual/astBuilder';
 import { CodeQLCliServer } from '../../../cli';
@@ -36,8 +36,22 @@ describe('AstBuilder', () => {
 
   beforeEach(() => {
     mockCli = {
-      bqrsDecode: sinon.stub().callsFake((_: string, resultSet: 'nodes' | 'edges' | 'graphProperties') => {
-        return mockDecode(resultSet);
+      bqrsDecode: jest.fn<(_: string, resultSet: 'nodes' | 'edges' | 'graphProperties') => void>().mockImplementation((_, resultSet) => {
+        if (overrides[resultSet]) {
+          return overrides[resultSet];
+        }
+
+        const mapper = {
+          nodes: 0,
+          edges: 1,
+          graphProperties: 2
+        };
+        const index = mapper[resultSet] as number;
+        if (index >= 0 && index <= 2) {
+          return JSON.parse(fs.readFileSync(`${__dirname}/../data/astBuilder.json`, 'utf8'))[index];
+        } else {
+          throw new Error(`Invalid resultSet: ${resultSet}`);
+        }
       })
     } as unknown as CodeQLCliServer;
     overrides = {
@@ -52,13 +66,13 @@ describe('AstBuilder', () => {
     const roots = await astBuilder.getRoots();
 
     const options = { entities: ['id', 'url', 'string'] };
-    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'nodes', options);
-    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'edges', options);
-    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'graphProperties', options);
+    expect(mockCli.bqrsDecode).toBeCalledWith('/a/b/c', 'nodes', options);
+    expect(mockCli.bqrsDecode).toBeCalledWith('/a/b/c', 'edges', options);
+    expect(mockCli.bqrsDecode).toBeCalledWith('/a/b/c', 'graphProperties', options);
 
     expect(roots.map(
       r => ({ ...r, children: undefined })
-    )).to.deep.eq(expectedRoots);
+    )).toEqual(expectedRoots);
   });
 
   it('should build an AST child without edge label', async () => {
@@ -67,7 +81,7 @@ describe('AstBuilder', () => {
     const astBuilder = createAstBuilder();
     const roots = await astBuilder.getRoots();
 
-    expect(roots[0].children[0].parent).to.eq(roots[0]);
+    expect(roots[0].children[0].parent).toBe(roots[0]);
     // break the recursion
     (roots[0].children[0] as any).parent = undefined;
     (roots[0].children[0] as any).children = undefined;
@@ -88,7 +102,7 @@ describe('AstBuilder', () => {
       parent: undefined
     };
 
-    expect(roots[0].children[0]).to.deep.eq(child);
+    expect(roots[0].children[0]).toEqual(child);
   });
 
   it('should build an AST child with edge label', async () => {
@@ -97,7 +111,7 @@ describe('AstBuilder', () => {
     const astBuilder = createAstBuilder();
     const roots = await astBuilder.getRoots();
 
-    expect(roots[0].children[1].parent).to.eq(roots[0]);
+    expect(roots[0].children[1].parent).toBe(roots[0]);
     // break the recursion
     (roots[0].children[1] as any).parent = undefined;
     (roots[0].children[1] as any).children = undefined;
@@ -118,7 +132,7 @@ describe('AstBuilder', () => {
       parent: undefined
     };
 
-    expect(roots[0].children[1]).to.deep.eq(child);
+    expect(roots[0].children[1]).toEqual(child);
   });
 
   it('should fail when graphProperties are not correct', async () => {
@@ -132,7 +146,7 @@ describe('AstBuilder', () => {
     };
 
     const astBuilder = createAstBuilder();
-    await expect(astBuilder.getRoots()).to.be.rejectedWith('AST is invalid');
+    await expect(astBuilder.getRoots()).rejects.toThrow('AST is invalid');
   });
 
   function createAstBuilder() {
@@ -143,24 +157,6 @@ describe('AstBuilder', () => {
         }
       }
     } as QueryWithResults, mockCli, {} as DatabaseItem, Uri.file(''));
-  }
-
-  function mockDecode(resultSet: 'nodes' | 'edges' | 'graphProperties') {
-    if (overrides[resultSet]) {
-      return overrides[resultSet];
-    }
-
-    const mapper = {
-      nodes: 0,
-      edges: 1,
-      graphProperties: 2
-    };
-    const index = mapper[resultSet] as number;
-    if (index >= 0 && index <= 2) {
-      return JSON.parse(fs.readFileSync(`${__dirname}/../data/astBuilder.json`, 'utf8'))[index];
-    } else {
-      throw new Error(`Invalid resultSet: ${resultSet}`);
-    }
   }
 });
 
