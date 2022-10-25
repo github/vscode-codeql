@@ -25,7 +25,7 @@ import { CodeQLCliServer } from '../cli';
 import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 import PQueue from 'p-queue';
-import { createTimestampFile } from '../helpers';
+import { createTimestampFile, showAndLogErrorMessage } from '../helpers';
 import { QueryStatus } from '../query-status';
 import * as fs from 'fs-extra';
 
@@ -222,6 +222,18 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
    */
   private async prepareStorageDirectory(variantAnalysisId: number): Promise<void> {
     await createTimestampFile(this.getVariantAnalysisStorageLocation(variantAnalysisId));
+  }
+
+  public async openVariantAnalysisResults(variantAnalysisId: number): Promise<void> {
+    try {
+      const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+      if (!variantAnalysis) {
+        void showAndLogErrorMessage(`No variant analysis with id: ${variantAnalysisId}`);
+      }
+      void commands.executeCommand('codeQL.openVariantAnalysisView', variantAnalysisId);
+    } catch (e) {
+      void showAndLogErrorMessage(`Could not open the results for variant analysis with id: ${variantAnalysisId}. Error: ${getErrorMessage(e)}`);
+    }
   }
 
   public async promptOpenVariantAnalysis() {
