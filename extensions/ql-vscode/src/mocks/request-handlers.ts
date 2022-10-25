@@ -39,8 +39,17 @@ async function readRequestFiles(scenarioDirPath: string): Promise<GitHubApiReque
 
   const requests: GitHubApiRequest[] = [];
   for (const file of orderedFiles) {
+    if (!file.endsWith('.json')) {
+      continue;
+    }
+
     const filePath = path.join(scenarioDirPath, file);
     const request: GitHubApiRequest = await fs.readJson(filePath, { encoding: 'utf8' });
+
+    if (typeof request.response.body === 'string' && request.response.body.startsWith('file:')) {
+      request.response.body = await fs.readFile(path.join(scenarioDirPath, request.response.body.substring(5)));
+    }
+
     requests.push(request);
   }
 
@@ -135,6 +144,7 @@ function createGetVariantAnalysisRepoResultRequestHandler(requests: GitHubApiReq
       if (scenarioRequest.response.body) {
         return res(
           ctx.status(scenarioRequest.response.status),
+          ctx.set('Content-Type', scenarioRequest.response.contentType),
           ctx.body(scenarioRequest.response.body),
         );
       } else {
