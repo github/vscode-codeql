@@ -1369,6 +1369,7 @@
     "husky": "~4.3.8",
     "jest": "^29.0.3",
     "jest-environment-jsdom": "^29.0.3",
+    "jest-runner-vscode": "^3.0.1",
     "lint-staged": "~10.2.2",
     "mini-css-extract-plugin": "^2.6.1",
     "mocha": "^10.0.0",
