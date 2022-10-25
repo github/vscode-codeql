@@ -14,6 +14,10 @@ import { storagePath } from '../global.helper';
 import { faker } from '@faker-js/faker';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { VariantAnalysisRepoTask } from '../../../remote-queries/gh-api/variant-analysis';
+import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
+import { VariantAnalysis, VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
+import { createMockScannedRepos } from '../../factories/remote-queries/shared/scanned-repositories';
+import { createMockScannedRepoResult } from '../../factories/remote-queries/shared/scanned-repo-result';
 
 describe(VariantAnalysisResultsManager.name, function() {
   this.timeout(10000);
@@ -134,5 +138,86 @@ describe(VariantAnalysisResultsManager.name, function() {
         expect(fs.existsSync(`${storageDirectory}/results/results.sarif`)).to.be.true;
       });
     });
+  });
+
+  describe('loadResultsIntoMemory', () => {
+    let variantAnalysisStoragePath: string;
+    let dummyVariantAnalysis: VariantAnalysis;
+    let repoFullName1: string;
+    let repoFullName2: string;
+
+    beforeEach(async () => {
+      const scannedRepos = createMockScannedRepos();
+      dummyVariantAnalysis = createMockVariantAnalysis(
+        VariantAnalysisStatus.InProgress,
+        scannedRepos
+      );
+      variantAnalysisStoragePath = path.join(storagePath, variantAnalysisId.toString());
+      repoFullName1 = scannedRepos[0].repository.fullName;
+      repoFullName2 = scannedRepos[1].repository.fullName;
+
+      sandbox.stub(fs, 'pathExists').resolves(true);
+      const result = createMockScannedRepoResult();
+      sandbox.stub(variantAnalysisResultsManager, 'loadResultsFromStorage').resolves(result);
+    });
+
+    it('should load results into memory', async () => {
+      await variantAnalysisResultsManager.loadResultsIntoMemory(
+        dummyVariantAnalysis.id,
+        variantAnalysisStoragePath,
+        repoFullName1
+      );
+
+      await variantAnalysisResultsManager.loadResultsIntoMemory(
+        dummyVariantAnalysis.id,
+        variantAnalysisStoragePath,
+        repoFullName2
+      );
+
+      expect(variantAnalysisResultsManager.cachedResults.size).to.eq(2);
+    });
+  });
+
+  describe('removeAnalysesResults', () => {
+    let variantAnalysisStoragePath: string;
+    let dummyVariantAnalysis: VariantAnalysis;
+    let repoFullName1: string;
+    let repoFullName2: string;
+
+    beforeEach(async () => {
+      const scannedRepos = createMockScannedRepos();
+      dummyVariantAnalysis = createMockVariantAnalysis(
+        VariantAnalysisStatus.InProgress,
+        scannedRepos
+      );
+      variantAnalysisStoragePath = path.join(storagePath, variantAnalysisId.toString());
+      repoFullName1 = scannedRepos[0].repository.fullName;
+      repoFullName2 = scannedRepos[1].repository.fullName;
+
+      sandbox.stub(fs, 'pathExists').resolves(true);
+      const result = createMockScannedRepoResult();
+      sandbox.stub(variantAnalysisResultsManager, 'loadResultsFromStorage').resolves(result);
+
+      await variantAnalysisResultsManager.loadResultsIntoMemory(
+        dummyVariantAnalysis.id,
+        variantAnalysisStoragePath,
+        repoFullName1
+      );
+
+      await variantAnalysisResultsManager.loadResultsIntoMemory(
+        dummyVariantAnalysis.id,
+        variantAnalysisStoragePath,
+        repoFullName2
+      );
+    });
+
+    it('should remove all cached results related to a variant analysis', async () => {
+      expect(variantAnalysisResultsManager.cachedResults.size).to.eq(2);
+
+      await variantAnalysisResultsManager.removeAnalysesResults(dummyVariantAnalysis);
+
+      expect(variantAnalysisResultsManager.cachedResults.size).to.eq(0);
+    });
+
   });
 });

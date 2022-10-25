@@ -29,7 +29,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
   private static readonly REPO_TASK_FILENAME = 'repo_task.json';
   private static readonly RESULTS_DIRECTORY = 'results';
 
-  private readonly cachedResults: Map<CacheKey, VariantAnalysisScannedRepositoryResult>;
+  public readonly cachedResults: Map<CacheKey, VariantAnalysisScannedRepositoryResult>;
 
   private readonly _onResultDownloaded = this.push(new EventEmitter<ResultDownloadedEvent>());
   readonly onResultDownloaded = this._onResultDownloaded.event;
@@ -90,7 +90,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     return result ?? await this.loadResultsIntoMemory(variantAnalysisId, variantAnalysisStoragePath, repositoryFullName);
   }
 
-  private async loadResultsIntoMemory(
+  public async loadResultsIntoMemory(
     variantAnalysisId: number,
     variantAnalysisStoragePath: string,
     repositoryFullName: string,
@@ -101,7 +101,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     return result;
   }
 
-  private async loadResultsFromStorage(
+  public async loadResultsFromStorage(
     variantAnalysisId: number,
     variantAnalysisStoragePath: string,
     repositoryFullName: string,
