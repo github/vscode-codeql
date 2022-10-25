@@ -33,6 +33,8 @@ import * as fs from 'fs-extra';
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis>());
   public readonly onVariantAnalysisAdded = this._onVariantAnalysisAdded.event;
+  private readonly _onVariantAnalysisStatusUpdated = this.push(new EventEmitter<VariantAnalysis>());
+  public readonly onVariantAnalysisStatusUpdated = this._onVariantAnalysisStatusUpdated.event;
 
   private readonly _onVariantAnalysisRemoved = this.push(new EventEmitter<VariantAnalysis>());
   public readonly onVariantAnalysisRemoved = this._onVariantAnalysisRemoved.event;
@@ -123,6 +125,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
 
     await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
+    this._onVariantAnalysisStatusUpdated.fire(variantAnalysis);
   }
 
   public async onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): Promise<void> {
