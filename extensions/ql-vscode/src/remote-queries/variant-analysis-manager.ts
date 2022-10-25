@@ -38,7 +38,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   public readonly onVariantAnalysisRemoved = this._onVariantAnalysisRemoved.event;
 
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
-  private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
+  public readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
   private readonly variantAnalyses = new Map<number, VariantAnalysis>();
   private readonly views = new Map<number, VariantAnalysisView>();
   private static readonly maxConcurrentDownloads = 3;
@@ -110,6 +110,14 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
   public async getVariantAnalysis(variantAnalysisId: number): Promise<VariantAnalysis | undefined> {
     return this.variantAnalyses.get(variantAnalysisId);
+  }
+
+  public getVariantAnalyses(): Map<number, VariantAnalysis> {
+    return this.variantAnalyses;
+  }
+
+  public async setVariantAnalysis(variantAnalysis: VariantAnalysis): Promise<void> {
+    this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
   }
 
   public async loadResults(variantAnalysisId: number, repositoryFullName: string): Promise<void> {
