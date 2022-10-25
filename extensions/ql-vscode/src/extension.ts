@@ -18,7 +18,7 @@ import {
   workspace,
   ProviderResult
 } from 'vscode';
-import { LanguageClient } from 'vscode-languageclient';
+import { LanguageClient } from 'vscode-languageclient/node';
 import * as os from 'os';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -1130,8 +1130,10 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(new SummaryLanguageSupport());
 
   void logger.log('Starting language server.');
-  ctx.subscriptions.push(client.start());
-
+  await client.start();
+  ctx.subscriptions.push({
+    dispose: () => { void client.stop(); }
+  });
   // Jump-to-definition and find-references
   void logger.log('Registering jump-to-definition handlers.');
 

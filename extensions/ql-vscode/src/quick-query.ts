@@ -8,7 +8,7 @@ import {
   workspace,
   Uri
 } from 'vscode';
-import { ErrorCodes, ResponseError } from 'vscode-languageclient';
+import { LSPErrorCodes, ResponseError } from 'vscode-languageclient';
 import { CodeQLCliServer } from './cli';
 import { DatabaseUI } from './databases-ui';
 import {
@@ -139,7 +139,7 @@ export async function displayQuickQuery(
 
     await Window.showTextDocument(await workspace.openTextDocument(qlFile));
   } catch (e) {
-    if (e instanceof ResponseError && e.code == ErrorCodes.RequestCancelled) {
+    if (e instanceof ResponseError && e.code == LSPErrorCodes.RequestCancelled) {
       throw new UserCancellationException(getErrorMessage(e));
     } else {
       throw e;
