@@ -21,7 +21,7 @@ export function getRawQueryName(item: QueryHistoryInfo): string {
 }
 
 /**
- * Gets an identifier for the query of history item which could be
+ * Gets an identifier for the query history item which could be
  * a local/remote query or a variant analysis. This id isn't guaranteed
  * to be unique for each item in the query history.
  * @param item the history item.
