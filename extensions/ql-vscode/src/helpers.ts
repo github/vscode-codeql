@@ -22,7 +22,11 @@ fs.ensureDirSync(upgradesTmpDir);
 
 export const tmpDirDisposal = {
   dispose: () => {
-    tmpDir.removeCallback();
+    try {
+      tmpDir.removeCallback();
+    } catch (e) {
+      void logger.log(`Failed to remove temporary directory ${tmpDir.name}: ${e}`);
+    }
   }
 };
 

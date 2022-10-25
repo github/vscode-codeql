@@ -30,15 +30,6 @@ import { workspace } from 'vscode';
  * exists. And the cli will not be re-downloaded if the zip already exists.
  */
 
-process.on('unhandledRejection', e => {
-  console.error('Unhandled rejection.');
-  console.error(e);
-  // Must use a setTimeout in order to ensure the log is fully flushed before exiting
-  setTimeout(() => {
-    process.exit(-1);
-  }, 2000);
-});
-
 const _1MB = 1024 * 1024;
 const _10MB = _1MB * 10;
 

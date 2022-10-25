@@ -16,6 +16,15 @@ process.on('unhandledRejection', e => {
   }, 2000);
 });
 
+process.on('exit', code => {
+  // If the exit code is 7, then the test runner has completed, but
+  // there was an error in exiting vscode.
+  if (code === 7) {
+    console.warn('Attempted to exit with code 7. This is likely due to a failure to exit vscode. Ignoring this and exiting with code 0.');
+    process.exit(0);
+  }
+});
+
 /**
  * Helper function that runs all Mocha tests found in the
  * given test root directory.

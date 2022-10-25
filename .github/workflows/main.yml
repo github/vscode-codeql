@@ -126,7 +126,7 @@ jobs:
         env:
           VSCODE_CODEQL_GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         run: |
-          sudo apt-get install xvfb
+          unset DBUS_SESSION_BUS_ADDRESS
           /usr/bin/xvfb-run npm run integration
 
       - name: Run integration tests (Windows)
@@ -193,6 +193,7 @@ jobs:
         working-directory: extensions/ql-vscode
         if: matrix.os == 'ubuntu-latest'
         run: |
+          unset DBUS_SESSION_BUS_ADDRESS
           /usr/bin/xvfb-run npm run cli-integration
 
       - name: Run CLI tests (Windows)

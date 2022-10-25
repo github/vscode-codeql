@@ -1338,7 +1338,7 @@ export class CliVersionConstraint {
   /**
    * CLI version that supports the new query server.
    */
-  public static CLI_VERSION_WITH_NEW_QUERY_SERVER = new SemVer('2.11.0');
+  public static CLI_VERSION_WITH_NEW_QUERY_SERVER = new SemVer('2.11.1');
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
@@ -1423,8 +1423,11 @@ export class CliVersionConstraint {
   async supportsNewQueryServer() {
     // TODO while under development, users _must_ opt-in to the new query server
     // by setting the `codeql.canaryQueryServer` setting to `true`.
-    // Ignore the version check for now.
-    return allowCanaryQueryServer();
-    // return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NEW_QUERY_SERVER);
+    return allowCanaryQueryServer() &&
+      this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NEW_QUERY_SERVER);
+  }
+
+  async supportsNewQueryServerForTests() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NEW_QUERY_SERVER);
   }
 }

@@ -14,15 +14,6 @@ import { CUSTOM_CODEQL_PATH_SETTING } from '../../config';
 
 export const DB_URL = 'https://github.com/github/vscode-codeql/files/5586722/simple-db.zip';
 
-process.addListener('unhandledRejection', (reason) => {
-  if (reason instanceof Error && reason.message === 'Canceled') {
-    console.log('Cancellation requested after the test has ended.');
-    process.exit(0);
-  } else {
-    fail(String(reason));
-  }
-});
-
 // We need to resolve the path, but the final three segments won't exist until later, so we only resolve the
 // first portion of the path.
 export const dbLoc = path.join(fs.realpathSync(path.join(__dirname, '../../../')), 'build/tests/db.zip');
@@ -84,7 +75,11 @@ export default function(mocha: Mocha) {
       // This shuts down the extension and can only be run after all tests have completed.
       // If this is not called, then the test process will hang.
       if ('dispose' in extension) {
-        extension.dispose();
+        try {
+          extension.dispose();
+        } catch (e) {
+          console.warn('Failed to dispose extension', e);
+        }
       }
     }
   );
@@ -92,7 +87,13 @@ export default function(mocha: Mocha) {
   // ensure temp directory is cleaned up.
   (mocha.options as any).globalTeardown.push(
     () => {
-      removeStorage?.();
+      try {
+        removeStorage?.();
+      } catch (e) {
+        // we are exiting anyway so don't worry about it.
+        // most likely the directory this is a test on Windows and some files are locked.
+        console.warn(`Failed to remove storage directory '${storagePath}': ${e}`);
+      }
     }
   );
 
