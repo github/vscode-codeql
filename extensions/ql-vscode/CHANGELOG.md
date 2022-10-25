@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Add commands for navigating up, down, left, or right in the result viewer. Previously there were only commands for moving up and down the currently-selected path. We suggest binding keyboard shortcuts to these commands, for navigating the result viewer using the keyboard. [#1568](https://github.com/github/vscode-codeql/pull/1568)
+
 ## 1.7.2 - 14 October 2022
 
 - Fix a bug where results created in older versions were thought to be unsuccessful. [#1605](https://github.com/github/vscode-codeql/pull/1605)

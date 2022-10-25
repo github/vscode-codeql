@@ -602,12 +602,20 @@
         "title": "Copy Repository List"
       },
       {
-        "command": "codeQLQueryResults.nextPathStep",
-        "title": "CodeQL: Show Next Step on Path"
+        "command": "codeQLQueryResults.down",
+        "title": "CodeQL: Navigate Down in Local Result Viewer"
       },
       {
-        "command": "codeQLQueryResults.previousPathStep",
-        "title": "CodeQL: Show Previous Step on Path"
+        "command": "codeQLQueryResults.up",
+        "title": "CodeQL: Navigate Up in Local Result Viewer"
+      },
+      {
+        "command": "codeQLQueryResults.right",
+        "title": "CodeQL: Navigate Right in Local Result Viewer"
+      },
+      {
+        "command": "codeQLQueryResults.left",
+        "title": "CodeQL: Navigate Left in Local Result Viewer"
       },
       {
         "command": "codeQL.restartQueryServer",
