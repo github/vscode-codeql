@@ -6,6 +6,8 @@ import { expect } from 'chai';
 import {
   ExtensionContext,
   Uri,
+  window,
+  workspace,
 } from 'vscode';
 import { QueryHistoryConfig } from '../../../config';
 import { DatabaseManager } from '../../../databases';
@@ -39,6 +41,9 @@ describe('Variant Analyses and QueryHistoryManager', function() {
   let variantAnalysisManagerStub: VariantAnalysisManager;
   let rawQueryHistory: any;
   let disposables: DisposableBucket;
+  let showTextDocumentSpy: sinon.SinonSpy;
+  let openTextDocumentSpy: sinon.SinonSpy;
+
   let openRemoteQueryResultsStub: sinon.SinonStub;
   let rehydrateVariantAnalysisStub: sinon.SinonStub;
   let removeVariantAnalysisStub: sinon.SinonStub;
@@ -98,6 +103,9 @@ describe('Variant Analyses and QueryHistoryManager', function() {
       asyncNoop
     );
     disposables.push(qhm);
+
+    showTextDocumentSpy = sandbox.spy(window, 'showTextDocument');
+    openTextDocumentSpy = sandbox.spy(workspace, 'openTextDocument');
   });
 
   afterEach(function() {
@@ -169,6 +177,20 @@ describe('Variant Analyses and QueryHistoryManager', function() {
 
     await qhm.handleItemClicked(qhm.treeDataProvider.allHistory[0], []);
     expect(openRemoteQueryResultsStub).calledOnceWithExactly(rawQueryHistory[0].historyItemId);
+  });
+
+  it('should get the query text', async () => {
+    await qhm.readQueryHistory();
+    await qhm.handleShowQueryText(qhm.treeDataProvider.allHistory[0], []);
+
+    expect(showTextDocumentSpy).to.have.been.calledOnce;
+    expect(openTextDocumentSpy).to.have.been.calledOnce;
+
+    const uri: Uri = openTextDocumentSpy.getCall(0).args[0];
+    expect(uri.scheme).to.eq('codeql');
+    const params = new URLSearchParams(uri.query);
+    expect(params.get('isQuickEval')).to.eq('false');
+    expect(params.get('queryText')).to.eq(rawQueryHistory[0].variantAnalysis.query.text);
   });
 
   async function copyHistoryState() {
