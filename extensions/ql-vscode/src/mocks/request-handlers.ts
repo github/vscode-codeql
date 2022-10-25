@@ -21,8 +21,8 @@ export async function createRequestHandlers(scenarioDirPath: string): Promise<Re
     createGetRepoRequestHandler(requests),
     createSubmitVariantAnalysisRequestHandler(requests),
     createGetVariantAnalysisRequestHandler(requests),
-    ...createGetVariantAnalysisRepoRequestHandlers(requests),
-    ...createGetVariantAnalysisRepoResultRequestHandlers(requests),
+    createGetVariantAnalysisRepoRequestHandler(requests),
+    createGetVariantAnalysisRepoResultRequestHandler(requests),
   ];
 
   return handlers;
@@ -103,34 +103,44 @@ function createGetVariantAnalysisRequestHandler(requests: GitHubApiRequest[]): R
   });
 }
 
-function createGetVariantAnalysisRepoRequestHandlers(requests: GitHubApiRequest[]): RequestHandler[] {
+function createGetVariantAnalysisRepoRequestHandler(requests: GitHubApiRequest[]): RequestHandler {
   const getVariantAnalysisRepoRequests = requests.filter(isGetVariantAnalysisRepoRequest);
 
-  return getVariantAnalysisRepoRequests.map(request => rest.get(
-    `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/${request.request.repositoryId}`,
-    (_req, res, ctx) => {
+  return rest.get(
+    `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/:repoId`,
+    (req, res, ctx) => {
+      const scenarioRequest = getVariantAnalysisRepoRequests.find(r => r.request.repositoryId.toString() === req.params.repoId);
+      if (!scenarioRequest) {
+        throw Error(`No scenario request found for ${req.url}`);
+      }
+
       return res(
-        ctx.status(request.response.status),
-        ctx.json(request.response.body),
+        ctx.status(scenarioRequest.response.status),
+        ctx.json(scenarioRequest.response.body),
       );
-    }));
+    });
 }
 
-function createGetVariantAnalysisRepoResultRequestHandlers(requests: GitHubApiRequest[]): RequestHandler[] {
+function createGetVariantAnalysisRepoResultRequestHandler(requests: GitHubApiRequest[]): RequestHandler {
   const getVariantAnalysisRepoResultRequests = requests.filter(isGetVariantAnalysisRepoResultRequest);
 
-  return getVariantAnalysisRepoResultRequests.map(request => rest.get(
-    `https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/:variantAnalysisId/${request.request.repositoryId}/*`,
-    (_req, res, ctx) => {
-      if (request.response.body) {
+  return rest.get(
+    'https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/:variantAnalysisId/:repoId/*',
+    (req, res, ctx) => {
+      const scenarioRequest = getVariantAnalysisRepoResultRequests.find(r => r.request.repositoryId.toString() === req.params.repoId);
+      if (!scenarioRequest) {
+        throw Error(`No scenario request found for ${req.url}`);
+      }
+
+      if (scenarioRequest.response.body) {
         return res(
-          ctx.status(request.response.status),
-          ctx.body(request.response.body),
+          ctx.status(scenarioRequest.response.status),
+          ctx.body(scenarioRequest.response.body),
         );
       } else {
         return res(
-          ctx.status(request.response.status),
+          ctx.status(scenarioRequest.response.status),
         );
       }
-    }));
+    });
 }
