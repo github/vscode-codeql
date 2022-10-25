@@ -101,7 +101,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     return result;
   }
 
-  private async loadResultsFromStorage(
+  public async loadResultsFromStorage(
     variantAnalysisId: number,
     variantAnalysisStoragePath: string,
     repositoryFullName: string,
@@ -190,6 +190,10 @@ export class VariantAnalysisResultsManager extends DisposableObject {
         }
       });
     }
+  }
+
+  public getCachedResultsSize() {
+    return this.cachedResults.size;
   }
 
   public dispose(disposeHandler?: DisposeHandler) {
