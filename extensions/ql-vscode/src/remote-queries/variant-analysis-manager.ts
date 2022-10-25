@@ -73,18 +73,17 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
-    try{
-      if (!this.views.has(variantAnalysisId)) {
-        // The view will register itself with the manager, so we don't need to do anything here.
-        this.push(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
-      }
-
-      const variantAnalysisView = this.views.get(variantAnalysisId)!;
-      await variantAnalysisView.openView();
-      return;
-    } catch (e) {
-      void showAndLogErrorMessage(`Could not open the results for variant analysis with id: ${variantAnalysisId}. Error: ${getErrorMessage(e)}`);
+    if (!this.variantAnalyses.get(variantAnalysisId)) {
+      void showAndLogErrorMessage(`No variant analysis found with id: ${variantAnalysisId}.`);
     }
+    if (!this.views.has(variantAnalysisId)) {
+      // The view will register itself with the manager, so we don't need to do anything here.
+      this.push(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
+    }
+
+    const variantAnalysisView = this.views.get(variantAnalysisId)!;
+    await variantAnalysisView.openView();
+    return;
   }
 
   public registerView(view: VariantAnalysisView): void {
