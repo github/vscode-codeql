@@ -1,12 +1,12 @@
-import { expect } from 'chai';
+import { describe, it, expect } from '@jest/globals';
 import { parseVariantAnalysisQueryLanguage, VariantAnalysisQueryLanguage } from '../../src/remote-queries/shared/variant-analysis';
 
 describe('parseVariantAnalysisQueryLanguage', () => {
   it('parses a valid language', () => {
-    expect(parseVariantAnalysisQueryLanguage('javascript')).to.equal(VariantAnalysisQueryLanguage.Javascript);
+    expect(parseVariantAnalysisQueryLanguage('javascript')).toBe(VariantAnalysisQueryLanguage.Javascript);
   });
 
   it('returns undefined for an valid language', () => {
-    expect(parseVariantAnalysisQueryLanguage('rubbish')).to.not.exist;
+    expect(parseVariantAnalysisQueryLanguage('rubbish')).toBeFalsy();
   });
 });

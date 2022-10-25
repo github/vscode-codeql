@@ -1,8 +1,8 @@
 {
-  "include": [
-    "**/*.ts"
-  ],
+  "include": ["**/*.ts"],
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    "lib": ["ES2021"],
+    "esModuleInterop": true
   }
 }

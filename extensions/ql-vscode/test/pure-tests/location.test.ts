@@ -1,23 +1,22 @@
-import { expect } from 'chai';
-import 'mocha';
+import { describe, it, expect } from '@jest/globals';
 import { tryGetRemoteLocation, tryGetResolvableLocation } from '../../src/pure/bqrs-utils';
 
 describe('processing string locations', function() {
   it('should detect Windows whole-file locations', function() {
     const loc = 'file://C:/path/to/file.ext:0:0:0:0';
     const wholeFileLoc = tryGetResolvableLocation(loc);
-    expect(wholeFileLoc).to.eql({ uri: 'C:/path/to/file.ext' });
+    expect(wholeFileLoc).toEqual({ uri: 'C:/path/to/file.ext' });
   });
   it('should detect Unix whole-file locations', function() {
     const loc = 'file:///path/to/file.ext:0:0:0:0';
     const wholeFileLoc = tryGetResolvableLocation(loc);
-    expect(wholeFileLoc).to.eql({ uri: '/path/to/file.ext' });
+    expect(wholeFileLoc).toEqual({ uri: '/path/to/file.ext' });
   });
 
   it('should detect Unix 5-part locations', function() {
     const loc = 'file:///path/to/file.ext:1:2:3:4';
     const wholeFileLoc = tryGetResolvableLocation(loc);
-    expect(wholeFileLoc).to.eql({
+    expect(wholeFileLoc).toEqual({
       uri: '/path/to/file.ext',
       startLine: 1,
       startColumn: 2,
@@ -28,7 +27,7 @@ describe('processing string locations', function() {
   it('should ignore other string locations', function() {
     for (const loc of ['file:///path/to/file.ext', 'I am not a location']) {
       const wholeFileLoc = tryGetResolvableLocation(loc);
-      expect(wholeFileLoc).to.be.undefined;
+      expect(wholeFileLoc).toBeUndefined();
     }
   });
 });
@@ -41,7 +40,7 @@ describe('getting links to remote (GitHub) locations', function() {
 
     const link = tryGetRemoteLocation(loc, fileLinkPrefix, sourceLocationPrefix);
 
-    expect(link).to.be.undefined;
+    expect(link).toBeUndefined();
   });
 
   it('should return undefined if resolvableLocation has the wrong format', function() {
@@ -57,7 +56,7 @@ describe('getting links to remote (GitHub) locations', function() {
 
     const link = tryGetRemoteLocation(loc, fileLinkPrefix, sourceLocationPrefix);
 
-    expect(link).to.be.undefined;
+    expect(link).toBeUndefined();
   });
 
   it('should return a remote file ref if the sourceLocationPrefix and resolvableLocation match up', function() {
@@ -73,7 +72,7 @@ describe('getting links to remote (GitHub) locations', function() {
 
     const link = tryGetRemoteLocation(loc, fileLinkPrefix, sourceLocationPrefix);
 
-    expect(link).to.eql('https://github.com/owner/repo/blob/sha1234/path/to/file.ext#L194-L237');
+    expect(link).toEqual('https://github.com/owner/repo/blob/sha1234/path/to/file.ext#L194-L237');
   });
 
   it('should return undefined if the sourceLocationPrefix is missing and resolvableLocation doesn\'t match the default format', function() {
@@ -89,7 +88,7 @@ describe('getting links to remote (GitHub) locations', function() {
 
     const link = tryGetRemoteLocation(loc, fileLinkPrefix, sourceLocationPrefix);
 
-    expect(link).to.eql(undefined);
+    expect(link).toBeUndefined();
   });
 
   it('should return a remote file ref if the sourceLocationPrefix is missing, but the resolvableLocation matches the default format', function() {
@@ -105,6 +104,6 @@ describe('getting links to remote (GitHub) locations', function() {
 
     const link = tryGetRemoteLocation(loc, fileLinkPrefix, sourceLocationPrefix);
 
-    expect(link).to.eql('https://github.com/owner/repo/blob/sha1234/path/to/file.ext#L194-L237');
+    expect(link).toEqual('https://github.com/owner/repo/blob/sha1234/path/to/file.ext#L194-L237');
   });
 });

@@ -1,10 +1,10 @@
-import { expect } from 'chai';
+import { describe, it, expect } from '@jest/globals';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import { generateMarkdown, MarkdownFile } from '../../../../src/remote-queries/remote-queries-markdown-generation';
 
-describe('markdown generation', async function() {
-  describe('for path-problem query', async function() {
+describe('markdown generation', function() {
+  describe('for path-problem query', function() {
     it('should generate markdown file for each repo with results', async function() {
       const pathProblemQuery = JSON.parse(
         await fs.readFile(path.join(__dirname, 'data/interpreted-results/path-problem/path-problem-query.json'), 'utf8')
@@ -20,7 +20,7 @@ describe('markdown generation', async function() {
     });
   });
 
-  describe('for problem query', async function() {
+  describe('for problem query', function() {
     it('should generate markdown file for each repo with results', async function() {
       const problemQuery = JSON.parse(
         await fs.readFile(path.join(__dirname, 'data/interpreted-results/problem/problem-query.json'), 'utf8')
@@ -35,7 +35,7 @@ describe('markdown generation', async function() {
     });
   });
 
-  describe('for non-alert query', async function() {
+  describe('for non-alert query', function() {
     it('should generate markdown file for each repo with results', async function() {
       const query = JSON.parse(
         await fs.readFile(path.join(__dirname, 'data/raw-results/query.json'), 'utf8')
@@ -62,18 +62,18 @@ async function readTestOutputFile(relativePath: string): Promise<string> {
 
 /**
  * Compares the generated (actual) markdown files to the expected markdown files and
- * checks whether the names and contents are the same.  
+ * checks whether the names and contents are the same.
  */
 async function checkGeneratedMarkdown(actualFiles: MarkdownFile[], testDataBasePath: string) {
   const expectedDir = path.join(__dirname, testDataBasePath);
   const expectedFiles = await fs.readdir(expectedDir);
 
-  expect(actualFiles.length).to.equal(expectedFiles.length);
+  expect(actualFiles.length).toBe(expectedFiles.length);
 
   for (const expectedFile of expectedFiles) {
     const actualFile = actualFiles.find(f => `${f.fileName}.md` === expectedFile);
-    expect(actualFile).to.not.be.undefined;
+    expect(actualFile).toBeDefined();
     const expectedContent = await readTestOutputFile(path.join(testDataBasePath, expectedFile));
-    expect(actualFile!.content.join('\n')).to.equal(expectedContent);
+    expect(actualFile!.content.join('\n')).toBe(expectedContent);
   }
 }
