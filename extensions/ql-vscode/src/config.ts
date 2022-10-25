@@ -10,11 +10,19 @@ export const ALL_SETTINGS: Setting[] = [];
 export class Setting {
   name: string;
   parent?: Setting;
+  private _hasChildren = false;
 
   constructor(name: string, parent?: Setting) {
     this.name = name;
     this.parent = parent;
+    if (parent !== undefined) {
+      parent._hasChildren = true;
+    }
     ALL_SETTINGS.push(this);
+  }
+
+  get hasChildren() {
+    return this._hasChildren;
   }
 
   get qualifiedName(): string {
@@ -430,13 +438,24 @@ export function isVariantAnalysisLiveResultsEnabled(): boolean {
   return !!LIVE_RESULTS.getValue<boolean>();
 }
 
+// Settings for mocking the GitHub API.
+const MOCK_GH_API_SERVER = new Setting('mockGitHubApiServer', ROOT_SETTING);
+
 /**
  * A flag indicating whether to enable a mock GitHub API server.
  */
-const MOCK_GH_API_SERVER = new Setting('mockGitHubApiServer', REMOTE_QUERIES_SETTING);
+const MOCK_GH_API_SERVER_ENABLED = new Setting('enabled', MOCK_GH_API_SERVER);
+
+/**
+ * A path to a directory containing test scenarios. If this setting is not set,
+ * the mock server will a default location for test scenarios in dev mode, and 
+ * will show a menu to select a directory in production mode.
+ */
+const MOCK_GH_API_SERVER_SCENARIOS_PATH = new Setting('scenariosPath', MOCK_GH_API_SERVER);
 
 export interface MockGitHubApiConfig {
   mockServerEnabled: boolean;
+  mockScenariosPath: string;
   onDidChangeConfiguration: Event<void>;
 }
 
@@ -446,6 +465,14 @@ export class MockGitHubApiConfigListener extends ConfigListener implements MockG
   }
 
   public get mockServerEnabled(): boolean {
-    return !!MOCK_GH_API_SERVER.getValue<boolean>();
+    return !!MOCK_GH_API_SERVER_ENABLED.getValue<boolean>();
   }
+
+  public get mockScenariosPath(): string {
+    return MOCK_GH_API_SERVER_SCENARIOS_PATH.getValue<string>();
+  }
+}
+
+export function getMockGitHubApiServerScenariosPath(): string | undefined {
+  return MOCK_GH_API_SERVER_SCENARIOS_PATH.getValue<string>();
 }

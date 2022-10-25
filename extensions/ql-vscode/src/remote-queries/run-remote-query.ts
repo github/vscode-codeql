@@ -11,7 +11,6 @@ import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
   tryGetQueryMetadata,
-  pluralize,
   tmpDir,
 } from '../helpers';
 import { Credentials } from '../authentication';
@@ -24,6 +23,7 @@ import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
 import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
+import { pluralize } from '../pure/word';
 import * as ghApiClient from './gh-api/gh-api-client';
 import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
 import { parseVariantAnalysisQueryLanguage, VariantAnalysisSubmission } from './shared/variant-analysis';
@@ -130,11 +130,21 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
   // Clear the cliServer cache so that the previous qlpack text is purged from the CLI.
   await cliServer.clearCache();
 
+  let precompilationOpts: string[] = [];
+  if (await cliServer.cliConstraints.supportsQlxRemote()) {
+    const ccache = path.join(originalPackRoot, '.cache');
+    precompilationOpts = ['--qlx',
+      '--no-default-compilation-cache',
+      `--compilation-cache=${ccache}`];
+  } else if (await cliServer.cliConstraints.supportsNoPrecompile()) {
+    precompilationOpts = ['--no-precompile'];
+  }
+
   const bundlePath = await getPackedBundlePath(queryPackDir);
   void logger.log(`Compiling and bundling query pack from ${queryPackDir} to ${bundlePath}. (This may take a while.)`);
   await cliServer.packInstall(queryPackDir);
   const workspaceFolders = getOnDiskWorkspaceFolders();
-  await cliServer.packBundle(queryPackDir, workspaceFolders, bundlePath, false);
+  await cliServer.packBundle(queryPackDir, workspaceFolders, bundlePath, precompilationOpts);
   const base64Pack = (await fs.readFile(bundlePath)).toString('base64');
   return {
     base64Pack,

@@ -1,10 +1,13 @@
 import * as React from 'react';
-import { ResultTableProps, className, emptyQueryResultsMessage } from './result-table-utils';
-import { RAW_RESULTS_LIMIT, RawResultsSortState } from '../../pure/interface-types';
+import { ResultTableProps, className, emptyQueryResultsMessage, jumpToLocation } from './result-table-utils';
+import { RAW_RESULTS_LIMIT, RawResultsSortState, NavigateMsg, NavigationDirection } from '../../pure/interface-types';
 import { RawTableResultSet } from '../../pure/interface-types';
 import RawTableHeader from './RawTableHeader';
 import RawTableRow from './RawTableRow';
 import { ResultRow } from '../../pure/bqrs-cli-types';
+import { onNavigation } from './results';
+import { tryGetResolvableLocation } from '../../pure/bqrs-utils';
+import { ScrollIntoViewHelper } from './scroll-into-view-helper';
 
 export type RawTableProps = ResultTableProps & {
   resultSet: RawTableResultSet;
@@ -12,9 +15,25 @@ export type RawTableProps = ResultTableProps & {
   offset: number;
 };
 
-export class RawTable extends React.Component<RawTableProps, Record<string, never>> {
+interface RawTableState {
+  selectedItem?: { row: number, column: number };
+}
+
+export class RawTable extends React.Component<RawTableProps, RawTableState> {
+  private scroller = new ScrollIntoViewHelper();
+
   constructor(props: RawTableProps) {
     super(props);
+    this.setSelection = this.setSelection.bind(this);
+    this.handleNavigationEvent = this.handleNavigationEvent.bind(this);
+    this.state = {};
+  }
+
+  private setSelection(row: number, column: number) {
+    this.setState(prev => ({
+      ...prev,
+      selectedItem: { row, column }
+    }));
   }
 
   render(): React.ReactNode {
@@ -37,6 +56,9 @@ export class RawTable extends React.Component<RawTableProps, Record<string, neve
         rowIndex={rowIndex + this.props.offset}
         row={row}
         databaseUri={databaseUri}
+        selectedColumn={this.state.selectedItem?.row === rowIndex ? this.state.selectedItem?.column : undefined}
+        onSelected={this.setSelection}
+        scroller={this.scroller}
       />
     );
 
@@ -57,5 +79,76 @@ export class RawTable extends React.Component<RawTableProps, Record<string, neve
         {tableRows}
       </tbody>
     </table>;
+  }
+
+  private handleNavigationEvent(event: NavigateMsg) {
+    switch (event.direction) {
+      case NavigationDirection.up: {
+        this.navigateWithDelta(-1, 0);
+        break;
+      }
+      case NavigationDirection.down: {
+        this.navigateWithDelta(1, 0);
+        break;
+      }
+      case NavigationDirection.left: {
+        this.navigateWithDelta(0, -1);
+        break;
+      }
+      case NavigationDirection.right: {
+        this.navigateWithDelta(0, 1);
+        break;
+      }
+    }
+  }
+
+  private navigateWithDelta(rowDelta: number, columnDelta: number) {
+    this.setState(prevState => {
+      const numberOfAlerts = this.props.resultSet.rows.length;
+      if (numberOfAlerts === 0) {
+        return prevState;
+      }
+      const currentRow = prevState.selectedItem?.row;
+      const nextRow = currentRow === undefined
+        ? 0
+        : (currentRow + rowDelta);
+      if (nextRow < 0 || nextRow >= numberOfAlerts) {
+        return prevState;
+      }
+      const currentColumn = prevState.selectedItem?.column;
+      const nextColumn = currentColumn === undefined
+        ? 0
+        : (currentColumn + columnDelta);
+      // Jump to the location of the new cell
+      const rowData = this.props.resultSet.rows[nextRow];
+      if (nextColumn < 0 || nextColumn >= rowData.length) {
+        return prevState;
+      }
+      const cellData = rowData[nextColumn];
+      if (cellData != null && typeof cellData === 'object') {
+        const location = tryGetResolvableLocation(cellData.url);
+        if (location !== undefined) {
+          jumpToLocation(location, this.props.databaseUri);
+        }
+      }
+      this.scroller.scrollIntoViewOnNextUpdate();
+      return {
+        ...prevState,
+        selectedItem: { row: nextRow, column: nextColumn }
+      };
+    });
+  }
+
+  componentDidUpdate() {
+    this.scroller.update();
+  }
+
+  componentDidMount() {
+    this.scroller.update();
+    onNavigation.addListener(this.handleNavigationEvent);
+  }
+
+  componentWillUnmount() {
+    onNavigation.removeListener(this.handleNavigationEvent);
   }
 }

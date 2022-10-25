@@ -12,56 +12,8 @@ Welcome to the Storybook for **CodeQL for Visual Studio Code**! This Storybook c
 
 ### Switching themes
 
-To switch between VSCode Dark+ and Light+ themes, you can make the following changes:
-
-```diff
-diff --git a/extensions/ql-vscode/.storybook/manager.ts b/extensions/ql-vscode/.storybook/manager.ts
---- a/extensions/ql-vscode/.storybook/manager.ts
-+++ b/extensions/ql-vscode/.storybook/manager.ts
-@@ -2,6 +2,6 @@ import { addons } from '@storybook/addons';
- import { themes } from '@storybook/theming';
-
- addons.setConfig({
--  theme: themes.dark,
-+  theme: themes.light,
-   enableShortcuts: false,
- });
-diff --git a/extensions/ql-vscode/.storybook/preview.ts b/extensions/ql-vscode/.storybook/preview.ts
---- a/extensions/ql-vscode/.storybook/preview.ts
-+++ b/extensions/ql-vscode/.storybook/preview.ts
-@@ -4,7 +4,7 @@ import { action } from '@storybook/addon-actions';
- // Allow all stories/components to use Codicons
- import '@vscode/codicons/dist/codicon.css';
-
--import '../src/stories/vscode-theme-dark.css';
-+import '../src/stories/vscode-theme-light.css';
-
- // https://storybook.js.org/docs/react/configure/overview#configure-story-rendering
- export const parameters = {
-@@ -19,14 +19,14 @@ export const parameters = {
-   },
--   // Use a dark theme to be aligned with VSCode
-+   // Use a light theme to be aligned with VSCode
-   docs: {
--    theme: themes.dark,
-+    theme: themes.light,
-   },
-   backgrounds: {
--    default: 'dark',
-+    default: 'light',
-     values: [
-       {
--        name: 'dark',
--        value: '#1e1e1e',
-+        name: 'light',
-+        value: '#ffffff',
-       },
-     ],
-   }
-```
-
-You will need to restart Storybook to apply the theme change to the Storybook UI. The preview frame should update
-automatically.
+To switch between VSCode Dark+ and Light+ themes, use the button in the toolbar. This will not work on this document, so you'll only see
+the changes applied to a different story.
 
 ### Writing stories
 

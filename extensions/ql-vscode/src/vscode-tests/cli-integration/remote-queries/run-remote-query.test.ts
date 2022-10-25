@@ -100,7 +100,6 @@ describe('Remote queries', function() {
       const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, true, progress, cancellationTokenSource.token, variantAnalysisManager);
       expect(querySubmissionResult).to.be.ok;
       const queryPackRootDir = querySubmissionResult!.queryDirPath!;
-      printDirectoryContents(queryPackRootDir);
 
       // to retrieve the list of repositories
       expect(showQuickPickSpy).to.have.been.calledOnce;
@@ -113,7 +112,6 @@ describe('Remote queries', function() {
       expect(fs.readdirSync(queryPackRootDir).find(f => f.startsWith('qlpack-') && f.endsWith('-generated.tgz'))).not.to.be.undefined;
 
       const queryPackDir = path.join(queryPackRootDir, 'query-pack');
-      printDirectoryContents(queryPackDir);
 
       expect(fs.existsSync(path.join(queryPackDir, 'in-pack.ql'))).to.be.true;
       expect(fs.existsSync(path.join(queryPackDir, 'lib.qll'))).to.be.true;
@@ -128,7 +126,6 @@ describe('Remote queries', function() {
 
       // the compiled pack
       const compiledPackDir = path.join(queryPackDir, '.codeql/pack/codeql-remote/query/0.0.0/');
-      printDirectoryContents(compiledPackDir);
 
       expect(fs.existsSync(path.join(compiledPackDir, 'in-pack.ql'))).to.be.true;
       expect(fs.existsSync(path.join(compiledPackDir, 'lib.qll'))).to.be.true;
@@ -171,11 +168,9 @@ describe('Remote queries', function() {
       // check a few files that we know should exist and others that we know should not
 
       // the tarball to deliver to the server
-      printDirectoryContents(queryPackRootDir);
       expect(fs.readdirSync(queryPackRootDir).find(f => f.startsWith('qlpack-') && f.endsWith('-generated.tgz'))).not.to.be.undefined;
 
       const queryPackDir = path.join(queryPackRootDir, 'query-pack');
-      printDirectoryContents(queryPackDir);
 
       expect(fs.existsSync(path.join(queryPackDir, 'in-pack.ql'))).to.be.true;
       expect(fs.existsSync(path.join(queryPackDir, 'qlpack.yml'))).to.be.true;
@@ -189,7 +184,6 @@ describe('Remote queries', function() {
 
       // the compiled pack
       const compiledPackDir = path.join(queryPackDir, '.codeql/pack/codeql-remote/query/0.0.0/');
-      printDirectoryContents(compiledPackDir);
       expect(fs.existsSync(path.join(compiledPackDir, 'in-pack.ql'))).to.be.true;
       expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
       verifyQlPack(path.join(compiledPackDir, 'qlpack.yml'), 'in-pack.ql', '0.0.0', await pathSerializationBroken());
@@ -208,7 +202,6 @@ describe('Remote queries', function() {
       expect(qlpackContents.dependencies?.['codeql/javascript-all']).to.equal('*');
 
       const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
-      printDirectoryContents(libraryDir);
       const packNames = fs.readdirSync(libraryDir).sort();
 
       // check dependencies.
@@ -233,11 +226,9 @@ describe('Remote queries', function() {
       // check a few files that we know should exist and others that we know should not
 
       // the tarball to deliver to the server
-      printDirectoryContents(queryPackRootDir);
       expect(fs.readdirSync(queryPackRootDir).find(f => f.startsWith('qlpack-') && f.endsWith('-generated.tgz'))).not.to.be.undefined;
 
       const queryPackDir = path.join(queryPackRootDir, 'query-pack');
-      printDirectoryContents(queryPackDir);
 
       expect(fs.existsSync(path.join(queryPackDir, 'subfolder/in-pack.ql'))).to.be.true;
       expect(fs.existsSync(path.join(queryPackDir, 'qlpack.yml'))).to.be.true;
@@ -251,7 +242,6 @@ describe('Remote queries', function() {
 
       // the compiled pack
       const compiledPackDir = path.join(queryPackDir, '.codeql/pack/codeql-remote/query/0.0.0/');
-      printDirectoryContents(compiledPackDir);
       expect(fs.existsSync(path.join(compiledPackDir, 'otherfolder/lib.qll'))).to.be.true;
       expect(fs.existsSync(path.join(compiledPackDir, 'subfolder/in-pack.ql'))).to.be.true;
       expect(fs.existsSync(path.join(compiledPackDir, 'qlpack.yml'))).to.be.true;
@@ -270,7 +260,6 @@ describe('Remote queries', function() {
       expect(qlpackContents.dependencies?.['codeql/javascript-all']).to.equal('*');
 
       const libraryDir = path.join(compiledPackDir, '.codeql/libraries/codeql');
-      printDirectoryContents(libraryDir);
       const packNames = fs.readdirSync(libraryDir).sort();
 
       // check dependencies.
@@ -398,13 +387,5 @@ describe('Remote queries', function() {
   }
   function getFile(file: string): Uri {
     return Uri.file(path.join(baseDir, file));
-  }
-
-  function printDirectoryContents(dir: string) {
-    console.log(`DIR ${dir}`);
-    if (!fs.existsSync(dir)) {
-      console.log(`DIR ${dir} does not exist`);
-    }
-    fs.readdirSync(dir).sort().forEach(f => console.log(`  ${f}`));
   }
 });

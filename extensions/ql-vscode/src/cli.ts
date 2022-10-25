@@ -944,16 +944,14 @@ export class CodeQLCliServer implements Disposable {
     return this.runJsonCodeQlCliCommand(['pack', 'install'], args, 'Installing pack dependencies');
   }
 
-  async packBundle(dir: string, workspaceFolders: string[], outputPath: string, precompile = true): Promise<void> {
+  async packBundle(dir: string, workspaceFolders: string[], outputPath: string, moreOptions: string[]): Promise<void> {
     const args = [
       '-o',
       outputPath,
       dir,
+      ...moreOptions,
       ...this.getAdditionalPacksArg(workspaceFolders)
     ];
-    if (!precompile && await this.cliConstraints.supportsNoPrecompile()) {
-      args.push('--no-precompile');
-    }
 
     return this.runJsonCodeQlCliCommand(['pack', 'bundle'], args, 'Bundling pack');
   }
@@ -1289,6 +1287,13 @@ export class CliVersionConstraint {
   public static CLI_VERSION_REMOTE_QUERIES = new SemVer('2.6.3');
 
   /**
+   * CLI version where building QLX packs for remote queries is supported.
+   * (The options were _accepted_ by a few earlier versions, but only from
+   * 2.11.3 will it actually use the existing compilation cache correctly).
+   */
+  public static CLI_VERSION_QLX_REMOTE = new SemVer('2.11.3');
+
+  /**
    * CLI version where the `resolve ml-models` subcommand was introduced.
    */
   public static CLI_VERSION_WITH_RESOLVE_ML_MODELS = new SemVer('2.7.3');
@@ -1333,7 +1338,7 @@ export class CliVersionConstraint {
   /**
    * CLI version that supports the new query server.
    */
-  public static CLI_VERSION_WITH_NEW_QUERY_SERVER = new SemVer('2.11.0');
+  public static CLI_VERSION_WITH_NEW_QUERY_SERVER = new SemVer('2.11.1');
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
@@ -1383,6 +1388,10 @@ export class CliVersionConstraint {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES);
   }
 
+  async supportsQlxRemote() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_QLX_REMOTE);
+  }
+
   async supportsResolveMlModels() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_ML_MODELS);
   }
@@ -1414,8 +1423,11 @@ export class CliVersionConstraint {
   async supportsNewQueryServer() {
     // TODO while under development, users _must_ opt-in to the new query server
     // by setting the `codeql.canaryQueryServer` setting to `true`.
-    // Ignore the version check for now.
-    return allowCanaryQueryServer();
-    // return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NEW_QUERY_SERVER);
+    return allowCanaryQueryServer() &&
+      this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NEW_QUERY_SERVER);
+  }
+
+  async supportsNewQueryServerForTests() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NEW_QUERY_SERVER);
   }
 }

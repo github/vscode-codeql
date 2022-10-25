@@ -31,10 +31,10 @@ import { commandRunner } from './commandRunner';
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
-import { getQueryHistoryItemId, getQueryText, QueryHistoryInfo } from './query-history-info';
+import { getQueryId, getQueryText, QueryHistoryInfo } from './query-history-info';
 import { DatabaseManager } from './databases';
 import { registerQueryHistoryScrubber } from './query-history-scrubber';
-import { QueryStatus } from './query-status';
+import { QueryStatus, variantAnalysisStatusToQueryStatus } from './query-status';
 import { slurpQueryHistory, splatQueryHistory } from './query-serialization';
 import * as fs from 'fs-extra';
 import { CliVersionConstraint } from './cli';
@@ -51,7 +51,8 @@ import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
 import { QueryWithResults } from './run-queries-shared';
 import { QueryRunner } from './queryRunner';
 import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
-import { nanoid } from 'nanoid';
+import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-history-item';
+import { getTotalResultCount } from './remote-queries/shared/variant-analysis';
 
 /**
  * query-history.ts
@@ -604,14 +605,43 @@ export class QueryHistoryManager extends DisposableObject {
         t: 'variant-analysis',
         status: QueryStatus.InProgress,
         completed: false,
-        historyItemId: nanoid(),
         variantAnalysis,
       });
 
       await this.refreshTreeView();
     });
 
+    const variantAnalysisStatusUpdateSubscription = this.variantAnalysisManager.onVariantAnalysisStatusUpdated(async (variantAnalysis) => {
+      const items = this.treeDataProvider.allHistory.filter(i => i.t === 'variant-analysis' && i.variantAnalysis.id === variantAnalysis.id);
+      const status = variantAnalysisStatusToQueryStatus(variantAnalysis.status);
+
+      if (items.length > 0) {
+        items.forEach(async (item) => {
+          const variantAnalysisHistoryItem = item as VariantAnalysisHistoryItem;
+          variantAnalysisHistoryItem.status = status;
+          variantAnalysisHistoryItem.failureReason = variantAnalysis.failureReason;
+          variantAnalysisHistoryItem.resultCount = getTotalResultCount(variantAnalysis.scannedRepos);
+          variantAnalysisHistoryItem.variantAnalysis = variantAnalysis;
+          if (status === QueryStatus.Completed) {
+            variantAnalysisHistoryItem.completed = true;
+          }
+        });
+        await this.refreshTreeView();
+      } else {
+        void logger.log('Variant analysis status update event received for unknown variant analysis');
+      }
+    });
+
+    const variantAnalysisRemovedSubscription = this.variantAnalysisManager.onVariantAnalysisRemoved(async (variantAnalysis) => {
+      const items = this.treeDataProvider.allHistory.filter(i => i.t === 'variant-analysis' && i.variantAnalysis.id === variantAnalysis.id);
+      items.forEach(async (item) => {
+        await this.removeRemoteQuery(item as RemoteQueryHistoryItem);
+      });
+    });
+
     this.push(variantAnalysisAddedSubscription);
+    this.push(variantAnalysisStatusUpdateSubscription);
+    this.push(variantAnalysisRemovedSubscription);
   }
 
   private registerToRemoteQueriesEvents() {
@@ -662,6 +692,9 @@ export class QueryHistoryManager extends DisposableObject {
     this.treeDataProvider.allHistory.forEach(async (item) => {
       if (item.t === 'remote') {
         await this.remoteQueriesManager.rehydrateRemoteQuery(item.queryId, item.remoteQuery, item.status);
+      }
+      if (item.t === 'variant-analysis') {
+        await this.variantAnalysisManager.rehydrateVariantAnalysis(item.variantAnalysis, item.status);
       }
     });
   }
@@ -1074,7 +1107,7 @@ export class QueryHistoryManager extends DisposableObject {
       queryText: encodeURIComponent(getQueryText(finalSingleItem)),
     });
 
-    const queryId = getQueryHistoryItemId(finalSingleItem);
+    const queryId = getQueryId(finalSingleItem);
 
     const uri = Uri.parse(
       `codeql:${queryId}.ql?${params.toString()}`, true

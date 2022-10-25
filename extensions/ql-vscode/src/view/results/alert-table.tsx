@@ -3,9 +3,9 @@ import * as React from 'react';
 import * as Sarif from 'sarif';
 import * as Keys from '../../pure/result-keys';
 import * as octicons from './octicons';
-import { className, renderLocation, ResultTableProps, zebraStripe, selectableZebraStripe, jumpToLocation, nextSortDirection, emptyQueryResultsMessage } from './result-table-utils';
-import { onNavigation, NavigationEvent } from './results';
-import { InterpretedResultSet, SarifInterpretationData } from '../../pure/interface-types';
+import { className, renderLocation, ResultTableProps, selectableZebraStripe, jumpToLocation, nextSortDirection, emptyQueryResultsMessage } from './result-table-utils';
+import { onNavigation } from './results';
+import { InterpretedResultSet, NavigateMsg, NavigationDirection, SarifInterpretationData } from '../../pure/interface-types';
 import {
   parseSarifPlainTextMessage,
   parseSarifLocation,
@@ -14,37 +14,40 @@ import {
 import { InterpretedResultsSortColumn, SortDirection, InterpretedResultsSortState } from '../../pure/interface-types';
 import { vscode } from '../vscode-api';
 import { isWholeFileLoc, isLineColumnLoc } from '../../pure/bqrs-utils';
+import { ScrollIntoViewHelper } from './scroll-into-view-helper';
 
 export type PathTableProps = ResultTableProps & { resultSet: InterpretedResultSet<SarifInterpretationData> };
 export interface PathTableState {
-  expanded: { [k: string]: boolean };
-  selectedPathNode: undefined | Keys.PathNode;
+  expanded: Set<string>;
+  selectedItem: undefined | Keys.ResultKey;
 }
 
 export class PathTable extends React.Component<PathTableProps, PathTableState> {
+  private scroller = new ScrollIntoViewHelper();
+
   constructor(props: PathTableProps) {
     super(props);
-    this.state = { expanded: {}, selectedPathNode: undefined };
+    this.state = { expanded: new Set<string>(), selectedItem: undefined };
     this.handleNavigationEvent = this.handleNavigationEvent.bind(this);
   }
 
   /**
-   * Given a list of `indices`, toggle the first, and if we 'open' the
+   * Given a list of `keys`, toggle the first, and if we 'open' the
    * first item, open all the rest as well. This mimics vscode's file
    * explorer tree view behavior.
    */
-  toggle(e: React.MouseEvent, indices: number[]) {
+  toggle(e: React.MouseEvent, keys: Keys.ResultKey[]) {
+    const keyStrings = keys.map(Keys.keyToString);
     this.setState(previousState => {
-      if (previousState.expanded[indices[0]]) {
-        return { expanded: { ...previousState.expanded, [indices[0]]: false } };
-      }
-      else {
-        const expanded = { ...previousState.expanded };
-        for (const index of indices) {
-          expanded[index] = true;
+      const expanded = new Set(previousState.expanded);
+      if (previousState.expanded.has(keyStrings[0])) {
+        expanded.delete(keyStrings[0]);
+      } else {
+        for (const str of keyStrings) {
+          expanded.add(str);
         }
-        return { expanded };
       }
+      return { expanded };
     });
     e.stopPropagation();
     e.preventDefault();
@@ -96,7 +99,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     const rows: JSX.Element[] = [];
     const { numTruncatedResults, sourceLocationPrefix } = resultSet.interpretation;
 
-    function renderRelatedLocations(msg: string, relatedLocations: Sarif.Location[]): JSX.Element[] {
+    function renderRelatedLocations(msg: string, relatedLocations: Sarif.Location[], resultKey: Keys.PathNode | Keys.Result | undefined): JSX.Element[] {
       const relatedLocationsById: { [k: string]: Sarif.Location } = {};
       for (const loc of relatedLocations) {
         relatedLocationsById[loc.id!] = loc;
@@ -110,7 +113,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           return <span key={i}>{part}</span>;
         } else {
           const renderedLocation = renderSarifLocationWithText(part.text, relatedLocationsById[part.dest],
-            undefined);
+            resultKey);
           return <span key={i}>{renderedLocation}</span>;
         }
       });
@@ -122,16 +125,16 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return <span title={locationHint}>{msg}</span>;
     }
 
-    const updateSelectionCallback = (pathNodeKey: Keys.PathNode | undefined) => {
+    const updateSelectionCallback = (resultKey: Keys.PathNode | Keys.Result | undefined) => {
       return () => {
         this.setState(previousState => ({
           ...previousState,
-          selectedPathNode: pathNodeKey
+          selectedItem: resultKey
         }));
       };
     };
 
-    function renderSarifLocationWithText(text: string | undefined, loc: Sarif.Location, pathNodeKey: Keys.PathNode | undefined): JSX.Element | undefined {
+    function renderSarifLocationWithText(text: string | undefined, loc: Sarif.Location, resultKey: Keys.PathNode | Keys.Result | undefined): JSX.Element | undefined {
       const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
       if ('hint' in parsedLoc) {
         return renderNonLocation(text, parsedLoc.hint);
@@ -141,7 +144,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           text,
           databaseUri,
           undefined,
-          updateSelectionCallback(pathNodeKey)
+          updateSelectionCallback(resultKey)
         );
       } else {
         return undefined;
@@ -154,7 +157,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
      */
     function renderSarifLocation(
       loc: Sarif.Location,
-      pathNodeKey: Keys.PathNode | undefined
+      pathNodeKey: Keys.PathNode | Keys.Result | undefined
     ): JSX.Element | undefined {
       const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
       if ('hint' in parsedLoc) {
@@ -184,7 +187,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       }
     }
 
-    const toggler: (indices: number[]) => (e: React.MouseEvent) => void = (indices) => {
+    const toggler: (keys: Keys.ResultKey[]) => (e: React.MouseEvent) => void = (indices) => {
       return (e) => this.toggle(e, indices);
     };
 
@@ -192,24 +195,26 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return this.renderNoResults();
     }
 
-    let expansionIndex = 0;
-
     resultSet.interpretation.data.runs[0].results.forEach((result, resultIndex) => {
+      const resultKey: Keys.Result = { resultIndex };
       const text = result.message.text || '[no text]';
       const msg: JSX.Element[] =
         result.relatedLocations === undefined ?
           [<span key="0">{text}</span>] :
-          renderRelatedLocations(text, result.relatedLocations);
+          renderRelatedLocations(text, result.relatedLocations, resultKey);
 
-      const currentResultExpanded = this.state.expanded[expansionIndex];
+      const currentResultExpanded = this.state.expanded.has(Keys.keyToString(resultKey));
       const indicator = currentResultExpanded ? octicons.chevronDown : octicons.chevronRight;
       const location = result.locations !== undefined && result.locations.length > 0 &&
-        renderSarifLocation(result.locations[0], Keys.none);
+        renderSarifLocation(result.locations[0], resultKey);
       const locationCells = <td className="vscode-codeql__location-cell">{location}</td>;
+
+      const selectedItem = this.state.selectedItem;
+      const resultRowIsSelected = selectedItem?.resultIndex === resultIndex && selectedItem.pathIndex === undefined;
 
       if (result.codeFlows === undefined) {
         rows.push(
-          <tr key={resultIndex} {...zebraStripe(resultIndex)}>
+          <tr ref={this.scroller.ref(resultRowIsSelected)} key={resultIndex} {...selectableZebraStripe(resultRowIsSelected, resultIndex)}>
             <td className="vscode-codeql__icon-cell">{octicons.info}</td>
             <td colSpan={3}>{msg}</td>
             {locationCells}
@@ -220,12 +225,12 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         const paths: Sarif.ThreadFlow[] = Keys.getAllPaths(result);
 
         const indices = paths.length == 1 ?
-          [expansionIndex, expansionIndex + 1] : /* if there's exactly one path, auto-expand
-                                                  * the path when expanding the result */
-          [expansionIndex];
+          [resultKey, { ...resultKey, pathIndex: 0 }] : /* if there's exactly one path, auto-expand
+                                                         * the path when expanding the result */
+          [resultKey];
 
         rows.push(
-          <tr {...zebraStripe(resultIndex)} key={resultIndex}>
+          <tr ref={this.scroller.ref(resultRowIsSelected)} {...selectableZebraStripe(resultRowIsSelected, resultIndex)} key={resultIndex}>
             <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler(indices)}>
               {indicator}
             </td>
@@ -238,24 +243,23 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
             {locationCells}
           </tr >
         );
-        expansionIndex++;
 
         paths.forEach((path, pathIndex) => {
           const pathKey = { resultIndex, pathIndex };
-          const currentPathExpanded = this.state.expanded[expansionIndex];
+          const currentPathExpanded = this.state.expanded.has(Keys.keyToString(pathKey));
           if (currentResultExpanded) {
             const indicator = currentPathExpanded ? octicons.chevronDown : octicons.chevronRight;
+            const isPathSpecificallySelected = Keys.equalsNotUndefined(pathKey, selectedItem);
             rows.push(
-              <tr {...zebraStripe(resultIndex)} key={`${resultIndex}-${pathIndex}`}>
+              <tr ref={this.scroller.ref(isPathSpecificallySelected)} {...selectableZebraStripe(isPathSpecificallySelected, resultIndex)} key={`${resultIndex}-${pathIndex}`}>
                 <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
-                <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler([expansionIndex])}>{indicator}</td>
+                <td className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell" onMouseDown={toggler([pathKey])}>{indicator}</td>
                 <td className="vscode-codeql__text-center" colSpan={3}>
                   Path
                 </td>
               </tr>
             );
           }
-          expansionIndex++;
 
           if (currentResultExpanded && currentPathExpanded) {
             const pathNodes = path.locations;
@@ -268,11 +272,11 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
               const additionalMsg = step.location !== undefined ?
                 renderSarifLocation(step.location, pathNodeKey) :
                 '';
-              const isSelected = Keys.equalsNotUndefined(this.state.selectedPathNode, pathNodeKey);
+              const isSelected = Keys.equalsNotUndefined(this.state.selectedItem, pathNodeKey);
               const stepIndex = pathNodeIndex + 1; // Convert to 1-based
               const zebraIndex = resultIndex + stepIndex;
               rows.push(
-                <tr className={isSelected ? 'vscode-codeql__selected-path-node' : undefined} key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}>
+                <tr ref={this.scroller.ref(isSelected)} className={isSelected ? 'vscode-codeql__selected-path-node' : undefined} key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}>
                   <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                   <td className="vscode-codeql__icon-cell"><span className="vscode-codeql__vertical-rule"></span></td>
                   <td {...selectableZebraStripe(isSelected, zebraIndex, 'vscode-codeql__path-index-cell')}>{stepIndex}</td>
@@ -302,34 +306,103 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     </table>;
   }
 
-  private handleNavigationEvent(event: NavigationEvent) {
+  private handleNavigationEvent(event: NavigateMsg) {
     this.setState(prevState => {
-      const { selectedPathNode } = prevState;
-      if (selectedPathNode === undefined) return prevState;
+      const key = this.getNewSelection(prevState.selectedItem, event.direction);
+      const data = this.props.resultSet.interpretation.data;
 
-      const path = Keys.getPath(this.props.resultSet.interpretation.data, selectedPathNode);
-      if (path === undefined) return prevState;
-
-      const nextIndex = selectedPathNode.pathNodeIndex + event.direction;
-      if (nextIndex < 0 || nextIndex >= path.locations.length) return prevState;
-
-      const sarifLoc = path.locations[nextIndex].location;
-      if (sarifLoc === undefined) {
-        return prevState;
+      // Check if the selected node actually exists (bounds check) and get its location if relevant
+      let jumpLocation: Sarif.Location | undefined;
+      if (key.pathNodeIndex !== undefined) {
+        jumpLocation = Keys.getPathNode(data, key);
+        if (jumpLocation === undefined) {
+          return prevState; // Result does not exist
+        }
+      } else if (key.pathIndex !== undefined) {
+        if (Keys.getPath(data, key) === undefined) {
+          return prevState; // Path does not exist
+        }
+        jumpLocation = undefined; // When selecting a 'path', don't jump anywhere.
+      } else {
+        jumpLocation = Keys.getResult(data, key)?.locations?.[0];
+        if (jumpLocation === undefined) {
+          return prevState; // Path step does not exist.
+        }
+      }
+      if (jumpLocation !== undefined) {
+        const parsedLocation = parseSarifLocation(jumpLocation, this.props.resultSet.interpretation.sourceLocationPrefix);
+        if (!isNoLocation(parsedLocation)) {
+          jumpToLocation(parsedLocation, this.props.databaseUri);
+        }
       }
 
-      const loc = parseSarifLocation(sarifLoc, this.props.resultSet.interpretation.sourceLocationPrefix);
-      if (isNoLocation(loc)) {
-        return prevState;
+      const expanded = new Set(prevState.expanded);
+      if (event.direction === NavigationDirection.right) {
+        // When stepping right, expand to ensure the selected node is visible
+        expanded.add(Keys.keyToString({ resultIndex: key.resultIndex }));
+        if (key.pathIndex !== undefined) {
+          expanded.add(Keys.keyToString({ resultIndex: key.resultIndex, pathIndex: key.pathIndex }));
+        }
+      } else if (event.direction === NavigationDirection.left) {
+        // When stepping left, collapse immediately
+        expanded.delete(Keys.keyToString(key));
+      } else {
+        // When stepping up or down, collapse the previous node
+        if (prevState.selectedItem !== undefined) {
+          expanded.delete(Keys.keyToString(prevState.selectedItem));
+        }
       }
-
-      jumpToLocation(loc, this.props.databaseUri);
-      const newSelection = { ...selectedPathNode, pathNodeIndex: nextIndex };
-      return { ...prevState, selectedPathNode: newSelection };
+      this.scroller.scrollIntoViewOnNextUpdate();
+      return {
+        ...prevState,
+        expanded,
+        selectedItem: key
+      };
     });
   }
 
+  private getNewSelection(key: Keys.ResultKey | undefined, direction: NavigationDirection): Keys.ResultKey {
+    if (key === undefined) {
+      return { resultIndex: 0 };
+    }
+    const { resultIndex, pathIndex, pathNodeIndex } = key;
+    switch (direction) {
+      case NavigationDirection.up:
+      case NavigationDirection.down: {
+        const delta = direction === NavigationDirection.up ? -1 : 1;
+        if (key.pathNodeIndex !== undefined) {
+          return { resultIndex, pathIndex: key.pathIndex, pathNodeIndex: key.pathNodeIndex + delta };
+        } else if (pathIndex !== undefined) {
+          return { resultIndex, pathIndex: pathIndex + delta };
+        } else {
+          return { resultIndex: resultIndex + delta };
+        }
+      }
+      case NavigationDirection.left:
+        if (key.pathNodeIndex !== undefined) {
+          return { resultIndex, pathIndex: key.pathIndex };
+        } else if (pathIndex !== undefined) {
+          return { resultIndex };
+        } else {
+          return key;
+        }
+      case NavigationDirection.right:
+        if (pathIndex === undefined) {
+          return { resultIndex, pathIndex: 0 };
+        } else if (pathNodeIndex === undefined) {
+          return { resultIndex, pathIndex, pathNodeIndex: 0 };
+        } else {
+          return key;
+        }
+    }
+  }
+
+  componentDidUpdate() {
+    this.scroller.update();
+  }
+
   componentDidMount() {
+    this.scroller.update();
     onNavigation.addListener(this.handleNavigationEvent);
   }
 

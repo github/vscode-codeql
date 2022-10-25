@@ -4,8 +4,6 @@ import { action } from '@storybook/addon-actions';
 // Allow all stories/components to use Codicons
 import '@vscode/codicons/dist/codicon.css';
 
-import '../src/stories/vscode-theme-dark.css';
-
 // https://storybook.js.org/docs/react/configure/overview#configure-story-rendering
 export const parameters = {
   // All props starting with `on` will automatically receive an action as a prop
@@ -22,13 +20,8 @@ export const parameters = {
     theme: themes.dark,
   },
   backgrounds: {
-    default: 'dark',
-    values: [
-      {
-        name: 'dark',
-        value: '#1e1e1e',
-      },
-    ],
+    // The background is injected by our theme CSS files
+    disable: true,
   }
 };
 

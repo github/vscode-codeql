@@ -626,3 +626,10 @@ body {
   margin: 0;
   padding: 0 20px;
 }
+
+/**
+ * This is used for setting the background on the Storybook preview.
+ */
+body {
+  background-color: var(--vscode-editor-background);
+}

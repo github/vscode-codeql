@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import * as path from 'path';
 import * as fs from 'fs-extra';
+import * as os from 'os';
 import * as sinon from 'sinon';
 import { LocalQueryInfo, InitialQueryInfo, interpretResultsSarif } from '../../query-results';
 import { QueryWithResults } from '../../run-queries-shared';
@@ -11,6 +12,7 @@ import { tmpDir } from '../../helpers';
 import { slurpQueryHistory, splatQueryHistory } from '../../query-serialization';
 import { formatLegacyMessage, QueryInProgress } from '../../legacy-query-server/run-queries';
 import { EvaluationResult, QueryResultType } from '../../pure/legacy-messages';
+import Sinon = require('sinon');
 
 describe('query-results', () => {
   let disposeSpy: sinon.SinonSpy;
@@ -155,68 +157,213 @@ describe('query-results', () => {
     });
   });
 
-  it('should interpretResultsSarif', async () => {
-    const spy = sandbox.mock();
-    spy.returns({ a: '1234' });
-    const mockServer = {
-      interpretBqrsSarif: spy
-    } as unknown as CodeQLCliServer;
-
-    const interpretedResultsPath = path.join(tmpDir.name, 'interpreted.json');
-    const resultsPath = '123';
-    const sourceInfo = {};
+  describe('interpretResultsSarif', () => {
+    let mockServer: CodeQLCliServer;
+    let spy: Sinon.SinonExpectation;
     const metadata = {
       kind: 'my-kind',
       id: 'my-id' as string | undefined,
       scored: undefined
     };
-    const results1 = await interpretResultsSarif(
-      mockServer,
-      metadata,
-      {
-        resultsPath, interpretedResultsPath
-      },
-      sourceInfo as SourceInfo
-    );
+    const resultsPath = '123';
+    const interpretedResultsPath = path.join(tmpDir.name, 'interpreted.json');
+    const sourceInfo = {};
 
-    expect(results1).to.deep.eq({ a: '1234', t: 'SarifInterpretationData' });
-    expect(spy).to.have.been.calledWith(
-      metadata,
-      resultsPath, interpretedResultsPath, sourceInfo
-    );
+    beforeEach(() => {
+      spy = sandbox.mock();
+      spy.returns({ a: '1234' });
 
-    // Try again, but with no id
-    spy.reset();
-    spy.returns({ a: '1234' });
-    delete metadata.id;
-    const results2 = await interpretResultsSarif(
-      mockServer,
-      metadata,
-      {
-        resultsPath, interpretedResultsPath
-      },
-      sourceInfo as SourceInfo
-    );
-    expect(results2).to.deep.eq({ a: '1234', t: 'SarifInterpretationData' });
-    expect(spy).to.have.been.calledWith(
-      { kind: 'my-kind', id: 'dummy-id', scored: undefined },
-      resultsPath, interpretedResultsPath, sourceInfo
-    );
+      mockServer = {
+        interpretBqrsSarif: spy
+      } as unknown as CodeQLCliServer;
+    });
 
-    // try a third time, but this time we get from file
-    spy.reset();
-    fs.writeFileSync(interpretedResultsPath, JSON.stringify({
-      a: 6
-    }), 'utf8');
-    const results3 = await interpretResultsSarif(
-      mockServer,
-      metadata,
-      {
-        resultsPath, interpretedResultsPath
-      },
-      sourceInfo as SourceInfo
-    );
-    expect(results3).to.deep.eq({ a: 6, t: 'SarifInterpretationData' });
+    afterEach(async () => {
+      sandbox.restore();
+      safeDel(interpretedResultsPath);
+    });
+
+    it('should interpretResultsSarif', async function() {
+      // up to 2 minutes per test
+      this.timeout(2 * 60 * 1000);
+
+      const results = await interpretResultsSarif(
+        mockServer,
+        metadata,
+        {
+          resultsPath, interpretedResultsPath
+        },
+        sourceInfo as SourceInfo
+      );
+
+      expect(results).to.deep.eq({ a: '1234', t: 'SarifInterpretationData' });
+      expect(spy).to.have.been.calledWith(
+        metadata,
+        resultsPath, interpretedResultsPath, sourceInfo
+      );
+    });
+
+    it('should interpretBqrsSarif without ID', async function() {
+      // up to 2 minutes per test
+      this.timeout(2 * 60 * 1000);
+
+      delete metadata.id;
+      const results = await interpretResultsSarif(
+        mockServer,
+        metadata,
+        {
+          resultsPath, interpretedResultsPath
+        },
+        sourceInfo as SourceInfo
+      );
+      expect(results).to.deep.eq({ a: '1234', t: 'SarifInterpretationData' });
+      expect(spy).to.have.been.calledWith(
+        { kind: 'my-kind', id: 'dummy-id', scored: undefined },
+        resultsPath, interpretedResultsPath, sourceInfo
+      );
+    });
+
+    it('should use sarifParser on a valid small SARIF file', async function() {
+      // up to 2 minutes per test
+      this.timeout(2 * 60 * 1000);
+
+      fs.writeFileSync(interpretedResultsPath, JSON.stringify({
+        runs: [{ results: [] }] // A run needs results to succeed.
+      }), 'utf8');
+      const results = await interpretResultsSarif(
+        mockServer,
+        metadata,
+        {
+          resultsPath, interpretedResultsPath
+        },
+        sourceInfo as SourceInfo
+      );
+      // We do not re-interpret if we are reading from a SARIF file. 
+      expect(spy).to.not.have.been.called;
+
+      expect(results).to.have.property('t', 'SarifInterpretationData');
+      expect(results).to.have.nested.property('runs[0].results');
+    });
+
+    it('should throw an error on an invalid small SARIF file', async function() {
+      // up to 2 minutes per test
+      this.timeout(2 * 60 * 1000);
+
+      fs.writeFileSync(interpretedResultsPath, JSON.stringify({
+        a: '6' // Invalid: no runs or results
+      }), 'utf8');
+
+      await expect(
+        interpretResultsSarif(
+          mockServer,
+          metadata,
+          {
+            resultsPath, interpretedResultsPath
+          },
+          sourceInfo as SourceInfo)
+      ).to.be.rejectedWith('Parsing output of interpretation failed: Invalid SARIF file: expecting at least one run with result.');
+
+      // We do not attempt to re-interpret if we are reading from a SARIF file. 
+      expect(spy).to.not.have.been.called;
+    });
+
+    it('should use sarifParser on a valid large SARIF file', async function() {
+      // up to 2 minutes per test
+      this.timeout(2 * 60 * 1000);
+
+      const validSarifStream = fs.createWriteStream(interpretedResultsPath, { flags: 'w' });
+
+      const finished = new Promise((res, rej) => {
+        validSarifStream.addListener('close', res);
+        validSarifStream.addListener('error', rej);
+      });
+
+      validSarifStream.write(JSON.stringify({
+        runs: [{ results: [] }] // A run needs results to succeed.
+      }), 'utf8');
+
+      validSarifStream.write('[', 'utf8');
+      const iterations = 1_000_000;
+      for (let i = 0; i < iterations; i++) {
+        validSarifStream.write(JSON.stringify({
+          a: '6'
+        }), 'utf8');
+        if (i < iterations - 1) {
+          validSarifStream.write(',');
+        }
+      }
+      validSarifStream.write(']', 'utf8');
+      validSarifStream.end();
+      await finished;
+
+      // We need to sleep to wait for MSFT Defender to scan the file 
+      // so that it can be read by our test.  
+      if (os.platform() === 'win32') {
+        await sleep(10_000);
+      }
+
+      const results = await interpretResultsSarif(
+        mockServer,
+        metadata,
+        {
+          resultsPath, interpretedResultsPath
+        },
+        sourceInfo as SourceInfo
+      );
+      // We do not re-interpret if we are reading from a SARIF file. 
+      expect(spy).to.not.have.been.called;
+
+      expect(results).to.have.property('t', 'SarifInterpretationData');
+      expect(results).to.have.nested.property('runs[0].results');
+    });
+
+    it('should throw an error on an invalid large SARIF file', async function() {
+      // up to 2 minutes per test
+      this.timeout(2 * 60 * 1000);
+
+      // There is a problem on Windows where the file at the prior path isn't able
+      // to be deleted or written to, so we rename the path for this last test.
+      const interpretedResultsPath = path.join(tmpDir.name, 'interpreted-invalid.json');
+      const invalidSarifStream = fs.createWriteStream(interpretedResultsPath, { flags: 'w' });
+
+      const finished = new Promise((res, rej) => {
+        invalidSarifStream.addListener('close', res);
+        invalidSarifStream.addListener('error', rej);
+      });
+
+      invalidSarifStream.write('[', 'utf8');
+      const iterations = 1_000_000;
+      for (let i = 0; i < iterations; i++) {
+        invalidSarifStream.write(JSON.stringify({
+          a: '6'
+        }), 'utf8');
+        if (i < iterations - 1) {
+          invalidSarifStream.write(',');
+        }
+      }
+      invalidSarifStream.write(']', 'utf8');
+      invalidSarifStream.end();
+      await finished;
+
+      // We need to sleep to wait for MSFT Defender to scan the file 
+      // so that it can be read by our test.  
+      if (os.platform() === 'win32') {
+        await sleep(10_000);
+      }
+
+      await expect(
+        interpretResultsSarif(
+          mockServer,
+          metadata,
+          {
+            resultsPath, interpretedResultsPath
+          },
+          sourceInfo as SourceInfo)
+      ).to.be.rejectedWith('Parsing output of interpretation failed: Invalid SARIF file: expecting at least one run with result.');
+
+      // We do not attempt to re-interpret if we are reading from a SARIF file. 
+      expect(spy).to.not.have.been.called;
+    });
   });
 
   describe('splat and slurp', () => {
@@ -299,6 +446,18 @@ describe('query-results', () => {
       expect(allHistoryActual).to.deep.eq([]);
     });
   });
+
+  function safeDel(file: string) {
+    try {
+      fs.unlinkSync(file);
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  async function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
   function createMockQueryWithResults(
     queryPath: string,

@@ -22,7 +22,11 @@ fs.ensureDirSync(upgradesTmpDir);
 
 export const tmpDirDisposal = {
   dispose: () => {
-    tmpDir.removeCallback();
+    try {
+      tmpDir.removeCallback();
+    } catch (e) {
+      void logger.log(`Failed to remove temporary directory ${tmpDir.name}: ${e}`);
+    }
   }
 };
 
@@ -583,12 +587,4 @@ export async function* walkDirectory(dir: string): AsyncIterableIterator<string>
       yield entry;
     }
   }
-}
-
-/**
- * Pluralizes a word.
- * Example: Returns "N repository" if N is one, "N repositories" otherwise.
- */
-export function pluralize(numItems: number | undefined, singular: string, plural: string): string {
-  return numItems ? `${numItems} ${numItems === 1 ? singular : plural}` : '';
 }

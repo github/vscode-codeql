@@ -145,12 +145,17 @@ export interface ShowInterpretedPageMsg {
   queryPath: string;
 }
 
-/** Advance to the next or previous path no in the path viewer */
-export interface NavigatePathMsg {
-  t: 'navigatePath';
+export const enum NavigationDirection {
+  up = 'up',
+  down = 'down',
+  left = 'left',
+  right = 'right',
+}
 
-  /** 1 for next, -1 for previous */
-  direction: number;
+/** Move up, down, left, or right in the result viewer. */
+export interface NavigateMsg {
+  t: 'navigate';
+  direction: NavigationDirection;
 }
 
 /**
@@ -168,7 +173,7 @@ export type IntoResultsViewMsg =
   | ResultsUpdatingMsg
   | SetStateMsg
   | ShowInterpretedPageMsg
-  | NavigatePathMsg
+  | NavigateMsg
   | UntoggleShowProblemsMsg;
 
 /**

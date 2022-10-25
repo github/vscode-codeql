@@ -28,3 +28,25 @@ export async function gatherQlFiles(paths: string[]): Promise<[string[], boolean
   }
   return [Array.from(gatheredUris), dirFound];
 }
+
+/**
+ * Lists the names of directories inside the given path.
+ * @param path The path to the directory to read.
+ * @returns the names of the directories inside the given path.
+ */
+export async function getDirectoryNamesInsidePath(path: string): Promise<string[]> {
+  if (!(await fs.pathExists(path))) {
+    throw Error(`Path does not exist: ${path}`);
+  }
+  if (!(await fs.stat(path)).isDirectory()) {
+    throw Error(`Path is not a directory: ${path}`);
+  }
+
+  const dirItems = await fs.readdir(path, { withFileTypes: true });
+
+  const dirNames = dirItems
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name);
+
+  return dirNames;
+}
