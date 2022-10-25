@@ -31,7 +31,7 @@ import { commandRunner } from './commandRunner';
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
-import { getQueryHistoryItemId, getQueryText, QueryHistoryInfo } from './query-history-info';
+import { getQueryId, getQueryText, QueryHistoryInfo } from './query-history-info';
 import { DatabaseManager } from './databases';
 import { registerQueryHistoryScrubber } from './query-history-scrubber';
 import { QueryStatus, variantAnalysisStatusToQueryStatus } from './query-status';
@@ -51,7 +51,6 @@ import { EvalLogData, parseViewerData } from './pure/log-summary-parser';
 import { QueryWithResults } from './run-queries-shared';
 import { QueryRunner } from './queryRunner';
 import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
-import { nanoid } from 'nanoid';
 import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-history-item';
 import { getTotalResultCount } from './remote-queries/shared/variant-analysis';
 
@@ -606,7 +605,6 @@ export class QueryHistoryManager extends DisposableObject {
         t: 'variant-analysis',
         status: QueryStatus.InProgress,
         completed: false,
-        historyItemId: nanoid(),
         variantAnalysis,
       });
 
@@ -1109,7 +1107,7 @@ export class QueryHistoryManager extends DisposableObject {
       queryText: encodeURIComponent(getQueryText(finalSingleItem)),
     });
 
-    const queryId = getQueryHistoryItemId(finalSingleItem);
+    const queryId = getQueryId(finalSingleItem);
 
     const uri = Uri.parse(
       `codeql:${queryId}.ql?${params.toString()}`, true

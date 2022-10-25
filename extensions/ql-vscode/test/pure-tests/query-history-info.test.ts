@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import { QueryStatus } from '../../src/query-status';
-import { buildRepoLabel, getQueryHistoryItemId, getQueryText, getRawQueryName } from '../../src/query-history-info';
+import { buildRepoLabel, getQueryId, getQueryText, getRawQueryName } from '../../src/query-history-info';
 import { VariantAnalysisHistoryItem } from '../../src/remote-queries/variant-analysis-history-item';
 import { createMockVariantAnalysis } from '../../src/vscode-tests/factories/remote-queries/shared/variant-analysis';
 import { createMockScannedRepos } from '../../src/vscode-tests/factories/remote-queries/shared/scanned-repositories';
@@ -19,7 +19,6 @@ describe('Query history info', () => {
     t: 'variant-analysis',
     status: QueryStatus.InProgress,
     completed: false,
-    historyItemId: 'abc123',
     variantAnalysis: createMockVariantAnalysis(
       VariantAnalysisStatus.InProgress,
       createMockScannedRepos([
@@ -51,23 +50,23 @@ describe('Query history info', () => {
     });
   });
 
-  describe('getQueryHistoryItemId', () => {
+  describe('getQueryId', () => {
     it('should get the ID for local history items', () => {
-      const historyItemId = getQueryHistoryItemId(localQueryHistoryItem);
+      const historyItemId = getQueryId(localQueryHistoryItem);
 
       expect(historyItemId).to.equal(localQueryHistoryItem.initialInfo.id);
     });
 
     it('should get the ID for remote query history items', () => {
-      const historyItemId = getQueryHistoryItemId(remoteQueryHistoryItem);
+      const historyItemId = getQueryId(remoteQueryHistoryItem);
 
       expect(historyItemId).to.equal(remoteQueryHistoryItem.queryId);
     });
 
     it('should get the ID for variant analysis history items', () => {
-      const historyItemId = getQueryHistoryItemId(variantAnalysisHistoryItem);
+      const historyItemId = getQueryId(variantAnalysisHistoryItem);
 
-      expect(historyItemId).to.equal(variantAnalysisHistoryItem.historyItemId);
+      expect(historyItemId).to.equal(variantAnalysisHistoryItem.variantAnalysis.id.toString());
     });
   });
 
@@ -100,10 +99,10 @@ describe('Query history info', () => {
         expect(repoLabel).to.equal(expectedRepoLabel);
       });
       it('should return number of repositories when `repositoryCount` is non-zero', () => {
-        const remoteQueryHistoryItem2 = createMockRemoteQueryHistoryItem({repositoryCount: 3});
+        const remoteQueryHistoryItem2 = createMockRemoteQueryHistoryItem({ repositoryCount: 3 });
         const repoLabel2 = buildRepoLabel(remoteQueryHistoryItem2);
         const expectedRepoLabel2 = '3 repositories';
-  
+
         expect(repoLabel2).to.equal(expectedRepoLabel2);
       });
     });
@@ -113,7 +112,6 @@ describe('Query history info', () => {
           t: 'variant-analysis',
           status: QueryStatus.InProgress,
           completed: false,
-          historyItemId: 'abc123',
           variantAnalysis: createMockVariantAnalysis(
             VariantAnalysisStatus.InProgress,
             createMockScannedRepos([])
@@ -128,7 +126,6 @@ describe('Query history info', () => {
           t: 'variant-analysis',
           status: QueryStatus.InProgress,
           completed: false,
-          historyItemId: 'abc123',
           variantAnalysis: createMockVariantAnalysis(
             VariantAnalysisStatus.InProgress,
             createMockScannedRepos([
@@ -142,9 +139,9 @@ describe('Query history info', () => {
       });
       it('should return label when `totalScannedRepositoryCount` is greater than 1', () => {
         const repoLabel = buildRepoLabel(variantAnalysisHistoryItem);
-        
+
         expect(repoLabel).to.equal('2/4 repositories');
       });
     });
-  });  
+  });
 });
