@@ -1444,7 +1444,7 @@ the file in the file explorer and dragging it into the workspace.`
     } else if (item.t === 'remote') {
       await this.remoteQueriesManager.openRemoteQueryResults(item.queryId);
     } else if (item.t === 'variant-analysis') {
-      await this.variantAnalysisManager.openVariantAnalysisResults(item.variantAnalysis.id);
+      await this.variantAnalysisManager.showView(item.variantAnalysis.id);
     }
   }
 }

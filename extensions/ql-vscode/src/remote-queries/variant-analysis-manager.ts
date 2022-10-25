@@ -73,14 +73,18 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
-    if (!this.views.has(variantAnalysisId)) {
-      // The view will register itself with the manager, so we don't need to do anything here.
-      this.push(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
-    }
+    try{
+      if (!this.views.has(variantAnalysisId)) {
+        // The view will register itself with the manager, so we don't need to do anything here.
+        this.push(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
+      }
 
-    const variantAnalysisView = this.views.get(variantAnalysisId)!;
-    await variantAnalysisView.openView();
-    return;
+      const variantAnalysisView = this.views.get(variantAnalysisId)!;
+      await variantAnalysisView.openView();
+      return;
+    } catch (e) {
+      void showAndLogErrorMessage(`Could not open the results for variant analysis with id: ${variantAnalysisId}. Error: ${getErrorMessage(e)}`);
+    }
   }
 
   public registerView(view: VariantAnalysisView): void {
@@ -222,18 +226,6 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
    */
   private async prepareStorageDirectory(variantAnalysisId: number): Promise<void> {
     await createTimestampFile(this.getVariantAnalysisStorageLocation(variantAnalysisId));
-  }
-
-  public async openVariantAnalysisResults(variantAnalysisId: number): Promise<void> {
-    try {
-      const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
-      if (!variantAnalysis) {
-        void showAndLogErrorMessage(`No variant analysis with id: ${variantAnalysisId}`);
-      }
-      void commands.executeCommand('codeQL.openVariantAnalysisView', variantAnalysisId);
-    } catch (e) {
-      void showAndLogErrorMessage(`Could not open the results for variant analysis with id: ${variantAnalysisId}. Error: ${getErrorMessage(e)}`);
-    }
   }
 
   public async promptOpenVariantAnalysis() {
