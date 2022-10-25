@@ -120,6 +120,31 @@ describe('Variant Analyses and QueryHistoryManager', function() {
     expect(qhm.treeDataProvider.allHistory.length).to.eq(2);
   });
 
+  it('should remove the variant analysis history item', async () => {
+    await qhm.readQueryHistory();
+
+    // Remove the first variant analysis
+    await qhm.handleRemoveHistoryItem(qhm.treeDataProvider.allHistory[0]);
+
+    expect(removeVariantAnalysisStub).calledOnceWithExactly(rawQueryHistory[0].historyItemId);
+    expect(rehydrateVariantAnalysisStub).to.have.callCount(2);
+
+    expect(rehydrateVariantAnalysisStub.getCall(0).args[0]).to.deep.eq(rawQueryHistory[0].variantAnalysis);
+    expect(rehydrateVariantAnalysisStub.getCall(0).args[1]).to.deep.eq(rawQueryHistory[0].status);
+
+    expect(rehydrateVariantAnalysisStub.getCall(1).args[0]).to.deep.eq(rawQueryHistory[1].variantAnalysis);
+    expect(rehydrateVariantAnalysisStub.getCall(1).args[1]).to.deep.eq(rawQueryHistory[1].status);
+
+    expect(openRemoteQueryResultsStub).calledOnceWithExactly(rawQueryHistory[1].historyItemId);
+    expect(qhm.treeDataProvider.allHistory).to.deep.eq(rawQueryHistory.slice(1));
+
+    // Add it back to the history
+    qhm.addQuery(rawQueryHistory[0]);
+    expect(removeVariantAnalysisStub).to.have.callCount(1);
+    expect(rehydrateVariantAnalysisStub).to.have.callCount(2);
+    expect(qhm.treeDataProvider.allHistory).to.deep.eq([rawQueryHistory[1], rawQueryHistory[0]]);
+  });
+
   async function copyHistoryState() {
     fs.ensureDirSync(STORAGE_DIR);
     fs.copySync(
