@@ -36,5 +36,13 @@
   "typescript.preferences.quoteStyle": "single",
   "javascript.preferences.quoteStyle": "single",
   "editor.wordWrapColumn": 100,
-  "jest.rootPath": "./extensions/ql-vscode"
+  "jest.rootPath": "./extensions/ql-vscode",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+  },
 }
