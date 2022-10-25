@@ -5,7 +5,6 @@
       "t": "variant-analysis",
       "status": "Completed",
       "completed": true,
-      "historyItemId": "12349821",
       "variantAnalysis": {
         "id": 98574321397,
         "controllerRepoId": 128321,
@@ -29,7 +28,6 @@
       "t": "variant-analysis",
       "status": "Completed",
       "completed": true,
-      "historyItemId": "12349821",
       "variantAnalysis": {
         "id": 98574321397,
         "controllerRepoId": 128321,

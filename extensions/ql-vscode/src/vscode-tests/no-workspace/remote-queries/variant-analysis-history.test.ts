@@ -79,7 +79,8 @@ describe('Variant Analyses and QueryHistoryManager', function() {
       onVariantAnalysisAdded: sandbox.stub(),
       onVariantAnalysisRemoved: sandbox.stub(),
       removeRemoteQuery: removeVariantAnalysisStub,
-      rehydrateVariantAnalysis: rehydrateVariantAnalysisStub
+      rehydrateVariantAnalysis: rehydrateVariantAnalysisStub,
+      onVariantAnalysisStatusUpdated: sandbox.stub()
     } as any as VariantAnalysisManager;
 
     rawQueryHistory = fs.readJSONSync(path.join(STORAGE_DIR, 'workspace-query-history.json')).queries;
@@ -134,7 +135,7 @@ describe('Variant Analyses and QueryHistoryManager', function() {
     // Remove the first variant analysis
     await qhm.handleRemoveHistoryItem(qhm.treeDataProvider.allHistory[0]);
 
-    expect(removeVariantAnalysisStub).calledOnceWithExactly(rawQueryHistory[0].historyItemId);
+    expect(removeVariantAnalysisStub).calledOnceWithExactly(rawQueryHistory[0].variantAnalysis.id.toString());
     expect(rehydrateVariantAnalysisStub).to.have.callCount(2);
 
     expect(rehydrateVariantAnalysisStub.getCall(0).args[0]).to.deep.eq(rawQueryHistory[0].variantAnalysis);
@@ -143,7 +144,7 @@ describe('Variant Analyses and QueryHistoryManager', function() {
     expect(rehydrateVariantAnalysisStub.getCall(1).args[0]).to.deep.eq(rawQueryHistory[1].variantAnalysis);
     expect(rehydrateVariantAnalysisStub.getCall(1).args[1]).to.deep.eq(rawQueryHistory[1].status);
 
-    expect(openRemoteQueryResultsStub).calledOnceWithExactly(rawQueryHistory[1].historyItemId);
+    expect(openRemoteQueryResultsStub).calledOnceWithExactly(rawQueryHistory[1].variantAnalysis.id.toString());
     expect(qhm.treeDataProvider.allHistory).to.deep.eq(rawQueryHistory.slice(1));
 
     // Add it back to the history
@@ -161,8 +162,8 @@ describe('Variant Analyses and QueryHistoryManager', function() {
     await qhm.handleRemoveHistoryItem(undefined!, [qhm.treeDataProvider.allHistory[1], qhm.treeDataProvider.allHistory[0]]);
 
     expect(removeVariantAnalysisStub.callCount).to.eq(2);
-    expect(removeVariantAnalysisStub.getCall(0).args[0]).to.eq(rawQueryHistory[1].historyItemId);
-    expect(removeVariantAnalysisStub.getCall(1).args[0]).to.eq(rawQueryHistory[0].historyItemId);
+    expect(removeVariantAnalysisStub.getCall(0).args[0]).to.eq(rawQueryHistory[1].variantAnalysis.id.toString());
+    expect(removeVariantAnalysisStub.getCall(1).args[0]).to.eq(rawQueryHistory[0].variantAnalysis.id.toString());
     expect(qhm.treeDataProvider.allHistory).to.deep.eq([]);
 
     // also, both queries should be removed from disk storage
@@ -176,7 +177,7 @@ describe('Variant Analyses and QueryHistoryManager', function() {
     await qhm.readQueryHistory();
 
     await qhm.handleItemClicked(qhm.treeDataProvider.allHistory[0], []);
-    expect(openRemoteQueryResultsStub).calledOnceWithExactly(rawQueryHistory[0].historyItemId);
+    expect(openRemoteQueryResultsStub).calledOnceWithExactly(rawQueryHistory[0].variantAnalysis.id.toString());
   });
 
   it('should get the query text', async () => {
