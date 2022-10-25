@@ -70,6 +70,17 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     }
   }
 
+  public async removeVariantAnalysis(variantAnalysis: VariantAnalysis) {
+    this.variantAnalysisResultsManager.removeAnalysesResults(variantAnalysis);
+    await this.removeStorageDirectory(variantAnalysis.id);
+    this.variantAnalyses.delete(variantAnalysis.id);
+  }
+
+  private async removeStorageDirectory(variantAnalysisId: number) {
+    const storageLocation = this.getVariantAnalysisStorageLocation(variantAnalysisId);
+    await fs.remove(storageLocation);
+  }
+
   public async showView(variantAnalysisId: number): Promise<void> {
     if (!this.views.has(variantAnalysisId)) {
       // The view will register itself with the manager, so we don't need to do anything here.
