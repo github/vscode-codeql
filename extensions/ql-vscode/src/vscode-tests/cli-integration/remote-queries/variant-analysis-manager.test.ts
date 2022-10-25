@@ -21,6 +21,8 @@ import { createMockVariantAnalysisRepoTask } from '../../factories/remote-querie
 import { CodeQLCliServer } from '../../../cli';
 import { storagePath } from '../global.helper';
 import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
+import { VariantAnalysis } from '../../../remote-queries/shared/variant-analysis';
+import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
@@ -165,6 +167,29 @@ describe('Variant Analysis Manager', async function() {
 
           expect(variantAnalysisManager.downloadsQueueSize()).to.equal(0);
           expect(getResultsSpy).to.have.been.calledThrice;
+        });
+      });
+
+      describe('removeVariantAnalysis', async () => {
+        let removeAnalysisResultsStub: sinon.SinonStub;
+        let removeStorageStub: sinon.SinonStub;
+        let dummyVariantAnalysis: VariantAnalysis;
+
+        beforeEach(async () => {
+          dummyVariantAnalysis = createMockVariantAnalysis();
+          removeAnalysisResultsStub = sandbox.stub(variantAnalysisResultsManager, 'removeAnalysisResults');
+          removeStorageStub = sandbox.stub(fs, 'remove');
+        });
+
+        it('should remove variant analysis', async () => {
+          await variantAnalysisManager.onVariantAnalysisUpdated(dummyVariantAnalysis);
+          expect(variantAnalysisManager.getVariantAnalysesSize()).to.eq(1);
+
+          await variantAnalysisManager.removeVariantAnalysis(dummyVariantAnalysis);
+
+          expect(removeAnalysisResultsStub).to.have.been.calledOnce;
+          expect(removeStorageStub).to.have.been.calledOnce;
+          expect(variantAnalysisManager.getVariantAnalysesSize()).to.equal(0);
         });
       });
     });
