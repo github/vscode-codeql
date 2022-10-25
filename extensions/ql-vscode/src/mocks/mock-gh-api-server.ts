@@ -1,11 +1,14 @@
+import * as path from 'path';
 import * as fs from 'fs-extra';
-import { commands, env, ExtensionContext, ExtensionMode, Uri, window } from 'vscode';
+import { commands, env, ExtensionContext, ExtensionMode, QuickPickItem, Uri, window } from 'vscode';
 import { setupServer, SetupServerApi } from 'msw/node';
 
 import { getMockGitHubApiServerScenariosPath, MockGitHubApiConfigListener } from '../config';
 import { DisposableObject } from '../pure/disposable-object';
 
 import { Recorder } from './recorder';
+import { createRequestHandlers } from './request-handlers';
+import { getDirectoryNamesInsidePath } from '../pure/files';
 
 /**
  * Enables mocking of the GitHub API server via HTTP interception, using msw.
@@ -44,18 +47,57 @@ export class MockGitHubApiServer extends DisposableObject {
     this.isListening = false;
   }
 
-  public loadScenario(): void {
-    // TODO: Implement logic to load a scenario from a directory.
+  public async loadScenario(): Promise<void> {
+    const scenariosPath = await this.getScenariosPath();
+    if (!scenariosPath) {
+      return;
+    }
+
+    const scenarioNames = await getDirectoryNamesInsidePath(scenariosPath);
+    const scenarioQuickPickItems = scenarioNames.map(s => ({ label: s }));
+    const quickPickOptions = {
+      placeHolder: 'Select a scenario to load',
+    };
+    const selectedScenario = await window.showQuickPick<QuickPickItem>(
+      scenarioQuickPickItems,
+      quickPickOptions);
+    if (!selectedScenario) {
+      return;
+    }
+
+    const scenarioName = selectedScenario.label;
+    const scenarioPath = path.join(scenariosPath, scenarioName);
+
+    const handlers = await createRequestHandlers(scenarioPath);
+    this.server.resetHandlers();
+    this.server.use(...handlers);
+
+    // Set a value in the context to track whether we have a scenario loaded. 
+    // This allows us to use this to show/hide commands (see package.json)
+    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.scenarioLoaded', true);
+
+    await window.showInformationMessage(`Loaded scenario '${scenarioName}'`);
   }
 
-  public listScenarios(): void {
-    // TODO: Implement logic to list all available scenarios.
+  public async unloadScenario(): Promise<void> {
+    if (!this.isScenarioLoaded()) {
+      await window.showInformationMessage('No scenario currently loaded');
+    }
+    else {
+      await this.unloadAllScenarios();
+      await window.showInformationMessage('Unloaded scenario');
+    }
   }
 
   public async startRecording(): Promise<void> {
     if (this.recorder.isRecording) {
       void window.showErrorMessage('A scenario is already being recorded. Use the "Save Scenario" or "Cancel Scenario" commands to finish recording.');
       return;
+    }
+
+    if (this.isScenarioLoaded()) {
+      await this.unloadAllScenarios();
+      void window.showInformationMessage('A scenario was loaded so it has been unloaded');
     }
 
     this.recorder.start();
@@ -154,6 +196,15 @@ export class MockGitHubApiServer extends DisposableObject {
     // is no "when" clause that would allow us to only show it to users who have enabled the feature flag.
 
     return directories[0].fsPath;
+  }
+
+  private isScenarioLoaded(): boolean {
+    return this.server.listHandlers().length > 0;
+  }
+
+  private async unloadAllScenarios(): Promise<void> {
+    this.server.resetHandlers();
+    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.scenarioLoaded', false);
   }
 
   private setupConfigListener(): void {

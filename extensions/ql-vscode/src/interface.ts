@@ -27,6 +27,7 @@ import {
   ALERTS_TABLE_NAME,
   GRAPH_TABLE_NAME,
   RawResultsSortState,
+  NavigationDirection,
 } from './pure/interface-types';
 import { Logger } from './logging';
 import { commandRunner } from './commandRunner';
@@ -141,19 +142,24 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
         this.handleSelectionChange.bind(this)
       )
     );
-    void logger.log('Registering path-step navigation commands.');
-    this.push(
-      commandRunner(
-        'codeQLQueryResults.nextPathStep',
-        this.navigatePathStep.bind(this, 1)
-      )
-    );
-    this.push(
-      commandRunner(
-        'codeQLQueryResults.previousPathStep',
-        this.navigatePathStep.bind(this, -1)
-      )
-    );
+    const navigationCommands = {
+      'codeQLQueryResults.up': NavigationDirection.up,
+      'codeQLQueryResults.down': NavigationDirection.down,
+      'codeQLQueryResults.left': NavigationDirection.left,
+      'codeQLQueryResults.right': NavigationDirection.right,
+      // For backwards compatibility with keybindings set using an earlier version of the extension.
+      'codeQLQueryResults.nextPathStep': NavigationDirection.down,
+      'codeQLQueryResults.previousPathStep': NavigationDirection.up,
+    };
+    void logger.log('Registering result view navigation commands.');
+    for (const [commandId, direction] of Object.entries(navigationCommands)) {
+      this.push(
+        commandRunner(
+          commandId,
+          this.navigateResultView.bind(this, direction)
+        )
+      );
+    }
 
     this.push(
       this.databaseManager.onDidChangeDatabaseItem(({ kind }) => {
@@ -169,8 +175,13 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     );
   }
 
-  async navigatePathStep(direction: number): Promise<void> {
-    await this.postMessage({ t: 'navigatePath', direction });
+  async navigateResultView(direction: NavigationDirection): Promise<void> {
+    if (!this.panel?.visible) {
+      return;
+    }
+    // Reveal the panel now as the subsequent call to 'Window.showTextEditor' in 'showLocation' may destroy the webview otherwise.
+    this.panel.reveal();
+    await this.postMessage({ t: 'navigate', direction });
   }
 
   protected getPanelConfig(): WebviewPanelConfig {

@@ -1,3 +1,5 @@
+import * as fs from 'fs-extra';
+import * as path from 'path';
 import { ConfigurationTarget } from 'vscode';
 import { ALL_SETTINGS, InspectionResult, Setting } from '../config';
 
@@ -59,9 +61,21 @@ class TestSetting<T> {
   }
 }
 
+// Public configuration keys are the ones defined in the package.json.
+// These keys are documented in the settings page. Other keys are
+// internal and not documented.
+const PKG_CONFIGURATION: Record<string, any> = (function initConfigurationKeys() {
+  // Note we are using synchronous file reads here. This is fine because
+  // we are in tests.
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf-8'));
+  return pkg.contributes.configuration.properties;
+}());
+
+
 // The test settings are all settings in ALL_SETTINGS which don't have any children
+// and are also not hidden settings like the codeQL.canary.
 const TEST_SETTINGS = ALL_SETTINGS
-  .filter(setting => ALL_SETTINGS.filter(s => s.parent === setting).length === 0)
+  .filter(setting => (setting.qualifiedName in PKG_CONFIGURATION) && !setting.hasChildren)
   .map(setting => new TestSetting(setting));
 
 export const getTestSetting = (setting: Setting): TestSetting<unknown> | undefined => {
@@ -79,7 +93,10 @@ export const testConfigHelper = async (mocha: Mocha) => {
     },
     async afterAll() {
       // Restore all settings to their default values after each test suite
-      await Promise.all(TEST_SETTINGS.map(setting => setting.restoreToInitialValues()));
+      // Only do this outside of CI since the sometimes hangs on CI.
+      if (process.env.CI !== 'true') {
+        await Promise.all(TEST_SETTINGS.map(setting => setting.restoreToInitialValues()));
+      }
     }
   });
 };

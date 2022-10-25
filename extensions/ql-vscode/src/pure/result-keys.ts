@@ -1,43 +1,52 @@
 import * as sarif from 'sarif';
 
 /**
+ * Identifies a result, a path, or one of the nodes on a path.
+ */
+interface ResultKeyBase {
+  resultIndex: number;
+  pathIndex?: number;
+  pathNodeIndex?: number;
+}
+
+/**
  * Identifies one of the results in a result set by its index in the result list.
  */
-export interface Result {
+export interface Result extends ResultKeyBase {
   resultIndex: number;
+  pathIndex?: undefined;
+  pathNodeIndex?: undefined;
 }
 
 /**
  * Identifies one of the paths associated with a result.
  */
-export interface Path extends Result {
+export interface Path extends ResultKeyBase {
   pathIndex: number;
+  pathNodeIndex?: undefined;
 }
 
 /**
  * Identifies one of the nodes in a path.
  */
-export interface PathNode extends Path {
+export interface PathNode extends ResultKeyBase {
+  pathIndex: number;
   pathNodeIndex: number;
 }
 
-/** Alias for `undefined` but more readable in some cases */
-export const none: PathNode | undefined = undefined;
+export type ResultKey = Result | Path | PathNode;
 
 /**
  * Looks up a specific result in a result set.
  */
-export function getResult(sarif: sarif.Log, key: Result): sarif.Result | undefined {
-  if (sarif.runs.length === 0) return undefined;
-  if (sarif.runs[0].results === undefined) return undefined;
-  const results = sarif.runs[0].results;
-  return results[key.resultIndex];
+export function getResult(sarif: sarif.Log, key: Result | Path | PathNode): sarif.Result | undefined {
+  return sarif.runs[0]?.results?.[key.resultIndex];
 }
 
 /**
  * Looks up a specific path in a result set.
  */
-export function getPath(sarif: sarif.Log, key: Path): sarif.ThreadFlow | undefined {
+export function getPath(sarif: sarif.Log, key: Path | PathNode): sarif.ThreadFlow | undefined {
   const result = getResult(sarif, key);
   if (result === undefined) return undefined;
   let index = -1;
@@ -58,22 +67,13 @@ export function getPath(sarif: sarif.Log, key: Path): sarif.ThreadFlow | undefin
 export function getPathNode(sarif: sarif.Log, key: PathNode): sarif.Location | undefined {
   const path = getPath(sarif, key);
   if (path === undefined) return undefined;
-  return path.locations[key.pathNodeIndex];
-}
-
-/**
- * Returns true if the two keys are both `undefined` or contain the same set of indices.
- */
-export function equals(key1: PathNode | undefined, key2: PathNode | undefined): boolean {
-  if (key1 === key2) return true;
-  if (key1 === undefined || key2 === undefined) return false;
-  return key1.resultIndex === key2.resultIndex && key1.pathIndex === key2.pathIndex && key1.pathNodeIndex === key2.pathNodeIndex;
+  return path.locations[key.pathNodeIndex]?.location;
 }
 
 /**
  * Returns true if the two keys contain the same set of indices and neither are `undefined`.
  */
-export function equalsNotUndefined(key1: PathNode | undefined, key2: PathNode | undefined): boolean {
+export function equalsNotUndefined(key1: Partial<PathNode> | undefined, key2: Partial<PathNode> | undefined): boolean {
   if (key1 === undefined || key2 === undefined) return false;
   return key1.resultIndex === key2.resultIndex && key1.pathIndex === key2.pathIndex && key1.pathNodeIndex === key2.pathNodeIndex;
 }
@@ -92,4 +92,12 @@ export function getAllPaths(result: sarif.Result): sarif.ThreadFlow[] {
     }
   }
   return paths;
+}
+
+/**
+ * Creates a unique string representation of the given key, suitable for use
+ * as the key in a map or set.
+ */
+export function keyToString(key: ResultKey) {
+  return key.resultIndex + '-' + (key.pathIndex ?? '') + '-' + (key.pathNodeIndex ?? '');
 }

@@ -684,7 +684,9 @@ export class DatabaseManager extends DisposableObject {
         this._onDidChangeDatabaseItem.fire(event);
       });
 
-    await this.addDatabaseItem(progress, token, item);
+    // Avoid persisting the database state after adding since that should happen only after
+    // all databases have been added.
+    await this.addDatabaseItem(progress, token, item, false);
     return item;
   }
 
@@ -724,6 +726,7 @@ export class DatabaseManager extends DisposableObject {
               void this.logger.log(`Error loading database ${database.uri}: ${e}.`);
             }
           }
+          await this.updatePersistedDatabaseList();
         } catch (e) {
           // database list had an unexpected type - nothing to be done?
           void showAndLogErrorMessage(`Database list loading failed: ${getErrorMessage(e)}`);
@@ -784,10 +787,14 @@ export class DatabaseManager extends DisposableObject {
   private async addDatabaseItem(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
-    item: DatabaseItem
+    item: DatabaseItem,
+    updatePersistedState = true
   ) {
     this._databaseItems.push(item);
-    await this.updatePersistedDatabaseList();
+
+    if (updatePersistedState) {
+      await this.updatePersistedDatabaseList();
+    }
 
     // Add this database item to the allow-list
     // Database items reconstituted from persisted state

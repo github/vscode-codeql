@@ -68,6 +68,7 @@ describe('query-history', () => {
 
     variantAnalysisManagerStub = {
       onVariantAnalysisAdded: sandbox.stub(),
+      onVariantAnalysisStatusUpdated: sandbox.stub(),
       onVariantAnalysisRemoved: sandbox.stub()
     } as any as VariantAnalysisManager;
   });

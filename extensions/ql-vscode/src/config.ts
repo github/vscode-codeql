@@ -10,11 +10,19 @@ export const ALL_SETTINGS: Setting[] = [];
 export class Setting {
   name: string;
   parent?: Setting;
+  private _hasChildren = false;
 
   constructor(name: string, parent?: Setting) {
     this.name = name;
     this.parent = parent;
+    if (parent !== undefined) {
+      parent._hasChildren = true;
+    }
     ALL_SETTINGS.push(this);
+  }
+
+  get hasChildren() {
+    return this._hasChildren;
   }
 
   get qualifiedName(): string {

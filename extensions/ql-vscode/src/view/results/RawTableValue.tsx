@@ -6,6 +6,7 @@ import { CellValue } from '../../pure/bqrs-cli-types';
 interface Props {
   value: CellValue;
   databaseUri: string;
+  onSelected?: () => void;
 }
 
 export default function RawTableValue(props: Props): JSX.Element {
@@ -18,5 +19,5 @@ export default function RawTableValue(props: Props): JSX.Element {
     return <span>{renderLocation(undefined, rawValue.toString())}</span>;
   }
 
-  return renderLocation(rawValue.url, rawValue.label, props.databaseUri);
+  return renderLocation(rawValue.url, rawValue.label, props.databaseUri, undefined, props.onSelected);
 }

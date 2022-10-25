@@ -16,7 +16,6 @@ import { QueryResultType } from '../../pure/new-messages';
 import { cleanDatabases, dbLoc, storagePath } from './global.helper';
 import { importArchiveDatabase } from '../../databaseFetcher';
 
-
 const baseDir = path.join(__dirname, '../../../test/data');
 
 const tmpDir = tmp.dirSync({ prefix: 'query_test_', keep: false, unsafeCleanup: true });
@@ -106,7 +105,7 @@ describe('using the new query server', function() {
         cliServer = extension.cliServer;
 
         cliServer.quiet = true;
-        if (!(await cliServer.cliConstraints.supportsNewQueryServer())) {
+        if (!(await cliServer.cliConstraints.supportsNewQueryServerForTests())) {
           this.ctx.skip();
         }
         qs = new QueryServerClient({
