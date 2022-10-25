@@ -635,7 +635,7 @@ export class QueryHistoryManager extends DisposableObject {
     const variantAnalysisRemovedSubscription = this.variantAnalysisManager.onVariantAnalysisRemoved(async (variantAnalysis) => {
       const items = this.treeDataProvider.allHistory.filter(i => i.t === 'variant-analysis' && i.variantAnalysis.id === variantAnalysis.id);
       items.forEach(async (item) => {
-        await this.removeRemoteQuery(item as RemoteQueryHistoryItem);
+        await this.removeVariantAnalysis(item as VariantAnalysisHistoryItem);
       });
     });
 
@@ -786,7 +786,7 @@ export class QueryHistoryManager extends DisposableObject {
       } else if (item.t === 'remote') {
         await this.removeRemoteQuery(item);
       } else if (item.t === 'variant-analysis') {
-        // TODO
+        await this.removeVariantAnalysis(item);
       } else {
         assertNever(item);
       }
@@ -810,6 +810,18 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     await this.remoteQueriesManager.removeRemoteQuery(item.queryId);
+  }
+
+  private async removeVariantAnalysis(item: VariantAnalysisHistoryItem): Promise<void> {
+    // Remote queries can be removed locally, but not remotely.
+    // The user must cancel the query on GitHub Actions explicitly.
+    this.treeDataProvider.remove(item);
+    void logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
+    if (item.status === QueryStatus.InProgress) {
+      void logger.log('The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.');
+    }
+
+    await this.variantAnalysisManager.removeVariantAnalysis(item.variantAnalysis);
   }
 
   async handleSortByName() {
