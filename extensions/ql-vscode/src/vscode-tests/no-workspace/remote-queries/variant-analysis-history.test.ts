@@ -164,6 +164,13 @@ describe('Variant Analyses and QueryHistoryManager', function() {
     });
   });
 
+  it('should handle a click', async () => {
+    await qhm.readQueryHistory();
+
+    await qhm.handleItemClicked(qhm.treeDataProvider.allHistory[0], []);
+    expect(openRemoteQueryResultsStub).calledOnceWithExactly(rawQueryHistory[0].historyItemId);
+  });
+
   async function copyHistoryState() {
     fs.ensureDirSync(STORAGE_DIR);
     fs.copySync(
