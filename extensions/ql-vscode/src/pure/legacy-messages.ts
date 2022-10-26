@@ -977,70 +977,68 @@ export type ProgressMessage = shared.ProgressMessage;
 /**
  * Check a Ql query for errors without compiling it
  */
-export const checkQuery = new rpc.RequestType<WithProgressId<CheckQueryParams>, CheckQueryResult, void, void>('compilation/checkQuery');
+export const checkQuery = new rpc.RequestType<WithProgressId<CheckQueryParams>, CheckQueryResult, void>('compilation/checkQuery');
 /**
  * Compile a Ql query into a qlo
  */
-export const compileQuery = new rpc.RequestType<WithProgressId<CompileQueryParams>, CheckQueryResult, void, void>('compilation/compileQuery');
+export const compileQuery = new rpc.RequestType<WithProgressId<CompileQueryParams>, CheckQueryResult, void>('compilation/compileQuery');
 /**
  * Compile a dil query into a qlo
  */
-export const compileDilQuery = new rpc.RequestType<WithProgressId<CompileDilParams>, CheckQueryResult, void, void>('compilation/compileDilQuery');
+export const compileDilQuery = new rpc.RequestType<WithProgressId<CompileDilParams>, CheckQueryResult, void>('compilation/compileDilQuery');
 
 
 /**
  * Check if there is a valid upgrade path between two dbschemes.
  */
-export const checkUpgrade = new rpc.RequestType<WithProgressId<UpgradeParams>, CheckUpgradeResult, void, void>('compilation/checkUpgrade');
+export const checkUpgrade = new rpc.RequestType<WithProgressId<UpgradeParams>, CheckUpgradeResult, void>('compilation/checkUpgrade');
 /**
  * Compile an upgrade script to upgrade a dataset.
  */
-export const compileUpgrade = new rpc.RequestType<WithProgressId<CompileUpgradeParams>, CompileUpgradeResult, void, void>('compilation/compileUpgrade');
+export const compileUpgrade = new rpc.RequestType<WithProgressId<CompileUpgradeParams>, CompileUpgradeResult, void>('compilation/compileUpgrade');
 /**
  * Compile an upgrade script to upgrade a dataset.
  */
-export const compileUpgradeSequence = new rpc.RequestType<WithProgressId<CompileUpgradeSequenceParams>, CompileUpgradeSequenceResult, void, void>('compilation/compileUpgradeSequence');
+export const compileUpgradeSequence = new rpc.RequestType<WithProgressId<CompileUpgradeSequenceParams>, CompileUpgradeSequenceResult, void>('compilation/compileUpgradeSequence');
 
 /**
  * Start a new structured log in the evaluator, terminating the previous one if it exists
  */
-export const startLog = new rpc.RequestType<WithProgressId<StartLogParams>, StartLogResult, void, void>('evaluation/startLog');
+export const startLog = new rpc.RequestType<WithProgressId<StartLogParams>, StartLogResult, void>('evaluation/startLog');
 
 /**
  * Terminate a structured log in the evaluator. Is a no-op if we aren't logging to the given location
  */
-export const endLog = new rpc.RequestType<WithProgressId<EndLogParams>, EndLogResult, void, void>('evaluation/endLog');
+export const endLog = new rpc.RequestType<WithProgressId<EndLogParams>, EndLogResult, void>('evaluation/endLog');
 
 /**
  * Clear the cache of a dataset
  */
-export const clearCache = new rpc.RequestType<WithProgressId<ClearCacheParams>, ClearCacheResult, void, void>('evaluation/clearCache');
+export const clearCache = new rpc.RequestType<WithProgressId<ClearCacheParams>, ClearCacheResult, void>('evaluation/clearCache');
 /**
  * Trim the cache of a dataset
  */
-export const trimCache = new rpc.RequestType<WithProgressId<TrimCacheParams>, ClearCacheResult, void, void>('evaluation/trimCache');
+export const trimCache = new rpc.RequestType<WithProgressId<TrimCacheParams>, ClearCacheResult, void>('evaluation/trimCache');
 
 /**
  * Run some queries on a dataset
  */
-export const runQueries = new rpc.RequestType<WithProgressId<EvaluateQueriesParams>, EvaluationComplete, void, void>('evaluation/runQueries');
+export const runQueries = new rpc.RequestType<WithProgressId<EvaluateQueriesParams>, EvaluationComplete, void>('evaluation/runQueries');
 
 /**
  * Run upgrades on a dataset
  */
-export const runUpgrade = new rpc.RequestType<WithProgressId<RunUpgradeParams>, RunUpgradeResult, void, void>('evaluation/runUpgrade');
+export const runUpgrade = new rpc.RequestType<WithProgressId<RunUpgradeParams>, RunUpgradeResult, void>('evaluation/runUpgrade');
 
 export const registerDatabases = new rpc.RequestType<
   WithProgressId<RegisterDatabasesParams>,
   RegisterDatabasesResult,
-  void,
   void
 >('evaluation/registerDatabases');
 
 export const deregisterDatabases = new rpc.RequestType<
   WithProgressId<DeregisterDatabasesParams>,
   DeregisterDatabasesResult,
-  void,
   void
 >('evaluation/deregisterDatabases');
 
@@ -1048,6 +1046,6 @@ export const deregisterDatabases = new rpc.RequestType<
  * Request returned to the client to notify completion of a query.
  * The full runQueries job is completed when all queries are acknowledged.
  */
-export const completeQuery = new rpc.RequestType<EvaluationResult, Record<string, any>, void, void>('evaluation/queryCompleted');
+export const completeQuery = new rpc.RequestType<EvaluationResult, Record<string, any>, void>('evaluation/queryCompleted');
 
 export const progress = shared.progress;

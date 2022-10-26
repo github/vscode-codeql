@@ -107,4 +107,4 @@ export interface ProgressMessage {
 /**
  * A notification that the progress has been changed.
  */
-export const progress = new rpc.NotificationType<ProgressMessage, void>('ql/progressUpdated');
+export const progress = new rpc.NotificationType<ProgressMessage>('ql/progressUpdated');

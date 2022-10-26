@@ -171,33 +171,31 @@ export type ProgressMessage = shared.ProgressMessage;
 /**
  * Clear the cache of a dataset
  */
-export const clearCache = new rpc.RequestType<WithProgressId<ClearCacheParams>, ClearCacheResult, void, void>('evaluation/clearCache');
+export const clearCache = new rpc.RequestType<WithProgressId<ClearCacheParams>, ClearCacheResult, void>('evaluation/clearCache');
 /**
  * Trim the cache of a dataset
  */
-export const trimCache = new rpc.RequestType<WithProgressId<TrimCacheParams>, ClearCacheResult, void, void>('evaluation/trimCache');
+export const trimCache = new rpc.RequestType<WithProgressId<TrimCacheParams>, ClearCacheResult, void>('evaluation/trimCache');
 
 /**
  * Clear the pack cache
  */
-export const clearPackCache = new rpc.RequestType<WithProgressId<ClearPackCacheParams>, ClearPackCacheResult, void, void>('evaluation/clearPackCache');
+export const clearPackCache = new rpc.RequestType<WithProgressId<ClearPackCacheParams>, ClearPackCacheResult, void>('evaluation/clearPackCache');
 
 /**
  * Run a query on a database
  */
-export const runQuery = new rpc.RequestType<WithProgressId<RunQueryParams>, RunQueryResult, void, void>('evaluation/runQuery');
+export const runQuery = new rpc.RequestType<WithProgressId<RunQueryParams>, RunQueryResult, void>('evaluation/runQuery');
 
 export const registerDatabases = new rpc.RequestType<
   WithProgressId<RegisterDatabasesParams>,
   RegisterDatabasesResult,
-  void,
   void
 >('evaluation/registerDatabases');
 
 export const deregisterDatabases = new rpc.RequestType<
   WithProgressId<DeregisterDatabasesParams>,
   DeregisterDatabasesResult,
-  void,
   void
 >('evaluation/deregisterDatabases');
 
@@ -205,7 +203,6 @@ export const deregisterDatabases = new rpc.RequestType<
 export const upgradeDatabase = new rpc.RequestType<
   WithProgressId<UpgradeParams>,
   UpgradeResult,
-  void,
   void
 >('evaluation/runUpgrade');
 
