@@ -117,6 +117,7 @@ import {
 import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
 import { createVariantAnalysisContentProvider } from './remote-queries/variant-analysis-content-provider';
 import { MockGitHubApiServer } from './mocks/mock-gh-api-server';
+import { VariantAnalysisResultsManager } from './remote-queries/variant-analysis-results-manager';
 
 /**
  * extension.ts
@@ -490,8 +491,10 @@ async function activateWithInstalledDistribution(
   void logger.log('Initializing variant analysis manager.');
   const variantAnalysisStorageDir = path.join(ctx.globalStorageUri.fsPath, 'variant-analyses');
   await fs.ensureDir(variantAnalysisStorageDir);
-  const variantAnalysisManager = new VariantAnalysisManager(ctx, cliServer, variantAnalysisStorageDir, logger);
+  const variantAnalysisResultsManager = new VariantAnalysisResultsManager(cliServer, logger);
+  const variantAnalysisManager = new VariantAnalysisManager(ctx, variantAnalysisStorageDir, variantAnalysisResultsManager);
   ctx.subscriptions.push(variantAnalysisManager);
+  ctx.subscriptions.push(variantAnalysisResultsManager);
   ctx.subscriptions.push(workspace.registerTextDocumentContentProvider('codeql-variant-analysis', createVariantAnalysisContentProvider(variantAnalysisManager)));
 
   void logger.log('Initializing remote queries manager.');

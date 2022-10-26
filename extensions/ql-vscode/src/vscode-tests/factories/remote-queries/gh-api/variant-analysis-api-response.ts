@@ -25,7 +25,6 @@ export function createMockApiResponse(
       full_name: 'github/pickles',
       private: false,
     },
-    actor_id: faker.datatype.number(),
     query_language: VariantAnalysisQueryLanguage.Javascript,
     query_pack_url: 'https://example.com/foo',
     created_at: faker.date.recent().toISOString(),
