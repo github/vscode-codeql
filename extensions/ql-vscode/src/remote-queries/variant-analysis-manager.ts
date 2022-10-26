@@ -73,7 +73,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   }
 
   public async removeVariantAnalysis(variantAnalysis: VariantAnalysis) {
-    this.variantAnalysisResultsManager.removeAnalysesResults(variantAnalysis);
+    this.variantAnalysisResultsManager.removeAnalysisResults(variantAnalysis);
     await this.removeStorageDirectory(variantAnalysis.id);
     this.variantAnalyses.delete(variantAnalysis.id);
   }

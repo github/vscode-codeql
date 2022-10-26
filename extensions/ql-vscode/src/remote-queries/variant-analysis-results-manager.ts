@@ -179,7 +179,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     return `https://github.com/${fullName}/blob/${sha}`;
   }
 
-  public removeAnalysesResults(variantAnalysis: VariantAnalysis) {
+  public removeAnalysisResults(variantAnalysis: VariantAnalysis) {
     const scannedRepos = variantAnalysis.scannedRepos;
 
     if (scannedRepos) {
