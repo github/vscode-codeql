@@ -72,6 +72,17 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     }
   }
 
+  public async removeVariantAnalysis(variantAnalysis: VariantAnalysis) {
+    this.variantAnalysisResultsManager.removeAnalysisResults(variantAnalysis);
+    await this.removeStorageDirectory(variantAnalysis.id);
+    this.variantAnalyses.delete(variantAnalysis.id);
+  }
+
+  private async removeStorageDirectory(variantAnalysisId: number) {
+    const storageLocation = this.getVariantAnalysisStorageLocation(variantAnalysisId);
+    await fs.remove(storageLocation);
+  }
+
   public async showView(variantAnalysisId: number): Promise<void> {
     if (!this.variantAnalyses.get(variantAnalysisId)) {
       void showAndLogErrorMessage(`No variant analysis found with id: ${variantAnalysisId}.`);

@@ -9,7 +9,7 @@ import { sarifParser } from '../sarif-parser';
 import { extractAnalysisAlerts } from './sarif-processing';
 import { CodeQLCliServer } from '../cli';
 import { extractRawResults } from './bqrs-processing';
-import { VariantAnalysisScannedRepositoryResult } from './shared/variant-analysis';
+import { VariantAnalysis, VariantAnalysisScannedRepositoryResult } from './shared/variant-analysis';
 import { DisposableObject, DisposeHandler } from '../pure/disposable-object';
 import { VariantAnalysisRepoTask } from './gh-api/variant-analysis';
 import * as ghApiClient from './gh-api/gh-api-client';
@@ -177,6 +177,19 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   private createGitHubDotcomFileLinkPrefix(fullName: string, sha: string): string {
     return `https://github.com/${fullName}/blob/${sha}`;
+  }
+
+  public removeAnalysisResults(variantAnalysis: VariantAnalysis) {
+    const scannedRepos = variantAnalysis.scannedRepos;
+
+    if (scannedRepos) {
+      scannedRepos.forEach(scannedRepo => {
+        const cacheKey = createCacheKey(variantAnalysis.id, scannedRepo.repository.fullName);
+        if (this.cachedResults.get(cacheKey)) {
+          this.cachedResults.delete(cacheKey);
+        }
+      });
+    }
   }
 
   public dispose(disposeHandler?: DisposeHandler) {
