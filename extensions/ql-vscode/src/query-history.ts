@@ -813,7 +813,7 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   private async removeVariantAnalysis(item: VariantAnalysisHistoryItem): Promise<void> {
-    // Remote queries can be removed locally, but not remotely.
+    // We can remove a Variant Analysis locally, but not remotely.
     // The user must cancel the query on GitHub Actions explicitly.
     this.treeDataProvider.remove(item);
     void logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
