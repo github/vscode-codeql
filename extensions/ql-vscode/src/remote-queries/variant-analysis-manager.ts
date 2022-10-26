@@ -25,7 +25,7 @@ import { CodeQLCliServer } from '../cli';
 import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 import PQueue from 'p-queue';
-import { createTimestampFile } from '../helpers';
+import { createTimestampFile, showAndLogErrorMessage } from '../helpers';
 import { QueryStatus } from '../query-status';
 import * as fs from 'fs-extra';
 
@@ -73,6 +73,9 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
+    if (!this.variantAnalyses.get(variantAnalysisId)) {
+      void showAndLogErrorMessage(`No variant analysis found with id: ${variantAnalysisId}.`);
+    }
     if (!this.views.has(variantAnalysisId)) {
       // The view will register itself with the manager, so we don't need to do anything here.
       this.push(new VariantAnalysisView(this.ctx, variantAnalysisId, this));

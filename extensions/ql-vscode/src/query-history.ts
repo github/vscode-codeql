@@ -910,8 +910,8 @@ export class QueryHistoryManager extends DisposableObject {
       // show original query file on double click
       await this.handleOpenQuery(finalSingleItem, [finalSingleItem]);
     } else {
-      // show results on single click only if query is completed successfully.
-      if (finalSingleItem.status === QueryStatus.Completed) {
+      // show results on single click (if results view is available)
+      if (finalSingleItem.t === 'variant-analysis' || finalSingleItem.status === QueryStatus.Completed) {
         await this.openQueryResults(finalSingleItem);
       }
     }
@@ -1439,9 +1439,10 @@ the file in the file explorer and dragging it into the workspace.`
   private async openQueryResults(item: QueryHistoryInfo) {
     if (item.t === 'local') {
       await this.localQueriesResultsView.showResults(item as CompletedLocalQueryInfo, WebviewReveal.Forced, false);
-    }
-    else if (item.t === 'remote') {
+    } else if (item.t === 'remote') {
       await this.remoteQueriesManager.openRemoteQueryResults(item.queryId);
+    } else if (item.t === 'variant-analysis') {
+      await this.variantAnalysisManager.showView(item.variantAnalysis.id);
     }
   }
 }
