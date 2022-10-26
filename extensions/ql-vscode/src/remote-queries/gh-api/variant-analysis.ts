@@ -21,7 +21,6 @@ export type VariantAnalysisQueryLanguage =
 export interface VariantAnalysis {
   id: number,
   controller_repo: Repository,
-  actor_id: number,
   query_language: VariantAnalysisQueryLanguage,
   query_pack_url: string,
   created_at: string,
