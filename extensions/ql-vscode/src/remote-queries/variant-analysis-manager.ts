@@ -52,7 +52,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx));
     this.variantAnalysisMonitor.onVariantAnalysisChange(this.onVariantAnalysisUpdated.bind(this));
 
-    this.variantAnalysisResultsManager = this.push(variantAnalysisResultsManager);
+    this.variantAnalysisResultsManager = variantAnalysisResultsManager;
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
   }
 
