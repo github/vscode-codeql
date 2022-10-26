@@ -174,19 +174,20 @@ describe('Variant Analysis Manager', async function() {
 
         beforeEach(async () => {
           dummyVariantAnalysis = createMockVariantAnalysis();
-          await variantAnalysisManager.setVariantAnalysis(dummyVariantAnalysis);
           const resultsManager = variantAnalysisManager.variantAnalysisResultsManager;
           removeVariantAnalysisStub = sandbox.stub(resultsManager, 'removeAnalysesResults');
           removeStorageStub = sandbox.stub(fs, 'remove');
         });
 
         it('should remove variant analysis', async () => {
-          expect(variantAnalysisManager.getVariantAnalyses().size).to.eq(1);
+          await variantAnalysisManager.onVariantAnalysisUpdated(dummyVariantAnalysis);
+          expect(variantAnalysisManager.getVariantAnalysesSize()).to.eq(1);
+
           await variantAnalysisManager.removeVariantAnalysis(dummyVariantAnalysis);
 
           expect(removeVariantAnalysisStub).to.have.been.calledOnce;
           expect(removeStorageStub).to.have.been.calledOnce;
-          expect(variantAnalysisManager.getVariantAnalyses().size).to.equal(0);
+          expect(variantAnalysisManager.getVariantAnalysesSize()).to.equal(0);
         });
       });
     });

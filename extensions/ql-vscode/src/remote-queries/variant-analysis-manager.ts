@@ -114,12 +114,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return this.variantAnalyses.get(variantAnalysisId);
   }
 
-  public getVariantAnalyses(): Map<number, VariantAnalysis> {
-    return this.variantAnalyses;
-  }
-
-  public async setVariantAnalysis(variantAnalysis: VariantAnalysis): Promise<void> {
-    this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
+  public getVariantAnalysesSize(): number {
+    return this.variantAnalyses.size;
   }
 
   public async loadResults(variantAnalysisId: number, repositoryFullName: string): Promise<void> {
@@ -136,7 +132,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return await fs.pathExists(filePath);
   }
 
-  private async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
+  public async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
     if (!variantAnalysis) {
       return;
     }
