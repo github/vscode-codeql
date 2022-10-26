@@ -144,6 +144,47 @@ The CLI integration tests require the CodeQL standard libraries in order to run 
 
 3. Run the VSCode task from the "Run and Debug" view called _Launch Integration Tests - With CLI_.
 
+#### Using a mock GitHub API server
+
+Multi-Repo Variant Analyses (MRVA) rely on the GitHub API. In order to make development and testing easy, we have functionality that allows us to intercept requests to the GitHub API and provide mock responses. 
+
+##### Using a pre-recorded test scenario
+
+To run a mock MRVA scenario, follow these steps:
+1. Enable the mock GitHub API server by adding the following in your VS Code user settings (which can be found by running the `Preferences: Open User Settings (JSON)` VS Code command):
+```json
+"codeQL.mockGitHubApiServer": {
+  "enabled": true
+}
+```
+
+1. Run the `CodeQL: Mock GitHub API Server: Load Scenario` command from the command pallet, and choose one of the scenarios to load.
+1. Execute a normal MRVA. At this point you should see the scenario being played out, rather than an actual MRVA running.
+1. Once you're done, you can stop using the mock scenario with `CodeQL: Mock GitHub API Server: Unload Scenario`
+
+If you want to replay the same scenario you should unload and reload it so requests are replayed from the start.
+
+##### Recording a new test scenario
+To record a new mock MRVA scenario, follow these steps:
+
+1. Enable the mock GitHub API server by adding the following in your VS Code user settings (which can be found by running the `Preferences: Open User Settings (JSON)` VS Code command):
+```json
+"codeQL.mockGitHubApiServer": {
+  "enabled": true
+}
+```
+
+1. Run the `CodeQL: Mock GitHub API Server: Start Scenario Recording` VS Code command from the command pallet.
+1. Execute a normal MRVA.
+1. Once what you wanted to record is done (e.g. the MRVA has finished), then run the `CodeQL: Mock GitHub API Server: Save Scenario` command from the command pallet.
+1. The scenario should then be available for replaying.
+
+If you want to cancel recording, run the `CodeQL: Mock GitHub API Server: Cancel Scenario Recording` command.
+
+#### Scenario data location
+
+Pre-recorded scenarios are stored in `./src/mocks/scenarios`. However, it's possible to configure the location, by setting the `codeQL.mockGitHubApiServer.scenariosPath` configuration property in the VS Code user settings.
+
 ## Releasing (write access required)
 
 1. Double-check the `CHANGELOG.md` contains all desired change comments and has the version to be released with date at the top.
