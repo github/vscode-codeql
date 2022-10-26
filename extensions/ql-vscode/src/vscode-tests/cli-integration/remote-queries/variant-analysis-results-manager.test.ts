@@ -140,7 +140,7 @@ describe(VariantAnalysisResultsManager.name, function() {
     });
   });
 
-  describe('loadResultsIntoMemory', () => {
+  describe('loadResults', () => {
     let variantAnalysisStoragePath: string;
     let dummyVariantAnalysis: VariantAnalysis;
     let repoFullName1: string;
@@ -162,19 +162,21 @@ describe(VariantAnalysisResultsManager.name, function() {
     });
 
     it('should load results into memory', async () => {
-      await variantAnalysisResultsManager.loadResultsIntoMemory(
+      expect(variantAnalysisResultsManager.getCachedResultsSize()).to.eq(0);
+
+      await variantAnalysisResultsManager.loadResults(
         dummyVariantAnalysis.id,
         variantAnalysisStoragePath,
         repoFullName1
       );
 
-      await variantAnalysisResultsManager.loadResultsIntoMemory(
+      await variantAnalysisResultsManager.loadResults(
         dummyVariantAnalysis.id,
         variantAnalysisStoragePath,
         repoFullName2
       );
 
-      expect(variantAnalysisResultsManager.cachedResults.size).to.eq(2);
+      expect(variantAnalysisResultsManager.getCachedResultsSize()).to.eq(2);
     });
   });
 
@@ -198,13 +200,13 @@ describe(VariantAnalysisResultsManager.name, function() {
       const result = createMockScannedRepoResult();
       sandbox.stub(variantAnalysisResultsManager, 'loadResultsFromStorage').resolves(result);
 
-      await variantAnalysisResultsManager.loadResultsIntoMemory(
+      await variantAnalysisResultsManager.loadResults(
         dummyVariantAnalysis.id,
         variantAnalysisStoragePath,
         repoFullName1
       );
 
-      await variantAnalysisResultsManager.loadResultsIntoMemory(
+      await variantAnalysisResultsManager.loadResults(
         dummyVariantAnalysis.id,
         variantAnalysisStoragePath,
         repoFullName2
@@ -212,11 +214,11 @@ describe(VariantAnalysisResultsManager.name, function() {
     });
 
     it('should remove all cached results related to a variant analysis', async () => {
-      expect(variantAnalysisResultsManager.cachedResults.size).to.eq(2);
+      expect(variantAnalysisResultsManager.getCachedResultsSize()).to.eq(2);
 
       await variantAnalysisResultsManager.removeAnalysesResults(dummyVariantAnalysis);
 
-      expect(variantAnalysisResultsManager.cachedResults.size).to.eq(0);
+      expect(variantAnalysisResultsManager.getCachedResultsSize()).to.eq(0);
     });
 
   });
