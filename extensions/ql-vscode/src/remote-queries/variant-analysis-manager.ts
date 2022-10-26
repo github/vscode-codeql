@@ -113,7 +113,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return this.variantAnalyses.get(variantAnalysisId);
   }
 
-  public getVariantAnalysesSize(): number {
+  public get variantAnalysesSize(): number {
     return this.variantAnalyses.size;
   }
 

@@ -183,13 +183,13 @@ describe('Variant Analysis Manager', async function() {
 
         it('should remove variant analysis', async () => {
           await variantAnalysisManager.onVariantAnalysisUpdated(dummyVariantAnalysis);
-          expect(variantAnalysisManager.getVariantAnalysesSize()).to.eq(1);
+          expect(variantAnalysisManager.variantAnalysesSize).to.eq(1);
 
           await variantAnalysisManager.removeVariantAnalysis(dummyVariantAnalysis);
 
           expect(removeAnalysisResultsStub).to.have.been.calledOnce;
           expect(removeStorageStub).to.have.been.calledOnce;
-          expect(variantAnalysisManager.getVariantAnalysesSize()).to.equal(0);
+          expect(variantAnalysisManager.variantAnalysesSize).to.equal(0);
         });
       });
     });
