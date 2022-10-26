@@ -24,6 +24,7 @@ import { createMockApiResponse } from '../../factories/remote-queries/gh-api/var
 import { createMockExtensionContext } from '../../no-workspace';
 import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
 import { OutputChannelLogger } from '../../../logging';
+import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
 
 describe('Remote queries', function() {
   const baseDir = path.join(__dirname, '../../../../src/vscode-tests/cli-integration');
@@ -43,6 +44,7 @@ describe('Remote queries', function() {
   let ctx: ExtensionContext;
   let logger: any;
   let variantAnalysisManager: VariantAnalysisManager;
+  let variantAnalysisResultsManager: VariantAnalysisResultsManager;
 
   // use `function` so we have access to `this`
   beforeEach(async function() {
@@ -57,7 +59,8 @@ describe('Remote queries', function() {
 
     ctx = createMockExtensionContext();
     logger = new OutputChannelLogger('test-logger');
-    variantAnalysisManager = new VariantAnalysisManager(ctx, cli, 'fake-storage-dir', logger);
+    variantAnalysisResultsManager = new VariantAnalysisResultsManager(cli, logger);
+    variantAnalysisManager = new VariantAnalysisManager(ctx, 'fake-storage-dir', variantAnalysisResultsManager);
 
     if (!(await cli.cliConstraints.supportsRemoteQueries())) {
       console.log(`Remote queries are not supported on CodeQL CLI v${CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES

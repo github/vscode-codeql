@@ -20,6 +20,7 @@ import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/sc
 import { createMockVariantAnalysisRepoTask } from '../../factories/remote-queries/gh-api/variant-analysis-repo-task';
 import { CodeQLCliServer } from '../../../cli';
 import { storagePath } from '../global.helper';
+import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
@@ -30,6 +31,7 @@ describe('Variant Analysis Manager', async function() {
   let scannedRepos: ApiVariantAnalysisScannedRepository[];
   let getVariantAnalysisRepoStub: sinon.SinonStub;
   let getVariantAnalysisRepoResultStub: sinon.SinonStub;
+  let variantAnalysisResultsManager: VariantAnalysisResultsManager;
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
@@ -46,7 +48,8 @@ describe('Variant Analysis Manager', async function() {
     try {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
       cli = extension.cliServer;
-      variantAnalysisManager = new VariantAnalysisManager(extension.ctx, cli, storagePath, logger);
+      variantAnalysisResultsManager = new VariantAnalysisResultsManager(cli, logger);
+      variantAnalysisManager = new VariantAnalysisManager(extension.ctx, storagePath, variantAnalysisResultsManager);
     } catch (e) {
       fail(e as Error);
     }

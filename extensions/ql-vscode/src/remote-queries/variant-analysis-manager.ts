@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as ghApiClient from './gh-api/gh-api-client';
 import { CancellationToken, commands, EventEmitter, ExtensionContext, window } from 'vscode';
 import { DisposableObject } from '../pure/disposable-object';
-import { Logger } from '../logging';
 import { Credentials } from '../authentication';
 import { VariantAnalysisMonitor } from './variant-analysis-monitor';
 import {
@@ -21,7 +20,6 @@ import { getErrorMessage } from '../pure/helpers-pure';
 import { VariantAnalysisView } from './variant-analysis-view';
 import { VariantAnalysisViewManager } from './variant-analysis-view-manager';
 import { VariantAnalysisResultsManager } from './variant-analysis-results-manager';
-import { CodeQLCliServer } from '../cli';
 import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 import PQueue from 'p-queue';
@@ -40,7 +38,6 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   public readonly onVariantAnalysisRemoved = this._onVariantAnalysisRemoved.event;
 
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
-  private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager;
   private readonly variantAnalyses = new Map<number, VariantAnalysis>();
   private readonly views = new Map<number, VariantAnalysisView>();
   private static readonly maxConcurrentDownloads = 3;
@@ -48,21 +45,20 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
   constructor(
     private readonly ctx: ExtensionContext,
-    cliServer: CodeQLCliServer,
     private readonly storagePath: string,
-    logger: Logger,
+    private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager
   ) {
     super();
     this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx));
     this.variantAnalysisMonitor.onVariantAnalysisChange(this.onVariantAnalysisUpdated.bind(this));
 
-    this.variantAnalysisResultsManager = this.push(new VariantAnalysisResultsManager(cliServer, logger));
+    this.variantAnalysisResultsManager = this.push(variantAnalysisResultsManager);
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
   }
 
   public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis, status: QueryStatus) {
     if (!(await this.variantAnalysisRecordExists(variantAnalysis.id))) {
-      // In this case, the variant analysis was deleted from disk, most likely because 
+      // In this case, the variant analysis was deleted from disk, most likely because
       // it was purged by another workspace.
       this._onVariantAnalysisRemoved.fire(variantAnalysis);
     } else if (status === QueryStatus.InProgress) {
