@@ -47,6 +47,7 @@ describe('Variant Analyses and QueryHistoryManager', function() {
   let openRemoteQueryResultsStub: sinon.SinonStub;
   let rehydrateVariantAnalysisStub: sinon.SinonStub;
   let removeVariantAnalysisStub: sinon.SinonStub;
+  let showViewStub: sinon.SinonStub;
 
   beforeEach(async function() {
     // set a higher timeout since recursive delete below may take a while, expecially on Windows.
@@ -78,9 +79,10 @@ describe('Variant Analyses and QueryHistoryManager', function() {
     variantAnalysisManagerStub = {
       onVariantAnalysisAdded: sandbox.stub(),
       onVariantAnalysisRemoved: sandbox.stub(),
-      removeRemoteQuery: removeVariantAnalysisStub,
+      removeVariantAnalysis: removeVariantAnalysisStub,
       rehydrateVariantAnalysis: rehydrateVariantAnalysisStub,
-      onVariantAnalysisStatusUpdated: sandbox.stub()
+      onVariantAnalysisStatusUpdated: sandbox.stub(),
+      showView: showViewStub
     } as any as VariantAnalysisManager;
 
     rawQueryHistory = fs.readJSONSync(path.join(STORAGE_DIR, 'workspace-query-history.json')).queries;
@@ -162,8 +164,8 @@ describe('Variant Analyses and QueryHistoryManager', function() {
     await qhm.handleRemoveHistoryItem(undefined!, [qhm.treeDataProvider.allHistory[1], qhm.treeDataProvider.allHistory[0]]);
 
     expect(removeVariantAnalysisStub.callCount).to.eq(2);
-    expect(removeVariantAnalysisStub.getCall(0).args[0]).to.eq(rawQueryHistory[1].variantAnalysis.id.toString());
-    expect(removeVariantAnalysisStub.getCall(1).args[0]).to.eq(rawQueryHistory[0].variantAnalysis.id.toString());
+    expect(removeVariantAnalysisStub.getCall(0).args[0]).to.eq(rawQueryHistory[1].variantAnalysis);
+    expect(removeVariantAnalysisStub.getCall(1).args[0]).to.eq(rawQueryHistory[0].variantAnalysis);
     expect(qhm.treeDataProvider.allHistory).to.deep.eq([]);
 
     // also, both queries should be removed from disk storage
@@ -177,7 +179,7 @@ describe('Variant Analyses and QueryHistoryManager', function() {
     await qhm.readQueryHistory();
 
     await qhm.handleItemClicked(qhm.treeDataProvider.allHistory[0], []);
-    expect(openRemoteQueryResultsStub).calledOnceWithExactly(rawQueryHistory[0].variantAnalysis.id.toString());
+    expect(showViewStub).calledOnceWithExactly(rawQueryHistory[0].variantAnalysis.id.toString());
   });
 
   it('should get the query text', async () => {
