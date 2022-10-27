@@ -61,10 +61,14 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       // In this case, the variant analysis was deleted from disk, most likely because
       // it was purged by another workspace.
       this._onVariantAnalysisRemoved.fire(variantAnalysis);
-    } else if (status === QueryStatus.InProgress) {
-      // In this case, last time we checked, the query was still in progress.
-      // We need to setup the monitor to check for completion.
-      await commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
+    } else {
+      this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
+      await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
+      if (status === QueryStatus.InProgress) {
+        // In this case, last time we checked, the query was still in progress.
+        // We need to setup the monitor to check for completion.
+        await commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
+      }
     }
   }
 
