@@ -616,7 +616,7 @@ export class QueryHistoryManager extends DisposableObject {
       const status = variantAnalysisStatusToQueryStatus(variantAnalysis.status);
 
       if (items.length > 0) {
-        items.forEach(async (item) => {
+        items.forEach((item) => {
           const variantAnalysisHistoryItem = item as VariantAnalysisHistoryItem;
           variantAnalysisHistoryItem.status = status;
           variantAnalysisHistoryItem.failureReason = variantAnalysis.failureReason;
@@ -634,9 +634,9 @@ export class QueryHistoryManager extends DisposableObject {
 
     const variantAnalysisRemovedSubscription = this.variantAnalysisManager.onVariantAnalysisRemoved(async (variantAnalysis) => {
       const items = this.treeDataProvider.allHistory.filter(i => i.t === 'variant-analysis' && i.variantAnalysis.id === variantAnalysis.id);
-      items.forEach(async (item) => {
+      await Promise.all(items.map(async (item) => {
         await this.removeVariantAnalysis(item as VariantAnalysisHistoryItem);
-      });
+      }));
     });
 
     this.push(variantAnalysisAddedSubscription);
@@ -689,14 +689,14 @@ export class QueryHistoryManager extends DisposableObject {
     void logger.log(`Reading cached query history from '${this.queryMetadataStorageLocation}'.`);
     const history = await slurpQueryHistory(this.queryMetadataStorageLocation);
     this.treeDataProvider.allHistory = history;
-    this.treeDataProvider.allHistory.forEach(async (item) => {
+    await Promise.all(this.treeDataProvider.allHistory.map(async (item) => {
       if (item.t === 'remote') {
         await this.remoteQueriesManager.rehydrateRemoteQuery(item.queryId, item.remoteQuery, item.status);
       }
       if (item.t === 'variant-analysis') {
         await this.variantAnalysisManager.rehydrateVariantAnalysis(item.variantAnalysis, item.status);
       }
-    });
+    }));
   }
 
   async writeQueryHistory(): Promise<void> {
