@@ -66,6 +66,12 @@ describe(VariantAnalysisResultsManager.name, function() {
       fs.rmSync(variantAnalysisStoragePath, { recursive: true });
     });
 
+    describe('isVariantAnalysisRepoDownloaded', () => {
+      it('should return false when no results are downloaded', async () => {
+        expect(await variantAnalysisResultsManager.isVariantAnalysisRepoDownloaded(variantAnalysisStoragePath, dummyRepoTask.repository.full_name)).to.equal(false);
+      });
+    });
+
     describe('when the artifact_url is missing', async () => {
       it('should not try to download the result', async () => {
         const dummyRepoTask = createMockVariantAnalysisRepoTask();
@@ -130,6 +136,19 @@ describe(VariantAnalysisResultsManager.name, function() {
         );
 
         expect(fs.existsSync(`${repoTaskStorageDirectory}/results/results.sarif`)).to.be.true;
+      });
+
+      describe('isVariantAnalysisRepoDownloaded', () => {
+        it('should return true once results are downloaded', async () => {
+          await variantAnalysisResultsManager.download(
+            mockCredentials,
+            variantAnalysisId,
+            dummyRepoTask,
+            variantAnalysisStoragePath
+          );
+
+          expect(await variantAnalysisResultsManager.isVariantAnalysisRepoDownloaded(variantAnalysisStoragePath, dummyRepoTask.repository.full_name)).to.equal(true);
+        });
       });
     });
   });
