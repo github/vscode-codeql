@@ -152,6 +152,14 @@ export function hasRepoScanCompleted(repo: VariantAnalysisScannedRepository): bo
 }
 
 /**
+ * @param repo
+ * @returns whether the repo scan is complete and has results that can be downloaded
+ */
+export function repoScanHasResults(repo: VariantAnalysisScannedRepository): boolean {
+  return repo.analysisStatus === VariantAnalysisRepoStatus.Succeeded && (repo.resultCount || 0) > 0;
+}
+
+/**
  * @param repos
  * @returns the total number of results. Will be `undefined` when there are no repos with results.
  */

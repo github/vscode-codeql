@@ -11,10 +11,14 @@ import {
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
 } from './gh-api/variant-analysis';
 import {
+  hasRepoScanCompleted,
+  repoScanHasResults,
   VariantAnalysis, VariantAnalysisQueryLanguage,
+  VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
-  VariantAnalysisScannedRepositoryState
+  VariantAnalysisScannedRepositoryState,
+  VariantAnalysisStatus
 } from './shared/variant-analysis';
 import { getErrorMessage } from '../pure/helpers-pure';
 import { VariantAnalysisView } from './variant-analysis-view';
@@ -24,7 +28,6 @@ import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 import PQueue from 'p-queue';
 import { createTimestampFile, showAndLogErrorMessage } from '../helpers';
-import { QueryStatus } from '../query-status';
 import * as fs from 'fs-extra';
 
 
@@ -56,7 +59,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
   }
 
-  public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis, status: QueryStatus) {
+  public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis) {
     if (!(await this.variantAnalysisRecordExists(variantAnalysis.id))) {
       // In this case, the variant analysis was deleted from disk, most likely because
       // it was purged by another workspace.
@@ -64,11 +67,31 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     } else {
       this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
       await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
-      if (status === QueryStatus.InProgress) {
-        // In this case, last time we checked, the query was still in progress.
-        // We need to setup the monitor to check for completion.
+
+      if (!await this.isVariantAnalysisComplete(variantAnalysis)) {
         await commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
       }
+    }
+  }
+
+  public async isVariantAnalysisComplete(variantAnalysis: VariantAnalysis): Promise<boolean> {
+    // It's only acceptable to have no scanned repos if the variant analysis is not in a final state.
+    // Otherwise it means the analysis hit some kind of internal error or there were no repos to scan.
+    if (variantAnalysis.scannedRepos === undefined || variantAnalysis.scannedRepos.length === 0) {
+      return variantAnalysis.status !== VariantAnalysisStatus.InProgress;
+    }
+
+    return (await Promise.all(variantAnalysis.scannedRepos.map(repo => this.isVariantAnalysisRepoComplete(variantAnalysis.id, repo)))).every(x => x);
+  }
+
+  private async isVariantAnalysisRepoComplete(variantAnalysisId: number, repo: VariantAnalysisScannedRepository): Promise<boolean> {
+    if (!hasRepoScanCompleted(repo)) {
+      return false;
+    } else if (!repoScanHasResults(repo)) {
+      return true;
+    } else {
+      const storageLocation = this.getVariantAnalysisStorageLocation(variantAnalysisId);
+      return await this.variantAnalysisResultsManager.isVariantAnalysisRepoDownloaded(storageLocation, repo.repository.fullName);
     }
   }
 
@@ -234,7 +257,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
    * used by the query history manager to determine when the directory
    * should be deleted.
    */
-  private async prepareStorageDirectory(variantAnalysisId: number): Promise<void> {
+  public async prepareStorageDirectory(variantAnalysisId: number): Promise<void> {
     await createTimestampFile(this.getVariantAnalysisStorageLocation(variantAnalysisId));
   }
 

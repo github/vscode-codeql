@@ -694,7 +694,7 @@ export class QueryHistoryManager extends DisposableObject {
         await this.remoteQueriesManager.rehydrateRemoteQuery(item.queryId, item.remoteQuery, item.status);
       }
       if (item.t === 'variant-analysis') {
-        await this.variantAnalysisManager.rehydrateVariantAnalysis(item.variantAnalysis, item.status);
+        await this.variantAnalysisManager.rehydrateVariantAnalysis(item.variantAnalysis);
       }
     }));
   }

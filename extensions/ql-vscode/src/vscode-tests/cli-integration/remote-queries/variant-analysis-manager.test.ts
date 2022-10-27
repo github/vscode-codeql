@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { CancellationTokenSource, extensions } from 'vscode';
+import { CancellationTokenSource, commands, Disposable, extensions } from 'vscode';
 import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
@@ -21,6 +21,8 @@ import { createMockVariantAnalysisRepoTask } from '../../factories/remote-querie
 import { CodeQLCliServer } from '../../../cli';
 import { storagePath } from '../global.helper';
 import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
+import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
+import { VariantAnalysis, VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
@@ -164,5 +166,169 @@ describe('Variant Analysis Manager', async function() {
         expect(getResultsSpy).to.have.been.calledThrice;
       });
     });
+  });
+
+  describe('when rehydrating a query', async () => {
+    let variantAnalysis: VariantAnalysis;
+    let variantAnalysisRemovedFired = false;
+    let onVariantAnalysisRemovedListener: Disposable;
+    let monitorVariantAnalysisCommandCalled = false;
+
+    beforeEach(() => {
+      variantAnalysis = createMockVariantAnalysis();
+
+      variantAnalysisRemovedFired = false;
+      onVariantAnalysisRemovedListener = variantAnalysisManager.onVariantAnalysisRemoved(() => {
+        variantAnalysisRemovedFired = true;
+      });
+
+      monitorVariantAnalysisCommandCalled = false;
+      sandbox.stub(commands, 'executeCommand').callsFake((command: string) => {
+        if (command === 'codeQL.monitorVariantAnalysis') {
+          monitorVariantAnalysisCommandCalled = true;
+        }
+        return Promise.resolve();
+      });
+    });
+
+    afterEach(() => {
+      onVariantAnalysisRemovedListener.dispose();
+    });
+
+    describe('when variant analysis record doesn\'t exist', async () => {
+      it('should remove the variant analysis', async () => {
+        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+        expect(variantAnalysisRemovedFired).to.equal(true);
+      });
+
+      it('should not trigger a monitoring command', async () => {
+        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+        expect(monitorVariantAnalysisCommandCalled).to.equal(false);
+      });
+    });
+
+    describe('when variant analysis record does exist', async () => {
+      let variantAnalysisStorageLocation: string;
+
+      beforeEach(async () => {
+        variantAnalysisStorageLocation = variantAnalysisManager.getVariantAnalysisStorageLocation(variantAnalysis.id);
+        await variantAnalysisManager.prepareStorageDirectory(variantAnalysis.id);
+      });
+
+      afterEach(() => {
+        fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
+      });
+
+      describe('when the variant analysis is not complete', async () => {
+        beforeEach(() => {
+          sinon.stub(variantAnalysisManager, 'isVariantAnalysisComplete').resolves(false);
+        });
+
+        it('should not remove the variant analysis', async () => {
+          await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+          expect(variantAnalysisRemovedFired).to.equal(false);
+        });
+
+        it('should trigger a monitoring command', async () => {
+          await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+          expect(monitorVariantAnalysisCommandCalled).to.equal(true);
+        });
+      });
+
+      describe('when the variant analysis is complete', async () => {
+        beforeEach(() => {
+          sinon.stub(variantAnalysisManager, 'isVariantAnalysisComplete').resolves(true);
+        });
+
+        it('should not remove the variant analysis', async () => {
+          await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+          expect(variantAnalysisRemovedFired).to.equal(false);
+        });
+
+        it('should not trigger a monitoring command', async () => {
+          await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+          expect(monitorVariantAnalysisCommandCalled).to.equal(false);
+        });
+      });
+    });
+  });
+
+  describe('isVariantAnalysisComplete', async () => {
+    let variantAnalysis: VariantAnalysis;
+
+    beforeEach(() => {
+      variantAnalysis = createMockVariantAnalysis();
+    });
+
+    describe('when variant analysis status is InProgress', async () => {
+      beforeEach(() => {
+        variantAnalysis.status = VariantAnalysisStatus.InProgress;
+      });
+
+      describe('when scanned repos is undefined', async () => {
+        it('should say the variant analysis is not complete', async () => {
+          variantAnalysis.scannedRepos = undefined;
+          expect(variantAnalysisManager.isVariantAnalysisComplete(variantAnalysis)).to.equal(false);
+        });
+      });
+
+      describe('when scanned repos is non-empty', async () => {
+        describe('when not all results are downloaded', async () => {
+          it('should say the variant analysis is not complete', async () => {
+            sinon.stub(variantAnalysisResultsManager, 'isVariantAnalysisRepoDownloaded').resolves(false);
+            expect(variantAnalysisManager.isVariantAnalysisComplete(variantAnalysis)).to.equal(false);
+          });
+        });
+
+        describe('when all results are downloaded', async () => {
+          it('should say the variant analysis is complete', async () => {
+            sinon.stub(variantAnalysisResultsManager, 'isVariantAnalysisRepoDownloaded').resolves(true);
+            expect(variantAnalysisManager.isVariantAnalysisComplete(variantAnalysis)).to.equal(true);
+          });
+        });
+      });
+    });
+
+    for (const variantAnalysisStatus of [
+      VariantAnalysisStatus.Succeeded,
+      VariantAnalysisStatus.Failed,
+      VariantAnalysisStatus.Canceled
+    ]) {
+      describe(`when variant analysis status is ${variantAnalysisStatus}`, async () => {
+        beforeEach(() => {
+          variantAnalysis.status = variantAnalysisStatus;
+        });
+
+        describe('when scanned repos is undefined', async () => {
+          it('should say the variant analysis is complete', async () => {
+            variantAnalysis.scannedRepos = undefined;
+            expect(variantAnalysisManager.isVariantAnalysisComplete(variantAnalysis)).to.equal(true);
+          });
+        });
+
+        describe('when scanned repos is empty', async () => {
+          it('should say the variant analysis is complete', async () => {
+            variantAnalysis.scannedRepos = [];
+            expect(variantAnalysisManager.isVariantAnalysisComplete(variantAnalysis)).to.equal(true);
+          });
+        });
+
+        describe('when scanned repos is non-empty', async () => {
+          describe('when not all results are downloaded', async () => {
+            it('should say the variant analysis is not complete', async () => {
+              sinon.stub(variantAnalysisResultsManager, 'isVariantAnalysisRepoDownloaded').resolves(false);
+              expect(variantAnalysisManager.isVariantAnalysisComplete(variantAnalysis)).to.equal(false);
+            });
+          });
+
+          describe('when all results are downloaded', async () => {
+            it('should say the variant analysis is complete', async () => {
+              sinon.stub(variantAnalysisResultsManager, 'isVariantAnalysisRepoDownloaded').resolves(true);
+              expect(variantAnalysisManager.isVariantAnalysisComplete(variantAnalysis)).to.equal(true);
+            });
+          });
+        });
+      });
+    }
   });
 });
