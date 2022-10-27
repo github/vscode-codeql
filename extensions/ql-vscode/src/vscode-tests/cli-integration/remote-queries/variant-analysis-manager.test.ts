@@ -27,7 +27,7 @@ describe('Variant Analysis Manager', async function() {
   let cli: CodeQLCliServer;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
-  let variantAnalysis: VariantAnalysisApiResponse;
+  let variantAnalysisApiResponse: VariantAnalysisApiResponse;
   let scannedRepos: ApiVariantAnalysisScannedRepository[];
   let getVariantAnalysisRepoStub: sinon.SinonStub;
   let getVariantAnalysisRepoResultStub: sinon.SinonStub;
@@ -43,7 +43,7 @@ describe('Variant Analysis Manager', async function() {
     cancellationTokenSource = new CancellationTokenSource();
 
     scannedRepos = createMockScannedRepos();
-    variantAnalysis = createMockApiResponse('in_progress', scannedRepos);
+    variantAnalysisApiResponse = createMockApiResponse('in_progress', scannedRepos);
 
     try {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
@@ -66,7 +66,7 @@ describe('Variant Analysis Manager', async function() {
       try {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
-          variantAnalysis,
+          variantAnalysisApiResponse,
           cancellationTokenSource.token
         );
       } catch (error: any) {
@@ -103,7 +103,7 @@ describe('Variant Analysis Manager', async function() {
       it('should not try to download the result', async () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
-          variantAnalysis,
+          variantAnalysisApiResponse,
           cancellationTokenSource.token
         );
 
@@ -126,7 +126,7 @@ describe('Variant Analysis Manager', async function() {
 
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
-          variantAnalysis,
+          variantAnalysisApiResponse,
           cancellationTokenSource.token
         );
 
@@ -136,7 +136,7 @@ describe('Variant Analysis Manager', async function() {
       it('should fetch a repo task', async () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
-          variantAnalysis,
+          variantAnalysisApiResponse,
           cancellationTokenSource.token
         );
 
@@ -146,7 +146,7 @@ describe('Variant Analysis Manager', async function() {
       it('should fetch a repo result', async () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
-          variantAnalysis,
+          variantAnalysisApiResponse,
           cancellationTokenSource.token
         );
 
@@ -156,9 +156,9 @@ describe('Variant Analysis Manager', async function() {
       it('should pop download tasks off the queue', async () => {
         const getResultsSpy = sandbox.spy(variantAnalysisManager, 'autoDownloadVariantAnalysisResult');
 
-        await variantAnalysisManager.enqueueDownload(scannedRepos[0], variantAnalysis, cancellationTokenSource.token);
-        await variantAnalysisManager.enqueueDownload(scannedRepos[1], variantAnalysis, cancellationTokenSource.token);
-        await variantAnalysisManager.enqueueDownload(scannedRepos[2], variantAnalysis, cancellationTokenSource.token);
+        await variantAnalysisManager.enqueueDownload(scannedRepos[0], variantAnalysisApiResponse, cancellationTokenSource.token);
+        await variantAnalysisManager.enqueueDownload(scannedRepos[1], variantAnalysisApiResponse, cancellationTokenSource.token);
+        await variantAnalysisManager.enqueueDownload(scannedRepos[2], variantAnalysisApiResponse, cancellationTokenSource.token);
 
         expect(variantAnalysisManager.downloadsQueueSize()).to.equal(0);
         expect(getResultsSpy).to.have.been.calledThrice;
