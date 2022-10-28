@@ -1354,6 +1354,7 @@
     "@types/xml2js": "~0.4.4",
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@typescript-eslint/parser": "^4.26.0",
+    "@vscode/test-electron": "^2.2.0",
     "ajv": "^8.11.0",
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.3.5",
@@ -1395,7 +1396,6 @@
     "typescript": "^4.5.5",
     "typescript-formatter": "^7.2.2",
     "vsce": "^2.7.0",
-    "vscode-test": "^1.4.0",
     "webpack": "^5.62.2",
     "webpack-cli": "^4.6.0"
   },
