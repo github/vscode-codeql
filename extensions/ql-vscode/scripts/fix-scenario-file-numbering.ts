@@ -24,7 +24,7 @@ const scenariosDirectory = path.resolve(extensionDirectory, 'src/mocks/scenarios
 const scenarioDirectory = path.resolve(scenariosDirectory, scenarioName);
 
 async function fixScenarioFiles() {
-  console.log(scenarioDirectory)
+  console.log(scenarioDirectory);
   if (!(await fs.pathExists(scenarioDirectory))) {
     console.error('Scenario directory does not exist: ' + scenarioDirectory);
     return;
