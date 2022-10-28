@@ -62,8 +62,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       // it was purged by another workspace.
       this._onVariantAnalysisRemoved.fire(variantAnalysis);
     } else {
-      this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
-      await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
+      await this.setVariantAnalysis(variantAnalysis);
       if (status === QueryStatus.InProgress) {
         // In this case, last time we checked, the query was still in progress.
         // We need to setup the monitor to check for completion.
@@ -140,16 +139,21 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       return;
     }
 
-    this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
-
-    await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
+    await this.setVariantAnalysis(variantAnalysis);
     this._onVariantAnalysisStatusUpdated.fire(variantAnalysis);
   }
 
   public async onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): Promise<void> {
+    await this.setVariantAnalysis(variantAnalysis);
+
     await this.prepareStorageDirectory(variantAnalysis.id);
 
     this._onVariantAnalysisAdded.fire(variantAnalysis);
+  }
+
+  private async setVariantAnalysis(variantAnalysis: VariantAnalysis): Promise<void> {
+    this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
+    await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
   }
 
   private async onRepoResultLoaded(repositoryResult: VariantAnalysisScannedRepositoryResult): Promise<void> {
