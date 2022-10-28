@@ -117,6 +117,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return this.variantAnalyses.get(variantAnalysisId);
   }
 
+  public get variantAnalysesSize(): number {
+    return this.variantAnalyses.size;
+  }
+
   public async loadResults(variantAnalysisId: number, repositoryFullName: string): Promise<void> {
     const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
     if (!variantAnalysis) {
@@ -131,7 +135,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return await fs.pathExists(filePath);
   }
 
-  private async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
+  public async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
     if (!variantAnalysis) {
       return;
     }
