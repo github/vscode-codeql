@@ -3,28 +3,18 @@ import * as path from 'path';
 import * as sinon from 'sinon';
 
 import { commands, extensions, TextDocument, window, workspace } from 'vscode';
-import { setupServer } from 'msw/node';
 import * as Octokit from '@octokit/rest';
 import { retry } from '@octokit/plugin-retry';
 
 import { CodeQLExtensionInterface } from '../../../extension';
-import { createRequestHandlers } from '../../../mocks/request-handlers';
 import * as config from '../../../config';
 import { Credentials } from '../../../authentication';
+import { MockGitHubApiServer } from '../../../mocks/mock-gh-api-server';
 
-const server = setupServer();
-
-before(() => server.listen());
-
-afterEach(() => server.resetHandlers());
-
-after(() => server.close());
-
-async function loadScenario(scenarioName: string) {
-  const handlers = await createRequestHandlers(path.join(__dirname, '../../../../src/mocks/scenarios', scenarioName));
-
-  server.use(...handlers);
-}
+const mockServer = new MockGitHubApiServer();
+before(() => mockServer.startServer());
+afterEach(() => mockServer.unloadScenario());
+after(() => mockServer.stopServer());
 
 async function showQlDocument(name: string): Promise<TextDocument> {
   const folderPath = workspace.workspaceFolders![0].uri.fsPath;
@@ -34,7 +24,7 @@ async function showQlDocument(name: string): Promise<TextDocument> {
   return document;
 }
 
-describe('Variant Analysis Integration', function() {
+describe('Variant Analysis Submission Integration', function() {
   this.timeout(10_000);
 
   let sandbox: sinon.SinonSandbox;
@@ -75,7 +65,7 @@ describe('Variant Analysis Integration', function() {
 
   describe('Successful scenario', () => {
     beforeEach(async () => {
-      await loadScenario('problem-query-success');
+      await mockServer.loadScenario('problem-query-success');
     });
 
     it('opens the variant analysis view', async () => {
@@ -98,7 +88,7 @@ describe('Variant Analysis Integration', function() {
 
   describe('Missing controller repo', () => {
     beforeEach(async () => {
-      await loadScenario('missing-controller-repo');
+      await mockServer.loadScenario('missing-controller-repo');
     });
 
     it('shows the error message', async () => {
@@ -119,7 +109,7 @@ describe('Variant Analysis Integration', function() {
 
   describe('Submission failure', () => {
     beforeEach(async () => {
-      await loadScenario('submission-failure');
+      await mockServer.loadScenario('submission-failure');
     });
 
     it('shows the error message', async () => {
