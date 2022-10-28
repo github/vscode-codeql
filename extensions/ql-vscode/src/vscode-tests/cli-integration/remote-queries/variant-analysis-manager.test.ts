@@ -21,6 +21,8 @@ import { createMockVariantAnalysisRepoTask } from '../../factories/remote-querie
 import { CodeQLCliServer } from '../../../cli';
 import { storagePath } from '../global.helper';
 import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
+import { VariantAnalysis } from '../../../remote-queries/shared/variant-analysis';
+import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
@@ -121,47 +123,74 @@ describe('Variant Analysis Manager', async function() {
         getVariantAnalysisRepoResultStub = sandbox.stub(ghApiClient, 'getVariantAnalysisRepoResult').resolves(arrayBuffer);
       });
 
-      it('should return early if variant analysis is cancelled', async () => {
-        cancellationTokenSource.cancel();
+      describe('autoDownloadVariantAnalysisResult', async () => {
+        it('should return early if variant analysis is cancelled', async () => {
+          cancellationTokenSource.cancel();
 
-        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-          scannedRepos[0],
-          variantAnalysis,
-          cancellationTokenSource.token
-        );
+          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+            scannedRepos[0],
+            variantAnalysis,
+            cancellationTokenSource.token
+          );
 
-        expect(getVariantAnalysisRepoStub.notCalled).to.be.true;
+          expect(getVariantAnalysisRepoStub.notCalled).to.be.true;
+        });
+
+        it('should fetch a repo task', async () => {
+          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+            scannedRepos[0],
+            variantAnalysis,
+            cancellationTokenSource.token
+          );
+
+          expect(getVariantAnalysisRepoStub.calledOnce).to.be.true;
+        });
+
+        it('should fetch a repo result', async () => {
+          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+            scannedRepos[0],
+            variantAnalysis,
+            cancellationTokenSource.token
+          );
+
+          expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
+        });
       });
 
-      it('should fetch a repo task', async () => {
-        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-          scannedRepos[0],
-          variantAnalysis,
-          cancellationTokenSource.token
-        );
+      describe('enqueueDownload', async () => {
+        it('should pop download tasks off the queue', async () => {
+          const getResultsSpy = sandbox.spy(variantAnalysisManager, 'autoDownloadVariantAnalysisResult');
 
-        expect(getVariantAnalysisRepoStub.calledOnce).to.be.true;
+          await variantAnalysisManager.enqueueDownload(scannedRepos[0], variantAnalysis, cancellationTokenSource.token);
+          await variantAnalysisManager.enqueueDownload(scannedRepos[1], variantAnalysis, cancellationTokenSource.token);
+          await variantAnalysisManager.enqueueDownload(scannedRepos[2], variantAnalysis, cancellationTokenSource.token);
+
+          expect(variantAnalysisManager.downloadsQueueSize()).to.equal(0);
+          expect(getResultsSpy).to.have.been.calledThrice;
+        });
       });
 
-      it('should fetch a repo result', async () => {
-        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-          scannedRepos[0],
-          variantAnalysis,
-          cancellationTokenSource.token
-        );
+      describe('removeVariantAnalysis', async () => {
+        let removeAnalysisResultsStub: sinon.SinonStub;
+        let removeStorageStub: sinon.SinonStub;
+        let dummyVariantAnalysis: VariantAnalysis;
 
-        expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
-      });
+        beforeEach(async () => {
+          dummyVariantAnalysis = createMockVariantAnalysis();
+          removeAnalysisResultsStub = sandbox.stub(variantAnalysisResultsManager, 'removeAnalysisResults');
+          removeStorageStub = sandbox.stub(fs, 'remove');
+        });
 
-      it('should pop download tasks off the queue', async () => {
-        const getResultsSpy = sandbox.spy(variantAnalysisManager, 'autoDownloadVariantAnalysisResult');
+        it('should remove variant analysis', async () => {
+          await variantAnalysisManager.onVariantAnalysisUpdated(dummyVariantAnalysis);
+          expect(variantAnalysisManager.variantAnalysesSize).to.eq(1);
 
-        await variantAnalysisManager.enqueueDownload(scannedRepos[0], variantAnalysis, cancellationTokenSource.token);
-        await variantAnalysisManager.enqueueDownload(scannedRepos[1], variantAnalysis, cancellationTokenSource.token);
-        await variantAnalysisManager.enqueueDownload(scannedRepos[2], variantAnalysis, cancellationTokenSource.token);
+          await variantAnalysisManager.removeVariantAnalysis(dummyVariantAnalysis);
 
-        expect(variantAnalysisManager.downloadsQueueSize()).to.equal(0);
-        expect(getResultsSpy).to.have.been.calledThrice;
+          expect(removeAnalysisResultsStub).to.have.been.calledOnce;
+          expect(removeStorageStub).to.have.been.calledOnce;
+          expect(variantAnalysisManager.variantAnalysesSize).to.equal(0);
+        });
       });
     });
   });

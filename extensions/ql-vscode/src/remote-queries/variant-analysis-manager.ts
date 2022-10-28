@@ -61,10 +61,13 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       // In this case, the variant analysis was deleted from disk, most likely because
       // it was purged by another workspace.
       this._onVariantAnalysisRemoved.fire(variantAnalysis);
-    } else if (status === QueryStatus.InProgress) {
-      // In this case, last time we checked, the query was still in progress.
-      // We need to setup the monitor to check for completion.
-      await commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
+    } else {
+      await this.setVariantAnalysis(variantAnalysis);
+      if (status === QueryStatus.InProgress) {
+        // In this case, last time we checked, the query was still in progress.
+        // We need to setup the monitor to check for completion.
+        await commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
+      }
     }
   }
 
@@ -113,6 +116,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return this.variantAnalyses.get(variantAnalysisId);
   }
 
+  public get variantAnalysesSize(): number {
+    return this.variantAnalyses.size;
+  }
+
   public async loadResults(variantAnalysisId: number, repositoryFullName: string): Promise<void> {
     const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
     if (!variantAnalysis) {
@@ -127,21 +134,26 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return await fs.pathExists(filePath);
   }
 
-  private async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
+  public async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
     if (!variantAnalysis) {
       return;
     }
 
-    this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
-
-    await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
+    await this.setVariantAnalysis(variantAnalysis);
     this._onVariantAnalysisStatusUpdated.fire(variantAnalysis);
   }
 
   public async onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): Promise<void> {
+    await this.setVariantAnalysis(variantAnalysis);
+
     await this.prepareStorageDirectory(variantAnalysis.id);
 
     this._onVariantAnalysisAdded.fire(variantAnalysis);
+  }
+
+  private async setVariantAnalysis(variantAnalysis: VariantAnalysis): Promise<void> {
+    this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
+    await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
   }
 
   private async onRepoResultLoaded(repositoryResult: VariantAnalysisScannedRepositoryResult): Promise<void> {
