@@ -116,7 +116,7 @@ import {
 } from './remote-queries/gh-api/variant-analysis';
 import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
 import { createVariantAnalysisContentProvider } from './remote-queries/variant-analysis-content-provider';
-import { MockGitHubApiServer } from './mocks/mock-gh-api-server';
+import { VSCodeMockGitHubApiServer } from './mocks/vscode-mock-gh-api-server';
 import { VariantAnalysisResultsManager } from './remote-queries/variant-analysis-results-manager';
 
 /**
@@ -1194,7 +1194,7 @@ async function activateWithInstalledDistribution(
     )
   );
 
-  const mockServer = new MockGitHubApiServer(ctx);
+  const mockServer = new VSCodeMockGitHubApiServer(ctx);
   ctx.subscriptions.push(mockServer);
   ctx.subscriptions.push(
     commandRunner(
