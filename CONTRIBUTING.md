@@ -181,6 +181,8 @@ To record a new mock MRVA scenario, follow these steps:
 
 If you want to cancel recording, run the `CodeQL: Mock GitHub API Server: Cancel Scenario Recording` command.
 
+Once the scenario has been recorded, it's often useful to remove some of the requests to speed up the replay, particularly ones that fetch the variant analysis status. Once some of the request files have manually been removed, the [fix-scenario-file-numbering script](./extensions/ql-vscode/scripts/fix-scenario-file-numbering.ts) can be used to update the number of the files. See the script file for details on how to use.
+
 #### Scenario data location
 
 Pre-recorded scenarios are stored in `./src/mocks/scenarios`. However, it's possible to configure the location, by setting the `codeQL.mockGitHubApiServer.scenariosPath` configuration property in the VS Code user settings.
