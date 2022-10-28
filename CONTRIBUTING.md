@@ -54,7 +54,7 @@ Alternatively, you can build the extension within VS Code via `Terminal > Run Bu
 
 Before running any of the launch commands, be sure to have run the `build` command to ensure that the JavaScript is compiled and the resources are copied to the proper location.
 
-We recommend that you keep `npm run watch` running in the backgound and you only need to re-run `npm run build` in the following situations:
+We recommend that you keep `npm run watch` running in the background and you only need to re-run `npm run build` in the following situations:
 
 1. on first checkout
 2. whenever any of the non-TypeScript resources have changed
@@ -146,7 +146,7 @@ The CLI integration tests require the CodeQL standard libraries in order to run 
 
 #### Using a mock GitHub API server
 
-Multi-Repo Variant Analyses (MRVA) rely on the GitHub API. In order to make development and testing easy, we have functionality that allows us to intercept requests to the GitHub API and provide mock responses. 
+Multi-Repo Variant Analyses (MRVA) rely on the GitHub API. In order to make development and testing easy, we have functionality that allows us to intercept requests to the GitHub API and provide mock responses.
 
 ##### Using a pre-recorded test scenario
 
