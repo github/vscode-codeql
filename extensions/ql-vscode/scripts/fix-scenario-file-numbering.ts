@@ -60,11 +60,10 @@ async function fixScenarioFiles() {
           console.log(`Rename: ${oldZipFilePath} -> ${newZipFilePath}`);
           await fs.rename(oldZipFilePath, newZipFilePath);
 
-          const jsonText = await fs.readFile(newFilePath, 'utf8');
-          const json = JSON.parse(jsonText);
+          const json = await fs.readJson(newFilePath);
           json.response.body = `file:${newZipFileName}`;
           console.log(`Response.body change to ${json.response.body}`);
-          await fs.writeFile(newFilePath, JSON.stringify(json, null, 2));
+          await fs.writeJSON(newFilePath, json);
         }
       }
       
