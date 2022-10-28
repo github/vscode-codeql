@@ -16,7 +16,8 @@ import {
   QuickPickItem,
   Range,
   workspace,
-  ProviderResult
+  ProviderResult,
+  version as vscodeVersion
 } from 'vscode';
 import { LanguageClient } from 'vscode-languageclient';
 import * as os from 'os';
@@ -24,6 +25,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as tmp from 'tmp-promise';
 import { testExplorerExtensionId, TestHub } from 'vscode-test-adapter-api';
+import * as semver from 'semver';
 
 import { AstViewer } from './astViewer';
 import * as archiveFilesystemProvider from './archive-filesystem-provider';
@@ -188,6 +190,13 @@ export interface CodeQLExtensionInterface {
   readonly dispose: () => void;
 }
 
+// This is the minimum version of vscode that we _want_ to support. We want to update the language server library, but that
+// requires 1.67 or later. If we change the minimum version in the package.json, then anyone on an older version of vscode
+// silently be unable to upgrade. So, the solution is to first bump the minimum version here and release. Then
+// bump the version in the package.json and release again. This way, anyone on an older version of vscode will get a warning
+// before silently being refused to upgrade.
+const MIN_VERSION = '1.67.0';
+
 /**
  * Returns the CodeQLExtensionInterface, or an empty object if the interface is not
  * available after activation is complete. This will happen if there is no cli
@@ -222,6 +231,8 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
   registerErrorStubs([checkForUpdatesCommand], command => (async () => {
     void showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
   }));
+
+  assertVSCodeVersionGreaterThan(MIN_VERSION);
 
   interface DistributionUpdateConfig {
     isUserInitiated: boolean;
@@ -1305,4 +1316,24 @@ function registerRemoteQueryTextProvider() {
       return params.get('queryText');
     },
   });
+}
+
+function assertVSCodeVersionGreaterThan(minVersion: string) {
+  try {
+    const parsedVersion = semver.parse(vscodeVersion);
+    const parsedMinVersion = semver.parse(minVersion);
+    if (!parsedVersion || !parsedMinVersion) {
+      void showAndLogWarningMessage(
+        `Could not do a version check of vscode because could not parse version number: actual vscode version ${vscodeVersion} or minimum supported vscode version ${minVersion}.`
+      );
+      return;
+    }
+
+    if (semver.lt(parsedVersion, parsedMinVersion)) {
+      const message = `The CodeQL extension requires VS Code version ${minVersion} or later. Current version is ${vscodeVersion}. Please update VS Code to get the latest features of CodeQL.`;
+      void showAndLogWarningMessage(message);
+    }
+  } catch (e) {
+    void showAndLogWarningMessage(`Could not do a version check because of an error: ${getErrorMessage(e)}`);
+  }
 }
