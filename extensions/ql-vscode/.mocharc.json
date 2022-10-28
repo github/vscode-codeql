@@ -1,0 +1,6 @@
+{
+  "exit": true,
+  "require": [
+    "test/mocha.setup.js"
+  ]
+}

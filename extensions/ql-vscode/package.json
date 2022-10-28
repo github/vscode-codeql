@@ -1248,7 +1248,7 @@
     "watch:extension": "tsc --watch",
     "watch:webpack": "gulp watchView",
     "test": "npm-run-all -p test:*",
-    "test:unit": "mocha --exit -r ts-node/register -r test/mocha.setup.js test/pure-tests/**/*.ts",
+    "test:unit": "mocha --config .mocharc.json test/pure-tests/**/*.ts",
     "test:view": "jest",
     "preintegration": "rm -rf ./out/vscode-tests && gulp",
     "integration": "node ./out/vscode-tests/run-integration-tests.js no-workspace,minimal-workspace",
