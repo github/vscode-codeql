@@ -47,6 +47,13 @@ export enum VariantAnalysisStatus {
   Canceled = 'canceled',
 }
 
+export function isFinalVariantAnalysisStatus(status: VariantAnalysisStatus): boolean {
+  return [
+    // All states that indicates the analysis has completed and cannot change status anymore.
+    VariantAnalysisStatus.Succeeded, VariantAnalysisStatus.Failed, VariantAnalysisStatus.Canceled,
+  ].includes(status);
+}
+
 export enum VariantAnalysisFailureReason {
   NoReposQueried = 'noReposQueried',
   InternalError = 'internalError',
