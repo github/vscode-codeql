@@ -31,7 +31,7 @@ import { commandRunner } from './commandRunner';
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
-import { getQueryId, getQueryText, QueryHistoryInfo } from './query-history-info';
+import { getActionsWorkflowRunUrl, getQueryId, getQueryText, QueryHistoryInfo } from './query-history-info';
 import { DatabaseManager } from './databases';
 import { registerQueryHistoryScrubber } from './query-history-scrubber';
 import { QueryStatus, variantAnalysisStatusToQueryStatus } from './query-status';
@@ -1214,16 +1214,17 @@ export class QueryHistoryManager extends DisposableObject {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
     // Remote queries only
-    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'remote') {
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
       return;
     }
 
-    const { actionsWorkflowRunId: workflowRunId, controllerRepository: { owner, name } } = finalSingleItem.remoteQuery;
+    if (finalSingleItem.t === 'local') {
+      return;
+    }
 
-    await commands.executeCommand(
-      'vscode.open',
-      Uri.parse(`https://github.com/${owner}/${name}/actions/runs/${workflowRunId}`)
-    );
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(finalSingleItem);
+
+    await commands.executeCommand('vscode.open', Uri.parse(actionsWorkflowRunUrl));
   }
 
   async handleCopyRepoList(

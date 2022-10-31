@@ -71,3 +71,15 @@ export function buildRepoLabel(item: RemoteQueryHistoryItem | VariantAnalysisHis
     assertNever(item);
   }
 }
+
+export function getActionsWorkflowRunUrl(item: RemoteQueryHistoryItem | VariantAnalysisHistoryItem): string {
+  if (item.t === 'remote') {
+    const { actionsWorkflowRunId: workflowRunId, controllerRepository: { owner, name } } = item.remoteQuery;
+    return `https://github.com/${owner}/${name}/actions/runs/${workflowRunId}`;
+  } else if (item.t === 'variant-analysis') {
+    const { actionsWorkflowRunId, controllerRepo: { fullName } } = item.variantAnalysis;
+    return `https://github.com/${fullName}/actions/runs/${actionsWorkflowRunId}`;
+  } else {
+    assertNever(item);
+  }
+}

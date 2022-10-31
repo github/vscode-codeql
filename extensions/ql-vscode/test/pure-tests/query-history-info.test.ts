@@ -1,7 +1,13 @@
 import { expect } from 'chai';
 
 import { QueryStatus } from '../../src/query-status';
-import { buildRepoLabel, getQueryId, getQueryText, getRawQueryName } from '../../src/query-history-info';
+import {
+  buildRepoLabel,
+  getActionsWorkflowRunUrl,
+  getQueryId,
+  getQueryText,
+  getRawQueryName
+} from '../../src/query-history-info';
 import { VariantAnalysisHistoryItem } from '../../src/remote-queries/variant-analysis-history-item';
 import { createMockVariantAnalysis } from '../../src/vscode-tests/factories/remote-queries/shared/variant-analysis';
 import { createMockScannedRepos } from '../../src/vscode-tests/factories/remote-queries/shared/scanned-repositories';
@@ -142,6 +148,20 @@ describe('Query history info', () => {
 
         expect(repoLabel).to.equal('2/4 repositories');
       });
+    });
+  });
+
+  describe('getActionsWorkflowRunUrl', () => {
+    it('should get the run url for remote query history items', () => {
+      const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(remoteQueryHistoryItem);
+
+      expect(actionsWorkflowRunUrl).to.equal(`https://github.com/${remoteQueryHistoryItem.remoteQuery.controllerRepository.owner}/${remoteQueryHistoryItem.remoteQuery.controllerRepository.name}/actions/runs/${remoteQueryHistoryItem.remoteQuery.actionsWorkflowRunId}`);
+    });
+
+    it('should get the run url for variant analysis history items', () => {
+      const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysisHistoryItem);
+
+      expect(actionsWorkflowRunUrl).to.equal(`https://github.com/${variantAnalysisHistoryItem.variantAnalysis.controllerRepo.fullName}/actions/runs/${variantAnalysisHistoryItem.variantAnalysis.actionsWorkflowRunId}`);
     });
   });
 });
