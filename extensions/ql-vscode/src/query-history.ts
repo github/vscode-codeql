@@ -1213,7 +1213,6 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    // Remote queries only
     if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
       return;
     }

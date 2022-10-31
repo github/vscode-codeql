@@ -155,13 +155,21 @@ describe('Query history info', () => {
     it('should get the run url for remote query history items', () => {
       const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(remoteQueryHistoryItem);
 
-      expect(actionsWorkflowRunUrl).to.equal(`https://github.com/${remoteQueryHistoryItem.remoteQuery.controllerRepository.owner}/${remoteQueryHistoryItem.remoteQuery.controllerRepository.name}/actions/runs/${remoteQueryHistoryItem.remoteQuery.actionsWorkflowRunId}`);
+      const remoteQuery = remoteQueryHistoryItem.remoteQuery;
+      const fullName = `${remoteQuery.controllerRepository.owner}/${remoteQuery.controllerRepository.name}`;
+      expect(actionsWorkflowRunUrl).to.equal(
+        `https://github.com/${fullName}/actions/runs/${remoteQuery.actionsWorkflowRunId}`
+      );
     });
 
     it('should get the run url for variant analysis history items', () => {
       const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysisHistoryItem);
 
-      expect(actionsWorkflowRunUrl).to.equal(`https://github.com/${variantAnalysisHistoryItem.variantAnalysis.controllerRepo.fullName}/actions/runs/${variantAnalysisHistoryItem.variantAnalysis.actionsWorkflowRunId}`);
+      const variantAnalysis = variantAnalysisHistoryItem.variantAnalysis;
+      const fullName = variantAnalysis.controllerRepo.fullName;
+      expect(actionsWorkflowRunUrl).to.equal(
+        `https://github.com/${fullName}/actions/runs/${variantAnalysis.actionsWorkflowRunId}`
+      );
     });
   });
 });
