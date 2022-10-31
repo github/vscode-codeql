@@ -26,7 +26,8 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
   }
 
   public async openView() {
-    this.getPanel().reveal(undefined, true);
+    const panel = await this.getPanel();
+    panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
   }
@@ -40,6 +41,9 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
       t: 'setVariantAnalysis',
       variantAnalysis,
     });
+
+    const panel = await this.getPanel();
+    panel.title = `${variantAnalysis.query.name} - CodeQL Query Results`;
   }
 
   public async updateRepoState(repoState: VariantAnalysisScannedRepositoryState): Promise<void> {
@@ -64,10 +68,12 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
     });
   }
 
-  protected getPanelConfig(): WebviewPanelConfig {
+  protected async getPanelConfig(): Promise<WebviewPanelConfig> {
+    const variantAnalysis = await this.manager.getVariantAnalysis(this.variantAnalysisId);
+
     return {
       viewId: VariantAnalysisView.viewType,
-      title: `CodeQL Query Results for ${this.variantAnalysisId}`,
+      title: variantAnalysis ? `${variantAnalysis.query.name} - CodeQL Query Results` : `Variant analysis ${this.variantAnalysisId} - CodeQL Query Results`,
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
       view: 'variant-analysis',
