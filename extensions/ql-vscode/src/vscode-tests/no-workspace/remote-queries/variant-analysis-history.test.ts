@@ -141,22 +141,32 @@ describe('Variant Analyses and QueryHistoryManager', function() {
       expect(qhm.treeDataProvider.allHistory[1]).to.deep.eq(rawQueryHistory[1]);
       expect(qhm.treeDataProvider.allHistory.length).to.eq(3);
     });
+
+    describe('if the item was previously removed', async () => {
+      it('should add it back to query history', async () => {
+        // Remove the first variant analysis
+        await qhm.handleRemoveHistoryItem(qhm.treeDataProvider.allHistory[0]);
+
+        // Add the item back to history
+        qhm.addQuery(rawQueryHistory[0]);
+        expect(removeVariantAnalysisStub).to.have.callCount(1);
+        expect(rehydrateVariantAnalysisStub).to.have.callCount(2);
+        expect(qhm.treeDataProvider.allHistory).to.deep.eq([rawQueryHistory[1], rawQueryHistory[0]]);
+      });
+    });
   });
 
   describe('Removing an item', async () => {
-    it('should remove the variant analysis history item', async () => {
+    it('should remove a single variant analysis history item', async () => {
       // Remove the first variant analysis
       await qhm.handleRemoveHistoryItem(qhm.treeDataProvider.allHistory[0]);
 
-      // Add the item back to history
-      qhm.addQuery(rawQueryHistory[0]);
       expect(removeVariantAnalysisStub).to.have.callCount(1);
-      expect(rehydrateVariantAnalysisStub).to.have.callCount(2);
-      expect(qhm.treeDataProvider.allHistory).to.deep.eq([rawQueryHistory[1], rawQueryHistory[0]]);
+      expect(qhm.treeDataProvider.allHistory).to.deep.eq([rawQueryHistory[1]]);
+      expect(qhm.treeDataProvider.allHistory.length).to.eq(1);
     });
 
-    it('should remove two queries from history', async () => {
-      // Remove both queries
+    it('should remove multiple variant analysis history items', async () => {
       await qhm.handleRemoveHistoryItem(undefined!, [qhm.treeDataProvider.allHistory[1], qhm.treeDataProvider.allHistory[0]]);
 
       expect(removeVariantAnalysisStub.callCount).to.eq(2);
