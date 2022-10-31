@@ -3,7 +3,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: "module",
-    project: ["tsconfig.json", "./src/**/tsconfig.json", "./gulpfile.ts/tsconfig.json", "./scripts/tsconfig.json"],
+    project: ["tsconfig.json", "./src/**/tsconfig.json", "./gulpfile.ts/tsconfig.json", "./scripts/tsconfig.json", "./.storybook/tsconfig.json"],
   },
   plugins: ["@typescript-eslint"],
   env: {
