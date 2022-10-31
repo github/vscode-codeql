@@ -153,10 +153,10 @@ export function hasRepoScanCompleted(repo: VariantAnalysisScannedRepository): bo
 
 /**
  * @param repo
- * @returns whether the repo scan is complete and has results that can be downloaded
+ * @returns whether the repo scan has an artifact that can be downloaded
  */
-export function repoScanHasResults(repo: VariantAnalysisScannedRepository): boolean {
-  return repo.analysisStatus === VariantAnalysisRepoStatus.Succeeded && (repo.resultCount || 0) > 0;
+export function repoHasDownloadableArtifact(repo: VariantAnalysisScannedRepository): boolean {
+  return repo.analysisStatus === VariantAnalysisRepoStatus.Succeeded;
 }
 
 /**

@@ -12,7 +12,7 @@ import {
 } from './gh-api/variant-analysis';
 import {
   hasRepoScanCompleted,
-  repoScanHasResults,
+  repoHasDownloadableArtifact,
   VariantAnalysis, VariantAnalysisQueryLanguage,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryDownloadStatus,
@@ -87,7 +87,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   private async isVariantAnalysisRepoComplete(variantAnalysisId: number, repo: VariantAnalysisScannedRepository): Promise<boolean> {
     if (!hasRepoScanCompleted(repo)) {
       return false;
-    } else if (!repoScanHasResults(repo)) {
+    } else if (!repoHasDownloadableArtifact(repo)) {
       return true;
     } else {
       const storageLocation = this.getVariantAnalysisStorageLocation(variantAnalysisId);
