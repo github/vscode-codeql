@@ -4,8 +4,9 @@ import {
   CompletedLocalQueryInfo,
   LocalQueryInfo,
 } from '../../../query-results';
-import { QueryWithResults } from '../../../run-queries-shared';
+import { QueryEvaluationInfo, QueryWithResults } from '../../../run-queries-shared';
 import { CancellationTokenSource } from 'vscode';
+import { QueryResultType } from '../../../pure/legacy-messages';
 
 export function createMockLocalQueryInfo(
   startTime: string,
@@ -63,4 +64,26 @@ export function createMockLocalQuery(
   }
 
   return fqi;
+}
+
+export function createMockQueryWithResults(
+  sandbox: sinon.SinonSandbox,
+  didRunSuccessfully = true,
+  hasInterpretedResults = true
+): QueryWithResults {
+  return {
+    query: {
+      hasInterpretedResults: () => Promise.resolve(hasInterpretedResults),
+      deleteQuery: sandbox.stub(),
+    } as unknown as QueryEvaluationInfo,
+    successful: didRunSuccessfully,
+    message: 'foo',
+    dispose: sandbox.spy(),
+    result: {
+      evaluationTime: 1,
+      queryId: 0,
+      runId: 0,
+      resultType: QueryResultType.SUCCESS,
+    }
+  };
 }

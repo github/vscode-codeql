@@ -7,7 +7,6 @@ import * as sinon from 'sinon';
 import { logger } from '../../logging';
 import { registerQueryHistoryScrubber } from '../../query-history-scrubber';
 import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
-import { QueryEvaluationInfo, QueryWithResults } from '../../run-queries-shared';
 import { QueryHistoryConfig, QueryHistoryConfigListener } from '../../config';
 import { LocalQueryInfo } from '../../query-results';
 import { DatabaseManager } from '../../databases';
@@ -20,10 +19,9 @@ import { RemoteQueriesManager } from '../../remote-queries/remote-queries-manage
 import { ResultsView } from '../../interface';
 import { EvalLogViewer } from '../../eval-log-viewer';
 import { QueryRunner } from '../../queryRunner';
-import { QueryResultType } from '../../pure/legacy-messages';
 import { VariantAnalysisManager } from '../../remote-queries/variant-analysis-manager';
 import { QueryHistoryInfo } from '../../query-history-info';
-import { createMockLocalQuery } from '../factories/local-queries/local-query-history-item';
+import { createMockLocalQuery, createMockQueryWithResults } from '../factories/local-queries/local-query-history-item';
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -129,10 +127,10 @@ describe('query-history', () => {
 
   beforeEach(() => {
     localQueryHistory = [
-      createMockLocalQuery('a', createMockQueryWithResults(true)),
-      createMockLocalQuery('b', createMockQueryWithResults(true)),
-      createMockLocalQuery('a', createMockQueryWithResults(false)),
-      createMockLocalQuery('a', createMockQueryWithResults(true)),
+      createMockLocalQuery('a', createMockQueryWithResults(sandbox, true)),
+      createMockLocalQuery('b', createMockQueryWithResults(sandbox, true)),
+      createMockLocalQuery('a', createMockQueryWithResults(sandbox, false)),
+      createMockLocalQuery('a', createMockQueryWithResults(sandbox, true)),
     ];
     allHistory = [...localQueryHistory];
   });
@@ -175,7 +173,7 @@ describe('query-history', () => {
     it('should throw an error when a query is not successful', async () => {
       const thisQuery = allHistory[3];
       queryHistoryManager = await createMockQueryHistory(allHistory);
-      allHistory[0] = createMockLocalQuery('a', createMockQueryWithResults(false));
+      allHistory[0] = createMockLocalQuery('a', createMockQueryWithResults(sandbox, false));
 
       try {
         await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, allHistory[0]]);
@@ -357,7 +355,7 @@ describe('query-history', () => {
 
 
     it('should get a tree item with raw results', async () => {
-      const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(true, /* raw results */ false));
+      const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(sandbox, true, /* raw results */ false));
       const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
       expect(treeItem.command).to.deep.eq({
         title: 'Query History Item',
@@ -371,14 +369,14 @@ describe('query-history', () => {
     });
 
     it('should get a tree item with interpreted results', async () => {
-      const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(true, /* interpreted results */ true));
+      const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(sandbox, true, /* interpreted results */ true));
       const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
       expect(treeItem.contextValue).to.eq('interpretedResultsItem');
       expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file(mockExtensionLocation + '/media/drive.svg').fsPath);
     });
 
     it('should get a tree item that did not complete successfully', async () => {
-      const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(false), false);
+      const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(sandbox, false), false);
       const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
       expect(treeItem.iconPath).to.eq(vscode.Uri.file(mockExtensionLocation + '/media/red-x.svg').fsPath);
     });
@@ -773,24 +771,6 @@ describe('query-history', () => {
       return new Promise((resolve) => setTimeout(resolve, ms));
     }
   });
-
-  function createMockQueryWithResults(didRunSuccessfully = true, hasInterpretedResults = true): QueryWithResults {
-    return {
-      query: {
-        hasInterpretedResults: () => Promise.resolve(hasInterpretedResults),
-        deleteQuery: sandbox.stub(),
-      } as unknown as QueryEvaluationInfo,
-      successful: didRunSuccessfully,
-      message: 'foo',
-      dispose: sandbox.spy(),
-      result: {
-        evaluationTime: 1,
-        queryId: 0,
-        runId: 0,
-        resultType: QueryResultType.SUCCESS,
-      }
-    };
-  }
 
   async function createMockQueryHistory(allHistory: QueryHistoryInfo[]) {
     const qhm = new QueryHistoryManager(
