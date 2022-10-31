@@ -116,287 +116,532 @@ describe('query-history', () => {
     sandbox.restore();
   });
 
-  describe('tryOpenExternalFile', () => {
-    it('should open an external file', async () => {
-      await tryOpenExternalFile('xxx');
-      expect(showTextDocumentSpy).to.have.been.calledOnceWith(
-        vscode.Uri.file('xxx')
-      );
-      expect(executeCommandSpy).not.to.have.been.called;
-    });
-
-    [
-      'too large to open',
-      'Files above 50MB cannot be synchronized with extensions',
-    ].forEach(msg => {
-      it(`should fail to open a file because "${msg}" and open externally`, async () => {
-        showTextDocumentSpy.throws(new Error(msg));
-        showInformationMessageSpy.returns({ title: 'Yes' });
-
+  describe('QueryHistoryManager', () => {
+    describe('tryOpenExternalFile', () => {
+      it('should open an external file', async () => {
         await tryOpenExternalFile('xxx');
-        const uri = vscode.Uri.file('xxx');
         expect(showTextDocumentSpy).to.have.been.calledOnceWith(
-          uri
+          vscode.Uri.file('xxx')
         );
-        expect(executeCommandSpy).to.have.been.calledOnceWith(
-          'revealFileInOS',
-          uri
-        );
-      });
-
-      it(`should fail to open a file because "${msg}" and NOT open externally`, async () => {
-        showTextDocumentSpy.throws(new Error(msg));
-        showInformationMessageSpy.returns({ title: 'No' });
-
-        await tryOpenExternalFile('xxx');
-        const uri = vscode.Uri.file('xxx');
-        expect(showTextDocumentSpy).to.have.been.calledOnceWith(uri);
-        expect(showInformationMessageSpy).to.have.been.called;
         expect(executeCommandSpy).not.to.have.been.called;
       });
+
+      [
+        'too large to open',
+        'Files above 50MB cannot be synchronized with extensions',
+      ].forEach(msg => {
+        it(`should fail to open a file because "${msg}" and open externally`, async () => {
+          showTextDocumentSpy.throws(new Error(msg));
+          showInformationMessageSpy.returns({ title: 'Yes' });
+
+          await tryOpenExternalFile('xxx');
+          const uri = vscode.Uri.file('xxx');
+          expect(showTextDocumentSpy).to.have.been.calledOnceWith(
+            uri
+          );
+          expect(executeCommandSpy).to.have.been.calledOnceWith(
+            'revealFileInOS',
+            uri
+          );
+        });
+
+        it(`should fail to open a file because "${msg}" and NOT open externally`, async () => {
+          showTextDocumentSpy.throws(new Error(msg));
+          showInformationMessageSpy.returns({ title: 'No' });
+
+          await tryOpenExternalFile('xxx');
+          const uri = vscode.Uri.file('xxx');
+          expect(showTextDocumentSpy).to.have.been.calledOnceWith(uri);
+          expect(showInformationMessageSpy).to.have.been.called;
+          expect(executeCommandSpy).not.to.have.been.called;
+        });
+      });
     });
-  });
 
-  describe('Local Queries', () => {
-    describe('findOtherQueryToCompare', () => {
-      it('should find the second query to compare when one is selected', async () => {
-        const thisQuery = localQueryHistory[3];
+    describe('handleItemClicked', () => {
+      it('should call the selectedCallback when an item is clicked', async () => {
         queryHistoryManager = await createMockQueryHistory(allHistory);
-        showQuickPickSpy.returns({ query: localQueryHistory[0] });
+        const itemClicked = allHistory[0];
+        await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked]);
 
-        const otherQuery = await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, []);
-        expect(otherQuery).to.eq(localQueryHistory[0]);
+        if (itemClicked.t == 'local') {
+          expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(itemClicked);
+        } else if (itemClicked.t == 'remote') {
+          expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith(itemClicked.queryId);
+        } else if (itemClicked.t == 'variant-analysis') {
+          expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith(itemClicked.variantAnalysis.id);
+        }
 
-        // only called with first item, other items filtered out
-        expect(showQuickPickSpy.getCalls().length).to.eq(1);
-        expect(showQuickPickSpy.firstCall.args[0][0].query).to.eq(localQueryHistory[0]);
+        expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(itemClicked);
       });
 
-      it('should handle cancelling out of the quick select', async () => {
-        const thisQuery = localQueryHistory[3];
+      it('should do nothing if there is a multi-selection', async () => {
         queryHistoryManager = await createMockQueryHistory(allHistory);
+        const itemClicked = allHistory[0];
+        const secondItemClicked = allHistory[1];
 
-        const otherQuery = await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, []);
-        expect(otherQuery).to.be.undefined;
+        await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked, secondItemClicked]);
 
-        // only called with first item, other items filtered out
-        expect(showQuickPickSpy.getCalls().length).to.eq(1);
-        expect(showQuickPickSpy.firstCall.args[0][0].query).to.eq(localQueryHistory[0]);
+        expect(localQueriesResultsViewStub.showResults).not.to.have.been.called;
+        expect(remoteQueriesManagerStub.openRemoteQueryResults).not.to.have.been.called;
+        expect(variantAnalysisManagerStub.showView).not.to.have.been.called;
+        expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
       });
 
-      it('should compare against 2 queries', async () => {
-        const thisQuery = localQueryHistory[3];
+      it('should do nothing if there is no selection', async () => {
         queryHistoryManager = await createMockQueryHistory(allHistory);
 
-        const otherQuery = await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, localQueryHistory[0]]);
-        expect(otherQuery).to.eq(localQueryHistory[0]);
-        expect(showQuickPickSpy).not.to.have.been.called;
+        await queryHistoryManager.handleItemClicked(undefined!, []);
+
+        expect(localQueriesResultsViewStub.showResults).not.to.have.been.called;
+        expect(remoteQueriesManagerStub.openRemoteQueryResults).not.to.have.been.called;
+        expect(variantAnalysisManagerStub.showView).not.to.have.been.called;
+        expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
+      });
+    });
+
+    describe('handleRemoveHistoryItem', () => {
+      it('should remove an item and not select a new one', async () => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        // initialize the selection
+        await queryHistoryManager.treeView.reveal(allHistory[0], { select: true });
+
+        // deleting the first item when a different item is selected
+        // will not change the selection
+        const toDelete = allHistory[1];
+        const selected = allHistory[3];
+
+        // select the item we want
+        await queryHistoryManager.treeView.reveal(selected, { select: true });
+
+        // should be selected
+        expect(queryHistoryManager.treeDataProvider.getCurrent()).to.deep.eq(selected);
+
+        // remove an item
+        await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
+
+        if (toDelete.t == 'local') {
+          expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
+        } else if (toDelete.t == 'remote') {
+          expect(remoteQueriesManagerStub.removeRemoteQuery).to.have.been.calledOnceWith((toDelete as RemoteQueryHistoryItem).queryId);
+        } else if (toDelete.t == 'variant-analysis') {
+          expect(variantAnalysisManagerStub.removeVariantAnalysis).to.have.been.calledOnceWith((toDelete as VariantAnalysisHistoryItem).variantAnalysis.id);
+        }
+
+        // the same item should be selected
+        if (selected.t == 'local') {
+          expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(selected);
+        } else if (toDelete.t == 'remote') {
+          expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith((selected as RemoteQueryHistoryItem).queryId);
+        } else if (toDelete.t == 'variant-analysis') {
+          expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith((selected as VariantAnalysisHistoryItem).variantAnalysis.id);
+        }
+
+        expect(queryHistoryManager.treeDataProvider.getCurrent()).to.deep.eq(selected);
+        expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
       });
 
-      it('should throw an error when a query is not successful', async () => {
-        const thisQuery = localQueryHistory[3];
+      it('should remove an item and select a new one', async () => {
         queryHistoryManager = await createMockQueryHistory(allHistory);
-        allHistory[0] = createMockLocalQuery('a', createMockQueryWithResults(sandbox, false));
 
-        try {
-          await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, allHistory[0]]);
-          assert(false, 'Should have thrown');
-        } catch (e) {
-          expect(getErrorMessage(e)).to.eq('Please select a successful query.');
+        // deleting the selected item automatically selects next item
+        const toDelete = allHistory[1];
+        const newSelected = allHistory[2];
+        // avoid triggering the callback by setting the field directly
+
+        // select the item we want
+        await queryHistoryManager.treeView.reveal(toDelete, { select: true });
+        await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
+
+        if (toDelete.t == 'local') {
+          expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
+        } else if (toDelete.t == 'remote') {
+          expect(remoteQueriesManagerStub.removeRemoteQuery).to.have.been.calledOnceWith((toDelete as RemoteQueryHistoryItem).queryId);
+        } else if (toDelete.t == 'variant-analysis') {
+          expect(variantAnalysisManagerStub.removeVariantAnalysis).to.have.been.calledOnceWith((toDelete as VariantAnalysisHistoryItem).variantAnalysis.id);
+        }
+
+        // the current item should have been selected
+        if (newSelected.t == 'local') {
+          expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(newSelected);
+        } else if (toDelete.t == 'remote') {
+          expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith((newSelected as RemoteQueryHistoryItem).queryId);
+        } else if (toDelete.t == 'variant-analysis') {
+          expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith((newSelected as VariantAnalysisHistoryItem).variantAnalysis.id);
+        }
+
+        expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(newSelected);
+        expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
+      });
+    });
+
+    describe('determineSelection', () => {
+      const singleItem = 'a';
+      const multipleItems = ['b', 'c', 'd'];
+
+      it('should get the selection from parameters', async () => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        const selection = (queryHistoryManager as any).determineSelection(singleItem, multipleItems);
+        expect(selection).to.deep.eq({
+          finalSingleItem: singleItem,
+          finalMultiSelect: multipleItems
+        });
+      });
+
+      it('should get the selection when single selection is empty', async () => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        const selection = (queryHistoryManager as any).determineSelection(undefined, multipleItems);
+        expect(selection).to.deep.eq({
+          finalSingleItem: multipleItems[0],
+          finalMultiSelect: multipleItems
+        });
+      });
+
+      it('should get the selection when multi-selection is empty', async () => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        const selection = (queryHistoryManager as any).determineSelection(singleItem, undefined);
+        expect(selection).to.deep.eq({
+          finalSingleItem: singleItem,
+          finalMultiSelect: [singleItem]
+        });
+      });
+
+      it('should get the selection from the treeView when both selections are empty', async () => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        const p = new Promise<void>(done => {
+          queryHistoryManager!.treeView.onDidChangeSelection(s => {
+            if (s.selection[0] !== allHistory[1]) {
+              return;
+            }
+            const selection = (queryHistoryManager as any).determineSelection(undefined, undefined);
+            expect(selection).to.deep.eq({
+              finalSingleItem: allHistory[1],
+              finalMultiSelect: [allHistory[1]]
+            });
+            done();
+          });
+        });
+
+        // I can't explain why, but the first time the onDidChangeSelection event fires, the selection is
+        // not correct (it is inexplicably allHistory[2]). So we fire the event a second time to get the
+        // correct selection.
+        await queryHistoryManager.treeView.reveal(allHistory[0], { select: true });
+        await queryHistoryManager.treeView.reveal(allHistory[1], { select: true });
+        await p;
+      });
+
+      it('should get the selection from the treeDataProvider when both selections and the treeView are empty', async () => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        await queryHistoryManager.treeView.reveal(allHistory[1], { select: true });
+        const selection = (queryHistoryManager as any).determineSelection(undefined, undefined);
+        expect(selection).to.deep.eq({
+          finalSingleItem: allHistory[1],
+          finalMultiSelect: [allHistory[1]]
+        });
+      });
+    });
+
+    describe('Local Queries', () => {
+      describe('findOtherQueryToCompare', () => {
+        it('should find the second query to compare when one is selected', async () => {
+          const thisQuery = localQueryHistory[3];
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+          showQuickPickSpy.returns({ query: localQueryHistory[0] });
+
+          const otherQuery = await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, []);
+          expect(otherQuery).to.eq(localQueryHistory[0]);
+
+          // only called with first item, other items filtered out
+          expect(showQuickPickSpy.getCalls().length).to.eq(1);
+          expect(showQuickPickSpy.firstCall.args[0][0].query).to.eq(localQueryHistory[0]);
+        });
+
+        it('should handle cancelling out of the quick select', async () => {
+          const thisQuery = localQueryHistory[3];
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+
+          const otherQuery = await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, []);
+          expect(otherQuery).to.be.undefined;
+
+          // only called with first item, other items filtered out
+          expect(showQuickPickSpy.getCalls().length).to.eq(1);
+          expect(showQuickPickSpy.firstCall.args[0][0].query).to.eq(localQueryHistory[0]);
+        });
+
+        it('should compare against 2 queries', async () => {
+          const thisQuery = localQueryHistory[3];
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+
+          const otherQuery = await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, localQueryHistory[0]]);
+          expect(otherQuery).to.eq(localQueryHistory[0]);
+          expect(showQuickPickSpy).not.to.have.been.called;
+        });
+
+        it('should throw an error when a query is not successful', async () => {
+          const thisQuery = localQueryHistory[3];
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+          allHistory[0] = createMockLocalQuery('a', createMockQueryWithResults(sandbox, false));
+
+          try {
+            await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, allHistory[0]]);
+            assert(false, 'Should have thrown');
+          } catch (e) {
+            expect(getErrorMessage(e)).to.eq('Please select a successful query.');
+          }
+        });
+
+        it('should throw an error when a databases are not the same', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+
+          try {
+            // localQueryHistory[0] is database a
+            // localQueryHistory[1] is database b
+            await (queryHistoryManager as any).findOtherQueryToCompare(localQueryHistory[0], [localQueryHistory[0], localQueryHistory[1]]);
+            assert(false, 'Should have thrown');
+          } catch (e) {
+            expect(getErrorMessage(e)).to.eq('Query databases must be the same.');
+          }
+        });
+
+        it('should throw an error when more than 2 queries selected', async () => {
+          const thisQuery = localQueryHistory[3];
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+
+          try {
+            await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, localQueryHistory[0], localQueryHistory[1]]);
+            assert(false, 'Should have thrown');
+          } catch (e) {
+            expect(getErrorMessage(e)).to.eq('Please select no more than 2 queries.');
+          }
+        });
+      });
+
+      describe('Compare callback', () => {
+        it('should call the compare callback', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+          await queryHistoryManager.handleCompareWith(localQueryHistory[0], [localQueryHistory[0], localQueryHistory[3]]);
+          expect(doCompareCallback).to.have.been.calledOnceWith(localQueryHistory[0], localQueryHistory[3]);
+        });
+
+        it('should avoid calling the compare callback when only one item is selected', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+          await queryHistoryManager.handleCompareWith(localQueryHistory[0], [localQueryHistory[0]]);
+          expect(doCompareCallback).not.to.have.been.called;
+        });
+      });
+
+      describe('updateCompareWith', () => {
+        it('should update compareWithItem when there is a single item', async () => {
+          queryHistoryManager = await createMockQueryHistory([]);
+          (queryHistoryManager as any).updateCompareWith(['a']);
+          expect(queryHistoryManager.compareWithItem).to.be.eq('a');
+        });
+
+        it('should delete compareWithItem when there are 0 items', async () => {
+          queryHistoryManager = await createMockQueryHistory([]);
+          queryHistoryManager.compareWithItem = localQueryHistory[0];
+          (queryHistoryManager as any).updateCompareWith([]);
+          expect(queryHistoryManager.compareWithItem).to.be.undefined;
+        });
+
+        it('should delete compareWithItem when there are more than 2 items', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+          queryHistoryManager.compareWithItem = localQueryHistory[0];
+          (queryHistoryManager as any).updateCompareWith([localQueryHistory[0], localQueryHistory[1], localQueryHistory[2]]);
+          expect(queryHistoryManager.compareWithItem).to.be.undefined;
+        });
+
+        it('should delete compareWithItem when there are 2 items and disjoint from compareWithItem', async () => {
+          queryHistoryManager = await createMockQueryHistory([]);
+          queryHistoryManager.compareWithItem = localQueryHistory[0];
+          (queryHistoryManager as any).updateCompareWith([localQueryHistory[1], localQueryHistory[2]]);
+          expect(queryHistoryManager.compareWithItem).to.be.undefined;
+        });
+
+        it('should do nothing when compareWithItem exists and exactly 2 items', async () => {
+          queryHistoryManager = await createMockQueryHistory([]);
+          queryHistoryManager.compareWithItem = localQueryHistory[0];
+          (queryHistoryManager as any).updateCompareWith([localQueryHistory[0], localQueryHistory[1]]);
+          expect(queryHistoryManager.compareWithItem).to.be.eq(localQueryHistory[0]);
+        });
+      });
+    });
+
+    describe('query history scrubber', () => {
+      let clock: sinon.SinonFakeTimers;
+      let deregister: vscode.Disposable | undefined;
+      let mockCtx: vscode.ExtensionContext;
+      let runCount = 0;
+
+      // We don't want our times to align exactly with the hour,
+      // so we can better mimic real life
+      const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;
+      const tmpDir = tmp.dirSync({
+        unsafeCleanup: true
+      });
+
+      beforeEach(() => {
+        clock = sandbox.useFakeTimers({
+          toFake: ['setInterval', 'Date']
+        });
+        mockCtx = {
+          globalState: {
+            lastScrubTime: Date.now(),
+            get(key: string) {
+              if (key !== 'lastScrubTime') {
+                throw new Error(`Unexpected key: ${key}`);
+              }
+              return this.lastScrubTime;
+            },
+            async update(key: string, value: any) {
+              if (key !== 'lastScrubTime') {
+                throw new Error(`Unexpected key: ${key}`);
+              }
+              this.lastScrubTime = value;
+            }
+          }
+        } as any as vscode.ExtensionContext;
+      });
+
+      afterEach(() => {
+        clock.restore();
+        if (deregister) {
+          deregister.dispose();
+          deregister = undefined;
         }
       });
 
-      it('should throw an error when a databases are not the same', async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
+      it('should not throw an error when the query directory does not exist', async function() {
+        // because of the waits, we need to have a higher timeout on this test.
+        this.timeout(5000);
+        registerScrubber('idontexist');
 
-        try {
-          // localQueryHistory[0] is database a
-          // localQueryHistory[1] is database b
-          await (queryHistoryManager as any).findOtherQueryToCompare(localQueryHistory[0], [localQueryHistory[0], localQueryHistory[1]]);
-          assert(false, 'Should have thrown');
-        } catch (e) {
-          expect(getErrorMessage(e)).to.eq('Query databases must be the same.');
-        }
+        clock.tick(ONE_HOUR_IN_MS);
+        await wait();
+        expect(runCount, 'Should not have called the scrubber').to.eq(0);
+
+        clock.tick(ONE_HOUR_IN_MS - 1);
+        await wait();
+        expect(runCount, 'Should not have called the scrubber').to.eq(0);
+
+        clock.tick(1);
+        await wait();
+        expect(runCount, 'Should have called the scrubber once').to.eq(1);
+
+        clock.tick(TWO_HOURS_IN_MS);
+        await wait();
+        expect(runCount, 'Should have called the scrubber a second time').to.eq(2);
+
+        expect((mockCtx.globalState as any).lastScrubTime).to.eq(TWO_HOURS_IN_MS * 2, 'Should have scrubbed the last time at 4 hours.');
       });
 
-      it('should throw an error when more than 2 queries selected', async () => {
-        const thisQuery = localQueryHistory[3];
-        queryHistoryManager = await createMockQueryHistory(allHistory);
+      it('should scrub directories', async function() {
+        this.timeout(5000);
+        // create two query directories that are right around the cut off time
+        const queryDir = createMockQueryDir(ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, THREE_HOURS_IN_MS);
+        registerScrubber(queryDir);
 
-        try {
-          await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, localQueryHistory[0], localQueryHistory[1]]);
-          assert(false, 'Should have thrown');
-        } catch (e) {
-          expect(getErrorMessage(e)).to.eq('Please select no more than 2 queries.');
-        }
-      });
-    });
+        clock.tick(TWO_HOURS_IN_MS);
+        await wait();
 
-    describe('Compare callback', () => {
-      it('should call the compare callback', async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
-        await queryHistoryManager.handleCompareWith(localQueryHistory[0], [localQueryHistory[0], localQueryHistory[3]]);
-        expect(doCompareCallback).to.have.been.calledOnceWith(localQueryHistory[0], localQueryHistory[3]);
-      });
+        // should have deleted only the invalid locations
+        expectDirectories(
+          queryDir,
+          toQueryDirName(ONE_HOUR_IN_MS),
+          toQueryDirName(TWO_HOURS_IN_MS),
+          toQueryDirName(THREE_HOURS_IN_MS),
+        );
 
-      it('should avoid calling the compare callback when only one item is selected', async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
-        await queryHistoryManager.handleCompareWith(localQueryHistory[0], [localQueryHistory[0]]);
-        expect(doCompareCallback).not.to.have.been.called;
-      });
-    });
+        clock.tick(LESS_THAN_ONE_DAY);
+        await wait();
 
-    describe('updateCompareWith', () => {
-      it('should update compareWithItem when there is a single item', async () => {
-        queryHistoryManager = await createMockQueryHistory([]);
-        (queryHistoryManager as any).updateCompareWith(['a']);
-        expect(queryHistoryManager.compareWithItem).to.be.eq('a');
-      });
+        // nothing should have happened...yet
+        expectDirectories(
+          queryDir,
+          toQueryDirName(ONE_HOUR_IN_MS),
+          toQueryDirName(TWO_HOURS_IN_MS),
+          toQueryDirName(THREE_HOURS_IN_MS),
+        );
 
-      it('should delete compareWithItem when there are 0 items', async () => {
-        queryHistoryManager = await createMockQueryHistory([]);
-        queryHistoryManager.compareWithItem = localQueryHistory[0];
-        (queryHistoryManager as any).updateCompareWith([]);
-        expect(queryHistoryManager.compareWithItem).to.be.undefined;
-      });
+        clock.tick(1000);
+        await wait();
 
-      it('should delete compareWithItem when there are more than 2 items', async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
-        queryHistoryManager.compareWithItem = localQueryHistory[0];
-        (queryHistoryManager as any).updateCompareWith([localQueryHistory[0], localQueryHistory[1], localQueryHistory[2]]);
-        expect(queryHistoryManager.compareWithItem).to.be.undefined;
-      });
+        // should have deleted the two older directories
+        // even though they have different time stamps,
+        // they both expire during the same scrubbing period
+        expectDirectories(
+          queryDir,
+          toQueryDirName(THREE_HOURS_IN_MS),
+        );
 
-      it('should delete compareWithItem when there are 2 items and disjoint from compareWithItem', async () => {
-        queryHistoryManager = await createMockQueryHistory([]);
-        queryHistoryManager.compareWithItem = localQueryHistory[0];
-        (queryHistoryManager as any).updateCompareWith([localQueryHistory[1], localQueryHistory[2]]);
-        expect(queryHistoryManager.compareWithItem).to.be.undefined;
+        // Wait until the next scrub time and the final directory is deleted
+        clock.tick(TWO_HOURS_IN_MS);
+        await wait();
+
+        // should have deleted everything
+        expectDirectories(
+          queryDir
+        );
       });
 
-      it('should do nothing when compareWithItem exists and exactly 2 items', async () => {
-        queryHistoryManager = await createMockQueryHistory([]);
-        queryHistoryManager.compareWithItem = localQueryHistory[0];
-        (queryHistoryManager as any).updateCompareWith([localQueryHistory[0], localQueryHistory[1]]);
-        expect(queryHistoryManager.compareWithItem).to.be.eq(localQueryHistory[0]);
-      });
-    });
-  });
-
-  describe('handleItemClicked', () => {
-    it('should call the selectedCallback when an item is clicked', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      const itemClicked = allHistory[0];
-      await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked]);
-
-      if (itemClicked.t == 'local') {
-        expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(itemClicked);
-      } else if (itemClicked.t == 'remote') {
-        expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith(itemClicked.queryId);
-      } else if (itemClicked.t == 'variant-analysis') {
-        expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith(itemClicked.variantAnalysis.id);
+      function expectDirectories(queryDir: string, ...dirNames: string[]) {
+        const files = fs.readdirSync(queryDir);
+        expect(files.sort()).to.deep.eq(dirNames.sort());
       }
 
-      expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(itemClicked);
-    });
+      function createMockQueryDir(...timestamps: number[]) {
+        const dir = tmpDir.name;
+        const queryDir = path.join(dir, 'query');
+        // create qyuery directory and fill it with some query directories
+        fs.mkdirSync(queryDir);
 
-    it('should do nothing if there is a multi-selection', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      const itemClicked = allHistory[0];
-      const secondItemClicked = allHistory[1];
+        // create an invalid file
+        const invalidFile = path.join(queryDir, 'invalid.txt');
+        fs.writeFileSync(invalidFile, 'invalid');
 
-      await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked, secondItemClicked]);
+        // create a directory without a timestamp file
+        const noTimestampDir = path.join(queryDir, 'noTimestampDir');
+        fs.mkdirSync(noTimestampDir);
+        fs.writeFileSync(path.join(noTimestampDir, 'invalid.txt'), 'invalid');
 
-      expect(localQueriesResultsViewStub.showResults).not.to.have.been.called;
-      expect(remoteQueriesManagerStub.openRemoteQueryResults).not.to.have.been.called;
-      expect(variantAnalysisManagerStub.showView).not.to.have.been.called;
-      expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
-    });
+        // create a directory with a timestamp file, but is invalid
+        const invalidTimestampDir = path.join(queryDir, 'invalidTimestampDir');
+        fs.mkdirSync(invalidTimestampDir);
+        fs.writeFileSync(path.join(invalidTimestampDir, 'timestamp'), 'invalid');
 
-    it('should do nothing if there is no selection', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
+        // create a directories with a valid timestamp files from the args
+        timestamps.forEach((timestamp) => {
+          const dir = path.join(queryDir, toQueryDirName(timestamp));
+          fs.mkdirSync(dir);
+          fs.writeFileSync(path.join(dir, 'timestamp'), `${Date.now() + timestamp}`);
+        });
 
-      await queryHistoryManager.handleItemClicked(undefined!, []);
-
-      expect(localQueriesResultsViewStub.showResults).not.to.have.been.called;
-      expect(remoteQueriesManagerStub.openRemoteQueryResults).not.to.have.been.called;
-      expect(variantAnalysisManagerStub.showView).not.to.have.been.called;
-      expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
-    });
-  });
-
-  describe('handleRemoveHistoryItem', () => {
-    it('should remove an item and not select a new one', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      // initialize the selection
-      await queryHistoryManager.treeView.reveal(allHistory[0], { select: true });
-
-      // deleting the first item when a different item is selected
-      // will not change the selection
-      const toDelete = allHistory[1];
-      const selected = allHistory[3];
-
-      // select the item we want
-      await queryHistoryManager.treeView.reveal(selected, { select: true });
-
-      // should be selected
-      expect(queryHistoryManager.treeDataProvider.getCurrent()).to.deep.eq(selected);
-
-      // remove an item
-      await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
-
-      if (toDelete.t == 'local') {
-        expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
-      } else if (toDelete.t == 'remote') {
-        expect(remoteQueriesManagerStub.removeRemoteQuery).to.have.been.calledOnceWith((toDelete as RemoteQueryHistoryItem).queryId);
-      } else if (toDelete.t == 'variant-analysis') {
-        expect(variantAnalysisManagerStub.removeVariantAnalysis).to.have.been.calledOnceWith((toDelete as VariantAnalysisHistoryItem).variantAnalysis.id);
+        return queryDir;
       }
 
-      // the same item should be selected
-      if (selected.t == 'local') {
-        expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(selected);
-      } else if (toDelete.t == 'remote') {
-        expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith((selected as RemoteQueryHistoryItem).queryId);
-      } else if (toDelete.t == 'variant-analysis') {
-        expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith((selected as VariantAnalysisHistoryItem).variantAnalysis.id);
+      function toQueryDirName(timestamp: number) {
+        return `query-${timestamp}`;
       }
 
-      expect(queryHistoryManager.treeDataProvider.getCurrent()).to.deep.eq(selected);
-      expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
-    });
-
-    it('should remove an item and select a new one', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      // deleting the selected item automatically selects next item
-      const toDelete = allHistory[1];
-      const newSelected = allHistory[2];
-      // avoid triggering the callback by setting the field directly
-
-      // select the item we want
-      await queryHistoryManager.treeView.reveal(toDelete, { select: true });
-      await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
-
-      if (toDelete.t == 'local') {
-        expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
-      } else if (toDelete.t == 'remote') {
-        expect(remoteQueriesManagerStub.removeRemoteQuery).to.have.been.calledOnceWith((toDelete as RemoteQueryHistoryItem).queryId);
-      } else if (toDelete.t == 'variant-analysis') {
-        expect(variantAnalysisManagerStub.removeVariantAnalysis).to.have.been.calledOnceWith((toDelete as VariantAnalysisHistoryItem).variantAnalysis.id);
+      function registerScrubber(dir: string) {
+        deregister = registerQueryHistoryScrubber(
+          ONE_HOUR_IN_MS,
+          TWO_HOURS_IN_MS,
+          LESS_THAN_ONE_DAY,
+          dir,
+          {
+            removeDeletedQueries: () => { return Promise.resolve(); }
+          } as QueryHistoryManager,
+          mockCtx,
+          {
+            increment: () => runCount++
+          }
+        );
       }
 
-      // the current item should have been selected
-      if (newSelected.t == 'local') {
-        expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(newSelected);
-      } else if (toDelete.t == 'remote') {
-        expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith((newSelected as RemoteQueryHistoryItem).queryId);
-      } else if (toDelete.t == 'variant-analysis') {
-        expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith((newSelected as VariantAnalysisHistoryItem).variantAnalysis.id);
+      async function wait(ms = 500) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
       }
-
-      expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(newSelected);
-      expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
     });
   });
 
@@ -460,72 +705,6 @@ describe('query-history', () => {
       historyTreeDataProvider.allHistory.push(mockQuery);
       expect(historyTreeDataProvider.getChildren()).to.deep.eq([mockQuery]);
       expect(historyTreeDataProvider.getChildren(mockQuery)).to.deep.eq([]);
-    });
-  });
-
-  describe('determineSelection', () => {
-    const singleItem = 'a';
-    const multipleItems = ['b', 'c', 'd'];
-
-    it('should get the selection from parameters', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      const selection = (queryHistoryManager as any).determineSelection(singleItem, multipleItems);
-      expect(selection).to.deep.eq({
-        finalSingleItem: singleItem,
-        finalMultiSelect: multipleItems
-      });
-    });
-
-    it('should get the selection when single selection is empty', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      const selection = (queryHistoryManager as any).determineSelection(undefined, multipleItems);
-      expect(selection).to.deep.eq({
-        finalSingleItem: multipleItems[0],
-        finalMultiSelect: multipleItems
-      });
-    });
-
-    it('should get the selection when multi-selection is empty', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      const selection = (queryHistoryManager as any).determineSelection(singleItem, undefined);
-      expect(selection).to.deep.eq({
-        finalSingleItem: singleItem,
-        finalMultiSelect: [singleItem]
-      });
-    });
-
-    it('should get the selection from the treeView when both selections are empty', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      const p = new Promise<void>(done => {
-        queryHistoryManager!.treeView.onDidChangeSelection(s => {
-          if (s.selection[0] !== allHistory[1]) {
-            return;
-          }
-          const selection = (queryHistoryManager as any).determineSelection(undefined, undefined);
-          expect(selection).to.deep.eq({
-            finalSingleItem: allHistory[1],
-            finalMultiSelect: [allHistory[1]]
-          });
-          done();
-        });
-      });
-
-      // I can't explain why, but the first time the onDidChangeSelection event fires, the selection is
-      // not correct (it is inexplicably allHistory[2]). So we fire the event a second time to get the
-      // correct selection.
-      await queryHistoryManager.treeView.reveal(allHistory[0], { select: true });
-      await queryHistoryManager.treeView.reveal(allHistory[1], { select: true });
-      await p;
-    });
-
-    it('should get the selection from the treeDataProvider when both selections and the treeView are empty', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      await queryHistoryManager.treeView.reveal(allHistory[1], { select: true });
-      const selection = (queryHistoryManager as any).determineSelection(undefined, undefined);
-      expect(selection).to.deep.eq({
-        finalSingleItem: allHistory[1],
-        finalMultiSelect: [allHistory[1]]
-      });
     });
   });
 
@@ -652,183 +831,6 @@ describe('query-history', () => {
           t
         };
       }
-    }
-  });
-
-  describe('query history scrubber', () => {
-    let clock: sinon.SinonFakeTimers;
-    let deregister: vscode.Disposable | undefined;
-    let mockCtx: vscode.ExtensionContext;
-    let runCount = 0;
-
-    // We don't want our times to align exactly with the hour,
-    // so we can better mimic real life
-    const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;
-    const tmpDir = tmp.dirSync({
-      unsafeCleanup: true
-    });
-
-    beforeEach(() => {
-      clock = sandbox.useFakeTimers({
-        toFake: ['setInterval', 'Date']
-      });
-      mockCtx = {
-        globalState: {
-          lastScrubTime: Date.now(),
-          get(key: string) {
-            if (key !== 'lastScrubTime') {
-              throw new Error(`Unexpected key: ${key}`);
-            }
-            return this.lastScrubTime;
-          },
-          async update(key: string, value: any) {
-            if (key !== 'lastScrubTime') {
-              throw new Error(`Unexpected key: ${key}`);
-            }
-            this.lastScrubTime = value;
-          }
-        }
-      } as any as vscode.ExtensionContext;
-    });
-
-    afterEach(() => {
-      clock.restore();
-      if (deregister) {
-        deregister.dispose();
-        deregister = undefined;
-      }
-    });
-
-    it('should not throw an error when the query directory does not exist', async function() {
-      // because of the waits, we need to have a higher timeout on this test.
-      this.timeout(5000);
-      registerScrubber('idontexist');
-
-      clock.tick(ONE_HOUR_IN_MS);
-      await wait();
-      expect(runCount, 'Should not have called the scrubber').to.eq(0);
-
-      clock.tick(ONE_HOUR_IN_MS - 1);
-      await wait();
-      expect(runCount, 'Should not have called the scrubber').to.eq(0);
-
-      clock.tick(1);
-      await wait();
-      expect(runCount, 'Should have called the scrubber once').to.eq(1);
-
-      clock.tick(TWO_HOURS_IN_MS);
-      await wait();
-      expect(runCount, 'Should have called the scrubber a second time').to.eq(2);
-
-      expect((mockCtx.globalState as any).lastScrubTime).to.eq(TWO_HOURS_IN_MS * 2, 'Should have scrubbed the last time at 4 hours.');
-    });
-
-    it('should scrub directories', async function() {
-      this.timeout(5000);
-      // create two query directories that are right around the cut off time
-      const queryDir = createMockQueryDir(ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, THREE_HOURS_IN_MS);
-      registerScrubber(queryDir);
-
-      clock.tick(TWO_HOURS_IN_MS);
-      await wait();
-
-      // should have deleted only the invalid locations
-      expectDirectories(
-        queryDir,
-        toQueryDirName(ONE_HOUR_IN_MS),
-        toQueryDirName(TWO_HOURS_IN_MS),
-        toQueryDirName(THREE_HOURS_IN_MS),
-      );
-
-      clock.tick(LESS_THAN_ONE_DAY);
-      await wait();
-
-      // nothing should have happened...yet
-      expectDirectories(
-        queryDir,
-        toQueryDirName(ONE_HOUR_IN_MS),
-        toQueryDirName(TWO_HOURS_IN_MS),
-        toQueryDirName(THREE_HOURS_IN_MS),
-      );
-
-      clock.tick(1000);
-      await wait();
-
-      // should have deleted the two older directories
-      // even though they have different time stamps,
-      // they both expire during the same scrubbing period
-      expectDirectories(
-        queryDir,
-        toQueryDirName(THREE_HOURS_IN_MS),
-      );
-
-      // Wait until the next scrub time and the final directory is deleted
-      clock.tick(TWO_HOURS_IN_MS);
-      await wait();
-
-      // should have deleted everything
-      expectDirectories(
-        queryDir
-      );
-    });
-
-    function expectDirectories(queryDir: string, ...dirNames: string[]) {
-      const files = fs.readdirSync(queryDir);
-      expect(files.sort()).to.deep.eq(dirNames.sort());
-    }
-
-    function createMockQueryDir(...timestamps: number[]) {
-      const dir = tmpDir.name;
-      const queryDir = path.join(dir, 'query');
-      // create qyuery directory and fill it with some query directories
-      fs.mkdirSync(queryDir);
-
-      // create an invalid file
-      const invalidFile = path.join(queryDir, 'invalid.txt');
-      fs.writeFileSync(invalidFile, 'invalid');
-
-      // create a directory without a timestamp file
-      const noTimestampDir = path.join(queryDir, 'noTimestampDir');
-      fs.mkdirSync(noTimestampDir);
-      fs.writeFileSync(path.join(noTimestampDir, 'invalid.txt'), 'invalid');
-
-      // create a directory with a timestamp file, but is invalid
-      const invalidTimestampDir = path.join(queryDir, 'invalidTimestampDir');
-      fs.mkdirSync(invalidTimestampDir);
-      fs.writeFileSync(path.join(invalidTimestampDir, 'timestamp'), 'invalid');
-
-      // create a directories with a valid timestamp files from the args
-      timestamps.forEach((timestamp) => {
-        const dir = path.join(queryDir, toQueryDirName(timestamp));
-        fs.mkdirSync(dir);
-        fs.writeFileSync(path.join(dir, 'timestamp'), `${Date.now() + timestamp}`);
-      });
-
-      return queryDir;
-    }
-
-    function toQueryDirName(timestamp: number) {
-      return `query-${timestamp}`;
-    }
-
-    function registerScrubber(dir: string) {
-      deregister = registerQueryHistoryScrubber(
-        ONE_HOUR_IN_MS,
-        TWO_HOURS_IN_MS,
-        LESS_THAN_ONE_DAY,
-        dir,
-        {
-          removeDeletedQueries: () => { return Promise.resolve(); }
-        } as QueryHistoryManager,
-        mockCtx,
-        {
-          increment: () => runCount++
-        }
-      );
-    }
-
-    async function wait(ms = 500) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
     }
   });
 
