@@ -39,13 +39,10 @@ export function createMockApiResponse(
 }
 
 export function createFailedMockApiResponse(
-  status: VariantAnalysisStatus = 'in_progress',
   scannedRepos: VariantAnalysisScannedRepository[] = createMockScannedRepos(),
   skippedRepos: VariantAnalysisSkippedRepositories = createMockSkippedRepos(),
 ): VariantAnalysisApiResponse {
-  const variantAnalysis = createMockApiResponse(status, scannedRepos, skippedRepos);
-  variantAnalysis.status = status;
+  const variantAnalysis = createMockApiResponse('completed', scannedRepos, skippedRepos);
   variantAnalysis.failure_reason = 'internal_error';
-
   return variantAnalysis;
 }

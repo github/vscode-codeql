@@ -43,7 +43,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
       await this.sleep(VariantAnalysisMonitor.sleepTime);
 
       if (cancellationToken && cancellationToken.isCancellationRequested) {
-        return { status: 'Cancelled', error: 'Variant Analysis was canceled.' };
+        return { status: 'Canceled' };
       }
 
       const variantAnalysisSummary = await ghApiClient.getVariantAnalysis(
@@ -59,22 +59,14 @@ export class VariantAnalysisMonitor extends DisposableObject {
       const downloadedRepos = this.downloadVariantAnalysisResults(variantAnalysisSummary, scannedReposDownloaded);
       scannedReposDownloaded.push(...downloadedRepos);
 
-      if (variantAnalysis.failureReason) {
-        return {
-          status: 'Failed',
-          error: `Variant Analysis has failed: ${variantAnalysis.failureReason}`,
-          variantAnalysis: variantAnalysis
-        };
-      }
-
-      if (isFinalVariantAnalysisStatus(variantAnalysis.status)) {
+      if (isFinalVariantAnalysisStatus(variantAnalysis.status) || variantAnalysis.failureReason) {
         break;
       }
 
       attemptCount++;
     }
 
-    return { status: 'CompletedSuccessfully', scannedReposDownloaded: scannedReposDownloaded };
+    return { status: 'Completed', scannedReposDownloaded, variantAnalysis };
   }
 
   private scheduleForDownload(
