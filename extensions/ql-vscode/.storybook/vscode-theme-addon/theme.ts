@@ -6,4 +6,4 @@ export enum VSCodeTheme {
 export const themeNames: { [key in VSCodeTheme]: string } = {
   [VSCodeTheme.Dark]: 'Dark+',
   [VSCodeTheme.Light]: 'Light+',
-}
+};
