@@ -135,77 +135,129 @@ describe('query-history', () => {
     allHistory = [...localQueryHistory];
   });
 
-  describe('findOtherQueryToCompare', () => {
-    it('should find the second query to compare when one is selected', async () => {
-      const thisQuery = allHistory[3];
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      showQuickPickSpy.returns({ query: allHistory[0] });
+  describe('Local Queries', () => {
+    describe('findOtherQueryToCompare', () => {
+      it('should find the second query to compare when one is selected', async () => {
+        const thisQuery = localQueryHistory[3];
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        showQuickPickSpy.returns({ query: localQueryHistory[0] });
 
-      const otherQuery = await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, []);
-      expect(otherQuery).to.eq(allHistory[0]);
+        const otherQuery = await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, []);
+        expect(otherQuery).to.eq(localQueryHistory[0]);
 
-      // only called with first item, other items filtered out
-      expect(showQuickPickSpy.getCalls().length).to.eq(1);
-      expect(showQuickPickSpy.firstCall.args[0][0].query).to.eq(allHistory[0]);
+        // only called with first item, other items filtered out
+        expect(showQuickPickSpy.getCalls().length).to.eq(1);
+        expect(showQuickPickSpy.firstCall.args[0][0].query).to.eq(localQueryHistory[0]);
+      });
+
+      it('should handle cancelling out of the quick select', async () => {
+        const thisQuery = localQueryHistory[3];
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+
+        const otherQuery = await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, []);
+        expect(otherQuery).to.be.undefined;
+
+        // only called with first item, other items filtered out
+        expect(showQuickPickSpy.getCalls().length).to.eq(1);
+        expect(showQuickPickSpy.firstCall.args[0][0].query).to.eq(localQueryHistory[0]);
+      });
+
+      it('should compare against 2 queries', async () => {
+        const thisQuery = localQueryHistory[3];
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+
+        const otherQuery = await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, localQueryHistory[0]]);
+        expect(otherQuery).to.eq(localQueryHistory[0]);
+        expect(showQuickPickSpy).not.to.have.been.called;
+      });
+
+      it('should throw an error when a query is not successful', async () => {
+        const thisQuery = localQueryHistory[3];
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        allHistory[0] = createMockLocalQuery('a', createMockQueryWithResults(sandbox, false));
+
+        try {
+          await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, allHistory[0]]);
+          assert(false, 'Should have thrown');
+        } catch (e) {
+          expect(getErrorMessage(e)).to.eq('Please select a successful query.');
+        }
+      });
+
+      it('should throw an error when a databases are not the same', async () => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+
+        try {
+          // localQueryHistory[0] is database a
+          // localQueryHistory[1] is database b
+          await (queryHistoryManager as any).findOtherQueryToCompare(localQueryHistory[0], [localQueryHistory[0], localQueryHistory[1]]);
+          assert(false, 'Should have thrown');
+        } catch (e) {
+          expect(getErrorMessage(e)).to.eq('Query databases must be the same.');
+        }
+      });
+
+      it('should throw an error when more than 2 queries selected', async () => {
+        const thisQuery = localQueryHistory[3];
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+
+        try {
+          await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, localQueryHistory[0], localQueryHistory[1]]);
+          assert(false, 'Should have thrown');
+        } catch (e) {
+          expect(getErrorMessage(e)).to.eq('Please select no more than 2 queries.');
+        }
+      });
     });
 
-    it('should handle cancelling out of the quick select', async () => {
-      const thisQuery = allHistory[3];
-      queryHistoryManager = await createMockQueryHistory(allHistory);
+    describe('Compare callback', () => {
+      it('should call the compare callback', async () => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        await queryHistoryManager.handleCompareWith(localQueryHistory[0], [localQueryHistory[0], localQueryHistory[3]]);
+        expect(doCompareCallback).to.have.been.calledOnceWith(localQueryHistory[0], localQueryHistory[3]);
+      });
 
-      const otherQuery = await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, []);
-      expect(otherQuery).to.be.undefined;
-
-      // only called with first item, other items filtered out
-      expect(showQuickPickSpy.getCalls().length).to.eq(1);
-      expect(showQuickPickSpy.firstCall.args[0][0].query).to.eq(allHistory[0]);
+      it('should avoid calling the compare callback when only one item is selected', async () => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        await queryHistoryManager.handleCompareWith(localQueryHistory[0], [localQueryHistory[0]]);
+        expect(doCompareCallback).not.to.have.been.called;
+      });
     });
 
-    it('should compare against 2 queries', async () => {
-      const thisQuery = allHistory[3];
-      queryHistoryManager = await createMockQueryHistory(allHistory);
+    describe('updateCompareWith', () => {
+      it('should update compareWithItem when there is a single item', async () => {
+        queryHistoryManager = await createMockQueryHistory([]);
+        (queryHistoryManager as any).updateCompareWith(['a']);
+        expect(queryHistoryManager.compareWithItem).to.be.eq('a');
+      });
 
-      const otherQuery = await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, allHistory[0]]);
-      expect(otherQuery).to.eq(allHistory[0]);
-      expect(showQuickPickSpy).not.to.have.been.called;
-    });
+      it('should delete compareWithItem when there are 0 items', async () => {
+        queryHistoryManager = await createMockQueryHistory([]);
+        queryHistoryManager.compareWithItem = localQueryHistory[0];
+        (queryHistoryManager as any).updateCompareWith([]);
+        expect(queryHistoryManager.compareWithItem).to.be.undefined;
+      });
 
-    it('should throw an error when a query is not successful', async () => {
-      const thisQuery = allHistory[3];
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      allHistory[0] = createMockLocalQuery('a', createMockQueryWithResults(sandbox, false));
+      it('should delete compareWithItem when there are more than 2 items', async () => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        queryHistoryManager.compareWithItem = localQueryHistory[0];
+        (queryHistoryManager as any).updateCompareWith([localQueryHistory[0], localQueryHistory[1], localQueryHistory[2]]);
+        expect(queryHistoryManager.compareWithItem).to.be.undefined;
+      });
 
-      try {
-        await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, allHistory[0]]);
-        assert(false, 'Should have thrown');
-      } catch (e) {
-        expect(getErrorMessage(e)).to.eq('Please select a successful query.');
-      }
-    });
+      it('should delete compareWithItem when there are 2 items and disjoint from compareWithItem', async () => {
+        queryHistoryManager = await createMockQueryHistory([]);
+        queryHistoryManager.compareWithItem = localQueryHistory[0];
+        (queryHistoryManager as any).updateCompareWith([localQueryHistory[1], localQueryHistory[2]]);
+        expect(queryHistoryManager.compareWithItem).to.be.undefined;
+      });
 
-    it('should throw an error when a databases are not the same', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      try {
-        // allHistory[0] is database a
-        // allHistory[1] is database b
-        await (queryHistoryManager as any).findOtherQueryToCompare(allHistory[0], [allHistory[0], allHistory[1]]);
-        assert(false, 'Should have thrown');
-      } catch (e) {
-        expect(getErrorMessage(e)).to.eq('Query databases must be the same.');
-      }
-    });
-
-    it('should throw an error when more than 2 queries selected', async () => {
-      const thisQuery = allHistory[3];
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      try {
-        await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, allHistory[0], allHistory[1]]);
-        assert(false, 'Should have thrown');
-      } catch (e) {
-        expect(getErrorMessage(e)).to.eq('Please select no more than 2 queries.');
-      }
+      it('should do nothing when compareWithItem exists and exactly 2 items', async () => {
+        queryHistoryManager = await createMockQueryHistory([]);
+        queryHistoryManager.compareWithItem = localQueryHistory[0];
+        (queryHistoryManager as any).updateCompareWith([localQueryHistory[0], localQueryHistory[1]]);
+        expect(queryHistoryManager.compareWithItem).to.be.eq(localQueryHistory[0]);
+      });
     });
   });
 
@@ -287,56 +339,6 @@ describe('query-history', () => {
 
     // the current item should have been selected
     expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(newSelected);
-  });
-
-  describe('Compare callback', () => {
-    it('should call the compare callback', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      await queryHistoryManager.handleCompareWith(allHistory[0], [allHistory[0], allHistory[3]]);
-      expect(doCompareCallback).to.have.been.calledOnceWith(allHistory[0], allHistory[3]);
-    });
-
-    it('should avoid calling the compare callback when only one item is selected', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      await queryHistoryManager.handleCompareWith(allHistory[0], [allHistory[0]]);
-      expect(doCompareCallback).not.to.have.been.called;
-    });
-  });
-
-  describe('updateCompareWith', () => {
-    it('should update compareWithItem when there is a single item', async () => {
-      queryHistoryManager = await createMockQueryHistory([]);
-      (queryHistoryManager as any).updateCompareWith(['a']);
-      expect(queryHistoryManager.compareWithItem).to.be.eq('a');
-    });
-
-    it('should delete compareWithItem when there are 0 items', async () => {
-      queryHistoryManager = await createMockQueryHistory([]);
-      queryHistoryManager.compareWithItem = localQueryHistory[0];
-      (queryHistoryManager as any).updateCompareWith([]);
-      expect(queryHistoryManager.compareWithItem).to.be.undefined;
-    });
-
-    it('should delete compareWithItem when there are more than 2 items', async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      queryHistoryManager.compareWithItem = localQueryHistory[0];
-      (queryHistoryManager as any).updateCompareWith([localQueryHistory[0], localQueryHistory[1], localQueryHistory[2]]);
-      expect(queryHistoryManager.compareWithItem).to.be.undefined;
-    });
-
-    it('should delete compareWithItem when there are 2 items and disjoint from compareWithItem', async () => {
-      queryHistoryManager = await createMockQueryHistory([]);
-      queryHistoryManager.compareWithItem = localQueryHistory[0];
-      (queryHistoryManager as any).updateCompareWith([localQueryHistory[1], localQueryHistory[2]]);
-      expect(queryHistoryManager.compareWithItem).to.be.undefined;
-    });
-
-    it('should do nothing when compareWithItem exists and exactly 2 items', async () => {
-      queryHistoryManager = await createMockQueryHistory([]);
-      queryHistoryManager.compareWithItem = localQueryHistory[0];
-      (queryHistoryManager as any).updateCompareWith([localQueryHistory[0], localQueryHistory[1]]);
-      expect(queryHistoryManager.compareWithItem).to.be.eq(localQueryHistory[0]);
-    });
   });
 
   describe('HistoryTreeDataProvider', () => {
