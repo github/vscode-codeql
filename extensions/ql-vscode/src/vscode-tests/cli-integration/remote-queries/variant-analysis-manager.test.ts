@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { CancellationTokenSource, commands, Disposable, extensions } from 'vscode';
+import { CancellationTokenSource, commands, extensions } from 'vscode';
 import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
@@ -170,40 +170,28 @@ describe('Variant Analysis Manager', async function() {
 
   describe('when rehydrating a query', async () => {
     let variantAnalysis: VariantAnalysis;
-    let variantAnalysisRemovedFired = false;
-    let onVariantAnalysisRemovedListener: Disposable;
-    let monitorVariantAnalysisCommandCalled = false;
+    let variantAnalysisRemovedSpy: sinon.SinonSpy;
+    let monitorVariantAnalysisCommandSpy: sinon.SinonSpy;
 
     beforeEach(() => {
       variantAnalysis = createMockVariantAnalysis();
 
-      variantAnalysisRemovedFired = false;
-      onVariantAnalysisRemovedListener = variantAnalysisManager.onVariantAnalysisRemoved(() => {
-        variantAnalysisRemovedFired = true;
-      });
+      variantAnalysisRemovedSpy = sinon.spy();
+      variantAnalysisManager.onVariantAnalysisRemoved(variantAnalysisRemovedSpy);
 
-      monitorVariantAnalysisCommandCalled = false;
-      sandbox.stub(commands, 'executeCommand').callsFake((command: string) => {
-        if (command === 'codeQL.monitorVariantAnalysis') {
-          monitorVariantAnalysisCommandCalled = true;
-        }
-        return Promise.resolve();
-      });
-    });
-
-    afterEach(() => {
-      onVariantAnalysisRemovedListener.dispose();
+      monitorVariantAnalysisCommandSpy = sinon.spy();
+      sandbox.stub(commands, 'executeCommand').callsFake(monitorVariantAnalysisCommandSpy);
     });
 
     describe('when variant analysis record doesn\'t exist', async () => {
       it('should remove the variant analysis', async () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
-        expect(variantAnalysisRemovedFired).to.equal(true);
+        sinon.assert.calledOnce(variantAnalysisRemovedSpy);
       });
 
       it('should not trigger a monitoring command', async () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
-        expect(monitorVariantAnalysisCommandCalled).to.equal(false);
+        sinon.assert.notCalled(monitorVariantAnalysisCommandSpy);
       });
     });
 
@@ -226,12 +214,12 @@ describe('Variant Analysis Manager', async function() {
 
         it('should not remove the variant analysis', async () => {
           await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
-          expect(variantAnalysisRemovedFired).to.equal(false);
+          sinon.assert.notCalled(variantAnalysisRemovedSpy);
         });
 
         it('should trigger a monitoring command', async () => {
           await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
-          expect(monitorVariantAnalysisCommandCalled).to.equal(true);
+          sinon.assert.calledWith(monitorVariantAnalysisCommandSpy, 'codeQL.monitorVariantAnalysis');
         });
       });
 
@@ -242,12 +230,12 @@ describe('Variant Analysis Manager', async function() {
 
         it('should not remove the variant analysis', async () => {
           await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
-          expect(variantAnalysisRemovedFired).to.equal(false);
+          sinon.assert.notCalled(variantAnalysisRemovedSpy);
         });
 
         it('should not trigger a monitoring command', async () => {
           await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
-          expect(monitorVariantAnalysisCommandCalled).to.equal(false);
+          sinon.assert.notCalled(monitorVariantAnalysisCommandSpy);
         });
       });
     });
