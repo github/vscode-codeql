@@ -45,6 +45,11 @@ describe('query-history', () => {
   let tryOpenExternalFile: Function;
   let sandbox: sinon.SinonSandbox;
 
+  let allHistory: QueryHistoryInfo[];
+  let localQueryHistory: LocalQueryInfo[];
+  let remoteQueryHistory: RemoteQueryHistoryItem[];
+  let variantAnalysisHistory: VariantAnalysisHistoryItem[];
+
   beforeEach(() => {
     sandbox = sinon.createSandbox();
 
@@ -80,6 +85,27 @@ describe('query-history', () => {
       removeVariantAnalysis: sandbox.stub(),
       showView: sandbox.stub(),
     } as any as VariantAnalysisManager;
+
+    localQueryHistory = [
+      createMockLocalQuery('a', createMockQueryWithResults(sandbox, true)),
+      createMockLocalQuery('b', createMockQueryWithResults(sandbox, true)),
+      createMockLocalQuery('a', createMockQueryWithResults(sandbox, false)),
+      createMockLocalQuery('a', createMockQueryWithResults(sandbox, true)),
+    ];
+    remoteQueryHistory = [
+      createMockRemoteQueryHistoryItem({}),
+      createMockRemoteQueryHistoryItem({}),
+      createMockRemoteQueryHistoryItem({}),
+      createMockRemoteQueryHistoryItem({})
+    ];
+    variantAnalysisHistory = [
+      createMockVariantAnalysisHistoryItem(),
+      createMockVariantAnalysisHistoryItem(),
+      createMockVariantAnalysisHistoryItem(),
+      createMockVariantAnalysisHistoryItem()
+    ];
+    allHistory = shuffleHistoryItems([...localQueryHistory, ...remoteQueryHistory, ...variantAnalysisHistory]);
+
   });
 
   afterEach(async () => {
@@ -129,33 +155,6 @@ describe('query-history', () => {
         expect(executeCommandSpy).not.to.have.been.called;
       });
     });
-  });
-
-  let allHistory: QueryHistoryInfo[];
-  let localQueryHistory: LocalQueryInfo[];
-  let remoteQueryHistory: RemoteQueryHistoryItem[];
-  let variantAnalysisHistory: VariantAnalysisHistoryItem[];
-
-  beforeEach(() => {
-    localQueryHistory = [
-      createMockLocalQuery('a', createMockQueryWithResults(sandbox, true)),
-      createMockLocalQuery('b', createMockQueryWithResults(sandbox, true)),
-      createMockLocalQuery('a', createMockQueryWithResults(sandbox, false)),
-      createMockLocalQuery('a', createMockQueryWithResults(sandbox, true)),
-    ];
-    remoteQueryHistory = [
-      createMockRemoteQueryHistoryItem({}),
-      createMockRemoteQueryHistoryItem({}),
-      createMockRemoteQueryHistoryItem({}),
-      createMockRemoteQueryHistoryItem({})
-    ];
-    variantAnalysisHistory = [
-      createMockVariantAnalysisHistoryItem(),
-      createMockVariantAnalysisHistoryItem(),
-      createMockVariantAnalysisHistoryItem(),
-      createMockVariantAnalysisHistoryItem()
-    ];
-    allHistory = shuffleHistoryItems([...localQueryHistory, ...remoteQueryHistory, ...variantAnalysisHistory]);
   });
 
   describe('Local Queries', () => {
