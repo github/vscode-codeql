@@ -11,14 +11,12 @@ import {
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
 } from './gh-api/variant-analysis';
 import {
-  hasRepoScanCompleted,
-  repoHasDownloadableArtifact,
+  isVariantAnalysisComplete,
   VariantAnalysis, VariantAnalysisQueryLanguage,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
-  VariantAnalysisScannedRepositoryState,
-  VariantAnalysisStatus
+  VariantAnalysisScannedRepositoryState
 } from './shared/variant-analysis';
 import { getErrorMessage } from '../pure/helpers-pure';
 import { VariantAnalysisView } from './variant-analysis-view';
@@ -68,31 +66,15 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
       await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
 
-      if (!await this.isVariantAnalysisComplete(variantAnalysis)) {
+      if (!await isVariantAnalysisComplete(variantAnalysis, this.makeResultDownloadChecker(variantAnalysis))) {
         await commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
       }
     }
   }
 
-  public async isVariantAnalysisComplete(variantAnalysis: VariantAnalysis): Promise<boolean> {
-    // It's only acceptable to have no scanned repos if the variant analysis is not in a final state.
-    // Otherwise it means the analysis hit some kind of internal error or there were no repos to scan.
-    if (variantAnalysis.scannedRepos === undefined || variantAnalysis.scannedRepos.length === 0) {
-      return variantAnalysis.status !== VariantAnalysisStatus.InProgress;
-    }
-
-    return (await Promise.all(variantAnalysis.scannedRepos.map(repo => this.isVariantAnalysisRepoComplete(variantAnalysis.id, repo)))).every(x => x);
-  }
-
-  private async isVariantAnalysisRepoComplete(variantAnalysisId: number, repo: VariantAnalysisScannedRepository): Promise<boolean> {
-    if (!hasRepoScanCompleted(repo)) {
-      return false;
-    } else if (!repoHasDownloadableArtifact(repo)) {
-      return true;
-    } else {
-      const storageLocation = this.getVariantAnalysisStorageLocation(variantAnalysisId);
-      return await this.variantAnalysisResultsManager.isVariantAnalysisRepoDownloaded(storageLocation, repo.repository.fullName);
-    }
+  private makeResultDownloadChecker(variantAnalysis: VariantAnalysis): (repo: VariantAnalysisScannedRepository) => Promise<boolean> {
+    const storageLocation = this.getVariantAnalysisStorageLocation(variantAnalysis.id);
+    return (repo) => this.variantAnalysisResultsManager.isVariantAnalysisRepoDownloaded(storageLocation, repo.repository.fullName);
   }
 
   public async removeVariantAnalysis(variantAnalysis: VariantAnalysis) {
