@@ -108,6 +108,8 @@ describe('Variant Analyses and QueryHistoryManager', function() {
 
     showTextDocumentSpy = sandbox.spy(window, 'showTextDocument');
     openTextDocumentSpy = sandbox.spy(workspace, 'openTextDocument');
+
+    await qhm.readQueryHistory();
   });
 
   afterEach(function() {
@@ -118,8 +120,6 @@ describe('Variant Analyses and QueryHistoryManager', function() {
 
   describe('Reading query history items', async () => {
     it('should read query history that has variant analysis history items', async () => {
-      await qhm.readQueryHistory();
-
       expect(rehydrateVariantAnalysisStub).to.have.callCount(2);
       expect(rehydrateVariantAnalysisStub.getCall(0).args[0]).to.deep.eq(rawQueryHistory[0].variantAnalysis);
       expect(rehydrateVariantAnalysisStub.getCall(0).args[1]).to.deep.eq(rawQueryHistory[0].status);
@@ -134,12 +134,10 @@ describe('Variant Analyses and QueryHistoryManager', function() {
 
   describe('Removing an item', async () => {
     it('should remove the variant analysis history item', async () => {
-      await qhm.readQueryHistory();
-
       // Remove the first variant analysis
       await qhm.handleRemoveHistoryItem(qhm.treeDataProvider.allHistory[0]);
 
-      // Add it back to the history
+      // Add the item back to history
       qhm.addQuery(rawQueryHistory[0]);
       expect(removeVariantAnalysisStub).to.have.callCount(1);
       expect(rehydrateVariantAnalysisStub).to.have.callCount(2);
@@ -147,8 +145,6 @@ describe('Variant Analyses and QueryHistoryManager', function() {
     });
 
     it('should remove two queries from history', async () => {
-      await qhm.readQueryHistory();
-
       // Remove both queries
       await qhm.handleRemoveHistoryItem(undefined!, [qhm.treeDataProvider.allHistory[1], qhm.treeDataProvider.allHistory[0]]);
 
@@ -167,14 +163,11 @@ describe('Variant Analyses and QueryHistoryManager', function() {
 
   describe('Opening result view', async () => {
     it('should open view when we click on an item', async () => {
-      await qhm.readQueryHistory();
-
       await qhm.handleItemClicked(qhm.treeDataProvider.allHistory[0], []);
       expect(showViewStub).calledOnceWithExactly(rawQueryHistory[0].variantAnalysis.id);
     });
 
     it('should get the query text', async () => {
-      await qhm.readQueryHistory();
       await qhm.handleShowQueryText(qhm.treeDataProvider.allHistory[0], []);
 
       expect(showTextDocumentSpy).to.have.been.calledOnce;
