@@ -9,7 +9,7 @@ import {
 } from 'vscode';
 import * as path from 'path';
 
-import { DisposableObject } from './pure/disposable-object';
+import { DisposableObject, DisposeHandler } from './pure/disposable-object';
 import { tmpDir } from './helpers';
 import { getHtmlForWebview, WebviewMessage, WebviewView } from './interface-utils';
 
@@ -125,5 +125,10 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
 
   protected postMessage(msg: ToMessage): Thenable<boolean> {
     return this.getPanel().webview.postMessage(msg);
+  }
+
+  public dispose(disposeHandler?: DisposeHandler) {
+    this.panel?.dispose();
+    super.dispose(disposeHandler);
   }
 }
