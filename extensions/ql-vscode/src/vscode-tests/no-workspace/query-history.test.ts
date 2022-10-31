@@ -22,6 +22,7 @@ import { EvalLogViewer } from '../../eval-log-viewer';
 import { QueryRunner } from '../../queryRunner';
 import { QueryResultType } from '../../pure/legacy-messages';
 import { VariantAnalysisManager } from '../../remote-queries/variant-analysis-manager';
+import { QueryHistoryInfo } from '../../query-history-info';
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -122,15 +123,17 @@ describe('query-history', () => {
     });
   });
 
-  let allHistory: LocalQueryInfo[];
+  let allHistory: QueryHistoryInfo[];
+  let localQueryHistory: LocalQueryInfo[];
 
   beforeEach(() => {
-    allHistory = [
+    localQueryHistory = [
       createMockFullQueryInfo('a', createMockQueryWithResults(true)),
       createMockFullQueryInfo('b', createMockQueryWithResults(true)),
       createMockFullQueryInfo('a', createMockQueryWithResults(false)),
       createMockFullQueryInfo('a', createMockQueryWithResults(true)),
     ];
+    allHistory = [...localQueryHistory];
   });
 
   describe('findOtherQueryToCompare', () => {
@@ -255,7 +258,9 @@ describe('query-history', () => {
     // remove an item
     await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
 
-    expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
+    if (toDelete.t == 'local') {
+      expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
+    }
     expect(queryHistoryManager.treeDataProvider.getCurrent()).to.deep.eq(selected);
     expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
 
@@ -275,7 +280,9 @@ describe('query-history', () => {
     await queryHistoryManager.treeView.reveal(toDelete, { select: true });
     await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
 
-    expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
+    if (toDelete.t == 'local') {
+      expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
+    }
     expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(newSelected);
     expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
 
@@ -306,30 +313,30 @@ describe('query-history', () => {
 
     it('should delete compareWithItem when there are 0 items', async () => {
       queryHistoryManager = await createMockQueryHistory([]);
-      queryHistoryManager.compareWithItem = allHistory[0];
+      queryHistoryManager.compareWithItem = localQueryHistory[0];
       (queryHistoryManager as any).updateCompareWith([]);
       expect(queryHistoryManager.compareWithItem).to.be.undefined;
     });
 
     it('should delete compareWithItem when there are more than 2 items', async () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
-      queryHistoryManager.compareWithItem = allHistory[0];
-      (queryHistoryManager as any).updateCompareWith([allHistory[0], allHistory[1], allHistory[2]]);
+      queryHistoryManager.compareWithItem = localQueryHistory[0];
+      (queryHistoryManager as any).updateCompareWith([localQueryHistory[0], localQueryHistory[1], localQueryHistory[2]]);
       expect(queryHistoryManager.compareWithItem).to.be.undefined;
     });
 
     it('should delete compareWithItem when there are 2 items and disjoint from compareWithItem', async () => {
       queryHistoryManager = await createMockQueryHistory([]);
-      queryHistoryManager.compareWithItem = allHistory[0];
-      (queryHistoryManager as any).updateCompareWith([allHistory[1], allHistory[2]]);
+      queryHistoryManager.compareWithItem = localQueryHistory[0];
+      (queryHistoryManager as any).updateCompareWith([localQueryHistory[1], localQueryHistory[2]]);
       expect(queryHistoryManager.compareWithItem).to.be.undefined;
     });
 
     it('should do nothing when compareWithItem exists and exactly 2 items', async () => {
       queryHistoryManager = await createMockQueryHistory([]);
-      queryHistoryManager.compareWithItem = allHistory[0];
-      (queryHistoryManager as any).updateCompareWith([allHistory[0], allHistory[1]]);
-      expect(queryHistoryManager.compareWithItem).to.be.eq(allHistory[0]);
+      queryHistoryManager.compareWithItem = localQueryHistory[0];
+      (queryHistoryManager as any).updateCompareWith([localQueryHistory[0], localQueryHistory[1]]);
+      expect(queryHistoryManager.compareWithItem).to.be.eq(localQueryHistory[0]);
     });
   });
 
@@ -805,7 +812,7 @@ describe('query-history', () => {
     };
   }
 
-  async function createMockQueryHistory(allHistory: LocalQueryInfo[]) {
+  async function createMockQueryHistory(allHistory: QueryHistoryInfo[]) {
     const qhm = new QueryHistoryManager(
       {} as QueryRunner,
       {} as DatabaseManager,
