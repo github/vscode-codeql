@@ -37,6 +37,7 @@
     "onLanguage:ql",
     "onLanguage:ql-summary",
     "onView:codeQLDatabases",
+    "onView:codeQLDatabasesExperimental",
     "onView:codeQLQueryHistory",
     "onView:codeQLAstViewer",
     "onView:codeQLEvalLogViewer",
@@ -1207,6 +1208,11 @@
         {
           "id": "codeQLDatabases",
           "name": "Databases"
+        },
+        {
+          "id": "codeQLDatabasesExperimental",
+          "name": "Databases",
+          "when": "config.codeQL.canary && config.codeQL.newQueryRunExperience"
         },
         {
           "id": "codeQLQueryHistory",
