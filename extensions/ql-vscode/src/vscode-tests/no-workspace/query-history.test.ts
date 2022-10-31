@@ -708,133 +708,134 @@ describe('query-history', () => {
       expect(historyTreeDataProvider.getChildren()).to.deep.eq([mockQuery]);
       expect(historyTreeDataProvider.getChildren(mockQuery)).to.deep.eq([]);
     });
-  });
 
-  describe('getChildren', () => {
-    const history = [
-      item('a', 2, 'remote', 24),
-      item('b', 10, 'local', 20),
-      item('c', 5, 'local', 30),
-      item('d', 1, 'local', 25),
-      item('e', 6, 'remote', 5),
-    ];
-    let treeDataProvider: HistoryTreeDataProvider;
+    describe('getChildren', () => {
+      const history = [
+        item('a', 2, 'remote', 24),
+        item('b', 10, 'local', 20),
+        item('c', 5, 'local', 30),
+        item('d', 1, 'local', 25),
+        item('e', 6, 'remote', 5),
+      ];
+      let treeDataProvider: HistoryTreeDataProvider;
 
-    beforeEach(async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      (queryHistoryManager.treeDataProvider as any).history = [...history];
-      treeDataProvider = queryHistoryManager.treeDataProvider;
-    });
+      beforeEach(async () => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        (queryHistoryManager.treeDataProvider as any).history = [...history];
+        treeDataProvider = queryHistoryManager.treeDataProvider;
+      });
 
-    it('should get children for name ascending', async () => {
-      const expected = [...history];
-      treeDataProvider.sortOrder = SortOrder.NameAsc;
+      it('should get children for name ascending', async () => {
+        const expected = [...history];
+        treeDataProvider.sortOrder = SortOrder.NameAsc;
 
-      const children = await treeDataProvider.getChildren();
-      expect(children).to.deep.eq(expected);
-    });
+        const children = await treeDataProvider.getChildren();
+        expect(children).to.deep.eq(expected);
+      });
 
-    it('should get children for name descending', async () => {
-      const expected = [...history].reverse();
-      treeDataProvider.sortOrder = SortOrder.NameDesc;
+      it('should get children for name descending', async () => {
+        const expected = [...history].reverse();
+        treeDataProvider.sortOrder = SortOrder.NameDesc;
 
-      const children = await treeDataProvider.getChildren();
-      expect(children).to.deep.eq(expected);
-    });
+        const children = await treeDataProvider.getChildren();
+        expect(children).to.deep.eq(expected);
+      });
 
-    it('should get children for date ascending', async () => {
-      const expected = [history[3], history[0], history[2], history[4], history[1]];
-      treeDataProvider.sortOrder = SortOrder.DateAsc;
+      it('should get children for date ascending', async () => {
+        const expected = [history[3], history[0], history[2], history[4], history[1]];
+        treeDataProvider.sortOrder = SortOrder.DateAsc;
 
-      const children = await treeDataProvider.getChildren();
-      expect(children).to.deep.eq(expected);
-    });
+        const children = await treeDataProvider.getChildren();
+        expect(children).to.deep.eq(expected);
+      });
 
-    it('should get children for date descending', async () => {
-      const expected = [history[3], history[0], history[2], history[4], history[1]].reverse();
-      treeDataProvider.sortOrder = SortOrder.DateDesc;
+      it('should get children for date descending', async () => {
+        const expected = [history[3], history[0], history[2], history[4], history[1]].reverse();
+        treeDataProvider.sortOrder = SortOrder.DateDesc;
 
-      const children = await treeDataProvider.getChildren();
-      expect(children).to.deep.eq(expected);
-    });
+        const children = await treeDataProvider.getChildren();
+        expect(children).to.deep.eq(expected);
+      });
 
-    it('should get children for result count ascending', async () => {
-      const expected = [history[4], history[1], history[0], history[3], history[2]];
-      treeDataProvider.sortOrder = SortOrder.CountAsc;
+      it('should get children for result count ascending', async () => {
+        const expected = [history[4], history[1], history[0], history[3], history[2]];
+        treeDataProvider.sortOrder = SortOrder.CountAsc;
 
-      const children = await treeDataProvider.getChildren();
-      expect(children).to.deep.eq(expected);
-    });
+        const children = await treeDataProvider.getChildren();
+        expect(children).to.deep.eq(expected);
+      });
 
-    it('should get children for result count descending', async () => {
-      const expected = [history[4], history[1], history[0], history[3], history[2]].reverse();
-      treeDataProvider.sortOrder = SortOrder.CountDesc;
+      it('should get children for result count descending', async () => {
+        const expected = [history[4], history[1], history[0], history[3], history[2]].reverse();
+        treeDataProvider.sortOrder = SortOrder.CountDesc;
 
-      const children = await treeDataProvider.getChildren();
-      expect(children).to.deep.eq(expected);
-    });
+        const children = await treeDataProvider.getChildren();
+        expect(children).to.deep.eq(expected);
+      });
 
-    it('should get children for result count ascending when there are no results', async () => {
-      // fall back to name
-      const thisHistory = [item('a', 10), item('b', 50), item('c', 1)];
-      (queryHistoryManager!.treeDataProvider as any).history = [...thisHistory];
-      const expected = [...thisHistory];
-      treeDataProvider.sortOrder = SortOrder.CountAsc;
+      it('should get children for result count ascending when there are no results', async () => {
+        // fall back to name
+        const thisHistory = [item('a', 10), item('b', 50), item('c', 1)];
+        (queryHistoryManager!.treeDataProvider as any).history = [...thisHistory];
+        const expected = [...thisHistory];
+        treeDataProvider.sortOrder = SortOrder.CountAsc;
 
-      const children = await treeDataProvider.getChildren();
-      expect(children).to.deep.eq(expected);
-    });
+        const children = await treeDataProvider.getChildren();
+        expect(children).to.deep.eq(expected);
+      });
 
-    it('should get children for result count descending when there are no results', async () => {
-      // fall back to name
-      const thisHistory = [item('a', 10), item('b', 50), item('c', 1)];
-      (queryHistoryManager!.treeDataProvider as any).history = [...thisHistory];
-      const expected = [...thisHistory].reverse();
-      treeDataProvider.sortOrder = SortOrder.CountDesc;
+      it('should get children for result count descending when there are no results', async () => {
+        // fall back to name
+        const thisHistory = [item('a', 10), item('b', 50), item('c', 1)];
+        (queryHistoryManager!.treeDataProvider as any).history = [...thisHistory];
+        const expected = [...thisHistory].reverse();
+        treeDataProvider.sortOrder = SortOrder.CountDesc;
 
-      const children = await treeDataProvider.getChildren();
-      expect(children).to.deep.eq(expected);
-    });
+        const children = await treeDataProvider.getChildren();
+        expect(children).to.deep.eq(expected);
+      });
 
-    function item(label: string, start: number, t = 'local', resultCount?: number) {
-      if (t === 'local') {
-        return {
-          getQueryName() {
-            return label;
-          },
-          getQueryFileName() {
-            return label + '.ql';
-          },
-          initialInfo: {
-            start: new Date(start),
-            databaseInfo: {
-              name: 'test',
-            }
-          },
-          completedQuery: {
-            resultCount,
-          },
-          t
-        };
-      } else {
-        return {
-          status: 'success',
-          remoteQuery: {
-            queryFilePath: label + '.ql',
-            queryName: label,
-            executionStartTime: start,
-            controllerRepository: {
-              name: 'test',
-              owner: 'user',
+      function item(label: string, start: number, t = 'local', resultCount?: number) {
+        if (t === 'local') {
+          return {
+            getQueryName() {
+              return label;
             },
-            repositories: []
-          },
-          resultCount,
-          t
-        };
+            getQueryFileName() {
+              return label + '.ql';
+            },
+            initialInfo: {
+              start: new Date(start),
+              databaseInfo: {
+                name: 'test',
+              }
+            },
+            completedQuery: {
+              resultCount,
+            },
+            t
+          };
+        } else {
+          return {
+            status: 'success',
+            remoteQuery: {
+              queryFilePath: label + '.ql',
+              queryName: label,
+              executionStartTime: start,
+              controllerRepository: {
+                name: 'test',
+                owner: 'user',
+              },
+              repositories: []
+            },
+            resultCount,
+            t
+          };
+        }
       }
-    }
+    });
   });
+
 
   async function createMockQueryHistory(allHistory: QueryHistoryInfo[]) {
     const qhm = new QueryHistoryManager(
