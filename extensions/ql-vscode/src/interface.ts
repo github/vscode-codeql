@@ -7,7 +7,7 @@ import {
   languages,
   Uri,
   window as Window,
-  env
+  env, WebviewPanel
 } from 'vscode';
 import * as cli from './cli';
 import { CodeQLCliServer } from './cli';
@@ -341,6 +341,8 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       return;
     }
 
+    const panel = await this.getPanel();
+
     this._interpretation = undefined;
     const interpretationPage = await this.interpretResultsInfo(
       fullQuery.completedQuery.query,
@@ -350,12 +352,11 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     const sortedResultsMap: SortedResultsMap = {};
     Object.entries(fullQuery.completedQuery.sortedResultsInfo).forEach(
       ([k, v]) =>
-        (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v))
+        (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(panel, v))
     );
 
     this._displayedQuery = fullQuery;
 
-    const panel = this.getPanel();
     await this.waitForPanelLoaded();
     if (!panel.visible) {
       if (forceReveal === WebviewReveal.Forced) {
@@ -426,6 +427,7 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       interpretation: interpretationPage,
       origResultsPaths: fullQuery.completedQuery.query.resultsPaths,
       resultsPath: this.convertPathToWebviewUri(
+        panel,
         fullQuery.completedQuery.query.resultsPaths.resultsPath
       ),
       parsedResultSets,
@@ -498,10 +500,12 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       throw new Error('trying to view a page of a query that is not loaded');
     }
 
+    const panel = await this.getPanel();
+
     const sortedResultsMap: SortedResultsMap = {};
     Object.entries(results.completedQuery.sortedResultsInfo).forEach(
       ([k, v]) =>
-        (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v))
+        (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(panel, v))
     );
 
     const resultSetSchemas = await this.getResultSetSchemas(results.completedQuery, sorted ? selectedTable : '');
@@ -544,6 +548,7 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       interpretation: this._interpretation,
       origResultsPaths: results.completedQuery.query.resultsPaths,
       resultsPath: this.convertPathToWebviewUri(
+        panel,
         results.completedQuery.query.resultsPaths.resultsPath
       ),
       parsedResultSets,
@@ -812,15 +817,16 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     this._diagnosticCollection.set(diagnostics);
   }
 
-  private convertPathToWebviewUri(path: string): string {
-    return fileUriToWebviewUri(this.getPanel(), Uri.file(path));
+  private convertPathToWebviewUri(panel: WebviewPanel, path: string): string {
+    return fileUriToWebviewUri(panel, Uri.file(path));
   }
 
   private convertPathPropertiesToWebviewUris(
+    panel: WebviewPanel,
     info: SortedResultSetInfo
   ): SortedResultSetInfo {
     return {
-      resultsPath: this.convertPathToWebviewUri(info.resultsPath),
+      resultsPath: this.convertPathToWebviewUri(panel, info.resultsPath),
       sortState: info.sortState,
     };
   }

@@ -5,7 +5,7 @@ import {
   ViewColumn,
   Uri,
   WebviewPanelOptions,
-  WebviewOptions
+  WebviewOptions,
 } from 'vscode';
 import * as path from 'path';
 
@@ -27,6 +27,8 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
   protected panelLoaded = false;
   protected panelLoadedCallBacks: (() => void)[] = [];
 
+  private panelResolves?: Array<(panel: WebviewPanel) => void>;
+
   constructor(
     protected readonly ctx: ExtensionContext
   ) {
@@ -35,20 +37,36 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
 
   public async restoreView(panel: WebviewPanel): Promise<void> {
     this.panel = panel;
-    this.setupPanel(panel);
+    const config = await this.getPanelConfig();
+    await this.setupPanel(panel, config);
   }
 
   protected get isShowingPanel() {
     return !!this.panel;
   }
 
-  protected getPanel(): WebviewPanel {
+  protected async getPanel(): Promise<WebviewPanel> {
     if (this.panel == undefined) {
       const { ctx } = this;
 
-      const config = this.getPanelConfig();
+      // This is an async method, so in theory this method can be called concurrently. To ensure that we don't
+      // create two panels, we use a promise that resolves when the panel is created. This way, if the panel is
+      // being created, the promise will resolve when it is done.
+      if (this.panelResolves !== undefined) {
+        return new Promise((resolve) => {
+          if (this.panel !== undefined) {
+            resolve(this.panel);
+            return;
+          }
 
-      this.panel = Window.createWebviewPanel(
+          this.panelResolves?.push(resolve);
+        });
+      }
+      this.panelResolves = [];
+
+      const config = await this.getPanelConfig();
+
+      const panel = Window.createWebviewPanel(
         config.viewId,
         config.title,
         { viewColumn: config.viewColumn, preserveFocus: config.preserveFocus },
@@ -64,14 +82,17 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
           ],
         }
       );
-      this.setupPanel(this.panel);
+      this.panel = panel;
+
+      this.setupPanel(panel, config);
+
+      this.panelResolves.forEach((resolve) => resolve(panel));
+      this.panelResolves = undefined;
     }
     return this.panel;
   }
 
-  protected setupPanel(panel: WebviewPanel): void {
-    const config = this.getPanelConfig();
-
+  protected setupPanel(panel: WebviewPanel, config: WebviewPanelConfig): void {
     this.push(
       panel.onDidDispose(
         () => {
@@ -101,7 +122,7 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
     );
   }
 
-  protected abstract getPanelConfig(): WebviewPanelConfig;
+  protected abstract getPanelConfig(): WebviewPanelConfig | Promise<WebviewPanelConfig>;
 
   protected abstract onPanelDispose(): void;
 
@@ -123,7 +144,8 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
     this.panelLoadedCallBacks = [];
   }
 
-  protected postMessage(msg: ToMessage): Thenable<boolean> {
-    return this.getPanel().webview.postMessage(msg);
+  protected async postMessage(msg: ToMessage): Promise<boolean> {
+    const panel = await this.getPanel();
+    return panel.webview.postMessage(msg);
   }
 }

@@ -26,7 +26,8 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
   }
 
   public async openView() {
-    this.getPanel().reveal(undefined, true);
+    const panel = await this.getPanel();
+    panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
   }
