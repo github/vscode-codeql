@@ -63,7 +63,9 @@ describe(VariantAnalysisResultsManager.name, function() {
     });
 
     afterEach(async () => {
-      fs.rmSync(variantAnalysisStoragePath, { recursive: true });
+      if (fs.existsSync(variantAnalysisStoragePath)) {
+        fs.rmSync(variantAnalysisStoragePath, { recursive: true });
+      }
     });
 
     describe('isVariantAnalysisRepoDownloaded', () => {
