@@ -3,7 +3,10 @@ import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-hi
 import { LocalQueryInfo } from './query-results';
 import { assertNever } from './pure/helpers-pure';
 import { pluralize } from './pure/word';
-import { hasRepoScanCompleted } from './remote-queries/shared/variant-analysis';
+import {
+  hasRepoScanCompleted,
+  getActionsWorkflowRunUrl as getVariantAnalysisActionsWorkflowRunUrl
+} from './remote-queries/shared/variant-analysis';
 
 export type QueryHistoryInfo = LocalQueryInfo | RemoteQueryHistoryItem | VariantAnalysisHistoryItem;
 
@@ -67,6 +70,17 @@ export function buildRepoLabel(item: RemoteQueryHistoryItem | VariantAnalysisHis
     const completedRepositoryCount = item.variantAnalysis.scannedRepos?.filter(repo => hasRepoScanCompleted(repo)).length ?? 0;
 
     return `${completedRepositoryCount}/${pluralize(totalScannedRepositoryCount, 'repository', 'repositories')}`; // e.g. "2/3 repositories"
+  } else {
+    assertNever(item);
+  }
+}
+
+export function getActionsWorkflowRunUrl(item: RemoteQueryHistoryItem | VariantAnalysisHistoryItem): string {
+  if (item.t === 'remote') {
+    const { actionsWorkflowRunId: workflowRunId, controllerRepository: { owner, name } } = item.remoteQuery;
+    return `https://github.com/${owner}/${name}/actions/runs/${workflowRunId}`;
+  } else if (item.t === 'variant-analysis') {
+    return getVariantAnalysisActionsWorkflowRunUrl(item.variantAnalysis);
   } else {
     assertNever(item);
   }

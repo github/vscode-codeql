@@ -5,6 +5,7 @@ import { logger } from '../logging';
 import { FromVariantAnalysisMessage, ToVariantAnalysisMessage } from '../pure/interface-types';
 import { assertNever } from '../pure/helpers-pure';
 import {
+  getActionsWorkflowRunUrl,
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
@@ -26,7 +27,8 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
   }
 
   public async openView() {
-    this.getPanel().reveal(undefined, true);
+    const panel = await this.getPanel();
+    panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
   }
@@ -40,6 +42,9 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
       t: 'setVariantAnalysis',
       variantAnalysis,
     });
+
+    const panel = await this.getPanel();
+    panel.title = `${variantAnalysis.query.name} - CodeQL Query Results`;
   }
 
   public async updateRepoState(repoState: VariantAnalysisScannedRepositoryState): Promise<void> {
@@ -64,10 +69,12 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
     });
   }
 
-  protected getPanelConfig(): WebviewPanelConfig {
+  protected async getPanelConfig(): Promise<WebviewPanelConfig> {
+    const variantAnalysis = await this.manager.getVariantAnalysis(this.variantAnalysisId);
+
     return {
       viewId: VariantAnalysisView.viewType,
-      title: `CodeQL Query Results for ${this.variantAnalysisId}`,
+      title: variantAnalysis ? `${variantAnalysis.query.name} - CodeQL Query Results` : `Variant analysis ${this.variantAnalysisId} - CodeQL Query Results`,
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
       view: 'variant-analysis',
@@ -95,6 +102,9 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
         break;
       case 'openQueryText':
         await this.openQueryText();
+        break;
+      case 'openLogs':
+        await this.openLogs();
         break;
       default:
         assertNever(msg);
@@ -158,5 +168,17 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
     } catch (error) {
       void showAndLogWarningMessage('Could not open variant analysis query text. Failed to open text document.');
     }
+  }
+
+  private async openLogs(): Promise<void> {
+    const variantAnalysis = await this.manager.getVariantAnalysis(this.variantAnalysisId);
+    if (!variantAnalysis) {
+      void showAndLogWarningMessage('Could not open variant analysis logs. Variant analysis not found.');
+      return;
+    }
+
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
+
+    await commands.executeCommand('vscode.open', Uri.parse(actionsWorkflowRunUrl));
   }
 }

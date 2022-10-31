@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { VariantAnalysis, parseVariantAnalysisQueryLanguage, VariantAnalysisQueryLanguage, VariantAnalysisStatus, isVariantAnalysisComplete, VariantAnalysisRepoStatus } from '../../src/remote-queries/shared/variant-analysis';
+import { VariantAnalysis, parseVariantAnalysisQueryLanguage, VariantAnalysisQueryLanguage, VariantAnalysisStatus, isVariantAnalysisComplete, VariantAnalysisRepoStatus, getActionsWorkflowRunUrl } from '../../src/remote-queries/shared/variant-analysis';
 import { createMockScannedRepo } from '../../src/vscode-tests/factories/remote-queries/shared/scanned-repositories';
 import { createMockVariantAnalysis } from '../../src/vscode-tests/factories/remote-queries/shared/variant-analysis';
 
@@ -100,4 +100,14 @@ describe('isVariantAnalysisComplete', async () => {
       });
     });
   }
+});
+
+describe('getActionsWorkflowRunUrl', () => {
+  it('should get the run url', () => {
+    const variantAnalysis = createMockVariantAnalysis();
+
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
+
+    expect(actionsWorkflowRunUrl).to.equal(`https://github.com/${variantAnalysis.controllerRepo.fullName}/actions/runs/${variantAnalysis.actionsWorkflowRunId}`);
+  });
 });

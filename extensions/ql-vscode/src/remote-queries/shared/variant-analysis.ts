@@ -3,7 +3,7 @@ import { AnalysisAlert, AnalysisRawResults } from './analysis-result';
 
 export interface VariantAnalysis {
   id: number,
-  controllerRepoId: number,
+  controllerRepo: Repository;
   query: {
     name: string,
     filePath: string,
@@ -202,4 +202,9 @@ export function getSkippedRepoCount(skippedRepos: VariantAnalysisSkippedReposito
   }
 
   return Object.values(skippedRepos).reduce((acc, group) => acc + group.repositoryCount, 0);
+}
+
+export function getActionsWorkflowRunUrl(variantAnalysis: VariantAnalysis): string {
+  const { actionsWorkflowRunId, controllerRepo: { fullName } } = variantAnalysis;
+  return `https://github.com/${fullName}/actions/runs/${actionsWorkflowRunId}`;
 }

@@ -46,7 +46,8 @@ export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompa
     selectedResultSetName?: string
   ) {
     this.comparePair = { from, to };
-    this.getPanel().reveal(undefined, true);
+    const panel = await this.getPanel();
+    panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
     const [

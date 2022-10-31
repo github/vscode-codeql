@@ -26,7 +26,11 @@ describe('Variant Analysis processor', function() {
 
     expect(result).to.eql({
       'id': mockApiResponse.id,
-      'controllerRepoId': mockApiResponse.controller_repo.id,
+      'controllerRepo': {
+        'id': mockApiResponse.controller_repo.id,
+        'fullName': mockApiResponse.controller_repo.full_name,
+        'private': mockApiResponse.controller_repo.private
+      },
       'query': {
         'filePath': 'query-file-path',
         'language': VariantAnalysisQueryLanguage.Javascript,
