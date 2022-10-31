@@ -56,6 +56,9 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
       this._onVariantAnalysisChange.fire(variantAnalysis);
 
+      const downloadedRepos = this.downloadVariantAnalysisResults(variantAnalysisSummary, scannedReposDownloaded);
+      scannedReposDownloaded.push(...downloadedRepos);
+
       if (variantAnalysis.failureReason) {
         return {
           status: 'Failed',
@@ -63,9 +66,6 @@ export class VariantAnalysisMonitor extends DisposableObject {
           variantAnalysis: variantAnalysis
         };
       }
-
-      const downloadedRepos = this.downloadVariantAnalysisResults(variantAnalysisSummary, scannedReposDownloaded);
-      scannedReposDownloaded.push(...downloadedRepos);
 
       if (isFinalVariantAnalysisStatus(variantAnalysis.status)) {
         break;
