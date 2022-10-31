@@ -659,44 +659,46 @@ describe('query-history', () => {
       historyTreeDataProvider.dispose();
     });
 
-    it('should get a tree item with raw results', async () => {
-      const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(sandbox, true, /* raw results */ false));
-      const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
-      expect(treeItem.command).to.deep.eq({
-        title: 'Query History Item',
-        command: 'codeQLQueryHistory.itemClicked',
-        arguments: [mockQuery],
-        tooltip: labelProvider.getLabel(mockQuery),
+    describe('getTreeItem', async () => {
+      it('should get a tree item with raw results', async () => {
+        const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(sandbox, true, /* raw results */ false));
+        const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
+        expect(treeItem.command).to.deep.eq({
+          title: 'Query History Item',
+          command: 'codeQLQueryHistory.itemClicked',
+          arguments: [mockQuery],
+          tooltip: labelProvider.getLabel(mockQuery),
+        });
+        expect(treeItem.label).to.contain('hucairz');
+        expect(treeItem.contextValue).to.eq('rawResultsItem');
+        expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file(mockExtensionLocation + '/media/drive.svg').fsPath);
       });
-      expect(treeItem.label).to.contain('hucairz');
-      expect(treeItem.contextValue).to.eq('rawResultsItem');
-      expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file(mockExtensionLocation + '/media/drive.svg').fsPath);
-    });
 
-    it('should get a tree item with interpreted results', async () => {
-      const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(sandbox, true, /* interpreted results */ true));
-      const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
-      expect(treeItem.contextValue).to.eq('interpretedResultsItem');
-      expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file(mockExtensionLocation + '/media/drive.svg').fsPath);
-    });
+      it('should get a tree item with interpreted results', async () => {
+        const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(sandbox, true, /* interpreted results */ true));
+        const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
+        expect(treeItem.contextValue).to.eq('interpretedResultsItem');
+        expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file(mockExtensionLocation + '/media/drive.svg').fsPath);
+      });
 
-    it('should get a tree item that did not complete successfully', async () => {
-      const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(sandbox, false), false);
-      const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
-      expect(treeItem.iconPath).to.eq(vscode.Uri.file(mockExtensionLocation + '/media/red-x.svg').fsPath);
-    });
+      it('should get a tree item that did not complete successfully', async () => {
+        const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(sandbox, false), false);
+        const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
+        expect(treeItem.iconPath).to.eq(vscode.Uri.file(mockExtensionLocation + '/media/red-x.svg').fsPath);
+      });
 
-    it('should get a tree item that failed before creating any results', async () => {
-      const mockQuery = createMockLocalQuery('a', undefined, true);
-      const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
-      expect(treeItem.iconPath).to.eq(vscode.Uri.file(mockExtensionLocation + '/media/red-x.svg').fsPath);
-    });
+      it('should get a tree item that failed before creating any results', async () => {
+        const mockQuery = createMockLocalQuery('a', undefined, true);
+        const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
+        expect(treeItem.iconPath).to.eq(vscode.Uri.file(mockExtensionLocation + '/media/red-x.svg').fsPath);
+      });
 
-    it('should get a tree item that is in progress', async () => {
-      const mockQuery = createMockLocalQuery('a');
-      const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
-      expect(treeItem.iconPath).to.deep.eq({
-        id: 'sync~spin', color: undefined
+      it('should get a tree item that is in progress', async () => {
+        const mockQuery = createMockLocalQuery('a');
+        const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
+        expect(treeItem.iconPath).to.deep.eq({
+          id: 'sync~spin', color: undefined
+        });
       });
     });
 
