@@ -5,6 +5,7 @@ import { logger } from '../logging';
 import { FromVariantAnalysisMessage, ToVariantAnalysisMessage } from '../pure/interface-types';
 import { assertNever } from '../pure/helpers-pure';
 import {
+  getActionsWorkflowRunUrl,
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
@@ -96,6 +97,9 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
       case 'openQueryText':
         await this.openQueryText();
         break;
+      case 'openLogs':
+        await this.openLogs();
+        break;
       default:
         assertNever(msg);
     }
@@ -158,5 +162,17 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
     } catch (error) {
       void showAndLogWarningMessage('Could not open variant analysis query text. Failed to open text document.');
     }
+  }
+
+  private async openLogs(): Promise<void> {
+    const variantAnalysis = await this.manager.getVariantAnalysis(this.variantAnalysisId);
+    if (!variantAnalysis) {
+      void showAndLogWarningMessage('Could not open variant analysis logs. Variant analysis not found.');
+      return;
+    }
+
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
+
+    await commands.executeCommand('vscode.open', Uri.parse(actionsWorkflowRunUrl));
   }
 }
