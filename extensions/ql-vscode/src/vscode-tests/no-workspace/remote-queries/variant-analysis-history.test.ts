@@ -183,6 +183,10 @@ describe('Variant Analyses and QueryHistoryManager', function() {
         queries: []
       });
     });
+
+    // it('should stop monitoring the query', async () => {
+    //
+    // });
   });
 
   describe('Opening result view', async () => {
@@ -204,6 +208,18 @@ describe('Variant Analyses and QueryHistoryManager', function() {
       expect(params.get('queryText')).to.eq(rawQueryHistory[0].variantAnalysis.query.text);
     });
   });
+
+  // describe('Updating an item', async () => {
+  //
+  // });
+  //
+  // describe('Sorting items', async () => {
+  //
+  // });
+  //
+  // describe('Downloading results', async () => {
+  //
+  // });
 
   async function copyHistoryState() {
     fs.ensureDirSync(STORAGE_DIR);

@@ -77,6 +77,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     // This will automatically unregister the view
     this.views.get(variantAnalysis.id)?.dispose();
+
+    this._onVariantAnalysisRemoved.fire(variantAnalysis);
   }
 
   private async removeStorageDirectory(variantAnalysisId: number) {

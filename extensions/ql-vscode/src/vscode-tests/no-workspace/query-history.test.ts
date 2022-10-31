@@ -347,7 +347,6 @@ describe('query-history', () => {
       historyTreeDataProvider.dispose();
     });
 
-
     it('should get a tree item with raw results', async () => {
       const mockQuery = createMockFullQueryInfo('a', createMockQueryWithResults(true, /* raw results */ false));
       const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
