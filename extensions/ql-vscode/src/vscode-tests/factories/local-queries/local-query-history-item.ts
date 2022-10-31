@@ -4,6 +4,8 @@ import {
   CompletedLocalQueryInfo,
   LocalQueryInfo,
 } from '../../../query-results';
+import { QueryWithResults } from '../../../run-queries-shared';
+import { CancellationTokenSource } from 'vscode';
 
 export function createMockLocalQueryInfo(
   startTime: string,
@@ -30,4 +32,35 @@ export function createMockLocalQueryInfo(
       statusString: 'in progress',
     } as unknown) as CompletedQueryInfo,
   } as unknown) as CompletedLocalQueryInfo;
+}
+
+export function createMockLocalQuery(
+  dbName = 'a',
+  queryWithResults?: QueryWithResults,
+  isFail = false
+): LocalQueryInfo {
+  const initialQueryInfo = {
+    databaseInfo: { name: dbName },
+    start: new Date(),
+    queryPath: 'hucairz'
+  } as InitialQueryInfo;
+
+  const cancellationToken = {
+    dispose: () => { /**/ },
+  } as CancellationTokenSource;
+
+  const fqi = new LocalQueryInfo(
+    initialQueryInfo,
+    cancellationToken,
+  );
+
+  if (queryWithResults) {
+    fqi.completeThisQuery(queryWithResults);
+  }
+
+  if (isFail) {
+    fqi.failureReason = 'failure reason';
+  }
+
+  return fqi;
 }
