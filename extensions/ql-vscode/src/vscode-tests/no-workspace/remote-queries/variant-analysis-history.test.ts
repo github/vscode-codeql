@@ -172,9 +172,12 @@ describe('Variant Analyses and QueryHistoryManager', function() {
       expect(removeVariantAnalysisStub.callCount).to.eq(2);
       expect(removeVariantAnalysisStub.getCall(0).args[0]).to.deep.eq(rawQueryHistory[1].variantAnalysis);
       expect(removeVariantAnalysisStub.getCall(1).args[0]).to.deep.eq(rawQueryHistory[0].variantAnalysis);
-      expect(qhm.treeDataProvider.allHistory).to.deep.eq([]);
+      expect(qhm.treeDataProvider.allHistory).to.be.empty;
+    });
 
-      // also, both queries should be removed from disk storage
+    it('should remove items from storage', async () => {
+      await qhm.handleRemoveHistoryItem(undefined!, [qhm.treeDataProvider.allHistory[1], qhm.treeDataProvider.allHistory[0]]);
+
       expect(fs.readJSONSync(path.join(STORAGE_DIR, 'workspace-query-history.json'))).to.deep.eq({
         version: 2,
         queries: []
