@@ -24,6 +24,7 @@ import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-a
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
 import { VariantAnalysis } from '../../../remote-queries/shared/variant-analysis';
 import * as VariantAnalysisModule from '../../../remote-queries/shared/variant-analysis';
+import { createTimestampFile } from '../../../helpers';
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
@@ -201,7 +202,7 @@ describe('Variant Analysis Manager', async function() {
 
       beforeEach(async () => {
         variantAnalysisStorageLocation = variantAnalysisManager.getVariantAnalysisStorageLocation(variantAnalysis.id);
-        await variantAnalysisManager.prepareStorageDirectory(variantAnalysis.id);
+        await createTimestampFile(variantAnalysisStorageLocation);
       });
 
       afterEach(() => {
