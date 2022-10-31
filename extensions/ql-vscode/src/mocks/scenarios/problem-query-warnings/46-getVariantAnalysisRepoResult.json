@@ -1,0 +1,11 @@
+{
+  "request": {
+    "kind": "getVariantAnalysisRepoResult",
+    "repositoryId": 2950981
+  },
+  "response": {
+    "status": 200,
+    "body": "file:46-getVariantAnalysisRepoResult.body.zip",
+    "contentType": "application/zip"
+  }
+}

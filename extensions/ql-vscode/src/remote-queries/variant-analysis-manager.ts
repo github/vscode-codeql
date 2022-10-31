@@ -28,7 +28,6 @@ import PQueue from 'p-queue';
 import { createTimestampFile, showAndLogErrorMessage } from '../helpers';
 import * as fs from 'fs-extra';
 
-
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis>());
   public readonly onVariantAnalysisAdded = this._onVariantAnalysisAdded.event;
@@ -63,9 +62,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       // it was purged by another workspace.
       this._onVariantAnalysisRemoved.fire(variantAnalysis);
     } else {
-      this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
-      await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
-
+      await this.setVariantAnalysis(variantAnalysis);
       if (!await isVariantAnalysisComplete(variantAnalysis, this.makeResultDownloadChecker(variantAnalysis))) {
         await commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
       }
@@ -81,6 +78,9 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.variantAnalysisResultsManager.removeAnalysisResults(variantAnalysis);
     await this.removeStorageDirectory(variantAnalysis.id);
     this.variantAnalyses.delete(variantAnalysis.id);
+
+    // This will automatically unregister the view
+    this.views.get(variantAnalysis.id)?.dispose();
   }
 
   private async removeStorageDirectory(variantAnalysisId: number) {
@@ -94,7 +94,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     }
     if (!this.views.has(variantAnalysisId)) {
       // The view will register itself with the manager, so we don't need to do anything here.
-      this.push(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
+      this.track(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
     }
 
     const variantAnalysisView = this.views.get(variantAnalysisId)!;
@@ -112,6 +112,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
   public unregisterView(view: VariantAnalysisView): void {
     this.views.delete(view.variantAnalysisId);
+    this.disposeAndStopTracking(view);
   }
 
   public getView(variantAnalysisId: number): VariantAnalysisView | undefined {
@@ -120,6 +121,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
   public async getVariantAnalysis(variantAnalysisId: number): Promise<VariantAnalysis | undefined> {
     return this.variantAnalyses.get(variantAnalysisId);
+  }
+
+  public get variantAnalysesSize(): number {
+    return this.variantAnalyses.size;
   }
 
   public async loadResults(variantAnalysisId: number, repositoryFullName: string): Promise<void> {
@@ -136,21 +141,26 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return await fs.pathExists(filePath);
   }
 
-  private async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
+  public async onVariantAnalysisUpdated(variantAnalysis: VariantAnalysis | undefined): Promise<void> {
     if (!variantAnalysis) {
       return;
     }
 
-    this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
-
-    await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
+    await this.setVariantAnalysis(variantAnalysis);
     this._onVariantAnalysisStatusUpdated.fire(variantAnalysis);
   }
 
   public async onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): Promise<void> {
+    await this.setVariantAnalysis(variantAnalysis);
+
     await this.prepareStorageDirectory(variantAnalysis.id);
 
     this._onVariantAnalysisAdded.fire(variantAnalysis);
+  }
+
+  private async setVariantAnalysis(variantAnalysis: VariantAnalysis): Promise<void> {
+    this.variantAnalyses.set(variantAnalysis.id, variantAnalysis);
+    await this.getView(variantAnalysis.id)?.updateView(variantAnalysis);
   }
 
   private async onRepoResultLoaded(repositoryResult: VariantAnalysisScannedRepositoryResult): Promise<void> {

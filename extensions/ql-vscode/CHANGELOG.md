@@ -1,6 +1,10 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.7.4 - 29 October 2022
+
+No user facing changes.
+
+## 1.7.3 - 28 October 2022
 
 - Fix a bug where databases may be lost if VS Code is restarted while the extension is being started up. [#1638](https://github.com/github/vscode-codeql/pull/1638)
 - Add commands for navigating up, down, left, or right in the result viewer. Previously there were only commands for moving up and down the currently-selected path. We suggest binding keyboard shortcuts to these commands, for navigating the result viewer using the keyboard. [#1568](https://github.com/github/vscode-codeql/pull/1568)

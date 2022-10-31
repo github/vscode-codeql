@@ -44,10 +44,8 @@
         "bdd",
         "--colors",
         "--diff",
-        "-r",
-        "ts-node/register",
-        "-r",
-        "test/mocha.setup.js",
+        "--config",
+        ".mocharc.json",
         "test/pure-tests/**/*.ts"
       ],
       "stopOnEntry": false,

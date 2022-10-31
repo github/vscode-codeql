@@ -1,5 +1,4 @@
 import 'source-map-support/register';
-import 'vscode-test';
 import * as sinonChai from 'sinon-chai';
 import * as chai from 'chai';
 import 'chai/register-should';
