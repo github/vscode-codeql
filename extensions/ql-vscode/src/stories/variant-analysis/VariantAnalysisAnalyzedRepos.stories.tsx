@@ -37,7 +37,11 @@ export const Example = Template.bind({});
 Example.args = {
   variantAnalysis: {
     id: 1,
-    controllerRepoId: 1,
+    controllerRepo: {
+      id: 1,
+      fullName: 'octodemo/variant-analysis-controller',
+      private: false,
+    },
     query: {
       name: 'Query name',
       filePath: 'example.ql',

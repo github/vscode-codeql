@@ -3,7 +3,7 @@ import { AnalysisAlert, AnalysisRawResults } from './analysis-result';
 
 export interface VariantAnalysis {
   id: number,
-  controllerRepoId: number,
+  controllerRepo: Repository;
   query: {
     name: string,
     filePath: string,
