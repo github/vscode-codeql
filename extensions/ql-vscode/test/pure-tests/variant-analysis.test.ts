@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import { VariantAnalysis, parseVariantAnalysisQueryLanguage, VariantAnalysisQueryLanguage, VariantAnalysisStatus, isVariantAnalysisComplete } from '../../src/remote-queries/shared/variant-analysis';
+import { VariantAnalysis, parseVariantAnalysisQueryLanguage, VariantAnalysisQueryLanguage, VariantAnalysisStatus, isVariantAnalysisComplete, VariantAnalysisRepoStatus } from '../../src/remote-queries/shared/variant-analysis';
+import { createMockScannedRepo } from '../../src/vscode-tests/factories/remote-queries/shared/scanned-repositories';
 import { createMockVariantAnalysis } from '../../src/vscode-tests/factories/remote-queries/shared/variant-analysis';
 
 describe('parseVariantAnalysisQueryLanguage', () => {
@@ -41,7 +42,7 @@ describe('isVariantAnalysisComplete', async () => {
 
       describe('when all results are downloaded', async () => {
         it('should say the variant analysis is complete', async () => {
-          expect(await isVariantAnalysisComplete(variantAnalysis, async () => true)).to.equal(true);
+          expect(await isVariantAnalysisComplete(variantAnalysis, async () => true)).to.equal(false);
         });
       });
     });
@@ -71,17 +72,30 @@ describe('isVariantAnalysisComplete', async () => {
         });
       });
 
-      describe('when scanned repos is non-empty', async () => {
-        describe('when not all results are downloaded', async () => {
-          it('should say the variant analysis is not complete', async () => {
-            expect(await isVariantAnalysisComplete(variantAnalysis, async () => false)).to.equal(false);
-          });
+      describe('when a repo scan is still in progress', async () => {
+        it('should say the variant analysis is not complete', async () => {
+          variantAnalysis.scannedRepos = [
+            createMockScannedRepo('in-progress-repo', false, VariantAnalysisRepoStatus.InProgress),
+          ];
+          expect(await isVariantAnalysisComplete(variantAnalysis, async () => false)).to.equal(false);
         });
+      });
 
-        describe('when all results are downloaded', async () => {
-          it('should say the variant analysis is complete', async () => {
-            expect(await isVariantAnalysisComplete(variantAnalysis, async () => true)).to.equal(true);
-          });
+      describe('when not all results are downloaded', async () => {
+        it('should say the variant analysis is not complete', async () => {
+          variantAnalysis.scannedRepos = [
+            createMockScannedRepo('in-progress-repo', false, VariantAnalysisRepoStatus.Succeeded),
+          ];
+          expect(await isVariantAnalysisComplete(variantAnalysis, async () => false)).to.equal(false);
+        });
+      });
+
+      describe('when all results are downloaded', async () => {
+        it('should say the variant analysis is complete', async () => {
+          variantAnalysis.scannedRepos = [
+            createMockScannedRepo('in-progress-repo', false, VariantAnalysisRepoStatus.Succeeded),
+          ];
+          expect(await isVariantAnalysisComplete(variantAnalysis, async () => true)).to.equal(true);
         });
       });
     });
