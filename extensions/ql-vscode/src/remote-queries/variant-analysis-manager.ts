@@ -29,6 +29,8 @@ import * as fs from 'fs-extra';
 
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
+  private static readonly REPO_STATES_FILENAME = 'repo_states.json';
+
   private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis>());
   public readonly onVariantAnalysisAdded = this._onVariantAnalysisAdded.event;
   private readonly _onVariantAnalysisStatusUpdated = this.push(new EventEmitter<VariantAnalysis>());
@@ -42,6 +44,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   private readonly views = new Map<number, VariantAnalysisView>();
   private static readonly maxConcurrentDownloads = 3;
   private readonly queue = new PQueue({ concurrency: VariantAnalysisManager.maxConcurrentDownloads });
+
+  private readonly repoStates = new Map<number, Record<number, VariantAnalysisScannedRepositoryState>>();
 
   constructor(
     private readonly ctx: ExtensionContext,
@@ -63,6 +67,15 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       this._onVariantAnalysisRemoved.fire(variantAnalysis);
     } else {
       await this.setVariantAnalysis(variantAnalysis);
+
+      try {
+        const repoStates = await fs.readJson(this.getRepoStatesStoragePath(variantAnalysis.id));
+        this.repoStates.set(variantAnalysis.id, repoStates);
+      } catch (e) {
+        // Ignore this error, we simply might not have downloaded anything yet
+        this.repoStates.set(variantAnalysis.id, {});
+      }
+
       if (status === QueryStatus.InProgress) {
         // In this case, last time we checked, the query was still in progress.
         // We need to setup the monitor to check for completion.
@@ -148,6 +161,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     await this.prepareStorageDirectory(variantAnalysis.id);
 
+    this.repoStates.set(variantAnalysis.id, {});
+
     this._onVariantAnalysisAdded.fire(variantAnalysis);
   }
 
@@ -162,6 +177,14 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
   private async onRepoStateUpdated(variantAnalysisId: number, repoState: VariantAnalysisScannedRepositoryState): Promise<void> {
     await this.getView(variantAnalysisId)?.updateRepoState(repoState);
+
+    let repoStates = this.repoStates.get(variantAnalysisId);
+    if (!repoStates) {
+      repoStates = {};
+      this.repoStates.set(variantAnalysisId, repoStates);
+    }
+
+    repoStates[repoState.repositoryId] = repoState;
   }
 
   public async monitorVariantAnalysis(
@@ -176,6 +199,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     variantAnalysisSummary: VariantAnalysisApiResponse,
     cancellationToken: CancellationToken
   ): Promise<void> {
+    if (this.repoStates.get(variantAnalysisSummary.id)?.[scannedRepo.repository.id]?.downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Succeeded) {
+      return;
+    }
+
     const repoState = {
       repositoryId: scannedRepo.repository.id,
       downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Pending,
@@ -215,6 +242,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
     await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
+
+    await fs.outputJson(this.getRepoStatesStoragePath(variantAnalysisSummary.id), this.repoStates.get(variantAnalysisSummary.id));
   }
 
   public async enqueueDownload(
@@ -233,6 +262,13 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return path.join(
       this.storagePath,
       `${variantAnalysisId}`
+    );
+  }
+
+  private getRepoStatesStoragePath(variantAnalysisId: number): string {
+    return path.join(
+      this.getVariantAnalysisStorageLocation(variantAnalysisId),
+      VariantAnalysisManager.REPO_STATES_FILENAME
     );
   }
 
