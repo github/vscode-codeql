@@ -132,6 +132,17 @@ describe('Variant Analyses and QueryHistoryManager', function() {
     });
   });
 
+  describe('Adding a new item', async () => {
+    it('should add the variant analysis history item to query history', async () => {
+      qhm.addQuery(rawQueryHistory[1]);
+      expect(rehydrateVariantAnalysisStub).to.have.callCount(2);
+      expect(qhm.treeDataProvider.allHistory[0]).to.deep.eq(rawQueryHistory[0]);
+      expect(qhm.treeDataProvider.allHistory[1]).to.deep.eq(rawQueryHistory[1]);
+      expect(qhm.treeDataProvider.allHistory[1]).to.deep.eq(rawQueryHistory[1]);
+      expect(qhm.treeDataProvider.allHistory.length).to.eq(3);
+    });
+  });
+
   describe('Removing an item', async () => {
     it('should remove the variant analysis history item', async () => {
       // Remove the first variant analysis
