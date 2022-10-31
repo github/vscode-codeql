@@ -38,7 +38,7 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
   public async restoreView(panel: WebviewPanel): Promise<void> {
     this.panel = panel;
     const config = await this.getPanelConfig();
-    await this.setupPanel(panel, config);
+    this.setupPanel(panel, config);
   }
 
   protected get isShowingPanel() {
