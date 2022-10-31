@@ -52,7 +52,11 @@ export function processUpdatedVariantAnalysis(
 
   const variantAnalysis: VariantAnalysis = {
     id: response.id,
-    controllerRepoId: response.controller_repo.id,
+    controllerRepo: {
+      id: response.controller_repo.id,
+      fullName: response.controller_repo.full_name,
+      private: response.controller_repo.private,
+    },
     query: previousVariantAnalysis.query,
     databases: previousVariantAnalysis.databases,
     executionStartTime: previousVariantAnalysis.executionStartTime,

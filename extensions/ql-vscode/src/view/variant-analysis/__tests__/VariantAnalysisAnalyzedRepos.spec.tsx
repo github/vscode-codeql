@@ -11,7 +11,11 @@ import { VariantAnalysisAnalyzedRepos, VariantAnalysisAnalyzedReposProps } from 
 describe(VariantAnalysisAnalyzedRepos.name, () => {
   const defaultVariantAnalysis = {
     id: 1,
-    controllerRepoId: 1,
+    controllerRepo: {
+      id: 1,
+      fullName: 'octodemo/variant-analysis-controller',
+      private: false,
+    },
     actionsWorkflowRunId: 789263,
     query: {
       name: 'Example query',

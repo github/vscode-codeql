@@ -51,7 +51,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
       variantAnalysisSummary = await ghApiClient.getVariantAnalysis(
         credentials,
-        variantAnalysis.controllerRepoId,
+        variantAnalysis.controllerRepo.id,
         variantAnalysis.id
       );
 

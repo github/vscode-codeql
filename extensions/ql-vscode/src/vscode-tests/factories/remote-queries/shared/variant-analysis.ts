@@ -16,7 +16,13 @@ export function createMockVariantAnalysis(
 ): VariantAnalysis {
   const variantAnalysis: VariantAnalysis = {
     id: faker.datatype.number(),
-    controllerRepoId: faker.datatype.number(),
+    controllerRepo: {
+      id: faker.datatype.number(),
+      fullName: 'github/' + faker.datatype.hexadecimal({
+        prefix: '',
+      }),
+      private: faker.datatype.boolean(),
+    },
     query: {
       name: 'a-query-name',
       filePath: 'a-query-file-path',
