@@ -129,6 +129,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return this.variantAnalyses.get(variantAnalysisId);
   }
 
+  public async getRepoStates(variantAnalysisId: number): Promise<VariantAnalysisScannedRepositoryState[]> {
+    return Object.values(this.repoStates.get(variantAnalysisId) ?? {});
+  }
+
   public get variantAnalysesSize(): number {
     return this.variantAnalyses.size;
   }

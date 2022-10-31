@@ -117,6 +117,16 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
       t: 'setVariantAnalysis',
       variantAnalysis,
     });
+
+    const repoStates = await this.manager.getRepoStates(this.variantAnalysisId);
+    if (repoStates.length === 0) {
+      return;
+    }
+
+    await this.postMessage({
+      t: 'setRepoStates',
+      repoStates,
+    });
   }
 
   private async openQueryFile(): Promise<void> {

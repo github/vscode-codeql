@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { render as reactRender, screen } from '@testing-library/react';
-import { VariantAnalysisRepoStatus } from '../../../remote-queries/shared/variant-analysis';
+import {
+  VariantAnalysisRepoStatus,
+  VariantAnalysisScannedRepositoryDownloadStatus
+} from '../../../remote-queries/shared/variant-analysis';
 import userEvent from '@testing-library/user-event';
 import { RepoRow, RepoRowProps } from '../RepoRow';
 
@@ -48,7 +51,7 @@ describe(RepoRow.name, () => {
     })).toBeDisabled();
   });
 
-  it('renders the succeeded state', () => {
+  it('renders the succeeded state without download status', () => {
     render({
       status: VariantAnalysisRepoStatus.Succeeded,
       resultCount: 178,
@@ -58,6 +61,42 @@ describe(RepoRow.name, () => {
       name: 'Success',
     })).toBeInTheDocument();
     expect(screen.getByText('178')).toBeInTheDocument();
+    expect(screen.getByRole<HTMLButtonElement>('button', {
+      expanded: false
+    })).toBeDisabled();
+  });
+
+  it('renders the succeeded state with pending download status', () => {
+    render({
+      status: VariantAnalysisRepoStatus.Succeeded,
+      resultCount: 178,
+      downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Pending,
+    });
+
+    expect(screen.getByRole<HTMLButtonElement>('button', {
+      expanded: false
+    })).toBeDisabled();
+  });
+
+  it('renders the succeeded state with in progress download status', () => {
+    render({
+      status: VariantAnalysisRepoStatus.Succeeded,
+      resultCount: 178,
+      downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
+    });
+
+    expect(screen.getByRole<HTMLButtonElement>('button', {
+      expanded: false
+    })).toBeDisabled();
+  });
+
+  it('renders the succeeded state with succeeded download status', () => {
+    render({
+      status: VariantAnalysisRepoStatus.Succeeded,
+      resultCount: 178,
+      downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+    });
+
     expect(screen.getByRole<HTMLButtonElement>('button', {
       expanded: false
     })).toBeEnabled();
@@ -167,6 +206,7 @@ describe(RepoRow.name, () => {
   it('can expand the repo item when succeeded and loaded', async () => {
     render({
       status: VariantAnalysisRepoStatus.Succeeded,
+      downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
       interpretedResults: [],
     });
 
@@ -182,6 +222,7 @@ describe(RepoRow.name, () => {
   it('can expand the repo item when succeeded and not loaded', async () => {
     const { rerender } = render({
       status: VariantAnalysisRepoStatus.Succeeded,
+      downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
     });
 
     await userEvent.click(screen.getByRole('button', {

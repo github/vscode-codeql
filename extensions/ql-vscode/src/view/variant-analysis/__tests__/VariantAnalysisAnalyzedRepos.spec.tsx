@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import {
   VariantAnalysisQueryLanguage,
   VariantAnalysisRepoStatus,
+  VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisStatus
 } from '../../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisAnalyzedRepos, VariantAnalysisAnalyzedReposProps } from '../VariantAnalysisAnalyzedRepos';
@@ -80,6 +81,12 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
 
   it('renders the interpreted result for a succeeded repo', async () => {
     render({
+      repositoryStates: [
+        {
+          repositoryId: 2,
+          downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+        }
+      ],
       repositoryResults: [
         {
           variantAnalysisId: 1,

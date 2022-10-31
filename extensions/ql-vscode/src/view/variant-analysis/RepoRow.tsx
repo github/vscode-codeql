@@ -111,7 +111,7 @@ export const RepoRow = ({
     }
   }, [resultsLoaded, resultsLoading]);
 
-  const disabled = !status || !isCompletedAnalysisRepoStatus(status);
+  const disabled = !status || !isCompletedAnalysisRepoStatus(status) || (status === VariantAnalysisRepoStatus.Succeeded && downloadStatus !== VariantAnalysisScannedRepositoryDownloadStatus.Succeeded);
   const expandableContentLoaded = status && (status !== VariantAnalysisRepoStatus.Succeeded || resultsLoaded);
 
   return (
