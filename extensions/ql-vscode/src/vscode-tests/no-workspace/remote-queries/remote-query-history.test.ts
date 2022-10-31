@@ -58,6 +58,7 @@ describe('Remote queries and query history manager', function() {
     await copyHistoryState();
 
     sandbox = sinon.createSandbox();
+    disposables = new DisposableBucket();
 
     localQueriesResultsViewStub = {
       showResults: sandbox.stub()
@@ -81,17 +82,6 @@ describe('Remote queries and query history manager', function() {
       onVariantAnalysisStatusUpdated: sandbox.stub(),
       onVariantAnalysisRemoved: sandbox.stub()
     } as any as VariantAnalysisManager;
-  });
-
-  afterEach(function() {
-    // set a higher timeout since recursive delete below may take a while, expecially on Windows.
-    this.timeout(120000);
-    deleteHistoryState();
-  });
-
-  beforeEach(() => {
-    sandbox = sinon.createSandbox();
-    disposables = new DisposableBucket();
 
     rawQueryHistory = fs.readJSONSync(path.join(STORAGE_DIR, 'workspace-query-history.json')).queries;
     remoteQueryResult0 = fs.readJSONSync(path.join(STORAGE_DIR, 'queries', rawQueryHistory[0].queryId, 'query-result.json'));
@@ -121,7 +111,10 @@ describe('Remote queries and query history manager', function() {
     openTextDocumentSpy = sandbox.spy(workspace, 'openTextDocument');
   });
 
-  afterEach(() => {
+  afterEach(function() {
+    // set a higher timeout since recursive delete below may take a while, expecially on Windows.
+    this.timeout(120000);
+    deleteHistoryState();
     disposables.dispose(testDisposeHandler);
     sandbox.restore();
   });
