@@ -28,20 +28,20 @@ describe('isVariantAnalysisComplete', async () => {
     describe('when scanned repos is undefined', async () => {
       it('should say the variant analysis is not complete', async () => {
         variantAnalysis.scannedRepos = undefined;
-        expect(isVariantAnalysisComplete(variantAnalysis, uncallableArtifactDownloadChecker)).to.equal(false);
+        expect(await isVariantAnalysisComplete(variantAnalysis, uncallableArtifactDownloadChecker)).to.equal(false);
       });
     });
 
     describe('when scanned repos is non-empty', async () => {
       describe('when not all results are downloaded', async () => {
         it('should say the variant analysis is not complete', async () => {
-          expect(isVariantAnalysisComplete(variantAnalysis, async () => false)).to.equal(false);
+          expect(await isVariantAnalysisComplete(variantAnalysis, async () => false)).to.equal(false);
         });
       });
 
       describe('when all results are downloaded', async () => {
         it('should say the variant analysis is complete', async () => {
-          expect(isVariantAnalysisComplete(variantAnalysis, async () => true)).to.equal(true);
+          expect(await isVariantAnalysisComplete(variantAnalysis, async () => true)).to.equal(true);
         });
       });
     });
@@ -60,27 +60,27 @@ describe('isVariantAnalysisComplete', async () => {
       describe('when scanned repos is undefined', async () => {
         it('should say the variant analysis is complete', async () => {
           variantAnalysis.scannedRepos = undefined;
-          expect(isVariantAnalysisComplete(variantAnalysis, uncallableArtifactDownloadChecker)).to.equal(true);
+          expect(await isVariantAnalysisComplete(variantAnalysis, uncallableArtifactDownloadChecker)).to.equal(true);
         });
       });
 
       describe('when scanned repos is empty', async () => {
         it('should say the variant analysis is complete', async () => {
           variantAnalysis.scannedRepos = [];
-          expect(isVariantAnalysisComplete(variantAnalysis, uncallableArtifactDownloadChecker)).to.equal(true);
+          expect(await isVariantAnalysisComplete(variantAnalysis, uncallableArtifactDownloadChecker)).to.equal(true);
         });
       });
 
       describe('when scanned repos is non-empty', async () => {
         describe('when not all results are downloaded', async () => {
           it('should say the variant analysis is not complete', async () => {
-            expect(isVariantAnalysisComplete(variantAnalysis, async () => false)).to.equal(false);
+            expect(await isVariantAnalysisComplete(variantAnalysis, async () => false)).to.equal(false);
           });
         });
 
         describe('when all results are downloaded', async () => {
           it('should say the variant analysis is complete', async () => {
-            expect(isVariantAnalysisComplete(variantAnalysis, async () => true)).to.equal(true);
+            expect(await isVariantAnalysisComplete(variantAnalysis, async () => true)).to.equal(true);
           });
         });
       });
