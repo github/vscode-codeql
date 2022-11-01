@@ -263,14 +263,14 @@ describe('query-history', () => {
 
     describe('handleRemoveHistoryItem', () => {
       it('should remove an item and not select a new one', async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
+        queryHistoryManager = await createMockQueryHistory(localQueryHistory);
         // initialize the selection
-        await queryHistoryManager.treeView.reveal(allHistory[0], { select: true });
+        await queryHistoryManager.treeView.reveal(localQueryHistory[0], { select: true });
 
         // deleting the first item when a different item is selected
         // will not change the selection
-        const toDelete = allHistory[1];
-        const selected = allHistory[3];
+        const toDelete = localQueryHistory[1];
+        const selected = localQueryHistory[3];
 
         // select the item we want
         await queryHistoryManager.treeView.reveal(selected, { select: true });
@@ -281,58 +281,32 @@ describe('query-history', () => {
         // remove an item
         await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
 
-        if (toDelete.t == 'local') {
-          expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
-        } else if (toDelete.t == 'remote') {
-          expect(remoteQueriesManagerStub.removeRemoteQuery).to.have.been.calledOnceWith((toDelete as RemoteQueryHistoryItem).queryId);
-        } else if (toDelete.t == 'variant-analysis') {
-          expect(variantAnalysisManagerStub.removeVariantAnalysis).to.have.been.calledOnceWith((toDelete as VariantAnalysisHistoryItem).variantAnalysis.id);
-        }
-
-        // the same item should be selected
-        if (selected.t == 'local') {
-          expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(selected);
-        } else if (toDelete.t == 'remote') {
-          expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith((selected as RemoteQueryHistoryItem).queryId);
-        } else if (toDelete.t == 'variant-analysis') {
-          expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith((selected as VariantAnalysisHistoryItem).variantAnalysis.id);
-        }
-
+        expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
         expect(queryHistoryManager.treeDataProvider.getCurrent()).to.deep.eq(selected);
         expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
+
+        // the same item should be selected
+        expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(selected);
       });
 
       it('should remove an item and select a new one', async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
+        queryHistoryManager = await createMockQueryHistory(localQueryHistory);
 
         // deleting the selected item automatically selects next item
-        const toDelete = allHistory[1];
-        const newSelected = allHistory[2];
+        const toDelete = localQueryHistory[1];
+        const newSelected = localQueryHistory[2];
         // avoid triggering the callback by setting the field directly
 
         // select the item we want
         await queryHistoryManager.treeView.reveal(toDelete, { select: true });
         await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
 
-        if (toDelete.t == 'local') {
-          expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
-        } else if (toDelete.t == 'remote') {
-          expect(remoteQueriesManagerStub.removeRemoteQuery).to.have.been.calledOnceWith((toDelete as RemoteQueryHistoryItem).queryId);
-        } else if (toDelete.t == 'variant-analysis') {
-          expect(variantAnalysisManagerStub.removeVariantAnalysis).to.have.been.calledOnceWith((toDelete as VariantAnalysisHistoryItem).variantAnalysis.id);
-        }
-
-        // the current item should have been selected
-        if (newSelected.t == 'local') {
-          expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(newSelected);
-        } else if (toDelete.t == 'remote') {
-          expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith((newSelected as RemoteQueryHistoryItem).queryId);
-        } else if (toDelete.t == 'variant-analysis') {
-          expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith((newSelected as VariantAnalysisHistoryItem).variantAnalysis.id);
-        }
-
+        expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
         expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(newSelected);
         expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
+
+        // the current item should have been selected
+        expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(newSelected);
       });
     });
 
