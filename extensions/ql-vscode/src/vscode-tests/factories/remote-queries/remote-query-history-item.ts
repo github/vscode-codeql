@@ -3,12 +3,14 @@ import { QueryStatus } from '../../../query-status';
 
 export function createMockRemoteQueryHistoryItem({
   date = new Date('2022-01-01T00:00:00.000Z'),
+  status = QueryStatus.InProgress,
   failureReason = undefined,
   resultCount = 16,
   repositoryCount = 0,
   userSpecifiedLabel = undefined,
 }: {
   date?: Date;
+  status?: QueryStatus;
   failureReason?: string;
   resultCount?: number;
   repositoryCount?: number;
@@ -18,7 +20,7 @@ export function createMockRemoteQueryHistoryItem({
     t: 'remote',
     failureReason,
     resultCount,
-    status: QueryStatus.InProgress,
+    status,
     completed: false,
     queryId: 'queryId',
     remoteQuery: {

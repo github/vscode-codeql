@@ -1,17 +1,17 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { expect, assert } from 'chai';
+import { assert, expect } from 'chai';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 
 import { logger } from '../../logging';
 import { registerQueryHistoryScrubber } from '../../query-history-scrubber';
-import { QueryHistoryManager, HistoryTreeDataProvider, SortOrder } from '../../query-history';
+import { HistoryTreeDataProvider, QueryHistoryManager, SortOrder } from '../../query-history';
 import { QueryHistoryConfig, QueryHistoryConfigListener } from '../../config';
 import { LocalQueryInfo } from '../../query-results';
 import { DatabaseManager } from '../../databases';
 import * as tmp from 'tmp-promise';
-import { ONE_DAY_IN_MS, ONE_HOUR_IN_MS, TWO_HOURS_IN_MS, THREE_HOURS_IN_MS } from '../../pure/time';
+import { ONE_DAY_IN_MS, ONE_HOUR_IN_MS, THREE_HOURS_IN_MS, TWO_HOURS_IN_MS } from '../../pure/time';
 import { tmpDir } from '../../helpers';
 import { getErrorMessage } from '../../pure/helpers-pure';
 import { HistoryItemLabelProvider } from '../../history-item-label-provider';
@@ -27,6 +27,7 @@ import { RemoteQueryHistoryItem } from '../../remote-queries/remote-query-histor
 import { shuffleHistoryItems } from '../utils/query-history-helpers';
 import { createMockVariantAnalysisHistoryItem } from '../factories/remote-queries/variant-analysis-history-item';
 import { VariantAnalysisHistoryItem } from '../../remote-queries/variant-analysis-history-item';
+import { QueryStatus } from '../../query-status';
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -93,16 +94,16 @@ describe('query-history', () => {
       createMockLocalQuery('a', createMockQueryWithResults(sandbox, true)),
     ];
     remoteQueryHistory = [
-      createMockRemoteQueryHistoryItem({}),
-      createMockRemoteQueryHistoryItem({}),
-      createMockRemoteQueryHistoryItem({}),
-      createMockRemoteQueryHistoryItem({})
+      createMockRemoteQueryHistoryItem({ status: QueryStatus.Completed }),
+      createMockRemoteQueryHistoryItem({ status: QueryStatus.Failed }),
+      createMockRemoteQueryHistoryItem({ status: QueryStatus.InProgress }),
+      createMockRemoteQueryHistoryItem({ status: QueryStatus.InProgress })
     ];
     variantAnalysisHistory = [
-      createMockVariantAnalysisHistoryItem(),
-      createMockVariantAnalysisHistoryItem(),
-      createMockVariantAnalysisHistoryItem(),
-      createMockVariantAnalysisHistoryItem()
+      createMockVariantAnalysisHistoryItem(QueryStatus.Completed),
+      createMockVariantAnalysisHistoryItem(QueryStatus.InProgress),
+      createMockVariantAnalysisHistoryItem(QueryStatus.Failed),
+      createMockVariantAnalysisHistoryItem(QueryStatus.InProgress)
     ];
     allHistory = shuffleHistoryItems([...localQueryHistory, ...remoteQueryHistory, ...variantAnalysisHistory]);
 
@@ -158,45 +159,105 @@ describe('query-history', () => {
       });
     });
 
-    describe('handleItemClicked', () => {
-      it('should call the selectedCallback when an item is clicked', async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
-        const itemClicked = allHistory[0];
-        await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked]);
+    describe('handleItemClicked', async () => {
+      describe('single click', async () => {
+        describe('local query', async () => {
+          describe('when complete', async () => {
+            it('should show results', async () => {
+              queryHistoryManager = await createMockQueryHistory(allHistory);
+              const itemClicked = localQueryHistory[0];
+              await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked]);
 
-        if (itemClicked.t == 'local') {
-          expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(itemClicked);
-        } else if (itemClicked.t == 'remote') {
-          expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith(itemClicked.queryId);
-        } else if (itemClicked.t == 'variant-analysis') {
-          expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith(itemClicked.variantAnalysis.id);
-        }
+              expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(itemClicked);
+              expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(itemClicked);
+            });
+          });
 
-        expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(itemClicked);
+          describe('when incomplete', async () => {
+            it('should do nothing', async () => {
+              queryHistoryManager = await createMockQueryHistory(allHistory);
+              const itemClicked = localQueryHistory[2];
+              await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked]);
+
+              expect(localQueriesResultsViewStub.showResults).not.to.have.been.calledWith(itemClicked);
+            });
+          });
+        });
+
+        describe('remote query', async () => {
+          describe('when complete', async () => {
+            it('should show results', async () => {
+              queryHistoryManager = await createMockQueryHistory(allHistory);
+              const itemClicked = remoteQueryHistory[0];
+              await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked]);
+
+              expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith(itemClicked.queryId);
+              expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(itemClicked);
+            });
+          });
+
+          describe('when incomplete', async () => {
+            it('should do nothing', async () => {
+              queryHistoryManager = await createMockQueryHistory(allHistory);
+              const itemClicked = remoteQueryHistory[2];
+              await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked]);
+
+              expect(remoteQueriesManagerStub.openRemoteQueryResults).not.to.have.been.calledWith(itemClicked.queryId);
+            });
+          });
+        });
+
+        describe('variant analysis', async () => {
+          describe('when complete', async () => {
+            it('should show results', async () => {
+              queryHistoryManager = await createMockQueryHistory(allHistory);
+              const itemClicked = variantAnalysisHistory[0];
+              await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked]);
+
+              expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith(itemClicked.variantAnalysis.id);
+              expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(itemClicked);
+            });
+          });
+
+          describe('when incomplete', async () => {
+            it('should show results', async () => {
+              queryHistoryManager = await createMockQueryHistory(allHistory);
+              const itemClicked = variantAnalysisHistory[1];
+              await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked]);
+
+              expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith(itemClicked.variantAnalysis.id);
+              expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(itemClicked);
+            });
+          });
+        });
       });
 
-      it('should do nothing if there is a multi-selection', async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
-        const itemClicked = allHistory[0];
-        const secondItemClicked = allHistory[1];
+      describe('double click', () => {
+        it('should do nothing', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+          const itemClicked = allHistory[0];
+          const secondItemClicked = allHistory[1];
 
-        await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked, secondItemClicked]);
+          await queryHistoryManager.handleItemClicked(itemClicked, [itemClicked, secondItemClicked]);
 
-        expect(localQueriesResultsViewStub.showResults).not.to.have.been.called;
-        expect(remoteQueriesManagerStub.openRemoteQueryResults).not.to.have.been.called;
-        expect(variantAnalysisManagerStub.showView).not.to.have.been.called;
-        expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
+          expect(localQueriesResultsViewStub.showResults).not.to.have.been.called;
+          expect(remoteQueriesManagerStub.openRemoteQueryResults).not.to.have.been.called;
+          expect(variantAnalysisManagerStub.showView).not.to.have.been.called;
+          expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
+        });
       });
 
-      it('should do nothing if there is no selection', async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
+      describe('no selection', () => {
+        it('should do nothing', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
 
-        await queryHistoryManager.handleItemClicked(undefined!, []);
+          await queryHistoryManager.handleItemClicked(undefined!, []);
 
-        expect(localQueriesResultsViewStub.showResults).not.to.have.been.called;
-        expect(remoteQueriesManagerStub.openRemoteQueryResults).not.to.have.been.called;
-        expect(variantAnalysisManagerStub.showView).not.to.have.been.called;
-        expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
+          expect(localQueriesResultsViewStub.showResults).not.to.have.been.called;
+          expect(remoteQueriesManagerStub.openRemoteQueryResults).not.to.have.been.called;
+          expect(variantAnalysisManagerStub.showView).not.to.have.been.called;
+          expect(queryHistoryManager.treeDataProvider.getCurrent()).to.be.undefined;
+        });
       });
     });
 
