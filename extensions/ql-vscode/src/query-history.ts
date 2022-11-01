@@ -273,17 +273,23 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
   }
 
   remove(item: QueryHistoryInfo) {
+    console.log('remove - this.current', this.current);
     const isCurrent = this.current === item;
     if (isCurrent) {
       this.setCurrentItem();
     }
     const index = this.history.findIndex((i) => i === item);
+    console.log('remove - index', index);
     if (index >= 0) {
       this.history.splice(index, 1);
       if (isCurrent && this.history.length > 0) {
+        const targetIndex = Math.min(index, this.history.length - 1);
+        console.log('remove - targetIndex', targetIndex);
+        console.log('Modified history:', this.history);
+        console.log('!!!!!!! fetch the thing', this.history[targetIndex]);
         // Try to keep a current item, near the deleted item if there
         // are any available.
-        this.setCurrentItem(this.history[Math.min(index, this.history.length - 1)]);
+        this.setCurrentItem(this.history[targetIndex]);
       }
       this.refresh();
     }
@@ -777,18 +783,27 @@ export class QueryHistoryManager extends DisposableObject {
         case 'local':
           // Removing in progress local queries is not supported. They must be cancelled first.
           if (item.status !== QueryStatus.InProgress) {
+            console.log('Removing local query');
+            console.log('item', item);
             this.treeDataProvider.remove(item);
             item.completedQuery?.dispose();
 
             // User has explicitly asked for this query to be removed.
             // We need to delete it from disk as well.
             await item.completedQuery?.query.deleteQuery();
+          } else {
+            console.log('Did not remove local query');
+            console.log('item', item);
           }
           break;
         case 'remote':
+          console.log('Removing remote query');
+          console.log('item', item);
           await this.removeRemoteQuery(item);
           break;
         case 'variant-analysis':
+          console.log('Removing variant analysis');
+          console.log('item', item);
           await this.removeVariantAnalysis(item);
           break;
         default:
@@ -798,6 +813,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     await this.writeQueryHistory();
     const current = this.treeDataProvider.getCurrent();
+
     if (current !== undefined) {
       await this.treeView.reveal(current, { select: true });
       await this.openQueryResults(current);
@@ -1453,6 +1469,7 @@ the file in the file explorer and dragging it into the workspace.`
   }
 
   private async openQueryResults(item: QueryHistoryInfo) {
+    console.log('openQueryResults - item type', item.t);
     if (item.t === 'local') {
       await this.localQueriesResultsView.showResults(item as CompletedLocalQueryInfo, WebviewReveal.Forced, false);
     } else if (item.t === 'remote') {

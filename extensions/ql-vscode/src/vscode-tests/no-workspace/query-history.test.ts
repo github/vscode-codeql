@@ -106,7 +106,6 @@ describe('query-history', () => {
       createMockVariantAnalysisHistoryItem(QueryStatus.InProgress)
     ];
     allHistory = shuffleHistoryItems([...localQueryHistory, ...remoteQueryHistory, ...variantAnalysisHistory]);
-
   });
 
   afterEach(async () => {
@@ -262,6 +261,9 @@ describe('query-history', () => {
     });
 
     describe('handleRemoveHistoryItem', () => {
+      describe('if you remove the selected item', () => {
+
+      });
       it('should remove an item and not select a new one', async () => {
         queryHistoryManager = await createMockQueryHistory(allHistory);
         // initialize the selection
@@ -291,16 +293,20 @@ describe('query-history', () => {
         expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
       });
 
-      it('should remove an item and select a new one', async () => {
+      it.only('should remove an item and select a new one', async () => {
         queryHistoryManager = await createMockQueryHistory(allHistory);
 
         // deleting the selected item automatically selects next item
         const toDelete = allHistory[1];
         const newSelected = allHistory[2];
+
+        console.log('toDelete', toDelete);
+        console.log('newSelected', newSelected);
         // avoid triggering the callback by setting the field directly
 
         // select the item we want
         await queryHistoryManager.treeView.reveal(toDelete, { select: true });
+        queryHistoryManager.treeDataProvider.setCurrentItem(toDelete);
         await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
 
         expectToHaveBeenRemoved(toDelete, queryHistoryManager);
@@ -315,6 +321,8 @@ describe('query-history', () => {
     });
 
     function expectToHaveBeenSelected(selected: QueryHistoryInfo) {
+      console.log('expectToHaveBeenSelected - selected', selected);
+
       switch (selected.t) {
         case 'local':
           expect(localQueriesResultsViewStub.showResults).to.have.been.calledWith(selected);

@@ -102,6 +102,7 @@ export async function splatQueryHistory(queries: QueryHistoryInfo[], fsPath: str
     }
     // remove incomplete local queries since they cannot be recreated on restart
     const filteredQueries = queries.filter(q => q.t === 'local' ? q.completedQuery !== undefined : true);
+
     const data = JSON.stringify({
       // version 2:
       // - adds the `variant-analysis` type
