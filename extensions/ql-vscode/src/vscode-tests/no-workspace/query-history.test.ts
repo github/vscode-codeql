@@ -283,7 +283,9 @@ describe('query-history', () => {
         expectToHaveBeenRemoved(toDelete, queryHistoryManager);
 
         // the same item should be selected
-        expectToHaveBeenSelected(selected);
+        if (toDelete.t !== 'local' || toDelete.status !== 'InProgress') {
+          expectToHaveBeenSelected(selected);
+        }
 
         expect(queryHistoryManager.treeDataProvider.getCurrent()).to.deep.eq(selected);
         expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
@@ -304,7 +306,9 @@ describe('query-history', () => {
         expectToHaveBeenRemoved(toDelete, queryHistoryManager);
 
         // the current item should have been selected
-        expectToHaveBeenSelected(newSelected);
+        if (toDelete.t !== 'local' || toDelete.status !== 'InProgress') {
+          expectToHaveBeenSelected(newSelected);
+        }
 
         expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(newSelected);
       });
