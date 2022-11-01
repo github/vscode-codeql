@@ -8,6 +8,7 @@ import {
 } from '../../../../remote-queries/shared/variant-analysis';
 import { createMockScannedRepos } from './scanned-repositories';
 import { createMockSkippedRepos } from './skipped-repositories';
+import { createMockRepository } from './repository';
 
 export function createMockVariantAnalysis(
   status: VariantAnalysisStatus = VariantAnalysisStatus.InProgress,
@@ -17,11 +18,10 @@ export function createMockVariantAnalysis(
   const variantAnalysis: VariantAnalysis = {
     id: faker.datatype.number(),
     controllerRepo: {
-      id: faker.datatype.number(),
+      ...createMockRepository(),
       fullName: 'github/' + faker.datatype.hexadecimal({
         prefix: '',
       }),
-      private: faker.datatype.boolean(),
     },
     query: {
       name: 'a-query-name',

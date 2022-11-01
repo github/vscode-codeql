@@ -3,12 +3,14 @@ import { render as reactRender, screen } from '@testing-library/react';
 import { VariantAnalysisRepoStatus } from '../../../remote-queries/shared/variant-analysis';
 import userEvent from '@testing-library/user-event';
 import { RepoRow, RepoRowProps } from '../RepoRow';
+import { createMockRepositoryWithMetadata } from '../../../vscode-tests/factories/remote-queries/shared/repository';
 
 describe(RepoRow.name, () => {
   const render = (props: Partial<RepoRowProps> = {}) => {
     return reactRender(
       <RepoRow
         repository={{
+          ...createMockRepositoryWithMetadata(),
           id: 1,
           fullName: 'octodemo/hello-world-1',
           private: false,
@@ -115,6 +117,7 @@ describe(RepoRow.name, () => {
   it('shows visibility when public', () => {
     render({
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 1,
         fullName: 'octodemo/hello-world-1',
         private: false,
@@ -127,6 +130,7 @@ describe(RepoRow.name, () => {
   it('shows visibility when private', () => {
     render({
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 1,
         fullName: 'octodemo/hello-world-1',
         private: true,
@@ -200,6 +204,7 @@ describe(RepoRow.name, () => {
     rerender(
       <RepoRow
         repository={{
+          ...createMockRepositoryWithMetadata(),
           id: 1,
           fullName: 'octodemo/hello-world-1',
           private: false,

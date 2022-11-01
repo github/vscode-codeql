@@ -8,6 +8,7 @@ import {
   VariantAnalysisScannedRepositoryDownloadStatus,
 } from '../../remote-queries/shared/variant-analysis';
 import { AnalysisAlert, AnalysisRawResults } from '../../remote-queries/shared/analysis-result';
+import { createMockRepositoryWithMetadata } from '../../vscode-tests/factories/remote-queries/shared/repository';
 
 import analysesResults from '../remote-queries/data/analysesResultsMessage.json';
 import rawResults from '../remote-queries/data/rawResults.json';
@@ -32,6 +33,7 @@ const Template: ComponentStory<typeof RepoRow> = (args) => (
 export const Pending = Template.bind({});
 Pending.args = {
   repository: {
+    ...createMockRepositoryWithMetadata(),
     id: 63537249,
     fullName: 'facebook/create-react-app',
     private: false,
@@ -99,6 +101,7 @@ SkippedOnlyFullName.args = {
 export const SkippedPublic = Template.bind({});
 SkippedPublic.args = {
   repository: {
+    ...createMockRepositoryWithMetadata(),
     fullName: 'octodemo/hello-globe',
     private: false,
   }
@@ -107,6 +110,7 @@ SkippedPublic.args = {
 export const SkippedPrivate = Template.bind({});
 SkippedPrivate.args = {
   repository: {
+    ...createMockRepositoryWithMetadata(),
     fullName: 'octodemo/hello-globe',
     private: true,
   }

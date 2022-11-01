@@ -3,6 +3,7 @@ import {
   VariantAnalysisSkippedRepositories,
   VariantAnalysisSkippedRepositoryGroup
 } from '../../../../remote-queries/shared/variant-analysis';
+import { createMockRepositoryWithMetadata } from './repository';
 
 export function createMockSkippedRepos(): VariantAnalysisSkippedRepositories {
   return {
@@ -17,14 +18,8 @@ export function createMockSkippedRepoGroup(): VariantAnalysisSkippedRepositoryGr
   return {
     repositoryCount: 2,
     repositories: [
-      {
-        id: faker.datatype.number(),
-        fullName: 'github/' + faker.random.word(),
-      },
-      {
-        id: faker.datatype.number(),
-        fullName: 'github/' + faker.random.word(),
-      }
+      createMockRepositoryWithMetadata(),
+      createMockRepositoryWithMetadata(),
     ]
   };
 }
