@@ -7,7 +7,7 @@ import { ExtensionContext } from 'vscode';
 import { createMockExtensionContext } from '../index';
 import { Credentials } from '../../../authentication';
 import { MarkdownFile } from '../../../remote-queries/remote-queries-markdown-generation';
-import * as actionsApiClient from '../../../remote-queries/gh-api/gh-actions-api-client';
+import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { exportResultsToGist } from '../../../remote-queries/export-results';
 
 const proxyquire = pq.noPreserveCache();
@@ -41,7 +41,7 @@ describe('export results', async function() {
     });
 
     it('should call the GitHub Actions API with the correct gist title', async function() {
-      mockCreateGist = sinon.stub(actionsApiClient, 'createGist');
+      mockCreateGist = sinon.stub(ghApiClient, 'createGist');
 
       ctx = createMockExtensionContext();
       const query = JSON.parse(await fs.readFile(path.join(__dirname, '../data/remote-queries/query-with-results/query.json'), 'utf8'));
