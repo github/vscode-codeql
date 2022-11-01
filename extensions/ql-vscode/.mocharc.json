@@ -1,6 +1,4 @@
 {
   "exit": true,
-  "require": [
-    "test/mocha.setup.js"
-  ]
+  "require": ["test/mocha.setup.js"]
 }

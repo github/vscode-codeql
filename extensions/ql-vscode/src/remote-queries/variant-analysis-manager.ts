@@ -11,7 +11,9 @@ import {
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
 } from './gh-api/variant-analysis';
 import {
+  isVariantAnalysisComplete,
   VariantAnalysis, VariantAnalysisQueryLanguage,
+  VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState
@@ -24,7 +26,6 @@ import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 import PQueue from 'p-queue';
 import { createTimestampFile, showAndLogErrorMessage } from '../helpers';
-import { QueryStatus } from '../query-status';
 import * as fs from 'fs-extra';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
@@ -55,19 +56,22 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
   }
 
-  public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis, status: QueryStatus) {
+  public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis) {
     if (!(await this.variantAnalysisRecordExists(variantAnalysis.id))) {
       // In this case, the variant analysis was deleted from disk, most likely because
       // it was purged by another workspace.
       this._onVariantAnalysisRemoved.fire(variantAnalysis);
     } else {
       await this.setVariantAnalysis(variantAnalysis);
-      if (status === QueryStatus.InProgress) {
-        // In this case, last time we checked, the query was still in progress.
-        // We need to setup the monitor to check for completion.
+      if (!await isVariantAnalysisComplete(variantAnalysis, this.makeResultDownloadChecker(variantAnalysis))) {
         await commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
       }
     }
+  }
+
+  private makeResultDownloadChecker(variantAnalysis: VariantAnalysis): (repo: VariantAnalysisScannedRepository) => Promise<boolean> {
+    const storageLocation = this.getVariantAnalysisStorageLocation(variantAnalysis.id);
+    return (repo) => this.variantAnalysisResultsManager.isVariantAnalysisRepoDownloaded(storageLocation, repo.repository.fullName);
   }
 
   public async removeVariantAnalysis(variantAnalysis: VariantAnalysis) {
