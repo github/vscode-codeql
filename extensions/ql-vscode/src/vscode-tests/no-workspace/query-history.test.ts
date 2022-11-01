@@ -282,20 +282,25 @@ describe('query-history', () => {
         await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
 
         if (toDelete.t == 'local') {
-          expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
+          if (toDelete.status !== QueryStatus.InProgress) {
+            expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
+            expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
+          } else {
+            expect(queryHistoryManager.treeDataProvider.allHistory).to.contain(toDelete);
+          }
         } else if (toDelete.t == 'remote') {
-          expect(remoteQueriesManagerStub.removeRemoteQuery).to.have.been.calledOnceWith((toDelete as RemoteQueryHistoryItem).queryId);
+          expect(remoteQueriesManagerStub.removeRemoteQuery).to.have.been.calledOnceWith(toDelete.queryId);
         } else if (toDelete.t == 'variant-analysis') {
-          expect(variantAnalysisManagerStub.removeVariantAnalysis).to.have.been.calledOnceWith((toDelete as VariantAnalysisHistoryItem).variantAnalysis.id);
+          expect(variantAnalysisManagerStub.removeVariantAnalysis).to.have.been.calledOnceWith(toDelete.variantAnalysis.id);
         }
 
         // the same item should be selected
         if (selected.t == 'local') {
           expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(selected);
-        } else if (toDelete.t == 'remote') {
-          expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith((selected as RemoteQueryHistoryItem).queryId);
-        } else if (toDelete.t == 'variant-analysis') {
-          expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith((selected as VariantAnalysisHistoryItem).variantAnalysis.id);
+        } else if (selected.t == 'remote') {
+          expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith(selected.queryId);
+        } else if (selected.t == 'variant-analysis') {
+          expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith(selected.variantAnalysis.id);
         }
 
         expect(queryHistoryManager.treeDataProvider.getCurrent()).to.deep.eq(selected);
@@ -315,24 +320,30 @@ describe('query-history', () => {
         await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
 
         if (toDelete.t == 'local') {
-          expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
+          if (toDelete.status !== QueryStatus.InProgress) {
+            expect(toDelete.completedQuery!.dispose).to.have.been.calledOnce;
+            expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
+          } else {
+            expect(queryHistoryManager.treeDataProvider.allHistory).to.contain(toDelete);
+          }
         } else if (toDelete.t == 'remote') {
-          expect(remoteQueriesManagerStub.removeRemoteQuery).to.have.been.calledOnceWith((toDelete as RemoteQueryHistoryItem).queryId);
+          expect(remoteQueriesManagerStub.removeRemoteQuery).to.have.been.calledOnceWith(toDelete.queryId);
+          expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
         } else if (toDelete.t == 'variant-analysis') {
-          expect(variantAnalysisManagerStub.removeVariantAnalysis).to.have.been.calledOnceWith((toDelete as VariantAnalysisHistoryItem).variantAnalysis.id);
+          expect(variantAnalysisManagerStub.removeVariantAnalysis).to.have.been.calledOnceWith(toDelete.variantAnalysis.id);
+          expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
         }
 
         // the current item should have been selected
         if (newSelected.t == 'local') {
           expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(newSelected);
-        } else if (toDelete.t == 'remote') {
-          expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith((newSelected as RemoteQueryHistoryItem).queryId);
-        } else if (toDelete.t == 'variant-analysis') {
-          expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith((newSelected as VariantAnalysisHistoryItem).variantAnalysis.id);
+        } else if (newSelected.t == 'remote') {
+          expect(remoteQueriesManagerStub.openRemoteQueryResults).to.have.been.calledOnceWith(newSelected.queryId);
+        } else if (newSelected.t == 'variant-analysis') {
+          expect(variantAnalysisManagerStub.showView).to.have.been.calledOnceWith(newSelected.variantAnalysis.id);
         }
 
         expect(queryHistoryManager.treeDataProvider.getCurrent()).to.eq(newSelected);
-        expect(queryHistoryManager.treeDataProvider.allHistory).not.to.contain(toDelete);
       });
     });
 
