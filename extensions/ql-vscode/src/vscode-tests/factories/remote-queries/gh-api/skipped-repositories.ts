@@ -22,13 +22,17 @@ export function createMockSkippedRepoGroup(): VariantAnalysisSkippedRepositoryGr
         id: faker.datatype.number(),
         name: faker.random.word(),
         full_name: 'github/' + faker.random.word(),
-        private: true
+        private: true,
+        stargazers_count: faker.datatype.number(),
+        updated_at: faker.date.past().toISOString()
       },
       {
         id: faker.datatype.number(),
         name: faker.random.word(),
         full_name: 'github/' + faker.random.word(),
-        private: false
+        private: false,
+        stargazers_count: faker.datatype.number(),
+        updated_at: faker.date.past().toISOString()
       }
     ]
   };

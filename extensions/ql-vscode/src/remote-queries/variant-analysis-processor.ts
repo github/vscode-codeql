@@ -85,6 +85,8 @@ function processScannedRepositories(
         id: scannedRepo.repository.id,
         fullName: scannedRepo.repository.full_name,
         private: scannedRepo.repository.private,
+        stargazersCount: scannedRepo.repository.stargazers_count,
+        updatedAt: scannedRepo.repository.updated_at,
       },
       analysisStatus: processApiRepoStatus(scannedRepo.analysis_status),
       resultCount: scannedRepo.result_count,
@@ -114,7 +116,10 @@ function processRepoGroup(repoGroup: ApiVariantAnalysisSkippedRepositoryGroup | 
   const repos = repoGroup.repositories.map(repo => {
     return {
       id: repo.id,
-      fullName: repo.full_name
+      fullName: repo.full_name,
+      private: repo.private,
+      stargazersCount: repo.stargazers_count,
+      updatedAt: repo.updated_at
     };
   });
 

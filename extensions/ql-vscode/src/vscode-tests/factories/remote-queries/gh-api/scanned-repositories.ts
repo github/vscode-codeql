@@ -15,6 +15,8 @@ export function createMockScannedRepo(
       name: name,
       full_name: 'github/' + name,
       private: isPrivate,
+      stargazers_count: faker.datatype.number(),
+      updated_at: faker.date.past().toISOString(),
     },
     analysis_status: analysisStatus,
     result_count: faker.datatype.number(),

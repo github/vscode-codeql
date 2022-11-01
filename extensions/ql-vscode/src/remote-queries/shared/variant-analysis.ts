@@ -1,4 +1,4 @@
-import { Repository } from './repository';
+import { Repository, RepositoryWithMetadata } from './repository';
 import { AnalysisAlert, AnalysisRawResults } from './analysis-result';
 
 export interface VariantAnalysis {
@@ -62,7 +62,7 @@ export enum VariantAnalysisRepoStatus {
 }
 
 export interface VariantAnalysisScannedRepository {
-  repository: Repository,
+  repository: RepositoryWithMetadata,
   analysisStatus: VariantAnalysisRepoStatus,
   resultCount?: number,
   artifactSizeInBytes?: number,
@@ -85,6 +85,8 @@ export interface VariantAnalysisSkippedRepository {
   id?: number,
   fullName: string,
   private?: boolean,
+  stargazersCount?: number,
+  updatedAt?: string | null,
 }
 
 export enum VariantAnalysisScannedRepositoryDownloadStatus {
