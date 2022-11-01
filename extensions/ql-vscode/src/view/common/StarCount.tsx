@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { StarIcon } from '@primer/octicons-react';
 import styled from 'styled-components';
+import { Codicon } from './icon';
 
 const Star = styled.span`
   flex-grow: 2;
@@ -9,19 +9,22 @@ const Star = styled.span`
 `;
 
 const Count = styled.span`
+  display: inline-block;
   text-align: left;
   width: 2em;
   margin-left: 0.5em;
   margin-right: 1.5em;
 `;
 
-type Props = { starCount?: number };
+type Props = {
+  starCount?: number;
+};
 
 const StarCount = ({ starCount }: Props) => (
   Number.isFinite(starCount) ? (
     <>
       <Star>
-        <StarIcon size={16} />
+        <Codicon name="star-empty" label="Stars count" />
       </Star>
       <Count>
         {displayStars(starCount!)}

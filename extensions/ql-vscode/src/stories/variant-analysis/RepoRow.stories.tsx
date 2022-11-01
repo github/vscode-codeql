@@ -37,6 +37,8 @@ Pending.args = {
     id: 63537249,
     fullName: 'facebook/create-react-app',
     private: false,
+    stargazersCount: 97_761,
+    updatedAt: '2022-11-01T13:07:05Z',
   },
   status: VariantAnalysisRepoStatus.Pending,
 };
@@ -104,6 +106,8 @@ SkippedPublic.args = {
     ...createMockRepositoryWithMetadata(),
     fullName: 'octodemo/hello-globe',
     private: false,
+    stargazersCount: 83_372,
+    updatedAt: '2022-10-28T14:10:35Z',
   }
 };
 
@@ -113,5 +117,7 @@ SkippedPrivate.args = {
     ...createMockRepositoryWithMetadata(),
     fullName: 'octodemo/hello-globe',
     private: true,
+    stargazersCount: 83_372,
+    updatedAt: '2022-05-28T14:10:35Z',
   }
 };
