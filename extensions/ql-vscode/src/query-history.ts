@@ -773,22 +773,26 @@ export class QueryHistoryManager extends DisposableObject {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
     const toDelete = (finalMultiSelect || [finalSingleItem]);
     await Promise.all(toDelete.map(async (item) => {
-      if (item.t === 'local') {
-        // Removing in progress local queries is not supported. They must be cancelled first.
-        if (item.status !== QueryStatus.InProgress) {
-          this.treeDataProvider.remove(item);
-          item.completedQuery?.dispose();
+      switch (item.t) {
+        case 'local':
+          // Removing in progress local queries is not supported. They must be cancelled first.
+          if (item.status !== QueryStatus.InProgress) {
+            this.treeDataProvider.remove(item);
+            item.completedQuery?.dispose();
 
-          // User has explicitly asked for this query to be removed.
-          // We need to delete it from disk as well.
-          await item.completedQuery?.query.deleteQuery();
-        }
-      } else if (item.t === 'remote') {
-        await this.removeRemoteQuery(item);
-      } else if (item.t === 'variant-analysis') {
-        await this.removeVariantAnalysis(item);
-      } else {
-        assertNever(item);
+            // User has explicitly asked for this query to be removed.
+            // We need to delete it from disk as well.
+            await item.completedQuery?.query.deleteQuery();
+          }
+          break;
+        case 'remote':
+          await this.removeRemoteQuery(item);
+          break;
+        case 'variant-analysis':
+          await this.removeVariantAnalysis(item);
+          break;
+        default:
+          assertNever(item);
       }
     }));
 
