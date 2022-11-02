@@ -105,7 +105,9 @@
             "id": 206444,
             "name": "hive",
             "full_name": "apache/hive",
-            "private": false
+            "private": false,
+            "stargazers_count": 4523,
+            "updated_at": "2022-11-02T10:04:02Z"
           },
           "analysis_status": "in_progress",
           "artifact_size_in_bytes": 81841
@@ -115,7 +117,9 @@
             "id": 20753500,
             "name": "ng-nice",
             "full_name": "angular-cn/ng-nice",
-            "private": false
+            "private": false,
+            "stargazers_count": 192,
+            "updated_at": "2022-03-17T08:34:30Z"
           },
           "analysis_status": "in_progress"
         },
@@ -124,7 +128,9 @@
             "id": 23418517,
             "name": "hadoop",
             "full_name": "apache/hadoop",
-            "private": false
+            "private": false,
+            "stargazers_count": 13030,
+            "updated_at": "2022-11-02T08:23:58Z"
           },
           "analysis_status": "in_progress"
         },
@@ -133,7 +139,9 @@
             "id": 236095576,
             "name": "backstage",
             "full_name": "backstage/backstage",
-            "private": false
+            "private": false,
+            "stargazers_count": 19033,
+            "updated_at": "2022-11-02T10:25:24Z"
           },
           "analysis_status": "in_progress"
         },
@@ -142,7 +150,9 @@
             "id": 257485422,
             "name": "vite",
             "full_name": "vitejs/vite",
-            "private": false
+            "private": false,
+            "stargazers_count": 49064,
+            "updated_at": "2022-11-02T11:29:22Z"
           },
           "analysis_status": "in_progress"
         }

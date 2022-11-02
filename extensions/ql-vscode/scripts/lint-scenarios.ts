@@ -4,6 +4,8 @@ import * as path from 'path';
 import Ajv from 'ajv';
 import * as tsj from 'ts-json-schema-generator';
 
+import { getFiles } from './util/files';
+
 const extensionDirectory = path.resolve(__dirname, '..');
 const rootDirectory = path.resolve(extensionDirectory, '../..');
 const scenariosDirectory = path.resolve(extensionDirectory, 'src/mocks/scenarios');
@@ -57,19 +59,6 @@ async function lintScenarios() {
 
   if (invalidFiles > 0) {
     process.exit(1);
-  }
-}
-
-// https://stackoverflow.com/a/45130990
-async function* getFiles(dir: string): AsyncGenerator<string> {
-  const dirents = await fs.readdir(dir, { withFileTypes: true });
-  for (const dirent of dirents) {
-    const res = path.resolve(dir, dirent.name);
-    if (dirent.isDirectory()) {
-      yield* getFiles(res);
-    } else {
-      yield res;
-    }
   }
 }
 
