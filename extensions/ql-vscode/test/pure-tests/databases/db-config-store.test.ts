@@ -2,6 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { DbConfigStore } from '../../../src/databases/db-config-store';
 import { expect } from 'chai';
+import { DbConfig } from '../../../src/databases/db-config';
 
 describe('db config store', async () => {
   const tempWorkspaceStoragePath = path.join(__dirname, 'test-workspace');
@@ -53,4 +54,43 @@ describe('db config store', async () => {
     const reRetrievedConfig = configStore.getConfig();
     expect(reRetrievedConfig.remote.repositoryLists).to.have.length(1);
   });
+
+  it('should watch changes to the config file', async () => {
+    const configStore = new DbConfigStore(testStoragePath);
+    await configStore.initialize();
+
+    const configPath = path.join(testStoragePath, 'dbconfig.json');
+
+    const config: DbConfig = {
+      remote: {
+        repositoryLists: [
+          {
+            name: 'repoList2',
+            repositories: ['foo/bar2', 'foo/baz2']
+          },
+          {
+            name: 'repoList3',
+            repositories: ['foo/bar3', 'foo/baz3']
+          }
+        ],
+        owners: [],
+        repositories: []
+      }
+    };
+
+    await fs.writeJSON(configPath, config, { spaces: 2 });
+    // Get the config again and check that it has changed
+    const reRetrievedConfig = configStore.getConfig();
+    // Wait for the watcher to pick up the change
+    await sleep(1000);
+    expect(reRetrievedConfig.remote.repositoryLists).to.have.length(2);
+    expect(reRetrievedConfig.remote.repositoryLists[0]).to.deep.equal({
+      'name': 'repoList2',
+      'repositories': ['foo/bar2', 'foo/baz2']
+    });
+  });
 });
+
+async function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
