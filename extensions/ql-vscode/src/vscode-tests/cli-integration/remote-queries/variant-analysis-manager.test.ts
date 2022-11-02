@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { CancellationTokenSource, extensions } from 'vscode';
+import { CancellationTokenSource, commands, extensions } from 'vscode';
 import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
@@ -21,15 +21,17 @@ import { createMockVariantAnalysisRepoTask } from '../../factories/remote-querie
 import { CodeQLCliServer } from '../../../cli';
 import { storagePath } from '../global.helper';
 import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
-import { VariantAnalysis } from '../../../remote-queries/shared/variant-analysis';
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
+import { VariantAnalysis } from '../../../remote-queries/shared/variant-analysis';
+import * as VariantAnalysisModule from '../../../remote-queries/shared/variant-analysis';
+import { createTimestampFile } from '../../../helpers';
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
   let cli: CodeQLCliServer;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
-  let variantAnalysis: VariantAnalysisApiResponse;
+  let variantAnalysisApiResponse: VariantAnalysisApiResponse;
   let scannedRepos: ApiVariantAnalysisScannedRepository[];
   let getVariantAnalysisRepoStub: sinon.SinonStub;
   let getVariantAnalysisRepoResultStub: sinon.SinonStub;
@@ -45,7 +47,7 @@ describe('Variant Analysis Manager', async function() {
     cancellationTokenSource = new CancellationTokenSource();
 
     scannedRepos = createMockScannedRepos();
-    variantAnalysis = createMockApiResponse('in_progress', scannedRepos);
+    variantAnalysisApiResponse = createMockApiResponse('in_progress', scannedRepos);
 
     try {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
@@ -68,7 +70,7 @@ describe('Variant Analysis Manager', async function() {
       try {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
-          variantAnalysis,
+          variantAnalysisApiResponse,
           cancellationTokenSource.token
         );
       } catch (error: any) {
@@ -105,7 +107,7 @@ describe('Variant Analysis Manager', async function() {
       it('should not try to download the result', async () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
-          variantAnalysis,
+          variantAnalysisApiResponse,
           cancellationTokenSource.token
         );
 
@@ -129,7 +131,7 @@ describe('Variant Analysis Manager', async function() {
 
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
-            variantAnalysis,
+            variantAnalysisApiResponse,
             cancellationTokenSource.token
           );
 
@@ -139,7 +141,7 @@ describe('Variant Analysis Manager', async function() {
         it('should fetch a repo task', async () => {
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
-            variantAnalysis,
+            variantAnalysisApiResponse,
             cancellationTokenSource.token
           );
 
@@ -149,7 +151,7 @@ describe('Variant Analysis Manager', async function() {
         it('should fetch a repo result', async () => {
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
-            variantAnalysis,
+            variantAnalysisApiResponse,
             cancellationTokenSource.token
           );
 
@@ -161,9 +163,9 @@ describe('Variant Analysis Manager', async function() {
         it('should pop download tasks off the queue', async () => {
           const getResultsSpy = sandbox.spy(variantAnalysisManager, 'autoDownloadVariantAnalysisResult');
 
-          await variantAnalysisManager.enqueueDownload(scannedRepos[0], variantAnalysis, cancellationTokenSource.token);
-          await variantAnalysisManager.enqueueDownload(scannedRepos[1], variantAnalysis, cancellationTokenSource.token);
-          await variantAnalysisManager.enqueueDownload(scannedRepos[2], variantAnalysis, cancellationTokenSource.token);
+          await variantAnalysisManager.enqueueDownload(scannedRepos[0], variantAnalysisApiResponse, cancellationTokenSource.token);
+          await variantAnalysisManager.enqueueDownload(scannedRepos[1], variantAnalysisApiResponse, cancellationTokenSource.token);
+          await variantAnalysisManager.enqueueDownload(scannedRepos[2], variantAnalysisApiResponse, cancellationTokenSource.token);
 
           expect(variantAnalysisManager.downloadsQueueSize()).to.equal(0);
           expect(getResultsSpy).to.have.been.calledThrice;
@@ -190,6 +192,79 @@ describe('Variant Analysis Manager', async function() {
           expect(removeAnalysisResultsStub).to.have.been.calledOnce;
           expect(removeStorageStub).to.have.been.calledOnce;
           expect(variantAnalysisManager.variantAnalysesSize).to.equal(0);
+        });
+      });
+    });
+  });
+
+  describe('when rehydrating a query', async () => {
+    let variantAnalysis: VariantAnalysis;
+    let variantAnalysisRemovedSpy: sinon.SinonSpy;
+    let monitorVariantAnalysisCommandSpy: sinon.SinonSpy;
+
+    beforeEach(() => {
+      variantAnalysis = createMockVariantAnalysis();
+
+      variantAnalysisRemovedSpy = sinon.spy();
+      variantAnalysisManager.onVariantAnalysisRemoved(variantAnalysisRemovedSpy);
+
+      monitorVariantAnalysisCommandSpy = sinon.spy();
+      sandbox.stub(commands, 'executeCommand').callsFake(monitorVariantAnalysisCommandSpy);
+    });
+
+    describe('when variant analysis record doesn\'t exist', async () => {
+      it('should remove the variant analysis', async () => {
+        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+        sinon.assert.calledOnce(variantAnalysisRemovedSpy);
+      });
+
+      it('should not trigger a monitoring command', async () => {
+        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+        sinon.assert.notCalled(monitorVariantAnalysisCommandSpy);
+      });
+    });
+
+    describe('when variant analysis record does exist', async () => {
+      let variantAnalysisStorageLocation: string;
+
+      beforeEach(async () => {
+        variantAnalysisStorageLocation = variantAnalysisManager.getVariantAnalysisStorageLocation(variantAnalysis.id);
+        await createTimestampFile(variantAnalysisStorageLocation);
+      });
+
+      afterEach(() => {
+        fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
+      });
+
+      describe('when the variant analysis is not complete', async () => {
+        beforeEach(() => {
+          sandbox.stub(VariantAnalysisModule, 'isVariantAnalysisComplete').resolves(false);
+        });
+
+        it('should not remove the variant analysis', async () => {
+          await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+          sinon.assert.notCalled(variantAnalysisRemovedSpy);
+        });
+
+        it('should trigger a monitoring command', async () => {
+          await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+          sinon.assert.calledWith(monitorVariantAnalysisCommandSpy, 'codeQL.monitorVariantAnalysis');
+        });
+      });
+
+      describe('when the variant analysis is complete', async () => {
+        beforeEach(() => {
+          sandbox.stub(VariantAnalysisModule, 'isVariantAnalysisComplete').resolves(true);
+        });
+
+        it('should not remove the variant analysis', async () => {
+          await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+          sinon.assert.notCalled(variantAnalysisRemovedSpy);
+        });
+
+        it('should not trigger a monitoring command', async () => {
+          await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+          sinon.assert.notCalled(monitorVariantAnalysisCommandSpy);
         });
       });
     });

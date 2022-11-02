@@ -62,7 +62,7 @@ export function processUpdatedVariantAnalysis(
     executionStartTime: previousVariantAnalysis.executionStartTime,
     createdAt: response.created_at,
     updatedAt: response.updated_at,
-    status: processApiStatus(response.status),
+    status: processApiStatus(response.status, response.failure_reason),
     completedAt: response.completed_at,
     actionsWorkflowRunId: response.actions_workflow_run_id,
     scannedRepos: scannedRepos,
@@ -102,7 +102,7 @@ function processSkippedRepositories(
 
   return {
     accessMismatchRepos: processRepoGroup(skippedRepos.access_mismatch_repos),
-    notFoundRepos: processNotFoundRepoGroup(skippedRepos.not_found_repo_nwos),
+    notFoundRepos: processNotFoundRepoGroup(skippedRepos.not_found_repos),
     noCodeqlDbRepos: processRepoGroup(skippedRepos.no_codeql_db_repos),
     overLimitRepos: processRepoGroup(skippedRepos.over_limit_repos)
   };
@@ -163,12 +163,13 @@ function processApiRepoStatus(analysisStatus: ApiVariantAnalysisRepoStatus): Var
   }
 }
 
-function processApiStatus(status: ApiVariantAnalysisStatus): VariantAnalysisStatus {
-  switch (status) {
-    case 'in_progress':
-      return VariantAnalysisStatus.InProgress;
-    case 'completed':
-      return VariantAnalysisStatus.Succeeded;
+function processApiStatus(status: ApiVariantAnalysisStatus, failureReason: string | undefined): VariantAnalysisStatus {
+  if (status === 'in_progress') {
+    return VariantAnalysisStatus.InProgress;
+  } else if (failureReason !== undefined) {
+    return VariantAnalysisStatus.Failed;
+  } else {
+    return VariantAnalysisStatus.Succeeded;
   }
 }
 

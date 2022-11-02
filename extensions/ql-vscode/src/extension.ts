@@ -525,9 +525,6 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(logScannerService);
   ctx.subscriptions.push(logScannerService.scanners.registerLogScannerProvider(new JoinOrderScannerProvider(() => joinOrderWarningThreshold())));
 
-  void logger.log('Reading query history');
-  await qhm.readQueryHistory();
-
   void logger.log('Initializing compare view.');
   const compareView = new CompareView(
     ctx,
@@ -1228,6 +1225,9 @@ async function activateWithInstalledDistribution(
   );
 
   await commands.executeCommand('codeQLDatabases.removeOrphanedDatabases');
+
+  void logger.log('Reading query history');
+  await qhm.readQueryHistory();
 
   void logger.log('Successfully finished extension initialization.');
 

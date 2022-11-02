@@ -5,9 +5,7 @@ import { HistoryItemLabelProvider } from '../../history-item-label-provider';
 import { createMockLocalQueryInfo } from '../factories/local-queries/local-query-history-item';
 import { createMockRemoteQueryHistoryItem } from '../factories/remote-queries/remote-query-history-item';
 
-
 describe('HistoryItemLabelProvider', () => {
-
   let labelProvider: HistoryItemLabelProvider;
   let config: QueryHistoryConfig;
   const date = new Date('2022-01-01T00:00:00.000Z');

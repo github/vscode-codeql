@@ -973,7 +973,7 @@
             }
           ]
         },
-        "not_found_repo_nwos": {
+        "not_found_repos": {
           "repository_count": 110,
           "repository_full_names": [
             "evanw/node-source-map-support",

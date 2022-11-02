@@ -1,19 +1,18 @@
 import { expect } from 'chai';
-
-import { QueryStatus } from '../../src/query-status';
+import { QueryStatus } from '../../query-status';
 import {
   buildRepoLabel,
   getActionsWorkflowRunUrl,
   getQueryId,
   getQueryText,
   getRawQueryName
-} from '../../src/query-history-info';
-import { VariantAnalysisHistoryItem } from '../../src/remote-queries/variant-analysis-history-item';
-import { createMockVariantAnalysis } from '../../src/vscode-tests/factories/remote-queries/shared/variant-analysis';
-import { createMockScannedRepos } from '../../src/vscode-tests/factories/remote-queries/shared/scanned-repositories';
-import { createMockLocalQueryInfo } from '../../src/vscode-tests/factories/local-queries/local-query-history-item';
-import { createMockRemoteQueryHistoryItem } from '../../src/vscode-tests/factories/remote-queries/remote-query-history-item';
-import { VariantAnalysisRepoStatus, VariantAnalysisStatus } from '../../src/remote-queries/shared/variant-analysis';
+} from '../../query-history-info';
+import { VariantAnalysisHistoryItem } from '../../remote-queries/variant-analysis-history-item';
+import { createMockVariantAnalysis } from '../factories/remote-queries/shared/variant-analysis';
+import { createMockScannedRepos } from '../factories/remote-queries/shared/scanned-repositories';
+import { createMockLocalQueryInfo } from '../factories/local-queries/local-query-history-item';
+import { createMockRemoteQueryHistoryItem } from '../factories/remote-queries/remote-query-history-item';
+import { VariantAnalysisRepoStatus, VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
 
 describe('Query history info', () => {
 
