@@ -3,6 +3,7 @@ import * as path from 'path';
 import { DbConfigStore } from '../../../src/databases/db-config-store';
 import { expect } from 'chai';
 import { DbConfig } from '../../../src/databases/db-config';
+import { sleep } from '../../../src/pure/time';
 
 describe('db config store', async () => {
   const tempWorkspaceStoragePath = path.join(__dirname, 'test-workspace');
@@ -88,7 +89,3 @@ describe('db config store', async () => {
     expect(reRetrievedConfig).to.deep.equal(config);
   });
 });
-
-async function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
