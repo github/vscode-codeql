@@ -79,10 +79,11 @@ describe('db config store', async () => {
     };
 
     await fs.writeJSON(configPath, config, { spaces: 2 });
-    const reRetrievedConfig = configStore.getConfig();
 
     // Wait for the watcher to pick up the change
     await sleep(1000);
+
+    const reRetrievedConfig = configStore.getConfig();
 
     expect(reRetrievedConfig).to.deep.equal(config);
   });
