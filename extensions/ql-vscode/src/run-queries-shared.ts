@@ -166,8 +166,8 @@ export class QueryEvaluationInfo {
   /**
    * Holds if this query actually has produced interpreted results.
    */
-  async hasInterpretedResults(): Promise<boolean> {
-    return fs.pathExists(this.resultsPaths.interpretedResultsPath);
+  hasInterpretedResults(): boolean {
+    return fs.pathExistsSync(this.resultsPaths.interpretedResultsPath);
   }
 
   /**

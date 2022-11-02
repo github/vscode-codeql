@@ -174,7 +174,7 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
     // Populate the icon and the context value. We use the context value to
     // control which commands are visible in the context menu.
     treeItem.iconPath = this.getIconPath(element);
-    treeItem.contextValue = await this.getContextValue(element);
+    treeItem.contextValue = this.getContextValue(element);
 
     return treeItem;
   }
@@ -196,7 +196,7 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
     }
   }
 
-  private async getContextValue(element: QueryHistoryInfo): Promise<string> {
+  private getContextValue(element: QueryHistoryInfo): string {
     switch (element.status) {
       case QueryStatus.InProgress:
         if (element.t === 'local') {
@@ -208,7 +208,7 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
         }
       case QueryStatus.Completed:
         if (element.t === 'local') {
-          const hasResults = await element.completedQuery?.query.hasInterpretedResults();
+          const hasResults = element.completedQuery?.query.hasInterpretedResults();
           return hasResults
             ? 'interpretedResultsItem'
             : 'rawResultsItem';
