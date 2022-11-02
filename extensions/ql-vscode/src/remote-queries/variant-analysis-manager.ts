@@ -64,7 +64,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     } else {
       await this.setVariantAnalysis(variantAnalysis);
       if (!await isVariantAnalysisComplete(variantAnalysis, this.makeResultDownloadChecker(variantAnalysis))) {
-        await commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
+        void commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
       }
     }
   }
