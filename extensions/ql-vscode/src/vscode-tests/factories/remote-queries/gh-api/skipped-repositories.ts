@@ -9,7 +9,7 @@ export function createMockSkippedRepos(): VariantAnalysisSkippedRepositories {
   return {
     access_mismatch_repos: createMockSkippedRepoGroup(),
     no_codeql_db_repos: createMockSkippedRepoGroup(),
-    not_found_repo_nwos: createMockNotFoundSkippedRepoGroup(),
+    not_found_repos: createMockNotFoundSkippedRepoGroup(),
     over_limit_repos: createMockSkippedRepoGroup()
   };
 }
