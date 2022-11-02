@@ -1256,7 +1256,7 @@
     "test": "npm-run-all -p test:*",
     "test:unit": "mocha --config .mocharc.json test/pure-tests/**/*.ts",
     "test:view": "jest",
-    "integration-setup": "rm -rf ./out/vscode-tests && gulp",
+    "integration-setup": "rm -rf ./out/vscode-tests",
     "integration": "npm run integration-setup && node ./out/vscode-tests/run-integration-tests.js no-workspace,minimal-workspace",
     "integration:no-workspace": "npm run integration-setup && node ./out/vscode-tests/run-integration-tests.js no-workspace",
     "integration:minimal-workspace": "npm run integration-setup && node ./out/vscode-tests/run-integration-tests.js minimal-workspace",
