@@ -10,6 +10,7 @@ import {
 import { VariantAnalysisMonitorResult } from './shared/variant-analysis-monitor-result';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 import { DisposableObject } from '../pure/disposable-object';
+import { sleep } from '../pure/time';
 
 export class VariantAnalysisMonitor extends DisposableObject {
   // With a sleep of 5 seconds, the maximum number of attempts takes
@@ -40,7 +41,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
     const scannedReposDownloaded: number[] = [];
 
     while (attemptCount <= VariantAnalysisMonitor.maxAttemptCount) {
-      await this.sleep(VariantAnalysisMonitor.sleepTime);
+      await sleep(VariantAnalysisMonitor.sleepTime);
 
       if (cancellationToken && cancellationToken.isCancellationRequested) {
         return { status: 'Canceled' };
@@ -107,9 +108,5 @@ export class VariantAnalysisMonitor extends DisposableObject {
     });
 
     return downloadedRepos;
-  }
-
-  private async sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

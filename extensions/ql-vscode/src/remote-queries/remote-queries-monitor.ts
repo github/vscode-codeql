@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { Credentials } from '../authentication';
 import { Logger } from '../logging';
+import { sleep } from '../pure/time';
 import { getWorkflowStatus, isArtifactAvailable, RESULT_INDEX_ARTIFACT_NAME } from './gh-api/gh-actions-api-client';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueryWorkflowResult } from './remote-query-workflow-result';
@@ -30,7 +31,7 @@ export class RemoteQueriesMonitor {
     let attemptCount = 0;
 
     while (attemptCount <= RemoteQueriesMonitor.maxAttemptCount) {
-      await this.sleep(RemoteQueriesMonitor.sleepTime);
+      await sleep(RemoteQueriesMonitor.sleepTime);
 
       if (cancellationToken && cancellationToken.isCancellationRequested) {
         return { status: 'Cancelled' };
@@ -69,10 +70,6 @@ export class RemoteQueriesMonitor {
 
     void this.logger.log('Variant analysis monitoring timed out after 2 days');
     return { status: 'Cancelled' };
-  }
-
-  private async sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 
