@@ -79,15 +79,12 @@ describe('db config store', async () => {
     };
 
     await fs.writeJSON(configPath, config, { spaces: 2 });
-    // Get the config again and check that it has changed
     const reRetrievedConfig = configStore.getConfig();
+
     // Wait for the watcher to pick up the change
     await sleep(1000);
-    expect(reRetrievedConfig.remote.repositoryLists).to.have.length(2);
-    expect(reRetrievedConfig.remote.repositoryLists[0]).to.deep.equal({
-      'name': 'repoList2',
-      'repositories': ['foo/bar2', 'foo/baz2']
-    });
+
+    expect(reRetrievedConfig).to.deep.equal(config);
   });
 });
 
