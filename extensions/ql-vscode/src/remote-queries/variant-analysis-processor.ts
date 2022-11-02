@@ -100,7 +100,7 @@ function processSkippedRepositories(
 
   return {
     accessMismatchRepos: processRepoGroup(skippedRepos.access_mismatch_repos),
-    notFoundRepos: processNotFoundRepoGroup(skippedRepos.not_found_repo_nwos),
+    notFoundRepos: processNotFoundRepoGroup(skippedRepos.not_found_repos),
     noCodeqlDbRepos: processRepoGroup(skippedRepos.no_codeql_db_repos),
     overLimitRepos: processRepoGroup(skippedRepos.over_limit_repos)
   };

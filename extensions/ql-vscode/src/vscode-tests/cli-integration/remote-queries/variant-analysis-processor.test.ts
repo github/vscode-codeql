@@ -22,7 +22,7 @@ describe('Variant Analysis processor', function() {
   it('should process an API response and return a variant analysis', () => {
     const result = processVariantAnalysis(mockSubmission, mockApiResponse);
 
-    const { access_mismatch_repos, no_codeql_db_repos, not_found_repo_nwos, over_limit_repos } = skippedRepos;
+    const { access_mismatch_repos, no_codeql_db_repos, not_found_repos, over_limit_repos } = skippedRepos;
 
     expect(result).to.eql({
       'id': mockApiResponse.id,
@@ -81,13 +81,13 @@ describe('Variant Analysis processor', function() {
         'notFoundRepos': {
           'repositories': [
             {
-              'fullName': not_found_repo_nwos?.repository_full_names[0]
+              'fullName': not_found_repos?.repository_full_names[0]
             },
             {
-              'fullName': not_found_repo_nwos?.repository_full_names[1]
+              'fullName': not_found_repos?.repository_full_names[1]
             }
           ],
-          'repositoryCount': not_found_repo_nwos?.repository_count
+          'repositoryCount': not_found_repos?.repository_count
         },
         'overLimitRepos': {
           'repositories': [
