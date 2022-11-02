@@ -20,7 +20,7 @@ export function cloneDbConfig(config: DbConfig): DbConfig {
     remote: {
       repositoryLists: config.remote.repositoryLists.map((list) => ({
         name: list.name,
-        repositories: list.repositories.slice(),
+        repositories: [...list.repositories],
       })),
       owners: [...config.remote.owners],
       repositories: [...config.remote.repositories],

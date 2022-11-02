@@ -10,7 +10,7 @@ export class DbConfigStore {
   public constructor(workspaceStoragePath: string) {
     this.configPath = path.join(workspaceStoragePath, 'dbconfig.json');
 
-    this.config = emptyConfig;
+    this.config = this.createEmptyConfig();
   }
 
   public async initialize(): Promise<void> {
@@ -24,8 +24,7 @@ export class DbConfigStore {
 
   private async loadConfig(): Promise<void> {
     if (!await fs.pathExists(this.configPath)) {
-      await fs.createFile(this.configPath);
-      await fs.writeJSON(this.configPath, emptyConfig, { spaces: 2 });
+      await fs.writeJSON(this.configPath, this.createEmptyConfig(), { spaces: 2 });
     }
 
     await this.readConfig();
@@ -34,12 +33,14 @@ export class DbConfigStore {
   private async readConfig(): Promise<void> {
     this.config = await fs.readJSON(this.configPath);
   }
-}
 
-const emptyConfig: DbConfig = {
-  remote: {
-    repositoryLists: [],
-    owners: [],
-    repositories: [],
+  private createEmptyConfig(): DbConfig {
+    return {
+      remote: {
+        repositoryLists: [],
+        owners: [],
+        repositories: [],
+      }
+    };
   }
-};
+}
