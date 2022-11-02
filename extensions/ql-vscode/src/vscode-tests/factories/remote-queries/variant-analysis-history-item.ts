@@ -18,6 +18,6 @@ export function createMockVariantAnalysisHistoryItem(
     completed: false,
     variantAnalysis: createMockVariantAnalysis(variantAnalysisStatus),
     userSpecifiedLabel,
-  } as unknown) as VariantAnalysisHistoryItem;
+  });
 }
 

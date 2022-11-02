@@ -37,5 +37,5 @@ export function createMockRemoteQueryHistoryItem({
       repositoryCount,
     },
     userSpecifiedLabel,
-  } as unknown) as RemoteQueryHistoryItem;
+  });
 }
