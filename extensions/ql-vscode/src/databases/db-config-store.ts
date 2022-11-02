@@ -1,11 +1,11 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { cloneDatabaseConfig, DatabaseConfig } from './database-config';
+import { cloneDbConfig, DbConfig } from './db-config';
 
-export class DatabaseConfigStore {
+export class DbConfigStore {
   private readonly configPath: string;
 
-  private config: DatabaseConfig;
+  private config: DbConfig;
 
   public constructor(workspaceStoragePath: string) {
     this.configPath = path.join(workspaceStoragePath, 'dbconfig.json');
@@ -17,9 +17,9 @@ export class DatabaseConfigStore {
     await this.loadConfig();
   }
 
-  public getConfig(): DatabaseConfig {
+  public getConfig(): DbConfig {
     // Clone the config so that it's not modified outside of this class.
-    return cloneDatabaseConfig(this.config);
+    return cloneDbConfig(this.config);
   }
 
   private async loadConfig(): Promise<void> {
@@ -36,7 +36,7 @@ export class DatabaseConfigStore {
   }
 }
 
-const emptyConfig: DatabaseConfig = {
+const emptyConfig: DbConfig = {
   remote: {
     repositoryLists: [],
     owners: [],

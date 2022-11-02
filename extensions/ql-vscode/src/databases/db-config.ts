@@ -1,10 +1,10 @@
 // Contains models for the data we want to store in the database config
 
-export interface DatabaseConfig {
-  remote: RemoteDatabaseConfig;
+export interface DbConfig {
+  remote: RemoteDbConfig;
 }
 
-export interface RemoteDatabaseConfig {
+export interface RemoteDbConfig {
   repositoryLists: RemoteRepositoryList[];
   owners: string[];
   repositories: string[];
@@ -15,7 +15,7 @@ export interface RemoteRepositoryList {
   repositories: string[];
 }
 
-export function cloneDatabaseConfig(config: DatabaseConfig): DatabaseConfig {
+export function cloneDbConfig(config: DbConfig): DbConfig {
   return {
     remote: {
       repositoryLists: config.remote.repositoryLists.map((list) => ({

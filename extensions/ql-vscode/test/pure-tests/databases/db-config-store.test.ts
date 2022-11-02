@@ -1,10 +1,10 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { DatabaseConfigStore } from '../../../src/databases/database-config-store';
+import { DbConfigStore } from '../../../src/databases/db-config-store';
 import { expect } from 'chai';
 
 
-describe('database config store', async () => {
+describe('db config store', async () => {
   const workspaceStoragePath = path.join(__dirname, 'test-workspace');
   const testStoragePath = path.join(__dirname, 'data');
 
@@ -19,7 +19,7 @@ describe('database config store', async () => {
   it('should create a new config if one does not exist', async () => {
     const configPath = path.join(workspaceStoragePath, 'dbconfig.json');
 
-    const configStore = new DatabaseConfigStore(workspaceStoragePath);
+    const configStore = new DbConfigStore(workspaceStoragePath);
     await configStore.initialize();
 
     expect(await fs.pathExists(configPath)).to.be.true;
@@ -30,7 +30,7 @@ describe('database config store', async () => {
   });
 
   it('should load an existing config', async () => {
-    const configStore = new DatabaseConfigStore(testStoragePath);
+    const configStore = new DbConfigStore(testStoragePath);
     await configStore.initialize();
 
     const config = configStore.getConfig();
@@ -45,7 +45,7 @@ describe('database config store', async () => {
   });
 
   it('should not allow modification of the config', async () => {
-    const configStore = new DatabaseConfigStore(testStoragePath);
+    const configStore = new DbConfigStore(testStoragePath);
     await configStore.initialize();
 
     const config = configStore.getConfig();
