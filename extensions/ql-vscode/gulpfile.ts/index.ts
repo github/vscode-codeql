@@ -1,7 +1,7 @@
 import * as gulp from 'gulp';
 import { compileTypeScript, watchTypeScript, cleanOutput } from './typescript';
 import { compileTextMateGrammar } from './textmate';
-import { copyTestData } from './tests';
+import { copyTestData, watchTestData } from './tests';
 import { compileView, watchView } from './webpack';
 import { packageExtension } from './package';
 import { injectAppInsightsKey } from './appInsights';
@@ -21,6 +21,7 @@ export {
   watchView,
   compileTypeScript,
   copyTestData,
+  watchTestData,
   injectAppInsightsKey,
   compileView,
 };

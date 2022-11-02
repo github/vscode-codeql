@@ -6,6 +6,10 @@ export function copyTestData() {
   return Promise.resolve();
 }
 
+export function watchTestData() {
+  return gulp.watch(['src/vscode-tests/no-workspace/data/**/*', 'src/vscode-tests/minimal-workspace/data/**/*'], copyTestData);
+}
+
 function copyNoWorkspaceData() {
   return gulp.src('src/vscode-tests/no-workspace/data/**/*')
     .pipe(gulp.dest('out/vscode-tests/no-workspace/data'));
