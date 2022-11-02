@@ -199,7 +199,13 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
   private async getContextValue(element: QueryHistoryInfo): Promise<string> {
     switch (element.status) {
       case QueryStatus.InProgress:
-        return element.t === 'local' ? 'inProgressResultsItem' : 'inProgressRemoteResultsItem';
+        if (element.t === 'local') {
+          return 'inProgressResultsItem';
+        } else if (element.t === 'variant-analysis' && element.variantAnalysis.actionsWorkflowRunId === undefined) {
+          return 'pendingRemoteResultsItem';
+        } else {
+          return 'inProgressRemoteResultsItem';
+        }
       case QueryStatus.Completed:
         if (element.t === 'local') {
           const hasResults = await element.completedQuery?.query.hasInterpretedResults();
