@@ -36,9 +36,13 @@ export class DbConfigStore {
     this.config = await fs.readJSON(this.configPath);
   }
 
+  private readConfigSync(): void {
+    this.config = fs.readJSONSync(this.configPath);
+  }
+
   private watchConfig(): void {
-    chokidar.watch(this.configPath).on('change', async () => {
-      await this.readConfig();
+    chokidar.watch(this.configPath).on('change', () => {
+      this.readConfigSync();
     });
   }
 
