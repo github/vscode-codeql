@@ -104,9 +104,11 @@ The CLI integration tests require an instance of the CodeQL CLI to run so they w
 
 #### Running the tests
 
+You will need to have `npm run watch` running in the background.
+
 ##### 1. From the terminal
 
-First move into the `extensions/ql-vscode` directory. Then, depending on which tests you want to run, use the appropriate command to run the tests:
+Then, from the `extensions/ql-vscode` directory, use the appropriate command to run the tests:
 
 * Unit tests: `npm run test:unit`
 * View Tests: `npm test:view`
