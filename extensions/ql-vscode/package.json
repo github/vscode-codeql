@@ -1277,6 +1277,7 @@
     "@vscode/codicons": "^0.0.31",
     "@vscode/webview-ui-toolkit": "^1.0.1",
     "child-process-promise": "^2.2.1",
+    "chokidar": "^3.5.3",
     "classnames": "~2.2.6",
     "d3": "^7.6.1",
     "d3-graphviz": "^2.6.1",

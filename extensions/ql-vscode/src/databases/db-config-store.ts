@@ -1,6 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { cloneDbConfig, DbConfig } from './db-config';
+import * as chokidar from 'chokidar';
 
 export class DbConfigStore {
   private readonly configPath: string;
@@ -15,6 +16,7 @@ export class DbConfigStore {
 
   public async initialize(): Promise<void> {
     await this.loadConfig();
+    this.watchConfig();
   }
 
   public getConfig(): DbConfig {
@@ -32,6 +34,12 @@ export class DbConfigStore {
 
   private async readConfig(): Promise<void> {
     this.config = await fs.readJSON(this.configPath);
+  }
+
+  private watchConfig(): void {
+    chokidar.watch(this.configPath).on('change', async () => {
+      await this.readConfig();
+    });
   }
 
   private createEmptyConfig(): DbConfig {
