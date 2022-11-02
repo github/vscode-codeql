@@ -56,10 +56,10 @@ describe('db config store', async () => {
   });
 
   it('should watch changes to the config file', async () => {
-    const configStore = new DbConfigStore(testStoragePath);
+    const configStore = new DbConfigStore(workspaceStoragePath);
     await configStore.initialize();
 
-    const configPath = path.join(testStoragePath, 'dbconfig.json');
+    const configPath = path.join(workspaceStoragePath, 'dbconfig.json');
 
     const config: DbConfig = {
       remote: {

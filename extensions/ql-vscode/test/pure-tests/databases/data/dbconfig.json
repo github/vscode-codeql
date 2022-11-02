@@ -2,15 +2,11 @@
   "remote": {
     "repositoryLists": [
       {
-        "name": "repoList2",
-        "repositories": ["foo/bar2", "foo/baz2"]
-      },
-      {
-        "name": "repoList3",
-        "repositories": ["foo/bar3", "foo/baz3"]
+        "name": "repoList1",
+        "repositories": ["foo/bar", "foo/baz"]
       }
     ],
     "owners": [],
-    "repositories": []
+    "repositories": ["owner/repo1", "owner/repo2", "owner/repo3"]
   }
 }
