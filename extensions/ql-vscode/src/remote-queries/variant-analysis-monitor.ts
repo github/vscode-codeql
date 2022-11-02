@@ -2,13 +2,13 @@ import { ExtensionContext, CancellationToken, commands, EventEmitter } from 'vsc
 import { Credentials } from '../authentication';
 import * as ghApiClient from './gh-api/gh-api-client';
 
-import { VariantAnalysis, VariantAnalysisStatus } from './shared/variant-analysis';
+import { isFinalVariantAnalysisStatus, VariantAnalysis } from './shared/variant-analysis';
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
   VariantAnalysisScannedRepository
 } from './gh-api/variant-analysis';
 import { VariantAnalysisMonitorResult } from './shared/variant-analysis-monitor-result';
-import { processFailureReason, processUpdatedVariantAnalysis } from './variant-analysis-processor';
+import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 import { DisposableObject } from '../pure/disposable-object';
 
 export class VariantAnalysisMonitor extends DisposableObject {
@@ -36,37 +36,21 @@ export class VariantAnalysisMonitor extends DisposableObject {
       throw Error('Error authenticating with GitHub');
     }
 
-    let variantAnalysisSummary: VariantAnalysisApiResponse;
     let attemptCount = 0;
     const scannedReposDownloaded: number[] = [];
-
-    this._onVariantAnalysisChange.fire(variantAnalysis);
 
     while (attemptCount <= VariantAnalysisMonitor.maxAttemptCount) {
       await this.sleep(VariantAnalysisMonitor.sleepTime);
 
       if (cancellationToken && cancellationToken.isCancellationRequested) {
-        return { status: 'Cancelled', error: 'Variant Analysis was canceled.' };
+        return { status: 'Canceled' };
       }
 
-      variantAnalysisSummary = await ghApiClient.getVariantAnalysis(
+      const variantAnalysisSummary = await ghApiClient.getVariantAnalysis(
         credentials,
         variantAnalysis.controllerRepo.id,
         variantAnalysis.id
       );
-
-      if (variantAnalysisSummary.failure_reason) {
-        variantAnalysis.status = VariantAnalysisStatus.Failed;
-        variantAnalysis.failureReason = processFailureReason(variantAnalysisSummary.failure_reason);
-
-        this._onVariantAnalysisChange.fire(variantAnalysis);
-
-        return {
-          status: 'Failed',
-          error: `Variant Analysis has failed: ${variantAnalysisSummary.failure_reason}`,
-          variantAnalysis: variantAnalysis
-        };
-      }
 
       variantAnalysis = processUpdatedVariantAnalysis(variantAnalysis, variantAnalysisSummary);
 
@@ -75,14 +59,14 @@ export class VariantAnalysisMonitor extends DisposableObject {
       const downloadedRepos = this.downloadVariantAnalysisResults(variantAnalysisSummary, scannedReposDownloaded);
       scannedReposDownloaded.push(...downloadedRepos);
 
-      if (variantAnalysisSummary.status === 'completed') {
+      if (isFinalVariantAnalysisStatus(variantAnalysis.status) || variantAnalysis.failureReason) {
         break;
       }
 
       attemptCount++;
     }
 
-    return { status: 'CompletedSuccessfully', scannedReposDownloaded: scannedReposDownloaded };
+    return { status: 'Completed', scannedReposDownloaded, variantAnalysis };
   }
 
   private scheduleForDownload(
