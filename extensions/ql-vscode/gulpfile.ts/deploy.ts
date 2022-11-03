@@ -15,7 +15,8 @@ const packageFiles = [
   'snippets.json',
   'media',
   'node_modules',
-  'out'
+  'out',
+  'workspace-databases-schema.json'
 ];
 
 async function copyPackage(sourcePath: string, destPath: string): Promise<void> {
