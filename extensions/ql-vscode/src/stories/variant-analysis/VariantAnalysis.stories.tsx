@@ -24,7 +24,7 @@ const Template: ComponentStory<typeof VariantAnalysisComponent> = (args) => (
 );
 
 const variantAnalysis: VariantAnalysisDomainModel = {
-  ...createMockVariantAnalysis(VariantAnalysisStatus.InProgress),
+  ...createMockVariantAnalysis({ status: VariantAnalysisStatus.InProgress }),
   controllerRepo: {
     id: 1,
     fullName: 'octodemo/variant-analysis-controller',

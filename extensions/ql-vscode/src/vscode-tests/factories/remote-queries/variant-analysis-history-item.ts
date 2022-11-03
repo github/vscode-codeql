@@ -16,7 +16,10 @@ export function createMockVariantAnalysisHistoryItem(
     resultCount,
     status: historyItemStatus,
     completed: false,
-    variantAnalysis: createMockVariantAnalysis(variantAnalysisStatus),
+    variantAnalysis: createMockVariantAnalysis({
+      status: variantAnalysisStatus,
+      executionStartTime: executionStartTime
+    }),
     userSpecifiedLabel,
   });
 }

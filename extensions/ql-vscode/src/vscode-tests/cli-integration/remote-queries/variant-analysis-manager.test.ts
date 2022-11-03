@@ -178,7 +178,7 @@ describe('Variant Analysis Manager', async function() {
         let dummyVariantAnalysis: VariantAnalysis;
 
         beforeEach(async () => {
-          dummyVariantAnalysis = createMockVariantAnalysis();
+          dummyVariantAnalysis = createMockVariantAnalysis({});
           removeAnalysisResultsStub = sandbox.stub(variantAnalysisResultsManager, 'removeAnalysisResults');
           removeStorageStub = sandbox.stub(fs, 'remove');
         });
@@ -203,7 +203,7 @@ describe('Variant Analysis Manager', async function() {
     let monitorVariantAnalysisCommandSpy: sinon.SinonSpy;
 
     beforeEach(() => {
-      variantAnalysis = createMockVariantAnalysis();
+      variantAnalysis = createMockVariantAnalysis({});
 
       variantAnalysisRemovedSpy = sinon.spy();
       variantAnalysisManager.onVariantAnalysisRemoved(variantAnalysisRemovedSpy);

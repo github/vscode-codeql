@@ -11,48 +11,51 @@ import { createMockRepositoryWithMetadata } from '../../../vscode-tests/factorie
 import { createMockScannedRepo } from '../../../vscode-tests/factories/remote-queries/shared/scanned-repositories';
 
 describe(VariantAnalysisAnalyzedRepos.name, () => {
-  const defaultVariantAnalysis = createMockVariantAnalysis(VariantAnalysisStatus.InProgress, [
-    {
-      ...createMockScannedRepo(),
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 1,
-        fullName: 'octodemo/hello-world-1',
-        private: false,
+  const defaultVariantAnalysis = createMockVariantAnalysis({
+    status: VariantAnalysisStatus.InProgress,
+    scannedRepos: [
+      {
+        ...createMockScannedRepo(),
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 1,
+          fullName: 'octodemo/hello-world-1',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Pending,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-    {
-      ...createMockScannedRepo(),
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 2,
-        fullName: 'octodemo/hello-world-2',
-        private: false,
+      {
+        ...createMockScannedRepo(),
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 2,
+          fullName: 'octodemo/hello-world-2',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-    },
-    {
-      ...createMockScannedRepo(),
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 3,
-        fullName: 'octodemo/hello-world-3',
-        private: true,
+      {
+        ...createMockScannedRepo(),
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 3,
+          fullName: 'octodemo/hello-world-3',
+          private: true,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Failed,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Failed,
-    },
-    {
-      ...createMockScannedRepo(),
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 4,
-        fullName: 'octodemo/hello-world-4',
-        private: false,
+      {
+        ...createMockScannedRepo(),
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 4,
+          fullName: 'octodemo/hello-world-4',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.InProgress,
       },
-      analysisStatus: VariantAnalysisRepoStatus.InProgress,
-    },
-  ]);
+    ]
+  });
 
   const render = (props: Partial<VariantAnalysisAnalyzedReposProps> = {}) => {
     return reactRender(

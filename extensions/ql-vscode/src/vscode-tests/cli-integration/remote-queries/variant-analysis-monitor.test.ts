@@ -37,7 +37,7 @@ describe('Variant Analysis Monitor', async function() {
 
     cancellationTokenSource = new CancellationTokenSource();
 
-    variantAnalysis = createMockVariantAnalysis();
+    variantAnalysis = createMockVariantAnalysis({});
 
     try {
       extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
