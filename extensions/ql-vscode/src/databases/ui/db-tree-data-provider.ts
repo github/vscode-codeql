@@ -1,9 +1,9 @@
 import { logger } from '../../logging';
 import { ProviderResult, TreeDataProvider, TreeItem } from 'vscode';
-import { DbTreeViewItem } from './db-tree-item';
+import { DbTreeViewItem } from './db-tree-view-item';
 import { DbManager } from '../db-manager';
 
-export class DatabaseTreeDataProvider implements TreeDataProvider<DbTreeViewItem> {
+export class DbTreeDataProvider implements TreeDataProvider<DbTreeViewItem> {
   private dbTreeItems: DbTreeViewItem[];
 
   public constructor(

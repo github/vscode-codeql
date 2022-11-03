@@ -4,7 +4,7 @@ import { logger } from '../logging';
 import { DisposableObject } from '../pure/disposable-object';
 import { DbConfigStore } from './db-config-store';
 import { DbManager } from './db-manager';
-import { DbPanel } from './ui/database-panel';
+import { DbPanel } from './ui/db-panel';
 
 export class DbModule extends DisposableObject {
   public async initialize(

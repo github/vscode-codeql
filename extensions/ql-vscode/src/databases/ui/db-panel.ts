@@ -1,17 +1,17 @@
 import * as vscode from 'vscode';
 import { DisposableObject } from '../../pure/disposable-object';
 import { DbManager } from '../db-manager';
-import { DatabaseTreeDataProvider } from './database-tree-data-provider';
+import { DbTreeDataProvider } from './db-tree-data-provider';
 
 export class DbPanel extends DisposableObject {
-  private readonly dataProvider: DatabaseTreeDataProvider;
+  private readonly dataProvider: DbTreeDataProvider;
 
   public constructor(
     dbManager: DbManager
   ) {
     super();
 
-    this.dataProvider = new DatabaseTreeDataProvider(dbManager);
+    this.dataProvider = new DbTreeDataProvider(dbManager);
 
     const treeView = vscode.window.createTreeView('codeQLDatabasesExperimental', {
       treeDataProvider: this.dataProvider,
