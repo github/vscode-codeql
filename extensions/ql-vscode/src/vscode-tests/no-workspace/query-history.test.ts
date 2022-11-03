@@ -767,12 +767,16 @@ describe('query-history', () => {
 
       describe('sorting', () => {
         const history = [
-          item('a', 2, 'remote', 24),
-          item('b', 10, 'local', 20),
-          item('c', 5, 'local', 30),
-          item('d', 1, 'local', 25),
-          item('e', 6, 'remote', 5),
+          createMockRemoteQueryHistoryItem({ userSpecifiedLabel: 'a', executionStartTime: 2, resultCount: 24, status: QueryStatus.Completed }),
+          createMockLocalQueryInfo({ userSpecifiedLabel: 'b', startTime: new Date(10), resultCount: 20 }),
+          createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'c', executionStartTime: 15, resultCount: 456, historyItemStatus: QueryStatus.Completed, variantAnalysisStatus: VariantAnalysisStatus.Succeeded }),
+          createMockLocalQueryInfo({ userSpecifiedLabel: 'd', startTime: new Date(5), resultCount: 30 }),
+          createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'e', executionStartTime: 50, resultCount: 15, historyItemStatus: QueryStatus.InProgress, variantAnalysisStatus: VariantAnalysisStatus.InProgress }),
+          createMockLocalQueryInfo({ userSpecifiedLabel: 'f', startTime: new Date(1), resultCount: 13 }),
+          createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'g', executionStartTime: 7, resultCount: 30, historyItemStatus: QueryStatus.Failed, variantAnalysisStatus: VariantAnalysisStatus.Failed }),
+          createMockRemoteQueryHistoryItem({ userSpecifiedLabel: 'h', executionStartTime: 6, resultCount: 5, status: QueryStatus.InProgress })
         ];
+
         let treeDataProvider: HistoryTreeDataProvider;
 
         beforeEach(async () => {
@@ -798,7 +802,7 @@ describe('query-history', () => {
         });
 
         it('should get children for date ascending', async () => {
-          const expected = [history[3], history[0], history[2], history[4], history[1]];
+          const expected = [history[5], history[0], history[3], history[7], history[6], history[1], history[2], history[4]];
           treeDataProvider.sortOrder = SortOrder.DateAsc;
 
           const children = await treeDataProvider.getChildren();
@@ -806,7 +810,8 @@ describe('query-history', () => {
         });
 
         it('should get children for date descending', async () => {
-          const expected = [history[3], history[0], history[2], history[4], history[1]].reverse();
+          const expected = [history[5], history[0], history[3], history[7], history[6], history[1], history[2], history[4]].reverse();
+
           treeDataProvider.sortOrder = SortOrder.DateDesc;
 
           const children = await treeDataProvider.getChildren();
@@ -814,35 +819,48 @@ describe('query-history', () => {
         });
 
         it('should get children for result count ascending', async () => {
-          const expected = [history[4], history[1], history[0], history[3], history[2]];
+          const expected = [history[7], history[5], history[4], history[1], history[0], history[3], history[6], history[2]];
           treeDataProvider.sortOrder = SortOrder.CountAsc;
 
           const children = await treeDataProvider.getChildren();
+
           expect(children).to.deep.eq(expected);
         });
 
         it('should get children for result count descending', async () => {
-          const expected = [history[4], history[1], history[0], history[3], history[2]].reverse();
+          const expected = [history[7], history[5], history[4], history[1], history[0], history[3], history[6], history[2]].reverse();
           treeDataProvider.sortOrder = SortOrder.CountDesc;
 
           const children = await treeDataProvider.getChildren();
           expect(children).to.deep.eq(expected);
         });
 
-        it('should get children for result count ascending when there are no results', async () => {
-          // fall back to name
-          const thisHistory = [item('a', 10), item('b', 50), item('c', 1)];
+        it('should fall back to name ascending when there are no results', async () => {
+          const thisHistory = [
+            createMockLocalQueryInfo({ userSpecifiedLabel: 'a', resultCount: 0, startTime: new Date(10) }),
+            createMockLocalQueryInfo({ userSpecifiedLabel: 'b', resultCount: 0, startTime: new Date(1) }),
+            createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'c', resultCount: 0, historyItemStatus: QueryStatus.Completed, variantAnalysisStatus: VariantAnalysisStatus.Failed }),
+            createMockRemoteQueryHistoryItem({ userSpecifiedLabel: 'd', resultCount: 0, executionStartTime: 50, status: QueryStatus.Completed }),
+            createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'e', resultCount: 0, historyItemStatus: QueryStatus.InProgress, variantAnalysisStatus: VariantAnalysisStatus.Failed }),
+          ];
           (queryHistoryManager!.treeDataProvider as any).history = [...thisHistory];
           const expected = [...thisHistory];
+
           treeDataProvider.sortOrder = SortOrder.CountAsc;
 
           const children = await treeDataProvider.getChildren();
+
           expect(children).to.deep.eq(expected);
         });
 
-        it('should get children for result count descending when there are no results', async () => {
-          // fall back to name
-          const thisHistory = [item('a', 10), item('b', 50), item('c', 1)];
+        it('should fall back to name descending when there are no results', async () => {
+          const thisHistory = [
+            createMockLocalQueryInfo({ userSpecifiedLabel: 'a', resultCount: 0, startTime: new Date(10) }),
+            createMockLocalQueryInfo({ userSpecifiedLabel: 'b', resultCount: 0, startTime: new Date(1) }),
+            createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'c', resultCount: 0, historyItemStatus: QueryStatus.Completed, variantAnalysisStatus: VariantAnalysisStatus.Failed }),
+            createMockRemoteQueryHistoryItem({ userSpecifiedLabel: 'd', resultCount: 0, executionStartTime: 50, status: QueryStatus.Completed }),
+            createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'e', resultCount: 0, historyItemStatus: QueryStatus.InProgress, variantAnalysisStatus: VariantAnalysisStatus.Failed }),
+          ];
           (queryHistoryManager!.treeDataProvider as any).history = [...thisHistory];
           const expected = [...thisHistory].reverse();
           treeDataProvider.sortOrder = SortOrder.CountDesc;
