@@ -102,6 +102,8 @@ We have several types of tests:
 
 The CLI integration tests require an instance of the CodeQL CLI to run so they will require some extra setup steps. When adding new tests to our test suite, please be mindful of whether they need to be in the cli-integration folder. If the tests don't depend on the CLI, they are better suited to being a VSCode integration test.
 
+Any test data you're using (sample projects, config files, etc.) must go in a `src/vscode-tests/*/data` directory. When you run the tests, the test runner will copy the data directory to `out/vscode-tests/*/data`.
+
 #### Running the tests
 
 You will need to have `npm run watch` running in the background.
