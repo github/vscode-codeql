@@ -2,21 +2,29 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { cloneDbConfig, DbConfig } from './db-config';
 import * as chokidar from 'chokidar';
+import { DisposableObject } from '../pure/disposable-object';
 
-export class DbConfigStore {
+export class DbConfigStore extends DisposableObject {
   private readonly configPath: string;
 
   private config: DbConfig;
+  private configWatcher: chokidar.FSWatcher | undefined;
 
   public constructor(workspaceStoragePath: string) {
+    super();
     this.configPath = path.join(workspaceStoragePath, 'dbconfig.json');
 
     this.config = this.createEmptyConfig();
+    this.configWatcher = undefined;
   }
 
   public async initialize(): Promise<void> {
     await this.loadConfig();
     this.watchConfig();
+  }
+
+  public dispose(): void {
+    this.configWatcher?.unwatch(this.configPath);
   }
 
   public getConfig(): DbConfig {
@@ -41,7 +49,7 @@ export class DbConfigStore {
   }
 
   private watchConfig(): void {
-    chokidar.watch(this.configPath).on('change', () => {
+    this.configWatcher = chokidar.watch(this.configPath).on('change', () => {
       this.readConfigSync();
     });
   }
