@@ -355,6 +355,14 @@
         "title": "CodeQL: Copy Version Information"
       },
       {
+        "command": "codeQLDatabasesExperimental.openConfigFile",
+        "title": "CodeQL: Open Database Configuration File",
+        "icon": {
+          "light": "media/light/edit.svg",
+          "dark": "media/dark/edit.svg"
+        }
+      },
+      {
         "command": "codeQLDatabases.chooseDatabaseFolder",
         "title": "Choose Database from Folder",
         "icon": {
@@ -752,6 +760,11 @@
           "command": "codeQLEvalLogViewer.clear",
           "when": "view == codeQLEvalLogViewer",
           "group": "navigation"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.openConfigFile",
+          "when": "view == codeQLDatabasesExperimental",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -969,6 +982,10 @@
         {
           "command": "codeQL.chooseDatabaseLgtm",
           "when": "config.codeQL.canary"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.openConfigFile",
+          "when": "false"
         },
         {
           "command": "codeQLDatabases.setCurrentDatabase",

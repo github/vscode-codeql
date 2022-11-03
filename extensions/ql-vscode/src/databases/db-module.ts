@@ -29,6 +29,8 @@ export class DbModule extends DisposableObject {
     dbManager.loadDatabases();
 
     const dbPanel = new DbPanel(dbManager);
+    await dbPanel.initialize();
+    extensionContext.subscriptions.push(dbPanel);
 
     this.push(dbPanel);
     this.push(dbConfigStore);

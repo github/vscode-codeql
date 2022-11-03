@@ -19,4 +19,8 @@ export class DbManager {
     // This will be fleshed out in a future change.
     return [];
   }
+
+  public getConfigPath(): string {
+    return this.dbConfigStore.getConfigPath();
+  }
 }
