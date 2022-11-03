@@ -3,15 +3,16 @@ import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepository
 } from '../../../../remote-queries/shared/variant-analysis';
+import { createMockRepositoryWithMetadata } from './repository';
 
 export function createMockScannedRepo(
-  name: string,
-  isPrivate: boolean,
-  analysisStatus: VariantAnalysisRepoStatus,
+  name: string = faker.random.word(),
+  isPrivate: boolean = faker.datatype.boolean(),
+  analysisStatus: VariantAnalysisRepoStatus = VariantAnalysisRepoStatus.Pending,
 ): VariantAnalysisScannedRepository {
   return {
     repository: {
-      id: faker.datatype.number(),
+      ...createMockRepositoryWithMetadata(),
       fullName: 'github/' + name,
       private: isPrivate,
     },

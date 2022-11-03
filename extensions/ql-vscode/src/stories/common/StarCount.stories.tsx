@@ -2,7 +2,7 @@ import React from 'react';
 
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
-import StarCountComponent from '../../view/remote-queries/StarCount';
+import StarCountComponent from '../../view/common/StarCount';
 
 export default {
   title: 'Star Count',

@@ -5,11 +5,12 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { VariantAnalysisContainer } from '../../view/variant-analysis/VariantAnalysisContainer';
 import { VariantAnalysisAnalyzedRepos } from '../../view/variant-analysis/VariantAnalysisAnalyzedRepos';
 import {
-  VariantAnalysisQueryLanguage,
   VariantAnalysisRepoStatus,
   VariantAnalysisStatus
 } from '../../remote-queries/shared/variant-analysis';
 import { AnalysisAlert } from '../../remote-queries/shared/analysis-result';
+import { createMockVariantAnalysis } from '../../vscode-tests/factories/remote-queries/shared/variant-analysis';
+import { createMockRepositoryWithMetadata } from '../../vscode-tests/factories/remote-queries/shared/repository';
 
 import analysesResults from '../remote-queries/data/analysesResultsMessage.json';
 
@@ -35,73 +36,64 @@ const interpretedResultsForRepo = (nwo: string): AnalysisAlert[] | undefined => 
 
 export const Example = Template.bind({});
 Example.args = {
-  variantAnalysis: {
-    id: 1,
-    controllerRepo: {
-      id: 1,
-      fullName: 'octodemo/variant-analysis-controller',
-      private: false,
+  variantAnalysis: createMockVariantAnalysis(VariantAnalysisStatus.InProgress, [
+    {
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        id: 63537249,
+        fullName: 'facebook/create-react-app',
+        private: false,
+      },
+      analysisStatus: VariantAnalysisRepoStatus.Succeeded, resultCount: 198,
     },
-    query: {
-      name: 'Query name',
-      filePath: 'example.ql',
-      language: VariantAnalysisQueryLanguage.Javascript,
+    {
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        id: 167174,
+        fullName: 'jquery/jquery',
+        private: false,
+      },
+      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+      resultCount: 67,
     },
-    databases: {},
-    status: VariantAnalysisStatus.InProgress,
-    scannedRepos: [
-      {
-        repository: {
-          id: 63537249,
-          fullName: 'facebook/create-react-app',
-          private: false,
-        },
-        analysisStatus: VariantAnalysisRepoStatus.Succeeded, resultCount: 198,
+    {
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        id: 237159,
+        fullName: 'expressjs/express',
+        private: false,
       },
-      {
-        repository: {
-          id: 167174,
-          fullName: 'jquery/jquery',
-          private: false,
-        },
-        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-        resultCount: 67,
+      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+      resultCount: 26,
+    },
+    {
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        id: 15062869,
+        fullName: 'facebook/jest',
+        private: false,
       },
-      {
-        repository: {
-          id: 237159,
-          fullName: 'expressjs/express',
-          private: false,
-        },
-        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-        resultCount: 26,
+      analysisStatus: VariantAnalysisRepoStatus.Failed,
+    },
+    {
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        id: 24195339,
+        fullName: 'angular/angular',
+        private: false,
       },
-      {
-        repository: {
-          id: 15062869,
-          fullName: 'facebook/jest',
-          private: false,
-        },
-        analysisStatus: VariantAnalysisRepoStatus.Failed,
+      analysisStatus: VariantAnalysisRepoStatus.InProgress,
+    },
+    {
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        id: 24560307,
+        fullName: 'babel/babel',
+        private: false,
       },
-      {
-        repository: {
-          id: 24195339,
-          fullName: 'angular/angular',
-          private: false,
-        },
-        analysisStatus: VariantAnalysisRepoStatus.InProgress,
-      },
-      {
-        repository: {
-          id: 24560307,
-          fullName: 'babel/babel',
-          private: false,
-        },
-        analysisStatus: VariantAnalysisRepoStatus.Pending,
-      },
-    ]
-  },
+      analysisStatus: VariantAnalysisRepoStatus.Pending,
+    },
+  ]),
   repositoryResults: [
     {
       variantAnalysisId: 1,

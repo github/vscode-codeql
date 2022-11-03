@@ -55,7 +55,7 @@ Succeeded.args = {
   totalRepositoryCount: 1000,
   completedRepositoryCount: 1000,
   variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
-  duration: 720_000,
+  createdAt: new Date(1661262726000),
   completedAt: new Date(1661263446000),
 };
 
@@ -71,7 +71,7 @@ export const Failed = Template.bind({});
 Failed.args = {
   ...Starting.args,
   variantAnalysisStatus: VariantAnalysisStatus.Failed,
-  duration: 10_000,
+  createdAt: new Date(1661263436000),
   completedAt: new Date(1661263446000),
 };
 

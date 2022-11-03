@@ -2,67 +2,57 @@ import * as React from 'react';
 import { render as reactRender, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
-  VariantAnalysisQueryLanguage,
   VariantAnalysisRepoStatus,
   VariantAnalysisStatus
 } from '../../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisAnalyzedRepos, VariantAnalysisAnalyzedReposProps } from '../VariantAnalysisAnalyzedRepos';
+import { createMockVariantAnalysis } from '../../../vscode-tests/factories/remote-queries/shared/variant-analysis';
+import { createMockRepositoryWithMetadata } from '../../../vscode-tests/factories/remote-queries/shared/repository';
+import { createMockScannedRepo } from '../../../vscode-tests/factories/remote-queries/shared/scanned-repositories';
 
 describe(VariantAnalysisAnalyzedRepos.name, () => {
-  const defaultVariantAnalysis = {
-    id: 1,
-    controllerRepo: {
-      id: 1,
-      fullName: 'octodemo/variant-analysis-controller',
-      private: false,
+  const defaultVariantAnalysis = createMockVariantAnalysis(VariantAnalysisStatus.InProgress, [
+    {
+      ...createMockScannedRepo(),
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        id: 1,
+        fullName: 'octodemo/hello-world-1',
+        private: false,
+      },
+      analysisStatus: VariantAnalysisRepoStatus.Pending,
     },
-    actionsWorkflowRunId: 789263,
-    query: {
-      name: 'Example query',
-      filePath: 'example.ql',
-      language: VariantAnalysisQueryLanguage.Javascript,
-      text: 'import javascript\nselect 1',
+    {
+      ...createMockScannedRepo(),
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        id: 2,
+        fullName: 'octodemo/hello-world-2',
+        private: false,
+      },
+      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
     },
-    databases: {},
-    executionStartTime: 1611234567890,
-    createdAt: '2021-01-21T13:09:27.890Z',
-    updatedAt: '2021-01-21T13:09:27.890Z',
-    status: VariantAnalysisStatus.InProgress,
-    scannedRepos: [
-      {
-        repository: {
-          id: 1,
-          fullName: 'octodemo/hello-world-1',
-          private: false,
-        },
-        analysisStatus: VariantAnalysisRepoStatus.Pending,
+    {
+      ...createMockScannedRepo(),
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        id: 3,
+        fullName: 'octodemo/hello-world-3',
+        private: true,
       },
-      {
-        repository: {
-          id: 2,
-          fullName: 'octodemo/hello-world-2',
-          private: false,
-        },
-        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+      analysisStatus: VariantAnalysisRepoStatus.Failed,
+    },
+    {
+      ...createMockScannedRepo(),
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        id: 4,
+        fullName: 'octodemo/hello-world-4',
+        private: false,
       },
-      {
-        repository: {
-          id: 3,
-          fullName: 'octodemo/hello-world-3',
-          private: true,
-        },
-        analysisStatus: VariantAnalysisRepoStatus.Failed,
-      },
-      {
-        repository: {
-          id: 4,
-          fullName: 'octodemo/hello-world-4',
-          private: false,
-        },
-        analysisStatus: VariantAnalysisRepoStatus.InProgress,
-      },
-    ],
-  };
+      analysisStatus: VariantAnalysisRepoStatus.InProgress,
+    },
+  ]);
 
   const render = (props: Partial<VariantAnalysisAnalyzedReposProps> = {}) => {
     return reactRender(

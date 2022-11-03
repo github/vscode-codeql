@@ -10,6 +10,7 @@ import {
 } from '../../../../remote-queries/shared/variant-analysis';
 import { createMockScannedRepos } from './scanned-repositories';
 import { createMockSkippedRepos } from './skipped-repositories';
+import { createMockRepository } from './repository';
 
 export function createMockApiResponse(
   status: VariantAnalysisStatus = 'in_progress',
@@ -20,7 +21,7 @@ export function createMockApiResponse(
   const variantAnalysis: VariantAnalysisApiResponse = {
     id: faker.datatype.number(),
     controller_repo: {
-      id: faker.datatype.number(),
+      ...createMockRepository(),
       name: 'pickles',
       full_name: 'github/pickles',
       private: false,

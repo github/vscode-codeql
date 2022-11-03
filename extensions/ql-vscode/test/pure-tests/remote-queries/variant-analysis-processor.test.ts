@@ -1,17 +1,21 @@
 import { expect } from 'chai';
 import {
-  VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository,
-} from '../../../remote-queries/gh-api/variant-analysis';
+  VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
+} from '../../../src/remote-queries/gh-api/variant-analysis';
 import {
   VariantAnalysisQueryLanguage,
   VariantAnalysisScannedRepository,
   VariantAnalysisRepoStatus
-} from '../../../remote-queries/shared/variant-analysis';
-import { processVariantAnalysis } from '../../../remote-queries/variant-analysis-processor';
-import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/scanned-repositories';
-import { createMockSkippedRepos } from '../../factories/remote-queries/gh-api/skipped-repositories';
-import { createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
-import { createMockSubmission } from '../../factories/remote-queries/shared/variant-analysis-submission';
+} from '../../../src/remote-queries/shared/variant-analysis';
+import { processVariantAnalysis } from '../../../src/remote-queries/variant-analysis-processor';
+import { createMockScannedRepos } from '../../../src/vscode-tests/factories/remote-queries/gh-api/scanned-repositories';
+import { createMockSkippedRepos } from '../../../src/vscode-tests/factories/remote-queries/gh-api/skipped-repositories';
+import {
+  createMockApiResponse
+} from '../../../src/vscode-tests/factories/remote-queries/gh-api/variant-analysis-api-response';
+import {
+  createMockSubmission
+} from '../../../src/vscode-tests/factories/remote-queries/shared/variant-analysis-submission';
 
 describe('Variant Analysis processor', function() {
   const scannedRepos = createMockScannedRepos();
@@ -56,11 +60,17 @@ describe('Variant Analysis processor', function() {
           'repositories': [
             {
               'fullName': access_mismatch_repos?.repositories[0].full_name,
-              'id': access_mismatch_repos?.repositories[0].id
+              'id': access_mismatch_repos?.repositories[0].id,
+              'private': access_mismatch_repos?.repositories[0].private,
+              'stargazersCount': access_mismatch_repos?.repositories[0].stargazers_count,
+              'updatedAt': access_mismatch_repos?.repositories[0].updated_at,
             },
             {
               'fullName': access_mismatch_repos?.repositories[1].full_name,
-              'id': access_mismatch_repos?.repositories[1].id
+              'id': access_mismatch_repos?.repositories[1].id,
+              'private': access_mismatch_repos?.repositories[1].private,
+              'stargazersCount': access_mismatch_repos?.repositories[1].stargazers_count,
+              'updatedAt': access_mismatch_repos?.repositories[1].updated_at,
             }
           ],
           'repositoryCount': access_mismatch_repos?.repository_count
@@ -69,11 +79,17 @@ describe('Variant Analysis processor', function() {
           'repositories': [
             {
               'fullName': no_codeql_db_repos?.repositories[0].full_name,
-              'id': no_codeql_db_repos?.repositories[0].id
+              'id': no_codeql_db_repos?.repositories[0].id,
+              'private': no_codeql_db_repos?.repositories[0].private,
+              'stargazersCount': no_codeql_db_repos?.repositories[0].stargazers_count,
+              'updatedAt': no_codeql_db_repos?.repositories[0].updated_at,
             },
             {
               'fullName': no_codeql_db_repos?.repositories[1].full_name,
               'id': no_codeql_db_repos?.repositories[1].id,
+              'private': no_codeql_db_repos?.repositories[1].private,
+              'stargazersCount': no_codeql_db_repos?.repositories[1].stargazers_count,
+              'updatedAt': no_codeql_db_repos?.repositories[1].updated_at,
             }
           ],
           'repositoryCount': 2
@@ -93,11 +109,17 @@ describe('Variant Analysis processor', function() {
           'repositories': [
             {
               'fullName': over_limit_repos?.repositories[0].full_name,
-              'id': over_limit_repos?.repositories[0].id
+              'id': over_limit_repos?.repositories[0].id,
+              'private': over_limit_repos?.repositories[0].private,
+              'stargazersCount': over_limit_repos?.repositories[0].stargazers_count,
+              'updatedAt': over_limit_repos?.repositories[0].updated_at,
             },
             {
               'fullName': over_limit_repos?.repositories[1].full_name,
-              'id': over_limit_repos?.repositories[1].id
+              'id': over_limit_repos?.repositories[1].id,
+              'private': over_limit_repos?.repositories[1].private,
+              'stargazersCount': over_limit_repos?.repositories[1].stargazers_count,
+              'updatedAt': over_limit_repos?.repositories[1].updated_at,
             }
           ],
           'repositoryCount': over_limit_repos?.repository_count
@@ -118,6 +140,8 @@ describe('Variant Analysis processor', function() {
         'fullName': scannedRepo.repository.full_name,
         'id': scannedRepo.repository.id,
         'private': scannedRepo.repository.private,
+        'stargazersCount': scannedRepo.repository.stargazers_count,
+        'updatedAt': scannedRepo.repository.updated_at
       },
       'resultCount': scannedRepo.result_count
     };

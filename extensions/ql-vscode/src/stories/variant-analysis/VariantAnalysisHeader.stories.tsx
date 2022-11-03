@@ -4,13 +4,9 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import { VariantAnalysisContainer } from '../../view/variant-analysis/VariantAnalysisContainer';
 import { VariantAnalysisHeader } from '../../view/variant-analysis/VariantAnalysisHeader';
-import {
-  VariantAnalysis,
-  VariantAnalysisQueryLanguage,
-  VariantAnalysisRepoStatus,
-  VariantAnalysisScannedRepository,
-  VariantAnalysisStatus
-} from '../../remote-queries/shared/variant-analysis';
+import { VariantAnalysisRepoStatus, VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
+import { createMockVariantAnalysis } from '../../vscode-tests/factories/remote-queries/shared/variant-analysis';
+import { createMockScannedRepo } from '../../vscode-tests/factories/remote-queries/shared/scanned-repositories';
 
 export default {
   title: 'Variant Analysis/Variant Analysis Header',
@@ -66,79 +62,53 @@ const Template: ComponentStory<typeof VariantAnalysisHeader> = (args) => (
   <VariantAnalysisHeader {...args} />
 );
 
-const buildVariantAnalysis = (data: Partial<VariantAnalysis>) => ({
-  id: 1,
-  controllerRepo: {
-    id: 1,
-    fullName: 'octodemo/variant-analysis-controller',
-    private: false,
-  },
-  query: {
-    name: 'Query name',
-    filePath: 'example.ql',
-    language: VariantAnalysisQueryLanguage.Javascript,
-  },
-  databases: {},
-  status: VariantAnalysisStatus.InProgress,
-  ...data,
-});
-
-const buildScannedRepo = (id: number, data?: Partial<VariantAnalysisScannedRepository>): VariantAnalysisScannedRepository => ({
-  repository: {
-    id: id,
-    fullName: `octodemo/hello-world-${id}`,
-    private: false,
-  },
-  analysisStatus: VariantAnalysisRepoStatus.Pending,
-  ...data,
-});
-
 export const InProgress = Template.bind({});
 InProgress.args = {
-  variantAnalysis: buildVariantAnalysis({
-    scannedRepos: [
-      buildScannedRepo(1, {
-        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-        resultCount: 99_999,
-      }),
-      buildScannedRepo(2, {
-        analysisStatus: VariantAnalysisRepoStatus.Failed,
-      }),
-      buildScannedRepo(3, {
-        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-        resultCount: 0,
-      }),
-      buildScannedRepo(4),
-      buildScannedRepo(5),
-      buildScannedRepo(6),
-      buildScannedRepo(7),
-      buildScannedRepo(8),
-      buildScannedRepo(9),
-      buildScannedRepo(10),
-    ]
-  }),
+  variantAnalysis: createMockVariantAnalysis(VariantAnalysisStatus.InProgress, [
+    {
+      ...createMockScannedRepo(),
+      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+      resultCount: 99_999,
+    },
+    {
+      ...createMockScannedRepo(),
+      analysisStatus: VariantAnalysisRepoStatus.Failed,
+    },
+    {
+      ...createMockScannedRepo(),
+      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+      resultCount: 0,
+    },
+    createMockScannedRepo(),
+    createMockScannedRepo(),
+    createMockScannedRepo(),
+    createMockScannedRepo(),
+    createMockScannedRepo(),
+    createMockScannedRepo(),
+    createMockScannedRepo(),
+  ]),
 };
 
 export const Succeeded = Template.bind({});
 Succeeded.args = {
   ...InProgress.args,
-  variantAnalysis: buildVariantAnalysis({
-    status: VariantAnalysisStatus.Succeeded,
-    scannedRepos: Array.from({ length: 1000 }, (_, i) => buildScannedRepo(i + 1, {
+  variantAnalysis: {
+    ...createMockVariantAnalysis(VariantAnalysisStatus.Succeeded, Array.from({ length: 1000 }, (_) => ({
+      ...createMockScannedRepo(),
       analysisStatus: VariantAnalysisRepoStatus.Succeeded,
       resultCount: 100,
-    }))
-  }),
-  duration: 720_000,
-  completedAt: new Date(1661263446000),
+    }))),
+    createdAt: new Date(1661262726000).toISOString(),
+    completedAt: new Date(1661263446000).toISOString(),
+  },
 };
 
 export const Failed = Template.bind({});
 Failed.args = {
   ...InProgress.args,
-  variantAnalysis: buildVariantAnalysis({
-    status: VariantAnalysisStatus.Failed,
-  }),
-  duration: 10_000,
-  completedAt: new Date(1661263446000),
+  variantAnalysis: {
+    ...createMockVariantAnalysis(VariantAnalysisStatus.Failed, [], {}),
+    createdAt: new Date(1661263436000).toISOString(),
+    completedAt: new Date(1661263446000).toISOString(),
+  },
 };

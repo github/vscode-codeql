@@ -1,4 +1,4 @@
-import { Repository } from './repository';
+import { Repository, RepositoryWithMetadata } from './repository';
 
 export interface VariantAnalysisSubmissionRequest {
   action_repo_ref: string,
@@ -50,7 +50,7 @@ export type VariantAnalysisRepoStatus =
   | 'timed_out';
 
 export interface VariantAnalysisScannedRepository {
-  repository: Repository,
+  repository: RepositoryWithMetadata,
   analysis_status: VariantAnalysisRepoStatus,
   result_count?: number,
   artifact_size_in_bytes?: number,
@@ -59,7 +59,7 @@ export interface VariantAnalysisScannedRepository {
 
 export interface VariantAnalysisSkippedRepositoryGroup {
   repository_count: number,
-  repositories: Repository[]
+  repositories: RepositoryWithMetadata[]
 }
 
 export interface VariantAnalysisNotFoundRepositoryGroup {

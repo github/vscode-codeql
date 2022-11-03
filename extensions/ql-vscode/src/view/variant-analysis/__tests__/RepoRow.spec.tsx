@@ -3,12 +3,14 @@ import { render as reactRender, screen } from '@testing-library/react';
 import { VariantAnalysisRepoStatus } from '../../../remote-queries/shared/variant-analysis';
 import userEvent from '@testing-library/user-event';
 import { RepoRow, RepoRowProps } from '../RepoRow';
+import { createMockRepositoryWithMetadata } from '../../../vscode-tests/factories/remote-queries/shared/repository';
 
 describe(RepoRow.name, () => {
   const render = (props: Partial<RepoRowProps> = {}) => {
     return reactRender(
       <RepoRow
         repository={{
+          ...createMockRepositoryWithMetadata(),
           id: 1,
           fullName: 'octodemo/hello-world-1',
           private: false,
@@ -26,8 +28,8 @@ describe(RepoRow.name, () => {
     expect(screen.getByText('-')).toBeInTheDocument();
 
     expect(screen.queryByRole('img', {
-      // There should not be any icons, except the expand icon
-      name: (name) => name.toLowerCase() !== 'expand',
+      // There should not be any icons, except for the icons which are always shown
+      name: (name) => !['expand', 'stars count', 'last updated'].includes(name.toLowerCase()),
     })).not.toBeInTheDocument();
 
     expect(screen.getByRole<HTMLButtonElement>('button', {
@@ -115,6 +117,7 @@ describe(RepoRow.name, () => {
   it('shows visibility when public', () => {
     render({
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 1,
         fullName: 'octodemo/hello-world-1',
         private: false,
@@ -127,6 +130,7 @@ describe(RepoRow.name, () => {
   it('shows visibility when private', () => {
     render({
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 1,
         fullName: 'octodemo/hello-world-1',
         private: true,
@@ -147,6 +151,52 @@ describe(RepoRow.name, () => {
 
     expect(screen.queryByText('public')).not.toBeInTheDocument();
     expect(screen.queryByText('private')).not.toBeInTheDocument();
+  });
+
+  it('shows stars', () => {
+    render({
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        stargazersCount: 57_378,
+      }
+    });
+
+    expect(screen.getByText('57k')).toBeInTheDocument();
+    expect(screen.getByRole('img', {
+      name: 'Stars count',
+    })).toBeInTheDocument();
+  });
+
+  it('shows updated at', () => {
+    render({
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        // 1 month ago
+        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
+      }
+    });
+
+    expect(screen.getByText('last month')).toBeInTheDocument();
+    expect(screen.getByRole('img', {
+      name: 'Last updated',
+    })).toBeInTheDocument();
+  });
+
+  it('does not show star count and updated at when unknown', () => {
+    render({
+      repository: {
+        id: undefined,
+        fullName: 'octodemo/hello-world-1',
+        private: undefined,
+      }
+    });
+
+    expect(screen.queryByRole('img', {
+      name: 'Stars count',
+    })).not.toBeInTheDocument();
+    expect(screen.queryByRole('img', {
+      name: 'Last updated',
+    })).not.toBeInTheDocument();
   });
 
   it('can expand the repo item', async () => {
@@ -200,6 +250,7 @@ describe(RepoRow.name, () => {
     rerender(
       <RepoRow
         repository={{
+          ...createMockRepositoryWithMetadata(),
           id: 1,
           fullName: 'octodemo/hello-world-1',
           private: false,
