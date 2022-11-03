@@ -18,7 +18,7 @@ describe('isVariantAnalysisComplete', async () => {
   const uncallableArtifactDownloadChecker = () => { throw new Error('Should not be called'); };
 
   beforeEach(() => {
-    variantAnalysis = createMockVariantAnalysis();
+    variantAnalysis = createMockVariantAnalysis({});
   });
 
   describe('when variant analysis status is InProgress', async () => {
@@ -104,7 +104,7 @@ describe('isVariantAnalysisComplete', async () => {
 
 describe('getActionsWorkflowRunUrl', () => {
   it('should get the run url', () => {
-    const variantAnalysis = createMockVariantAnalysis();
+    const variantAnalysis = createMockVariantAnalysis({});
 
     const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
 

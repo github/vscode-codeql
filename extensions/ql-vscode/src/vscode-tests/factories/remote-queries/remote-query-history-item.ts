@@ -5,15 +5,18 @@ export function createMockRemoteQueryHistoryItem({
   date = new Date('2022-01-01T00:00:00.000Z'),
   status = QueryStatus.InProgress,
   failureReason = undefined,
-  resultCount = 16,
+  resultCount = undefined,
   repositoryCount = 0,
-  userSpecifiedLabel = undefined,
+  executionStartTime = date.getTime(),
+  userSpecifiedLabel = undefined
 }: {
   date?: Date;
   status?: QueryStatus;
   failureReason?: string;
   resultCount?: number;
   repositoryCount?: number;
+  repositories?: string[];
+  executionStartTime?: number;
   userSpecifiedLabel?: string;
 }): RemoteQueryHistoryItem {
   return ({
@@ -32,7 +35,7 @@ export function createMockRemoteQueryHistoryItem({
         owner: 'github',
         name: 'vscode-codeql-integration-tests',
       },
-      executionStartTime: date.getTime(),
+      executionStartTime,
       actionsWorkflowRunId: 1,
       repositoryCount,
     },

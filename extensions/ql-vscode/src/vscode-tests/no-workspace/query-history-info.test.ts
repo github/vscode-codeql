@@ -17,22 +17,21 @@ import { VariantAnalysisRepoStatus, VariantAnalysisStatus } from '../../remote-q
 describe('Query history info', () => {
 
   const date = new Date('2022-01-01T00:00:00.000Z');
-  const dateStr = date.toLocaleString();
-  const localQueryHistoryItem = createMockLocalQueryInfo(dateStr);
+  const localQueryHistoryItem = createMockLocalQueryInfo({ startTime: date });
   const remoteQueryHistoryItem = createMockRemoteQueryHistoryItem({});
   const variantAnalysisHistoryItem: VariantAnalysisHistoryItem = {
     t: 'variant-analysis',
     status: QueryStatus.InProgress,
     completed: false,
-    variantAnalysis: createMockVariantAnalysis(
-      VariantAnalysisStatus.InProgress,
-      createMockScannedRepos([
+    variantAnalysis: createMockVariantAnalysis({
+      status: VariantAnalysisStatus.InProgress,
+      scannedRepos: createMockScannedRepos([
         VariantAnalysisRepoStatus.Succeeded,
         VariantAnalysisRepoStatus.Pending,
         VariantAnalysisRepoStatus.InProgress,
         VariantAnalysisRepoStatus.Canceled,
       ])
-    ),
+    }),
   };
 
   describe('getRawQueryName', () => {
@@ -117,10 +116,10 @@ describe('Query history info', () => {
           t: 'variant-analysis',
           status: QueryStatus.InProgress,
           completed: false,
-          variantAnalysis: createMockVariantAnalysis(
-            VariantAnalysisStatus.InProgress,
-            createMockScannedRepos([])
-          ),
+          variantAnalysis: createMockVariantAnalysis({
+            status: VariantAnalysisStatus.InProgress,
+            scannedRepos: createMockScannedRepos([])
+          }),
         };
         const repoLabel0 = buildRepoLabel(variantAnalysisHistoryItem0);
 
@@ -131,12 +130,10 @@ describe('Query history info', () => {
           t: 'variant-analysis',
           status: QueryStatus.InProgress,
           completed: false,
-          variantAnalysis: createMockVariantAnalysis(
-            VariantAnalysisStatus.InProgress,
-            createMockScannedRepos([
-              VariantAnalysisRepoStatus.Pending,
-            ])
-          ),
+          variantAnalysis: createMockVariantAnalysis({
+            status: VariantAnalysisStatus.InProgress,
+            scannedRepos: createMockScannedRepos([VariantAnalysisRepoStatus.Pending])
+          }),
         };
 
         const repoLabel1 = buildRepoLabel(variantAnalysisHistoryItem1);

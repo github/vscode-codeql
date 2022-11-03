@@ -21,13 +21,17 @@ import { EvalLogViewer } from '../../eval-log-viewer';
 import { QueryRunner } from '../../queryRunner';
 import { VariantAnalysisManager } from '../../remote-queries/variant-analysis-manager';
 import { QueryHistoryInfo } from '../../query-history-info';
-import { createMockLocalQuery, createMockQueryWithResults } from '../factories/local-queries/local-query-history-item';
+import {
+  createMockLocalQueryInfo,
+  createMockQueryWithResults
+} from '../factories/local-queries/local-query-history-item';
 import { createMockRemoteQueryHistoryItem } from '../factories/remote-queries/remote-query-history-item';
 import { RemoteQueryHistoryItem } from '../../remote-queries/remote-query-history-item';
 import { shuffleHistoryItems } from '../utils/query-history-helpers';
 import { createMockVariantAnalysisHistoryItem } from '../factories/remote-queries/variant-analysis-history-item';
 import { VariantAnalysisHistoryItem } from '../../remote-queries/variant-analysis-history-item';
 import { QueryStatus } from '../../query-status';
+import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -88,10 +92,10 @@ describe('query-history', () => {
     } as any as VariantAnalysisManager;
 
     localQueryHistory = [
-      createMockLocalQuery('a', createMockQueryWithResults(sandbox, true)),
-      createMockLocalQuery('b', createMockQueryWithResults(sandbox, true)),
-      createMockLocalQuery('a', createMockQueryWithResults(sandbox, false)),
-      createMockLocalQuery('a', createMockQueryWithResults(sandbox, true)),
+      createMockLocalQueryInfo({ dbName: 'a', queryWithResults: createMockQueryWithResults({ sandbox, didRunSuccessfully: true }) }),
+      createMockLocalQueryInfo({ dbName: 'b', queryWithResults: createMockQueryWithResults({ sandbox, didRunSuccessfully: true }) }),
+      createMockLocalQueryInfo({ dbName: 'a', queryWithResults: createMockQueryWithResults({ sandbox, didRunSuccessfully: false }) }),
+      createMockLocalQueryInfo({ dbName: 'a', queryWithResults: createMockQueryWithResults({ sandbox, didRunSuccessfully: true }) }),
     ];
     remoteQueryHistory = [
       createMockRemoteQueryHistoryItem({ status: QueryStatus.Completed }),
@@ -100,13 +104,24 @@ describe('query-history', () => {
       createMockRemoteQueryHistoryItem({ status: QueryStatus.InProgress })
     ];
     variantAnalysisHistory = [
-      createMockVariantAnalysisHistoryItem(QueryStatus.Completed),
-      createMockVariantAnalysisHistoryItem(QueryStatus.InProgress),
-      createMockVariantAnalysisHistoryItem(QueryStatus.Failed),
-      createMockVariantAnalysisHistoryItem(QueryStatus.InProgress)
+      createMockVariantAnalysisHistoryItem({
+        historyItemStatus: QueryStatus.Completed,
+        variantAnalysisStatus: VariantAnalysisStatus.Succeeded
+      }),
+      createMockVariantAnalysisHistoryItem({
+        historyItemStatus: QueryStatus.InProgress,
+        variantAnalysisStatus: VariantAnalysisStatus.InProgress
+      }),
+      createMockVariantAnalysisHistoryItem({
+        historyItemStatus: QueryStatus.Failed,
+        variantAnalysisStatus: VariantAnalysisStatus.Failed
+      }),
+      createMockVariantAnalysisHistoryItem({
+        historyItemStatus: QueryStatus.InProgress,
+        variantAnalysisStatus: VariantAnalysisStatus.InProgress
+      })
     ];
     allHistory = shuffleHistoryItems([...localQueryHistory, ...remoteQueryHistory, ...variantAnalysisHistory]);
-
   });
 
   afterEach(async () => {
@@ -415,7 +430,7 @@ describe('query-history', () => {
         it('should throw an error when a query is not successful', async () => {
           const thisQuery = localQueryHistory[3];
           queryHistoryManager = await createMockQueryHistory(allHistory);
-          allHistory[0] = createMockLocalQuery('a', createMockQueryWithResults(sandbox, false));
+          allHistory[0] = createMockLocalQueryInfo({ dbName: 'a', queryWithResults: createMockQueryWithResults({ sandbox, didRunSuccessfully: false }) });
 
           try {
             await (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [thisQuery, allHistory[0]]);
@@ -696,40 +711,45 @@ describe('query-history', () => {
 
     describe('getTreeItem', async () => {
       it('should get a tree item with raw results', async () => {
-        const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(sandbox, true, /* raw results */ false));
-        const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
+        const mockQueryWithRawResults = createMockLocalQueryInfo({ dbName: 'a', queryWithResults: createMockQueryWithResults({ sandbox, didRunSuccessfully: true, hasInterpretedResults: false }) });
+
+        const treeItem = await historyTreeDataProvider.getTreeItem(mockQueryWithRawResults);
         expect(treeItem.command).to.deep.eq({
           title: 'Query History Item',
           command: 'codeQLQueryHistory.itemClicked',
-          arguments: [mockQuery],
-          tooltip: labelProvider.getLabel(mockQuery),
+          arguments: [mockQueryWithRawResults],
+          tooltip: labelProvider.getLabel(mockQueryWithRawResults),
         });
-        expect(treeItem.label).to.contain('hucairz');
+        expect(treeItem.label).to.contain('query-file.ql');
         expect(treeItem.contextValue).to.eq('rawResultsItem');
         expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file(mockExtensionLocation + '/media/drive.svg').fsPath);
       });
 
       it('should get a tree item with interpreted results', async () => {
-        const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(sandbox, true, /* interpreted results */ true));
-        const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
+        const mockQueryWithInterpretedResults = createMockLocalQueryInfo({ dbName: 'a', queryWithResults: createMockQueryWithResults({ sandbox, didRunSuccessfully: true, hasInterpretedResults: true }) });
+
+        const treeItem = await historyTreeDataProvider.getTreeItem(mockQueryWithInterpretedResults);
         expect(treeItem.contextValue).to.eq('interpretedResultsItem');
         expect(treeItem.iconPath).to.deep.eq(vscode.Uri.file(mockExtensionLocation + '/media/drive.svg').fsPath);
       });
 
       it('should get a tree item that did not complete successfully', async () => {
-        const mockQuery = createMockLocalQuery('a', createMockQueryWithResults(sandbox, false), false);
+        const mockQuery = createMockLocalQueryInfo({ dbName: 'a', failureReason: 'failure reason', queryWithResults: createMockQueryWithResults({ sandbox, didRunSuccessfully: false }) });
+
         const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
         expect(treeItem.iconPath).to.eq(vscode.Uri.file(mockExtensionLocation + '/media/red-x.svg').fsPath);
       });
 
       it('should get a tree item that failed before creating any results', async () => {
-        const mockQuery = createMockLocalQuery('a', undefined, true);
+        const mockQuery = createMockLocalQueryInfo({ dbName: 'a', failureReason: 'failure reason' });
+
         const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
         expect(treeItem.iconPath).to.eq(vscode.Uri.file(mockExtensionLocation + '/media/red-x.svg').fsPath);
       });
 
       it('should get a tree item that is in progress', async () => {
-        const mockQuery = createMockLocalQuery('a');
+        const mockQuery = createMockLocalQueryInfo({ dbName: 'a' });
+
         const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
         expect(treeItem.iconPath).to.deep.eq({
           id: 'sync~spin', color: undefined
@@ -739,7 +759,7 @@ describe('query-history', () => {
 
     describe('getChildren', () => {
       it('fetch children correctly', () => {
-        const mockQuery = createMockLocalQuery();
+        const mockQuery = createMockLocalQueryInfo({});
         historyTreeDataProvider.allHistory.push(mockQuery);
         expect(historyTreeDataProvider.getChildren()).to.deep.eq([mockQuery]);
         expect(historyTreeDataProvider.getChildren(mockQuery)).to.deep.eq([]);
@@ -747,12 +767,16 @@ describe('query-history', () => {
 
       describe('sorting', () => {
         const history = [
-          item('a', 2, 'remote', 24),
-          item('b', 10, 'local', 20),
-          item('c', 5, 'local', 30),
-          item('d', 1, 'local', 25),
-          item('e', 6, 'remote', 5),
+          createMockRemoteQueryHistoryItem({ userSpecifiedLabel: 'a', executionStartTime: 2, resultCount: 24, status: QueryStatus.Completed }),
+          createMockLocalQueryInfo({ userSpecifiedLabel: 'b', startTime: new Date(10), resultCount: 20 }),
+          createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'c', executionStartTime: 15, resultCount: 456, historyItemStatus: QueryStatus.Completed, variantAnalysisStatus: VariantAnalysisStatus.Succeeded }),
+          createMockLocalQueryInfo({ userSpecifiedLabel: 'd', startTime: new Date(5), resultCount: 30 }),
+          createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'e', executionStartTime: 50, resultCount: 15, historyItemStatus: QueryStatus.InProgress, variantAnalysisStatus: VariantAnalysisStatus.InProgress }),
+          createMockLocalQueryInfo({ userSpecifiedLabel: 'f', startTime: new Date(1), resultCount: 13 }),
+          createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'g', executionStartTime: 7, resultCount: 30, historyItemStatus: QueryStatus.Failed, variantAnalysisStatus: VariantAnalysisStatus.Failed }),
+          createMockRemoteQueryHistoryItem({ userSpecifiedLabel: 'h', executionStartTime: 6, resultCount: 5, status: QueryStatus.InProgress })
         ];
+
         let treeDataProvider: HistoryTreeDataProvider;
 
         beforeEach(async () => {
@@ -778,7 +802,7 @@ describe('query-history', () => {
         });
 
         it('should get children for date ascending', async () => {
-          const expected = [history[3], history[0], history[2], history[4], history[1]];
+          const expected = [history[5], history[0], history[3], history[7], history[6], history[1], history[2], history[4]];
           treeDataProvider.sortOrder = SortOrder.DateAsc;
 
           const children = await treeDataProvider.getChildren();
@@ -786,7 +810,8 @@ describe('query-history', () => {
         });
 
         it('should get children for date descending', async () => {
-          const expected = [history[3], history[0], history[2], history[4], history[1]].reverse();
+          const expected = [history[5], history[0], history[3], history[7], history[6], history[1], history[2], history[4]].reverse();
+
           treeDataProvider.sortOrder = SortOrder.DateDesc;
 
           const children = await treeDataProvider.getChildren();
@@ -794,35 +819,48 @@ describe('query-history', () => {
         });
 
         it('should get children for result count ascending', async () => {
-          const expected = [history[4], history[1], history[0], history[3], history[2]];
+          const expected = [history[7], history[5], history[4], history[1], history[0], history[3], history[6], history[2]];
           treeDataProvider.sortOrder = SortOrder.CountAsc;
 
           const children = await treeDataProvider.getChildren();
+
           expect(children).to.deep.eq(expected);
         });
 
         it('should get children for result count descending', async () => {
-          const expected = [history[4], history[1], history[0], history[3], history[2]].reverse();
+          const expected = [history[7], history[5], history[4], history[1], history[0], history[3], history[6], history[2]].reverse();
           treeDataProvider.sortOrder = SortOrder.CountDesc;
 
           const children = await treeDataProvider.getChildren();
           expect(children).to.deep.eq(expected);
         });
 
-        it('should get children for result count ascending when there are no results', async () => {
-          // fall back to name
-          const thisHistory = [item('a', 10), item('b', 50), item('c', 1)];
+        it('should fall back to name ascending when there are no results', async () => {
+          const thisHistory = [
+            createMockLocalQueryInfo({ userSpecifiedLabel: 'a', resultCount: 0, startTime: new Date(10) }),
+            createMockLocalQueryInfo({ userSpecifiedLabel: 'b', resultCount: 0, startTime: new Date(1) }),
+            createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'c', resultCount: 0, historyItemStatus: QueryStatus.Completed, variantAnalysisStatus: VariantAnalysisStatus.Failed }),
+            createMockRemoteQueryHistoryItem({ userSpecifiedLabel: 'd', resultCount: 0, executionStartTime: 50, status: QueryStatus.Completed }),
+            createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'e', resultCount: 0, historyItemStatus: QueryStatus.InProgress, variantAnalysisStatus: VariantAnalysisStatus.Failed }),
+          ];
           (queryHistoryManager!.treeDataProvider as any).history = [...thisHistory];
           const expected = [...thisHistory];
+
           treeDataProvider.sortOrder = SortOrder.CountAsc;
 
           const children = await treeDataProvider.getChildren();
+
           expect(children).to.deep.eq(expected);
         });
 
-        it('should get children for result count descending when there are no results', async () => {
-          // fall back to name
-          const thisHistory = [item('a', 10), item('b', 50), item('c', 1)];
+        it('should fall back to name descending when there are no results', async () => {
+          const thisHistory = [
+            createMockLocalQueryInfo({ userSpecifiedLabel: 'a', resultCount: 0, startTime: new Date(10) }),
+            createMockLocalQueryInfo({ userSpecifiedLabel: 'b', resultCount: 0, startTime: new Date(1) }),
+            createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'c', resultCount: 0, historyItemStatus: QueryStatus.Completed, variantAnalysisStatus: VariantAnalysisStatus.Failed }),
+            createMockRemoteQueryHistoryItem({ userSpecifiedLabel: 'd', resultCount: 0, executionStartTime: 50, status: QueryStatus.Completed }),
+            createMockVariantAnalysisHistoryItem({ userSpecifiedLabel: 'e', resultCount: 0, historyItemStatus: QueryStatus.InProgress, variantAnalysisStatus: VariantAnalysisStatus.Failed }),
+          ];
           (queryHistoryManager!.treeDataProvider as any).history = [...thisHistory];
           const expected = [...thisHistory].reverse();
           treeDataProvider.sortOrder = SortOrder.CountDesc;
@@ -830,45 +868,6 @@ describe('query-history', () => {
           const children = await treeDataProvider.getChildren();
           expect(children).to.deep.eq(expected);
         });
-
-        function item(label: string, start: number, t = 'local', resultCount?: number) {
-          if (t === 'local') {
-            return {
-              getQueryName() {
-                return label;
-              },
-              getQueryFileName() {
-                return label + '.ql';
-              },
-              initialInfo: {
-                start: new Date(start),
-                databaseInfo: {
-                  name: 'test',
-                }
-              },
-              completedQuery: {
-                resultCount,
-              },
-              t
-            };
-          } else {
-            return {
-              status: 'success',
-              remoteQuery: {
-                queryFilePath: label + '.ql',
-                queryName: label,
-                executionStartTime: start,
-                controllerRepository: {
-                  name: 'test',
-                  owner: 'user',
-                },
-                repositories: []
-              },
-              resultCount,
-              t
-            };
-          }
-        }
       });
     });
   });

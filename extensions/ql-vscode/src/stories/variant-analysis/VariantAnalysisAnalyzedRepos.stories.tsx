@@ -36,64 +36,67 @@ const interpretedResultsForRepo = (nwo: string): AnalysisAlert[] | undefined => 
 
 export const Example = Template.bind({});
 Example.args = {
-  variantAnalysis: createMockVariantAnalysis(VariantAnalysisStatus.InProgress, [
-    {
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 63537249,
-        fullName: 'facebook/create-react-app',
-        private: false,
+  variantAnalysis: createMockVariantAnalysis({
+    status: VariantAnalysisStatus.InProgress,
+    scannedRepos: [
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 63537249,
+          fullName: 'facebook/create-react-app',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded, resultCount: 198,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Succeeded, resultCount: 198,
-    },
-    {
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 167174,
-        fullName: 'jquery/jquery',
-        private: false,
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 167174,
+          fullName: 'jquery/jquery',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+        resultCount: 67,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-      resultCount: 67,
-    },
-    {
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 237159,
-        fullName: 'expressjs/express',
-        private: false,
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 237159,
+          fullName: 'expressjs/express',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+        resultCount: 26,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-      resultCount: 26,
-    },
-    {
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 15062869,
-        fullName: 'facebook/jest',
-        private: false,
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 15062869,
+          fullName: 'facebook/jest',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Failed,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Failed,
-    },
-    {
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 24195339,
-        fullName: 'angular/angular',
-        private: false,
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 24195339,
+          fullName: 'angular/angular',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.InProgress,
       },
-      analysisStatus: VariantAnalysisRepoStatus.InProgress,
-    },
-    {
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 24560307,
-        fullName: 'babel/babel',
-        private: false,
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 24560307,
+          fullName: 'babel/babel',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Pending,
       },
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-  ]),
+    ]
+  }),
   repositoryResults: [
     {
       variantAnalysisId: 1,

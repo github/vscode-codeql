@@ -1,84 +1,88 @@
+import { faker } from '@faker-js/faker';
 import {
   InitialQueryInfo,
-  CompletedQueryInfo,
-  CompletedLocalQueryInfo,
   LocalQueryInfo,
 } from '../../../query-results';
 import { QueryEvaluationInfo, QueryWithResults } from '../../../run-queries-shared';
 import { CancellationTokenSource } from 'vscode';
 import { QueryResultType } from '../../../pure/legacy-messages';
+import { QueryMetadata } from '../../../pure/interface-types';
 
-export function createMockLocalQueryInfo(
-  startTime: string,
-  userSpecifiedLabel?: string
-): LocalQueryInfo {
-  return ({
-    t: 'local',
-    userSpecifiedLabel,
-    startTime: startTime,
-    getQueryFileName() {
-      return 'query-file.ql';
-    },
-    getQueryName() {
-      return 'query-name';
-    },
-    initialInfo: ({
-      databaseInfo: {
-        databaseUri: 'unused',
-        name: 'db-name',
-      },
-    } as unknown) as InitialQueryInfo,
-    completedQuery: ({
-      resultCount: 456,
-      statusString: 'in progress',
-    } as unknown) as CompletedQueryInfo,
-  } as unknown) as CompletedLocalQueryInfo;
-}
-
-export function createMockLocalQuery(
-  dbName = 'a',
-  queryWithResults?: QueryWithResults,
-  isFail = false
-): LocalQueryInfo {
-  const initialQueryInfo = {
-    databaseInfo: { name: dbName },
-    start: new Date(),
-    queryPath: 'hucairz'
-  } as InitialQueryInfo;
-
+export function createMockLocalQueryInfo({
+  startTime = new Date(),
+  resultCount = 0,
+  userSpecifiedLabel = undefined,
+  failureReason = undefined,
+  dbName = 'db-name',
+  hasMetadata = false,
+  queryWithResults = undefined,
+}: {
+  startTime?: Date,
+  resultCount?: number,
+  userSpecifiedLabel?: string,
+  failureReason?: string,
+  dbName?: string,
+  hasMetadata?: boolean,
+  queryWithResults?: QueryWithResults | undefined,
+}): LocalQueryInfo {
   const cancellationToken = {
     dispose: () => { /**/ },
   } as CancellationTokenSource;
 
-  const fqi = new LocalQueryInfo(
-    initialQueryInfo,
-    cancellationToken,
-  );
+  const initialQueryInfo = {
+    queryText: 'select 1',
+    isQuickQuery: false,
+    isQuickEval: false,
+    queryName: 'query-name',
+    queryPath: 'query-file.ql',
+    databaseInfo: {
+      databaseUri: 'databaseUri',
+      name: dbName,
+    },
+    start: startTime,
+    id: faker.datatype.number().toString(),
+    userSpecifiedLabel
+  } as InitialQueryInfo;
+
+  const localQuery = new LocalQueryInfo(initialQueryInfo, cancellationToken);
+
+  localQuery.failureReason = failureReason;
 
   if (queryWithResults) {
-    fqi.completeThisQuery(queryWithResults);
+    localQuery.completeThisQuery(queryWithResults);
+    localQuery.completedQuery?.setResultCount(1);
+  } else if (resultCount > 0) {
+    const queryWithResults = createMockQueryWithResults({ hasMetadata });
+    localQuery.completeThisQuery(queryWithResults);
+    localQuery.completedQuery?.setResultCount(resultCount);
   }
 
-  if (isFail) {
-    fqi.failureReason = 'failure reason';
-  }
-
-  return fqi;
+  return localQuery;
 }
 
-export function createMockQueryWithResults(
-  sandbox: sinon.SinonSandbox,
+export function createMockQueryWithResults({
+  sandbox = undefined,
   didRunSuccessfully = true,
-  hasInterpretedResults = true
-): QueryWithResults {
+  hasInterpretedResults = true,
+  hasMetadata = undefined
+}: {
+  sandbox?: sinon.SinonSandbox,
+  didRunSuccessfully?: boolean,
+  hasInterpretedResults?: boolean,
+  hasMetadata?: boolean,
+}): QueryWithResults {
+  const dispose = sandbox ? sandbox.spy() : () => { /**/ };
+  const deleteQuery = sandbox ? sandbox.stub() : () => { /**/ };
+  const metadata = hasMetadata ? { name: 'query-name' } as QueryMetadata : undefined;
+
   return {
     query: {
       hasInterpretedResults: () => Promise.resolve(hasInterpretedResults),
-      deleteQuery: sandbox.stub(),
+      deleteQuery,
+      metadata,
     } as unknown as QueryEvaluationInfo,
     successful: didRunSuccessfully,
-    message: 'foo',
-    dispose: sandbox.spy(),
+    dispose,
     result: {
       evaluationTime: 1,
       queryId: 0,
