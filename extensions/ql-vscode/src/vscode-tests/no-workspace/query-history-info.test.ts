@@ -17,8 +17,7 @@ import { VariantAnalysisRepoStatus, VariantAnalysisStatus } from '../../remote-q
 describe('Query history info', () => {
 
   const date = new Date('2022-01-01T00:00:00.000Z');
-  const dateStr = date.toLocaleString();
-  const localQueryHistoryItem = createMockLocalQueryInfo(dateStr);
+  const localQueryHistoryItem = createMockLocalQueryInfo({ startTime: date });
   const remoteQueryHistoryItem = createMockRemoteQueryHistoryItem({});
   const variantAnalysisHistoryItem: VariantAnalysisHistoryItem = {
     t: 'variant-analysis',
