@@ -7,7 +7,7 @@ export function copyTestData() {
 }
 
 export function watchTestData() {
-  return gulp.watch(['src/vscode-tests/no-workspace/data/**/*', 'src/vscode-tests/minimal-workspace/data/**/*'], copyTestData);
+  return gulp.watch(['src/vscode-tests/*/data/**/*'], copyTestData);
 }
 
 function copyNoWorkspaceData() {
