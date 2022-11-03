@@ -868,45 +868,6 @@ describe('query-history', () => {
           const children = await treeDataProvider.getChildren();
           expect(children).to.deep.eq(expected);
         });
-
-        function item(label: string, start: number, t = 'local', resultCount?: number) {
-          if (t === 'local') {
-            return {
-              getQueryName() {
-                return label;
-              },
-              getQueryFileName() {
-                return label + '.ql';
-              },
-              initialInfo: {
-                start: new Date(start),
-                databaseInfo: {
-                  name: 'test',
-                }
-              },
-              completedQuery: {
-                resultCount,
-              },
-              t
-            };
-          } else {
-            return {
-              status: 'success',
-              remoteQuery: {
-                queryFilePath: label + '.ql',
-                queryName: label,
-                executionStartTime: start,
-                controllerRepository: {
-                  name: 'test',
-                  owner: 'user',
-                },
-                repositories: []
-              },
-              resultCount,
-              t
-            };
-          }
-        }
       });
     });
   });
