@@ -1,9 +1,10 @@
 import * as gulp from 'gulp';
 
 export function copyTestData() {
-  copyNoWorkspaceData();
-  copyCliIntegrationData();
-  return Promise.resolve();
+  return Promise.all([
+    copyNoWorkspaceData(),
+    copyCliIntegrationData()
+  ]);
 }
 
 export function watchTestData() {
