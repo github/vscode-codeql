@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isNewQueryRunExperienceEnabled } from '../config';
+import { isCanary, isNewQueryRunExperienceEnabled } from '../config';
 import { logger } from '../logging';
 import { DisposableObject } from '../pure/disposable-object';
 import { DbConfigStore } from './db-config-store';
@@ -11,10 +11,11 @@ export class DbModule extends DisposableObject {
     extensionContext: vscode.ExtensionContext
   ): Promise<void> {
     if (extensionContext.extensionMode !== vscode.ExtensionMode.Development ||
+      !isCanary() ||
       !isNewQueryRunExperienceEnabled()) {
       // Currently, we only want to expose the new database panel when we
-      // are in development mode and the developer has enabled the new 
-      // query run experience.
+      // are in development and canary modem and the developer has enabled the 
+      // new query run experience.
       return;
     }
 
