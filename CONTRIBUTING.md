@@ -106,7 +106,9 @@ Any test data you're using (sample projects, config files, etc.) must go in a `s
 
 #### Running the tests
 
-You will need to have `npm run watch` running in the background.
+Pre-requisites:
+1. Run `npm run build`.
+2. You will need to have `npm run watch` running in the background.
 
 ##### 1. From the terminal
 
