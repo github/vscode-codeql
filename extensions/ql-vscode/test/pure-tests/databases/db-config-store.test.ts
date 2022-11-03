@@ -16,7 +16,7 @@ describe('db config store', async () => {
   });
 
   it('should create a new config if one does not exist', async () => {
-    const configPath = path.join(tempWorkspaceStoragePath, 'dbconfig.json');
+    const configPath = path.join(tempWorkspaceStoragePath, 'workspace-databases.json');
 
     const configStore = new DbConfigStore(tempWorkspaceStoragePath);
     await configStore.initialize();
