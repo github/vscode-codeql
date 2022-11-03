@@ -42,10 +42,8 @@
           }
         }
       },
-      "required": ["repositoryList", "owners", "repositories"],
+      "required": ["repositoryLists", "owners", "repositories"],
       "additionalProperties": false
     }
-  },
-  "required": ["repositoryLists", "owners", "repositories"],
-  "additionalProperties": false
+  }
 }
