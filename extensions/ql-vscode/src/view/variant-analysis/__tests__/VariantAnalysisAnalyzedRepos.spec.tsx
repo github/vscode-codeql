@@ -9,6 +9,7 @@ import { VariantAnalysisAnalyzedRepos, VariantAnalysisAnalyzedReposProps } from 
 import { createMockVariantAnalysis } from '../../../vscode-tests/factories/remote-queries/shared/variant-analysis';
 import { createMockRepositoryWithMetadata } from '../../../vscode-tests/factories/remote-queries/shared/repository';
 import { createMockScannedRepo } from '../../../vscode-tests/factories/remote-queries/shared/scanned-repositories';
+import { defaultFilterSortState, SortKey } from '../filterSort';
 
 describe(VariantAnalysisAnalyzedRepos.name, () => {
   const defaultVariantAnalysis = createMockVariantAnalysis(VariantAnalysisStatus.InProgress, [
@@ -19,7 +20,9 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
         id: 1,
         fullName: 'octodemo/hello-world-1',
         private: false,
+        stargazersCount: 5_000,
       },
+      resultCount: undefined,
       analysisStatus: VariantAnalysisRepoStatus.Pending,
     },
     {
@@ -29,7 +32,9 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
         id: 2,
         fullName: 'octodemo/hello-world-2',
         private: false,
+        stargazersCount: 20_000,
       },
+      resultCount: 200,
       analysisStatus: VariantAnalysisRepoStatus.Succeeded,
     },
     {
@@ -39,7 +44,9 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
         id: 3,
         fullName: 'octodemo/hello-world-3',
         private: true,
+        stargazersCount: 20,
       },
+      resultCount: undefined,
       analysisStatus: VariantAnalysisRepoStatus.Failed,
     },
     {
@@ -49,8 +56,34 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
         id: 4,
         fullName: 'octodemo/hello-world-4',
         private: false,
+        stargazersCount: 8_000,
       },
+      resultCount: undefined,
       analysisStatus: VariantAnalysisRepoStatus.InProgress,
+    },
+    {
+      ...createMockScannedRepo(),
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        id: 5,
+        fullName: 'octodemo/hello-world-5',
+        private: false,
+        stargazersCount: 50_000,
+      },
+      resultCount: 55_323,
+      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+    },
+    {
+      ...createMockScannedRepo(),
+      repository: {
+        ...createMockRepositoryWithMetadata(),
+        id: 6,
+        fullName: 'octodemo/hello-world-6',
+        private: false,
+        stargazersCount: 1,
+      },
+      resultCount: 10_000,
+      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
     },
   ]);
 
@@ -110,12 +143,53 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
 
   it('uses the search value', () => {
     render({
-      searchValue: 'world-2',
+      filterSortState: {
+        ...defaultFilterSortState,
+        searchValue: 'world-2',
+      }
     });
 
     expect(screen.queryByText('octodemo/hello-world-1')).not.toBeInTheDocument();
     expect(screen.getByText('octodemo/hello-world-2')).toBeInTheDocument();
     expect(screen.queryByText('octodemo/hello-world-3')).not.toBeInTheDocument();
     expect(screen.queryByText('octodemo/hello-world-4')).not.toBeInTheDocument();
+  });
+
+  it('uses the sort key', async () => {
+    render({
+      filterSortState: {
+        ...defaultFilterSortState,
+        sortKey: SortKey.Stars,
+      }
+    });
+
+    const rows = screen.queryAllByRole('button');
+
+    expect(rows).toHaveLength(6);
+    expect(rows[0]).toHaveTextContent('octodemo/hello-world-5');
+    expect(rows[1]).toHaveTextContent('octodemo/hello-world-2');
+    expect(rows[2]).toHaveTextContent('octodemo/hello-world-4');
+    expect(rows[3]).toHaveTextContent('octodemo/hello-world-1');
+    expect(rows[4]).toHaveTextContent('octodemo/hello-world-3');
+    expect(rows[5]).toHaveTextContent('octodemo/hello-world-6');
+  });
+
+  it('uses the results count sort key', async () => {
+    render({
+      filterSortState: {
+        ...defaultFilterSortState,
+        sortKey: SortKey.ResultsCount,
+      }
+    });
+
+    const rows = screen.queryAllByRole('button');
+
+    expect(rows).toHaveLength(6);
+    expect(rows[0]).toHaveTextContent('octodemo/hello-world-5');
+    expect(rows[1]).toHaveTextContent('octodemo/hello-world-6');
+    expect(rows[2]).toHaveTextContent('octodemo/hello-world-2');
+    expect(rows[3]).toHaveTextContent('octodemo/hello-world-1');
+    expect(rows[4]).toHaveTextContent('octodemo/hello-world-3');
+    expect(rows[5]).toHaveTextContent('octodemo/hello-world-4');
   });
 });
