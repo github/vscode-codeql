@@ -14,7 +14,7 @@ export class DbModule extends DisposableObject {
       !isCanary() ||
       !isNewQueryRunExperienceEnabled()) {
       // Currently, we only want to expose the new database panel when we
-      // are in development and canary modem and the developer has enabled the 
+      // are in development and canary mode and the developer has enabled the 
       // new query run experience.
       return;
     }
