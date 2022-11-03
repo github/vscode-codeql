@@ -6,6 +6,7 @@ type Props = {
   name: string;
   label: string;
   className?: string;
+  slot?: string;
 };
 
 const CodiconIcon = styled.span`
@@ -15,5 +16,6 @@ const CodiconIcon = styled.span`
 export const Codicon = ({
   name,
   label,
-  className
-}: Props) => <CodiconIcon role="img" aria-label={label} className={classNames('codicon', `codicon-${name}`, className)} />;
+  className,
+  slot,
+}: Props) => <CodiconIcon role="img" aria-label={label} className={classNames('codicon', `codicon-${name}`, className)} slot={slot} />;

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useMemo } from 'react';
 import styled from 'styled-components';
 import { RepoRow } from './RepoRow';
 import {
@@ -6,7 +7,7 @@ import {
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState
 } from '../../remote-queries/shared/variant-analysis';
-import { useMemo } from 'react';
+import { matchesSearchValue } from './filterSort';
 
 const Container = styled.div`
   display: flex;
@@ -19,12 +20,15 @@ export type VariantAnalysisAnalyzedReposProps = {
   variantAnalysis: VariantAnalysis;
   repositoryStates?: VariantAnalysisScannedRepositoryState[];
   repositoryResults?: VariantAnalysisScannedRepositoryResult[];
+
+  searchValue?: string;
 }
 
 export const VariantAnalysisAnalyzedRepos = ({
   variantAnalysis,
   repositoryStates,
   repositoryResults,
+  searchValue,
 }: VariantAnalysisAnalyzedReposProps) => {
   const repositoryStateById = useMemo(() => {
     const map = new Map<number, VariantAnalysisScannedRepositoryState>();
@@ -42,9 +46,19 @@ export const VariantAnalysisAnalyzedRepos = ({
     return map;
   }, [repositoryResults]);
 
+  const repositories = useMemo(() => {
+    if (searchValue) {
+      return variantAnalysis.scannedRepos?.filter((repoTask) => {
+        return matchesSearchValue(repoTask.repository, searchValue);
+      });
+    }
+
+    return variantAnalysis.scannedRepos;
+  }, [searchValue, variantAnalysis.scannedRepos]);
+
   return (
     <Container>
-      {variantAnalysis.scannedRepos?.map(repository => {
+      {repositories?.map(repository => {
         const state = repositoryStateById.get(repository.repository.id);
         const results = repositoryResultsById.get(repository.repository.id);
 
