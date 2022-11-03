@@ -3,13 +3,21 @@ import { QueryStatus } from '../../../query-status';
 import { VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
 import { createMockVariantAnalysis } from './shared/variant-analysis';
 
-export function createMockVariantAnalysisHistoryItem(
-  historyItemStatus: QueryStatus = QueryStatus.InProgress,
-  variantAnalysisStatus: VariantAnalysisStatus = VariantAnalysisStatus.Succeeded,
-  failureReason?: string,
+export function createMockVariantAnalysisHistoryItem({
+  historyItemStatus = QueryStatus.InProgress,
+  variantAnalysisStatus = VariantAnalysisStatus.Succeeded,
+  failureReason = undefined,
+  resultCount = 0,
+  userSpecifiedLabel = 'query-name',
+  executionStartTime = undefined
+}: {
+  historyItemStatus?: QueryStatus,
+  variantAnalysisStatus?: VariantAnalysisStatus,
+  failureReason?: string | undefined,
   resultCount?: number,
-  userSpecifiedLabel?: string
-): VariantAnalysisHistoryItem {
+  userSpecifiedLabel?: string,
+  executionStartTime?: number
+}): VariantAnalysisHistoryItem {
   return ({
     t: 'variant-analysis',
     failureReason,
