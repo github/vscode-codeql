@@ -119,6 +119,7 @@ import { createVariantAnalysisContentProvider } from './remote-queries/variant-a
 import { VSCodeMockGitHubApiServer } from './mocks/vscode-mock-gh-api-server';
 import { VariantAnalysisResultsManager } from './remote-queries/variant-analysis-results-manager';
 import { initializeDbModule } from './databases/db-module';
+import { DbConfigStore } from './databases/db-config-store';
 
 /**
  * extension.ts
@@ -1224,6 +1225,11 @@ async function activateWithInstalledDistribution(
       async () => await mockServer.unloadScenario(),
     )
   );
+
+  const storagePath = ctx.storageUri?.fsPath || ctx.globalStorageUri.fsPath;
+  const extensionPath = ctx.extensionPath;
+  const dbConfigStore = new DbConfigStore(storagePath, extensionPath);
+  await dbConfigStore.initialize();
 
   await commands.executeCommand('codeQLDatabases.removeOrphanedDatabases');
 
