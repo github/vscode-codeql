@@ -79,7 +79,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       if (status === QueryStatus.InProgress) {
         // In this case, last time we checked, the query was still in progress.
         // We need to setup the monitor to check for completion.
-        await commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
+        void commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
       }
     }
   }
@@ -241,7 +241,13 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.InProgress;
       await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
 
-      await this.variantAnalysisResultsManager.download(credentials, variantAnalysisSummary.id, repoTask, this.getVariantAnalysisStorageLocation(variantAnalysisSummary.id));
+      try {
+        await this.variantAnalysisResultsManager.download(credentials, variantAnalysisSummary.id, repoTask, this.getVariantAnalysisStorageLocation(variantAnalysisSummary.id));
+      } catch (e) {
+        repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Failed;
+        await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
+        throw new Error(`Could not download the results for variant analysis with id: ${variantAnalysisSummary.id}. Error: ${getErrorMessage(e)}`);
+      }
     }
 
     repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
