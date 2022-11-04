@@ -3,7 +3,7 @@ import { DbItem } from '../db-item';
 
 /**
  * Represents an item in the database tree view. This item could be 
- * representing an actual database item or an error.
+ * representing an actual database item or a warning.
  */
 export class DbTreeViewItem extends vscode.TreeItem {
   constructor(
