@@ -42,7 +42,7 @@ export class DbTreeDataProvider implements TreeDataProvider<DbTreeViewItem> {
     void logger.log(`Creating database tree with ${dbItems.length} items`);
 
     // Add a sample warning as a proof of concept.
-    const errorTreeViewItem = createDbTreeViewItemWarning(
+    const warningTreeViewItem = createDbTreeViewItemWarning(
       'There was an error',
       'Fix it'
     );
