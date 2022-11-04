@@ -173,33 +173,53 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
 
     // Populate the icon and the context value. We use the context value to
     // control which commands are visible in the context menu.
-    let hasResults;
+    treeItem.iconPath = this.getIconPath(element);
+    treeItem.contextValue = await this.getContextValue(element);
+
+    return treeItem;
+  }
+
+  private getIconPath(element: QueryHistoryInfo): ThemeIcon | string {
     switch (element.status) {
       case QueryStatus.InProgress:
-        treeItem.iconPath = new ThemeIcon('sync~spin');
-        treeItem.contextValue = element.t === 'local' ? 'inProgressResultsItem' : 'inProgressRemoteResultsItem';
-        break;
+        return new ThemeIcon('sync~spin');
       case QueryStatus.Completed:
         if (element.t === 'local') {
-          hasResults = await element.completedQuery?.query.hasInterpretedResults();
-          treeItem.iconPath = this.localSuccessIconPath;
-          treeItem.contextValue = hasResults
-            ? 'interpretedResultsItem'
-            : 'rawResultsItem';
+          return this.localSuccessIconPath;
         } else {
-          treeItem.iconPath = this.remoteSuccessIconPath;
-          treeItem.contextValue = 'remoteResultsItem';
+          return this.remoteSuccessIconPath;
         }
-        break;
       case QueryStatus.Failed:
-        treeItem.iconPath = this.failedIconPath;
-        treeItem.contextValue = element.t === 'local' ? 'cancelledResultsItem' : 'cancelledRemoteResultsItem';
-        break;
+        return this.failedIconPath;
       default:
         assertNever(element.status);
     }
+  }
 
-    return treeItem;
+  private async getContextValue(element: QueryHistoryInfo): Promise<string> {
+    switch (element.status) {
+      case QueryStatus.InProgress:
+        if (element.t === 'local') {
+          return 'inProgressResultsItem';
+        } else if (element.t === 'variant-analysis' && element.variantAnalysis.actionsWorkflowRunId === undefined) {
+          return 'pendingRemoteResultsItem';
+        } else {
+          return 'inProgressRemoteResultsItem';
+        }
+      case QueryStatus.Completed:
+        if (element.t === 'local') {
+          const hasResults = await element.completedQuery?.query.hasInterpretedResults();
+          return hasResults
+            ? 'interpretedResultsItem'
+            : 'rawResultsItem';
+        } else {
+          return 'remoteResultsItem';
+        }
+      case QueryStatus.Failed:
+        return element.t === 'local' ? 'cancelledResultsItem' : 'cancelledRemoteResultsItem';
+      default:
+        assertNever(element.status);
+    }
   }
 
   getChildren(

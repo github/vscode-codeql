@@ -118,6 +118,7 @@ import { VariantAnalysisManager } from './remote-queries/variant-analysis-manage
 import { createVariantAnalysisContentProvider } from './remote-queries/variant-analysis-content-provider';
 import { VSCodeMockGitHubApiServer } from './mocks/vscode-mock-gh-api-server';
 import { VariantAnalysisResultsManager } from './remote-queries/variant-analysis-results-manager';
+import { initializeDbModule } from './databases/db-module';
 
 /**
  * extension.ts
@@ -1228,6 +1229,9 @@ async function activateWithInstalledDistribution(
 
   void logger.log('Reading query history');
   await qhm.readQueryHistory();
+
+  const dbModule = await initializeDbModule(ctx);
+  ctx.subscriptions.push(dbModule);
 
   void logger.log('Successfully finished extension initialization.');
 

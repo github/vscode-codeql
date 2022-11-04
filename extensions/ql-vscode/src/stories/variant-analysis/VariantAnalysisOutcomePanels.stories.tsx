@@ -27,111 +27,118 @@ const Template: ComponentStory<typeof VariantAnalysisOutcomePanels> = (args) => 
 
 export const WithoutSkippedRepos = Template.bind({});
 WithoutSkippedRepos.args = {
-  variantAnalysis: createMockVariantAnalysis(VariantAnalysisStatus.InProgress, [
-    {
-      ...createMockScannedRepo('hello-world-1'),
-      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-      resultCount: 99_999,
-    },
-    {
-      ...createMockScannedRepo('hello-world-2'),
-      analysisStatus: VariantAnalysisRepoStatus.Failed,
-    },
-    {
-      ...createMockScannedRepo('hello-world-3'),
-      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-      resultCount: 0,
-    },
-    {
-      ...createMockScannedRepo('hello-world-4'),
-      resultCount: undefined,
-    },
-    {
-      ...createMockScannedRepo('hello-world-5'),
-      resultCount: undefined,
-    },
-    {
-      ...createMockScannedRepo('hello-world-6'),
-      resultCount: undefined,
-    },
-    {
-      ...createMockScannedRepo('hello-world-7'),
-      resultCount: undefined,
-    },
-    {
-      ...createMockScannedRepo('hello-world-8'),
-      resultCount: undefined,
-    },
-    {
-      ...createMockScannedRepo('hello-world-9'),
-      resultCount: undefined,
-    },
-    {
-      ...createMockScannedRepo('hello-world-10'),
-      resultCount: undefined,
-    },
-  ]),
+  variantAnalysis: createMockVariantAnalysis({
+    status: VariantAnalysisStatus.InProgress,
+    scannedRepos: [
+      {
+        ...createMockScannedRepo('hello-world-1'),
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+        resultCount: 99_999,
+      },
+      {
+        ...createMockScannedRepo('hello-world-2'),
+        analysisStatus: VariantAnalysisRepoStatus.Failed,
+      },
+      {
+        ...createMockScannedRepo('hello-world-3'),
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+        resultCount: 0,
+      },
+      {
+        ...createMockScannedRepo('hello-world-4'),
+        resultCount: undefined,
+      },
+      {
+        ...createMockScannedRepo('hello-world-5'),
+        resultCount: undefined,
+      },
+      {
+        ...createMockScannedRepo('hello-world-6'),
+        resultCount: undefined,
+      },
+      {
+        ...createMockScannedRepo('hello-world-7'),
+        resultCount: undefined,
+      },
+      {
+        ...createMockScannedRepo('hello-world-8'),
+        resultCount: undefined,
+      },
+      {
+        ...createMockScannedRepo('hello-world-9'),
+        resultCount: undefined,
+      },
+      {
+        ...createMockScannedRepo('hello-world-10'),
+        resultCount: undefined,
+      },
+    ]
+  }),
 };
 
 export const WithSkippedRepos = Template.bind({});
 WithSkippedRepos.args = {
   ...WithoutSkippedRepos.args,
-  variantAnalysis: createMockVariantAnalysis(VariantAnalysisStatus.InProgress, WithoutSkippedRepos.args.variantAnalysis?.scannedRepos, {
-    notFoundRepos: {
-      repositoryCount: 2,
-      repositories: [
-        {
-          fullName: 'octodemo/hello-globe'
-        },
-        {
-          fullName: 'octodemo/hello-planet'
-        }
-      ]
-    },
-    noCodeqlDbRepos: {
-      repositoryCount: 4,
-      repositories: [
-        {
-          ...createMockRepositoryWithMetadata(),
-          id: 100,
-          fullName: 'octodemo/no-db-1'
-        },
-        {
-          ...createMockRepositoryWithMetadata(),
-          id: 101,
-          fullName: 'octodemo/no-db-2'
-        },
-        {
-          ...createMockRepositoryWithMetadata(),
-          id: 102,
-          fullName: 'octodemo/no-db-3'
-        },
-        {
-          ...createMockRepositoryWithMetadata(),
-          id: 103,
-          fullName: 'octodemo/no-db-4'
-        }
-      ]
-    },
-    overLimitRepos: {
-      repositoryCount: 1,
-      repositories: [
-        {
-          ...createMockRepositoryWithMetadata(),
-          id: 201,
-          fullName: 'octodemo/over-limit-1'
-        }
-      ]
-    },
-    accessMismatchRepos: {
-      repositoryCount: 1,
-      repositories: [
-        {
-          ...createMockRepositoryWithMetadata(),
-          id: 205,
-          fullName: 'octodemo/private'
-        }
-      ]
+  variantAnalysis: createMockVariantAnalysis({
+    status: VariantAnalysisStatus.InProgress,
+    scannedRepos: WithoutSkippedRepos.args.variantAnalysis?.scannedRepos,
+    skippedRepos: {
+      notFoundRepos: {
+        repositoryCount: 2,
+        repositories: [
+          {
+            fullName: 'octodemo/hello-globe'
+          },
+          {
+            fullName: 'octodemo/hello-planet'
+          }
+        ]
+      },
+      noCodeqlDbRepos: {
+        repositoryCount: 4,
+        repositories: [
+          {
+            ...createMockRepositoryWithMetadata(),
+            id: 100,
+            fullName: 'octodemo/no-db-1'
+          },
+          {
+            ...createMockRepositoryWithMetadata(),
+            id: 101,
+            fullName: 'octodemo/no-db-2'
+          },
+          {
+            ...createMockRepositoryWithMetadata(),
+            id: 102,
+            fullName: 'octodemo/no-db-3'
+          },
+          {
+            ...createMockRepositoryWithMetadata(),
+            id: 103,
+            fullName: 'octodemo/no-db-4'
+          }
+        ]
+      },
+      overLimitRepos: {
+        repositoryCount: 1,
+        repositories: [
+          {
+            ...createMockRepositoryWithMetadata(),
+            id: 201,
+            fullName: 'octodemo/over-limit-1'
+          }
+        ]
+      },
+      accessMismatchRepos: {
+        repositoryCount: 1,
+        repositories: [
+          {
+            ...createMockRepositoryWithMetadata(),
+            id: 205,
+            fullName: 'octodemo/private'
+          }
+        ]
+      }
     }
   }),
 };
@@ -139,9 +146,13 @@ WithSkippedRepos.args = {
 export const WithOnlyWarningsSkippedRepos = Template.bind({});
 WithOnlyWarningsSkippedRepos.args = {
   ...WithoutSkippedRepos.args,
-  variantAnalysis: createMockVariantAnalysis(VariantAnalysisStatus.InProgress, WithoutSkippedRepos.args.variantAnalysis?.scannedRepos, {
-    ...WithSkippedRepos.args.variantAnalysis?.skippedRepos,
-    notFoundRepos: undefined,
-    noCodeqlDbRepos: undefined,
+  variantAnalysis: createMockVariantAnalysis({
+    status: VariantAnalysisStatus.InProgress,
+    scannedRepos: WithoutSkippedRepos.args.variantAnalysis?.scannedRepos,
+    skippedRepos: {
+      ...WithSkippedRepos.args.variantAnalysis?.skippedRepos,
+      notFoundRepos: undefined,
+      noCodeqlDbRepos: undefined,
+    }
   }),
 };

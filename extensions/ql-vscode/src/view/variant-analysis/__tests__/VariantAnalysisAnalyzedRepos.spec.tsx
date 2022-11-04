@@ -12,80 +12,83 @@ import { createMockScannedRepo } from '../../../vscode-tests/factories/remote-qu
 import { defaultFilterSortState, SortKey } from '../filterSort';
 
 describe(VariantAnalysisAnalyzedRepos.name, () => {
-  const defaultVariantAnalysis = createMockVariantAnalysis(VariantAnalysisStatus.InProgress, [
-    {
-      ...createMockScannedRepo(),
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 1,
-        fullName: 'octodemo/hello-world-1',
-        private: false,
-        stargazersCount: 5_000,
+  const defaultVariantAnalysis = createMockVariantAnalysis({
+    status: VariantAnalysisStatus.InProgress,
+    scannedRepos: [
+      {
+        ...createMockScannedRepo(),
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 1,
+          fullName: 'octodemo/hello-world-1',
+          private: false,
+          stargazersCount: 5_000,
+        },
+        resultCount: undefined,
+        analysisStatus: VariantAnalysisRepoStatus.Pending,
       },
-      resultCount: undefined,
-      analysisStatus: VariantAnalysisRepoStatus.Pending,
-    },
-    {
-      ...createMockScannedRepo(),
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 2,
-        fullName: 'octodemo/hello-world-2',
-        private: false,
-        stargazersCount: 20_000,
+      {
+        ...createMockScannedRepo(),
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 2,
+          fullName: 'octodemo/hello-world-2',
+          private: false,
+          stargazersCount: 20_000,
+        },
+        resultCount: 200,
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
       },
-      resultCount: 200,
-      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-    },
-    {
-      ...createMockScannedRepo(),
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 3,
-        fullName: 'octodemo/hello-world-3',
-        private: true,
-        stargazersCount: 20,
+      {
+        ...createMockScannedRepo(),
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 3,
+          fullName: 'octodemo/hello-world-3',
+          private: true,
+          stargazersCount: 20,
+        },
+        resultCount: undefined,
+        analysisStatus: VariantAnalysisRepoStatus.Failed,
       },
-      resultCount: undefined,
-      analysisStatus: VariantAnalysisRepoStatus.Failed,
-    },
-    {
-      ...createMockScannedRepo(),
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 4,
-        fullName: 'octodemo/hello-world-4',
-        private: false,
-        stargazersCount: 8_000,
+      {
+        ...createMockScannedRepo(),
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 4,
+          fullName: 'octodemo/hello-world-4',
+          private: false,
+          stargazersCount: 8_000,
+        },
+        resultCount: undefined,
+        analysisStatus: VariantAnalysisRepoStatus.InProgress,
       },
-      resultCount: undefined,
-      analysisStatus: VariantAnalysisRepoStatus.InProgress,
-    },
-    {
-      ...createMockScannedRepo(),
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 5,
-        fullName: 'octodemo/hello-world-5',
-        private: false,
-        stargazersCount: 50_000,
+      {
+        ...createMockScannedRepo(),
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 5,
+          fullName: 'octodemo/hello-world-5',
+          private: false,
+          stargazersCount: 50_000,
+        },
+        resultCount: 55_323,
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
       },
-      resultCount: 55_323,
-      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-    },
-    {
-      ...createMockScannedRepo(),
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        id: 6,
-        fullName: 'octodemo/hello-world-6',
-        private: false,
-        stargazersCount: 1,
+      {
+        ...createMockScannedRepo(),
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 6,
+          fullName: 'octodemo/hello-world-6',
+          private: false,
+          stargazersCount: 1,
+        },
+        resultCount: 10_000,
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
       },
-      resultCount: 10_000,
-      analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-    },
-  ]);
+    ]
+  });
 
   const render = (props: Partial<VariantAnalysisAnalyzedReposProps> = {}) => {
     return reactRender(

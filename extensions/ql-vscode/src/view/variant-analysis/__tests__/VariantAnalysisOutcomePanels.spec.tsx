@@ -12,7 +12,7 @@ import { createMockScannedRepo } from '../../../vscode-tests/factories/remote-qu
 
 describe(VariantAnalysisOutcomePanels.name, () => {
   const defaultVariantAnalysis = {
-    ...createMockVariantAnalysis(VariantAnalysisStatus.InProgress),
+    ...createMockVariantAnalysis({ status: VariantAnalysisStatus.InProgress }),
     controllerRepo: {
       id: 1,
       fullName: 'octodemo/variant-analysis-controller',
