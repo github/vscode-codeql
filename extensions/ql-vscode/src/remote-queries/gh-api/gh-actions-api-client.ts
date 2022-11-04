@@ -9,6 +9,7 @@ import { RemoteQuery } from '../remote-query';
 import { RemoteQueryFailureIndexItem, RemoteQueryResultIndex, RemoteQuerySuccessIndexItem } from '../remote-query-result-index';
 import { getErrorMessage } from '../../pure/helpers-pure';
 import { unzipFile } from '../../pure/zip';
+import { VariantAnalysis } from '../shared/variant-analysis';
 
 export const RESULT_INDEX_ARTIFACT_NAME = 'result-index';
 
@@ -89,6 +90,18 @@ export async function cancelRemoteQuery(
   const octokit = await credentials.getOctokit();
   const { actionsWorkflowRunId, controllerRepository: { owner, name } } = remoteQuery;
   const response = await octokit.request(`POST /repos/${owner}/${name}/actions/runs/${actionsWorkflowRunId}/cancel`);
+  if (response.status >= 300) {
+    throw new Error(`Error cancelling variant analysis: ${response.status} ${response?.data?.message || ''}`);
+  }
+}
+
+export async function cancelVariantAnalysis(
+  credentials: Credentials,
+  variantAnalysis: VariantAnalysis
+): Promise<void> {
+  const octokit = await credentials.getOctokit();
+  const { actionsWorkflowRunId, controllerRepo: { fullName } } = variantAnalysis;
+  const response = await octokit.request(`POST /repos/${fullName}/actions/runs/${actionsWorkflowRunId}/cancel`);
   if (response.status >= 300) {
     throw new Error(`Error cancelling variant analysis: ${response.status} ${response?.data?.message || ''}`);
   }
