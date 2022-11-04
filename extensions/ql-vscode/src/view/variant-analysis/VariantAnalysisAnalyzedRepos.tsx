@@ -7,7 +7,7 @@ import {
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState
 } from '../../remote-queries/shared/variant-analysis';
-import { matchesSearchValue } from './filterSort';
+import { compareWithResults, matchesFilter, RepositoriesFilterSortState } from './filterSort';
 
 const Container = styled.div`
   display: flex;
@@ -21,14 +21,14 @@ export type VariantAnalysisAnalyzedReposProps = {
   repositoryStates?: VariantAnalysisScannedRepositoryState[];
   repositoryResults?: VariantAnalysisScannedRepositoryResult[];
 
-  searchValue?: string;
+  filterSortState?: RepositoriesFilterSortState;
 }
 
 export const VariantAnalysisAnalyzedRepos = ({
   variantAnalysis,
   repositoryStates,
   repositoryResults,
-  searchValue,
+  filterSortState,
 }: VariantAnalysisAnalyzedReposProps) => {
   const repositoryStateById = useMemo(() => {
     const map = new Map<number, VariantAnalysisScannedRepositoryState>();
@@ -47,14 +47,10 @@ export const VariantAnalysisAnalyzedRepos = ({
   }, [repositoryResults]);
 
   const repositories = useMemo(() => {
-    if (searchValue) {
-      return variantAnalysis.scannedRepos?.filter((repoTask) => {
-        return matchesSearchValue(repoTask.repository, searchValue);
-      });
-    }
-
-    return variantAnalysis.scannedRepos;
-  }, [searchValue, variantAnalysis.scannedRepos]);
+    return variantAnalysis.scannedRepos?.filter((repoTask) => {
+      return matchesFilter(repoTask.repository, filterSortState);
+    })?.sort(compareWithResults(filterSortState));
+  }, [filterSortState, variantAnalysis.scannedRepos]);
 
   return (
     <Container>

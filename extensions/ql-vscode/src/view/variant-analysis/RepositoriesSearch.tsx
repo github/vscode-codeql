@@ -11,9 +11,11 @@ const TextField = styled(VSCodeTextField)`
 type Props = {
   value: string;
   onChange: (value: string) => void;
+
+  className?: string;
 }
 
-export const RepositoriesSearch = ({ value, onChange }: Props) => {
+export const RepositoriesSearch = ({ value, onChange, className }: Props) => {
   const handleInput = useCallback((e: InputEvent) => {
     const target = e.target as HTMLInputElement;
 
@@ -25,6 +27,7 @@ export const RepositoriesSearch = ({ value, onChange }: Props) => {
       placeholder='Filter by repository owner/name'
       value={value}
       onInput={handleInput}
+      className={className}
     >
       <Codicon name="search" label="Search..." slot="start" />
     </TextField>

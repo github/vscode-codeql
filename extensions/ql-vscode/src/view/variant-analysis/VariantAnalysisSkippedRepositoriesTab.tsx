@@ -4,14 +4,14 @@ import styled from 'styled-components';
 import { VariantAnalysisSkippedRepositoryGroup } from '../../remote-queries/shared/variant-analysis';
 import { Alert } from '../common';
 import { RepoRow } from './RepoRow';
-import { matchesSearchValue } from './filterSort';
+import { compareRepository, matchesFilter, RepositoriesFilterSortState } from './filterSort';
 
 export type VariantAnalysisSkippedRepositoriesTabProps = {
   alertTitle: string,
   alertMessage: string,
   skippedRepositoryGroup: VariantAnalysisSkippedRepositoryGroup,
 
-  searchValue?: string,
+  filterSortState?: RepositoriesFilterSortState,
 };
 
 function getSkipReasonAlert(
@@ -43,17 +43,13 @@ export const VariantAnalysisSkippedRepositoriesTab = ({
   alertTitle,
   alertMessage,
   skippedRepositoryGroup,
-  searchValue,
+  filterSortState,
 }: VariantAnalysisSkippedRepositoriesTabProps) => {
   const repositories = useMemo(() => {
-    if (searchValue) {
-      return skippedRepositoryGroup.repositories?.filter((repo) => {
-        return matchesSearchValue(repo, searchValue);
-      });
-    }
-
-    return skippedRepositoryGroup.repositories;
-  }, [searchValue, skippedRepositoryGroup.repositories]);
+    return skippedRepositoryGroup.repositories?.filter((repo) => {
+      return matchesFilter(repo, filterSortState);
+    })?.sort(compareRepository(filterSortState));
+  }, [filterSortState, skippedRepositoryGroup.repositories]);
 
   return (
     <Container>

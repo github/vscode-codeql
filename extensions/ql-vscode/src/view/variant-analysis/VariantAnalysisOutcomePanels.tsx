@@ -11,7 +11,8 @@ import {
 import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
 import { Alert } from '../common';
 import { VariantAnalysisSkippedRepositoriesTab } from './VariantAnalysisSkippedRepositoriesTab';
-import { RepositoriesSearch } from './RepositoriesSearch';
+import { defaultFilterSortState, RepositoriesFilterSortState } from './filterSort';
+import { RepositoriesSearchSortRow } from './RepositoriesSearchSortRow';
 
 export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
@@ -44,7 +45,7 @@ export const VariantAnalysisOutcomePanels = ({
   repositoryStates,
   repositoryResults,
 }: VariantAnalysisOutcomePanelProps) => {
-  const [searchValue, setSearchValue] = useState('');
+  const [filterSortState, setFilterSortState] = useState<RepositoriesFilterSortState>(defaultFilterSortState);
 
   const noCodeqlDbRepos = variantAnalysis.skippedRepos?.noCodeqlDbRepos;
   const notFoundRepos = variantAnalysis.skippedRepos?.notFoundRepos;
@@ -74,12 +75,12 @@ export const VariantAnalysisOutcomePanels = ({
     return (
       <>
         {warnings}
-        <RepositoriesSearch value={searchValue} onChange={setSearchValue} />
+        <RepositoriesSearchSortRow value={filterSortState} onChange={setFilterSortState} />
         <VariantAnalysisAnalyzedRepos
           variantAnalysis={variantAnalysis}
           repositoryStates={repositoryStates}
           repositoryResults={repositoryResults}
-          searchValue={searchValue}
+          filterSortState={filterSortState}
         />
       </>
     );
@@ -88,7 +89,7 @@ export const VariantAnalysisOutcomePanels = ({
   return (
     <>
       {warnings}
-      <RepositoriesSearch value={searchValue} onChange={setSearchValue} />
+      <RepositoriesSearchSortRow value={filterSortState} onChange={setFilterSortState} />
       <VSCodePanels>
         <Tab>
           Analyzed
@@ -111,7 +112,7 @@ export const VariantAnalysisOutcomePanels = ({
             variantAnalysis={variantAnalysis}
             repositoryStates={repositoryStates}
             repositoryResults={repositoryResults}
-            searchValue={searchValue}
+            filterSortState={filterSortState}
           />
         </VSCodePanelView>
         {notFoundRepos?.repositoryCount &&
@@ -120,7 +121,7 @@ export const VariantAnalysisOutcomePanels = ({
               alertTitle='No access'
               alertMessage='The following repositories could not be scanned because you do not have read access.'
               skippedRepositoryGroup={notFoundRepos}
-              searchValue={searchValue}
+              filterSortState={filterSortState}
             />
           </VSCodePanelView>}
         {noCodeqlDbRepos?.repositoryCount &&
@@ -129,7 +130,7 @@ export const VariantAnalysisOutcomePanels = ({
               alertTitle='No database'
               alertMessage='The following repositories could not be scanned because they do not have an available CodeQL database.'
               skippedRepositoryGroup={noCodeqlDbRepos}
-              searchValue={searchValue}
+              filterSortState={filterSortState}
             />
           </VSCodePanelView>}
       </VSCodePanels>
