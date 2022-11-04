@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import { expect } from 'chai';
 import * as yaml from 'js-yaml';
+import { faker } from '@faker-js/faker';
 
 import { DatabaseItem, DatabaseManager } from '../../databases';
 import { CodeQLExtensionInterface } from '../../extension';
@@ -15,7 +16,6 @@ import { skipIfNoCodeQL } from '../ensureCli';
 import { tmpDir } from '../../helpers';
 import { createInitialQueryInfo } from '../../run-queries-shared';
 import { QueryRunner } from '../../queryRunner';
-
 
 /**
  * Integration tests for queries
@@ -41,7 +41,6 @@ describe('Queries', function() {
   let oldQlpackLockFile: string; // codeql v2.6.3 and earlier
   let qlFile: string;
 
-
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
 
@@ -53,17 +52,13 @@ describe('Queries', function() {
         qs = extension.qs;
         cli.quiet = true;
         ctx = extension.ctx;
-        qlpackFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack.yml`;
+        qlpackFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack-${faker.name}.yml`;
         qlpackLockFile = `${ctx.storageUri?.fsPath}/quick-queries/codeql-pack.lock.yml`;
         oldQlpackLockFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack.lock.yml`;
-        qlFile = `${ctx.storageUri?.fsPath}/quick-queries/quick-query.ql`;
+        qlFile = `${ctx.storageUri?.fsPath}/quick-queries/quick-query-${faker.name}.ql`;
       } else {
         throw new Error('Extension not initialized. Make sure cli is downloaded and installed properly.');
       }
-
-      // Ensure we are starting from a clean slate.
-      safeDel(qlFile);
-      safeDel(qlpackFile);
 
       progress = sandbox.spy();
       token = {} as CancellationToken;
