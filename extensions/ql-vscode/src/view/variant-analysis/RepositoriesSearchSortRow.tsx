@@ -15,6 +15,7 @@ const Container = styled.div`
   gap: 1em;
 
   width: 100%;
+  margin-bottom: 1em;
 `;
 
 const RepositoriesSearchColumn = styled(RepositoriesSearch)`

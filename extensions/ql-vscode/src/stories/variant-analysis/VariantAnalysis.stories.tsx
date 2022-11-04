@@ -246,3 +246,13 @@ FullExample.args = {
   repoStates,
   repoResults,
 };
+
+export const FullExampleWithoutSkipped = Template.bind({});
+FullExampleWithoutSkipped.args = {
+  variantAnalysis: {
+    ...variantAnalysis,
+    skippedRepos: {},
+  },
+  repoStates,
+  repoResults,
+};
