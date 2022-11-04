@@ -1,6 +1,6 @@
-import { logger } from '../logging';
 import { DbConfigStore } from './db-config-store';
 import { DbItem } from './db-item';
+import { createLocalTree, createRemoteTree } from './db-tree-creator';
 
 export class DbManager {
   constructor(
@@ -8,15 +8,12 @@ export class DbManager {
   ) {
   }
 
-  public loadDatabases(): void {
-    const config = this.dbConfigStore.getConfig();
-    void logger.log(`Loaded databases: ${JSON.stringify(config)}`);
-
-    // This will be fleshed out in a future change.
-  }
-
   public getDbItems(): DbItem[] {
-    // This will be fleshed out in a future change.
-    return [];
+    const config = this.dbConfigStore.getConfig();
+
+    return [
+      createRemoteTree(config),
+      createLocalTree()
+    ];
   }
 }
