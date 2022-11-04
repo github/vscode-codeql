@@ -8,11 +8,14 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 
 import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
-import { createMockVariantAnalysisRepoTask } from '../../factories/remote-queries/gh-api/variant-analysis-repo-task';
 import { CodeQLCliServer } from '../../../cli';
 import { storagePath } from '../global.helper';
 import { faker } from '@faker-js/faker';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
+import {
+  createMockVariantAnalysisRepositoryTask
+} from '../../factories/remote-queries/shared/variant-analysis-repo-tasks';
+import { VariantAnalysisRepositoryTask } from '../../../remote-queries/shared/variant-analysis';
 
 describe(VariantAnalysisResultsManager.name, function() {
   this.timeout(10000);
@@ -51,15 +54,15 @@ describe(VariantAnalysisResultsManager.name, function() {
         request: getOctokitStub
       })
     } as unknown as Credentials;
-    let dummyRepoTask = createMockVariantAnalysisRepoTask();
+    let dummyRepoTask: VariantAnalysisRepositoryTask;
     let variantAnalysisStoragePath: string;
     let repoTaskStorageDirectory: string;
 
     beforeEach(async () => {
-      dummyRepoTask = createMockVariantAnalysisRepoTask();
+      dummyRepoTask = createMockVariantAnalysisRepositoryTask();
 
       variantAnalysisStoragePath = path.join(storagePath, variantAnalysisId.toString());
-      repoTaskStorageDirectory = variantAnalysisResultsManager.getRepoStorageDirectory(variantAnalysisStoragePath, dummyRepoTask.repository.full_name);
+      repoTaskStorageDirectory = variantAnalysisResultsManager.getRepoStorageDirectory(variantAnalysisStoragePath, dummyRepoTask.repository.fullName);
     });
 
     afterEach(async () => {
@@ -70,14 +73,14 @@ describe(VariantAnalysisResultsManager.name, function() {
 
     describe('isVariantAnalysisRepoDownloaded', () => {
       it('should return false when no results are downloaded', async () => {
-        expect(await variantAnalysisResultsManager.isVariantAnalysisRepoDownloaded(variantAnalysisStoragePath, dummyRepoTask.repository.full_name)).to.equal(false);
+        expect(await variantAnalysisResultsManager.isVariantAnalysisRepoDownloaded(variantAnalysisStoragePath, dummyRepoTask.repository.fullName)).to.equal(false);
       });
     });
 
     describe('when the artifact_url is missing', async () => {
       it('should not try to download the result', async () => {
-        const dummyRepoTask = createMockVariantAnalysisRepoTask();
-        delete dummyRepoTask.artifact_url;
+        const dummyRepoTask = createMockVariantAnalysisRepositoryTask();
+        delete dummyRepoTask.artifactUrl;
 
         try {
           await variantAnalysisResultsManager.download(
@@ -103,7 +106,7 @@ describe(VariantAnalysisResultsManager.name, function() {
 
         getVariantAnalysisRepoResultStub = sandbox
           .stub(ghApiClient, 'getVariantAnalysisRepoResult')
-          .withArgs(mockCredentials, dummyRepoTask.artifact_url as string)
+          .withArgs(mockCredentials, dummyRepoTask.artifactUrl as string)
           .resolves(arrayBuffer);
       });
 
@@ -149,7 +152,7 @@ describe(VariantAnalysisResultsManager.name, function() {
             variantAnalysisStoragePath
           );
 
-          expect(await variantAnalysisResultsManager.isVariantAnalysisRepoDownloaded(variantAnalysisStoragePath, dummyRepoTask.repository.full_name)).to.equal(true);
+          expect(await variantAnalysisResultsManager.isVariantAnalysisRepoDownloaded(variantAnalysisStoragePath, dummyRepoTask.repository.fullName)).to.equal(true);
         });
       });
     });

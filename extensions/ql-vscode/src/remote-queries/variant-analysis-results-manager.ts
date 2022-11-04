@@ -9,9 +9,12 @@ import { sarifParser } from '../sarif-parser';
 import { extractAnalysisAlerts } from './sarif-processing';
 import { CodeQLCliServer } from '../cli';
 import { extractRawResults } from './bqrs-processing';
-import { VariantAnalysis, VariantAnalysisScannedRepositoryResult } from './shared/variant-analysis';
+import {
+  VariantAnalysis,
+  VariantAnalysisRepositoryTask,
+  VariantAnalysisScannedRepositoryResult
+} from './shared/variant-analysis';
 import { DisposableObject, DisposeHandler } from '../pure/disposable-object';
-import { VariantAnalysisRepoTask } from './gh-api/variant-analysis';
 import * as ghApiClient from './gh-api/gh-api-client';
 import { EventEmitter } from 'vscode';
 import { unzipFile } from '../pure/zip';
@@ -22,7 +25,7 @@ const createCacheKey = (variantAnalysisId: number, repositoryFullName: string): 
 
 export type ResultDownloadedEvent = {
   variantAnalysisId: number;
-  repoTask: VariantAnalysisRepoTask;
+  repoTask: VariantAnalysisRepositoryTask;
 }
 
 export class VariantAnalysisResultsManager extends DisposableObject {
@@ -48,18 +51,18 @@ export class VariantAnalysisResultsManager extends DisposableObject {
   public async download(
     credentials: Credentials,
     variantAnalysisId: number,
-    repoTask: VariantAnalysisRepoTask,
+    repoTask: VariantAnalysisRepositoryTask,
     variantAnalysisStoragePath: string,
   ): Promise<void> {
-    if (!repoTask.artifact_url) {
+    if (!repoTask.artifactUrl) {
       throw new Error('Missing artifact URL');
     }
 
-    const resultDirectory = this.getRepoStorageDirectory(variantAnalysisStoragePath, repoTask.repository.full_name);
+    const resultDirectory = this.getRepoStorageDirectory(variantAnalysisStoragePath, repoTask.repository.fullName);
 
     const result = await ghApiClient.getVariantAnalysisRepoResult(
       credentials,
-      repoTask.artifact_url
+      repoTask.artifactUrl
     );
 
     if (!(await fs.pathExists(resultDirectory))) {
@@ -112,13 +115,13 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
     const storageDirectory = this.getRepoStorageDirectory(variantAnalysisStoragePath, repositoryFullName);
 
-    const repoTask: VariantAnalysisRepoTask = await fs.readJson(path.join(storageDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME));
+    const repoTask: VariantAnalysisRepositoryTask = await fs.readJson(path.join(storageDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME));
 
-    if (!repoTask.database_commit_sha || !repoTask.source_location_prefix) {
+    if (!repoTask.databaseCommitSha || !repoTask.sourceLocationPrefix) {
       throw new Error('Missing database commit SHA');
     }
 
-    const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(repoTask.repository.full_name, repoTask.database_commit_sha);
+    const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(repoTask.repository.fullName, repoTask.databaseCommitSha);
 
     const resultsDirectory = path.join(storageDirectory, VariantAnalysisResultsManager.RESULTS_DIRECTORY);
     const sarifPath = path.join(resultsDirectory, 'results.sarif');
@@ -134,7 +137,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     }
 
     if (await fs.pathExists(bqrsPath)) {
-      const rawResults = await this.readBqrsResults(bqrsPath, fileLinkPrefix, repoTask.source_location_prefix);
+      const rawResults = await this.readBqrsResults(bqrsPath, fileLinkPrefix, repoTask.sourceLocationPrefix);
 
       return {
         variantAnalysisId,
