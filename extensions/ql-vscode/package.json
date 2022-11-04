@@ -84,6 +84,12 @@
         "editor.wordBasedSuggestions": false
       }
     },
+    "jsonValidation": [
+      {
+        "fileMatch": "workspace-databases.json",
+        "url": "./workspace-databases-schema.json"
+      }
+    ],
     "languages": [
       {
         "id": "ql",

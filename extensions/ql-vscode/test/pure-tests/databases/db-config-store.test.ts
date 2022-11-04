@@ -6,7 +6,6 @@ import { expect } from 'chai';
 describe('db config store', async () => {
   const tempWorkspaceStoragePath = path.join(__dirname, 'test-workspace');
   const testDataStoragePath = path.join(__dirname, 'data');
-  const extensionPath = path.join(__dirname, 'data');
 
   beforeEach(async () => {
     await fs.ensureDir(tempWorkspaceStoragePath);
@@ -19,7 +18,7 @@ describe('db config store', async () => {
   it('should create a new config if one does not exist', async () => {
     const configPath = path.join(tempWorkspaceStoragePath, 'workspace-databases.json');
 
-    const configStore = new DbConfigStore(tempWorkspaceStoragePath, extensionPath);
+    const configStore = new DbConfigStore(tempWorkspaceStoragePath);
     await configStore.initialize();
 
     expect(await fs.pathExists(configPath)).to.be.true;
@@ -30,7 +29,7 @@ describe('db config store', async () => {
   });
 
   it('should load an existing config', async () => {
-    const configStore = new DbConfigStore(testDataStoragePath, extensionPath);
+    const configStore = new DbConfigStore(testDataStoragePath);
     await configStore.initialize();
 
     const config = configStore.getConfig();
@@ -45,7 +44,7 @@ describe('db config store', async () => {
   });
 
   it('should not allow modification of the config', async () => {
-    const configStore = new DbConfigStore(testDataStoragePath, extensionPath);
+    const configStore = new DbConfigStore(testDataStoragePath);
     await configStore.initialize();
 
     const config = configStore.getConfig();

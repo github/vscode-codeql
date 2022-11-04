@@ -10,7 +10,7 @@ export class DbConfigStore extends DisposableObject {
   private config: DbConfig;
   private configWatcher: chokidar.FSWatcher | undefined;
 
-  public constructor(workspaceStoragePath: string, private readonly extensionPath: string) {
+  public constructor(workspaceStoragePath: string) {
     super();
 
     this.configPath = path.join(workspaceStoragePath, 'workspace-databases.json');
@@ -35,12 +35,7 @@ export class DbConfigStore extends DisposableObject {
 
   private async loadConfig(): Promise<void> {
     if (!await fs.pathExists(this.configPath)) {
-      const schemaPath = path.resolve(this.extensionPath, 'workspace-databases-schema.json');
-      const json = {
-        '$schema': `file://${schemaPath}`,
-        ...this.createEmptyConfig()
-      };
-      await fs.writeJSON(this.configPath, json, { spaces: 2 });
+      await fs.writeJSON(this.configPath, this.createEmptyConfig(), { spaces: 2 });
     }
 
     await this.readConfig();
