@@ -21,7 +21,7 @@ export function createMockVariantAnalysis({
   skippedRepos?: VariantAnalysisSkippedRepositories,
   executionStartTime?: number | undefined
 }): VariantAnalysis {
-  const variantAnalysis: VariantAnalysis = {
+  return {
     id: faker.datatype.number(),
     controllerRepo: {
       ...createMockRepository(),
@@ -46,6 +46,4 @@ export function createMockVariantAnalysis({
     scannedRepos: scannedRepos,
     skippedRepos: skippedRepos
   };
-
-  return variantAnalysis;
 }
