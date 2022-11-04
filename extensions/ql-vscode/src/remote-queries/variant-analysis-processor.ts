@@ -52,13 +52,17 @@ export function processUpdatedVariantAnalysis(
 
   const variantAnalysis: VariantAnalysis = {
     id: response.id,
-    controllerRepoId: response.controller_repo.id,
+    controllerRepo: {
+      id: response.controller_repo.id,
+      fullName: response.controller_repo.full_name,
+      private: response.controller_repo.private,
+    },
     query: previousVariantAnalysis.query,
     databases: previousVariantAnalysis.databases,
     executionStartTime: previousVariantAnalysis.executionStartTime,
     createdAt: response.created_at,
     updatedAt: response.updated_at,
-    status: processApiStatus(response.status),
+    status: processApiStatus(response.status, response.failure_reason),
     completedAt: response.completed_at,
     actionsWorkflowRunId: response.actions_workflow_run_id,
     scannedRepos: scannedRepos,
@@ -81,6 +85,8 @@ function processScannedRepositories(
         id: scannedRepo.repository.id,
         fullName: scannedRepo.repository.full_name,
         private: scannedRepo.repository.private,
+        stargazersCount: scannedRepo.repository.stargazers_count,
+        updatedAt: scannedRepo.repository.updated_at,
       },
       analysisStatus: processApiRepoStatus(scannedRepo.analysis_status),
       resultCount: scannedRepo.result_count,
@@ -96,7 +102,7 @@ function processSkippedRepositories(
 
   return {
     accessMismatchRepos: processRepoGroup(skippedRepos.access_mismatch_repos),
-    notFoundRepos: processNotFoundRepoGroup(skippedRepos.not_found_repo_nwos),
+    notFoundRepos: processNotFoundRepoGroup(skippedRepos.not_found_repos),
     noCodeqlDbRepos: processRepoGroup(skippedRepos.no_codeql_db_repos),
     overLimitRepos: processRepoGroup(skippedRepos.over_limit_repos)
   };
@@ -110,7 +116,10 @@ function processRepoGroup(repoGroup: ApiVariantAnalysisSkippedRepositoryGroup | 
   const repos = repoGroup.repositories.map(repo => {
     return {
       id: repo.id,
-      fullName: repo.full_name
+      fullName: repo.full_name,
+      private: repo.private,
+      stargazersCount: repo.stargazers_count,
+      updatedAt: repo.updated_at
     };
   });
 
@@ -154,12 +163,13 @@ function processApiRepoStatus(analysisStatus: ApiVariantAnalysisRepoStatus): Var
   }
 }
 
-function processApiStatus(status: ApiVariantAnalysisStatus): VariantAnalysisStatus {
-  switch (status) {
-    case 'in_progress':
-      return VariantAnalysisStatus.InProgress;
-    case 'completed':
-      return VariantAnalysisStatus.Succeeded;
+function processApiStatus(status: ApiVariantAnalysisStatus, failureReason: string | undefined): VariantAnalysisStatus {
+  if (status === 'in_progress') {
+    return VariantAnalysisStatus.InProgress;
+  } else if (failureReason !== undefined) {
+    return VariantAnalysisStatus.Failed;
+  } else {
+    return VariantAnalysisStatus.Succeeded;
   }
 }
 

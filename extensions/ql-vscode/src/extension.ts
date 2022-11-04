@@ -118,6 +118,7 @@ import { VariantAnalysisManager } from './remote-queries/variant-analysis-manage
 import { createVariantAnalysisContentProvider } from './remote-queries/variant-analysis-content-provider';
 import { VSCodeMockGitHubApiServer } from './mocks/vscode-mock-gh-api-server';
 import { VariantAnalysisResultsManager } from './remote-queries/variant-analysis-results-manager';
+import { initializeDbModule } from './databases/db-module';
 
 /**
  * extension.ts
@@ -524,9 +525,6 @@ async function activateWithInstalledDistribution(
   const logScannerService = new LogScannerService(qhm);
   ctx.subscriptions.push(logScannerService);
   ctx.subscriptions.push(logScannerService.scanners.registerLogScannerProvider(new JoinOrderScannerProvider(() => joinOrderWarningThreshold())));
-
-  void logger.log('Reading query history');
-  await qhm.readQueryHistory();
 
   void logger.log('Initializing compare view.');
   const compareView = new CompareView(
@@ -1228,6 +1226,12 @@ async function activateWithInstalledDistribution(
   );
 
   await commands.executeCommand('codeQLDatabases.removeOrphanedDatabases');
+
+  void logger.log('Reading query history');
+  await qhm.readQueryHistory();
+
+  const dbModule = await initializeDbModule(ctx);
+  ctx.subscriptions.push(dbModule);
 
   void logger.log('Successfully finished extension initialization.');
 

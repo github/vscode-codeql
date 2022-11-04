@@ -15,7 +15,7 @@ import { AlertIcon, CodeSquareIcon, FileCodeIcon, RepoIcon, TerminalIcon } from 
 import AnalysisAlertResult from './AnalysisAlertResult';
 import RawResultsTable from './RawResultsTable';
 import RepositoriesSearch from './RepositoriesSearch';
-import StarCount from './StarCount';
+import StarCount from '../common/StarCount';
 import SortRepoFilter, { Sort, sorter } from './SortRepoFilter';
 import LastUpdated from './LastUpdated';
 import RepoListCopyButton from './RepoListCopyButton';

@@ -4,9 +4,11 @@ import type { AnyFramework, PartialStoryFn as StoryFunction, StoryContext } from
 import { VSCodeTheme } from './theme';
 
 const themeFiles: { [key in VSCodeTheme]: string } = {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   [VSCodeTheme.Dark]: require('!file-loader?modules!../../src/stories/vscode-theme-dark.css').default,
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   [VSCodeTheme.Light]: require('!file-loader?modules!../../src/stories/vscode-theme-light.css').default,
-}
+};
 
 export const withTheme = (
   StoryFn: StoryFunction<AnyFramework>,
@@ -18,7 +20,7 @@ export const withTheme = (
     const styleSelectorId =
       context.viewMode === 'docs'
         ? `addon-vscode-theme-docs-${context.id}`
-        : `addon-vscode-theme-theme`;
+        : 'addon-vscode-theme-theme';
 
     const theme = Object.values(VSCodeTheme).includes(vscodeTheme) ? vscodeTheme as VSCodeTheme : VSCodeTheme.Dark;
 

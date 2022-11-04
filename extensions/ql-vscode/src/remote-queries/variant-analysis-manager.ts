@@ -11,7 +11,9 @@ import {
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
 } from './gh-api/variant-analysis';
 import {
+  isVariantAnalysisComplete,
   VariantAnalysis, VariantAnalysisQueryLanguage,
+  VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState
@@ -24,9 +26,7 @@ import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 import PQueue from 'p-queue';
 import { createTimestampFile, showAndLogErrorMessage } from '../helpers';
-import { QueryStatus } from '../query-status';
 import * as fs from 'fs-extra';
-
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private static readonly REPO_STATES_FILENAME = 'repo_states.json';
@@ -60,7 +60,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
   }
 
-  public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis, status: QueryStatus) {
+  public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis) {
     if (!(await this.variantAnalysisRecordExists(variantAnalysis.id))) {
       // In this case, the variant analysis was deleted from disk, most likely because
       // it was purged by another workspace.
@@ -76,18 +76,24 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
         this.repoStates.set(variantAnalysis.id, {});
       }
 
-      if (status === QueryStatus.InProgress) {
-        // In this case, last time we checked, the query was still in progress.
-        // We need to setup the monitor to check for completion.
+      if (!await isVariantAnalysisComplete(variantAnalysis, this.makeResultDownloadChecker(variantAnalysis))) {
         void commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
       }
     }
+  }
+
+  private makeResultDownloadChecker(variantAnalysis: VariantAnalysis): (repo: VariantAnalysisScannedRepository) => Promise<boolean> {
+    const storageLocation = this.getVariantAnalysisStorageLocation(variantAnalysis.id);
+    return (repo) => this.variantAnalysisResultsManager.isVariantAnalysisRepoDownloaded(storageLocation, repo.repository.fullName);
   }
 
   public async removeVariantAnalysis(variantAnalysis: VariantAnalysis) {
     this.variantAnalysisResultsManager.removeAnalysisResults(variantAnalysis);
     await this.removeStorageDirectory(variantAnalysis.id);
     this.variantAnalyses.delete(variantAnalysis.id);
+
+    // This will automatically unregister the view
+    this.views.get(variantAnalysis.id)?.dispose();
   }
 
   private async removeStorageDirectory(variantAnalysisId: number) {
@@ -101,7 +107,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     }
     if (!this.views.has(variantAnalysisId)) {
       // The view will register itself with the manager, so we don't need to do anything here.
-      this.push(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
+      this.track(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
     }
 
     const variantAnalysisView = this.views.get(variantAnalysisId)!;
@@ -119,6 +125,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
   public unregisterView(view: VariantAnalysisView): void {
     this.views.delete(view.variantAnalysisId);
+    this.disposeAndStopTracking(view);
   }
 
   public getView(variantAnalysisId: number): VariantAnalysisView | undefined {

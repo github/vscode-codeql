@@ -30,6 +30,12 @@ const openQueryText = () => {
   });
 };
 
+const openLogs = () => {
+  vscode.postMessage({
+    t: 'openLogs',
+  });
+};
+
 export function VariantAnalysis({
   variantAnalysis: initialVariantAnalysis,
   repoStates: initialRepoStates = [],
@@ -85,7 +91,7 @@ export function VariantAnalysis({
         onStopQueryClick={() => console.log('Stop query')}
         onCopyRepositoryListClick={() => console.log('Copy repository list')}
         onExportResultsClick={() => console.log('Export results')}
-        onViewLogsClick={() => console.log('View logs')}
+        onViewLogsClick={openLogs}
       />
       <VariantAnalysisOutcomePanels
         variantAnalysis={variantAnalysis}

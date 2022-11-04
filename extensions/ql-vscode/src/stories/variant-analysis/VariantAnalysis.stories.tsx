@@ -5,13 +5,14 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { VariantAnalysis as VariantAnalysisComponent } from '../../view/variant-analysis/VariantAnalysis';
 import {
   VariantAnalysis as VariantAnalysisDomainModel,
-  VariantAnalysisQueryLanguage,
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisStatus
 } from '../../remote-queries/shared/variant-analysis';
+import { createMockVariantAnalysis } from '../../vscode-tests/factories/remote-queries/shared/variant-analysis';
+import { createMockRepositoryWithMetadata } from '../../vscode-tests/factories/remote-queries/shared/repository';
 
 export default {
   title: 'Variant Analysis/Variant Analysis',
@@ -23,19 +24,19 @@ const Template: ComponentStory<typeof VariantAnalysisComponent> = (args) => (
 );
 
 const variantAnalysis: VariantAnalysisDomainModel = {
-  id: 1,
-  controllerRepoId: 1,
-  actionsWorkflowRunId: 789263,
-  query: {
-    name: 'Example query',
-    filePath: 'example.ql',
-    language: VariantAnalysisQueryLanguage.Javascript,
+  ...createMockVariantAnalysis({ status: VariantAnalysisStatus.InProgress }),
+  controllerRepo: {
+    id: 1,
+    fullName: 'octodemo/variant-analysis-controller',
+    private: false,
   },
+  actionsWorkflowRunId: 789263,
   databases: {},
   status: VariantAnalysisStatus.InProgress,
   scannedRepos: [
     {
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 1,
         fullName: 'octodemo/hello-world-1',
         private: false,
@@ -44,6 +45,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
     },
     {
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 2,
         fullName: 'octodemo/hello-world-2',
         private: false,
@@ -52,6 +54,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
     },
     {
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 3,
         fullName: 'octodemo/hello-world-3',
         private: false,
@@ -60,6 +63,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
     },
     {
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 4,
         fullName: 'octodemo/hello-world-4',
         private: false,
@@ -68,6 +72,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
     },
     {
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 5,
         fullName: 'octodemo/hello-world-5',
         private: false,
@@ -76,6 +81,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
     },
     {
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 6,
         fullName: 'octodemo/hello-world-6',
         private: false,
@@ -84,6 +90,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
     },
     {
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 7,
         fullName: 'octodemo/hello-world-7',
         private: false,
@@ -92,6 +99,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
     },
     {
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 8,
         fullName: 'octodemo/hello-world-8',
         private: false,
@@ -100,6 +108,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
     },
     {
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 9,
         fullName: 'octodemo/hello-world-9',
         private: false,
@@ -108,6 +117,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
     },
     {
       repository: {
+        ...createMockRepositoryWithMetadata(),
         id: 10,
         fullName: 'octodemo/hello-world-10',
         private: false,
@@ -131,18 +141,22 @@ const variantAnalysis: VariantAnalysisDomainModel = {
       repositoryCount: 4,
       repositories: [
         {
+          ...createMockRepositoryWithMetadata(),
           id: 100,
           fullName: 'octodemo/no-db-1'
         },
         {
+          ...createMockRepositoryWithMetadata(),
           id: 101,
           fullName: 'octodemo/no-db-2'
         },
         {
+          ...createMockRepositoryWithMetadata(),
           id: 102,
           fullName: 'octodemo/no-db-3'
         },
         {
+          ...createMockRepositoryWithMetadata(),
           id: 103,
           fullName: 'octodemo/no-db-4'
         }
@@ -152,6 +166,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
       repositoryCount: 1,
       repositories: [
         {
+          ...createMockRepositoryWithMetadata(),
           id: 201,
           fullName: 'octodemo/over-limit-1'
         }
@@ -161,6 +176,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
       repositoryCount: 1,
       repositories: [
         {
+          ...createMockRepositoryWithMetadata(),
           id: 205,
           fullName: 'octodemo/private'
         }

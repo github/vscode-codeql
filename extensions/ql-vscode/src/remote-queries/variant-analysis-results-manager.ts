@@ -146,7 +146,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     throw new Error('Missing results file');
   }
 
-  private async isVariantAnalysisRepoDownloaded(
+  public async isVariantAnalysisRepoDownloaded(
     variantAnalysisStoragePath: string,
     repositoryFullName: string,
   ): Promise<boolean> {

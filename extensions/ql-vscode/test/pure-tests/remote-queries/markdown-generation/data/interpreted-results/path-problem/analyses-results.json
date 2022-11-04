@@ -612,6 +612,74 @@
                 },
                 "highlightedRegion": {
                   "startLine": 259,
+                  "startColumn": 42,
+                  "endLine": 259,
+                  "endColumn": 52
+                }
+              },
+              {
+                "fileLink": {
+                  "fileLinkPrefix": "https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec",
+                  "filePath": "npm-packages/meteor-installer/install.js"
+                },
+                "codeSnippet": {
+                  "startLine": 257,
+                  "endLine": 261,
+                  "text": "  if (isWindows()) {\n    //set for the current session and beyond\n    child_process.execSync(`setx path \"${meteorPath}/;%path%`);\n    return;\n  }\n"
+                },
+                "highlightedRegion": {
+                  "startLine": 259,
+                  "startColumn": 42,
+                  "endLine": 259,
+                  "endColumn": 52
+                }
+              },
+              {
+                "fileLink": {
+                  "fileLinkPrefix": "https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec",
+                  "filePath": "npm-packages/meteor-installer/install.js"
+                },
+                "codeSnippet": {
+                  "startLine": 257,
+                  "endLine": 261,
+                  "text": "  if (isWindows()) {\n    //set for the current session and beyond\n    child_process.execSync(`setx path \"${meteorPath}/;%path%`);\n    return;\n  }\n"
+                },
+                "highlightedRegion": {
+                  "startLine": 259,
+                  "startColumn": 42,
+                  "endLine": 259,
+                  "endColumn": 52
+                }
+              },
+              {
+                "fileLink": {
+                  "fileLinkPrefix": "https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec",
+                  "filePath": "npm-packages/meteor-installer/install.js"
+                },
+                "codeSnippet": {
+                  "startLine": 257,
+                  "endLine": 261,
+                  "text": "  if (isWindows()) {\n    //set for the current session and beyond\n    child_process.execSync(`setx path \"${meteorPath}/;%path%`);\n    return;\n  }\n"
+                },
+                "highlightedRegion": {
+                  "startLine": 259,
+                  "startColumn": 42,
+                  "endLine": 259,
+                  "endColumn": 52
+                }
+              },
+              {
+                "fileLink": {
+                  "fileLinkPrefix": "https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec",
+                  "filePath": "npm-packages/meteor-installer/install.js"
+                },
+                "codeSnippet": {
+                  "startLine": 257,
+                  "endLine": 261,
+                  "text": "  if (isWindows()) {\n    //set for the current session and beyond\n    child_process.execSync(`setx path \"${meteorPath}/;%path%`);\n    return;\n  }\n"
+                },
+                "highlightedRegion": {
+                  "startLine": 259,
                   "startColumn": 28,
                   "endLine": 259,
                   "endColumn": 62

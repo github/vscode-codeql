@@ -332,27 +332,6 @@ function getWorkflowError(conclusion: string | null): string {
   return `Unexpected variant analysis execution conclusion: ${conclusion}`;
 }
 
-/**
- * Creates a gist with the given description and files.
- * Returns the URL of the created gist.
- */
-export async function createGist(
-  credentials: Credentials,
-  description: string,
-  files: { [key: string]: { content: string } }
-): Promise<string | undefined> {
-  const octokit = await credentials.getOctokit();
-  const response = await octokit.request('POST /gists', {
-    description,
-    files,
-    public: false,
-  });
-  if (response.status >= 300) {
-    throw new Error(`Error exporting variant analysis results: ${response.status} ${response?.data || ''}`);
-  }
-  return response.data.html_url;
-}
-
 const repositoriesMetadataQuery = `query Stars($repos: String!, $pageSize: Int!, $cursor: String) {
   search(
     query: $repos

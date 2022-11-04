@@ -13,6 +13,7 @@ import { slurpQueryHistory, splatQueryHistory } from '../../query-serialization'
 import { formatLegacyMessage, QueryInProgress } from '../../legacy-query-server/run-queries';
 import { EvaluationResult, QueryResultType } from '../../pure/legacy-messages';
 import Sinon = require('sinon');
+import { sleep } from '../../pure/time';
 
 describe('query-results', () => {
   let disposeSpy: sinon.SinonSpy;
@@ -453,10 +454,6 @@ describe('query-results', () => {
     } catch (e) {
       // ignore
     }
-  }
-
-  async function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   function createMockQueryWithResults(

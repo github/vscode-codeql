@@ -8,15 +8,27 @@ import {
 } from '../../../../remote-queries/shared/variant-analysis';
 import { createMockScannedRepos } from './scanned-repositories';
 import { createMockSkippedRepos } from './skipped-repositories';
+import { createMockRepository } from './repository';
 
-export function createMockVariantAnalysis(
-  status: VariantAnalysisStatus = VariantAnalysisStatus.InProgress,
-  scannedRepos: VariantAnalysisScannedRepository[] = createMockScannedRepos(),
-  skippedRepos: VariantAnalysisSkippedRepositories = createMockSkippedRepos()
-): VariantAnalysis {
+export function createMockVariantAnalysis({
+  status = VariantAnalysisStatus.InProgress,
+  scannedRepos = createMockScannedRepos(),
+  skippedRepos = createMockSkippedRepos(),
+  executionStartTime = faker.datatype.number()
+}: {
+  status?: VariantAnalysisStatus,
+  scannedRepos?: VariantAnalysisScannedRepository[],
+  skippedRepos?: VariantAnalysisSkippedRepositories,
+  executionStartTime?: number | undefined
+}): VariantAnalysis {
   const variantAnalysis: VariantAnalysis = {
     id: faker.datatype.number(),
-    controllerRepoId: faker.datatype.number(),
+    controllerRepo: {
+      ...createMockRepository(),
+      fullName: 'github/' + faker.datatype.hexadecimal({
+        prefix: '',
+      }),
+    },
     query: {
       name: 'a-query-name',
       filePath: 'a-query-file-path',
@@ -26,7 +38,7 @@ export function createMockVariantAnalysis(
     databases: {
       repositories: ['1', '2', '3'],
     },
-    executionStartTime: faker.datatype.number(),
+    executionStartTime,
     createdAt: faker.date.recent().toISOString(),
     updatedAt: faker.date.recent().toISOString(),
     status: status,

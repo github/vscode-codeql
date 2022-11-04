@@ -5,11 +5,12 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { VariantAnalysisContainer } from '../../view/variant-analysis/VariantAnalysisContainer';
 import { VariantAnalysisAnalyzedRepos } from '../../view/variant-analysis/VariantAnalysisAnalyzedRepos';
 import {
-  VariantAnalysisQueryLanguage,
   VariantAnalysisRepoStatus,
   VariantAnalysisStatus
 } from '../../remote-queries/shared/variant-analysis';
 import { AnalysisAlert } from '../../remote-queries/shared/analysis-result';
+import { createMockVariantAnalysis } from '../../vscode-tests/factories/remote-queries/shared/variant-analysis';
+import { createMockRepositoryWithMetadata } from '../../vscode-tests/factories/remote-queries/shared/repository';
 
 import analysesResults from '../remote-queries/data/analysesResultsMessage.json';
 
@@ -35,19 +36,12 @@ const interpretedResultsForRepo = (nwo: string): AnalysisAlert[] | undefined => 
 
 export const Example = Template.bind({});
 Example.args = {
-  variantAnalysis: {
-    id: 1,
-    controllerRepoId: 1,
-    query: {
-      name: 'Query name',
-      filePath: 'example.ql',
-      language: VariantAnalysisQueryLanguage.Javascript,
-    },
-    databases: {},
+  variantAnalysis: createMockVariantAnalysis({
     status: VariantAnalysisStatus.InProgress,
     scannedRepos: [
       {
         repository: {
+          ...createMockRepositoryWithMetadata(),
           id: 63537249,
           fullName: 'facebook/create-react-app',
           private: false,
@@ -56,6 +50,7 @@ Example.args = {
       },
       {
         repository: {
+          ...createMockRepositoryWithMetadata(),
           id: 167174,
           fullName: 'jquery/jquery',
           private: false,
@@ -65,6 +60,7 @@ Example.args = {
       },
       {
         repository: {
+          ...createMockRepositoryWithMetadata(),
           id: 237159,
           fullName: 'expressjs/express',
           private: false,
@@ -74,6 +70,7 @@ Example.args = {
       },
       {
         repository: {
+          ...createMockRepositoryWithMetadata(),
           id: 15062869,
           fullName: 'facebook/jest',
           private: false,
@@ -82,6 +79,7 @@ Example.args = {
       },
       {
         repository: {
+          ...createMockRepositoryWithMetadata(),
           id: 24195339,
           fullName: 'angular/angular',
           private: false,
@@ -90,6 +88,7 @@ Example.args = {
       },
       {
         repository: {
+          ...createMockRepositoryWithMetadata(),
           id: 24560307,
           fullName: 'babel/babel',
           private: false,
@@ -97,7 +96,7 @@ Example.args = {
         analysisStatus: VariantAnalysisRepoStatus.Pending,
       },
     ]
-  },
+  }),
   repositoryResults: [
     {
       variantAnalysisId: 1,

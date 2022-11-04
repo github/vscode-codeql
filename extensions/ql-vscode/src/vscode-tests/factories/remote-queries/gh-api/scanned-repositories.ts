@@ -3,6 +3,7 @@ import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepository
 } from '../../../../remote-queries/gh-api/variant-analysis';
+import { createMockRepositoryWithMetadata } from './repository';
 
 export function createMockScannedRepo(
   name: string,
@@ -11,7 +12,7 @@ export function createMockScannedRepo(
 ): VariantAnalysisScannedRepository {
   return {
     repository: {
-      id: faker.datatype.number(),
+      ...createMockRepositoryWithMetadata(),
       name: name,
       full_name: 'github/' + name,
       private: isPrivate,

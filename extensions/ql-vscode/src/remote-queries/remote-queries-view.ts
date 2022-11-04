@@ -49,7 +49,8 @@ export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, F
   }
 
   async showResults(query: RemoteQuery, queryResult: RemoteQueryResult) {
-    this.getPanel().reveal(undefined, true);
+    const panel = await this.getPanel();
+    panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
     const model = this.buildViewModel(query, queryResult);

@@ -14,7 +14,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 
 if (process.argv.length !== 3) {
-  console.error('Expected 1 argument - the scenario name')
+  console.error('Expected 1 argument - the scenario name');
 }
 
 const scenarioName = process.argv[2];
@@ -39,7 +39,7 @@ async function fixScenarioFiles() {
   });
 
   let index = 0;
-  for (let file of orderedFiles) {
+  for (const file of orderedFiles) {
     const ext = path.extname(file);
     if (ext === '.json') {
       const fileName = path.basename(file, ext);
@@ -66,7 +66,7 @@ async function fixScenarioFiles() {
           await fs.writeJSON(newFilePath, json);
         }
       }
-      
+
       index++;
     }
   }

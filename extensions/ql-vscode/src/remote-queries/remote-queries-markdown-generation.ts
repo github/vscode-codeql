@@ -205,6 +205,7 @@ function generateMarkdownForPathResults(
     const stepCount = codeFlow.threadFlows.length;
     const title = `Path with ${stepCount} steps`;
     for (let i = 0; i < stepCount; i++) {
+      const listNumber = i + 1;
       const threadFlow = codeFlow.threadFlows[i];
       const link = createMarkdownRemoteFileRef(
         threadFlow.fileLink,
@@ -217,8 +218,9 @@ function generateMarkdownForPathResults(
         threadFlow.highlightedRegion
       );
       // Indent the snippet to fit with the numbered list.
-      const codeSnippetIndented = codeSnippet.map((line) => `    ${line}`);
-      pathLines.push(`${i + 1}. ${link}`, ...codeSnippetIndented);
+      // The indentation is "n + 2" where the list number is an n-digit number.
+      const codeSnippetIndented = codeSnippet.map(line => ' '.repeat(listNumber.toString().length + 2) + line);
+      pathLines.push(`${listNumber}. ${link}`, ...codeSnippetIndented);
     }
     lines.push(
       ...buildExpandableMarkdownSection(title, pathLines)

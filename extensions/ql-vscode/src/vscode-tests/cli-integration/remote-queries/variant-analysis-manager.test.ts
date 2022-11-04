@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { CancellationTokenSource, extensions } from 'vscode';
+import { CancellationTokenSource, commands, extensions } from 'vscode';
 import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
@@ -26,9 +26,10 @@ import {
   VariantAnalysisScannedRepositoryDownloadStatus
 } from '../../../remote-queries/shared/variant-analysis';
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
-import { QueryStatus } from '../../../query-status';
+import * as VariantAnalysisModule from '../../../remote-queries/shared/variant-analysis';
+import { createTimestampFile } from '../../../helpers';
 
-describe.only('Variant Analysis Manager', async function() {
+describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
   let pathExistsStub: sinon.SinonStub;
   let readJsonStub: sinon.SinonStub;
@@ -36,7 +37,7 @@ describe.only('Variant Analysis Manager', async function() {
   let cli: CodeQLCliServer;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
-  let variantAnalysis: VariantAnalysisApiResponse;
+  let variantAnalysisApiResponse: VariantAnalysisApiResponse;
   let scannedRepos: ApiVariantAnalysisScannedRepository[];
   let getVariantAnalysisRepoStub: sinon.SinonStub;
   let getVariantAnalysisRepoResultStub: sinon.SinonStub;
@@ -55,7 +56,7 @@ describe.only('Variant Analysis Manager', async function() {
     cancellationTokenSource = new CancellationTokenSource();
 
     scannedRepos = createMockScannedRepos();
-    variantAnalysis = createMockApiResponse('in_progress', scannedRepos);
+    variantAnalysisApiResponse = createMockApiResponse('in_progress', scannedRepos);
 
     try {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
@@ -72,7 +73,7 @@ describe.only('Variant Analysis Manager', async function() {
   });
 
   describe('rehydrateVariantAnalysis', () => {
-    const variantAnalysis = createMockVariantAnalysis();
+    const variantAnalysis = createMockVariantAnalysis({});
 
     describe('when the directory does not exist', () => {
       beforeEach(() => {
@@ -83,7 +84,7 @@ describe.only('Variant Analysis Manager', async function() {
         const stub = sandbox.stub();
         variantAnalysisManager.onVariantAnalysisRemoved(stub);
 
-        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis, QueryStatus.InProgress);
+        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(stub).to.have.been.calledOnce;
         sinon.assert.calledWith(pathExistsStub, path.join(storagePath, variantAnalysis.id.toString()));
@@ -96,7 +97,7 @@ describe.only('Variant Analysis Manager', async function() {
       });
 
       it('should store the variant analysis', async () => {
-        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis, QueryStatus.InProgress);
+        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(await variantAnalysisManager.getVariantAnalysis(variantAnalysis.id)).to.deep.equal(variantAnalysis);
       });
@@ -104,7 +105,7 @@ describe.only('Variant Analysis Manager', async function() {
       it('should not error if the repo states file does not exist', async () => {
         readJsonStub.withArgs(path.join(storagePath, variantAnalysis.id.toString(), 'repo_states.json')).rejects(new Error('File does not exist'));
 
-        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis, QueryStatus.InProgress);
+        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         sinon.assert.calledWith(readJsonStub, path.join(storagePath, variantAnalysis.id.toString(), 'repo_states.json'));
         expect(await variantAnalysisManager.getRepoStates(variantAnalysis.id)).to.deep.equal([]);
@@ -122,7 +123,7 @@ describe.only('Variant Analysis Manager', async function() {
           },
         });
 
-        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis, QueryStatus.InProgress);
+        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         sinon.assert.calledWith(readJsonStub, path.join(storagePath, variantAnalysis.id.toString(), 'repo_states.json'));
         expect(await variantAnalysisManager.getRepoStates(variantAnalysis.id)).to.have.same.deep.members([
@@ -146,7 +147,7 @@ describe.only('Variant Analysis Manager', async function() {
       try {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
-          variantAnalysis,
+          variantAnalysisApiResponse,
           cancellationTokenSource.token
         );
       } catch (error: any) {
@@ -183,7 +184,7 @@ describe.only('Variant Analysis Manager', async function() {
       it('should not try to download the result', async () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
-          variantAnalysis,
+          variantAnalysisApiResponse,
           cancellationTokenSource.token
         );
 
@@ -207,7 +208,7 @@ describe.only('Variant Analysis Manager', async function() {
 
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
-            variantAnalysis,
+            variantAnalysisApiResponse,
             cancellationTokenSource.token
           );
 
@@ -217,7 +218,7 @@ describe.only('Variant Analysis Manager', async function() {
         it('should fetch a repo task', async () => {
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
-            variantAnalysis,
+            variantAnalysisApiResponse,
             cancellationTokenSource.token
           );
 
@@ -227,7 +228,7 @@ describe.only('Variant Analysis Manager', async function() {
         it('should fetch a repo result', async () => {
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
-            variantAnalysis,
+            variantAnalysisApiResponse,
             cancellationTokenSource.token
           );
 
@@ -238,7 +239,7 @@ describe.only('Variant Analysis Manager', async function() {
           // First, do a download so it is downloaded. This avoids having to mock the repo states.
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
-            variantAnalysis,
+            variantAnalysisApiResponse,
             cancellationTokenSource.token
           );
 
@@ -246,7 +247,7 @@ describe.only('Variant Analysis Manager', async function() {
 
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
-            variantAnalysis,
+            variantAnalysisApiResponse,
             cancellationTokenSource.token
           );
 
@@ -256,11 +257,11 @@ describe.only('Variant Analysis Manager', async function() {
         it('should write the repo state when the download is successful', async () => {
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
-            variantAnalysis,
+            variantAnalysisApiResponse,
             cancellationTokenSource.token
           );
 
-          sinon.assert.calledWith(outputJsonStub, path.join(storagePath, variantAnalysis.id.toString(), 'repo_states.json'), {
+          sinon.assert.calledWith(outputJsonStub, path.join(storagePath, variantAnalysisApiResponse.id.toString(), 'repo_states.json'), {
             [scannedRepos[0].repository.id]: {
               repositoryId: scannedRepos[0].repository.id,
               downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
@@ -274,7 +275,7 @@ describe.only('Variant Analysis Manager', async function() {
           try {
             await variantAnalysisManager.autoDownloadVariantAnalysisResult(
               scannedRepos[0],
-              variantAnalysis,
+              variantAnalysisApiResponse,
               cancellationTokenSource.token
             );
             fail('Expected an error to be thrown');
@@ -291,7 +292,7 @@ describe.only('Variant Analysis Manager', async function() {
           try {
             await variantAnalysisManager.autoDownloadVariantAnalysisResult(
               scannedRepos[0],
-              variantAnalysis,
+              variantAnalysisApiResponse,
               cancellationTokenSource.token
             );
             fail('Expected an error to be thrown');
@@ -303,11 +304,11 @@ describe.only('Variant Analysis Manager', async function() {
 
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[1],
-            variantAnalysis,
+            variantAnalysisApiResponse,
             cancellationTokenSource.token
           );
 
-          sinon.assert.calledWith(outputJsonStub, path.join(storagePath, variantAnalysis.id.toString(), 'repo_states.json'), {
+          sinon.assert.calledWith(outputJsonStub, path.join(storagePath, variantAnalysisApiResponse.id.toString(), 'repo_states.json'), {
             [scannedRepos[0].repository.id]: {
               repositoryId: scannedRepos[0].repository.id,
               downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Failed,
@@ -325,7 +326,7 @@ describe.only('Variant Analysis Manager', async function() {
           try {
             await variantAnalysisManager.autoDownloadVariantAnalysisResult(
               scannedRepos[0],
-              variantAnalysis,
+              variantAnalysisApiResponse,
               cancellationTokenSource.token
             );
             fail('Expected an error to be thrown');
@@ -337,11 +338,11 @@ describe.only('Variant Analysis Manager', async function() {
 
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[1],
-            variantAnalysis,
+            variantAnalysisApiResponse,
             cancellationTokenSource.token
           );
 
-          sinon.assert.calledWith(outputJsonStub, path.join(storagePath, variantAnalysis.id.toString(), 'repo_states.json'), {
+          sinon.assert.calledWith(outputJsonStub, path.join(storagePath, variantAnalysisApiResponse.id.toString(), 'repo_states.json'), {
             [scannedRepos[0].repository.id]: {
               repositoryId: scannedRepos[0].repository.id,
               downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Failed,
@@ -358,9 +359,9 @@ describe.only('Variant Analysis Manager', async function() {
           // The actual tests for these are in rehydrateVariantAnalysis, so we can just mock them here and test that
           // the methods are called.
 
-          pathExistsStub.withArgs(path.join(storagePath, variantAnalysis.id.toString())).resolves(true);
+          pathExistsStub.withArgs(path.join(storagePath, variantAnalysisApiResponse.id.toString())).resolves(true);
           // This will read in the correct repo states
-          readJsonStub.withArgs(path.join(storagePath, variantAnalysis.id.toString(), 'repo_states.json')).resolves({
+          readJsonStub.withArgs(path.join(storagePath, variantAnalysisApiResponse.id.toString(), 'repo_states.json')).resolves({
             [scannedRepos[1].repository.id]: {
               repositoryId: scannedRepos[1].repository.id,
               downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
@@ -372,18 +373,18 @@ describe.only('Variant Analysis Manager', async function() {
           });
 
           await variantAnalysisManager.rehydrateVariantAnalysis({
-            ...createMockVariantAnalysis(),
-            id: variantAnalysis.id,
-          }, QueryStatus.InProgress);
-          sinon.assert.calledWith(readJsonStub, path.join(storagePath, variantAnalysis.id.toString(), 'repo_states.json'));
+            ...createMockVariantAnalysis({}),
+            id: variantAnalysisApiResponse.id,
+          });
+          sinon.assert.calledWith(readJsonStub, path.join(storagePath, variantAnalysisApiResponse.id.toString(), 'repo_states.json'));
 
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
-            variantAnalysis,
+            variantAnalysisApiResponse,
             cancellationTokenSource.token
           );
 
-          sinon.assert.calledWith(outputJsonStub, path.join(storagePath, variantAnalysis.id.toString(), 'repo_states.json'), {
+          sinon.assert.calledWith(outputJsonStub, path.join(storagePath, variantAnalysisApiResponse.id.toString(), 'repo_states.json'), {
             [scannedRepos[1].repository.id]: {
               repositoryId: scannedRepos[1].repository.id,
               downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
@@ -404,9 +405,9 @@ describe.only('Variant Analysis Manager', async function() {
         it('should pop download tasks off the queue', async () => {
           const getResultsSpy = sandbox.spy(variantAnalysisManager, 'autoDownloadVariantAnalysisResult');
 
-          await variantAnalysisManager.enqueueDownload(scannedRepos[0], variantAnalysis, cancellationTokenSource.token);
-          await variantAnalysisManager.enqueueDownload(scannedRepos[1], variantAnalysis, cancellationTokenSource.token);
-          await variantAnalysisManager.enqueueDownload(scannedRepos[2], variantAnalysis, cancellationTokenSource.token);
+          await variantAnalysisManager.enqueueDownload(scannedRepos[0], variantAnalysisApiResponse, cancellationTokenSource.token);
+          await variantAnalysisManager.enqueueDownload(scannedRepos[1], variantAnalysisApiResponse, cancellationTokenSource.token);
+          await variantAnalysisManager.enqueueDownload(scannedRepos[2], variantAnalysisApiResponse, cancellationTokenSource.token);
 
           expect(variantAnalysisManager.downloadsQueueSize()).to.equal(0);
           expect(getResultsSpy).to.have.been.calledThrice;
@@ -419,7 +420,7 @@ describe.only('Variant Analysis Manager', async function() {
         let dummyVariantAnalysis: VariantAnalysis;
 
         beforeEach(async () => {
-          dummyVariantAnalysis = createMockVariantAnalysis();
+          dummyVariantAnalysis = createMockVariantAnalysis({});
           removeAnalysisResultsStub = sandbox.stub(variantAnalysisResultsManager, 'removeAnalysisResults');
           removeStorageStub = sandbox.stub(fs, 'remove');
         });
@@ -433,6 +434,79 @@ describe.only('Variant Analysis Manager', async function() {
           expect(removeAnalysisResultsStub).to.have.been.calledOnce;
           expect(removeStorageStub).to.have.been.calledOnce;
           expect(variantAnalysisManager.variantAnalysesSize).to.equal(0);
+        });
+      });
+    });
+  });
+
+  describe('when rehydrating a query', async () => {
+    let variantAnalysis: VariantAnalysis;
+    let variantAnalysisRemovedSpy: sinon.SinonSpy;
+    let monitorVariantAnalysisCommandSpy: sinon.SinonSpy;
+
+    beforeEach(() => {
+      variantAnalysis = createMockVariantAnalysis({});
+
+      variantAnalysisRemovedSpy = sinon.spy();
+      variantAnalysisManager.onVariantAnalysisRemoved(variantAnalysisRemovedSpy);
+
+      monitorVariantAnalysisCommandSpy = sinon.spy();
+      sandbox.stub(commands, 'executeCommand').callsFake(monitorVariantAnalysisCommandSpy);
+    });
+
+    describe('when variant analysis record doesn\'t exist', async () => {
+      it('should remove the variant analysis', async () => {
+        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+        sinon.assert.calledOnce(variantAnalysisRemovedSpy);
+      });
+
+      it('should not trigger a monitoring command', async () => {
+        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+        sinon.assert.notCalled(monitorVariantAnalysisCommandSpy);
+      });
+    });
+
+    describe('when variant analysis record does exist', async () => {
+      let variantAnalysisStorageLocation: string;
+
+      beforeEach(async () => {
+        variantAnalysisStorageLocation = variantAnalysisManager.getVariantAnalysisStorageLocation(variantAnalysis.id);
+        await createTimestampFile(variantAnalysisStorageLocation);
+      });
+
+      afterEach(() => {
+        fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
+      });
+
+      describe('when the variant analysis is not complete', async () => {
+        beforeEach(() => {
+          sandbox.stub(VariantAnalysisModule, 'isVariantAnalysisComplete').resolves(false);
+        });
+
+        it('should not remove the variant analysis', async () => {
+          await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+          sinon.assert.notCalled(variantAnalysisRemovedSpy);
+        });
+
+        it('should trigger a monitoring command', async () => {
+          await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+          sinon.assert.calledWith(monitorVariantAnalysisCommandSpy, 'codeQL.monitorVariantAnalysis');
+        });
+      });
+
+      describe('when the variant analysis is complete', async () => {
+        beforeEach(() => {
+          sandbox.stub(VariantAnalysisModule, 'isVariantAnalysisComplete').resolves(true);
+        });
+
+        it('should not remove the variant analysis', async () => {
+          await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+          sinon.assert.notCalled(variantAnalysisRemovedSpy);
+        });
+
+        it('should not trigger a monitoring command', async () => {
+          await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+          sinon.assert.notCalled(monitorVariantAnalysisCommandSpy);
         });
       });
     });

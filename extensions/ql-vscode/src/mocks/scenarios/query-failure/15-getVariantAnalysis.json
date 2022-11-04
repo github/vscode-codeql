@@ -106,7 +106,9 @@
             "id": 23418517,
             "name": "hadoop",
             "full_name": "apache/hadoop",
-            "private": false
+            "private": false,
+            "stargazers_count": 13030,
+            "updated_at": "2022-11-02T08:23:58Z"
           },
           "analysis_status": "succeeded",
           "artifact_size_in_bytes": 66895,
@@ -117,7 +119,9 @@
             "id": 105590837,
             "name": "amplify-js",
             "full_name": "aws-amplify/amplify-js",
-            "private": false
+            "private": false,
+            "stargazers_count": 8969,
+            "updated_at": "2022-11-02T09:55:27Z"
           },
           "analysis_status": "failed",
           "failure_message": "There was a problem when running the query."

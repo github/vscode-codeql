@@ -9,10 +9,12 @@ import {
 } from '../../remote-queries/shared/variant-analysis';
 import { formatDecimal } from '../../pure/number';
 import { Codicon, ErrorIcon, LoadingIcon, SuccessIcon, WarningIcon } from '../common';
-import { Repository } from '../../remote-queries/shared/repository';
+import { RepositoryWithMetadata } from '../../remote-queries/shared/repository';
 import { AnalysisAlert, AnalysisRawResults } from '../../remote-queries/shared/analysis-result';
 import { vscode } from '../vscode-api';
 import { AnalyzedRepoItemContent } from './AnalyzedRepoItemContent';
+import StarCount from '../common/StarCount';
+import { LastUpdated } from '../common/LastUpdated';
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;
@@ -21,6 +23,7 @@ const TitleContainer = styled.button`
   display: flex;
   gap: 0.5em;
   align-items: center;
+  width: 100%;
 
   color: var(--vscode-editor-foreground);
   background-color: transparent;
@@ -39,6 +42,11 @@ const TitleContainer = styled.button`
 const VisibilityText = styled.span`
   font-size: 0.85em;
   color: var(--vscode-descriptionForeground);
+`;
+
+const MetadataContainer = styled.div`
+  display: flex;
+  margin-left: auto;
 `;
 
 type VisibilityProps = {
@@ -65,7 +73,7 @@ const getErrorLabel = (status: VariantAnalysisRepoStatus.Failed | VariantAnalysi
 
 export type RepoRowProps = {
   // Only fullName is required
-  repository: Partial<Repository> & Pick<Repository, 'fullName'>;
+  repository: Partial<RepositoryWithMetadata> & Pick<RepositoryWithMetadata, 'fullName'>;
   status?: VariantAnalysisRepoStatus;
   downloadStatus?: VariantAnalysisScannedRepositoryDownloadStatus;
   resultCount?: number;
@@ -131,6 +139,10 @@ export const RepoRow = ({
           {!status && <WarningIcon />}
         </span>
         {downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.InProgress && <LoadingIcon label="Downloading" />}
+        <MetadataContainer>
+          <div><StarCount starCount={repository.stargazersCount} /></div>
+          <LastUpdated lastUpdated={repository.updatedAt} />
+        </MetadataContainer>
       </TitleContainer>
       {isExpanded && expandableContentLoaded &&
         <AnalyzedRepoItemContent status={status} interpretedResults={interpretedResults} rawResults={rawResults} />}
