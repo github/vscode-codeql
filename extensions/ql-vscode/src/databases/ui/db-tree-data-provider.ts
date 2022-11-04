@@ -1,6 +1,6 @@
 import { logger } from '../../logging';
 import { ProviderResult, TreeDataProvider, TreeItem } from 'vscode';
-import { DbTreeViewItem } from './db-tree-view-item';
+import { createDbTreeViewItemWarning, DbTreeViewItem } from './db-tree-view-item';
 import { DbManager } from '../db-manager';
 
 export class DbTreeDataProvider implements TreeDataProvider<DbTreeViewItem> {
@@ -41,6 +41,12 @@ export class DbTreeDataProvider implements TreeDataProvider<DbTreeViewItem> {
     // This will be fleshed out in a future change.
     void logger.log(`Creating database tree with ${dbItems.length} items`);
 
-    return [];
+    // Add a sample warning as a proof of concept.
+    const warningTreeViewItem = createDbTreeViewItemWarning(
+      'There was an error',
+      'Fix it'
+    );
+
+    return [warningTreeViewItem];
   }
 }
