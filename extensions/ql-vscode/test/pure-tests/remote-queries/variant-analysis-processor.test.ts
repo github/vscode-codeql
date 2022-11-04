@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { faker } from '@faker-js/faker';
 import {
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
 } from '../../../src/remote-queries/gh-api/variant-analysis';
@@ -7,8 +8,15 @@ import {
   VariantAnalysisScannedRepository,
   VariantAnalysisRepoStatus
 } from '../../../src/remote-queries/shared/variant-analysis';
-import { processVariantAnalysis } from '../../../src/remote-queries/variant-analysis-processor';
-import { createMockScannedRepos } from '../../../src/vscode-tests/factories/remote-queries/gh-api/scanned-repositories';
+import {
+  processScannedRepository,
+  processVariantAnalysis,
+  processVariantAnalysisRepositoryTask
+} from '../../../src/remote-queries/variant-analysis-processor';
+import {
+  createMockScannedRepo,
+  createMockScannedRepos
+} from '../../../src/vscode-tests/factories/remote-queries/gh-api/scanned-repositories';
 import { createMockSkippedRepos } from '../../../src/vscode-tests/factories/remote-queries/gh-api/skipped-repositories';
 import {
   createMockApiResponse
@@ -16,8 +24,11 @@ import {
 import {
   createMockSubmission
 } from '../../../src/vscode-tests/factories/remote-queries/shared/variant-analysis-submission';
+import {
+  createMockVariantAnalysisRepoTask
+} from '../../../src/vscode-tests/factories/remote-queries/gh-api/variant-analysis-repo-task';
 
-describe('Variant Analysis processor', function() {
+describe(processVariantAnalysis.name, function() {
   const scannedRepos = createMockScannedRepos();
   const skippedRepos = createMockSkippedRepos();
   const mockApiResponse = createMockApiResponse('completed', scannedRepos, skippedRepos);
@@ -146,4 +157,45 @@ describe('Variant Analysis processor', function() {
       'resultCount': scannedRepo.result_count
     };
   }
+});
+
+describe(processVariantAnalysisRepositoryTask.name, () => {
+  const mockApiResponse = createMockVariantAnalysisRepoTask();
+
+  it('should return the correct result', () => {
+    expect(processVariantAnalysisRepositoryTask(mockApiResponse)).to.deep.eq({
+      repository: {
+        id: mockApiResponse.repository.id,
+        fullName: mockApiResponse.repository.full_name,
+        private: mockApiResponse.repository.private,
+      },
+      analysisStatus: 'succeeded',
+      resultCount: mockApiResponse.result_count,
+      artifactSizeInBytes: mockApiResponse.artifact_size_in_bytes,
+      failureMessage: mockApiResponse.failure_message,
+      databaseCommitSha: mockApiResponse.database_commit_sha,
+      sourceLocationPrefix: mockApiResponse.source_location_prefix,
+      artifactUrl: mockApiResponse.artifact_url,
+    });
+  });
+});
+
+describe(processScannedRepository.name, () => {
+  const mockApiResponse = createMockScannedRepo(faker.random.word(), faker.datatype.boolean(), VariantAnalysisRepoStatus.Pending);
+
+  it('should return the correct result', () => {
+    expect(processScannedRepository(mockApiResponse)).to.deep.eq({
+      repository: {
+        id: mockApiResponse.repository.id,
+        fullName: mockApiResponse.repository.full_name,
+        private: mockApiResponse.repository.private,
+        stargazersCount: mockApiResponse.repository.stargazers_count,
+        updatedAt: mockApiResponse.repository.updated_at,
+      },
+      analysisStatus: 'pending',
+      resultCount: mockApiResponse.result_count,
+      artifactSizeInBytes: mockApiResponse.artifact_size_in_bytes,
+      failureMessage: mockApiResponse.failure_message,
+    });
+  });
 });

@@ -6,7 +6,8 @@ import {
   VariantAnalysisFailureReason as ApiVariantAnalysisFailureReason,
   VariantAnalysisStatus as ApiVariantAnalysisStatus,
   VariantAnalysisSkippedRepositoryGroup as ApiVariantAnalysisSkippedRepositoryGroup,
-  VariantAnalysisNotFoundRepositoryGroup as ApiVariantAnalysisNotFoundRepositoryGroup
+  VariantAnalysisNotFoundRepositoryGroup as ApiVariantAnalysisNotFoundRepositoryGroup,
+  VariantAnalysisRepoTask as ApiVariantAnalysisRepoTask,
 } from './gh-api/variant-analysis';
 import {
   VariantAnalysis,
@@ -16,7 +17,8 @@ import {
   VariantAnalysisStatus,
   VariantAnalysisRepoStatus,
   VariantAnalysisSubmission,
-  VariantAnalysisSkippedRepositoryGroup
+  VariantAnalysisSkippedRepositoryGroup,
+  VariantAnalysisRepositoryTask
 } from './shared/variant-analysis';
 
 export function processVariantAnalysis(
@@ -76,24 +78,47 @@ export function processUpdatedVariantAnalysis(
   return variantAnalysis;
 }
 
+export function processVariantAnalysisRepositoryTask(
+  response: ApiVariantAnalysisRepoTask
+): VariantAnalysisRepositoryTask {
+  return {
+    repository: {
+      id: response.repository.id,
+      fullName: response.repository.full_name,
+      private: response.repository.private,
+    },
+    analysisStatus: processApiRepoStatus(response.analysis_status),
+    resultCount: response.result_count,
+    artifactSizeInBytes: response.artifact_size_in_bytes,
+    failureMessage: response.failure_message,
+    databaseCommitSha: response.database_commit_sha,
+    sourceLocationPrefix: response.source_location_prefix,
+    artifactUrl: response.artifact_url,
+  };
+}
+
+export function processScannedRepository(
+  scannedRepo: ApiVariantAnalysisScannedRepository
+): VariantAnalysisScannedRepository {
+  return {
+    repository: {
+      id: scannedRepo.repository.id,
+      fullName: scannedRepo.repository.full_name,
+      private: scannedRepo.repository.private,
+      stargazersCount: scannedRepo.repository.stargazers_count,
+      updatedAt: scannedRepo.repository.updated_at,
+    },
+    analysisStatus: processApiRepoStatus(scannedRepo.analysis_status),
+    resultCount: scannedRepo.result_count,
+    artifactSizeInBytes: scannedRepo.artifact_size_in_bytes,
+    failureMessage: scannedRepo.failure_message
+  };
+}
+
 function processScannedRepositories(
   scannedRepos: ApiVariantAnalysisScannedRepository[]
 ): VariantAnalysisScannedRepository[] {
-  return scannedRepos.map(scannedRepo => {
-    return {
-      repository: {
-        id: scannedRepo.repository.id,
-        fullName: scannedRepo.repository.full_name,
-        private: scannedRepo.repository.private,
-        stargazersCount: scannedRepo.repository.stargazers_count,
-        updatedAt: scannedRepo.repository.updated_at,
-      },
-      analysisStatus: processApiRepoStatus(scannedRepo.analysis_status),
-      resultCount: scannedRepo.result_count,
-      artifactSizeInBytes: scannedRepo.artifact_size_in_bytes,
-      failureMessage: scannedRepo.failure_message
-    };
-  });
+  return scannedRepos.map(scannedRepo => processScannedRepository(scannedRepo));
 }
 
 function processSkippedRepositories(

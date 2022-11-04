@@ -1,12 +1,13 @@
-import { ExtensionContext, CancellationToken, commands, EventEmitter } from 'vscode';
+import { CancellationToken, commands, EventEmitter, ExtensionContext } from 'vscode';
 import { Credentials } from '../authentication';
 import * as ghApiClient from './gh-api/gh-api-client';
 
-import { isFinalVariantAnalysisStatus, VariantAnalysis } from './shared/variant-analysis';
 import {
-  VariantAnalysis as VariantAnalysisApiResponse,
+  isFinalVariantAnalysisStatus,
+  VariantAnalysis,
+  VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepository
-} from './gh-api/variant-analysis';
+} from './shared/variant-analysis';
 import { VariantAnalysisMonitorResult } from './shared/variant-analysis-monitor-result';
 import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
 import { DisposableObject } from '../pure/disposable-object';
@@ -57,7 +58,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
       this._onVariantAnalysisChange.fire(variantAnalysis);
 
-      const downloadedRepos = this.downloadVariantAnalysisResults(variantAnalysisSummary, scannedReposDownloaded);
+      const downloadedRepos = this.downloadVariantAnalysisResults(variantAnalysis, scannedReposDownloaded);
       scannedReposDownloaded.push(...downloadedRepos);
 
       if (isFinalVariantAnalysisStatus(variantAnalysis.status) || variantAnalysis.failureReason) {
@@ -72,7 +73,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
   private scheduleForDownload(
     scannedRepo: VariantAnalysisScannedRepository,
-    variantAnalysisSummary: VariantAnalysisApiResponse
+    variantAnalysisSummary: VariantAnalysis
   ) {
     void commands.executeCommand('codeQL.autoDownloadVariantAnalysisResult', scannedRepo, variantAnalysisSummary);
   }
@@ -81,22 +82,22 @@ export class VariantAnalysisMonitor extends DisposableObject {
     scannedRepo: VariantAnalysisScannedRepository,
     alreadyDownloaded: number[]
   ): boolean {
-    return !alreadyDownloaded.includes(scannedRepo.repository.id) && scannedRepo.analysis_status === 'succeeded';
+    return !alreadyDownloaded.includes(scannedRepo.repository.id) && scannedRepo.analysisStatus === VariantAnalysisRepoStatus.Succeeded;
   }
 
   private getReposToDownload(
-    variantAnalysisSummary: VariantAnalysisApiResponse,
+    variantAnalysisSummary: VariantAnalysis,
     alreadyDownloaded: number[]
   ): VariantAnalysisScannedRepository[] {
-    if (variantAnalysisSummary.scanned_repositories) {
-      return variantAnalysisSummary.scanned_repositories.filter(scannedRepo => this.shouldDownload(scannedRepo, alreadyDownloaded));
+    if (variantAnalysisSummary.scannedRepos) {
+      return variantAnalysisSummary.scannedRepos.filter(scannedRepo => this.shouldDownload(scannedRepo, alreadyDownloaded));
     } else {
       return [];
     }
   }
 
   private downloadVariantAnalysisResults(
-    variantAnalysisSummary: VariantAnalysisApiResponse,
+    variantAnalysisSummary: VariantAnalysis,
     scannedReposDownloaded: number[]
   ): number[] {
     const repoResultsToDownload = this.getReposToDownload(variantAnalysisSummary, scannedReposDownloaded);

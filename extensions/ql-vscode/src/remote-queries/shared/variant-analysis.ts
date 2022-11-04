@@ -76,6 +76,17 @@ export interface VariantAnalysisScannedRepository {
   failureMessage?: string
 }
 
+export interface VariantAnalysisRepositoryTask {
+  repository: Repository,
+  analysisStatus: VariantAnalysisRepoStatus,
+  resultCount?: number,
+  artifactSizeInBytes?: number,
+  failureMessage?: string,
+  databaseCommitSha?: string,
+  sourceLocationPrefix?: string,
+  artifactUrl?: string,
+}
+
 export interface VariantAnalysisSkippedRepositories {
   accessMismatchRepos?: VariantAnalysisSkippedRepositoryGroup,
   notFoundRepos?: VariantAnalysisSkippedRepositoryGroup,
