@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 
 import { ComponentMeta } from '@storybook/react';
 
-import RepositoriesSearchComponent from '../../view/remote-queries/RepositoriesSearch';
+import { RepositoriesSearch as RepositoriesSearchComponent } from '../../view/variant-analysis/RepositoriesSearch';
 
 export default {
-  title: 'MRVA/Repositories Search',
+  title: 'Variant Analysis/Repositories Search',
   component: RepositoriesSearchComponent,
   argTypes: {
-    filterValue: {
+    value: {
       control: {
         disable: true,
       },
@@ -17,9 +17,9 @@ export default {
 } as ComponentMeta<typeof RepositoriesSearchComponent>;
 
 export const RepositoriesSearch = () => {
-  const [filterValue, setFilterValue] = useState('');
+  const [value, setValue] = useState('');
 
   return (
-    <RepositoriesSearchComponent filterValue={filterValue} setFilterValue={setFilterValue} />
+    <RepositoriesSearchComponent value={value} onChange={setValue} />
   );
 };

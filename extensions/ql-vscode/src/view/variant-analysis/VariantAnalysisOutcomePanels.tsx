@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import { VSCodeBadge, VSCodePanels, VSCodePanelTab, VSCodePanelView } from '@vscode/webview-ui-toolkit/react';
 import { formatDecimal } from '../../pure/number';
@@ -10,6 +11,7 @@ import {
 import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
 import { Alert } from '../common';
 import { VariantAnalysisSkippedRepositoriesTab } from './VariantAnalysisSkippedRepositoriesTab';
+import { RepositoriesSearch } from './RepositoriesSearch';
 
 export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
@@ -42,6 +44,8 @@ export const VariantAnalysisOutcomePanels = ({
   repositoryStates,
   repositoryResults,
 }: VariantAnalysisOutcomePanelProps) => {
+  const [searchValue, setSearchValue] = useState('');
+
   const noCodeqlDbRepos = variantAnalysis.skippedRepos?.noCodeqlDbRepos;
   const notFoundRepos = variantAnalysis.skippedRepos?.notFoundRepos;
   const overLimitRepositoryCount = variantAnalysis.skippedRepos?.overLimitRepos?.repositoryCount ?? 0;
@@ -70,10 +74,12 @@ export const VariantAnalysisOutcomePanels = ({
     return (
       <>
         {warnings}
+        <RepositoriesSearch value={searchValue} onChange={setSearchValue} />
         <VariantAnalysisAnalyzedRepos
           variantAnalysis={variantAnalysis}
           repositoryStates={repositoryStates}
           repositoryResults={repositoryResults}
+          searchValue={searchValue}
         />
       </>
     );
@@ -82,6 +88,7 @@ export const VariantAnalysisOutcomePanels = ({
   return (
     <>
       {warnings}
+      <RepositoriesSearch value={searchValue} onChange={setSearchValue} />
       <VSCodePanels>
         <Tab>
           Analyzed
@@ -104,6 +111,7 @@ export const VariantAnalysisOutcomePanels = ({
             variantAnalysis={variantAnalysis}
             repositoryStates={repositoryStates}
             repositoryResults={repositoryResults}
+            searchValue={searchValue}
           />
         </VSCodePanelView>
         {notFoundRepos?.repositoryCount &&
@@ -111,14 +119,18 @@ export const VariantAnalysisOutcomePanels = ({
             <VariantAnalysisSkippedRepositoriesTab
               alertTitle='No access'
               alertMessage='The following repositories could not be scanned because you do not have read access.'
-              skippedRepositoryGroup={notFoundRepos} />
+              skippedRepositoryGroup={notFoundRepos}
+              searchValue={searchValue}
+            />
           </VSCodePanelView>}
         {noCodeqlDbRepos?.repositoryCount &&
           <VSCodePanelView>
             <VariantAnalysisSkippedRepositoriesTab
               alertTitle='No database'
               alertMessage='The following repositories could not be scanned because they do not have an available CodeQL database.'
-              skippedRepositoryGroup={noCodeqlDbRepos} />
+              skippedRepositoryGroup={noCodeqlDbRepos}
+              searchValue={searchValue}
+            />
           </VSCodePanelView>}
       </VSCodePanels>
     </>

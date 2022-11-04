@@ -1,13 +1,17 @@
 import * as React from 'react';
+import { useMemo } from 'react';
 import styled from 'styled-components';
 import { VariantAnalysisSkippedRepositoryGroup } from '../../remote-queries/shared/variant-analysis';
 import { Alert } from '../common';
 import { RepoRow } from './RepoRow';
+import { matchesSearchValue } from './filterSort';
 
 export type VariantAnalysisSkippedRepositoriesTabProps = {
   alertTitle: string,
   alertMessage: string,
   skippedRepositoryGroup: VariantAnalysisSkippedRepositoryGroup,
+
+  searchValue?: string,
 };
 
 function getSkipReasonAlert(
@@ -39,11 +43,22 @@ export const VariantAnalysisSkippedRepositoriesTab = ({
   alertTitle,
   alertMessage,
   skippedRepositoryGroup,
+  searchValue,
 }: VariantAnalysisSkippedRepositoriesTabProps) => {
+  const repositories = useMemo(() => {
+    if (searchValue) {
+      return skippedRepositoryGroup.repositories?.filter((repo) => {
+        return matchesSearchValue(repo, searchValue);
+      });
+    }
+
+    return skippedRepositoryGroup.repositories;
+  }, [searchValue, skippedRepositoryGroup.repositories]);
+
   return (
     <Container>
       {getSkipReasonAlert(alertTitle, alertMessage, skippedRepositoryGroup)}
-      {skippedRepositoryGroup.repositories.map((repo) =>
+      {repositories.map((repo) =>
         <RepoRow key={`repo/${repo.fullName}`} repository={repo} />
       )}
     </Container>

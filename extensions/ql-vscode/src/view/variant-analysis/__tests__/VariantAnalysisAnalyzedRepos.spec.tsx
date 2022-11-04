@@ -110,4 +110,15 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
     }));
     expect(screen.getByText('This is an empty block.')).toBeInTheDocument();
   });
+
+  it('uses the search value', () => {
+    render({
+      searchValue: 'world-2',
+    });
+
+    expect(screen.queryByText('octodemo/hello-world-1')).not.toBeInTheDocument();
+    expect(screen.getByText('octodemo/hello-world-2')).toBeInTheDocument();
+    expect(screen.queryByText('octodemo/hello-world-3')).not.toBeInTheDocument();
+    expect(screen.queryByText('octodemo/hello-world-4')).not.toBeInTheDocument();
+  });
 });

@@ -97,4 +97,30 @@ describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
     expect(screen.getByText('octodemo/hello-galaxy')).toBeInTheDocument();
     expect(screen.getByText('octodemo/hello-universe')).toBeInTheDocument();
   });
+
+  it('uses the search value', async () => {
+    render({
+      alertTitle: 'No database',
+      alertMessage: 'The following repositories could not be scanned because they do not have an available CodeQL database.',
+      skippedRepositoryGroup: {
+        repositoryCount: 1,
+        repositories: [
+          {
+            fullName: 'octodemo/hello-world',
+          },
+          {
+            fullName: 'octodemo/hello-galaxy',
+          },
+          {
+            fullName: 'octodemo/hello-universe',
+          },
+        ],
+      },
+      searchValue: 'world',
+    });
+
+    expect(screen.getByText('octodemo/hello-world')).toBeInTheDocument();
+    expect(screen.queryByText('octodemo/hello-galaxy')).not.toBeInTheDocument();
+    expect(screen.queryByText('octodemo/hello-universe')).not.toBeInTheDocument();
+  });
 });
