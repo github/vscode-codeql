@@ -32,6 +32,8 @@ import { createMockVariantAnalysisHistoryItem } from '../factories/remote-querie
 import { VariantAnalysisHistoryItem } from '../../remote-queries/variant-analysis-history-item';
 import { QueryStatus } from '../../query-status';
 import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
+import * as ghActionsApiClient from '../../remote-queries/gh-api/gh-actions-api-client';
+import { Credentials } from '../../authentication';
 
 describe('query-history', () => {
   const mockExtensionLocation = path.join(tmpDir.name, 'mock-extension-location');
@@ -92,10 +94,18 @@ describe('query-history', () => {
     } as any as VariantAnalysisManager;
 
     localQueryHistory = [
+      // completed
       createMockLocalQueryInfo({ dbName: 'a', queryWithResults: createMockQueryWithResults({ sandbox, didRunSuccessfully: true }) }),
+      // completed
       createMockLocalQueryInfo({ dbName: 'b', queryWithResults: createMockQueryWithResults({ sandbox, didRunSuccessfully: true }) }),
+      // failed
       createMockLocalQueryInfo({ dbName: 'a', queryWithResults: createMockQueryWithResults({ sandbox, didRunSuccessfully: false }) }),
+      // completed
       createMockLocalQueryInfo({ dbName: 'a', queryWithResults: createMockQueryWithResults({ sandbox, didRunSuccessfully: true }) }),
+      // in progress
+      createMockLocalQueryInfo({ resultCount: 0 }),
+      // in progress
+      createMockLocalQueryInfo({ resultCount: 0 })
     ];
     remoteQueryHistory = [
       createMockRemoteQueryHistoryItem({ status: QueryStatus.Completed }),
@@ -322,6 +332,168 @@ describe('query-history', () => {
 
         // the current item should have been selected
         expect(localQueriesResultsViewStub.showResults).to.have.been.calledOnceWith(newSelected);
+      });
+    });
+
+    describe('handleCancel', () => {
+      let mockCredentials: Credentials;
+      let mockCancelRemoteQuery: sinon.SinonStub;
+      let mockCancelVariantAnalysis: sinon.SinonStub;
+      let getOctokitStub: sinon.SinonStub;
+
+      beforeEach(async () => {
+        mockCredentials = {
+          getOctokit: () => Promise.resolve({
+            request: getOctokitStub
+          })
+        } as unknown as Credentials;
+        sandbox.stub(Credentials, 'initialize').resolves(mockCredentials);
+        mockCancelRemoteQuery = sandbox.stub(ghActionsApiClient, 'cancelRemoteQuery');
+        mockCancelVariantAnalysis = sandbox.stub(ghActionsApiClient, 'cancelVariantAnalysis');
+      });
+
+      describe('if the item is in progress', async () => {
+        it('should cancel a single local query', async () => {
+          queryHistoryManager = await createMockQueryHistory(localQueryHistory);
+
+          // cancelling the selected item
+          const inProgress1 = localQueryHistory[4];
+          const cancelSpy = sandbox.spy(inProgress1, 'cancel');
+
+          await queryHistoryManager.handleCancel(inProgress1, [inProgress1]);
+          expect(cancelSpy).to.have.been.calledOnce;
+        });
+
+        it('should cancel multiple local queries', async () => {
+          queryHistoryManager = await createMockQueryHistory(localQueryHistory);
+
+          // cancelling the selected item
+          const inProgress1 = localQueryHistory[4];
+          const inProgress2 = localQueryHistory[5];
+
+          const cancelSpy1 = sandbox.spy(inProgress1, 'cancel');
+          const cancelSpy2 = sandbox.spy(inProgress2, 'cancel');
+
+          await queryHistoryManager.handleCancel(inProgress1, [inProgress1, inProgress2]);
+          expect(cancelSpy1).to.have.been.called;
+          expect(cancelSpy2).to.have.been.called;
+        });
+
+        it('should cancel a single remote query', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+
+          // cancelling the selected item
+          const inProgress1 = remoteQueryHistory[2];
+
+          await queryHistoryManager.handleCancel(inProgress1, [inProgress1]);
+          expect(mockCancelRemoteQuery).to.have.been.calledWith(mockCredentials, inProgress1.remoteQuery);
+        });
+
+        it('should cancel multiple remote queries', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+
+          // cancelling the selected item
+          const inProgress1 = remoteQueryHistory[2];
+          const inProgress2 = remoteQueryHistory[3];
+
+          await queryHistoryManager.handleCancel(inProgress1, [inProgress1, inProgress2]);
+          expect(mockCancelRemoteQuery).to.have.been.calledWith(mockCredentials, inProgress1.remoteQuery);
+          expect(mockCancelRemoteQuery).to.have.been.calledWith(mockCredentials, inProgress2.remoteQuery);
+        });
+
+        it('should cancel a single variant analysis', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+
+          // cancelling the selected item
+          const inProgress1 = variantAnalysisHistory[1];
+
+          await queryHistoryManager.handleCancel(inProgress1, [inProgress1]);
+          expect(mockCancelVariantAnalysis).to.have.been.calledWith(mockCredentials, inProgress1.variantAnalysis);
+        });
+
+        it('should cancel multiple variant analyses', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+
+          // cancelling the selected item
+          const inProgress1 = variantAnalysisHistory[1];
+          const inProgress2 = variantAnalysisHistory[3];
+
+          await queryHistoryManager.handleCancel(inProgress1, [inProgress1, inProgress2]);
+          expect(mockCancelVariantAnalysis).to.have.been.calledWith(mockCredentials, inProgress1.variantAnalysis);
+          expect(mockCancelVariantAnalysis).to.have.been.calledWith(mockCredentials, inProgress2.variantAnalysis);
+        });
+      });
+
+      describe('if the item is not in progress', async () => {
+        it('should not cancel a single local query', async () => {
+          queryHistoryManager = await createMockQueryHistory(localQueryHistory);
+
+          // cancelling the selected item
+          const completed = localQueryHistory[0];
+          const cancelSpy = sandbox.spy(completed, 'cancel');
+
+          await queryHistoryManager.handleCancel(completed, [completed]);
+          expect(cancelSpy).to.not.have.been.calledOnce;
+        });
+
+        it('should not cancel multiple local queries', async () => {
+          queryHistoryManager = await createMockQueryHistory(localQueryHistory);
+
+          // cancelling the selected item
+          const completed = localQueryHistory[0];
+          const failed = localQueryHistory[2];
+
+          const cancelSpy = sandbox.spy(completed, 'cancel');
+          const cancelSpy2 = sandbox.spy(failed, 'cancel');
+
+          await queryHistoryManager.handleCancel(completed, [completed, failed]);
+          expect(cancelSpy).to.not.have.been.calledOnce;
+          expect(cancelSpy2).to.not.have.been.calledOnce;
+        });
+
+        it('should not cancel a single remote query', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+
+          // cancelling the selected item
+          const completed = remoteQueryHistory[0];
+
+          await queryHistoryManager.handleCancel(completed, [completed]);
+          expect(mockCancelRemoteQuery).to.not.have.been.calledWith(mockCredentials, completed.remoteQuery);
+        });
+
+        it('should not cancel multiple remote queries', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+
+          // cancelling the selected item
+          const completed = remoteQueryHistory[0];
+          const failed = remoteQueryHistory[1];
+
+          await queryHistoryManager.handleCancel(completed, [completed, failed]);
+          expect(mockCancelRemoteQuery).to.not.have.been.calledWith(mockCredentials, completed.remoteQuery);
+          expect(mockCancelRemoteQuery).to.not.have.been.calledWith(mockCredentials, failed.remoteQuery);
+        });
+
+        it('should not cancel a single variant analysis', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+
+          // cancelling the selected item
+          const completedVariantAnalysis = variantAnalysisHistory[0];
+
+          await queryHistoryManager.handleCancel(completedVariantAnalysis, [completedVariantAnalysis]);
+          expect(mockCancelVariantAnalysis).to.not.have.been.calledWith(mockCredentials, completedVariantAnalysis.variantAnalysis);
+        });
+
+        it('should not cancel multiple variant analyses', async () => {
+          queryHistoryManager = await createMockQueryHistory(allHistory);
+
+          // cancelling the selected item
+          const completedVariantAnalysis = variantAnalysisHistory[0];
+          const failedVariantAnalysis = variantAnalysisHistory[2];
+
+          await queryHistoryManager.handleCancel(completedVariantAnalysis, [completedVariantAnalysis, failedVariantAnalysis]);
+          expect(mockCancelVariantAnalysis).to.not.have.been.calledWith(mockCredentials, completedVariantAnalysis.variantAnalysis);
+          expect(mockCancelVariantAnalysis).to.not.have.been.calledWith(mockCredentials, failedVariantAnalysis.variantAnalysis);
+        });
       });
     });
 
