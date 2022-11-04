@@ -36,7 +36,6 @@ export class DbConfigStore extends DisposableObject {
   private async loadConfig(): Promise<void> {
     if (!await fs.pathExists(this.configPath)) {
       const schemaPath = path.resolve(this.extensionPath, 'workspace-databases-schema.json');
-      await fs.writeJSON(this.configPath, fs.readJson(schemaPath), {});
       const json = {
         '$schema': `file://${schemaPath}`,
         ...this.createEmptyConfig()
