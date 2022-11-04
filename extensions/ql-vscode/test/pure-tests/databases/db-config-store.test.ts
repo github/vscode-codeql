@@ -6,6 +6,7 @@ import { expect } from 'chai';
 describe('db config store', async () => {
   const tempWorkspaceStoragePath = path.join(__dirname, 'test-workspace');
   const testDataStoragePath = path.join(__dirname, 'data');
+  const corruptedTestDataStoragePath = path.join(__dirname, 'corruptedData');
 
   beforeEach(async () => {
     await fs.ensureDir(tempWorkspaceStoragePath);
@@ -52,5 +53,29 @@ describe('db config store', async () => {
 
     const reRetrievedConfig = configStore.getConfig();
     expect(reRetrievedConfig.remote.repositoryLists).to.have.length(1);
+  });
+
+  it('should return error when file is not valid', async () => {
+    const configStore = new DbConfigStore(corruptedTestDataStoragePath);
+    await configStore.initialize();
+
+    const validationOutput = configStore.validateConfig();
+    expect(validationOutput).to.have.length(2);
+    if (validationOutput) {
+      expect(validationOutput[0]).to.deep.equal({
+        'instancePath': '/remote',
+        'keyword': 'required',
+        'message': 'must have required property \'owners\'',
+        'params': { 'missingProperty': 'owners' },
+        'schemaPath': '#/properties/remote/required'
+      });
+      expect(validationOutput[1]).to.deep.equal({
+        'instancePath': '/remote',
+        'keyword': 'additionalProperties',
+        'message': 'must NOT have additional properties',
+        'params': { 'additionalProperty': 'somethingElse' },
+        'schemaPath': '#/properties/remote/additionalProperties'
+      });
+    }
   });
 });
