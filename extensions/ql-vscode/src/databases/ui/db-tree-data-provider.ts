@@ -47,6 +47,6 @@ export class DbTreeDataProvider implements TreeDataProvider<DbTreeViewItem> {
       'Fix it'
     );
 
-    return [errorTreeViewItem];
+    return [warningTreeViewItem];
   }
 }
