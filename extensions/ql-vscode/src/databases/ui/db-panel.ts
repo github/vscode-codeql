@@ -31,7 +31,7 @@ export class DbPanel extends DisposableObject {
     );
   }
 
-  async openConfigFile(): Promise<void> {
+  private async openConfigFile(): Promise<void> {
     const configPath = this.dbManager.getConfigPath();
     const document = await vscode.workspace.openTextDocument(configPath);
     await vscode.window.showTextDocument(document);
