@@ -232,7 +232,8 @@ export async function activate(ctx: ExtensionContext): Promise<CodeQLExtensionIn
     void showAndLogErrorMessage(`Can't execute ${command}: waiting to finish loading CodeQL CLI.`);
   }));
 
-  assertVSCodeVersionGreaterThan(MIN_VERSION);
+  // Checking the vscode version should not block extension activation.
+  void assertVSCodeVersionGreaterThan(MIN_VERSION, ctx);
 
   interface DistributionUpdateConfig {
     isUserInitiated: boolean;
@@ -1318,7 +1319,24 @@ function registerRemoteQueryTextProvider() {
   });
 }
 
-function assertVSCodeVersionGreaterThan(minVersion: string) {
+const avoidVersionCheck = 'avoid-version-check-at-startup';
+const lastVersionChecked = 'last-version-checked';
+async function assertVSCodeVersionGreaterThan(minVersion: string, ctx: ExtensionContext) {
+
+  // Check if we should reset the version check.
+  const lastVersion = await ctx.globalState.get(lastVersionChecked);
+  await ctx.globalState.update(lastVersionChecked, vscodeVersion);
+
+  if (lastVersion !== minVersion) {
+    // In this case, the version has changed since the last time we checked.
+    // If the user has previously opted out of this check, then user has updated their
+    // vscode instance since then, so we should check again. Any future warning would
+    // be for a different version of vscode.
+    await ctx.globalState.update(avoidVersionCheck, false);
+  }
+  if (await ctx.globalState.get(avoidVersionCheck)) {
+    return;
+  }
   try {
     const parsedVersion = semver.parse(vscodeVersion);
     const parsedMinVersion = semver.parse(minVersion);
@@ -1331,7 +1349,10 @@ function assertVSCodeVersionGreaterThan(minVersion: string) {
 
     if (semver.lt(parsedVersion, parsedMinVersion)) {
       const message = `The CodeQL extension requires VS Code version ${minVersion} or later. Current version is ${vscodeVersion}. Please update VS Code to get the latest features of CodeQL.`;
-      void showAndLogWarningMessage(message);
+      const result = await showBinaryChoiceDialog(message, false, 'OK', 'Don\'t show again');
+      if (!result) {
+        await ctx.globalState.update(avoidVersionCheck, true);
+      }
     }
   } catch (e) {
     void showAndLogWarningMessage(`Could not do a version check because of an error: ${getErrorMessage(e)}`);
