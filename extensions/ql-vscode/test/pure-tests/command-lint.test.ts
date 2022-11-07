@@ -39,6 +39,7 @@ describe('commands declared in package.json', function() {
     }
     else if (
       command.match(/^codeQLDatabases\./)
+      || command.match(/^codeQLDatabasesExperimental\./)
       || command.match(/^codeQLQueryHistory\./)
       || command.match(/^codeQLAstViewer\./)
       || command.match(/^codeQLEvalLogViewer\./)
