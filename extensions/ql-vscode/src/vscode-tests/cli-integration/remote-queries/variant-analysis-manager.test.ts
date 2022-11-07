@@ -5,6 +5,7 @@ import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
+import * as ghActionsApiClient from '../../../remote-queries/gh-api/gh-actions-api-client';
 import { Credentials } from '../../../authentication';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -505,6 +506,82 @@ describe('Variant Analysis Manager', async function() {
           await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
           sinon.assert.notCalled(monitorVariantAnalysisCommandSpy);
         });
+      });
+    });
+  });
+
+  describe('cancelVariantAnalysis', async () => {
+    let variantAnalysis: VariantAnalysis;
+    let mockCancelVariantAnalysis: sinon.SinonStub;
+    let getOctokitStub: sinon.SinonStub;
+
+    let variantAnalysisStorageLocation: string;
+
+    beforeEach(async () => {
+      variantAnalysis = createMockVariantAnalysis({});
+
+      mockCancelVariantAnalysis = sandbox.stub(ghActionsApiClient, 'cancelVariantAnalysis');
+
+      variantAnalysisStorageLocation = variantAnalysisManager.getVariantAnalysisStorageLocation(variantAnalysis.id);
+      await createTimestampFile(variantAnalysisStorageLocation);
+      await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+    });
+
+    afterEach(() => {
+      fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
+    });
+
+    describe('when the credentials are invalid', () => {
+      beforeEach(async () => {
+        sandbox.stub(Credentials, 'initialize').resolves(undefined);
+      });
+
+      it('should return early', async () => {
+        try {
+          await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
+        } catch (error: any) {
+          expect(error.message).to.equal('Error authenticating with GitHub');
+        }
+      });
+    });
+
+    describe('when the credentials are valid', () => {
+      let mockCredentials: Credentials;
+
+      beforeEach(async () => {
+        mockCredentials = {
+          getOctokit: () => Promise.resolve({
+            request: getOctokitStub
+          })
+        } as unknown as Credentials;
+        sandbox.stub(Credentials, 'initialize').resolves(mockCredentials);
+      });
+
+      it('should return early if the variant analysis is not found', async () => {
+        try {
+          await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id + 100);
+        } catch (error: any) {
+          expect(error.message).to.equal('No variant analysis with id: ' + (variantAnalysis.id + 100));
+        }
+      });
+
+      it('should return early if the variant analysis does not have an actions workflow run id', async () => {
+        await variantAnalysisManager.onVariantAnalysisUpdated({
+          ...variantAnalysis,
+          actionsWorkflowRunId: undefined,
+        });
+
+        try {
+          await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
+        } catch (error: any) {
+          expect(error.message).to.equal('No workflow run id for variant analysis a-query-name');
+        }
+      });
+
+      it('should return cancel if valid', async () => {
+        await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
+
+        expect(mockCancelVariantAnalysis).to.have.been.calledWith(mockCredentials, variantAnalysis);
       });
     });
   });

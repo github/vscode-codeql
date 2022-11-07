@@ -954,6 +954,14 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
+    commandRunner('codeQL.cancelVariantAnalysis', async (
+      variantAnalysisId: number,
+    ) => {
+      await variantAnalysisManager.cancelVariantAnalysis(variantAnalysisId);
+    })
+  );
+
+  ctx.subscriptions.push(
     commandRunner('codeQL.openVariantAnalysis', async () => {
       await variantAnalysisManager.promptOpenVariantAnalysis();
     })

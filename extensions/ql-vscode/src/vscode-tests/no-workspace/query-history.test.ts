@@ -338,7 +338,6 @@ describe('query-history', () => {
     describe('handleCancel', () => {
       let mockCredentials: Credentials;
       let mockCancelRemoteQuery: sinon.SinonStub;
-      let mockCancelVariantAnalysis: sinon.SinonStub;
       let getOctokitStub: sinon.SinonStub;
 
       beforeEach(async () => {
@@ -349,7 +348,6 @@ describe('query-history', () => {
         } as unknown as Credentials;
         sandbox.stub(Credentials, 'initialize').resolves(mockCredentials);
         mockCancelRemoteQuery = sandbox.stub(ghActionsApiClient, 'cancelRemoteQuery');
-        mockCancelVariantAnalysis = sandbox.stub(ghActionsApiClient, 'cancelVariantAnalysis');
       });
 
       describe('if the item is in progress', async () => {
@@ -408,7 +406,7 @@ describe('query-history', () => {
           const inProgress1 = variantAnalysisHistory[1];
 
           await queryHistoryManager.handleCancel(inProgress1, [inProgress1]);
-          expect(mockCancelVariantAnalysis).to.have.been.calledWith(mockCredentials, inProgress1.variantAnalysis);
+          expect(executeCommandSpy).to.have.been.calledWith('codeQL.cancelVariantAnalysis', inProgress1.variantAnalysis.id);
         });
 
         it('should cancel multiple variant analyses', async () => {
@@ -419,8 +417,8 @@ describe('query-history', () => {
           const inProgress2 = variantAnalysisHistory[3];
 
           await queryHistoryManager.handleCancel(inProgress1, [inProgress1, inProgress2]);
-          expect(mockCancelVariantAnalysis).to.have.been.calledWith(mockCredentials, inProgress1.variantAnalysis);
-          expect(mockCancelVariantAnalysis).to.have.been.calledWith(mockCredentials, inProgress2.variantAnalysis);
+          expect(executeCommandSpy).to.have.been.calledWith('codeQL.cancelVariantAnalysis', inProgress1.variantAnalysis.id);
+          expect(executeCommandSpy).to.have.been.calledWith('codeQL.cancelVariantAnalysis', inProgress2.variantAnalysis.id);
         });
       });
 
@@ -480,7 +478,7 @@ describe('query-history', () => {
           const completedVariantAnalysis = variantAnalysisHistory[0];
 
           await queryHistoryManager.handleCancel(completedVariantAnalysis, [completedVariantAnalysis]);
-          expect(mockCancelVariantAnalysis).to.not.have.been.calledWith(mockCredentials, completedVariantAnalysis.variantAnalysis);
+          expect(executeCommandSpy).to.not.have.been.calledWith('codeQL.cancelVariantAnalysis', completedVariantAnalysis.variantAnalysis);
         });
 
         it('should not cancel multiple variant analyses', async () => {
@@ -491,8 +489,8 @@ describe('query-history', () => {
           const failedVariantAnalysis = variantAnalysisHistory[2];
 
           await queryHistoryManager.handleCancel(completedVariantAnalysis, [completedVariantAnalysis, failedVariantAnalysis]);
-          expect(mockCancelVariantAnalysis).to.not.have.been.calledWith(mockCredentials, completedVariantAnalysis.variantAnalysis);
-          expect(mockCancelVariantAnalysis).to.not.have.been.calledWith(mockCredentials, failedVariantAnalysis.variantAnalysis);
+          expect(executeCommandSpy).to.not.have.been.calledWith('codeQL.cancelVariantAnalysis', completedVariantAnalysis.variantAnalysis.id);
+          expect(executeCommandSpy).to.not.have.been.calledWith('codeQL.cancelVariantAnalysis', failedVariantAnalysis.variantAnalysis.id);
         });
       });
     });
