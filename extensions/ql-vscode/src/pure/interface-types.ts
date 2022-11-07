@@ -477,6 +477,10 @@ export interface OpenQueryTextMessage {
   t: 'openQueryText';
 }
 
+export interface OpenLogsMessage {
+  t: 'openLogs';
+}
+
 export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
   | SetRepoResultsMessage
@@ -487,4 +491,5 @@ export type FromVariantAnalysisMessage =
   | StopVariantAnalysisMessage
   | RequestRepositoryResultsMessage
   | OpenQueryFileMessage
-  | OpenQueryTextMessage;
+  | OpenQueryTextMessage
+  | OpenLogsMessage;

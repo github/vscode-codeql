@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { render as reactRender, screen } from '@testing-library/react';
 import { VariantAnalysisSkippedRepositoriesTab, VariantAnalysisSkippedRepositoriesTabProps } from '../VariantAnalysisSkippedRepositoriesTab';
+import { defaultFilterSortState, SortKey } from '../filterSort';
 
 describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
   const render = (props: VariantAnalysisSkippedRepositoriesTabProps) =>
@@ -96,5 +97,101 @@ describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
     expect(screen.getByText('octodemo/hello-world')).toBeInTheDocument();
     expect(screen.getByText('octodemo/hello-galaxy')).toBeInTheDocument();
     expect(screen.getByText('octodemo/hello-universe')).toBeInTheDocument();
+  });
+
+  it('uses the search value', async () => {
+    render({
+      alertTitle: 'No database',
+      alertMessage: 'The following repositories could not be scanned because they do not have an available CodeQL database.',
+      skippedRepositoryGroup: {
+        repositoryCount: 1,
+        repositories: [
+          {
+            fullName: 'octodemo/hello-world',
+          },
+          {
+            fullName: 'octodemo/hello-galaxy',
+          },
+          {
+            fullName: 'octodemo/hello-universe',
+          },
+        ],
+      },
+      filterSortState: {
+        ...defaultFilterSortState,
+        searchValue: 'world',
+      }
+    });
+
+    expect(screen.getByText('octodemo/hello-world')).toBeInTheDocument();
+    expect(screen.queryByText('octodemo/hello-galaxy')).not.toBeInTheDocument();
+    expect(screen.queryByText('octodemo/hello-universe')).not.toBeInTheDocument();
+  });
+
+  it('uses the sort key', async () => {
+    render({
+      alertTitle: 'No database',
+      alertMessage: 'The following repositories could not be scanned because they do not have an available CodeQL database.',
+      skippedRepositoryGroup: {
+        repositoryCount: 1,
+        repositories: [
+          {
+            fullName: 'octodemo/hello-world',
+            stargazersCount: 300,
+          },
+          {
+            fullName: 'octodemo/hello-galaxy',
+            stargazersCount: 50,
+          },
+          {
+            fullName: 'octodemo/hello-universe',
+            stargazersCount: 500,
+          },
+        ],
+      },
+      filterSortState: {
+        ...defaultFilterSortState,
+        sortKey: SortKey.Stars,
+      }
+    });
+
+    const rows = screen.queryAllByRole('button');
+
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toHaveTextContent('octodemo/hello-universe');
+    expect(rows[1]).toHaveTextContent('octodemo/hello-world');
+    expect(rows[2]).toHaveTextContent('octodemo/hello-galaxy');
+  });
+
+  it('does not use the result count sort key', async () => {
+    render({
+      alertTitle: 'No database',
+      alertMessage: 'The following repositories could not be scanned because they do not have an available CodeQL database.',
+      skippedRepositoryGroup: {
+        repositoryCount: 1,
+        repositories: [
+          {
+            fullName: 'octodemo/hello-world',
+          },
+          {
+            fullName: 'octodemo/hello-galaxy',
+          },
+          {
+            fullName: 'octodemo/hello-universe',
+          },
+        ],
+      },
+      filterSortState: {
+        ...defaultFilterSortState,
+        sortKey: SortKey.ResultsCount,
+      }
+    });
+
+    const rows = screen.queryAllByRole('button');
+
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toHaveTextContent('octodemo/hello-galaxy');
+    expect(rows[1]).toHaveTextContent('octodemo/hello-universe');
+    expect(rows[2]).toHaveTextContent('octodemo/hello-world');
   });
 });

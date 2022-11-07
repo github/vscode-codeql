@@ -438,6 +438,16 @@ export function isVariantAnalysisLiveResultsEnabled(): boolean {
   return !!LIVE_RESULTS.getValue<boolean>();
 }
 
+/**
+ * A flag indicating whether to use the new query run experience which involves
+ * using a new database panel.
+ */
+const NEW_QUERY_RUN_EXPERIENCE = new Setting('newQueryRunExperience', ROOT_SETTING);
+
+export function isNewQueryRunExperienceEnabled(): boolean {
+  return !!NEW_QUERY_RUN_EXPERIENCE.getValue<boolean>();
+}
+
 // Settings for mocking the GitHub API.
 const MOCK_GH_API_SERVER = new Setting('mockGitHubApiServer', ROOT_SETTING);
 

@@ -2,8 +2,14 @@ import { fail } from 'assert';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { Credentials } from '../../../../authentication';
-import { cancelRemoteQuery, getRepositoriesMetadata } from '../../../../remote-queries/gh-api/gh-actions-api-client';
+import {
+  cancelRemoteQuery,
+  cancelVariantAnalysis,
+  getRepositoriesMetadata
+} from '../../../../remote-queries/gh-api/gh-actions-api-client';
 import { RemoteQuery } from '../../../../remote-queries/remote-query';
+import { createMockVariantAnalysis } from '../../../factories/remote-queries/shared/variant-analysis';
+import { VariantAnalysis } from '../../../../remote-queries/shared/variant-analysis';
 
 describe('gh-actions-api-client mock responses', () => {
   let sandbox: sinon.SinonSandbox;
@@ -49,6 +55,29 @@ describe('gh-actions-api-client mock responses', () => {
         }
       } as unknown as RemoteQuery;
     }
+  });
+
+  describe('cancelVariantAnalysis', () => {
+    let variantAnalysis: VariantAnalysis;
+    before(() => {
+      variantAnalysis = createMockVariantAnalysis({});
+    });
+
+    it('should cancel a variant analysis', async () => {
+      mockResponse = sinon.stub().resolves({ status: 202 });
+      await cancelVariantAnalysis(mockCredentials, variantAnalysis);
+
+      expect(mockResponse.calledOnce).to.be.true;
+      expect(mockResponse.firstCall.args[0]).to.equal(`POST /repos/${variantAnalysis.controllerRepo.fullName}/actions/runs/${variantAnalysis.actionsWorkflowRunId}/cancel`);
+    });
+
+    it('should fail to cancel a variant analysis', async () => {
+      mockResponse = sinon.stub().resolves({ status: 409, data: { message: 'Uh oh!' } });
+
+      await expect(cancelVariantAnalysis(mockCredentials, variantAnalysis)).to.be.rejectedWith(/Error cancelling variant analysis: 409 Uh oh!/);
+      expect(mockResponse.calledOnce).to.be.true;
+      expect(mockResponse.firstCall.args[0]).to.equal(`POST /repos/${variantAnalysis.controllerRepo.fullName}/actions/runs/${variantAnalysis.actionsWorkflowRunId}/cancel`);
+    });
   });
 });
 

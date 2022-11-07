@@ -1,4 +1,4 @@
-import { VariantAnalysis } from './shared/variant-analysis';
+import { VariantAnalysis, VariantAnalysisScannedRepositoryState } from './shared/variant-analysis';
 
 export interface VariantAnalysisViewInterface {
   variantAnalysisId: number;
@@ -10,4 +10,5 @@ export interface VariantAnalysisViewManager<T extends VariantAnalysisViewInterfa
   unregisterView(view: T): void;
 
   getVariantAnalysis(variantAnalysisId: number): Promise<VariantAnalysis | undefined>;
+  getRepoStates(variantAnalysisId: number): Promise<VariantAnalysisScannedRepositoryState[]>;
 }

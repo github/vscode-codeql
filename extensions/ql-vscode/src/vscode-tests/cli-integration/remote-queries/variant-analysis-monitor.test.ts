@@ -14,7 +14,11 @@ import {
 import { createFailedMockApiResponse, createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
 import { VariantAnalysis, VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
 import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/scanned-repositories';
-import { processFailureReason } from '../../../remote-queries/variant-analysis-processor';
+import {
+  processFailureReason,
+  processScannedRepository,
+  processUpdatedVariantAnalysis,
+} from '../../../remote-queries/variant-analysis-processor';
 import { Credentials } from '../../../authentication';
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
 import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
@@ -37,7 +41,7 @@ describe('Variant Analysis Monitor', async function() {
 
     cancellationTokenSource = new CancellationTokenSource();
 
-    variantAnalysis = createMockVariantAnalysis();
+    variantAnalysis = createMockVariantAnalysis({});
 
     try {
       extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
@@ -83,14 +87,14 @@ describe('Variant Analysis Monitor', async function() {
 
       const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
-      expect(result).to.eql({ status: 'Cancelled', error: 'Variant Analysis was canceled.' });
+      expect(result).to.eql({ status: 'Canceled' });
     });
 
     describe('when the variant analysis fails', async () => {
       let mockFailedApiResponse: VariantAnalysisApiResponse;
 
       beforeEach(async function() {
-        mockFailedApiResponse = createFailedMockApiResponse('in_progress');
+        mockFailedApiResponse = createFailedMockApiResponse();
         mockGetVariantAnalysis = sandbox.stub(ghApiClient, 'getVariantAnalysis').resolves(mockFailedApiResponse);
       });
 
@@ -98,8 +102,7 @@ describe('Variant Analysis Monitor', async function() {
         const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
         expect(mockGetVariantAnalysis.calledOnce).to.be.true;
-        expect(result.status).to.eql('Failed');
-        expect(result.error).to.eql(`Variant Analysis has failed: ${mockFailedApiResponse.failure_reason}`);
+        expect(result.status).to.eql('Completed');
         expect(result.variantAnalysis?.status).to.equal(VariantAnalysisStatus.Failed);
         expect(result.variantAnalysis?.failureReason).to.equal(processFailureReason(mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason));
       });
@@ -130,7 +133,7 @@ describe('Variant Analysis Monitor', async function() {
         it('should succeed and return a list of scanned repo ids', async () => {
           const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
-          expect(result.status).to.equal('CompletedSuccessfully');
+          expect(result.status).to.equal('Completed');
           expect(result.scannedReposDownloaded).to.eql(succeededRepos.map(r => r.repository.id));
         });
 
@@ -144,8 +147,8 @@ describe('Variant Analysis Monitor', async function() {
 
           succeededRepos.forEach((succeededRepo, index) => {
             expect(commandSpy.getCall(index).args[0]).to.eq('codeQL.autoDownloadVariantAnalysisResult');
-            expect(commandSpy.getCall(index).args[1]).to.eq(succeededRepo);
-            expect(commandSpy.getCall(index).args[2]).to.eq(mockApiResponse);
+            expect(commandSpy.getCall(index).args[1]).to.deep.eq(processScannedRepository(succeededRepo));
+            expect(commandSpy.getCall(index).args[2]).to.deep.eq(processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse));
           });
         });
 
@@ -155,8 +158,8 @@ describe('Variant Analysis Monitor', async function() {
           expect(mockGetDownloadResult).to.have.callCount(succeededRepos.length);
 
           succeededRepos.forEach((succeededRepo, index) => {
-            expect(mockGetDownloadResult.getCall(index).args[0]).to.eq(succeededRepo);
-            expect(mockGetDownloadResult.getCall(index).args[1]).to.eq(mockApiResponse);
+            expect(mockGetDownloadResult.getCall(index).args[0]).to.deep.eq(processScannedRepository(succeededRepo));
+            expect(mockGetDownloadResult.getCall(index).args[1]).to.deep.eq(processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse));
           });
         });
       });
@@ -173,7 +176,7 @@ describe('Variant Analysis Monitor', async function() {
         it('should succeed and return an empty list of scanned repo ids', async () => {
           const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
-          expect(result.status).to.equal('CompletedSuccessfully');
+          expect(result.status).to.equal('Completed');
           expect(result.scannedReposDownloaded).to.eql([]);
         });
 
@@ -194,7 +197,7 @@ describe('Variant Analysis Monitor', async function() {
         it('should succeed and return an empty list of scanned repo ids', async () => {
           const result = await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis, cancellationTokenSource.token);
 
-          expect(result.status).to.equal('CompletedSuccessfully');
+          expect(result.status).to.equal('Completed');
           expect(result.scannedReposDownloaded).to.eql([]);
         });
 

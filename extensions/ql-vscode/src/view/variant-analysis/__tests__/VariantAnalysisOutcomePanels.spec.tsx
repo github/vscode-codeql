@@ -2,30 +2,32 @@ import * as React from 'react';
 import { render as reactRender, screen } from '@testing-library/react';
 import {
   VariantAnalysis,
-  VariantAnalysisQueryLanguage, VariantAnalysisRepoStatus,
+  VariantAnalysisRepoStatus,
   VariantAnalysisStatus
 } from '../../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisOutcomePanelProps, VariantAnalysisOutcomePanels } from '../VariantAnalysisOutcomePanels';
+import { createMockVariantAnalysis } from '../../../vscode-tests/factories/remote-queries/shared/variant-analysis';
+import { createMockRepositoryWithMetadata } from '../../../vscode-tests/factories/remote-queries/shared/repository';
+import { createMockScannedRepo } from '../../../vscode-tests/factories/remote-queries/shared/scanned-repositories';
 
 describe(VariantAnalysisOutcomePanels.name, () => {
   const defaultVariantAnalysis = {
-    id: 1,
-    controllerRepoId: 1,
-    actionsWorkflowRunId: 789263,
-    query: {
-      name: 'Example query',
-      filePath: 'example.ql',
-      language: VariantAnalysisQueryLanguage.Javascript,
-      text: 'import javascript\nselect 1',
+    ...createMockVariantAnalysis({ status: VariantAnalysisStatus.InProgress }),
+    controllerRepo: {
+      id: 1,
+      fullName: 'octodemo/variant-analysis-controller',
+      private: false,
     },
-    databases: {},
+    actionsWorkflowRunId: 789263,
     executionStartTime: 1611234567890,
     createdAt: '2021-01-21T13:09:27.890Z',
     updatedAt: '2021-01-21T13:09:27.890Z',
     status: VariantAnalysisStatus.InProgress,
     scannedRepos: [
       {
+        ...createMockScannedRepo(),
         repository: {
+          ...createMockRepositoryWithMetadata(),
           id: 1,
           fullName: 'octodemo/hello-world-1',
           private: false,
@@ -48,40 +50,22 @@ describe(VariantAnalysisOutcomePanels.name, () => {
       noCodeqlDbRepos: {
         repositoryCount: 4,
         repositories: [
-          {
-            id: 100,
-            fullName: 'octodemo/no-db-1'
-          },
-          {
-            id: 101,
-            fullName: 'octodemo/no-db-2'
-          },
-          {
-            id: 102,
-            fullName: 'octodemo/no-db-3'
-          },
-          {
-            id: 103,
-            fullName: 'octodemo/no-db-4'
-          }
+          createMockRepositoryWithMetadata(),
+          createMockRepositoryWithMetadata(),
+          createMockRepositoryWithMetadata(),
+          createMockRepositoryWithMetadata()
         ]
       },
       overLimitRepos: {
         repositoryCount: 1,
         repositories: [
-          {
-            id: 201,
-            fullName: 'octodemo/over-limit-1'
-          }
+          createMockRepositoryWithMetadata()
         ]
       },
       accessMismatchRepos: {
         repositoryCount: 1,
         repositories: [
-          {
-            id: 205,
-            fullName: 'octodemo/private'
-          }
+          createMockRepositoryWithMetadata()
         ]
       }
     },

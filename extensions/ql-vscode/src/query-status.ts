@@ -21,3 +21,16 @@ export function variantAnalysisStatusToQueryStatus(status: VariantAnalysisStatus
       assertNever(status);
   }
 }
+
+export function humanizeQueryStatus(status: QueryStatus): string {
+  switch (status) {
+    case QueryStatus.InProgress:
+      return 'in progress';
+    case QueryStatus.Completed:
+      return 'completed';
+    case QueryStatus.Failed:
+      return 'failed';
+    default:
+      return 'unknown';
+  }
+}

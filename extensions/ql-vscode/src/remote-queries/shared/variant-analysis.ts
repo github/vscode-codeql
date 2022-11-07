@@ -1,9 +1,9 @@
-import { Repository } from './repository';
+import { Repository, RepositoryWithMetadata } from './repository';
 import { AnalysisAlert, AnalysisRawResults } from './analysis-result';
 
 export interface VariantAnalysis {
   id: number,
-  controllerRepoId: number,
+  controllerRepo: Repository;
   query: {
     name: string,
     filePath: string,
@@ -47,6 +47,13 @@ export enum VariantAnalysisStatus {
   Canceled = 'canceled',
 }
 
+export function isFinalVariantAnalysisStatus(status: VariantAnalysisStatus): boolean {
+  return [
+    // All states that indicates the analysis has completed and cannot change status anymore.
+    VariantAnalysisStatus.Succeeded, VariantAnalysisStatus.Failed, VariantAnalysisStatus.Canceled,
+  ].includes(status);
+}
+
 export enum VariantAnalysisFailureReason {
   NoReposQueried = 'noReposQueried',
   InternalError = 'internalError',
@@ -62,11 +69,22 @@ export enum VariantAnalysisRepoStatus {
 }
 
 export interface VariantAnalysisScannedRepository {
-  repository: Repository,
+  repository: RepositoryWithMetadata,
   analysisStatus: VariantAnalysisRepoStatus,
   resultCount?: number,
   artifactSizeInBytes?: number,
   failureMessage?: string
+}
+
+export interface VariantAnalysisRepositoryTask {
+  repository: Repository,
+  analysisStatus: VariantAnalysisRepoStatus,
+  resultCount?: number,
+  artifactSizeInBytes?: number,
+  failureMessage?: string,
+  databaseCommitSha?: string,
+  sourceLocationPrefix?: string,
+  artifactUrl?: string,
 }
 
 export interface VariantAnalysisSkippedRepositories {
@@ -85,6 +103,8 @@ export interface VariantAnalysisSkippedRepository {
   id?: number,
   fullName: string,
   private?: boolean,
+  stargazersCount?: number,
+  updatedAt?: string | null,
 }
 
 export enum VariantAnalysisScannedRepositoryDownloadStatus {
@@ -130,6 +150,26 @@ export interface VariantAnalysisSubmission {
   }
 }
 
+export async function isVariantAnalysisComplete(
+  variantAnalysis: VariantAnalysis,
+  artifactDownloaded: (repo: VariantAnalysisScannedRepository) => Promise<boolean>
+): Promise<boolean> {
+  // It's only acceptable to have no scanned repos if the variant analysis is not in a final state.
+  // Otherwise it means the analysis hit some kind of internal error or there were no repos to scan.
+  if (variantAnalysis.scannedRepos === undefined || variantAnalysis.scannedRepos.length === 0) {
+    return variantAnalysis.status !== VariantAnalysisStatus.InProgress;
+  }
+
+  return (await Promise.all(variantAnalysis.scannedRepos.map(repo => isVariantAnalysisRepoComplete(repo, artifactDownloaded)))).every(x => x);
+}
+
+async function isVariantAnalysisRepoComplete(
+  repo: VariantAnalysisScannedRepository,
+  artifactDownloaded: (repo: VariantAnalysisScannedRepository) => Promise<boolean>
+): Promise<boolean> {
+  return hasRepoScanCompleted(repo) && (!repoHasDownloadableArtifact(repo) || await artifactDownloaded(repo));
+}
+
 /**
  * @param status
  * @returns whether the status is in a completed state, i.e. it cannot normally change state anymore
@@ -149,6 +189,14 @@ export function isCompletedAnalysisRepoStatus(status: VariantAnalysisRepoStatus)
  */
 export function hasRepoScanCompleted(repo: VariantAnalysisScannedRepository): boolean {
   return isCompletedAnalysisRepoStatus(repo.analysisStatus);
+}
+
+/**
+ * @param repo
+ * @returns whether the repo scan has an artifact that can be downloaded
+ */
+export function repoHasDownloadableArtifact(repo: VariantAnalysisScannedRepository): boolean {
+  return repo.analysisStatus === VariantAnalysisRepoStatus.Succeeded;
 }
 
 /**
@@ -174,4 +222,9 @@ export function getSkippedRepoCount(skippedRepos: VariantAnalysisSkippedReposito
   }
 
   return Object.values(skippedRepos).reduce((acc, group) => acc + group.repositoryCount, 0);
+}
+
+export function getActionsWorkflowRunUrl(variantAnalysis: VariantAnalysis): string {
+  const { actionsWorkflowRunId, controllerRepo: { fullName } } = variantAnalysis;
+  return `https://github.com/${fullName}/actions/runs/${actionsWorkflowRunId}`;
 }

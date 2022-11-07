@@ -82,7 +82,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.14.0'
+          node-version: '16.14.2'
 
       - name: Install dependencies
         working-directory: extensions/ql-vscode
@@ -156,7 +156,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.14.0'
+          node-version: '16.14.2'
 
       - name: Install dependencies
         working-directory: extensions/ql-vscode

@@ -7,6 +7,7 @@ import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-it
 import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-history-item';
 import { assertNever } from './pure/helpers-pure';
 import { pluralize } from './pure/word';
+import { humanizeQueryStatus } from './query-status';
 
 interface InterpolateReplacements {
   t: string; // Start time
@@ -86,7 +87,7 @@ export class HistoryItemLabelProvider {
       q: `${item.remoteQuery.queryName} (${item.remoteQuery.language})`,
       d: buildRepoLabel(item),
       r: resultCount,
-      s: item.status,
+      s: humanizeQueryStatus(item.status),
       f: path.basename(item.remoteQuery.queryFilePath),
       '%': '%'
     };
@@ -99,7 +100,7 @@ export class HistoryItemLabelProvider {
       q: `${item.variantAnalysis.query.name} (${item.variantAnalysis.query.language})`,
       d: buildRepoLabel(item),
       r: resultCount,
-      s: item.status,
+      s: humanizeQueryStatus(item.status),
       f: path.basename(item.variantAnalysis.query.filePath),
       '%': '%',
     };

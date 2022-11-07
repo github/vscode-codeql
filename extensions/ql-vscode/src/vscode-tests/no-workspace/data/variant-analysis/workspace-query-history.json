@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "queries": [
+    {
+      "t": "variant-analysis",
+      "status": "Completed",
+      "completed": true,
+      "variantAnalysis": {
+        "id": 98574321397,
+        "controllerRepoId": 128321,
+        "query": {
+          "name": "Variant Analysis Integration Test 1",
+          "filePath": "PLACEHOLDER/q2.ql",
+          "language": "javascript",
+          "text": "/**\n * @name Variant Analysis Integration Test 1\n * @kind problem\n * @problem.severity warning\n * @id javascript/variant-analysis-integration-test-1\n */\nimport javascript\n\nfrom MemberDeclaration md\nwhere md.getName() = \"dispose\"\nselect md, \"Dispose method\"\n"
+        },
+        "databases": {
+          "repositories": ["234321", "123301"]
+        },
+        "createdAt": "1666688269308",
+        "updatedAt": "1666688869308",
+        "executionStartTime": 1645644973911,
+        "status": "succeeded",
+        "actionsWorkflowRunId": 1889316048
+      }
+    },
+    {
+      "t": "variant-analysis",
+      "status": "Completed",
+      "completed": true,
+      "variantAnalysis": {
+        "id": 98574321397,
+        "controllerRepoId": 128321,
+        "query": {
+          "name": "Variant Analysis Integration Test 2",
+          "filePath": "PLACEHOLDER/q2.ql",
+          "language": "ruby",
+          "text": "/**\n * @name Variant Analysis Integration Test 2\n * @kind problem\n * @problem.severity warning\n * @id ruby/example/empty-block\n */\nimport ruby\n\nfrom Block b\nwhere b.getNumberOfStatements() = 0\nselect b, \"This is an empty block.\"\n"
+        },
+        "databases": {
+          "repositories": ["92384123", "1230871"]
+        },
+        "createdAt": "1666689080847",
+        "updatedAt": "1666689080847",
+        "executionStartTime": 1645644973911,
+        "status": "succeeded",
+        "actionsWorkflowRunId": 1889316048
+      }
+    }
+  ]
+}

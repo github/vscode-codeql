@@ -54,12 +54,14 @@ describe('Time', () => {
   });
 
   it('should return a humanized duration negative', () => {
-    expect(humanizeRelativeTime(-1)).to.eq('1 minute ago');
+    expect(humanizeRelativeTime(-1)).to.eq('this minute');
     expect(humanizeRelativeTime(-1000 * 60)).to.eq('1 minute ago');
-    expect(humanizeRelativeTime(-1000 * 60 - 1)).to.eq('2 minutes ago');
+    expect(humanizeRelativeTime(-1000 * 60 - 1)).to.eq('1 minute ago');
     expect(humanizeRelativeTime(-1000 * 60 * 2)).to.eq('2 minutes ago');
-    expect(humanizeRelativeTime(-1000 * 60 * 2 - 1)).to.eq('3 minutes ago');
+    expect(humanizeRelativeTime(-1000 * 60 * 2 - 1)).to.eq('2 minutes ago');
+    expect(humanizeRelativeTime(-1000 * 60 * 3)).to.eq('3 minutes ago');
     expect(humanizeRelativeTime(-1000 * 60 * 60)).to.eq('1 hour ago');
+    expect(humanizeRelativeTime(-1000 * 60 * 60 - 1)).to.eq('1 hour ago');
     expect(humanizeRelativeTime(-1000 * 60 * 60 * 2)).to.eq('2 hours ago');
     expect(humanizeRelativeTime(-1000 * 60 * 60 * 24)).to.eq('yesterday');
     expect(humanizeRelativeTime(-1000 * 60 * 60 * 24 * 2)).to.eq('2 days ago');

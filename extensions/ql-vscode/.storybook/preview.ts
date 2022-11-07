@@ -7,7 +7,7 @@ import '@vscode/codicons/dist/codicon.css';
 // https://storybook.js.org/docs/react/configure/overview#configure-story-rendering
 export const parameters = {
   // All props starting with `on` will automatically receive an action as a prop
-  actions: { argTypesRegex: "^on[A-Z].*" },
+  actions: { argTypesRegex: '^on[A-Z].*' },
   // All props matching these names will automatically get the correct control
   controls: {
     matchers: {

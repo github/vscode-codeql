@@ -7,7 +7,7 @@ import { UserCancellationException } from '../commandRunner';
 import { showInformationMessageWithAction } from '../helpers';
 import { logger } from '../logging';
 import { QueryHistoryManager } from '../query-history';
-import { createGist } from './gh-api/gh-actions-api-client';
+import { createGist } from './gh-api/gh-api-client';
 import { RemoteQueriesManager } from './remote-queries-manager';
 import { generateMarkdown } from './remote-queries-markdown-generation';
 import { RemoteQuery } from './remote-query';

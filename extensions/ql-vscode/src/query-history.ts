@@ -31,7 +31,7 @@ import { commandRunner } from './commandRunner';
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from './pure/time';
 import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
 import { CompletedLocalQueryInfo, LocalQueryInfo } from './query-results';
-import { getQueryId, getQueryText, QueryHistoryInfo } from './query-history-info';
+import { getActionsWorkflowRunUrl, getQueryId, getQueryText, QueryHistoryInfo } from './query-history-info';
 import { DatabaseManager } from './databases';
 import { registerQueryHistoryScrubber } from './query-history-scrubber';
 import { QueryStatus, variantAnalysisStatusToQueryStatus } from './query-status';
@@ -40,7 +40,7 @@ import * as fs from 'fs-extra';
 import { CliVersionConstraint } from './cli';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { Credentials } from './authentication';
-import { cancelRemoteQuery } from './remote-queries/gh-api/gh-actions-api-client';
+import { cancelRemoteQuery, cancelVariantAnalysis } from './remote-queries/gh-api/gh-actions-api-client';
 import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { ResultsView } from './interface';
@@ -173,33 +173,53 @@ export class HistoryTreeDataProvider extends DisposableObject implements TreeDat
 
     // Populate the icon and the context value. We use the context value to
     // control which commands are visible in the context menu.
-    let hasResults;
+    treeItem.iconPath = this.getIconPath(element);
+    treeItem.contextValue = await this.getContextValue(element);
+
+    return treeItem;
+  }
+
+  private getIconPath(element: QueryHistoryInfo): ThemeIcon | string {
     switch (element.status) {
       case QueryStatus.InProgress:
-        treeItem.iconPath = new ThemeIcon('sync~spin');
-        treeItem.contextValue = element.t === 'local' ? 'inProgressResultsItem' : 'inProgressRemoteResultsItem';
-        break;
+        return new ThemeIcon('sync~spin');
       case QueryStatus.Completed:
         if (element.t === 'local') {
-          hasResults = await element.completedQuery?.query.hasInterpretedResults();
-          treeItem.iconPath = this.localSuccessIconPath;
-          treeItem.contextValue = hasResults
-            ? 'interpretedResultsItem'
-            : 'rawResultsItem';
+          return this.localSuccessIconPath;
         } else {
-          treeItem.iconPath = this.remoteSuccessIconPath;
-          treeItem.contextValue = 'remoteResultsItem';
+          return this.remoteSuccessIconPath;
         }
-        break;
       case QueryStatus.Failed:
-        treeItem.iconPath = this.failedIconPath;
-        treeItem.contextValue = element.t === 'local' ? 'cancelledResultsItem' : 'cancelledRemoteResultsItem';
-        break;
+        return this.failedIconPath;
       default:
         assertNever(element.status);
     }
+  }
 
-    return treeItem;
+  private async getContextValue(element: QueryHistoryInfo): Promise<string> {
+    switch (element.status) {
+      case QueryStatus.InProgress:
+        if (element.t === 'local') {
+          return 'inProgressResultsItem';
+        } else if (element.t === 'variant-analysis' && element.variantAnalysis.actionsWorkflowRunId === undefined) {
+          return 'pendingRemoteResultsItem';
+        } else {
+          return 'inProgressRemoteResultsItem';
+        }
+      case QueryStatus.Completed:
+        if (element.t === 'local') {
+          const hasResults = await element.completedQuery?.query.hasInterpretedResults();
+          return hasResults
+            ? 'interpretedResultsItem'
+            : 'rawResultsItem';
+        } else {
+          return 'remoteResultsItem';
+        }
+      case QueryStatus.Failed:
+        return element.t === 'local' ? 'cancelledResultsItem' : 'cancelledRemoteResultsItem';
+      default:
+        assertNever(element.status);
+    }
   }
 
   getChildren(
@@ -694,7 +714,7 @@ export class QueryHistoryManager extends DisposableObject {
         await this.remoteQueriesManager.rehydrateRemoteQuery(item.queryId, item.remoteQuery, item.status);
       }
       if (item.t === 'variant-analysis') {
-        await this.variantAnalysisManager.rehydrateVariantAnalysis(item.variantAnalysis, item.status);
+        await this.variantAnalysisManager.rehydrateVariantAnalysis(item.variantAnalysis);
       }
     }));
   }
@@ -1089,6 +1109,7 @@ export class QueryHistoryManager extends DisposableObject {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
     const selected = finalMultiSelect || [finalSingleItem];
+
     const results = selected.map(async item => {
       if (item.status === QueryStatus.InProgress) {
         if (item.t === 'local') {
@@ -1097,6 +1118,10 @@ export class QueryHistoryManager extends DisposableObject {
           void showAndLogInformationMessage('Cancelling variant analysis. This may take a while.');
           const credentials = await this.getCredentials();
           await cancelRemoteQuery(credentials, item.remoteQuery);
+        } else if (item.t === 'variant-analysis') {
+          void showAndLogInformationMessage('Cancelling variant analysis. This may take a while.');
+          const credentials = await this.getCredentials();
+          await cancelVariantAnalysis(credentials, item.variantAnalysis);
         }
       }
     });
@@ -1213,17 +1238,17 @@ export class QueryHistoryManager extends DisposableObject {
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
-    // Remote queries only
-    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'remote') {
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
       return;
     }
 
-    const { actionsWorkflowRunId: workflowRunId, controllerRepository: { owner, name } } = finalSingleItem.remoteQuery;
+    if (finalSingleItem.t === 'local') {
+      return;
+    }
 
-    await commands.executeCommand(
-      'vscode.open',
-      Uri.parse(`https://github.com/${owner}/${name}/actions/runs/${workflowRunId}`)
-    );
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(finalSingleItem);
+
+    await commands.executeCommand('vscode.open', Uri.parse(actionsWorkflowRunUrl));
   }
 
   async handleCopyRepoList(

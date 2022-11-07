@@ -4,6 +4,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import { VariantAnalysisContainer } from '../../view/variant-analysis/VariantAnalysisContainer';
 import { VariantAnalysisSkippedRepositoriesTab } from '../../view/variant-analysis/VariantAnalysisSkippedRepositoriesTab';
+import { createMockRepositoryWithMetadata } from '../../vscode-tests/factories/remote-queries/shared/repository';
 
 export default {
   title: 'Variant Analysis/Variant Analysis Skipped Repositories Tab',
@@ -65,11 +66,13 @@ NoDatabaseNoOmissions.args = {
     repositoryCount: 2,
     repositories: [
       {
+        ...createMockRepositoryWithMetadata(),
         id: 1,
         fullName: 'octodemo/hello-globe',
         private: false,
       },
       {
+        ...createMockRepositoryWithMetadata(),
         id: 2,
         fullName: 'octodemo/hello-planet',
         private: true,
@@ -85,16 +88,19 @@ NoDatabaseWithOmissions.args = {
     repositoryCount: 12345,
     repositories: [
       {
+        ...createMockRepositoryWithMetadata(),
         id: 1,
         fullName: 'octodemo/hello-globe',
         private: false,
       },
       {
+        ...createMockRepositoryWithMetadata(),
         id: 2,
         fullName: 'octodemo/hello-planet',
         private: true,
       },
       {
+        ...createMockRepositoryWithMetadata(),
         id: 3,
         fullName: 'octodemo/hello-universe',
         private: false,
