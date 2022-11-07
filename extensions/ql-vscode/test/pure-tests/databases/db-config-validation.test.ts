@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import { validateDbConfig } from '../../../src/databases/db-config-validation';
 import { DbConfig } from '../../../src/databases/db-config';
 

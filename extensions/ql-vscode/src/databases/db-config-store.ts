@@ -3,6 +3,7 @@ import * as path from 'path';
 import { cloneDbConfig, DbConfig } from './db-config';
 import * as chokidar from 'chokidar';
 import { DisposableObject } from '../pure/disposable-object';
+import { validateDbConfig } from './db-config-validation';
 
 export class DbConfigStore extends DisposableObject {
   private readonly configPath: string;
@@ -33,8 +34,8 @@ export class DbConfigStore extends DisposableObject {
     return cloneDbConfig(this.config);
   }
 
-  public getConfigPath(): string {
-    return this.configPath;
+  public validateConfig(): string[] {
+    return validateDbConfig(this.config);
   }
 
   private async loadConfig(): Promise<void> {
