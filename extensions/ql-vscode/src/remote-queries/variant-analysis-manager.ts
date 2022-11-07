@@ -26,6 +26,8 @@ import { createTimestampFile, showAndLogErrorMessage } from '../helpers';
 import * as fs from 'fs-extra';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
+  private static readonly REPO_STATES_FILENAME = 'repo_states.json';
+
   private readonly _onVariantAnalysisAdded = this.push(new EventEmitter<VariantAnalysis>());
   public readonly onVariantAnalysisAdded = this._onVariantAnalysisAdded.event;
   private readonly _onVariantAnalysisStatusUpdated = this.push(new EventEmitter<VariantAnalysis>());
@@ -39,6 +41,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   private readonly views = new Map<number, VariantAnalysisView>();
   private static readonly maxConcurrentDownloads = 3;
   private readonly queue = new PQueue({ concurrency: VariantAnalysisManager.maxConcurrentDownloads });
+
+  private readonly repoStates = new Map<number, Record<number, VariantAnalysisScannedRepositoryState>>();
 
   constructor(
     private readonly ctx: ExtensionContext,
@@ -60,6 +64,15 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       this._onVariantAnalysisRemoved.fire(variantAnalysis);
     } else {
       await this.setVariantAnalysis(variantAnalysis);
+
+      try {
+        const repoStates = await fs.readJson(this.getRepoStatesStoragePath(variantAnalysis.id));
+        this.repoStates.set(variantAnalysis.id, repoStates);
+      } catch (e) {
+        // Ignore this error, we simply might not have downloaded anything yet
+        this.repoStates.set(variantAnalysis.id, {});
+      }
+
       if (!await isVariantAnalysisComplete(variantAnalysis, this.makeResultDownloadChecker(variantAnalysis))) {
         void commands.executeCommand('codeQL.monitorVariantAnalysis', variantAnalysis);
       }
@@ -120,6 +133,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return this.variantAnalyses.get(variantAnalysisId);
   }
 
+  public async getRepoStates(variantAnalysisId: number): Promise<VariantAnalysisScannedRepositoryState[]> {
+    return Object.values(this.repoStates.get(variantAnalysisId) ?? {});
+  }
+
   public get variantAnalysesSize(): number {
     return this.variantAnalyses.size;
   }
@@ -152,6 +169,8 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     await this.prepareStorageDirectory(variantAnalysis.id);
 
+    this.repoStates.set(variantAnalysis.id, {});
+
     this._onVariantAnalysisAdded.fire(variantAnalysis);
   }
 
@@ -166,6 +185,14 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
   private async onRepoStateUpdated(variantAnalysisId: number, repoState: VariantAnalysisScannedRepositoryState): Promise<void> {
     await this.getView(variantAnalysisId)?.updateRepoState(repoState);
+
+    let repoStates = this.repoStates.get(variantAnalysisId);
+    if (!repoStates) {
+      repoStates = {};
+      this.repoStates.set(variantAnalysisId, repoStates);
+    }
+
+    repoStates[repoState.repositoryId] = repoState;
   }
 
   public async monitorVariantAnalysis(
@@ -180,6 +207,10 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     variantAnalysis: VariantAnalysis,
     cancellationToken: CancellationToken
   ): Promise<void> {
+    if (this.repoStates.get(variantAnalysis.id)?.[scannedRepo.repository.id]?.downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Succeeded) {
+      return;
+    }
+
     const repoState = {
       repositoryId: scannedRepo.repository.id,
       downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Pending,
@@ -216,11 +247,19 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.InProgress;
       await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
-      await this.variantAnalysisResultsManager.download(credentials, variantAnalysis.id, repoTask, this.getVariantAnalysisStorageLocation(variantAnalysis.id));
+      try {
+        await this.variantAnalysisResultsManager.download(credentials, variantAnalysis.id, repoTask, this.getVariantAnalysisStorageLocation(variantAnalysis.id));
+      } catch (e) {
+        repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Failed;
+        await this.onRepoStateUpdated(variantAnalysis.id, repoState);
+        throw new Error(`Could not download the results for variant analysis with id: ${variantAnalysis.id}. Error: ${getErrorMessage(e)}`);
+      }
     }
 
     repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
     await this.onRepoStateUpdated(variantAnalysis.id, repoState);
+
+    await fs.outputJson(this.getRepoStatesStoragePath(variantAnalysis.id), this.repoStates.get(variantAnalysis.id));
   }
 
   public async enqueueDownload(
@@ -239,6 +278,13 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return path.join(
       this.storagePath,
       `${variantAnalysisId}`
+    );
+  }
+
+  private getRepoStatesStoragePath(variantAnalysisId: number): string {
+    return path.join(
+      this.getVariantAnalysisStorageLocation(variantAnalysisId),
+      VariantAnalysisManager.REPO_STATES_FILENAME
     );
   }
 
