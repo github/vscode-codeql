@@ -355,7 +355,7 @@
         "title": "CodeQL: Copy Version Information"
       },
       {
-        "command": "codeQLDatabasesExperimental.openConfigFile",
+        "command": "codeQLDatabases.openConfigFile",
         "title": "CodeQL: Open Database Configuration File",
         "icon": {
           "light": "media/light/edit.svg",
@@ -762,7 +762,7 @@
           "group": "navigation"
         },
         {
-          "command": "codeQLDatabasesExperimental.openConfigFile",
+          "command": "codeQLDatabases.openConfigFile",
           "when": "view == codeQLDatabasesExperimental",
           "group": "navigation"
         }
@@ -984,7 +984,7 @@
           "when": "config.codeQL.canary"
         },
         {
-          "command": "codeQLDatabasesExperimental.openConfigFile",
+          "command": "codeQLDatabases.openConfigFile",
           "when": "false"
         },
         {
