@@ -33,6 +33,10 @@ export class DbConfigStore extends DisposableObject {
     return cloneDbConfig(this.config);
   }
 
+  public getConfigPath(): string {
+    return this.configPath;
+  }
+
   private async loadConfig(): Promise<void> {
     if (!await fs.pathExists(this.configPath)) {
       await fs.writeJSON(this.configPath, this.createEmptyConfig(), { spaces: 2 });

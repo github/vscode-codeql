@@ -16,4 +16,8 @@ export class DbManager {
       createLocalTree()
     ];
   }
+
+  public getConfigPath(): string {
+    return this.dbConfigStore.getConfigPath();
+  }
 }
