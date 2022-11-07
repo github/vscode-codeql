@@ -356,7 +356,7 @@
       },
       {
         "command": "codeQLDatabases.openConfigFile",
-        "title": "CodeQL: Open Database Configuration File",
+        "title": "Open Database Configuration File",
         "icon": {
           "light": "media/light/edit.svg",
           "dark": "media/dark/edit.svg"
