@@ -3,21 +3,25 @@ import * as path from 'path';
 import { cloneDbConfig, DbConfig } from './db-config';
 import * as chokidar from 'chokidar';
 import { DisposableObject } from '../pure/disposable-object';
-import { validateDbConfig } from './db-config-validation';
+import { DbConfigValidator } from './db-config-validator';
 
 export class DbConfigStore extends DisposableObject {
   private readonly configPath: string;
+  private readonly configValidator: DbConfigValidator;
 
   private config: DbConfig;
   private configWatcher: chokidar.FSWatcher | undefined;
 
-  public constructor(workspaceStoragePath: string) {
+  public constructor(
+    workspaceStoragePath: string,
+    extensionPath: string) {
     super();
 
     this.configPath = path.join(workspaceStoragePath, 'workspace-databases.json');
 
     this.config = this.createEmptyConfig();
     this.configWatcher = undefined;
+    this.configValidator = new DbConfigValidator(extensionPath);
   }
 
   public async initialize(): Promise<void> {
@@ -34,8 +38,12 @@ export class DbConfigStore extends DisposableObject {
     return cloneDbConfig(this.config);
   }
 
+  public getConfigPath(): string {
+    return this.configPath;
+  }
+
   public validateConfig(): string[] {
-    return validateDbConfig(this.config);
+    return this.configValidator.validate(this.config);
   }
 
   private async loadConfig(): Promise<void> {

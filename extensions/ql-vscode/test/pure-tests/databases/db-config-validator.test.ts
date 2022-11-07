@@ -1,8 +1,12 @@
 import { expect } from 'chai';
-import { validateDbConfig } from '../../../src/databases/db-config-validation';
+import * as path from 'path';
 import { DbConfig } from '../../../src/databases/db-config';
+import { DbConfigValidator } from '../../../src/databases/db-config-validator';
 
 describe('db config validation', async () => {
+  const extensionPath = path.join(__dirname, '../../..');
+  const configValidator = new DbConfigValidator(extensionPath);
+
   it('should return error when file is not valid', async () => {
     // We're intentionally bypassing the type check because we'd
     // like to make sure validation errors are highlighted.
@@ -19,7 +23,7 @@ describe('db config validation', async () => {
       }
     } as any as DbConfig;
 
-    const validationOutput = validateDbConfig(dbConfig);
+    const validationOutput = configValidator.validate(dbConfig);
 
     expect(validationOutput).to.have.length(2);
 
