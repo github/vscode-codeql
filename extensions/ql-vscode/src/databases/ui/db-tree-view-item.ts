@@ -1,5 +1,13 @@
 import * as vscode from 'vscode';
-import { DbItem } from '../db-item';
+import {
+  DbItem,
+  RemoteOwnerDbItem,
+  RemoteRepoDbItem,
+  RemoteSystemDefinedListDbItem,
+  RemoteUserDefinedListDbItem,
+  RootLocalDbItem,
+  RootRemoteDbItem
+} from '../db-item';
 
 /**
  * Represents an item in the database tree view. This item could be 
@@ -8,9 +16,9 @@ import { DbItem } from '../db-item';
 export class DbTreeViewItem extends vscode.TreeItem {
   constructor(
     public readonly dbItem: DbItem | undefined,
-    public readonly iconPath: vscode.ThemeIcon,
+    public readonly iconPath: vscode.ThemeIcon | undefined,
     public readonly label: string,
-    public readonly tooltip: string,
+    public readonly tooltip: string | undefined,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState,
     public readonly children: DbTreeViewItem[]
   ) {
@@ -27,4 +35,73 @@ export function createDbTreeViewItemWarning(label: string, tooltip: string): DbT
     vscode.TreeItemCollapsibleState.None,
     []
   );
+}
+
+export function createDbTreeViewItemRoot(
+  dbItem: RootLocalDbItem | RootRemoteDbItem,
+  label: string,
+  tooltip: string,
+  children: DbTreeViewItem[]
+): DbTreeViewItem {
+  return new DbTreeViewItem(
+    dbItem,
+    undefined,
+    label,
+    tooltip,
+    vscode.TreeItemCollapsibleState.Collapsed,
+    children);
+}
+
+export function createDbTreeViewItemSystemDefinedList(
+  dbItem: RemoteSystemDefinedListDbItem,
+  label: string,
+  tooltip: string
+): DbTreeViewItem {
+  return new DbTreeViewItem(
+    dbItem,
+    new vscode.ThemeIcon('github'),
+    label,
+    tooltip,
+    vscode.TreeItemCollapsibleState.None,
+    []);
+}
+
+export function createDbTreeViewItemUserDefinedList(
+  dbItem: RemoteUserDefinedListDbItem,
+  listName: string,
+  children: DbTreeViewItem[]
+): DbTreeViewItem {
+  return new DbTreeViewItem(
+    dbItem,
+    undefined,
+    listName,
+    undefined,
+    vscode.TreeItemCollapsibleState.Collapsed,
+    children);
+}
+
+export function createDbTreeViewItemOwner(
+  dbItem: RemoteOwnerDbItem,
+  ownerName: string,
+): DbTreeViewItem {
+  return new DbTreeViewItem(
+    dbItem,
+    new vscode.ThemeIcon('organization'),
+    ownerName,
+    undefined,
+    vscode.TreeItemCollapsibleState.None,
+    []);
+}
+
+export function createDbTreeViewItemRepo(
+  dbItem: RemoteRepoDbItem,
+  repoName: string,
+): DbTreeViewItem {
+  return new DbTreeViewItem(
+    dbItem,
+    new vscode.ThemeIcon('database'),
+    repoName,
+    undefined,
+    vscode.TreeItemCollapsibleState.None,
+    []);
 }
