@@ -47,6 +47,7 @@ export function createMockLocalQueryInfo({
   const localQuery = new LocalQueryInfo(initialQueryInfo, cancellationToken);
 
   localQuery.failureReason = failureReason;
+  localQuery.cancel = () => { /**/ };
 
   if (queryWithResults) {
     localQuery.completeThisQuery(queryWithResults);

@@ -109,11 +109,7 @@ import { NewQueryRunner } from './query-server/query-runner';
 import { QueryRunner } from './queryRunner';
 import { VariantAnalysisView } from './remote-queries/variant-analysis-view';
 import { VariantAnalysisViewSerializer } from './remote-queries/variant-analysis-view-serializer';
-import { VariantAnalysis } from './remote-queries/shared/variant-analysis';
-import {
-  VariantAnalysis as VariantAnalysisApiResponse,
-  VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
-} from './remote-queries/gh-api/variant-analysis';
+import { VariantAnalysis, VariantAnalysisScannedRepository } from './remote-queries/shared/variant-analysis';
 import { VariantAnalysisManager } from './remote-queries/variant-analysis-manager';
 import { createVariantAnalysisContentProvider } from './remote-queries/variant-analysis-content-provider';
 import { VSCodeMockGitHubApiServer } from './mocks/vscode-mock-gh-api-server';
@@ -949,8 +945,8 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner('codeQL.autoDownloadVariantAnalysisResult', async (
-      scannedRepo: ApiVariantAnalysisScannedRepository,
-      variantAnalysisSummary: VariantAnalysisApiResponse,
+      scannedRepo: VariantAnalysisScannedRepository,
+      variantAnalysisSummary: VariantAnalysis,
       token: CancellationToken
     ) => {
       await variantAnalysisManager.enqueueDownload(scannedRepo, variantAnalysisSummary, token);

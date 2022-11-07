@@ -12,6 +12,7 @@ export class DbConfigStore extends DisposableObject {
 
   public constructor(workspaceStoragePath: string) {
     super();
+
     this.configPath = path.join(workspaceStoragePath, 'workspace-databases.json');
 
     this.config = this.createEmptyConfig();

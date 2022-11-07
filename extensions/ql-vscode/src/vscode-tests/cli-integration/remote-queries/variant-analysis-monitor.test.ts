@@ -14,7 +14,11 @@ import {
 import { createFailedMockApiResponse, createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
 import { VariantAnalysis, VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
 import { createMockScannedRepos } from '../../factories/remote-queries/gh-api/scanned-repositories';
-import { processFailureReason } from '../../../remote-queries/variant-analysis-processor';
+import {
+  processFailureReason,
+  processScannedRepository,
+  processUpdatedVariantAnalysis,
+} from '../../../remote-queries/variant-analysis-processor';
 import { Credentials } from '../../../authentication';
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
 import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
@@ -143,8 +147,8 @@ describe('Variant Analysis Monitor', async function() {
 
           succeededRepos.forEach((succeededRepo, index) => {
             expect(commandSpy.getCall(index).args[0]).to.eq('codeQL.autoDownloadVariantAnalysisResult');
-            expect(commandSpy.getCall(index).args[1]).to.eq(succeededRepo);
-            expect(commandSpy.getCall(index).args[2]).to.eq(mockApiResponse);
+            expect(commandSpy.getCall(index).args[1]).to.deep.eq(processScannedRepository(succeededRepo));
+            expect(commandSpy.getCall(index).args[2]).to.deep.eq(processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse));
           });
         });
 
@@ -154,8 +158,8 @@ describe('Variant Analysis Monitor', async function() {
           expect(mockGetDownloadResult).to.have.callCount(succeededRepos.length);
 
           succeededRepos.forEach((succeededRepo, index) => {
-            expect(mockGetDownloadResult.getCall(index).args[0]).to.eq(succeededRepo);
-            expect(mockGetDownloadResult.getCall(index).args[1]).to.eq(mockApiResponse);
+            expect(mockGetDownloadResult.getCall(index).args[0]).to.deep.eq(processScannedRepository(succeededRepo));
+            expect(mockGetDownloadResult.getCall(index).args[1]).to.deep.eq(processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse));
           });
         });
       });

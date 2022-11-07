@@ -6,13 +6,10 @@ import { DisposableObject } from '../pure/disposable-object';
 import { Credentials } from '../authentication';
 import { VariantAnalysisMonitor } from './variant-analysis-monitor';
 import {
-  VariantAnalysis as VariantAnalysisApiResponse,
-  VariantAnalysisRepoTask,
-  VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository
-} from './gh-api/variant-analysis';
-import {
   isVariantAnalysisComplete,
-  VariantAnalysis, VariantAnalysisQueryLanguage,
+  VariantAnalysis,
+  VariantAnalysisQueryLanguage,
+  VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
@@ -23,7 +20,7 @@ import { VariantAnalysisView } from './variant-analysis-view';
 import { VariantAnalysisViewManager } from './variant-analysis-view-manager';
 import { VariantAnalysisResultsManager } from './variant-analysis-results-manager';
 import { getControllerRepo } from './run-remote-query';
-import { processUpdatedVariantAnalysis } from './variant-analysis-processor';
+import { processUpdatedVariantAnalysis, processVariantAnalysisRepositoryTask } from './variant-analysis-processor';
 import PQueue from 'p-queue';
 import { createTimestampFile, showAndLogErrorMessage } from '../helpers';
 import * as fs from 'fs-extra';
@@ -206,11 +203,11 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
   }
 
   public async autoDownloadVariantAnalysisResult(
-    scannedRepo: ApiVariantAnalysisScannedRepository,
-    variantAnalysisSummary: VariantAnalysisApiResponse,
+    scannedRepo: VariantAnalysisScannedRepository,
+    variantAnalysis: VariantAnalysis,
     cancellationToken: CancellationToken
   ): Promise<void> {
-    if (this.repoStates.get(variantAnalysisSummary.id)?.[scannedRepo.repository.id]?.downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Succeeded) {
+    if (this.repoStates.get(variantAnalysis.id)?.[scannedRepo.repository.id]?.downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Succeeded) {
       return;
     }
 
@@ -219,56 +216,58 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Pending,
     };
 
-    await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
+    await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
     const credentials = await Credentials.initialize(this.ctx);
     if (!credentials) { throw Error('Error authenticating with GitHub'); }
 
     if (cancellationToken && cancellationToken.isCancellationRequested) {
       repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Failed;
-      await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
+      await this.onRepoStateUpdated(variantAnalysis.id, repoState);
       return;
     }
 
-    let repoTask: VariantAnalysisRepoTask;
+    let repoTask: VariantAnalysisRepositoryTask;
     try {
-      repoTask = await ghApiClient.getVariantAnalysisRepo(
+      const repoTaskResponse = await ghApiClient.getVariantAnalysisRepo(
         credentials,
-        variantAnalysisSummary.controller_repo.id,
-        variantAnalysisSummary.id,
+        variantAnalysis.controllerRepo.id,
+        variantAnalysis.id,
         scannedRepo.repository.id
       );
+
+      repoTask = processVariantAnalysisRepositoryTask(repoTaskResponse);
     } catch (e) {
       repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Failed;
-      await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
-      throw new Error(`Could not download the results for variant analysis with id: ${variantAnalysisSummary.id}. Error: ${getErrorMessage(e)}`);
+      await this.onRepoStateUpdated(variantAnalysis.id, repoState);
+      throw new Error(`Could not download the results for variant analysis with id: ${variantAnalysis.id}. Error: ${getErrorMessage(e)}`);
     }
 
-    if (repoTask.artifact_url) {
+    if (repoTask.artifactUrl) {
       repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.InProgress;
-      await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
+      await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
       try {
-        await this.variantAnalysisResultsManager.download(credentials, variantAnalysisSummary.id, repoTask, this.getVariantAnalysisStorageLocation(variantAnalysisSummary.id));
+        await this.variantAnalysisResultsManager.download(credentials, variantAnalysis.id, repoTask, this.getVariantAnalysisStorageLocation(variantAnalysis.id));
       } catch (e) {
         repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Failed;
-        await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
-        throw new Error(`Could not download the results for variant analysis with id: ${variantAnalysisSummary.id}. Error: ${getErrorMessage(e)}`);
+        await this.onRepoStateUpdated(variantAnalysis.id, repoState);
+        throw new Error(`Could not download the results for variant analysis with id: ${variantAnalysis.id}. Error: ${getErrorMessage(e)}`);
       }
     }
 
     repoState.downloadStatus = VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
-    await this.onRepoStateUpdated(variantAnalysisSummary.id, repoState);
+    await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
-    await fs.outputJson(this.getRepoStatesStoragePath(variantAnalysisSummary.id), this.repoStates.get(variantAnalysisSummary.id));
+    await fs.outputJson(this.getRepoStatesStoragePath(variantAnalysis.id), this.repoStates.get(variantAnalysis.id));
   }
 
   public async enqueueDownload(
-    scannedRepo: ApiVariantAnalysisScannedRepository,
-    variantAnalysisSummary: VariantAnalysisApiResponse,
+    scannedRepo: VariantAnalysisScannedRepository,
+    variantAnalysis: VariantAnalysis,
     token: CancellationToken
   ): Promise<void> {
-    await this.queue.add(() => this.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysisSummary, token));
+    await this.queue.add(() => this.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysis, token));
   }
 
   public downloadsQueueSize(): number {
