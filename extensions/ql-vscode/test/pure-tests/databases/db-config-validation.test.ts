@@ -1,7 +1,7 @@
 import { validateDbConfig } from '../../../src/databases/db-config-validation';
 import { DbConfig } from '../../../src/databases/db-config';
 
-describe.only('db config validation', async () => {
+describe('db config validation', async () => {
   it('should return error when file is not valid', async () => {
     // We're intentionally bypassing the type check because we'd
     // like to make sure validation errors are highlighted.
