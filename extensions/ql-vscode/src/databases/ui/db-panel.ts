@@ -25,7 +25,7 @@ export class DbPanel extends DisposableObject {
   public async initialize(): Promise<void> {
     this.push(
       commandRunner(
-        'codeQLDatabases.openConfigFile',
+        'codeQLDatabasesExperimental.openConfigFile',
         () => this.openConfigFile(),
       )
     );
