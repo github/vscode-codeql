@@ -6,7 +6,7 @@ import { createRemoteTree } from '../../../src/databases/db-tree-creator';
 
 describe('db tree creator', () => {
   describe('createRemoteTree', () => {
-    it('should build root node and sytem defined lists', () => {
+    it('should build root node and system defined lists', () => {
       const dbConfig: DbConfig = {
         remote: {
           repositoryLists: [],

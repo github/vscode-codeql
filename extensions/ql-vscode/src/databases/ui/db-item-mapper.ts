@@ -21,7 +21,7 @@ export function mapDbItemToTreeViewItem(dbItem: DbItem): DbTreeViewItem {
       return createDbTreeViewItemRoot(
         dbItem,
         'remote',
-        'Local databases',
+        'Remote databases',
         dbItem.children.map(c => mapDbItemToTreeViewItem(c)));
 
     case DbItemKind.RemoteSystemDefinedList:
