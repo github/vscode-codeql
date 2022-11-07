@@ -27,12 +27,11 @@ import { createInitialQueryInfo, QueryWithResults } from '../run-queries-shared'
 import { QueryRunner } from '../queryRunner';
 
 /**
- * Run templated CodeQL queries to find definitions and references in
+ * Runs templated CodeQL queries to find definitions in
  * source-language files. We may eventually want to find a way to
  * generalize this to other custom queries, e.g. showing dataflow to
  * or from a selected identifier.
  */
-
 export class TemplateQueryDefinitionProvider implements DefinitionProvider {
   private cache: CachedOperation<LocationLink[]>;
 
@@ -77,6 +76,12 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
   }
 }
 
+/**
+ * Runs templated CodeQL queries to find references in
+ * source-language files. We may eventually want to find a way to
+ * generalize this to other custom queries, e.g. showing dataflow to
+ * or from a selected identifier.
+ */
 export class TemplateQueryReferenceProvider implements ReferenceProvider {
   private cache: CachedOperation<FullLocationLink[]>;
 
@@ -131,6 +136,10 @@ type QueryWithDb = {
   dbUri: Uri
 };
 
+/**
+ * Run templated CodeQL queries to produce AST information for
+ * source-language files.
+ */
 export class TemplatePrintAstProvider {
   private cache: CachedOperation<QueryWithDb>;
 
@@ -222,6 +231,10 @@ export class TemplatePrintAstProvider {
   }
 }
 
+/**
+ * Run templated CodeQL queries to produce CFG information for
+ * source-language files.
+ */
 export class TemplatePrintCfgProvider {
   private cache: CachedOperation<[Uri, Record<string, string>] | undefined>;
 
