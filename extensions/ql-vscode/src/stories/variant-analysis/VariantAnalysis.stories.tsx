@@ -5,6 +5,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { VariantAnalysis as VariantAnalysisComponent } from '../../view/variant-analysis/VariantAnalysis';
 import {
   VariantAnalysis as VariantAnalysisDomainModel,
+  VariantAnalysisFailureReason,
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
@@ -252,6 +253,26 @@ FullExampleWithoutSkipped.args = {
   variantAnalysis: {
     ...variantAnalysis,
     skippedRepos: {},
+  },
+  repoStates,
+  repoResults,
+};
+
+export const Failed = Template.bind({});
+Failed.args = {
+  variantAnalysis: {
+    ...variantAnalysis,
+    status: VariantAnalysisStatus.Failed,
+    failureReason: VariantAnalysisFailureReason.NoReposQueried,
+    completedAt: new Date(new Date(variantAnalysis.createdAt).getTime() + 100_000).toISOString(),
+    scannedRepos: [],
+    skippedRepos: {
+      ...variantAnalysis.skippedRepos,
+      overLimitRepos: {
+        repositoryCount: 0,
+        repositories: [],
+      },
+    }
   },
   repoStates,
   repoResults,

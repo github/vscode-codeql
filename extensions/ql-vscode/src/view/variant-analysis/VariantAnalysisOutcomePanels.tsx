@@ -6,13 +6,15 @@ import { formatDecimal } from '../../pure/number';
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
-  VariantAnalysisScannedRepositoryState
+  VariantAnalysisScannedRepositoryState,
+  VariantAnalysisStatus
 } from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
 import { Alert } from '../common';
 import { VariantAnalysisSkippedRepositoriesTab } from './VariantAnalysisSkippedRepositoriesTab';
 import { defaultFilterSortState, RepositoriesFilterSortState } from './filterSort';
 import { RepositoriesSearchSortRow } from './RepositoriesSearchSortRow';
+import { FailureReasonAlert } from './FailureReasonAlert';
 
 export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
@@ -54,6 +56,9 @@ export const VariantAnalysisOutcomePanels = ({
 
   const warnings = (
     <WarningsContainer>
+      {variantAnalysis.status === VariantAnalysisStatus.Failed && variantAnalysis.failureReason && (
+        <FailureReasonAlert failureReason={variantAnalysis.failureReason} showLogsButton={!!variantAnalysis.actionsWorkflowRunId} />
+      )}
       {overLimitRepositoryCount > 0 && (
         <Alert
           type="warning"
