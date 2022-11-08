@@ -12,16 +12,16 @@ type Props = {
 const getTitle = (failureReason: VariantAnalysisFailureReason): string => {
   switch (failureReason) {
     case VariantAnalysisFailureReason.NoReposQueried:
-      return 'No repositories queried';
+      return 'No repositories to analyze';
     case VariantAnalysisFailureReason.InternalError:
-      return 'Internal error';
+      return 'Something unexpected happened';
   }
 };
 
 const getMessage = (failureReason: VariantAnalysisFailureReason): string => {
   switch (failureReason) {
     case VariantAnalysisFailureReason.NoReposQueried:
-      return 'No repositories were queried for this variant analysis. This may be because you do not have access to any of the requested repositories, or none of the requested repositories have CodeQL databases.';
+      return 'No repositories available after processing. No repositories were analyzed.';
     case VariantAnalysisFailureReason.InternalError:
       return 'An internal error occurred while running this variant analysis. Please try again later.';
   }
