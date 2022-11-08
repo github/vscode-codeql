@@ -125,7 +125,7 @@ describe('Variant Analysis Monitor', async function() {
       describe('when there are successfully scanned repos', async () => {
         beforeEach(async function() {
           scannedRepos = createMockScannedRepos(['pending', 'pending', 'in_progress', 'in_progress', 'succeeded', 'succeeded', 'succeeded']);
-          mockApiResponse = createMockApiResponse('completed', scannedRepos);
+          mockApiResponse = createMockApiResponse('succeeded', scannedRepos);
           mockGetVariantAnalysis = sandbox.stub(ghApiClient, 'getVariantAnalysis').resolves(mockApiResponse);
           succeededRepos = scannedRepos.filter(r => r.analysis_status === 'succeeded');
         });
@@ -190,7 +190,7 @@ describe('Variant Analysis Monitor', async function() {
       describe('when there are no repos to scan', async () => {
         beforeEach(async function() {
           scannedRepos = [];
-          mockApiResponse = createMockApiResponse('completed', scannedRepos);
+          mockApiResponse = createMockApiResponse('succeeded', scannedRepos);
           mockGetVariantAnalysis = sandbox.stub(ghApiClient, 'getVariantAnalysis').resolves(mockApiResponse);
         });
 
