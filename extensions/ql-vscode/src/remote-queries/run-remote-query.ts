@@ -31,6 +31,7 @@ import { parseVariantAnalysisQueryLanguage, VariantAnalysisSubmission } from './
 import { Repository } from './shared/repository';
 import { processVariantAnalysis } from './variant-analysis-processor';
 import { VariantAnalysisManager } from './variant-analysis-manager';
+import { CodeQLCliServer } from '../cli';
 
 export interface QlPack {
   name: string;
@@ -253,13 +254,12 @@ export async function prepareRemoteQueryRun(
 }
 
 export async function runRemoteQuery(
-  cliServer: cli.CodeQLCliServer,
+  cliServer: CodeQLCliServer,
   credentials: Credentials,
   uri: Uri | undefined,
-  dryRun: boolean,
   progress: ProgressCallback,
   token: CancellationToken,
-  variantAnalysisManager: VariantAnalysisManager
+  variantAnalysisManager: VariantAnalysisManager,
 ): Promise<void | RemoteQuerySubmissionResult> {
   if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
     throw new Error(`Variant analysis is not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
@@ -324,38 +324,29 @@ export async function runRemoteQuery(
 
       return { variantAnalysis: processedVariantAnalysis };
     } else {
-      const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, controllerRepo, base64Pack, dryRun);
+      const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, controllerRepo, base64Pack);
 
-      if (dryRun) {
-        return { queryDirPath: remoteQueryDir.path };
-      } else {
-        if (!apiResponse) {
-          return;
-        }
-
-        const workflowRunId = apiResponse.workflow_run_id;
-        const repositoryCount = apiResponse.repositories_queried.length;
-        const remoteQuery = await buildRemoteQueryEntity(
-          queryFile,
-          queryMetadata,
-          controllerRepo,
-          queryStartTime,
-          workflowRunId,
-          language,
-          repositoryCount);
-
-        // don't return the path because it has been deleted
-        return { query: remoteQuery };
+      if (!apiResponse) {
+        return;
       }
+
+      const workflowRunId = apiResponse.workflow_run_id;
+      const repositoryCount = apiResponse.repositories_queried.length;
+      const remoteQuery = await buildRemoteQueryEntity(
+        queryFile,
+        queryMetadata,
+        controllerRepo,
+        queryStartTime,
+        workflowRunId,
+        language,
+        repositoryCount);
+
+      // don't return the path because it has been deleted
+      return { query: remoteQuery };
     }
 
   } finally {
-    if (dryRun) {
-      // If we are in a dry run keep the data around for debugging purposes.
-      void logger.log(`[DRY RUN] Not deleting ${queryPackDir}.`);
-    } else {
-      await remoteQueryDir.cleanup();
-    }
+    await remoteQueryDir.cleanup();
   }
 }
 
@@ -366,29 +357,7 @@ async function runRemoteQueriesApiRequest(
   repoSelection: RepositorySelection,
   controllerRepo: Repository,
   queryPackBase64: string,
-  dryRun = false
 ): Promise<void | RemoteQueriesResponse> {
-  const data = {
-    ref,
-    language,
-    repositories: repoSelection.repositories ?? undefined,
-    repository_lists: repoSelection.repositoryLists ?? undefined,
-    repository_owners: repoSelection.owners ?? undefined,
-    query_pack: queryPackBase64,
-  };
-
-  if (dryRun) {
-    void showAndLogInformationMessage('[DRY RUN] Would have sent request. See extension log for the payload.');
-    void logger.log(JSON.stringify({
-      controllerRepo,
-      data: {
-        ...data,
-        queryPackBase64: queryPackBase64.substring(0, 100) + '... ' + queryPackBase64.length + ' bytes'
-      }
-    }));
-    return;
-  }
-
   try {
     const response = await ghApiClient.submitRemoteQueries(credentials, {
       ref,
