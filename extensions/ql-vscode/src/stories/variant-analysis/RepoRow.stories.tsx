@@ -77,6 +77,22 @@ SucceededDownloading.args = {
   downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
 };
 
+export const SucceededSuccessfulDownload = Template.bind({});
+SucceededSuccessfulDownload.args = {
+  ...Pending.args,
+  status: VariantAnalysisRepoStatus.Succeeded,
+  resultCount: 198,
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+};
+
+export const SucceededFailedDownload = Template.bind({});
+SucceededFailedDownload.args = {
+  ...Pending.args,
+  status: VariantAnalysisRepoStatus.Succeeded,
+  resultCount: 198,
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Failed,
+};
+
 export const InterpretedResults = Template.bind({});
 InterpretedResults.args = {
   ...Pending.args,
