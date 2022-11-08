@@ -574,7 +574,7 @@ describe('Variant Analysis Manager', async function() {
         try {
           await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
         } catch (error: any) {
-          expect(error.message).to.equal('No workflow run id for variant analysis a-query-name');
+          expect(error.message).to.equal(`No workflow run id for variant analysis with id: ${variantAnalysis.id}`);
         }
       });
 

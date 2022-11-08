@@ -289,7 +289,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     }
 
     if (!variantAnalysis.actionsWorkflowRunId) {
-      throw new Error(`No workflow run id for variant analysis ${variantAnalysis.query.name}`);
+      throw new Error(`No workflow run id for variant analysis with id: ${variantAnalysis.id}`);
     }
 
     const credentials = await Credentials.initialize(this.ctx);
