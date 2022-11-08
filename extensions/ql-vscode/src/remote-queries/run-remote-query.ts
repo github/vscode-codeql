@@ -187,6 +187,82 @@ async function getPackedBundlePath(queryPackDir: string) {
   });
 }
 
+export async function prepareRemoteQueryRun(
+  cliServer: cli.CodeQLCliServer,
+  credentials: Credentials,
+  uri: Uri | undefined,
+  queryPackDir: string,
+  progress: ProgressCallback,
+  token: CancellationToken,
+) {
+  if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
+    throw new Error(`Variant analysis is not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
+      } or later.`);
+  }
+
+  if (!uri?.fsPath.endsWith('.ql')) {
+    throw new UserCancellationException('Not a CodeQL query file.');
+  }
+
+  const queryFile = uri.fsPath;
+
+  progress({
+    maxStep: 4,
+    step: 1,
+    message: 'Determining query target language'
+  });
+
+  const repoSelection = await getRepositorySelection();
+  if (!isValidSelection(repoSelection)) {
+    throw new UserCancellationException('No repositories to query.');
+  }
+
+  progress({
+    maxStep: 4,
+    step: 2,
+    message: 'Determining controller repo'
+  });
+
+  const controllerRepo = await getControllerRepo(credentials);
+
+  progress({
+    maxStep: 4,
+    step: 3,
+    message: 'Bundling the query pack'
+  });
+
+  if (token.isCancellationRequested) {
+    throw new UserCancellationException('Cancelled');
+  }
+
+  const { base64Pack, language } = await generateQueryPack(cliServer, queryFile, queryPackDir);
+
+  if (token.isCancellationRequested) {
+    throw new UserCancellationException('Cancelled');
+  }
+
+  progress({
+    maxStep: 4,
+    step: 4,
+    message: 'Sending request'
+  });
+
+  const actionBranch = getActionBranch();
+  const queryStartTime = Date.now();
+  const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
+
+  return {
+    actionBranch,
+    base64Pack,
+    repoSelection,
+    queryFile,
+    queryMetadata,
+    controllerRepo,
+    queryStartTime,
+    language,
+  };
+}
+
 export async function runRemoteQuery(
   cliServer: cli.CodeQLCliServer,
   credentials: Credentials,
@@ -203,56 +279,16 @@ export async function runRemoteQuery(
 
   const { remoteQueryDir, queryPackDir } = await createRemoteQueriesTempDirectory();
   try {
-    if (!uri?.fsPath.endsWith('.ql')) {
-      throw new UserCancellationException('Not a CodeQL query file.');
-    }
-
-    const queryFile = uri.fsPath;
-
-    progress({
-      maxStep: 4,
-      step: 1,
-      message: 'Determining query target language'
-    });
-
-    const repoSelection = await getRepositorySelection();
-    if (!isValidSelection(repoSelection)) {
-      throw new UserCancellationException('No repositories to query.');
-    }
-
-    progress({
-      maxStep: 4,
-      step: 2,
-      message: 'Determining controller repo'
-    });
-
-    const controllerRepo = await getControllerRepo(credentials);
-
-    progress({
-      maxStep: 4,
-      step: 3,
-      message: 'Bundling the query pack'
-    });
-
-    if (token.isCancellationRequested) {
-      throw new UserCancellationException('Cancelled');
-    }
-
-    const { base64Pack, language } = await generateQueryPack(cliServer, queryFile, queryPackDir);
-
-    if (token.isCancellationRequested) {
-      throw new UserCancellationException('Cancelled');
-    }
-
-    progress({
-      maxStep: 4,
-      step: 4,
-      message: 'Sending request'
-    });
-
-    const actionBranch = getActionBranch();
-    const queryStartTime = Date.now();
-    const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
+    const {
+      actionBranch,
+      base64Pack,
+      repoSelection,
+      queryFile,
+      queryMetadata,
+      controllerRepo,
+      queryStartTime,
+      language,
+    } = await prepareRemoteQueryRun(cliServer, credentials, uri, queryPackDir, progress, token);
 
     if (isVariantAnalysisLiveResultsEnabled()) {
       const queryName = getQueryName(queryMetadata, queryFile);
