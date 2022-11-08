@@ -1379,6 +1379,7 @@
     "@types/sinon-chai": "~3.2.3",
     "@types/stream-chain": "~2.0.1",
     "@types/stream-json": "~1.7.1",
+    "@types/tar-stream": "^2.2.2",
     "@types/through2": "^2.0.36",
     "@types/tmp": "^0.1.0",
     "@types/unzipper": "~0.10.1",
