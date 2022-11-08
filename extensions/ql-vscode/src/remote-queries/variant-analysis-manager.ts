@@ -22,8 +22,9 @@ import { VariantAnalysisResultsManager } from './variant-analysis-results-manage
 import { getControllerRepo } from './run-remote-query';
 import { processUpdatedVariantAnalysis, processVariantAnalysisRepositoryTask } from './variant-analysis-processor';
 import PQueue from 'p-queue';
-import { createTimestampFile, showAndLogErrorMessage } from '../helpers';
+import { createTimestampFile, showAndLogErrorMessage, showAndLogInformationMessage } from '../helpers';
 import * as fs from 'fs-extra';
+import { cancelVariantAnalysis } from './gh-api/gh-actions-api-client';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private static readonly REPO_STATES_FILENAME = 'repo_states.json';
@@ -279,6 +280,25 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       this.storagePath,
       `${variantAnalysisId}`
     );
+  }
+
+  public async cancelVariantAnalysis(variantAnalysisId: number) {
+    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+    if (!variantAnalysis) {
+      throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
+
+    if (!variantAnalysis.actionsWorkflowRunId) {
+      throw new Error(`No workflow run id for variant analysis with id: ${variantAnalysis.id}`);
+    }
+
+    const credentials = await Credentials.initialize(this.ctx);
+    if (!credentials) {
+      throw Error('Error authenticating with GitHub');
+    }
+
+    void showAndLogInformationMessage('Cancelling variant analysis. This may take a while.');
+    await cancelVariantAnalysis(credentials, variantAnalysis);
   }
 
   private getRepoStatesStoragePath(variantAnalysisId: number): string {

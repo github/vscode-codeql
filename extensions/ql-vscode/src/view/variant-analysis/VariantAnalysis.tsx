@@ -30,6 +30,12 @@ const openQueryText = () => {
   });
 };
 
+const stopQuery = () => {
+  vscode.postMessage({
+    t: 'cancelVariantAnalysis',
+  });
+};
+
 const openLogs = () => {
   vscode.postMessage({
     t: 'openLogs',
@@ -88,7 +94,7 @@ export function VariantAnalysis({
         variantAnalysis={variantAnalysis}
         onOpenQueryFileClick={openQueryFile}
         onViewQueryTextClick={openQueryText}
-        onStopQueryClick={() => console.log('Stop query')}
+        onStopQueryClick={stopQuery}
         onCopyRepositoryListClick={() => console.log('Copy repository list')}
         onExportResultsClick={() => console.log('Export results')}
         onViewLogsClick={openLogs}
