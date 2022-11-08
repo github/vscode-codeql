@@ -970,9 +970,9 @@ export class CodeQLCliServer implements Disposable {
     }
   }
 
-  async packResolveDependencies(dir: string, mode: 'use-lock'): Promise<{ [pack: string]: string }> {
-    const args = ['--mode', mode, dir];
-    const results: { [pack: string]: string } = await this.runJsonCodeQlCliCommand(['pack', 'resolve-dependencies'], args, 'Resolving pack dependencies');
+  async packResolveDependencies(dir: string): Promise<{ [pack: string]: string }> {
+    // Uses the default `--mode use-lock`, which creates the lock file if it doesn't exist.
+    const results: { [pack: string]: string } = await this.runJsonCodeQlCliCommand(['pack', 'resolve-dependencies'], [dir], 'Resolving pack dependencies');
     return results;
   }
 

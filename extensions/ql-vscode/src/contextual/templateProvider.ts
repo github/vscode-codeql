@@ -230,7 +230,11 @@ export class TemplatePrintAstProvider {
       // Create a lock file so that we can resolve dependencies and library path
       // for the AST query.
       void logger.log(`Library pack ${packPath} is missing a lock file; creating a temporary lock file`);
-      await this.cli.packResolveDependencies(packPath, 'use-lock');
+      await this.cli.packResolveDependencies(packPath);
+      // Clear CLI server pack cache before installing dependencies,
+      // so that it picks up the new lock file, not the previously cached pack.
+      void logger.log('Clearing the CodeQL CLI server\'s pack cache');
+      await this.cli.clearCache();
       // Install dependencies.
       void logger.log(`Installing package dependencies for library pack ${packPath}`);
       await this.cli.packInstall(packPath);
@@ -260,7 +264,7 @@ export class TemplatePrintAstProvider {
       const tempLockFilePath = path.resolve(packPath, 'codeql-pack.lock.yml');
       void logger.log(`Deleting temporary package lock file at ${tempLockFilePath}`);
       // It's fine if the file doesn't exist.
-      fs.rmSync(path.resolve(packPath, 'codeql-pack.lock.yml'), { force: true });
+      await fs.promises.rm(path.resolve(packPath, 'codeql-pack.lock.yml'), { force: true });
     }
     return {
       query: queryResult,
