@@ -18,13 +18,14 @@ import * as cli from '../cli';
 import { logger } from '../logging';
 import { getActionBranch, getRemoteControllerRepo, isVariantAnalysisLiveResultsEnabled, setRemoteControllerRepo } from '../config';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
-import { OctokitResponse, RequestError } from '@octokit/types/dist-types';
+import { RequestError } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
 import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
 import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
 import { pluralize } from '../pure/word';
 import * as ghApiClient from './gh-api/gh-api-client';
+import { RemoteQueriesResponse } from './gh-api/remote-queries';
 import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
 import { parseVariantAnalysisQueryLanguage, VariantAnalysisSubmission } from './shared/variant-analysis';
 import { Repository } from './shared/repository';
@@ -37,18 +38,6 @@ export interface QlPack {
   dependencies: { [key: string]: string };
   defaultSuite?: Record<string, unknown>[];
   defaultSuiteFile?: string;
-}
-
-interface QueriesResponse {
-  workflow_run_id: number,
-  errors?: {
-    invalid_repositories?: string[],
-    repositories_without_database?: string[],
-    private_repositories?: string[],
-    cutoff_repositories?: string[],
-    cutoff_repositories_count?: number,
-  },
-  repositories_queried: string[],
 }
 
 /**
@@ -172,7 +161,7 @@ function isFileSystemRoot(dir: string): boolean {
   return pathObj.root === dir && pathObj.base === '';
 }
 
-async function createRemoteQueriesTempDirectory() {
+export async function createRemoteQueriesTempDirectory() {
   const remoteQueryDir = await tmp.dir({ dir: tmpDir.name, unsafeCleanup: true });
   const queryPackDir = path.join(remoteQueryDir.path, 'query-pack');
   await fs.mkdirp(queryPackDir);
@@ -378,7 +367,7 @@ async function runRemoteQueriesApiRequest(
   controllerRepo: Repository,
   queryPackBase64: string,
   dryRun = false
-): Promise<void | QueriesResponse> {
+): Promise<void | RemoteQueriesResponse> {
   const data = {
     ref,
     language,
@@ -401,17 +390,18 @@ async function runRemoteQueriesApiRequest(
   }
 
   try {
-    const octokit = await credentials.getOctokit();
-    const response: OctokitResponse<QueriesResponse, number> = await octokit.request(
-      'POST /repositories/:controllerRepoId/code-scanning/codeql/queries',
-      {
-        controllerRepoId: controllerRepo.id,
-        data
-      }
-    );
-    const { popupMessage, logMessage } = parseResponse(controllerRepo, response.data);
+    const response = await ghApiClient.submitRemoteQueries(credentials, {
+      ref,
+      language,
+      repositories: repoSelection.repositories,
+      repositoryLists: repoSelection.repositoryLists,
+      repositoryOwners: repoSelection.owners,
+      queryPack: queryPackBase64,
+      controllerRepoId: controllerRepo.id,
+    });
+    const { popupMessage, logMessage } = parseResponse(controllerRepo, response);
     void showAndLogInformationMessage(popupMessage, { fullMessage: logMessage });
-    return response.data;
+    return response;
   } catch (error: any) {
     if (error.status === 404) {
       void showAndLogErrorMessage(`Controller repository was not found. Please make sure it's a valid repo name.${eol}`);
@@ -425,7 +415,7 @@ const eol = os.EOL;
 const eol2 = os.EOL + os.EOL;
 
 // exported for testing only
-export function parseResponse(controllerRepo: Repository, response: QueriesResponse) {
+export function parseResponse(controllerRepo: Repository, response: RemoteQueriesResponse) {
   const repositoriesQueried = response.repositories_queried;
   const repositoryCount = repositoriesQueried.length;
 
