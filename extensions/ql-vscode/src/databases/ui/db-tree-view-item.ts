@@ -26,10 +26,10 @@ export class DbTreeViewItem extends vscode.TreeItem {
   }
 }
 
-export function createDbTreeViewItemWarning(label: string, tooltip: string): DbTreeViewItem {
+export function createDbTreeViewItemError(label: string, tooltip: string): DbTreeViewItem {
   return new DbTreeViewItem(
     undefined,
-    new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground')),
+    new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsErrorIcon.foreground')),
     label,
     tooltip,
     vscode.TreeItemCollapsibleState.None,
