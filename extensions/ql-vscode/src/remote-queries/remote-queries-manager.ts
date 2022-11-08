@@ -122,13 +122,7 @@ export class RemoteQueriesManager extends DisposableObject {
   ): Promise<void> {
     const credentials = await Credentials.initialize(this.ctx);
 
-    const querySubmission = await runRemoteQuery(
-      this.cliServer,
-      credentials, uri || window.activeTextEditor?.document.uri,
-      false,
-      progress,
-      token,
-      this.variantAnalysisManager);
+    const querySubmission = await runRemoteQuery(this.cliServer, credentials, uri || window.activeTextEditor?.document.uri, progress, token, this.variantAnalysisManager);
 
     if (querySubmission?.query) {
       const query = querySubmission.query;
