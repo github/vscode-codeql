@@ -256,3 +256,109 @@ FullExampleWithoutSkipped.args = {
   repoStates,
   repoResults,
 };
+
+export const Canceled = Template.bind({});
+Canceled.args = {
+  variantAnalysis: {
+    ...variantAnalysis,
+    status: VariantAnalysisStatus.Canceled,
+    completedAt: new Date(new Date(variantAnalysis.createdAt).getTime() + 100_000).toISOString(),
+    scannedRepos: [
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 1,
+          fullName: 'octodemo/hello-world-1',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+        resultCount: 200,
+      },
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 2,
+          fullName: 'octodemo/hello-world-2',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+        resultCount: 10_000,
+      },
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 3,
+          fullName: 'octodemo/hello-world-3',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+        resultCount: 500,
+      },
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 4,
+          fullName: 'octodemo/hello-world-4',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Canceled,
+      },
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 5,
+          fullName: 'octodemo/hello-world-5',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Failed,
+      },
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 6,
+          fullName: 'octodemo/hello-world-6',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Canceled,
+      },
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 7,
+          fullName: 'octodemo/hello-world-7',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Canceled,
+      },
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 8,
+          fullName: 'octodemo/hello-world-8',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Canceled,
+      },
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 9,
+          fullName: 'octodemo/hello-world-9',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Canceled,
+      },
+      {
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: 10,
+          fullName: 'octodemo/hello-world-10',
+          private: false,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Canceled,
+      },
+    ],
+  },
+  repoStates,
+  repoResults,
+};

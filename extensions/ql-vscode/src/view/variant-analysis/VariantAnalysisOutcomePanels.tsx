@@ -6,7 +6,8 @@ import { formatDecimal } from '../../pure/number';
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
-  VariantAnalysisScannedRepositoryState
+  VariantAnalysisScannedRepositoryState,
+  VariantAnalysisStatus,
 } from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
 import { Alert } from '../common';
@@ -54,6 +55,13 @@ export const VariantAnalysisOutcomePanels = ({
 
   const warnings = (
     <WarningsContainer>
+      {variantAnalysis.status === VariantAnalysisStatus.Canceled && (
+        <Alert
+          type="warning"
+          title="Query manually stopped"
+          message="This query was manually stopped before the analysis completed. Results may be partial."
+        />
+      )}
       {overLimitRepositoryCount > 0 && (
         <Alert
           type="warning"

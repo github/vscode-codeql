@@ -136,6 +136,14 @@ describe(VariantAnalysisOutcomePanels.name, () => {
     expect(screen.getByText('No database')).toBeInTheDocument();
   });
 
+  it('renders warning with canceled variant analysis', () => {
+    render({
+      status: VariantAnalysisStatus.Canceled,
+    });
+
+    expect(screen.getByText('Warning: Query manually stopped')).toBeInTheDocument();
+  });
+
   it('renders warning with access mismatch repos', () => {
     render({
       skippedRepos: {
