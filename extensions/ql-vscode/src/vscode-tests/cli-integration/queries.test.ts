@@ -21,7 +21,7 @@ import { QueryRunner } from '../../queryRunner';
  * Integration tests for queries
  */
 describe('Queries', function() {
-  this.timeout(20000);
+  this.timeout(20_000);
 
   before(function() {
     skipIfNoCodeQL(this);
@@ -42,7 +42,9 @@ describe('Queries', function() {
   let qlFile: string;
 
 
-  beforeEach(async () => {
+  beforeEach(async function() {
+    this.timeout(20_000);
+
     sandbox = sinon.createSandbox();
 
     try {
@@ -89,7 +91,8 @@ describe('Queries', function() {
     }
   });
 
-  afterEach(async () => {
+  afterEach(async function() {
+    this.timeout(20_000);
     try {
       sandbox.restore();
       safeDel(qlpackFile);
