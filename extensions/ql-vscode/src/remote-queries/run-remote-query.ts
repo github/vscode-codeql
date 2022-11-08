@@ -1,4 +1,4 @@
-import { CancellationToken, commands, Uri, window } from 'vscode';
+import { CancellationToken, Uri, window } from 'vscode';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
@@ -16,22 +16,17 @@ import {
 import { Credentials } from '../authentication';
 import * as cli from '../cli';
 import { logger } from '../logging';
-import { getActionBranch, getRemoteControllerRepo, isVariantAnalysisLiveResultsEnabled, setRemoteControllerRepo } from '../config';
+import { getActionBranch, getRemoteControllerRepo, setRemoteControllerRepo } from '../config';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { RequestError } from '@octokit/types/dist-types';
 import { RemoteQuery } from './remote-query';
-import { RemoteQuerySubmissionResult } from './remote-query-submission-result';
 import { QueryMetadata } from '../pure/interface-types';
 import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
 import { pluralize } from '../pure/word';
 import * as ghApiClient from './gh-api/gh-api-client';
 import { RemoteQueriesResponse } from './gh-api/remote-queries';
 import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
-import { parseVariantAnalysisQueryLanguage, VariantAnalysisSubmission } from './shared/variant-analysis';
 import { Repository } from './shared/repository';
-import { processVariantAnalysis } from './variant-analysis-processor';
-import { VariantAnalysisManager } from './variant-analysis-manager';
-import { CodeQLCliServer } from '../cli';
 
 export interface QlPack {
   name: string;
@@ -262,98 +257,7 @@ export async function prepareRemoteQueryRun(
   };
 }
 
-export async function runRemoteQuery(
-  cliServer: CodeQLCliServer,
-  credentials: Credentials,
-  uri: Uri | undefined,
-  progress: ProgressCallback,
-  token: CancellationToken,
-  variantAnalysisManager: VariantAnalysisManager,
-): Promise<void | RemoteQuerySubmissionResult> {
-  if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
-    throw new Error(`Variant analysis is not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
-      } or later.`);
-  }
-
-  const {
-    actionBranch,
-    base64Pack,
-    repoSelection,
-    queryFile,
-    queryMetadata,
-    controllerRepo,
-    queryStartTime,
-    language,
-  } = await prepareRemoteQueryRun(cliServer, credentials, uri, progress, token);
-
-  if (isVariantAnalysisLiveResultsEnabled()) {
-    const queryName = getQueryName(queryMetadata, queryFile);
-    const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(language);
-    if (variantAnalysisLanguage === undefined) {
-      throw new UserCancellationException(`Found unsupported language: ${language}`);
-    }
-
-    const queryText = await fs.readFile(queryFile, 'utf8');
-
-    const variantAnalysisSubmission: VariantAnalysisSubmission = {
-      startTime: queryStartTime,
-      actionRepoRef: actionBranch,
-      controllerRepoId: controllerRepo.id,
-      query: {
-        name: queryName,
-        filePath: queryFile,
-        pack: base64Pack,
-        language: variantAnalysisLanguage,
-        text: queryText,
-      },
-      databases: {
-        repositories: repoSelection.repositories,
-        repositoryLists: repoSelection.repositoryLists,
-        repositoryOwners: repoSelection.owners
-      }
-    };
-
-    const variantAnalysisResponse = await ghApiClient.submitVariantAnalysis(
-      credentials,
-      variantAnalysisSubmission
-    );
-
-    const processedVariantAnalysis = processVariantAnalysis(variantAnalysisSubmission, variantAnalysisResponse);
-
-    await variantAnalysisManager.onVariantAnalysisSubmitted(processedVariantAnalysis);
-
-    void logger.log(`Variant analysis:\n${JSON.stringify(processedVariantAnalysis, null, 2)}`);
-
-    void showAndLogInformationMessage(`Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`);
-
-    void commands.executeCommand('codeQL.openVariantAnalysisView', processedVariantAnalysis.id);
-    void commands.executeCommand('codeQL.monitorVariantAnalysis', processedVariantAnalysis);
-
-    return { variantAnalysis: processedVariantAnalysis };
-  } else {
-    const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, controllerRepo, base64Pack);
-
-    if (!apiResponse) {
-      return;
-    }
-
-    const workflowRunId = apiResponse.workflow_run_id;
-    const repositoryCount = apiResponse.repositories_queried.length;
-    const remoteQuery = await buildRemoteQueryEntity(
-      queryFile,
-      queryMetadata,
-      controllerRepo,
-      queryStartTime,
-      workflowRunId,
-      language,
-      repositoryCount);
-
-    // don't return the path because it has been deleted
-    return { query: remoteQuery };
-  }
-}
-
-async function runRemoteQueriesApiRequest(
+export async function runRemoteQueriesApiRequest(
   credentials: Credentials,
   ref: string,
   language: string,
@@ -455,7 +359,7 @@ async function ensureNameAndSuite(queryPackDir: string, packRelativePath: string
   await fs.writeFile(packPath, yaml.dump(qlpack));
 }
 
-async function buildRemoteQueryEntity(
+export async function buildRemoteQueryEntity(
   queryFilePath: string,
   queryMetadata: QueryMetadata | undefined,
   controllerRepo: Repository,
@@ -483,7 +387,7 @@ async function buildRemoteQueryEntity(
   };
 }
 
-function getQueryName(queryMetadata: QueryMetadata | undefined, queryFilePath: string): string {
+export function getQueryName(queryMetadata: QueryMetadata | undefined, queryFilePath: string): string {
   // The query name is either the name as specified in the query metadata, or the file name.
   return queryMetadata?.name ?? path.basename(queryFilePath);
 }

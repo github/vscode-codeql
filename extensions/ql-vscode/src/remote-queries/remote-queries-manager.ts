@@ -1,4 +1,4 @@
-import { CancellationToken, commands, EventEmitter, ExtensionContext, Uri, env, window } from 'vscode';
+import { CancellationToken, commands, EventEmitter, ExtensionContext, Uri, env } from 'vscode';
 import { nanoid } from 'nanoid';
 import * as path from 'path';
 import * as fs from 'fs-extra';
@@ -9,7 +9,11 @@ import { CodeQLCliServer } from '../cli';
 import { ProgressCallback } from '../commandRunner';
 import { createTimestampFile, showAndLogErrorMessage, showAndLogInformationMessage, showInformationMessageWithAction } from '../helpers';
 import { Logger } from '../logging';
-import { runRemoteQuery } from './run-remote-query';
+import {
+  buildRemoteQueryEntity,
+  prepareRemoteQueryRun,
+  runRemoteQueriesApiRequest,
+} from './run-remote-query';
 import { RemoteQueriesView } from './remote-queries-view';
 import { RemoteQuery } from './remote-query';
 import { RemoteQueriesMonitor } from './remote-queries-monitor';
@@ -22,7 +26,6 @@ import { assertNever } from '../pure/helpers-pure';
 import { QueryStatus } from '../query-status';
 import { DisposableObject } from '../pure/disposable-object';
 import { AnalysisResults } from './shared/analysis-result';
-import { VariantAnalysisManager } from './variant-analysis-manager';
 
 const autoDownloadMaxSize = 300 * 1024;
 const autoDownloadMaxCount = 100;
@@ -57,7 +60,6 @@ export class RemoteQueriesManager extends DisposableObject {
 
   private readonly remoteQueriesMonitor: RemoteQueriesMonitor;
   private readonly analysesResultsManager: AnalysesResultsManager;
-  private readonly variantAnalysisManager: VariantAnalysisManager;
   private readonly view: RemoteQueriesView;
 
   constructor(
@@ -65,13 +67,11 @@ export class RemoteQueriesManager extends DisposableObject {
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     logger: Logger,
-    variantAnalysisManager: VariantAnalysisManager,
   ) {
     super();
     this.analysesResultsManager = new AnalysesResultsManager(ctx, cliServer, storagePath, logger);
     this.view = new RemoteQueriesView(ctx, logger, this.analysesResultsManager);
     this.remoteQueriesMonitor = new RemoteQueriesMonitor(ctx, logger);
-    this.variantAnalysisManager = variantAnalysisManager;
 
     this.remoteQueryAddedEventEmitter = this.push(new EventEmitter<NewQueryEvent>());
     this.remoteQueryRemovedEventEmitter = this.push(new EventEmitter<RemovedQueryEvent>());
@@ -119,21 +119,47 @@ export class RemoteQueriesManager extends DisposableObject {
     uri: Uri | undefined,
     progress: ProgressCallback,
     token: CancellationToken
-  ): Promise<void> {
+  ): Promise<RemoteQuery | undefined> {
     const credentials = await Credentials.initialize(this.ctx);
 
-    const querySubmission = await runRemoteQuery(this.cliServer, credentials, uri || window.activeTextEditor?.document.uri, progress, token, this.variantAnalysisManager);
+    const {
+      actionBranch,
+      base64Pack,
+      repoSelection,
+      queryFile,
+      queryMetadata,
+      controllerRepo,
+      queryStartTime,
+      language,
+    } = await prepareRemoteQueryRun(this.cliServer, credentials, uri, progress, token);
 
-    if (querySubmission?.query) {
-      const query = querySubmission.query;
-      const queryId = this.createQueryId();
+    const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, controllerRepo, base64Pack);
 
-      await this.prepareStorageDirectory(queryId);
-      await this.storeJsonFile(queryId, 'query.json', query);
-
-      this.remoteQueryAddedEventEmitter.fire({ queryId, query });
-      void commands.executeCommand('codeQL.monitorRemoteQuery', queryId, query);
+    if (!apiResponse) {
+      return undefined;
     }
+
+    const workflowRunId = apiResponse.workflow_run_id;
+    const repositoryCount = apiResponse.repositories_queried.length;
+    const query = await buildRemoteQueryEntity(
+      queryFile,
+      queryMetadata,
+      controllerRepo,
+      queryStartTime,
+      workflowRunId,
+      language,
+      repositoryCount
+    );
+
+    const queryId = this.createQueryId();
+
+    await this.prepareStorageDirectory(queryId);
+    await this.storeJsonFile(queryId, 'query.json', query);
+
+    this.remoteQueryAddedEventEmitter.fire({ queryId, query });
+    void commands.executeCommand('codeQL.monitorRemoteQuery', queryId, query);
+
+    return query;
   }
 
   public async monitorRemoteQuery(

@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
-import { expect } from 'chai';
-import { CancellationTokenSource, commands, extensions } from 'vscode';
+import { assert, expect } from 'chai';
+import { CancellationTokenSource, commands, extensions, QuickPickItem, Uri, window } from 'vscode';
 import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
@@ -11,7 +11,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 
 import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
-import { CodeQLCliServer } from '../../../cli';
+import { CliVersionConstraint, CodeQLCliServer } from '../../../cli';
 import { storagePath } from '../global.helper';
 import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
@@ -25,13 +25,21 @@ import {
 } from '../../../remote-queries/shared/variant-analysis';
 import { createTimestampFile } from '../../../helpers';
 import { createMockVariantAnalysisRepoTask } from '../../factories/remote-queries/gh-api/variant-analysis-repo-task';
-import { VariantAnalysisRepoTask } from '../../../remote-queries/gh-api/variant-analysis';
+import {
+  VariantAnalysis as VariantAnalysisApiResponse,
+  VariantAnalysisRepoTask
+} from '../../../remote-queries/gh-api/variant-analysis';
+import { createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
+import { UserCancellationException } from '../../../commandRunner';
+import { Repository } from '../../../remote-queries/gh-api/repository';
+import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../../config';
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
   let pathExistsStub: sinon.SinonStub;
   let readJsonStub: sinon.SinonStub;
   let outputJsonStub: sinon.SinonStub;
+  let writeFileStub: sinon.SinonStub;
   let cli: CodeQLCliServer;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
@@ -46,7 +54,7 @@ describe('Variant Analysis Manager', async function() {
     sandbox.stub(logger, 'log');
     sandbox.stub(config, 'isVariantAnalysisLiveResultsEnabled').returns(false);
     sandbox.stub(fs, 'mkdirSync');
-    sandbox.stub(fs, 'writeFile');
+    writeFileStub = sandbox.stub(fs, 'writeFile');
     pathExistsStub = sandbox.stub(fs, 'pathExists').callThrough();
     readJsonStub = sandbox.stub(fs, 'readJson').callThrough();
     outputJsonStub = sandbox.stub(fs, 'outputJson');
@@ -63,7 +71,7 @@ describe('Variant Analysis Manager', async function() {
       const extension = await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
       cli = extension.cliServer;
       variantAnalysisResultsManager = new VariantAnalysisResultsManager(cli, logger);
-      variantAnalysisManager = new VariantAnalysisManager(extension.ctx, storagePath, variantAnalysisResultsManager);
+      variantAnalysisManager = new VariantAnalysisManager(extension.ctx, cli, storagePath, variantAnalysisResultsManager);
     } catch (e) {
       fail(e as Error);
     }
@@ -71,6 +79,108 @@ describe('Variant Analysis Manager', async function() {
 
   afterEach(async () => {
     sandbox.restore();
+  });
+
+  describe('runVariantAnalysis', function() {
+    // up to 3 minutes per test
+    this.timeout(3 * 60 * 1000);
+
+    let progress: sinon.SinonSpy;
+    let showQuickPickSpy: sinon.SinonStub;
+    let mockGetRepositoryFromNwo: sinon.SinonStub;
+    let mockSubmitVariantAnalysis: sinon.SinonStub;
+    let mockApiResponse: VariantAnalysisApiResponse;
+
+    const baseDir = path.join(__dirname, '../../../../src/vscode-tests/cli-integration');
+    function getFile(file: string): Uri {
+      return Uri.file(path.join(baseDir, file));
+    }
+
+    beforeEach(async function() {
+      if (!(await cli.cliConstraints.supportsRemoteQueries())) {
+        console.log(`Remote queries are not supported on CodeQL CLI v${CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
+          }. Skipping this test.`);
+        this.skip();
+      }
+
+      writeFileStub.callThrough();
+
+      progress = sandbox.spy();
+      // Should not have asked for a language
+      showQuickPickSpy = sandbox.stub(window, 'showQuickPick')
+        .onFirstCall().resolves({ repositories: ['github/vscode-codeql'] } as unknown as QuickPickItem)
+        .onSecondCall().resolves('javascript' as unknown as QuickPickItem);
+
+      cancellationTokenSource = new CancellationTokenSource();
+
+      const dummyRepository: Repository = {
+        id: 123,
+        name: 'vscode-codeql',
+        full_name: 'github/vscode-codeql',
+        private: false,
+      };
+      mockGetRepositoryFromNwo = sandbox.stub(ghApiClient, 'getRepositoryFromNwo').resolves(dummyRepository);
+
+      mockApiResponse = createMockApiResponse('in_progress');
+      mockSubmitVariantAnalysis = sandbox.stub(ghApiClient, 'submitVariantAnalysis').resolves(mockApiResponse);
+
+      // always run in the vscode-codeql repo
+      await setRemoteControllerRepo('github/vscode-codeql');
+      await setRemoteRepositoryLists({ 'vscode-codeql': ['github/vscode-codeql'] });
+    });
+
+    it('should run a variant analysis that is part of a qlpack', async () => {
+      const fileUri = getFile('data-remote-qlpack/in-pack.ql');
+
+      const variantAnalysis = await variantAnalysisManager.runVariantAnalysis(fileUri, progress, cancellationTokenSource.token);
+      expect(variantAnalysis).to.be.ok;
+      expect(variantAnalysis.id).to.be.equal(mockApiResponse.id);
+      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
+
+      expect(showQuickPickSpy).to.have.been.calledOnce;
+
+      expect(mockGetRepositoryFromNwo).to.have.been.calledOnce;
+      expect(mockSubmitVariantAnalysis).to.have.been.calledOnce;
+    });
+
+    it('should run a remote query that is not part of a qlpack', async () => {
+      const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
+
+      const variantAnalysis = await variantAnalysisManager.runVariantAnalysis(fileUri, progress, cancellationTokenSource.token);
+      expect(variantAnalysis).to.be.ok;
+      expect(variantAnalysis.id).to.be.equal(mockApiResponse.id);
+      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
+
+      expect(mockGetRepositoryFromNwo).to.have.been.calledOnce;
+      expect(mockSubmitVariantAnalysis).to.have.been.calledOnce;
+    });
+
+    it('should run a remote query that is nested inside a qlpack', async () => {
+      const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
+
+      const variantAnalysis = await variantAnalysisManager.runVariantAnalysis(fileUri, progress, cancellationTokenSource.token);
+      expect(variantAnalysis).to.be.ok;
+      expect(variantAnalysis.id).to.be.equal(mockApiResponse.id);
+      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
+
+      expect(mockGetRepositoryFromNwo).to.have.been.calledOnce;
+      expect(mockSubmitVariantAnalysis).to.have.been.calledOnce;
+    });
+
+    it('should cancel a run before uploading', async () => {
+      const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
+
+      const promise = variantAnalysisManager.runVariantAnalysis(fileUri, progress, cancellationTokenSource.token);
+
+      cancellationTokenSource.cancel();
+
+      try {
+        await promise;
+        assert.fail('should have thrown');
+      } catch (e) {
+        expect(e).to.be.instanceof(UserCancellationException);
+      }
+    });
   });
 
   describe('rehydrateVariantAnalysis', () => {
