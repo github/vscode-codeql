@@ -1278,7 +1278,7 @@
     "watch:webpack": "gulp watchView",
     "watch:files": "gulp watchTestData",
     "test": "npm-run-all -p test:*",
-    "test:unit": "mocha --config .mocharc.json test/pure-tests/**/*.ts",
+    "test:unit": "mocha --config .mocharc.json 'test/pure-tests/**/*.ts'",
     "test:view": "jest",
     "integration": "node ./out/vscode-tests/run-integration-tests.js no-workspace,minimal-workspace",
     "integration:no-workspace": "node ./out/vscode-tests/run-integration-tests.js no-workspace",
