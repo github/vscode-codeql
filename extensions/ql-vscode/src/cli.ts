@@ -970,6 +970,12 @@ export class CodeQLCliServer implements Disposable {
     }
   }
 
+  async packResolveDependencies(dir: string, mode: 'use-lock'): Promise<{ [pack: string]: string }> {
+    const args = ['--mode', mode, dir];
+    const results: { [pack: string]: string } = await this.runJsonCodeQlCliCommand(['pack', 'resolve-dependencies'], args, 'Resolving pack dependencies');
+    return results;
+  }
+
   async generateDil(qloFile: string, outFile: string): Promise<void> {
     const extraArgs = await this.cliConstraints.supportsDecompileDil()
       ? ['--kind', 'dil', '-o', outFile, qloFile]

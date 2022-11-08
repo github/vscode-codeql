@@ -1,3 +1,5 @@
+import * as fs from 'fs-extra';
+import * as path from 'path';
 import {
   CancellationToken,
   DefinitionProvider,
@@ -14,6 +16,7 @@ import {
 import { decodeSourceArchiveUri, encodeArchiveBasePath, zipArchiveScheme } from '../archive-filesystem-provider';
 import { CodeQLCliServer } from '../cli';
 import { DatabaseManager } from '../databases';
+import { logger } from '../logging';
 import { CachedOperation } from '../helpers';
 import { ProgressCallback, withProgress } from '../commandRunner';
 import AstBuilder from './astBuilder';
@@ -208,6 +211,31 @@ export class TemplatePrintAstProvider {
         zippedArchive.pathWithinSourceArchive
     };
 
+    // The AST viewer queries now live within the standard library packs.
+    // This simplifies distribution (you don't need the standard query pack to use the AST viewer),
+    // but if the library pack doesn't have a lockfile, we won't be able to find
+    // other pack dependencies of the library pack.
+
+    // Work out the enclosing pack.
+    const packContents = await this.cli.packPacklist(query, false);
+    const packFilePath = packContents.find((p) => ['codeql-pack.yml', 'qlpack.yml'].includes(path.basename(p)));
+    if (packFilePath === undefined) {
+      // Should not happen; we already resolved this query.
+      throw new Error(`Could not find a CodeQL pack file for the pack enclosing the query ${query}`);
+    }
+    const packPath = path.dirname(packFilePath);
+    const lockFilePath = packContents.find((p) => ['codeql-pack.lock.yml', 'qlpack.lock.yml'].includes(path.basename(p)));
+    if (!lockFilePath) {
+      // No lock file, likely because this library pack is in the package cache.
+      // Create a lock file so that we can resolve dependencies and library path
+      // for the AST query.
+      void logger.log(`Library pack ${packPath} is missing a lock file; creating a temporary lock file`);
+      await this.cli.packResolveDependencies(packPath, 'use-lock');
+      // Install dependencies.
+      void logger.log(`Installing package dependencies for library pack ${packPath}`);
+      await this.cli.packInstall(packPath);
+    }
+
     const initialInfo = await createInitialQueryInfo(
       Uri.file(query),
       {
@@ -217,15 +245,25 @@ export class TemplatePrintAstProvider {
       false
     );
 
+    void logger.log(`Running AST query ${query}; results will be stored in ${this.queryStorageDir}`);
+    const queryResult = await this.qs.compileAndRunQueryAgainstDatabase(
+      db,
+      initialInfo,
+      this.queryStorageDir,
+      progress,
+      token,
+      templates
+    );
+
+    if (!lockFilePath) {
+      // Clean up the temporary lock file we created.
+      const tempLockFilePath = path.resolve(packPath, 'codeql-pack.lock.yml');
+      void logger.log(`Deleting temporary package lock file at ${tempLockFilePath}`);
+      // It's fine if the file doesn't exist.
+      fs.rmSync(path.resolve(packPath, 'codeql-pack.lock.yml'), { force: true });
+    }
     return {
-      query: await this.qs.compileAndRunQueryAgainstDatabase(
-        db,
-        initialInfo,
-        this.queryStorageDir,
-        progress,
-        token,
-        templates
-      ),
+      query: queryResult,
       dbUri: db.databaseUri
     };
   }
