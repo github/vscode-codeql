@@ -111,7 +111,7 @@ export async function resolveQueries(cli: CodeQLCliServer, qlpacks: QlPacksForLa
   throw new Error(`Couldn't find any queries tagged ${tagOfKeyType(keyType)} in any of the following packs: ${packsToSearch.join(', ')}.`);
 }
 
-async function resolveContextualQuery(cli: CodeQLCliServer, query: string): Promise<{ packPath: string, lockFilePath?: string }> {
+async function resolveContextualQuery(cli: CodeQLCliServer, query: string): Promise<{ packPath: string, createdTempLockFile: boolean }> {
   // Contextual queries now live within the standard library packs.
   // This simplifies distribution (you don't need the standard query pack to use the AST viewer),
   // but if the library pack doesn't have a lockfile, we won't be able to find
@@ -126,12 +126,14 @@ async function resolveContextualQuery(cli: CodeQLCliServer, query: string): Prom
   }
   const packPath = path.dirname(packFilePath);
   const lockFilePath = packContents.find((p) => ['codeql-pack.lock.yml', 'qlpack.lock.yml'].includes(path.basename(p)));
+  let createdTempLockFile = false;
   if (!lockFilePath) {
     // No lock file, likely because this library pack is in the package cache.
     // Create a lock file so that we can resolve dependencies and library path
     // for the contextual query.
     void logger.log(`Library pack ${packPath} is missing a lock file; creating a temporary lock file`);
     await cli.packResolveDependencies(packPath);
+    createdTempLockFile = true;
     // Clear CLI server pack cache before installing dependencies,
     // so that it picks up the new lock file, not the previously cached pack.
     void logger.log('Clearing the CodeQL CLI server\'s pack cache');
@@ -140,7 +142,7 @@ async function resolveContextualQuery(cli: CodeQLCliServer, query: string): Prom
     void logger.log(`Installing package dependencies for library pack ${packPath}`);
     await cli.packInstall(packPath);
   }
-  return { packPath, lockFilePath };
+  return { packPath, createdTempLockFile };
 }
 
 async function removeTemporaryLockFile(packPath: string) {
@@ -151,7 +153,7 @@ async function removeTemporaryLockFile(packPath: string) {
 }
 
 export async function runContextualQuery(query: string, db: DatabaseItem, queryStorageDir: string, qs: QueryRunner, cli: CodeQLCliServer, progress: ProgressCallback, token: CancellationToken, templates: Record<string, string>) {
-  const { packPath, lockFilePath } = await resolveContextualQuery(cli, query);
+  const { packPath, createdTempLockFile } = await resolveContextualQuery(cli, query);
   const initialInfo = await createInitialQueryInfo(
     Uri.file(query),
     {
@@ -169,7 +171,7 @@ export async function runContextualQuery(query: string, db: DatabaseItem, queryS
     token,
     templates
   );
-  if (!lockFilePath) {
+  if (createdTempLockFile) {
     await removeTemporaryLockFile(packPath);
   }
   return queryResult;
