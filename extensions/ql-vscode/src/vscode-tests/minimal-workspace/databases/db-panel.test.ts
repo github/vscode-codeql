@@ -164,10 +164,10 @@ describe('db panel', async () => {
     expect(remoteRootNode.children).to.be.ok;
     expect(remoteRootNode.children.length).to.equal(5);
 
-    const onwerListItems = remoteRootNode.children.filter(item => item.dbItem?.kind === DbItemKind.RemoteOwner);
-    expect(onwerListItems.length).to.equal(2);
-    checkOwnerItem(onwerListItems[0], 'owner1');
-    checkOwnerItem(onwerListItems[1], 'owner2');
+    const ownerListItems = remoteRootNode.children.filter(item => item.dbItem?.kind === DbItemKind.RemoteOwner);
+    expect(ownerListItems.length).to.equal(2);
+    checkOwnerItem(ownerListItems[0], 'owner1');
+    checkOwnerItem(ownerListItems[1], 'owner2');
   });
 
   it('should render repository nodes', async () => {
