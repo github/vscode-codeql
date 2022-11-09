@@ -23,7 +23,7 @@ describe('db config store', async () => {
     await configStore.initialize();
 
     expect(await fs.pathExists(configPath)).to.be.true;
-    const config = configStore.getConfig();
+    const config = configStore.getConfig().value;
     expect(config.remote.repositoryLists).to.be.empty;
     expect(config.remote.owners).to.be.empty;
     expect(config.remote.repositories).to.be.empty;
@@ -33,7 +33,7 @@ describe('db config store', async () => {
     const configStore = new DbConfigStore(testDataStoragePath, extensionPath);
     await configStore.initialize();
 
-    const config = configStore.getConfig();
+    const config = configStore.getConfig().value;
     expect(config.remote.repositoryLists).to.have.length(1);
     expect(config.remote.repositoryLists[0]).to.deep.equal({
       'name': 'repoList1',
@@ -48,10 +48,10 @@ describe('db config store', async () => {
     const configStore = new DbConfigStore(testDataStoragePath, extensionPath);
     await configStore.initialize();
 
-    const config = configStore.getConfig();
+    const config = configStore.getConfig().value;
     config.remote.repositoryLists = [];
 
-    const reRetrievedConfig = configStore.getConfig();
+    const reRetrievedConfig = configStore.getConfig().value;
     expect(reRetrievedConfig.remote.repositoryLists).to.have.length(1);
   });
 });
