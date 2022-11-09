@@ -21,18 +21,17 @@ import {
   KeyType,
 } from './keyType';
 import { FullLocationLink, getLocationsForUriString, TEMPLATE_NAME } from './locationFinder';
-import { qlpackOfDatabase, resolveQueries } from './queryResolver';
+import { qlpackOfDatabase, resolveQueries, runContextualQuery } from './queryResolver';
 import { isCanary, NO_CACHE_AST_VIEWER } from '../config';
-import { createInitialQueryInfo, QueryWithResults } from '../run-queries-shared';
+import { QueryWithResults } from '../run-queries-shared';
 import { QueryRunner } from '../queryRunner';
 
 /**
- * Run templated CodeQL queries to find definitions and references in
+ * Runs templated CodeQL queries to find definitions in
  * source-language files. We may eventually want to find a way to
  * generalize this to other custom queries, e.g. showing dataflow to
  * or from a selected identifier.
  */
-
 export class TemplateQueryDefinitionProvider implements DefinitionProvider {
   private cache: CachedOperation<LocationLink[]>;
 
@@ -77,6 +76,12 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
   }
 }
 
+/**
+ * Runs templated CodeQL queries to find references in
+ * source-language files. We may eventually want to find a way to
+ * generalize this to other custom queries, e.g. showing dataflow to
+ * or from a selected identifier.
+ */
 export class TemplateQueryReferenceProvider implements ReferenceProvider {
   private cache: CachedOperation<FullLocationLink[]>;
 
@@ -131,6 +136,10 @@ type QueryWithDb = {
   dbUri: Uri
 };
 
+/**
+ * Run templated CodeQL queries to produce AST information for
+ * source-language files.
+ */
 export class TemplatePrintAstProvider {
   private cache: CachedOperation<QueryWithDb>;
 
@@ -199,29 +208,18 @@ export class TemplatePrintAstProvider {
         zippedArchive.pathWithinSourceArchive
     };
 
-    const initialInfo = await createInitialQueryInfo(
-      Uri.file(query),
-      {
-        name: db.name,
-        databaseUri: db.databaseUri.toString(),
-      },
-      false
-    );
-
+    const queryResult = await runContextualQuery(query, db, this.queryStorageDir, this.qs, this.cli, progress, token, templates);
     return {
-      query: await this.qs.compileAndRunQueryAgainstDatabase(
-        db,
-        initialInfo,
-        this.queryStorageDir,
-        progress,
-        token,
-        templates
-      ),
+      query: queryResult,
       dbUri: db.databaseUri
     };
   }
 }
 
+/**
+ * Run templated CodeQL queries to produce CFG information for
+ * source-language files.
+ */
 export class TemplatePrintCfgProvider {
   private cache: CachedOperation<[Uri, Record<string, string>] | undefined>;
 

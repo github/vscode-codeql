@@ -5,9 +5,9 @@ import { DatabaseManager, DatabaseItem } from '../databases';
 import fileRangeFromURI from './fileRangeFromURI';
 import { ProgressCallback } from '../commandRunner';
 import { KeyType } from './keyType';
-import { qlpackOfDatabase, resolveQueries } from './queryResolver';
+import { qlpackOfDatabase, resolveQueries, runContextualQuery } from './queryResolver';
 import { CancellationToken, LocationLink, Uri } from 'vscode';
-import { createInitialQueryInfo, QueryWithResults } from '../run-queries-shared';
+import { QueryWithResults } from '../run-queries-shared';
 import { QueryRunner } from '../queryRunner';
 
 export const SELECT_QUERY_NAME = '#select';
@@ -56,15 +56,7 @@ export async function getLocationsForUriString(
 
   const links: FullLocationLink[] = [];
   for (const query of await resolveQueries(cli, qlpack, keyType)) {
-    const initialInfo = await createInitialQueryInfo(
-      Uri.file(query),
-      {
-        name: db.name,
-        databaseUri: db.databaseUri.toString(),
-      },
-      false
-    );
-    const results = await qs.compileAndRunQueryAgainstDatabase(db, initialInfo, queryStorageDir, progress, token, templates);
+    const results = await runContextualQuery(query, db, queryStorageDir, qs, cli, progress, token, templates);
     if (results.successful) {
       links.push(...await getLinksFromResults(results, cli, db, filter));
     }
