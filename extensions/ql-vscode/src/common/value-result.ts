@@ -10,7 +10,7 @@ export class ValueResult<TValue> {
 
   public static ok<TValue>(value: TValue): ValueResult<TValue> {
     if (value === undefined) {
-      throw Error('Value must be set for successful result');
+      throw new Error('Value must be set for successful result');
     }
 
     return new ValueResult([], value);
@@ -42,7 +42,7 @@ export class ValueResult<TValue> {
 
   public get value(): TValue {
     if (this.val === undefined) {
-      throw new Error('Cannot get value for unsucessful result');
+      throw new Error('Cannot get value for unsuccessful result');
     }
 
     return this.val;
