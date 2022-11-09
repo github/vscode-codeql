@@ -56,6 +56,13 @@ export const VariantAnalysisOutcomePanels = ({
 
   const warnings = (
     <WarningsContainer>
+      {variantAnalysis.status === VariantAnalysisStatus.Canceled && (
+        <Alert
+          type="warning"
+          title="Query manually stopped"
+          message="This query was manually stopped before the analysis completed. Results may be partial."
+        />
+      )}
       {variantAnalysis.status === VariantAnalysisStatus.Failed && variantAnalysis.failureReason && (
         <FailureReasonAlert failureReason={variantAnalysis.failureReason} showLogsButton={!!variantAnalysis.actionsWorkflowRunId} />
       )}

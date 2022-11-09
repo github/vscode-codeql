@@ -22,7 +22,8 @@ export class DbModule extends DisposableObject {
     void logger.log('Initializing database module');
 
     const storagePath = extensionContext.storageUri?.fsPath || extensionContext.globalStorageUri.fsPath;
-    const dbConfigStore = new DbConfigStore(storagePath);
+    const extensionPath = extensionContext.extensionPath;
+    const dbConfigStore = new DbConfigStore(storagePath, extensionPath);
     await dbConfigStore.initialize();
 
     const dbManager = new DbManager(dbConfigStore);

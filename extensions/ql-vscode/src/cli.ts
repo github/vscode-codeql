@@ -970,6 +970,12 @@ export class CodeQLCliServer implements Disposable {
     }
   }
 
+  async packResolveDependencies(dir: string): Promise<{ [pack: string]: string }> {
+    // Uses the default `--mode use-lock`, which creates the lock file if it doesn't exist.
+    const results: { [pack: string]: string } = await this.runJsonCodeQlCliCommand(['pack', 'resolve-dependencies'], [dir], 'Resolving pack dependencies');
+    return results;
+  }
+
   async generateDil(qloFile: string, outFile: string): Promise<void> {
     const extraArgs = await this.cliConstraints.supportsDecompileDil()
       ? ['--kind', 'dil', '-o', outFile, qloFile]
