@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.7.5 - 8 November 2022
 
 - Fix a bug where the AST Viewer was not working unless the associated CodeQL library pack is in the workspace. [#1735](https://github.com/github/vscode-codeql/pull/1735)
