@@ -8,7 +8,10 @@ import {
 import { VariantAnalysisOutcomePanelProps, VariantAnalysisOutcomePanels } from '../VariantAnalysisOutcomePanels';
 import { createMockVariantAnalysis } from '../../../vscode-tests/factories/remote-queries/shared/variant-analysis';
 import { createMockRepositoryWithMetadata } from '../../../vscode-tests/factories/remote-queries/shared/repository';
-import { createMockScannedRepo } from '../../../vscode-tests/factories/remote-queries/shared/scanned-repositories';
+import {
+  createMockScannedRepo,
+  createMockScannedRepos
+} from '../../../vscode-tests/factories/remote-queries/shared/scanned-repositories';
 
 describe(VariantAnalysisOutcomePanels.name, () => {
   const defaultVariantAnalysis = {
@@ -141,7 +144,7 @@ describe(VariantAnalysisOutcomePanels.name, () => {
       status: VariantAnalysisStatus.Canceled,
     });
 
-    expect(screen.getByText('Warning: Query manually stopped')).toBeInTheDocument();
+    expect(screen.getByText('Warning: Variant analysis canceled')).toBeInTheDocument();
   });
 
   it('renders warning with access mismatch repos', () => {
@@ -152,7 +155,7 @@ describe(VariantAnalysisOutcomePanels.name, () => {
       },
     });
 
-    expect(screen.getByText('Warning: Access mismatch')).toBeInTheDocument();
+    expect(screen.getByText('Warning: Problem with controller repository')).toBeInTheDocument();
   });
 
   it('renders warning with over limit repos', () => {
@@ -162,7 +165,7 @@ describe(VariantAnalysisOutcomePanels.name, () => {
       },
     });
 
-    expect(screen.getByText('Warning: Repository limit exceeded')).toBeInTheDocument();
+    expect(screen.getByText('Warning: Repository list too large')).toBeInTheDocument();
   });
 
   it('renders singulars in warnings', () => {
@@ -179,12 +182,12 @@ describe(VariantAnalysisOutcomePanels.name, () => {
       },
     });
 
-    expect(screen.getByText('The number of requested repositories exceeds the maximum number of repositories supported by multi-repository variant analysis. 1 repository was skipped.')).toBeInTheDocument();
-    expect(screen.getByText('1 repository is private, while the controller repository is public. This repository was skipped.')).toBeInTheDocument();
+    expect(screen.getByText('Publicly visible controller repository can\'t be used to analyze private repositories. 1 private repository was not analyzed.')).toBeInTheDocument();
   });
 
   it('renders plurals in warnings', () => {
     render({
+      scannedRepos: createMockScannedRepos(),
       skippedRepos: {
         overLimitRepos: {
           repositoryCount: 2,
@@ -197,7 +200,7 @@ describe(VariantAnalysisOutcomePanels.name, () => {
       },
     });
 
-    expect(screen.getByText('The number of requested repositories exceeds the maximum number of repositories supported by multi-repository variant analysis. 2 repositories were skipped.')).toBeInTheDocument();
-    expect(screen.getByText('2 repositories are private, while the controller repository is public. These repositories were skipped.')).toBeInTheDocument();
+    expect(screen.getByText('Repository list contains more than 3 entries. Only the first 3 repositories were processed.')).toBeInTheDocument();
+    expect(screen.getByText('Publicly visible controller repository can\'t be used to analyze private repositories. 2 private repositories were not analyzed.')).toBeInTheDocument();
   });
 });
