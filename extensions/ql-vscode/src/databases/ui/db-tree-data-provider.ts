@@ -39,12 +39,12 @@ export class DbTreeDataProvider implements TreeDataProvider<DbTreeViewItem> {
     const dbItemsResult = this.dbManager.getDbItems();
 
     if (dbItemsResult.isFailure) {
-      const warningTreeViewItem = createDbTreeViewItemError(
-        'Error when reading databases file',
-        'Please open your databases file and address errors'
+      const errorTreeViewItem = createDbTreeViewItemError(
+        'Error when reading databases config',
+        'Please open your databases config and address errors'
       );
 
-      return [warningTreeViewItem];
+      return [errorTreeViewItem];
     }
 
     return dbItemsResult.value.map(mapDbItemToTreeViewItem);
