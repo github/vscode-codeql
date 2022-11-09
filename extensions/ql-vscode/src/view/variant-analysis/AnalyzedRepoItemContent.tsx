@@ -3,7 +3,10 @@ import styled from 'styled-components';
 import { AnalysisAlert, AnalysisRawResults } from '../../remote-queries/shared/analysis-result';
 import AnalysisAlertResult from '../remote-queries/AnalysisAlertResult';
 import RawResultsTable from '../remote-queries/RawResultsTable';
-import { VariantAnalysisRepoStatus } from '../../remote-queries/shared/variant-analysis';
+import {
+  VariantAnalysisRepoStatus,
+  VariantAnalysisScannedRepositoryDownloadStatus,
+} from '../../remote-queries/shared/variant-analysis';
 import { Alert } from '../common';
 
 const ContentContainer = styled.div`
@@ -32,7 +35,8 @@ const RawResultsContainer = styled.div`
 `;
 
 export type AnalyzedRepoItemContentProps = {
-  status: VariantAnalysisRepoStatus;
+  status?: VariantAnalysisRepoStatus;
+  downloadStatus?: VariantAnalysisScannedRepositoryDownloadStatus;
 
   interpretedResults?: AnalysisAlert[];
   rawResults?: AnalysisRawResults;
@@ -40,6 +44,7 @@ export type AnalyzedRepoItemContentProps = {
 
 export const AnalyzedRepoItemContent = ({
   status,
+  downloadStatus,
   interpretedResults,
   rawResults,
 }: AnalyzedRepoItemContentProps) => {
@@ -64,6 +69,13 @@ export const AnalyzedRepoItemContent = ({
           type="error"
           title="Canceled"
           message="The variant analysis or this repository was canceled."
+        />
+      </AlertContainer>}
+      {downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Failed && <AlertContainer>
+        <Alert
+          type="error"
+          title="Download failed"
+          message="The query was successful on this repository, but the extension failed to download the results for this repository."
         />
       </AlertContainer>}
       {interpretedResults && (

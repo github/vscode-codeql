@@ -82,6 +82,50 @@ export type RepoRowProps = {
   rawResults?: AnalysisRawResults;
 }
 
+const canExpand = (
+  status: VariantAnalysisRepoStatus | undefined,
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus | undefined,
+): boolean => {
+  if (!status) {
+    return false;
+  }
+
+  if (!isCompletedAnalysisRepoStatus(status)) {
+    return false;
+  }
+
+  if (status !== VariantAnalysisRepoStatus.Succeeded) {
+    return true;
+  }
+
+  return downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Succeeded || downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Failed;
+};
+
+const isExpandableContentLoaded = (
+  status: VariantAnalysisRepoStatus | undefined,
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus | undefined,
+  resultsLoaded: boolean,
+): boolean => {
+  if (!canExpand(status, downloadStatus)) {
+    return false;
+  }
+
+  if (!status) {
+    return false;
+  }
+
+  if (status !== VariantAnalysisRepoStatus.Succeeded) {
+    return true;
+  }
+
+  if (downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Failed) {
+    // If the download has failed, we allow expansion to show the error
+    return true;
+  }
+
+  return resultsLoaded;
+};
+
 export const RepoRow = ({
   repository,
   status,
@@ -99,7 +143,7 @@ export const RepoRow = ({
       return;
     }
 
-    if (resultsLoaded || status !== VariantAnalysisRepoStatus.Succeeded) {
+    if (resultsLoaded || status !== VariantAnalysisRepoStatus.Succeeded || downloadStatus !== VariantAnalysisScannedRepositoryDownloadStatus.Succeeded) {
       setExpanded(oldIsExpanded => !oldIsExpanded);
       return;
     }
@@ -110,7 +154,7 @@ export const RepoRow = ({
     });
 
     setResultsLoading(true);
-  }, [resultsLoading, resultsLoaded, repository.fullName, status]);
+  }, [resultsLoading, resultsLoaded, repository.fullName, status, downloadStatus]);
 
   useEffect(() => {
     if (resultsLoaded && resultsLoading) {
@@ -119,8 +163,8 @@ export const RepoRow = ({
     }
   }, [resultsLoaded, resultsLoading]);
 
-  const disabled = !status || !isCompletedAnalysisRepoStatus(status) || (status === VariantAnalysisRepoStatus.Succeeded && downloadStatus !== VariantAnalysisScannedRepositoryDownloadStatus.Succeeded);
-  const expandableContentLoaded = status && (status !== VariantAnalysisRepoStatus.Succeeded || resultsLoaded);
+  const disabled = !canExpand(status, downloadStatus);
+  const expandableContentLoaded = isExpandableContentLoaded(status, downloadStatus, resultsLoaded);
 
   return (
     <div>
@@ -139,13 +183,20 @@ export const RepoRow = ({
           {!status && <WarningIcon />}
         </span>
         {downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.InProgress && <LoadingIcon label="Downloading" />}
+        {downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Failed && <WarningIcon label="Failed to download the results" />}
         <MetadataContainer>
           <div><StarCount starCount={repository.stargazersCount} /></div>
           <LastUpdated lastUpdated={repository.updatedAt} />
         </MetadataContainer>
       </TitleContainer>
-      {isExpanded && expandableContentLoaded &&
-        <AnalyzedRepoItemContent status={status} interpretedResults={interpretedResults} rawResults={rawResults} />}
+      {isExpanded && expandableContentLoaded && (
+        <AnalyzedRepoItemContent
+          status={status}
+          downloadStatus={downloadStatus}
+          interpretedResults={interpretedResults}
+          rawResults={rawResults}
+        />
+      )}
     </div>
   );
 };
