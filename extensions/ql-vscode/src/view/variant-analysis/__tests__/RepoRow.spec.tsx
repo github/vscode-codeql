@@ -104,6 +104,21 @@ describe(RepoRow.name, () => {
     })).toBeEnabled();
   });
 
+  it('renders the succeeded state with failed download status', () => {
+    render({
+      status: VariantAnalysisRepoStatus.Succeeded,
+      resultCount: 178,
+      downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Failed,
+    });
+
+    expect(screen.getByRole<HTMLButtonElement>('button', {
+      expanded: false
+    })).toBeEnabled();
+    expect(screen.getByRole('img', {
+      name: 'Failed to download the results',
+    })).toBeInTheDocument();
+  });
+
   it('renders the failed state', () => {
     render({
       status: VariantAnalysisRepoStatus.Failed,

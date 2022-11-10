@@ -2,6 +2,10 @@
 
 ## [UNRELEASED]
 
+## 1.7.5 - 8 November 2022
+
+- Fix a bug where the AST Viewer was not working unless the associated CodeQL library pack is in the workspace. [#1735](https://github.com/github/vscode-codeql/pull/1735)
+
 ## 1.7.4 - 29 October 2022
 
 No user facing changes.

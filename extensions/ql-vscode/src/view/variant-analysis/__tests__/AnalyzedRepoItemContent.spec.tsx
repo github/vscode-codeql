@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { render as reactRender, screen } from '@testing-library/react';
-import { VariantAnalysisRepoStatus } from '../../../remote-queries/shared/variant-analysis';
+import {
+  VariantAnalysisRepoStatus,
+  VariantAnalysisScannedRepositoryDownloadStatus
+} from '../../../remote-queries/shared/variant-analysis';
 import { AnalyzedRepoItemContent, AnalyzedRepoItemContentProps } from '../AnalyzedRepoItemContent';
 
 describe(AnalyzedRepoItemContent.name, () => {
@@ -111,5 +114,14 @@ describe(AnalyzedRepoItemContent.name, () => {
     });
 
     expect(screen.getByText('Error: Canceled')).toBeInTheDocument();
+  });
+
+  it('renders the failed download state', () => {
+    render({
+      status: VariantAnalysisRepoStatus.Succeeded,
+      downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Failed,
+    });
+
+    expect(screen.getByText('Error: Download failed')).toBeInTheDocument();
   });
 });

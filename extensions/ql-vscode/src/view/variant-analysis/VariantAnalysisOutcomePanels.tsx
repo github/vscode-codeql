@@ -6,13 +6,15 @@ import { formatDecimal } from '../../pure/number';
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
-  VariantAnalysisScannedRepositoryState
+  VariantAnalysisScannedRepositoryState,
+  VariantAnalysisStatus
 } from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
 import { Alert } from '../common';
 import { VariantAnalysisSkippedRepositoriesTab } from './VariantAnalysisSkippedRepositoriesTab';
 import { defaultFilterSortState, RepositoriesFilterSortState } from './filterSort';
 import { RepositoriesSearchSortRow } from './RepositoriesSearchSortRow';
+import { FailureReasonAlert } from './FailureReasonAlert';
 
 export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
@@ -47,6 +49,7 @@ export const VariantAnalysisOutcomePanels = ({
 }: VariantAnalysisOutcomePanelProps) => {
   const [filterSortState, setFilterSortState] = useState<RepositoriesFilterSortState>(defaultFilterSortState);
 
+  const scannedReposCount = variantAnalysis.scannedRepos?.length ?? 0;
   const noCodeqlDbRepos = variantAnalysis.skippedRepos?.noCodeqlDbRepos;
   const notFoundRepos = variantAnalysis.skippedRepos?.notFoundRepos;
   const overLimitRepositoryCount = variantAnalysis.skippedRepos?.overLimitRepos?.repositoryCount ?? 0;
@@ -54,18 +57,28 @@ export const VariantAnalysisOutcomePanels = ({
 
   const warnings = (
     <WarningsContainer>
+      {variantAnalysis.status === VariantAnalysisStatus.Canceled && (
+        <Alert
+          type="warning"
+          title="Variant analysis canceled"
+          message="Variant analysis canceled before all queries were complete. Some repositories were not analyzed."
+        />
+      )}
+      {variantAnalysis.status === VariantAnalysisStatus.Failed && variantAnalysis.failureReason && (
+        <FailureReasonAlert failureReason={variantAnalysis.failureReason} showLogsButton={!!variantAnalysis.actionsWorkflowRunId} />
+      )}
       {overLimitRepositoryCount > 0 && (
         <Alert
           type="warning"
-          title="Repository limit exceeded"
-          message={`The number of requested repositories exceeds the maximum number of repositories supported by multi-repository variant analysis. ${overLimitRepositoryCount} ${overLimitRepositoryCount === 1 ? 'repository was' : 'repositories were'} skipped.`}
+          title="Repository list too large"
+          message={`Repository list contains more than ${formatDecimal(scannedReposCount)} entries. Only the first ${formatDecimal(scannedReposCount)} repositories were processed.`}
         />
       )}
       {accessMismatchRepositoryCount > 0 && (
         <Alert
           type="warning"
-          title="Access mismatch"
-          message={`${accessMismatchRepositoryCount} ${accessMismatchRepositoryCount === 1 ? 'repository is' : 'repositories are'} private, while the controller repository is public. ${accessMismatchRepositoryCount === 1 ? 'This repository was' : 'These repositories were'} skipped.`}
+          title="Problem with controller repository"
+          message={`Publicly visible controller repository can't be used to analyze private repositories. ${formatDecimal(accessMismatchRepositoryCount)} ${accessMismatchRepositoryCount === 1 ? 'private repository was' : 'private repositories were'} not analyzed.`}
         />
       )}
     </WarningsContainer>
@@ -118,8 +131,8 @@ export const VariantAnalysisOutcomePanels = ({
         {notFoundRepos?.repositoryCount &&
           <VSCodePanelView>
             <VariantAnalysisSkippedRepositoriesTab
-              alertTitle='No access'
-              alertMessage='The following repositories could not be scanned because you do not have read access.'
+              alertTitle="No access"
+              alertMessage="The following repositories can't be analyzed because they don’t exist or you don’t have access."
               skippedRepositoryGroup={notFoundRepos}
               filterSortState={filterSortState}
             />
@@ -127,8 +140,8 @@ export const VariantAnalysisOutcomePanels = ({
         {noCodeqlDbRepos?.repositoryCount &&
           <VSCodePanelView>
             <VariantAnalysisSkippedRepositoriesTab
-              alertTitle='No database'
-              alertMessage='The following repositories could not be scanned because they do not have an available CodeQL database.'
+              alertTitle="No CodeQL database"
+              alertMessage="The following repositories can't be analyzed because they don't currently have a CodeQL database available for the selected language."
               skippedRepositoryGroup={noCodeqlDbRepos}
               filterSortState={filterSortState}
             />

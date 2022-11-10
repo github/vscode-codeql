@@ -1,3 +1,4 @@
+import { ValueResult } from '../common/value-result';
 import { DbConfigStore } from './db-config-store';
 import { DbItem } from './db-item';
 import { createLocalTree, createRemoteTree } from './db-tree-creator';
@@ -8,13 +9,16 @@ export class DbManager {
   ) {
   }
 
-  public getDbItems(): DbItem[] {
-    const config = this.dbConfigStore.getConfig();
+  public getDbItems(): ValueResult<DbItem[]> {
+    const configResult = this.dbConfigStore.getConfig();
+    if (configResult.isFailure) {
+      return ValueResult.fail(configResult.errors);
+    }
 
-    return [
-      createRemoteTree(config),
+    return ValueResult.ok([
+      createRemoteTree(configResult.value),
       createLocalTree()
-    ];
+    ]);
   }
 
   public getConfigPath(): string {
