@@ -214,7 +214,7 @@ describe('db panel', async () => {
   ): void {
     expect(item.label).to.equal(`Top ${n} repositories`);
     expect(item.tooltip).to.equal(`Top ${n} repositories of a language`);
-    expect(item.iconPath).to.deep.equal(new vscode.ThemeIcon('github'));
+    expect(item.icon).to.deep.equal(new vscode.ThemeIcon('github'));
     expect(item.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.None);
   }
 
@@ -225,7 +225,7 @@ describe('db panel', async () => {
   ): void {
     expect(item.label).to.equal(listName);
     expect(item.tooltip).to.be.undefined;
-    expect(item.iconPath).to.be.undefined;
+    expect(item.icon).to.be.undefined;
     expect(item.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.Collapsed);
     expect(item.children).to.be.ok;
     expect(item.children.length).to.equal(repos.length);
@@ -241,7 +241,7 @@ describe('db panel', async () => {
   ): void {
     expect(item.label).to.equal(ownerName);
     expect(item.tooltip).to.be.undefined;
-    expect(item.iconPath).to.deep.equal(new vscode.ThemeIcon('organization'));
+    expect(item.icon).to.deep.equal(new vscode.ThemeIcon('organization'));
     expect(item.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.None);
     expect(item.children).to.be.ok;
     expect(item.children.length).to.equal(0);
@@ -253,7 +253,7 @@ describe('db panel', async () => {
   ): void {
     expect(item.label).to.equal(repoName);
     expect(item.tooltip).to.be.undefined;
-    expect(item.iconPath).to.deep.equal(new vscode.ThemeIcon('database'));
+    expect(item.icon).to.deep.equal(new vscode.ThemeIcon('database'));
     expect(item.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.None);
   }
 });
