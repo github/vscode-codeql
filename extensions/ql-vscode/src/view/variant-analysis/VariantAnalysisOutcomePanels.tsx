@@ -7,13 +7,14 @@ import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
-  VariantAnalysisStatus,
+  VariantAnalysisStatus
 } from '../../remote-queries/shared/variant-analysis';
 import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
 import { Alert } from '../common';
 import { VariantAnalysisSkippedRepositoriesTab } from './VariantAnalysisSkippedRepositoriesTab';
 import { defaultFilterSortState, RepositoriesFilterSortState } from './filterSort';
 import { RepositoriesSearchSortRow } from './RepositoriesSearchSortRow';
+import { FailureReasonAlert } from './FailureReasonAlert';
 
 export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
@@ -62,6 +63,9 @@ export const VariantAnalysisOutcomePanels = ({
           title="Variant analysis canceled"
           message="Variant analysis canceled before all queries were complete. Some repositories were not analyzed."
         />
+      )}
+      {variantAnalysis.status === VariantAnalysisStatus.Failed && variantAnalysis.failureReason && (
+        <FailureReasonAlert failureReason={variantAnalysis.failureReason} showLogsButton={!!variantAnalysis.actionsWorkflowRunId} />
       )}
       {overLimitRepositoryCount > 0 && (
         <Alert
