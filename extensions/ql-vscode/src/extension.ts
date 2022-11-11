@@ -97,7 +97,11 @@ import { RemoteQueryResult } from './remote-queries/remote-query-result';
 import { URLSearchParams } from 'url';
 import { handleDownloadPacks, handleInstallPackDependencies } from './packaging';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
-import { exportRemoteQueryResults, exportSelectedRemoteQueryResults } from './remote-queries/export-results';
+import {
+  exportRemoteQueryResults,
+  exportSelectedRemoteQueryResults,
+  exportVariantAnalysisResults
+} from './remote-queries/export-results';
 import { RemoteQuery } from './remote-queries/remote-query';
 import { EvalLogViewer } from './eval-log-viewer';
 import { SummaryLanguageSupport } from './log-insights/summary-language-support';
@@ -983,6 +987,12 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(
     commandRunner('codeQL.exportRemoteQueryResults', async (queryId: string) => {
       await exportRemoteQueryResults(qhm, rqm, ctx, queryId);
+    })
+  );
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.exportVariantAnalysisResults', async (variantAnalysisId: number) => {
+      await exportVariantAnalysisResults(ctx, variantAnalysisManager, variantAnalysisId);
     })
   );
 

@@ -1273,9 +1273,11 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    // Remote queries only
+    // Remote queries and variant analysis only
     if (finalSingleItem.t === 'remote') {
       await commands.executeCommand('codeQL.exportRemoteQueryResults', finalSingleItem.queryId);
+    } else if (finalSingleItem.t === 'variant-analysis') {
+      await commands.executeCommand('codeQL.exportVariantAnalysisResults', finalSingleItem.variantAnalysis.id);
     }
   }
 

@@ -93,6 +93,13 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     return result ?? await this.loadResultsIntoMemory(variantAnalysisId, variantAnalysisStoragePath, repositoryFullName);
   }
 
+  public areResultsLoaded(
+    variantAnalysisId: number,
+    repositoryFullName: string
+  ): boolean {
+    return this.cachedResults.has(createCacheKey(variantAnalysisId, repositoryFullName));
+  }
+
   private async loadResultsIntoMemory(
     variantAnalysisId: number,
     variantAnalysisStoragePath: string,
@@ -104,7 +111,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     return result;
   }
 
-  private async loadResultsFromStorage(
+  public async loadResultsFromStorage(
     variantAnalysisId: number,
     variantAnalysisStoragePath: string,
     repositoryFullName: string,
