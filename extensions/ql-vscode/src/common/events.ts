@@ -1,7 +1,7 @@
 import { Disposable } from '../pure/disposable-object';
 
 export interface AppEvent<T> {
-  (listener: (event: T) => any): Disposable;
+  (listener: (event: T) => void): Disposable;
 }
 
 export interface AppEventEmitter<T> {
