@@ -18,7 +18,7 @@
             "name": "foo/bar",
             "dateAdded": 1668096745193,
             "language": "go",
-            "path": "Uri to db in workspace storage"
+            "storagePath": "file://database-uri/"
           }
         ]
       },
@@ -29,7 +29,7 @@
             "name": "foo/baz",
             "dateAdded": 1668096760848,
             "language": "javascript",
-            "path": "Uri to db in workspace storage"
+            "storagePath": "file://database-uri/"
           }
         ]
       }
@@ -39,7 +39,7 @@
         "name": "example/repo1",
         "dateAdded": 1668096927267,
         "language": "ruby",
-        "path": "Uri to db in workspace storage"
+        "storagePath": "file://database-uri/"
       }
     ]
   }

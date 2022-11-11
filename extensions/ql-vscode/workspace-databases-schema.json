@@ -70,11 +70,11 @@
                     "language": {
                       "type": "string"
                     },
-                    "path": {
+                    "storagePath": {
                       "type": "string"
                     }
                   },
-                  "required": ["name", "dateAdded", "language", "path"],
+                  "required": ["name", "dateAdded", "language", "storagePath"],
                   "additionalProperties": false
                 }
               }
@@ -97,11 +97,11 @@
               "language": {
                 "type": "string"
               },
-              "path": {
+              "storagePath": {
                 "type": "string"
               }
             },
-            "required": ["name", "dateAdded", "language", "path"],
+            "required": ["name", "dateAdded", "language", "storagePath"],
             "additionalProperties": false
           }
         }

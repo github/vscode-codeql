@@ -30,7 +30,7 @@ export interface LocalDatabase {
   name: string;
   dateAdded: number;
   language: string;
-  path: string;
+  storagePath: string;
 }
 
 export function cloneDbConfig(config: DbConfig): DbConfig {
@@ -46,19 +46,9 @@ export function cloneDbConfig(config: DbConfig): DbConfig {
     local: {
       lists: config.local.lists.map((list) => ({
         name: list.name,
-        databases: list.databases.map((db) => ({
-          name: db.name,
-          dateAdded: db.dateAdded,
-          language: db.language,
-          path: db.path,
-        })),
+        databases: list.databases.map((db) => ({ ...db })),
       })),
-      databases: config.local.databases.map((db) => ({
-        name: db.name,
-        dateAdded: db.dateAdded,
-        language: db.language,
-        path: db.path,
-      })),
+      databases: config.local.databases.map((db) => ({ ...db })),
     },
   };
 }
