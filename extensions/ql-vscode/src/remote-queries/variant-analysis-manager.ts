@@ -1,7 +1,7 @@
 import * as path from 'path';
 
 import * as ghApiClient from './gh-api/gh-api-client';
-import { CancellationToken, commands, EventEmitter, ExtensionContext, window } from 'vscode';
+import { CancellationToken, commands, env, EventEmitter, ExtensionContext, window } from 'vscode';
 import { DisposableObject } from '../pure/disposable-object';
 import { Credentials } from '../authentication';
 import { VariantAnalysisMonitor } from './variant-analysis-monitor';
@@ -24,6 +24,7 @@ import { processUpdatedVariantAnalysis, processVariantAnalysisRepositoryTask } f
 import PQueue from 'p-queue';
 import { createTimestampFile, showAndLogErrorMessage, showAndLogInformationMessage } from '../helpers';
 import * as fs from 'fs-extra';
+import * as os from 'os';
 import { cancelVariantAnalysis } from './gh-api/gh-actions-api-client';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
@@ -299,6 +300,27 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     void showAndLogInformationMessage('Cancelling variant analysis. This may take a while.');
     await cancelVariantAnalysis(credentials, variantAnalysis);
+  }
+
+  public async copyRepoListToClipboard(variantAnalysisId: number) {
+    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+    if (!variantAnalysis) {
+      throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
+
+    const fullNames = variantAnalysis.scannedRepos?.filter(a => a.resultCount && a.resultCount > 0).map(a => a.repository.fullName);
+    if (!fullNames || fullNames.length === 0) {
+      return;
+    }
+
+    const text = [
+      '"new-repo-list": [',
+      ...fullNames.slice(0, -1).map(repo => `    "${repo}",`),
+      `    "${fullNames[fullNames.length - 1]}"`,
+      ']'
+    ];
+
+    await env.clipboard.writeText(text.join(os.EOL));
   }
 
   private getRepoStatesStoragePath(variantAnalysisId: number): string {
