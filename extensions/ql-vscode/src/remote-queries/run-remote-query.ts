@@ -2,14 +2,11 @@ import { CancellationToken, Uri, window } from 'vscode';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
-import * as os from 'os';
 import * as tmp from 'tmp-promise';
 import {
   askForLanguage,
   findLanguage,
   getOnDiskWorkspaceFolders,
-  showAndLogErrorMessage,
-  showAndLogInformationMessage,
   tryGetQueryMetadata,
   tmpDir,
 } from '../helpers';
@@ -19,13 +16,10 @@ import { logger } from '../logging';
 import { getActionBranch, getRemoteControllerRepo, setRemoteControllerRepo } from '../config';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { RequestError } from '@octokit/types/dist-types';
-import { RemoteQuery } from './remote-query';
 import { QueryMetadata } from '../pure/interface-types';
-import { getErrorMessage, REPO_REGEX } from '../pure/helpers-pure';
-import { pluralize } from '../pure/word';
+import { REPO_REGEX } from '../pure/helpers-pure';
 import * as ghApiClient from './gh-api/gh-api-client';
-import { RemoteQueriesResponse } from './gh-api/remote-queries';
-import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
+import { getRepositorySelection, isValidSelection } from './repository-selection';
 import { Repository } from './shared/repository';
 
 export interface QlPack {
@@ -257,84 +251,6 @@ export async function prepareRemoteQueryRun(
   };
 }
 
-export async function runRemoteQueriesApiRequest(
-  credentials: Credentials,
-  ref: string,
-  language: string,
-  repoSelection: RepositorySelection,
-  controllerRepo: Repository,
-  queryPackBase64: string,
-): Promise<void | RemoteQueriesResponse> {
-  try {
-    const response = await ghApiClient.submitRemoteQueries(credentials, {
-      ref,
-      language,
-      repositories: repoSelection.repositories,
-      repositoryLists: repoSelection.repositoryLists,
-      repositoryOwners: repoSelection.owners,
-      queryPack: queryPackBase64,
-      controllerRepoId: controllerRepo.id,
-    });
-    const { popupMessage, logMessage } = parseResponse(controllerRepo, response);
-    void showAndLogInformationMessage(popupMessage, { fullMessage: logMessage });
-    return response;
-  } catch (error: any) {
-    if (error.status === 404) {
-      void showAndLogErrorMessage(`Controller repository was not found. Please make sure it's a valid repo name.${eol}`);
-    } else {
-      void showAndLogErrorMessage(getErrorMessage(error));
-    }
-  }
-}
-
-const eol = os.EOL;
-const eol2 = os.EOL + os.EOL;
-
-// exported for testing only
-export function parseResponse(controllerRepo: Repository, response: RemoteQueriesResponse) {
-  const repositoriesQueried = response.repositories_queried;
-  const repositoryCount = repositoriesQueried.length;
-
-  const popupMessage = `Successfully scheduled runs on ${pluralize(repositoryCount, 'repository', 'repositories')}. [Click here to see the progress](https://github.com/${controllerRepo.fullName}/actions/runs/${response.workflow_run_id}).`
-    + (response.errors ? `${eol2}Some repositories could not be scheduled. See extension log for details.` : '');
-
-  let logMessage = `Successfully scheduled runs on ${pluralize(repositoryCount, 'repository', 'repositories')}. See https://github.com/${controllerRepo.fullName}/actions/runs/${response.workflow_run_id}.`;
-  logMessage += `${eol2}Repositories queried:${eol}${repositoriesQueried.join(', ')}`;
-  if (response.errors) {
-    const { invalid_repositories, repositories_without_database, private_repositories, cutoff_repositories, cutoff_repositories_count } = response.errors;
-    logMessage += `${eol2}Some repositories could not be scheduled.`;
-    if (invalid_repositories?.length) {
-      logMessage += `${eol2}${pluralize(invalid_repositories.length, 'repository', 'repositories')} invalid and could not be found:${eol}${invalid_repositories.join(', ')}`;
-    }
-    if (repositories_without_database?.length) {
-      logMessage += `${eol2}${pluralize(repositories_without_database.length, 'repository', 'repositories')} did not have a CodeQL database available:${eol}${repositories_without_database.join(', ')}`;
-      logMessage += `${eol}For each public repository that has not yet been added to the database service, we will try to create a database next time the store is updated.`;
-    }
-    if (private_repositories?.length) {
-      logMessage += `${eol2}${pluralize(private_repositories.length, 'repository', 'repositories')} not public:${eol}${private_repositories.join(', ')}`;
-      logMessage += `${eol}When using a public controller repository, only public repositories can be queried.`;
-    }
-    if (cutoff_repositories_count) {
-      logMessage += `${eol2}${pluralize(cutoff_repositories_count, 'repository', 'repositories')} over the limit for a single request`;
-      if (cutoff_repositories) {
-        logMessage += `:${eol}${cutoff_repositories.join(', ')}`;
-        if (cutoff_repositories_count !== cutoff_repositories.length) {
-          const moreRepositories = cutoff_repositories_count - cutoff_repositories.length;
-          logMessage += `${eol}...${eol}And another ${pluralize(moreRepositories, 'repository', 'repositories')}.`;
-        }
-      } else {
-        logMessage += '.';
-      }
-      logMessage += `${eol}Repositories were selected based on how recently they had been updated.`;
-    }
-  }
-
-  return {
-    popupMessage,
-    logMessage
-  };
-}
-
 /**
  * Updates the default suite of the query pack. This is used to ensure
  * only the specified query is run.
@@ -357,34 +273,6 @@ async function ensureNameAndSuite(queryPackDir: string, packRelativePath: string
     query: packRelativePath.replace(/\\/g, '/')
   }];
   await fs.writeFile(packPath, yaml.dump(qlpack));
-}
-
-export async function buildRemoteQueryEntity(
-  queryFilePath: string,
-  queryMetadata: QueryMetadata | undefined,
-  controllerRepo: Repository,
-  queryStartTime: number,
-  workflowRunId: number,
-  language: string,
-  repositoryCount: number
-): Promise<RemoteQuery> {
-  const queryName = getQueryName(queryMetadata, queryFilePath);
-  const queryText = await fs.readFile(queryFilePath, 'utf8');
-  const [owner, name] = controllerRepo.fullName.split('/');
-
-  return {
-    queryName,
-    queryFilePath,
-    queryText,
-    language,
-    controllerRepository: {
-      owner,
-      name,
-    },
-    executionStartTime: queryStartTime,
-    actionsWorkflowRunId: workflowRunId,
-    repositoryCount,
-  };
 }
 
 export function getQueryName(queryMetadata: QueryMetadata | undefined, queryFilePath: string): string {

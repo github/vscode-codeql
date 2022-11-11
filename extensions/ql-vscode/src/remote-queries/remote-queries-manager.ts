@@ -10,12 +10,10 @@ import { ProgressCallback } from '../commandRunner';
 import { createTimestampFile, showAndLogErrorMessage, showAndLogInformationMessage, showInformationMessageWithAction } from '../helpers';
 import { Logger } from '../logging';
 import {
-  buildRemoteQueryEntity,
   prepareRemoteQueryRun,
-  runRemoteQueriesApiRequest,
 } from './run-remote-query';
 import { RemoteQueriesView } from './remote-queries-view';
-import { RemoteQuery } from './remote-query';
+import { buildRemoteQueryEntity, RemoteQuery } from './remote-query';
 import { RemoteQueriesMonitor } from './remote-queries-monitor';
 import { getRemoteQueryIndex, getRepositoriesMetadata, RepositoriesMetadata } from './gh-api/gh-actions-api-client';
 import { RemoteQueryResultIndex } from './remote-query-result-index';
@@ -26,6 +24,7 @@ import { assertNever } from '../pure/helpers-pure';
 import { QueryStatus } from '../query-status';
 import { DisposableObject } from '../pure/disposable-object';
 import { AnalysisResults } from './shared/analysis-result';
+import { runRemoteQueriesApiRequest } from './remote-queries-api';
 
 const autoDownloadMaxSize = 300 * 1024;
 const autoDownloadMaxCount = 100;
