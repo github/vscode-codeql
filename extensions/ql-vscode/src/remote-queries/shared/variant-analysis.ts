@@ -56,6 +56,7 @@ export function isFinalVariantAnalysisStatus(status: VariantAnalysisStatus): boo
 
 export enum VariantAnalysisFailureReason {
   NoReposQueried = 'noReposQueried',
+  ActionsWorkflowRunFailed = 'actionsWorkflowRunFailed',
   InternalError = 'internalError',
 }
 

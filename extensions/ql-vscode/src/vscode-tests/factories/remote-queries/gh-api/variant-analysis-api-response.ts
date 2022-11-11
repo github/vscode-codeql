@@ -43,7 +43,7 @@ export function createFailedMockApiResponse(
   scannedRepos: VariantAnalysisScannedRepository[] = createMockScannedRepos(),
   skippedRepos: VariantAnalysisSkippedRepositories = createMockSkippedRepos(),
 ): VariantAnalysisApiResponse {
-  const variantAnalysis = createMockApiResponse('completed', scannedRepos, skippedRepos);
+  const variantAnalysis = createMockApiResponse('failed', scannedRepos, skippedRepos);
   variantAnalysis.failure_reason = 'internal_error';
   return variantAnalysis;
 }

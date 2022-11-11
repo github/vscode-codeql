@@ -35,10 +35,13 @@ export interface VariantAnalysis {
 
 export type VariantAnalysisStatus =
   | 'in_progress'
-  | 'completed';
+  | 'succeeded'
+  | 'failed'
+  | 'cancelled';
 
 export type VariantAnalysisFailureReason =
   | 'no_repos_queried'
+  | 'actions_workflow_run_failed'
   | 'internal_error';
 
 export type VariantAnalysisRepoStatus =

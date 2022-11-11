@@ -64,7 +64,7 @@ export function processUpdatedVariantAnalysis(
     executionStartTime: previousVariantAnalysis.executionStartTime,
     createdAt: response.created_at,
     updatedAt: response.updated_at,
-    status: processApiStatus(response.status, response.failure_reason),
+    status: processApiStatus(response.status),
     completedAt: response.completed_at,
     actionsWorkflowRunId: response.actions_workflow_run_id,
     scannedRepos: scannedRepos,
@@ -188,13 +188,17 @@ function processApiRepoStatus(analysisStatus: ApiVariantAnalysisRepoStatus): Var
   }
 }
 
-function processApiStatus(status: ApiVariantAnalysisStatus, failureReason: string | undefined): VariantAnalysisStatus {
-  if (status === 'in_progress') {
-    return VariantAnalysisStatus.InProgress;
-  } else if (failureReason !== undefined) {
-    return VariantAnalysisStatus.Failed;
-  } else {
+function processApiStatus(status: ApiVariantAnalysisStatus): VariantAnalysisStatus {
+  if (status === 'succeeded') {
     return VariantAnalysisStatus.Succeeded;
+  } else if (status === 'in_progress') {
+    return VariantAnalysisStatus.InProgress;
+  } else if (status === 'failed') {
+    return VariantAnalysisStatus.Failed;
+  } else if (status === 'cancelled') {
+    return VariantAnalysisStatus.Canceled;
+  } else {
+    return VariantAnalysisStatus.InProgress;
   }
 }
 
@@ -202,6 +206,8 @@ export function processFailureReason(failureReason: ApiVariantAnalysisFailureRea
   switch (failureReason) {
     case 'no_repos_queried':
       return VariantAnalysisFailureReason.NoReposQueried;
+    case 'actions_workflow_run_failed':
+      return VariantAnalysisFailureReason.ActionsWorkflowRunFailed;
     case 'internal_error':
       return VariantAnalysisFailureReason.InternalError;
   }
