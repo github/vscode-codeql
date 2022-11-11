@@ -33,6 +33,7 @@ import {
   CliConfigListener,
   DistributionConfigListener,
   isCanary,
+  isVariantAnalysisLiveResultsEnabled,
   joinOrderWarningThreshold,
   MAX_QUERIES,
   QueryHistoryConfigListener,
@@ -489,13 +490,13 @@ async function activateWithInstalledDistribution(
   const variantAnalysisStorageDir = path.join(ctx.globalStorageUri.fsPath, 'variant-analyses');
   await fs.ensureDir(variantAnalysisStorageDir);
   const variantAnalysisResultsManager = new VariantAnalysisResultsManager(cliServer, logger);
-  const variantAnalysisManager = new VariantAnalysisManager(ctx, variantAnalysisStorageDir, variantAnalysisResultsManager);
+  const variantAnalysisManager = new VariantAnalysisManager(ctx, cliServer, variantAnalysisStorageDir, variantAnalysisResultsManager);
   ctx.subscriptions.push(variantAnalysisManager);
   ctx.subscriptions.push(variantAnalysisResultsManager);
   ctx.subscriptions.push(workspace.registerTextDocumentContentProvider('codeql-variant-analysis', createVariantAnalysisContentProvider(variantAnalysisManager)));
 
   void logger.log('Initializing remote queries manager.');
-  const rqm = new RemoteQueriesManager(ctx, cliServer, queryStorageDir, logger, variantAnalysisManager);
+  const rqm = new RemoteQueriesManager(ctx, cliServer, queryStorageDir, logger);
   ctx.subscriptions.push(rqm);
 
   void logger.log('Initializing query history.');
@@ -906,11 +907,20 @@ async function activateWithInstalledDistribution(
           step: 0,
           message: 'Getting credentials'
         });
-        await rqm.runRemoteQuery(
-          uri || window.activeTextEditor?.document.uri,
-          progress,
-          token
-        );
+
+        if (isVariantAnalysisLiveResultsEnabled()) {
+          await variantAnalysisManager.runVariantAnalysis(
+            uri || window.activeTextEditor?.document.uri,
+            progress,
+            token
+          );
+        } else {
+          await rqm.runRemoteQuery(
+            uri || window.activeTextEditor?.document.uri,
+            progress,
+            token
+          );
+        }
       } else {
         throw new Error('Variant analysis requires the CodeQL Canary version to run.');
       }
