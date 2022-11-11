@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai';
 import * as path from 'path';
 import * as sinon from 'sinon';
-import { CancellationTokenSource, ExtensionContext, extensions, QuickPickItem, Uri, window } from 'vscode';
+import { CancellationTokenSource, commands, ExtensionContext, extensions, QuickPickItem, Uri, window } from 'vscode';
 import * as os from 'os';
 import * as yaml from 'js-yaml';
 
@@ -92,8 +92,11 @@ describe('Remote queries', function() {
 
   describe('runRemoteQuery', () => {
     let mockSubmitRemoteQueries: sinon.SinonStub;
+    let executeCommandSpy: sinon.SinonStub;
 
     beforeEach(() => {
+      executeCommandSpy = sandbox.stub(commands, 'executeCommand').callThrough();
+
       mockSubmitRemoteQueries = sandbox.stub(ghApiClient, 'submitRemoteQueries').resolves({
         workflow_run_id: 20,
         repositories_queried: ['octodemo/hello-world-1'],
@@ -103,10 +106,10 @@ describe('Remote queries', function() {
     it('should run a remote query that is part of a qlpack', async () => {
       const fileUri = getFile('data-remote-qlpack/in-pack.ql');
 
-      const querySubmissionResult = await remoteQueriesManager.runRemoteQuery(fileUri, progress, cancellationTokenSource.token);
-      expect(querySubmissionResult).to.be.ok;
+      await remoteQueriesManager.runRemoteQuery(fileUri, progress, cancellationTokenSource.token);
 
       expect(mockSubmitRemoteQueries).to.have.been.calledOnce;
+      expect(executeCommandSpy).to.have.been.calledWith('codeQL.monitorRemoteQuery', sinon.match.string, sinon.match.has('queryFilePath', fileUri.fsPath));
 
       const request: RemoteQueriesSubmission = mockSubmitRemoteQueries.getCall(0).lastArg;
 
@@ -148,10 +151,10 @@ describe('Remote queries', function() {
     it('should run a remote query that is not part of a qlpack', async () => {
       const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
-      const querySubmissionResult = await remoteQueriesManager.runRemoteQuery(fileUri, progress, cancellationTokenSource.token);
-      expect(querySubmissionResult).to.be.ok;
+      await remoteQueriesManager.runRemoteQuery(fileUri, progress, cancellationTokenSource.token);
 
       expect(mockSubmitRemoteQueries).to.have.been.calledOnce;
+      expect(executeCommandSpy).to.have.been.calledWith('codeQL.monitorRemoteQuery', sinon.match.string, sinon.match.has('queryFilePath', fileUri.fsPath));
 
       const request: RemoteQueriesSubmission = mockSubmitRemoteQueries.getCall(0).lastArg;
 
@@ -196,10 +199,10 @@ describe('Remote queries', function() {
     it('should run a remote query that is nested inside a qlpack', async () => {
       const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
 
-      const querySubmissionResult = await remoteQueriesManager.runRemoteQuery(fileUri, progress, cancellationTokenSource.token);
-      expect(querySubmissionResult).to.be.ok;
+      await remoteQueriesManager.runRemoteQuery(fileUri, progress, cancellationTokenSource.token);
 
       expect(mockSubmitRemoteQueries).to.have.been.calledOnce;
+      expect(executeCommandSpy).to.have.been.calledWith('codeQL.monitorRemoteQuery', sinon.match.string, sinon.match.has('queryFilePath', fileUri.fsPath));
 
       const request: RemoteQueriesSubmission = mockSubmitRemoteQueries.getCall(0).lastArg;
 

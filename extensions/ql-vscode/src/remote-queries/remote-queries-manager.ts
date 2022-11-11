@@ -119,7 +119,7 @@ export class RemoteQueriesManager extends DisposableObject {
     uri: Uri | undefined,
     progress: ProgressCallback,
     token: CancellationToken
-  ): Promise<RemoteQuery | undefined> {
+  ): Promise<void> {
     const credentials = await Credentials.initialize(this.ctx);
 
     const {
@@ -136,7 +136,7 @@ export class RemoteQueriesManager extends DisposableObject {
     const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, controllerRepo, base64Pack);
 
     if (!apiResponse) {
-      return undefined;
+      return;
     }
 
     const workflowRunId = apiResponse.workflow_run_id;
@@ -158,8 +158,6 @@ export class RemoteQueriesManager extends DisposableObject {
 
     this.remoteQueryAddedEventEmitter.fire({ queryId, query });
     void commands.executeCommand('codeQL.monitorRemoteQuery', queryId, query);
-
-    return query;
   }
 
   public async monitorRemoteQuery(

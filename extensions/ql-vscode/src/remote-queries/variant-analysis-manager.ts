@@ -69,7 +69,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     uri: Uri | undefined,
     progress: ProgressCallback,
     token: CancellationToken,
-  ): Promise<VariantAnalysis> {
+  ): Promise<void> {
     const credentials = await Credentials.initialize(this.ctx);
 
     const {
@@ -122,8 +122,6 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     void commands.executeCommand('codeQL.openVariantAnalysisView', processedVariantAnalysis.id);
     void commands.executeCommand('codeQL.monitorVariantAnalysis', processedVariantAnalysis);
-
-    return processedVariantAnalysis;
   }
 
   public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis) {

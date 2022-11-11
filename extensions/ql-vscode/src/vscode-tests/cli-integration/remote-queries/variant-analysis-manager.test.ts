@@ -90,6 +90,7 @@ describe('Variant Analysis Manager', async function() {
     let mockGetRepositoryFromNwo: sinon.SinonStub;
     let mockSubmitVariantAnalysis: sinon.SinonStub;
     let mockApiResponse: VariantAnalysisApiResponse;
+    let executeCommandSpy: sinon.SinonStub;
 
     const baseDir = path.join(__dirname, '../../../../src/vscode-tests/cli-integration');
     function getFile(file: string): Uri {
@@ -110,6 +111,8 @@ describe('Variant Analysis Manager', async function() {
       showQuickPickSpy = sandbox.stub(window, 'showQuickPick')
         .onFirstCall().resolves({ repositories: ['github/vscode-codeql'] } as unknown as QuickPickItem)
         .onSecondCall().resolves('javascript' as unknown as QuickPickItem);
+
+      executeCommandSpy = sandbox.stub(commands, 'executeCommand').callThrough();
 
       cancellationTokenSource = new CancellationTokenSource();
 
@@ -132,10 +135,9 @@ describe('Variant Analysis Manager', async function() {
     it('should run a variant analysis that is part of a qlpack', async () => {
       const fileUri = getFile('data-remote-qlpack/in-pack.ql');
 
-      const variantAnalysis = await variantAnalysisManager.runVariantAnalysis(fileUri, progress, cancellationTokenSource.token);
-      expect(variantAnalysis).to.be.ok;
-      expect(variantAnalysis.id).to.be.equal(mockApiResponse.id);
-      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
+      await variantAnalysisManager.runVariantAnalysis(fileUri, progress, cancellationTokenSource.token);
+
+      expect(executeCommandSpy).to.have.been.calledWith('codeQL.monitorVariantAnalysis', sinon.match.has('id', mockApiResponse.id).and(sinon.match.has('status', VariantAnalysisStatus.InProgress)));
 
       expect(showQuickPickSpy).to.have.been.calledOnce;
 
@@ -146,10 +148,9 @@ describe('Variant Analysis Manager', async function() {
     it('should run a remote query that is not part of a qlpack', async () => {
       const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
-      const variantAnalysis = await variantAnalysisManager.runVariantAnalysis(fileUri, progress, cancellationTokenSource.token);
-      expect(variantAnalysis).to.be.ok;
-      expect(variantAnalysis.id).to.be.equal(mockApiResponse.id);
-      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
+      await variantAnalysisManager.runVariantAnalysis(fileUri, progress, cancellationTokenSource.token);
+
+      expect(executeCommandSpy).to.have.been.calledWith('codeQL.monitorVariantAnalysis', sinon.match.has('id', mockApiResponse.id).and(sinon.match.has('status', VariantAnalysisStatus.InProgress)));
 
       expect(mockGetRepositoryFromNwo).to.have.been.calledOnce;
       expect(mockSubmitVariantAnalysis).to.have.been.calledOnce;
@@ -158,10 +159,9 @@ describe('Variant Analysis Manager', async function() {
     it('should run a remote query that is nested inside a qlpack', async () => {
       const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
 
-      const variantAnalysis = await variantAnalysisManager.runVariantAnalysis(fileUri, progress, cancellationTokenSource.token);
-      expect(variantAnalysis).to.be.ok;
-      expect(variantAnalysis.id).to.be.equal(mockApiResponse.id);
-      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
+      await variantAnalysisManager.runVariantAnalysis(fileUri, progress, cancellationTokenSource.token);
+
+      expect(executeCommandSpy).to.have.been.calledWith('codeQL.monitorVariantAnalysis', sinon.match.has('id', mockApiResponse.id).and(sinon.match.has('status', VariantAnalysisStatus.InProgress)));
 
       expect(mockGetRepositoryFromNwo).to.have.been.calledOnce;
       expect(mockSubmitVariantAnalysis).to.have.been.calledOnce;
