@@ -46,6 +46,11 @@ export interface QlPack {
  */
 const QUERY_PACK_NAME = 'codeql-remote/query';
 
+export interface GeneratedQueryPack {
+  base64Pack: string,
+  language: string
+}
+
 /**
  * Two possibilities:
  * 1. There is no qlpack.yml in this directory. Assume this is a lone query and generate a synthetic qlpack for it.
@@ -53,10 +58,7 @@ const QUERY_PACK_NAME = 'codeql-remote/query';
  *
  * @returns the entire qlpack as a base64 string.
  */
-async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: string, queryPackDir: string): Promise<{
-  base64Pack: string,
-  language: string
-}> {
+async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: string, queryPackDir: string): Promise<GeneratedQueryPack> {
   const originalPackRoot = await findPackRoot(queryFile);
   const packRelativePath = path.relative(originalPackRoot, queryFile);
   const targetQueryFileName = path.join(queryPackDir, packRelativePath);
@@ -192,7 +194,6 @@ export async function prepareRemoteQueryRun(
   cliServer: cli.CodeQLCliServer,
   credentials: Credentials,
   uri: Uri | undefined,
-  queryPackDir: string,
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<PreparedRemoteQuery> {
@@ -236,7 +237,17 @@ export async function prepareRemoteQueryRun(
     throw new UserCancellationException('Cancelled');
   }
 
-  const { base64Pack, language } = await generateQueryPack(cliServer, queryFile, queryPackDir);
+  const { remoteQueryDir, queryPackDir } = await createRemoteQueriesTempDirectory();
+
+  let pack: GeneratedQueryPack;
+
+  try {
+    pack = await generateQueryPack(cliServer, queryFile, queryPackDir);
+  } finally {
+    await remoteQueryDir.cleanup();
+  }
+
+  const { base64Pack, language } = pack;
 
   if (token.isCancellationRequested) {
     throw new UserCancellationException('Cancelled');
@@ -277,87 +288,81 @@ export async function runRemoteQuery(
       } or later.`);
   }
 
-  const { remoteQueryDir, queryPackDir } = await createRemoteQueriesTempDirectory();
-  try {
-    const {
-      actionBranch,
-      base64Pack,
-      repoSelection,
+  const {
+    actionBranch,
+    base64Pack,
+    repoSelection,
+    queryFile,
+    queryMetadata,
+    controllerRepo,
+    queryStartTime,
+    language,
+  } = await prepareRemoteQueryRun(cliServer, credentials, uri, progress, token);
+
+  if (isVariantAnalysisLiveResultsEnabled()) {
+    const queryName = getQueryName(queryMetadata, queryFile);
+    const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(language);
+    if (variantAnalysisLanguage === undefined) {
+      throw new UserCancellationException(`Found unsupported language: ${language}`);
+    }
+
+    const queryText = await fs.readFile(queryFile, 'utf8');
+
+    const variantAnalysisSubmission: VariantAnalysisSubmission = {
+      startTime: queryStartTime,
+      actionRepoRef: actionBranch,
+      controllerRepoId: controllerRepo.id,
+      query: {
+        name: queryName,
+        filePath: queryFile,
+        pack: base64Pack,
+        language: variantAnalysisLanguage,
+        text: queryText,
+      },
+      databases: {
+        repositories: repoSelection.repositories,
+        repositoryLists: repoSelection.repositoryLists,
+        repositoryOwners: repoSelection.owners
+      }
+    };
+
+    const variantAnalysisResponse = await ghApiClient.submitVariantAnalysis(
+      credentials,
+      variantAnalysisSubmission
+    );
+
+    const processedVariantAnalysis = processVariantAnalysis(variantAnalysisSubmission, variantAnalysisResponse);
+
+    await variantAnalysisManager.onVariantAnalysisSubmitted(processedVariantAnalysis);
+
+    void logger.log(`Variant analysis:\n${JSON.stringify(processedVariantAnalysis, null, 2)}`);
+
+    void showAndLogInformationMessage(`Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`);
+
+    void commands.executeCommand('codeQL.openVariantAnalysisView', processedVariantAnalysis.id);
+    void commands.executeCommand('codeQL.monitorVariantAnalysis', processedVariantAnalysis);
+
+    return { variantAnalysis: processedVariantAnalysis };
+  } else {
+    const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, controllerRepo, base64Pack);
+
+    if (!apiResponse) {
+      return;
+    }
+
+    const workflowRunId = apiResponse.workflow_run_id;
+    const repositoryCount = apiResponse.repositories_queried.length;
+    const remoteQuery = await buildRemoteQueryEntity(
       queryFile,
       queryMetadata,
       controllerRepo,
       queryStartTime,
+      workflowRunId,
       language,
-    } = await prepareRemoteQueryRun(cliServer, credentials, uri, queryPackDir, progress, token);
+      repositoryCount);
 
-    if (isVariantAnalysisLiveResultsEnabled()) {
-      const queryName = getQueryName(queryMetadata, queryFile);
-      const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(language);
-      if (variantAnalysisLanguage === undefined) {
-        throw new UserCancellationException(`Found unsupported language: ${language}`);
-      }
-
-      const queryText = await fs.readFile(queryFile, 'utf8');
-
-      const variantAnalysisSubmission: VariantAnalysisSubmission = {
-        startTime: queryStartTime,
-        actionRepoRef: actionBranch,
-        controllerRepoId: controllerRepo.id,
-        query: {
-          name: queryName,
-          filePath: queryFile,
-          pack: base64Pack,
-          language: variantAnalysisLanguage,
-          text: queryText,
-        },
-        databases: {
-          repositories: repoSelection.repositories,
-          repositoryLists: repoSelection.repositoryLists,
-          repositoryOwners: repoSelection.owners
-        }
-      };
-
-      const variantAnalysisResponse = await ghApiClient.submitVariantAnalysis(
-        credentials,
-        variantAnalysisSubmission
-      );
-
-      const processedVariantAnalysis = processVariantAnalysis(variantAnalysisSubmission, variantAnalysisResponse);
-
-      await variantAnalysisManager.onVariantAnalysisSubmitted(processedVariantAnalysis);
-
-      void logger.log(`Variant analysis:\n${JSON.stringify(processedVariantAnalysis, null, 2)}`);
-
-      void showAndLogInformationMessage(`Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`);
-
-      void commands.executeCommand('codeQL.openVariantAnalysisView', processedVariantAnalysis.id);
-      void commands.executeCommand('codeQL.monitorVariantAnalysis', processedVariantAnalysis);
-
-      return { variantAnalysis: processedVariantAnalysis };
-    } else {
-      const apiResponse = await runRemoteQueriesApiRequest(credentials, actionBranch, language, repoSelection, controllerRepo, base64Pack);
-
-      if (!apiResponse) {
-        return;
-      }
-
-      const workflowRunId = apiResponse.workflow_run_id;
-      const repositoryCount = apiResponse.repositories_queried.length;
-      const remoteQuery = await buildRemoteQueryEntity(
-        queryFile,
-        queryMetadata,
-        controllerRepo,
-        queryStartTime,
-        workflowRunId,
-        language,
-        repositoryCount);
-
-      // don't return the path because it has been deleted
-      return { query: remoteQuery };
-    }
-
-  } finally {
-    await remoteQueryDir.cleanup();
+    // don't return the path because it has been deleted
+    return { query: remoteQuery };
   }
 }
 
