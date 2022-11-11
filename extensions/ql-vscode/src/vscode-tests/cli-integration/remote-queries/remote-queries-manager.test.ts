@@ -1,31 +1,24 @@
 import { assert, expect } from 'chai';
 import * as path from 'path';
 import * as sinon from 'sinon';
-import { CancellationTokenSource, ExtensionContext, extensions, QuickPickItem, Uri, window } from 'vscode';
+import { CancellationTokenSource, commands, ExtensionContext, extensions, QuickPickItem, Uri, window } from 'vscode';
 import * as os from 'os';
 import * as yaml from 'js-yaml';
 
-import { QlPack, runRemoteQuery } from '../../../remote-queries/run-remote-query';
-import { Credentials } from '../../../authentication';
+import { QlPack } from '../../../remote-queries/run-remote-query';
 import { CliVersionConstraint, CodeQLCliServer } from '../../../cli';
 import { CodeQLExtensionInterface } from '../../../extension';
 import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../../config';
-import * as config from '../../../config';
 import { UserCancellationException } from '../../../commandRunner';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import { lte } from 'semver';
-import {
-  VariantAnalysis as VariantAnalysisApiResponse
-} from '../../../remote-queries/gh-api/variant-analysis';
 import { Repository } from '../../../remote-queries/gh-api/repository';
-import { VariantAnalysisStatus } from '../../../remote-queries/shared/variant-analysis';
-import { createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
 import { createMockExtensionContext } from '../../no-workspace';
-import { VariantAnalysisManager } from '../../../remote-queries/variant-analysis-manager';
 import { OutputChannelLogger } from '../../../logging';
-import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
 import { RemoteQueriesSubmission } from '../../../remote-queries/shared/remote-queries';
 import { readBundledPack } from '../../utils/bundled-pack-helpers';
+import { RemoteQueriesManager } from '../../../remote-queries/remote-queries-manager';
+import { Credentials } from '../../../authentication';
 
 describe('Remote queries', function() {
   const baseDir = path.join(__dirname, '../../../../src/vscode-tests/cli-integration');
@@ -36,16 +29,13 @@ describe('Remote queries', function() {
   this.timeout(3 * 60 * 1000);
 
   let cli: CodeQLCliServer;
-  let credentials: Credentials = {} as unknown as Credentials;
   let cancellationTokenSource: CancellationTokenSource;
   let progress: sinon.SinonSpy;
   let showQuickPickSpy: sinon.SinonStub;
   let getRepositoryFromNwoStub: sinon.SinonStub;
-  let liveResultsStub: sinon.SinonStub;
   let ctx: ExtensionContext;
   let logger: any;
-  let variantAnalysisManager: VariantAnalysisManager;
-  let variantAnalysisResultsManager: VariantAnalysisResultsManager;
+  let remoteQueriesManager: RemoteQueriesManager;
 
   // use `function` so we have access to `this`
   beforeEach(async function() {
@@ -60,15 +50,13 @@ describe('Remote queries', function() {
 
     ctx = createMockExtensionContext();
     logger = new OutputChannelLogger('test-logger');
-    variantAnalysisResultsManager = new VariantAnalysisResultsManager(cli, logger);
-    variantAnalysisManager = new VariantAnalysisManager(ctx, 'fake-storage-dir', variantAnalysisResultsManager);
+    remoteQueriesManager = new RemoteQueriesManager(ctx, cli, 'fake-storage-dir', logger);
 
     if (!(await cli.cliConstraints.supportsRemoteQueries())) {
       console.log(`Remote queries are not supported on CodeQL CLI v${CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
         }. Skipping this test.`);
       this.skip();
     }
-    credentials = {} as unknown as Credentials;
 
     cancellationTokenSource = new CancellationTokenSource();
 
@@ -90,17 +78,25 @@ describe('Remote queries', function() {
     await setRemoteControllerRepo('github/vscode-codeql');
     await setRemoteRepositoryLists({ 'vscode-codeql': ['github/vscode-codeql'] });
 
-    liveResultsStub = sandbox.stub(config, 'isVariantAnalysisLiveResultsEnabled').returns(false);
+    const mockCredentials = {
+      getOctokit: () => Promise.resolve({
+        request: undefined,
+      })
+    } as unknown as Credentials;
+    sandbox.stub(Credentials, 'initialize').resolves(mockCredentials);
   });
 
   afterEach(async () => {
     sandbox.restore();
   });
 
-  describe('when live results are not enabled', () => {
+  describe('runRemoteQuery', () => {
     let mockSubmitRemoteQueries: sinon.SinonStub;
+    let executeCommandSpy: sinon.SinonStub;
 
     beforeEach(() => {
+      executeCommandSpy = sandbox.stub(commands, 'executeCommand').callThrough();
+
       mockSubmitRemoteQueries = sandbox.stub(ghApiClient, 'submitRemoteQueries').resolves({
         workflow_run_id: 20,
         repositories_queried: ['octodemo/hello-world-1'],
@@ -110,10 +106,10 @@ describe('Remote queries', function() {
     it('should run a remote query that is part of a qlpack', async () => {
       const fileUri = getFile('data-remote-qlpack/in-pack.ql');
 
-      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, progress, cancellationTokenSource.token, variantAnalysisManager);
-      expect(querySubmissionResult).to.be.ok;
+      await remoteQueriesManager.runRemoteQuery(fileUri, progress, cancellationTokenSource.token);
 
       expect(mockSubmitRemoteQueries).to.have.been.calledOnce;
+      expect(executeCommandSpy).to.have.been.calledWith('codeQL.monitorRemoteQuery', sinon.match.string, sinon.match.has('queryFilePath', fileUri.fsPath));
 
       const request: RemoteQueriesSubmission = mockSubmitRemoteQueries.getCall(0).lastArg;
 
@@ -155,10 +151,10 @@ describe('Remote queries', function() {
     it('should run a remote query that is not part of a qlpack', async () => {
       const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
-      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, progress, cancellationTokenSource.token, variantAnalysisManager);
-      expect(querySubmissionResult).to.be.ok;
+      await remoteQueriesManager.runRemoteQuery(fileUri, progress, cancellationTokenSource.token);
 
       expect(mockSubmitRemoteQueries).to.have.been.calledOnce;
+      expect(executeCommandSpy).to.have.been.calledWith('codeQL.monitorRemoteQuery', sinon.match.string, sinon.match.has('queryFilePath', fileUri.fsPath));
 
       const request: RemoteQueriesSubmission = mockSubmitRemoteQueries.getCall(0).lastArg;
 
@@ -203,10 +199,10 @@ describe('Remote queries', function() {
     it('should run a remote query that is nested inside a qlpack', async () => {
       const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
 
-      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, progress, cancellationTokenSource.token, variantAnalysisManager);
-      expect(querySubmissionResult).to.be.ok;
+      await remoteQueriesManager.runRemoteQuery(fileUri, progress, cancellationTokenSource.token);
 
       expect(mockSubmitRemoteQueries).to.have.been.calledOnce;
+      expect(executeCommandSpy).to.have.been.calledWith('codeQL.monitorRemoteQuery', sinon.match.string, sinon.match.has('queryFilePath', fileUri.fsPath));
 
       const request: RemoteQueriesSubmission = mockSubmitRemoteQueries.getCall(0).lastArg;
 
@@ -250,72 +246,7 @@ describe('Remote queries', function() {
     it('should cancel a run before uploading', async () => {
       const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
 
-      const promise = runRemoteQuery(cli, credentials, fileUri, progress, cancellationTokenSource.token, variantAnalysisManager);
-
-      cancellationTokenSource.cancel();
-
-      try {
-        await promise;
-        assert.fail('should have thrown');
-      } catch (e) {
-        expect(e).to.be.instanceof(UserCancellationException);
-      }
-    });
-  });
-
-  describe('when live results are enabled', () => {
-    let mockApiResponse: VariantAnalysisApiResponse;
-    let mockSubmitVariantAnalysis: sinon.SinonStub;
-
-    beforeEach(() => {
-      liveResultsStub.returns(true);
-      mockApiResponse = createMockApiResponse('in_progress');
-      mockSubmitVariantAnalysis = sandbox.stub(ghApiClient, 'submitVariantAnalysis').resolves(mockApiResponse);
-    });
-
-    it('should run a variant analysis that is part of a qlpack', async () => {
-      const fileUri = getFile('data-remote-qlpack/in-pack.ql');
-
-      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, progress, cancellationTokenSource.token, variantAnalysisManager);
-      expect(querySubmissionResult).to.be.ok;
-      const variantAnalysis = querySubmissionResult!.variantAnalysis!;
-      expect(variantAnalysis.id).to.be.equal(mockApiResponse.id);
-      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
-
-      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
-      expect(mockSubmitVariantAnalysis).to.have.been.calledOnce;
-    });
-
-    it('should run a remote query that is not part of a qlpack', async () => {
-      const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
-
-      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, progress, cancellationTokenSource.token, variantAnalysisManager);
-      expect(querySubmissionResult).to.be.ok;
-      const variantAnalysis = querySubmissionResult!.variantAnalysis!;
-      expect(variantAnalysis.id).to.be.equal(mockApiResponse.id);
-      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
-
-      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
-      expect(mockSubmitVariantAnalysis).to.have.been.calledOnce;
-    });
-
-    it('should run a remote query that is nested inside a qlpack', async () => {
-      const fileUri = getFile('data-remote-qlpack-nested/subfolder/in-pack.ql');
-
-      const querySubmissionResult = await runRemoteQuery(cli, credentials, fileUri, progress, cancellationTokenSource.token, variantAnalysisManager);
-      expect(querySubmissionResult).to.be.ok;
-      const variantAnalysis = querySubmissionResult!.variantAnalysis!;
-      expect(variantAnalysis.id).to.be.equal(mockApiResponse.id);
-      expect(variantAnalysis.status).to.be.equal(VariantAnalysisStatus.InProgress);
-
-      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
-      expect(mockSubmitVariantAnalysis).to.have.been.calledOnce;
-    });
-
-    it('should cancel a run before uploading', async () => {
-      const fileUri = getFile('data-remote-no-qlpack/in-pack.ql');
-
-      const promise = runRemoteQuery(cli, credentials, fileUri, progress, cancellationTokenSource.token, variantAnalysisManager);
+      const promise = remoteQueriesManager.runRemoteQuery(fileUri, progress, cancellationTokenSource.token);
 
       cancellationTokenSource.cancel();
 

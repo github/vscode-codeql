@@ -1,30 +1,36 @@
 import * as path from 'path';
 
 import * as ghApiClient from './gh-api/gh-api-client';
-import { CancellationToken, commands, EventEmitter, ExtensionContext, window } from 'vscode';
+import { CancellationToken, commands, EventEmitter, ExtensionContext, Uri, window } from 'vscode';
 import { DisposableObject } from '../pure/disposable-object';
 import { Credentials } from '../authentication';
 import { VariantAnalysisMonitor } from './variant-analysis-monitor';
 import {
-  isVariantAnalysisComplete,
+  isVariantAnalysisComplete, parseVariantAnalysisQueryLanguage,
   VariantAnalysis,
   VariantAnalysisQueryLanguage,
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
-  VariantAnalysisScannedRepositoryState
+  VariantAnalysisScannedRepositoryState, VariantAnalysisSubmission
 } from './shared/variant-analysis';
 import { getErrorMessage } from '../pure/helpers-pure';
 import { VariantAnalysisView } from './variant-analysis-view';
 import { VariantAnalysisViewManager } from './variant-analysis-view-manager';
 import { VariantAnalysisResultsManager } from './variant-analysis-results-manager';
-import { getControllerRepo } from './run-remote-query';
-import { processUpdatedVariantAnalysis, processVariantAnalysisRepositoryTask } from './variant-analysis-processor';
+import { getControllerRepo, getQueryName, prepareRemoteQueryRun } from './run-remote-query';
+import {
+  processUpdatedVariantAnalysis,
+  processVariantAnalysis,
+  processVariantAnalysisRepositoryTask
+} from './variant-analysis-processor';
 import PQueue from 'p-queue';
 import { createTimestampFile, showAndLogErrorMessage, showAndLogInformationMessage } from '../helpers';
 import * as fs from 'fs-extra';
 import { cancelVariantAnalysis } from './gh-api/gh-actions-api-client';
+import { ProgressCallback, UserCancellationException } from '../commandRunner';
+import { CodeQLCliServer } from '../cli';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private static readonly REPO_STATES_FILENAME = 'repo_states.json';
@@ -47,6 +53,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
   constructor(
     private readonly ctx: ExtensionContext,
+    private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager
   ) {
@@ -56,6 +63,65 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
 
     this.variantAnalysisResultsManager = variantAnalysisResultsManager;
     this.variantAnalysisResultsManager.onResultLoaded(this.onRepoResultLoaded.bind(this));
+  }
+
+  public async runVariantAnalysis(
+    uri: Uri | undefined,
+    progress: ProgressCallback,
+    token: CancellationToken,
+  ): Promise<void> {
+    const credentials = await Credentials.initialize(this.ctx);
+
+    const {
+      actionBranch,
+      base64Pack,
+      repoSelection,
+      queryFile,
+      queryMetadata,
+      controllerRepo,
+      queryStartTime,
+      language,
+    } = await prepareRemoteQueryRun(this.cliServer, credentials, uri, progress, token);
+
+    const queryName = getQueryName(queryMetadata, queryFile);
+    const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(language);
+    if (variantAnalysisLanguage === undefined) {
+      throw new UserCancellationException(`Found unsupported language: ${language}`);
+    }
+
+    const queryText = await fs.readFile(queryFile, 'utf8');
+
+    const variantAnalysisSubmission: VariantAnalysisSubmission = {
+      startTime: queryStartTime,
+      actionRepoRef: actionBranch,
+      controllerRepoId: controllerRepo.id,
+      query: {
+        name: queryName,
+        filePath: queryFile,
+        pack: base64Pack,
+        language: variantAnalysisLanguage,
+        text: queryText,
+      },
+      databases: {
+        repositories: repoSelection.repositories,
+        repositoryLists: repoSelection.repositoryLists,
+        repositoryOwners: repoSelection.owners
+      }
+    };
+
+    const variantAnalysisResponse = await ghApiClient.submitVariantAnalysis(
+      credentials,
+      variantAnalysisSubmission
+    );
+
+    const processedVariantAnalysis = processVariantAnalysis(variantAnalysisSubmission, variantAnalysisResponse);
+
+    await this.onVariantAnalysisSubmitted(processedVariantAnalysis);
+
+    void showAndLogInformationMessage(`Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`);
+
+    void commands.executeCommand('codeQL.openVariantAnalysisView', processedVariantAnalysis.id);
+    void commands.executeCommand('codeQL.monitorVariantAnalysis', processedVariantAnalysis);
   }
 
   public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis) {
@@ -165,7 +231,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     this._onVariantAnalysisStatusUpdated.fire(variantAnalysis);
   }
 
-  public async onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): Promise<void> {
+  private async onVariantAnalysisSubmitted(variantAnalysis: VariantAnalysis): Promise<void> {
     await this.setVariantAnalysis(variantAnalysis);
 
     await this.prepareStorageDirectory(variantAnalysis.id);
