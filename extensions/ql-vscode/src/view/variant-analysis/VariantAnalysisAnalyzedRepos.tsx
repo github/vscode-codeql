@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useMemo } from 'react';
+import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { RepoRow } from './RepoRow';
 import {
@@ -22,6 +22,9 @@ export type VariantAnalysisAnalyzedReposProps = {
   repositoryResults?: VariantAnalysisScannedRepositoryResult[];
 
   filterSortState?: RepositoriesFilterSortState;
+
+  selectedRepositoryIds?: number[];
+  setSelectedRepositoryIds?: Dispatch<SetStateAction<number[]>>;
 }
 
 export const VariantAnalysisAnalyzedRepos = ({
@@ -29,6 +32,8 @@ export const VariantAnalysisAnalyzedRepos = ({
   repositoryStates,
   repositoryResults,
   filterSortState,
+  selectedRepositoryIds,
+  setSelectedRepositoryIds,
 }: VariantAnalysisAnalyzedReposProps) => {
   const repositoryStateById = useMemo(() => {
     const map = new Map<number, VariantAnalysisScannedRepositoryState>();
@@ -52,6 +57,20 @@ export const VariantAnalysisAnalyzedRepos = ({
     })?.sort(compareWithResults(filterSortState));
   }, [filterSortState, variantAnalysis.scannedRepos]);
 
+  const onSelectedChange = useCallback((repositoryId: number, selected: boolean) => {
+    setSelectedRepositoryIds?.((prevSelectedRepositoryIds) => {
+      if (selected) {
+        if (prevSelectedRepositoryIds.includes(repositoryId)) {
+          return prevSelectedRepositoryIds;
+        }
+
+        return [...prevSelectedRepositoryIds, repositoryId];
+      } else {
+        return prevSelectedRepositoryIds.filter((id) => id !== repositoryId);
+      }
+    });
+  }, [setSelectedRepositoryIds]);
+
   return (
     <Container>
       {repositories?.map(repository => {
@@ -67,6 +86,8 @@ export const VariantAnalysisAnalyzedRepos = ({
             resultCount={repository.resultCount}
             interpretedResults={results?.interpretedResults}
             rawResults={results?.rawResults}
+            selected={selectedRepositoryIds?.includes(repository.repository.id)}
+            onSelectedChange={onSelectedChange}
           />
         );
       })}
