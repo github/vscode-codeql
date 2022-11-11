@@ -187,6 +187,17 @@ async function getPackedBundlePath(queryPackDir: string) {
   });
 }
 
+export interface PreparedRemoteQuery {
+  actionBranch: string;
+  base64Pack: string;
+  repoSelection: RepositorySelection;
+  queryFile: string;
+  queryMetadata: QueryMetadata | undefined;
+  controllerRepo: Repository;
+  queryStartTime: number;
+  language: string;
+}
+
 export async function prepareRemoteQueryRun(
   cliServer: cli.CodeQLCliServer,
   credentials: Credentials,
@@ -194,7 +205,7 @@ export async function prepareRemoteQueryRun(
   queryPackDir: string,
   progress: ProgressCallback,
   token: CancellationToken,
-) {
+): Promise<PreparedRemoteQuery> {
   if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
     throw new Error(`Variant analysis is not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
       } or later.`);
