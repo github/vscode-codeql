@@ -12,8 +12,27 @@ import { RemoteQueriesManager } from './remote-queries-manager';
 import { generateMarkdown } from './remote-queries-markdown-generation';
 import { RemoteQuery } from './remote-query';
 import { AnalysisResults, sumAnalysesResults } from './shared/analysis-result';
-import { RemoteQueryHistoryItem } from './remote-query-history-item';
 import { pluralize } from '../pure/word';
+
+/**
+ * Exports the results of the currently-selected remote query.
+ */
+export async function exportSelectedRemoteQueryResults(queryHistoryManager: QueryHistoryManager): Promise<void> {
+  const queryHistoryItem = queryHistoryManager.getCurrentQueryHistoryItem();
+  if (!queryHistoryItem || queryHistoryItem.t === 'local') {
+    throw new Error('No variant analysis results currently open. To open results, click an item in the query history view.');
+  }
+
+  if (!queryHistoryItem.completed) {
+    throw new Error('Variant analysis results are not yet available.');
+  }
+
+  if (queryHistoryItem.t === 'remote') {
+    return commands.executeCommand('codeQL.exportRemoteQueryResults', queryHistoryItem.queryId);
+  } else {
+    throw new Error('No variant analysis results currently open. To open results, click an item in the query history view.');
+  }
+}
 
 /**
  * Exports the results of the given or currently-selected remote query.
@@ -23,22 +42,12 @@ export async function exportRemoteQueryResults(
   queryHistoryManager: QueryHistoryManager,
   remoteQueriesManager: RemoteQueriesManager,
   ctx: ExtensionContext,
-  queryId?: string,
+  queryId: string,
 ): Promise<void> {
-  let queryHistoryItem: RemoteQueryHistoryItem;
-  if (queryId) {
-    const query = queryHistoryManager.getRemoteQueryById(queryId);
-    if (!query) {
-      void logger.log(`Could not find query with id ${queryId}`);
-      throw new Error('There was an error when trying to retrieve variant analysis information');
-    }
-    queryHistoryItem = query;
-  } else {
-    const query = queryHistoryManager.getCurrentQueryHistoryItem();
-    if (!query || query.t !== 'remote') {
-      throw new Error('No variant analysis results currently open. To open results, click an item in the query history view.');
-    }
-    queryHistoryItem = query;
+  const queryHistoryItem = queryHistoryManager.getRemoteQueryById(queryId);
+  if (!queryHistoryItem) {
+    void logger.log(`Could not find query with id ${queryId}`);
+    throw new Error('There was an error when trying to retrieve variant analysis information');
   }
 
   if (!queryHistoryItem.completed) {

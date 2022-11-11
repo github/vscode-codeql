@@ -325,7 +325,7 @@
         "title": "CodeQL: Run Variant Analysis"
       },
       {
-        "command": "codeQL.exportVariantAnalysisResults",
+        "command": "codeQL.exportSelectedVariantAnalysisResults",
         "title": "CodeQL: Export Variant Analysis Results"
       },
       {
@@ -954,7 +954,7 @@
           "when": "config.codeQL.canary && config.codeQL.variantAnalysis.liveResults"
         },
         {
-          "command": "codeQL.exportVariantAnalysisResults",
+          "command": "codeQL.exportSelectedVariantAnalysisResults",
           "when": "config.codeQL.canary"
         },
         {
