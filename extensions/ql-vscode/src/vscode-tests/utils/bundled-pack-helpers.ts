@@ -10,7 +10,7 @@ export interface QueryPackFS {
   directoryContents: (name: string) => string[];
 }
 
-export const readBundledPack = async (base64Pack: string): Promise<QueryPackFS> => {
+export async function readBundledPack(base64Pack: string): Promise<QueryPackFS> {
   const buffer = Buffer.from(base64Pack, 'base64');
   const stream = Readable.from(buffer);
 
@@ -73,4 +73,4 @@ export const readBundledPack = async (base64Pack: string): Promise<QueryPackFS> 
         .map(dir => dir.substring(name.length + 1));
     },
   };
-};
+}

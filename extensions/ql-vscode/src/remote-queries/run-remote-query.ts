@@ -19,7 +19,7 @@ import { RequestError } from '@octokit/types/dist-types';
 import { QueryMetadata } from '../pure/interface-types';
 import { REPO_REGEX } from '../pure/helpers-pure';
 import * as ghApiClient from './gh-api/gh-api-client';
-import { getRepositorySelection, isValidSelection } from './repository-selection';
+import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
 import { Repository } from './shared/repository';
 
 export interface QlPack {
@@ -166,13 +166,24 @@ async function getPackedBundlePath(queryPackDir: string) {
   });
 }
 
+export interface PreparedRemoteQuery {
+  actionBranch: string;
+  base64Pack: string;
+  repoSelection: RepositorySelection;
+  queryFile: string;
+  queryMetadata: QueryMetadata | undefined;
+  controllerRepo: Repository;
+  queryStartTime: number;
+  language: string;
+}
+
 export async function prepareRemoteQueryRun(
   cliServer: cli.CodeQLCliServer,
   credentials: Credentials,
   uri: Uri | undefined,
   progress: ProgressCallback,
   token: CancellationToken,
-) {
+): Promise<PreparedRemoteQuery> {
   if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
     throw new Error(`Variant analysis is not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
       } or later.`);
