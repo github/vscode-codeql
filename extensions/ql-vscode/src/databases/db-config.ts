@@ -2,6 +2,7 @@
 
 export interface DbConfig {
   remote: RemoteDbConfig;
+  local: LocalDbConfig;
 }
 
 export interface RemoteDbConfig {
@@ -15,6 +16,23 @@ export interface RemoteRepositoryList {
   repositories: string[];
 }
 
+export interface LocalDbConfig {
+  lists: LocalRepositoryList[];
+  databases: LocalDatabase[];
+}
+
+export interface LocalRepositoryList {
+  name: string;
+  databases: LocalDatabase[];
+}
+
+export interface LocalDatabase {
+  name: string;
+  dateAdded: number;
+  language: string;
+  path: string;
+}
+
 export function cloneDbConfig(config: DbConfig): DbConfig {
   return {
     remote: {
@@ -24,6 +42,23 @@ export function cloneDbConfig(config: DbConfig): DbConfig {
       })),
       owners: [...config.remote.owners],
       repositories: [...config.remote.repositories],
-    }
+    },
+    local: {
+      lists: config.local.lists.map((list) => ({
+        name: list.name,
+        databases: list.databases.map((db) => ({
+          name: db.name,
+          dateAdded: db.dateAdded,
+          language: db.language,
+          path: db.path,
+        })),
+      })),
+      databases: config.local.databases.map((db) => ({
+        name: db.name,
+        dateAdded: db.dateAdded,
+        language: db.language,
+        path: db.path,
+      })),
+    },
   };
 }

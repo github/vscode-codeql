@@ -44,6 +44,72 @@
       },
       "required": ["repositoryLists", "owners", "repositories"],
       "additionalProperties": false
+    },
+    "local": {
+      "type": "object",
+      "properties": {
+        "lists": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "databases": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "dateAdded": {
+                      "type": "number"
+                    },
+                    "language": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["name", "dateAdded", "language", "path"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": ["name", "databases"],
+            "additionalProperties": false
+          }
+        },
+        "databases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "dateAdded": {
+                "type": "number"
+              },
+              "language": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "required": ["name", "dateAdded", "language", "path"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["lists", "databases"],
+      "additionalProperties": false
     }
-  }
+  },
+  "required": ["remote", "local"],
+  "additionalProperties": false
 }
