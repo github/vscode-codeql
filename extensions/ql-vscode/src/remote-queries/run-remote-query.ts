@@ -46,6 +46,11 @@ export interface QlPack {
  */
 const QUERY_PACK_NAME = 'codeql-remote/query';
 
+export interface GeneratedQueryPack {
+  base64Pack: string,
+  language: string
+}
+
 /**
  * Two possibilities:
  * 1. There is no qlpack.yml in this directory. Assume this is a lone query and generate a synthetic qlpack for it.
@@ -53,10 +58,7 @@ const QUERY_PACK_NAME = 'codeql-remote/query';
  *
  * @returns the entire qlpack as a base64 string.
  */
-async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: string, queryPackDir: string): Promise<{
-  base64Pack: string,
-  language: string
-}> {
+async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: string, queryPackDir: string): Promise<GeneratedQueryPack> {
   const originalPackRoot = await findPackRoot(queryFile);
   const packRelativePath = path.relative(originalPackRoot, queryFile);
   const targetQueryFileName = path.join(queryPackDir, packRelativePath);
@@ -226,7 +228,7 @@ export async function prepareRemoteQueryRun(
 
   const { remoteQueryDir, queryPackDir } = await createRemoteQueriesTempDirectory();
 
-  let pack: Awaited<ReturnType<typeof generateQueryPack>>;
+  let pack: GeneratedQueryPack;
 
   try {
     pack = await generateQueryPack(cliServer, queryFile, queryPackDir);
