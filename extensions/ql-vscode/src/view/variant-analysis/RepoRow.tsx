@@ -107,17 +107,7 @@ const canExpand = (
 const canSelect = (
   status: VariantAnalysisRepoStatus | undefined,
   downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus | undefined,
-): boolean => {
-  if (!status) {
-    return false;
-  }
-
-  if (status !== VariantAnalysisRepoStatus.Succeeded) {
-    return false;
-  }
-
-  return downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
-};
+) => status == VariantAnalysisRepoStatus.Succeeded && downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
 
 const isExpandableContentLoaded = (
   status: VariantAnalysisRepoStatus | undefined,
