@@ -949,6 +949,12 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
+    commandRunner('codeQL.copyVariantAnalysisRepoList', async (variantAnalysisId: number) => {
+      await variantAnalysisManager.copyRepoListToClipboard(variantAnalysisId);
+    })
+  );
+
+  ctx.subscriptions.push(
     commandRunner('codeQL.monitorVariantAnalysis', async (
       variantAnalysis: VariantAnalysis,
       token: CancellationToken

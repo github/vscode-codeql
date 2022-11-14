@@ -103,6 +103,9 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
       case 'openQueryText':
         await this.openQueryText();
         break;
+      case 'copyRepositoryList':
+        void commands.executeCommand('codeQL.copyVariantAnalysisRepoList', this.variantAnalysisId);
+        break;
       case 'openLogs':
         await this.openLogs();
         break;

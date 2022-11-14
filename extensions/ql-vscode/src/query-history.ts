@@ -1256,11 +1256,15 @@ export class QueryHistoryManager extends DisposableObject {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
     // Remote queries only
-    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'remote') {
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
       return;
     }
 
-    await commands.executeCommand('codeQL.copyRepoList', finalSingleItem.queryId);
+    if (finalSingleItem.t === 'remote') {
+      await commands.executeCommand('codeQL.copyRepoList', finalSingleItem.queryId);
+    } else if (finalSingleItem.t === 'variant-analysis') {
+      await commands.executeCommand('codeQL.copyVariantAnalysisRepoList', finalSingleItem.variantAnalysis.id);
+    }
   }
 
   async handleExportResults(
