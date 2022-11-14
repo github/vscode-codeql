@@ -11,7 +11,7 @@ export class ExtensionApp implements App {
   ) {
   }
 
-  public static CreateFromExtensionContext(extensionContext: vscode.ExtensionContext): ExtensionApp {
+  public static createFromExtensionContext(extensionContext: vscode.ExtensionContext): ExtensionApp {
     return new ExtensionApp(
       extensionContext.extensionPath,
       extensionContext.globalStorageUri.fsPath,
