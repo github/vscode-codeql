@@ -1,5 +1,5 @@
-import { Repository, RepositoryWithMetadata } from '../../remote-queries/shared/repository';
-import { parseDate } from '../../pure/date';
+import { Repository, RepositoryWithMetadata } from '../remote-queries/shared/repository';
+import { parseDate } from './date';
 
 export enum SortKey {
   Name = 'name',

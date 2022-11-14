@@ -7,7 +7,7 @@ import {
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState
 } from '../../remote-queries/shared/variant-analysis';
-import { compareWithResults, matchesFilter, RepositoriesFilterSortState } from './filterSort';
+import { compareWithResults, matchesFilter, RepositoriesFilterSortState } from '../../pure/variant-analysis-filter-sort';
 
 const Container = styled.div`
   display: flex;

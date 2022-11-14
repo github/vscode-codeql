@@ -12,7 +12,7 @@ import {
 import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
 import { Alert } from '../common';
 import { VariantAnalysisSkippedRepositoriesTab } from './VariantAnalysisSkippedRepositoriesTab';
-import { defaultFilterSortState, RepositoriesFilterSortState } from './filterSort';
+import { defaultFilterSortState, RepositoriesFilterSortState } from '../../pure/variant-analysis-filter-sort';
 import { RepositoriesSearchSortRow } from './RepositoriesSearchSortRow';
 import { FailureReasonAlert } from './FailureReasonAlert';
 

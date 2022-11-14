@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { render as reactRender, screen } from '@testing-library/react';
 import { VariantAnalysisSkippedRepositoriesTab, VariantAnalysisSkippedRepositoriesTabProps } from '../VariantAnalysisSkippedRepositoriesTab';
-import { defaultFilterSortState, SortKey } from '../filterSort';
+import { defaultFilterSortState, SortKey } from '../../../pure/variant-analysis-filter-sort';
 
 describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
   const render = (props: VariantAnalysisSkippedRepositoriesTabProps) =>
