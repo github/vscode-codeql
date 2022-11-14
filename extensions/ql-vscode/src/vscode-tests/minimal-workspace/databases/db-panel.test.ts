@@ -219,7 +219,7 @@ describe('db panel', async () => {
     await fs.writeJson(dbConfigFilePath, dbConfig);
 
     // Give the file watcher a chance to fire.
-    await sleep(100);
+    await sleep(500);
   }
 
   function checkRemoteSystemDefinedListItem(
