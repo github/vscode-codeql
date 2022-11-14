@@ -22,7 +22,7 @@ export class DbModule extends DisposableObject {
     const dbConfigStore = new DbConfigStore(app);
     await dbConfigStore.initialize();
 
-    const dbManager = new DbManager(dbConfigStore);
+    const dbManager = new DbManager(app, dbConfigStore);
     const dbPanel = new DbPanel(dbManager);
     await dbPanel.initialize();
 
