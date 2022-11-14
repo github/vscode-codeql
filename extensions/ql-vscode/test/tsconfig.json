@@ -4,6 +4,7 @@
   "exclude": [],
   "compilerOptions": {
     "noEmit": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "rootDirs": [".", "../src"]
   }
 }
