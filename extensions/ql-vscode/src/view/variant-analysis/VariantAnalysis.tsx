@@ -57,6 +57,8 @@ export function VariantAnalysis({
   const [repoStates, setRepoStates] = useState<VariantAnalysisScannedRepositoryState[]>(initialRepoStates);
   const [repoResults, setRepoResults] = useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
 
+  const [selectedRepositoryIds, setSelectedRepositoryIds] = useState<number[]>([]);
+
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
@@ -109,6 +111,8 @@ export function VariantAnalysis({
         variantAnalysis={variantAnalysis}
         repositoryStates={repoStates}
         repositoryResults={repoResults}
+        selectedRepositoryIds={selectedRepositoryIds}
+        setSelectedRepositoryIds={setSelectedRepositoryIds}
       />
     </>
   );
