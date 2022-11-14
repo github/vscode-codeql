@@ -12,7 +12,6 @@ import { DbItemKind } from '../../../databases/db-item';
 import { DbTreeViewItem } from '../../../databases/ui/db-tree-view-item';
 import { ExtensionApp } from '../../../common/vscode/vscode-app';
 import { createMockExtensionContext } from '../../factories/extension-context';
-import { sleep } from '../../../pure/time';
 
 const proxyquire = pq.noPreserveCache();
 
@@ -39,8 +38,6 @@ describe('db panel', async () => {
     dbConfigStore = new DbConfigStore(app);
     dbManager = new DbManager(app, dbConfigStore);
 
-    await dbConfigStore.initialize();
-    dbTreeDataProvider = new DbTreeDataProvider(dbManager);
 
     // Create a modified version of the DbPanel module that allows
     // us to override the creation of the DbTreeDataProvider
@@ -218,8 +215,12 @@ describe('db panel', async () => {
   async function saveDbConfig(dbConfig: DbConfig): Promise<void> {
     await fs.writeJson(dbConfigFilePath, dbConfig);
 
-    // Give the file watcher a chance to fire.
-    await sleep(500);
+    // Ideally we would just initialise the db config store at the start
+    // of each test and then rely on the file watcher to update the config.
+    // However, this requires adding sleep to the tests to allow for the 
+    // file watcher to catch up, so we instead initialise the config store here.
+    await dbConfigStore.initialize();
+    dbTreeDataProvider = new DbTreeDataProvider(dbManager);
   }
 
   function checkRemoteSystemDefinedListItem(
