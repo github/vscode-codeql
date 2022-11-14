@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { ExtensionApp } from '../common/vscode/vscode-app';
 import { isCanary, isNewQueryRunExperienceEnabled } from '../config';
 import { logger } from '../logging';
 import { DisposableObject } from '../pure/disposable-object';
@@ -21,9 +22,9 @@ export class DbModule extends DisposableObject {
 
     void logger.log('Initializing database module');
 
-    const storagePath = extensionContext.storageUri?.fsPath || extensionContext.globalStorageUri.fsPath;
-    const extensionPath = extensionContext.extensionPath;
-    const dbConfigStore = new DbConfigStore(storagePath, extensionPath);
+    const app = ExtensionApp.CreateFromExtensionContext(extensionContext);
+
+    const dbConfigStore = new DbConfigStore(app);
     await dbConfigStore.initialize();
 
     const dbManager = new DbManager(dbConfigStore);

@@ -2,6 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { DbConfigStore } from '../../../src/databases/db-config-store';
 import { expect } from 'chai';
+import { createMockApp } from '../../__mocks__/appMock';
 
 describe('db config store', async () => {
   const extensionPath = path.join(__dirname, '../../..');
@@ -17,9 +18,14 @@ describe('db config store', async () => {
   });
 
   it('should create a new config if one does not exist', async () => {
+    const app = createMockApp({
+      extensionPath,
+      workspaceStoragePath: tempWorkspaceStoragePath
+    });
+
     const configPath = path.join(tempWorkspaceStoragePath, 'workspace-databases.json');
 
-    const configStore = new DbConfigStore(tempWorkspaceStoragePath, extensionPath);
+    const configStore = new DbConfigStore(app);
     await configStore.initialize();
 
     expect(await fs.pathExists(configPath)).to.be.true;
@@ -30,7 +36,11 @@ describe('db config store', async () => {
   });
 
   it('should load an existing config', async () => {
-    const configStore = new DbConfigStore(testDataStoragePath, extensionPath);
+    const app = createMockApp({
+      extensionPath,
+      workspaceStoragePath: testDataStoragePath
+    });
+    const configStore = new DbConfigStore(app);
     await configStore.initialize();
 
     const config = configStore.getConfig().value;
@@ -45,7 +55,11 @@ describe('db config store', async () => {
   });
 
   it('should not allow modification of the config', async () => {
-    const configStore = new DbConfigStore(testDataStoragePath, extensionPath);
+    const app = createMockApp({
+      extensionPath,
+      workspaceStoragePath: testDataStoragePath
+    });
+    const configStore = new DbConfigStore(app);
     await configStore.initialize();
 
     const config = configStore.getConfig().value;

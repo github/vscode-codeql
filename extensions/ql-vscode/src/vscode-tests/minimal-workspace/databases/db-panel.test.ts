@@ -10,11 +10,13 @@ import { DbTreeDataProvider } from '../../../databases/ui/db-tree-data-provider'
 import { DbPanel } from '../../../databases/ui/db-panel';
 import { DbItemKind } from '../../../databases/db-item';
 import { DbTreeViewItem } from '../../../databases/ui/db-tree-view-item';
+import { ExtensionApp } from '../../../common/vscode/vscode-app';
 
 const proxyquire = pq.noPreserveCache();
 
 describe('db panel', async () => {
-  const workspaceStoragePath = path.join(__dirname, 'test-workspace');
+  const workspaceStoragePath = path.join(__dirname, 'test-workspace-storage');
+  const globalStoragePath = path.join(__dirname, 'test-global-storage');
   const extensionPath = path.join(__dirname, '../../../../');
   const dbConfigFilePath = path.join(workspaceStoragePath, 'workspace-databases.json');
   let dbTreeDataProvider: DbTreeDataProvider;
@@ -23,7 +25,13 @@ describe('db panel', async () => {
   let dbPanel: DbPanel;
 
   before(async () => {
-    dbConfigStore = new DbConfigStore(workspaceStoragePath, extensionPath);
+    const app = new ExtensionApp(
+      extensionPath,
+      globalStoragePath,
+      workspaceStoragePath
+    );
+
+    dbConfigStore = new DbConfigStore(app);
     dbManager = new DbManager(dbConfigStore);
 
     // Create a modified version of the DbPanel module that allows
