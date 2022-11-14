@@ -17,11 +17,11 @@ export interface RemoteRepositoryList {
 }
 
 export interface LocalDbConfig {
-  lists: LocalRepositoryList[];
+  lists: LocalList[];
   databases: LocalDatabase[];
 }
 
-export interface LocalRepositoryList {
+export interface LocalList {
   name: string;
   databases: LocalDatabase[];
 }
