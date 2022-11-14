@@ -58,6 +58,10 @@ describe('db panel', async () => {
         owners: [],
         repositories: []
       },
+      local: {
+        lists: [],
+        databases: []
+      },
     };
 
     await saveDbConfig(dbConfig);
@@ -116,6 +120,10 @@ describe('db panel', async () => {
         owners: [],
         repositories: []
       },
+      local: {
+        lists: [],
+        databases: []
+      },
     };
 
     await saveDbConfig(dbConfig);
@@ -148,6 +156,10 @@ describe('db panel', async () => {
         owners: ['owner1', 'owner2'],
         repositories: []
       },
+      local: {
+        lists: [],
+        databases: []
+      },
     };
 
     await saveDbConfig(dbConfig);
@@ -176,6 +188,10 @@ describe('db panel', async () => {
         repositoryLists: [],
         owners: [],
         repositories: ['owner1/repo1', 'owner1/repo2']
+      },
+      local: {
+        lists: [],
+        databases: []
       },
     };
 

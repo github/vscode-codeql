@@ -99,7 +99,11 @@ export class DbConfigStore extends DisposableObject {
         repositoryLists: [],
         owners: [],
         repositories: [],
-      }
+      },
+      local: {
+        lists: [],
+        databases: [],
+      },
     };
   }
 }

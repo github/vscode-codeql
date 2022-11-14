@@ -12,6 +12,10 @@ describe('db tree creator', () => {
           repositoryLists: [],
           owners: [],
           repositories: []
+        },
+        local: {
+          lists: [],
+          databases: []
         }
       };
 
@@ -63,6 +67,10 @@ describe('db tree creator', () => {
           ],
           owners: [],
           repositories: []
+        },
+        local: {
+          lists: [],
+          databases: []
         }
       };
 
@@ -102,6 +110,10 @@ describe('db tree creator', () => {
             'owner2'
           ],
           repositories: []
+        },
+        local: {
+          lists: [],
+          databases: []
         }
       };
 
@@ -134,6 +146,10 @@ describe('db tree creator', () => {
             'owner1/repo2',
             'owner2/repo1'
           ]
+        },
+        local: {
+          lists: [],
+          databases: []
         }
       };
 
