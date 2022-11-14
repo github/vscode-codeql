@@ -46,7 +46,7 @@
     }
   },
   "selected": {
-    "kind": "foo",
-    "path": "bar"
+    "kind": "configDefined",
+    "value": "path.to.database"
   }
 }

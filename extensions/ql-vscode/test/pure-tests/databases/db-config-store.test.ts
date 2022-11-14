@@ -80,12 +80,12 @@ describe('db config store', async () => {
       storagePath: '/path/to/database/',
     });
     expect(config.selected).to.deep.equal({
-      kind: 'foo',
-      path: 'bar',
+      kind: 'configDefined',
+      value: 'path.to.database',
     });
   });
 
-  it('should load an existing config and accept no selected', async () => {
+  it('should load an existing config without selected db', async () => {
     const testDataStoragePathWithout = path.join(__dirname, 'data', 'without-selected');
 
     const configStore = new DbConfigStore(testDataStoragePathWithout, extensionPath);

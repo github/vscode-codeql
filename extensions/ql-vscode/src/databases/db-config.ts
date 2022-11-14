@@ -2,7 +2,7 @@
 
 export interface DbConfig {
   databases: DbConfigDatabases;
-  selected?: SelectedDb;
+  selected?: SelectedDbItem;
 }
 
 export interface DbConfigDatabases {
@@ -10,9 +10,14 @@ export interface DbConfigDatabases {
   local: LocalDbConfig;
 }
 
-export interface SelectedDb {
-  kind: string;
-  path: string;
+export interface SelectedDbItem {
+  kind: SelectedDbKind;
+  value: string;
+}
+
+export enum SelectedDbKind {
+  ConfigDefined = 'configDefined',
+  RemoteSystemDefinedList = 'remoteSystemDefinedList',
 }
 
 export interface RemoteDbConfig {
@@ -64,7 +69,7 @@ export function cloneDbConfig(config: DbConfig): DbConfig {
     },
     selected: config.selected ? {
       kind: config.selected.kind,
-      path: config.selected.path
+      value: config.selected.value,
     } : undefined
   };
 }

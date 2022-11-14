@@ -125,13 +125,14 @@
       "type": "object",
       "properties": {
         "kind": {
-          "type": "string"
+          "type": "string",
+          "enum": ["configDefined", "remoteSystemDefinedList"]
         },
-        "path": {
+        "value": {
           "type": "string"
         }
       },
-      "required": ["kind", "path"],
+      "required": ["kind", "value"],
       "additionalProperties": false
     }
   },
