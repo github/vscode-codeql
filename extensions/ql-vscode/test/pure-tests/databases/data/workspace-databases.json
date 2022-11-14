@@ -36,7 +36,7 @@
     ],
     "databases": [
       {
-        "name": "example/repo1",
+        "name": "example-db",
         "dateAdded": 1668096927267,
         "language": "ruby",
         "storagePath": "/path/to/database/"
