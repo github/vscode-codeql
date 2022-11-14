@@ -22,7 +22,7 @@ export class DbModule extends DisposableObject {
 
     void logger.log('Initializing database module');
 
-    const app = ExtensionApp.createFromExtensionContext(extensionContext);
+    const app = new ExtensionApp(extensionContext);
 
     const dbConfigStore = new DbConfigStore(app);
     await dbConfigStore.initialize();

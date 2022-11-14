@@ -5,18 +5,20 @@ import { VSCodeAppEventEmitter } from './events';
 
 export class ExtensionApp implements App {
   public constructor(
-    public readonly extensionPath: string,
-    public readonly globalStoragePath: string,
-    public readonly workspaceStoragePath?: string
+    public readonly extensionContext: vscode.ExtensionContext
   ) {
   }
 
-  public static createFromExtensionContext(extensionContext: vscode.ExtensionContext): ExtensionApp {
-    return new ExtensionApp(
-      extensionContext.extensionPath,
-      extensionContext.globalStorageUri.fsPath,
-      extensionContext.storageUri?.fsPath
-    );
+  public get extensionPath(): string {
+    return this.extensionContext.extensionPath;
+  }
+
+  public get globalStoragePath(): string {
+    return this.extensionContext.globalStorageUri.fsPath;
+  }
+
+  public get workspaceStoragePath(): string | undefined {
+    return this.extensionContext.storageUri?.fsPath;
   }
 
   public createEventEmitter<T>(): AppEventEmitter<T> {

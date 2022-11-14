@@ -11,6 +11,7 @@ import { DbPanel } from '../../../databases/ui/db-panel';
 import { DbItemKind } from '../../../databases/db-item';
 import { DbTreeViewItem } from '../../../databases/ui/db-tree-view-item';
 import { ExtensionApp } from '../../../common/vscode/vscode-app';
+import { createMockExtensionContext } from '../../factories/extension-context';
 
 const proxyquire = pq.noPreserveCache();
 
@@ -25,11 +26,12 @@ describe('db panel', async () => {
   let dbPanel: DbPanel;
 
   before(async () => {
-    const app = new ExtensionApp(
+    const extensionContext = createMockExtensionContext({
       extensionPath,
       globalStoragePath,
       workspaceStoragePath
-    );
+    });
+    const app = new ExtensionApp(extensionContext);
 
     dbConfigStore = new DbConfigStore(app);
     dbManager = new DbManager(dbConfigStore);
