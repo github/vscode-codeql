@@ -36,6 +36,12 @@ const stopQuery = () => {
   });
 };
 
+const copyRepositoryList = () => {
+  vscode.postMessage({
+    t: 'copyRepositoryList',
+  });
+};
+
 const openLogs = () => {
   vscode.postMessage({
     t: 'openLogs',
@@ -95,7 +101,7 @@ export function VariantAnalysis({
         onOpenQueryFileClick={openQueryFile}
         onViewQueryTextClick={openQueryText}
         onStopQueryClick={stopQuery}
-        onCopyRepositoryListClick={() => console.log('Copy repository list')}
+        onCopyRepositoryListClick={copyRepositoryList}
         onExportResultsClick={() => console.log('Export results')}
         onViewLogsClick={openLogs}
       />
