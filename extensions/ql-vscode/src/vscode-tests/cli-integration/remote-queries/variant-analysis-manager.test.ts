@@ -1,6 +1,6 @@
 import * as sinon from 'sinon';
 import { assert, expect } from 'chai';
-import { CancellationTokenSource, commands, extensions, QuickPickItem, Uri, window } from 'vscode';
+import { CancellationTokenSource, commands, env, extensions, QuickPickItem, Uri, window } from 'vscode';
 import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
@@ -16,7 +16,10 @@ import { storagePath } from '../global.helper';
 import { VariantAnalysisResultsManager } from '../../../remote-queries/variant-analysis-results-manager';
 import { createMockVariantAnalysis } from '../../factories/remote-queries/shared/variant-analysis';
 import * as VariantAnalysisModule from '../../../remote-queries/shared/variant-analysis';
-import { createMockScannedRepos } from '../../factories/remote-queries/shared/scanned-repositories';
+import {
+  createMockScannedRepo,
+  createMockScannedRepos
+} from '../../factories/remote-queries/shared/scanned-repositories';
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
@@ -252,7 +255,9 @@ describe('Variant Analysis Manager', async function() {
   });
 
   describe('when credentials are invalid', async () => {
-    beforeEach(async () => { sandbox.stub(Credentials, 'initialize').resolves(undefined); });
+    beforeEach(async () => {
+      sandbox.stub(Credentials, 'initialize').resolves(undefined);
+    });
 
     it('should return early if credentials are wrong', async () => {
       try {
@@ -692,6 +697,123 @@ describe('Variant Analysis Manager', async function() {
         await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
 
         expect(mockCancelVariantAnalysis).to.have.been.calledWith(mockCredentials, variantAnalysis);
+      });
+    });
+  });
+
+  describe('copyRepoListToClipboard', async () => {
+    let variantAnalysis: VariantAnalysis;
+    let variantAnalysisStorageLocation: string;
+
+    let writeTextStub: sinon.SinonStub;
+
+    beforeEach(async () => {
+      variantAnalysis = createMockVariantAnalysis({});
+
+      variantAnalysisStorageLocation = variantAnalysisManager.getVariantAnalysisStorageLocation(variantAnalysis.id);
+      await createTimestampFile(variantAnalysisStorageLocation);
+      await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+
+      writeTextStub = sinon.stub();
+      sinon.stub(env, 'clipboard').value({
+        writeText: writeTextStub,
+      });
+    });
+
+    afterEach(() => {
+      fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
+    });
+
+    describe('when the variant analysis does not have any repositories', () => {
+      beforeEach(async () => {
+        await variantAnalysisManager.rehydrateVariantAnalysis({
+          ...variantAnalysis,
+          scannedRepos: [],
+        });
+      });
+
+      it('should not copy any text', async () => {
+        await variantAnalysisManager.copyRepoListToClipboard(variantAnalysis.id);
+
+        expect(writeTextStub).not.to.have.been.called;
+      });
+    });
+
+    describe('when the variant analysis does not have any repositories with results', () => {
+      beforeEach(async () => {
+        await variantAnalysisManager.rehydrateVariantAnalysis({
+          ...variantAnalysis,
+          scannedRepos: [
+            {
+              ...createMockScannedRepo(),
+              resultCount: 0,
+            },
+            {
+              ...createMockScannedRepo(),
+              resultCount: undefined,
+            }
+          ],
+        });
+      });
+
+      it('should not copy any text', async () => {
+        await variantAnalysisManager.copyRepoListToClipboard(variantAnalysis.id);
+
+        expect(writeTextStub).not.to.have.been.called;
+      });
+    });
+
+    describe('when the variant analysis has repositories with results', () => {
+      const scannedRepos = [
+        {
+          ...createMockScannedRepo(),
+          resultCount: 100,
+        },
+        {
+          ...createMockScannedRepo(),
+          resultCount: 0,
+        },
+        {
+          ...createMockScannedRepo(),
+          resultCount: 200,
+        },
+        {
+          ...createMockScannedRepo(),
+          resultCount: undefined,
+        },
+        {
+          ...createMockScannedRepo(),
+          resultCount: 5,
+        },
+      ];
+
+      beforeEach(async () => {
+        await variantAnalysisManager.rehydrateVariantAnalysis({
+          ...variantAnalysis,
+          scannedRepos,
+        });
+      });
+
+      it('should copy text', async () => {
+        await variantAnalysisManager.copyRepoListToClipboard(variantAnalysis.id);
+
+        expect(writeTextStub).to.have.been.calledOnce;
+      });
+
+      it('should be valid JSON when put in object', async () => {
+        await variantAnalysisManager.copyRepoListToClipboard(variantAnalysis.id);
+
+        const text = writeTextStub.getCalls()[0].lastArg;
+
+        const parsed = JSON.parse('{' + text + '}');
+
+        expect(parsed).to.deep.eq({
+          'new-repo-list': [
+            scannedRepos[0].repository.fullName,
+            scannedRepos[2].repository.fullName,
+            scannedRepos[4].repository.fullName,
+          ],
+        });
       });
     });
   });
