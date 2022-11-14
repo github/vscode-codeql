@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import {
   DbItem,
+  LocalDatabaseDbItem,
+  LocalListDbItem,
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
@@ -70,7 +72,7 @@ export function createDbTreeViewItemSystemDefinedList(
 }
 
 export function createDbTreeViewItemUserDefinedList(
-  dbItem: RemoteUserDefinedListDbItem,
+  dbItem: LocalListDbItem | RemoteUserDefinedListDbItem,
   listName: string,
   children: DbTreeViewItem[]
 ): DbTreeViewItem {
@@ -105,6 +107,20 @@ export function createDbTreeViewItemRepo(
     new vscode.ThemeIcon('database'),
     repoName,
     undefined,
+    vscode.TreeItemCollapsibleState.None,
+    []);
+}
+
+export function createDbTreeViewItemLocalDatabase(
+  dbItem: LocalDatabaseDbItem,
+  databaseName: string,
+  language: string
+): DbTreeViewItem {
+  return new DbTreeViewItem(
+    dbItem,
+    new vscode.ThemeIcon('database'),
+    databaseName,
+    `Language: ${language}`,
     vscode.TreeItemCollapsibleState.None,
     []);
 }
