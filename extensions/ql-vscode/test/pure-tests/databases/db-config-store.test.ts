@@ -29,12 +29,14 @@ describe('db config store', async () => {
     await configStore.initialize();
 
     expect(await fs.pathExists(configPath)).to.be.true;
+
     const config = configStore.getConfig().value;
-    expect(config.remote.repositoryLists).to.be.empty;
-    expect(config.remote.owners).to.be.empty;
-    expect(config.remote.repositories).to.be.empty;
-    expect(config.local.lists).to.be.empty;
-    expect(config.local.databases).to.be.empty;
+    expect(config.databases.remote.repositoryLists).to.be.empty;
+    expect(config.databases.remote.owners).to.be.empty;
+    expect(config.databases.remote.repositories).to.be.empty;
+    expect(config.databases.local.lists).to.be.empty;
+    expect(config.databases.local.databases).to.be.empty;
+    expect(config.selected).to.be.undefined;
   });
 
   it('should load an existing config', async () => {
@@ -46,20 +48,20 @@ describe('db config store', async () => {
     await configStore.initialize();
 
     const config = configStore.getConfig().value;
-    expect(config.remote.repositoryLists).to.have.length(1);
-    expect(config.remote.repositoryLists[0]).to.deep.equal({
+    expect(config.databases.remote.repositoryLists).to.have.length(1);
+    expect(config.databases.remote.repositoryLists[0]).to.deep.equal({
       name: 'repoList1',
       repositories: ['foo/bar', 'foo/baz']
     });
-    expect(config.remote.owners).to.be.empty;
-    expect(config.remote.repositories).to.have.length(3);
-    expect(config.remote.repositories).to.deep.equal([
+    expect(config.databases.remote.owners).to.be.empty;
+    expect(config.databases.remote.repositories).to.have.length(3);
+    expect(config.databases.remote.repositories).to.deep.equal([
       'owner/repo1',
       'owner/repo2',
       'owner/repo3',
     ]);
-    expect(config.local.lists).to.have.length(2);
-    expect(config.local.lists[0]).to.deep.equal({
+    expect(config.databases.local.lists).to.have.length(2);
+    expect(config.databases.local.lists[0]).to.deep.equal({
       name: 'localList1',
       databases: [
         {
@@ -70,13 +72,27 @@ describe('db config store', async () => {
         },
       ],
     });
-    expect(config.local.databases).to.have.length(1);
-    expect(config.local.databases[0]).to.deep.equal({
+    expect(config.databases.local.databases).to.have.length(1);
+    expect(config.databases.local.databases[0]).to.deep.equal({
       name: 'example-db',
       dateAdded: 1668096927267,
       language: 'ruby',
       storagePath: '/path/to/database/',
     });
+    expect(config.selected).to.deep.equal({
+      kind: 'foo',
+      path: 'bar',
+    });
+  });
+
+  it('should load an existing config and accept no selected', async () => {
+    const testDataStoragePathWithout = path.join(__dirname, 'data', 'without-selected');
+
+    const configStore = new DbConfigStore(testDataStoragePathWithout, extensionPath);
+    await configStore.initialize();
+
+    const config = configStore.getConfig().value;
+    expect(config.selected).to.be.undefined;
   });
 
   it('should not allow modification of the config', async () => {
@@ -88,9 +104,9 @@ describe('db config store', async () => {
     await configStore.initialize();
 
     const config = configStore.getConfig().value;
-    config.remote.repositoryLists = [];
+    config.databases.remote.repositoryLists = [];
 
     const reRetrievedConfig = configStore.getConfig().value;
-    expect(reRetrievedConfig.remote.repositoryLists).to.have.length(1);
+    expect(reRetrievedConfig.databases.remote.repositoryLists).to.have.length(1);
   });
 });

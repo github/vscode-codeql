@@ -25,10 +25,9 @@ describe('db config validation', async () => {
 
     const validationOutput = configValidator.validate(dbConfig);
 
-    expect(validationOutput).to.have.length(3);
+    expect(validationOutput).to.have.length(2);
 
-    expect(validationOutput[0]).to.deep.equal(' must have required property \'local\'');
-    expect(validationOutput[1]).to.deep.equal('/remote must have required property \'owners\'');
-    expect(validationOutput[2]).to.deep.equal('/remote must NOT have additional properties');
+    expect(validationOutput[0]).to.deep.equal(' must have required property \'databases\'');
+    expect(validationOutput[1]).to.deep.equal(' must NOT have additional properties');
   });
 });
