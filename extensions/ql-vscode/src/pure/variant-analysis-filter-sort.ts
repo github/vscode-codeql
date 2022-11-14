@@ -71,3 +71,17 @@ export function compareWithResults(filterSortState: RepositoriesFilterSortState 
     return fallbackSort(left.repository, right.repository);
   };
 }
+
+// These define the behavior for undefined input values
+export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[], filterSortState: RepositoriesFilterSortState | undefined): T[];
+export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[] | undefined, filterSortState: RepositoriesFilterSortState | undefined): T[] | undefined;
+
+export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[] | undefined, filterSortState: RepositoriesFilterSortState | undefined): T[] | undefined {
+  if (!repositories) {
+    return undefined;
+  }
+
+  return repositories
+    .filter(repo => matchesFilter(repo.repository, filterSortState))
+    .sort(compareWithResults(filterSortState));
+}

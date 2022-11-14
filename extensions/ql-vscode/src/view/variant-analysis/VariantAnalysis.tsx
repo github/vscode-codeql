@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
   VariantAnalysis as VariantAnalysisDomainModel,
@@ -11,6 +11,7 @@ import { VariantAnalysisOutcomePanels } from './VariantAnalysisOutcomePanels';
 import { VariantAnalysisLoading } from './VariantAnalysisLoading';
 import { ToVariantAnalysisMessage } from '../../pure/interface-types';
 import { vscode } from '../vscode-api';
+import { defaultFilterSortState, RepositoriesFilterSortState } from '../../pure/variant-analysis-filter-sort';
 
 type Props = {
   variantAnalysis?: VariantAnalysisDomainModel;
@@ -36,12 +37,6 @@ const stopQuery = () => {
   });
 };
 
-const copyRepositoryList = () => {
-  vscode.postMessage({
-    t: 'copyRepositoryList',
-  });
-};
-
 const openLogs = () => {
   vscode.postMessage({
     t: 'openLogs',
@@ -56,6 +51,8 @@ export function VariantAnalysis({
   const [variantAnalysis, setVariantAnalysis] = useState<VariantAnalysisDomainModel | undefined>(initialVariantAnalysis);
   const [repoStates, setRepoStates] = useState<VariantAnalysisScannedRepositoryState[]>(initialRepoStates);
   const [repoResults, setRepoResults] = useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
+
+  const [filterSortState, setFilterSortState] = useState<RepositoriesFilterSortState>(defaultFilterSortState);
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
@@ -90,6 +87,13 @@ export function VariantAnalysis({
     };
   }, []);
 
+  const copyRepositoryList = useCallback(() => {
+    vscode.postMessage({
+      t: 'copyRepositoryList',
+      filterSort: filterSortState,
+    });
+  }, [filterSortState]);
+
   if (variantAnalysis?.actionsWorkflowRunId === undefined) {
     return <VariantAnalysisLoading />;
   }
@@ -109,6 +113,8 @@ export function VariantAnalysis({
         variantAnalysis={variantAnalysis}
         repositoryStates={repoStates}
         repositoryResults={repoResults}
+        filterSortState={filterSortState}
+        setFilterSortState={setFilterSortState}
       />
     </>
   );
