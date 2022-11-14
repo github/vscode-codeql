@@ -88,7 +88,12 @@ describe('db config store', async () => {
   it('should load an existing config without selected db', async () => {
     const testDataStoragePathWithout = path.join(__dirname, 'data', 'without-selected');
 
-    const configStore = new DbConfigStore(testDataStoragePathWithout, extensionPath);
+    const app = createMockApp({
+      extensionPath,
+      workspaceStoragePath: testDataStoragePathWithout
+    });
+
+    const configStore = new DbConfigStore(app);
     await configStore.initialize();
 
     const config = configStore.getConfig().value;
