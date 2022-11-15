@@ -118,7 +118,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     return result;
   }
 
-  public async loadResultsFromStorage(
+  private async loadResultsFromStorage(
     variantAnalysisId: number,
     variantAnalysisStoragePath: string,
     repositoryFullName: string,
