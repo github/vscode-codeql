@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { VSCodeBadge, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
 import {
@@ -80,6 +80,9 @@ export type RepoRowProps = {
 
   interpretedResults?: AnalysisAlert[];
   rawResults?: AnalysisRawResults;
+
+  selected?: boolean;
+  onSelectedChange?: (repositoryId: number, selected: boolean) => void;
 }
 
 const canExpand = (
@@ -100,6 +103,11 @@ const canExpand = (
 
   return downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Succeeded || downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Failed;
 };
+
+const canSelect = (
+  status: VariantAnalysisRepoStatus | undefined,
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus | undefined,
+) => status == VariantAnalysisRepoStatus.Succeeded && downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
 
 const isExpandableContentLoaded = (
   status: VariantAnalysisRepoStatus | undefined,
@@ -133,6 +141,8 @@ export const RepoRow = ({
   resultCount,
   interpretedResults,
   rawResults,
+  selected,
+  onSelectedChange,
 }: RepoRowProps) => {
   const [isExpanded, setExpanded] = useState(false);
   const resultsLoaded = !!interpretedResults || !!rawResults;
@@ -163,13 +173,35 @@ export const RepoRow = ({
     }
   }, [resultsLoaded, resultsLoading]);
 
+  const onClickCheckbox = useCallback((e: React.MouseEvent) => {
+    // Prevent calling the onClick event of the container, which would toggle the expanded state
+    e.stopPropagation();
+  }, []);
+  const onChangeCheckbox = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    // This is called on first render, but we don't really care about this value
+    if (e.target.checked === undefined) {
+      return;
+    }
+
+    if (!repository.id) {
+      return;
+    }
+
+    onSelectedChange?.(repository.id, e.target.checked);
+  }, [onSelectedChange, repository]);
+
   const disabled = !canExpand(status, downloadStatus);
   const expandableContentLoaded = isExpandableContentLoaded(status, downloadStatus, resultsLoaded);
 
   return (
     <div>
       <TitleContainer onClick={toggleExpanded} disabled={disabled} aria-expanded={isExpanded}>
-        <VSCodeCheckbox disabled />
+        <VSCodeCheckbox
+          onChange={onChangeCheckbox}
+          onClick={onClickCheckbox}
+          checked={selected}
+          disabled={!repository.id || !canSelect(status, downloadStatus)}
+        />
         {isExpanded ? <ExpandCollapseCodicon name="chevron-down" label="Collapse" /> :
           <ExpandCollapseCodicon name="chevron-right" label="Expand" />}
         <VSCodeBadge>{resultCount === undefined ? '-' : formatDecimal(resultCount)}</VSCodeBadge>

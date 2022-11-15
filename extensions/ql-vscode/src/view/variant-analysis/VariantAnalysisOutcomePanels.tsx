@@ -21,6 +21,9 @@ export type VariantAnalysisOutcomePanelProps = {
   repositoryStates?: VariantAnalysisScannedRepositoryState[];
   repositoryResults?: VariantAnalysisScannedRepositoryResult[];
 
+  selectedRepositoryIds?: number[];
+  setSelectedRepositoryIds?: Dispatch<SetStateAction<number[]>>;
+
   filterSortState: RepositoriesFilterSortState;
   setFilterSortState: Dispatch<SetStateAction<RepositoriesFilterSortState>>;
 };
@@ -49,6 +52,8 @@ export const VariantAnalysisOutcomePanels = ({
   variantAnalysis,
   repositoryStates,
   repositoryResults,
+  selectedRepositoryIds,
+  setSelectedRepositoryIds,
   filterSortState,
   setFilterSortState,
 }: VariantAnalysisOutcomePanelProps) => {
@@ -97,6 +102,8 @@ export const VariantAnalysisOutcomePanels = ({
           repositoryStates={repositoryStates}
           repositoryResults={repositoryResults}
           filterSortState={filterSortState}
+          selectedRepositoryIds={selectedRepositoryIds}
+          setSelectedRepositoryIds={setSelectedRepositoryIds}
         />
       </>
     );
@@ -129,6 +136,8 @@ export const VariantAnalysisOutcomePanels = ({
             repositoryStates={repositoryStates}
             repositoryResults={repositoryResults}
             filterSortState={filterSortState}
+            selectedRepositoryIds={selectedRepositoryIds}
+            setSelectedRepositoryIds={setSelectedRepositoryIds}
           />
         </VSCodePanelView>
         {notFoundRepos?.repositoryCount &&

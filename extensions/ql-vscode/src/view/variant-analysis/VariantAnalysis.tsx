@@ -52,6 +52,7 @@ export function VariantAnalysis({
   const [repoStates, setRepoStates] = useState<VariantAnalysisScannedRepositoryState[]>(initialRepoStates);
   const [repoResults, setRepoResults] = useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
 
+  const [selectedRepositoryIds, setSelectedRepositoryIds] = useState<number[]>([]);
   const [filterSortState, setFilterSortState] = useState<RepositoriesFilterSortState>(defaultFilterSortState);
 
   useEffect(() => {
@@ -113,6 +114,8 @@ export function VariantAnalysis({
         variantAnalysis={variantAnalysis}
         repositoryStates={repoStates}
         repositoryResults={repoResults}
+        selectedRepositoryIds={selectedRepositoryIds}
+        setSelectedRepositoryIds={setSelectedRepositoryIds}
         filterSortState={filterSortState}
         setFilterSortState={setFilterSortState}
       />

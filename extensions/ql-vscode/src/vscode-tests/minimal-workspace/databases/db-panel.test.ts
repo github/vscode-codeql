@@ -10,11 +10,14 @@ import { DbTreeDataProvider } from '../../../databases/ui/db-tree-data-provider'
 import { DbPanel } from '../../../databases/ui/db-panel';
 import { DbItemKind } from '../../../databases/db-item';
 import { DbTreeViewItem } from '../../../databases/ui/db-tree-view-item';
+import { ExtensionApp } from '../../../common/vscode/vscode-app';
+import { createMockExtensionContext } from '../../factories/extension-context';
 
 const proxyquire = pq.noPreserveCache();
 
 describe('db panel', async () => {
-  const workspaceStoragePath = path.join(__dirname, 'test-workspace');
+  const workspaceStoragePath = path.join(__dirname, 'test-workspace-storage');
+  const globalStoragePath = path.join(__dirname, 'test-global-storage');
   const extensionPath = path.join(__dirname, '../../../../');
   const dbConfigFilePath = path.join(workspaceStoragePath, 'workspace-databases.json');
   let dbTreeDataProvider: DbTreeDataProvider;
@@ -23,7 +26,14 @@ describe('db panel', async () => {
   let dbPanel: DbPanel;
 
   before(async () => {
-    dbConfigStore = new DbConfigStore(workspaceStoragePath, extensionPath);
+    const extensionContext = createMockExtensionContext({
+      extensionPath,
+      globalStoragePath,
+      workspaceStoragePath
+    });
+    const app = new ExtensionApp(extensionContext);
+
+    dbConfigStore = new DbConfigStore(app);
     dbManager = new DbManager(dbConfigStore);
 
     // Create a modified version of the DbPanel module that allows
@@ -230,7 +240,7 @@ describe('db panel', async () => {
   ): void {
     expect(item.label).to.equal(`Top ${n} repositories`);
     expect(item.tooltip).to.equal(`Top ${n} repositories of a language`);
-    expect(item.icon).to.deep.equal(new vscode.ThemeIcon('github'));
+    expect(item.iconPath).to.deep.equal(new vscode.ThemeIcon('github'));
     expect(item.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.None);
   }
 
@@ -241,7 +251,7 @@ describe('db panel', async () => {
   ): void {
     expect(item.label).to.equal(listName);
     expect(item.tooltip).to.be.undefined;
-    expect(item.icon).to.be.undefined;
+    expect(item.iconPath).to.be.undefined;
     expect(item.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.Collapsed);
     expect(item.children).to.be.ok;
     expect(item.children.length).to.equal(repos.length);
@@ -257,7 +267,7 @@ describe('db panel', async () => {
   ): void {
     expect(item.label).to.equal(ownerName);
     expect(item.tooltip).to.be.undefined;
-    expect(item.icon).to.deep.equal(new vscode.ThemeIcon('organization'));
+    expect(item.iconPath).to.deep.equal(new vscode.ThemeIcon('organization'));
     expect(item.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.None);
     expect(item.children).to.be.ok;
     expect(item.children.length).to.equal(0);
@@ -269,7 +279,7 @@ describe('db panel', async () => {
   ): void {
     expect(item.label).to.equal(repoName);
     expect(item.tooltip).to.be.undefined;
-    expect(item.icon).to.deep.equal(new vscode.ThemeIcon('database'));
+    expect(item.iconPath).to.deep.equal(new vscode.ThemeIcon('database'));
     expect(item.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.None);
   }
 });
