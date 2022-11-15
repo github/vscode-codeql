@@ -77,13 +77,14 @@ export async function exportRemoteQueryResults(
   }
 
   const exportDirectory = await queryHistoryManager.getQueryHistoryItemDirectory(queryHistoryItem);
+  const exportedResultsDirectory = path.join(exportDirectory, 'exported-results');
 
-  await exportRemoteQueryAnalysisResults(ctx, exportDirectory, query, analysesResults, exportFormat);
+  await exportRemoteQueryAnalysisResults(ctx, exportedResultsDirectory, query, analysesResults, exportFormat);
 }
 
 export async function exportRemoteQueryAnalysisResults(
   ctx: ExtensionContext,
-  exportDirectory: string,
+  exportedResultsPath: string,
   query: RemoteQuery,
   analysesResults: AnalysisResults[],
   exportFormat: 'gist' | 'local',
@@ -91,7 +92,7 @@ export async function exportRemoteQueryAnalysisResults(
   const description = buildGistDescription(query, analysesResults);
   const markdownFiles = generateMarkdown(query, analysesResults, exportFormat);
 
-  await exportResults(ctx, exportDirectory, description, markdownFiles, exportFormat);
+  await exportResults(ctx, exportedResultsPath, description, markdownFiles, exportFormat);
 }
 
 /**
@@ -147,12 +148,16 @@ export async function exportVariantAnalysisResults(
 
   const exportDirectory = variantAnalysisManager.getVariantAnalysisStorageLocation(variantAnalysis.id);
 
-  await exportVariantAnalysisAnalysisResults(ctx, exportDirectory, variantAnalysis, getAnalysesResults(), exportFormat);
+  // The date will be formatted like the following: 20221115T123456Z. The time is in UTC.
+  const formattedDate = (new Date()).toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  const exportedResultsDirectory = path.join(exportDirectory, 'exported-results', `results_${formattedDate}`);
+
+  await exportVariantAnalysisAnalysisResults(ctx, exportedResultsDirectory, variantAnalysis, getAnalysesResults(), exportFormat);
 }
 
 export async function exportVariantAnalysisAnalysisResults(
   ctx: ExtensionContext,
-  exportDirectory: string,
+  exportedResultsPath: string,
   variantAnalysis: VariantAnalysis,
   analysesResults: AsyncIterable<[VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]>,
   exportFormat: 'gist' | 'local',
@@ -160,7 +165,7 @@ export async function exportVariantAnalysisAnalysisResults(
   const description = buildVariantAnalysisGistDescription(variantAnalysis);
   const markdownFiles = await generateVariantAnalysisMarkdown(variantAnalysis, analysesResults, 'gist');
 
-  await exportResults(ctx, exportDirectory, description, markdownFiles, exportFormat);
+  await exportResults(ctx, exportedResultsPath, description, markdownFiles, exportFormat);
 }
 
 /**
@@ -201,7 +206,7 @@ async function determineExportFormat(): Promise<'gist' | 'local' | undefined> {
 
 export async function exportResults(
   ctx: ExtensionContext,
-  exportDirectory: string,
+  exportedResultsPath: string,
   description: string,
   markdownFiles: MarkdownFile[],
   exportFormat: 'gist' | 'local',
@@ -209,7 +214,7 @@ export async function exportResults(
   if (exportFormat === 'gist') {
     await exportToGist(ctx, description, markdownFiles);
   } else if (exportFormat === 'local') {
-    await exportToLocalMarkdown(exportDirectory, markdownFiles);
+    await exportToLocalMarkdown(exportedResultsPath, markdownFiles);
   }
 }
 
@@ -265,10 +270,9 @@ const buildVariantAnalysisGistDescription = (variantAnalysis: VariantAnalysis) =
  * Saves the results of an exported query to local markdown files.
  */
 async function exportToLocalMarkdown(
-  exportDirectory: string,
+  exportedResultsPath: string,
   markdownFiles: MarkdownFile[],
 ) {
-  const exportedResultsPath = path.join(exportDirectory, 'exported-results');
   await fs.ensureDir(exportedResultsPath);
   for (const markdownFile of markdownFiles) {
     const filePath = path.join(exportedResultsPath, `${markdownFile.fileName}.md`);
