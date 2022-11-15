@@ -31,10 +31,12 @@ describe('db panel', async () => {
       globalStoragePath,
       workspaceStoragePath
     });
+    await fs.ensureDir(workspaceStoragePath);
+
     const app = new ExtensionApp(extensionContext);
 
     dbConfigStore = new DbConfigStore(app);
-    dbManager = new DbManager(dbConfigStore);
+    dbManager = new DbManager(app, dbConfigStore);
 
     // Create a modified version of the DbPanel module that allows
     // us to override the creation of the DbTreeDataProvider
@@ -228,8 +230,10 @@ describe('db panel', async () => {
   async function saveDbConfig(dbConfig: DbConfig): Promise<void> {
     await fs.writeJson(dbConfigFilePath, dbConfig);
 
-    // Once we have watching of the db config, this can happen
-    // at the start of the test.
+    // Ideally we would just initialise the db config store at the start
+    // of each test and then rely on the file watcher to update the config.
+    // However, this requires adding sleep to the tests to allow for the 
+    // file watcher to catch up, so we instead initialise the config store here.
     await dbConfigStore.initialize();
     dbTreeDataProvider = new DbTreeDataProvider(dbManager);
   }

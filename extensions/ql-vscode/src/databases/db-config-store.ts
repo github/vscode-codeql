@@ -6,8 +6,12 @@ import { DisposableObject } from '../pure/disposable-object';
 import { DbConfigValidator } from './db-config-validator';
 import { ValueResult } from '../common/value-result';
 import { App } from '../common/app';
+import { AppEvent, AppEventEmitter } from '../common/events';
 
 export class DbConfigStore extends DisposableObject {
+  public readonly onDidChangeConfig: AppEvent<void>;
+  private readonly onDidChangeConfigEventEmitter: AppEventEmitter<void>;
+
   private readonly configPath: string;
   private readonly configValidator: DbConfigValidator;
 
@@ -25,6 +29,8 @@ export class DbConfigStore extends DisposableObject {
     this.configErrors = [];
     this.configWatcher = undefined;
     this.configValidator = new DbConfigValidator(app.extensionPath);
+    this.onDidChangeConfigEventEmitter = app.createEventEmitter<void>();
+    this.onDidChangeConfig = this.onDidChangeConfigEventEmitter.event;
   }
 
   public async initialize(): Promise<void> {
@@ -85,6 +91,8 @@ export class DbConfigStore extends DisposableObject {
     }
 
     this.config = this.configErrors.length === 0 ? newConfig : undefined;
+
+    this.onDidChangeConfigEventEmitter.fire();
   }
 
   private watchConfig(): void {
