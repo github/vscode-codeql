@@ -15,6 +15,9 @@ import {
  */
 export class DbTreeViewItem extends vscode.TreeItem {
   constructor(
+    // iconPath and tooltip must have those names because
+    // they are part of the vscode.TreeItem interface
+
     public readonly dbItem: DbItem | undefined,
     public readonly iconPath: vscode.ThemeIcon | undefined,
     public readonly label: string,
@@ -26,10 +29,10 @@ export class DbTreeViewItem extends vscode.TreeItem {
   }
 }
 
-export function createDbTreeViewItemWarning(label: string, tooltip: string): DbTreeViewItem {
+export function createDbTreeViewItemError(label: string, tooltip: string): DbTreeViewItem {
   return new DbTreeViewItem(
     undefined,
-    new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground')),
+    new vscode.ThemeIcon('error', new vscode.ThemeColor('problemsErrorIcon.foreground')),
     label,
     tooltip,
     vscode.TreeItemCollapsibleState.None,

@@ -3,20 +3,28 @@ import * as path from 'path';
 import { cloneDbConfig, DbConfig } from './db-config';
 import * as chokidar from 'chokidar';
 import { DisposableObject } from '../pure/disposable-object';
+import { DbConfigValidator } from './db-config-validator';
+import { ValueResult } from '../common/value-result';
+import { App } from '../common/app';
 
 export class DbConfigStore extends DisposableObject {
   private readonly configPath: string;
+  private readonly configValidator: DbConfigValidator;
 
-  private config: DbConfig;
+  private config: DbConfig | undefined;
+  private configErrors: string[];
   private configWatcher: chokidar.FSWatcher | undefined;
 
-  public constructor(workspaceStoragePath: string) {
+  public constructor(app: App) {
     super();
 
-    this.configPath = path.join(workspaceStoragePath, 'workspace-databases.json');
+    const storagePath = app.workspaceStoragePath || app.globalStoragePath;
+    this.configPath = path.join(storagePath, 'workspace-databases.json');
 
     this.config = this.createEmptyConfig();
+    this.configErrors = [];
     this.configWatcher = undefined;
+    this.configValidator = new DbConfigValidator(app.extensionPath);
   }
 
   public async initialize(): Promise<void> {
@@ -28,9 +36,13 @@ export class DbConfigStore extends DisposableObject {
     this.configWatcher?.unwatch(this.configPath);
   }
 
-  public getConfig(): DbConfig {
-    // Clone the config so that it's not modified outside of this class.
-    return cloneDbConfig(this.config);
+  public getConfig(): ValueResult<DbConfig> {
+    if (this.config) {
+      // Clone the config so that it's not modified outside of this class.
+      return ValueResult.ok(cloneDbConfig(this.config));
+    } else {
+      return ValueResult.fail(this.configErrors);
+    }
   }
 
   public getConfigPath(): string {
@@ -46,11 +58,33 @@ export class DbConfigStore extends DisposableObject {
   }
 
   private async readConfig(): Promise<void> {
-    this.config = await fs.readJSON(this.configPath);
+    let newConfig: DbConfig | undefined = undefined;
+    try {
+      newConfig = await fs.readJSON(this.configPath);
+    } catch (e) {
+      this.configErrors = [`Failed to read config file: ${this.configPath}`];
+    }
+
+    if (newConfig) {
+      this.configErrors = this.configValidator.validate(newConfig);
+    }
+
+    this.config = this.configErrors.length === 0 ? newConfig : undefined;
   }
 
   private readConfigSync(): void {
-    this.config = fs.readJSONSync(this.configPath);
+    let newConfig: DbConfig | undefined = undefined;
+    try {
+      newConfig = fs.readJSONSync(this.configPath);
+    } catch (e) {
+      this.configErrors = [`Failed to read config file: ${this.configPath}`];
+    }
+
+    if (newConfig) {
+      this.configErrors = this.configValidator.validate(newConfig);
+    }
+
+    this.config = this.configErrors.length === 0 ? newConfig : undefined;
   }
 
   private watchConfig(): void {
@@ -65,7 +99,11 @@ export class DbConfigStore extends DisposableObject {
         repositoryLists: [],
         owners: [],
         repositories: [],
-      }
+      },
+      local: {
+        lists: [],
+        databases: [],
+      },
     };
   }
 }

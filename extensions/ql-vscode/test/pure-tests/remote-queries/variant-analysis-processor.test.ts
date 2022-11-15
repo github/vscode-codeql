@@ -31,7 +31,7 @@ import {
 describe(processVariantAnalysis.name, function() {
   const scannedRepos = createMockScannedRepos();
   const skippedRepos = createMockSkippedRepos();
-  const mockApiResponse = createMockApiResponse('completed', scannedRepos, skippedRepos);
+  const mockApiResponse = createMockApiResponse('succeeded', scannedRepos, skippedRepos);
   const mockSubmission = createMockSubmission();
 
   it('should process an API response and return a variant analysis', () => {

@@ -4,6 +4,10 @@
 
 - Warn users when their VS Code version is too old to support all features in the vscode-codeql extension. [#1674](https://github.com/github/vscode-codeql/pull/1674)
 
+## 1.7.5 - 8 November 2022
+
+- Fix a bug where the AST Viewer was not working unless the associated CodeQL library pack is in the workspace. [#1735](https://github.com/github/vscode-codeql/pull/1735)
+
 ## 1.7.4 - 29 October 2022
 
 No user facing changes.

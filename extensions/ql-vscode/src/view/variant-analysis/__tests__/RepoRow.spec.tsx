@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { render as reactRender, screen } from '@testing-library/react';
+import { render as reactRender, screen, waitFor } from '@testing-library/react';
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus
@@ -102,6 +102,21 @@ describe(RepoRow.name, () => {
     expect(screen.getByRole<HTMLButtonElement>('button', {
       expanded: false
     })).toBeEnabled();
+  });
+
+  it('renders the succeeded state with failed download status', () => {
+    render({
+      status: VariantAnalysisRepoStatus.Succeeded,
+      resultCount: 178,
+      downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Failed,
+    });
+
+    expect(screen.getByRole<HTMLButtonElement>('button', {
+      expanded: false
+    })).toBeEnabled();
+    expect(screen.getByRole('img', {
+      name: 'Failed to download the results',
+    })).toBeInTheDocument();
   });
 
   it('renders the failed state', () => {
@@ -314,5 +329,43 @@ describe(RepoRow.name, () => {
     expect(screen.getByRole('button', {
       expanded: false
     })).toBeDisabled();
+  });
+
+  it('does not allow selecting the item if the item has not succeeded', async () => {
+    render({
+      status: VariantAnalysisRepoStatus.InProgress,
+    });
+
+    expect(screen.getByRole('checkbox')).toBeDisabled();
+  });
+
+  it('does not allow selecting the item if the item has not been downloaded', async () => {
+    render({
+      status: VariantAnalysisRepoStatus.Succeeded,
+    });
+
+    expect(screen.getByRole('checkbox')).toBeDisabled();
+  });
+
+  it('does not allow selecting the item if the item has not been downloaded successfully', async () => {
+    render({
+      status: VariantAnalysisRepoStatus.Succeeded,
+      downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Failed,
+    });
+
+    // It seems like sometimes the first render doesn't have the checkbox disabled
+    // Might be related to https://github.com/microsoft/vscode-webview-ui-toolkit/issues/404
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox')).toBeDisabled();
+    });
+  });
+
+  it('allows selecting the item if the item has been downloaded', async () => {
+    render({
+      status: VariantAnalysisRepoStatus.Succeeded,
+      downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+    });
+
+    expect(screen.getByRole('checkbox')).toBeEnabled();
   });
 });

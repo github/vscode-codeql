@@ -1,6 +1,7 @@
 import * as fs from 'fs-extra';
 import * as yaml from 'js-yaml';
 import * as tmp from 'tmp-promise';
+import * as path from 'path';
 
 import * as helpers from '../helpers';
 import {
@@ -12,6 +13,11 @@ import {
 import { CodeQLCliServer } from '../cli';
 import { DatabaseItem } from '../databases';
 import { QlPacksForLanguage } from '../helpers';
+import { logger } from '../logging';
+import { createInitialQueryInfo } from '../run-queries-shared';
+import { CancellationToken, Uri } from 'vscode';
+import { ProgressCallback } from '../commandRunner';
+import { QueryRunner } from '../queryRunner';
 
 export async function qlpackOfDatabase(cli: CodeQLCliServer, db: DatabaseItem): Promise<QlPacksForLanguage> {
   if (db.contents === undefined) {
@@ -103,4 +109,70 @@ export async function resolveQueries(cli: CodeQLCliServer, qlpacks: QlPacksForLa
 
   void helpers.showAndLogErrorMessage(errorMessage);
   throw new Error(`Couldn't find any queries tagged ${tagOfKeyType(keyType)} in any of the following packs: ${packsToSearch.join(', ')}.`);
+}
+
+async function resolveContextualQuery(cli: CodeQLCliServer, query: string): Promise<{ packPath: string, createdTempLockFile: boolean }> {
+  // Contextual queries now live within the standard library packs.
+  // This simplifies distribution (you don't need the standard query pack to use the AST viewer),
+  // but if the library pack doesn't have a lockfile, we won't be able to find
+  // other pack dependencies of the library pack.
+
+  // Work out the enclosing pack.
+  const packContents = await cli.packPacklist(query, false);
+  const packFilePath = packContents.find((p) => ['codeql-pack.yml', 'qlpack.yml'].includes(path.basename(p)));
+  if (packFilePath === undefined) {
+    // Should not happen; we already resolved this query.
+    throw new Error(`Could not find a CodeQL pack file for the pack enclosing the contextual query ${query}`);
+  }
+  const packPath = path.dirname(packFilePath);
+  const lockFilePath = packContents.find((p) => ['codeql-pack.lock.yml', 'qlpack.lock.yml'].includes(path.basename(p)));
+  let createdTempLockFile = false;
+  if (!lockFilePath) {
+    // No lock file, likely because this library pack is in the package cache.
+    // Create a lock file so that we can resolve dependencies and library path
+    // for the contextual query.
+    void logger.log(`Library pack ${packPath} is missing a lock file; creating a temporary lock file`);
+    await cli.packResolveDependencies(packPath);
+    createdTempLockFile = true;
+    // Clear CLI server pack cache before installing dependencies,
+    // so that it picks up the new lock file, not the previously cached pack.
+    void logger.log('Clearing the CodeQL CLI server\'s pack cache');
+    await cli.clearCache();
+    // Install dependencies.
+    void logger.log(`Installing package dependencies for library pack ${packPath}`);
+    await cli.packInstall(packPath);
+  }
+  return { packPath, createdTempLockFile };
+}
+
+async function removeTemporaryLockFile(packPath: string) {
+  const tempLockFilePath = path.resolve(packPath, 'codeql-pack.lock.yml');
+  void logger.log(`Deleting temporary package lock file at ${tempLockFilePath}`);
+  // It's fine if the file doesn't exist.
+  await fs.promises.rm(path.resolve(packPath, 'codeql-pack.lock.yml'), { force: true });
+}
+
+export async function runContextualQuery(query: string, db: DatabaseItem, queryStorageDir: string, qs: QueryRunner, cli: CodeQLCliServer, progress: ProgressCallback, token: CancellationToken, templates: Record<string, string>) {
+  const { packPath, createdTempLockFile } = await resolveContextualQuery(cli, query);
+  const initialInfo = await createInitialQueryInfo(
+    Uri.file(query),
+    {
+      name: db.name,
+      databaseUri: db.databaseUri.toString(),
+    },
+    false
+  );
+  void logger.log(`Running contextual query ${query}; results will be stored in ${queryStorageDir}`);
+  const queryResult = await qs.compileAndRunQueryAgainstDatabase(
+    db,
+    initialInfo,
+    queryStorageDir,
+    progress,
+    token,
+    templates
+  );
+  if (createdTempLockFile) {
+    await removeTemporaryLockFile(packPath);
+  }
+  return queryResult;
 }

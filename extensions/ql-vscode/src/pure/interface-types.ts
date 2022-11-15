@@ -445,11 +445,6 @@ export interface SetVariantAnalysisMessage {
   variantAnalysis: VariantAnalysis;
 }
 
-export type StopVariantAnalysisMessage = {
-  t: 'stopVariantAnalysis';
-  variantAnalysisId: number;
-}
-
 export type VariantAnalysisState = {
   variantAnalysisId: number;
 }
@@ -477,8 +472,16 @@ export interface OpenQueryTextMessage {
   t: 'openQueryText';
 }
 
+export interface CopyRepositoryListMessage {
+  t: 'copyRepositoryList';
+}
+
 export interface OpenLogsMessage {
   t: 'openLogs';
+}
+
+export interface CancelVariantAnalysisMessage {
+  t: 'cancelVariantAnalysis';
 }
 
 export type ToVariantAnalysisMessage =
@@ -488,8 +491,9 @@ export type ToVariantAnalysisMessage =
 
 export type FromVariantAnalysisMessage =
   | ViewLoadedMsg
-  | StopVariantAnalysisMessage
   | RequestRepositoryResultsMessage
   | OpenQueryFileMessage
   | OpenQueryTextMessage
-  | OpenLogsMessage;
+  | CopyRepositoryListMessage
+  | OpenLogsMessage
+  | CancelVariantAnalysisMessage;

@@ -91,8 +91,8 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
         await this.onWebViewLoaded();
 
         break;
-      case 'stopVariantAnalysis':
-        void logger.log(`Stop variant analysis: ${msg.variantAnalysisId}`);
+      case 'cancelVariantAnalysis':
+        void commands.executeCommand('codeQL.cancelVariantAnalysis', this.variantAnalysisId);
         break;
       case 'requestRepositoryResults':
         void commands.executeCommand('codeQL.loadVariantAnalysisRepoResults', this.variantAnalysisId, msg.repositoryFullName);
@@ -102,6 +102,9 @@ export class VariantAnalysisView extends AbstractWebview<ToVariantAnalysisMessag
         break;
       case 'openQueryText':
         await this.openQueryText();
+        break;
+      case 'copyRepositoryList':
+        void commands.executeCommand('codeQL.copyVariantAnalysisRepoList', this.variantAnalysisId);
         break;
       case 'openLogs':
         await this.openLogs();

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { VSCodeBadge, VSCodeCheckbox } from '@vscode/webview-ui-toolkit/react';
 import {
@@ -80,7 +80,59 @@ export type RepoRowProps = {
 
   interpretedResults?: AnalysisAlert[];
   rawResults?: AnalysisRawResults;
+
+  selected?: boolean;
+  onSelectedChange?: (repositoryId: number, selected: boolean) => void;
 }
+
+const canExpand = (
+  status: VariantAnalysisRepoStatus | undefined,
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus | undefined,
+): boolean => {
+  if (!status) {
+    return false;
+  }
+
+  if (!isCompletedAnalysisRepoStatus(status)) {
+    return false;
+  }
+
+  if (status !== VariantAnalysisRepoStatus.Succeeded) {
+    return true;
+  }
+
+  return downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Succeeded || downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Failed;
+};
+
+const canSelect = (
+  status: VariantAnalysisRepoStatus | undefined,
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus | undefined,
+) => status == VariantAnalysisRepoStatus.Succeeded && downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
+
+const isExpandableContentLoaded = (
+  status: VariantAnalysisRepoStatus | undefined,
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus | undefined,
+  resultsLoaded: boolean,
+): boolean => {
+  if (!canExpand(status, downloadStatus)) {
+    return false;
+  }
+
+  if (!status) {
+    return false;
+  }
+
+  if (status !== VariantAnalysisRepoStatus.Succeeded) {
+    return true;
+  }
+
+  if (downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Failed) {
+    // If the download has failed, we allow expansion to show the error
+    return true;
+  }
+
+  return resultsLoaded;
+};
 
 export const RepoRow = ({
   repository,
@@ -89,6 +141,8 @@ export const RepoRow = ({
   resultCount,
   interpretedResults,
   rawResults,
+  selected,
+  onSelectedChange,
 }: RepoRowProps) => {
   const [isExpanded, setExpanded] = useState(false);
   const resultsLoaded = !!interpretedResults || !!rawResults;
@@ -99,7 +153,7 @@ export const RepoRow = ({
       return;
     }
 
-    if (resultsLoaded || status !== VariantAnalysisRepoStatus.Succeeded) {
+    if (resultsLoaded || status !== VariantAnalysisRepoStatus.Succeeded || downloadStatus !== VariantAnalysisScannedRepositoryDownloadStatus.Succeeded) {
       setExpanded(oldIsExpanded => !oldIsExpanded);
       return;
     }
@@ -110,7 +164,7 @@ export const RepoRow = ({
     });
 
     setResultsLoading(true);
-  }, [resultsLoading, resultsLoaded, repository.fullName, status]);
+  }, [resultsLoading, resultsLoaded, repository.fullName, status, downloadStatus]);
 
   useEffect(() => {
     if (resultsLoaded && resultsLoading) {
@@ -119,13 +173,35 @@ export const RepoRow = ({
     }
   }, [resultsLoaded, resultsLoading]);
 
-  const disabled = !status || !isCompletedAnalysisRepoStatus(status) || (status === VariantAnalysisRepoStatus.Succeeded && downloadStatus !== VariantAnalysisScannedRepositoryDownloadStatus.Succeeded);
-  const expandableContentLoaded = status && (status !== VariantAnalysisRepoStatus.Succeeded || resultsLoaded);
+  const onClickCheckbox = useCallback((e: React.MouseEvent) => {
+    // Prevent calling the onClick event of the container, which would toggle the expanded state
+    e.stopPropagation();
+  }, []);
+  const onChangeCheckbox = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    // This is called on first render, but we don't really care about this value
+    if (e.target.checked === undefined) {
+      return;
+    }
+
+    if (!repository.id) {
+      return;
+    }
+
+    onSelectedChange?.(repository.id, e.target.checked);
+  }, [onSelectedChange, repository]);
+
+  const disabled = !canExpand(status, downloadStatus);
+  const expandableContentLoaded = isExpandableContentLoaded(status, downloadStatus, resultsLoaded);
 
   return (
     <div>
       <TitleContainer onClick={toggleExpanded} disabled={disabled} aria-expanded={isExpanded}>
-        <VSCodeCheckbox disabled />
+        <VSCodeCheckbox
+          onChange={onChangeCheckbox}
+          onClick={onClickCheckbox}
+          checked={selected}
+          disabled={!repository.id || !canSelect(status, downloadStatus)}
+        />
         {isExpanded ? <ExpandCollapseCodicon name="chevron-down" label="Collapse" /> :
           <ExpandCollapseCodicon name="chevron-right" label="Expand" />}
         <VSCodeBadge>{resultCount === undefined ? '-' : formatDecimal(resultCount)}</VSCodeBadge>
@@ -139,13 +215,20 @@ export const RepoRow = ({
           {!status && <WarningIcon />}
         </span>
         {downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.InProgress && <LoadingIcon label="Downloading" />}
+        {downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Failed && <WarningIcon label="Failed to download the results" />}
         <MetadataContainer>
           <div><StarCount starCount={repository.stargazersCount} /></div>
           <LastUpdated lastUpdated={repository.updatedAt} />
         </MetadataContainer>
       </TitleContainer>
-      {isExpanded && expandableContentLoaded &&
-        <AnalyzedRepoItemContent status={status} interpretedResults={interpretedResults} rawResults={rawResults} />}
+      {isExpanded && expandableContentLoaded && (
+        <AnalyzedRepoItemContent
+          status={status}
+          downloadStatus={downloadStatus}
+          interpretedResults={interpretedResults}
+          rawResults={rawResults}
+        />
+      )}
     </div>
   );
 };

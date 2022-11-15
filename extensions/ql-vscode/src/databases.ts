@@ -123,7 +123,7 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
 
 // exported for testing
 export async function findSourceArchive(
-  databasePath: string, silent = false
+  databasePath: string
 ): Promise<vscode.Uri | undefined> {
   const relativePaths = ['src', 'output/src_archive'];
 
@@ -138,11 +138,10 @@ export async function findSourceArchive(
       return vscode.Uri.file(basePath);
     }
   }
-  if (!silent) {
-    void showAndLogInformationMessage(
-      `Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`
-    );
-  }
+
+  void showAndLogInformationMessage(
+    `Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`
+  );
   return undefined;
 }
 

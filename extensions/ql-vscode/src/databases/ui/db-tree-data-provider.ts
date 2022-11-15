@@ -1,5 +1,5 @@
 import { ProviderResult, TreeDataProvider, TreeItem } from 'vscode';
-import { createDbTreeViewItemWarning, DbTreeViewItem } from './db-tree-view-item';
+import { createDbTreeViewItemError, DbTreeViewItem } from './db-tree-view-item';
 import { DbManager } from '../db-manager';
 import { mapDbItemToTreeViewItem } from './db-item-mapper';
 
@@ -36,14 +36,17 @@ export class DbTreeDataProvider implements TreeDataProvider<DbTreeViewItem> {
   }
 
   private createTree(): DbTreeViewItem[] {
-    const dbItems = this.dbManager.getDbItems();
+    const dbItemsResult = this.dbManager.getDbItems();
 
-    // Add a sample warning as a proof of concept.
-    const warningTreeViewItem = createDbTreeViewItemWarning(
-      'There was an error',
-      'Fix it'
-    );
+    if (dbItemsResult.isFailure) {
+      const errorTreeViewItem = createDbTreeViewItemError(
+        'Error when reading databases config',
+        'Please open your databases config and address errors'
+      );
 
-    return [...dbItems.map(mapDbItemToTreeViewItem), warningTreeViewItem];
+      return [errorTreeViewItem];
+    }
+
+    return dbItemsResult.value.map(mapDbItemToTreeViewItem);
   }
 }

@@ -40,7 +40,7 @@ import * as fs from 'fs-extra';
 import { CliVersionConstraint } from './cli';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
 import { Credentials } from './authentication';
-import { cancelRemoteQuery, cancelVariantAnalysis } from './remote-queries/gh-api/gh-actions-api-client';
+import { cancelRemoteQuery } from './remote-queries/gh-api/gh-actions-api-client';
 import { RemoteQueriesManager } from './remote-queries/remote-queries-manager';
 import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
 import { ResultsView } from './interface';
@@ -1119,9 +1119,7 @@ export class QueryHistoryManager extends DisposableObject {
           const credentials = await this.getCredentials();
           await cancelRemoteQuery(credentials, item.remoteQuery);
         } else if (item.t === 'variant-analysis') {
-          void showAndLogInformationMessage('Cancelling variant analysis. This may take a while.');
-          const credentials = await this.getCredentials();
-          await cancelVariantAnalysis(credentials, item.variantAnalysis);
+          await commands.executeCommand('codeQL.cancelVariantAnalysis', item.variantAnalysis.id);
         }
       }
     });
@@ -1258,11 +1256,15 @@ export class QueryHistoryManager extends DisposableObject {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
 
     // Remote queries only
-    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem || finalSingleItem.t !== 'remote') {
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
       return;
     }
 
-    await commands.executeCommand('codeQL.copyRepoList', finalSingleItem.queryId);
+    if (finalSingleItem.t === 'remote') {
+      await commands.executeCommand('codeQL.copyRepoList', finalSingleItem.queryId);
+    } else if (finalSingleItem.t === 'variant-analysis') {
+      await commands.executeCommand('codeQL.copyVariantAnalysisRepoList', finalSingleItem.variantAnalysis.id);
+    }
   }
 
   async handleExportResults(): Promise<void> {

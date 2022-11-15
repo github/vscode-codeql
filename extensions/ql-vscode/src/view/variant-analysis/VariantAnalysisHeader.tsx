@@ -73,6 +73,7 @@ export const VariantAnalysisHeader = ({
           onStopQueryClick={onStopQueryClick}
           onCopyRepositoryListClick={onCopyRepositoryListClick}
           onExportResultsClick={onExportResultsClick}
+          stopQueryDisabled={!variantAnalysis.actionsWorkflowRunId}
         />
       </Row>
       <VariantAnalysisStats

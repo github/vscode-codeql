@@ -4,8 +4,8 @@ import * as ghApiClient from './gh-api/gh-api-client';
 
 import {
   isFinalVariantAnalysisStatus,
+  repoHasDownloadableArtifact,
   VariantAnalysis,
-  VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepository
 } from './shared/variant-analysis';
 import { VariantAnalysisMonitorResult } from './shared/variant-analysis-monitor-result';
@@ -61,7 +61,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
       const downloadedRepos = this.downloadVariantAnalysisResults(variantAnalysis, scannedReposDownloaded);
       scannedReposDownloaded.push(...downloadedRepos);
 
-      if (isFinalVariantAnalysisStatus(variantAnalysis.status) || variantAnalysis.failureReason) {
+      if (isFinalVariantAnalysisStatus(variantAnalysis.status)) {
         break;
       }
 
@@ -82,7 +82,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
     scannedRepo: VariantAnalysisScannedRepository,
     alreadyDownloaded: number[]
   ): boolean {
-    return !alreadyDownloaded.includes(scannedRepo.repository.id) && scannedRepo.analysisStatus === VariantAnalysisRepoStatus.Succeeded;
+    return !alreadyDownloaded.includes(scannedRepo.repository.id) && repoHasDownloadableArtifact(scannedRepo);
   }
 
   private getReposToDownload(

@@ -1,5 +1,6 @@
 import { Credentials } from '../../authentication';
 import { OctokitResponse } from '@octokit/types/dist-types';
+import { RemoteQueriesSubmission } from '../shared/remote-queries';
 import { VariantAnalysisSubmission } from '../shared/variant-analysis';
 import {
   VariantAnalysis,
@@ -7,6 +8,7 @@ import {
   VariantAnalysisSubmissionRequest
 } from './variant-analysis';
 import { Repository } from './repository';
+import { RemoteQueriesResponse, RemoteQueriesSubmissionRequest } from './remote-queries';
 
 export async function submitVariantAnalysis(
   credentials: Credentials,
@@ -115,4 +117,32 @@ export async function createGist(
     throw new Error(`Error exporting variant analysis results: ${response.status} ${response?.data || ''}`);
   }
   return response.data.html_url;
+}
+
+export async function submitRemoteQueries(
+  credentials: Credentials,
+  submissionDetails: RemoteQueriesSubmission
+): Promise<RemoteQueriesResponse> {
+  const octokit = await credentials.getOctokit();
+
+  const { ref, language, repositories, repositoryLists, repositoryOwners, queryPack, controllerRepoId } = submissionDetails;
+
+  const data: RemoteQueriesSubmissionRequest = {
+    ref,
+    language,
+    repositories,
+    repository_lists: repositoryLists,
+    repository_owners: repositoryOwners,
+    query_pack: queryPack,
+  };
+
+  const response: OctokitResponse<RemoteQueriesResponse> = await octokit.request(
+    'POST /repositories/:controllerRepoId/code-scanning/codeql/queries',
+    {
+      controllerRepoId,
+      data
+    }
+  );
+
+  return response.data;
 }
