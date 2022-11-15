@@ -13,6 +13,10 @@ export type RepositoriesFilterSortState = {
   sortKey: SortKey;
 }
 
+export type RepositoriesFilterSortStateWithIds = RepositoriesFilterSortState & {
+  repositoryIds?: number[];
+}
+
 export const defaultFilterSortState: RepositoriesFilterSortState = {
   searchValue: '',
   sortKey: SortKey.Name,
@@ -52,7 +56,7 @@ export function compareRepository(filterSortState: RepositoriesFilterSortState |
 }
 
 type SortableResult = {
-  repository: SortableRepository;
+  repository: SortableRepository & Pick<Repository, 'id'>;
   resultCount?: number;
 }
 
@@ -72,16 +76,30 @@ export function compareWithResults(filterSortState: RepositoriesFilterSortState 
   };
 }
 
-// These define the behavior for undefined input values
-export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[], filterSortState: RepositoriesFilterSortState | undefined): T[];
-export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[] | undefined, filterSortState: RepositoriesFilterSortState | undefined): T[] | undefined;
+function hasRepositoryIds(filterSortState: RepositoriesFilterSortState | RepositoriesFilterSortStateWithIds | undefined): filterSortState is RepositoriesFilterSortStateWithIds {
+  if (!filterSortState) {
+    return false;
+  }
 
-export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[] | undefined, filterSortState: RepositoriesFilterSortState | undefined): T[] | undefined {
+  return 'repositoryIds' in filterSortState;
+}
+
+function isFilterOnRepositoryIds(filterSortState: RepositoriesFilterSortState | RepositoriesFilterSortStateWithIds | undefined): filterSortState is RepositoriesFilterSortStateWithIds & Required<Pick<RepositoriesFilterSortStateWithIds, 'repositoryIds'>> {
+  return hasRepositoryIds(filterSortState) && filterSortState.repositoryIds !== undefined && filterSortState.repositoryIds.length > 0;
+}
+
+// These define the behavior for undefined input values
+export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[], filterSortState: RepositoriesFilterSortState | RepositoriesFilterSortStateWithIds | undefined): T[];
+export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[] | undefined, filterSortState: RepositoriesFilterSortState | RepositoriesFilterSortStateWithIds | undefined): T[] | undefined;
+
+export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[] | undefined, filterSortState: RepositoriesFilterSortState | RepositoriesFilterSortStateWithIds | undefined): T[] | undefined {
   if (!repositories) {
     return undefined;
   }
 
-  return repositories
-    .filter(repo => matchesFilter(repo.repository, filterSortState))
-    .sort(compareWithResults(filterSortState));
+  const filteredRepositories = isFilterOnRepositoryIds(filterSortState) ?
+    repositories.filter(repo => filterSortState.repositoryIds.includes(repo.repository.id)) :
+    repositories.filter(repo => matchesFilter(repo.repository, filterSortState));
+
+  return filteredRepositories.sort(compareWithResults(filterSortState));
 }

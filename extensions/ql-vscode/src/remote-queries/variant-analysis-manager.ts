@@ -35,7 +35,7 @@ import { CodeQLCliServer } from '../cli';
 import {
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,
-  RepositoriesFilterSortState,
+  RepositoriesFilterSortStateWithIds,
 } from '../pure/variant-analysis-filter-sort';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
@@ -373,7 +373,7 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     await cancelVariantAnalysis(credentials, variantAnalysis);
   }
 
-  public async copyRepoListToClipboard(variantAnalysisId: number, filterSort: RepositoriesFilterSortState = defaultFilterSortState) {
+  public async copyRepoListToClipboard(variantAnalysisId: number, filterSort: RepositoriesFilterSortStateWithIds = defaultFilterSortState) {
     const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
     if (!variantAnalysis) {
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
