@@ -1008,8 +1008,8 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner('codeQL.exportVariantAnalysisResults', async (variantAnalysisId: number) => {
-      await exportVariantAnalysisResults(ctx, variantAnalysisManager, variantAnalysisId);
+    commandRunner('codeQL.exportVariantAnalysisResults', async (variantAnalysisId: number, filterSort?: RepositoriesFilterSortStateWithIds) => {
+      await exportVariantAnalysisResults(ctx, variantAnalysisManager, variantAnalysisId, filterSort);
     })
   );
 

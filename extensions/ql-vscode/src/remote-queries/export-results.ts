@@ -24,6 +24,10 @@ import {
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult
 } from './shared/variant-analysis';
+import {
+  filterAndSortRepositoriesWithResults,
+  RepositoriesFilterSortStateWithIds,
+} from '../pure/variant-analysis-filter-sort';
 
 /**
  * Exports the results of the currently-selected remote query or variant analysis.
@@ -98,6 +102,7 @@ export async function exportVariantAnalysisResults(
   ctx: ExtensionContext,
   variantAnalysisManager: VariantAnalysisManager,
   variantAnalysisId: number,
+  filterSort?: RepositoriesFilterSortStateWithIds,
 ): Promise<void> {
   const variantAnalysis = await variantAnalysisManager.getVariantAnalysis(variantAnalysisId);
   if (!variantAnalysis) {
@@ -117,7 +122,9 @@ export async function exportVariantAnalysisResults(
       return;
     }
 
-    for (const repo of variantAnalysis.scannedRepos) {
+    const repositories = filterAndSortRepositoriesWithResults(variantAnalysis.scannedRepos, filterSort);
+
+    for (const repo of repositories) {
       if (repo.resultCount == 0) {
         yield [repo, {
           variantAnalysisId: variantAnalysis.id,
