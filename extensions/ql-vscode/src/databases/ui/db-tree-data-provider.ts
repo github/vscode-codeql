@@ -1,15 +1,29 @@
-import { ProviderResult, TreeDataProvider, TreeItem } from 'vscode';
+import { Event, EventEmitter, ProviderResult, TreeDataProvider, TreeItem } from 'vscode';
 import { createDbTreeViewItemError, DbTreeViewItem } from './db-tree-view-item';
 import { DbManager } from '../db-manager';
 import { mapDbItemToTreeViewItem } from './db-item-mapper';
+import { DisposableObject } from '../../pure/disposable-object';
 
-export class DbTreeDataProvider implements TreeDataProvider<DbTreeViewItem> {
+export class DbTreeDataProvider extends DisposableObject implements TreeDataProvider<DbTreeViewItem> {
+
+  // This is an event to signal that there's been a change in the tree which
+  // will case the view to refresh. It is part of the TreeDataProvider interface.
+  public readonly onDidChangeTreeData: Event<DbTreeViewItem | undefined>;
+
+  private _onDidChangeTreeData = this.push(new EventEmitter<DbTreeViewItem | undefined>());
   private dbTreeItems: DbTreeViewItem[];
 
   public constructor(
     private readonly dbManager: DbManager
   ) {
+    super();
     this.dbTreeItems = this.createTree();
+    this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+
+    dbManager.onDbItemsChanged(() => {
+      this.dbTreeItems = this.createTree();
+      this._onDidChangeTreeData.fire(undefined);
+    });
   }
 
   /**

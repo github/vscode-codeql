@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 
-import { window, commands, Uri, ExtensionContext, QuickPickItem, workspace, ViewColumn } from 'vscode';
+import { window, commands, Uri, ExtensionContext, workspace, ViewColumn } from 'vscode';
 import { Credentials } from '../authentication';
 import { UserCancellationException } from '../commandRunner';
 import { showInformationMessageWithAction } from '../helpers';
@@ -9,36 +9,54 @@ import { logger } from '../logging';
 import { QueryHistoryManager } from '../query-history';
 import { createGist } from './gh-api/gh-api-client';
 import { RemoteQueriesManager } from './remote-queries-manager';
-import { generateMarkdown } from './remote-queries-markdown-generation';
+import {
+  generateMarkdown,
+  generateVariantAnalysisMarkdown,
+  MarkdownFile,
+} from './remote-queries-markdown-generation';
 import { RemoteQuery } from './remote-query';
 import { AnalysisResults, sumAnalysesResults } from './shared/analysis-result';
-import { RemoteQueryHistoryItem } from './remote-query-history-item';
 import { pluralize } from '../pure/word';
+import { VariantAnalysisManager } from './variant-analysis-manager';
+import { assertNever } from '../pure/helpers-pure';
+import {
+  VariantAnalysis,
+  VariantAnalysisScannedRepository,
+  VariantAnalysisScannedRepositoryResult
+} from './shared/variant-analysis';
 
 /**
- * Exports the results of the given or currently-selected remote query.
+ * Exports the results of the currently-selected remote query or variant analysis.
+ */
+export async function exportSelectedRemoteQueryResults(queryHistoryManager: QueryHistoryManager): Promise<void> {
+  const queryHistoryItem = queryHistoryManager.getCurrentQueryHistoryItem();
+  if (!queryHistoryItem || queryHistoryItem.t === 'local') {
+    throw new Error('No variant analysis results currently open. To open results, click an item in the query history view.');
+  }
+
+  if (queryHistoryItem.t === 'remote') {
+    return commands.executeCommand('codeQL.exportRemoteQueryResults', queryHistoryItem.queryId);
+  } else if (queryHistoryItem.t === 'variant-analysis') {
+    return commands.executeCommand('codeQL.exportVariantAnalysisResults', queryHistoryItem.variantAnalysis.id);
+  } else {
+    assertNever(queryHistoryItem);
+  }
+}
+
+/**
+ * Exports the results of the given remote query.
  * The user is prompted to select the export format.
  */
 export async function exportRemoteQueryResults(
   queryHistoryManager: QueryHistoryManager,
   remoteQueriesManager: RemoteQueriesManager,
   ctx: ExtensionContext,
-  queryId?: string,
+  queryId: string,
 ): Promise<void> {
-  let queryHistoryItem: RemoteQueryHistoryItem;
-  if (queryId) {
-    const query = queryHistoryManager.getRemoteQueryById(queryId);
-    if (!query) {
-      void logger.log(`Could not find query with id ${queryId}`);
-      throw new Error('There was an error when trying to retrieve variant analysis information');
-    }
-    queryHistoryItem = query;
-  } else {
-    const query = queryHistoryManager.getCurrentQueryHistoryItem();
-    if (!query || query.t !== 'remote') {
-      throw new Error('No variant analysis results currently open. To open results, click an item in the query history view.');
-    }
-    queryHistoryItem = query;
+  const queryHistoryItem = queryHistoryManager.getRemoteQueryById(queryId);
+  if (!queryHistoryItem) {
+    void logger.log(`Could not find query with id ${queryId}`);
+    throw new Error('There was an error when trying to retrieve variant analysis information');
   }
 
   if (!queryHistoryItem.completed) {
@@ -49,32 +67,107 @@ export async function exportRemoteQueryResults(
   const query = queryHistoryItem.remoteQuery;
   const analysesResults = remoteQueriesManager.getAnalysesResults(queryHistoryItem.queryId);
 
+  const exportFormat = await determineExportFormat();
+  if (!exportFormat) {
+    return;
+  }
+
+  const exportDirectory = await queryHistoryManager.getQueryHistoryItemDirectory(queryHistoryItem);
+
+  await exportRemoteQueryAnalysisResults(ctx, exportDirectory, query, analysesResults, exportFormat);
+}
+
+export async function exportRemoteQueryAnalysisResults(
+  ctx: ExtensionContext,
+  exportDirectory: string,
+  query: RemoteQuery,
+  analysesResults: AnalysisResults[],
+  exportFormat: 'gist' | 'local',
+) {
+  const description = buildGistDescription(query, analysesResults);
+  const markdownFiles = generateMarkdown(query, analysesResults, exportFormat);
+
+  await exportResults(ctx, exportDirectory, description, markdownFiles, exportFormat);
+}
+
+/**
+ * Exports the results of the given or currently-selected remote query.
+ * The user is prompted to select the export format.
+ */
+export async function exportVariantAnalysisResults(
+  ctx: ExtensionContext,
+  variantAnalysisManager: VariantAnalysisManager,
+  variantAnalysisId: number,
+): Promise<void> {
+  const variantAnalysis = await variantAnalysisManager.getVariantAnalysis(variantAnalysisId);
+  if (!variantAnalysis) {
+    void logger.log(`Could not find variant analysis with id ${variantAnalysisId}`);
+    throw new Error('There was an error when trying to retrieve variant analysis information');
+  }
+
+  void logger.log(`Exporting variant analysis results for variant analysis with id ${variantAnalysis.id}`);
+
+  const exportFormat = await determineExportFormat();
+  if (!exportFormat) {
+    return;
+  }
+
+  async function* getAnalysesResults(): AsyncGenerator<[VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]> {
+    if (!variantAnalysis?.scannedRepos) {
+      return;
+    }
+
+    for (const repo of variantAnalysis.scannedRepos) {
+      if (repo.resultCount == 0) {
+        yield [repo, {
+          variantAnalysisId: variantAnalysis.id,
+          repositoryId: repo.repository.id,
+        }];
+        continue;
+      }
+
+      const result = await variantAnalysisManager.loadResults(variantAnalysis.id, repo.repository.fullName, {
+        skipCacheStore: true,
+      });
+
+      yield [repo, result];
+    }
+  }
+
+  const exportDirectory = variantAnalysisManager.getVariantAnalysisStorageLocation(variantAnalysis.id);
+
+  await exportVariantAnalysisAnalysisResults(ctx, exportDirectory, variantAnalysis, getAnalysesResults(), exportFormat);
+}
+
+export async function exportVariantAnalysisAnalysisResults(
+  ctx: ExtensionContext,
+  exportDirectory: string,
+  variantAnalysis: VariantAnalysis,
+  analysesResults: AsyncIterable<[VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]>,
+  exportFormat: 'gist' | 'local',
+) {
+  const description = buildVariantAnalysisGistDescription(variantAnalysis);
+  const markdownFiles = await generateVariantAnalysisMarkdown(variantAnalysis, analysesResults, 'gist');
+
+  await exportResults(ctx, exportDirectory, description, markdownFiles, exportFormat);
+}
+
+/**
+ * Determines the format in which to export the results, from the given export options.
+ */
+async function determineExportFormat(): Promise<'gist' | 'local' | undefined> {
   const gistOption = {
     label: '$(ports-open-browser-icon) Create Gist (GitHub)',
   };
   const localMarkdownOption = {
     label: '$(markdown) Save as markdown',
   };
-  const exportFormat = await determineExportFormat(gistOption, localMarkdownOption);
 
-  if (exportFormat === gistOption) {
-    await exportResultsToGist(ctx, query, analysesResults);
-  } else if (exportFormat === localMarkdownOption) {
-    const queryDirectoryPath = await queryHistoryManager.getQueryHistoryItemDirectory(
-      queryHistoryItem
-    );
-    await exportResultsToLocalMarkdown(queryDirectoryPath, query, analysesResults);
-  }
-}
-
-/**
- * Determines the format in which to export the results, from the given export options.
- */
-async function determineExportFormat(
-  ...options: { label: string }[]
-): Promise<QuickPickItem> {
   const exportFormat = await window.showQuickPick(
-    options,
+    [
+      gistOption,
+      localMarkdownOption,
+    ],
     {
       placeHolder: 'Select export format',
       canPickMany: false,
@@ -84,20 +177,38 @@ async function determineExportFormat(
   if (!exportFormat || !exportFormat.label) {
     throw new UserCancellationException('No export format selected', true);
   }
-  return exportFormat;
+
+  if (exportFormat === gistOption) {
+    return 'gist';
+  }
+  if (exportFormat === localMarkdownOption) {
+    return 'local';
+  }
+
+  return undefined;
 }
 
-/**
- * Converts the results of a remote query to markdown and uploads the files as a secret gist.
- */
-export async function exportResultsToGist(
+export async function exportResults(
   ctx: ExtensionContext,
-  query: RemoteQuery,
-  analysesResults: AnalysisResults[]
-): Promise<void> {
+  exportDirectory: string,
+  description: string,
+  markdownFiles: MarkdownFile[],
+  exportFormat: 'gist' | 'local',
+) {
+  if (exportFormat === 'gist') {
+    await exportToGist(ctx, description, markdownFiles);
+  } else if (exportFormat === 'local') {
+    await exportToLocalMarkdown(exportDirectory, markdownFiles);
+  }
+}
+
+export async function exportToGist(
+  ctx: ExtensionContext,
+  description: string,
+  markdownFiles: MarkdownFile[]
+) {
   const credentials = await Credentials.initialize(ctx);
-  const description = buildGistDescription(query, analysesResults);
-  const markdownFiles = generateMarkdown(query, analysesResults, 'gist');
+
   // Convert markdownFiles to the appropriate format for uploading to gist
   const gistFiles = markdownFiles.reduce((acc, cur) => {
     acc[`${cur.fileName}.md`] = { content: cur.content.join('\n') };
@@ -128,16 +239,25 @@ const buildGistDescription = (query: RemoteQuery, analysesResults: AnalysisResul
 };
 
 /**
- * Converts the results of a remote query to markdown and saves the files locally
- * in the query directory (where query results and metadata are also saved).
+ * Builds Gist description
+ * Ex: Empty Block (Go) x results (y repositories)
  */
-async function exportResultsToLocalMarkdown(
-  queryDirectoryPath: string,
-  query: RemoteQuery,
-  analysesResults: AnalysisResults[]
+const buildVariantAnalysisGistDescription = (variantAnalysis: VariantAnalysis) => {
+  const resultCount = variantAnalysis.scannedRepos?.reduce((acc, item) => acc + (item.resultCount ?? 0), 0) ?? 0;
+  const resultLabel = pluralize(resultCount, 'result', 'results');
+
+  const repositoryLabel = variantAnalysis.scannedRepos?.length ? `(${pluralize(variantAnalysis.scannedRepos.length, 'repository', 'repositories')})` : '';
+  return `${variantAnalysis.query.name} (${variantAnalysis.query.language}) ${resultLabel} ${repositoryLabel}`;
+};
+
+/**
+ * Saves the results of an exported query to local markdown files.
+ */
+async function exportToLocalMarkdown(
+  exportDirectory: string,
+  markdownFiles: MarkdownFile[],
 ) {
-  const markdownFiles = generateMarkdown(query, analysesResults, 'local');
-  const exportedResultsPath = path.join(queryDirectoryPath, 'exported-results');
+  const exportedResultsPath = path.join(exportDirectory, 'exported-results');
   await fs.ensureDir(exportedResultsPath);
   for (const markdownFile of markdownFiles) {
     const filePath = path.join(exportedResultsPath, `${markdownFile.fileName}.md`);

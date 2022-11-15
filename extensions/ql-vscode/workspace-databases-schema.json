@@ -4,112 +4,138 @@
     "$schema": {
       "type": "string"
     },
-    "remote": {
+    "databases": {
       "type": "object",
       "properties": {
-        "repositoryLists": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "repositories": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "pattern": "^[a-zA-Z0-9-_\\.]+/[a-zA-Z0-9-_\\.]+$"
-                }
+        "remote": {
+          "type": "object",
+          "properties": {
+            "repositoryLists": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "repositories": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-zA-Z0-9-_\\.]+/[a-zA-Z0-9-_\\.]+$"
+                    }
+                  }
+                },
+                "required": ["name", "repositories"],
+                "additionalProperties": false
               }
             },
-            "required": ["name", "repositories"],
-            "additionalProperties": false
-          }
+            "owners": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9-_\\.]+$"
+              }
+            },
+            "repositories": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9-_\\.]+/[a-zA-Z0-9-_\\.]+$"
+              }
+            }
+          },
+          "required": ["repositoryLists", "owners", "repositories"],
+          "additionalProperties": false
         },
-        "owners": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^[a-zA-Z0-9-_\\.]+$"
-          }
-        },
-        "repositories": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^[a-zA-Z0-9-_\\.]+/[a-zA-Z0-9-_\\.]+$"
-          }
+        "local": {
+          "type": "object",
+          "properties": {
+            "lists": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "databases": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "dateAdded": {
+                          "type": "number"
+                        },
+                        "language": {
+                          "type": "string"
+                        },
+                        "storagePath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "dateAdded",
+                        "language",
+                        "storagePath"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": ["name", "databases"],
+                "additionalProperties": false
+              }
+            },
+            "databases": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "dateAdded": {
+                    "type": "number"
+                  },
+                  "language": {
+                    "type": "string"
+                  },
+                  "storagePath": {
+                    "type": "string"
+                  }
+                },
+                "required": ["name", "dateAdded", "language", "storagePath"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["lists", "databases"],
+          "additionalProperties": false
         }
       },
-      "required": ["repositoryLists", "owners", "repositories"],
+      "required": ["remote", "local"],
       "additionalProperties": false
     },
-    "local": {
+    "selected": {
       "type": "object",
       "properties": {
-        "lists": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "databases": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "dateAdded": {
-                      "type": "number"
-                    },
-                    "language": {
-                      "type": "string"
-                    },
-                    "storagePath": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "dateAdded", "language", "storagePath"],
-                  "additionalProperties": false
-                }
-              }
-            },
-            "required": ["name", "databases"],
-            "additionalProperties": false
-          }
+        "kind": {
+          "type": "string",
+          "enum": ["configDefined", "remoteSystemDefinedList"]
         },
-        "databases": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "dateAdded": {
-                "type": "number"
-              },
-              "language": {
-                "type": "string"
-              },
-              "storagePath": {
-                "type": "string"
-              }
-            },
-            "required": ["name", "dateAdded", "language", "storagePath"],
-            "additionalProperties": false
-          }
+        "value": {
+          "type": "string"
         }
       },
-      "required": ["lists", "databases"],
+      "required": ["kind", "value"],
       "additionalProperties": false
     }
   },
-  "required": ["remote", "local"],
+  "required": ["databases"],
   "additionalProperties": false
 }

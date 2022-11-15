@@ -18,7 +18,7 @@ import {
 import { getErrorMessage } from '../pure/helpers-pure';
 import { VariantAnalysisView } from './variant-analysis-view';
 import { VariantAnalysisViewManager } from './variant-analysis-view-manager';
-import { VariantAnalysisResultsManager } from './variant-analysis-results-manager';
+import { LoadResultsOptions, VariantAnalysisResultsManager } from './variant-analysis-results-manager';
 import { getControllerRepo, getQueryName, prepareRemoteQueryRun } from './run-remote-query';
 import {
   processUpdatedVariantAnalysis,
@@ -214,13 +214,13 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     return this.variantAnalyses.size;
   }
 
-  public async loadResults(variantAnalysisId: number, repositoryFullName: string): Promise<void> {
+  public async loadResults(variantAnalysisId: number, repositoryFullName: string, options?: LoadResultsOptions): Promise<VariantAnalysisScannedRepositoryResult> {
     const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
     if (!variantAnalysis) {
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
     }
 
-    await this.variantAnalysisResultsManager.loadResults(variantAnalysisId, this.getVariantAnalysisStorageLocation(variantAnalysisId), repositoryFullName);
+    return this.variantAnalysisResultsManager.loadResults(variantAnalysisId, this.getVariantAnalysisStorageLocation(variantAnalysisId), repositoryFullName, options);
   }
 
   private async variantAnalysisRecordExists(variantAnalysisId: number): Promise<boolean> {

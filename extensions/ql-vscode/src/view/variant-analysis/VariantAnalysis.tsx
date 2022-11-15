@@ -37,6 +37,12 @@ const stopQuery = () => {
   });
 };
 
+const exportResults = () => {
+  vscode.postMessage({
+    t: 'exportResults',
+  });
+};
+
 const openLogs = () => {
   vscode.postMessage({
     t: 'openLogs',
@@ -107,7 +113,7 @@ export function VariantAnalysis({
         onViewQueryTextClick={openQueryText}
         onStopQueryClick={stopQuery}
         onCopyRepositoryListClick={copyRepositoryList}
-        onExportResultsClick={() => console.log('Export results')}
+        onExportResultsClick={exportResults}
         onViewLogsClick={openLogs}
       />
       <VariantAnalysisOutcomePanels

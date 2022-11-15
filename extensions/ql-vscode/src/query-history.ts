@@ -1267,8 +1267,22 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  async handleExportResults(): Promise<void> {
-    await commands.executeCommand('codeQL.exportVariantAnalysisResults');
+  async handleExportResults(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[],
+  ): Promise<void> {
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(singleItem, multiSelect);
+
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
+      return;
+    }
+
+    // Remote queries and variant analysis only
+    if (finalSingleItem.t === 'remote') {
+      await commands.executeCommand('codeQL.exportRemoteQueryResults', finalSingleItem.queryId);
+    } else if (finalSingleItem.t === 'variant-analysis') {
+      await commands.executeCommand('codeQL.exportVariantAnalysisResults', finalSingleItem.variantAnalysis.id);
+    }
   }
 
   addQuery(item: QueryHistoryInfo) {

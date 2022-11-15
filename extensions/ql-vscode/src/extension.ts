@@ -98,7 +98,11 @@ import { RemoteQueryResult } from './remote-queries/remote-query-result';
 import { URLSearchParams } from 'url';
 import { handleDownloadPacks, handleInstallPackDependencies } from './packaging';
 import { HistoryItemLabelProvider } from './history-item-label-provider';
-import { exportRemoteQueryResults } from './remote-queries/export-results';
+import {
+  exportRemoteQueryResults,
+  exportSelectedRemoteQueryResults,
+  exportVariantAnalysisResults
+} from './remote-queries/export-results';
 import { RemoteQuery } from './remote-queries/remote-query';
 import { EvalLogViewer } from './eval-log-viewer';
 import { SummaryLanguageSupport } from './log-insights/summary-language-support';
@@ -116,6 +120,7 @@ import { createVariantAnalysisContentProvider } from './remote-queries/variant-a
 import { VSCodeMockGitHubApiServer } from './mocks/vscode-mock-gh-api-server';
 import { VariantAnalysisResultsManager } from './remote-queries/variant-analysis-results-manager';
 import { initializeDbModule } from './databases/db-module';
+import { ExtensionApp } from './common/vscode/vscode-app';
 import { RepositoriesFilterSortState } from './pure/variant-analysis-filter-sort';
 
 /**
@@ -992,8 +997,20 @@ async function activateWithInstalledDistribution(
     }));
 
   ctx.subscriptions.push(
-    commandRunner('codeQL.exportVariantAnalysisResults', async (queryId?: string) => {
+    commandRunner('codeQL.exportSelectedVariantAnalysisResults', async () => {
+      await exportSelectedRemoteQueryResults(qhm);
+    })
+  );
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.exportRemoteQueryResults', async (queryId: string) => {
       await exportRemoteQueryResults(qhm, rqm, ctx, queryId);
+    })
+  );
+
+  ctx.subscriptions.push(
+    commandRunner('codeQL.exportVariantAnalysisResults', async (variantAnalysisId: number) => {
+      await exportVariantAnalysisResults(ctx, variantAnalysisManager, variantAnalysisId);
     })
   );
 
@@ -1251,7 +1268,8 @@ async function activateWithInstalledDistribution(
   void logger.log('Reading query history');
   await qhm.readQueryHistory();
 
-  const dbModule = await initializeDbModule(ctx);
+  const app = new ExtensionApp(ctx);
+  const dbModule = await initializeDbModule(app);
   ctx.subscriptions.push(dbModule);
 
   void logger.log('Successfully finished extension initialization.');

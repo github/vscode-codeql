@@ -30,7 +30,7 @@ export class MockGitHubApiServer extends DisposableObject {
       return;
     }
 
-    this.server.listen();
+    this.server.listen({ onUnhandledRequest: 'bypass' });
     this._isListening = true;
   }
 
