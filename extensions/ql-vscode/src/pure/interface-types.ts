@@ -476,6 +476,10 @@ export interface CopyRepositoryListMessage {
   t: 'copyRepositoryList';
 }
 
+export interface ExportResultsMessage {
+  t: 'exportResults';
+}
+
 export interface OpenLogsMessage {
   t: 'openLogs';
 }
@@ -495,5 +499,6 @@ export type FromVariantAnalysisMessage =
   | OpenQueryFileMessage
   | OpenQueryTextMessage
   | CopyRepositoryListMessage
+  | ExportResultsMessage
   | OpenLogsMessage
   | CancelVariantAnalysisMessage;
