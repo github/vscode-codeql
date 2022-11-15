@@ -65,14 +65,16 @@ describe('db panel', async () => {
 
   it('should render default local and remote nodes when the config is empty', async () => {
     const dbConfig: DbConfig = {
-      remote: {
-        repositoryLists: [],
-        owners: [],
-        repositories: []
-      },
-      local: {
-        lists: [],
-        databases: []
+      databases: {
+        remote: {
+          repositoryLists: [],
+          owners: [],
+          repositories: []
+        },
+        local: {
+          lists: [],
+          databases: []
+        },
       },
     };
 
@@ -111,30 +113,32 @@ describe('db panel', async () => {
 
   it('should render remote repository list nodes', async () => {
     const dbConfig: DbConfig = {
-      remote: {
-        repositoryLists: [
-          {
-            name: 'my-list-1',
-            repositories: [
-              'owner1/repo1',
-              'owner1/repo2'
-            ]
-          },
-          {
-            name: 'my-list-2',
-            repositories: [
-              'owner1/repo1',
-              'owner2/repo1',
-              'owner2/repo2'
-            ]
-          },
-        ],
-        owners: [],
-        repositories: []
-      },
-      local: {
-        lists: [],
-        databases: []
+      databases: {
+        remote: {
+          repositoryLists: [
+            {
+              name: 'my-list-1',
+              repositories: [
+                'owner1/repo1',
+                'owner1/repo2'
+              ]
+            },
+            {
+              name: 'my-list-2',
+              repositories: [
+                'owner1/repo1',
+                'owner2/repo1',
+                'owner2/repo2'
+              ]
+            },
+          ],
+          owners: [],
+          repositories: []
+        },
+        local: {
+          lists: [],
+          databases: []
+        },
       },
     };
 
@@ -163,14 +167,16 @@ describe('db panel', async () => {
 
   it('should render owner list nodes', async () => {
     const dbConfig: DbConfig = {
-      remote: {
-        repositoryLists: [],
-        owners: ['owner1', 'owner2'],
-        repositories: []
-      },
-      local: {
-        lists: [],
-        databases: []
+      databases: {
+        remote: {
+          repositoryLists: [],
+          owners: ['owner1', 'owner2'],
+          repositories: []
+        },
+        local: {
+          lists: [],
+          databases: []
+        },
       },
     };
 
@@ -196,14 +202,16 @@ describe('db panel', async () => {
 
   it('should render repository nodes', async () => {
     const dbConfig: DbConfig = {
-      remote: {
-        repositoryLists: [],
-        owners: [],
-        repositories: ['owner1/repo1', 'owner1/repo2']
-      },
-      local: {
-        lists: [],
-        databases: []
+      databases: {
+        remote: {
+          repositoryLists: [],
+          owners: [],
+          repositories: ['owner1/repo1', 'owner1/repo2']
+        },
+        local: {
+          lists: [],
+          databases: []
+        },
       },
     };
 
