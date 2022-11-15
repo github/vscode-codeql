@@ -237,43 +237,45 @@ describe('db panel', async () => {
 
   it('should render local list nodes', async () => {
     const dbConfig: DbConfig = {
-      remote: {
-        repositoryLists: [],
-        owners: [],
-        repositories: []
-      },
-      local: {
-        lists: [
-          {
-            name: 'my-list-1',
-            databases: [
-              {
-                name: 'db1',
-                dateAdded: 1668428293677,
-                language: 'cpp',
-                storagePath: '/path/to/db1/',
-              },
-              {
-                name: 'db2',
-                dateAdded: 1668428472731,
-                language: 'cpp',
-                storagePath: '/path/to/db2/',
-              },
-            ],
-          },
-          {
-            name: 'my-list-2',
-            databases: [
-              {
-                name: 'db3',
-                dateAdded: 1668428472731,
-                language: 'ruby',
-                storagePath: '/path/to/db3/',
-              },
-            ],
-          },
-        ],
-        databases: []
+      databases: {
+        remote: {
+          repositoryLists: [],
+          owners: [],
+          repositories: []
+        },
+        local: {
+          lists: [
+            {
+              name: 'my-list-1',
+              databases: [
+                {
+                  name: 'db1',
+                  dateAdded: 1668428293677,
+                  language: 'cpp',
+                  storagePath: '/path/to/db1/',
+                },
+                {
+                  name: 'db2',
+                  dateAdded: 1668428472731,
+                  language: 'cpp',
+                  storagePath: '/path/to/db2/',
+                },
+              ],
+            },
+            {
+              name: 'my-list-2',
+              databases: [
+                {
+                  name: 'db3',
+                  dateAdded: 1668428472731,
+                  language: 'ruby',
+                  storagePath: '/path/to/db3/',
+                },
+              ],
+            },
+          ],
+          databases: []
+        },
       },
     };
 
@@ -320,28 +322,30 @@ describe('db panel', async () => {
 
   it('should render local database nodes', async () => {
     const dbConfig: DbConfig = {
-      remote: {
-        repositoryLists: [],
-        owners: [],
-        repositories: []
-      },
-      local: {
-        lists: [],
-        databases: [
-          {
-            name: 'db1',
-            dateAdded: 1668428293677,
-            language: 'csharp',
-            storagePath: '/path/to/db1/',
-          },
-          {
-            name: 'db2',
-            dateAdded: 1668428472731,
-            language: 'go',
-            storagePath: '/path/to/db2/',
-          }
-        ]
-      },
+      databases: {
+        remote: {
+          repositoryLists: [],
+          owners: [],
+          repositories: []
+        },
+        local: {
+          lists: [],
+          databases: [
+            {
+              name: 'db1',
+              dateAdded: 1668428293677,
+              language: 'csharp',
+              storagePath: '/path/to/db1/',
+            },
+            {
+              name: 'db2',
+              dateAdded: 1668428472731,
+              language: 'go',
+              storagePath: '/path/to/db2/',
+            }
+          ]
+        }
+      }
     };
 
     await saveDbConfig(dbConfig);

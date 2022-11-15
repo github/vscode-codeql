@@ -34,8 +34,8 @@ export function createRemoteTree(dbConfig: DbConfig): RootRemoteDbItem {
 }
 
 export function createLocalTree(dbConfig: DbConfig): RootLocalDbItem {
-  const localLists = dbConfig.local.lists.map(createLocalList);
-  const localDbs = dbConfig.local.databases.map(createLocalDb);
+  const localLists = dbConfig.databases.local.lists.map(createLocalList);
+  const localDbs = dbConfig.databases.local.databases.map(createLocalDb);
 
   return {
     kind: DbItemKind.RootLocal,

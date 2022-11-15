@@ -187,14 +187,16 @@ describe('db tree creator', () => {
   describe('createLocalTree', () => {
     it('should build root node', () => {
       const dbConfig: DbConfig = {
-        remote: {
-          repositoryLists: [],
-          owners: [],
-          repositories: []
-        },
-        local: {
-          lists: [],
-          databases: []
+        databases: {
+          remote: {
+            repositoryLists: [],
+            owners: [],
+            repositories: []
+          },
+          local: {
+            lists: [],
+            databases: []
+          }
         }
       };
 
@@ -207,43 +209,45 @@ describe('db tree creator', () => {
 
     it('should create local list nodes', () => {
       const dbConfig: DbConfig = {
-        remote: {
-          repositoryLists: [],
-          owners: [],
-          repositories: [],
-        },
-        local: {
-          lists: [
-            {
-              name: 'my-list-1',
-              databases: [
-                {
-                  name: 'db1',
-                  dateAdded: 1668428293677,
-                  language: 'cpp',
-                  storagePath: '/path/to/db1/',
-                },
-                {
-                  name: 'db2',
-                  dateAdded: 1668428472731,
-                  language: 'cpp',
-                  storagePath: '/path/to/db2/',
-                },
-              ],
-            },
-            {
-              name: 'my-list-2',
-              databases: [
-                {
-                  name: 'db3',
-                  dateAdded: 1668428472731,
-                  language: 'ruby',
-                  storagePath: '/path/to/db3/',
-                },
-              ],
-            },
-          ],
-          databases: [],
+        databases: {
+          remote: {
+            repositoryLists: [],
+            owners: [],
+            repositories: [],
+          },
+          local: {
+            lists: [
+              {
+                name: 'my-list-1',
+                databases: [
+                  {
+                    name: 'db1',
+                    dateAdded: 1668428293677,
+                    language: 'cpp',
+                    storagePath: '/path/to/db1/',
+                  },
+                  {
+                    name: 'db2',
+                    dateAdded: 1668428472731,
+                    language: 'cpp',
+                    storagePath: '/path/to/db2/',
+                  },
+                ],
+              },
+              {
+                name: 'my-list-2',
+                databases: [
+                  {
+                    name: 'db3',
+                    dateAdded: 1668428472731,
+                    language: 'ruby',
+                    storagePath: '/path/to/db3/',
+                  },
+                ],
+              },
+            ],
+            databases: [],
+          },
         },
       };
 
@@ -258,8 +262,8 @@ describe('db tree creator', () => {
       expect(localListNodes.length).to.equal(2);
       expect(localListNodes[0]).to.deep.equal({
         kind: DbItemKind.LocalList,
-        listName: dbConfig.local.lists[0].name,
-        databases: dbConfig.local.lists[0].databases.map((db) => ({
+        listName: dbConfig.databases.local.lists[0].name,
+        databases: dbConfig.databases.local.lists[0].databases.map((db) => ({
           kind: DbItemKind.LocalDatabase,
           databaseName: db.name,
           dateAdded: db.dateAdded,
@@ -269,8 +273,8 @@ describe('db tree creator', () => {
       });
       expect(localListNodes[1]).to.deep.equal({
         kind: DbItemKind.LocalList,
-        listName: dbConfig.local.lists[1].name,
-        databases: dbConfig.local.lists[1].databases.map((db) => ({
+        listName: dbConfig.databases.local.lists[1].name,
+        databases: dbConfig.databases.local.lists[1].databases.map((db) => ({
           kind: DbItemKind.LocalDatabase,
           databaseName: db.name,
           dateAdded: db.dateAdded,
@@ -282,27 +286,29 @@ describe('db tree creator', () => {
 
     it('should create local database nodes', () => {
       const dbConfig: DbConfig = {
-        remote: {
-          repositoryLists: [],
-          owners: [],
-          repositories: []
-        },
-        local: {
-          lists: [],
-          databases: [
-            {
-              name: 'db1',
-              dateAdded: 1668428293677,
-              language: 'csharp',
-              storagePath: '/path/to/db1/',
-            },
-            {
-              name: 'db2',
-              dateAdded: 1668428472731,
-              language: 'go',
-              storagePath: '/path/to/db2/',
-            }
-          ]
+        databases: {
+          remote: {
+            repositoryLists: [],
+            owners: [],
+            repositories: []
+          },
+          local: {
+            lists: [],
+            databases: [
+              {
+                name: 'db1',
+                dateAdded: 1668428293677,
+                language: 'csharp',
+                storagePath: '/path/to/db1/',
+              },
+              {
+                name: 'db2',
+                dateAdded: 1668428472731,
+                language: 'go',
+                storagePath: '/path/to/db2/',
+              }
+            ]
+          }
         }
       };
 
@@ -317,17 +323,17 @@ describe('db tree creator', () => {
       expect(localDatabaseNodes.length).to.equal(2);
       expect(localDatabaseNodes[0]).to.deep.equal({
         kind: DbItemKind.LocalDatabase,
-        databaseName: dbConfig.local.databases[0].name,
-        dateAdded: dbConfig.local.databases[0].dateAdded,
-        language: dbConfig.local.databases[0].language,
-        storagePath: dbConfig.local.databases[0].storagePath,
+        databaseName: dbConfig.databases.local.databases[0].name,
+        dateAdded: dbConfig.databases.local.databases[0].dateAdded,
+        language: dbConfig.databases.local.databases[0].language,
+        storagePath: dbConfig.databases.local.databases[0].storagePath,
       });
       expect(localDatabaseNodes[1]).to.deep.equal({
         kind: DbItemKind.LocalDatabase,
-        databaseName: dbConfig.local.databases[1].name,
-        dateAdded: dbConfig.local.databases[1].dateAdded,
-        language: dbConfig.local.databases[1].language,
-        storagePath: dbConfig.local.databases[1].storagePath,
+        databaseName: dbConfig.databases.local.databases[1].name,
+        dateAdded: dbConfig.databases.local.databases[1].dateAdded,
+        language: dbConfig.databases.local.databases[1].language,
+        storagePath: dbConfig.databases.local.databases[1].storagePath,
       });
     });
   });
