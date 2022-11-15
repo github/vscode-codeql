@@ -1,5 +1,4 @@
-import * as vscode from 'vscode';
-import { ExtensionApp } from '../common/vscode/vscode-app';
+import { App, AppMode } from '../common/app';
 import { isCanary, isNewQueryRunExperienceEnabled } from '../config';
 import { logger } from '../logging';
 import { DisposableObject } from '../pure/disposable-object';
@@ -8,10 +7,8 @@ import { DbManager } from './db-manager';
 import { DbPanel } from './ui/db-panel';
 
 export class DbModule extends DisposableObject {
-  public async initialize(
-    extensionContext: vscode.ExtensionContext
-  ): Promise<void> {
-    if (extensionContext.extensionMode !== vscode.ExtensionMode.Development ||
+  public async initialize(app: App): Promise<void> {
+    if (app.mode !== AppMode.Development ||
       !isCanary() ||
       !isNewQueryRunExperienceEnabled()) {
       // Currently, we only want to expose the new database panel when we
@@ -22,25 +19,20 @@ export class DbModule extends DisposableObject {
 
     void logger.log('Initializing database module');
 
-    const app = new ExtensionApp(extensionContext);
-
     const dbConfigStore = new DbConfigStore(app);
     await dbConfigStore.initialize();
 
-    const dbManager = new DbManager(dbConfigStore);
+    const dbManager = new DbManager(app, dbConfigStore);
     const dbPanel = new DbPanel(dbManager);
     await dbPanel.initialize();
-    extensionContext.subscriptions.push(dbPanel);
 
     this.push(dbPanel);
     this.push(dbConfigStore);
   }
 }
 
-export async function initializeDbModule(
-  extensionContext: vscode.ExtensionContext
-): Promise<DbModule> {
+export async function initializeDbModule(app: App): Promise<DbModule> {
   const dbModule = new DbModule();
-  await dbModule.initialize(extensionContext);
+  await dbModule.initialize(app);
   return dbModule;
 }

@@ -16,9 +16,9 @@ export function createRemoteTree(dbConfig: DbConfig): RootRemoteDbItem {
     createSystemDefinedList(1000)
   ];
 
-  const userDefinedRepoLists = dbConfig.remote.repositoryLists.map(createUserDefinedList);
-  const owners = dbConfig.remote.owners.map(createOwnerItem);
-  const repos = dbConfig.remote.repositories.map(createRepoItem);
+  const userDefinedRepoLists = dbConfig.databases.remote.repositoryLists.map(createUserDefinedList);
+  const owners = dbConfig.databases.remote.owners.map(createOwnerItem);
+  const repos = dbConfig.databases.remote.repositories.map(createRepoItem);
 
   return {
     kind: DbItemKind.RootRemote,

@@ -134,13 +134,9 @@ export async function exportVariantAnalysisResults(
         continue;
       }
 
-      let result: VariantAnalysisScannedRepositoryResult;
-
-      if (!variantAnalysisManager.areResultsLoaded(variantAnalysis.id, repo.repository.fullName)) {
-        result = await variantAnalysisManager.loadResultsFromStorage(variantAnalysis.id, repo.repository.fullName);
-      } else {
-        result = await variantAnalysisManager.loadResults(variantAnalysis.id, repo.repository.fullName);
-      }
+      const result = await variantAnalysisManager.loadResults(variantAnalysis.id, repo.repository.fullName, {
+        skipCacheStore: true,
+      });
 
       yield [repo, result];
     }
