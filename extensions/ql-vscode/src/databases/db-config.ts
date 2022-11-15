@@ -11,11 +11,11 @@ export interface DbConfigDatabases {
 }
 
 export interface SelectedDbItem {
-  kind: SelectedDbKind;
+  kind: SelectedDbItemKind;
   value: string;
 }
 
-export enum SelectedDbKind {
+export enum SelectedDbItemKind {
   ConfigDefined = 'configDefined',
   RemoteSystemDefinedList = 'remoteSystemDefinedList',
 }
