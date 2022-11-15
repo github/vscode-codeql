@@ -8,12 +8,12 @@ import { createMockExtensionContext } from '../index';
 import { Credentials } from '../../../authentication';
 import { MarkdownFile } from '../../../remote-queries/remote-queries-markdown-generation';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
-import { exportResultsToGist } from '../../../remote-queries/export-results';
+import { exportRemoteQueryAnalysisResults } from '../../../remote-queries/export-results';
 
 const proxyquire = pq.noPreserveCache();
 
 describe('export results', async function() {
-  describe('exportResultsToGist', async function() {
+  describe('exportRemoteQueryAnalysisResults', async function() {
     let sandbox: sinon.SinonSandbox;
     let mockCredentials: Credentials;
     let mockResponse: sinon.SinonStub<any, Promise<{ status: number }>>;
@@ -47,7 +47,7 @@ describe('export results', async function() {
       const query = JSON.parse(await fs.readFile(path.join(__dirname, '../data/remote-queries/query-with-results/query.json'), 'utf8'));
       const analysesResults = JSON.parse(await fs.readFile(path.join(__dirname, '../data/remote-queries/query-with-results/analyses-results.json'), 'utf8'));
 
-      await exportResultsToGist(ctx, query, analysesResults);
+      await exportRemoteQueryAnalysisResults(ctx, '', query, analysesResults, 'gist');
 
       expect(mockCreateGist.calledOnce).to.be.true;
       expect(mockCreateGist.firstCall.args[1]).to.equal('Shell command built from environment values (javascript) 3 results (10 repositories)');
