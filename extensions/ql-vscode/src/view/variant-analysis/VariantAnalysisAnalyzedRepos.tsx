@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useMemo } from 'react';
+import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { RepoRow } from './RepoRow';
 import {
@@ -7,7 +7,10 @@ import {
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState
 } from '../../remote-queries/shared/variant-analysis';
-import { compareWithResults, matchesFilter, RepositoriesFilterSortState } from './filterSort';
+import {
+  filterAndSortRepositoriesWithResults,
+  RepositoriesFilterSortState,
+} from '../../pure/variant-analysis-filter-sort';
 
 const Container = styled.div`
   display: flex;
@@ -22,6 +25,9 @@ export type VariantAnalysisAnalyzedReposProps = {
   repositoryResults?: VariantAnalysisScannedRepositoryResult[];
 
   filterSortState?: RepositoriesFilterSortState;
+
+  selectedRepositoryIds?: number[];
+  setSelectedRepositoryIds?: Dispatch<SetStateAction<number[]>>;
 }
 
 export const VariantAnalysisAnalyzedRepos = ({
@@ -29,6 +35,8 @@ export const VariantAnalysisAnalyzedRepos = ({
   repositoryStates,
   repositoryResults,
   filterSortState,
+  selectedRepositoryIds,
+  setSelectedRepositoryIds,
 }: VariantAnalysisAnalyzedReposProps) => {
   const repositoryStateById = useMemo(() => {
     const map = new Map<number, VariantAnalysisScannedRepositoryState>();
@@ -47,10 +55,22 @@ export const VariantAnalysisAnalyzedRepos = ({
   }, [repositoryResults]);
 
   const repositories = useMemo(() => {
-    return variantAnalysis.scannedRepos?.filter((repoTask) => {
-      return matchesFilter(repoTask.repository, filterSortState);
-    })?.sort(compareWithResults(filterSortState));
+    return filterAndSortRepositoriesWithResults(variantAnalysis.scannedRepos, filterSortState);
   }, [filterSortState, variantAnalysis.scannedRepos]);
+
+  const onSelectedChange = useCallback((repositoryId: number, selected: boolean) => {
+    setSelectedRepositoryIds?.((prevSelectedRepositoryIds) => {
+      if (selected) {
+        if (prevSelectedRepositoryIds.includes(repositoryId)) {
+          return prevSelectedRepositoryIds;
+        }
+
+        return [...prevSelectedRepositoryIds, repositoryId];
+      } else {
+        return prevSelectedRepositoryIds.filter((id) => id !== repositoryId);
+      }
+    });
+  }, [setSelectedRepositoryIds]);
 
   return (
     <Container>
@@ -67,6 +87,8 @@ export const VariantAnalysisAnalyzedRepos = ({
             resultCount={repository.resultCount}
             interpretedResults={results?.interpretedResults}
             rawResults={results?.rawResults}
+            selected={selectedRepositoryIds?.includes(repository.repository.id)}
+            onSelectedChange={onSelectedChange}
           />
         );
       })}

@@ -120,6 +120,7 @@ import { createVariantAnalysisContentProvider } from './remote-queries/variant-a
 import { VSCodeMockGitHubApiServer } from './mocks/vscode-mock-gh-api-server';
 import { VariantAnalysisResultsManager } from './remote-queries/variant-analysis-results-manager';
 import { initializeDbModule } from './databases/db-module';
+import { RepositoriesFilterSortStateWithIds } from './pure/variant-analysis-filter-sort';
 
 /**
  * extension.ts
@@ -949,8 +950,8 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner('codeQL.copyVariantAnalysisRepoList', async (variantAnalysisId: number) => {
-      await variantAnalysisManager.copyRepoListToClipboard(variantAnalysisId);
+    commandRunner('codeQL.copyVariantAnalysisRepoList', async (variantAnalysisId: number, filterSort?: RepositoriesFilterSortStateWithIds) => {
+      await variantAnalysisManager.copyRepoListToClipboard(variantAnalysisId, filterSort);
     })
   );
 

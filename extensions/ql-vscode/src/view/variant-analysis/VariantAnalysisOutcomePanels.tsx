@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 import styled from 'styled-components';
 import { VSCodeBadge, VSCodePanels, VSCodePanelTab, VSCodePanelView } from '@vscode/webview-ui-toolkit/react';
 import { formatDecimal } from '../../pure/number';
@@ -12,7 +12,7 @@ import {
 import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
 import { Alert } from '../common';
 import { VariantAnalysisSkippedRepositoriesTab } from './VariantAnalysisSkippedRepositoriesTab';
-import { defaultFilterSortState, RepositoriesFilterSortState } from './filterSort';
+import { RepositoriesFilterSortState } from '../../pure/variant-analysis-filter-sort';
 import { RepositoriesSearchSortRow } from './RepositoriesSearchSortRow';
 import { FailureReasonAlert } from './FailureReasonAlert';
 
@@ -20,6 +20,12 @@ export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
   repositoryStates?: VariantAnalysisScannedRepositoryState[];
   repositoryResults?: VariantAnalysisScannedRepositoryResult[];
+
+  selectedRepositoryIds?: number[];
+  setSelectedRepositoryIds?: Dispatch<SetStateAction<number[]>>;
+
+  filterSortState: RepositoriesFilterSortState;
+  setFilterSortState: Dispatch<SetStateAction<RepositoriesFilterSortState>>;
 };
 
 const Tab = styled(VSCodePanelTab)`
@@ -46,9 +52,11 @@ export const VariantAnalysisOutcomePanels = ({
   variantAnalysis,
   repositoryStates,
   repositoryResults,
+  selectedRepositoryIds,
+  setSelectedRepositoryIds,
+  filterSortState,
+  setFilterSortState,
 }: VariantAnalysisOutcomePanelProps) => {
-  const [filterSortState, setFilterSortState] = useState<RepositoriesFilterSortState>(defaultFilterSortState);
-
   const scannedReposCount = variantAnalysis.scannedRepos?.length ?? 0;
   const noCodeqlDbRepos = variantAnalysis.skippedRepos?.noCodeqlDbRepos;
   const notFoundRepos = variantAnalysis.skippedRepos?.notFoundRepos;
@@ -94,6 +102,8 @@ export const VariantAnalysisOutcomePanels = ({
           repositoryStates={repositoryStates}
           repositoryResults={repositoryResults}
           filterSortState={filterSortState}
+          selectedRepositoryIds={selectedRepositoryIds}
+          setSelectedRepositoryIds={setSelectedRepositoryIds}
         />
       </>
     );
@@ -126,6 +136,8 @@ export const VariantAnalysisOutcomePanels = ({
             repositoryStates={repositoryStates}
             repositoryResults={repositoryResults}
             filterSortState={filterSortState}
+            selectedRepositoryIds={selectedRepositoryIds}
+            setSelectedRepositoryIds={setSelectedRepositoryIds}
           />
         </VSCodePanelView>
         {notFoundRepos?.repositoryCount &&

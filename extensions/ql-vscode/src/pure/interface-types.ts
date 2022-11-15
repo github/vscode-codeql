@@ -7,6 +7,7 @@ import {
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
 } from '../remote-queries/shared/variant-analysis';
+import { RepositoriesFilterSortStateWithIds } from './variant-analysis-filter-sort';
 
 /**
  * This module contains types and code that are shared between
@@ -474,6 +475,7 @@ export interface OpenQueryTextMessage {
 
 export interface CopyRepositoryListMessage {
   t: 'copyRepositoryList';
+  filterSort?: RepositoriesFilterSortStateWithIds;
 }
 
 export interface ExportResultsMessage {

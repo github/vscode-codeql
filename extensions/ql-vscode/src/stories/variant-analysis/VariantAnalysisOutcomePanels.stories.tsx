@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
@@ -8,6 +8,7 @@ import { VariantAnalysisRepoStatus, VariantAnalysisStatus } from '../../remote-q
 import { createMockScannedRepo } from '../../vscode-tests/factories/remote-queries/shared/scanned-repositories';
 import { createMockVariantAnalysis } from '../../vscode-tests/factories/remote-queries/shared/variant-analysis';
 import { createMockRepositoryWithMetadata } from '../../vscode-tests/factories/remote-queries/shared/repository';
+import { defaultFilterSortState, RepositoriesFilterSortState } from '../../pure/variant-analysis-filter-sort';
 
 export default {
   title: 'Variant Analysis/Variant Analysis Outcome Panels',
@@ -21,9 +22,13 @@ export default {
   ],
 } as ComponentMeta<typeof VariantAnalysisOutcomePanels>;
 
-const Template: ComponentStory<typeof VariantAnalysisOutcomePanels> = (args) => (
-  <VariantAnalysisOutcomePanels {...args} />
-);
+const Template: ComponentStory<typeof VariantAnalysisOutcomePanels> = (args) => {
+  const [filterSortState, setFilterSortState] = useState<RepositoriesFilterSortState>(defaultFilterSortState);
+
+  return (
+    <VariantAnalysisOutcomePanels {...args} filterSortState={filterSortState} setFilterSortState={setFilterSortState} />
+  );
+};
 
 export const WithoutSkippedRepos = Template.bind({});
 WithoutSkippedRepos.args = {

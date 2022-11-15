@@ -15,8 +15,11 @@ import {
  */
 export class DbTreeViewItem extends vscode.TreeItem {
   constructor(
+    // iconPath and tooltip must have those names because
+    // they are part of the vscode.TreeItem interface
+
     public readonly dbItem: DbItem | undefined,
-    public readonly icon: vscode.ThemeIcon | undefined,
+    public readonly iconPath: vscode.ThemeIcon | undefined,
     public readonly label: string,
     public readonly tooltip: string | undefined,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState,

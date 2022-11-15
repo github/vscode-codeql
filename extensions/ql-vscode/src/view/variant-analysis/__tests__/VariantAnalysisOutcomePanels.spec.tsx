@@ -12,6 +12,7 @@ import {
   createMockScannedRepo,
   createMockScannedRepos
 } from '../../../vscode-tests/factories/remote-queries/shared/scanned-repositories';
+import { defaultFilterSortState } from '../../../pure/variant-analysis-filter-sort';
 
 describe(VariantAnalysisOutcomePanels.name, () => {
   const defaultVariantAnalysis = {
@@ -81,6 +82,8 @@ describe(VariantAnalysisOutcomePanels.name, () => {
           ...defaultVariantAnalysis,
           ...variantAnalysis,
         }}
+        filterSortState={defaultFilterSortState}
+        setFilterSortState={jest.fn()}
         {...props}
       />
     );

@@ -10,7 +10,7 @@ import { VariantAnalysisAnalyzedRepos, VariantAnalysisAnalyzedReposProps } from 
 import { createMockVariantAnalysis } from '../../../vscode-tests/factories/remote-queries/shared/variant-analysis';
 import { createMockRepositoryWithMetadata } from '../../../vscode-tests/factories/remote-queries/shared/repository';
 import { createMockScannedRepo } from '../../../vscode-tests/factories/remote-queries/shared/scanned-repositories';
-import { defaultFilterSortState, SortKey } from '../filterSort';
+import { defaultFilterSortState, SortKey } from '../../../pure/variant-analysis-filter-sort';
 
 describe(VariantAnalysisAnalyzedRepos.name, () => {
   const defaultVariantAnalysis = createMockVariantAnalysis({

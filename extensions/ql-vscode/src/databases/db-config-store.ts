@@ -5,6 +5,7 @@ import * as chokidar from 'chokidar';
 import { DisposableObject } from '../pure/disposable-object';
 import { DbConfigValidator } from './db-config-validator';
 import { ValueResult } from '../common/value-result';
+import { App } from '../common/app';
 
 export class DbConfigStore extends DisposableObject {
   private readonly configPath: string;
@@ -14,17 +15,16 @@ export class DbConfigStore extends DisposableObject {
   private configErrors: string[];
   private configWatcher: chokidar.FSWatcher | undefined;
 
-  public constructor(
-    workspaceStoragePath: string,
-    extensionPath: string) {
+  public constructor(app: App) {
     super();
 
-    this.configPath = path.join(workspaceStoragePath, 'workspace-databases.json');
+    const storagePath = app.workspaceStoragePath || app.globalStoragePath;
+    this.configPath = path.join(storagePath, 'workspace-databases.json');
 
     this.config = this.createEmptyConfig();
     this.configErrors = [];
     this.configWatcher = undefined;
-    this.configValidator = new DbConfigValidator(extensionPath);
+    this.configValidator = new DbConfigValidator(app.extensionPath);
   }
 
   public async initialize(): Promise<void> {
@@ -99,7 +99,11 @@ export class DbConfigStore extends DisposableObject {
         repositoryLists: [],
         owners: [],
         repositories: [],
-      }
+      },
+      local: {
+        lists: [],
+        databases: [],
+      },
     };
   }
 }

@@ -4,6 +4,7 @@ import { CancellationTokenSource, commands, env, extensions, QuickPickItem, Uri,
 import { CodeQLExtensionInterface } from '../../../extension';
 import { logger } from '../../../logging';
 import * as config from '../../../config';
+import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../../config';
 import * as ghApiClient from '../../../remote-queries/gh-api/gh-api-client';
 import * as ghActionsApiClient from '../../../remote-queries/gh-api/gh-actions-api-client';
 import { Credentials } from '../../../authentication';
@@ -35,7 +36,7 @@ import {
 import { createMockApiResponse } from '../../factories/remote-queries/gh-api/variant-analysis-api-response';
 import { UserCancellationException } from '../../../commandRunner';
 import { Repository } from '../../../remote-queries/gh-api/repository';
-import { setRemoteControllerRepo, setRemoteRepositoryLists } from '../../../config';
+import { defaultFilterSortState, SortKey } from '../../../pure/variant-analysis-filter-sort';
 
 describe('Variant Analysis Manager', async function() {
   let sandbox: sinon.SinonSandbox;
@@ -766,23 +767,23 @@ describe('Variant Analysis Manager', async function() {
     describe('when the variant analysis has repositories with results', () => {
       const scannedRepos = [
         {
-          ...createMockScannedRepo(),
+          ...createMockScannedRepo('pear'),
           resultCount: 100,
         },
         {
-          ...createMockScannedRepo(),
+          ...createMockScannedRepo('apple'),
           resultCount: 0,
         },
         {
-          ...createMockScannedRepo(),
+          ...createMockScannedRepo('citrus'),
           resultCount: 200,
         },
         {
-          ...createMockScannedRepo(),
+          ...createMockScannedRepo('sky'),
           resultCount: undefined,
         },
         {
-          ...createMockScannedRepo(),
+          ...createMockScannedRepo('banana'),
           resultCount: 5,
         },
       ];
@@ -809,8 +810,44 @@ describe('Variant Analysis Manager', async function() {
 
         expect(parsed).to.deep.eq({
           'new-repo-list': [
-            scannedRepos[0].repository.fullName,
+            scannedRepos[4].repository.fullName,
             scannedRepos[2].repository.fullName,
+            scannedRepos[0].repository.fullName,
+          ],
+        });
+      });
+
+      it('should use the sort key', async () => {
+        await variantAnalysisManager.copyRepoListToClipboard(variantAnalysis.id, {
+          ...defaultFilterSortState,
+          sortKey: SortKey.ResultsCount,
+        });
+
+        const text = writeTextStub.getCalls()[0].lastArg;
+
+        const parsed = JSON.parse('{' + text + '}');
+
+        expect(parsed).to.deep.eq({
+          'new-repo-list': [
+            scannedRepos[2].repository.fullName,
+            scannedRepos[0].repository.fullName,
+            scannedRepos[4].repository.fullName,
+          ],
+        });
+      });
+
+      it('should use the search value', async () => {
+        await variantAnalysisManager.copyRepoListToClipboard(variantAnalysis.id, {
+          ...defaultFilterSortState,
+          searchValue: 'ban',
+        });
+
+        const text = writeTextStub.getCalls()[0].lastArg;
+
+        const parsed = JSON.parse('{' + text + '}');
+
+        expect(parsed).to.deep.eq({
+          'new-repo-list': [
             scannedRepos[4].repository.fullName,
           ],
         });
