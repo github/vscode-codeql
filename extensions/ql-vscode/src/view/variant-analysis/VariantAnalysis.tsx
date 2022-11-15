@@ -36,6 +36,12 @@ const stopQuery = () => {
   });
 };
 
+const copyRepositoryList = () => {
+  vscode.postMessage({
+    t: 'copyRepositoryList',
+  });
+};
+
 const openLogs = () => {
   vscode.postMessage({
     t: 'openLogs',
@@ -50,6 +56,8 @@ export function VariantAnalysis({
   const [variantAnalysis, setVariantAnalysis] = useState<VariantAnalysisDomainModel | undefined>(initialVariantAnalysis);
   const [repoStates, setRepoStates] = useState<VariantAnalysisScannedRepositoryState[]>(initialRepoStates);
   const [repoResults, setRepoResults] = useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
+
+  const [selectedRepositoryIds, setSelectedRepositoryIds] = useState<number[]>([]);
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
@@ -95,7 +103,7 @@ export function VariantAnalysis({
         onOpenQueryFileClick={openQueryFile}
         onViewQueryTextClick={openQueryText}
         onStopQueryClick={stopQuery}
-        onCopyRepositoryListClick={() => console.log('Copy repository list')}
+        onCopyRepositoryListClick={copyRepositoryList}
         onExportResultsClick={() => console.log('Export results')}
         onViewLogsClick={openLogs}
       />
@@ -103,6 +111,8 @@ export function VariantAnalysis({
         variantAnalysis={variantAnalysis}
         repositoryStates={repoStates}
         repositoryResults={repoResults}
+        selectedRepositoryIds={selectedRepositoryIds}
+        setSelectedRepositoryIds={setSelectedRepositoryIds}
       />
     </>
   );
