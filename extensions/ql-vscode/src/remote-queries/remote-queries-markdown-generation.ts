@@ -5,6 +5,11 @@ import { parseHighlightedLine, shouldHighlightLine } from '../pure/sarif-utils';
 import { convertNonPrintableChars } from '../text-utils';
 import { RemoteQuery } from './remote-query';
 import { AnalysisAlert, AnalysisRawResults, AnalysisResults, CodeSnippet, FileLink, getAnalysisResultCount, HighlightedRegion } from './shared/analysis-result';
+import {
+  VariantAnalysis,
+  VariantAnalysisScannedRepository,
+  VariantAnalysisScannedRepositoryResult
+} from './shared/variant-analysis';
 
 export type MarkdownLinkType = 'local' | 'gist';
 
@@ -57,6 +62,51 @@ export function generateMarkdown(
   return [summaryFile, ...resultsFiles];
 }
 
+/**
+ * Generates markdown files with variant analysis results.
+ */
+export async function generateVariantAnalysisMarkdown(
+  variantAnalysis: VariantAnalysis,
+  results: AsyncIterable<[VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]>,
+  linkType: MarkdownLinkType
+): Promise<MarkdownFile[]> {
+  const resultsFiles: MarkdownFile[] = [];
+  // Generate summary file with links to individual files
+  const summaryFile: MarkdownFile = generateVariantAnalysisMarkdownSummary(variantAnalysis);
+  for await (const [scannedRepo, result] of results) {
+    if (scannedRepo.resultCount === 0) {
+      continue;
+    }
+
+    // Append nwo and results count to the summary table
+    const fullName = scannedRepo.repository.fullName;
+    const fileName = createFileName(fullName);
+    const link = createRelativeLink(fileName, linkType);
+    summaryFile.content.push(`| ${fullName} | [${scannedRepo.resultCount} result(s)](${link}) |`);
+
+    // Generate individual markdown file for each repository
+    const resultsFileContent = [
+      `### ${scannedRepo.repository.fullName}`,
+      ''
+    ];
+    if (result.interpretedResults) {
+      for (const interpretedResult of result.interpretedResults) {
+        const individualResult = generateMarkdownForInterpretedResult(interpretedResult, variantAnalysis.query.language);
+        resultsFileContent.push(...individualResult);
+      }
+    }
+    if (result.rawResults) {
+      const rawResultTable = generateMarkdownForRawResults(result.rawResults);
+      resultsFileContent.push(...rawResultTable);
+    }
+    resultsFiles.push({
+      fileName: fileName,
+      content: resultsFileContent,
+    });
+  }
+  return [summaryFile, ...resultsFiles];
+}
+
 export function generateMarkdownSummary(query: RemoteQuery): MarkdownFile {
   const lines: string[] = [];
   // Title
@@ -69,6 +119,44 @@ export function generateMarkdownSummary(query: RemoteQuery): MarkdownFile {
   const queryCodeBlock = [
     '```ql',
     ...query.queryText.split('\n'),
+    '```',
+  ];
+  lines.push(
+    ...buildExpandableMarkdownSection('Query', queryCodeBlock)
+  );
+
+  // Padding between sections
+  lines.push(
+    '<br />',
+    '',
+  );
+
+  // Summary table
+  lines.push(
+    '### Summary',
+    '',
+    '| Repository | Results |',
+    '| --- | --- |',
+  );
+  // nwo and result count will be appended to this table
+  return {
+    fileName: '_summary',
+    content: lines
+  };
+}
+
+export function generateVariantAnalysisMarkdownSummary(variantAnalysis: VariantAnalysis): MarkdownFile {
+  const lines: string[] = [];
+  // Title
+  lines.push(
+    `### Results for "${variantAnalysis.query.name}"`,
+    ''
+  );
+
+  // Expandable section containing query text
+  const queryCodeBlock = [
+    '```ql',
+    ...variantAnalysis.query.text.split('\n'),
     '```',
   ];
   lines.push(
@@ -296,11 +384,11 @@ export function createMarkdownRemoteFileRef(
 
 /**
  * Builds an expandable markdown section of the form:
- * <details> 
+ * <details>
  * <summary>title</summary>
- * 
+ *
  * contents
- * 
+ *
  * </details>
  */
 function buildExpandableMarkdownSection(title: string, contents: string[]): string[] {

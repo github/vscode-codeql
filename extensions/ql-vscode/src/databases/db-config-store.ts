@@ -103,15 +103,17 @@ export class DbConfigStore extends DisposableObject {
 
   private createEmptyConfig(): DbConfig {
     return {
-      remote: {
-        repositoryLists: [],
-        owners: [],
-        repositories: [],
-      },
-      local: {
-        lists: [],
-        databases: [],
-      },
+      databases: {
+        remote: {
+          repositoryLists: [],
+          owners: [],
+          repositories: [],
+        },
+        local: {
+          lists: [],
+          databases: [],
+        },
+      }
     };
   }
 }
