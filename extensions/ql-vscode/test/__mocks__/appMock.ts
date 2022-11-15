@@ -1,4 +1,4 @@
-import { App } from '../../src/common/app';
+import { App, AppMode } from '../../src/common/app';
 import { AppEvent, AppEventEmitter } from '../../src/common/events';
 import { Disposable } from '../../src/pure/disposable-object';
 
@@ -6,7 +6,7 @@ export function createMockApp({
   extensionPath = '/mock/extension/path',
   workspaceStoragePath = '/mock/workspace/storage/path',
   globalStoragePath = '/mock/global/storage/path',
-  createEventEmitter = <T>() => new MockAppEventEmitter<T>()
+  createEventEmitter = <T>() => new MockAppEventEmitter<T>(),
 }: {
   extensionPath?: string,
   workspaceStoragePath?: string,
@@ -14,10 +14,12 @@ export function createMockApp({
   createEventEmitter?: <T>() => AppEventEmitter<T>
 }): App {
   return {
-    createEventEmitter,
+    mode: AppMode.Test,
+    subscriptions: [],
     extensionPath,
     workspaceStoragePath,
-    globalStoragePath
+    globalStoragePath,
+    createEventEmitter,
   };
 }
 

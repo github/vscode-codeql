@@ -146,7 +146,7 @@ export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, F
         await this.downloadAllAnalysesResults(msg);
         break;
       case 'remoteQueryExportResults':
-        await commands.executeCommand('codeQL.exportVariantAnalysisResults', msg.queryId);
+        await commands.executeCommand('codeQL.exportRemoteQueryResults', msg.queryId);
         break;
       default:
         assertNever(msg);
