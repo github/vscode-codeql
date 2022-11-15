@@ -1427,8 +1427,7 @@ export class CliVersionConstraint {
   }
 
   async supportsNewQueryServer() {
-    // TODO while under development, users _must_ opt-in to the new query server
-    // by setting the `codeql.canaryQueryServer` setting to `true`.
+    // This allows users to explicitly opt-out of the new query server.
     return allowCanaryQueryServer() &&
       this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_WITH_NEW_QUERY_SERVER);
   }

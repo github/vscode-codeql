@@ -346,9 +346,10 @@ export function isCanary() {
  */
 export const CANARY_QUERY_SERVER = new Setting('canaryQueryServer', ROOT_SETTING);
 
-
+// The default value for this setting is now `true`
 export function allowCanaryQueryServer() {
-  return !!CANARY_QUERY_SERVER.getValue<boolean>();
+  const value = CANARY_QUERY_SERVER.getValue<boolean>();
+  return value === undefined ? true : !!value;
 }
 
 export const JOIN_ORDER_WARNING_THRESHOLD = new Setting('joinOrderWarningThreshold', LOG_INSIGHTS_SETTING);
@@ -458,7 +459,7 @@ const MOCK_GH_API_SERVER_ENABLED = new Setting('enabled', MOCK_GH_API_SERVER);
 
 /**
  * A path to a directory containing test scenarios. If this setting is not set,
- * the mock server will a default location for test scenarios in dev mode, and 
+ * the mock server will a default location for test scenarios in dev mode, and
  * will show a menu to select a directory in production mode.
  */
 const MOCK_GH_API_SERVER_SCENARIOS_PATH = new Setting('scenariosPath', MOCK_GH_API_SERVER);
