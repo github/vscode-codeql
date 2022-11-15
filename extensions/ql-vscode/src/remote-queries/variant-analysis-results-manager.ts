@@ -28,6 +28,12 @@ export type ResultDownloadedEvent = {
   repoTask: VariantAnalysisRepositoryTask;
 }
 
+export type LoadResultsOptions = {
+  // If true, when results are loaded from storage, they will not be stored in the cache. This reduces memory usage if
+  // results are only needed temporarily (e.g. for exporting results to a different format).
+  skipCacheStore?: boolean;
+}
+
 export class VariantAnalysisResultsManager extends DisposableObject {
   private static readonly REPO_TASK_FILENAME = 'repo_task.json';
   private static readonly RESULTS_DIRECTORY = 'results';
@@ -86,18 +92,19 @@ export class VariantAnalysisResultsManager extends DisposableObject {
   public async loadResults(
     variantAnalysisId: number,
     variantAnalysisStoragePath: string,
-    repositoryFullName: string
+    repositoryFullName: string,
+    options?: LoadResultsOptions,
   ): Promise<VariantAnalysisScannedRepositoryResult> {
     const result = this.cachedResults.get(createCacheKey(variantAnalysisId, repositoryFullName));
+    if (result) {
+      return result;
+    }
 
-    return result ?? await this.loadResultsIntoMemory(variantAnalysisId, variantAnalysisStoragePath, repositoryFullName);
-  }
+    if (options?.skipCacheStore) {
+      return this.loadResultsFromStorage(variantAnalysisId, variantAnalysisStoragePath, repositoryFullName);
+    }
 
-  public areResultsLoaded(
-    variantAnalysisId: number,
-    repositoryFullName: string
-  ): boolean {
-    return this.cachedResults.has(createCacheKey(variantAnalysisId, repositoryFullName));
+    return this.loadResultsIntoMemory(variantAnalysisId, variantAnalysisStoragePath, repositoryFullName);
   }
 
   private async loadResultsIntoMemory(
