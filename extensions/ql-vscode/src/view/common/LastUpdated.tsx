@@ -1,11 +1,11 @@
-import * as React from 'react';
-import { useMemo } from 'react';
-import styled from 'styled-components';
+import * as React from "react";
+import { useMemo } from "react";
+import styled from "styled-components";
 
-import { parseDate } from '../../pure/date';
-import { humanizeRelativeTime } from '../../pure/time';
+import { parseDate } from "../../pure/date";
+import { humanizeRelativeTime } from "../../pure/time";
 
-import { Codicon } from './icon';
+import { Codicon } from "./icon";
 
 const IconContainer = styled.span`
   flex-grow: 0;
@@ -36,9 +36,7 @@ export const LastUpdated = ({ lastUpdated }: Props) => {
       <IconContainer>
         <Codicon name="repo-push" label="Last updated" />
       </IconContainer>
-      <Duration>
-        {humanizeRelativeTime(date.getTime() - Date.now())}
-      </Duration>
+      <Duration>{humanizeRelativeTime(date.getTime() - Date.now())}</Duration>
     </div>
   );
 };

@@ -1,20 +1,25 @@
-import * as React from 'react';
-import { Dispatch, SetStateAction } from 'react';
-import styled from 'styled-components';
-import { VSCodeBadge, VSCodePanels, VSCodePanelTab, VSCodePanelView } from '@vscode/webview-ui-toolkit/react';
-import { formatDecimal } from '../../pure/number';
+import * as React from "react";
+import { Dispatch, SetStateAction } from "react";
+import styled from "styled-components";
+import {
+  VSCodeBadge,
+  VSCodePanels,
+  VSCodePanelTab,
+  VSCodePanelView,
+} from "@vscode/webview-ui-toolkit/react";
+import { formatDecimal } from "../../pure/number";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
-  VariantAnalysisStatus
-} from '../../remote-queries/shared/variant-analysis';
-import { VariantAnalysisAnalyzedRepos } from './VariantAnalysisAnalyzedRepos';
-import { Alert } from '../common';
-import { VariantAnalysisSkippedRepositoriesTab } from './VariantAnalysisSkippedRepositoriesTab';
-import { RepositoriesFilterSortState } from '../../pure/variant-analysis-filter-sort';
-import { RepositoriesSearchSortRow } from './RepositoriesSearchSortRow';
-import { FailureReasonAlert } from './FailureReasonAlert';
+  VariantAnalysisStatus,
+} from "../../remote-queries/shared/variant-analysis";
+import { VariantAnalysisAnalyzedRepos } from "./VariantAnalysisAnalyzedRepos";
+import { Alert } from "../common";
+import { VariantAnalysisSkippedRepositoriesTab } from "./VariantAnalysisSkippedRepositoriesTab";
+import { RepositoriesFilterSortState } from "../../pure/variant-analysis-filter-sort";
+import { RepositoriesSearchSortRow } from "./RepositoriesSearchSortRow";
+import { FailureReasonAlert } from "./FailureReasonAlert";
 
 export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
@@ -60,8 +65,10 @@ export const VariantAnalysisOutcomePanels = ({
   const scannedReposCount = variantAnalysis.scannedRepos?.length ?? 0;
   const noCodeqlDbRepos = variantAnalysis.skippedRepos?.noCodeqlDbRepos;
   const notFoundRepos = variantAnalysis.skippedRepos?.notFoundRepos;
-  const overLimitRepositoryCount = variantAnalysis.skippedRepos?.overLimitRepos?.repositoryCount ?? 0;
-  const accessMismatchRepositoryCount = variantAnalysis.skippedRepos?.accessMismatchRepos?.repositoryCount ?? 0;
+  const overLimitRepositoryCount =
+    variantAnalysis.skippedRepos?.overLimitRepos?.repositoryCount ?? 0;
+  const accessMismatchRepositoryCount =
+    variantAnalysis.skippedRepos?.accessMismatchRepos?.repositoryCount ?? 0;
 
   const warnings = (
     <WarningsContainer>
@@ -72,21 +79,32 @@ export const VariantAnalysisOutcomePanels = ({
           message="Variant analysis canceled before all queries were complete. Some repositories were not analyzed."
         />
       )}
-      {variantAnalysis.status === VariantAnalysisStatus.Failed && variantAnalysis.failureReason && (
-        <FailureReasonAlert failureReason={variantAnalysis.failureReason} />
-      )}
+      {variantAnalysis.status === VariantAnalysisStatus.Failed &&
+        variantAnalysis.failureReason && (
+          <FailureReasonAlert failureReason={variantAnalysis.failureReason} />
+        )}
       {overLimitRepositoryCount > 0 && (
         <Alert
           type="warning"
           title="Repository list too large"
-          message={`Repository list contains more than ${formatDecimal(scannedReposCount)} entries. Only the first ${formatDecimal(scannedReposCount)} repositories were processed.`}
+          message={`Repository list contains more than ${formatDecimal(
+            scannedReposCount,
+          )} entries. Only the first ${formatDecimal(
+            scannedReposCount,
+          )} repositories were processed.`}
         />
       )}
       {accessMismatchRepositoryCount > 0 && (
         <Alert
           type="warning"
           title="Problem with controller repository"
-          message={`Publicly visible controller repository can't be used to analyze private repositories. ${formatDecimal(accessMismatchRepositoryCount)} ${accessMismatchRepositoryCount === 1 ? 'private repository was' : 'private repositories were'} not analyzed.`}
+          message={`Publicly visible controller repository can't be used to analyze private repositories. ${formatDecimal(
+            accessMismatchRepositoryCount,
+          )} ${
+            accessMismatchRepositoryCount === 1
+              ? "private repository was"
+              : "private repositories were"
+          } not analyzed.`}
         />
       )}
     </WarningsContainer>
@@ -96,7 +114,10 @@ export const VariantAnalysisOutcomePanels = ({
     return (
       <>
         {warnings}
-        <RepositoriesSearchSortRow value={filterSortState} onChange={setFilterSortState} />
+        <RepositoriesSearchSortRow
+          value={filterSortState}
+          onChange={setFilterSortState}
+        />
         <VariantAnalysisAnalyzedRepos
           variantAnalysis={variantAnalysis}
           repositoryStates={repositoryStates}
@@ -112,22 +133,31 @@ export const VariantAnalysisOutcomePanels = ({
   return (
     <>
       {warnings}
-      <RepositoriesSearchSortRow value={filterSortState} onChange={setFilterSortState} />
+      <RepositoriesSearchSortRow
+        value={filterSortState}
+        onChange={setFilterSortState}
+      />
       <VSCodePanels>
         <Tab>
           Analyzed
-          <VSCodeBadge appearance="secondary">{formatDecimal(variantAnalysis.scannedRepos?.length ?? 0)}</VSCodeBadge>
+          <VSCodeBadge appearance="secondary">
+            {formatDecimal(variantAnalysis.scannedRepos?.length ?? 0)}
+          </VSCodeBadge>
         </Tab>
         {notFoundRepos?.repositoryCount && (
           <Tab>
             No access
-            <VSCodeBadge appearance="secondary">{formatDecimal(notFoundRepos.repositoryCount)}</VSCodeBadge>
+            <VSCodeBadge appearance="secondary">
+              {formatDecimal(notFoundRepos.repositoryCount)}
+            </VSCodeBadge>
           </Tab>
         )}
         {noCodeqlDbRepos?.repositoryCount && (
           <Tab>
             No database
-            <VSCodeBadge appearance="secondary">{formatDecimal(noCodeqlDbRepos.repositoryCount)}</VSCodeBadge>
+            <VSCodeBadge appearance="secondary">
+              {formatDecimal(noCodeqlDbRepos.repositoryCount)}
+            </VSCodeBadge>
           </Tab>
         )}
         <VSCodePanelView>
@@ -140,7 +170,7 @@ export const VariantAnalysisOutcomePanels = ({
             setSelectedRepositoryIds={setSelectedRepositoryIds}
           />
         </VSCodePanelView>
-        {notFoundRepos?.repositoryCount &&
+        {notFoundRepos?.repositoryCount && (
           <VSCodePanelView>
             <VariantAnalysisSkippedRepositoriesTab
               alertTitle="No access"
@@ -148,8 +178,9 @@ export const VariantAnalysisOutcomePanels = ({
               skippedRepositoryGroup={notFoundRepos}
               filterSortState={filterSortState}
             />
-          </VSCodePanelView>}
-        {noCodeqlDbRepos?.repositoryCount &&
+          </VSCodePanelView>
+        )}
+        {noCodeqlDbRepos?.repositoryCount && (
           <VSCodePanelView>
             <VariantAnalysisSkippedRepositoriesTab
               alertTitle="No CodeQL database"
@@ -157,7 +188,8 @@ export const VariantAnalysisOutcomePanels = ({
               skippedRepositoryGroup={noCodeqlDbRepos}
               filterSortState={filterSortState}
             />
-          </VSCodePanelView>}
+          </VSCodePanelView>
+        )}
       </VSCodePanels>
     </>
   );

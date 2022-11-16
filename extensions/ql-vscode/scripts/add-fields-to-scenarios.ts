@@ -11,20 +11,23 @@
  * Usage: npx ts-node scripts/add-fields-to-scenarios.ts
  */
 
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import * as fs from "fs-extra";
+import * as path from "path";
 
-import { Octokit, type RestEndpointMethodTypes } from '@octokit/rest';
-import { throttling } from '@octokit/plugin-throttling';
+import { Octokit, type RestEndpointMethodTypes } from "@octokit/rest";
+import { throttling } from "@octokit/plugin-throttling";
 
-import { getFiles } from './util/files';
-import type { GitHubApiRequest } from '../src/mocks/gh-api-request';
-import { isGetVariantAnalysisRequest } from '../src/mocks/gh-api-request';
-import { VariantAnalysis } from '../src/remote-queries/gh-api/variant-analysis';
-import { RepositoryWithMetadata } from '../src/remote-queries/gh-api/repository';
+import { getFiles } from "./util/files";
+import type { GitHubApiRequest } from "../src/mocks/gh-api-request";
+import { isGetVariantAnalysisRequest } from "../src/mocks/gh-api-request";
+import { VariantAnalysis } from "../src/remote-queries/gh-api/variant-analysis";
+import { RepositoryWithMetadata } from "../src/remote-queries/gh-api/repository";
 
-const extensionDirectory = path.resolve(__dirname, '..');
-const scenariosDirectory = path.resolve(extensionDirectory, 'src/mocks/scenarios');
+const extensionDirectory = path.resolve(__dirname, "..");
+const scenariosDirectory = path.resolve(
+  extensionDirectory,
+  "src/mocks/scenarios",
+);
 
 // Make sure we don't run into rate limits by automatically waiting until we can
 // make another request.
@@ -35,25 +38,36 @@ const auth = process.env.GITHUB_TOKEN;
 const octokit = new MyOctokit({
   auth,
   throttle: {
-    onRateLimit: (retryAfter: number, options: any, octokit: Octokit): boolean => {
+    onRateLimit: (
+      retryAfter: number,
+      options: any,
+      octokit: Octokit,
+    ): boolean => {
       octokit.log.warn(
-        `Request quota exhausted for request ${options.method} ${options.url}. Retrying after ${retryAfter} seconds!`
+        `Request quota exhausted for request ${options.method} ${options.url}. Retrying after ${retryAfter} seconds!`,
       );
 
       return true;
     },
-    onSecondaryRateLimit: (_retryAfter: number, options: any, octokit: Octokit): void => {
+    onSecondaryRateLimit: (
+      _retryAfter: number,
+      options: any,
+      octokit: Octokit,
+    ): void => {
       octokit.log.warn(
-        `SecondaryRateLimit detected for request ${options.method} ${options.url}`
+        `SecondaryRateLimit detected for request ${options.method} ${options.url}`,
       );
     },
-  }
+  },
 });
-const repositories = new Map<number, RestEndpointMethodTypes['repos']['get']['response']['data']>();
+const repositories = new Map<
+  number,
+  RestEndpointMethodTypes["repos"]["get"]["response"]["data"]
+>();
 
 async function addFieldsToRepository(repository: RepositoryWithMetadata) {
   if (!repositories.has(repository.id)) {
-    const [owner, repo] = repository.full_name.split('/');
+    const [owner, repo] = repository.full_name.split("/");
 
     const apiRepository = await octokit.repos.get({
       owner,
@@ -71,12 +85,12 @@ async function addFieldsToRepository(repository: RepositoryWithMetadata) {
 
 async function addFieldsToScenarios() {
   if (!(await fs.pathExists(scenariosDirectory))) {
-    console.error('Scenarios directory does not exist: ' + scenariosDirectory);
+    console.error("Scenarios directory does not exist: " + scenariosDirectory);
     return;
   }
 
   for await (const file of getFiles(scenariosDirectory)) {
-    if (!file.endsWith('.json')) {
+    if (!file.endsWith(".json")) {
       continue;
     }
 
@@ -86,11 +100,13 @@ async function addFieldsToScenarios() {
       continue;
     }
 
-    if (!data.response.body || !('controller_repo' in data.response.body)) {
+    if (!data.response.body || !("controller_repo" in data.response.body)) {
       continue;
     }
 
-    console.log(`Adding fields to '${path.relative(scenariosDirectory, file)}'`);
+    console.log(
+      `Adding fields to '${path.relative(scenariosDirectory, file)}'`,
+    );
 
     const variantAnalysis = data.response.body as VariantAnalysis;
 
@@ -101,19 +117,22 @@ async function addFieldsToScenarios() {
     }
 
     if (variantAnalysis.skipped_repositories?.access_mismatch_repos) {
-      for (const item of variantAnalysis.skipped_repositories.access_mismatch_repos.repositories) {
+      for (const item of variantAnalysis.skipped_repositories
+        .access_mismatch_repos.repositories) {
         await addFieldsToRepository(item);
       }
     }
 
     if (variantAnalysis.skipped_repositories?.no_codeql_db_repos) {
-      for (const item of variantAnalysis.skipped_repositories.no_codeql_db_repos.repositories) {
+      for (const item of variantAnalysis.skipped_repositories.no_codeql_db_repos
+        .repositories) {
         await addFieldsToRepository(item);
       }
     }
 
     if (variantAnalysis.skipped_repositories?.over_limit_repos) {
-      for (const item of variantAnalysis.skipped_repositories.over_limit_repos.repositories) {
+      for (const item of variantAnalysis.skipped_repositories.over_limit_repos
+        .repositories) {
         await addFieldsToRepository(item);
       }
     }
@@ -122,7 +141,7 @@ async function addFieldsToScenarios() {
   }
 }
 
-addFieldsToScenarios().catch(e => {
+addFieldsToScenarios().catch((e) => {
   console.error(e);
   process.exit(2);
 });

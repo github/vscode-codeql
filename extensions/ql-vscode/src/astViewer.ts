@@ -11,17 +11,21 @@ import {
   TextEditorSelectionChangeKind,
   Location,
   Range,
-  Uri
-} from 'vscode';
-import * as path from 'path';
+  Uri,
+} from "vscode";
+import * as path from "path";
 
-import { DatabaseItem } from './databases';
-import { UrlValue, BqrsId } from './pure/bqrs-cli-types';
-import { showLocation } from './interface-utils';
-import { isStringLoc, isWholeFileLoc, isLineColumnLoc } from './pure/bqrs-utils';
-import { commandRunner } from './commandRunner';
-import { DisposableObject } from './pure/disposable-object';
-import { showAndLogErrorMessage } from './helpers';
+import { DatabaseItem } from "./databases";
+import { UrlValue, BqrsId } from "./pure/bqrs-cli-types";
+import { showLocation } from "./interface-utils";
+import {
+  isStringLoc,
+  isWholeFileLoc,
+  isLineColumnLoc,
+} from "./pure/bqrs-utils";
+import { commandRunner } from "./commandRunner";
+import { DisposableObject } from "./pure/disposable-object";
+import { showAndLogErrorMessage } from "./helpers";
 
 export interface AstItem {
   id: BqrsId;
@@ -36,23 +40,25 @@ export interface ChildAstItem extends AstItem {
   parent: ChildAstItem | AstItem;
 }
 
-class AstViewerDataProvider extends DisposableObject implements TreeDataProvider<AstItem> {
-
+class AstViewerDataProvider
+  extends DisposableObject
+  implements TreeDataProvider<AstItem>
+{
   public roots: AstItem[] = [];
   public db: DatabaseItem | undefined;
 
-  private _onDidChangeTreeData =
-    this.push(new EventEmitter<AstItem | undefined>());
+  private _onDidChangeTreeData = this.push(
+    new EventEmitter<AstItem | undefined>(),
+  );
   readonly onDidChangeTreeData: Event<AstItem | undefined> =
     this._onDidChangeTreeData.event;
 
   constructor() {
     super();
     this.push(
-      commandRunner('codeQLAstViewer.gotoCode',
-        async (item: AstItem) => {
-          await showLocation(item.fileLocation);
-        })
+      commandRunner("codeQLAstViewer.gotoCode", async (item: AstItem) => {
+        await showLocation(item.fileLocation);
+      }),
     );
   }
 
@@ -61,7 +67,7 @@ class AstViewerDataProvider extends DisposableObject implements TreeDataProvider
   }
   getChildren(item?: AstItem): ProviderResult<AstItem[]> {
     const children = item ? item.children : this.roots;
-    return children.sort((c1, c2) => (c1.order - c2.order));
+    return children.sort((c1, c2) => c1.order - c2.order);
   }
 
   getParent(item: ChildAstItem): ProviderResult<AstItem> {
@@ -74,22 +80,22 @@ class AstViewerDataProvider extends DisposableObject implements TreeDataProvider
     const state = item.children.length
       ? TreeItemCollapsibleState.Collapsed
       : TreeItemCollapsibleState.None;
-    const treeItem = new TreeItem(item.label || '', state);
-    treeItem.description = line ? `Line ${line}` : '';
+    const treeItem = new TreeItem(item.label || "", state);
+    treeItem.description = line ? `Line ${line}` : "";
     treeItem.id = String(item.id);
     treeItem.tooltip = `${treeItem.description} ${treeItem.label}`;
     treeItem.command = {
-      command: 'codeQLAstViewer.gotoCode',
-      title: 'Go To Code',
+      command: "codeQLAstViewer.gotoCode",
+      title: "Go To Code",
       tooltip: `Go To ${item.location}`,
-      arguments: [item]
+      arguments: [item],
     };
     return treeItem;
   }
 
   private extractLineInfo(loc?: UrlValue) {
     if (!loc) {
-      return '';
+      return "";
     } else if (isStringLoc(loc)) {
       return loc;
     } else if (isWholeFileLoc(loc)) {
@@ -97,7 +103,7 @@ class AstViewerDataProvider extends DisposableObject implements TreeDataProvider
     } else if (isLineColumnLoc(loc)) {
       return loc.startLine;
     } else {
-      return '';
+      return "";
     }
   }
 }
@@ -111,19 +117,21 @@ export class AstViewer extends DisposableObject {
     super();
 
     this.treeDataProvider = new AstViewerDataProvider();
-    this.treeView = window.createTreeView('codeQLAstViewer', {
+    this.treeView = window.createTreeView("codeQLAstViewer", {
       treeDataProvider: this.treeDataProvider,
-      showCollapseAll: true
+      showCollapseAll: true,
     });
 
     this.push(this.treeView);
     this.push(this.treeDataProvider);
     this.push(
-      commandRunner('codeQLAstViewer.clear', async () => {
+      commandRunner("codeQLAstViewer.clear", async () => {
         this.clear();
-      })
+      }),
     );
-    this.push(window.onDidChangeTextEditorSelection(this.updateTreeSelection, this));
+    this.push(
+      window.onDidChangeTextEditorSelection(this.updateTreeSelection, this),
+    );
   }
 
   updateRoots(roots: AstItem[], db: DatabaseItem, fileUri: Uri) {
@@ -135,8 +143,10 @@ export class AstViewer extends DisposableObject {
     // Handle error on reveal. This could happen if
     // the tree view is disposed during the reveal.
     this.treeView.reveal(roots[0], { focus: false })?.then(
-      () => { /**/ },
-      err => showAndLogErrorMessage(err)
+      () => {
+        /**/
+      },
+      (err) => showAndLogErrorMessage(err),
     );
   }
 
@@ -149,7 +159,10 @@ export class AstViewer extends DisposableObject {
     // range that contains the selection.
     // Some nodes do not have a location, but their children might, so must
     // recurse though location-less AST nodes to see if children are correct.
-    function findBest(selectedRange: Range, items?: AstItem[]): AstItem | undefined {
+    function findBest(
+      selectedRange: Range,
+      items?: AstItem[],
+    ): AstItem | undefined {
       if (!items || !items.length) {
         return;
       }
@@ -188,8 +201,10 @@ export class AstViewer extends DisposableObject {
         // Handle error on reveal. This could happen if
         // the tree view is disposed during the reveal.
         this.treeView.reveal(targetItem)?.then(
-          () => { /**/ },
-          err => showAndLogErrorMessage(err)
+          () => {
+            /**/
+          },
+          (err) => showAndLogErrorMessage(err),
         );
       }
     }

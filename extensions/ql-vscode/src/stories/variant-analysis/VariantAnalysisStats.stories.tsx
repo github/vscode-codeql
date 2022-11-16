@@ -1,29 +1,29 @@
-import React from 'react';
+import React from "react";
 
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { VariantAnalysisContainer } from '../../view/variant-analysis/VariantAnalysisContainer';
-import { VariantAnalysisStats } from '../../view/variant-analysis/VariantAnalysisStats';
-import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
+import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
+import { VariantAnalysisStats } from "../../view/variant-analysis/VariantAnalysisStats";
+import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
 
 export default {
-  title: 'Variant Analysis/Variant Analysis Stats',
+  title: "Variant Analysis/Variant Analysis Stats",
   component: VariantAnalysisStats,
   decorators: [
     (Story) => (
       <VariantAnalysisContainer>
         <Story />
       </VariantAnalysisContainer>
-    )
+    ),
   ],
   argTypes: {
     onViewLogsClick: {
-      action: 'view-logs-clicked',
+      action: "view-logs-clicked",
       table: {
         disable: true,
       },
     },
-  }
+  },
 } as ComponentMeta<typeof VariantAnalysisStats>;
 
 const Template: ComponentStory<typeof VariantAnalysisStats> = (args) => (

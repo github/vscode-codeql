@@ -1,9 +1,12 @@
-import * as fs from 'fs-extra';
-import { QuickPickItem, window } from 'vscode';
-import { logger } from '../logging';
-import { getRemoteRepositoryLists, getRemoteRepositoryListsPath } from '../config';
-import { OWNER_REGEX, REPO_REGEX } from '../pure/helpers-pure';
-import { UserCancellationException } from '../commandRunner';
+import * as fs from "fs-extra";
+import { QuickPickItem, window } from "vscode";
+import { logger } from "../logging";
+import {
+  getRemoteRepositoryLists,
+  getRemoteRepositoryListsPath,
+} from "../config";
+import { OWNER_REGEX, REPO_REGEX } from "../pure/helpers-pure";
+import { UserCancellationException } from "../commandRunner";
 
 export interface RepositorySelection {
   repositories?: string[];
@@ -36,16 +39,20 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
   ];
 
   const options = {
-    placeHolder: 'Select a repository list. You can define repository lists in the `codeQL.variantAnalysis.repositoryLists` setting.',
+    placeHolder:
+      "Select a repository list. You can define repository lists in the `codeQL.variantAnalysis.repositoryLists` setting.",
     ignoreFocusOut: true,
   };
 
   const quickpick = await window.showQuickPick<RepoListQuickPickItem>(
     quickPickItems,
-    options);
+    options,
+  );
 
   if (quickpick?.repositories?.length) {
-    void logger.log(`Selected repositories: ${quickpick.repositories.join(', ')}`);
+    void logger.log(
+      `Selected repositories: ${quickpick.repositories.join(", ")}`,
+    );
     return { repositories: quickpick.repositories };
   } else if (quickpick?.repositoryList) {
     void logger.log(`Selected repository list: ${quickpick.repositoryList}`);
@@ -54,10 +61,12 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
     const customRepo = await getCustomRepo();
     if (customRepo === undefined) {
       // The user cancelled, do nothing.
-      throw new UserCancellationException('No repositories selected', true);
+      throw new UserCancellationException("No repositories selected", true);
     }
     if (!customRepo || !REPO_REGEX.test(customRepo)) {
-      throw new UserCancellationException('Invalid repository format. Please enter a valid repository in the format <owner>/<repo> (e.g. github/codeql)');
+      throw new UserCancellationException(
+        "Invalid repository format. Please enter a valid repository in the format <owner>/<repo> (e.g. github/codeql)",
+      );
     }
     void logger.log(`Entered repository: ${customRepo}`);
     return { repositories: [customRepo] };
@@ -65,7 +74,7 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
     const owner = await getOwner();
     if (owner === undefined) {
       // The user cancelled, do nothing.
-      throw new UserCancellationException('No repositories selected', true);
+      throw new UserCancellationException("No repositories selected", true);
     }
     if (!owner || !OWNER_REGEX.test(owner)) {
       throw new Error(`Invalid user or organization: ${owner}`);
@@ -75,7 +84,7 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
   } else {
     // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
     // We set 'true' to make this a silent exception.
-    throw new UserCancellationException('No repositories selected', true);
+    throw new UserCancellationException("No repositories selected", true);
   }
 }
 
@@ -89,17 +98,22 @@ export function isValidSelection(repoSelection: RepositorySelection): boolean {
   const repositoryLists = repoSelection.repositoryLists || [];
   const owners = repoSelection.owners || [];
 
-  return (repositories.length > 0 || repositoryLists.length > 0 || owners.length > 0);
+  return (
+    repositories.length > 0 || repositoryLists.length > 0 || owners.length > 0
+  );
 }
 
 function createSystemDefinedRepoListsQuickPickItems(): RepoListQuickPickItem[] {
   const topNs = [10, 100, 1000];
 
-  return topNs.map(n => ({
-    label: '$(star) Top ' + n,
-    repositoryList: `top_${n}`,
-    alwaysShow: true
-  } as RepoListQuickPickItem));
+  return topNs.map(
+    (n) =>
+      ({
+        label: "$(star) Top " + n,
+        repositoryList: `top_${n}`,
+        alwaysShow: true,
+      } as RepoListQuickPickItem),
+  );
 }
 
 async function readExternalRepoLists(): Promise<RepoList[]> {
@@ -115,12 +129,14 @@ async function readExternalRepoLists(): Promise<RepoList[]> {
 
   for (const [repoListName, repositories] of Object.entries(json)) {
     if (!Array.isArray(repositories)) {
-      throw Error('Invalid repository lists file. It should contain an array of repositories for each list.');
+      throw Error(
+        "Invalid repository lists file. It should contain an array of repositories for each list.",
+      );
     }
 
     repoLists.push({
       label: repoListName,
-      repositories
+      repositories,
     });
   }
 
@@ -135,22 +151,28 @@ async function validateExternalRepoListsFile(path: string): Promise<void> {
 
   const pathStat = await fs.stat(path);
   if (pathStat.isDirectory()) {
-    throw Error('External repository lists path should not point to a directory');
+    throw Error(
+      "External repository lists path should not point to a directory",
+    );
   }
 }
 
-async function readExternalRepoListsJson(path: string): Promise<Record<string, unknown>> {
+async function readExternalRepoListsJson(
+  path: string,
+): Promise<Record<string, unknown>> {
   let json;
 
   try {
-    const fileContents = await fs.readFile(path, 'utf8');
+    const fileContents = await fs.readFile(path, "utf8");
     json = await JSON.parse(fileContents);
   } catch (error) {
-    throw Error('Invalid repository lists file. It should contain valid JSON.');
+    throw Error("Invalid repository lists file. It should contain valid JSON.");
   }
 
   if (Array.isArray(json)) {
-    throw Error('Invalid repository lists file. It should be an object mapping names to a list of repositories.');
+    throw Error(
+      "Invalid repository lists file. It should be an object mapping names to a list of repositories.",
+    );
   }
 
   return json;
@@ -162,15 +184,15 @@ function readRepoListsFromSettings(): RepoList[] {
     return [];
   }
 
-  return Object.entries(repoLists).map<RepoList>(([label, repositories]) => (
-    {
-      label,
-      repositories
-    }
-  ));
+  return Object.entries(repoLists).map<RepoList>(([label, repositories]) => ({
+    label,
+    repositories,
+  }));
 }
 
-async function createUserDefinedRepoListsQuickPickItems(): Promise<RepoListQuickPickItem[]> {
+async function createUserDefinedRepoListsQuickPickItems(): Promise<
+  RepoListQuickPickItem[]
+> {
   const repoListsFromSetings = readRepoListsFromSettings();
   const repoListsFromExternalFile = await readExternalRepoLists();
 
@@ -179,7 +201,7 @@ async function createUserDefinedRepoListsQuickPickItems(): Promise<RepoListQuick
 
 function createCustomRepoQuickPickItem(): RepoListQuickPickItem {
   return {
-    label: '$(edit) Enter a GitHub repository',
+    label: "$(edit) Enter a GitHub repository",
     useCustomRepo: true,
     alwaysShow: true,
   };
@@ -187,24 +209,26 @@ function createCustomRepoQuickPickItem(): RepoListQuickPickItem {
 
 function createAllReposOfOwnerQuickPickItem(): RepoListQuickPickItem {
   return {
-    label: '$(edit) Enter a GitHub user or organization',
+    label: "$(edit) Enter a GitHub user or organization",
     useAllReposOfOwner: true,
-    alwaysShow: true
+    alwaysShow: true,
   };
 }
 
 async function getCustomRepo(): Promise<string | undefined> {
   return await window.showInputBox({
-    title: 'Enter a GitHub repository in the format <owner>/<repo> (e.g. github/codeql)',
-    placeHolder: '<owner>/<repo>',
-    prompt: 'Tip: you can save frequently used repositories in the `codeQL.variantAnalysis.repositoryLists` setting',
+    title:
+      "Enter a GitHub repository in the format <owner>/<repo> (e.g. github/codeql)",
+    placeHolder: "<owner>/<repo>",
+    prompt:
+      "Tip: you can save frequently used repositories in the `codeQL.variantAnalysis.repositoryLists` setting",
     ignoreFocusOut: true,
   });
 }
 
 async function getOwner(): Promise<string | undefined> {
   return await window.showInputBox({
-    title: 'Enter a GitHub user or organization',
-    ignoreFocusOut: true
+    title: "Enter a GitHub user or organization",
+    ignoreFocusOut: true,
   });
 }

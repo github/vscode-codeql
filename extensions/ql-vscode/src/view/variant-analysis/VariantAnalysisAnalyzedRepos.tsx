@@ -1,16 +1,16 @@
-import * as React from 'react';
-import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
-import styled from 'styled-components';
-import { RepoRow } from './RepoRow';
+import * as React from "react";
+import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import styled from "styled-components";
+import { RepoRow } from "./RepoRow";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
-  VariantAnalysisScannedRepositoryState
-} from '../../remote-queries/shared/variant-analysis';
+  VariantAnalysisScannedRepositoryState,
+} from "../../remote-queries/shared/variant-analysis";
 import {
   filterAndSortRepositoriesWithResultsByName,
   RepositoriesFilterSortState,
-} from '../../pure/variant-analysis-filter-sort';
+} from "../../pure/variant-analysis-filter-sort";
 
 const Container = styled.div`
   display: flex;
@@ -28,7 +28,7 @@ export type VariantAnalysisAnalyzedReposProps = {
 
   selectedRepositoryIds?: number[];
   setSelectedRepositoryIds?: Dispatch<SetStateAction<number[]>>;
-}
+};
 
 export const VariantAnalysisAnalyzedRepos = ({
   variantAnalysis,
@@ -55,26 +55,32 @@ export const VariantAnalysisAnalyzedRepos = ({
   }, [repositoryResults]);
 
   const repositories = useMemo(() => {
-    return filterAndSortRepositoriesWithResultsByName(variantAnalysis.scannedRepos, filterSortState);
+    return filterAndSortRepositoriesWithResultsByName(
+      variantAnalysis.scannedRepos,
+      filterSortState,
+    );
   }, [filterSortState, variantAnalysis.scannedRepos]);
 
-  const onSelectedChange = useCallback((repositoryId: number, selected: boolean) => {
-    setSelectedRepositoryIds?.((prevSelectedRepositoryIds) => {
-      if (selected) {
-        if (prevSelectedRepositoryIds.includes(repositoryId)) {
-          return prevSelectedRepositoryIds;
-        }
+  const onSelectedChange = useCallback(
+    (repositoryId: number, selected: boolean) => {
+      setSelectedRepositoryIds?.((prevSelectedRepositoryIds) => {
+        if (selected) {
+          if (prevSelectedRepositoryIds.includes(repositoryId)) {
+            return prevSelectedRepositoryIds;
+          }
 
-        return [...prevSelectedRepositoryIds, repositoryId];
-      } else {
-        return prevSelectedRepositoryIds.filter((id) => id !== repositoryId);
-      }
-    });
-  }, [setSelectedRepositoryIds]);
+          return [...prevSelectedRepositoryIds, repositoryId];
+        } else {
+          return prevSelectedRepositoryIds.filter((id) => id !== repositoryId);
+        }
+      });
+    },
+    [setSelectedRepositoryIds],
+  );
 
   return (
     <Container>
-      {repositories?.map(repository => {
+      {repositories?.map((repository) => {
         const state = repositoryStateById.get(repository.repository.id);
         const results = repositoryResultsById.get(repository.repository.id);
 

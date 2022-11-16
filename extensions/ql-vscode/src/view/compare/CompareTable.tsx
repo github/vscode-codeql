@@ -1,11 +1,11 @@
-import * as React from 'react';
+import * as React from "react";
 
-import { SetComparisonsMessage } from '../../pure/interface-types';
-import RawTableHeader from '../results/RawTableHeader';
-import { className } from '../results/result-table-utils';
-import { ResultRow } from '../../pure/bqrs-cli-types';
-import RawTableRow from '../results/RawTableRow';
-import { vscode } from '../vscode-api';
+import { SetComparisonsMessage } from "../../pure/interface-types";
+import RawTableHeader from "../results/RawTableHeader";
+import { className } from "../results/result-table-utils";
+import { ResultRow } from "../../pure/bqrs-cli-types";
+import RawTableRow from "../results/RawTableRow";
+import { vscode } from "../vscode-api";
 
 interface Props {
   comparison: SetComparisonsMessage;
@@ -15,9 +15,9 @@ export default function CompareTable(props: Props) {
   const comparison = props.comparison;
   const rows = props.comparison.rows!;
 
-  async function openQuery(kind: 'from' | 'to') {
+  async function openQuery(kind: "from" | "to") {
     vscode.postMessage({
-      t: 'openQuery',
+      t: "openQuery",
       kind,
     });
   }
@@ -38,21 +38,21 @@ export default function CompareTable(props: Props) {
   }
 
   return (
-    <table className='vscode-codeql__compare-body'>
+    <table className="vscode-codeql__compare-body">
       <thead>
         <tr>
           <td>
             <a
-              onClick={() => openQuery('from')}
-              className='vscode-codeql__compare-open'
+              onClick={() => openQuery("from")}
+              className="vscode-codeql__compare-open"
             >
               {comparison.stats.fromQuery?.name}
             </a>
           </td>
           <td>
             <a
-              onClick={() => openQuery('to')}
-              className='vscode-codeql__compare-open'
+              onClick={() => openQuery("to")}
+              className="vscode-codeql__compare-open"
             >
               {comparison.stats.toQuery?.name}
             </a>

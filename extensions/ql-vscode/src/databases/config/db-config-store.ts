@@ -1,12 +1,12 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import { cloneDbConfig, DbConfig } from './db-config';
-import * as chokidar from 'chokidar';
-import { DisposableObject } from '../../pure/disposable-object';
-import { DbConfigValidator } from './db-config-validator';
-import { ValueResult } from '../../common/value-result';
-import { App } from '../../common/app';
-import { AppEvent, AppEventEmitter } from '../../common/events';
+import * as fs from "fs-extra";
+import * as path from "path";
+import { cloneDbConfig, DbConfig } from "./db-config";
+import * as chokidar from "chokidar";
+import { DisposableObject } from "../../pure/disposable-object";
+import { DbConfigValidator } from "./db-config-validator";
+import { ValueResult } from "../../common/value-result";
+import { App } from "../../common/app";
+import { AppEvent, AppEventEmitter } from "../../common/events";
 
 export class DbConfigStore extends DisposableObject {
   public readonly onDidChangeConfig: AppEvent<void>;
@@ -23,7 +23,7 @@ export class DbConfigStore extends DisposableObject {
     super();
 
     const storagePath = app.workspaceStoragePath || app.globalStoragePath;
-    this.configPath = path.join(storagePath, 'workspace-databases.json');
+    this.configPath = path.join(storagePath, "workspace-databases.json");
 
     this.config = this.createEmptyConfig();
     this.configErrors = [];
@@ -56,8 +56,10 @@ export class DbConfigStore extends DisposableObject {
   }
 
   private async loadConfig(): Promise<void> {
-    if (!await fs.pathExists(this.configPath)) {
-      await fs.writeJSON(this.configPath, this.createEmptyConfig(), { spaces: 2 });
+    if (!(await fs.pathExists(this.configPath))) {
+      await fs.writeJSON(this.configPath, this.createEmptyConfig(), {
+        spaces: 2,
+      });
     }
 
     await this.readConfig();
@@ -96,7 +98,7 @@ export class DbConfigStore extends DisposableObject {
   }
 
   private watchConfig(): void {
-    this.configWatcher = chokidar.watch(this.configPath).on('change', () => {
+    this.configWatcher = chokidar.watch(this.configPath).on("change", () => {
       this.readConfigSync();
     });
   }
@@ -113,7 +115,7 @@ export class DbConfigStore extends DisposableObject {
           lists: [],
           databases: [],
         },
-      }
+      },
     };
   }
 }

@@ -1,11 +1,14 @@
-import React from 'react';
+import React from "react";
 
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { CodePaths, WarningIcon as WarningIconComponent } from '../../../view/common';
+import {
+  CodePaths,
+  WarningIcon as WarningIconComponent,
+} from "../../../view/common";
 
 export default {
-  title: 'Icon/Warning Icon',
+  title: "Icon/Warning Icon",
   component: WarningIconComponent,
 } as ComponentMeta<typeof CodePaths>;
 

@@ -1,4 +1,4 @@
 export interface AnalysisFailure {
-  nwo: string,
-  error: string
+  nwo: string;
+  error: string;
 }

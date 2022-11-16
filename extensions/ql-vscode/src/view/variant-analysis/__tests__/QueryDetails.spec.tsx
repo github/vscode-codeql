@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { render as reactRender, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { QueryDetails, QueryDetailsProps } from '../QueryDetails';
+import * as React from "react";
+import { render as reactRender, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { QueryDetails, QueryDetailsProps } from "../QueryDetails";
 
 describe(QueryDetails.name, () => {
   const onOpenQueryFileClick = jest.fn();
@@ -26,26 +26,26 @@ describe(QueryDetails.name, () => {
         onOpenQueryFileClick={onOpenQueryFileClick}
         onViewQueryTextClick={onViewQueryTextClick}
         {...props}
-      />
+      />,
     );
 
-  it('renders correctly', () => {
+  it("renders correctly", () => {
     render();
 
-    expect(screen.getByText('Query name')).toBeInTheDocument();
+    expect(screen.getByText("Query name")).toBeInTheDocument();
   });
 
-  it('renders the query file name as a button', async () => {
+  it("renders the query file name as a button", async () => {
     render();
 
-    await userEvent.click(screen.getByText('example.ql'));
+    await userEvent.click(screen.getByText("example.ql"));
     expect(onOpenQueryFileClick).toHaveBeenCalledTimes(1);
   });
 
-  it('renders a view query button', async () => {
+  it("renders a view query button", async () => {
     render();
 
-    await userEvent.click(screen.getByText('View query'));
+    await userEvent.click(screen.getByText("View query"));
     expect(onViewQueryTextClick).toHaveBeenCalledTimes(1);
   });
 });

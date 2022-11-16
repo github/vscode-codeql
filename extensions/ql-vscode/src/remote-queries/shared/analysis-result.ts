@@ -1,15 +1,15 @@
-import { RawResultSet, ResultSetSchema } from '../../pure/bqrs-cli-types';
+import { RawResultSet, ResultSetSchema } from "../../pure/bqrs-cli-types";
 
-export type AnalysisResultStatus = 'InProgress' | 'Completed' | 'Failed';
+export type AnalysisResultStatus = "InProgress" | "Completed" | "Failed";
 
 export interface AnalysisResults {
   nwo: string;
   status: AnalysisResultStatus;
   interpretedResults: AnalysisAlert[];
   rawResults?: AnalysisRawResults;
-  resultCount: number,
-  starCount?: number,
-  lastUpdated?: number,
+  resultCount: number;
+  starCount?: number;
+  lastUpdated?: number;
 }
 
 export interface AnalysisRawResults {
@@ -60,7 +60,7 @@ export interface ThreadFlow {
 }
 
 export interface AnalysisMessage {
-  tokens: AnalysisMessageToken[]
+  tokens: AnalysisMessageToken[];
 }
 
 export type AnalysisMessageToken =
@@ -68,12 +68,12 @@ export type AnalysisMessageToken =
   | AnalysisMessageLocationToken;
 
 export interface AnalysisMessageTextToken {
-  t: 'text';
+  t: "text";
   text: string;
 }
 
 export interface AnalysisMessageLocationToken {
-  t: 'location';
+  t: "location";
   text: string;
   location: {
     fileLink: FileLink;
@@ -81,12 +81,14 @@ export interface AnalysisMessageLocationToken {
   };
 }
 
-export type ResultSeverity = 'Recommendation' | 'Warning' | 'Error';
+export type ResultSeverity = "Recommendation" | "Warning" | "Error";
 
 /**
  * Returns the number of (raw + interpreted) results for an analysis.
  */
-export const getAnalysisResultCount = (analysisResults: AnalysisResults): number => {
+export const getAnalysisResultCount = (
+  analysisResults: AnalysisResults,
+): number => {
   const rawResultCount = analysisResults.rawResults?.resultSet.rows.length || 0;
   return analysisResults.interpretedResults.length + rawResultCount;
 };

@@ -1,14 +1,17 @@
-import * as React from 'react';
-import { Dispatch, SetStateAction, useCallback } from 'react';
-import styled from 'styled-components';
-import { RepositoriesFilterSortState, SortKey } from '../../pure/variant-analysis-filter-sort';
-import { RepositoriesSearch } from './RepositoriesSearch';
-import { RepositoriesSort } from './RepositoriesSort';
+import * as React from "react";
+import { Dispatch, SetStateAction, useCallback } from "react";
+import styled from "styled-components";
+import {
+  RepositoriesFilterSortState,
+  SortKey,
+} from "../../pure/variant-analysis-filter-sort";
+import { RepositoriesSearch } from "./RepositoriesSearch";
+import { RepositoriesSort } from "./RepositoriesSort";
 
 type Props = {
   value: RepositoriesFilterSortState;
   onChange: Dispatch<SetStateAction<RepositoriesFilterSortState>>;
-}
+};
 
 const Container = styled.div`
   display: flex;
@@ -27,24 +30,36 @@ const RepositoriesSortColumn = styled(RepositoriesSort)`
 `;
 
 export const RepositoriesSearchSortRow = ({ value, onChange }: Props) => {
-  const handleSearchValueChange = useCallback((searchValue: string) => {
-    onChange(oldValue => ({
-      ...oldValue,
-      searchValue,
-    }));
-  }, [onChange]);
+  const handleSearchValueChange = useCallback(
+    (searchValue: string) => {
+      onChange((oldValue) => ({
+        ...oldValue,
+        searchValue,
+      }));
+    },
+    [onChange],
+  );
 
-  const handleSortKeyChange = useCallback((sortKey: SortKey) => {
-    onChange(oldValue => ({
-      ...oldValue,
-      sortKey,
-    }));
-  }, [onChange]);
+  const handleSortKeyChange = useCallback(
+    (sortKey: SortKey) => {
+      onChange((oldValue) => ({
+        ...oldValue,
+        sortKey,
+      }));
+    },
+    [onChange],
+  );
 
   return (
     <Container>
-      <RepositoriesSearchColumn value={value.searchValue} onChange={handleSearchValueChange} />
-      <RepositoriesSortColumn value={value.sortKey} onChange={handleSortKeyChange} />
+      <RepositoriesSearchColumn
+        value={value.searchValue}
+        onChange={handleSearchValueChange}
+      />
+      <RepositoriesSortColumn
+        value={value.sortKey}
+        onChange={handleSortKeyChange}
+      />
     </Container>
   );
 };

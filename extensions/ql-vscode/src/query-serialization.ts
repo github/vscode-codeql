@@ -1,34 +1,41 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import * as fs from "fs-extra";
+import * as path from "path";
 
-import { showAndLogErrorMessage } from './helpers';
-import { asyncFilter, getErrorMessage, getErrorStack } from './pure/helpers-pure';
-import { CompletedQueryInfo, LocalQueryInfo } from './query-results';
-import { QueryHistoryInfo } from './query-history-info';
-import { QueryStatus } from './query-status';
-import { QueryEvaluationInfo } from './run-queries-shared';
-import { QueryResultType } from './pure/legacy-messages';
+import { showAndLogErrorMessage } from "./helpers";
+import {
+  asyncFilter,
+  getErrorMessage,
+  getErrorStack,
+} from "./pure/helpers-pure";
+import { CompletedQueryInfo, LocalQueryInfo } from "./query-results";
+import { QueryHistoryInfo } from "./query-history-info";
+import { QueryStatus } from "./query-status";
+import { QueryEvaluationInfo } from "./run-queries-shared";
+import { QueryResultType } from "./pure/legacy-messages";
 
-export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInfo[]> {
+export async function slurpQueryHistory(
+  fsPath: string,
+): Promise<QueryHistoryInfo[]> {
   try {
     if (!(await fs.pathExists(fsPath))) {
       return [];
     }
 
-    const data = await fs.readFile(fsPath, 'utf8');
+    const data = await fs.readFile(fsPath, "utf8");
     const obj = JSON.parse(data);
     if (![1, 2].includes(obj.version)) {
-      void showAndLogErrorMessage(`Can't parse query history. Unsupported query history format: v${obj.version}. `);
+      void showAndLogErrorMessage(
+        `Can't parse query history. Unsupported query history format: v${obj.version}. `,
+      );
       return [];
     }
 
     const queries = obj.queries;
     const parsedQueries = queries.map((q: QueryHistoryInfo) => {
-
       // Need to explicitly set prototype since reading in from JSON will not
       // do this automatically. Note that we can't call the constructor here since
       // the constructor invokes extra logic that we don't want to do.
-      if (q.t === 'local') {
+      if (q.t === "local") {
         Object.setPrototypeOf(q, LocalQueryInfo.prototype);
 
         // Date instances are serialized as strings. Need to
@@ -37,22 +44,30 @@ export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInf
         if (q.completedQuery) {
           // Again, need to explicitly set prototypes.
           Object.setPrototypeOf(q.completedQuery, CompletedQueryInfo.prototype);
-          Object.setPrototypeOf(q.completedQuery.query, QueryEvaluationInfo.prototype);
+          Object.setPrototypeOf(
+            q.completedQuery.query,
+            QueryEvaluationInfo.prototype,
+          );
           // slurped queries do not need to be disposed
-          q.completedQuery.dispose = () => { /**/ };
+          q.completedQuery.dispose = () => {
+            /**/
+          };
 
           // Previously, there was a typo in the completedQuery type. There was a field
           // `sucessful` and it was renamed to `successful`. We need to handle this case.
-          if ('sucessful' in q.completedQuery) {
-            (q.completedQuery as any).successful = (q.completedQuery as any).sucessful;
+          if ("sucessful" in q.completedQuery) {
+            (q.completedQuery as any).successful = (
+              q.completedQuery as any
+            ).sucessful;
             delete (q.completedQuery as any).sucessful;
           }
 
-          if (!('successful' in q.completedQuery)) {
-            (q.completedQuery as any).successful = q.completedQuery.result?.resultType === QueryResultType.SUCCESS;
+          if (!("successful" in q.completedQuery)) {
+            (q.completedQuery as any).successful =
+              q.completedQuery.result?.resultType === QueryResultType.SUCCESS;
           }
         }
-      } else if (q.t === 'remote') {
+      } else if (q.t === "remote") {
         // A bug was introduced that didn't set the completed flag in query history
         // items. The following code makes sure that the flag is set in order to
         // "patch" older query history items.
@@ -67,18 +82,20 @@ export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInf
     // most likely another workspace has deleted them because the
     // queries aged out.
     return asyncFilter(parsedQueries, async (q) => {
-      if (q.t === 'remote' || q.t === 'variant-analysis') {
+      if (q.t === "remote" || q.t === "variant-analysis") {
         // the slurper doesn't know where the remote queries are stored
         // so we need to assume here that they exist. Later, we check to
         // see if they exist on disk.
         return true;
       }
       const resultsPath = q.completedQuery?.query.resultsPaths.resultsPath;
-      return !!resultsPath && await fs.pathExists(resultsPath);
+      return !!resultsPath && (await fs.pathExists(resultsPath));
     });
   } catch (e) {
-    void showAndLogErrorMessage('Error loading query history.', {
-      fullMessage: ['Error loading query history.', getErrorStack(e)].join('\n'),
+    void showAndLogErrorMessage("Error loading query history.", {
+      fullMessage: ["Error loading query history.", getErrorStack(e)].join(
+        "\n",
+      ),
     });
     // since the query history is invalid, it should be deleted so this error does not happen on next startup.
     await fs.remove(fsPath);
@@ -95,22 +112,33 @@ export async function slurpQueryHistory(fsPath: string): Promise<QueryHistoryInf
  * @param queries the list of queries to save.
  * @param fsPath the path to save the queries to.
  */
-export async function splatQueryHistory(queries: QueryHistoryInfo[], fsPath: string): Promise<void> {
+export async function splatQueryHistory(
+  queries: QueryHistoryInfo[],
+  fsPath: string,
+): Promise<void> {
   try {
     if (!(await fs.pathExists(fsPath))) {
       await fs.mkdir(path.dirname(fsPath), { recursive: true });
     }
     // remove incomplete local queries since they cannot be recreated on restart
-    const filteredQueries = queries.filter(q => q.t === 'local' ? q.completedQuery !== undefined : true);
-    const data = JSON.stringify({
-      // version 2:
-      // - adds the `variant-analysis` type
-      // - ensures a `successful` property exists on completedQuery
-      version: 2,
-      queries: filteredQueries
-    }, null, 2);
+    const filteredQueries = queries.filter((q) =>
+      q.t === "local" ? q.completedQuery !== undefined : true,
+    );
+    const data = JSON.stringify(
+      {
+        // version 2:
+        // - adds the `variant-analysis` type
+        // - ensures a `successful` property exists on completedQuery
+        version: 2,
+        queries: filteredQueries,
+      },
+      null,
+      2,
+    );
     await fs.writeFile(fsPath, data);
   } catch (e) {
-    throw new Error(`Error saving query history to ${fsPath}: ${getErrorMessage(e)}`);
+    throw new Error(
+      `Error saving query history to ${fsPath}: ${getErrorMessage(e)}`,
+    );
   }
 }

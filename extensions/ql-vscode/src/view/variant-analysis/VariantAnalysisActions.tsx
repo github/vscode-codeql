@@ -1,7 +1,7 @@
-import * as React from 'react';
-import styled from 'styled-components';
-import { VSCodeButton } from '@vscode/webview-ui-toolkit/react';
-import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
+import * as React from "react";
+import styled from "styled-components";
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
+import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
 
 type Props = {
   variantAnalysisStatus: VariantAnalysisStatus;
@@ -33,7 +33,11 @@ export const VariantAnalysisActions = ({
   return (
     <Container>
       {variantAnalysisStatus === VariantAnalysisStatus.InProgress && (
-        <Button appearance="secondary" onClick={onStopQueryClick} disabled={stopQueryDisabled}>
+        <Button
+          appearance="secondary"
+          onClick={onStopQueryClick}
+          disabled={stopQueryDisabled}
+        >
           Stop query
         </Button>
       )}

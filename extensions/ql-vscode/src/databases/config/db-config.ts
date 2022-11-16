@@ -16,8 +16,8 @@ export interface SelectedDbItem {
 }
 
 export enum SelectedDbItemKind {
-  ConfigDefined = 'configDefined',
-  RemoteSystemDefinedList = 'remoteSystemDefinedList',
+  ConfigDefined = "configDefined",
+  RemoteSystemDefinedList = "remoteSystemDefinedList",
 }
 
 export interface RemoteDbConfig {
@@ -52,10 +52,12 @@ export function cloneDbConfig(config: DbConfig): DbConfig {
   return {
     databases: {
       remote: {
-        repositoryLists: config.databases.remote.repositoryLists.map((list) => ({
-          name: list.name,
-          repositories: [...list.repositories],
-        })),
+        repositoryLists: config.databases.remote.repositoryLists.map(
+          (list) => ({
+            name: list.name,
+            repositories: [...list.repositories],
+          }),
+        ),
         owners: [...config.databases.remote.owners],
         repositories: [...config.databases.remote.repositories],
       },
@@ -67,9 +69,11 @@ export function cloneDbConfig(config: DbConfig): DbConfig {
         databases: config.databases.local.databases.map((db) => ({ ...db })),
       },
     },
-    selected: config.selected ? {
-      kind: config.selected.kind,
-      value: config.selected.value,
-    } : undefined
+    selected: config.selected
+      ? {
+          kind: config.selected.kind,
+          value: config.selected.value,
+        }
+      : undefined,
   };
 }

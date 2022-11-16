@@ -1,13 +1,16 @@
-import * as React from 'react';
-import styled from 'styled-components';
-import { AnalysisAlert, AnalysisRawResults } from '../../remote-queries/shared/analysis-result';
-import AnalysisAlertResult from '../remote-queries/AnalysisAlertResult';
-import RawResultsTable from '../remote-queries/RawResultsTable';
+import * as React from "react";
+import styled from "styled-components";
+import {
+  AnalysisAlert,
+  AnalysisRawResults,
+} from "../../remote-queries/shared/analysis-result";
+import AnalysisAlertResult from "../remote-queries/AnalysisAlertResult";
+import RawResultsTable from "../remote-queries/RawResultsTable";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
-} from '../../remote-queries/shared/variant-analysis';
-import { Alert } from '../common';
+} from "../../remote-queries/shared/variant-analysis";
+import { Alert } from "../common";
 
 const ContentContainer = styled.div`
   display: flex;
@@ -40,7 +43,7 @@ export type AnalyzedRepoItemContentProps = {
 
   interpretedResults?: AnalysisAlert[];
   rawResults?: AnalysisRawResults;
-}
+};
 
 export const AnalyzedRepoItemContent = ({
   status,
@@ -50,40 +53,50 @@ export const AnalyzedRepoItemContent = ({
 }: AnalyzedRepoItemContentProps) => {
   return (
     <ContentContainer>
-      {status === VariantAnalysisRepoStatus.Failed && <AlertContainer>
-        <Alert
-          type="error"
-          title="Failed"
-          message="The query failed to run on this repository."
-        />
-      </AlertContainer>}
-      {status === VariantAnalysisRepoStatus.TimedOut && <AlertContainer>
-        <Alert
-          type="error"
-          title="Timed out"
-          message="The analysis ran out of time and we couldn't scan the repository."
-        />
-      </AlertContainer>}
-      {status === VariantAnalysisRepoStatus.Canceled && <AlertContainer>
-        <Alert
-          type="error"
-          title="Canceled"
-          message="The variant analysis or this repository was canceled."
-        />
-      </AlertContainer>}
-      {downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Failed && <AlertContainer>
-        <Alert
-          type="error"
-          title="Download failed"
-          message="The query was successful on this repository, but the extension failed to download the results for this repository."
-        />
-      </AlertContainer>}
+      {status === VariantAnalysisRepoStatus.Failed && (
+        <AlertContainer>
+          <Alert
+            type="error"
+            title="Failed"
+            message="The query failed to run on this repository."
+          />
+        </AlertContainer>
+      )}
+      {status === VariantAnalysisRepoStatus.TimedOut && (
+        <AlertContainer>
+          <Alert
+            type="error"
+            title="Timed out"
+            message="The analysis ran out of time and we couldn't scan the repository."
+          />
+        </AlertContainer>
+      )}
+      {status === VariantAnalysisRepoStatus.Canceled && (
+        <AlertContainer>
+          <Alert
+            type="error"
+            title="Canceled"
+            message="The variant analysis or this repository was canceled."
+          />
+        </AlertContainer>
+      )}
+      {downloadStatus ===
+        VariantAnalysisScannedRepositoryDownloadStatus.Failed && (
+        <AlertContainer>
+          <Alert
+            type="error"
+            title="Download failed"
+            message="The query was successful on this repository, but the extension failed to download the results for this repository."
+          />
+        </AlertContainer>
+      )}
       {interpretedResults && (
         <InterpretedResultsContainer>
-          {interpretedResults.map((r, i) =>
+          {interpretedResults.map((r, i) => (
             <InterpretedResultItem key={i}>
               <AnalysisAlertResult alert={r} />
-            </InterpretedResultItem>)}
+            </InterpretedResultItem>
+          ))}
         </InterpretedResultsContainer>
       )}
       {rawResults && (
@@ -92,7 +105,8 @@ export const AnalyzedRepoItemContent = ({
             schema={rawResults.schema}
             results={rawResults.resultSet}
             fileLinkPrefix={rawResults.fileLinkPrefix}
-            sourceLocationPrefix={rawResults.sourceLocationPrefix} />
+            sourceLocationPrefix={rawResults.sourceLocationPrefix}
+          />
         </RawResultsContainer>
       )}
     </ContentContainer>

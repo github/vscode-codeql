@@ -1,20 +1,20 @@
-import React from 'react';
+import React from "react";
 
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import DownloadButtonComponent from '../../view/remote-queries/DownloadButton';
+import DownloadButtonComponent from "../../view/remote-queries/DownloadButton";
 
 export default {
-  title: 'Download Button',
+  title: "Download Button",
   component: DownloadButtonComponent,
   argTypes: {
     onClick: {
-      action: 'clicked',
+      action: "clicked",
       table: {
         disable: true,
       },
     },
-  }
+  },
 } as ComponentMeta<typeof DownloadButtonComponent>;
 
 const Template: ComponentStory<typeof DownloadButtonComponent> = (args) => (
@@ -23,5 +23,5 @@ const Template: ComponentStory<typeof DownloadButtonComponent> = (args) => (
 
 export const DownloadButton = Template.bind({});
 DownloadButton.args = {
-  text: 'Download',
+  text: "Download",
 };

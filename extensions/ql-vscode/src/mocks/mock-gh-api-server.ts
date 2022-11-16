@@ -1,12 +1,12 @@
-import * as path from 'path';
-import * as fs from 'fs-extra';
-import { setupServer, SetupServerApi } from 'msw/node';
+import * as path from "path";
+import * as fs from "fs-extra";
+import { setupServer, SetupServerApi } from "msw/node";
 
-import { DisposableObject } from '../pure/disposable-object';
+import { DisposableObject } from "../pure/disposable-object";
 
-import { Recorder } from './recorder';
-import { createRequestHandlers } from './request-handlers';
-import { getDirectoryNamesInsidePath } from '../pure/files';
+import { Recorder } from "./recorder";
+import { createRequestHandlers } from "./request-handlers";
+import { getDirectoryNamesInsidePath } from "../pure/files";
 
 /**
  * Enables mocking of the GitHub API server via HTTP interception, using msw.
@@ -30,7 +30,7 @@ export class MockGitHubApiServer extends DisposableObject {
       return;
     }
 
-    this.server.listen({ onUnhandledRequest: 'bypass' });
+    this.server.listen({ onUnhandledRequest: "bypass" });
     this._isListening = true;
   }
 
@@ -39,7 +39,10 @@ export class MockGitHubApiServer extends DisposableObject {
     this._isListening = false;
   }
 
-  public async loadScenario(scenarioName: string, scenariosPath?: string): Promise<void> {
+  public async loadScenario(
+    scenarioName: string,
+    scenariosPath?: string,
+  ): Promise<void> {
     if (!scenariosPath) {
       scenariosPath = await this.getDefaultScenariosPath();
       if (!scenariosPath) {
@@ -54,11 +57,14 @@ export class MockGitHubApiServer extends DisposableObject {
     this.server.use(...handlers);
   }
 
-  public async saveScenario(scenarioName: string, scenariosPath?: string): Promise<string> {
+  public async saveScenario(
+    scenarioName: string,
+    scenariosPath?: string,
+  ): Promise<string> {
     if (!scenariosPath) {
       scenariosPath = await this.getDefaultScenariosPath();
       if (!scenariosPath) {
-        throw new Error('Could not find scenarios path');
+        throw new Error("Could not find scenarios path");
       }
     }
 
@@ -123,9 +129,9 @@ export class MockGitHubApiServer extends DisposableObject {
 
   public async getDefaultScenariosPath(): Promise<string | undefined> {
     // This should be the directory where package.json is located
-    const rootDirectory = path.resolve(__dirname, '../..');
+    const rootDirectory = path.resolve(__dirname, "../..");
 
-    const scenariosPath = path.resolve(rootDirectory, 'src/mocks/scenarios');
+    const scenariosPath = path.resolve(rootDirectory, "src/mocks/scenarios");
     if (await fs.pathExists(scenariosPath)) {
       return scenariosPath;
     }

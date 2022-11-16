@@ -1,6 +1,6 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import { Uri, TextDocumentShowOptions, commands, window } from 'vscode';
+import * as fs from "fs-extra";
+import * as path from "path";
+import { Uri, TextDocumentShowOptions, commands, window } from "vscode";
 import {
   TestHub,
   TestController,
@@ -8,17 +8,21 @@ import {
   TestRunStartedEvent,
   TestRunFinishedEvent,
   TestEvent,
-  TestSuiteEvent
-} from 'vscode-test-adapter-api';
+  TestSuiteEvent,
+} from "vscode-test-adapter-api";
 
-import { showAndLogWarningMessage } from './helpers';
-import { TestTreeNode } from './test-tree-node';
-import { DisposableObject } from './pure/disposable-object';
-import { UIService } from './vscode-utils/ui-service';
-import { QLTestAdapter, getExpectedFile, getActualFile } from './test-adapter';
-import { logger } from './logging';
+import { showAndLogWarningMessage } from "./helpers";
+import { TestTreeNode } from "./test-tree-node";
+import { DisposableObject } from "./pure/disposable-object";
+import { UIService } from "./vscode-utils/ui-service";
+import { QLTestAdapter, getExpectedFile, getActualFile } from "./test-adapter";
+import { logger } from "./logging";
 
-type VSCodeTestEvent = TestRunStartedEvent | TestRunFinishedEvent | TestSuiteEvent | TestEvent;
+type VSCodeTestEvent =
+  | TestRunStartedEvent
+  | TestRunFinishedEvent
+  | TestSuiteEvent
+  | TestEvent;
 
 /**
  * Test event listener. Currently unused, but left in to keep the plumbing hooked up for future use.
@@ -44,9 +48,12 @@ export class TestUIService extends UIService implements TestController {
   constructor(private readonly testHub: TestHub) {
     super();
 
-    void logger.log('Registering CodeQL test panel commands.');
-    this.registerCommand('codeQLTests.showOutputDifferences', this.showOutputDifferences);
-    this.registerCommand('codeQLTests.acceptOutput', this.acceptOutput);
+    void logger.log("Registering CodeQL test panel commands.");
+    this.registerCommand(
+      "codeQLTests.showOutputDifferences",
+      this.showOutputDifferences,
+    );
+    this.registerCommand("codeQLTests.acceptOutput", this.acceptOutput);
 
     testHub.registerTestController(this);
   }
@@ -86,18 +93,27 @@ export class TestUIService extends UIService implements TestController {
       const actualPath = getActualFile(testId);
       const options: TextDocumentShowOptions = {
         preserveFocus: true,
-        preview: true
+        preview: true,
       };
 
-      if (!await fs.pathExists(expectedPath)) {
-        void showAndLogWarningMessage(`'${path.basename(expectedPath)}' does not exist. Creating an empty file.`);
+      if (!(await fs.pathExists(expectedPath))) {
+        void showAndLogWarningMessage(
+          `'${path.basename(
+            expectedPath,
+          )}' does not exist. Creating an empty file.`,
+        );
         await fs.createFile(expectedPath);
       }
 
       if (await fs.pathExists(actualPath)) {
         const actualUri = Uri.file(actualPath);
-        await commands.executeCommand<void>('vscode.diff', expectedUri, actualUri,
-          `Expected vs. Actual for ${path.basename(testId)}`, options);
+        await commands.executeCommand<void>(
+          "vscode.diff",
+          expectedUri,
+          actualUri,
+          `Expected vs. Actual for ${path.basename(testId)}`,
+          options,
+        );
       } else {
         await window.showTextDocument(expectedUri, options);
       }

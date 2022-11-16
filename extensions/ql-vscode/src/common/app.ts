@@ -1,5 +1,5 @@
-import { Disposable } from '../pure/disposable-object';
-import { AppEventEmitter } from './events';
+import { Disposable } from "../pure/disposable-object";
+import { AppEventEmitter } from "./events";
 
 export interface App {
   createEventEmitter<T>(): AppEventEmitter<T>;

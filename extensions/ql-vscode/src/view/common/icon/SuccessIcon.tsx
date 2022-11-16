@@ -1,6 +1,6 @@
-import * as React from 'react';
-import styled from 'styled-components';
-import { Codicon } from './Codicon';
+import * as React from "react";
+import styled from "styled-components";
+import { Codicon } from "./Codicon";
 
 const Icon = styled(Codicon)`
   color: var(--vscode-testing-iconPassed);
@@ -9,9 +9,8 @@ const Icon = styled(Codicon)`
 type Props = {
   label?: string;
   className?: string;
-}
+};
 
-export const SuccessIcon = ({
-  label = 'Success',
-  className,
-}: Props) => <Icon name="pass" label={label} className={className} />;
+export const SuccessIcon = ({ label = "Success", className }: Props) => (
+  <Icon name="pass" label={label} className={className} />
+);

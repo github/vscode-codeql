@@ -1,20 +1,22 @@
-import * as path from 'path';
-import * as fs from 'fs-extra';
-import { DefaultBodyType, MockedRequest, rest, RestHandler } from 'msw';
+import * as path from "path";
+import * as fs from "fs-extra";
+import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
 import {
   GitHubApiRequest,
   isGetRepoRequest,
   isGetVariantAnalysisRepoRequest,
   isGetVariantAnalysisRepoResultRequest,
   isGetVariantAnalysisRequest,
-  isSubmitVariantAnalysisRequest
-} from './gh-api-request';
+  isSubmitVariantAnalysisRequest,
+} from "./gh-api-request";
 
-const baseUrl = 'https://api.github.com';
+const baseUrl = "https://api.github.com";
 
 export type RequestHandler = RestHandler<MockedRequest<DefaultBodyType>>;
 
-export async function createRequestHandlers(scenarioDirPath: string): Promise<RequestHandler[]> {
+export async function createRequestHandlers(
+  scenarioDirPath: string,
+): Promise<RequestHandler[]> {
   const requests = await readRequestFiles(scenarioDirPath);
 
   const handlers = [
@@ -28,26 +30,35 @@ export async function createRequestHandlers(scenarioDirPath: string): Promise<Re
   return handlers;
 }
 
-async function readRequestFiles(scenarioDirPath: string): Promise<GitHubApiRequest[]> {
+async function readRequestFiles(
+  scenarioDirPath: string,
+): Promise<GitHubApiRequest[]> {
   const files = await fs.readdir(scenarioDirPath);
 
   const orderedFiles = files.sort((a, b) => {
-    const aNum = parseInt(a.split('-')[0]);
-    const bNum = parseInt(b.split('-')[0]);
+    const aNum = parseInt(a.split("-")[0]);
+    const bNum = parseInt(b.split("-")[0]);
     return aNum - bNum;
   });
 
   const requests: GitHubApiRequest[] = [];
   for (const file of orderedFiles) {
-    if (!file.endsWith('.json')) {
+    if (!file.endsWith(".json")) {
       continue;
     }
 
     const filePath = path.join(scenarioDirPath, file);
-    const request: GitHubApiRequest = await fs.readJson(filePath, { encoding: 'utf8' });
+    const request: GitHubApiRequest = await fs.readJson(filePath, {
+      encoding: "utf8",
+    });
 
-    if (typeof request.response.body === 'string' && request.response.body.startsWith('file:')) {
-      request.response.body = await fs.readFile(path.join(scenarioDirPath, request.response.body.substring(5)));
+    if (
+      typeof request.response.body === "string" &&
+      request.response.body.startsWith("file:")
+    ) {
+      request.response.body = await fs.readFile(
+        path.join(scenarioDirPath, request.response.body.substring(5)),
+      );
     }
 
     requests.push(request);
@@ -56,11 +67,13 @@ async function readRequestFiles(scenarioDirPath: string): Promise<GitHubApiReque
   return requests;
 }
 
-function createGetRepoRequestHandler(requests: GitHubApiRequest[]): RequestHandler {
+function createGetRepoRequestHandler(
+  requests: GitHubApiRequest[],
+): RequestHandler {
   const getRepoRequests = requests.filter(isGetRepoRequest);
 
   if (getRepoRequests.length > 1) {
-    throw Error('More than one get repo request found');
+    throw Error("More than one get repo request found");
   }
 
   const getRepoRequest = getRepoRequests[0];
@@ -73,52 +86,72 @@ function createGetRepoRequestHandler(requests: GitHubApiRequest[]): RequestHandl
   });
 }
 
-function createSubmitVariantAnalysisRequestHandler(requests: GitHubApiRequest[]): RequestHandler {
-  const submitVariantAnalysisRequests = requests.filter(isSubmitVariantAnalysisRequest);
+function createSubmitVariantAnalysisRequestHandler(
+  requests: GitHubApiRequest[],
+): RequestHandler {
+  const submitVariantAnalysisRequests = requests.filter(
+    isSubmitVariantAnalysisRequest,
+  );
 
   if (submitVariantAnalysisRequests.length > 1) {
-    throw Error('More than one submit variant analysis request found');
+    throw Error("More than one submit variant analysis request found");
   }
 
   const getRepoRequest = submitVariantAnalysisRequests[0];
 
-  return rest.post(`${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses`, (_req, res, ctx) => {
-    return res(
-      ctx.status(getRepoRequest.response.status),
-      ctx.json(getRepoRequest.response.body),
-    );
-  });
+  return rest.post(
+    `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses`,
+    (_req, res, ctx) => {
+      return res(
+        ctx.status(getRepoRequest.response.status),
+        ctx.json(getRepoRequest.response.body),
+      );
+    },
+  );
 }
 
-function createGetVariantAnalysisRequestHandler(requests: GitHubApiRequest[]): RequestHandler {
-  const getVariantAnalysisRequests = requests.filter(isGetVariantAnalysisRequest);
+function createGetVariantAnalysisRequestHandler(
+  requests: GitHubApiRequest[],
+): RequestHandler {
+  const getVariantAnalysisRequests = requests.filter(
+    isGetVariantAnalysisRequest,
+  );
   let requestIndex = 0;
 
   // During the lifetime of a variant analysis run, there are multiple requests
   // to get the variant analysis. We need to return different responses for each
   // request, so keep an index of the request and return the appropriate response.
-  return rest.get(`${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId`, (_req, res, ctx) => {
-    const request = getVariantAnalysisRequests[requestIndex];
+  return rest.get(
+    `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId`,
+    (_req, res, ctx) => {
+      const request = getVariantAnalysisRequests[requestIndex];
 
-    if (requestIndex < getVariantAnalysisRequests.length - 1) {
-      // If there are more requests to come, increment the index.
-      requestIndex++;
-    }
+      if (requestIndex < getVariantAnalysisRequests.length - 1) {
+        // If there are more requests to come, increment the index.
+        requestIndex++;
+      }
 
-    return res(
-      ctx.status(request.response.status),
-      ctx.json(request.response.body),
-    );
-  });
+      return res(
+        ctx.status(request.response.status),
+        ctx.json(request.response.body),
+      );
+    },
+  );
 }
 
-function createGetVariantAnalysisRepoRequestHandler(requests: GitHubApiRequest[]): RequestHandler {
-  const getVariantAnalysisRepoRequests = requests.filter(isGetVariantAnalysisRepoRequest);
+function createGetVariantAnalysisRepoRequestHandler(
+  requests: GitHubApiRequest[],
+): RequestHandler {
+  const getVariantAnalysisRepoRequests = requests.filter(
+    isGetVariantAnalysisRepoRequest,
+  );
 
   return rest.get(
     `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/:repoId`,
     (req, res, ctx) => {
-      const scenarioRequest = getVariantAnalysisRepoRequests.find(r => r.request.repositoryId.toString() === req.params.repoId);
+      const scenarioRequest = getVariantAnalysisRepoRequests.find(
+        (r) => r.request.repositoryId.toString() === req.params.repoId,
+      );
       if (!scenarioRequest) {
         throw Error(`No scenario request found for ${req.url}`);
       }
@@ -127,16 +160,23 @@ function createGetVariantAnalysisRepoRequestHandler(requests: GitHubApiRequest[]
         ctx.status(scenarioRequest.response.status),
         ctx.json(scenarioRequest.response.body),
       );
-    });
+    },
+  );
 }
 
-function createGetVariantAnalysisRepoResultRequestHandler(requests: GitHubApiRequest[]): RequestHandler {
-  const getVariantAnalysisRepoResultRequests = requests.filter(isGetVariantAnalysisRepoResultRequest);
+function createGetVariantAnalysisRepoResultRequestHandler(
+  requests: GitHubApiRequest[],
+): RequestHandler {
+  const getVariantAnalysisRepoResultRequests = requests.filter(
+    isGetVariantAnalysisRepoResultRequest,
+  );
 
   return rest.get(
-    'https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/:variantAnalysisId/:repoId/*',
+    "https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/:variantAnalysisId/:repoId/*",
     (req, res, ctx) => {
-      const scenarioRequest = getVariantAnalysisRepoResultRequests.find(r => r.request.repositoryId.toString() === req.params.repoId);
+      const scenarioRequest = getVariantAnalysisRepoResultRequests.find(
+        (r) => r.request.repositoryId.toString() === req.params.repoId,
+      );
       if (!scenarioRequest) {
         throw Error(`No scenario request found for ${req.url}`);
       }
@@ -144,13 +184,12 @@ function createGetVariantAnalysisRepoResultRequestHandler(requests: GitHubApiReq
       if (scenarioRequest.response.body) {
         return res(
           ctx.status(scenarioRequest.response.status),
-          ctx.set('Content-Type', scenarioRequest.response.contentType),
+          ctx.set("Content-Type", scenarioRequest.response.contentType),
           ctx.body(scenarioRequest.response.body),
         );
       } else {
-        return res(
-          ctx.status(scenarioRequest.response.status),
-        );
+        return res(ctx.status(scenarioRequest.response.status));
       }
-    });
+    },
+  );
 }

@@ -1,13 +1,13 @@
-import * as ReactDOM from 'react-dom';
-import { vscode } from './vscode-api';
+import * as ReactDOM from "react-dom";
+import { vscode } from "./vscode-api";
 
-import { WebviewDefinition } from './webview-definition';
+import { WebviewDefinition } from "./webview-definition";
 
 // Allow all views to use Codicons
-import '@vscode/codicons/dist/codicon.css';
+import "@vscode/codicons/dist/codicon.css";
 
 const render = () => {
-  const element = document.getElementById('root');
+  const element = document.getElementById("root");
 
   if (!element) {
     console.error('Could not find element with id "root"');
@@ -16,7 +16,7 @@ const render = () => {
 
   const viewName = element.dataset.view;
   if (!viewName) {
-    console.error('Could not find view name in data-view attribute');
+    console.error("Could not find view name in data-view attribute");
     return;
   }
 
@@ -27,9 +27,9 @@ const render = () => {
 
   ReactDOM.render(
     view.component,
-    document.getElementById('root'),
+    document.getElementById("root"),
     // Post a message to the extension when fully loaded.
-    () => vscode.postMessage({ t: 'viewLoaded', viewName })
+    () => vscode.postMessage({ t: "viewLoaded", viewName }),
   );
 };
 

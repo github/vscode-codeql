@@ -1,4 +1,4 @@
-import * as path from 'path';
+import * as path from "path";
 
 /**
  * Represents a link to an artifact to be downloaded.
@@ -35,6 +35,14 @@ export interface DownloadLink {
  *
  * @returns A full path to the download location of the artifact
  */
-export function createDownloadPath(storagePath: string, downloadLink: DownloadLink, extension = '') {
-  return path.join(storagePath, downloadLink.queryId, downloadLink.id + (extension ? `.${extension}` : ''));
+export function createDownloadPath(
+  storagePath: string,
+  downloadLink: DownloadLink,
+  extension = "",
+) {
+  return path.join(
+    storagePath,
+    downloadLink.queryId,
+    downloadLink.id + (extension ? `.${extension}` : ""),
+  );
 }

@@ -8,7 +8,7 @@ import {
   VariantAnalysisSkippedRepositoryGroup as ApiVariantAnalysisSkippedRepositoryGroup,
   VariantAnalysisNotFoundRepositoryGroup as ApiVariantAnalysisNotFoundRepositoryGroup,
   VariantAnalysisRepoTask as ApiVariantAnalysisRepoTask,
-} from './gh-api/variant-analysis';
+} from "./gh-api/variant-analysis";
 import {
   VariantAnalysis,
   VariantAnalysisFailureReason,
@@ -18,38 +18,48 @@ import {
   VariantAnalysisRepoStatus,
   VariantAnalysisSubmission,
   VariantAnalysisSkippedRepositoryGroup,
-  VariantAnalysisRepositoryTask
-} from './shared/variant-analysis';
+  VariantAnalysisRepositoryTask,
+} from "./shared/variant-analysis";
 
 export function processVariantAnalysis(
   submission: VariantAnalysisSubmission,
-  response: ApiVariantAnalysis
+  response: ApiVariantAnalysis,
 ): VariantAnalysis {
-  return processUpdatedVariantAnalysis({
-    query: {
-      name: submission.query.name,
-      filePath: submission.query.filePath,
-      language: submission.query.language,
-      text: submission.query.text,
+  return processUpdatedVariantAnalysis(
+    {
+      query: {
+        name: submission.query.name,
+        filePath: submission.query.filePath,
+        language: submission.query.language,
+        text: submission.query.text,
+      },
+      databases: submission.databases,
+      executionStartTime: submission.startTime,
     },
-    databases: submission.databases,
-    executionStartTime: submission.startTime
-  }, response);
+    response,
+  );
 }
 
 export function processUpdatedVariantAnalysis(
-  previousVariantAnalysis: Pick<VariantAnalysis, 'query' | 'databases' | 'executionStartTime'>,
-  response: ApiVariantAnalysis
+  previousVariantAnalysis: Pick<
+    VariantAnalysis,
+    "query" | "databases" | "executionStartTime"
+  >,
+  response: ApiVariantAnalysis,
 ): VariantAnalysis {
   let scannedRepos: VariantAnalysisScannedRepository[] = [];
   let skippedRepos: VariantAnalysisSkippedRepositories = {};
 
   if (response.scanned_repositories) {
-    scannedRepos = processScannedRepositories(response.scanned_repositories as ApiVariantAnalysisScannedRepository[]);
+    scannedRepos = processScannedRepositories(
+      response.scanned_repositories as ApiVariantAnalysisScannedRepository[],
+    );
   }
 
   if (response.skipped_repositories) {
-    skippedRepos = processSkippedRepositories(response.skipped_repositories as ApiVariantAnalysisSkippedRepositories);
+    skippedRepos = processSkippedRepositories(
+      response.skipped_repositories as ApiVariantAnalysisSkippedRepositories,
+    );
   }
 
   const variantAnalysis: VariantAnalysis = {
@@ -68,18 +78,20 @@ export function processUpdatedVariantAnalysis(
     completedAt: response.completed_at,
     actionsWorkflowRunId: response.actions_workflow_run_id,
     scannedRepos: scannedRepos,
-    skippedRepos: skippedRepos
+    skippedRepos: skippedRepos,
   };
 
   if (response.failure_reason) {
-    variantAnalysis.failureReason = processFailureReason(response.failure_reason);
+    variantAnalysis.failureReason = processFailureReason(
+      response.failure_reason,
+    );
   }
 
   return variantAnalysis;
 }
 
 export function processVariantAnalysisRepositoryTask(
-  response: ApiVariantAnalysisRepoTask
+  response: ApiVariantAnalysisRepoTask,
 ): VariantAnalysisRepositoryTask {
   return {
     repository: {
@@ -98,7 +110,7 @@ export function processVariantAnalysisRepositoryTask(
 }
 
 export function processScannedRepository(
-  scannedRepo: ApiVariantAnalysisScannedRepository
+  scannedRepo: ApiVariantAnalysisScannedRepository,
 ): VariantAnalysisScannedRepository {
   return {
     repository: {
@@ -111,104 +123,115 @@ export function processScannedRepository(
     analysisStatus: processApiRepoStatus(scannedRepo.analysis_status),
     resultCount: scannedRepo.result_count,
     artifactSizeInBytes: scannedRepo.artifact_size_in_bytes,
-    failureMessage: scannedRepo.failure_message
+    failureMessage: scannedRepo.failure_message,
   };
 }
 
 function processScannedRepositories(
-  scannedRepos: ApiVariantAnalysisScannedRepository[]
+  scannedRepos: ApiVariantAnalysisScannedRepository[],
 ): VariantAnalysisScannedRepository[] {
-  return scannedRepos.map(scannedRepo => processScannedRepository(scannedRepo));
+  return scannedRepos.map((scannedRepo) =>
+    processScannedRepository(scannedRepo),
+  );
 }
 
 function processSkippedRepositories(
-  skippedRepos: ApiVariantAnalysisSkippedRepositories
+  skippedRepos: ApiVariantAnalysisSkippedRepositories,
 ): VariantAnalysisSkippedRepositories {
-
   return {
     accessMismatchRepos: processRepoGroup(skippedRepos.access_mismatch_repos),
     notFoundRepos: processNotFoundRepoGroup(skippedRepos.not_found_repos),
     noCodeqlDbRepos: processRepoGroup(skippedRepos.no_codeql_db_repos),
-    overLimitRepos: processRepoGroup(skippedRepos.over_limit_repos)
+    overLimitRepos: processRepoGroup(skippedRepos.over_limit_repos),
   };
 }
 
-function processRepoGroup(repoGroup: ApiVariantAnalysisSkippedRepositoryGroup | undefined): VariantAnalysisSkippedRepositoryGroup | undefined {
+function processRepoGroup(
+  repoGroup: ApiVariantAnalysisSkippedRepositoryGroup | undefined,
+): VariantAnalysisSkippedRepositoryGroup | undefined {
   if (!repoGroup) {
     return undefined;
   }
 
-  const repos = repoGroup.repositories.map(repo => {
+  const repos = repoGroup.repositories.map((repo) => {
     return {
       id: repo.id,
       fullName: repo.full_name,
       private: repo.private,
       stargazersCount: repo.stargazers_count,
-      updatedAt: repo.updated_at
+      updatedAt: repo.updated_at,
     };
   });
 
   return {
     repositoryCount: repoGroup.repository_count,
-    repositories: repos
+    repositories: repos,
   };
 }
 
-function processNotFoundRepoGroup(repoGroup: ApiVariantAnalysisNotFoundRepositoryGroup | undefined): VariantAnalysisSkippedRepositoryGroup | undefined {
+function processNotFoundRepoGroup(
+  repoGroup: ApiVariantAnalysisNotFoundRepositoryGroup | undefined,
+): VariantAnalysisSkippedRepositoryGroup | undefined {
   if (!repoGroup) {
     return undefined;
   }
 
-  const repo_full_names = repoGroup.repository_full_names.map(nwo => {
+  const repo_full_names = repoGroup.repository_full_names.map((nwo) => {
     return {
-      fullName: nwo
+      fullName: nwo,
     };
   });
 
   return {
     repositoryCount: repoGroup.repository_count,
-    repositories: repo_full_names
+    repositories: repo_full_names,
   };
 }
 
-function processApiRepoStatus(analysisStatus: ApiVariantAnalysisRepoStatus): VariantAnalysisRepoStatus {
+function processApiRepoStatus(
+  analysisStatus: ApiVariantAnalysisRepoStatus,
+): VariantAnalysisRepoStatus {
   switch (analysisStatus) {
-    case 'pending':
+    case "pending":
       return VariantAnalysisRepoStatus.Pending;
-    case 'in_progress':
+    case "in_progress":
       return VariantAnalysisRepoStatus.InProgress;
-    case 'succeeded':
+    case "succeeded":
       return VariantAnalysisRepoStatus.Succeeded;
-    case 'failed':
+    case "failed":
       return VariantAnalysisRepoStatus.Failed;
-    case 'canceled':
+    case "canceled":
       return VariantAnalysisRepoStatus.Canceled;
-    case 'timed_out':
+    case "timed_out":
       return VariantAnalysisRepoStatus.TimedOut;
   }
 }
 
-function processApiStatus(status: ApiVariantAnalysisStatus): VariantAnalysisStatus {
-  if (status === 'succeeded') {
+function processApiStatus(
+  status: ApiVariantAnalysisStatus,
+): VariantAnalysisStatus {
+  if (status === "succeeded") {
     return VariantAnalysisStatus.Succeeded;
-  } else if (status === 'in_progress') {
+  } else if (status === "in_progress") {
     return VariantAnalysisStatus.InProgress;
-  } else if (status === 'failed') {
+  } else if (status === "failed") {
     return VariantAnalysisStatus.Failed;
-  } else if (status === 'cancelled') {
+  } else if (status === "cancelled") {
     return VariantAnalysisStatus.Canceled;
   } else {
     return VariantAnalysisStatus.InProgress;
   }
 }
 
-export function processFailureReason(failureReason: ApiVariantAnalysisFailureReason): VariantAnalysisFailureReason {
+export function processFailureReason(
+  failureReason: ApiVariantAnalysisFailureReason,
+): VariantAnalysisFailureReason {
   switch (failureReason) {
-    case 'no_repos_queried':
+    case "no_repos_queried":
       return VariantAnalysisFailureReason.NoReposQueried;
-    case 'actions_workflow_run_failed':
+    case "actions_workflow_run_failed":
       return VariantAnalysisFailureReason.ActionsWorkflowRunFailed;
-    case 'internal_error':
+    case "internal_error":
       return VariantAnalysisFailureReason.InternalError;
   }
 }

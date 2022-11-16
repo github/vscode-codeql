@@ -1,9 +1,9 @@
-import { FileLink } from '../remote-queries/shared/analysis-result';
+import { FileLink } from "../remote-queries/shared/analysis-result";
 
 export function createRemoteFileRef(
   fileLink: FileLink,
   startLine?: number,
-  endLine?: number
+  endLine?: number,
 ): string {
   if (startLine && endLine) {
     return `${fileLink.fileLinkPrefix}/${fileLink.filePath}#L${startLine}-L${endLine}`;

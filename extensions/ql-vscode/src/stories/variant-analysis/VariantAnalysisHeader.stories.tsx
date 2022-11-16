@@ -1,61 +1,64 @@
-import React from 'react';
+import React from "react";
 
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { ComponentMeta, ComponentStory } from "@storybook/react";
 
-import { VariantAnalysisContainer } from '../../view/variant-analysis/VariantAnalysisContainer';
-import { VariantAnalysisHeader } from '../../view/variant-analysis/VariantAnalysisHeader';
-import { VariantAnalysisRepoStatus, VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
-import { createMockVariantAnalysis } from '../../vscode-tests/factories/remote-queries/shared/variant-analysis';
-import { createMockScannedRepo } from '../../vscode-tests/factories/remote-queries/shared/scanned-repositories';
+import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
+import { VariantAnalysisHeader } from "../../view/variant-analysis/VariantAnalysisHeader";
+import {
+  VariantAnalysisRepoStatus,
+  VariantAnalysisStatus,
+} from "../../remote-queries/shared/variant-analysis";
+import { createMockVariantAnalysis } from "../../vscode-tests/factories/remote-queries/shared/variant-analysis";
+import { createMockScannedRepo } from "../../vscode-tests/factories/remote-queries/shared/scanned-repositories";
 
 export default {
-  title: 'Variant Analysis/Variant Analysis Header',
+  title: "Variant Analysis/Variant Analysis Header",
   component: VariantAnalysisHeader,
   decorators: [
     (Story) => (
       <VariantAnalysisContainer>
         <Story />
       </VariantAnalysisContainer>
-    )
+    ),
   ],
   argTypes: {
     onOpenQueryFileClick: {
-      action: 'open-query-file-clicked',
+      action: "open-query-file-clicked",
       table: {
         disable: true,
       },
     },
     onViewQueryTextClick: {
-      action: 'view-query-text-clicked',
+      action: "view-query-text-clicked",
       table: {
         disable: true,
       },
     },
     onStopQueryClick: {
-      action: 'stop-query-clicked',
+      action: "stop-query-clicked",
       table: {
         disable: true,
       },
     },
     onCopyRepositoryListClick: {
-      action: 'copy-repository-list-clicked',
+      action: "copy-repository-list-clicked",
       table: {
         disable: true,
       },
     },
     onExportResultsClick: {
-      action: 'export-results-clicked',
+      action: "export-results-clicked",
       table: {
         disable: true,
       },
     },
     onViewLogsClick: {
-      action: 'view-logs-clicked',
+      action: "view-logs-clicked",
       table: {
         disable: true,
-      }
+      },
     },
-  }
+  },
 } as ComponentMeta<typeof VariantAnalysisHeader>;
 
 const Template: ComponentStory<typeof VariantAnalysisHeader> = (args) => (
@@ -88,7 +91,7 @@ InProgress.args = {
       createMockScannedRepo(),
       createMockScannedRepo(),
       createMockScannedRepo(),
-    ]
+    ],
   }),
 };
 
@@ -102,7 +105,7 @@ Succeeded.args = {
         ...createMockScannedRepo(),
         analysisStatus: VariantAnalysisRepoStatus.Succeeded,
         resultCount: 100,
-      }))
+      })),
     }),
     createdAt: new Date(1661262726000).toISOString(),
     completedAt: new Date(1661263446000).toISOString(),
@@ -116,7 +119,7 @@ Failed.args = {
     ...createMockVariantAnalysis({
       status: VariantAnalysisStatus.Failed,
       scannedRepos: [],
-      skippedRepos: {}
+      skippedRepos: {},
     }),
     createdAt: new Date(1661263436000).toISOString(),
     completedAt: new Date(1661263446000).toISOString(),
