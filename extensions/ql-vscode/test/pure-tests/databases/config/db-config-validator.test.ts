@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as path from 'path';
-import { DbConfig } from '../../../src/databases/db-config';
-import { DbConfigValidator } from '../../../src/databases/db-config-validator';
+import { DbConfig } from '../../../../src/databases/config/db-config';
+import { DbConfigValidator } from '../../../../src/databases/config/db-config-validator';
 
 describe('db config validation', async () => {
   const extensionPath = path.join(__dirname, '../../..');

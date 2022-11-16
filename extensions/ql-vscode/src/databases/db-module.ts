@@ -2,7 +2,7 @@ import { App, AppMode } from '../common/app';
 import { isCanary, isNewQueryRunExperienceEnabled } from '../config';
 import { logger } from '../logging';
 import { DisposableObject } from '../pure/disposable-object';
-import { DbConfigStore } from './db-config-store';
+import { DbConfigStore } from './config/db-config-store';
 import { DbManager } from './db-manager';
 import { DbPanel } from './ui/db-panel';
 

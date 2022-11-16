@@ -1,4 +1,4 @@
-import { DbConfig, RemoteRepositoryList } from './db-config';
+import { DbConfig, RemoteRepositoryList } from './config/db-config';
 import {
   DbItemKind,
   RemoteOwnerDbItem,
