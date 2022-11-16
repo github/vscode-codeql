@@ -99,7 +99,7 @@ When the results are ready, they're displayed in the CodeQL Query Results view. 
 
 If there are any problems running a query, a notification is displayed in the bottom right corner of the application. In addition to the error message, the notification includes details of how to fix the problem.
 
-### Keyboad navigation
+### Keyboard navigation
 
 If you wish to navigate the query results from your keyboard, you can bind shortcuts to the **CodeQL: Navigate Up/Down/Left/Right in Result Viewer** commands.
 

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
   VariantAnalysis as VariantAnalysisDomainModel,
@@ -11,6 +11,7 @@ import { VariantAnalysisOutcomePanels } from './VariantAnalysisOutcomePanels';
 import { VariantAnalysisLoading } from './VariantAnalysisLoading';
 import { ToVariantAnalysisMessage } from '../../pure/interface-types';
 import { vscode } from '../vscode-api';
+import { defaultFilterSortState, RepositoriesFilterSortState } from '../../pure/variant-analysis-filter-sort';
 
 type Props = {
   variantAnalysis?: VariantAnalysisDomainModel;
@@ -36,12 +37,6 @@ const stopQuery = () => {
   });
 };
 
-const copyRepositoryList = () => {
-  vscode.postMessage({
-    t: 'copyRepositoryList',
-  });
-};
-
 const exportResults = () => {
   vscode.postMessage({
     t: 'exportResults',
@@ -64,6 +59,7 @@ export function VariantAnalysis({
   const [repoResults, setRepoResults] = useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
 
   const [selectedRepositoryIds, setSelectedRepositoryIds] = useState<number[]>([]);
+  const [filterSortState, setFilterSortState] = useState<RepositoriesFilterSortState>(defaultFilterSortState);
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
@@ -98,6 +94,13 @@ export function VariantAnalysis({
     };
   }, []);
 
+  const copyRepositoryList = useCallback(() => {
+    vscode.postMessage({
+      t: 'copyRepositoryList',
+      filterSort: filterSortState,
+    });
+  }, [filterSortState]);
+
   if (variantAnalysis?.actionsWorkflowRunId === undefined) {
     return <VariantAnalysisLoading />;
   }
@@ -119,6 +122,8 @@ export function VariantAnalysis({
         repositoryResults={repoResults}
         selectedRepositoryIds={selectedRepositoryIds}
         setSelectedRepositoryIds={setSelectedRepositoryIds}
+        filterSortState={filterSortState}
+        setFilterSortState={setFilterSortState}
       />
     </>
   );

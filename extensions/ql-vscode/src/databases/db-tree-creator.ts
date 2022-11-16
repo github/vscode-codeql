@@ -1,4 +1,4 @@
-import { DbConfig, LocalDatabase, LocalList, RemoteRepositoryList } from './db-config';
+import { DbConfig, LocalDatabase, LocalList, RemoteRepositoryList } from './config/db-config';
 import {
   DbItemKind,
   LocalDatabaseDbItem,

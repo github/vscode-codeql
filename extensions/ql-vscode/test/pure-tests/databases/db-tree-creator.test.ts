@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { DbConfig } from '../../../src/databases/db-config';
+import { DbConfig } from '../../../src/databases/config/db-config';
 import { DbItemKind } from '../../../src/databases/db-item';
 import { createLocalTree, createRemoteTree } from '../../../src/databases/db-tree-creator';
 
