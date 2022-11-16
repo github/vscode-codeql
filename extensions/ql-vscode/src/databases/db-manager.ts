@@ -29,7 +29,7 @@ export class DbManager {
 
     return ValueResult.ok([
       createRemoteTree(configResult.value),
-      createLocalTree()
+      createLocalTree(configResult.value)
     ]);
   }
 

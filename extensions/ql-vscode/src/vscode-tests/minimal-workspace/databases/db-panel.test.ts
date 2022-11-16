@@ -8,7 +8,7 @@ import { DbManager } from '../../../databases/db-manager';
 import { DbConfigStore } from '../../../databases/config/db-config-store';
 import { DbTreeDataProvider } from '../../../databases/ui/db-tree-data-provider';
 import { DbPanel } from '../../../databases/ui/db-panel';
-import { DbItemKind } from '../../../databases/db-item';
+import { DbItemKind, LocalDatabaseDbItem } from '../../../databases/db-item';
 import { DbTreeViewItem } from '../../../databases/ui/db-tree-view-item';
 import { ExtensionApp } from '../../../common/vscode/vscode-app';
 import { createMockExtensionContext } from '../../factories/extension-context';
@@ -235,6 +235,151 @@ describe('db panel', async () => {
     checkRemoteRepoItem(repoItems[1], 'owner1/repo2');
   });
 
+  it('should render local list nodes', async () => {
+    const dbConfig: DbConfig = {
+      databases: {
+        remote: {
+          repositoryLists: [],
+          owners: [],
+          repositories: []
+        },
+        local: {
+          lists: [
+            {
+              name: 'my-list-1',
+              databases: [
+                {
+                  name: 'db1',
+                  dateAdded: 1668428293677,
+                  language: 'cpp',
+                  storagePath: '/path/to/db1/',
+                },
+                {
+                  name: 'db2',
+                  dateAdded: 1668428472731,
+                  language: 'cpp',
+                  storagePath: '/path/to/db2/',
+                },
+              ],
+            },
+            {
+              name: 'my-list-2',
+              databases: [
+                {
+                  name: 'db3',
+                  dateAdded: 1668428472731,
+                  language: 'ruby',
+                  storagePath: '/path/to/db3/',
+                },
+              ],
+            },
+          ],
+          databases: []
+        },
+      },
+    };
+
+    await saveDbConfig(dbConfig);
+
+    const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+    expect(dbTreeItems).to.be.ok;
+    const items = dbTreeItems!;
+    expect(items.length).to.equal(2);
+
+    const localRootNode = items[1];
+    expect(localRootNode.dbItem).to.be.ok;
+    expect(localRootNode.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.Collapsed);
+    expect(localRootNode.children).to.be.ok;
+    expect(localRootNode.children.length).to.equal(2);
+
+    const localListItems = localRootNode.children.filter(item => item.dbItem?.kind === DbItemKind.LocalList);
+    expect(localListItems.length).to.equal(2);
+    checkLocalListItem(localListItems[0], 'my-list-1', [{
+      kind: DbItemKind.LocalDatabase,
+      databaseName: 'db1',
+      dateAdded: 1668428293677,
+      language: 'cpp',
+      storagePath: '/path/to/db1/',
+    },
+    {
+      kind: DbItemKind.LocalDatabase,
+      databaseName: 'db2',
+      dateAdded: 1668428472731,
+      language: 'cpp',
+      storagePath: '/path/to/db2/',
+    }]);
+    checkLocalListItem(localListItems[1], 'my-list-2', [
+      {
+        kind: DbItemKind.LocalDatabase,
+        databaseName: 'db3',
+        dateAdded: 1668428472731,
+        language: 'ruby',
+        storagePath: '/path/to/db3/',
+      },
+    ]);
+  });
+
+  it('should render local database nodes', async () => {
+    const dbConfig: DbConfig = {
+      databases: {
+        remote: {
+          repositoryLists: [],
+          owners: [],
+          repositories: []
+        },
+        local: {
+          lists: [],
+          databases: [
+            {
+              name: 'db1',
+              dateAdded: 1668428293677,
+              language: 'csharp',
+              storagePath: '/path/to/db1/',
+            },
+            {
+              name: 'db2',
+              dateAdded: 1668428472731,
+              language: 'go',
+              storagePath: '/path/to/db2/',
+            }
+          ]
+        }
+      }
+    };
+
+    await saveDbConfig(dbConfig);
+
+    const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+    expect(dbTreeItems).to.be.ok;
+    const items = dbTreeItems!;
+    expect(items.length).to.equal(2);
+
+    const localRootNode = items[1];
+    expect(localRootNode.dbItem).to.be.ok;
+    expect(localRootNode.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.Collapsed);
+    expect(localRootNode.children).to.be.ok;
+    expect(localRootNode.children.length).to.equal(2);
+
+    const localDatabaseItems = localRootNode.children.filter(item => item.dbItem?.kind === DbItemKind.LocalDatabase);
+    expect(localDatabaseItems.length).to.equal(2);
+    checkLocalDatabaseItem(localDatabaseItems[0], {
+      kind: DbItemKind.LocalDatabase,
+      databaseName: 'db1',
+      dateAdded: 1668428293677,
+      language: 'csharp',
+      storagePath: '/path/to/db1/',
+    });
+    checkLocalDatabaseItem(localDatabaseItems[1], {
+      kind: DbItemKind.LocalDatabase,
+      databaseName: 'db2',
+      dateAdded: 1668428472731,
+      language: 'go',
+      storagePath: '/path/to/db2/',
+    });
+  });
+
   async function saveDbConfig(dbConfig: DbConfig): Promise<void> {
     await fs.writeJson(dbConfigFilePath, dbConfig);
 
@@ -291,6 +436,33 @@ describe('db panel', async () => {
   ): void {
     expect(item.label).to.equal(repoName);
     expect(item.tooltip).to.be.undefined;
+    expect(item.iconPath).to.deep.equal(new vscode.ThemeIcon('database'));
+    expect(item.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.None);
+  }
+
+  function checkLocalListItem(
+    item: DbTreeViewItem,
+    listName: string,
+    databases: LocalDatabaseDbItem[]
+  ): void {
+    expect(item.label).to.equal(listName);
+    expect(item.tooltip).to.be.undefined;
+    expect(item.iconPath).to.be.undefined;
+    expect(item.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.Collapsed);
+    expect(item.children).to.be.ok;
+    expect(item.children.length).to.equal(databases.length);
+
+    for (let i = 0; i < databases.length; i++) {
+      checkLocalDatabaseItem(item.children[i], databases[i]);
+    }
+  }
+
+  function checkLocalDatabaseItem(
+    item: DbTreeViewItem,
+    database: LocalDatabaseDbItem,
+  ): void {
+    expect(item.label).to.equal(database.databaseName);
+    expect(item.tooltip).to.equal(`Language: ${database.language}`);
     expect(item.iconPath).to.deep.equal(new vscode.ThemeIcon('database'));
     expect(item.collapsibleState).to.equal(vscode.TreeItemCollapsibleState.None);
   }
