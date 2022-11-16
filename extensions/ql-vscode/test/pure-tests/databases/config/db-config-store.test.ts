@@ -1,11 +1,11 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { DbConfigStore } from '../../../src/databases/db-config-store';
+import { DbConfigStore } from '../../../../src/databases/config/db-config-store';
 import { expect } from 'chai';
-import { createMockApp } from '../../__mocks__/appMock';
+import { createMockApp } from '../../../__mocks__/appMock';
 
 describe('db config store', async () => {
-  const extensionPath = path.join(__dirname, '../../..');
+  const extensionPath = path.join(__dirname, '../../../..');
   const tempWorkspaceStoragePath = path.join(__dirname, 'test-workspace');
   const testDataStoragePath = path.join(__dirname, 'data');
 

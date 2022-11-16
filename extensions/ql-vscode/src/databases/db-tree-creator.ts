@@ -1,6 +1,8 @@
-import { DbConfig, RemoteRepositoryList } from './db-config';
+import { DbConfig, LocalDatabase, LocalList, RemoteRepositoryList } from './config/db-config';
 import {
   DbItemKind,
+  LocalDatabaseDbItem,
+  LocalListDbItem,
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
@@ -31,10 +33,16 @@ export function createRemoteTree(dbConfig: DbConfig): RootRemoteDbItem {
   };
 }
 
-export function createLocalTree(): RootLocalDbItem {
-  // This will be fleshed out further in the future.
+export function createLocalTree(dbConfig: DbConfig): RootLocalDbItem {
+  const localLists = dbConfig.databases.local.lists.map(createLocalList);
+  const localDbs = dbConfig.databases.local.databases.map(createLocalDb);
+
   return {
-    kind: DbItemKind.RootLocal
+    kind: DbItemKind.RootLocal,
+    children: [
+      ...localLists,
+      ...localDbs
+    ]
   };
 }
 
@@ -66,5 +74,23 @@ function createRepoItem(repo: string): RemoteRepoDbItem {
   return {
     kind: DbItemKind.RemoteRepo,
     repoFullName: repo
+  };
+}
+
+function createLocalList(list: LocalList): LocalListDbItem {
+  return {
+    kind: DbItemKind.LocalList,
+    listName: list.name,
+    databases: list.databases.map(createLocalDb)
+  };
+}
+
+function createLocalDb(db: LocalDatabase): LocalDatabaseDbItem {
+  return {
+    kind: DbItemKind.LocalDatabase,
+    databaseName: db.name,
+    dateAdded: db.dateAdded,
+    language: db.language,
+    storagePath: db.storagePath
   };
 }

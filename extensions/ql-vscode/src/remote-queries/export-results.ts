@@ -119,11 +119,14 @@ export async function exportVariantAnalysisResults(
   }
 
   async function* getAnalysesResults(): AsyncGenerator<[VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]> {
-    if (!variantAnalysis?.scannedRepos) {
+    if (!variantAnalysis) {
       return;
     }
 
     const repositories = filterAndSortRepositoriesWithResults(variantAnalysis.scannedRepos, filterSort);
+    if (!repositories) {
+      return;
+    }
 
     for (const repo of repositories) {
       if (repo.resultCount == 0) {
