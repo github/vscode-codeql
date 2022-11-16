@@ -2,11 +2,11 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { cloneDbConfig, DbConfig } from './db-config';
 import * as chokidar from 'chokidar';
-import { DisposableObject } from '../pure/disposable-object';
+import { DisposableObject } from '../../pure/disposable-object';
 import { DbConfigValidator } from './db-config-validator';
-import { ValueResult } from '../common/value-result';
-import { App } from '../common/app';
-import { AppEvent, AppEventEmitter } from '../common/events';
+import { ValueResult } from '../../common/value-result';
+import { App } from '../../common/app';
+import { AppEvent, AppEventEmitter } from '../../common/events';
 
 export class DbConfigStore extends DisposableObject {
   public readonly onDidChangeConfig: AppEvent<void>;
