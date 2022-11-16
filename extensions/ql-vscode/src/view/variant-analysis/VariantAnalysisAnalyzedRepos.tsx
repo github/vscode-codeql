@@ -8,7 +8,7 @@ import {
   VariantAnalysisScannedRepositoryState
 } from '../../remote-queries/shared/variant-analysis';
 import {
-  filterAndSortRepositoriesWithResults,
+  filterAndSortRepositoriesWithResultsByName,
   RepositoriesFilterSortState,
 } from '../../pure/variant-analysis-filter-sort';
 
@@ -55,7 +55,7 @@ export const VariantAnalysisAnalyzedRepos = ({
   }, [repositoryResults]);
 
   const repositories = useMemo(() => {
-    return filterAndSortRepositoriesWithResults(variantAnalysis.scannedRepos, filterSortState);
+    return filterAndSortRepositoriesWithResultsByName(variantAnalysis.scannedRepos, filterSortState);
   }, [filterSortState, variantAnalysis.scannedRepos]);
 
   const onSelectedChange = useCallback((repositoryId: number, selected: boolean) => {

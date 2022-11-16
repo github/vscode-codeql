@@ -76,22 +76,26 @@ export function compareWithResults(filterSortState: RepositoriesFilterSortState 
   };
 }
 
-function isFilterOnRepositoryIds(filterSortState: RepositoriesFilterSortState | RepositoriesFilterSortStateWithIds | undefined): filterSortState is RepositoriesFilterSortStateWithIds & Required<Pick<RepositoriesFilterSortStateWithIds, 'repositoryIds'>> {
-  return !!filterSortState && 'repositoryIds' in filterSortState && filterSortState.repositoryIds !== undefined && filterSortState.repositoryIds.length > 0;
-}
-
-// These define the behavior for undefined input values
-export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[], filterSortState: RepositoriesFilterSortState | RepositoriesFilterSortStateWithIds | undefined): T[];
-export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[] | undefined, filterSortState: RepositoriesFilterSortState | RepositoriesFilterSortStateWithIds | undefined): T[] | undefined;
-
-export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[] | undefined, filterSortState: RepositoriesFilterSortState | RepositoriesFilterSortStateWithIds | undefined): T[] | undefined {
+export function filterAndSortRepositoriesWithResultsByName<T extends SortableResult>(repositories: T[] | undefined, filterSortState: RepositoriesFilterSortState | undefined): T[] | undefined {
   if (!repositories) {
     return undefined;
   }
 
-  const filteredRepositories = isFilterOnRepositoryIds(filterSortState) ?
-    repositories.filter(repo => filterSortState.repositoryIds.includes(repo.repository.id)) :
-    repositories.filter(repo => matchesFilter(repo.repository, filterSortState));
+  return repositories
+    .filter(repo => matchesFilter(repo.repository, filterSortState))
+    .sort(compareWithResults(filterSortState));
+}
 
-  return filteredRepositories.sort(compareWithResults(filterSortState));
+export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[] | undefined, filterSortState: RepositoriesFilterSortStateWithIds | undefined): T[] | undefined {
+  if (!repositories) {
+    return undefined;
+  }
+
+  if (filterSortState?.repositoryIds && filterSortState.repositoryIds.length > 0) {
+    return repositories
+      .filter(repo => filterSortState.repositoryIds?.includes(repo.repository.id))
+      .sort(compareWithResults(filterSortState));
+  }
+
+  return filterAndSortRepositoriesWithResultsByName(repositories, filterSortState);
 }

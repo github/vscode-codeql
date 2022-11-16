@@ -3,6 +3,7 @@ import {
   compareWithResults,
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,
+  filterAndSortRepositoriesWithResultsByName,
   matchesFilter,
   SortKey,
 } from '../../../pure/variant-analysis-filter-sort';
@@ -290,6 +291,58 @@ describe(compareWithResults.name, () => {
         ...left,
         resultCount: undefined,
       }, right)).toBeGreaterThan(0);
+    });
+  });
+});
+
+describe(filterAndSortRepositoriesWithResultsByName.name, () => {
+  const repositories = [
+    {
+      repository: {
+        id: 10,
+        fullName: 'github/galaxy',
+      },
+      resultCount: 10,
+    },
+    {
+      repository: {
+        id: 11,
+        fullName: 'github/world',
+      },
+      resultCount: undefined,
+    },
+    {
+      repository: {
+        id: 13,
+        fullName: 'github/planet',
+      },
+      resultCount: 500,
+    },
+    {
+      repository: {
+        id: 783532,
+        fullName: 'github/stars',
+      },
+      resultCount: 8000,
+    }
+  ];
+
+  describe('when sort key is given without filter', () => {
+    it('returns the correct results', () => {
+      expect(filterAndSortRepositoriesWithResultsByName(repositories, {
+        ...defaultFilterSortState,
+        sortKey: SortKey.ResultsCount,
+      })).toEqual([repositories[3], repositories[2], repositories[0], repositories[1]]);
+    });
+  });
+
+  describe('when sort key and search filter are given', () => {
+    it('returns the correct results', () => {
+      expect(filterAndSortRepositoriesWithResultsByName(repositories, {
+        ...defaultFilterSortState,
+        sortKey: SortKey.ResultsCount,
+        searchValue: 'la',
+      })).toEqual([repositories[2], repositories[0]]);
     });
   });
 });
