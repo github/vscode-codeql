@@ -1,4 +1,12 @@
-import { compareRepository, compareWithResults, defaultFilterSortState, matchesFilter, SortKey } from '../../../pure/variant-analysis-filter-sort';
+import {
+  compareRepository,
+  compareWithResults,
+  defaultFilterSortState,
+  filterAndSortRepositoriesWithResults,
+  filterAndSortRepositoriesWithResultsByName,
+  matchesFilter,
+  SortKey,
+} from '../../../pure/variant-analysis-filter-sort';
 
 // TODO: Move this file to the "pure" tests once it has been switched to Jest
 describe(matchesFilter.name, () => {
@@ -170,11 +178,13 @@ describe(compareWithResults.name, () => {
 
     const left = {
       repository: {
+        id: 10,
         fullName: 'github/galaxy',
       },
     };
     const right = {
       repository: {
+        id: 12,
         fullName: 'github/world',
       },
     };
@@ -192,12 +202,14 @@ describe(compareWithResults.name, () => {
 
     const left = {
       repository: {
+        id: 11,
         fullName: 'github/galaxy',
         stargazersCount: 1,
       },
     };
     const right = {
       repository: {
+        id: 12,
         fullName: 'github/world',
         stargazersCount: 10,
       },
@@ -216,12 +228,14 @@ describe(compareWithResults.name, () => {
 
     const left = {
       repository: {
+        id: 11,
         fullName: 'github/galaxy',
         updatedAt: '2020-01-01T00:00:00Z',
       },
     };
     const right = {
       repository: {
+        id: 12,
         fullName: 'github/world',
         updatedAt: '2021-01-01T00:00:00Z',
       },
@@ -240,12 +254,14 @@ describe(compareWithResults.name, () => {
 
     const left = {
       repository: {
+        id: 11,
         fullName: 'github/galaxy',
       },
       resultCount: 10,
     };
     const right = {
       repository: {
+        id: 12,
         fullName: 'github/world',
       },
       resultCount: 100,
@@ -275,6 +291,139 @@ describe(compareWithResults.name, () => {
         ...left,
         resultCount: undefined,
       }, right)).toBeGreaterThan(0);
+    });
+  });
+});
+
+describe(filterAndSortRepositoriesWithResultsByName.name, () => {
+  const repositories = [
+    {
+      repository: {
+        id: 10,
+        fullName: 'github/galaxy',
+      },
+      resultCount: 10,
+    },
+    {
+      repository: {
+        id: 11,
+        fullName: 'github/world',
+      },
+      resultCount: undefined,
+    },
+    {
+      repository: {
+        id: 13,
+        fullName: 'github/planet',
+      },
+      resultCount: 500,
+    },
+    {
+      repository: {
+        id: 783532,
+        fullName: 'github/stars',
+      },
+      resultCount: 8000,
+    }
+  ];
+
+  describe('when sort key is given without filter', () => {
+    it('returns the correct results', () => {
+      expect(filterAndSortRepositoriesWithResultsByName(repositories, {
+        ...defaultFilterSortState,
+        sortKey: SortKey.ResultsCount,
+      })).toEqual([repositories[3], repositories[2], repositories[0], repositories[1]]);
+    });
+  });
+
+  describe('when sort key and search filter are given', () => {
+    it('returns the correct results', () => {
+      expect(filterAndSortRepositoriesWithResultsByName(repositories, {
+        ...defaultFilterSortState,
+        sortKey: SortKey.ResultsCount,
+        searchValue: 'la',
+      })).toEqual([repositories[2], repositories[0]]);
+    });
+  });
+});
+
+describe(filterAndSortRepositoriesWithResults.name, () => {
+  const repositories = [
+    {
+      repository: {
+        id: 10,
+        fullName: 'github/galaxy',
+      },
+      resultCount: 10,
+    },
+    {
+      repository: {
+        id: 11,
+        fullName: 'github/world',
+      },
+      resultCount: undefined,
+    },
+    {
+      repository: {
+        id: 13,
+        fullName: 'github/planet',
+      },
+      resultCount: 500,
+    },
+    {
+      repository: {
+        id: 783532,
+        fullName: 'github/stars',
+      },
+      resultCount: 8000,
+    }
+  ];
+
+  describe('when sort key is given without filter', () => {
+    it('returns the correct results', () => {
+      expect(filterAndSortRepositoriesWithResults(repositories, {
+        ...defaultFilterSortState,
+        sortKey: SortKey.ResultsCount,
+      })).toEqual([repositories[3], repositories[2], repositories[0], repositories[1]]);
+    });
+  });
+
+  describe('when sort key and search filter are given', () => {
+    it('returns the correct results', () => {
+      expect(filterAndSortRepositoriesWithResults(repositories, {
+        ...defaultFilterSortState,
+        sortKey: SortKey.ResultsCount,
+        searchValue: 'la',
+      })).toEqual([repositories[2], repositories[0]]);
+    });
+  });
+
+  describe('when sort key, search filter, and repository ids are given', () => {
+    it('returns the correct results', () => {
+      expect(filterAndSortRepositoriesWithResults(repositories, {
+        ...defaultFilterSortState,
+        sortKey: SortKey.ResultsCount,
+        searchValue: 'la',
+        repositoryIds: [repositories[1].repository.id, repositories[3].repository.id],
+      })).toEqual([repositories[3], repositories[1]]);
+    });
+  });
+
+  describe('when repository ids are given', () => {
+    it('returns the correct results', () => {
+      expect(filterAndSortRepositoriesWithResults(repositories, {
+        ...defaultFilterSortState,
+        repositoryIds: [repositories[0].repository.id, repositories[3].repository.id],
+      })).toEqual([repositories[0], repositories[3]]);
+    });
+  });
+
+  describe('when empty repository ids are given', () => {
+    it('returns the correct results', () => {
+      expect(filterAndSortRepositoriesWithResults(repositories, {
+        ...defaultFilterSortState,
+        repositoryIds: [],
+      })).toEqual([repositories[0], repositories[2], repositories[3], repositories[1]]);
     });
   });
 });

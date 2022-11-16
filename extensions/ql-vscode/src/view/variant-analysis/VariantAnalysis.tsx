@@ -97,9 +97,12 @@ export function VariantAnalysis({
   const copyRepositoryList = useCallback(() => {
     vscode.postMessage({
       t: 'copyRepositoryList',
-      filterSort: filterSortState,
+      filterSort: {
+        ...filterSortState,
+        repositoryIds: selectedRepositoryIds,
+      },
     });
-  }, [filterSortState]);
+  }, [filterSortState, selectedRepositoryIds]);
 
   if (variantAnalysis?.actionsWorkflowRunId === undefined) {
     return <VariantAnalysisLoading />;
