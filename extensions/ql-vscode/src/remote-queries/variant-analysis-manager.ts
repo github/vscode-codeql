@@ -379,9 +379,9 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
     }
 
-    const filteredRepositories = filterAndSortRepositoriesWithResults(variantAnalysis.scannedRepos ?? [], filterSort);
+    const filteredRepositories = filterAndSortRepositoriesWithResults(variantAnalysis.scannedRepos, filterSort);
 
-    const fullNames = filteredRepositories.filter(a => a.resultCount && a.resultCount > 0).map(a => a.repository.fullName);
+    const fullNames = filteredRepositories?.filter(a => a.resultCount && a.resultCount > 0).map(a => a.repository.fullName);
     if (!fullNames || fullNames.length === 0) {
       return;
     }
