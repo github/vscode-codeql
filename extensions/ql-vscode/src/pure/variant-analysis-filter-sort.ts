@@ -76,16 +76,8 @@ export function compareWithResults(filterSortState: RepositoriesFilterSortState 
   };
 }
 
-function hasRepositoryIds(filterSortState: RepositoriesFilterSortState | RepositoriesFilterSortStateWithIds | undefined): filterSortState is RepositoriesFilterSortStateWithIds {
-  if (!filterSortState) {
-    return false;
-  }
-
-  return 'repositoryIds' in filterSortState;
-}
-
 function isFilterOnRepositoryIds(filterSortState: RepositoriesFilterSortState | RepositoriesFilterSortStateWithIds | undefined): filterSortState is RepositoriesFilterSortStateWithIds & Required<Pick<RepositoriesFilterSortStateWithIds, 'repositoryIds'>> {
-  return hasRepositoryIds(filterSortState) && filterSortState.repositoryIds !== undefined && filterSortState.repositoryIds.length > 0;
+  return !!filterSortState && 'repositoryIds' in filterSortState && filterSortState.repositoryIds !== undefined && filterSortState.repositoryIds.length > 0;
 }
 
 // These define the behavior for undefined input values
