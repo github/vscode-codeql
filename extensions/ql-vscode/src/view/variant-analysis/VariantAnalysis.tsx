@@ -37,12 +37,6 @@ const stopQuery = () => {
   });
 };
 
-const exportResults = () => {
-  vscode.postMessage({
-    t: 'exportResults',
-  });
-};
-
 const openLogs = () => {
   vscode.postMessage({
     t: 'openLogs',
@@ -97,6 +91,16 @@ export function VariantAnalysis({
   const copyRepositoryList = useCallback(() => {
     vscode.postMessage({
       t: 'copyRepositoryList',
+      filterSort: {
+        ...filterSortState,
+        repositoryIds: selectedRepositoryIds,
+      },
+    });
+  }, [filterSortState, selectedRepositoryIds]);
+
+  const exportResults = useCallback(() => {
+    vscode.postMessage({
+      t: 'exportResults',
       filterSort: {
         ...filterSortState,
         repositoryIds: selectedRepositoryIds,

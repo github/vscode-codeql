@@ -480,6 +480,7 @@ export interface CopyRepositoryListMessage {
 
 export interface ExportResultsMessage {
   t: 'exportResults';
+  filterSort?: RepositoriesFilterSortStateWithIds;
 }
 
 export interface OpenLogsMessage {
