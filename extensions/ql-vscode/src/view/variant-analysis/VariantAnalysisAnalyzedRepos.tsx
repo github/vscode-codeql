@@ -7,7 +7,10 @@ import {
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState
 } from '../../remote-queries/shared/variant-analysis';
-import { compareWithResults, matchesFilter, RepositoriesFilterSortState } from './filterSort';
+import {
+  filterAndSortRepositoriesWithResults,
+  RepositoriesFilterSortState,
+} from '../../pure/variant-analysis-filter-sort';
 
 const Container = styled.div`
   display: flex;
@@ -52,9 +55,7 @@ export const VariantAnalysisAnalyzedRepos = ({
   }, [repositoryResults]);
 
   const repositories = useMemo(() => {
-    return variantAnalysis.scannedRepos?.filter((repoTask) => {
-      return matchesFilter(repoTask.repository, filterSortState);
-    })?.sort(compareWithResults(filterSortState));
+    return filterAndSortRepositoriesWithResults(variantAnalysis.scannedRepos, filterSortState);
   }, [filterSortState, variantAnalysis.scannedRepos]);
 
   const onSelectedChange = useCallback((repositoryId: number, selected: boolean) => {

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { ComponentMeta } from '@storybook/react';
 
 import { RepositoriesSort as RepositoriesSortComponent } from '../../view/variant-analysis/RepositoriesSort';
-import { SortKey } from '../../view/variant-analysis/filterSort';
+import { SortKey } from '../../pure/variant-analysis-filter-sort';
 
 export default {
   title: 'Variant Analysis/Repositories Sort',

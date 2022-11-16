@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { VariantAnalysisSkippedRepositoryGroup } from '../../remote-queries/shared/variant-analysis';
 import { Alert } from '../common';
 import { RepoRow } from './RepoRow';
-import { compareRepository, matchesFilter, RepositoriesFilterSortState } from './filterSort';
+import { compareRepository, matchesFilter, RepositoriesFilterSortState } from '../../pure/variant-analysis-filter-sort';
 
 export type VariantAnalysisSkippedRepositoriesTabProps = {
   alertTitle: string,

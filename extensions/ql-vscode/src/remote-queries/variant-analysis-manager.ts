@@ -32,6 +32,11 @@ import * as os from 'os';
 import { cancelVariantAnalysis } from './gh-api/gh-actions-api-client';
 import { ProgressCallback, UserCancellationException } from '../commandRunner';
 import { CodeQLCliServer } from '../cli';
+import {
+  defaultFilterSortState,
+  filterAndSortRepositoriesWithResults,
+  RepositoriesFilterSortState,
+} from '../pure/variant-analysis-filter-sort';
 
 export class VariantAnalysisManager extends DisposableObject implements VariantAnalysisViewManager<VariantAnalysisView> {
   private static readonly REPO_STATES_FILENAME = 'repo_states.json';
@@ -368,13 +373,15 @@ export class VariantAnalysisManager extends DisposableObject implements VariantA
     await cancelVariantAnalysis(credentials, variantAnalysis);
   }
 
-  public async copyRepoListToClipboard(variantAnalysisId: number) {
+  public async copyRepoListToClipboard(variantAnalysisId: number, filterSort: RepositoriesFilterSortState = defaultFilterSortState) {
     const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
     if (!variantAnalysis) {
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
     }
 
-    const fullNames = variantAnalysis.scannedRepos?.filter(a => a.resultCount && a.resultCount > 0).map(a => a.repository.fullName);
+    const filteredRepositories = filterAndSortRepositoriesWithResults(variantAnalysis.scannedRepos, filterSort);
+
+    const fullNames = filteredRepositories?.filter(a => a.resultCount && a.resultCount > 0).map(a => a.repository.fullName);
     if (!fullNames || fullNames.length === 0) {
       return;
     }

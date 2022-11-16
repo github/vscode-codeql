@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Dispatch, SetStateAction, useCallback } from 'react';
 import styled from 'styled-components';
-import { RepositoriesFilterSortState, SortKey } from './filterSort';
+import { RepositoriesFilterSortState, SortKey } from '../../pure/variant-analysis-filter-sort';
 import { RepositoriesSearch } from './RepositoriesSearch';
 import { RepositoriesSort } from './RepositoriesSort';
 
