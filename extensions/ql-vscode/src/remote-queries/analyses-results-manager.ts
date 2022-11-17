@@ -1,20 +1,24 @@
-import * as fs from 'fs-extra';
-import * as os from 'os';
-import * as path from 'path';
-import { CancellationToken, ExtensionContext } from 'vscode';
+import * as fs from "fs-extra";
+import * as os from "os";
+import * as path from "path";
+import { CancellationToken, ExtensionContext } from "vscode";
 
-import { Credentials } from '../authentication';
-import { Logger } from '../logging';
-import { downloadArtifactFromLink } from './gh-api/gh-actions-api-client';
-import { AnalysisSummary } from './shared/remote-query-result';
-import { AnalysisResults, AnalysisAlert, AnalysisRawResults } from './shared/analysis-result';
-import { UserCancellationException } from '../commandRunner';
-import { sarifParser } from '../sarif-parser';
-import { extractAnalysisAlerts } from './sarif-processing';
-import { CodeQLCliServer } from '../cli';
-import { extractRawResults } from './bqrs-processing';
-import { asyncFilter, getErrorMessage } from '../pure/helpers-pure';
-import { createDownloadPath } from './download-link';
+import { Credentials } from "../authentication";
+import { Logger } from "../logging";
+import { downloadArtifactFromLink } from "./gh-api/gh-actions-api-client";
+import { AnalysisSummary } from "./shared/remote-query-result";
+import {
+  AnalysisResults,
+  AnalysisAlert,
+  AnalysisRawResults,
+} from "./shared/analysis-result";
+import { UserCancellationException } from "../commandRunner";
+import { sarifParser } from "../sarif-parser";
+import { extractAnalysisAlerts } from "./sarif-processing";
+import { CodeQLCliServer } from "../cli";
+import { extractRawResults } from "./bqrs-processing";
+import { asyncFilter, getErrorMessage } from "../pure/helpers-pure";
+import { createDownloadPath } from "./download-link";
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for each remote query.
@@ -32,7 +36,7 @@ export class AnalysesResultsManager {
 
   public async downloadAnalysisResults(
     analysisSummary: AnalysisSummary,
-    publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
+    publishResults: (analysesResults: AnalysisResults[]) => Promise<void>,
   ): Promise<void> {
     if (this.isAnalysisInMemory(analysisSummary)) {
       // We already have the results for this analysis in memory, don't download again.
@@ -41,9 +45,15 @@ export class AnalysesResultsManager {
 
     const credentials = await Credentials.initialize(this.ctx);
 
-    void this.logger.log(`Downloading and processing results for ${analysisSummary.nwo}`);
+    void this.logger.log(
+      `Downloading and processing results for ${analysisSummary.nwo}`,
+    );
 
-    await this.downloadSingleAnalysisResults(analysisSummary, credentials, publishResults);
+    await this.downloadSingleAnalysisResults(
+      analysisSummary,
+      credentials,
+      publishResults,
+    );
   }
 
   /**
@@ -58,14 +68,18 @@ export class AnalysesResultsManager {
   public async loadAnalysesResults(
     allAnalysesToLoad: AnalysisSummary[],
     token?: CancellationToken,
-    publishResults: (analysesResults: AnalysisResults[]) => Promise<void> = () => Promise.resolve()
+    publishResults: (
+      analysesResults: AnalysisResults[],
+    ) => Promise<void> = () => Promise.resolve(),
   ): Promise<void> {
     // Filter out analyses that we have already in memory.
-    const analysesToDownload = allAnalysesToLoad.filter(x => !this.isAnalysisInMemory(x));
+    const analysesToDownload = allAnalysesToLoad.filter(
+      (x) => !this.isAnalysisInMemory(x),
+    );
 
     const credentials = await Credentials.initialize(this.ctx);
 
-    void this.logger.log('Downloading and processing analyses results');
+    void this.logger.log("Downloading and processing analyses results");
 
     const batchSize = 3;
     const numOfBatches = Math.ceil(analysesToDownload.length / batchSize);
@@ -73,20 +87,35 @@ export class AnalysesResultsManager {
 
     for (let i = 0; i < analysesToDownload.length; i += batchSize) {
       if (token?.isCancellationRequested) {
-        throw new UserCancellationException('Downloading of analyses results has been cancelled', true);
+        throw new UserCancellationException(
+          "Downloading of analyses results has been cancelled",
+          true,
+        );
       }
 
       const batch = analysesToDownload.slice(i, i + batchSize);
-      const batchTasks = batch.map(analysis => this.downloadSingleAnalysisResults(analysis, credentials, publishResults));
+      const batchTasks = batch.map((analysis) =>
+        this.downloadSingleAnalysisResults(
+          analysis,
+          credentials,
+          publishResults,
+        ),
+      );
 
-      const nwos = batch.map(a => a.nwo).join(', ');
-      void this.logger.log(`Downloading batch ${Math.floor(i / batchSize) + 1} of ${numOfBatches} (${nwos})`);
+      const nwos = batch.map((a) => a.nwo).join(", ");
+      void this.logger.log(
+        `Downloading batch ${
+          Math.floor(i / batchSize) + 1
+        } of ${numOfBatches} (${nwos})`,
+      );
 
       const taskResults = await Promise.allSettled(batchTasks);
-      const failedTasks = taskResults.filter(x => x.status === 'rejected') as Array<PromiseRejectedResult>;
+      const failedTasks = taskResults.filter(
+        (x) => x.status === "rejected",
+      ) as Array<PromiseRejectedResult>;
       if (failedTasks.length > 0) {
-        const failures = failedTasks.map(t => t.reason.message);
-        failures.forEach(f => void this.logger.log(f));
+        const failures = failedTasks.map((t) => t.reason.message);
+        failures.forEach((f) => void this.logger.log(f));
         allFailures.push(...failures);
       }
     }
@@ -111,11 +140,11 @@ export class AnalysesResultsManager {
   private async downloadSingleAnalysisResults(
     analysis: AnalysisSummary,
     credentials: Credentials,
-    publishResults: (analysesResults: AnalysisResults[]) => Promise<void>
+    publishResults: (analysesResults: AnalysisResults[]) => Promise<void>,
   ): Promise<void> {
     const analysisResults: AnalysisResults = {
       nwo: analysis.nwo,
-      status: 'InProgress',
+      status: "InProgress",
       interpretedResults: [],
       resultCount: analysis.resultCount,
       starCount: analysis.starCount,
@@ -130,73 +159,113 @@ export class AnalysesResultsManager {
 
     let artifactPath;
     try {
-      artifactPath = await downloadArtifactFromLink(credentials, this.storagePath, analysis.downloadLink);
-    }
-    catch (e) {
-      throw new Error(`Could not download the analysis results for ${analysis.nwo}: ${getErrorMessage(e)}`);
+      artifactPath = await downloadArtifactFromLink(
+        credentials,
+        this.storagePath,
+        analysis.downloadLink,
+      );
+    } catch (e) {
+      throw new Error(
+        `Could not download the analysis results for ${
+          analysis.nwo
+        }: ${getErrorMessage(e)}`,
+      );
     }
 
-    const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(analysis.nwo, analysis.databaseSha);
+    const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(
+      analysis.nwo,
+      analysis.databaseSha,
+    );
 
     let newAnaysisResults: AnalysisResults;
     const fileExtension = path.extname(artifactPath);
-    if (fileExtension === '.sarif') {
-      const queryResults = await this.readSarifResults(artifactPath, fileLinkPrefix);
+    if (fileExtension === ".sarif") {
+      const queryResults = await this.readSarifResults(
+        artifactPath,
+        fileLinkPrefix,
+      );
       newAnaysisResults = {
         ...analysisResults,
         interpretedResults: queryResults,
-        status: 'Completed'
+        status: "Completed",
       };
-    } else if (fileExtension === '.bqrs') {
-      const queryResults = await this.readBqrsResults(artifactPath, fileLinkPrefix, analysis.sourceLocationPrefix);
+    } else if (fileExtension === ".bqrs") {
+      const queryResults = await this.readBqrsResults(
+        artifactPath,
+        fileLinkPrefix,
+        analysis.sourceLocationPrefix,
+      );
       newAnaysisResults = {
         ...analysisResults,
         rawResults: queryResults,
-        status: 'Completed'
+        status: "Completed",
       };
     } else {
-      void this.logger.log(`Cannot download results. File type '${fileExtension}' not supported.`);
+      void this.logger.log(
+        `Cannot download results. File type '${fileExtension}' not supported.`,
+      );
       newAnaysisResults = {
         ...analysisResults,
-        status: 'Failed'
+        status: "Failed",
       };
     }
     resultsForQuery[pos] = newAnaysisResults;
     void publishResults([...resultsForQuery]);
   }
 
-
-  public async loadDownloadedAnalyses(
-    allAnalysesToCheck: AnalysisSummary[]
-  ) {
-
+  public async loadDownloadedAnalyses(allAnalysesToCheck: AnalysisSummary[]) {
     // Find all analyses that are already downloaded.
-    const allDownloadedAnalyses = await asyncFilter(allAnalysesToCheck, x => this.isAnalysisDownloaded(x));
+    const allDownloadedAnalyses = await asyncFilter(allAnalysesToCheck, (x) =>
+      this.isAnalysisDownloaded(x),
+    );
     // Now, ensure that all of these analyses are in memory. Some may already be in memory. These are ignored.
     await this.loadAnalysesResults(allDownloadedAnalyses);
   }
 
-  private async isAnalysisDownloaded(analysis: AnalysisSummary): Promise<boolean> {
-    return await fs.pathExists(createDownloadPath(this.storagePath, analysis.downloadLink));
+  private async isAnalysisDownloaded(
+    analysis: AnalysisSummary,
+  ): Promise<boolean> {
+    return await fs.pathExists(
+      createDownloadPath(this.storagePath, analysis.downloadLink),
+    );
   }
 
-  private async readBqrsResults(filePath: string, fileLinkPrefix: string, sourceLocationPrefix: string): Promise<AnalysisRawResults> {
-    return await extractRawResults(this.cliServer, this.logger, filePath, fileLinkPrefix, sourceLocationPrefix);
+  private async readBqrsResults(
+    filePath: string,
+    fileLinkPrefix: string,
+    sourceLocationPrefix: string,
+  ): Promise<AnalysisRawResults> {
+    return await extractRawResults(
+      this.cliServer,
+      this.logger,
+      filePath,
+      fileLinkPrefix,
+      sourceLocationPrefix,
+    );
   }
 
-  private async readSarifResults(filePath: string, fileLinkPrefix: string): Promise<AnalysisAlert[]> {
+  private async readSarifResults(
+    filePath: string,
+    fileLinkPrefix: string,
+  ): Promise<AnalysisAlert[]> {
     const sarifLog = await sarifParser(filePath);
 
     const processedSarif = extractAnalysisAlerts(sarifLog, fileLinkPrefix);
     if (processedSarif.errors.length) {
-      void this.logger.log(`Error processing SARIF file: ${os.EOL}${processedSarif.errors.join(os.EOL)}`);
+      void this.logger.log(
+        `Error processing SARIF file: ${os.EOL}${processedSarif.errors.join(
+          os.EOL,
+        )}`,
+      );
     }
 
     return processedSarif.alerts;
   }
 
   private isAnalysisInMemory(analysis: AnalysisSummary): boolean {
-    return this.internalGetAnalysesResults(analysis.downloadLink.queryId).some(x => x.nwo === analysis.nwo);
+    return this.internalGetAnalysesResults(analysis.downloadLink.queryId).some(
+      (x) => x.nwo === analysis.nwo,
+    );
   }
 
   private createGitHubDotcomFileLinkPrefix(nwo: string, sha: string): string {

@@ -1,14 +1,13 @@
-import * as vscode from 'vscode';
-import { Disposable } from '../../pure/disposable-object';
-import { App, AppMode } from '../app';
-import { AppEventEmitter } from '../events';
-import { VSCodeAppEventEmitter } from './events';
+import * as vscode from "vscode";
+import { Disposable } from "../../pure/disposable-object";
+import { App, AppMode } from "../app";
+import { AppEventEmitter } from "../events";
+import { VSCodeAppEventEmitter } from "./events";
 
 export class ExtensionApp implements App {
   public constructor(
-    public readonly extensionContext: vscode.ExtensionContext
-  ) {
-  }
+    public readonly extensionContext: vscode.ExtensionContext,
+  ) {}
 
   public get extensionPath(): string {
     return this.extensionContext.extensionPath;

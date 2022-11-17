@@ -1,24 +1,23 @@
-import { CodeQLCliServer } from '../cli';
-import { DecodedBqrsChunk, BqrsId, EntityValue } from '../pure/bqrs-cli-types';
-import { DatabaseItem } from '../databases';
-import { ChildAstItem, AstItem } from '../astViewer';
-import fileRangeFromURI from './fileRangeFromURI';
-import { Uri } from 'vscode';
-import { QueryWithResults } from '../run-queries-shared';
+import { CodeQLCliServer } from "../cli";
+import { DecodedBqrsChunk, BqrsId, EntityValue } from "../pure/bqrs-cli-types";
+import { DatabaseItem } from "../databases";
+import { ChildAstItem, AstItem } from "../astViewer";
+import fileRangeFromURI from "./fileRangeFromURI";
+import { Uri } from "vscode";
+import { QueryWithResults } from "../run-queries-shared";
 
 /**
  * A class that wraps a tree of QL results from a query that
  * has an @kind of graph
  */
 export default class AstBuilder {
-
   private roots: AstItem[] | undefined;
   private bqrsPath: string;
   constructor(
     queryResults: QueryWithResults,
     private cli: CodeQLCliServer,
     public db: DatabaseItem,
-    public fileName: Uri
+    public fileName: Uri,
   ) {
     this.bqrsPath = queryResults.query.resultsPaths.resultsPath;
   }
@@ -31,15 +30,15 @@ export default class AstBuilder {
   }
 
   private async parseRoots(): Promise<AstItem[]> {
-    const options = { entities: ['id', 'url', 'string'] };
+    const options = { entities: ["id", "url", "string"] };
     const [nodeTuples, edgeTuples, graphProperties] = await Promise.all([
-      await this.cli.bqrsDecode(this.bqrsPath, 'nodes', options),
-      await this.cli.bqrsDecode(this.bqrsPath, 'edges', options),
-      await this.cli.bqrsDecode(this.bqrsPath, 'graphProperties', options),
+      await this.cli.bqrsDecode(this.bqrsPath, "nodes", options),
+      await this.cli.bqrsDecode(this.bqrsPath, "edges", options),
+      await this.cli.bqrsDecode(this.bqrsPath, "graphProperties", options),
     ]);
 
     if (!this.isValidGraph(graphProperties)) {
-      throw new Error('AST is invalid');
+      throw new Error("AST is invalid");
     }
 
     const idToItem = new Map<BqrsId, AstItem>();
@@ -50,21 +49,26 @@ export default class AstBuilder {
     const roots = [];
 
     // Build up the parent-child relationships
-    edgeTuples.tuples.forEach(tuple => {
-      const [source, target, tupleType, value] = tuple as [EntityValue, EntityValue, string, string];
+    edgeTuples.tuples.forEach((tuple) => {
+      const [source, target, tupleType, value] = tuple as [
+        EntityValue,
+        EntityValue,
+        string,
+        string,
+      ];
       const sourceId = source.id!;
       const targetId = target.id!;
 
       switch (tupleType) {
-        case 'semmle.order':
+        case "semmle.order":
           astOrder.set(targetId, Number(value));
           break;
 
-        case 'semmle.label': {
+        case "semmle.label": {
           childToParent.set(targetId, sourceId);
           let children = parentToChildren.get(sourceId);
           if (!children) {
-            parentToChildren.set(sourceId, children = []);
+            parentToChildren.set(sourceId, (children = []));
           }
           children.push(targetId);
 
@@ -81,39 +85,43 @@ export default class AstBuilder {
     });
 
     // populate parents and children
-    nodeTuples.tuples.forEach(tuple => {
+    nodeTuples.tuples.forEach((tuple) => {
       const [entity, tupleType, value] = tuple as [EntityValue, string, string];
       const id = entity.id!;
 
       switch (tupleType) {
-        case 'semmle.order':
+        case "semmle.order":
           astOrder.set(id, Number(value));
           break;
 
-        case 'semmle.label': {
+        case "semmle.label": {
           // If an edge label exists, include it and separate from the node label using ':'
           const nodeLabel = value ?? entity.label;
           const edgeLabel = edgeLabels.get(id);
-          const label = [edgeLabel, nodeLabel].filter(e => e).join(': ');
+          const label = [edgeLabel, nodeLabel].filter((e) => e).join(": ");
           const item = {
             id,
             label,
             location: entity.url,
             fileLocation: fileRangeFromURI(entity.url, this.db),
             children: [] as ChildAstItem[],
-            order: Number.MAX_SAFE_INTEGER
+            order: Number.MAX_SAFE_INTEGER,
           };
 
           idToItem.set(id, item);
-          const parent = idToItem.get(childToParent.has(id) ? childToParent.get(id)! : -1);
+          const parent = idToItem.get(
+            childToParent.has(id) ? childToParent.get(id)! : -1,
+          );
 
           if (parent) {
             const astItem = item as ChildAstItem;
             astItem.parent = parent;
             parent.children.push(astItem);
           }
-          const children = parentToChildren.has(id) ? parentToChildren.get(id)! : [];
-          children.forEach(childId => {
+          const children = parentToChildren.has(id)
+            ? parentToChildren.get(id)!
+            : [];
+          children.forEach((childId) => {
             const child = idToItem.get(childId) as ChildAstItem | undefined;
             if (child) {
               child.parent = item;
@@ -134,7 +142,7 @@ export default class AstBuilder {
         ? astOrder.get(item.id)!
         : Number.MAX_SAFE_INTEGER;
 
-      if (!('parent' in item)) {
+      if (!("parent" in item)) {
         roots.push(item);
       }
     }
@@ -142,7 +150,9 @@ export default class AstBuilder {
   }
 
   private isValidGraph(graphProperties: DecodedBqrsChunk) {
-    const tuple = graphProperties?.tuples?.find(t => t[0] === 'semmle.graphKind');
-    return tuple?.[1] === 'tree';
+    const tuple = graphProperties?.tuples?.find(
+      (t) => t[0] === "semmle.graphKind",
+    );
+    return tuple?.[1] === "tree";
   }
 }

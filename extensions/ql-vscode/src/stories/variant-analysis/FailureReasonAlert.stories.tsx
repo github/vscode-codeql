@@ -1,11 +1,11 @@
-import React from 'react';
+import React from "react";
 
-import { ComponentMeta, ComponentStory } from '@storybook/react';
-import { VariantAnalysisFailureReason } from '../../remote-queries/shared/variant-analysis';
-import { FailureReasonAlert } from '../../view/variant-analysis/FailureReasonAlert';
+import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { VariantAnalysisFailureReason } from "../../remote-queries/shared/variant-analysis";
+import { FailureReasonAlert } from "../../view/variant-analysis/FailureReasonAlert";
 
 export default {
-  title: 'Variant Analysis/Failure reason alert',
+  title: "Variant Analysis/Failure reason alert",
   component: FailureReasonAlert,
 } as ComponentMeta<typeof FailureReasonAlert>;
 

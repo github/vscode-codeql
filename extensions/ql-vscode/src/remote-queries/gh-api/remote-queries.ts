@@ -8,13 +8,13 @@ export interface RemoteQueriesSubmissionRequest {
 }
 
 export interface RemoteQueriesResponse {
-  workflow_run_id: number,
+  workflow_run_id: number;
   errors?: {
-    invalid_repositories?: string[],
-    repositories_without_database?: string[],
-    private_repositories?: string[],
-    cutoff_repositories?: string[],
-    cutoff_repositories_count?: number,
-  },
-  repositories_queried: string[],
+    invalid_repositories?: string[];
+    repositories_without_database?: string[];
+    private_repositories?: string[];
+    cutoff_repositories?: string[];
+    cutoff_repositories_count?: number;
+  };
+  repositories_queried: string[];
 }

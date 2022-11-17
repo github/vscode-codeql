@@ -1,15 +1,15 @@
-import * as path from 'path';
+import * as path from "path";
 
-import * as sinon from 'sinon';
+import * as sinon from "sinon";
 
-import { commands, extensions, TextDocument, window, workspace } from 'vscode';
-import * as Octokit from '@octokit/rest';
-import { retry } from '@octokit/plugin-retry';
+import { commands, extensions, TextDocument, window, workspace } from "vscode";
+import * as Octokit from "@octokit/rest";
+import { retry } from "@octokit/plugin-retry";
 
-import { CodeQLExtensionInterface } from '../../../extension';
-import * as config from '../../../config';
-import { Credentials } from '../../../authentication';
-import { MockGitHubApiServer } from '../../../mocks/mock-gh-api-server';
+import { CodeQLExtensionInterface } from "../../../extension";
+import * as config from "../../../config";
+import { Credentials } from "../../../authentication";
+import { MockGitHubApiServer } from "../../../mocks/mock-gh-api-server";
 
 const mockServer = new MockGitHubApiServer();
 before(() => mockServer.startServer());
@@ -24,7 +24,7 @@ async function showQlDocument(name: string): Promise<TextDocument> {
   return document;
 }
 
-describe('Variant Analysis Submission Integration', function() {
+describe("Variant Analysis Submission Integration", function () {
   this.timeout(10_000);
 
   let sandbox: sinon.SinonSandbox;
@@ -36,24 +36,30 @@ describe('Variant Analysis Submission Integration', function() {
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
 
-    sandbox.stub(config, 'isCanary').returns(true);
-    sandbox.stub(config, 'isVariantAnalysisLiveResultsEnabled').returns(true);
+    sandbox.stub(config, "isCanary").returns(true);
+    sandbox.stub(config, "isVariantAnalysisLiveResultsEnabled").returns(true);
 
     const mockCredentials = {
       getOctokit: () => Promise.resolve(new Octokit.Octokit({ retry })),
     } as unknown as Credentials;
-    sandbox.stub(Credentials, 'initialize').resolves(mockCredentials);
+    sandbox.stub(Credentials, "initialize").resolves(mockCredentials);
 
-    await config.setRemoteControllerRepo('github/vscode-codeql');
+    await config.setRemoteControllerRepo("github/vscode-codeql");
 
-    quickPickSpy = sandbox.stub(window, 'showQuickPick').resolves(undefined);
-    inputBoxSpy = sandbox.stub(window, 'showInputBox').resolves(undefined);
+    quickPickSpy = sandbox.stub(window, "showQuickPick").resolves(undefined);
+    inputBoxSpy = sandbox.stub(window, "showInputBox").resolves(undefined);
 
-    executeCommandSpy = sandbox.stub(commands, 'executeCommand').callThrough();
-    showErrorMessageSpy = sandbox.stub(window, 'showErrorMessage').resolves(undefined);
+    executeCommandSpy = sandbox.stub(commands, "executeCommand").callThrough();
+    showErrorMessageSpy = sandbox
+      .stub(window, "showErrorMessage")
+      .resolves(undefined);
 
     try {
-      await extensions.getExtension<CodeQLExtensionInterface | Record<string, never>>('GitHub.vscode-codeql')!.activate();
+      await extensions
+        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+          "GitHub.vscode-codeql",
+        )!
+        .activate();
     } catch (e) {
       fail(e as Error);
     }
@@ -63,70 +69,82 @@ describe('Variant Analysis Submission Integration', function() {
     sandbox.restore();
   });
 
-  describe('Successful scenario', () => {
+  describe("Successful scenario", () => {
     beforeEach(async () => {
-      await mockServer.loadScenario('problem-query-success');
+      await mockServer.loadScenario("problem-query-success");
     });
 
-    it('opens the variant analysis view', async () => {
-      await showQlDocument('query.ql');
+    it("opens the variant analysis view", async () => {
+      await showQlDocument("query.ql");
 
       // Select a repository list
       quickPickSpy.onFirstCall().resolves({
         useCustomRepo: true,
       });
       // Enter a GitHub repository
-      inputBoxSpy.onFirstCall().resolves('github/codeql');
+      inputBoxSpy.onFirstCall().resolves("github/codeql");
       // Select target language for your query
-      quickPickSpy.onSecondCall().resolves('javascript');
+      quickPickSpy.onSecondCall().resolves("javascript");
 
-      await commands.executeCommand('codeQL.runVariantAnalysis');
+      await commands.executeCommand("codeQL.runVariantAnalysis");
 
-      sinon.assert.calledWith(executeCommandSpy, 'codeQL.openVariantAnalysisView', 146);
+      sinon.assert.calledWith(
+        executeCommandSpy,
+        "codeQL.openVariantAnalysisView",
+        146,
+      );
     });
   });
 
-  describe('Missing controller repo', () => {
+  describe("Missing controller repo", () => {
     beforeEach(async () => {
-      await mockServer.loadScenario('missing-controller-repo');
+      await mockServer.loadScenario("missing-controller-repo");
     });
 
-    it('shows the error message', async () => {
-      await showQlDocument('query.ql');
+    it("shows the error message", async () => {
+      await showQlDocument("query.ql");
 
       // Select a repository list
       quickPickSpy.onFirstCall().resolves({
         useCustomRepo: true,
       });
       // Enter a GitHub repository
-      inputBoxSpy.onFirstCall().resolves('github/codeql');
+      inputBoxSpy.onFirstCall().resolves("github/codeql");
 
-      await commands.executeCommand('codeQL.runVariantAnalysis');
+      await commands.executeCommand("codeQL.runVariantAnalysis");
 
-      sinon.assert.calledWith(showErrorMessageSpy, sinon.match('Controller repository "github/vscode-codeql" not found'), sinon.match.string);
+      sinon.assert.calledWith(
+        showErrorMessageSpy,
+        sinon.match('Controller repository "github/vscode-codeql" not found'),
+        sinon.match.string,
+      );
     });
   });
 
-  describe('Submission failure', () => {
+  describe("Submission failure", () => {
     beforeEach(async () => {
-      await mockServer.loadScenario('submission-failure');
+      await mockServer.loadScenario("submission-failure");
     });
 
-    it('shows the error message', async () => {
-      await showQlDocument('query.ql');
+    it("shows the error message", async () => {
+      await showQlDocument("query.ql");
 
       // Select a repository list
       quickPickSpy.onFirstCall().resolves({
         useCustomRepo: true,
       });
       // Enter a GitHub repository
-      inputBoxSpy.onFirstCall().resolves('github/codeql');
+      inputBoxSpy.onFirstCall().resolves("github/codeql");
       // Select target language for your query
-      quickPickSpy.onSecondCall().resolves('javascript');
+      quickPickSpy.onSecondCall().resolves("javascript");
 
-      await commands.executeCommand('codeQL.runVariantAnalysis');
+      await commands.executeCommand("codeQL.runVariantAnalysis");
 
-      sinon.assert.calledWith(showErrorMessageSpy, sinon.match('No repositories could be queried.'), sinon.match.string);
+      sinon.assert.calledWith(
+        showErrorMessageSpy,
+        sinon.match("No repositories could be queried."),
+        sinon.match.string,
+      );
     });
   });
 });

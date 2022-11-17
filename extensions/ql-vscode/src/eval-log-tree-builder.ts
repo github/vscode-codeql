@@ -1,5 +1,5 @@
-import { ChildEvalLogTreeItem, EvalLogTreeItem } from './eval-log-viewer';
-import { EvalLogData as EvalLogData } from './pure/log-summary-parser';
+import { ChildEvalLogTreeItem, EvalLogTreeItem } from "./eval-log-viewer";
+import { EvalLogData as EvalLogData } from "./pure/log-summary-parser";
 
 /** Builds the tree data for the evaluator log viewer for a single query run. */
 export default class EvalLogTreeBuilder {
@@ -22,40 +22,40 @@ export default class EvalLogTreeBuilder {
     // level. For now, there will always be one root (the one query being shown).
     const queryItem: EvalLogTreeItem = {
       label: this.queryName,
-      children: [] // Will assign predicate items as children shortly.
+      children: [], // Will assign predicate items as children shortly.
     };
 
-    // Display descriptive message when no data exists 
+    // Display descriptive message when no data exists
     if (this.evalLogDataItems.length === 0) {
       const noResultsItem: ChildEvalLogTreeItem = {
-        label: 'No predicates evaluated in this query run.',
+        label: "No predicates evaluated in this query run.",
         parent: queryItem,
         children: [],
       };
       queryItem.children.push(noResultsItem);
     }
 
-    // For each predicate, create a TreeItem object with appropriate parents/children 
-    this.evalLogDataItems.forEach(logDataItem => {
+    // For each predicate, create a TreeItem object with appropriate parents/children
+    this.evalLogDataItems.forEach((logDataItem) => {
       const predicateLabel = `${logDataItem.predicateName} (${logDataItem.resultSize} tuples, ${logDataItem.millis} ms)`;
       const predicateItem: ChildEvalLogTreeItem = {
         label: predicateLabel,
         parent: queryItem,
-        children: [] // Will assign pipeline items as children shortly.
+        children: [], // Will assign pipeline items as children shortly.
       };
       for (const [pipelineName, steps] of Object.entries(logDataItem.ra)) {
         const pipelineLabel = `Pipeline: ${pipelineName}`;
         const pipelineItem: ChildEvalLogTreeItem = {
           label: pipelineLabel,
           parent: predicateItem,
-          children: [] // Will assign step items as children shortly.
+          children: [], // Will assign step items as children shortly.
         };
         predicateItem.children.push(pipelineItem);
 
         pipelineItem.children = steps.map((step: string) => ({
           label: step,
           parent: pipelineItem,
-          children: []
+          children: [],
         }));
       }
       queryItem.children.push(predicateItem);

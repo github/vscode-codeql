@@ -1,31 +1,40 @@
-import * as React from 'react';
-import { useMemo } from 'react';
-import styled from 'styled-components';
-import { VariantAnalysisSkippedRepositoryGroup } from '../../remote-queries/shared/variant-analysis';
-import { Alert } from '../common';
-import { RepoRow } from './RepoRow';
-import { compareRepository, matchesFilter, RepositoriesFilterSortState } from '../../pure/variant-analysis-filter-sort';
+import * as React from "react";
+import { useMemo } from "react";
+import styled from "styled-components";
+import { VariantAnalysisSkippedRepositoryGroup } from "../../remote-queries/shared/variant-analysis";
+import { Alert } from "../common";
+import { RepoRow } from "./RepoRow";
+import {
+  compareRepository,
+  matchesFilter,
+  RepositoriesFilterSortState,
+} from "../../pure/variant-analysis-filter-sort";
 
 export type VariantAnalysisSkippedRepositoriesTabProps = {
-  alertTitle: string,
-  alertMessage: string,
-  skippedRepositoryGroup: VariantAnalysisSkippedRepositoryGroup,
+  alertTitle: string;
+  alertMessage: string;
+  skippedRepositoryGroup: VariantAnalysisSkippedRepositoryGroup;
 
-  filterSortState?: RepositoriesFilterSortState,
+  filterSortState?: RepositoriesFilterSortState;
 };
 
 function getSkipReasonAlert(
   title: string,
   message: string,
-  repos: VariantAnalysisSkippedRepositoryGroup
+  repos: VariantAnalysisSkippedRepositoryGroup,
 ) {
-  const repositoriesOmittedText = repos.repositoryCount > repos.repositories.length
-    ? ` (Only the first ${repos.repositories.length > 1 ? `${repos.repositories.length} repositories are` : 'repository is'} shown.)`
-    : '';
+  const repositoriesOmittedText =
+    repos.repositoryCount > repos.repositories.length
+      ? ` (Only the first ${
+          repos.repositories.length > 1
+            ? `${repos.repositories.length} repositories are`
+            : "repository is"
+        } shown.)`
+      : "";
   return (
     <Alert
-      key='alert'
-      type='warning'
+      key="alert"
+      type="warning"
       title={title}
       message={message + repositoriesOmittedText}
     />
@@ -46,17 +55,19 @@ export const VariantAnalysisSkippedRepositoriesTab = ({
   filterSortState,
 }: VariantAnalysisSkippedRepositoriesTabProps) => {
   const repositories = useMemo(() => {
-    return skippedRepositoryGroup.repositories?.filter((repo) => {
-      return matchesFilter(repo, filterSortState);
-    })?.sort(compareRepository(filterSortState));
+    return skippedRepositoryGroup.repositories
+      ?.filter((repo) => {
+        return matchesFilter(repo, filterSortState);
+      })
+      ?.sort(compareRepository(filterSortState));
   }, [filterSortState, skippedRepositoryGroup.repositories]);
 
   return (
     <Container>
       {getSkipReasonAlert(alertTitle, alertMessage, skippedRepositoryGroup)}
-      {repositories.map((repo) =>
+      {repositories.map((repo) => (
         <RepoRow key={`repo/${repo.fullName}`} repository={repo} />
-      )}
+      ))}
     </Container>
   );
 };

@@ -1,18 +1,20 @@
-import * as gulp from 'gulp';
-import { compileTypeScript, watchTypeScript, cleanOutput } from './typescript';
-import { compileTextMateGrammar } from './textmate';
-import { copyTestData, watchTestData } from './tests';
-import { compileView, watchView } from './webpack';
-import { packageExtension } from './package';
-import { injectAppInsightsKey } from './appInsights';
+import * as gulp from "gulp";
+import { compileTypeScript, watchTypeScript, cleanOutput } from "./typescript";
+import { compileTextMateGrammar } from "./textmate";
+import { copyTestData, watchTestData } from "./tests";
+import { compileView, watchView } from "./webpack";
+import { packageExtension } from "./package";
+import { injectAppInsightsKey } from "./appInsights";
 
-export const buildWithoutPackage =
-  gulp.series(
-    cleanOutput,
-    gulp.parallel(
-      compileTypeScript, compileTextMateGrammar, compileView, copyTestData
-    )
-  );
+export const buildWithoutPackage = gulp.series(
+  cleanOutput,
+  gulp.parallel(
+    compileTypeScript,
+    compileTextMateGrammar,
+    compileView,
+    copyTestData,
+  ),
+);
 
 export {
   cleanOutput,
@@ -25,4 +27,8 @@ export {
   injectAppInsightsKey,
   compileView,
 };
-export default gulp.series(buildWithoutPackage, injectAppInsightsKey, packageExtension);
+export default gulp.series(
+  buildWithoutPackage,
+  injectAppInsightsKey,
+  packageExtension,
+);

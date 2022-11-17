@@ -1,8 +1,8 @@
-import { Readable } from 'stream';
-import * as tar from 'tar-stream';
-import { Headers } from 'tar-stream';
-import { pipeline } from 'stream/promises';
-import { createGunzip } from 'zlib';
+import { Readable } from "stream";
+import * as tar from "tar-stream";
+import { Headers } from "tar-stream";
+import { pipeline } from "stream/promises";
+import { createGunzip } from "zlib";
 
 export interface QueryPackFS {
   fileExists: (name: string) => boolean;
@@ -10,22 +10,27 @@ export interface QueryPackFS {
   directoryContents: (name: string) => string[];
 }
 
-export async function readBundledPack(base64Pack: string): Promise<QueryPackFS> {
-  const buffer = Buffer.from(base64Pack, 'base64');
+export async function readBundledPack(
+  base64Pack: string,
+): Promise<QueryPackFS> {
+  const buffer = Buffer.from(base64Pack, "base64");
   const stream = Readable.from(buffer);
 
   const extract = tar.extract();
 
-  const files: Record<string, {
-    headers: Headers,
-    contents: Buffer,
-  }> = {};
+  const files: Record<
+    string,
+    {
+      headers: Headers;
+      contents: Buffer;
+    }
+  > = {};
 
-  extract.on('entry', function(headers: Headers, stream, next) {
+  extract.on("entry", function (headers: Headers, stream, next) {
     const buffers: Buffer[] = [];
 
-    stream.on('data', chunk => buffers.push(chunk));
-    stream.on('end', () => {
+    stream.on("data", (chunk) => buffers.push(chunk));
+    stream.on("end", () => {
       files[headers.name] = {
         headers,
         contents: Buffer.concat(buffers),
@@ -33,7 +38,7 @@ export async function readBundledPack(base64Pack: string): Promise<QueryPackFS> 
 
       next();
     });
-    stream.on('error', err => {
+    stream.on("error", (err) => {
       console.error(err);
       next();
     });
@@ -43,8 +48,8 @@ export async function readBundledPack(base64Pack: string): Promise<QueryPackFS> 
 
   const directories: Record<string, number> = {};
   for (let file of Object.keys(files)) {
-    while (file.indexOf('/') > 0) {
-      const directory = file.substring(0, file.lastIndexOf('/'));
+    while (file.indexOf("/") > 0) {
+      const directory = file.substring(0, file.lastIndexOf("/"));
       if (!(directory in directories)) {
         directories[directory] = 0;
       }
@@ -57,11 +62,11 @@ export async function readBundledPack(base64Pack: string): Promise<QueryPackFS> 
 
   return {
     fileExists: (name: string) => {
-      return files[name]?.headers.type === 'file';
+      return files[name]?.headers.type === "file";
     },
     fileContents: (name: string): Buffer => {
       const file = files[name];
-      if (file?.headers.type === 'file') {
+      if (file?.headers.type === "file") {
         return file.contents;
       }
 
@@ -69,8 +74,13 @@ export async function readBundledPack(base64Pack: string): Promise<QueryPackFS> 
     },
     directoryContents: (name: string): string[] => {
       return Object.keys(directories)
-        .filter(dir => dir.startsWith(name) && dir !== name && dir.substring(name.length + 1).split('/').length === 1)
-        .map(dir => dir.substring(name.length + 1));
+        .filter(
+          (dir) =>
+            dir.startsWith(name) &&
+            dir !== name &&
+            dir.substring(name.length + 1).split("/").length === 1,
+        )
+        .map((dir) => dir.substring(name.length + 1));
     },
   };
 }

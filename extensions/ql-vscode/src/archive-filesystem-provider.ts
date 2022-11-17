@@ -1,11 +1,11 @@
-import * as fs from 'fs-extra';
-import * as unzipper from 'unzipper';
-import * as vscode from 'vscode';
-import { logger } from './logging';
+import * as fs from "fs-extra";
+import * as unzipper from "unzipper";
+import * as vscode from "vscode";
+import { logger } from "./logging";
 
 // All path operations in this file must be on paths *within* the zip
 // archive.
-import * as _path from 'path';
+import * as _path from "path";
 const path = _path.posix;
 
 export class File implements vscode.FileStat {
@@ -72,19 +72,20 @@ export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
   // Since we will use an authority component, we add a leading slash if necessary
   // (paths on Windows usually start with the drive letter).
   let sourceArchiveZipPathStartIndex: number;
-  if (encodedPath.startsWith('/')) {
+  if (encodedPath.startsWith("/")) {
     sourceArchiveZipPathStartIndex = 0;
   } else {
-    encodedPath = '/' + encodedPath;
+    encodedPath = "/" + encodedPath;
     sourceArchiveZipPathStartIndex = 1;
   }
 
   // The authority component of the URI records the 0-based inclusive start and exclusive end index
   // of the source archive zip path within the path component of the resulting URI.
   // This lets us separate the paths, ignoring the leading slash if we added one.
-  const sourceArchiveZipPathEndIndex = sourceArchiveZipPathStartIndex + sourceArchiveZipPath.length;
+  const sourceArchiveZipPathEndIndex =
+    sourceArchiveZipPathStartIndex + sourceArchiveZipPath.length;
   const authority = `${sourceArchiveZipPathStartIndex}-${sourceArchiveZipPathEndIndex}`;
-  return vscode.Uri.parse(zipArchiveScheme + ':/', true).with({
+  return vscode.Uri.parse(zipArchiveScheme + ":/", true).with({
     path: encodedPath,
     authority,
   });
@@ -99,7 +100,7 @@ export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
 export function encodeArchiveBasePath(sourceArchiveZipPath: string) {
   return encodeSourceArchiveUri({
     sourceArchiveZipPath,
-    pathWithinSourceArchive: ''
+    pathWithinSourceArchive: "",
   });
 }
 
@@ -107,7 +108,9 @@ const sourceArchiveUriAuthorityPattern = /^(\d+)-(\d+)$/;
 
 class InvalidSourceArchiveUriError extends Error {
   constructor(uri: vscode.Uri) {
-    super(`Can't decode uri ${uri}: authority should be of the form startIndex-endIndex (where both indices are integers).`);
+    super(
+      `Can't decode uri ${uri}: authority should be of the form startIndex-endIndex (where both indices are integers).`,
+    );
   }
 }
 
@@ -115,22 +118,26 @@ class InvalidSourceArchiveUriError extends Error {
 export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
   if (!uri.authority) {
     // Uri is malformed, but this is recoverable
-    void logger.log(`Warning: ${new InvalidSourceArchiveUriError(uri).message}`);
+    void logger.log(
+      `Warning: ${new InvalidSourceArchiveUriError(uri).message}`,
+    );
     return {
-      pathWithinSourceArchive: '/',
-      sourceArchiveZipPath: uri.path
+      pathWithinSourceArchive: "/",
+      sourceArchiveZipPath: uri.path,
     };
   }
   const match = sourceArchiveUriAuthorityPattern.exec(uri.authority);
-  if (match === null)
-    throw new InvalidSourceArchiveUriError(uri);
+  if (match === null) throw new InvalidSourceArchiveUriError(uri);
   const zipPathStartIndex = parseInt(match[1]);
   const zipPathEndIndex = parseInt(match[2]);
   if (isNaN(zipPathStartIndex) || isNaN(zipPathEndIndex))
     throw new InvalidSourceArchiveUriError(uri);
   return {
-    pathWithinSourceArchive: uri.path.substring(zipPathEndIndex) || '/',
-    sourceArchiveZipPath: uri.path.substring(zipPathStartIndex, zipPathEndIndex),
+    pathWithinSourceArchive: uri.path.substring(zipPathEndIndex) || "/",
+    sourceArchiveZipPath: uri.path.substring(
+      zipPathStartIndex,
+      zipPathEndIndex,
+    ),
   };
 }
 
@@ -139,7 +146,7 @@ export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
  */
 function ensureFile(map: DirectoryHierarchyMap, file: string) {
   const dirname = path.dirname(file);
-  if (dirname === '.') {
+  if (dirname === ".") {
     const error = `Ill-formed path ${file} in zip archive (expected absolute path)`;
     void logger.log(error);
     throw new Error(error);
@@ -154,8 +161,9 @@ function ensureFile(map: DirectoryHierarchyMap, file: string) {
 function ensureDir(map: DirectoryHierarchyMap, dir: string) {
   const parent = path.dirname(dir);
   if (!map.has(dir)) {
-    map.set(dir, new Map);
-    if (dir !== parent) { // not the root directory
+    map.set(dir, new Map());
+    if (dir !== parent) {
+      // not the root directory
       ensureDir(map, parent);
       map.get(parent)!.set(path.basename(dir), vscode.FileType.Directory);
     }
@@ -168,16 +176,23 @@ type Archive = {
 };
 
 async function parse_zip(zipPath: string): Promise<Archive> {
-  if (!await fs.pathExists(zipPath))
+  if (!(await fs.pathExists(zipPath)))
     throw vscode.FileSystemError.FileNotFound(zipPath);
-  const archive: Archive = { unzipped: await unzipper.Open.file(zipPath), dirMap: new Map };
-  archive.unzipped.files.forEach(f => { ensureFile(archive.dirMap, path.resolve('/', f.path)); });
+  const archive: Archive = {
+    unzipped: await unzipper.Open.file(zipPath),
+    dirMap: new Map(),
+  };
+  archive.unzipped.files.forEach((f) => {
+    ensureFile(archive.dirMap, path.resolve("/", f.path));
+  });
   return archive;
 }
 
 export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
-  private readOnlyError = vscode.FileSystemError.NoPermissions('write operation attempted, but source archive filesystem is readonly');
-  private archives: Map<string, Promise<Archive>> = new Map;
+  private readOnlyError = vscode.FileSystemError.NoPermissions(
+    "write operation attempted, but source archive filesystem is readonly",
+  );
+  private archives: Map<string, Promise<Archive>> = new Map();
 
   private async getArchive(zipPath: string): Promise<Archive> {
     if (!this.archives.has(zipPath)) {
@@ -186,8 +201,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     return await this.archives.get(zipPath)!;
   }
 
-
-  root = new Directory('');
+  root = new Directory("");
 
   // metadata
 
@@ -199,7 +213,8 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     const ref = decodeSourceArchiveUri(uri);
     const archive = await this.getArchive(ref.sourceArchiveZipPath);
     const contents = archive.dirMap.get(ref.pathWithinSourceArchive);
-    const result = contents === undefined ? undefined : Array.from(contents.entries());
+    const result =
+      contents === undefined ? undefined : Array.from(contents.entries());
     if (result === undefined) {
       throw vscode.FileSystemError.FileNotFound(uri);
     }
@@ -218,11 +233,19 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
 
   // write operations, all disabled
 
-  writeFile(_uri: vscode.Uri, _content: Uint8Array, _options: { create: boolean; overwrite: boolean }): void {
+  writeFile(
+    _uri: vscode.Uri,
+    _content: Uint8Array,
+    _options: { create: boolean; overwrite: boolean },
+  ): void {
     throw this.readOnlyError;
   }
 
-  rename(_oldUri: vscode.Uri, _newUri: vscode.Uri, _options: { overwrite: boolean }): void {
+  rename(
+    _oldUri: vscode.Uri,
+    _newUri: vscode.Uri,
+    _options: { overwrite: boolean },
+  ): void {
     throw this.readOnlyError;
   }
 
@@ -244,18 +267,18 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     // use '/' as path separator throughout
     const reqPath = ref.pathWithinSourceArchive;
 
-    const file = archive.unzipped.files.find(
-      f => {
-        const absolutePath = path.resolve('/', f.path);
-        return absolutePath === reqPath
-          || absolutePath === path.join('/src_archive', reqPath);
-      }
-    );
+    const file = archive.unzipped.files.find((f) => {
+      const absolutePath = path.resolve("/", f.path);
+      return (
+        absolutePath === reqPath ||
+        absolutePath === path.join("/src_archive", reqPath)
+      );
+    });
     if (file !== undefined) {
-      if (file.type === 'File') {
+      if (file.type === "File") {
         return new File(reqPath, await file.buffer());
-      }
-      else { // file.type === 'Directory'
+      } else {
+        // file.type === 'Directory'
         // I haven't observed this case in practice. Could it happen
         // with a zip file that contains empty directories?
         return new Directory(reqPath);
@@ -264,7 +287,11 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     if (archive.dirMap.has(reqPath)) {
       return new Directory(reqPath);
     }
-    throw vscode.FileSystemError.FileNotFound(`uri '${uri.toString()}', interpreted as '${reqPath}' in archive '${ref.sourceArchiveZipPath}'`);
+    throw vscode.FileSystemError.FileNotFound(
+      `uri '${uri.toString()}', interpreted as '${reqPath}' in archive '${
+        ref.sourceArchiveZipPath
+      }'`,
+    );
   }
 
   private async _lookupAsFile(uri: vscode.Uri): Promise<File> {
@@ -279,11 +306,14 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
 
   private _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
 
-  readonly onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> = this._emitter.event;
+  readonly onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> =
+    this._emitter.event;
 
   watch(_resource: vscode.Uri): vscode.Disposable {
     // ignore, fires for all changes...
-    return new vscode.Disposable(() => { /**/ });
+    return new vscode.Disposable(() => {
+      /**/
+    });
   }
 }
 
@@ -295,15 +325,17 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
  * (cf. https://www.ietf.org/rfc/rfc2396.txt (Appendix A, page 26) for
  * the fact that hyphens are allowed in uri schemes)
  */
-export const zipArchiveScheme = 'codeql-zip-archive';
+export const zipArchiveScheme = "codeql-zip-archive";
 
 export function activate(ctx: vscode.ExtensionContext) {
-  ctx.subscriptions.push(vscode.workspace.registerFileSystemProvider(
-    zipArchiveScheme,
-    new ArchiveFileSystemProvider(),
-    {
-      isCaseSensitive: true,
-      isReadonly: true,
-    }
-  ));
+  ctx.subscriptions.push(
+    vscode.workspace.registerFileSystemProvider(
+      zipArchiveScheme,
+      new ArchiveFileSystemProvider(),
+      {
+        isCaseSensitive: true,
+        isReadonly: true,
+      },
+    ),
+  );
 }

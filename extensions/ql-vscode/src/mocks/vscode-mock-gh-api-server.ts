@@ -1,9 +1,20 @@
-import * as fs from 'fs-extra';
-import { commands, env, ExtensionContext, ExtensionMode, QuickPickItem, Uri, window } from 'vscode';
+import * as fs from "fs-extra";
+import {
+  commands,
+  env,
+  ExtensionContext,
+  ExtensionMode,
+  QuickPickItem,
+  Uri,
+  window,
+} from "vscode";
 
-import { getMockGitHubApiServerScenariosPath, MockGitHubApiConfigListener } from '../config';
-import { DisposableObject } from '../pure/disposable-object';
-import { MockGitHubApiServer } from './mock-gh-api-server';
+import {
+  getMockGitHubApiServerScenariosPath,
+  MockGitHubApiConfigListener,
+} from "../config";
+import { DisposableObject } from "../pure/disposable-object";
+import { MockGitHubApiServer } from "./mock-gh-api-server";
 
 /**
  * "Interface" to the mock GitHub API server which implements VSCode interactions, such as
@@ -15,9 +26,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
   private readonly server: MockGitHubApiServer;
   private readonly config: MockGitHubApiConfigListener;
 
-  constructor(
-    private readonly ctx: ExtensionContext,
-  ) {
+  constructor(private readonly ctx: ExtensionContext) {
     super();
     this.server = new MockGitHubApiServer();
     this.config = new MockGitHubApiConfigListener();
@@ -32,8 +41,16 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
   public async stopServer(): Promise<void> {
     await this.server.stopServer();
 
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.scenarioLoaded', false);
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', false);
+    await commands.executeCommand(
+      "setContext",
+      "codeQL.mockGitHubApiServer.scenarioLoaded",
+      false,
+    );
+    await commands.executeCommand(
+      "setContext",
+      "codeQL.mockGitHubApiServer.recording",
+      false,
+    );
   }
 
   public async loadScenario(): Promise<void> {
@@ -43,13 +60,14 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
     }
 
     const scenarioNames = await this.server.getScenarioNames(scenariosPath);
-    const scenarioQuickPickItems = scenarioNames.map(s => ({ label: s }));
+    const scenarioQuickPickItems = scenarioNames.map((s) => ({ label: s }));
     const quickPickOptions = {
-      placeHolder: 'Select a scenario to load',
+      placeHolder: "Select a scenario to load",
     };
     const selectedScenario = await window.showQuickPick<QuickPickItem>(
       scenarioQuickPickItems,
-      quickPickOptions);
+      quickPickOptions,
+    );
     if (!selectedScenario) {
       return;
     }
@@ -60,38 +78,60 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
 
     // Set a value in the context to track whether we have a scenario loaded.
     // This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.scenarioLoaded', true);
+    await commands.executeCommand(
+      "setContext",
+      "codeQL.mockGitHubApiServer.scenarioLoaded",
+      true,
+    );
 
     await window.showInformationMessage(`Loaded scenario '${scenarioName}'`);
   }
 
   public async unloadScenario(): Promise<void> {
     if (!this.server.isScenarioLoaded) {
-      await window.showInformationMessage('No scenario currently loaded');
+      await window.showInformationMessage("No scenario currently loaded");
     } else {
       await this.server.unloadScenario();
-      await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.scenarioLoaded', false);
-      await window.showInformationMessage('Unloaded scenario');
+      await commands.executeCommand(
+        "setContext",
+        "codeQL.mockGitHubApiServer.scenarioLoaded",
+        false,
+      );
+      await window.showInformationMessage("Unloaded scenario");
     }
   }
 
   public async startRecording(): Promise<void> {
     if (this.server.isRecording) {
-      void window.showErrorMessage('A scenario is already being recorded. Use the "Save Scenario" or "Cancel Scenario" commands to finish recording.');
+      void window.showErrorMessage(
+        'A scenario is already being recorded. Use the "Save Scenario" or "Cancel Scenario" commands to finish recording.',
+      );
       return;
     }
 
     if (this.server.isScenarioLoaded) {
       await this.server.unloadScenario();
-      await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.scenarioLoaded', false);
-      void window.showInformationMessage('A scenario was loaded so it has been unloaded');
+      await commands.executeCommand(
+        "setContext",
+        "codeQL.mockGitHubApiServer.scenarioLoaded",
+        false,
+      );
+      void window.showInformationMessage(
+        "A scenario was loaded so it has been unloaded",
+      );
     }
 
     await this.server.startRecording();
     // Set a value in the context to track whether we are recording. This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', true);
+    await commands.executeCommand(
+      "setContext",
+      "codeQL.mockGitHubApiServer.recording",
+      true,
+    );
 
-    await window.showInformationMessage('Recording scenario. To save the scenario, use the "CodeQL Mock GitHub API Server: Save Scenario" command.');
+    await window.showInformationMessage(
+      'Recording scenario. To save the scenario, use the "CodeQL Mock GitHub API Server: Save Scenario" command.',
+    );
   }
 
   public async saveScenario(): Promise<void> {
@@ -101,14 +141,20 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
     }
 
     // Set a value in the context to track whether we are recording. This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', false);
+    await commands.executeCommand(
+      "setContext",
+      "codeQL.mockGitHubApiServer.recording",
+      false,
+    );
 
     if (!this.server.isRecording) {
-      void window.showErrorMessage('No scenario is currently being recorded.');
+      void window.showErrorMessage("No scenario is currently being recorded.");
       return;
     }
     if (!this.server.anyRequestsRecorded) {
-      void window.showWarningMessage('No requests were recorded. Cancelling scenario.');
+      void window.showWarningMessage(
+        "No requests were recorded. Cancelling scenario.",
+      );
 
       await this.stopRecording();
 
@@ -116,9 +162,9 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
     }
 
     const name = await window.showInputBox({
-      title: 'Save scenario',
-      prompt: 'Enter a name for the scenario.',
-      placeHolder: 'successful-run',
+      title: "Save scenario",
+      prompt: "Enter a name for the scenario.",
+      placeHolder: "successful-run",
     });
     if (!name) {
       return;
@@ -128,26 +174,33 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
 
     await this.stopRecording();
 
-    const action = await window.showInformationMessage(`Scenario saved to ${filePath}`, 'Open directory');
-    if (action === 'Open directory') {
+    const action = await window.showInformationMessage(
+      `Scenario saved to ${filePath}`,
+      "Open directory",
+    );
+    if (action === "Open directory") {
       await env.openExternal(Uri.file(filePath));
     }
   }
 
   public async cancelRecording(): Promise<void> {
     if (!this.server.isRecording) {
-      void window.showErrorMessage('No scenario is currently being recorded.');
+      void window.showErrorMessage("No scenario is currently being recorded.");
       return;
     }
 
     await this.stopRecording();
 
-    void window.showInformationMessage('Recording cancelled.');
+    void window.showInformationMessage("Recording cancelled.");
   }
 
   private async stopRecording(): Promise<void> {
     // Set a value in the context to track whether we are recording. This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', false);
+    await commands.executeCommand(
+      "setContext",
+      "codeQL.mockGitHubApiServer.recording",
+      false,
+    );
 
     await this.server.stopRecording();
   }
@@ -159,7 +212,10 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
     }
 
     if (this.ctx.extensionMode === ExtensionMode.Development) {
-      const developmentScenariosPath = Uri.joinPath(this.ctx.extensionUri, 'src/mocks/scenarios').fsPath.toString();
+      const developmentScenariosPath = Uri.joinPath(
+        this.ctx.extensionUri,
+        "src/mocks/scenarios",
+      ).fsPath.toString();
       if (await fs.pathExists(developmentScenariosPath)) {
         return developmentScenariosPath;
       }
@@ -169,11 +225,11 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
       canSelectFolders: true,
       canSelectFiles: false,
       canSelectMany: false,
-      openLabel: 'Select scenarios directory',
-      title: 'Select scenarios directory',
+      openLabel: "Select scenarios directory",
+      title: "Select scenarios directory",
     });
     if (directories === undefined || directories.length === 0) {
-      void window.showErrorMessage('No scenarios directory selected.');
+      void window.showErrorMessage("No scenarios directory selected.");
       return undefined;
     }
 

@@ -1,6 +1,6 @@
-import * as React from 'react';
-import styled from 'styled-components';
-import { Codicon } from './icon';
+import * as React from "react";
+import styled from "styled-components";
+import { Codicon } from "./icon";
 
 const Star = styled.span`
   flex-grow: 2;
@@ -20,20 +20,17 @@ type Props = {
   starCount?: number;
 };
 
-const StarCount = ({ starCount }: Props) => (
+const StarCount = ({ starCount }: Props) =>
   Number.isFinite(starCount) ? (
     <>
       <Star>
         <Codicon name="star-empty" label="Stars count" />
       </Star>
-      <Count>
-        {displayStars(starCount!)}
-      </Count>
+      <Count>{displayStars(starCount!)}</Count>
     </>
   ) : (
     <></>
-  )
-);
+  );
 
 function displayStars(starCount: number) {
   if (starCount > 10000) {

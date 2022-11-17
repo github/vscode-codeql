@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-import { ComponentMeta } from '@storybook/react';
+import { ComponentMeta } from "@storybook/react";
 
-import { RepositoriesSearchSortRow as RepositoriesSearchSortRowComponent } from '../../view/variant-analysis/RepositoriesSearchSortRow';
-import { defaultFilterSortState } from '../../pure/variant-analysis-filter-sort';
+import { RepositoriesSearchSortRow as RepositoriesSearchSortRowComponent } from "../../view/variant-analysis/RepositoriesSearchSortRow";
+import { defaultFilterSortState } from "../../pure/variant-analysis-filter-sort";
 
 export default {
-  title: 'Variant Analysis/Repositories Search and Sort Row',
+  title: "Variant Analysis/Repositories Search and Sort Row",
   component: RepositoriesSearchSortRowComponent,
   argTypes: {
     value: {
@@ -14,7 +14,7 @@ export default {
         disable: true,
       },
     },
-  }
+  },
 } as ComponentMeta<typeof RepositoriesSearchSortRowComponent>;
 
 export const RepositoriesSearchSortRow = () => {

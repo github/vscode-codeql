@@ -1,14 +1,13 @@
-import 'chai';
-import 'chai/register-should';
-import 'sinon-chai';
-import * as sinon from 'sinon';
-import 'mocha';
+import "chai";
+import "chai/register-should";
+import "sinon-chai";
+import * as sinon from "sinon";
+import "mocha";
 
-import { DisposableObject } from '../../src/pure/disposable-object';
-import { expect } from 'chai';
+import { DisposableObject } from "../../src/pure/disposable-object";
+import { expect } from "chai";
 
-describe('DisposableObject and DisposeHandler', () => {
-
+describe("DisposableObject and DisposeHandler", () => {
   let disposable1: { dispose: sinon.SinonSpy };
   let disposable2: { dispose: sinon.SinonSpy };
   let disposable3: { dispose: sinon.SinonSpy };
@@ -32,7 +31,7 @@ describe('DisposableObject and DisposeHandler', () => {
     sandbox.restore();
   });
 
-  it('should dispose tracked and pushed objects', () => {
+  it("should dispose tracked and pushed objects", () => {
     disposableObject.push(disposable1);
     disposableObject.push(disposable2);
     disposableObject.track(nestedDisposableObject);
@@ -60,7 +59,7 @@ describe('DisposableObject and DisposeHandler', () => {
     expect(disposable3.dispose).not.to.have.been.called;
   });
 
-  it('should dispose and stop tracking objects', () => {
+  it("should dispose and stop tracking objects", () => {
     disposableObject.track(disposable1);
     disposableObject.disposeAndStopTracking(disposable1);
 
@@ -71,7 +70,7 @@ describe('DisposableObject and DisposeHandler', () => {
     expect(disposable1.dispose).not.to.have.been.called;
   });
 
-  it('should avoid disposing an object that is not tracked', () => {
+  it("should avoid disposing an object that is not tracked", () => {
     disposableObject.push(disposable1);
     disposableObject.disposeAndStopTracking(disposable1);
 
@@ -81,10 +80,11 @@ describe('DisposableObject and DisposeHandler', () => {
     expect(disposable1.dispose).to.have.been.called;
   });
 
-  it('ahould use a dispose handler', () => {
-    const handler = (d: any) => (d === disposable1 || d === disposable3 || d === nestedDisposableObject)
-      ? d.dispose(handler)
-      : void (0);
+  it("ahould use a dispose handler", () => {
+    const handler = (d: any) =>
+      d === disposable1 || d === disposable3 || d === nestedDisposableObject
+        ? d.dispose(handler)
+        : void 0;
 
     disposableObject.push(disposable1);
     disposableObject.push(disposable2);

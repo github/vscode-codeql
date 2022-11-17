@@ -1,10 +1,14 @@
-import * as React from 'react';
-import styled from 'styled-components';
+import * as React from "react";
+import styled from "styled-components";
 
-import { HighlightedRegion } from '../../../remote-queries/shared/analysis-result';
-import { parseHighlightedLine, shouldHighlightLine } from '../../../pure/sarif-utils';
+import { HighlightedRegion } from "../../../remote-queries/shared/analysis-result";
+import {
+  parseHighlightedLine,
+  shouldHighlightLine,
+} from "../../../pure/sarif-utils";
 
-const replaceSpaceAndTabChar = (text: string) => text.replaceAll(' ', '\u00a0').replaceAll('\t', '\u00a0\u00a0\u00a0\u00a0');
+const replaceSpaceAndTabChar = (text: string) =>
+  text.replaceAll(" ", "\u00a0").replaceAll("\t", "\u00a0\u00a0\u00a0\u00a0");
 
 const HighlightedSpan = styled.span`
   background-color: var(--vscode-editor-findMatchHighlightBackground);
@@ -21,17 +25,24 @@ const HighlightedCode = ({ text }: { text: string }) => {
 export const CodeSnippetCode = ({
   line,
   lineNumber,
-  highlightedRegion
+  highlightedRegion,
 }: {
-  line: string,
-  lineNumber: number,
-  highlightedRegion?: HighlightedRegion
+  line: string;
+  lineNumber: number;
+  highlightedRegion?: HighlightedRegion;
 }) => {
-  if (!highlightedRegion || !shouldHighlightLine(lineNumber, highlightedRegion)) {
+  if (
+    !highlightedRegion ||
+    !shouldHighlightLine(lineNumber, highlightedRegion)
+  ) {
     return <PlainCode text={line} />;
   }
 
-  const partiallyHighlightedLine = parseHighlightedLine(line, lineNumber, highlightedRegion);
+  const partiallyHighlightedLine = parseHighlightedLine(
+    line,
+    lineNumber,
+    highlightedRegion,
+  );
 
   return (
     <>

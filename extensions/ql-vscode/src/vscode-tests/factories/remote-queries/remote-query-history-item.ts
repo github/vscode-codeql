@@ -1,14 +1,14 @@
-import { RemoteQueryHistoryItem } from '../../../remote-queries/remote-query-history-item';
-import { QueryStatus } from '../../../query-status';
+import { RemoteQueryHistoryItem } from "../../../remote-queries/remote-query-history-item";
+import { QueryStatus } from "../../../query-status";
 
 export function createMockRemoteQueryHistoryItem({
-  date = new Date('2022-01-01T00:00:00.000Z'),
+  date = new Date("2022-01-01T00:00:00.000Z"),
   status = QueryStatus.InProgress,
   failureReason = undefined,
   resultCount = undefined,
   repositoryCount = 0,
   executionStartTime = date.getTime(),
-  userSpecifiedLabel = undefined
+  userSpecifiedLabel = undefined,
 }: {
   date?: Date;
   status?: QueryStatus;
@@ -19,26 +19,26 @@ export function createMockRemoteQueryHistoryItem({
   executionStartTime?: number;
   userSpecifiedLabel?: string;
 }): RemoteQueryHistoryItem {
-  return ({
-    t: 'remote',
+  return {
+    t: "remote",
     failureReason,
     resultCount,
     status,
     completed: false,
-    queryId: 'queryId',
+    queryId: "queryId",
     remoteQuery: {
-      queryName: 'query-name',
-      queryFilePath: 'query-file.ql',
-      queryText: 'select 1',
-      language: 'javascript',
+      queryName: "query-name",
+      queryFilePath: "query-file.ql",
+      queryText: "select 1",
+      language: "javascript",
       controllerRepository: {
-        owner: 'github',
-        name: 'vscode-codeql-integration-tests',
+        owner: "github",
+        name: "vscode-codeql-integration-tests",
       },
       executionStartTime,
       actionsWorkflowRunId: 1,
       repositoryCount,
     },
     userSpecifiedLabel,
-  });
+  };
 }

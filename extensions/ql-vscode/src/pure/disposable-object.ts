@@ -1,4 +1,3 @@
-
 // Avoid explicitly referencing Disposable type in vscode.
 // This file cannot have dependencies on the vscode API.
 export interface Disposable {

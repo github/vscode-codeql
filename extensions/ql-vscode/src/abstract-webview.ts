@@ -6,12 +6,16 @@ import {
   Uri,
   WebviewPanelOptions,
   WebviewOptions,
-} from 'vscode';
-import * as path from 'path';
+} from "vscode";
+import * as path from "path";
 
-import { DisposableObject, DisposeHandler } from './pure/disposable-object';
-import { tmpDir } from './helpers';
-import { getHtmlForWebview, WebviewMessage, WebviewView } from './interface-utils';
+import { DisposableObject, DisposeHandler } from "./pure/disposable-object";
+import { tmpDir } from "./helpers";
+import {
+  getHtmlForWebview,
+  WebviewMessage,
+  WebviewView,
+} from "./interface-utils";
 
 export type WebviewPanelConfig = {
   viewId: string;
@@ -20,18 +24,19 @@ export type WebviewPanelConfig = {
   view: WebviewView;
   preserveFocus?: boolean;
   additionalOptions?: WebviewPanelOptions & WebviewOptions;
-}
+};
 
-export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMessage extends WebviewMessage> extends DisposableObject {
+export abstract class AbstractWebview<
+  ToMessage extends WebviewMessage,
+  FromMessage extends WebviewMessage,
+> extends DisposableObject {
   protected panel: WebviewPanel | undefined;
   protected panelLoaded = false;
   protected panelLoadedCallBacks: (() => void)[] = [];
 
   private panelResolves?: Array<(panel: WebviewPanel) => void>;
 
-  constructor(
-    protected readonly ctx: ExtensionContext
-  ) {
+  constructor(protected readonly ctx: ExtensionContext) {
     super();
   }
 
@@ -78,9 +83,9 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
           localResourceRoots: [
             ...(config.additionalOptions?.localResourceRoots ?? []),
             Uri.file(tmpDir.name),
-            Uri.file(path.join(ctx.extensionPath, 'out'))
+            Uri.file(path.join(ctx.extensionPath, "out")),
           ],
-        }
+        },
       );
       this.panel = panel;
 
@@ -101,8 +106,8 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
           this.onPanelDispose();
         },
         null,
-        this.ctx.subscriptions
-      )
+        this.ctx.subscriptions,
+      ),
     );
 
     panel.webview.html = getHtmlForWebview(
@@ -111,18 +116,20 @@ export abstract class AbstractWebview<ToMessage extends WebviewMessage, FromMess
       config.view,
       {
         allowInlineStyles: true,
-      }
+      },
     );
     this.push(
       panel.webview.onDidReceiveMessage(
         async (e) => this.onMessage(e),
         undefined,
-        this.ctx.subscriptions
-      )
+        this.ctx.subscriptions,
+      ),
     );
   }
 
-  protected abstract getPanelConfig(): WebviewPanelConfig | Promise<WebviewPanelConfig>;
+  protected abstract getPanelConfig():
+    | WebviewPanelConfig
+    | Promise<WebviewPanelConfig>;
 
   protected abstract onPanelDispose(): void;
 

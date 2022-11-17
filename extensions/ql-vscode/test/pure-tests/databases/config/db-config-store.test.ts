@@ -1,13 +1,13 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import { DbConfigStore } from '../../../../src/databases/config/db-config-store';
-import { expect } from 'chai';
-import { createMockApp } from '../../../__mocks__/appMock';
+import * as fs from "fs-extra";
+import * as path from "path";
+import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
+import { expect } from "chai";
+import { createMockApp } from "../../../__mocks__/appMock";
 
-describe('db config store', async () => {
-  const extensionPath = path.join(__dirname, '../../../..');
-  const tempWorkspaceStoragePath = path.join(__dirname, 'test-workspace');
-  const testDataStoragePath = path.join(__dirname, 'data');
+describe("db config store", async () => {
+  const extensionPath = path.join(__dirname, "../../../..");
+  const tempWorkspaceStoragePath = path.join(__dirname, "test-workspace");
+  const testDataStoragePath = path.join(__dirname, "data");
 
   beforeEach(async () => {
     await fs.ensureDir(tempWorkspaceStoragePath);
@@ -17,13 +17,16 @@ describe('db config store', async () => {
     await fs.remove(tempWorkspaceStoragePath);
   });
 
-  it('should create a new config if one does not exist', async () => {
+  it("should create a new config if one does not exist", async () => {
     const app = createMockApp({
       extensionPath,
-      workspaceStoragePath: tempWorkspaceStoragePath
+      workspaceStoragePath: tempWorkspaceStoragePath,
     });
 
-    const configPath = path.join(tempWorkspaceStoragePath, 'workspace-databases.json');
+    const configPath = path.join(
+      tempWorkspaceStoragePath,
+      "workspace-databases.json",
+    );
 
     const configStore = new DbConfigStore(app);
     await configStore.initialize();
@@ -39,10 +42,10 @@ describe('db config store', async () => {
     expect(config.selected).to.be.undefined;
   });
 
-  it('should load an existing config', async () => {
+  it("should load an existing config", async () => {
     const app = createMockApp({
       extensionPath,
-      workspaceStoragePath: testDataStoragePath
+      workspaceStoragePath: testDataStoragePath,
     });
     const configStore = new DbConfigStore(app);
     await configStore.initialize();
@@ -50,47 +53,51 @@ describe('db config store', async () => {
     const config = configStore.getConfig().value;
     expect(config.databases.remote.repositoryLists).to.have.length(1);
     expect(config.databases.remote.repositoryLists[0]).to.deep.equal({
-      name: 'repoList1',
-      repositories: ['foo/bar', 'foo/baz']
+      name: "repoList1",
+      repositories: ["foo/bar", "foo/baz"],
     });
     expect(config.databases.remote.owners).to.be.empty;
     expect(config.databases.remote.repositories).to.have.length(3);
     expect(config.databases.remote.repositories).to.deep.equal([
-      'owner/repo1',
-      'owner/repo2',
-      'owner/repo3',
+      "owner/repo1",
+      "owner/repo2",
+      "owner/repo3",
     ]);
     expect(config.databases.local.lists).to.have.length(2);
     expect(config.databases.local.lists[0]).to.deep.equal({
-      name: 'localList1',
+      name: "localList1",
       databases: [
         {
-          name: 'foo/bar',
+          name: "foo/bar",
           dateAdded: 1668096745193,
-          language: 'go',
-          storagePath: '/path/to/database/',
+          language: "go",
+          storagePath: "/path/to/database/",
         },
       ],
     });
     expect(config.databases.local.databases).to.have.length(1);
     expect(config.databases.local.databases[0]).to.deep.equal({
-      name: 'example-db',
+      name: "example-db",
       dateAdded: 1668096927267,
-      language: 'ruby',
-      storagePath: '/path/to/database/',
+      language: "ruby",
+      storagePath: "/path/to/database/",
     });
     expect(config.selected).to.deep.equal({
-      kind: 'configDefined',
-      value: 'path.to.database',
+      kind: "configDefined",
+      value: "path.to.database",
     });
   });
 
-  it('should load an existing config without selected db', async () => {
-    const testDataStoragePathWithout = path.join(__dirname, 'data', 'without-selected');
+  it("should load an existing config without selected db", async () => {
+    const testDataStoragePathWithout = path.join(
+      __dirname,
+      "data",
+      "without-selected",
+    );
 
     const app = createMockApp({
       extensionPath,
-      workspaceStoragePath: testDataStoragePathWithout
+      workspaceStoragePath: testDataStoragePathWithout,
     });
 
     const configStore = new DbConfigStore(app);
@@ -100,10 +107,10 @@ describe('db config store', async () => {
     expect(config.selected).to.be.undefined;
   });
 
-  it('should not allow modification of the config', async () => {
+  it("should not allow modification of the config", async () => {
     const app = createMockApp({
       extensionPath,
-      workspaceStoragePath: testDataStoragePath
+      workspaceStoragePath: testDataStoragePath,
     });
     const configStore = new DbConfigStore(app);
     await configStore.initialize();
@@ -112,6 +119,8 @@ describe('db config store', async () => {
     config.databases.remote.repositoryLists = [];
 
     const reRetrievedConfig = configStore.getConfig().value;
-    expect(reRetrievedConfig.databases.remote.repositoryLists).to.have.length(1);
+    expect(reRetrievedConfig.databases.remote.repositoryLists).to.have.length(
+      1,
+    );
   });
 });

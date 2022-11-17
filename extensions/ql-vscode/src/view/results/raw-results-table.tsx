@@ -1,13 +1,23 @@
-import * as React from 'react';
-import { ResultTableProps, className, emptyQueryResultsMessage, jumpToLocation } from './result-table-utils';
-import { RAW_RESULTS_LIMIT, RawResultsSortState, NavigateMsg, NavigationDirection } from '../../pure/interface-types';
-import { RawTableResultSet } from '../../pure/interface-types';
-import RawTableHeader from './RawTableHeader';
-import RawTableRow from './RawTableRow';
-import { ResultRow } from '../../pure/bqrs-cli-types';
-import { onNavigation } from './results';
-import { tryGetResolvableLocation } from '../../pure/bqrs-utils';
-import { ScrollIntoViewHelper } from './scroll-into-view-helper';
+import * as React from "react";
+import {
+  ResultTableProps,
+  className,
+  emptyQueryResultsMessage,
+  jumpToLocation,
+} from "./result-table-utils";
+import {
+  RAW_RESULTS_LIMIT,
+  RawResultsSortState,
+  NavigateMsg,
+  NavigationDirection,
+} from "../../pure/interface-types";
+import { RawTableResultSet } from "../../pure/interface-types";
+import RawTableHeader from "./RawTableHeader";
+import RawTableRow from "./RawTableRow";
+import { ResultRow } from "../../pure/bqrs-cli-types";
+import { onNavigation } from "./results";
+import { tryGetResolvableLocation } from "../../pure/bqrs-utils";
+import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 
 export type RawTableProps = ResultTableProps & {
   resultSet: RawTableResultSet;
@@ -16,7 +26,7 @@ export type RawTableProps = ResultTableProps & {
 };
 
 interface RawTableState {
-  selectedItem?: { row: number, column: number };
+  selectedItem?: { row: number; column: number };
 }
 
 export class RawTable extends React.Component<RawTableProps, RawTableState> {
@@ -30,9 +40,9 @@ export class RawTable extends React.Component<RawTableProps, RawTableState> {
   }
 
   private setSelection(row: number, column: number) {
-    this.setState(prev => ({
+    this.setState((prev) => ({
       ...prev,
-      selectedItem: { row, column }
+      selectedItem: { row, column },
     }));
   }
 
@@ -50,35 +60,48 @@ export class RawTable extends React.Component<RawTableProps, RawTableState> {
       dataRows = dataRows.slice(0, RAW_RESULTS_LIMIT);
     }
 
-    const tableRows = dataRows.map((row: ResultRow, rowIndex: number) =>
+    const tableRows = dataRows.map((row: ResultRow, rowIndex: number) => (
       <RawTableRow
         key={rowIndex}
         rowIndex={rowIndex + this.props.offset}
         row={row}
         databaseUri={databaseUri}
-        selectedColumn={this.state.selectedItem?.row === rowIndex ? this.state.selectedItem?.column : undefined}
+        selectedColumn={
+          this.state.selectedItem?.row === rowIndex
+            ? this.state.selectedItem?.column
+            : undefined
+        }
         onSelected={this.setSelection}
         scroller={this.scroller}
       />
-    );
+    ));
 
     if (numTruncatedResults > 0) {
       const colSpan = dataRows[0].length + 1; // one row for each data column, plus index column
-      tableRows.push(<tr><td key={'message'} colSpan={colSpan} style={{ textAlign: 'center', fontStyle: 'italic' }}>
-        Too many results to show at once. {numTruncatedResults} result(s) omitted.
-      </td></tr>);
+      tableRows.push(
+        <tr>
+          <td
+            key={"message"}
+            colSpan={colSpan}
+            style={{ textAlign: "center", fontStyle: "italic" }}
+          >
+            Too many results to show at once. {numTruncatedResults} result(s)
+            omitted.
+          </td>
+        </tr>,
+      );
     }
 
-    return <table className={className}>
-      <RawTableHeader
-        columns={resultSet.schema.columns}
-        schemaName={resultSet.schema.name}
-        sortState={this.props.sortState}
-      />
-      <tbody>
-        {tableRows}
-      </tbody>
-    </table>;
+    return (
+      <table className={className}>
+        <RawTableHeader
+          columns={resultSet.schema.columns}
+          schemaName={resultSet.schema.name}
+          sortState={this.props.sortState}
+        />
+        <tbody>{tableRows}</tbody>
+      </table>
+    );
   }
 
   private handleNavigationEvent(event: NavigateMsg) {
@@ -103,29 +126,26 @@ export class RawTable extends React.Component<RawTableProps, RawTableState> {
   }
 
   private navigateWithDelta(rowDelta: number, columnDelta: number) {
-    this.setState(prevState => {
+    this.setState((prevState) => {
       const numberOfAlerts = this.props.resultSet.rows.length;
       if (numberOfAlerts === 0) {
         return prevState;
       }
       const currentRow = prevState.selectedItem?.row;
-      const nextRow = currentRow === undefined
-        ? 0
-        : (currentRow + rowDelta);
+      const nextRow = currentRow === undefined ? 0 : currentRow + rowDelta;
       if (nextRow < 0 || nextRow >= numberOfAlerts) {
         return prevState;
       }
       const currentColumn = prevState.selectedItem?.column;
-      const nextColumn = currentColumn === undefined
-        ? 0
-        : (currentColumn + columnDelta);
+      const nextColumn =
+        currentColumn === undefined ? 0 : currentColumn + columnDelta;
       // Jump to the location of the new cell
       const rowData = this.props.resultSet.rows[nextRow];
       if (nextColumn < 0 || nextColumn >= rowData.length) {
         return prevState;
       }
       const cellData = rowData[nextColumn];
-      if (cellData != null && typeof cellData === 'object') {
+      if (cellData != null && typeof cellData === "object") {
         const location = tryGetResolvableLocation(cellData.url);
         if (location !== undefined) {
           jumpToLocation(location, this.props.databaseUri);
@@ -134,7 +154,7 @@ export class RawTable extends React.Component<RawTableProps, RawTableState> {
       this.scroller.scrollIntoViewOnNextUpdate();
       return {
         ...prevState,
-        selectedItem: { row: nextRow, column: nextColumn }
+        selectedItem: { row: nextRow, column: nextColumn },
       };
     });
   }

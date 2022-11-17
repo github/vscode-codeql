@@ -1,22 +1,29 @@
-import { CancellationToken } from 'vscode';
-import { CodeQLCliServer } from './cli';
-import { ProgressCallback } from './commandRunner';
-import { DatabaseItem } from './databases';
-import { InitialQueryInfo, LocalQueryInfo } from './query-results';
-import { QueryWithResults } from './run-queries-shared';
-
-
+import { CancellationToken } from "vscode";
+import { CodeQLCliServer } from "./cli";
+import { ProgressCallback } from "./commandRunner";
+import { DatabaseItem } from "./databases";
+import { InitialQueryInfo, LocalQueryInfo } from "./query-results";
+import { QueryWithResults } from "./run-queries-shared";
 
 export abstract class QueryRunner {
-  abstract restartQueryServer(progress: ProgressCallback, token: CancellationToken): Promise<void>;
+  abstract restartQueryServer(
+    progress: ProgressCallback,
+    token: CancellationToken,
+  ): Promise<void>;
 
   abstract cliServer: CodeQLCliServer;
 
-  abstract onStart(arg0: (progress: ProgressCallback, token: CancellationToken) => Promise<void>): void;
+  abstract onStart(
+    arg0: (
+      progress: ProgressCallback,
+      token: CancellationToken,
+    ) => Promise<void>,
+  ): void;
   abstract clearCacheInDatabase(
     dbItem: DatabaseItem,
     progress: ProgressCallback,
-    token: CancellationToken): Promise<void>;
+    token: CancellationToken,
+  ): Promise<void>;
 
   abstract compileAndRunQueryAgainstDatabase(
     dbItem: DatabaseItem,
@@ -44,7 +51,7 @@ export abstract class QueryRunner {
     dbItem: DatabaseItem,
     progress: ProgressCallback,
     token: CancellationToken,
-  ): Promise<void>
+  ): Promise<void>;
 
-  abstract clearPackCache(): Promise<void>
+  abstract clearPackCache(): Promise<void>;
 }

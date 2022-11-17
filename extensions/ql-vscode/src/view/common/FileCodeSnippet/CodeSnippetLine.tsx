@@ -1,9 +1,13 @@
-import * as React from 'react';
-import styled from 'styled-components';
+import * as React from "react";
+import styled from "styled-components";
 
-import { AnalysisMessage, HighlightedRegion, ResultSeverity } from '../../../remote-queries/shared/analysis-result';
-import { CodeSnippetCode } from './CodeSnippetCode';
-import { CodeSnippetMessage } from './CodeSnippetMessage';
+import {
+  AnalysisMessage,
+  HighlightedRegion,
+  ResultSeverity,
+} from "../../../remote-queries/shared/analysis-result";
+import { CodeSnippetCode } from "./CodeSnippetCode";
+import { CodeSnippetMessage } from "./CodeSnippetMessage";
 
 const MessageContainer = styled.div`
   padding-top: 0.5em;
@@ -27,13 +31,13 @@ const CodeSnippetLineCodeContainer = styled.div`
 `;
 
 type CodeSnippetLineProps = {
-  line: string,
-  lineIndex: number,
-  startingLineIndex: number,
-  highlightedRegion?: HighlightedRegion,
-  severity?: ResultSeverity,
-  message?: AnalysisMessage,
-  messageChildren?: React.ReactNode,
+  line: string;
+  lineIndex: number;
+  startingLineIndex: number;
+  highlightedRegion?: HighlightedRegion;
+  severity?: ResultSeverity;
+  message?: AnalysisMessage;
+  messageChildren?: React.ReactNode;
 };
 
 export const CodeSnippetLine = ({
@@ -43,9 +47,10 @@ export const CodeSnippetLine = ({
   highlightedRegion,
   severity,
   message,
-  messageChildren
+  messageChildren,
 }: CodeSnippetLineProps) => {
-  const shouldShowMessage = message &&
+  const shouldShowMessage =
+    message &&
     severity &&
     highlightedRegion &&
     highlightedRegion.endLine == startingLineIndex + lineIndex;
@@ -53,7 +58,9 @@ export const CodeSnippetLine = ({
   return (
     <div>
       <LineContainer>
-        <LineNumberContainer>{startingLineIndex + lineIndex}</LineNumberContainer>
+        <LineNumberContainer>
+          {startingLineIndex + lineIndex}
+        </LineNumberContainer>
         <CodeSnippetLineCodeContainer>
           <CodeSnippetCode
             line={line}
@@ -62,16 +69,13 @@ export const CodeSnippetLine = ({
           />
         </CodeSnippetLineCodeContainer>
       </LineContainer>
-      {shouldShowMessage &&
+      {shouldShowMessage && (
         <MessageContainer>
-          <CodeSnippetMessage
-            message={message}
-            severity={severity}
-          >
+          <CodeSnippetMessage message={message} severity={severity}>
             {messageChildren}
           </CodeSnippetMessage>
         </MessageContainer>
-      }
+      )}
     </div>
   );
 };

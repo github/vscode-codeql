@@ -1,41 +1,41 @@
-import React from 'react';
+import React from "react";
 
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { ComponentMeta, ComponentStory } from "@storybook/react";
 
-import { VariantAnalysisContainer } from '../../view/variant-analysis/VariantAnalysisContainer';
-import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
-import { VariantAnalysisActions } from '../../view/variant-analysis/VariantAnalysisActions';
+import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
+import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
+import { VariantAnalysisActions } from "../../view/variant-analysis/VariantAnalysisActions";
 
 export default {
-  title: 'Variant Analysis/Variant Analysis Actions',
+  title: "Variant Analysis/Variant Analysis Actions",
   component: VariantAnalysisActions,
   decorators: [
     (Story) => (
       <VariantAnalysisContainer>
         <Story />
       </VariantAnalysisContainer>
-    )
+    ),
   ],
   argTypes: {
     onStopQueryClick: {
-      action: 'stop-query-clicked',
+      action: "stop-query-clicked",
       table: {
         disable: true,
       },
     },
     onCopyRepositoryListClick: {
-      action: 'copy-repository-list-clicked',
+      action: "copy-repository-list-clicked",
       table: {
         disable: true,
       },
     },
     onExportResultsClick: {
-      action: 'export-results-clicked',
+      action: "export-results-clicked",
       table: {
         disable: true,
       },
     },
-  }
+  },
 } as ComponentMeta<typeof VariantAnalysisActions>;
 
 const Template: ComponentStory<typeof VariantAnalysisActions> = (args) => (

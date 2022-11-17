@@ -5,12 +5,11 @@ export class ValueResult<TValue> {
   private constructor(
     private readonly errorMsgs: string[],
     private readonly val?: TValue,
-  ) {
-  }
+  ) {}
 
   public static ok<TValue>(value: TValue): ValueResult<TValue> {
     if (value === undefined) {
-      throw new Error('Value must be set for successful result');
+      throw new Error("Value must be set for successful result");
     }
 
     return new ValueResult([], value);
@@ -18,7 +17,9 @@ export class ValueResult<TValue> {
 
   public static fail<TValue>(errorMsgs: string[]): ValueResult<TValue> {
     if (errorMsgs.length === 0) {
-      throw new Error('At least one error message must be set for a failed result');
+      throw new Error(
+        "At least one error message must be set for a failed result",
+      );
     }
 
     return new ValueResult<TValue>(errorMsgs, undefined);
@@ -34,7 +35,7 @@ export class ValueResult<TValue> {
 
   public get errors(): string[] {
     if (!this.errorMsgs) {
-      throw new Error('Cannot get error for successful result');
+      throw new Error("Cannot get error for successful result");
     }
 
     return this.errorMsgs;
@@ -42,7 +43,7 @@ export class ValueResult<TValue> {
 
   public get value(): TValue {
     if (this.val === undefined) {
-      throw new Error('Cannot get value for unsuccessful result');
+      throw new Error("Cannot get value for unsuccessful result");
     }
 
     return this.val;

@@ -1,5 +1,5 @@
-import { RemoteQuery } from './remote-query';
-import { VariantAnalysis } from './shared/variant-analysis';
+import { RemoteQuery } from "./remote-query";
+import { VariantAnalysis } from "./shared/variant-analysis";
 
 export interface RemoteQuerySubmissionResult {
   queryDirPath?: string;

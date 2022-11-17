@@ -1,8 +1,8 @@
-import * as fs from 'fs-extra';
-import { Repository as RemoteRepository } from './repository';
-import { QueryMetadata } from '../pure/interface-types';
-import { getQueryName } from './run-remote-query';
-import { Repository } from './shared/repository';
+import * as fs from "fs-extra";
+import { Repository as RemoteRepository } from "./repository";
+import { QueryMetadata } from "../pure/interface-types";
+import { getQueryName } from "./run-remote-query";
+import { Repository } from "./shared/repository";
 
 export interface RemoteQuery {
   queryName: string;
@@ -22,11 +22,11 @@ export async function buildRemoteQueryEntity(
   queryStartTime: number,
   workflowRunId: number,
   language: string,
-  repositoryCount: number
+  repositoryCount: number,
 ): Promise<RemoteQuery> {
   const queryName = getQueryName(queryMetadata, queryFilePath);
-  const queryText = await fs.readFile(queryFilePath, 'utf8');
-  const [owner, name] = controllerRepo.fullName.split('/');
+  const queryText = await fs.readFile(queryFilePath, "utf8");
+  const [owner, name] = controllerRepo.fullName.split("/");
 
   return {
     queryName,

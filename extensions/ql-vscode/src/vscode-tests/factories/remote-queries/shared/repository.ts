@@ -1,10 +1,13 @@
-import { faker } from '@faker-js/faker';
-import { Repository, RepositoryWithMetadata } from '../../../../remote-queries/shared/repository';
+import { faker } from "@faker-js/faker";
+import {
+  Repository,
+  RepositoryWithMetadata,
+} from "../../../../remote-queries/shared/repository";
 
 export function createMockRepository(): Repository {
   return {
     id: faker.datatype.number(),
-    fullName: 'github/' + faker.random.word(),
+    fullName: "github/" + faker.random.word(),
     private: faker.datatype.boolean(),
   };
 }
@@ -13,6 +16,6 @@ export function createMockRepositoryWithMetadata(): RepositoryWithMetadata {
   return {
     ...createMockRepository(),
     stargazersCount: faker.datatype.number(),
-    updatedAt: faker.date.past().toISOString()
+    updatedAt: faker.date.past().toISOString(),
   };
 }

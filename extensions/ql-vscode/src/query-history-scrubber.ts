@@ -1,11 +1,11 @@
-import * as fs from 'fs-extra';
-import * as os from 'os';
-import * as path from 'path';
-import { Disposable, ExtensionContext } from 'vscode';
-import { logger } from './logging';
-import { QueryHistoryManager } from './query-history';
+import * as fs from "fs-extra";
+import * as os from "os";
+import * as path from "path";
+import { Disposable, ExtensionContext } from "vscode";
+import { logger } from "./logging";
+import { QueryHistoryManager } from "./query-history";
 
-const LAST_SCRUB_TIME_KEY = 'lastScrubTime';
+const LAST_SCRUB_TIME_KEY = "lastScrubTime";
 
 type Counter = {
   increment: () => void;
@@ -35,14 +35,23 @@ export function registerQueryHistoryScrubber(
   ctx: ExtensionContext,
 
   // optional counter to keep track of how many times the scrubber has run
-  counter?: Counter
+  counter?: Counter,
 ): Disposable {
-  const deregister = setInterval(scrubQueries, wakeInterval, throttleTime, maxQueryTime, queryDirectory, qhm, ctx, counter);
+  const deregister = setInterval(
+    scrubQueries,
+    wakeInterval,
+    throttleTime,
+    maxQueryTime,
+    queryDirectory,
+    qhm,
+    ctx,
+    counter,
+  );
 
   return {
     dispose: () => {
       clearInterval(deregister);
-    }
+    },
   };
 }
 
@@ -52,7 +61,7 @@ async function scrubQueries(
   queryDirectory: string,
   qhm: QueryHistoryManager,
   ctx: ExtensionContext,
-  counter?: Counter
+  counter?: Counter,
 ) {
   const lastScrubTime = ctx.globalState.get<number>(LAST_SCRUB_TIME_KEY);
   const now = Date.now();
@@ -65,9 +74,11 @@ async function scrubQueries(
     let scrubCount = 0; // total number of directories deleted
     try {
       counter?.increment();
-      void logger.log('Scrubbing query directory. Removing old queries.');
+      void logger.log("Scrubbing query directory. Removing old queries.");
       if (!(await fs.pathExists(queryDirectory))) {
-        void logger.log(`Cannot scrub. Query directory does not exist: ${queryDirectory}`);
+        void logger.log(
+          `Cannot scrub. Query directory does not exist: ${queryDirectory}`,
+        );
         return;
       }
 
@@ -96,11 +107,15 @@ async function scrubQueries(
   }
 }
 
-async function scrubDirectory(dir: string, now: number, maxQueryTime: number): Promise<{
-  errorMsg?: string,
-  deleted: boolean
+async function scrubDirectory(
+  dir: string,
+  now: number,
+  maxQueryTime: number,
+): Promise<{
+  errorMsg?: string;
+  deleted: boolean;
 }> {
-  const timestampFile = path.join(dir, 'timestamp');
+  const timestampFile = path.join(dir, "timestamp");
   try {
     let deleted = true;
     if (!(await fs.stat(dir)).isDirectory()) {
@@ -113,27 +128,33 @@ async function scrubDirectory(dir: string, now: number, maxQueryTime: number): P
       void logger.log(`  ${timestampFile} is not a file. Deleting.`);
       await fs.remove(dir);
     } else {
-      const timestampText = await fs.readFile(timestampFile, 'utf8');
+      const timestampText = await fs.readFile(timestampFile, "utf8");
       const timestamp = parseInt(timestampText, 10);
 
       if (Number.isNaN(timestamp)) {
-        void logger.log(`  ${dir} has invalid timestamp '${timestampText}'. Deleting.`);
+        void logger.log(
+          `  ${dir} has invalid timestamp '${timestampText}'. Deleting.`,
+        );
         await fs.remove(dir);
       } else if (now - timestamp > maxQueryTime) {
-        void logger.log(`  ${dir} is older than ${maxQueryTime / 1000} seconds. Deleting.`);
+        void logger.log(
+          `  ${dir} is older than ${maxQueryTime / 1000} seconds. Deleting.`,
+        );
         await fs.remove(dir);
       } else {
-        void logger.log(`  ${dir} is not older than ${maxQueryTime / 1000} seconds. Keeping.`);
+        void logger.log(
+          `  ${dir} is not older than ${maxQueryTime / 1000} seconds. Keeping.`,
+        );
         deleted = false;
       }
     }
     return {
-      deleted
+      deleted,
     };
   } catch (err) {
     return {
       errorMsg: `  Could not delete '${dir}': ${err}`,
-      deleted: false
+      deleted: false,
     };
   }
 }

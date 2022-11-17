@@ -2,9 +2,9 @@ import {
   UrlValue,
   ResolvableLocationValue,
   LineColumnLocation,
-  WholeFileLocation
-} from './bqrs-cli-types';
-import { createRemoteFileRef } from './location-link-utils';
+  WholeFileLocation,
+} from "./bqrs-cli-types";
+import { createRemoteFileRef } from "./location-link-utils";
 
 /**
  * The CodeQL filesystem libraries use this pattern in `getURL()` predicates
@@ -20,7 +20,7 @@ const FILE_LOCATION_REGEX = /file:\/\/(.+):([0-9]+):([0-9]+):([0-9]+):([0-9]+)/;
  * @param loc The location to test.
  */
 export function tryGetResolvableLocation(
-  loc: UrlValue | undefined
+  loc: UrlValue | undefined,
 ): ResolvableLocationValue | undefined {
   let resolvedLoc;
   if (loc === undefined) {
@@ -37,7 +37,7 @@ export function tryGetResolvableLocation(
 }
 
 export function tryGetLocationFromString(
-  loc: string
+  loc: string,
 ): ResolvableLocationValue | undefined {
   const matches = FILE_LOCATION_REGEX.exec(loc);
   if (matches && matches.length > 1 && matches[1]) {
@@ -61,10 +61,10 @@ export function tryGetLocationFromString(
 
 function isWholeFileMatch(matches: RegExpExecArray): boolean {
   return (
-    matches[2] === '0' &&
-    matches[3] === '0' &&
-    matches[4] === '0' &&
-    matches[5] === '0'
+    matches[2] === "0" &&
+    matches[3] === "0" &&
+    matches[4] === "0" &&
+    matches[5] === "0"
   );
 }
 
@@ -75,24 +75,28 @@ function isWholeFileMatch(matches: RegExpExecArray): boolean {
  * @param uri A file uri
  */
 export function isEmptyPath(uriStr: string) {
-  return !uriStr || uriStr === 'file:/';
+  return !uriStr || uriStr === "file:/";
 }
 
 export function isLineColumnLoc(loc: UrlValue): loc is LineColumnLocation {
-  return typeof loc !== 'string'
-    && !isEmptyPath(loc.uri)
-    && 'startLine' in loc
-    && 'startColumn' in loc
-    && 'endLine' in loc
-    && 'endColumn' in loc;
+  return (
+    typeof loc !== "string" &&
+    !isEmptyPath(loc.uri) &&
+    "startLine" in loc &&
+    "startColumn" in loc &&
+    "endLine" in loc &&
+    "endColumn" in loc
+  );
 }
 
 export function isWholeFileLoc(loc: UrlValue): loc is WholeFileLocation {
-  return typeof loc !== 'string' && !isEmptyPath(loc.uri) && !isLineColumnLoc(loc);
+  return (
+    typeof loc !== "string" && !isEmptyPath(loc.uri) && !isLineColumnLoc(loc)
+  );
 }
 
 export function isStringLoc(loc: UrlValue): loc is string {
-  return typeof loc === 'string';
+  return typeof loc === "string";
 }
 
 export function tryGetRemoteLocation(
@@ -114,17 +118,20 @@ export function tryGetRemoteLocation(
     if (!resolvableLocation.uri.startsWith(`file:${sourceLocationPrefix}/`)) {
       return undefined;
     }
-    trimmedLocation = resolvableLocation.uri.replace(`file:${sourceLocationPrefix}/`, '');
+    trimmedLocation = resolvableLocation.uri.replace(
+      `file:${sourceLocationPrefix}/`,
+      "",
+    );
   } else {
     // If the source location prefix is empty (e.g. for older remote queries), we assume that the database
     // was created on a Linux actions runner and has the format:
     // "file:/home/runner/work/<repo>/<repo>/relative/path/to/file"
     // So we need to drop the first 6 parts of the path.
-    if (!resolvableLocation.uri.startsWith('file:/home/runner/work/')) {
+    if (!resolvableLocation.uri.startsWith("file:/home/runner/work/")) {
       return undefined;
     }
-    const locationParts = resolvableLocation.uri.split('/');
-    trimmedLocation = locationParts.slice(6, locationParts.length).join('/');
+    const locationParts = resolvableLocation.uri.split("/");
+    trimmedLocation = locationParts.slice(6, locationParts.length).join("/");
   }
 
   const fileLink = {
@@ -134,5 +141,6 @@ export function tryGetRemoteLocation(
   return createRemoteFileRef(
     fileLink,
     resolvableLocation.startLine,
-    resolvableLocation.endLine);
+    resolvableLocation.endLine,
+  );
 }

@@ -1,12 +1,12 @@
-import * as fs from 'fs-extra';
-import { expect } from 'chai';
-import * as sinon from 'sinon';
+import * as fs from "fs-extra";
+import { expect } from "chai";
+import * as sinon from "sinon";
 
-import AstBuilder from '../../../contextual/astBuilder';
-import { CodeQLCliServer } from '../../../cli';
-import { DatabaseItem } from '../../../databases';
-import { Uri } from 'vscode';
-import { QueryWithResults } from '../../../run-queries-shared';
+import AstBuilder from "../../../contextual/astBuilder";
+import { CodeQLCliServer } from "../../../cli";
+import { DatabaseItem } from "../../../databases";
+import { Uri } from "vscode";
+import { QueryWithResults } from "../../../run-queries-shared";
 
 /**
  *
@@ -29,39 +29,54 @@ int disable_interrupts(void)
 }
  */
 
-
-describe('AstBuilder', () => {
+describe("AstBuilder", () => {
   let mockCli: CodeQLCliServer;
   let overrides: Record<string, Record<string, unknown> | undefined>;
 
   beforeEach(() => {
     mockCli = {
-      bqrsDecode: sinon.stub().callsFake((_: string, resultSet: 'nodes' | 'edges' | 'graphProperties') => {
-        return mockDecode(resultSet);
-      })
+      bqrsDecode: sinon
+        .stub()
+        .callsFake(
+          (_: string, resultSet: "nodes" | "edges" | "graphProperties") => {
+            return mockDecode(resultSet);
+          },
+        ),
     } as unknown as CodeQLCliServer;
     overrides = {
       nodes: undefined,
       edges: undefined,
-      graphProperties: undefined
+      graphProperties: undefined,
     };
   });
 
-  it('should build the AST roots', async () => {
+  it("should build the AST roots", async () => {
     const astBuilder = createAstBuilder();
     const roots = await astBuilder.getRoots();
 
-    const options = { entities: ['id', 'url', 'string'] };
-    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'nodes', options);
-    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'edges', options);
-    expect(mockCli.bqrsDecode).to.have.been.calledWith('/a/b/c', 'graphProperties', options);
+    const options = { entities: ["id", "url", "string"] };
+    expect(mockCli.bqrsDecode).to.have.been.calledWith(
+      "/a/b/c",
+      "nodes",
+      options,
+    );
+    expect(mockCli.bqrsDecode).to.have.been.calledWith(
+      "/a/b/c",
+      "edges",
+      options,
+    );
+    expect(mockCli.bqrsDecode).to.have.been.calledWith(
+      "/a/b/c",
+      "graphProperties",
+      options,
+    );
 
-    expect(roots.map(
-      r => ({ ...r, children: undefined })
-    )).to.deep.eq(expectedRoots);
+    expect(roots.map((r) => ({ ...r, children: undefined }))).to.deep.eq(
+      expectedRoots,
+    );
   });
 
-  it('should build an AST child without edge label', async () => {
+  it("should build an AST child without edge label", async () => {
     // just test one of the children to make sure that the structure is right
     // this label should only come from the node, not the edge
     const astBuilder = createAstBuilder();
@@ -76,22 +91,22 @@ describe('AstBuilder', () => {
       children: undefined,
       fileLocation: undefined,
       id: 26359,
-      label: 'params',
+      label: "params",
       location: {
         endColumn: 22,
         endLine: 19,
         startColumn: 5,
         startLine: 19,
-        uri: 'file:/opt/src/arch/sandbox/lib/interrupts.c'
+        uri: "file:/opt/src/arch/sandbox/lib/interrupts.c",
       },
       order: 0,
-      parent: undefined
+      parent: undefined,
     };
 
     expect(roots[0].children[0]).to.deep.eq(child);
   });
 
-  it('should build an AST child with edge label', async () => {
+  it("should build an AST child with edge label", async () => {
     // just test one of the children to make sure that the structure is right
     // this label should only come from both the node and the edge
     const astBuilder = createAstBuilder();
@@ -106,46 +121,46 @@ describe('AstBuilder', () => {
       children: undefined,
       fileLocation: undefined,
       id: 26367,
-      label: 'body: [Block] { ... }',
+      label: "body: [Block] { ... }",
       location: {
         endColumn: 1,
         endLine: 22,
         startColumn: 1,
         startLine: 20,
-        uri: 'file:/opt/src/arch/sandbox/lib/interrupts.c'
+        uri: "file:/opt/src/arch/sandbox/lib/interrupts.c",
       },
       order: 2,
-      parent: undefined
+      parent: undefined,
     };
 
     expect(roots[0].children[1]).to.deep.eq(child);
   });
 
-  it('should fail when graphProperties are not correct', async () => {
+  it("should fail when graphProperties are not correct", async () => {
     overrides.graphProperties = {
-      tuples: [
-        [
-          'semmle.graphKind',
-          'hucairz'
-        ]
-      ]
+      tuples: [["semmle.graphKind", "hucairz"]],
     };
 
     const astBuilder = createAstBuilder();
-    await expect(astBuilder.getRoots()).to.be.rejectedWith('AST is invalid');
+    await expect(astBuilder.getRoots()).to.be.rejectedWith("AST is invalid");
   });
 
   function createAstBuilder() {
-    return new AstBuilder({
-      query: {
-        resultsPaths: {
-          resultsPath: '/a/b/c'
-        }
-      }
-    } as QueryWithResults, mockCli, {} as DatabaseItem, Uri.file(''));
+    return new AstBuilder(
+      {
+        query: {
+          resultsPaths: {
+            resultsPath: "/a/b/c",
+          },
+        },
+      } as QueryWithResults,
+      mockCli,
+      {} as DatabaseItem,
+      Uri.file(""),
+    );
   }
 
-  function mockDecode(resultSet: 'nodes' | 'edges' | 'graphProperties') {
+  function mockDecode(resultSet: "nodes" | "edges" | "graphProperties") {
     if (overrides[resultSet]) {
       return overrides[resultSet];
     }
@@ -153,11 +168,13 @@ describe('AstBuilder', () => {
     const mapper = {
       nodes: 0,
       edges: 1,
-      graphProperties: 2
+      graphProperties: 2,
     };
     const index = mapper[resultSet] as number;
     if (index >= 0 && index <= 2) {
-      return JSON.parse(fs.readFileSync(`${__dirname}/../data/astBuilder.json`, 'utf8'))[index];
+      return JSON.parse(
+        fs.readFileSync(`${__dirname}/../data/astBuilder.json`, "utf8"),
+      )[index];
     } else {
       throw new Error(`Invalid resultSet: ${resultSet}`);
     }
@@ -167,44 +184,44 @@ describe('AstBuilder', () => {
 const expectedRoots = [
   {
     id: 0,
-    label: '[TopLevelFunction] int disable_interrupts()',
+    label: "[TopLevelFunction] int disable_interrupts()",
     fileLocation: undefined,
     location: {
-      uri: 'file:/opt/src/arch/sandbox/lib/interrupts.c',
+      uri: "file:/opt/src/arch/sandbox/lib/interrupts.c",
       startLine: 19,
       startColumn: 5,
       endLine: 19,
-      endColumn: 22
+      endColumn: 22,
     },
     order: 3,
-    children: undefined
+    children: undefined,
   },
   {
     id: 26363,
-    label: '[TopLevelFunction] void enable_interrupts()',
+    label: "[TopLevelFunction] void enable_interrupts()",
     fileLocation: undefined,
     location: {
-      uri: 'file:/opt/src/arch/sandbox/lib/interrupts.c',
+      uri: "file:/opt/src/arch/sandbox/lib/interrupts.c",
       startLine: 15,
       startColumn: 6,
       endLine: 15,
-      endColumn: 22
+      endColumn: 22,
     },
     order: 2,
-    children: undefined
+    children: undefined,
   },
   {
     id: 26364,
-    label: '[TopLevelFunction] int interrupt_init()',
+    label: "[TopLevelFunction] int interrupt_init()",
     fileLocation: undefined,
     location: {
-      uri: 'file:/opt/src/arch/sandbox/lib/interrupts.c',
+      uri: "file:/opt/src/arch/sandbox/lib/interrupts.c",
       startLine: 10,
       startColumn: 5,
       endLine: 10,
-      endColumn: 18
+      endColumn: 18,
     },
     order: 1,
-    children: undefined
-  }
+    children: undefined,
+  },
 ];

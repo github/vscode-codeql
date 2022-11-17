@@ -1,11 +1,13 @@
-import { faker } from '@faker-js/faker';
+import { faker } from "@faker-js/faker";
 import {
   VariantAnalysisRepositoryTask,
   VariantAnalysisRepoStatus,
-} from '../../../../remote-queries/shared/variant-analysis';
-import { createMockRepositoryWithMetadata } from './repository';
+} from "../../../../remote-queries/shared/variant-analysis";
+import { createMockRepositoryWithMetadata } from "./repository";
 
-export function createMockVariantAnalysisRepositoryTask(data?: Partial<VariantAnalysisRepositoryTask>): VariantAnalysisRepositoryTask {
+export function createMockVariantAnalysisRepositoryTask(
+  data?: Partial<VariantAnalysisRepositoryTask>,
+): VariantAnalysisRepositoryTask {
   return {
     repository: createMockRepositoryWithMetadata(),
     analysisStatus: VariantAnalysisRepoStatus.Pending,

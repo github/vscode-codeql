@@ -1,42 +1,54 @@
-import { Repository, RepositoryWithMetadata } from '../remote-queries/shared/repository';
-import { parseDate } from './date';
+import {
+  Repository,
+  RepositoryWithMetadata,
+} from "../remote-queries/shared/repository";
+import { parseDate } from "./date";
 
 export enum SortKey {
-  Name = 'name',
-  Stars = 'stars',
-  LastUpdated = 'lastUpdated',
-  ResultsCount = 'resultsCount',
+  Name = "name",
+  Stars = "stars",
+  LastUpdated = "lastUpdated",
+  ResultsCount = "resultsCount",
 }
 
 export type RepositoriesFilterSortState = {
   searchValue: string;
   sortKey: SortKey;
-}
+};
 
 export type RepositoriesFilterSortStateWithIds = RepositoriesFilterSortState & {
   repositoryIds?: number[];
-}
+};
 
 export const defaultFilterSortState: RepositoriesFilterSortState = {
-  searchValue: '',
+  searchValue: "",
   sortKey: SortKey.Name,
 };
 
-export function matchesFilter(repo: Pick<Repository, 'fullName'>, filterSortState: RepositoriesFilterSortState | undefined): boolean {
+export function matchesFilter(
+  repo: Pick<Repository, "fullName">,
+  filterSortState: RepositoriesFilterSortState | undefined,
+): boolean {
   if (!filterSortState) {
     return true;
   }
 
-  return repo.fullName.toLowerCase().includes(filterSortState.searchValue.toLowerCase());
+  return repo.fullName
+    .toLowerCase()
+    .includes(filterSortState.searchValue.toLowerCase());
 }
 
-type SortableRepository = Pick<Repository, 'fullName'> & Partial<Pick<RepositoryWithMetadata, 'stargazersCount' | 'updatedAt'>>;
+type SortableRepository = Pick<Repository, "fullName"> &
+  Partial<Pick<RepositoryWithMetadata, "stargazersCount" | "updatedAt">>;
 
-export function compareRepository(filterSortState: RepositoriesFilterSortState | undefined): (left: SortableRepository, right: SortableRepository) => number {
+export function compareRepository(
+  filterSortState: RepositoriesFilterSortState | undefined,
+): (left: SortableRepository, right: SortableRepository) => number {
   return (left: SortableRepository, right: SortableRepository) => {
     // Highest to lowest
     if (filterSortState?.sortKey === SortKey.Stars) {
-      const stargazersCount = (right.stargazersCount ?? 0) - (left.stargazersCount ?? 0);
+      const stargazersCount =
+        (right.stargazersCount ?? 0) - (left.stargazersCount ?? 0);
       if (stargazersCount !== 0) {
         return stargazersCount;
       }
@@ -44,23 +56,29 @@ export function compareRepository(filterSortState: RepositoriesFilterSortState |
 
     // Newest to oldest
     if (filterSortState?.sortKey === SortKey.LastUpdated) {
-      const lastUpdated = (parseDate(right.updatedAt)?.getTime() ?? 0) - (parseDate(left.updatedAt)?.getTime() ?? 0);
+      const lastUpdated =
+        (parseDate(right.updatedAt)?.getTime() ?? 0) -
+        (parseDate(left.updatedAt)?.getTime() ?? 0);
       if (lastUpdated !== 0) {
         return lastUpdated;
       }
     }
 
     // Fall back on name compare
-    return left.fullName.localeCompare(right.fullName, undefined, { sensitivity: 'base' });
+    return left.fullName.localeCompare(right.fullName, undefined, {
+      sensitivity: "base",
+    });
   };
 }
 
 type SortableResult = {
-  repository: SortableRepository & Pick<Repository, 'id'>;
+  repository: SortableRepository & Pick<Repository, "id">;
   resultCount?: number;
-}
+};
 
-export function compareWithResults(filterSortState: RepositoriesFilterSortState | undefined): (left: SortableResult, right: SortableResult) => number {
+export function compareWithResults(
+  filterSortState: RepositoriesFilterSortState | undefined,
+): (left: SortableResult, right: SortableResult) => number {
   const fallbackSort = compareRepository(filterSortState);
 
   return (left: SortableResult, right: SortableResult) => {
@@ -76,26 +94,42 @@ export function compareWithResults(filterSortState: RepositoriesFilterSortState 
   };
 }
 
-export function filterAndSortRepositoriesWithResultsByName<T extends SortableResult>(repositories: T[] | undefined, filterSortState: RepositoriesFilterSortState | undefined): T[] | undefined {
+export function filterAndSortRepositoriesWithResultsByName<
+  T extends SortableResult,
+>(
+  repositories: T[] | undefined,
+  filterSortState: RepositoriesFilterSortState | undefined,
+): T[] | undefined {
   if (!repositories) {
     return undefined;
   }
 
   return repositories
-    .filter(repo => matchesFilter(repo.repository, filterSortState))
+    .filter((repo) => matchesFilter(repo.repository, filterSortState))
     .sort(compareWithResults(filterSortState));
 }
 
-export function filterAndSortRepositoriesWithResults<T extends SortableResult>(repositories: T[] | undefined, filterSortState: RepositoriesFilterSortStateWithIds | undefined): T[] | undefined {
+export function filterAndSortRepositoriesWithResults<T extends SortableResult>(
+  repositories: T[] | undefined,
+  filterSortState: RepositoriesFilterSortStateWithIds | undefined,
+): T[] | undefined {
   if (!repositories) {
     return undefined;
   }
 
-  if (filterSortState?.repositoryIds && filterSortState.repositoryIds.length > 0) {
+  if (
+    filterSortState?.repositoryIds &&
+    filterSortState.repositoryIds.length > 0
+  ) {
     return repositories
-      .filter(repo => filterSortState.repositoryIds?.includes(repo.repository.id))
+      .filter((repo) =>
+        filterSortState.repositoryIds?.includes(repo.repository.id),
+      )
       .sort(compareWithResults(filterSortState));
   }
 
-  return filterAndSortRepositoriesWithResultsByName(repositories, filterSortState);
+  return filterAndSortRepositoriesWithResultsByName(
+    repositories,
+    filterSortState,
+  );
 }

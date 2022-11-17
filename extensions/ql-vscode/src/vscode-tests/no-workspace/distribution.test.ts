@@ -1,156 +1,178 @@
-import { expect } from 'chai';
-import * as path from 'path';
-import * as fetch from 'node-fetch';
-import * as semver from 'semver';
-import * as sinon from 'sinon';
-import * as pq from 'proxyquire';
+import { expect } from "chai";
+import * as path from "path";
+import * as fetch from "node-fetch";
+import * as semver from "semver";
+import * as sinon from "sinon";
+import * as pq from "proxyquire";
 
-import { GithubRelease, GithubReleaseAsset, ReleasesApiConsumer } from '../../distribution';
+import {
+  GithubRelease,
+  GithubReleaseAsset,
+  ReleasesApiConsumer,
+} from "../../distribution";
 
 const proxyquire = pq.noPreserveCache();
 
-describe('Releases API consumer', () => {
-  const owner = 'someowner';
-  const repo = 'somerepo';
-  const unconstrainedVersionRange = new semver.Range('*');
+describe("Releases API consumer", () => {
+  const owner = "someowner";
+  const repo = "somerepo";
+  const unconstrainedVersionRange = new semver.Range("*");
 
-  describe('picking the latest release', () => {
+  describe("picking the latest release", () => {
     const sampleReleaseResponse: GithubRelease[] = [
       {
-        'assets': [],
-        'created_at': '2019-09-01T00:00:00Z',
-        'id': 1,
-        'name': '',
-        'prerelease': false,
-        'tag_name': 'v2.1.0'
+        assets: [],
+        created_at: "2019-09-01T00:00:00Z",
+        id: 1,
+        name: "",
+        prerelease: false,
+        tag_name: "v2.1.0",
       },
       {
-        'assets': [],
-        'created_at': '2019-08-10T00:00:00Z',
-        'id': 2,
-        'name': '',
-        'prerelease': false,
-        'tag_name': 'v3.1.1'
+        assets: [],
+        created_at: "2019-08-10T00:00:00Z",
+        id: 2,
+        name: "",
+        prerelease: false,
+        tag_name: "v3.1.1",
       },
       {
-        'assets': [{
-          id: 1,
-          name: 'exampleAsset.txt',
-          size: 1
-        }],
-        'created_at': '2019-09-05T00:00:00Z',
-        'id': 3,
-        'name': '',
-        'prerelease': false,
-        'tag_name': 'v2.0.0'
+        assets: [
+          {
+            id: 1,
+            name: "exampleAsset.txt",
+            size: 1,
+          },
+        ],
+        created_at: "2019-09-05T00:00:00Z",
+        id: 3,
+        name: "",
+        prerelease: false,
+        tag_name: "v2.0.0",
       },
       {
-        'assets': [],
-        'created_at': '2019-08-11T00:00:00Z',
-        'id': 4,
-        'name': '',
-        'prerelease': true,
-        'tag_name': 'v3.1.2-pre-1.1'
+        assets: [],
+        created_at: "2019-08-11T00:00:00Z",
+        id: 4,
+        name: "",
+        prerelease: true,
+        tag_name: "v3.1.2-pre-1.1",
       },
       // Release ID 5 is older than release ID 4 but its version has a higher precedence, so release
       // ID 5 should be picked over release ID 4.
       {
-        'assets': [],
-        'created_at': '2019-08-09T00:00:00Z',
-        'id': 5,
-        'name': '',
-        'prerelease': true,
-        'tag_name': 'v3.1.2-pre-2.0'
+        assets: [],
+        created_at: "2019-08-09T00:00:00Z",
+        id: 5,
+        name: "",
+        prerelease: true,
+        tag_name: "v3.1.2-pre-2.0",
       },
     ];
 
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
       protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
         if (apiPath === `/repos/${owner}/${repo}/releases`) {
-          return Promise.resolve(new fetch.Response(JSON.stringify(sampleReleaseResponse)));
+          return Promise.resolve(
+            new fetch.Response(JSON.stringify(sampleReleaseResponse)),
+          );
         }
         return Promise.reject(new Error(`Unknown API path: ${apiPath}`));
       }
     }
 
-    it('picked release has version with the highest precedence', async () => {
-      const consumer = new MockReleasesApiConsumer(owner, repo);
-
-      const latestRelease = await consumer.getLatestRelease(unconstrainedVersionRange);
-      expect(latestRelease.id).to.equal(2);
-    });
-
-    it('version of picked release is within the version range', async () => {
-      const consumer = new MockReleasesApiConsumer(owner, repo);
-
-      const latestRelease = await consumer.getLatestRelease(new semver.Range('2.*.*'));
-      expect(latestRelease.id).to.equal(1);
-    });
-
-    it('fails if none of the releases are within the version range', async () => {
-      const consumer = new MockReleasesApiConsumer(owner, repo);
-
-      await expect(
-        consumer.getLatestRelease(new semver.Range('5.*.*'))
-      ).to.be.rejectedWith(Error);
-    });
-
-    it('picked release passes additional compatibility test if an additional compatibility test is specified', async () => {
+    it("picked release has version with the highest precedence", async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       const latestRelease = await consumer.getLatestRelease(
-        new semver.Range('2.*.*'),
+        unconstrainedVersionRange,
+      );
+      expect(latestRelease.id).to.equal(2);
+    });
+
+    it("version of picked release is within the version range", async () => {
+      const consumer = new MockReleasesApiConsumer(owner, repo);
+
+      const latestRelease = await consumer.getLatestRelease(
+        new semver.Range("2.*.*"),
+      );
+      expect(latestRelease.id).to.equal(1);
+    });
+
+    it("fails if none of the releases are within the version range", async () => {
+      const consumer = new MockReleasesApiConsumer(owner, repo);
+
+      await expect(
+        consumer.getLatestRelease(new semver.Range("5.*.*")),
+      ).to.be.rejectedWith(Error);
+    });
+
+    it("picked release passes additional compatibility test if an additional compatibility test is specified", async () => {
+      const consumer = new MockReleasesApiConsumer(owner, repo);
+
+      const latestRelease = await consumer.getLatestRelease(
+        new semver.Range("2.*.*"),
         true,
-        release => release.assets.some(asset => asset.name === 'exampleAsset.txt')
+        (release) =>
+          release.assets.some((asset) => asset.name === "exampleAsset.txt"),
       );
       expect(latestRelease.id).to.equal(3);
     });
 
-    it('fails if none of the releases pass the additional compatibility test', async () => {
+    it("fails if none of the releases pass the additional compatibility test", async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
-      await expect(consumer.getLatestRelease(
-        new semver.Range('2.*.*'),
-        true,
-        release => release.assets.some(asset => asset.name === 'otherExampleAsset.txt')
-      )).to.be.rejectedWith(Error);
+      await expect(
+        consumer.getLatestRelease(new semver.Range("2.*.*"), true, (release) =>
+          release.assets.some(
+            (asset) => asset.name === "otherExampleAsset.txt",
+          ),
+        ),
+      ).to.be.rejectedWith(Error);
     });
 
-    it('picked release is the most recent prerelease when includePrereleases is set', async () => {
+    it("picked release is the most recent prerelease when includePrereleases is set", async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
-      const latestRelease = await consumer.getLatestRelease(unconstrainedVersionRange, true);
+      const latestRelease = await consumer.getLatestRelease(
+        unconstrainedVersionRange,
+        true,
+      );
       expect(latestRelease.id).to.equal(5);
     });
   });
 
-  it('gets correct assets for a release', async () => {
+  it("gets correct assets for a release", async () => {
     const expectedAssets: GithubReleaseAsset[] = [
       {
-        'id': 1,
-        'name': 'firstAsset',
-        'size': 11
+        id: 1,
+        name: "firstAsset",
+        size: 11,
       },
       {
-        'id': 2,
-        'name': 'secondAsset',
-        'size': 12
-      }
+        id: 2,
+        name: "secondAsset",
+        size: 12,
+      },
     ];
 
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
       protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
         if (apiPath === `/repos/${owner}/${repo}/releases`) {
-          const responseBody: GithubRelease[] = [{
-            'assets': expectedAssets,
-            'created_at': '2019-09-01T00:00:00Z',
-            'id': 1,
-            'name': 'Release 1',
-            'prerelease': false,
-            'tag_name': 'v2.0.0'
-          }];
+          const responseBody: GithubRelease[] = [
+            {
+              assets: expectedAssets,
+              created_at: "2019-09-01T00:00:00Z",
+              id: 1,
+              name: "Release 1",
+              prerelease: false,
+              tag_name: "v2.0.0",
+            },
+          ];
 
-          return Promise.resolve(new fetch.Response(JSON.stringify(responseBody)));
+          return Promise.resolve(
+            new fetch.Response(JSON.stringify(responseBody)),
+          );
         }
         return Promise.reject(new Error(`Unknown API path: ${apiPath}`));
       }
@@ -158,7 +180,8 @@ describe('Releases API consumer', () => {
 
     const consumer = new MockReleasesApiConsumer(owner, repo);
 
-    const assets = (await consumer.getLatestRelease(unconstrainedVersionRange)).assets;
+    const assets = (await consumer.getLatestRelease(unconstrainedVersionRange))
+      .assets;
 
     expect(assets.length).to.equal(expectedAssets.length);
     expectedAssets.map((expectedAsset, index) => {
@@ -169,7 +192,7 @@ describe('Releases API consumer', () => {
   });
 });
 
-describe('Launcher path', () => {
+describe("Launcher path", () => {
   const pathToCmd = `abc${path.sep}codeql.cmd`;
   const pathToExe = `abc${path.sep}codeql.exe`;
 
@@ -182,7 +205,7 @@ describe('Launcher path', () => {
 
   let getExecutableFromDirectory: Function;
 
-  let launcherThatExists = '';
+  let launcherThatExists = "";
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
@@ -193,9 +216,9 @@ describe('Launcher path', () => {
     sandbox.restore();
   });
 
-  it('should not warn with proper launcher name', async () => {
-    launcherThatExists = 'codeql.exe';
-    const result = await getExecutableFromDirectory('abc');
+  it("should not warn with proper launcher name", async () => {
+    launcherThatExists = "codeql.exe";
+    const result = await getExecutableFromDirectory("abc");
     expect(fsSpy).to.have.been.calledWith(pathToExe);
 
     // correct launcher has been found, so alternate one not looked for
@@ -208,9 +231,9 @@ describe('Launcher path', () => {
     expect(result).to.equal(pathToExe);
   });
 
-  it('should warn when using a hard-coded deprecated launcher name', async () => {
-    launcherThatExists = 'codeql.cmd';
-    const result = await getExecutableFromDirectory('abc');
+  it("should warn when using a hard-coded deprecated launcher name", async () => {
+    launcherThatExists = "codeql.cmd";
+    const result = await getExecutableFromDirectory("abc");
     expect(fsSpy).to.have.been.calledWith(pathToExe);
     expect(fsSpy).to.have.been.calledWith(pathToCmd);
 
@@ -221,9 +244,9 @@ describe('Launcher path', () => {
     expect(result).to.equal(pathToCmd);
   });
 
-  it('should avoid warn when no launcher is found', async () => {
-    launcherThatExists = 'xxx';
-    const result = await getExecutableFromDirectory('abc', false);
+  it("should avoid warn when no launcher is found", async () => {
+    launcherThatExists = "xxx";
+    const result = await getExecutableFromDirectory("abc", false);
     expect(fsSpy).to.have.been.calledWith(pathToExe);
     expect(fsSpy).to.have.been.calledWith(pathToCmd);
 
@@ -234,9 +257,9 @@ describe('Launcher path', () => {
     expect(result).to.equal(undefined);
   });
 
-  it('should warn when no launcher is found', async () => {
-    launcherThatExists = 'xxx';
-    const result = await getExecutableFromDirectory('abc', true);
+  it("should warn when no launcher is found", async () => {
+    launcherThatExists = "xxx";
+    const result = await getExecutableFromDirectory("abc", true);
     expect(fsSpy).to.have.been.calledWith(pathToExe);
     expect(fsSpy).to.have.been.calledWith(pathToCmd);
 
@@ -247,13 +270,13 @@ describe('Launcher path', () => {
     expect(result).to.equal(undefined);
   });
 
-  it('should not warn when deprecated launcher is used, but no new launcher is available', async function() {
+  it("should not warn when deprecated launcher is used, but no new launcher is available", async function () {
     const manager = new (createModule().DistributionManager)(
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
-      undefined as any
+      undefined as any,
     );
-    launcherThatExists = 'codeql.cmd';
+    launcherThatExists = "codeql.cmd";
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
     expect(result).to.equal(pathToCmd);
@@ -263,13 +286,13 @@ describe('Launcher path', () => {
     expect(errorSpy).to.have.callCount(0);
   });
 
-  it('should warn when deprecated launcher is used, and new launcher is available', async () => {
+  it("should warn when deprecated launcher is used, and new launcher is available", async () => {
     const manager = new (createModule().DistributionManager)(
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
-      undefined as any
+      undefined as any,
     );
-    launcherThatExists = ''; // pretend both launchers exist
+    launcherThatExists = ""; // pretend both launchers exist
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
     expect(result).to.equal(pathToCmd);
@@ -279,13 +302,13 @@ describe('Launcher path', () => {
     expect(errorSpy).to.have.callCount(0);
   });
 
-  it('should warn when launcher path is incorrect', async () => {
+  it("should warn when launcher path is incorrect", async () => {
     const manager = new (createModule().DistributionManager)(
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
-      undefined as any
+      undefined as any,
     );
-    launcherThatExists = 'xxx'; // pretend neither launcher exists
+    launcherThatExists = "xxx"; // pretend neither launcher exists
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
     expect(result).to.equal(undefined);
@@ -300,25 +323,27 @@ describe('Launcher path', () => {
     errorSpy = sandbox.spy();
     logSpy = sandbox.spy();
     // pretend that only the .cmd file exists
-    fsSpy = sandbox.stub().callsFake(arg => arg.endsWith(launcherThatExists) ? true : false);
-    platformSpy = sandbox.stub().returns('win32');
+    fsSpy = sandbox
+      .stub()
+      .callsFake((arg) => (arg.endsWith(launcherThatExists) ? true : false));
+    platformSpy = sandbox.stub().returns("win32");
 
-    return proxyquire('../../distribution', {
-      './helpers': {
+    return proxyquire("../../distribution", {
+      "./helpers": {
         showAndLogWarningMessage: warnSpy,
-        showAndLogErrorMessage: errorSpy
+        showAndLogErrorMessage: errorSpy,
       },
-      './logging': {
-        'logger': {
-          log: logSpy
-        }
+      "./logging": {
+        logger: {
+          log: logSpy,
+        },
       },
-      'fs-extra': {
-        pathExists: fsSpy
+      "fs-extra": {
+        pathExists: fsSpy,
       },
       os: {
-        platform: platformSpy
-      }
+        platform: platformSpy,
+      },
     });
   }
 });

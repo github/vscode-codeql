@@ -1,5 +1,5 @@
-import { Disposable } from 'vscode';
-import { DisposableObject } from '../pure/disposable-object';
+import { Disposable } from "vscode";
+import { DisposableObject } from "../pure/disposable-object";
 
 /**
  * A simple disposable object that does nothing other than contain a list of disposable objects.

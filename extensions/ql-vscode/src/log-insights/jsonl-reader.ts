@@ -1,4 +1,4 @@
-import * as fs from 'fs-extra';
+import * as fs from "fs-extra";
 
 /**
  * Read a file consisting of multiple JSON objects. Each object is separated from the previous one
@@ -10,8 +10,11 @@ import * as fs from 'fs-extra';
  * @param path The path to the file.
  * @param handler Callback to be invoked for each top-level JSON object in order.
  */
-export async function readJsonlFile(path: string, handler: (value: any) => Promise<void>): Promise<void> {
-  const logSummary = await fs.readFile(path, 'utf-8');
+export async function readJsonlFile(
+  path: string,
+  handler: (value: any) => Promise<void>,
+): Promise<void> {
+  const logSummary = await fs.readFile(path, "utf-8");
 
   // Remove newline delimiters because summary is in .jsonl format.
   const jsonSummaryObjects: string[] = logSummary.split(/\r?\n\r?\n/g);

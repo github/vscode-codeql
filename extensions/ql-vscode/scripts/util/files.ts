@@ -1,5 +1,5 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import * as fs from "fs-extra";
+import * as path from "path";
 
 // https://stackoverflow.com/a/45130990
 export async function* getFiles(dir: string): AsyncGenerator<string> {

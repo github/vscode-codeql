@@ -1,26 +1,34 @@
-import { CancellationToken, Uri, window } from 'vscode';
-import * as path from 'path';
-import * as yaml from 'js-yaml';
-import * as fs from 'fs-extra';
-import * as tmp from 'tmp-promise';
+import { CancellationToken, Uri, window } from "vscode";
+import * as path from "path";
+import * as yaml from "js-yaml";
+import * as fs from "fs-extra";
+import * as tmp from "tmp-promise";
 import {
   askForLanguage,
   findLanguage,
   getOnDiskWorkspaceFolders,
   tryGetQueryMetadata,
   tmpDir,
-} from '../helpers';
-import { Credentials } from '../authentication';
-import * as cli from '../cli';
-import { logger } from '../logging';
-import { getActionBranch, getRemoteControllerRepo, setRemoteControllerRepo } from '../config';
-import { ProgressCallback, UserCancellationException } from '../commandRunner';
-import { RequestError } from '@octokit/types/dist-types';
-import { QueryMetadata } from '../pure/interface-types';
-import { REPO_REGEX } from '../pure/helpers-pure';
-import * as ghApiClient from './gh-api/gh-api-client';
-import { getRepositorySelection, isValidSelection, RepositorySelection } from './repository-selection';
-import { Repository } from './shared/repository';
+} from "../helpers";
+import { Credentials } from "../authentication";
+import * as cli from "../cli";
+import { logger } from "../logging";
+import {
+  getActionBranch,
+  getRemoteControllerRepo,
+  setRemoteControllerRepo,
+} from "../config";
+import { ProgressCallback, UserCancellationException } from "../commandRunner";
+import { RequestError } from "@octokit/types/dist-types";
+import { QueryMetadata } from "../pure/interface-types";
+import { REPO_REGEX } from "../pure/helpers-pure";
+import * as ghApiClient from "./gh-api/gh-api-client";
+import {
+  getRepositorySelection,
+  isValidSelection,
+  RepositorySelection,
+} from "./repository-selection";
+import { Repository } from "./shared/repository";
 
 export interface QlPack {
   name: string;
@@ -33,11 +41,11 @@ export interface QlPack {
 /**
  * Well-known names for the query pack used by the server.
  */
-const QUERY_PACK_NAME = 'codeql-remote/query';
+const QUERY_PACK_NAME = "codeql-remote/query";
 
 export interface GeneratedQueryPack {
-  base64Pack: string,
-  language: string
+  base64Pack: string;
+  language: string;
 }
 
 /**
@@ -47,43 +55,51 @@ export interface GeneratedQueryPack {
  *
  * @returns the entire qlpack as a base64 string.
  */
-async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: string, queryPackDir: string): Promise<GeneratedQueryPack> {
+async function generateQueryPack(
+  cliServer: cli.CodeQLCliServer,
+  queryFile: string,
+  queryPackDir: string,
+): Promise<GeneratedQueryPack> {
   const originalPackRoot = await findPackRoot(queryFile);
   const packRelativePath = path.relative(originalPackRoot, queryFile);
   const targetQueryFileName = path.join(queryPackDir, packRelativePath);
 
   let language: string | undefined;
-  if (await fs.pathExists(path.join(originalPackRoot, 'qlpack.yml'))) {
+  if (await fs.pathExists(path.join(originalPackRoot, "qlpack.yml"))) {
     // don't include ql files. We only want the queryFile to be copied.
     const toCopy = await cliServer.packPacklist(originalPackRoot, false);
 
     // also copy the lock file (either new name or old name) and the query file itself. These are not included in the packlist.
-    [path.join(originalPackRoot, 'qlpack.lock.yml'), path.join(originalPackRoot, 'codeql-pack.lock.yml'), queryFile]
-      .forEach(absolutePath => {
-        if (absolutePath) {
-          toCopy.push(absolutePath);
-        }
-      });
+    [
+      path.join(originalPackRoot, "qlpack.lock.yml"),
+      path.join(originalPackRoot, "codeql-pack.lock.yml"),
+      queryFile,
+    ].forEach((absolutePath) => {
+      if (absolutePath) {
+        toCopy.push(absolutePath);
+      }
+    });
 
     let copiedCount = 0;
     await fs.copy(originalPackRoot, queryPackDir, {
       filter: (file: string) =>
         // copy file if it is in the packlist, or it is a parent directory of a file in the packlist
-        !!toCopy.find(f => {
+        !!toCopy.find((f) => {
           // Normalized paths ensure that Windows drive letters are capitalized consistently.
           const normalizedPath = Uri.file(f).fsPath;
-          const matches = normalizedPath === file || normalizedPath.startsWith(file + path.sep);
+          const matches =
+            normalizedPath === file ||
+            normalizedPath.startsWith(file + path.sep);
           if (matches) {
             copiedCount++;
           }
           return matches;
-        })
+        }),
     });
 
     void logger.log(`Copied ${copiedCount} files to ${queryPackDir}`);
 
     language = await findLanguage(cliServer, Uri.file(targetQueryFileName));
-
   } else {
     // open popup to ask for language if not already hardcoded
     language = await askForLanguage(cliServer);
@@ -92,18 +108,21 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
     // and generate a synthetic query pack
     void logger.log(`Copying ${queryFile} to ${queryPackDir}`);
     await fs.copy(queryFile, targetQueryFileName);
-    void logger.log('Generating synthetic query pack');
+    void logger.log("Generating synthetic query pack");
     const syntheticQueryPack = {
       name: QUERY_PACK_NAME,
-      version: '0.0.0',
+      version: "0.0.0",
       dependencies: {
-        [`codeql/${language}-all`]: '*',
-      }
+        [`codeql/${language}-all`]: "*",
+      },
     };
-    await fs.writeFile(path.join(queryPackDir, 'qlpack.yml'), yaml.dump(syntheticQueryPack));
+    await fs.writeFile(
+      path.join(queryPackDir, "qlpack.yml"),
+      yaml.dump(syntheticQueryPack),
+    );
   }
   if (!language) {
-    throw new UserCancellationException('Could not determine language.');
+    throw new UserCancellationException("Could not determine language.");
   }
 
   await ensureNameAndSuite(queryPackDir, packRelativePath);
@@ -113,30 +132,39 @@ async function generateQueryPack(cliServer: cli.CodeQLCliServer, queryFile: stri
 
   let precompilationOpts: string[] = [];
   if (await cliServer.cliConstraints.supportsQlxRemote()) {
-    const ccache = path.join(originalPackRoot, '.cache');
-    precompilationOpts = ['--qlx',
-      '--no-default-compilation-cache',
-      `--compilation-cache=${ccache}`];
+    const ccache = path.join(originalPackRoot, ".cache");
+    precompilationOpts = [
+      "--qlx",
+      "--no-default-compilation-cache",
+      `--compilation-cache=${ccache}`,
+    ];
   } else if (await cliServer.cliConstraints.supportsNoPrecompile()) {
-    precompilationOpts = ['--no-precompile'];
+    precompilationOpts = ["--no-precompile"];
   }
 
   const bundlePath = await getPackedBundlePath(queryPackDir);
-  void logger.log(`Compiling and bundling query pack from ${queryPackDir} to ${bundlePath}. (This may take a while.)`);
+  void logger.log(
+    `Compiling and bundling query pack from ${queryPackDir} to ${bundlePath}. (This may take a while.)`,
+  );
   await cliServer.packInstall(queryPackDir);
   const workspaceFolders = getOnDiskWorkspaceFolders();
-  await cliServer.packBundle(queryPackDir, workspaceFolders, bundlePath, precompilationOpts);
-  const base64Pack = (await fs.readFile(bundlePath)).toString('base64');
+  await cliServer.packBundle(
+    queryPackDir,
+    workspaceFolders,
+    bundlePath,
+    precompilationOpts,
+  );
+  const base64Pack = (await fs.readFile(bundlePath)).toString("base64");
   return {
     base64Pack,
-    language
+    language,
   };
 }
 
 async function findPackRoot(queryFile: string): Promise<string> {
   // recursively find the directory containing qlpack.yml
   let dir = path.dirname(queryFile);
-  while (!(await fs.pathExists(path.join(dir, 'qlpack.yml')))) {
+  while (!(await fs.pathExists(path.join(dir, "qlpack.yml")))) {
     dir = path.dirname(dir);
     if (isFileSystemRoot(dir)) {
       // there is no qlpack.yml in this directory or any parent directory.
@@ -150,12 +178,15 @@ async function findPackRoot(queryFile: string): Promise<string> {
 
 function isFileSystemRoot(dir: string): boolean {
   const pathObj = path.parse(dir);
-  return pathObj.root === dir && pathObj.base === '';
+  return pathObj.root === dir && pathObj.base === "";
 }
 
 export async function createRemoteQueriesTempDirectory() {
-  const remoteQueryDir = await tmp.dir({ dir: tmpDir.name, unsafeCleanup: true });
-  const queryPackDir = path.join(remoteQueryDir.path, 'query-pack');
+  const remoteQueryDir = await tmp.dir({
+    dir: tmpDir.name,
+    unsafeCleanup: true,
+  });
+  const queryPackDir = path.join(remoteQueryDir.path, "query-pack");
   await fs.mkdirp(queryPackDir);
   return { remoteQueryDir, queryPackDir };
 }
@@ -163,8 +194,8 @@ export async function createRemoteQueriesTempDirectory() {
 async function getPackedBundlePath(queryPackDir: string) {
   return tmp.tmpName({
     dir: path.dirname(queryPackDir),
-    postfix: 'generated.tgz',
-    prefix: 'qlpack',
+    postfix: "generated.tgz",
+    prefix: "qlpack",
   });
 }
 
@@ -187,12 +218,13 @@ export async function prepareRemoteQueryRun(
   token: CancellationToken,
 ): Promise<PreparedRemoteQuery> {
   if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
-    throw new Error(`Variant analysis is not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES
-      } or later.`);
+    throw new Error(
+      `Variant analysis is not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES} or later.`,
+    );
   }
 
-  if (!uri?.fsPath.endsWith('.ql')) {
-    throw new UserCancellationException('Not a CodeQL query file.');
+  if (!uri?.fsPath.endsWith(".ql")) {
+    throw new UserCancellationException("Not a CodeQL query file.");
   }
 
   const queryFile = uri.fsPath;
@@ -200,18 +232,18 @@ export async function prepareRemoteQueryRun(
   progress({
     maxStep: 4,
     step: 1,
-    message: 'Determining query target language'
+    message: "Determining query target language",
   });
 
   const repoSelection = await getRepositorySelection();
   if (!isValidSelection(repoSelection)) {
-    throw new UserCancellationException('No repositories to query.');
+    throw new UserCancellationException("No repositories to query.");
   }
 
   progress({
     maxStep: 4,
     step: 2,
-    message: 'Determining controller repo'
+    message: "Determining controller repo",
   });
 
   const controllerRepo = await getControllerRepo(credentials);
@@ -219,14 +251,15 @@ export async function prepareRemoteQueryRun(
   progress({
     maxStep: 4,
     step: 3,
-    message: 'Bundling the query pack'
+    message: "Bundling the query pack",
   });
 
   if (token.isCancellationRequested) {
-    throw new UserCancellationException('Cancelled');
+    throw new UserCancellationException("Cancelled");
   }
 
-  const { remoteQueryDir, queryPackDir } = await createRemoteQueriesTempDirectory();
+  const { remoteQueryDir, queryPackDir } =
+    await createRemoteQueriesTempDirectory();
 
   let pack: GeneratedQueryPack;
 
@@ -239,13 +272,13 @@ export async function prepareRemoteQueryRun(
   const { base64Pack, language } = pack;
 
   if (token.isCancellationRequested) {
-    throw new UserCancellationException('Cancelled');
+    throw new UserCancellationException("Cancelled");
   }
 
   progress({
     maxStep: 4,
     step: 4,
-    message: 'Sending request'
+    message: "Sending request",
   });
 
   const actionBranch = getActionBranch();
@@ -273,65 +306,92 @@ export async function prepareRemoteQueryRun(
  * @param queryPackDir The directory containing the query pack
  * @param packRelativePath The relative path to the query pack from the root of the query pack
  */
-async function ensureNameAndSuite(queryPackDir: string, packRelativePath: string): Promise<void> {
-  const packPath = path.join(queryPackDir, 'qlpack.yml');
-  const qlpack = yaml.load(await fs.readFile(packPath, 'utf8')) as QlPack;
+async function ensureNameAndSuite(
+  queryPackDir: string,
+  packRelativePath: string,
+): Promise<void> {
+  const packPath = path.join(queryPackDir, "qlpack.yml");
+  const qlpack = yaml.load(await fs.readFile(packPath, "utf8")) as QlPack;
   delete qlpack.defaultSuiteFile;
 
   qlpack.name = QUERY_PACK_NAME;
 
-  qlpack.defaultSuite = [{
-    description: 'Query suite for variant analysis'
-  }, {
-    query: packRelativePath.replace(/\\/g, '/')
-  }];
+  qlpack.defaultSuite = [
+    {
+      description: "Query suite for variant analysis",
+    },
+    {
+      query: packRelativePath.replace(/\\/g, "/"),
+    },
+  ];
   await fs.writeFile(packPath, yaml.dump(qlpack));
 }
 
-export function getQueryName(queryMetadata: QueryMetadata | undefined, queryFilePath: string): string {
+export function getQueryName(
+  queryMetadata: QueryMetadata | undefined,
+  queryFilePath: string,
+): string {
   // The query name is either the name as specified in the query metadata, or the file name.
   return queryMetadata?.name ?? path.basename(queryFilePath);
 }
 
-export async function getControllerRepo(credentials: Credentials): Promise<Repository> {
+export async function getControllerRepo(
+  credentials: Credentials,
+): Promise<Repository> {
   // Get the controller repo from the config, if it exists.
   // If it doesn't exist, prompt the user to enter it, and save that value to the config.
   let controllerRepoNwo: string | undefined;
   controllerRepoNwo = getRemoteControllerRepo();
   if (!controllerRepoNwo || !REPO_REGEX.test(controllerRepoNwo)) {
-    void logger.log(controllerRepoNwo ? 'Invalid controller repository name.' : 'No controller repository defined.');
+    void logger.log(
+      controllerRepoNwo
+        ? "Invalid controller repository name."
+        : "No controller repository defined.",
+    );
     controllerRepoNwo = await window.showInputBox({
-      title: 'Controller repository in which to run the GitHub Actions workflow for this variant analysis',
-      placeHolder: '<owner>/<repo>',
-      prompt: 'Enter the name of a GitHub repository in the format <owner>/<repo>',
+      title:
+        "Controller repository in which to run the GitHub Actions workflow for this variant analysis",
+      placeHolder: "<owner>/<repo>",
+      prompt:
+        "Enter the name of a GitHub repository in the format <owner>/<repo>",
       ignoreFocusOut: true,
     });
     if (!controllerRepoNwo) {
-      throw new UserCancellationException('No controller repository entered.');
-    } else if (!REPO_REGEX.test(controllerRepoNwo)) { // Check if user entered invalid input
-      throw new UserCancellationException('Invalid repository format. Must be a valid GitHub repository in the format <owner>/<repo>.');
+      throw new UserCancellationException("No controller repository entered.");
+    } else if (!REPO_REGEX.test(controllerRepoNwo)) {
+      // Check if user entered invalid input
+      throw new UserCancellationException(
+        "Invalid repository format. Must be a valid GitHub repository in the format <owner>/<repo>.",
+      );
     }
-    void logger.log(`Setting the controller repository as: ${controllerRepoNwo}`);
+    void logger.log(
+      `Setting the controller repository as: ${controllerRepoNwo}`,
+    );
     await setRemoteControllerRepo(controllerRepoNwo);
   }
 
   void logger.log(`Using controller repository: ${controllerRepoNwo}`);
-  const [owner, repo] = controllerRepoNwo.split('/');
+  const [owner, repo] = controllerRepoNwo.split("/");
 
   try {
-    const controllerRepo = await ghApiClient.getRepositoryFromNwo(credentials, owner, repo);
+    const controllerRepo = await ghApiClient.getRepositoryFromNwo(
+      credentials,
+      owner,
+      repo,
+    );
     void logger.log(`Controller repository ID: ${controllerRepo.id}`);
     return {
       id: controllerRepo.id,
       fullName: controllerRepo.full_name,
       private: controllerRepo.private,
     };
-
   } catch (e: any) {
     if ((e as RequestError).status === 404) {
       throw new Error(`Controller repository "${owner}/${repo}" not found`);
     } else {
-      throw new Error(`Error getting controller repository "${owner}/${repo}": ${e.message}`);
+      throw new Error(
+        `Error getting controller repository "${owner}/${repo}": ${e.message}`,
+      );
     }
   }
 }

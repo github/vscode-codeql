@@ -1,5 +1,5 @@
-import * as path from 'path';
-import { DisposableObject } from './pure/disposable-object';
+import * as path from "path";
+import { DisposableObject } from "./pure/disposable-object";
 import {
   Event,
   EventEmitter,
@@ -9,36 +9,36 @@ import {
   Uri,
   window,
   env,
-} from 'vscode';
-import * as fs from 'fs-extra';
+} from "vscode";
+import * as fs from "fs-extra";
 
 import {
   DatabaseChangedEvent,
   DatabaseItem,
   DatabaseManager,
-} from './databases';
+} from "./databases";
 import {
   commandRunner,
   commandRunnerWithProgress,
   ProgressCallback,
-} from './commandRunner';
+} from "./commandRunner";
 import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
-  showAndLogErrorMessage
-} from './helpers';
-import { logger } from './logging';
+  showAndLogErrorMessage,
+} from "./helpers";
+import { logger } from "./logging";
 import {
   importArchiveDatabase,
   promptImportGithubDatabase,
   promptImportInternetDatabase,
   promptImportLgtmDatabase,
-} from './databaseFetcher';
-import { CancellationToken } from 'vscode';
-import { asyncFilter, getErrorMessage } from './pure/helpers-pure';
-import { Credentials } from './authentication';
-import { QueryRunner } from './queryRunner';
-import { isCanary } from './config';
+} from "./databaseFetcher";
+import { CancellationToken } from "vscode";
+import { asyncFilter, getErrorMessage } from "./pure/helpers-pure";
+import { Credentials } from "./authentication";
+import { QueryRunner } from "./queryRunner";
+import { isCanary } from "./config";
 
 type ThemableIconPath = { light: string; dark: string } | string;
 
@@ -46,20 +46,20 @@ type ThemableIconPath = { light: string; dark: string } | string;
  * Path to icons to display next to currently selected database.
  */
 const SELECTED_DATABASE_ICON: ThemableIconPath = {
-  light: 'media/light/check.svg',
-  dark: 'media/dark/check.svg',
+  light: "media/light/check.svg",
+  dark: "media/dark/check.svg",
 };
 
 /**
  * Path to icon to display next to an invalid database.
  */
-const INVALID_DATABASE_ICON: ThemableIconPath = 'media/red-x.svg';
+const INVALID_DATABASE_ICON: ThemableIconPath = "media/red-x.svg";
 
 function joinThemableIconPath(
   base: string,
-  iconPath: ThemableIconPath
+  iconPath: ThemableIconPath,
 ): ThemableIconPath {
-  if (typeof iconPath == 'object')
+  if (typeof iconPath == "object")
     return {
       light: path.join(base, iconPath.light),
       dark: path.join(base, iconPath.dark),
@@ -68,25 +68,29 @@ function joinThemableIconPath(
 }
 
 enum SortOrder {
-  NameAsc = 'NameAsc',
-  NameDesc = 'NameDesc',
-  DateAddedAsc = 'DateAddedAsc',
-  DateAddedDesc = 'DateAddedDesc',
+  NameAsc = "NameAsc",
+  NameDesc = "NameDesc",
+  DateAddedAsc = "DateAddedAsc",
+  DateAddedDesc = "DateAddedDesc",
 }
 
 /**
  * Tree data provider for the databases view.
  */
-class DatabaseTreeDataProvider extends DisposableObject
-  implements TreeDataProvider<DatabaseItem> {
+class DatabaseTreeDataProvider
+  extends DisposableObject
+  implements TreeDataProvider<DatabaseItem>
+{
   private _sortOrder = SortOrder.NameAsc;
 
-  private readonly _onDidChangeTreeData = this.push(new EventEmitter<DatabaseItem | undefined>());
+  private readonly _onDidChangeTreeData = this.push(
+    new EventEmitter<DatabaseItem | undefined>(),
+  );
   private currentDatabaseItem: DatabaseItem | undefined;
 
   constructor(
     private databaseManager: DatabaseManager,
-    private readonly extensionPath: string
+    private readonly extensionPath: string,
   ) {
     super();
 
@@ -94,13 +98,13 @@ class DatabaseTreeDataProvider extends DisposableObject
 
     this.push(
       this.databaseManager.onDidChangeDatabaseItem(
-        this.handleDidChangeDatabaseItem
-      )
+        this.handleDidChangeDatabaseItem,
+      ),
     );
     this.push(
       this.databaseManager.onDidChangeCurrentDatabaseItem(
-        this.handleDidChangeCurrentDatabaseItem
-      )
+        this.handleDidChangeCurrentDatabaseItem,
+      ),
     );
   }
 
@@ -118,7 +122,7 @@ class DatabaseTreeDataProvider extends DisposableObject
   };
 
   private handleDidChangeCurrentDatabaseItem = (
-    event: DatabaseChangedEvent
+    event: DatabaseChangedEvent,
   ): void => {
     if (this.currentDatabaseItem) {
       this._onDidChangeTreeData.fire(this.currentDatabaseItem);
@@ -134,13 +138,13 @@ class DatabaseTreeDataProvider extends DisposableObject
     if (element === this.currentDatabaseItem) {
       item.iconPath = joinThemableIconPath(
         this.extensionPath,
-        SELECTED_DATABASE_ICON
+        SELECTED_DATABASE_ICON,
       );
-      item.contextValue = 'currentDatabase';
+      item.contextValue = "currentDatabase";
     } else if (element.error !== undefined) {
       item.iconPath = joinThemableIconPath(
         this.extensionPath,
-        INVALID_DATABASE_ICON
+        INVALID_DATABASE_ICON,
       );
     }
     item.tooltip = element.databaseUri.fsPath;
@@ -204,11 +208,11 @@ function getFirst(list: Uri[] | undefined): Uri | undefined {
  */
 async function chooseDatabaseDir(byFolder: boolean): Promise<Uri | undefined> {
   const chosen = await window.showOpenDialog({
-    openLabel: byFolder ? 'Choose Database folder' : 'Choose Database archive',
+    openLabel: byFolder ? "Choose Database folder" : "Choose Database archive",
     canSelectFiles: !byFolder,
     canSelectFolders: byFolder,
     canSelectMany: false,
-    filters: byFolder ? {} : { Archives: ['zip'] },
+    filters: byFolder ? {} : { Archives: ["zip"] },
   });
   return getFirst(chosen);
 }
@@ -221,173 +225,165 @@ export class DatabaseUI extends DisposableObject {
     private readonly queryServer: QueryRunner | undefined,
     private readonly storagePath: string,
     readonly extensionPath: string,
-    private readonly getCredentials: () => Promise<Credentials>
+    private readonly getCredentials: () => Promise<Credentials>,
   ) {
     super();
 
     this.treeDataProvider = this.push(
-      new DatabaseTreeDataProvider(databaseManager, extensionPath)
+      new DatabaseTreeDataProvider(databaseManager, extensionPath),
     );
     this.push(
-      window.createTreeView('codeQLDatabases', {
+      window.createTreeView("codeQLDatabases", {
         treeDataProvider: this.treeDataProvider,
         canSelectMany: true,
-      })
+      }),
     );
   }
 
   init() {
-    void logger.log('Registering database panel commands.');
+    void logger.log("Registering database panel commands.");
     this.push(
       commandRunnerWithProgress(
-        'codeQL.setCurrentDatabase',
+        "codeQL.setCurrentDatabase",
         this.handleSetCurrentDatabase,
         {
-          title: 'Importing database from archive',
-        }
-      )
+          title: "Importing database from archive",
+        },
+      ),
     );
     this.push(
       commandRunnerWithProgress(
-        'codeQL.upgradeCurrentDatabase',
+        "codeQL.upgradeCurrentDatabase",
         this.handleUpgradeCurrentDatabase,
         {
-          title: 'Upgrading current database',
+          title: "Upgrading current database",
           cancellable: true,
-        }
-      )
+        },
+      ),
     );
     this.push(
-      commandRunnerWithProgress(
-        'codeQL.clearCache',
-        this.handleClearCache,
-        {
-          title: 'Clearing Cache',
-        })
+      commandRunnerWithProgress("codeQL.clearCache", this.handleClearCache, {
+        title: "Clearing Cache",
+      }),
     );
 
     this.push(
       commandRunnerWithProgress(
-        'codeQLDatabases.chooseDatabaseFolder',
+        "codeQLDatabases.chooseDatabaseFolder",
         this.handleChooseDatabaseFolder,
         {
-          title: 'Adding database from folder',
-        }
-      )
+          title: "Adding database from folder",
+        },
+      ),
     );
     this.push(
       commandRunnerWithProgress(
-        'codeQLDatabases.chooseDatabaseArchive',
+        "codeQLDatabases.chooseDatabaseArchive",
         this.handleChooseDatabaseArchive,
         {
-          title: 'Adding database from archive',
-        }
-      )
+          title: "Adding database from archive",
+        },
+      ),
     );
     this.push(
       commandRunnerWithProgress(
-        'codeQLDatabases.chooseDatabaseInternet',
+        "codeQLDatabases.chooseDatabaseInternet",
         this.handleChooseDatabaseInternet,
         {
-          title: 'Adding database from URL',
-        }
-      )
+          title: "Adding database from URL",
+        },
+      ),
     );
     this.push(
       commandRunnerWithProgress(
-        'codeQLDatabases.chooseDatabaseGithub',
-        async (
-          progress: ProgressCallback,
-          token: CancellationToken
-        ) => {
-          const credentials = isCanary() ? await this.getCredentials() : undefined;
+        "codeQLDatabases.chooseDatabaseGithub",
+        async (progress: ProgressCallback, token: CancellationToken) => {
+          const credentials = isCanary()
+            ? await this.getCredentials()
+            : undefined;
           await this.handleChooseDatabaseGithub(credentials, progress, token);
         },
         {
-          title: 'Adding database from GitHub',
-        })
+          title: "Adding database from GitHub",
+        },
+      ),
     );
     this.push(
       commandRunnerWithProgress(
-        'codeQLDatabases.chooseDatabaseLgtm',
+        "codeQLDatabases.chooseDatabaseLgtm",
         this.handleChooseDatabaseLgtm,
         {
-          title: 'Adding database from LGTM',
-        })
+          title: "Adding database from LGTM",
+        },
+      ),
     );
     this.push(
       commandRunner(
-        'codeQLDatabases.setCurrentDatabase',
-        this.handleMakeCurrentDatabase
-      )
+        "codeQLDatabases.setCurrentDatabase",
+        this.handleMakeCurrentDatabase,
+      ),
+    );
+    this.push(
+      commandRunner("codeQLDatabases.sortByName", this.handleSortByName),
     );
     this.push(
       commandRunner(
-        'codeQLDatabases.sortByName',
-        this.handleSortByName
-      )
-    );
-    this.push(
-      commandRunner(
-        'codeQLDatabases.sortByDateAdded',
-        this.handleSortByDateAdded
-      )
+        "codeQLDatabases.sortByDateAdded",
+        this.handleSortByDateAdded,
+      ),
     );
     this.push(
       commandRunnerWithProgress(
-        'codeQLDatabases.removeDatabase',
+        "codeQLDatabases.removeDatabase",
         this.handleRemoveDatabase,
         {
-          title: 'Removing database',
-          cancellable: false
-        }
-      )
+          title: "Removing database",
+          cancellable: false,
+        },
+      ),
     );
     this.push(
       commandRunnerWithProgress(
-        'codeQLDatabases.upgradeDatabase',
+        "codeQLDatabases.upgradeDatabase",
         this.handleUpgradeDatabase,
         {
-          title: 'Upgrading database',
+          title: "Upgrading database",
           cancellable: true,
-        }
-      )
+        },
+      ),
     );
     this.push(
       commandRunner(
-        'codeQLDatabases.renameDatabase',
-        this.handleRenameDatabase
-      )
+        "codeQLDatabases.renameDatabase",
+        this.handleRenameDatabase,
+      ),
     );
     this.push(
       commandRunner(
-        'codeQLDatabases.openDatabaseFolder',
-        this.handleOpenFolder
-      )
+        "codeQLDatabases.openDatabaseFolder",
+        this.handleOpenFolder,
+      ),
+    );
+    this.push(
+      commandRunner("codeQLDatabases.addDatabaseSource", this.handleAddSource),
     );
     this.push(
       commandRunner(
-        'codeQLDatabases.addDatabaseSource',
-        this.handleAddSource
-      )
-    );
-    this.push(
-      commandRunner(
-        'codeQLDatabases.removeOrphanedDatabases',
-        this.handleRemoveOrphanedDatabases
-      )
+        "codeQLDatabases.removeOrphanedDatabases",
+        this.handleRemoveOrphanedDatabases,
+      ),
     );
   }
 
   private handleMakeCurrentDatabase = async (
-    databaseItem: DatabaseItem
+    databaseItem: DatabaseItem,
   ): Promise<void> => {
     await this.databaseManager.setCurrentDatabaseItem(databaseItem);
   };
 
   handleChooseDatabaseFolder = async (
     progress: ProgressCallback,
-    token: CancellationToken
+    token: CancellationToken,
   ): Promise<void> => {
     try {
       await this.chooseAndSetDatabase(true, progress, token);
@@ -397,14 +393,16 @@ export class DatabaseUI extends DisposableObject {
   };
 
   handleRemoveOrphanedDatabases = async (): Promise<void> => {
-    void logger.log('Removing orphaned databases from workspace storage.');
+    void logger.log("Removing orphaned databases from workspace storage.");
     let dbDirs = undefined;
 
     if (
       !(await fs.pathExists(this.storagePath)) ||
       !(await fs.stat(this.storagePath)).isDirectory()
     ) {
-      void logger.log('Missing or invalid storage directory. Not trying to remove orphaned databases.');
+      void logger.log(
+        "Missing or invalid storage directory. Not trying to remove orphaned databases.",
+      );
       return;
     }
 
@@ -412,49 +410,51 @@ export class DatabaseUI extends DisposableObject {
       // read directory
       (await fs.readdir(this.storagePath, { withFileTypes: true }))
         // remove non-directories
-        .filter(dirent => dirent.isDirectory())
+        .filter((dirent) => dirent.isDirectory())
         // get the full path
-        .map(dirent => path.join(this.storagePath, dirent.name))
+        .map((dirent) => path.join(this.storagePath, dirent.name))
         // remove databases still in workspace
-        .filter(dbDir => {
+        .filter((dbDir) => {
           const dbUri = Uri.file(dbDir);
-          return this.databaseManager.databaseItems.every(item => item.databaseUri.fsPath !== dbUri.fsPath);
+          return this.databaseManager.databaseItems.every(
+            (item) => item.databaseUri.fsPath !== dbUri.fsPath,
+          );
         });
 
     // remove non-databases
     dbDirs = await asyncFilter(dbDirs, isLikelyDatabaseRoot);
 
     if (!dbDirs.length) {
-      void logger.log('No orphaned databases found.');
+      void logger.log("No orphaned databases found.");
       return;
     }
 
     // delete
     const failures = [] as string[];
     await Promise.all(
-      dbDirs.map(async dbDir => {
+      dbDirs.map(async (dbDir) => {
         try {
           void logger.log(`Deleting orphaned database '${dbDir}'.`);
           await fs.remove(dbDir);
         } catch (e) {
           failures.push(`${path.basename(dbDir)}`);
         }
-      })
+      }),
     );
 
     if (failures.length) {
       const dirname = path.dirname(failures[0]);
       void showAndLogErrorMessage(
-        `Failed to delete unused databases (${failures.join(', ')
-        }).\nTo delete unused databases, please remove them manually from the storage folder ${dirname}.`
+        `Failed to delete unused databases (${failures.join(
+          ", ",
+        )}).\nTo delete unused databases, please remove them manually from the storage folder ${dirname}.`,
       );
     }
   };
 
-
   handleChooseDatabaseArchive = async (
     progress: ProgressCallback,
-    token: CancellationToken
+    token: CancellationToken,
   ): Promise<void> => {
     try {
       await this.chooseAndSetDatabase(false, progress, token);
@@ -465,21 +465,21 @@ export class DatabaseUI extends DisposableObject {
 
   handleChooseDatabaseInternet = async (
     progress: ProgressCallback,
-    token: CancellationToken
+    token: CancellationToken,
   ): Promise<DatabaseItem | undefined> => {
     return await promptImportInternetDatabase(
       this.databaseManager,
       this.storagePath,
       progress,
       token,
-      this.queryServer?.cliServer
+      this.queryServer?.cliServer,
     );
   };
 
   handleChooseDatabaseGithub = async (
     credentials: Credentials | undefined,
     progress: ProgressCallback,
-    token: CancellationToken
+    token: CancellationToken,
   ): Promise<DatabaseItem | undefined> => {
     return await promptImportGithubDatabase(
       this.databaseManager,
@@ -487,26 +487,26 @@ export class DatabaseUI extends DisposableObject {
       credentials,
       progress,
       token,
-      this.queryServer?.cliServer
+      this.queryServer?.cliServer,
     );
   };
 
   handleChooseDatabaseLgtm = async (
     progress: ProgressCallback,
-    token: CancellationToken
+    token: CancellationToken,
   ): Promise<DatabaseItem | undefined> => {
     return await promptImportLgtmDatabase(
       this.databaseManager,
       this.storagePath,
       progress,
       token,
-      this.queryServer?.cliServer
+      this.queryServer?.cliServer,
     );
   };
 
   async tryUpgradeCurrentDatabase(
     progress: ProgressCallback,
-    token: CancellationToken
+    token: CancellationToken,
   ) {
     await this.handleUpgradeCurrentDatabase(progress, token);
   }
@@ -532,9 +532,10 @@ export class DatabaseUI extends DisposableObject {
     token: CancellationToken,
   ): Promise<void> => {
     await this.handleUpgradeDatabase(
-      progress, token,
+      progress,
+      token,
       this.databaseManager.currentDatabaseItem,
-      []
+      [],
     );
   };
 
@@ -546,27 +547,29 @@ export class DatabaseUI extends DisposableObject {
   ): Promise<void> => {
     if (multiSelect?.length) {
       await Promise.all(
-        multiSelect.map((dbItem) => this.handleUpgradeDatabase(progress, token, dbItem, []))
+        multiSelect.map((dbItem) =>
+          this.handleUpgradeDatabase(progress, token, dbItem, []),
+        ),
       );
     }
     if (this.queryServer === undefined) {
       throw new Error(
-        'Received request to upgrade database, but there is no running query server.'
+        "Received request to upgrade database, but there is no running query server.",
       );
     }
     if (databaseItem === undefined) {
       throw new Error(
-        'Received request to upgrade database, but no database was provided.'
+        "Received request to upgrade database, but no database was provided.",
       );
     }
     if (databaseItem.contents === undefined) {
       throw new Error(
-        'Received request to upgrade database, but database contents could not be found.'
+        "Received request to upgrade database, but database contents could not be found.",
       );
     }
     if (databaseItem.contents.dbSchemeUri === undefined) {
       throw new Error(
-        'Received request to upgrade database, but database has no schema.'
+        "Received request to upgrade database, but database has no schema.",
       );
     }
 
@@ -575,7 +578,7 @@ export class DatabaseUI extends DisposableObject {
     await this.queryServer.upgradeDatabaseExplicit(
       databaseItem,
       progress,
-      token
+      token,
     );
   };
 
@@ -590,7 +593,7 @@ export class DatabaseUI extends DisposableObject {
       await this.queryServer.clearCacheInDatabase(
         this.databaseManager.currentDatabaseItem,
         progress,
-        token
+        token,
       );
     }
   };
@@ -602,14 +605,14 @@ export class DatabaseUI extends DisposableObject {
   ): Promise<void> => {
     try {
       // Assume user has selected an archive if the file has a .zip extension
-      if (uri.path.endsWith('.zip')) {
+      if (uri.path.endsWith(".zip")) {
         await importArchiveDatabase(
           uri.toString(true),
           this.databaseManager,
           this.storagePath,
           progress,
           token,
-          this.queryServer?.cliServer
+          this.queryServer?.cliServer,
         );
       } else {
         await this.setCurrentDatabase(progress, token, uri);
@@ -617,7 +620,9 @@ export class DatabaseUI extends DisposableObject {
     } catch (e) {
       // rethrow and let this be handled by default error handling.
       throw new Error(
-        `Could not set database to ${path.basename(uri.fsPath)}. Reason: ${getErrorMessage(e)}`
+        `Could not set database to ${path.basename(
+          uri.fsPath,
+        )}. Reason: ${getErrorMessage(e)}`,
       );
     }
   };
@@ -626,25 +631,31 @@ export class DatabaseUI extends DisposableObject {
     progress: ProgressCallback,
     token: CancellationToken,
     databaseItem: DatabaseItem,
-    multiSelect: DatabaseItem[] | undefined
+    multiSelect: DatabaseItem[] | undefined,
   ): Promise<void> => {
     if (multiSelect?.length) {
-      await Promise.all(multiSelect.map((dbItem) =>
-        this.databaseManager.removeDatabaseItem(progress, token, dbItem)
-      ));
+      await Promise.all(
+        multiSelect.map((dbItem) =>
+          this.databaseManager.removeDatabaseItem(progress, token, dbItem),
+        ),
+      );
     } else {
-      await this.databaseManager.removeDatabaseItem(progress, token, databaseItem);
+      await this.databaseManager.removeDatabaseItem(
+        progress,
+        token,
+        databaseItem,
+      );
     }
   };
 
   private handleRenameDatabase = async (
     databaseItem: DatabaseItem,
-    multiSelect: DatabaseItem[] | undefined
+    multiSelect: DatabaseItem[] | undefined,
   ): Promise<void> => {
     this.assertSingleDatabase(multiSelect);
 
     const newName = await window.showInputBox({
-      prompt: 'Choose new database name',
+      prompt: "Choose new database name",
       value: databaseItem.name,
     });
 
@@ -655,11 +666,11 @@ export class DatabaseUI extends DisposableObject {
 
   private handleOpenFolder = async (
     databaseItem: DatabaseItem,
-    multiSelect: DatabaseItem[] | undefined
+    multiSelect: DatabaseItem[] | undefined,
   ): Promise<void> => {
     if (multiSelect?.length) {
       await Promise.all(
-        multiSelect.map((dbItem) => env.openExternal(dbItem.databaseUri))
+        multiSelect.map((dbItem) => env.openExternal(dbItem.databaseUri)),
       );
     } else {
       await env.openExternal(databaseItem.databaseUri);
@@ -673,7 +684,7 @@ export class DatabaseUI extends DisposableObject {
    */
   private handleAddSource = async (
     databaseItem: DatabaseItem,
-    multiSelect: DatabaseItem[] | undefined
+    multiSelect: DatabaseItem[] | undefined,
   ): Promise<void> => {
     if (multiSelect?.length) {
       for (const dbItem of multiSelect) {
@@ -691,7 +702,7 @@ export class DatabaseUI extends DisposableObject {
    */
   public async getDatabaseItem(
     progress: ProgressCallback,
-    token: CancellationToken
+    token: CancellationToken,
   ): Promise<DatabaseItem | undefined> {
     if (this.databaseManager.currentDatabaseItem === undefined) {
       await this.chooseAndSetDatabase(false, progress, token);
@@ -703,11 +714,15 @@ export class DatabaseUI extends DisposableObject {
   private async setCurrentDatabase(
     progress: ProgressCallback,
     token: CancellationToken,
-    uri: Uri
+    uri: Uri,
   ): Promise<DatabaseItem | undefined> {
     let databaseItem = this.databaseManager.findDatabaseItem(uri);
     if (databaseItem === undefined) {
-      databaseItem = await this.databaseManager.openDatabase(progress, token, uri);
+      databaseItem = await this.databaseManager.openDatabase(
+        progress,
+        token,
+        uri,
+      );
     }
     await this.databaseManager.setCurrentDatabaseItem(databaseItem);
 
@@ -741,7 +756,7 @@ export class DatabaseUI extends DisposableObject {
         this.storagePath,
         progress,
         token,
-        this.queryServer?.cliServer
+        this.queryServer?.cliServer,
       );
     }
   }
@@ -771,7 +786,7 @@ export class DatabaseUI extends DisposableObject {
 
   private assertSingleDatabase(
     multiSelect: DatabaseItem[] = [],
-    message = 'Please select a single database.'
+    message = "Please select a single database.",
   ) {
     if (multiSelect.length > 1) {
       throw new Error(message);

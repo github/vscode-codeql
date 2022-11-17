@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-import { ComponentMeta } from '@storybook/react';
+import { ComponentMeta } from "@storybook/react";
 
-import { RepositoriesSearch as RepositoriesSearchComponent } from '../../view/variant-analysis/RepositoriesSearch';
+import { RepositoriesSearch as RepositoriesSearchComponent } from "../../view/variant-analysis/RepositoriesSearch";
 
 export default {
-  title: 'Variant Analysis/Repositories Search',
+  title: "Variant Analysis/Repositories Search",
   component: RepositoriesSearchComponent,
   argTypes: {
     value: {
@@ -13,13 +13,11 @@ export default {
         disable: true,
       },
     },
-  }
+  },
 } as ComponentMeta<typeof RepositoriesSearchComponent>;
 
 export const RepositoriesSearch = () => {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState("");
 
-  return (
-    <RepositoriesSearchComponent value={value} onChange={setValue} />
-  );
+  return <RepositoriesSearchComponent value={value} onChange={setValue} />;
 };

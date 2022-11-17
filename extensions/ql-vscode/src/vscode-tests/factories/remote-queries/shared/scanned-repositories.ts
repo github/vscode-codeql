@@ -1,9 +1,9 @@
-import { faker } from '@faker-js/faker';
+import { faker } from "@faker-js/faker";
 import {
   VariantAnalysisRepoStatus,
-  VariantAnalysisScannedRepository
-} from '../../../../remote-queries/shared/variant-analysis';
-import { createMockRepositoryWithMetadata } from './repository';
+  VariantAnalysisScannedRepository,
+} from "../../../../remote-queries/shared/variant-analysis";
+import { createMockRepositoryWithMetadata } from "./repository";
 
 export function createMockScannedRepo(
   name: string = faker.random.word(),
@@ -13,12 +13,12 @@ export function createMockScannedRepo(
   return {
     repository: {
       ...createMockRepositoryWithMetadata(),
-      fullName: 'github/' + name,
+      fullName: "github/" + name,
       private: isPrivate,
     },
     analysisStatus: analysisStatus,
     resultCount: faker.datatype.number(),
-    artifactSizeInBytes: faker.datatype.number()
+    artifactSizeInBytes: faker.datatype.number(),
   };
 }
 
@@ -27,8 +27,9 @@ export function createMockScannedRepos(
     VariantAnalysisRepoStatus.Succeeded,
     VariantAnalysisRepoStatus.Pending,
     VariantAnalysisRepoStatus.InProgress,
-  ]
+  ],
 ): VariantAnalysisScannedRepository[] {
-  return statuses.map(status => createMockScannedRepo(`mona-${status}`, false, status));
+  return statuses.map((status) =>
+    createMockScannedRepo(`mona-${status}`, false, status),
+  );
 }
-

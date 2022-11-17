@@ -6,10 +6,10 @@
  * that will always be available.
  */
 export interface Repository {
-  id: number,
-  name: string,
-  full_name: string,
-  private: boolean,
+  id: number;
+  name: string;
+  full_name: string;
+  private: boolean;
 }
 
 export interface RepositoryWithMetadata extends Repository {
