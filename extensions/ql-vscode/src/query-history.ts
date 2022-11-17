@@ -824,11 +824,15 @@ export class QueryHistoryManager extends DisposableObject {
     // Remote queries can be removed locally, but not remotely.
     // The user must cancel the query on GitHub Actions explicitly.
     this.treeDataProvider.remove(item);
-    void logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
+
+    let message = 'Remote query has been removed from history.';
+
     if (item.status === QueryStatus.InProgress) {
-      void logger.log('The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.');
+      const workflowRunUrl = getActionsWorkflowRunUrl(item);
+      message += ` However, the variant analysis is still running on GitHub Actions. To cancel it, you must go to the [workflow run](${workflowRunUrl}) in your browser.`;
     }
 
+    void showAndLogInformationMessage(message);
     await this.remoteQueriesManager.removeRemoteQuery(item.queryId);
   }
 
