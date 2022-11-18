@@ -106,9 +106,11 @@ export const getTestSetting = (
 };
 
 export const testConfigHelper = async (mocha: Mocha) => {
+  // Allow extra time to read settings. Sometimes this can time out.
+  mocha.timeout(20000);
+
   // Read in all current settings
   await Promise.all(TEST_SETTINGS.map((setting) => setting.initialSetup()));
-
   mocha.rootHooks({
     async beforeEach() {
       // Reset the settings to their initial values before each test

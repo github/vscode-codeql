@@ -24,7 +24,11 @@ import * as path from "path";
 
 import { VariantAnalysisManager } from "../../../remote-queries/variant-analysis-manager";
 import { CliVersionConstraint, CodeQLCliServer } from "../../../cli";
-import { storagePath } from "../global.helper";
+import {
+  fixWorkspaceReferences,
+  restoreWorkspaceReferences,
+  storagePath,
+} from "../global.helper";
 import { VariantAnalysisResultsManager } from "../../../remote-queries/variant-analysis-results-manager";
 import { createMockVariantAnalysis } from "../../factories/remote-queries/shared/variant-analysis";
 import * as VariantAnalysisModule from "../../../remote-queries/shared/variant-analysis";
@@ -66,6 +70,7 @@ describe("Variant Analysis Manager", async function () {
   let getVariantAnalysisRepoStub: sinon.SinonStub;
   let getVariantAnalysisRepoResultStub: sinon.SinonStub;
   let variantAnalysisResultsManager: VariantAnalysisResultsManager;
+  let originalDeps: Record<string, string> | undefined;
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
@@ -126,6 +131,10 @@ describe("Variant Analysis Manager", async function () {
       __dirname,
       "../../../../src/vscode-tests/cli-integration",
     );
+    const qlpackFileWithWorkspaceRefs = getFile(
+      "data-remote-qlpack/qlpack.yml",
+    ).fsPath;
+
     function getFile(file: string): Uri {
       return Uri.file(path.join(baseDir, file));
     }
@@ -177,6 +186,19 @@ describe("Variant Analysis Manager", async function () {
       await setRemoteRepositoryLists({
         "vscode-codeql": ["github/vscode-codeql"],
       });
+
+      // Only new version support `${workspace}` in qlpack.yml
+      originalDeps = await fixWorkspaceReferences(
+        qlpackFileWithWorkspaceRefs,
+        cli,
+      );
+    });
+
+    afterEach(async () => {
+      await restoreWorkspaceReferences(
+        qlpackFileWithWorkspaceRefs,
+        originalDeps,
+      );
     });
 
     it("should run a variant analysis that is part of a qlpack", async () => {

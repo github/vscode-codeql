@@ -21,7 +21,7 @@ import {
 import { ProgressCallback, UserCancellationException } from "../commandRunner";
 import { RequestError } from "@octokit/types/dist-types";
 import { QueryMetadata } from "../pure/interface-types";
-import { REPO_REGEX } from "../pure/helpers-pure";
+import { getErrorMessage, REPO_REGEX } from "../pure/helpers-pure";
 import * as ghApiClient from "./gh-api/gh-api-client";
 import {
   getRepositorySelection,
@@ -99,6 +99,8 @@ async function generateQueryPack(
 
     void logger.log(`Copied ${copiedCount} files to ${queryPackDir}`);
 
+    await fixPackFile(queryPackDir, packRelativePath);
+
     language = await findLanguage(cliServer, Uri.file(targetQueryFileName));
   } else {
     // open popup to ask for language if not already hardcoded
@@ -115,6 +117,7 @@ async function generateQueryPack(
       dependencies: {
         [`codeql/${language}-all`]: "*",
       },
+      defaultSuite: generateDefaultSuite(packRelativePath),
     };
     await fs.writeFile(
       path.join(queryPackDir, "qlpack.yml"),
@@ -124,8 +127,6 @@ async function generateQueryPack(
   if (!language) {
     throw new UserCancellationException("Could not determine language.");
   }
-
-  await ensureNameAndSuite(queryPackDir, packRelativePath);
 
   // Clear the cliServer cache so that the previous qlpack text is purged from the CLI.
   await cliServer.clearCache();
@@ -298,25 +299,41 @@ export async function prepareRemoteQueryRun(
 }
 
 /**
- * Updates the default suite of the query pack. This is used to ensure
- * only the specified query is run.
+ * Fixes the qlpack.yml file to be correct in the context of the MRVA request.
  *
- * Also, ensure the query pack name is set to the name expected by the server.
+ * Performs the following fixes:
+ *
+ * - Updates the default suite of the query pack. This is used to ensure
+ *   only the specified query is run.
+ * - Ensures the query pack name is set to the name expected by the server.
+ * - Removes any `${workspace}` version references from the qlpack.yml file. Converts them
+ *   to `*` versions.
  *
  * @param queryPackDir The directory containing the query pack
  * @param packRelativePath The relative path to the query pack from the root of the query pack
  */
-async function ensureNameAndSuite(
+async function fixPackFile(
   queryPackDir: string,
   packRelativePath: string,
 ): Promise<void> {
   const packPath = path.join(queryPackDir, "qlpack.yml");
   const qlpack = yaml.load(await fs.readFile(packPath, "utf8")) as QlPack;
-  delete qlpack.defaultSuiteFile;
 
+  // update pack name
   qlpack.name = QUERY_PACK_NAME;
 
-  qlpack.defaultSuite = [
+  // update default suite
+  delete qlpack.defaultSuiteFile;
+  qlpack.defaultSuite = generateDefaultSuite(packRelativePath);
+
+  // remove any ${workspace} version references
+  removeWorkspaceRefs(qlpack);
+
+  await fs.writeFile(packPath, yaml.dump(qlpack));
+}
+
+function generateDefaultSuite(packRelativePath: string) {
+  return [
     {
       description: "Query suite for variant analysis",
     },
@@ -324,7 +341,6 @@ async function ensureNameAndSuite(
       query: packRelativePath.replace(/\\/g, "/"),
     },
   ];
-  await fs.writeFile(packPath, yaml.dump(qlpack));
 }
 
 export function getQueryName(
@@ -385,13 +401,22 @@ export async function getControllerRepo(
       fullName: controllerRepo.full_name,
       private: controllerRepo.private,
     };
-  } catch (e: any) {
+  } catch (e) {
     if ((e as RequestError).status === 404) {
       throw new Error(`Controller repository "${owner}/${repo}" not found`);
     } else {
       throw new Error(
-        `Error getting controller repository "${owner}/${repo}": ${e.message}`,
+        `Error getting controller repository "${owner}/${repo}": ${getErrorMessage(
+          e,
+        )}`,
       );
+    }
+  }
+}
+export function removeWorkspaceRefs(qlpack: QlPack) {
+  for (const [key, value] of Object.entries(qlpack.dependencies || {})) {
+    if (value === "${workspace}") {
+      qlpack.dependencies[key] = "*";
     }
   }
 }

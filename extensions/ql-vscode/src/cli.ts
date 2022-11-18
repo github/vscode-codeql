@@ -1605,6 +1605,11 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_NEW_QUERY_SERVER = new SemVer("2.11.1");
 
+  /**
+   * CLI version that supports `${workspace}` references in qlpack.yml files.
+   */
+  public static CLI_VERSION_WITH_WORKSPACE_RFERENCES = new SemVer("2.11.3");
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1732,6 +1737,12 @@ export class CliVersionConstraint {
   async supportsNewQueryServerForTests() {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_NEW_QUERY_SERVER,
+    );
+  }
+
+  async supportsWorkspaceReferences() {
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_WORKSPACE_RFERENCES,
     );
   }
 }
