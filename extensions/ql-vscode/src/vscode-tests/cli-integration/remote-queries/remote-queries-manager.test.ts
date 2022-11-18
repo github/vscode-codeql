@@ -30,12 +30,20 @@ import { RemoteQueriesSubmission } from "../../../remote-queries/shared/remote-q
 import { readBundledPack } from "../../utils/bundled-pack-helpers";
 import { RemoteQueriesManager } from "../../../remote-queries/remote-queries-manager";
 import { Credentials } from "../../../authentication";
+import {
+  fixWorkspaceReferences,
+  restoreWorkspaceReferences,
+} from "../global.helper";
 
 describe("Remote queries", function () {
   const baseDir = path.join(
     __dirname,
     "../../../../src/vscode-tests/cli-integration",
   );
+
+  const qlpackFileWithWorkspaceRefs = getFile(
+    "data-remote-qlpack/qlpack.yml",
+  ).fsPath;
 
   let sandbox: sinon.SinonSandbox;
 
@@ -50,6 +58,8 @@ describe("Remote queries", function () {
   let ctx: ExtensionContext;
   let logger: any;
   let remoteQueriesManager: RemoteQueriesManager;
+
+  let originalDeps: Record<string, string> | undefined;
 
   // use `function` so we have access to `this`
   beforeEach(async function () {
@@ -69,13 +79,6 @@ describe("Remote queries", function () {
     }
 
     ctx = createMockExtensionContext();
-    logger = new OutputChannelLogger("test-logger");
-    remoteQueriesManager = new RemoteQueriesManager(
-      ctx,
-      cli,
-      "fake-storage-dir",
-      logger,
-    );
 
     if (!(await cli.cliConstraints.supportsRemoteQueries())) {
       console.log(
@@ -83,6 +86,14 @@ describe("Remote queries", function () {
       );
       this.skip();
     }
+
+    logger = new OutputChannelLogger("test-logger");
+    remoteQueriesManager = new RemoteQueriesManager(
+      ctx,
+      cli,
+      "fake-storage-dir",
+      logger,
+    );
 
     cancellationTokenSource = new CancellationTokenSource();
 
@@ -120,10 +131,17 @@ describe("Remote queries", function () {
         }),
     } as unknown as Credentials;
     sandbox.stub(Credentials, "initialize").resolves(mockCredentials);
+
+    // Only new version support `${workspace}` in qlpack.yml
+    originalDeps = await fixWorkspaceReferences(
+      qlpackFileWithWorkspaceRefs,
+      cli,
+    );
   });
 
   afterEach(async () => {
     sandbox.restore();
+    await restoreWorkspaceReferences(qlpackFileWithWorkspaceRefs, originalDeps);
   });
 
   describe("runRemoteQuery", () => {

@@ -1,5 +1,6 @@
 import * as path from "path";
 import * as tmp from "tmp";
+import * as yaml from "js-yaml";
 import * as fs from "fs-extra";
 import fetch from "node-fetch";
 
@@ -9,6 +10,8 @@ import { CodeQLExtensionInterface } from "../../extension";
 import { DatabaseManager } from "../../databases";
 import { getTestSetting } from "../test-config";
 import { CUSTOM_CODEQL_PATH_SETTING } from "../../config";
+import { CodeQLCliServer } from "../../cli";
+import { removeWorkspaceRefs } from "../../remote-queries/run-remote-query";
 
 // This file contains helpers shared between actual tests.
 
@@ -121,4 +124,53 @@ export async function cleanDatabases(databaseManager: DatabaseManager) {
   for (const item of databaseManager.databaseItems) {
     await commands.executeCommand("codeQLDatabases.removeDatabase", item);
   }
+}
+
+/**
+ * Conditionally removes `${workspace}` references from a qlpack.yml file.
+ * CLI versions earlier than 2.11.3 do not support `${workspace}` references in the dependencies block.
+ * If workspace references are removed, the qlpack.yml file is re-written to disk
+ * without the `${workspace}` references and the original dependencies are returned.
+ *
+ * @param qlpackFileWithWorkspaceRefs The qlpack.yml file with workspace refs
+ * @param cli The cli to use to check version constraints
+ * @returns The original dependencies with workspace refs, or undefined if the CLI version supports workspace refs and no changes were made
+ */
+export async function fixWorkspaceReferences(
+  qlpackFileWithWorkspaceRefs: string,
+  cli: CodeQLCliServer,
+): Promise<Record<string, string> | undefined> {
+  if (!(await cli.cliConstraints.supportsWorkspaceReferences())) {
+    // remove the workspace references from the qlpack
+    const qlpack = yaml.load(
+      fs.readFileSync(qlpackFileWithWorkspaceRefs, "utf8"),
+    );
+    const originalDeps = { ...qlpack.dependencies };
+    removeWorkspaceRefs(qlpack);
+    fs.writeFileSync(qlpackFileWithWorkspaceRefs, yaml.dump(qlpack));
+    return originalDeps;
+  }
+  return undefined;
+}
+
+/**
+ * Restores the original dependencies with `${workspace}` refs to a qlpack.yml file.
+ * See `fixWorkspaceReferences` for more details.
+ *
+ * @param qlpackFileWithWorkspaceRefs The qlpack.yml file to restore workspace refs
+ * @param originalDeps the original dependencies with workspace refs or undefined if
+ *  no changes were made.
+ */
+export async function restoreWorkspaceReferences(
+  qlpackFileWithWorkspaceRefs: string,
+  originalDeps?: Record<string, string>,
+) {
+  if (!originalDeps) {
+    return;
+  }
+  const qlpack = yaml.load(
+    fs.readFileSync(qlpackFileWithWorkspaceRefs, "utf8"),
+  );
+  qlpack.dependencies = originalDeps;
+  fs.writeFileSync(qlpackFileWithWorkspaceRefs, yaml.dump(qlpack));
 }
