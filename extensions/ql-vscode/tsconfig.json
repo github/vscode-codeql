@@ -4,7 +4,7 @@
     "declaration": true,
     "strict": true,
     "module": "commonjs",
-    "target": "es2017",
+    "target": "es2021",
     "outDir": "out",
     "lib": ["ES2021"],
     "moduleResolution": "node",
