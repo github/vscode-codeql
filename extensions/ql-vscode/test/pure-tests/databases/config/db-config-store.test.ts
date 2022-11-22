@@ -39,6 +39,8 @@ describe("db config store", () => {
     expect(config.databases.local.lists).toHaveLength(0);
     expect(config.databases.local.databases).toHaveLength(0);
     expect(config.selected).toBeUndefined();
+
+    configStore.dispose();
   });
 
   it("should load an existing config", async () => {
@@ -85,6 +87,8 @@ describe("db config store", () => {
       kind: "configDefined",
       value: "path.to.database",
     });
+
+    configStore.dispose();
   });
 
   it("should load an existing config without selected db", async () => {
@@ -104,6 +108,8 @@ describe("db config store", () => {
 
     const config = configStore.getConfig().value;
     expect(config.selected).toBeUndefined();
+
+    configStore.dispose();
   });
 
   it("should not allow modification of the config", async () => {
@@ -119,5 +125,7 @@ describe("db config store", () => {
 
     const reRetrievedConfig = configStore.getConfig().value;
     expect(reRetrievedConfig.databases.remote.repositoryLists).toHaveLength(1);
+
+    configStore.dispose();
   });
 });

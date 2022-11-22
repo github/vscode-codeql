@@ -2,7 +2,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { cloneDbConfig, DbConfig } from "./db-config";
 import * as chokidar from "chokidar";
-import { DisposableObject } from "../../pure/disposable-object";
+import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
 import { DbConfigValidator } from "./db-config-validator";
 import { ValueResult } from "../../common/value-result";
 import { App } from "../../common/app";
@@ -38,7 +38,8 @@ export class DbConfigStore extends DisposableObject {
     this.watchConfig();
   }
 
-  public dispose(): void {
+  public dispose(disposeHandler?: DisposeHandler): void {
+    super.dispose(disposeHandler);
     this.configWatcher?.unwatch(this.configPath);
   }
 
