@@ -645,8 +645,7 @@ describe("SARIF processing", () => {
 
   function expectNoParsingError(result: { errors: string[] }) {
     const array = result.errors;
-    // array.join()
-    expect(array.length).toBe(0);
+    expect(array).toEqual([]);
   }
 
   function buildValidSarifLog(): sarif.Log {
