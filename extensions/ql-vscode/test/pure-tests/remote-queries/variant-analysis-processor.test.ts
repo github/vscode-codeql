@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import { faker } from "@faker-js/faker";
 import { VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository } from "../../../src/remote-queries/gh-api/variant-analysis";
 import {
@@ -20,7 +19,7 @@ import { createMockApiResponse } from "../../../src/vscode-tests/factories/remot
 import { createMockSubmission } from "../../../src/vscode-tests/factories/remote-queries/shared/variant-analysis-submission";
 import { createMockVariantAnalysisRepoTask } from "../../../src/vscode-tests/factories/remote-queries/gh-api/variant-analysis-repo-task";
 
-describe(processVariantAnalysis.name, function () {
+describe(processVariantAnalysis.name, () => {
   const scannedRepos = createMockScannedRepos();
   const skippedRepos = createMockSkippedRepos();
   const mockApiResponse = createMockApiResponse(
@@ -40,7 +39,7 @@ describe(processVariantAnalysis.name, function () {
       over_limit_repos,
     } = skippedRepos;
 
-    expect(result).to.eql({
+    expect(result).toEqual({
       id: mockApiResponse.id,
       controllerRepo: {
         id: mockApiResponse.controller_repo.id,
@@ -179,7 +178,7 @@ describe(processVariantAnalysisRepositoryTask.name, () => {
   const mockApiResponse = createMockVariantAnalysisRepoTask();
 
   it("should return the correct result", () => {
-    expect(processVariantAnalysisRepositoryTask(mockApiResponse)).to.deep.eq({
+    expect(processVariantAnalysisRepositoryTask(mockApiResponse)).toEqual({
       repository: {
         id: mockApiResponse.repository.id,
         fullName: mockApiResponse.repository.full_name,
@@ -204,7 +203,7 @@ describe(processScannedRepository.name, () => {
   );
 
   it("should return the correct result", () => {
-    expect(processScannedRepository(mockApiResponse)).to.deep.eq({
+    expect(processScannedRepository(mockApiResponse)).toEqual({
       repository: {
         id: mockApiResponse.repository.id,
         fullName: mockApiResponse.repository.full_name,

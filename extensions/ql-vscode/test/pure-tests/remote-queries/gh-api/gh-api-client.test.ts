@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import * as Octokit from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 
@@ -25,9 +23,9 @@ const mockCredentials = {
 } as unknown as Credentials;
 
 const mockServer = new MockGitHubApiServer();
-before(() => mockServer.startServer());
+beforeAll(() => mockServer.startServer());
 afterEach(() => mockServer.unloadScenario());
-after(() => mockServer.stopServer());
+afterAll(() => mockServer.stopServer());
 
 const controllerRepoId = variantAnalysisJson.response.body.controller_repo.id;
 const variantAnalysisId = variantAnalysisJson.response.body.id;
@@ -42,8 +40,8 @@ describe("submitVariantAnalysis", () => {
       createMockSubmission(),
     );
 
-    expect(result).not.to.be.undefined;
-    expect(result.id).to.eq(variantAnalysisId);
+    expect(result).toBeDefined();
+    expect(result.id).toBe(variantAnalysisId);
   });
 });
 
@@ -57,8 +55,8 @@ describe("getVariantAnalysis", () => {
       variantAnalysisId,
     );
 
-    expect(result).not.to.be.undefined;
-    expect(result.status).not.to.be.undefined;
+    expect(result).toBeDefined();
+    expect(result.status).toBeDefined();
   });
 });
 
@@ -73,8 +71,8 @@ describe("getVariantAnalysisRepo", () => {
       repoTaskId,
     );
 
-    expect(result).not.to.be.undefined;
-    expect(result.repository.id).to.eq(repoTaskId);
+    expect(result).toBeDefined();
+    expect(result.repository.id).toBe(repoTaskId);
   });
 });
 
@@ -87,9 +85,9 @@ describe("getVariantAnalysisRepoResult", () => {
       `https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/${variantAnalysisId}/${repoTaskId}/${faker.datatype.uuid()}`,
     );
 
-    expect(result).not.to.be.undefined;
-    expect(result).to.be.an("ArrayBuffer");
-    expect(result.byteLength).to.eq(
+    expect(result).toBeDefined();
+    expect(result).toBeInstanceOf(ArrayBuffer);
+    expect(result.byteLength).toBe(
       variantAnalysisRepoJson.response.body.artifact_size_in_bytes,
     );
   });
@@ -105,7 +103,7 @@ describe("getRepositoryFromNwo", () => {
       "mrva-demo-controller-repo",
     );
 
-    expect(result).not.to.be.undefined;
-    expect(result.id).to.eq(getRepoJson.response.body.id);
+    expect(result).toBeDefined();
+    expect(result.id).toBe(getRepoJson.response.body.id);
   });
 });

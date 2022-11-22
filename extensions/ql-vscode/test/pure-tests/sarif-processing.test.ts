@@ -1,6 +1,3 @@
-import "mocha";
-import * as chaiAsPromised from "chai-as-promised";
-import * as chai from "chai";
 import * as sarif from "sarif";
 import {
   extractAnalysisAlerts,
@@ -11,9 +8,6 @@ import {
   AnalysisMessage,
   AnalysisMessageLocationToken,
 } from "../../src/remote-queries/shared/analysis-result";
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 describe("SARIF processing", () => {
   describe("tryGetRule", () => {
@@ -30,7 +24,7 @@ describe("SARIF processing", () => {
 
         const rule = tryGetRule(sarifRun, result);
 
-        expect(rule).to.be.undefined;
+        expect(rule).toBeUndefined();
       });
 
       it("should return undefined if rule missing from tool driver", () => {
@@ -60,7 +54,7 @@ describe("SARIF processing", () => {
 
         const rule = tryGetRule(sarifRun, result);
 
-        expect(rule).to.be.undefined;
+        expect(rule).toBeUndefined();
       });
 
       it("should return rule if it has been set on the tool driver", () => {
@@ -87,8 +81,8 @@ describe("SARIF processing", () => {
 
         const rule = tryGetRule(sarifRun, result);
 
-        expect(rule).to.be.ok;
-        expect(rule!.id).to.equal(result!.rule!.id);
+        expect(rule).toBeTruthy();
+        expect(rule!.id).toBe(result!.rule!.id);
       });
     });
 
@@ -136,7 +130,7 @@ describe("SARIF processing", () => {
 
         const rule = tryGetRule(sarifRun, result);
 
-        expect(rule).to.be.undefined;
+        expect(rule).toBeUndefined();
       });
 
       it("should return undefined if tool component index not set", () => {
@@ -182,7 +176,7 @@ describe("SARIF processing", () => {
 
         const rule = tryGetRule(sarifRun, result);
 
-        expect(rule).to.be.undefined;
+        expect(rule).toBeUndefined();
       });
 
       it("should return undefined if tool extensions not set", () => {
@@ -205,7 +199,7 @@ describe("SARIF processing", () => {
 
         const rule = tryGetRule(sarifRun, result);
 
-        expect(rule).to.be.undefined;
+        expect(rule).toBeUndefined();
       });
 
       it("should return undefined if tool extensions do not contain index", () => {
@@ -241,7 +235,7 @@ describe("SARIF processing", () => {
 
         const rule = tryGetRule(sarifRun, result);
 
-        expect(rule).to.be.undefined;
+        expect(rule).toBeUndefined();
       });
 
       it("should return rule if all information is defined", () => {
@@ -288,8 +282,8 @@ describe("SARIF processing", () => {
 
         const rule = tryGetRule(sarifRun, result);
 
-        expect(rule).to.be.ok;
-        expect(rule!.id).to.equal("D");
+        expect(rule).toBeTruthy();
+        expect(rule!.id).toBe("D");
       });
     });
   });
@@ -308,7 +302,7 @@ describe("SARIF processing", () => {
       } as sarif.Run;
 
       const severity = tryGetSeverity(sarifRun, result, rule);
-      expect(severity).to.be.undefined;
+      expect(severity).toBeUndefined();
     });
 
     it("should return undefined if severity not set on rule", () => {
@@ -336,7 +330,7 @@ describe("SARIF processing", () => {
       } as sarif.Run;
 
       const severity = tryGetSeverity(sarifRun, result, rule);
-      expect(severity).to.be.undefined;
+      expect(severity).toBeUndefined();
     });
 
     const severityMap = {
@@ -371,7 +365,7 @@ describe("SARIF processing", () => {
         } as sarif.Run;
 
         const severity = tryGetSeverity(sarifRun, result, rule);
-        expect(severity).to.equal(parsedSeverity);
+        expect(severity).toBe(parsedSeverity);
       });
     });
   });
@@ -385,8 +379,8 @@ describe("SARIF processing", () => {
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
-      expect(result).to.be.ok;
-      expect(result.alerts.length).to.equal(0);
+      expect(result).toBeTruthy();
+      expect(result.alerts.length).toBe(0);
     });
 
     it("should not return any results for runs that have no results", () => {
@@ -403,8 +397,8 @@ describe("SARIF processing", () => {
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
-      expect(result).to.be.ok;
-      expect(result.alerts.length).to.equal(0);
+      expect(result).toBeTruthy();
+      expect(result.alerts.length).toBe(0);
     });
 
     it("should return errors for results that have no message", () => {
@@ -413,8 +407,8 @@ describe("SARIF processing", () => {
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
-      expect(result).to.be.ok;
-      expect(result.errors.length).to.equal(1);
+      expect(result).toBeTruthy();
+      expect(result.errors.length).toBe(1);
       expectResultParsingError(result.errors[0]);
     });
 
@@ -433,9 +427,9 @@ describe("SARIF processing", () => {
 
       const actualCodeSnippet = result.alerts[0].codeSnippet;
 
-      expect(result).to.be.ok;
+      expect(result).toBeTruthy();
       expectNoParsingError(result);
-      expect(actualCodeSnippet).to.deep.equal(expectedCodeSnippet);
+      expect(actualCodeSnippet).toEqual(expectedCodeSnippet);
     });
 
     it("should use highlightedRegion for result locations with no contextRegion", () => {
@@ -453,9 +447,9 @@ describe("SARIF processing", () => {
 
       const actualCodeSnippet = result.alerts[0].codeSnippet;
 
-      expect(result).to.be.ok;
+      expect(result).toBeTruthy();
       expectNoParsingError(result);
-      expect(actualCodeSnippet).to.deep.equal(expectedCodeSnippet);
+      expect(actualCodeSnippet).toEqual(expectedCodeSnippet);
     });
 
     it("should not return errors for result locations with no region", () => {
@@ -465,8 +459,8 @@ describe("SARIF processing", () => {
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
-      expect(result).to.be.ok;
-      expect(result.alerts.length).to.equal(1);
+      expect(result).toBeTruthy();
+      expect(result.alerts.length).toBe(1);
       expectNoParsingError(result);
     });
 
@@ -477,8 +471,8 @@ describe("SARIF processing", () => {
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
-      expect(result).to.be.ok;
-      expect(result.errors.length).to.equal(1);
+      expect(result).toBeTruthy();
+      expect(result.errors.length).toBe(1);
       expectResultParsingError(result.errors[0]);
     });
 
@@ -565,31 +559,31 @@ describe("SARIF processing", () => {
       } as sarif.Log;
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
-      expect(result).to.be.ok;
-      expect(result.errors.length).to.equal(0);
-      expect(result.alerts.length).to.equal(3);
+      expect(result).toBeTruthy();
+      expect(result.errors.length).toBe(0);
+      expect(result.alerts.length).toBe(3);
       expect(
         result.alerts.find(
           (a) =>
             getMessageText(a.message) === "msg1" &&
             a.codeSnippet!.text === "foo",
         ),
-      ).to.be.ok;
+      ).toBeTruthy();
       expect(
         result.alerts.find(
           (a) =>
             getMessageText(a.message) === "msg1" &&
             a.codeSnippet!.text === "bar",
         ),
-      ).to.be.ok;
+      ).toBeTruthy();
       expect(
         result.alerts.find(
           (a) =>
             getMessageText(a.message) === "msg2" &&
             a.codeSnippet!.text === "baz",
         ),
-      ).to.be.ok;
-      expect(result.alerts.every((a) => a.severity === "Warning")).to.be.true;
+      ).toBeTruthy();
+      expect(result.alerts.every((a) => a.severity === "Warning")).toBe(true);
     });
 
     it("should deal with complex messages", () => {
@@ -615,20 +609,20 @@ describe("SARIF processing", () => {
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
-      expect(result).to.be.ok;
-      expect(result.errors.length).to.equal(0);
-      expect(result.alerts.length).to.equal(1);
+      expect(result).toBeTruthy();
+      expect(result.errors.length).toBe(0);
+      expect(result.alerts.length).toBe(1);
       const message = result.alerts[0].message;
-      expect(message.tokens.length).to.equal(3);
-      expect(message.tokens[0].t).to.equal("text");
-      expect(message.tokens[0].text).to.equal(
+      expect(message.tokens.length).toBe(3);
+      expect(message.tokens[0].t).toBe("text");
+      expect(message.tokens[0].text).toBe(
         "This shell command depends on an uncontrolled ",
       );
-      expect(message.tokens[1].t).to.equal("location");
-      expect(message.tokens[1].text).to.equal("absolute path");
+      expect(message.tokens[1].t).toBe("location");
+      expect(message.tokens[1].text).toBe("absolute path");
       expect(
         (message.tokens[1] as AnalysisMessageLocationToken).location,
-      ).to.deep.equal({
+      ).toEqual({
         fileLink: {
           fileLinkPrefix: fakefileLinkPrefix,
           filePath: "npm-packages/meteor-installer/config.js",
@@ -640,18 +634,19 @@ describe("SARIF processing", () => {
           endColumn: 60,
         },
       });
-      expect(message.tokens[2].t).to.equal("text");
-      expect(message.tokens[2].text).to.equal(".");
+      expect(message.tokens[2].t).toBe("text");
+      expect(message.tokens[2].text).toBe(".");
     });
   });
 
   function expectResultParsingError(msg: string) {
-    expect(msg.startsWith("Error when processing SARIF result")).to.be.true;
+    expect(msg.startsWith("Error when processing SARIF result")).toBe(true);
   }
 
   function expectNoParsingError(result: { errors: string[] }) {
     const array = result.errors;
-    expect(array.length, array.join()).to.equal(0);
+    // array.join()
+    expect(array.length).toBe(0);
   }
 
   function buildValidSarifLog(): sarif.Log {

@@ -1,5 +1,3 @@
-import "mocha";
-import { expect } from "chai";
 import * as Sarif from "sarif";
 
 import {
@@ -10,74 +8,72 @@ import {
 } from "../../src/pure/sarif-utils";
 
 describe("parsing sarif", () => {
-  it("should be able to parse a simple message from the spec", async function () {
+  it("should be able to parse a simple message from the spec", async () => {
     const message = "Tainted data was used. The data came from [here](3).";
     const results = parseSarifPlainTextMessage(message);
-    expect(results).to.deep.equal([
+    expect(results).toEqual([
       "Tainted data was used. The data came from ",
       { dest: 3, text: "here" },
       ".",
     ]);
   });
 
-  it("should be able to parse a complex message from the spec", async function () {
+  it("should be able to parse a complex message from the spec", async () => {
     const message = "Prohibited term used in [para\\[0\\]\\\\spans\\[2\\]](1).";
     const results = parseSarifPlainTextMessage(message);
-    expect(results).to.deep.equal([
+    expect(results).toEqual([
       "Prohibited term used in ",
       { dest: 1, text: "para[0]\\spans[2]" },
       ".",
     ]);
   });
-  it("should be able to parse a broken complex message from the spec", async function () {
+  it("should be able to parse a broken complex message from the spec", async () => {
     const message = "Prohibited term used in [para\\[0\\]\\\\spans\\[2\\](1).";
     const results = parseSarifPlainTextMessage(message);
-    expect(results).to.deep.equal([
-      "Prohibited term used in [para[0]\\spans[2](1).",
-    ]);
+    expect(results).toEqual(["Prohibited term used in [para[0]\\spans[2](1)."]);
   });
-  it("should be able to parse a message with extra escaping the spec", async function () {
+  it("should be able to parse a message with extra escaping the spec", async () => {
     const message = "Tainted data was used. The data came from \\[here](3).";
     const results = parseSarifPlainTextMessage(message);
-    expect(results).to.deep.equal([
+    expect(results).toEqual([
       "Tainted data was used. The data came from [here](3).",
     ]);
   });
 
   it("should unescape sarif text", () => {
-    expect(unescapeSarifText("\\\\ \\\\ \\[ \\[ \\] \\]")).to.eq(
+    expect(unescapeSarifText("\\\\ \\\\ \\[ \\[ \\] \\]")).toBe(
       "\\ \\ [ [ ] ]",
     );
     // Also show that unescaped special chars are unchanged...is this correct?
-    expect(unescapeSarifText("\\ \\ [ [ ] ]")).to.eq("\\ \\ [ [ ] ]");
+    expect(unescapeSarifText("\\ \\ [ [ ] ]")).toBe("\\ \\ [ [ ] ]");
   });
 
   it("should normalize source locations", () => {
-    expect(getPathRelativeToSourceLocationPrefix("C:\\a\\b", "?x=test")).to.eq(
+    expect(getPathRelativeToSourceLocationPrefix("C:\\a\\b", "?x=test")).toBe(
       "file:/C:/a/b/?x=test",
     );
     expect(
       getPathRelativeToSourceLocationPrefix("C:\\a\\b", "%3Fx%3Dtest"),
-    ).to.eq("file:/C:/a/b/%3Fx%3Dtest");
+    ).toBe("file:/C:/a/b/%3Fx%3Dtest");
     expect(
       getPathRelativeToSourceLocationPrefix("C:\\a =\\b c?", "?x=test"),
-    ).to.eq("file:/C:/a%20%3D/b%20c%3F/?x=test");
-    expect(getPathRelativeToSourceLocationPrefix("/a/b/c", "?x=test")).to.eq(
+    ).toBe("file:/C:/a%20%3D/b%20c%3F/?x=test");
+    expect(getPathRelativeToSourceLocationPrefix("/a/b/c", "?x=test")).toBe(
       "file:/a/b/c/?x=test",
     );
   });
 
   describe("parseSarifLocation", () => {
     it('should parse a sarif location with "no location"', () => {
-      expect(parseSarifLocation({}, "")).to.deep.equal({
+      expect(parseSarifLocation({}, "")).toEqual({
         hint: "no physical location",
       });
-      expect(parseSarifLocation({ physicalLocation: {} }, "")).to.deep.equal({
+      expect(parseSarifLocation({ physicalLocation: {} }, "")).toEqual({
         hint: "no artifact location",
       });
       expect(
         parseSarifLocation({ physicalLocation: { artifactLocation: {} } }, ""),
-      ).to.deep.equal({
+      ).toEqual({
         hint: "artifact location has no uri",
       });
     });
@@ -90,7 +86,7 @@ describe("parsing sarif", () => {
           },
         },
       };
-      expect(parseSarifLocation(location, "prefix")).to.deep.equal({
+      expect(parseSarifLocation(location, "prefix")).toEqual({
         uri: "file:/prefix/abc?x=test",
         userVisibleFile: "abc?x=test",
       });
@@ -104,7 +100,7 @@ describe("parsing sarif", () => {
           },
         },
       };
-      expect(parseSarifLocation(location, "prefix")).to.deep.equal({
+      expect(parseSarifLocation(location, "prefix")).toEqual({
         uri: "file:/abc%3Fx%3Dtest",
         userVisibleFile: "/abc?x=test",
       });
@@ -124,7 +120,7 @@ describe("parsing sarif", () => {
           },
         },
       };
-      expect(parseSarifLocation(location, "prefix")).to.deep.equal({
+      expect(parseSarifLocation(location, "prefix")).toEqual({
         uri: "file:abc%3Fx%3Dtest",
         userVisibleFile: "abc?x=test",
         startLine: 1,

@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import {
   VariantAnalysis,
   parseVariantAnalysisQueryLanguage,
@@ -13,17 +12,17 @@ import { createMockVariantAnalysis } from "../../src/vscode-tests/factories/remo
 
 describe("parseVariantAnalysisQueryLanguage", () => {
   it("parses a valid language", () => {
-    expect(parseVariantAnalysisQueryLanguage("javascript")).to.equal(
+    expect(parseVariantAnalysisQueryLanguage("javascript")).toBe(
       VariantAnalysisQueryLanguage.Javascript,
     );
   });
 
   it("returns undefined for an valid language", () => {
-    expect(parseVariantAnalysisQueryLanguage("rubbish")).to.not.exist;
+    expect(parseVariantAnalysisQueryLanguage("rubbish")).toBeFalsy();
   });
 });
 
-describe("isVariantAnalysisComplete", async () => {
+describe("isVariantAnalysisComplete", () => {
   let variantAnalysis: VariantAnalysis;
   const uncallableArtifactDownloadChecker = () => {
     throw new Error("Should not be called");
@@ -33,12 +32,12 @@ describe("isVariantAnalysisComplete", async () => {
     variantAnalysis = createMockVariantAnalysis({});
   });
 
-  describe("when variant analysis status is InProgress", async () => {
+  describe("when variant analysis status is InProgress", () => {
     beforeEach(() => {
       variantAnalysis.status = VariantAnalysisStatus.InProgress;
     });
 
-    describe("when scanned repos is undefined", async () => {
+    describe("when scanned repos is undefined", () => {
       it("should say the variant analysis is not complete", async () => {
         variantAnalysis.scannedRepos = undefined;
         expect(
@@ -46,24 +45,24 @@ describe("isVariantAnalysisComplete", async () => {
             variantAnalysis,
             uncallableArtifactDownloadChecker,
           ),
-        ).to.equal(false);
+        ).toBe(false);
       });
     });
 
-    describe("when scanned repos is non-empty", async () => {
-      describe("when not all results are downloaded", async () => {
+    describe("when scanned repos is non-empty", () => {
+      describe("when not all results are downloaded", () => {
         it("should say the variant analysis is not complete", async () => {
           expect(
             await isVariantAnalysisComplete(variantAnalysis, async () => false),
-          ).to.equal(false);
+          ).toBe(false);
         });
       });
 
-      describe("when all results are downloaded", async () => {
+      describe("when all results are downloaded", () => {
         it("should say the variant analysis is complete", async () => {
           expect(
             await isVariantAnalysisComplete(variantAnalysis, async () => true),
-          ).to.equal(false);
+          ).toBe(false);
         });
       });
     });
@@ -74,12 +73,12 @@ describe("isVariantAnalysisComplete", async () => {
     VariantAnalysisStatus.Failed,
     VariantAnalysisStatus.Canceled,
   ]) {
-    describe(`when variant analysis status is ${variantAnalysisStatus}`, async () => {
+    describe(`when variant analysis status is ${variantAnalysisStatus}`, () => {
       beforeEach(() => {
         variantAnalysis.status = variantAnalysisStatus;
       });
 
-      describe("when scanned repos is undefined", async () => {
+      describe("when scanned repos is undefined", () => {
         it("should say the variant analysis is complete", async () => {
           variantAnalysis.scannedRepos = undefined;
           expect(
@@ -87,11 +86,11 @@ describe("isVariantAnalysisComplete", async () => {
               variantAnalysis,
               uncallableArtifactDownloadChecker,
             ),
-          ).to.equal(true);
+          ).toBe(true);
         });
       });
 
-      describe("when scanned repos is empty", async () => {
+      describe("when scanned repos is empty", () => {
         it("should say the variant analysis is complete", async () => {
           variantAnalysis.scannedRepos = [];
           expect(
@@ -99,11 +98,11 @@ describe("isVariantAnalysisComplete", async () => {
               variantAnalysis,
               uncallableArtifactDownloadChecker,
             ),
-          ).to.equal(true);
+          ).toBe(true);
         });
       });
 
-      describe("when a repo scan is still in progress", async () => {
+      describe("when a repo scan is still in progress", () => {
         it("should say the variant analysis is not complete", async () => {
           variantAnalysis.scannedRepos = [
             createMockScannedRepo(
@@ -114,11 +113,11 @@ describe("isVariantAnalysisComplete", async () => {
           ];
           expect(
             await isVariantAnalysisComplete(variantAnalysis, async () => false),
-          ).to.equal(false);
+          ).toBe(false);
         });
       });
 
-      describe("when not all results are downloaded", async () => {
+      describe("when not all results are downloaded", () => {
         it("should say the variant analysis is not complete", async () => {
           variantAnalysis.scannedRepos = [
             createMockScannedRepo(
@@ -129,11 +128,11 @@ describe("isVariantAnalysisComplete", async () => {
           ];
           expect(
             await isVariantAnalysisComplete(variantAnalysis, async () => false),
-          ).to.equal(false);
+          ).toBe(false);
         });
       });
 
-      describe("when all results are downloaded", async () => {
+      describe("when all results are downloaded", () => {
         it("should say the variant analysis is complete", async () => {
           variantAnalysis.scannedRepos = [
             createMockScannedRepo(
@@ -144,7 +143,7 @@ describe("isVariantAnalysisComplete", async () => {
           ];
           expect(
             await isVariantAnalysisComplete(variantAnalysis, async () => true),
-          ).to.equal(true);
+          ).toBe(true);
         });
       });
     });
@@ -157,7 +156,7 @@ describe("getActionsWorkflowRunUrl", () => {
 
     const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
 
-    expect(actionsWorkflowRunUrl).to.equal(
+    expect(actionsWorkflowRunUrl).toBe(
       `https://github.com/${variantAnalysis.controllerRepo.fullName}/actions/runs/${variantAnalysis.actionsWorkflowRunId}`,
     );
   });

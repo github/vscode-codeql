@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import { DbConfig } from "../../../src/databases/config/db-config";
 import { DbItemKind } from "../../../src/databases/db-item";
 import {
@@ -26,22 +24,22 @@ describe("db tree creator", () => {
 
       const dbTreeRoot = createRemoteTree(dbConfig);
 
-      expect(dbTreeRoot).to.be.ok;
-      expect(dbTreeRoot.kind).to.equal(DbItemKind.RootRemote);
-      expect(dbTreeRoot.children.length).to.equal(3);
-      expect(dbTreeRoot.children[0]).to.deep.equal({
+      expect(dbTreeRoot).toBeTruthy();
+      expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
+      expect(dbTreeRoot.children.length).toBe(3);
+      expect(dbTreeRoot.children[0]).toEqual({
         kind: DbItemKind.RemoteSystemDefinedList,
         listName: "top_10",
         listDisplayName: "Top 10 repositories",
         listDescription: "Top 10 repositories of a language",
       });
-      expect(dbTreeRoot.children[1]).to.deep.equal({
+      expect(dbTreeRoot.children[1]).toEqual({
         kind: DbItemKind.RemoteSystemDefinedList,
         listName: "top_100",
         listDisplayName: "Top 100 repositories",
         listDescription: "Top 100 repositories of a language",
       });
-      expect(dbTreeRoot.children[2]).to.deep.equal({
+      expect(dbTreeRoot.children[2]).toEqual({
         kind: DbItemKind.RemoteSystemDefinedList,
         listName: "top_1000",
         listDisplayName: "Top 1000 repositories",
@@ -75,14 +73,14 @@ describe("db tree creator", () => {
 
       const dbTreeRoot = createRemoteTree(dbConfig);
 
-      expect(dbTreeRoot).to.be.ok;
-      expect(dbTreeRoot.kind).to.equal(DbItemKind.RootRemote);
+      expect(dbTreeRoot).toBeTruthy();
+      expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
       const repositoryListNodes = dbTreeRoot.children.filter(
         (child) => child.kind === DbItemKind.RemoteUserDefinedList,
       );
 
-      expect(repositoryListNodes.length).to.equal(2);
-      expect(repositoryListNodes[0]).to.deep.equal({
+      expect(repositoryListNodes.length).toBe(2);
+      expect(repositoryListNodes[0]).toEqual({
         kind: DbItemKind.RemoteUserDefinedList,
         listName: dbConfig.databases.remote.repositoryLists[0].name,
         repos: dbConfig.databases.remote.repositoryLists[0].repositories.map(
@@ -92,7 +90,7 @@ describe("db tree creator", () => {
           }),
         ),
       });
-      expect(repositoryListNodes[1]).to.deep.equal({
+      expect(repositoryListNodes[1]).toEqual({
         kind: DbItemKind.RemoteUserDefinedList,
         listName: dbConfig.databases.remote.repositoryLists[1].name,
         repos: dbConfig.databases.remote.repositoryLists[1].repositories.map(
@@ -121,18 +119,18 @@ describe("db tree creator", () => {
 
       const dbTreeRoot = createRemoteTree(dbConfig);
 
-      expect(dbTreeRoot).to.be.ok;
-      expect(dbTreeRoot.kind).to.equal(DbItemKind.RootRemote);
+      expect(dbTreeRoot).toBeTruthy();
+      expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
       const ownerNodes = dbTreeRoot.children.filter(
         (child) => child.kind === DbItemKind.RemoteOwner,
       );
 
-      expect(ownerNodes.length).to.equal(2);
-      expect(ownerNodes[0]).to.deep.equal({
+      expect(ownerNodes.length).toBe(2);
+      expect(ownerNodes[0]).toEqual({
         kind: DbItemKind.RemoteOwner,
         ownerName: dbConfig.databases.remote.owners[0],
       });
-      expect(ownerNodes[1]).to.deep.equal({
+      expect(ownerNodes[1]).toEqual({
         kind: DbItemKind.RemoteOwner,
         ownerName: dbConfig.databases.remote.owners[1],
       });
@@ -155,22 +153,22 @@ describe("db tree creator", () => {
 
       const dbTreeRoot = createRemoteTree(dbConfig);
 
-      expect(dbTreeRoot).to.be.ok;
-      expect(dbTreeRoot.kind).to.equal(DbItemKind.RootRemote);
+      expect(dbTreeRoot).toBeTruthy();
+      expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
       const repoNodes = dbTreeRoot.children.filter(
         (child) => child.kind === DbItemKind.RemoteRepo,
       );
 
-      expect(repoNodes.length).to.equal(3);
-      expect(repoNodes[0]).to.deep.equal({
+      expect(repoNodes.length).toBe(3);
+      expect(repoNodes[0]).toEqual({
         kind: DbItemKind.RemoteRepo,
         repoFullName: dbConfig.databases.remote.repositories[0],
       });
-      expect(repoNodes[1]).to.deep.equal({
+      expect(repoNodes[1]).toEqual({
         kind: DbItemKind.RemoteRepo,
         repoFullName: dbConfig.databases.remote.repositories[1],
       });
-      expect(repoNodes[2]).to.deep.equal({
+      expect(repoNodes[2]).toEqual({
         kind: DbItemKind.RemoteRepo,
         repoFullName: dbConfig.databases.remote.repositories[2],
       });
@@ -194,9 +192,9 @@ describe("db tree creator", () => {
 
       const dbTreeRoot = createLocalTree(dbConfig);
 
-      expect(dbTreeRoot).to.be.ok;
-      expect(dbTreeRoot.kind).to.equal(DbItemKind.RootLocal);
-      expect(dbTreeRoot.children.length).to.equal(0);
+      expect(dbTreeRoot).toBeTruthy();
+      expect(dbTreeRoot.kind).toBe(DbItemKind.RootLocal);
+      expect(dbTreeRoot.children.length).toBe(0);
     });
 
     it("should create local list nodes", () => {
@@ -245,14 +243,14 @@ describe("db tree creator", () => {
 
       const dbTreeRoot = createLocalTree(dbConfig);
 
-      expect(dbTreeRoot).to.be.ok;
-      expect(dbTreeRoot.kind).to.equal(DbItemKind.RootLocal);
+      expect(dbTreeRoot).toBeTruthy();
+      expect(dbTreeRoot.kind).toBe(DbItemKind.RootLocal);
       const localListNodes = dbTreeRoot.children.filter(
         (child) => child.kind === DbItemKind.LocalList,
       );
 
-      expect(localListNodes.length).to.equal(2);
-      expect(localListNodes[0]).to.deep.equal({
+      expect(localListNodes.length).toBe(2);
+      expect(localListNodes[0]).toEqual({
         kind: DbItemKind.LocalList,
         listName: dbConfig.databases.local.lists[0].name,
         databases: dbConfig.databases.local.lists[0].databases.map((db) => ({
@@ -263,7 +261,7 @@ describe("db tree creator", () => {
           storagePath: db.storagePath,
         })),
       });
-      expect(localListNodes[1]).to.deep.equal({
+      expect(localListNodes[1]).toEqual({
         kind: DbItemKind.LocalList,
         listName: dbConfig.databases.local.lists[1].name,
         databases: dbConfig.databases.local.lists[1].databases.map((db) => ({
@@ -306,21 +304,21 @@ describe("db tree creator", () => {
 
       const dbTreeRoot = createLocalTree(dbConfig);
 
-      expect(dbTreeRoot).to.be.ok;
-      expect(dbTreeRoot.kind).to.equal(DbItemKind.RootLocal);
+      expect(dbTreeRoot).toBeTruthy();
+      expect(dbTreeRoot.kind).toBe(DbItemKind.RootLocal);
       const localDatabaseNodes = dbTreeRoot.children.filter(
         (child) => child.kind === DbItemKind.LocalDatabase,
       );
 
-      expect(localDatabaseNodes.length).to.equal(2);
-      expect(localDatabaseNodes[0]).to.deep.equal({
+      expect(localDatabaseNodes.length).toBe(2);
+      expect(localDatabaseNodes[0]).toEqual({
         kind: DbItemKind.LocalDatabase,
         databaseName: dbConfig.databases.local.databases[0].name,
         dateAdded: dbConfig.databases.local.databases[0].dateAdded,
         language: dbConfig.databases.local.databases[0].language,
         storagePath: dbConfig.databases.local.databases[0].storagePath,
       });
-      expect(localDatabaseNodes[1]).to.deep.equal({
+      expect(localDatabaseNodes[1]).toEqual({
         kind: DbItemKind.LocalDatabase,
         databaseName: dbConfig.databases.local.databases[1].name,
         dateAdded: dbConfig.databases.local.databases[1].dateAdded,
