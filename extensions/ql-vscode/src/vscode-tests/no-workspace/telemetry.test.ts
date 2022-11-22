@@ -14,11 +14,11 @@ import { fail } from "assert";
 import { ENABLE_TELEMETRY } from "../../config";
 import { createMockExtensionContext } from "./index";
 
-describe("telemetry reporting", () => {
-  // setting preferences can trigger lots of background activity
-  // so need to bump up the timeout of this test.
-  jest.setTimeout(10000);
+// setting preferences can trigger lots of background activity
+// so need to bump up the timeout of this test.
+jest.setTimeout(10000);
 
+describe("telemetry reporting", () => {
   let originalTelemetryExtension: boolean | undefined;
   let originalTelemetryGlobal: boolean | undefined;
   let isCanary: string;
@@ -290,7 +290,6 @@ describe("telemetry reporting", () => {
       Promise.resolve(args[index]);
 
   it("should request permission if popup has never been seen before", async () => {
-    jest.setTimeout(3000);
     showInformationMessageSpy.mockImplementation(
       resolveArg(3 /* "yes" item */),
     );

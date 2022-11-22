@@ -28,6 +28,9 @@ import { EvalLogViewer } from "../../../eval-log-viewer";
 import { QueryRunner } from "../../../queryRunner";
 import { VariantAnalysisManager } from "../../../remote-queries/variant-analysis-manager";
 
+// set a higher timeout since recursive delete may take a while, expecially on Windows.
+jest.setTimeout(120000);
+
 /**
  * Tests for remote queries and how they interact with the query history manager.
  */
@@ -71,9 +74,6 @@ describe("Remote queries and query history manager", () => {
   const openTextDocumentSpy = jest.spyOn(workspace, "openTextDocument");
 
   beforeEach(async () => {
-    // set a higher timeout since recursive delete below may take a while, expecially on Windows.
-    jest.setTimeout(120000);
-
     // Since these tests change the state of the query history manager, we need to copy the original
     // to a temporary folder where we can manipulate it for tests
     await copyHistoryState();
@@ -129,8 +129,6 @@ describe("Remote queries and query history manager", () => {
   });
 
   afterEach(() => {
-    // set a higher timeout since recursive delete below may take a while, expecially on Windows.
-    jest.setTimeout(120000);
     deleteHistoryState();
     disposables.dispose(testDisposeHandler);
   });

@@ -1111,8 +1111,6 @@ describe("query-history", () => {
       });
 
       it("should not throw an error when the query directory does not exist", async () => {
-        // because of the waits, we need to have a higher timeout on this test.
-        jest.setTimeout(5000);
         registerScrubber("idontexist");
 
         jest.advanceTimersByTime(ONE_HOUR_IN_MS);
@@ -1141,8 +1139,6 @@ describe("query-history", () => {
       });
 
       it("should scrub directories", async () => {
-        jest.setTimeout(5000);
-
         // create two query directories that are right around the cut off time
         const queryDir = createMockQueryDir(
           ONE_HOUR_IN_MS,
