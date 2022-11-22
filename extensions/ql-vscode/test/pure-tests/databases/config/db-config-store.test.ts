@@ -1,10 +1,9 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
-import { expect } from "chai";
 import { createMockApp } from "../../../__mocks__/appMock";
 
-describe("db config store", async () => {
+describe("db config store", () => {
   const extensionPath = path.join(__dirname, "../../../..");
   const tempWorkspaceStoragePath = path.join(__dirname, "test-workspace");
   const testDataStoragePath = path.join(__dirname, "data");
@@ -31,15 +30,17 @@ describe("db config store", async () => {
     const configStore = new DbConfigStore(app);
     await configStore.initialize();
 
-    expect(await fs.pathExists(configPath)).to.be.true;
+    expect(await fs.pathExists(configPath)).toBe(true);
 
     const config = configStore.getConfig().value;
-    expect(config.databases.remote.repositoryLists).to.be.empty;
-    expect(config.databases.remote.owners).to.be.empty;
-    expect(config.databases.remote.repositories).to.be.empty;
-    expect(config.databases.local.lists).to.be.empty;
-    expect(config.databases.local.databases).to.be.empty;
-    expect(config.selected).to.be.undefined;
+    expect(config.databases.remote.repositoryLists).toHaveLength(0);
+    expect(config.databases.remote.owners).toHaveLength(0);
+    expect(config.databases.remote.repositories).toHaveLength(0);
+    expect(config.databases.local.lists).toHaveLength(0);
+    expect(config.databases.local.databases).toHaveLength(0);
+    expect(config.selected).toBeUndefined();
+
+    configStore.dispose();
   });
 
   it("should load an existing config", async () => {
@@ -51,20 +52,20 @@ describe("db config store", async () => {
     await configStore.initialize();
 
     const config = configStore.getConfig().value;
-    expect(config.databases.remote.repositoryLists).to.have.length(1);
-    expect(config.databases.remote.repositoryLists[0]).to.deep.equal({
+    expect(config.databases.remote.repositoryLists).toHaveLength(1);
+    expect(config.databases.remote.repositoryLists[0]).toEqual({
       name: "repoList1",
       repositories: ["foo/bar", "foo/baz"],
     });
-    expect(config.databases.remote.owners).to.be.empty;
-    expect(config.databases.remote.repositories).to.have.length(3);
-    expect(config.databases.remote.repositories).to.deep.equal([
+    expect(config.databases.remote.owners).toHaveLength(0);
+    expect(config.databases.remote.repositories).toHaveLength(3);
+    expect(config.databases.remote.repositories).toEqual([
       "owner/repo1",
       "owner/repo2",
       "owner/repo3",
     ]);
-    expect(config.databases.local.lists).to.have.length(2);
-    expect(config.databases.local.lists[0]).to.deep.equal({
+    expect(config.databases.local.lists).toHaveLength(2);
+    expect(config.databases.local.lists[0]).toEqual({
       name: "localList1",
       databases: [
         {
@@ -75,17 +76,19 @@ describe("db config store", async () => {
         },
       ],
     });
-    expect(config.databases.local.databases).to.have.length(1);
-    expect(config.databases.local.databases[0]).to.deep.equal({
+    expect(config.databases.local.databases).toHaveLength(1);
+    expect(config.databases.local.databases[0]).toEqual({
       name: "example-db",
       dateAdded: 1668096927267,
       language: "ruby",
       storagePath: "/path/to/database/",
     });
-    expect(config.selected).to.deep.equal({
+    expect(config.selected).toEqual({
       kind: "configDefined",
       value: "path.to.database",
     });
+
+    configStore.dispose();
   });
 
   it("should load an existing config without selected db", async () => {
@@ -104,7 +107,9 @@ describe("db config store", async () => {
     await configStore.initialize();
 
     const config = configStore.getConfig().value;
-    expect(config.selected).to.be.undefined;
+    expect(config.selected).toBeUndefined();
+
+    configStore.dispose();
   });
 
   it("should not allow modification of the config", async () => {
@@ -119,8 +124,8 @@ describe("db config store", async () => {
     config.databases.remote.repositoryLists = [];
 
     const reRetrievedConfig = configStore.getConfig().value;
-    expect(reRetrievedConfig.databases.remote.repositoryLists).to.have.length(
-      1,
-    );
+    expect(reRetrievedConfig.databases.remote.repositoryLists).toHaveLength(1);
+
+    configStore.dispose();
   });
 });

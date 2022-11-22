@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import * as path from "path";
 import * as fs from "fs-extra";
 import {
@@ -6,9 +5,9 @@ import {
   MarkdownFile,
 } from "../../../../src/remote-queries/remote-queries-markdown-generation";
 
-describe("markdown generation", async function () {
-  describe("for path-problem query", async function () {
-    it("should generate markdown file for each repo with results", async function () {
+describe("markdown generation", () => {
+  describe("for path-problem query", () => {
+    it("should generate markdown file for each repo with results", async () => {
       const pathProblemQuery = JSON.parse(
         await fs.readFile(
           path.join(
@@ -42,8 +41,8 @@ describe("markdown generation", async function () {
     });
   });
 
-  describe("for problem query", async function () {
-    it("should generate markdown file for each repo with results", async function () {
+  describe("for problem query", () => {
+    it("should generate markdown file for each repo with results", async () => {
       const problemQuery = JSON.parse(
         await fs.readFile(
           path.join(
@@ -76,8 +75,8 @@ describe("markdown generation", async function () {
     });
   });
 
-  describe("for non-alert query", async function () {
-    it("should generate markdown file for each repo with results", async function () {
+  describe("for non-alert query", () => {
+    it("should generate markdown file for each repo with results", async () => {
       const query = JSON.parse(
         await fs.readFile(
           path.join(__dirname, "data/raw-results/query.json"),
@@ -118,16 +117,16 @@ async function checkGeneratedMarkdown(
   const expectedDir = path.join(__dirname, testDataBasePath);
   const expectedFiles = await fs.readdir(expectedDir);
 
-  expect(actualFiles.length).to.equal(expectedFiles.length);
+  expect(actualFiles.length).toBe(expectedFiles.length);
 
   for (const expectedFile of expectedFiles) {
     const actualFile = actualFiles.find(
       (f) => `${f.fileName}.md` === expectedFile,
     );
-    expect(actualFile).to.not.be.undefined;
+    expect(actualFile).toBeDefined();
     const expectedContent = await readTestOutputFile(
       path.join(testDataBasePath, expectedFile),
     );
-    expect(actualFile!.content.join("\n")).to.equal(expectedContent);
+    expect(actualFile!.content.join("\n")).toBe(expectedContent);
   }
 }

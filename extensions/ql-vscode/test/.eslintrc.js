@@ -1,8 +1,8 @@
 module.exports = {
   env: {
-    mocha: true
+    jest: true,
   },
   parserOptions: {
-    project: './test/tsconfig.json',
+    project: "./test/tsconfig.json",
   },
-}
+};

@@ -4,5 +4,5 @@
  */
 
 module.exports = {
-  projects: ["<rootDir>/src/view"],
+  projects: ["<rootDir>/src/view", "<rootDir>/test"],
 };

@@ -37,6 +37,11 @@
   "javascript.preferences.quoteStyle": "single",
   "editor.wordWrapColumn": 100,
   "jest.rootPath": "./extensions/ql-vscode",
+  "jest.autoRun": "watch",
+  "jest.nodeEnv": {
+    "LANG": "en-US",
+    "TZ": "UTC"
+  },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,

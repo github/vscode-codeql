@@ -1,10 +1,9 @@
-import { expect } from "chai";
 import * as path from "path";
 import { DbConfig } from "../../../../src/databases/config/db-config";
 import { DbConfigValidator } from "../../../../src/databases/config/db-config-validator";
 
-describe("db config validation", async () => {
-  const extensionPath = path.join(__dirname, "../../..");
+describe("db config validation", () => {
+  const extensionPath = path.join(__dirname, "../../../..");
   const configValidator = new DbConfigValidator(extensionPath);
 
   it("should return error when file is not valid", async () => {
@@ -27,15 +26,15 @@ describe("db config validation", async () => {
 
     const validationOutput = configValidator.validate(dbConfig);
 
-    expect(validationOutput).to.have.length(3);
+    expect(validationOutput).toHaveLength(3);
 
-    expect(validationOutput[0]).to.deep.equal(
+    expect(validationOutput[0]).toEqual(
       "/databases must have required property 'local'",
     );
-    expect(validationOutput[1]).to.deep.equal(
+    expect(validationOutput[1]).toEqual(
       "/databases/remote must have required property 'owners'",
     );
-    expect(validationOutput[2]).to.deep.equal(
+    expect(validationOutput[2]).toEqual(
       "/databases/remote must NOT have additional properties",
     );
   });
