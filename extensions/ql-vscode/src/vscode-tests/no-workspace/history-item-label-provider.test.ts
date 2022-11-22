@@ -1,5 +1,4 @@
 import { env } from "vscode";
-import { expect } from "chai";
 import { QueryHistoryConfig } from "../../config";
 import { HistoryItemLabelProvider } from "../../history-item-label-provider";
 import { createMockLocalQueryInfo } from "../factories/local-queries/local-query-history-item";
@@ -30,15 +29,15 @@ describe("HistoryItemLabelProvider", () => {
         hasMetadata: true,
       });
 
-      expect(labelProvider.getLabel(fqi)).to.eq("user-specified-name");
+      expect(labelProvider.getLabel(fqi)).toBe("user-specified-name");
 
       fqi.userSpecifiedLabel = "%t %q %d %s %f %r %%";
-      expect(labelProvider.getLabel(fqi)).to.eq(
+      expect(labelProvider.getLabel(fqi)).toBe(
         `${dateStr} query-name db-name finished in 0 seconds query-file.ql (456 results) %`,
       );
 
       fqi.userSpecifiedLabel = "%t %q %d %s %f %r %%::%t %q %d %s %f %r %%";
-      expect(labelProvider.getLabel(fqi)).to.eq(
+      expect(labelProvider.getLabel(fqi)).toBe(
         `${dateStr} query-name db-name finished in 0 seconds query-file.ql (456 results) %::${dateStr} query-name db-name finished in 0 seconds query-file.ql (456 results) %`,
       );
     });
@@ -50,15 +49,15 @@ describe("HistoryItemLabelProvider", () => {
         hasMetadata: true,
       });
 
-      expect(labelProvider.getLabel(fqi)).to.eq("xxx query-name xxx");
+      expect(labelProvider.getLabel(fqi)).toBe("xxx query-name xxx");
 
       config.format = "%t %q %d %s %f %r %%";
-      expect(labelProvider.getLabel(fqi)).to.eq(
+      expect(labelProvider.getLabel(fqi)).toBe(
         `${dateStr} query-name db-name finished in 0 seconds query-file.ql (456 results) %`,
       );
 
       config.format = "%t %q %d %s %f %r %%::%t %q %d %s %f %r %%";
-      expect(labelProvider.getLabel(fqi)).to.eq(
+      expect(labelProvider.getLabel(fqi)).toBe(
         `${dateStr} query-name db-name finished in 0 seconds query-file.ql (456 results) %::${dateStr} query-name db-name finished in 0 seconds query-file.ql (456 results) %`,
       );
     });
@@ -72,18 +71,18 @@ describe("HistoryItemLabelProvider", () => {
       });
 
       // fall back on user specified if one exists.
-      expect(labelProvider.getShortLabel(fqi)).to.eq("user-specified-name");
+      expect(labelProvider.getShortLabel(fqi)).toBe("user-specified-name");
 
       // use query name if no user-specified label exists
       fqi.userSpecifiedLabel = undefined;
-      expect(labelProvider.getShortLabel(fqi)).to.eq("query-name");
+      expect(labelProvider.getShortLabel(fqi)).toBe("query-name");
 
       // use file name if no user-specified label exists and the query is not yet completed (meaning it has no results)
       const fqi2 = createMockLocalQueryInfo({
         startTime: date,
         hasMetadata: true,
       });
-      expect(labelProvider.getShortLabel(fqi2)).to.eq("query-file.ql");
+      expect(labelProvider.getShortLabel(fqi2)).toBe("query-file.ql");
     });
   });
 
@@ -91,15 +90,15 @@ describe("HistoryItemLabelProvider", () => {
     it("should interpolate query when user specified", () => {
       const fqi = createMockRemoteQueryHistoryItem({ userSpecifiedLabel });
 
-      expect(labelProvider.getLabel(fqi)).to.eq(userSpecifiedLabel);
+      expect(labelProvider.getLabel(fqi)).toBe(userSpecifiedLabel);
 
       fqi.userSpecifiedLabel = "%t %q %d %s %%";
-      expect(labelProvider.getLabel(fqi)).to.eq(
+      expect(labelProvider.getLabel(fqi)).toBe(
         `${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress %`,
       );
 
       fqi.userSpecifiedLabel = "%t %q %d %s %%::%t %q %d %s %%";
-      expect(labelProvider.getLabel(fqi)).to.eq(
+      expect(labelProvider.getLabel(fqi)).toBe(
         `${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress %::${dateStr} query-name (javascript) github/vscode-codeql-integration-tests in progress %`,
       );
     });
@@ -111,17 +110,17 @@ describe("HistoryItemLabelProvider", () => {
         resultCount: 16,
       });
 
-      expect(labelProvider.getLabel(fqi)).to.eq(
+      expect(labelProvider.getLabel(fqi)).toBe(
         "xxx query-name (javascript) xxx",
       );
 
       config.format = "%t %q %d %s %f %r %%";
-      expect(labelProvider.getLabel(fqi)).to.eq(
+      expect(labelProvider.getLabel(fqi)).toBe(
         `${dateStr} query-name (javascript) github/vscode-codeql-integration-tests completed query-file.ql (16 results) %`,
       );
 
       config.format = "%t %q %d %s %f %r %%::%t %q %d %s %f %r %%";
-      expect(labelProvider.getLabel(fqi)).to.eq(
+      expect(labelProvider.getLabel(fqi)).toBe(
         `${dateStr} query-name (javascript) github/vscode-codeql-integration-tests completed query-file.ql (16 results) %::${dateStr} query-name (javascript) github/vscode-codeql-integration-tests completed query-file.ql (16 results) %`,
       );
     });
@@ -135,7 +134,7 @@ describe("HistoryItemLabelProvider", () => {
       });
 
       config.format = "%t %q %d %s %f %r %%";
-      expect(labelProvider.getLabel(fqi)).to.eq(
+      expect(labelProvider.getLabel(fqi)).toBe(
         `${dateStr} query-name (javascript) 2 repositories completed query-file.ql (16 results) %`,
       );
     });
@@ -148,12 +147,12 @@ describe("HistoryItemLabelProvider", () => {
       });
 
       // fall back on user specified if one exists.
-      expect(labelProvider.getShortLabel(fqi)).to.eq("user-specified-name");
+      expect(labelProvider.getShortLabel(fqi)).toBe("user-specified-name");
 
       // use query name if no user-specified label exists
       const fqi2 = createMockRemoteQueryHistoryItem({});
 
-      expect(labelProvider.getShortLabel(fqi2)).to.eq("query-name");
+      expect(labelProvider.getShortLabel(fqi2)).toBe("query-name");
     });
 
     describe("when results are present", () => {
@@ -165,7 +164,7 @@ describe("HistoryItemLabelProvider", () => {
           repositoryCount: 2,
         });
         config.format = "%t %q %d %s %f %r %%";
-        expect(labelProvider.getLabel(fqi)).to.eq(
+        expect(labelProvider.getLabel(fqi)).toBe(
           `${dateStr} query-name (javascript) 2 repositories completed query-file.ql (16 results) %`,
         );
       });
@@ -180,7 +179,7 @@ describe("HistoryItemLabelProvider", () => {
           repositoryCount: 2,
         });
         config.format = "%t %q %d %s %f %r %%";
-        expect(labelProvider.getLabel(fqi)).to.eq(
+        expect(labelProvider.getLabel(fqi)).toBe(
           `${dateStr} query-name (javascript) 2 repositories completed query-file.ql %`,
         );
       });
@@ -195,7 +194,7 @@ describe("HistoryItemLabelProvider", () => {
           repositoryCount: 2,
         });
         config.format = "%t   %q        %d %s   %f   %r %%";
-        expect(labelProvider.getLabel(fqi)).to.eq(
+        expect(labelProvider.getLabel(fqi)).toBe(
           `${dateStr} query-name (javascript) 2 repositories completed query-file.ql %`,
         );
       });
@@ -210,7 +209,7 @@ describe("HistoryItemLabelProvider", () => {
           repositoryCount: 2,
         });
         config.format = "   %t %q %d %s %f %r %%";
-        expect(labelProvider.getLabel(fqi)).to.eq(
+        expect(labelProvider.getLabel(fqi)).toBe(
           ` ${dateStr} query-name (javascript) 2 repositories completed query-file.ql %`,
         );
       });
@@ -225,7 +224,7 @@ describe("HistoryItemLabelProvider", () => {
           repositoryCount: 2,
         });
         config.format = "%t %q %d %s %f %r %%   ";
-        expect(labelProvider.getLabel(fqi)).to.eq(
+        expect(labelProvider.getLabel(fqi)).toBe(
           `${dateStr} query-name (javascript) 2 repositories completed query-file.ql % `,
         );
       });

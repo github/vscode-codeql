@@ -66,7 +66,6 @@ export function createMockLocalQueryInfo({
 }
 
 export function createMockQueryWithResults({
-  sandbox = undefined,
   didRunSuccessfully = true,
   hasInterpretedResults = true,
   hasMetadata = undefined,
@@ -76,16 +75,8 @@ export function createMockQueryWithResults({
   hasInterpretedResults?: boolean;
   hasMetadata?: boolean;
 }): QueryWithResults {
-  const dispose = sandbox
-    ? sandbox.spy()
-    : () => {
-        /**/
-      };
-  const deleteQuery = sandbox
-    ? sandbox.stub()
-    : () => {
-        /**/
-      };
+  const dispose = jest.fn();
+  const deleteQuery = jest.fn();
   const metadata = hasMetadata
     ? ({ name: "query-name" } as QueryMetadata)
     : undefined;

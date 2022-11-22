@@ -1,8 +1,6 @@
-import { expect } from "chai";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as os from "os";
-import * as sinon from "sinon";
 import {
   LocalQueryInfo,
   InitialQueryInfo,
@@ -26,23 +24,14 @@ import {
   QueryInProgress,
 } from "../../legacy-query-server/run-queries";
 import { EvaluationResult, QueryResultType } from "../../pure/legacy-messages";
-import Sinon = require("sinon");
 import { sleep } from "../../pure/time";
 
 describe("query-results", () => {
-  let disposeSpy: sinon.SinonSpy;
-  let sandbox: sinon.SinonSandbox;
   let queryPath: string;
   let cnt = 0;
 
   beforeEach(() => {
-    sandbox = sinon.createSandbox();
-    disposeSpy = sandbox.spy();
     queryPath = path.join(Uri.file(tmpDir.name).fsPath, `query-${cnt++}`);
-  });
-
-  afterEach(() => {
-    sandbox.restore();
   });
 
   describe("FullQueryInfo", () => {
@@ -50,12 +39,12 @@ describe("query-results", () => {
       const fqi = createMockFullQueryInfo();
 
       // from the query path
-      expect(fqi.getQueryName()).to.eq("hucairz");
+      expect(fqi.getQueryName()).toBe("hucairz");
 
       fqi.completeThisQuery(createMockQueryWithResults(queryPath));
 
       // from the metadata
-      expect(fqi.getQueryName()).to.eq("vwx");
+      expect(fqi.getQueryName()).toBe("vwx");
 
       // from quick eval position
       (fqi.initialInfo as any).quickEvalPosition = {
@@ -63,16 +52,16 @@ describe("query-results", () => {
         endLine: 2,
         fileName: "/home/users/yz",
       };
-      expect(fqi.getQueryName()).to.eq("Quick evaluation of yz:1-2");
+      expect(fqi.getQueryName()).toBe("Quick evaluation of yz:1-2");
       (fqi.initialInfo as any).quickEvalPosition.endLine = 1;
-      expect(fqi.getQueryName()).to.eq("Quick evaluation of yz:1");
+      expect(fqi.getQueryName()).toBe("Quick evaluation of yz:1");
     });
 
     it("should get the query file name", () => {
       const fqi = createMockFullQueryInfo();
 
       // from the query path
-      expect(fqi.getQueryFileName()).to.eq("hucairz");
+      expect(fqi.getQueryFileName()).toBe("hucairz");
 
       // from quick eval position
       (fqi.initialInfo as any).quickEvalPosition = {
@@ -80,9 +69,9 @@ describe("query-results", () => {
         endLine: 2,
         fileName: "/home/users/yz",
       };
-      expect(fqi.getQueryFileName()).to.eq("yz:1-2");
+      expect(fqi.getQueryFileName()).toBe("yz:1-2");
       (fqi.initialInfo as any).quickEvalPosition.endLine = 1;
-      expect(fqi.getQueryFileName()).to.eq("yz:1");
+      expect(fqi.getQueryFileName()).toBe("yz:1");
     });
 
     it("should get the getResultsPath", () => {
@@ -92,7 +81,7 @@ describe("query-results", () => {
       const expectedResultsPath = path.join(queryPath, "results.bqrs");
 
       // from results path
-      expect(completedQuery.getResultsPath("zxa", false)).to.eq(
+      expect(completedQuery.getResultsPath("zxa", false)).toBe(
         expectedResultsPath,
       );
 
@@ -101,12 +90,12 @@ describe("query-results", () => {
       } as SortedResultSetInfo;
 
       // still from results path
-      expect(completedQuery.getResultsPath("zxa", false)).to.eq(
+      expect(completedQuery.getResultsPath("zxa", false)).toBe(
         expectedResultsPath,
       );
 
       // from sortedResultsInfo
-      expect(completedQuery.getResultsPath("zxa")).to.eq("bxa");
+      expect(completedQuery.getResultsPath("zxa")).toBe("bxa");
     });
 
     it("should format the statusString", () => {
@@ -118,27 +107,23 @@ describe("query-results", () => {
       };
 
       evalResult.message = "Tremendously";
-      expect(formatLegacyMessage(evalResult)).to.eq("failed: Tremendously");
+      expect(formatLegacyMessage(evalResult)).toBe("failed: Tremendously");
 
       evalResult.resultType = QueryResultType.OTHER_ERROR;
-      expect(formatLegacyMessage(evalResult)).to.eq("failed: Tremendously");
+      expect(formatLegacyMessage(evalResult)).toBe("failed: Tremendously");
 
       evalResult.resultType = QueryResultType.CANCELLATION;
       evalResult.evaluationTime = 2345;
-      expect(formatLegacyMessage(evalResult)).to.eq(
-        "cancelled after 2 seconds",
-      );
+      expect(formatLegacyMessage(evalResult)).toBe("cancelled after 2 seconds");
 
       evalResult.resultType = QueryResultType.OOM;
-      expect(formatLegacyMessage(evalResult)).to.eq("out of memory");
+      expect(formatLegacyMessage(evalResult)).toBe("out of memory");
 
       evalResult.resultType = QueryResultType.SUCCESS;
-      expect(formatLegacyMessage(evalResult)).to.eq("finished in 2 seconds");
+      expect(formatLegacyMessage(evalResult)).toBe("finished in 2 seconds");
 
       evalResult.resultType = QueryResultType.TIMEOUT;
-      expect(formatLegacyMessage(evalResult)).to.eq(
-        "timed out after 2 seconds",
-      );
+      expect(formatLegacyMessage(evalResult)).toBe("timed out after 2 seconds");
     });
     it("should updateSortState", async () => {
       // setup
@@ -148,7 +133,7 @@ describe("query-results", () => {
       );
       const completedQuery = fqi.completedQuery!;
 
-      const spy = sandbox.spy();
+      const spy = jest.fn();
       const mockServer = {
         sortBqrs: spy,
       } as unknown as CodeQLCliServer;
@@ -170,7 +155,7 @@ describe("query-results", () => {
         queryPath,
         "sortedResults-a-result-set-name.bqrs",
       );
-      expect(spy).to.have.been.calledWith(
+      expect(spy).toBeCalledWith(
         expectedResultsPath,
         expectedSortedResultsPath,
         "a-result-set-name",
@@ -178,22 +163,20 @@ describe("query-results", () => {
         [sortState.sortDirection],
       );
 
-      expect(
-        completedQuery.sortedResultsInfo["a-result-set-name"],
-      ).to.deep.equal({
+      expect(completedQuery.sortedResultsInfo["a-result-set-name"]).toEqual({
         resultsPath: expectedSortedResultsPath,
         sortState,
       });
 
       // delete the sort state
       await completedQuery.updateSortState(mockServer, "a-result-set-name");
-      expect(Object.values(completedQuery.sortedResultsInfo).length).to.eq(0);
+      expect(Object.values(completedQuery.sortedResultsInfo).length).toBe(0);
     });
   });
 
   describe("interpretResultsSarif", () => {
     let mockServer: CodeQLCliServer;
-    let spy: Sinon.SinonExpectation;
+    const spy = jest.fn();
     const metadata = {
       kind: "my-kind",
       id: "my-id" as string | undefined,
@@ -204,8 +187,7 @@ describe("query-results", () => {
     const sourceInfo = {};
 
     beforeEach(() => {
-      spy = sandbox.mock();
-      spy.returns({ a: "1234" });
+      spy.mockReset().mockReturnValue({ a: "1234" });
 
       mockServer = {
         interpretBqrsSarif: spy,
@@ -213,13 +195,12 @@ describe("query-results", () => {
     });
 
     afterEach(async () => {
-      sandbox.restore();
       safeDel(interpretedResultsPath);
     });
 
-    it("should interpretResultsSarif", async function () {
+    it("should interpretResultsSarif", async () => {
       // up to 2 minutes per test
-      this.timeout(2 * 60 * 1000);
+      jest.setTimeout(2 * 60 * 1000);
 
       const results = await interpretResultsSarif(
         mockServer,
@@ -231,8 +212,8 @@ describe("query-results", () => {
         sourceInfo as SourceInfo,
       );
 
-      expect(results).to.deep.eq({ a: "1234", t: "SarifInterpretationData" });
-      expect(spy).to.have.been.calledWith(
+      expect(results).toEqual({ a: "1234", t: "SarifInterpretationData" });
+      expect(spy).toBeCalledWith(
         metadata,
         resultsPath,
         interpretedResultsPath,
@@ -240,9 +221,9 @@ describe("query-results", () => {
       );
     });
 
-    it("should interpretBqrsSarif without ID", async function () {
+    it("should interpretBqrsSarif without ID", async () => {
       // up to 2 minutes per test
-      this.timeout(2 * 60 * 1000);
+      jest.setTimeout(2 * 60 * 1000);
 
       delete metadata.id;
       const results = await interpretResultsSarif(
@@ -254,8 +235,8 @@ describe("query-results", () => {
         },
         sourceInfo as SourceInfo,
       );
-      expect(results).to.deep.eq({ a: "1234", t: "SarifInterpretationData" });
-      expect(spy).to.have.been.calledWith(
+      expect(results).toEqual({ a: "1234", t: "SarifInterpretationData" });
+      expect(spy).toBeCalledWith(
         { kind: "my-kind", id: "dummy-id", scored: undefined },
         resultsPath,
         interpretedResultsPath,
@@ -263,9 +244,9 @@ describe("query-results", () => {
       );
     });
 
-    it("should use sarifParser on a valid small SARIF file", async function () {
+    it("should use sarifParser on a valid small SARIF file", async () => {
       // up to 2 minutes per test
-      this.timeout(2 * 60 * 1000);
+      jest.setTimeout(2 * 60 * 1000);
 
       fs.writeFileSync(
         interpretedResultsPath,
@@ -284,15 +265,15 @@ describe("query-results", () => {
         sourceInfo as SourceInfo,
       );
       // We do not re-interpret if we are reading from a SARIF file.
-      expect(spy).to.not.have.been.called;
+      expect(spy).not.toBeCalled();
 
-      expect(results).to.have.property("t", "SarifInterpretationData");
-      expect(results).to.have.nested.property("runs[0].results");
+      expect(results).toHaveProperty("t", "SarifInterpretationData");
+      expect(results).toHaveProperty("runs[0].results");
     });
 
-    it("should throw an error on an invalid small SARIF file", async function () {
+    it("should throw an error on an invalid small SARIF file", async () => {
       // up to 2 minutes per test
-      this.timeout(2 * 60 * 1000);
+      jest.setTimeout(2 * 60 * 1000);
 
       fs.writeFileSync(
         interpretedResultsPath,
@@ -312,17 +293,17 @@ describe("query-results", () => {
           },
           sourceInfo as SourceInfo,
         ),
-      ).to.be.rejectedWith(
+      ).rejects.toThrow(
         "Parsing output of interpretation failed: Invalid SARIF file: expecting at least one run with result.",
       );
 
       // We do not attempt to re-interpret if we are reading from a SARIF file.
-      expect(spy).to.not.have.been.called;
+      expect(spy).not.toBeCalled();
     });
 
-    it("should use sarifParser on a valid large SARIF file", async function () {
+    it("should use sarifParser on a valid large SARIF file", async () => {
       // up to 2 minutes per test
-      this.timeout(2 * 60 * 1000);
+      jest.setTimeout(2 * 60 * 1000);
 
       const validSarifStream = fs.createWriteStream(interpretedResultsPath, {
         flags: "w",
@@ -373,15 +354,15 @@ describe("query-results", () => {
         sourceInfo as SourceInfo,
       );
       // We do not re-interpret if we are reading from a SARIF file.
-      expect(spy).to.not.have.been.called;
+      expect(spy).not.toBeCalled();
 
-      expect(results).to.have.property("t", "SarifInterpretationData");
-      expect(results).to.have.nested.property("runs[0].results");
+      expect(results).toHaveProperty("t", "SarifInterpretationData");
+      expect(results).toHaveProperty("runs[0].results");
     });
 
-    it("should throw an error on an invalid large SARIF file", async function () {
+    it("should throw an error on an invalid large SARIF file", async () => {
       // up to 2 minutes per test
-      this.timeout(2 * 60 * 1000);
+      jest.setTimeout(2 * 60 * 1000);
 
       // There is a problem on Windows where the file at the prior path isn't able
       // to be deleted or written to, so we rename the path for this last test.
@@ -431,12 +412,12 @@ describe("query-results", () => {
           },
           sourceInfo as SourceInfo,
         ),
-      ).to.be.rejectedWith(
+      ).rejects.toThrow(
         "Parsing output of interpretation failed: Invalid SARIF file: expecting at least one run with result.",
       );
 
       // We do not attempt to re-interpret if we are reading from a SARIF file.
-      expect(spy).to.not.have.been.called;
+      expect(spy).not.toBeCalled();
     });
   });
 
@@ -532,9 +513,9 @@ describe("query-results", () => {
 
       // make the diffs somewhat sane by comparing each element directly
       for (let i = 0; i < allHistoryActual.length; i++) {
-        expect(allHistoryActual[i]).to.deep.eq(expectedHistory[i]);
+        expect(allHistoryActual[i]).toEqual(expectedHistory[i]);
       }
-      expect(allHistoryActual.length).to.deep.eq(expectedHistory.length);
+      expect(allHistoryActual.length).toEqual(expectedHistory.length);
     });
 
     it("should handle an invalid query history version", async () => {
@@ -550,7 +531,7 @@ describe("query-results", () => {
 
       const allHistoryActual = await slurpQueryHistory(badPath);
       // version number is invalid. Should return an empty array.
-      expect(allHistoryActual).to.deep.eq([]);
+      expect(allHistoryActual).toEqual([]);
     });
   });
 
@@ -589,7 +570,7 @@ describe("query-results", () => {
       query: query.queryEvalInfo,
       successful: didRunSuccessfully,
       message: "foo",
-      dispose: disposeSpy,
+      dispose: jest.fn(),
       result: {
         evaluationTime: 1,
         queryId: 0,

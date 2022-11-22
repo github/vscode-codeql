@@ -1,42 +1,63 @@
 import * as yaml from "js-yaml";
-import * as sinon from "sinon";
-import { expect } from "chai";
-import * as pq from "proxyquire";
+import * as fs from "fs-extra";
+
 import { KeyType } from "../../../contextual/keyType";
 import { getErrorMessage } from "../../../pure/helpers-pure";
 
-const proxyquire = pq.noPreserveCache().noCallThru();
+import * as helpers from "../../../helpers";
+import {
+  qlpackOfDatabase,
+  resolveQueries,
+} from "../../../contextual/queryResolver";
+import { CodeQLCliServer } from "../../../cli";
+import { DatabaseItem } from "../../../databases";
 
 describe("queryResolver", () => {
-  let module: Record<string, Function>;
-  let writeFileSpy: sinon.SinonSpy;
-  let getQlPackForDbschemeSpy: sinon.SinonStub;
-  let getPrimaryDbschemeSpy: sinon.SinonStub;
-  let mockCli: Record<
-    string,
-    sinon.SinonStub | Record<string, sinon.SinonStub>
-  >;
+  const writeFileSpy = jest.spyOn(fs, "writeFile");
+
+  const getQlPackForDbschemeSpy = jest.spyOn(helpers, "getQlPackForDbscheme");
+  const getPrimaryDbschemeSpy = jest.spyOn(helpers, "getPrimaryDbscheme");
+  jest.spyOn(helpers, "getOnDiskWorkspaceFolders").mockReturnValue([]);
+  jest.spyOn(helpers, "showAndLogErrorMessage").mockResolvedValue(undefined);
+
+  const mockCli = {
+    resolveQueriesInSuite: jest.fn(),
+    cliConstraints: {
+      supportsAllowLibraryPacksInResolveQueries: jest.fn(),
+    },
+  };
+
   beforeEach(() => {
-    mockCli = {
-      resolveQueriesInSuite: sinon.stub(),
-      cliConstraints: {
-        supportsAllowLibraryPacksInResolveQueries: sinon.stub().returns(true),
-      },
-    };
-    module = createModule();
+    writeFileSpy.mockReset().mockImplementation(() => Promise.resolve());
+
+    getQlPackForDbschemeSpy.mockReset().mockResolvedValue({
+      dbschemePack: "dbschemePack",
+      dbschemePackIsLibraryPack: false,
+    });
+    getPrimaryDbschemeSpy.mockReset().mockResolvedValue("primaryDbscheme");
+
+    mockCli.resolveQueriesInSuite.mockReset();
+    mockCli.cliConstraints.supportsAllowLibraryPacksInResolveQueries
+      .mockReset()
+      .mockReturnValue(true);
   });
 
   describe("resolveQueries", () => {
     it("should resolve a query", async () => {
-      mockCli.resolveQueriesInSuite.returns(["a", "b"]);
-      const result = await module.resolveQueries(
-        mockCli,
-        { dbschemePack: "my-qlpack" },
+      mockCli.resolveQueriesInSuite.mockReturnValue(["a", "b"]);
+      const result = await resolveQueries(
+        mockCli as unknown as CodeQLCliServer,
+        { dbschemePack: "my-qlpack", dbschemePackIsLibraryPack: false },
         KeyType.DefinitionQuery,
       );
-      expect(result).to.deep.equal(["a", "b"]);
-      expect(writeFileSpy.getCall(0).args[0]).to.match(/.qls$/);
-      expect(yaml.load(writeFileSpy.getCall(0).args[1])).to.deep.equal([
+      expect(result).toEqual(["a", "b"]);
+      expect(writeFileSpy).toHaveBeenNthCalledWith(
+        1,
+        expect.stringMatching(/.qls$/),
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(yaml.load(writeFileSpy.mock.calls[0][1])).toEqual([
         {
           from: "my-qlpack",
           queries: ".",
@@ -50,12 +71,12 @@ describe("queryResolver", () => {
 
     it("should resolve a query from the queries pack if this is an old CLI", async () => {
       // pretend this is an older CLI
-      (
-        mockCli.cliConstraints as any
-      ).supportsAllowLibraryPacksInResolveQueries.returns(false);
-      mockCli.resolveQueriesInSuite.returns(["a", "b"]);
-      const result = await module.resolveQueries(
-        mockCli,
+      mockCli.cliConstraints.supportsAllowLibraryPacksInResolveQueries.mockReturnValue(
+        false,
+      );
+      mockCli.resolveQueriesInSuite.mockReturnValue(["a", "b"]);
+      const result = await resolveQueries(
+        mockCli as unknown as CodeQLCliServer,
         {
           dbschemePackIsLibraryPack: true,
           dbschemePack: "my-qlpack",
@@ -63,9 +84,14 @@ describe("queryResolver", () => {
         },
         KeyType.DefinitionQuery,
       );
-      expect(result).to.deep.equal(["a", "b"]);
-      expect(writeFileSpy.getCall(0).args[0]).to.match(/.qls$/);
-      expect(yaml.load(writeFileSpy.getCall(0).args[1])).to.deep.equal([
+      expect(result).toEqual(["a", "b"]);
+      expect(writeFileSpy).toHaveBeenNthCalledWith(
+        1,
+        expect.stringMatching(/.qls$/),
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(yaml.load(writeFileSpy.mock.calls[0][1])).toEqual([
         {
           from: "my-qlpack2",
           queries: ".",
@@ -78,18 +104,18 @@ describe("queryResolver", () => {
     });
 
     it("should throw an error when there are no queries found", async () => {
-      mockCli.resolveQueriesInSuite.returns([]);
+      mockCli.resolveQueriesInSuite.mockReturnValue([]);
 
       try {
-        await module.resolveQueries(
-          mockCli,
-          { dbschemePack: "my-qlpack" },
+        await resolveQueries(
+          mockCli as unknown as CodeQLCliServer,
+          { dbschemePack: "my-qlpack", dbschemePackIsLibraryPack: false },
           KeyType.DefinitionQuery,
         );
         // should reject
-        expect(true).to.be.false;
+        expect(true).toBe(false);
       } catch (e) {
-        expect(getErrorMessage(e)).to.eq(
+        expect(getErrorMessage(e)).toBe(
           "Couldn't find any queries tagged ide-contextual-queries/local-definitions in any of the following packs: my-qlpack.",
         );
       }
@@ -98,37 +124,26 @@ describe("queryResolver", () => {
 
   describe("qlpackOfDatabase", () => {
     it("should get the qlpack of a database", async () => {
-      getQlPackForDbschemeSpy.resolves("my-qlpack");
+      getQlPackForDbschemeSpy.mockResolvedValue({
+        dbschemePack: "my-qlpack",
+        dbschemePackIsLibraryPack: false,
+      });
       const db = {
         contents: {
           datasetUri: {
             fsPath: "/path/to/database",
           },
         },
-      };
-      const result = await module.qlpackOfDatabase(mockCli, db);
-      expect(result).to.eq("my-qlpack");
-      expect(getPrimaryDbschemeSpy).to.have.been.calledWith(
-        "/path/to/database",
+      } as unknown as DatabaseItem;
+      const result = await qlpackOfDatabase(
+        mockCli as unknown as CodeQLCliServer,
+        db,
       );
+      expect(result).toEqual({
+        dbschemePack: "my-qlpack",
+        dbschemePackIsLibraryPack: false,
+      });
+      expect(getPrimaryDbschemeSpy).toBeCalledWith("/path/to/database");
     });
   });
-
-  function createModule() {
-    writeFileSpy = sinon.spy();
-    getQlPackForDbschemeSpy = sinon.stub();
-    getPrimaryDbschemeSpy = sinon.stub();
-    return proxyquire("../../../contextual/queryResolver", {
-      "fs-extra": {
-        writeFile: writeFileSpy,
-      },
-
-      "../helpers": {
-        getQlPackForDbscheme: getQlPackForDbschemeSpy,
-        getPrimaryDbscheme: getPrimaryDbschemeSpy,
-        getOnDiskWorkspaceFolders: () => ({}),
-        showAndLogErrorMessage: () => ({}),
-      },
-    });
-  }
 });

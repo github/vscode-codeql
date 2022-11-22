@@ -4,5 +4,9 @@
  */
 
 module.exports = {
-  projects: ["<rootDir>/src/view", "<rootDir>/test"],
+  projects: [
+    "<rootDir>/src/view",
+    "<rootDir>/test",
+    "<rootDir>/out/vscode-tests/no-workspace",
+  ],
 };
