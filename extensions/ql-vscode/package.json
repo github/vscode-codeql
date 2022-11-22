@@ -1272,7 +1272,7 @@
     "test": "npm-run-all -p test:*",
     "test:unit": "jest --projects test",
     "test:view": "jest --projects src/view",
-    "integration": "npm-run-all -p integration:*",
+    "integration": "npm-run-all integration:*",
     "integration:no-workspace": "jest --projects out/vscode-tests/no-workspace",
     "integration:minimal-workspace": "node ./out/vscode-tests/run-integration-tests.js minimal-workspace",
     "cli-integration": "node ./out/vscode-tests/run-integration-tests.js cli-integration",
