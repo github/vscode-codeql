@@ -3,6 +3,7 @@
  * https://jestjs.io/docs/configuration
  */
 
+/** @type {import('@jest/types').Config.InitialOptions} */
 module.exports = {
   projects: [
     "<rootDir>/src/view",

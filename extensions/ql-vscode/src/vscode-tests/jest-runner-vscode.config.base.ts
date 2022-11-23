@@ -11,7 +11,6 @@ const config: RunnerOptions = {
   launchArgs: [
     "--disable-extensions",
     "--disable-gpu",
-    "--disable-workspace-trust",
     "--user-data-dir=" + path.join(tmpDir.name, "user-data"),
   ],
   extensionDevelopmentPath: rootDir,
