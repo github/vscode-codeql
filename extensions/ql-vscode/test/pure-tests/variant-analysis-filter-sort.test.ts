@@ -6,9 +6,8 @@ import {
   filterAndSortRepositoriesWithResultsByName,
   matchesFilter,
   SortKey,
-} from "../../../pure/variant-analysis-filter-sort";
+} from "../../src/pure/variant-analysis-filter-sort";
 
-// TODO: Move this file to the "pure" tests once it has been switched to Jest
 describe(matchesFilter.name, () => {
   const repository = {
     fullName: "github/codeql",
