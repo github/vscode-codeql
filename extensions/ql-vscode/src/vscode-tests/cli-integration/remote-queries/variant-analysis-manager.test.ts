@@ -57,7 +57,7 @@ import {
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
 
-describe("Variant Analysis Manager", async () => {
+describe("Variant Analysis Manager", () => {
   const pathExistsStub = jest.spyOn(fs, "pathExists");
   const readJsonStub = jest.spyOn(fs, "readJson");
   const outputJsonStub = jest.spyOn(fs, "outputJson");
@@ -405,7 +405,7 @@ describe("Variant Analysis Manager", async () => {
     });
   });
 
-  describe("when credentials are invalid", async () => {
+  describe("when credentials are invalid", () => {
     beforeEach(async () => {
       jest
         .spyOn(Credentials, "initialize")
@@ -425,7 +425,7 @@ describe("Variant Analysis Manager", async () => {
     });
   });
 
-  describe("when credentials are valid", async () => {
+  describe("when credentials are valid", () => {
     let arrayBuffer: ArrayBuffer;
 
     const getVariantAnalysisRepoStub = jest.spyOn(
@@ -456,7 +456,7 @@ describe("Variant Analysis Manager", async () => {
       getVariantAnalysisRepoResultStub.mockReset();
     });
 
-    describe("when the artifact_url is missing", async () => {
+    describe("when the artifact_url is missing", () => {
       beforeEach(async () => {
         const dummyRepoTask = createMockVariantAnalysisRepoTask();
         delete dummyRepoTask.artifact_url;
@@ -476,7 +476,7 @@ describe("Variant Analysis Manager", async () => {
       });
     });
 
-    describe("when the artifact_url is present", async () => {
+    describe("when the artifact_url is present", () => {
       let dummyRepoTask: VariantAnalysisRepoTask;
 
       beforeEach(async () => {
@@ -486,7 +486,7 @@ describe("Variant Analysis Manager", async () => {
         getVariantAnalysisRepoResultStub.mockResolvedValue(arrayBuffer);
       });
 
-      describe("autoDownloadVariantAnalysisResult", async () => {
+      describe("autoDownloadVariantAnalysisResult", () => {
         it("should return early if variant analysis is cancelled", async () => {
           cancellationTokenSource.cancel();
 
@@ -754,7 +754,7 @@ describe("Variant Analysis Manager", async () => {
         });
       });
 
-      describe("enqueueDownload", async () => {
+      describe("enqueueDownload", () => {
         it("should pop download tasks off the queue", async () => {
           const getResultsSpy = jest.spyOn(
             variantAnalysisManager,
@@ -782,7 +782,7 @@ describe("Variant Analysis Manager", async () => {
         });
       });
 
-      describe("removeVariantAnalysis", async () => {
+      describe("removeVariantAnalysis", () => {
         const removeAnalysisResultsStub = jest.spyOn(
           variantAnalysisResultsManager,
           "removeAnalysisResults",
@@ -814,7 +814,7 @@ describe("Variant Analysis Manager", async () => {
     });
   });
 
-  describe("when rehydrating a query", async () => {
+  describe("when rehydrating a query", () => {
     let variantAnalysis: VariantAnalysis;
     const variantAnalysisRemovedSpy = jest.fn();
     const executeCommandSpy = jest.spyOn(commands, "executeCommand");
@@ -830,7 +830,7 @@ describe("Variant Analysis Manager", async () => {
       executeCommandSpy.mockReset().mockResolvedValue(undefined);
     });
 
-    describe("when variant analysis record doesn't exist", async () => {
+    describe("when variant analysis record doesn't exist", () => {
       it("should remove the variant analysis", async () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
         expect(variantAnalysisRemovedSpy).toHaveBeenCalledTimes(1);
@@ -842,7 +842,7 @@ describe("Variant Analysis Manager", async () => {
       });
     });
 
-    describe("when variant analysis record does exist", async () => {
+    describe("when variant analysis record does exist", () => {
       let variantAnalysisStorageLocation: string;
 
       beforeEach(async () => {
@@ -857,7 +857,7 @@ describe("Variant Analysis Manager", async () => {
         fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
       });
 
-      describe("when the variant analysis is not complete", async () => {
+      describe("when the variant analysis is not complete", () => {
         beforeEach(() => {
           jest
             .spyOn(VariantAnalysisModule, "isVariantAnalysisComplete")
@@ -882,7 +882,7 @@ describe("Variant Analysis Manager", async () => {
         });
       });
 
-      describe("when the variant analysis is complete", async () => {
+      describe("when the variant analysis is complete", () => {
         beforeEach(() => {
           jest
             .spyOn(VariantAnalysisModule, "isVariantAnalysisComplete")
@@ -906,7 +906,7 @@ describe("Variant Analysis Manager", async () => {
     });
   });
 
-  describe("cancelVariantAnalysis", async () => {
+  describe("cancelVariantAnalysis", () => {
     let variantAnalysis: VariantAnalysis;
     const mockCancelVariantAnalysis = jest.spyOn(
       ghActionsApiClient,
@@ -1005,7 +1005,7 @@ describe("Variant Analysis Manager", async () => {
     });
   });
 
-  describe("copyRepoListToClipboard", async () => {
+  describe("copyRepoListToClipboard", () => {
     let variantAnalysis: VariantAnalysis;
     let variantAnalysisStorageLocation: string;
 

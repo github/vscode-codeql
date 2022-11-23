@@ -85,7 +85,7 @@ describe(VariantAnalysisResultsManager.name, () => {
       });
     });
 
-    describe("when the artifact_url is missing", async () => {
+    describe("when the artifact_url is missing", () => {
       it("should not try to download the result", async () => {
         const dummyRepoTask = createMockVariantAnalysisRepositoryTask();
         delete dummyRepoTask.artifactUrl;
@@ -105,7 +105,7 @@ describe(VariantAnalysisResultsManager.name, () => {
       });
     });
 
-    describe("when the artifact_url is present", async () => {
+    describe("when the artifact_url is present", () => {
       let arrayBuffer: ArrayBuffer;
 
       const getVariantAnalysisRepoResultStub = jest.spyOn(

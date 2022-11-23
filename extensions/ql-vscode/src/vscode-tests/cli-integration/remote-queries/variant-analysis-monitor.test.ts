@@ -35,7 +35,7 @@ import { VariantAnalysisManager } from "../../../remote-queries/variant-analysis
 
 jest.setTimeout(60_000);
 
-describe("Variant Analysis Monitor", async () => {
+describe("Variant Analysis Monitor", () => {
   let extension: CodeQLExtensionInterface | Record<string, never>;
   const mockGetVariantAnalysis = jest.spyOn(ghApiClient, "getVariantAnalysis");
   let cancellationTokenSource: CancellationTokenSource;
@@ -83,7 +83,7 @@ describe("Variant Analysis Monitor", async () => {
     limitNumberOfAttemptsToMonitor();
   });
 
-  describe("when credentials are invalid", async () => {
+  describe("when credentials are invalid", () => {
     beforeEach(async () => {
       jest
         .spyOn(Credentials, "initialize")
@@ -102,7 +102,7 @@ describe("Variant Analysis Monitor", async () => {
     });
   });
 
-  describe("when credentials are valid", async () => {
+  describe("when credentials are valid", () => {
     beforeEach(async () => {
       const mockCredentials = {
         getOctokit: () =>
@@ -124,7 +124,7 @@ describe("Variant Analysis Monitor", async () => {
       expect(result).toEqual({ status: "Canceled" });
     });
 
-    describe("when the variant analysis fails", async () => {
+    describe("when the variant analysis fails", () => {
       let mockFailedApiResponse: VariantAnalysisApiResponse;
 
       beforeEach(async () => {
@@ -163,12 +163,12 @@ describe("Variant Analysis Monitor", async () => {
       });
     });
 
-    describe("when the variant analysis is in progress", async () => {
+    describe("when the variant analysis is in progress", () => {
       let mockApiResponse: VariantAnalysisApiResponse;
       let scannedRepos: ApiVariantAnalysisScannedRepository[];
       let succeededRepos: ApiVariantAnalysisScannedRepository[];
 
-      describe("when there are successfully scanned repos", async () => {
+      describe("when there are successfully scanned repos", () => {
         beforeEach(async () => {
           scannedRepos = createMockScannedRepos([
             "pending",
@@ -241,7 +241,7 @@ describe("Variant Analysis Monitor", async () => {
         });
       });
 
-      describe("when there are only in progress repos", async () => {
+      describe("when there are only in progress repos", () => {
         let scannedRepos: ApiVariantAnalysisScannedRepository[];
 
         beforeEach(async () => {
@@ -270,7 +270,7 @@ describe("Variant Analysis Monitor", async () => {
         });
       });
 
-      describe("when there are no repos to scan", async () => {
+      describe("when there are no repos to scan", () => {
         beforeEach(async () => {
           scannedRepos = [];
           mockApiResponse = createMockApiResponse("succeeded", scannedRepos);
