@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         working-directory: extensions/ql-vscode
         run: |
-          npm install
+          npm ci
         shell: bash
 
       - name: Build
@@ -87,7 +87,7 @@ jobs:
       - name: Install dependencies
         working-directory: extensions/ql-vscode
         run: |
-          npm install
+          npm ci
         shell: bash
 
       - name: Lint
@@ -121,7 +121,7 @@ jobs:
       - name: Install dependencies
         working-directory: extensions/ql-vscode
         run: |
-          npm install
+          npm ci
         shell: bash
 
       - name: Run unit tests
@@ -150,7 +150,7 @@ jobs:
       - name: Install dependencies
         working-directory: extensions/ql-vscode
         run: |
-          npm install
+          npm ci
         shell: bash
 
       - name: Build
@@ -204,7 +204,7 @@ jobs:
       - name: Install dependencies
         working-directory: extensions/ql-vscode
         run: |
-          npm install
+          npm ci
         shell: bash
 
       - name: Build
