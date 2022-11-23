@@ -71,6 +71,9 @@ beforeAll(async () => {
       );
     }
   }
+
+  // Activate the extension
+  await extensions.getExtension("GitHub.vscode-codeql")?.activate();
 });
 
 // ensure extension is cleaned up.
