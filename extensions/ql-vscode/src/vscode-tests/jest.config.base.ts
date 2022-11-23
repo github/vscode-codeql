@@ -84,7 +84,7 @@ const config: Config = {
   moduleFileExtensions: ["js", "mjs", "cjs", "jsx", "ts", "tsx", "json"],
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
-  // modulePathIgnorePatterns: [],
+  modulePathIgnorePatterns: [".vscode-test/"],
 
   // Activates notifications for test results
   // notify: false,
