@@ -2,16 +2,15 @@ import { fail } from "assert";
 import { commands, Selection, window, workspace } from "vscode";
 import * as path from "path";
 import * as assert from "assert";
-import { expect } from "chai";
 import { tmpDir } from "../../helpers";
 import * as fs from "fs-extra";
+
+jest.setTimeout(20_000);
 
 /**
  * Integration tests for queries
  */
-describe("SourceMap", function () {
-  this.timeout(20000);
-
+describe("SourceMap", () => {
   it("should jump to QL code", async () => {
     try {
       const root = workspace.workspaceFolders![0].uri.fsPath;
@@ -41,12 +40,12 @@ describe("SourceMap", function () {
       await commands.executeCommand("codeQL.gotoQL");
 
       const newEditor = window.activeTextEditor;
-      expect(newEditor).to.be.not.undefined;
+      expect(newEditor).toBeDefined();
       const newDocument = newEditor!.document;
-      expect(path.basename(newDocument.fileName)).to.equal("Namespace.qll");
+      expect(path.basename(newDocument.fileName)).toBe("Namespace.qll");
       const newSelection = newEditor!.selection;
-      expect(newSelection.start.line).to.equal(60);
-      expect(newSelection.start.character).to.equal(2);
+      expect(newSelection.start.line).toBe(60);
+      expect(newSelection.start.character).toBe(2);
     } catch (e) {
       console.error("Test Failed");
       fail(e as Error);

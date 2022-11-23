@@ -8,6 +8,7 @@ module.exports = {
   projects: [
     "<rootDir>/src/view",
     "<rootDir>/test",
+    "<rootDir>/out/vscode-tests/cli-integration",
     "<rootDir>/out/vscode-tests/no-workspace",
   ],
 };

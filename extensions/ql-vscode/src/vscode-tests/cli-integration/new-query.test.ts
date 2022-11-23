@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import * as path from "path";
 import * as tmp from "tmp";
 import { CancellationTokenSource } from "vscode-jsonrpc";
@@ -9,7 +8,7 @@ import { CellValue } from "../../pure/bqrs-cli-types";
 import { extensions, Uri } from "vscode";
 import { CodeQLExtensionInterface } from "../../extension";
 import { fail } from "assert";
-import { skipIfNoCodeQL } from "../ensureCli";
+import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../query-server/queryserver-client";
 import { logger, ProgressReporter } from "../../logging";
 import { QueryResultType } from "../../pure/new-messages";
@@ -101,19 +100,19 @@ const nullProgressReporter: ProgressReporter = {
   },
 };
 
-describe("using the new query server", function () {
-  before(function () {
-    skipIfNoCodeQL(this);
-  });
+jest.setTimeout(20_000);
 
-  // Note this does not work with arrow functions as the test case bodies:
-  // ensure they are all written with standard anonymous functions.
-  this.timeout(20000);
+describeWithCodeQL()("using the new query server", () => {
+  let testContext: any;
+
+  beforeAll(() => {
+    testContext = {};
+  });
 
   let qs: qsClient.QueryServerClient;
   let cliServer: cli.CodeQLCliServer;
   let db: string;
-  before(async () => {
+  beforeAll(async () => {
     try {
       const extension = await extensions
         .getExtension<CodeQLExtensionInterface | Record<string, never>>(
@@ -127,7 +126,7 @@ describe("using the new query server", function () {
         if (
           !(await cliServer.cliConstraints.supportsNewQueryServerForTests())
         ) {
-          this.ctx.skip();
+          testContext.ctx.skip();
         }
         qs = new QueryServerClient(
           {
@@ -194,7 +193,7 @@ describe("using the new query server", function () {
       );
     });
 
-    it(`should be able to run query ${queryName}`, async function () {
+    it(`should be able to run query ${queryName}`, async () => {
       try {
         const params: messages.RunQueryParams = {
           db,
@@ -213,7 +212,7 @@ describe("using the new query server", function () {
             /**/
           },
         );
-        expect(result.resultType).to.equal(QueryResultType.SUCCESS);
+        expect(result.resultType).toBe(QueryResultType.SUCCESS);
         await evaluationSucceeded.resolve();
       } catch (e) {
         await evaluationSucceeded.reject(e as Error);
@@ -221,7 +220,7 @@ describe("using the new query server", function () {
     });
 
     const actualResultSets: ResultSets = {};
-    it(`should be able to parse results of query ${queryName}`, async function () {
+    it(`should be able to parse results of query ${queryName}`, async () => {
       await evaluationSucceeded.done();
       const info = await cliServer.bqrsInfo(RESULTS_PATH);
 
@@ -235,16 +234,15 @@ describe("using the new query server", function () {
       await parsedResults.resolve();
     });
 
-    it(`should have correct results for query ${queryName}`, async function () {
+    it(`should have correct results for query ${queryName}`, async () => {
       await parsedResults.done();
-      expect(actualResultSets!).not.to.be.empty;
-      expect(Object.keys(actualResultSets!).sort()).to.eql(
+      expect(actualResultSets!).not.toHaveLength(0);
+      expect(Object.keys(actualResultSets!).sort()).toEqual(
         Object.keys(queryTestCase.expectedResultSets).sort(),
       );
       for (const name in queryTestCase.expectedResultSets) {
-        expect(actualResultSets![name]).to.eql(
+        expect(actualResultSets![name]).toEqual(
           queryTestCase.expectedResultSets[name],
-          `Results for query predicate ${name} do not match`,
         );
       }
     });

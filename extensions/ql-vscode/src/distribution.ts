@@ -3,7 +3,6 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
-import * as unzipper from "unzipper";
 import * as url from "url";
 import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "./config";
@@ -16,6 +15,12 @@ import {
 import { logger } from "./logging";
 import { getCodeQlCliVersion } from "./cli-version";
 import { ProgressCallback, reportStreamProgress } from "./commandRunner";
+import {
+  codeQlLauncherName,
+  deprecatedCodeQlLauncherName,
+  extractZipArchive,
+  getRequiredAssetName,
+} from "./pure/distribution";
 
 /**
  * distribution.ts
@@ -55,22 +60,6 @@ export interface DistributionProvider {
 }
 
 export class DistributionManager implements DistributionProvider {
-  /**
-   * Get the name of the codeql cli installation we prefer to install, based on our current platform.
-   */
-  public static getRequiredAssetName(): string {
-    switch (os.platform()) {
-      case "linux":
-        return "codeql-linux64.zip";
-      case "darwin":
-        return "codeql-osx64.zip";
-      case "win32":
-        return "codeql-win64.zip";
-      default:
-        return "codeql.zip";
-    }
-  }
-
   constructor(
     public readonly config: DistributionConfig,
     private readonly versionRange: semver.Range,
@@ -361,7 +350,7 @@ class ExtensionSpecificDistributionManager {
     }
 
     // Filter assets to the unique one that we require.
-    const requiredAssetName = DistributionManager.getRequiredAssetName();
+    const requiredAssetName = getRequiredAssetName();
     const assets = release.assets.filter(
       (asset) => asset.name === requiredAssetName,
     );
@@ -431,7 +420,7 @@ class ExtensionSpecificDistributionManager {
   }
 
   private async getLatestRelease(): Promise<Release> {
-    const requiredAssetName = DistributionManager.getRequiredAssetName();
+    const requiredAssetName = getRequiredAssetName();
     void logger.log(
       `Searching for latest release including ${requiredAssetName}.`,
     );
@@ -681,39 +670,6 @@ export class ReleasesApiConsumer {
 
   private static readonly _apiBase = "https://api.github.com";
   private static readonly _maxRedirects = 20;
-}
-
-export async function extractZipArchive(
-  archivePath: string,
-  outPath: string,
-): Promise<void> {
-  const archive = await unzipper.Open.file(archivePath);
-  await archive.extract({
-    concurrency: 4,
-    path: outPath,
-  });
-  // Set file permissions for extracted files
-  await Promise.all(
-    archive.files.map(async (file) => {
-      // Only change file permissions if within outPath (path.join normalises the path)
-      const extractedPath = path.join(outPath, file.path);
-      if (
-        extractedPath.indexOf(outPath) !== 0 ||
-        !(await fs.pathExists(extractedPath))
-      ) {
-        return Promise.resolve();
-      }
-      return fs.chmod(extractedPath, file.externalFileAttributes >>> 16);
-    }),
-  );
-}
-
-export function codeQlLauncherName(): string {
-  return os.platform() === "win32" ? "codeql.exe" : "codeql";
-}
-
-function deprecatedCodeQlLauncherName(): string | undefined {
-  return os.platform() === "win32" ? "codeql.cmd" : undefined;
 }
 
 function isRedirectStatusCode(statusCode: number): boolean {

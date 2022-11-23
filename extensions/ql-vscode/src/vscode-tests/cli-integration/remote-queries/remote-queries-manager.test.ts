@@ -1,6 +1,4 @@
-import { assert, expect } from "chai";
 import * as path from "path";
-import * as sinon from "sinon";
 import {
   CancellationTokenSource,
   commands,
@@ -14,7 +12,7 @@ import * as os from "os";
 import * as yaml from "js-yaml";
 
 import { QlPack } from "../../../remote-queries/run-remote-query";
-import { CliVersionConstraint, CodeQLCliServer } from "../../../cli";
+import { CodeQLCliServer } from "../../../cli";
 import { CodeQLExtensionInterface } from "../../../extension";
 import {
   setRemoteControllerRepo,
@@ -35,7 +33,10 @@ import {
   restoreWorkspaceReferences,
 } from "../global.helper";
 
-describe("Remote queries", function () {
+// up to 3 minutes per test
+jest.setTimeout(3 * 60 * 1000);
+
+describe("Remote queries", () => {
   const baseDir = path.join(
     __dirname,
     "../../../../src/vscode-tests/cli-integration",
@@ -45,26 +46,21 @@ describe("Remote queries", function () {
     "data-remote-qlpack/qlpack.yml",
   ).fsPath;
 
-  let sandbox: sinon.SinonSandbox;
-
-  // up to 3 minutes per test
-  this.timeout(3 * 60 * 1000);
-
   let cli: CodeQLCliServer;
   let cancellationTokenSource: CancellationTokenSource;
-  let progress: sinon.SinonSpy;
-  let showQuickPickSpy: sinon.SinonStub;
-  let getRepositoryFromNwoStub: sinon.SinonStub;
+  const progress = jest.fn();
+  const showQuickPickSpy = jest.spyOn(window, "showQuickPick");
+  const getRepositoryFromNwoStub = jest.spyOn(
+    ghApiClient,
+    "getRepositoryFromNwo",
+  );
   let ctx: ExtensionContext;
   let logger: any;
   let remoteQueriesManager: RemoteQueriesManager;
 
   let originalDeps: Record<string, string> | undefined;
 
-  // use `function` so we have access to `this`
-  beforeEach(async function () {
-    sandbox = sinon.createSandbox();
-
+  beforeEach(async () => {
     const extension = await extensions
       .getExtension<CodeQLExtensionInterface | Record<string, never>>(
         "GitHub.vscode-codeql",
@@ -80,13 +76,6 @@ describe("Remote queries", function () {
 
     ctx = createMockExtensionContext();
 
-    if (!(await cli.cliConstraints.supportsRemoteQueries())) {
-      console.log(
-        `Remote queries are not supported on CodeQL CLI v${CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES}. Skipping this test.`,
-      );
-      this.skip();
-    }
-
     logger = new OutputChannelLogger("test-logger");
     remoteQueriesManager = new RemoteQueriesManager(
       ctx,
@@ -97,16 +86,15 @@ describe("Remote queries", function () {
 
     cancellationTokenSource = new CancellationTokenSource();
 
-    progress = sandbox.spy();
+    progress.mockReset();
+
     // Should not have asked for a language
-    showQuickPickSpy = sandbox
-      .stub(window, "showQuickPick")
-      .onFirstCall()
-      .resolves({
+    showQuickPickSpy
+      .mockReset()
+      .mockResolvedValueOnce({
         repositories: ["github/vscode-codeql"],
       } as unknown as QuickPickItem)
-      .onSecondCall()
-      .resolves("javascript" as unknown as QuickPickItem);
+      .mockResolvedValue("javascript" as unknown as QuickPickItem);
 
     const dummyRepository: Repository = {
       id: 123,
@@ -114,9 +102,7 @@ describe("Remote queries", function () {
       full_name: "github/vscode-codeql",
       private: false,
     };
-    getRepositoryFromNwoStub = sandbox
-      .stub(ghApiClient, "getRepositoryFromNwo")
-      .resolves(dummyRepository);
+    getRepositoryFromNwoStub.mockReset().mockResolvedValue(dummyRepository);
 
     // always run in the vscode-codeql repo
     await setRemoteControllerRepo("github/vscode-codeql");
@@ -130,7 +116,7 @@ describe("Remote queries", function () {
           request: undefined,
         }),
     } as unknown as Credentials;
-    sandbox.stub(Credentials, "initialize").resolves(mockCredentials);
+    jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
 
     // Only new version support `${workspace}` in qlpack.yml
     originalDeps = await fixWorkspaceReferences(
@@ -140,25 +126,23 @@ describe("Remote queries", function () {
   });
 
   afterEach(async () => {
-    sandbox.restore();
     await restoreWorkspaceReferences(qlpackFileWithWorkspaceRefs, originalDeps);
   });
 
   describe("runRemoteQuery", () => {
-    let mockSubmitRemoteQueries: sinon.SinonStub;
-    let executeCommandSpy: sinon.SinonStub;
+    const mockSubmitRemoteQueries = jest.spyOn(
+      ghApiClient,
+      "submitRemoteQueries",
+    );
+    const executeCommandSpy = jest.spyOn(commands, "executeCommand");
 
     beforeEach(() => {
-      executeCommandSpy = sandbox
-        .stub(commands, "executeCommand")
-        .callThrough();
+      mockSubmitRemoteQueries.mockReset().mockResolvedValue({
+        workflow_run_id: 20,
+        repositories_queried: ["octodemo/hello-world-1"],
+      });
 
-      mockSubmitRemoteQueries = sandbox
-        .stub(ghApiClient, "submitRemoteQueries")
-        .resolves({
-          workflow_run_id: 20,
-          repositories_queried: ["octodemo/hello-world-1"],
-        });
+      executeCommandSpy.mockRestore();
     });
 
     it("should run a remote query that is part of a qlpack", async () => {
@@ -170,40 +154,40 @@ describe("Remote queries", function () {
         cancellationTokenSource.token,
       );
 
-      expect(mockSubmitRemoteQueries).to.have.been.calledOnce;
-      expect(executeCommandSpy).to.have.been.calledWith(
+      expect(mockSubmitRemoteQueries).toBeCalledTimes(1);
+      expect(executeCommandSpy).toBeCalledWith(
         "codeQL.monitorRemoteQuery",
-        sinon.match.string,
-        sinon.match.has("queryFilePath", fileUri.fsPath),
+        expect.any(String),
+        expect.objectContaining({ queryFilePath: fileUri.fsPath }),
       );
 
       const request: RemoteQueriesSubmission =
-        mockSubmitRemoteQueries.getCall(0).lastArg;
+        mockSubmitRemoteQueries.mock.calls[0][1];
 
       const packFS = await readBundledPack(request.queryPack);
 
       // to retrieve the list of repositories
-      expect(showQuickPickSpy).to.have.been.calledOnce;
+      expect(showQuickPickSpy).toBeCalledTimes(1);
 
-      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
+      expect(getRepositoryFromNwoStub).toBeCalledTimes(1);
 
       // check a few files that we know should exist and others that we know should not
-      expect(packFS.fileExists("in-pack.ql")).to.be.true;
-      expect(packFS.fileExists("lib.qll")).to.be.true;
-      expect(packFS.fileExists("qlpack.yml")).to.be.true;
+      expect(packFS.fileExists("in-pack.ql")).toBe(true);
+      expect(packFS.fileExists("lib.qll")).toBe(true);
+      expect(packFS.fileExists("qlpack.yml")).toBe(true);
 
       // depending on the cli version, we should have one of these files
       expect(
         packFS.fileExists("qlpack.lock.yml") ||
           packFS.fileExists("codeql-pack.lock.yml"),
-      ).to.be.true;
-      expect(packFS.fileExists("not-in-pack.ql")).to.be.false;
+      ).toBe(true);
+      expect(packFS.fileExists("not-in-pack.ql")).toBe(false);
 
       // should have generated a correct qlpack file
       const qlpackContents: any = yaml.load(
         packFS.fileContents("qlpack.yml").toString("utf-8"),
       );
-      expect(qlpackContents.name).to.equal("codeql-remote/query");
+      expect(qlpackContents.name).toBe("codeql-remote/query");
 
       verifyQlPack(
         "in-pack.ql",
@@ -218,8 +202,8 @@ describe("Remote queries", function () {
       // check dependencies.
       // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
       // later only have ['javascript-all']. ensure this test can handle either
-      expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
-      expect(packNames[0]).to.deep.equal("javascript-all");
+      expect(packNames.length).to.be.lessThan(3).toBeGreaterThan(0);
+      expect(packNames[0]).toEqual("javascript-all");
     });
 
     it("should run a remote query that is not part of a qlpack", async () => {
@@ -231,34 +215,34 @@ describe("Remote queries", function () {
         cancellationTokenSource.token,
       );
 
-      expect(mockSubmitRemoteQueries).to.have.been.calledOnce;
-      expect(executeCommandSpy).to.have.been.calledWith(
+      expect(mockSubmitRemoteQueries).toBeCalledTimes(1);
+      expect(executeCommandSpy).toBeCalledWith(
         "codeQL.monitorRemoteQuery",
-        sinon.match.string,
-        sinon.match.has("queryFilePath", fileUri.fsPath),
+        expect.any(String),
+        expect.objectContaining({ queryFilePath: fileUri.fsPath }),
       );
 
       const request: RemoteQueriesSubmission =
-        mockSubmitRemoteQueries.getCall(0).lastArg;
+        mockSubmitRemoteQueries.mock.calls[0][1];
 
       const packFS = await readBundledPack(request.queryPack);
 
       // to retrieve the list of repositories
       // and a second time to ask for the language
-      expect(showQuickPickSpy).to.have.been.calledTwice;
+      expect(showQuickPickSpy).toBeCalledTimes(2);
 
-      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
+      expect(getRepositoryFromNwoStub).toBeCalledTimes(1);
 
       // check a few files that we know should exist and others that we know should not
-      expect(packFS.fileExists("in-pack.ql")).to.be.true;
-      expect(packFS.fileExists("qlpack.yml")).to.be.true;
+      expect(packFS.fileExists("in-pack.ql")).toBe(true);
+      expect(packFS.fileExists("qlpack.yml")).toBe(true);
       // depending on the cli version, we should have one of these files
       expect(
         packFS.fileExists("qlpack.lock.yml") ||
           packFS.fileExists("codeql-pack.lock.yml"),
-      ).to.be.true;
-      expect(packFS.fileExists("lib.qll")).to.be.false;
-      expect(packFS.fileExists("not-in-pack.ql")).to.be.false;
+      ).toBe(true);
+      expect(packFS.fileExists("lib.qll")).toBe(false);
+      expect(packFS.fileExists("not-in-pack.ql")).toBe(false);
 
       // the compiled pack
       verifyQlPack(
@@ -272,11 +256,9 @@ describe("Remote queries", function () {
       const qlpackContents: any = yaml.load(
         packFS.fileContents("qlpack.yml").toString("utf-8"),
       );
-      expect(qlpackContents.name).to.equal("codeql-remote/query");
-      expect(qlpackContents.version).to.equal("0.0.0");
-      expect(qlpackContents.dependencies?.["codeql/javascript-all"]).to.equal(
-        "*",
-      );
+      expect(qlpackContents.name).toBe("codeql-remote/query");
+      expect(qlpackContents.version).toBe("0.0.0");
+      expect(qlpackContents.dependencies?.["codeql/javascript-all"]).toBe("*");
 
       const libraryDir = ".codeql/libraries/codeql";
       const packNames = packFS.directoryContents(libraryDir).sort();
@@ -284,8 +266,8 @@ describe("Remote queries", function () {
       // check dependencies.
       // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
       // later only have ['javascript-all']. ensure this test can handle either
-      expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
-      expect(packNames[0]).to.deep.equal("javascript-all");
+      expect(packNames.length).to.be.lessThan(3).toBeGreaterThan(0);
+      expect(packNames[0]).toEqual("javascript-all");
     });
 
     it("should run a remote query that is nested inside a qlpack", async () => {
@@ -297,33 +279,33 @@ describe("Remote queries", function () {
         cancellationTokenSource.token,
       );
 
-      expect(mockSubmitRemoteQueries).to.have.been.calledOnce;
-      expect(executeCommandSpy).to.have.been.calledWith(
+      expect(mockSubmitRemoteQueries).toBeCalledTimes(1);
+      expect(executeCommandSpy).toBeCalledWith(
         "codeQL.monitorRemoteQuery",
-        sinon.match.string,
-        sinon.match.has("queryFilePath", fileUri.fsPath),
+        expect.any(String),
+        expect.objectContaining({ queryFilePath: fileUri.fsPath }),
       );
 
       const request: RemoteQueriesSubmission =
-        mockSubmitRemoteQueries.getCall(0).lastArg;
+        mockSubmitRemoteQueries.mock.calls[0][1];
 
       const packFS = await readBundledPack(request.queryPack);
 
       // to retrieve the list of repositories
-      expect(showQuickPickSpy).to.have.been.calledOnce;
+      expect(showQuickPickSpy).toBeCalledTimes(1);
 
-      expect(getRepositoryFromNwoStub).to.have.been.calledOnce;
+      expect(getRepositoryFromNwoStub).toBeCalledTimes(1);
 
       // check a few files that we know should exist and others that we know should not
-      expect(packFS.fileExists("subfolder/in-pack.ql")).to.be.true;
-      expect(packFS.fileExists("qlpack.yml")).to.be.true;
+      expect(packFS.fileExists("subfolder/in-pack.ql")).toBe(true);
+      expect(packFS.fileExists("qlpack.yml")).toBe(true);
       // depending on the cli version, we should have one of these files
       expect(
         packFS.fileExists("qlpack.lock.yml") ||
           packFS.fileExists("codeql-pack.lock.yml"),
-      ).to.be.true;
-      expect(packFS.fileExists("otherfolder/lib.qll")).to.be.true;
-      expect(packFS.fileExists("not-in-pack.ql")).to.be.false;
+      ).toBe(true);
+      expect(packFS.fileExists("otherfolder/lib.qll")).toBe(true);
+      expect(packFS.fileExists("not-in-pack.ql")).toBe(false);
 
       // the compiled pack
       verifyQlPack(
@@ -337,11 +319,9 @@ describe("Remote queries", function () {
       const qlpackContents: any = yaml.load(
         packFS.fileContents("qlpack.yml").toString("utf-8"),
       );
-      expect(qlpackContents.name).to.equal("codeql-remote/query");
-      expect(qlpackContents.version).to.equal("0.0.0");
-      expect(qlpackContents.dependencies?.["codeql/javascript-all"]).to.equal(
-        "*",
-      );
+      expect(qlpackContents.name).toBe("codeql-remote/query");
+      expect(qlpackContents.version).toBe("0.0.0");
+      expect(qlpackContents.dependencies?.["codeql/javascript-all"]).toBe("*");
 
       const libraryDir = ".codeql/libraries/codeql";
       const packNames = packFS.directoryContents(libraryDir).sort();
@@ -349,8 +329,8 @@ describe("Remote queries", function () {
       // check dependencies.
       // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
       // later only have ['javascript-all']. ensure this test can handle either
-      expect(packNames.length).to.be.lessThan(3).and.greaterThan(0);
-      expect(packNames[0]).to.deep.equal("javascript-all");
+      expect(packNames.length).to.be.lessThan(3).toBeGreaterThan(0);
+      expect(packNames[0]).toEqual("javascript-all");
     });
 
     it("should cancel a run before uploading", async () => {
@@ -366,9 +346,9 @@ describe("Remote queries", function () {
 
       try {
         await promise;
-        assert.fail("should have thrown");
+        fail("should have thrown");
       } catch (e) {
-        expect(e).to.be.instanceof(UserCancellationException);
+        expect(e).toBeInstanceOf(UserCancellationException);
       }
     });
   });
@@ -389,7 +369,7 @@ describe("Remote queries", function () {
     // don't check the build metadata since it is variable
     delete (qlPack as any).buildMetadata;
 
-    expect(qlPack).to.deep.equal({
+    expect(qlPack).toEqual({
       name: "codeql-remote/query",
       version: packVersion,
       dependencies: {

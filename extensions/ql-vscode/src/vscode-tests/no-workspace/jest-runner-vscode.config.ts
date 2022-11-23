@@ -4,6 +4,7 @@ import baseConfig from "../jest-runner-vscode.config.base";
 
 const config: RunnerOptions = {
   ...baseConfig,
+  launchArgs: [...(baseConfig.launchArgs ?? []), "--disable-extensions"],
 };
 
 // We are purposefully not using export default here since that would result in an ESModule, which doesn't seem to be

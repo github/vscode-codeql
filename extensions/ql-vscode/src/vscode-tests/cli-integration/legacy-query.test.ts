@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as tmp from "tmp";
@@ -11,7 +10,7 @@ import { CellValue } from "../../pure/bqrs-cli-types";
 import { extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../extension";
 import { fail } from "assert";
-import { skipIfNoCodeQL } from "../ensureCli";
+import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../legacy-query-server/queryserver-client";
 import { logger, ProgressReporter } from "../../logging";
 
@@ -100,15 +99,9 @@ const db: messages.Dataset = {
   workingSet: "default",
 };
 
-describe("using the legacy query server", function () {
-  before(function () {
-    skipIfNoCodeQL(this);
-  });
+jest.setTimeout(20_000);
 
-  // Note this does not work with arrow functions as the test case bodies:
-  // ensure they are all written with standard anonymous functions.
-  this.timeout(20000);
-
+describeWithCodeQL()("using the legacy query server", () => {
   const nullProgressReporter: ProgressReporter = {
     report: () => {
       /** ignore */
@@ -118,7 +111,7 @@ describe("using the legacy query server", function () {
   let qs: qsClient.QueryServerClient;
   let cliServer: cli.CodeQLCliServer;
 
-  before(async () => {
+  beforeAll(async () => {
     try {
       const extension = await extensions
         .getExtension<CodeQLExtensionInterface | Record<string, never>>(
@@ -178,8 +171,8 @@ describe("using the legacy query server", function () {
       }
     });
 
-    it(`should be able to compile query ${queryName}`, async function () {
-      expect(fs.existsSync(queryTestCase.queryPath)).to.be.true;
+    it(`should be able to compile query ${queryName}`, async () => {
+      expect(fs.existsSync(queryTestCase.queryPath)).toBe(true);
       try {
         const qlProgram: messages.QlProgram = {
           libraryPath: [],
@@ -210,14 +203,14 @@ describe("using the legacy query server", function () {
             /**/
           },
         );
-        expect(result.messages!.length).to.equal(0);
+        expect(result.messages!.length).toBe(0);
         await compilationSucceeded.resolve();
       } catch (e) {
         await compilationSucceeded.reject(e as Error);
       }
     });
 
-    it(`should be able to run query ${queryName}`, async function () {
+    it(`should be able to run query ${queryName}`, async () => {
       try {
         await compilationSucceeded.done();
         const callbackId = qs.registerCallback((_res) => {
@@ -246,7 +239,7 @@ describe("using the legacy query server", function () {
     });
 
     const actualResultSets: ResultSets = {};
-    it(`should be able to parse results of query ${queryName}`, async function () {
+    it(`should be able to parse results of query ${queryName}`, async () => {
       await evaluationSucceeded.done();
       const info = await cliServer.bqrsInfo(RESULTS_PATH);
 
@@ -260,16 +253,15 @@ describe("using the legacy query server", function () {
       await parsedResults.resolve();
     });
 
-    it(`should have correct results for query ${queryName}`, async function () {
+    it(`should have correct results for query ${queryName}`, async () => {
       await parsedResults.done();
-      expect(actualResultSets!).not.to.be.empty;
-      expect(Object.keys(actualResultSets!).sort()).to.eql(
+      expect(actualResultSets!).not.toHaveLength(0);
+      expect(Object.keys(actualResultSets!).sort()).toEqual(
         Object.keys(queryTestCase.expectedResultSets).sort(),
       );
       for (const name in queryTestCase.expectedResultSets) {
-        expect(actualResultSets![name]).to.eql(
+        expect(actualResultSets![name]).toEqual(
           queryTestCase.expectedResultSets[name],
-          `Results for query predicate ${name} do not match`,
         );
       }
     });

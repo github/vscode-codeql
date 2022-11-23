@@ -9,8 +9,8 @@ export const rootDir = path.resolve(__dirname, "../..");
 const config: RunnerOptions = {
   version: "stable",
   launchArgs: [
-    "--disable-extensions",
     "--disable-gpu",
+    "--extensions-dir=" + path.join(rootDir, ".vscode-test", "extensions"),
     "--user-data-dir=" + path.join(tmpDir.name, "user-data"),
   ],
   extensionDevelopmentPath: rootDir,

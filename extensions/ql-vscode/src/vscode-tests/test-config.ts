@@ -127,3 +127,23 @@ export const testConfigHelper = async (mocha: Mocha) => {
     },
   });
 };
+
+export const jestTestConfigHelper = async () => {
+  // Read in all current settings
+  await Promise.all(TEST_SETTINGS.map((setting) => setting.initialSetup()));
+
+  beforeEach(async () => {
+    // Reset the settings to their initial values before each test
+    await Promise.all(TEST_SETTINGS.map((setting) => setting.setup()));
+  });
+
+  afterAll(async () => {
+    // Restore all settings to their default values after each test suite
+    // Only do this outside of CI since the sometimes hangs on CI.
+    if (process.env.CI !== "true") {
+      await Promise.all(
+        TEST_SETTINGS.map((setting) => setting.restoreToInitialValues()),
+      );
+    }
+  });
+};
