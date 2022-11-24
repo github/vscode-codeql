@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import EvalLogTreeBuilder from "../../eval-log-tree-builder";
 import { EvalLogData } from "../../pure/log-summary-parser";
 
@@ -60,7 +59,7 @@ describe("EvalLogTreeBuilder", () => {
     const roots = await builder.getRoots();
 
     // Force children, parent to be undefined for ease of testing.
-    expect(roots.map((r) => ({ ...r, children: undefined }))).to.deep.eq(
+    expect(roots.map((r) => ({ ...r, children: undefined }))).toEqual(
       expectedRoots,
     );
 
@@ -70,7 +69,7 @@ describe("EvalLogTreeBuilder", () => {
         children: undefined,
         parent: undefined,
       })),
-    ).to.deep.eq(expectedPredicate);
+    ).toEqual(expectedPredicate);
 
     expect(
       roots[0].children[0].children.map((ra) => ({
@@ -78,7 +77,7 @@ describe("EvalLogTreeBuilder", () => {
         children: undefined,
         parent: undefined,
       })),
-    ).to.deep.eq(expectedRA);
+    ).toEqual(expectedRA);
 
     // Pipeline steps' children should be empty so do not force undefined children here.
     expect(
@@ -86,7 +85,7 @@ describe("EvalLogTreeBuilder", () => {
         ...step,
         parent: undefined,
       })),
-    ).to.deep.eq(expectedPipelineSteps);
+    ).toEqual(expectedPipelineSteps);
   });
 
   it("should build the tree with descriptive message when no data exists", async () => {
@@ -107,12 +106,12 @@ describe("EvalLogTreeBuilder", () => {
     const builder = new EvalLogTreeBuilder("test-query-cached.ql", []);
     const roots = await builder.getRoots();
 
-    expect(roots.map((r) => ({ ...r, children: undefined }))).to.deep.eq(
+    expect(roots.map((r) => ({ ...r, children: undefined }))).toEqual(
       expectedRoots,
     );
 
     expect(
       roots[0].children.map((noPreds) => ({ ...noPreds, parent: undefined })),
-    ).to.deep.eq(expectedNoPredicates);
+    ).toEqual(expectedNoPredicates);
   });
 });

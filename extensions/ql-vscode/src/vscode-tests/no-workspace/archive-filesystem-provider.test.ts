@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import * as path from "path";
 
 import {
@@ -22,7 +21,7 @@ describe("archive-filesystem-provider", () => {
       pathWithinSourceArchive: "/aFileName.txt",
     });
     const data = await archiveProvider.readFile(uri);
-    expect(data.length).to.equal(0);
+    expect(data.length).toBe(0);
   });
 
   it("read non-empty file correctly", async () => {
@@ -35,7 +34,7 @@ describe("archive-filesystem-provider", () => {
       pathWithinSourceArchive: "folder1/textFile.txt",
     });
     const data = await archiveProvider.readFile(uri);
-    expect(Buffer.from(data).toString("utf8")).to.be.equal("I am a text\n");
+    expect(Buffer.from(data).toString("utf8")).toBe("I am a text\n");
   });
 
   it("read a directory", async () => {
@@ -48,7 +47,7 @@ describe("archive-filesystem-provider", () => {
       pathWithinSourceArchive: "folder1",
     });
     const files = await archiveProvider.readDirectory(uri);
-    expect(files).to.be.deep.equal([
+    expect(files).toEqual([
       ["folder2", FileType.Directory],
       ["textFile.txt", FileType.File],
       ["textFile2.txt", FileType.File],
@@ -68,7 +67,7 @@ describe("archive-filesystem-provider", () => {
       await archiveProvider.readDirectory(uri);
       throw new Error("Failed");
     } catch (e) {
-      expect(e).to.be.instanceOf(FileSystemError);
+      expect(e).toBeInstanceOf(FileSystemError);
     }
   });
 
@@ -85,7 +84,7 @@ describe("archive-filesystem-provider", () => {
       await archiveProvider.readFile(uri);
       throw new Error("Failed");
     } catch (e) {
-      expect(e).to.be.instanceOf(FileSystemError);
+      expect(e).toBeInstanceOf(FileSystemError);
     }
   });
 
@@ -102,7 +101,7 @@ describe("archive-filesystem-provider", () => {
       await archiveProvider.readDirectory(uri);
       throw new Error("Failed");
     } catch (e) {
-      expect(e).to.be.instanceOf(FileSystemError);
+      expect(e).toBeInstanceOf(FileSystemError);
     }
   });
 
@@ -119,7 +118,7 @@ describe("archive-filesystem-provider", () => {
       await archiveProvider.readFile(uri);
       throw new Error("Failed");
     } catch (e) {
-      expect(e).to.be.instanceOf(FileSystemError);
+      expect(e).toBeInstanceOf(FileSystemError);
     }
   });
 
@@ -133,11 +132,11 @@ describe("archive-filesystem-provider", () => {
       pathWithinSourceArchive: "folder1/folder2",
     });
     const files = await archiveProvider.readDirectory(uri);
-    expect(files).to.be.deep.equal([["textFile3.txt", FileType.File]]);
+    expect(files).toEqual([["textFile3.txt", FileType.File]]);
   });
 });
 
-describe("source archive uri encoding", function () {
+describe("source archive uri encoding", () => {
   const testCases: { name: string; input: ZipFileReference }[] = [
     {
       name: "mixed case and unicode",
@@ -169,11 +168,11 @@ describe("source archive uri encoding", function () {
     },
   ];
   for (const testCase of testCases) {
-    it(`should work round trip with ${testCase.name}`, function () {
+    it(`should work round trip with ${testCase.name}`, () => {
       const output = decodeSourceArchiveUri(
         encodeSourceArchiveUri(testCase.input),
       );
-      expect(output).to.eql(testCase.input);
+      expect(output).toEqual(testCase.input);
     });
   }
 
@@ -182,7 +181,7 @@ describe("source archive uri encoding", function () {
       pathWithinSourceArchive: "",
       sourceArchiveZipPath: "a/b/c",
     });
-    expect(decodeSourceArchiveUri(uri)).to.deep.eq({
+    expect(decodeSourceArchiveUri(uri)).toEqual({
       pathWithinSourceArchive: "/",
       sourceArchiveZipPath: "a/b/c",
     });
@@ -191,10 +190,10 @@ describe("source archive uri encoding", function () {
   it("should encode a uri at the root of the archive", () => {
     const path = "/a/b/c/src.zip";
     const uri = encodeArchiveBasePath(path);
-    expect(uri.path).to.eq(path);
-    expect(decodeSourceArchiveUri(uri).pathWithinSourceArchive).to.eq("/");
-    expect(decodeSourceArchiveUri(uri).sourceArchiveZipPath).to.eq(path);
-    expect(uri.authority).to.eq("0-14");
+    expect(uri.path).toBe(path);
+    expect(decodeSourceArchiveUri(uri).pathWithinSourceArchive).toBe("/");
+    expect(decodeSourceArchiveUri(uri).sourceArchiveZipPath).toBe(path);
+    expect(uri.authority).toBe("0-14");
   });
 
   it("should handle malformed uri with no authority", () => {
@@ -202,8 +201,8 @@ describe("source archive uri encoding", function () {
     const uri = Uri.parse("file:/a/b/c/src.zip").with({
       scheme: zipArchiveScheme,
     });
-    expect(uri.authority).to.eq("");
-    expect(decodeSourceArchiveUri(uri)).to.deep.eq({
+    expect(uri.authority).toBe("");
+    expect(decodeSourceArchiveUri(uri)).toEqual({
       sourceArchiveZipPath: "/a/b/c/src.zip",
       pathWithinSourceArchive: "/",
     });

@@ -1,6 +1,3 @@
-import { fail } from "assert";
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { Credentials } from "../../../../authentication";
 import {
   cancelRemoteQuery,
@@ -11,46 +8,39 @@ import { RemoteQuery } from "../../../../remote-queries/remote-query";
 import { createMockVariantAnalysis } from "../../../factories/remote-queries/shared/variant-analysis";
 import { VariantAnalysis } from "../../../../remote-queries/shared/variant-analysis";
 
+jest.setTimeout(10000);
+
 describe("gh-actions-api-client mock responses", () => {
-  let sandbox: sinon.SinonSandbox;
-  let mockCredentials: Credentials;
-  let mockResponse: sinon.SinonStub<any, Promise<{ status: number }>>;
-
-  beforeEach(() => {
-    sandbox = sinon.createSandbox();
-    mockCredentials = {
-      getOctokit: () =>
-        Promise.resolve({
-          request: mockResponse,
-        }),
-    } as unknown as Credentials;
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
+  const mockRequest = jest.fn();
+  const mockCredentials = {
+    getOctokit: () =>
+      Promise.resolve({
+        request: mockRequest,
+      }),
+  } as unknown as Credentials;
 
   describe("cancelRemoteQuery", () => {
     it("should cancel a remote query", async () => {
-      mockResponse = sinon.stub().resolves({ status: 202 });
+      mockRequest.mockReturnValue({ status: 202 });
       await cancelRemoteQuery(mockCredentials, createMockRemoteQuery());
 
-      expect(mockResponse.calledOnce).to.be.true;
-      expect(mockResponse.firstCall.args[0]).to.equal(
+      expect(mockRequest).toHaveBeenCalledTimes(1);
+      expect(mockRequest).toHaveBeenCalledWith(
         "POST /repos/github/codeql/actions/runs/123/cancel",
       );
     });
 
     it("should fail to cancel a remote query", async () => {
-      mockResponse = sinon
-        .stub()
-        .resolves({ status: 409, data: { message: "Uh oh!" } });
+      mockRequest.mockResolvedValue({
+        status: 409,
+        data: { message: "Uh oh!" },
+      });
 
       await expect(
         cancelRemoteQuery(mockCredentials, createMockRemoteQuery()),
-      ).to.be.rejectedWith(/Error cancelling variant analysis: 409 Uh oh!/);
-      expect(mockResponse.calledOnce).to.be.true;
-      expect(mockResponse.firstCall.args[0]).to.equal(
+      ).rejects.toThrow(/Error cancelling variant analysis: 409 Uh oh!/);
+      expect(mockRequest).toHaveBeenCalledTimes(1);
+      expect(mockRequest).toHaveBeenCalledWith(
         "POST /repos/github/codeql/actions/runs/123/cancel",
       );
     });
@@ -68,39 +58,38 @@ describe("gh-actions-api-client mock responses", () => {
 
   describe("cancelVariantAnalysis", () => {
     let variantAnalysis: VariantAnalysis;
-    before(() => {
+    beforeAll(() => {
       variantAnalysis = createMockVariantAnalysis({});
     });
 
     it("should cancel a variant analysis", async () => {
-      mockResponse = sinon.stub().resolves({ status: 202 });
+      mockRequest.mockResolvedValue({ status: 202 });
       await cancelVariantAnalysis(mockCredentials, variantAnalysis);
 
-      expect(mockResponse.calledOnce).to.be.true;
-      expect(mockResponse.firstCall.args[0]).to.equal(
+      expect(mockRequest).toHaveBeenCalledTimes(1);
+      expect(mockRequest).toHaveBeenCalledWith(
         `POST /repos/${variantAnalysis.controllerRepo.fullName}/actions/runs/${variantAnalysis.actionsWorkflowRunId}/cancel`,
       );
     });
 
     it("should fail to cancel a variant analysis", async () => {
-      mockResponse = sinon
-        .stub()
-        .resolves({ status: 409, data: { message: "Uh oh!" } });
+      mockRequest.mockResolvedValue({
+        status: 409,
+        data: { message: "Uh oh!" },
+      });
 
       await expect(
         cancelVariantAnalysis(mockCredentials, variantAnalysis),
-      ).to.be.rejectedWith(/Error cancelling variant analysis: 409 Uh oh!/);
-      expect(mockResponse.calledOnce).to.be.true;
-      expect(mockResponse.firstCall.args[0]).to.equal(
+      ).rejects.toThrow(/Error cancelling variant analysis: 409 Uh oh!/);
+      expect(mockRequest).toHaveBeenCalledTimes(1);
+      expect(mockRequest).toHaveBeenCalledWith(
         `POST /repos/${variantAnalysis.controllerRepo.fullName}/actions/runs/${variantAnalysis.actionsWorkflowRunId}/cancel`,
       );
     });
   });
 });
 
-describe("gh-actions-api-client real responses", function () {
-  this.timeout(10000);
-
+describe("gh-actions-api-client real responses", () => {
   it("should get the stargazers for repos", async () => {
     if (skip()) {
       return;
@@ -123,7 +112,7 @@ describe("gh-actions-api-client real responses", function () {
     );
 
     const stargazersKeys = Object.keys(stargazers).sort();
-    expect(stargazersKeys).to.deep.eq([
+    expect(stargazersKeys).toEqual([
       "angular/angular",
       "github/codeql",
       "github/vscode-codeql",
@@ -134,7 +123,7 @@ describe("gh-actions-api-client real responses", function () {
   function skip() {
     if (!process.env.VSCODE_CODEQL_GITHUB_TOKEN) {
       if (process.env.CI) {
-        fail(
+        throw new Error(
           "The VSCODE_CODEQL_GITHUB_TOKEN must be set to a valid GITHUB token on CI",
         );
       } else {

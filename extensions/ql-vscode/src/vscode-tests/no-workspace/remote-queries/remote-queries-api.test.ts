@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import * as os from "os";
 import { parseResponse } from "../../../remote-queries/remote-queries-api";
 import { Repository } from "../../../remote-queries/shared/repository";
@@ -16,10 +15,10 @@ describe("parseResponse", () => {
       repositories_queried: ["a/b", "c/d"],
     });
 
-    expect(result.popupMessage).to.equal(
+    expect(result.popupMessage).toBe(
       "Successfully scheduled runs on 2 repositories. [Click here to see the progress](https://github.com/org/name/actions/runs/123).",
     );
-    expect(result.logMessage).to.equal(
+    expect(result.logMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. See https://github.com/org/name/actions/runs/123.",
         "",
@@ -38,14 +37,14 @@ describe("parseResponse", () => {
       },
     });
 
-    expect(result.popupMessage).to.equal(
+    expect(result.popupMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. [Click here to see the progress](https://github.com/org/name/actions/runs/123).",
         "",
         "Some repositories could not be scheduled. See extension log for details.",
       ].join(os.EOL),
     );
-    expect(result.logMessage).to.equal(
+    expect(result.logMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. See https://github.com/org/name/actions/runs/123.",
         "",
@@ -69,14 +68,14 @@ describe("parseResponse", () => {
       },
     });
 
-    expect(result.popupMessage).to.equal(
+    expect(result.popupMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. [Click here to see the progress](https://github.com/org/name/actions/runs/123).",
         "",
         "Some repositories could not be scheduled. See extension log for details.",
       ].join(os.EOL),
     );
-    expect(result.logMessage).to.equal(
+    expect(result.logMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. See https://github.com/org/name/actions/runs/123.",
         "",
@@ -101,14 +100,14 @@ describe("parseResponse", () => {
       },
     });
 
-    expect(result.popupMessage).to.equal(
+    expect(result.popupMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. [Click here to see the progress](https://github.com/org/name/actions/runs/123).",
         "",
         "Some repositories could not be scheduled. See extension log for details.",
       ].join(os.EOL),
     );
-    expect(result.logMessage).to.equal(
+    expect(result.logMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. See https://github.com/org/name/actions/runs/123.",
         "",
@@ -134,14 +133,14 @@ describe("parseResponse", () => {
       },
     });
 
-    expect(result.popupMessage).to.equal(
+    expect(result.popupMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. [Click here to see the progress](https://github.com/org/name/actions/runs/123).",
         "",
         "Some repositories could not be scheduled. See extension log for details.",
       ].join(os.EOL),
     );
-    expect(result.logMessage).to.equal(
+    expect(result.logMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. See https://github.com/org/name/actions/runs/123.",
         "",
@@ -166,14 +165,14 @@ describe("parseResponse", () => {
       },
     });
 
-    expect(result.popupMessage).to.equal(
+    expect(result.popupMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. [Click here to see the progress](https://github.com/org/name/actions/runs/123).",
         "",
         "Some repositories could not be scheduled. See extension log for details.",
       ].join(os.EOL),
     );
-    expect(result.logMessage).to.equal(
+    expect(result.logMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. See https://github.com/org/name/actions/runs/123.",
         "",
@@ -198,14 +197,14 @@ describe("parseResponse", () => {
       },
     });
 
-    expect(result.popupMessage).to.equal(
+    expect(result.popupMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. [Click here to see the progress](https://github.com/org/name/actions/runs/123).",
         "",
         "Some repositories could not be scheduled. See extension log for details.",
       ].join(os.EOL),
     );
-    expect(result.logMessage).to.equal(
+    expect(result.logMessage).toBe(
       [
         "Successfully scheduled runs on 2 repositories. See https://github.com/org/name/actions/runs/123.",
         "",
@@ -237,14 +236,14 @@ describe("parseResponse", () => {
       },
     });
 
-    expect(result.popupMessage).to.equal(
+    expect(result.popupMessage).toBe(
       [
         "Successfully scheduled runs on 1 repository. [Click here to see the progress](https://github.com/org/name/actions/runs/123).",
         "",
         "Some repositories could not be scheduled. See extension log for details.",
       ].join(os.EOL),
     );
-    expect(result.logMessage).to.equal(
+    expect(result.logMessage).toBe(
       [
         "Successfully scheduled runs on 1 repository. See https://github.com/org/name/actions/runs/123.",
         "",

@@ -1,7 +1,5 @@
-import * as sinon from "sinon";
 import * as fs from "fs-extra";
 import { Uri, WorkspaceFolder } from "vscode";
-import { expect } from "chai";
 
 import { QLTestAdapter } from "../../test-adapter";
 import { CodeQLCliServer } from "../../cli";
@@ -17,14 +15,13 @@ describe("test-adapter", () => {
   let fakeDatabaseManager: DatabaseManager;
   let currentDatabaseItem: DatabaseItem | undefined;
   let databaseItems: DatabaseItem[] = [];
-  let openDatabaseSpy: sinon.SinonStub;
-  let removeDatabaseItemSpy: sinon.SinonStub;
-  let renameDatabaseItemSpy: sinon.SinonStub;
-  let setCurrentDatabaseItemSpy: sinon.SinonStub;
-  let runTestsSpy: sinon.SinonStub;
-  let resolveTestsSpy: sinon.SinonStub;
-  let resolveQlpacksSpy: sinon.SinonStub;
-  let sandox: sinon.SinonSandbox;
+  const openDatabaseSpy = jest.fn();
+  const removeDatabaseItemSpy = jest.fn();
+  const renameDatabaseItemSpy = jest.fn();
+  const setCurrentDatabaseItemSpy = jest.fn();
+  const runTestsSpy = jest.fn();
+  const resolveTestsSpy = jest.fn();
+  const resolveQlpacksSpy = jest.fn();
 
   const preTestDatabaseItem = new DatabaseItemImpl(
     Uri.file("/path/to/test/dir/dir.testproj"),
@@ -44,27 +41,28 @@ describe("test-adapter", () => {
   );
 
   beforeEach(() => {
-    sandox = sinon.createSandbox();
     mockRunTests();
-    openDatabaseSpy = sandox.stub().resolves(postTestDatabaseItem);
-    removeDatabaseItemSpy = sandox.stub().resolves();
-    renameDatabaseItemSpy = sandox.stub().resolves();
-    setCurrentDatabaseItemSpy = sandox.stub().resolves();
-    resolveQlpacksSpy = sandox.stub().resolves({});
-    resolveTestsSpy = sandox.stub().resolves([]);
+    openDatabaseSpy.mockResolvedValue(postTestDatabaseItem);
+    removeDatabaseItemSpy.mockResolvedValue(undefined);
+    renameDatabaseItemSpy.mockResolvedValue(undefined);
+    setCurrentDatabaseItemSpy.mockResolvedValue(undefined);
+    resolveQlpacksSpy.mockResolvedValue({});
+    resolveTestsSpy.mockResolvedValue([]);
     fakeDatabaseManager = {
-      currentDatabaseItem: undefined,
-      databaseItems: undefined,
       openDatabase: openDatabaseSpy,
       removeDatabaseItem: removeDatabaseItemSpy,
       renameDatabaseItem: renameDatabaseItemSpy,
       setCurrentDatabaseItem: setCurrentDatabaseItemSpy,
     } as unknown as DatabaseManager;
-    sandox
-      .stub(fakeDatabaseManager, "currentDatabaseItem")
-      .get(() => currentDatabaseItem);
-    sandox.stub(fakeDatabaseManager, "databaseItems").get(() => databaseItems);
-    sandox.stub(preTestDatabaseItem, "isAffectedByTest").resolves(true);
+    Object.defineProperty(fakeDatabaseManager, "currentDatabaseItem", {
+      get: () => currentDatabaseItem,
+    });
+    Object.defineProperty(fakeDatabaseManager, "databaseItems", {
+      get: () => databaseItems,
+    });
+
+    jest.spyOn(preTestDatabaseItem, "isAffectedByTest").mockResolvedValue(true);
+
     adapter = new QLTestAdapter(
       {
         name: "ABC",
@@ -79,12 +77,8 @@ describe("test-adapter", () => {
     );
   });
 
-  afterEach(() => {
-    sandox.restore();
-  });
-
   it("should run some tests", async () => {
-    const listenerSpy = sandox.spy();
+    const listenerSpy = jest.fn();
     adapter.testStates(listenerSpy);
     const testsPath = Uri.parse("file:/ab/c").fsPath;
     const dPath = Uri.parse("file:/ab/c/d.ql").fsPath;
@@ -93,72 +87,78 @@ describe("test-adapter", () => {
 
     await adapter.run([testsPath]);
 
-    expect(listenerSpy.getCall(0).args).to.deep.eq([
-      { type: "started", tests: [testsPath] },
-    ]);
-    expect(listenerSpy.getCall(1).args).to.deep.eq([
-      {
-        type: "test",
-        state: "passed",
-        test: dPath,
-        message: undefined,
-        decorations: [],
-      },
-    ]);
-    expect(listenerSpy.getCall(2).args).to.deep.eq([
-      {
-        type: "test",
-        state: "errored",
-        test: gPath,
-        message: `\ncompilation error: ${gPath}\nERROR: abc\n`,
-        decorations: [{ line: 1, message: "abc" }],
-      },
-    ]);
-    expect(listenerSpy.getCall(3).args).to.deep.eq([
-      {
-        type: "test",
-        state: "failed",
-        test: hPath,
-        message: `\nfailed: ${hPath}\njkh\ntuv\n`,
-        decorations: [],
-      },
-    ]);
-    expect(listenerSpy.getCall(4).args).to.deep.eq([{ type: "finished" }]);
-    expect(listenerSpy).to.have.callCount(5);
+    expect(listenerSpy).toBeCalledTimes(5);
+
+    expect(listenerSpy).toHaveBeenNthCalledWith(1, {
+      type: "started",
+      tests: [testsPath],
+    });
+    expect(listenerSpy).toHaveBeenNthCalledWith(2, {
+      type: "test",
+      state: "passed",
+      test: dPath,
+      message: undefined,
+      decorations: [],
+    });
+    expect(listenerSpy).toHaveBeenNthCalledWith(3, {
+      type: "test",
+      state: "errored",
+      test: gPath,
+      message: `\ncompilation error: ${gPath}\nERROR: abc\n`,
+      decorations: [{ line: 1, message: "abc" }],
+    });
+    expect(listenerSpy).toHaveBeenNthCalledWith(4, {
+      type: "test",
+      state: "failed",
+      test: hPath,
+      message: `\nfailed: ${hPath}\njkh\ntuv\n`,
+      decorations: [],
+    });
+    expect(listenerSpy).toHaveBeenNthCalledWith(5, { type: "finished" });
   });
 
   it("should reregister testproj databases around test run", async () => {
-    sandox.stub(fs, "access").resolves();
+    jest.spyOn(fs, "access").mockResolvedValue(undefined);
+
     currentDatabaseItem = preTestDatabaseItem;
     databaseItems = [preTestDatabaseItem];
     await adapter.run(["/path/to/test/dir"]);
 
-    removeDatabaseItemSpy.getCall(0).calledBefore(runTestsSpy.getCall(0));
-    openDatabaseSpy.getCall(0).calledAfter(runTestsSpy.getCall(0));
-    renameDatabaseItemSpy.getCall(0).calledAfter(openDatabaseSpy.getCall(0));
-    setCurrentDatabaseItemSpy
-      .getCall(0)
-      .calledAfter(openDatabaseSpy.getCall(0));
+    expect(removeDatabaseItemSpy.mock.invocationCallOrder[0]).toBeLessThan(
+      runTestsSpy.mock.invocationCallOrder[0],
+    );
+    expect(openDatabaseSpy.mock.invocationCallOrder[0]).toBeGreaterThan(
+      runTestsSpy.mock.invocationCallOrder[0],
+    );
+    expect(renameDatabaseItemSpy.mock.invocationCallOrder[0]).toBeGreaterThan(
+      openDatabaseSpy.mock.invocationCallOrder[0],
+    );
+    expect(
+      setCurrentDatabaseItemSpy.mock.invocationCallOrder[0],
+    ).toBeGreaterThan(openDatabaseSpy.mock.invocationCallOrder[0]);
 
-    sinon.assert.calledOnceWithExactly(
-      removeDatabaseItemSpy,
-      sinon.match.any,
-      sinon.match.any,
+    expect(removeDatabaseItemSpy).toBeCalledTimes(1);
+    expect(removeDatabaseItemSpy).toBeCalledWith(
+      expect.anything(),
+      expect.anything(),
       preTestDatabaseItem,
     );
-    sinon.assert.calledOnceWithExactly(
-      openDatabaseSpy,
-      sinon.match.any,
-      sinon.match.any,
+
+    expect(openDatabaseSpy).toBeCalledTimes(1);
+    expect(openDatabaseSpy).toBeCalledWith(
+      expect.anything(),
+      expect.anything(),
       preTestDatabaseItem.databaseUri,
     );
-    sinon.assert.calledOnceWithExactly(
-      renameDatabaseItemSpy,
+
+    expect(renameDatabaseItemSpy).toBeCalledTimes(1);
+    expect(renameDatabaseItemSpy).toBeCalledWith(
       postTestDatabaseItem,
       preTestDatabaseItem.name,
     );
-    sinon.assert.calledOnceWithExactly(
-      setCurrentDatabaseItemSpy,
+
+    expect(setCurrentDatabaseItemSpy).toBeCalledTimes(1);
+    expect(setCurrentDatabaseItemSpy).toBeCalledWith(
       postTestDatabaseItem,
       true,
     );
@@ -167,8 +167,7 @@ describe("test-adapter", () => {
   function mockRunTests() {
     // runTests is an async generator function. This is not directly supported in sinon
     // However, we can pretend the same thing by just returning an async array.
-    runTestsSpy = sandox.stub();
-    runTestsSpy.returns(
+    runTestsSpy.mockReturnValue(
       (async function* () {
         yield Promise.resolve({
           test: Uri.parse("file:/ab/c/d.ql").fsPath,
