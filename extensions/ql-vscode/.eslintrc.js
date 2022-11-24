@@ -5,16 +5,22 @@ module.exports = {
     sourceType: "module",
     project: ["tsconfig.json", "./src/**/tsconfig.json", "./gulpfile.ts/tsconfig.json", "./scripts/tsconfig.json", "./.storybook/tsconfig.json"],
   },
-  plugins: ["@typescript-eslint"],
+  plugins: [
+    "github",
+    "@typescript-eslint"
+  ],
   env: {
     node: true,
     es6: true,
   },
   extends: [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
+    "plugin:github/react",
+    "plugin:github/recommended",
+    "plugin:github/typescript",
     "plugin:jest-dom/recommended",
-    "plugin:prettier/recommended"
+    "plugin:prettier/recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
   rules: {
     "@typescript-eslint/no-use-before-define": 0,
