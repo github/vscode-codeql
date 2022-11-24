@@ -27,20 +27,16 @@ describe(VariantAnalysisResultsManager.name, () => {
 
     variantAnalysisId = faker.datatype.number();
 
-    try {
-      const extension = await extensions
-        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-          "GitHub.vscode-codeql",
-        )!
-        .activate();
-      cli = extension.cliServer;
-      variantAnalysisResultsManager = new VariantAnalysisResultsManager(
-        cli,
-        logger,
-      );
-    } catch (e) {
-      fail(e as Error);
-    }
+    const extension = await extensions
+      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+        "GitHub.vscode-codeql",
+      )!
+      .activate();
+    cli = extension.cliServer;
+    variantAnalysisResultsManager = new VariantAnalysisResultsManager(
+      cli,
+      logger,
+    );
   });
 
   describe("download", () => {
@@ -90,18 +86,14 @@ describe(VariantAnalysisResultsManager.name, () => {
         const dummyRepoTask = createMockVariantAnalysisRepositoryTask();
         delete dummyRepoTask.artifactUrl;
 
-        try {
-          await variantAnalysisResultsManager.download(
+        await expect(
+          variantAnalysisResultsManager.download(
             mockCredentials,
             variantAnalysisId,
             dummyRepoTask,
             variantAnalysisStoragePath,
-          );
-
-          fail("Expected an error to be thrown");
-        } catch (e: any) {
-          expect(e.message).toBe("Missing artifact URL");
-        }
+          ),
+        ).rejects.toThrow("Missing artifact URL");
       });
     });
 

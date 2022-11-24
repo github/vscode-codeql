@@ -60,16 +60,12 @@ describe("Variant Analysis Monitor", () => {
 
     variantAnalysis = createMockVariantAnalysis({});
 
-    try {
-      extension = await extensions
-        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-          "GitHub.vscode-codeql",
-        )!
-        .activate();
-      variantAnalysisMonitor = new VariantAnalysisMonitor(extension.ctx);
-    } catch (e) {
-      fail(e as Error);
-    }
+    extension = await extensions
+      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+        "GitHub.vscode-codeql",
+      )!
+      .activate();
+    variantAnalysisMonitor = new VariantAnalysisMonitor(extension.ctx);
 
     variantAnalysisManager = extension.variantAnalysisManager;
     mockGetDownloadResult = jest

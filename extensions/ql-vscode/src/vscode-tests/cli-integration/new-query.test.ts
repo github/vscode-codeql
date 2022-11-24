@@ -7,7 +7,6 @@ import * as cli from "../../cli";
 import { CellValue } from "../../pure/bqrs-cli-types";
 import { extensions, Uri } from "vscode";
 import { CodeQLExtensionInterface } from "../../extension";
-import { fail } from "assert";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../query-server/queryserver-client";
 import { logger, ProgressReporter } from "../../logging";
@@ -113,67 +112,61 @@ describeWithCodeQL()("using the new query server", () => {
   let cliServer: cli.CodeQLCliServer;
   let db: string;
   beforeAll(async () => {
-    try {
-      const extension = await extensions
-        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-          "GitHub.vscode-codeql",
-        )!
-        .activate();
-      if ("cliServer" in extension && "databaseManager" in extension) {
-        cliServer = extension.cliServer;
+    const extension = await extensions
+      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+        "GitHub.vscode-codeql",
+      )!
+      .activate();
+    if ("cliServer" in extension && "databaseManager" in extension) {
+      cliServer = extension.cliServer;
 
-        cliServer.quiet = true;
-        if (
-          !(await cliServer.cliConstraints.supportsNewQueryServerForTests())
-        ) {
-          testContext.ctx.skip();
-        }
-        qs = new QueryServerClient(
-          {
-            codeQlPath:
-              (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
-              "",
-            debug: false,
-            cacheSize: 0,
-            numThreads: 1,
-            saveCache: false,
-            timeoutSecs: 0,
-          },
-          cliServer,
-          {
-            contextStoragePath: tmpDir.name,
-            logger,
-          },
-          (task) =>
-            task(nullProgressReporter, new CancellationTokenSource().token),
-        );
-        await qs.startQueryServer();
-
-        // Unlike the old query sevre the new one wants a database and the empty direcrtory is not valid.
-        // Add a database, but make sure the database manager is empty first
-        await cleanDatabases(extension.databaseManager);
-        const uri = Uri.file(dbLoc);
-        const maybeDbItem = await importArchiveDatabase(
-          uri.toString(true),
-          extension.databaseManager,
-          storagePath,
-          () => {
-            /**ignore progress */
-          },
-          token,
-        );
-
-        if (!maybeDbItem) {
-          throw new Error("Could not import database");
-        }
-        db = maybeDbItem.databaseUri.fsPath;
-      } else {
-        throw new Error(
-          "Extension not initialized. Make sure cli is downloaded and installed properly.",
-        );
+      cliServer.quiet = true;
+      if (!(await cliServer.cliConstraints.supportsNewQueryServerForTests())) {
+        testContext.ctx.skip();
       }
-    } catch (e) {
-      fail(e as Error);
+      qs = new QueryServerClient(
+        {
+          codeQlPath:
+            (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
+            "",
+          debug: false,
+          cacheSize: 0,
+          numThreads: 1,
+          saveCache: false,
+          timeoutSecs: 0,
+        },
+        cliServer,
+        {
+          contextStoragePath: tmpDir.name,
+          logger,
+        },
+        (task) =>
+          task(nullProgressReporter, new CancellationTokenSource().token),
+      );
+      await qs.startQueryServer();
+
+      // Unlike the old query sevre the new one wants a database and the empty direcrtory is not valid.
+      // Add a database, but make sure the database manager is empty first
+      await cleanDatabases(extension.databaseManager);
+      const uri = Uri.file(dbLoc);
+      const maybeDbItem = await importArchiveDatabase(
+        uri.toString(true),
+        extension.databaseManager,
+        storagePath,
+        () => {
+          /**ignore progress */
+        },
+        token,
+      );
+
+      if (!maybeDbItem) {
+        throw new Error("Could not import database");
+      }
+      db = maybeDbItem.databaseUri.fsPath;
+    } else {
+      throw new Error(
+        "Extension not initialized. Make sure cli is downloaded and installed properly.",
+      );
     }
   });
 

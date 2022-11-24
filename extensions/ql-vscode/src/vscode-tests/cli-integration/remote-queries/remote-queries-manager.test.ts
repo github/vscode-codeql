@@ -344,12 +344,7 @@ describe("Remote queries", () => {
 
       cancellationTokenSource.cancel();
 
-      try {
-        await promise;
-        fail("should have thrown");
-      } catch (e) {
-        expect(e).toBeInstanceOf(UserCancellationException);
-      }
+      await expect(promise).rejects.toThrow(UserCancellationException);
     });
   });
 

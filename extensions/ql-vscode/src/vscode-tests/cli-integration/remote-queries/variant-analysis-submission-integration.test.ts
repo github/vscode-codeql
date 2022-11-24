@@ -56,15 +56,11 @@ describe("Variant Analysis Submission Integration", () => {
     executeCommandSpy.mockRestore();
     showErrorMessageSpy.mockReset().mockResolvedValue(undefined);
 
-    try {
-      await extensions
-        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-          "GitHub.vscode-codeql",
-        )!
-        .activate();
-    } catch (e) {
-      fail(e as Error);
-    }
+    await extensions
+      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+        "GitHub.vscode-codeql",
+      )!
+      .activate();
   });
 
   describe("Successful scenario", () => {

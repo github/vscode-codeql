@@ -9,7 +9,6 @@ import * as cli from "../../cli";
 import { CellValue } from "../../pure/bqrs-cli-types";
 import { extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../extension";
-import { fail } from "assert";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../legacy-query-server/queryserver-client";
 import { logger, ProgressReporter } from "../../logging";
@@ -112,43 +111,39 @@ describeWithCodeQL()("using the legacy query server", () => {
   let cliServer: cli.CodeQLCliServer;
 
   beforeAll(async () => {
-    try {
-      const extension = await extensions
-        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-          "GitHub.vscode-codeql",
-        )!
-        .activate();
-      if ("cliServer" in extension) {
-        cliServer = extension.cliServer;
-        cliServer.quiet = true;
+    const extension = await extensions
+      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+        "GitHub.vscode-codeql",
+      )!
+      .activate();
+    if ("cliServer" in extension) {
+      cliServer = extension.cliServer;
+      cliServer.quiet = true;
 
-        qs = new QueryServerClient(
-          {
-            codeQlPath:
-              (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
-              "",
-            debug: false,
-            cacheSize: 0,
-            numThreads: 1,
-            saveCache: false,
-            timeoutSecs: 0,
-          },
-          cliServer,
-          {
-            contextStoragePath: tmpDir.name,
-            logger,
-          },
-          (task) =>
-            task(nullProgressReporter, new CancellationTokenSource().token),
-        );
-        await qs.startQueryServer();
-      } else {
-        throw new Error(
-          "Extension not initialized. Make sure cli is downloaded and installed properly.",
-        );
-      }
-    } catch (e) {
-      fail(e as Error);
+      qs = new QueryServerClient(
+        {
+          codeQlPath:
+            (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
+            "",
+          debug: false,
+          cacheSize: 0,
+          numThreads: 1,
+          saveCache: false,
+          timeoutSecs: 0,
+        },
+        cliServer,
+        {
+          contextStoragePath: tmpDir.name,
+          logger,
+        },
+        (task) =>
+          task(nullProgressReporter, new CancellationTokenSource().token),
+      );
+      await qs.startQueryServer();
+    } else {
+      throw new Error(
+        "Extension not initialized. Make sure cli is downloaded and installed properly.",
+      );
     }
   });
 

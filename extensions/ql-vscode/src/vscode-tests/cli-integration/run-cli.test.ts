@@ -12,7 +12,6 @@ import {
 } from "../../helpers";
 import { resolveQueries } from "../../contextual/queryResolver";
 import { KeyType } from "../../contextual/keyType";
-import { fail } from "assert";
 
 jest.setTimeout(60_000);
 
@@ -88,31 +87,24 @@ describe("Use cli", () => {
   itWithCodeQL()(
     "should resolve printAST queries for supported languages",
     async () => {
-      try {
-        for (const lang of supportedLanguages) {
-          if (lang === "go") {
-            // The codeql-go submodule is not available in the integration tests.
-            return;
-          }
-
-          console.log(`resolving printAST queries for ${lang}`);
-          const pack = await getQlPackForDbscheme(
-            cli,
-            languageToDbScheme[lang],
-          );
-          expect(pack.dbschemePack).toEqual(expect.arrayContaining([lang]));
-          if (pack.dbschemePackIsLibraryPack) {
-            expect(pack.queryPack).toEqual(expect.arrayContaining([lang]));
-          }
-
-          const result = await resolveQueries(cli, pack, KeyType.PrintAstQuery);
-
-          // It doesn't matter what the name or path of the query is, only
-          // that we have found exactly one query.
-          expect(result.length).toBe(1);
+      for (const lang of supportedLanguages) {
+        if (lang === "go") {
+          // The codeql-go submodule is not available in the integration tests.
+          return;
         }
-      } catch (e) {
-        fail(e as Error);
+
+        console.log(`resolving printAST queries for ${lang}`);
+        const pack = await getQlPackForDbscheme(cli, languageToDbScheme[lang]);
+        expect(pack.dbschemePack).toEqual(expect.arrayContaining([lang]));
+        if (pack.dbschemePackIsLibraryPack) {
+          expect(pack.queryPack).toEqual(expect.arrayContaining([lang]));
+        }
+
+        const result = await resolveQueries(cli, pack, KeyType.PrintAstQuery);
+
+        // It doesn't matter what the name or path of the query is, only
+        // that we have found exactly one query.
+        expect(result.length).toBe(1);
       }
     },
   );

@@ -29,35 +29,27 @@ describe("Databases", () => {
   jest.spyOn(window, "showInformationMessage").mockResolvedValue(undefined);
 
   beforeEach(async () => {
-    try {
-      inputBoxStub.mockReset().mockResolvedValue(undefined);
-      progressCallback.mockReset();
+    inputBoxStub.mockReset().mockResolvedValue(undefined);
+    progressCallback.mockReset();
 
-      const extension = await extensions
-        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-          "GitHub.vscode-codeql",
-        )!
-        .activate();
-      if ("databaseManager" in extension) {
-        databaseManager = extension.databaseManager;
-      } else {
-        throw new Error(
-          "Extension not initialized. Make sure cli is downloaded and installed properly.",
-        );
-      }
-
-      await cleanDatabases(databaseManager);
-    } catch (e) {
-      fail(e as Error);
+    const extension = await extensions
+      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+        "GitHub.vscode-codeql",
+      )!
+      .activate();
+    if ("databaseManager" in extension) {
+      databaseManager = extension.databaseManager;
+    } else {
+      throw new Error(
+        "Extension not initialized. Make sure cli is downloaded and installed properly.",
+      );
     }
+
+    await cleanDatabases(databaseManager);
   });
 
   afterEach(async () => {
-    try {
-      await cleanDatabases(databaseManager);
-    } catch (e) {
-      fail(e as Error);
-    }
+    await cleanDatabases(databaseManager);
   });
 
   it("should add a database from a folder", async () => {

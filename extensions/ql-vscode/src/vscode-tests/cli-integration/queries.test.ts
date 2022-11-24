@@ -1,4 +1,3 @@
-import { fail } from "assert";
 import {
   CancellationToken,
   commands,
@@ -40,103 +39,85 @@ describeWithCodeQL()("Queries", () => {
   let qlFile: string;
 
   beforeEach(async () => {
-    try {
-      const extension = await extensions
-        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-          "GitHub.vscode-codeql",
-        )!
-        .activate();
-      if ("databaseManager" in extension) {
-        databaseManager = extension.databaseManager;
-        cli = extension.cliServer;
-        qs = extension.qs;
-        cli.quiet = true;
-        ctx = extension.ctx;
-        qlpackFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack.yml`;
-        qlpackLockFile = `${ctx.storageUri?.fsPath}/quick-queries/codeql-pack.lock.yml`;
-        oldQlpackLockFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack.lock.yml`;
-        qlFile = `${ctx.storageUri?.fsPath}/quick-queries/quick-query.ql`;
-      } else {
-        throw new Error(
-          "Extension not initialized. Make sure cli is downloaded and installed properly.",
-        );
-      }
-
-      // Ensure we are starting from a clean slate.
-      safeDel(qlFile);
-      safeDel(qlpackFile);
-
-      progress.mockReset();
-      token = {} as CancellationToken;
-
-      // Add a database, but make sure the database manager is empty first
-      await cleanDatabases(databaseManager);
-      const uri = Uri.file(dbLoc);
-      const maybeDbItem = await importArchiveDatabase(
-        uri.toString(true),
-        databaseManager,
-        storagePath,
-        progress,
-        token,
-        cli,
+    const extension = await extensions
+      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+        "GitHub.vscode-codeql",
+      )!
+      .activate();
+    if ("databaseManager" in extension) {
+      databaseManager = extension.databaseManager;
+      cli = extension.cliServer;
+      qs = extension.qs;
+      cli.quiet = true;
+      ctx = extension.ctx;
+      qlpackFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack.yml`;
+      qlpackLockFile = `${ctx.storageUri?.fsPath}/quick-queries/codeql-pack.lock.yml`;
+      oldQlpackLockFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack.lock.yml`;
+      qlFile = `${ctx.storageUri?.fsPath}/quick-queries/quick-query.ql`;
+    } else {
+      throw new Error(
+        "Extension not initialized. Make sure cli is downloaded and installed properly.",
       );
-
-      if (!maybeDbItem) {
-        throw new Error("Could not import database");
-      }
-      dbItem = maybeDbItem;
-    } catch (e) {
-      fail(e as Error);
     }
+
+    // Ensure we are starting from a clean slate.
+    safeDel(qlFile);
+    safeDel(qlpackFile);
+
+    progress.mockReset();
+    token = {} as CancellationToken;
+
+    // Add a database, but make sure the database manager is empty first
+    await cleanDatabases(databaseManager);
+    const uri = Uri.file(dbLoc);
+    const maybeDbItem = await importArchiveDatabase(
+      uri.toString(true),
+      databaseManager,
+      storagePath,
+      progress,
+      token,
+      cli,
+    );
+
+    if (!maybeDbItem) {
+      throw new Error("Could not import database");
+    }
+    dbItem = maybeDbItem;
   });
 
   afterEach(async () => {
-    try {
-      safeDel(qlpackFile);
-      safeDel(qlFile);
-      await cleanDatabases(databaseManager);
-    } catch (e) {
-      fail(e as Error);
-    }
+    safeDel(qlpackFile);
+    safeDel(qlFile);
+    await cleanDatabases(databaseManager);
   });
 
   it("should run a query", async () => {
-    try {
-      const queryPath = path.join(__dirname, "data", "simple-query.ql");
-      const result = qs.compileAndRunQueryAgainstDatabase(
-        dbItem,
-        await mockInitialQueryInfo(queryPath),
-        path.join(tmpDir.name, "mock-storage-path"),
-        progress,
-        token,
-      );
+    const queryPath = path.join(__dirname, "data", "simple-query.ql");
+    const result = qs.compileAndRunQueryAgainstDatabase(
+      dbItem,
+      await mockInitialQueryInfo(queryPath),
+      path.join(tmpDir.name, "mock-storage-path"),
+      progress,
+      token,
+    );
 
-      // just check that the query was successful
-      expect((await result).successful).toBe(true);
-    } catch (e) {
-      console.error("Test Failed");
-      fail(e as Error);
-    }
+    // just check that the query was successful
+    expect((await result).successful).toBe(true);
   });
 
   // Asserts a fix for bug https://github.com/github/vscode-codeql/issues/733
   it("should restart the database and run a query", async () => {
-    try {
-      await commands.executeCommand("codeQL.restartQueryServer");
-      const queryPath = path.join(__dirname, "data", "simple-query.ql");
-      const result = await qs.compileAndRunQueryAgainstDatabase(
-        dbItem,
-        await mockInitialQueryInfo(queryPath),
-        path.join(tmpDir.name, "mock-storage-path"),
-        progress,
-        token,
-      );
+    await commands.executeCommand("codeQL.restartQueryServer");
+    const queryPath = path.join(__dirname, "data", "simple-query.ql");
+    const result = await qs.compileAndRunQueryAgainstDatabase(
+      dbItem,
+      await mockInitialQueryInfo(queryPath),
+      path.join(tmpDir.name, "mock-storage-path"),
+      progress,
+      token,
+    );
 
-      expect(result.successful).toBe(true);
-    } catch (e) {
-      console.error("Test Failed");
-      fail(e as Error);
-    }
+    expect(result.successful).toBe(true);
   });
 
   it("should create a quick query", async () => {

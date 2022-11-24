@@ -88,26 +88,22 @@ describe("Variant Analysis Manager", () => {
       scannedRepos,
     });
 
-    try {
-      const extension = await extensions
-        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-          "GitHub.vscode-codeql",
-        )!
-        .activate();
-      cli = extension.cliServer;
-      variantAnalysisResultsManager = new VariantAnalysisResultsManager(
-        cli,
-        logger,
-      );
-      variantAnalysisManager = new VariantAnalysisManager(
-        extension.ctx,
-        cli,
-        storagePath,
-        variantAnalysisResultsManager,
-      );
-    } catch (e) {
-      fail(e as Error);
-    }
+    const extension = await extensions
+      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+        "GitHub.vscode-codeql",
+      )!
+      .activate();
+    cli = extension.cliServer;
+    variantAnalysisResultsManager = new VariantAnalysisResultsManager(
+      cli,
+      logger,
+    );
+    variantAnalysisManager = new VariantAnalysisManager(
+      extension.ctx,
+      cli,
+      storagePath,
+      variantAnalysisResultsManager,
+    );
   });
 
   describe("runVariantAnalysis", () => {
@@ -260,12 +256,7 @@ describe("Variant Analysis Manager", () => {
 
       cancellationTokenSource.cancel();
 
-      try {
-        await promise;
-        fail("should have thrown");
-      } catch (e) {
-        expect(e).toBeInstanceOf(UserCancellationException);
-      }
+      await expect(promise).rejects.toThrow(UserCancellationException);
     });
   });
 
@@ -566,16 +557,13 @@ describe("Variant Analysis Manager", () => {
             new Error("Failed to download"),
           );
 
-          try {
-            await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          await expect(
+            variantAnalysisManager.autoDownloadVariantAnalysisResult(
               scannedRepos[0],
               variantAnalysis,
               cancellationTokenSource.token,
-            );
-            fail("Expected an error to be thrown");
-          } catch (e: any) {
-            // we can ignore this error, we expect this
-          }
+            ),
+          ).rejects.toThrow();
 
           expect(outputJsonStub).not.toHaveBeenCalled();
         });
@@ -585,16 +573,13 @@ describe("Variant Analysis Manager", () => {
             new Error("Failed to download"),
           );
 
-          try {
-            await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          await expect(
+            variantAnalysisManager.autoDownloadVariantAnalysisResult(
               scannedRepos[0],
               variantAnalysis,
               cancellationTokenSource.token,
-            );
-            fail("Expected an error to be thrown");
-          } catch (e) {
-            // we can ignore this error, we expect this
-          }
+            ),
+          ).rejects.toThrow();
 
           expect(outputJsonStub).not.toHaveBeenCalled();
 
@@ -630,16 +615,13 @@ describe("Variant Analysis Manager", () => {
             new Error("Failed to download"),
           );
 
-          try {
-            await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          await expect(
+            variantAnalysisManager.autoDownloadVariantAnalysisResult(
               scannedRepos[0],
               variantAnalysis,
               cancellationTokenSource.token,
-            );
-            fail("Expected an error to be thrown");
-          } catch (e) {
-            // we can ignore this error, we expect this
-          }
+            ),
+          ).rejects.toThrow();
 
           expect(outputJsonStub).not.toHaveBeenCalled();
 
