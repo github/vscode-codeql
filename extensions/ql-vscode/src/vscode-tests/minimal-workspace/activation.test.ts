@@ -8,7 +8,7 @@ declare let it: jest.It;
 describe("launching with a minimal workspace", () => {
   const ext = vscode.extensions.getExtension("GitHub.vscode-codeql");
   it("should install the extension", () => {
-    expect(ext);
+    expect(ext).toBeDefined();
   });
 
   // Note, this test will only pass in pristine workspaces. This means that when run locally and you

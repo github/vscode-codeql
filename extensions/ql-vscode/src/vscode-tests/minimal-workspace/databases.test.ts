@@ -30,21 +30,22 @@ describe("databases", () => {
 
   let databaseManager: DatabaseManager;
 
-  const updateSpy = jest.fn(() => Promise.resolve());
-  const registerSpy = jest.fn(() => Promise.resolve());
-  const deregisterSpy = jest.fn(() => Promise.resolve());
-  const supportsLanguageNameSpy = jest.fn(() => Promise.resolve(true));
-  const resolveDatabaseSpy = jest.fn(() => Promise.resolve({} as DbInfo));
+  let updateSpy: jest.Mock<Promise<void>, []>;
+  let registerSpy: jest.Mock<Promise<void>, []>;
+  let deregisterSpy: jest.Mock<Promise<void>, []>;
+  let supportsLanguageNameSpy: jest.Mock<Promise<boolean>, []>;
+  let resolveDatabaseSpy: jest.Mock<Promise<DbInfo>, []>;
 
   let dir: tmp.DirResult;
 
   beforeEach(() => {
     dir = tmp.dirSync();
 
-    updateSpy.mockReset();
-    registerSpy.mockReset();
-    deregisterSpy.mockReset();
-    supportsLanguageNameSpy.mockReset();
+    updateSpy = jest.fn(() => Promise.resolve(undefined));
+    registerSpy = jest.fn(() => Promise.resolve(undefined));
+    deregisterSpy = jest.fn(() => Promise.resolve(undefined));
+    supportsLanguageNameSpy = jest.fn(() => Promise.resolve(true));
+    resolveDatabaseSpy = jest.fn(() => Promise.resolve({} as DbInfo));
 
     databaseManager = new DatabaseManager(
       {
@@ -80,9 +81,7 @@ describe("databases", () => {
     // Unfortunately, during a test it is not possible to convert from
     // a single root workspace to multi-root, so must stub out relevant
     // functions
-    jest
-      .spyOn(workspace, "updateWorkspaceFolders")
-      .mockImplementation(() => true);
+    jest.spyOn(workspace, "updateWorkspaceFolders").mockReturnValue(true);
   });
 
   afterEach(async () => {
@@ -111,6 +110,9 @@ describe("databases", () => {
       item: undefined,
       kind: DatabaseEventKind.Add,
     });
+
+    updateSpy.mockClear();
+    onDidChangeDatabaseItem.mockClear();
 
     // now remove the item
     await databaseManager.removeDatabaseItem(
@@ -198,8 +200,9 @@ describe("databases", () => {
 
     it("should remove a database item", async () => {
       const mockDbItem = createMockDB();
-      const removeMock = jest.spyOn(fs, "remove");
-      removeMock.mockImplementation(() => Promise.resolve());
+      const removeMock = jest
+        .spyOn(fs, "remove")
+        .mockImplementation(() => Promise.resolve());
 
       // pretend that this item is the first workspace folder in the list
       jest
@@ -410,8 +413,10 @@ describe("databases", () => {
   describe("isAffectedByTest", () => {
     const directoryStats = new fs.Stats();
     const fileStats = new fs.Stats();
-    jest.spyOn(directoryStats, "isDirectory").mockReturnValue(true);
-    jest.spyOn(fileStats, "isDirectory").mockReturnValue(false);
+    beforeEach(() => {
+      jest.spyOn(directoryStats, "isDirectory").mockReturnValue(true);
+      jest.spyOn(fileStats, "isDirectory").mockReturnValue(false);
+    });
 
     it("should return true for testproj database in test directory", async () => {
       jest.spyOn(fs, "stat").mockResolvedValue(directoryStats);
@@ -502,9 +507,6 @@ describe("databases", () => {
   });
 
   describe("findSourceArchive", () => {
-    // not sure why, but some of these tests take more than two seconds to run.
-    jest.setTimeout(5000);
-
     ["src", "output/src_archive"].forEach((name) => {
       it(`should find source folder in ${name}`, async () => {
         const uri = Uri.file(path.join(dir.name, name));

@@ -7,11 +7,7 @@ import {
   QueryServerConfigListener,
 } from "../../config";
 
-jest.setTimeout(5000);
-
 describe("config listeners", () => {
-  // Because we are adding some extra waiting, need to bump the test timeouts.
-
   interface TestConfig<T> {
     clazz: new () => ConfigListener;
     settings: {
