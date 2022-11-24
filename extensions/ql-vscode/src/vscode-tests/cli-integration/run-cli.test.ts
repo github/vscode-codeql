@@ -95,9 +95,9 @@ describe("Use cli", () => {
 
         console.log(`resolving printAST queries for ${lang}`);
         const pack = await getQlPackForDbscheme(cli, languageToDbScheme[lang]);
-        expect(pack.dbschemePack).toEqual(expect.arrayContaining([lang]));
+        expect(pack.dbschemePack).toContain(lang);
         if (pack.dbschemePackIsLibraryPack) {
-          expect(pack.queryPack).toEqual(expect.arrayContaining([lang]));
+          expect(pack.queryPack).toContain(lang);
         }
 
         const result = await resolveQueries(cli, pack, KeyType.PrintAstQuery);
