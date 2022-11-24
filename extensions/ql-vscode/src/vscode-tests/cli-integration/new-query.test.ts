@@ -102,15 +102,12 @@ const nullProgressReporter: ProgressReporter = {
 jest.setTimeout(20_000);
 
 describeWithCodeQL()("using the new query server", () => {
-  let testContext: any;
-
-  beforeAll(() => {
-    testContext = {};
-  });
-
   let qs: qsClient.QueryServerClient;
   let cliServer: cli.CodeQLCliServer;
   let db: string;
+
+  let supportNewQueryServer = true;
+
   beforeAll(async () => {
     const extension = await extensions
       .getExtension<CodeQLExtensionInterface | Record<string, never>>(
@@ -122,7 +119,7 @@ describeWithCodeQL()("using the new query server", () => {
 
       cliServer.quiet = true;
       if (!(await cliServer.cliConstraints.supportsNewQueryServerForTests())) {
-        testContext.ctx.skip();
+        supportNewQueryServer = false;
       }
       qs = new QueryServerClient(
         {
@@ -176,6 +173,10 @@ describeWithCodeQL()("using the new query server", () => {
     const parsedResults = new Checkpoint<void>();
 
     it("should register the database", async () => {
+      if (!supportNewQueryServer) {
+        return;
+      }
+
       await qs.sendRequest(
         messages.registerDatabases,
         { databases: [db] },
@@ -187,6 +188,10 @@ describeWithCodeQL()("using the new query server", () => {
     });
 
     it(`should be able to run query ${queryName}`, async () => {
+      if (!supportNewQueryServer) {
+        return;
+      }
+
       try {
         const params: messages.RunQueryParams = {
           db,
@@ -214,6 +219,10 @@ describeWithCodeQL()("using the new query server", () => {
 
     const actualResultSets: ResultSets = {};
     it(`should be able to parse results of query ${queryName}`, async () => {
+      if (!supportNewQueryServer) {
+        return;
+      }
+
       await evaluationSucceeded.done();
       const info = await cliServer.bqrsInfo(RESULTS_PATH);
 
@@ -228,6 +237,10 @@ describeWithCodeQL()("using the new query server", () => {
     });
 
     it(`should have correct results for query ${queryName}`, async () => {
+      if (!supportNewQueryServer) {
+        return;
+      }
+
       await parsedResults.done();
       expect(actualResultSets!).not.toHaveLength(0);
       expect(Object.keys(actualResultSets!).sort()).toEqual(
