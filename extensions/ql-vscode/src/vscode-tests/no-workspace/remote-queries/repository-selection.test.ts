@@ -6,32 +6,44 @@ import * as config from "../../../config";
 import { getRepositorySelection } from "../../../remote-queries/repository-selection";
 
 describe("repository selection", () => {
-  const quickPickSpy = jest.spyOn(window, "showQuickPick");
-  const showInputBoxSpy = jest.spyOn(window, "showInputBox");
+  let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
+  let showInputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
 
-  const getRemoteRepositoryListsSpy = jest.spyOn(
-    config,
-    "getRemoteRepositoryLists",
-  );
-  const getRemoteRepositoryListsPathSpy = jest.spyOn(
-    config,
-    "getRemoteRepositoryListsPath",
-  );
+  let getRemoteRepositoryListsSpy: jest.SpiedFunction<
+    typeof config.getRemoteRepositoryLists
+  >;
+  let getRemoteRepositoryListsPathSpy: jest.SpiedFunction<
+    typeof config.getRemoteRepositoryListsPath
+  >;
 
-  const pathExistsStub = jest.spyOn(fs, "pathExists");
-  const fsStatStub = jest.spyOn(fs, "stat");
-  const fsReadFileStub = jest.spyOn(fs, "readFile");
+  let pathExistsStub: jest.SpiedFunction<typeof fs.pathExists>;
+  let fsStatStub: jest.SpiedFunction<typeof fs.stat>;
+  let fsReadFileStub: jest.SpiedFunction<typeof fs.readFile>;
 
   beforeEach(() => {
-    quickPickSpy.mockResolvedValue(undefined);
-    showInputBoxSpy.mockResolvedValue(undefined);
+    quickPickSpy = jest
+      .spyOn(window, "showQuickPick")
+      .mockResolvedValue(undefined);
+    showInputBoxSpy = jest
+      .spyOn(window, "showInputBox")
+      .mockResolvedValue(undefined);
 
-    getRemoteRepositoryListsSpy.mockReturnValue(undefined);
-    getRemoteRepositoryListsPathSpy.mockReturnValue(undefined);
+    getRemoteRepositoryListsSpy = jest
+      .spyOn(config, "getRemoteRepositoryLists")
+      .mockReturnValue(undefined);
+    getRemoteRepositoryListsPathSpy = jest
+      .spyOn(config, "getRemoteRepositoryListsPath")
+      .mockReturnValue(undefined);
 
-    pathExistsStub.mockImplementation(() => false);
-    fsStatStub.mockRejectedValue(new Error("not found"));
-    fsReadFileStub.mockRejectedValue(new Error("not found"));
+    pathExistsStub = jest
+      .spyOn(fs, "pathExists")
+      .mockImplementation(() => false);
+    fsStatStub = jest
+      .spyOn(fs, "stat")
+      .mockRejectedValue(new Error("not found"));
+    fsReadFileStub = jest
+      .spyOn(fs, "readFile")
+      .mockRejectedValue(new Error("not found"));
   });
 
   describe("repo lists from settings", () => {

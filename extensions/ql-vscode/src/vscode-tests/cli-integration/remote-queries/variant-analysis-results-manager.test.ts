@@ -1,5 +1,3 @@
-import * as sinon from "sinon";
-import { expect } from "chai";
 import { extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../../extension";
 import { logger } from "../../../logging";
@@ -15,49 +13,37 @@ import * as ghApiClient from "../../../remote-queries/gh-api/gh-api-client";
 import { createMockVariantAnalysisRepositoryTask } from "../../factories/remote-queries/shared/variant-analysis-repo-tasks";
 import { VariantAnalysisRepositoryTask } from "../../../remote-queries/shared/variant-analysis";
 
-describe(VariantAnalysisResultsManager.name, function () {
-  this.timeout(10000);
+jest.setTimeout(10_000);
 
-  let sandbox: sinon.SinonSandbox;
+describe(VariantAnalysisResultsManager.name, () => {
   let cli: CodeQLCliServer;
   let variantAnalysisId: number;
   let variantAnalysisResultsManager: VariantAnalysisResultsManager;
-  let getVariantAnalysisRepoResultStub: sinon.SinonStub;
 
   beforeEach(async () => {
-    sandbox = sinon.createSandbox();
-    sandbox.stub(logger, "log");
-    sandbox.stub(fs, "mkdirSync");
-    sandbox.stub(fs, "writeFile");
+    jest.spyOn(logger, "log").mockResolvedValue(undefined);
+    jest.spyOn(fs, "mkdirSync").mockReturnValue(undefined);
+    jest.spyOn(fs, "writeFile").mockReturnValue(undefined);
 
     variantAnalysisId = faker.datatype.number();
 
-    try {
-      const extension = await extensions
-        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-          "GitHub.vscode-codeql",
-        )!
-        .activate();
-      cli = extension.cliServer;
-      variantAnalysisResultsManager = new VariantAnalysisResultsManager(
-        cli,
-        logger,
-      );
-    } catch (e) {
-      fail(e as Error);
-    }
-  });
-
-  afterEach(async () => {
-    sandbox.restore();
+    const extension = await extensions
+      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+        "GitHub.vscode-codeql",
+      )!
+      .activate();
+    cli = extension.cliServer;
+    variantAnalysisResultsManager = new VariantAnalysisResultsManager(
+      cli,
+      logger,
+    );
   });
 
   describe("download", () => {
-    let getOctokitStub: sinon.SinonStub;
     const mockCredentials = {
       getOctokit: () =>
         Promise.resolve({
-          request: getOctokitStub,
+          request: jest.fn(),
         }),
     } as unknown as Credentials;
     let dummyRepoTask: VariantAnalysisRepositoryTask;
@@ -91,32 +77,32 @@ describe(VariantAnalysisResultsManager.name, function () {
             variantAnalysisStoragePath,
             dummyRepoTask.repository.fullName,
           ),
-        ).to.equal(false);
+        ).toBe(false);
       });
     });
 
-    describe("when the artifact_url is missing", async () => {
+    describe("when the artifact_url is missing", () => {
       it("should not try to download the result", async () => {
         const dummyRepoTask = createMockVariantAnalysisRepositoryTask();
         delete dummyRepoTask.artifactUrl;
 
-        try {
-          await variantAnalysisResultsManager.download(
+        await expect(
+          variantAnalysisResultsManager.download(
             mockCredentials,
             variantAnalysisId,
             dummyRepoTask,
             variantAnalysisStoragePath,
-          );
-
-          expect.fail("Expected an error to be thrown");
-        } catch (e: any) {
-          expect(e.message).to.equal("Missing artifact URL");
-        }
+          ),
+        ).rejects.toThrow("Missing artifact URL");
       });
     });
 
-    describe("when the artifact_url is present", async () => {
+    describe("when the artifact_url is present", () => {
       let arrayBuffer: ArrayBuffer;
+
+      let getVariantAnalysisRepoResultStub: jest.SpiedFunction<
+        typeof ghApiClient.getVariantAnalysisRepoResult
+      >;
 
       beforeEach(async () => {
         const sourceFilePath = path.join(
@@ -125,10 +111,16 @@ describe(VariantAnalysisResultsManager.name, function () {
         );
         arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
 
-        getVariantAnalysisRepoResultStub = sandbox
-          .stub(ghApiClient, "getVariantAnalysisRepoResult")
-          .withArgs(mockCredentials, dummyRepoTask.artifactUrl as string)
-          .resolves(arrayBuffer);
+        getVariantAnalysisRepoResultStub = jest
+          .spyOn(ghApiClient, "getVariantAnalysisRepoResult")
+          .mockImplementation(
+            (_credentials: Credentials, downloadUrl: string) => {
+              if (downloadUrl === dummyRepoTask.artifactUrl) {
+                return Promise.resolve(arrayBuffer);
+              }
+              return Promise.reject(new Error("Unexpected artifact URL"));
+            },
+          );
       });
 
       it("should call the API to download the results", async () => {
@@ -139,7 +131,7 @@ describe(VariantAnalysisResultsManager.name, function () {
           variantAnalysisStoragePath,
         );
 
-        expect(getVariantAnalysisRepoResultStub.calledOnce).to.be.true;
+        expect(getVariantAnalysisRepoResultStub).toHaveBeenCalledTimes(1);
       });
 
       it("should save the results zip file to disk", async () => {
@@ -150,8 +142,9 @@ describe(VariantAnalysisResultsManager.name, function () {
           variantAnalysisStoragePath,
         );
 
-        expect(fs.existsSync(`${repoTaskStorageDirectory}/results.zip`)).to.be
-          .true;
+        expect(fs.existsSync(`${repoTaskStorageDirectory}/results.zip`)).toBe(
+          true,
+        );
       });
 
       it("should unzip the results in a `results/` folder", async () => {
@@ -164,7 +157,7 @@ describe(VariantAnalysisResultsManager.name, function () {
 
         expect(
           fs.existsSync(`${repoTaskStorageDirectory}/results/results.sarif`),
-        ).to.be.true;
+        ).toBe(true);
       });
 
       describe("isVariantAnalysisRepoDownloaded", () => {
@@ -181,7 +174,7 @@ describe(VariantAnalysisResultsManager.name, function () {
               variantAnalysisStoragePath,
               dummyRepoTask.repository.fullName,
             ),
-          ).to.equal(true);
+          ).toBe(true);
         });
       });
     });

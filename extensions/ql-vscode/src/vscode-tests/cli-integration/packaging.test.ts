@@ -1,43 +1,44 @@
-import * as sinon from "sinon";
-import { extensions, window } from "vscode";
+import { extensions, QuickPickItem, window } from "vscode";
 import * as path from "path";
 
-import * as pq from "proxyquire";
-
-import { CliVersionConstraint, CodeQLCliServer } from "../../cli";
+import { CodeQLCliServer } from "../../cli";
 import { CodeQLExtensionInterface } from "../../extension";
-import { expect } from "chai";
 import { getErrorMessage } from "../../pure/helpers-pure";
 
-const proxyquire = pq.noPreserveCache();
+import * as helpers from "../../helpers";
+import {
+  handleDownloadPacks,
+  handleInstallPackDependencies,
+} from "../../packaging";
 
-describe("Packaging commands", function () {
-  let sandbox: sinon.SinonSandbox;
+// up to 3 minutes per test
+jest.setTimeout(3 * 60 * 1000);
 
-  // up to 3 minutes per test
-  this.timeout(3 * 60 * 1000);
-
+describe("Packaging commands", () => {
   let cli: CodeQLCliServer;
-  let progress: sinon.SinonSpy;
-  let quickPickSpy: sinon.SinonStub;
-  let inputBoxSpy: sinon.SinonStub;
-  let showAndLogErrorMessageSpy: sinon.SinonStub;
-  let showAndLogInformationMessageSpy: sinon.SinonStub;
-  let mod: any;
+  const progress = jest.fn();
+  let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
+  let inputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
+  let showAndLogErrorMessageSpy: jest.SpiedFunction<
+    typeof helpers.showAndLogErrorMessage
+  >;
+  let showAndLogInformationMessageSpy: jest.SpiedFunction<
+    typeof helpers.showAndLogInformationMessage
+  >;
 
-  beforeEach(async function () {
-    sandbox = sinon.createSandbox();
-    progress = sandbox.spy();
-    quickPickSpy = sandbox.stub(window, "showQuickPick");
-    inputBoxSpy = sandbox.stub(window, "showInputBox");
-    showAndLogErrorMessageSpy = sandbox.stub();
-    showAndLogInformationMessageSpy = sandbox.stub();
-    mod = proxyquire("../../packaging", {
-      "./helpers": {
-        showAndLogErrorMessage: showAndLogErrorMessageSpy,
-        showAndLogInformationMessage: showAndLogInformationMessageSpy,
-      },
-    });
+  beforeEach(async () => {
+    quickPickSpy = jest
+      .spyOn(window, "showQuickPick")
+      .mockResolvedValue(undefined);
+    inputBoxSpy = jest
+      .spyOn(window, "showInputBox")
+      .mockResolvedValue(undefined);
+    showAndLogErrorMessageSpy = jest
+      .spyOn(helpers, "showAndLogErrorMessage")
+      .mockResolvedValue(undefined);
+    showAndLogInformationMessageSpy = jest
+      .spyOn(helpers, "showAndLogInformationMessage")
+      .mockResolvedValue(undefined);
 
     const extension = await extensions
       .getExtension<CodeQLExtensionInterface | Record<string, never>>(
@@ -51,45 +52,41 @@ describe("Packaging commands", function () {
         "Extension not initialized. Make sure cli is downloaded and installed properly.",
       );
     }
-    if (!(await cli.cliConstraints.supportsPackaging())) {
-      console.log(
-        `Packaging commands are not supported on CodeQL CLI v${CliVersionConstraint.CLI_VERSION_WITH_PACKAGING}. Skipping this test.`,
-      );
-      this.skip();
-    }
-  });
-
-  afterEach(() => {
-    sandbox.restore();
   });
 
   it("should download all core query packs", async () => {
-    quickPickSpy.resolves("Download all core query packs");
+    quickPickSpy.mockResolvedValue(
+      "Download all core query packs" as unknown as QuickPickItem,
+    );
 
-    await mod.handleDownloadPacks(cli, progress);
-    expect(showAndLogInformationMessageSpy.firstCall.args[0]).to.contain(
-      "Finished downloading packs.",
+    await handleDownloadPacks(cli, progress);
+    expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Finished downloading packs."),
     );
   });
 
   it("should download valid user-specified pack", async () => {
-    quickPickSpy.resolves("Download custom specified pack");
-    inputBoxSpy.resolves("codeql/csharp-solorigate-queries");
+    quickPickSpy.mockResolvedValue(
+      "Download custom specified pack" as unknown as QuickPickItem,
+    );
+    inputBoxSpy.mockResolvedValue("codeql/csharp-solorigate-queries");
 
-    await mod.handleDownloadPacks(cli, progress);
-    expect(showAndLogInformationMessageSpy.firstCall.args[0]).to.contain(
-      "Finished downloading packs.",
+    await handleDownloadPacks(cli, progress);
+    expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Finished downloading packs."),
     );
   });
 
   it("should show error when downloading invalid user-specified pack", async () => {
-    quickPickSpy.resolves("Download custom specified pack");
-    inputBoxSpy.resolves("foo/not-a-real-pack@0.0.1");
+    quickPickSpy.mockResolvedValue(
+      "Download custom specified pack" as unknown as QuickPickItem,
+    );
+    inputBoxSpy.mockResolvedValue("foo/not-a-real-pack@0.0.1");
 
-    await mod.handleDownloadPacks(cli, progress);
+    await handleDownloadPacks(cli, progress);
 
-    expect(showAndLogErrorMessageSpy.firstCall.args[0]).to.contain(
-      "Unable to download all packs.",
+    expect(showAndLogErrorMessageSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Unable to download all packs."),
     );
   });
 
@@ -98,16 +95,16 @@ describe("Packaging commands", function () {
       __dirname,
       "../../../src/vscode-tests/cli-integration/data",
     );
-    quickPickSpy.resolves([
+    quickPickSpy.mockResolvedValue([
       {
         label: "integration-test-queries-javascript",
         packRootDir: [rootDir],
       },
-    ]);
+    ] as unknown as QuickPickItem);
 
-    await mod.handleInstallPackDependencies(cli, progress);
-    expect(showAndLogInformationMessageSpy.firstCall.args[0]).to.contain(
-      "Finished installing pack dependencies.",
+    await handleInstallPackDependencies(cli, progress);
+    expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Finished installing pack dependencies."),
     );
   });
 
@@ -116,20 +113,20 @@ describe("Packaging commands", function () {
       __dirname,
       "../../../src/vscode-tests/cli-integration/data-invalid-pack",
     );
-    quickPickSpy.resolves([
+    quickPickSpy.mockResolvedValue([
       {
         label: "foo/bar",
         packRootDir: [rootDir],
       },
-    ]);
+    ] as unknown as QuickPickItem);
 
     try {
       // expect this to throw an error
-      await mod.handleInstallPackDependencies(cli, progress);
+      await handleInstallPackDependencies(cli, progress);
       // This line should not be reached
-      expect(true).to.be.false;
+      expect(true).toBe(false);
     } catch (e) {
-      expect(getErrorMessage(e)).to.contain(
+      expect(getErrorMessage(e)).toContain(
         "Unable to install pack dependencies",
       );
     }

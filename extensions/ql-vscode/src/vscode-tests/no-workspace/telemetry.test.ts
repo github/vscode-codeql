@@ -24,20 +24,19 @@ describe("telemetry reporting", () => {
   let ctx: ExtensionContext;
   let telemetryListener: TelemetryListener;
 
-  const sendTelemetryEventSpy = jest.spyOn(
-    TelemetryReporter.prototype,
-    "sendTelemetryEvent",
-  );
-  const sendTelemetryExceptionSpy = jest.spyOn(
-    TelemetryReporter.prototype,
-    "sendTelemetryException",
-  );
-  const disposeSpy = jest.spyOn(TelemetryReporter.prototype, "dispose");
+  let sendTelemetryEventSpy: jest.SpiedFunction<
+    typeof TelemetryReporter.prototype.sendTelemetryEvent
+  >;
+  let sendTelemetryExceptionSpy: jest.SpiedFunction<
+    typeof TelemetryReporter.prototype.sendTelemetryException
+  >;
+  let disposeSpy: jest.SpiedFunction<
+    typeof TelemetryReporter.prototype.dispose
+  >;
 
-  const showInformationMessageSpy = jest.spyOn(
-    window,
-    "showInformationMessage",
-  );
+  let showInformationMessageSpy: jest.SpiedFunction<
+    typeof window.showInformationMessage
+  >;
 
   beforeEach(async () => {
     try {
@@ -49,11 +48,19 @@ describe("telemetry reporting", () => {
 
       ctx = createMockExtensionContext();
 
-      sendTelemetryEventSpy.mockReturnValue(undefined);
-      sendTelemetryExceptionSpy.mockReturnValue(undefined);
-      disposeSpy.mockResolvedValue(undefined);
+      sendTelemetryEventSpy = jest
+        .spyOn(TelemetryReporter.prototype, "sendTelemetryEvent")
+        .mockReturnValue(undefined);
+      sendTelemetryExceptionSpy = jest
+        .spyOn(TelemetryReporter.prototype, "sendTelemetryException")
+        .mockReturnValue(undefined);
+      disposeSpy = jest
+        .spyOn(TelemetryReporter.prototype, "dispose")
+        .mockResolvedValue(undefined);
 
-      showInformationMessageSpy.mockResolvedValue(undefined);
+      showInformationMessageSpy = jest
+        .spyOn(window, "showInformationMessage")
+        .mockResolvedValue(undefined);
 
       originalTelemetryExtension = workspace
         .getConfiguration()

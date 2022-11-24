@@ -67,8 +67,10 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     showView: showViewStub,
   } as any as VariantAnalysisManager;
 
-  const showTextDocumentSpy = jest.spyOn(window, "showTextDocument");
-  const openTextDocumentSpy = jest.spyOn(workspace, "openTextDocument");
+  let showTextDocumentSpy: jest.SpiedFunction<typeof window.showTextDocument>;
+  let openTextDocumentSpy: jest.SpiedFunction<
+    typeof workspace.openTextDocument
+  >;
 
   beforeEach(async () => {
     // Since these tests change the state of the query history manager, we need to copy the original
@@ -101,8 +103,12 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     );
     disposables.push(qhm);
 
-    showTextDocumentSpy.mockResolvedValue(undefined as unknown as TextEditor);
-    openTextDocumentSpy.mockResolvedValue(undefined as unknown as TextDocument);
+    showTextDocumentSpy = jest
+      .spyOn(window, "showTextDocument")
+      .mockResolvedValue(undefined as unknown as TextEditor);
+    openTextDocumentSpy = jest
+      .spyOn(workspace, "openTextDocument")
+      .mockResolvedValue(undefined as unknown as TextDocument);
   });
 
   afterEach(() => {
