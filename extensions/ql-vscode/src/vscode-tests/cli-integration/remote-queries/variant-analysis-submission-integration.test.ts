@@ -1,6 +1,7 @@
 import * as path from "path";
 
 import {
+  authentication,
   commands,
   extensions,
   QuickPickItem,
@@ -12,7 +13,6 @@ import * as Octokit from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 
 import { CodeQLExtensionInterface } from "../../../extension";
-import * as config from "../../../config";
 import { Credentials } from "../../../authentication";
 import { MockGitHubApiServer } from "../../../mocks/mock-gh-api-server";
 
@@ -38,17 +38,65 @@ describe("Variant Analysis Submission Integration", () => {
   let showErrorMessageSpy: jest.SpiedFunction<typeof window.showErrorMessage>;
 
   beforeEach(async () => {
-    jest.spyOn(config, "isCanary").mockReturnValue(true);
+    const originalGetConfiguration = workspace.getConfiguration;
+
     jest
-      .spyOn(config, "isVariantAnalysisLiveResultsEnabled")
-      .mockReturnValue(true);
+      .spyOn(workspace, "getConfiguration")
+      .mockImplementation((section, scope) => {
+        const configuration = originalGetConfiguration(section, scope);
+
+        return {
+          get(key: string, defaultValue?: unknown) {
+            if (section === "codeQL.variantAnalysis" && key === "liveResults") {
+              return true;
+            }
+            if (section === "codeQL" && key == "canary") {
+              return true;
+            }
+            if (
+              section === "codeQL.variantAnalysis" &&
+              key === "controllerRepo"
+            ) {
+              return "github/vscode-codeql";
+            }
+            return configuration.get(key, defaultValue);
+          },
+          has(key: string) {
+            return configuration.has(key);
+          },
+          inspect(key: string) {
+            return configuration.inspect(key);
+          },
+          update(
+            key: string,
+            value: unknown,
+            configurationTarget?: boolean,
+            overrideInLanguage?: boolean,
+          ) {
+            return configuration.update(
+              key,
+              value,
+              configurationTarget,
+              overrideInLanguage,
+            );
+          },
+        };
+      });
+
+    jest.spyOn(authentication, "getSession").mockResolvedValue({
+      id: "test",
+      accessToken: "test-token",
+      scopes: [],
+      account: {
+        id: "test",
+        label: "test",
+      },
+    });
 
     const mockCredentials = {
       getOctokit: () => Promise.resolve(new Octokit.Octokit({ retry })),
     } as unknown as Credentials;
     jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
-
-    await config.setRemoteControllerRepo("github/vscode-codeql");
 
     quickPickSpy = jest
       .spyOn(window, "showQuickPick")
