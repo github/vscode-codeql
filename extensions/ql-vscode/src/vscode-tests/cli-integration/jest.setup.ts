@@ -6,7 +6,6 @@ import * as tmp from "tmp";
 import { getTestSetting } from "../test-config";
 import { CUSTOM_CODEQL_PATH_SETTING } from "../../config";
 import { extensions, workspace } from "vscode";
-import { CodeQLExtensionInterface } from "../../extension";
 
 import baseJestSetup from "../jest.setup";
 
@@ -78,21 +77,6 @@ beforeAll(async () => {
 
 // ensure extension is cleaned up.
 afterAll(async () => {
-  const extension = await extensions
-    .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-      "GitHub.vscode-codeql",
-    )!
-    .activate();
-  // This shuts down the extension and can only be run after all tests have completed.
-  // If this is not called, then the test process will hang.
-  if ("dispose" in extension) {
-    try {
-      extension.dispose();
-    } catch (e) {
-      console.warn("Failed to dispose extension", e);
-    }
-  }
-
   // ensure temp directory is cleaned up.
   try {
     removeStorage?.();
