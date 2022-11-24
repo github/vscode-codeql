@@ -28,18 +28,18 @@ describe("queryResolver", () => {
   };
 
   beforeEach(() => {
-    writeFileSpy.mockReset().mockImplementation(() => Promise.resolve());
+    writeFileSpy.mockImplementation(() => Promise.resolve());
 
-    getQlPackForDbschemeSpy.mockReset().mockResolvedValue({
+    getQlPackForDbschemeSpy.mockResolvedValue({
       dbschemePack: "dbschemePack",
       dbschemePackIsLibraryPack: false,
     });
-    getPrimaryDbschemeSpy.mockReset().mockResolvedValue("primaryDbscheme");
+    getPrimaryDbschemeSpy.mockResolvedValue("primaryDbscheme");
 
-    mockCli.resolveQueriesInSuite.mockReset();
-    mockCli.cliConstraints.supportsAllowLibraryPacksInResolveQueries
-      .mockReset()
-      .mockReturnValue(true);
+    mockCli.resolveQueriesInSuite;
+    mockCli.cliConstraints.supportsAllowLibraryPacksInResolveQueries.mockReturnValue(
+      true,
+    );
   });
 
   describe("resolveQueries", () => {

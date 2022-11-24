@@ -23,15 +23,15 @@ describe("repository selection", () => {
   const fsReadFileStub = jest.spyOn(fs, "readFile");
 
   beforeEach(() => {
-    quickPickSpy.mockReset().mockResolvedValue(undefined);
-    showInputBoxSpy.mockReset().mockResolvedValue(undefined);
+    quickPickSpy.mockResolvedValue(undefined);
+    showInputBoxSpy.mockResolvedValue(undefined);
 
-    getRemoteRepositoryListsSpy.mockReset().mockReturnValue(undefined);
-    getRemoteRepositoryListsPathSpy.mockReset().mockReturnValue(undefined);
+    getRemoteRepositoryListsSpy.mockReturnValue(undefined);
+    getRemoteRepositoryListsPathSpy.mockReturnValue(undefined);
 
-    pathExistsStub.mockReset().mockImplementation(() => false);
-    fsStatStub.mockReset().mockRejectedValue(new Error("not found"));
-    fsReadFileStub.mockReset().mockRejectedValue(new Error("not found"));
+    pathExistsStub.mockImplementation(() => false);
+    fsStatStub.mockRejectedValue(new Error("not found"));
+    fsReadFileStub.mockRejectedValue(new Error("not found"));
   });
 
   describe("repo lists from settings", () => {

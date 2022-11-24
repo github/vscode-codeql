@@ -10,7 +10,6 @@ import {
   telemetryListener as globalTelemetryListener,
 } from "../../telemetry";
 import { UserCancellationException } from "../../commandRunner";
-import { fail } from "assert";
 import { ENABLE_TELEMETRY } from "../../config";
 import { createMockExtensionContext } from "./index";
 
@@ -50,11 +49,11 @@ describe("telemetry reporting", () => {
 
       ctx = createMockExtensionContext();
 
-      sendTelemetryEventSpy.mockReset().mockReturnValue(undefined);
-      sendTelemetryExceptionSpy.mockReset().mockReturnValue(undefined);
-      disposeSpy.mockReset().mockResolvedValue(undefined);
+      sendTelemetryEventSpy.mockReturnValue(undefined);
+      sendTelemetryExceptionSpy.mockReturnValue(undefined);
+      disposeSpy.mockResolvedValue(undefined);
 
-      showInformationMessageSpy.mockReset().mockResolvedValue(undefined);
+      showInformationMessageSpy.mockResolvedValue(undefined);
 
       originalTelemetryExtension = workspace
         .getConfiguration()
@@ -105,27 +104,19 @@ describe("telemetry reporting", () => {
   });
 
   it("should initialize telemetry when global option disabled", async () => {
-    try {
-      await enableTelemetry("telemetry", false);
-      await telemetryListener.initialize();
-      expect(telemetryListener._reporter).toBeDefined();
+    await enableTelemetry("telemetry", false);
+    await telemetryListener.initialize();
+    expect(telemetryListener._reporter).toBeDefined();
 
-      const reporter: any = telemetryListener._reporter;
-      expect(reporter.userOptIn).toBe(false); // disabled
-    } catch (e) {
-      fail(e as Error);
-    }
+    const reporter: any = telemetryListener._reporter;
+    expect(reporter.userOptIn).toBe(false); // disabled
   });
 
   it("should not initialize telemetry when extension option disabled", async () => {
-    try {
-      await enableTelemetry("codeQL.telemetry", false);
-      await telemetryListener.initialize();
+    await enableTelemetry("codeQL.telemetry", false);
+    await telemetryListener.initialize();
 
-      expect(telemetryListener._reporter).toBeUndefined();
-    } catch (e) {
-      fail(e as Error);
-    }
+    expect(telemetryListener._reporter).toBeUndefined();
   });
 
   it("should not initialize telemetry when both options disabled", async () => {

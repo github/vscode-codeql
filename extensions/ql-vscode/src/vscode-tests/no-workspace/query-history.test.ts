@@ -20,7 +20,6 @@ import {
   TWO_HOURS_IN_MS,
 } from "../../pure/time";
 import { tmpDir } from "../../helpers";
-import { getErrorMessage } from "../../pure/helpers-pure";
 import { HistoryItemLabelProvider } from "../../history-item-label-provider";
 import { RemoteQueriesManager } from "../../remote-queries/remote-queries-manager";
 import { ResultsView } from "../../interface";
@@ -74,16 +73,12 @@ describe("query-history", () => {
   let variantAnalysisHistory: VariantAnalysisHistoryItem[];
 
   beforeEach(() => {
-    showTextDocumentSpy
-      .mockClear()
-      .mockResolvedValue(undefined as unknown as TextEditor);
+    showTextDocumentSpy.mockResolvedValue(undefined as unknown as TextEditor);
 
-    showInformationMessageSpy.mockClear().mockResolvedValue(undefined);
-    showQuickPickSpy.mockClear().mockResolvedValue(undefined);
-    executeCommandSpy.mockClear().mockResolvedValue(undefined);
-    logSpy.mockClear().mockResolvedValue(undefined);
-
-    doCompareCallback.mockReset();
+    showInformationMessageSpy.mockResolvedValue(undefined);
+    showQuickPickSpy.mockResolvedValue(undefined);
+    executeCommandSpy.mockResolvedValue(undefined);
+    logSpy.mockResolvedValue(undefined);
 
     tryOpenExternalFile = (QueryHistoryManager.prototype as any)
       .tryOpenExternalFile;
@@ -478,10 +473,10 @@ describe("query-history", () => {
               request: getOctokitStub,
             }),
         } as unknown as Credentials;
-        credentialsSpy.mockReset().mockResolvedValue(mockCredentials);
+        credentialsSpy.mockResolvedValue(mockCredentials);
 
-        mockCancelRemoteQuery.mockClear().mockResolvedValue();
-        getOctokitStub.mockClear();
+        mockCancelRemoteQuery.mockResolvedValue();
+        getOctokitStub;
       });
 
       describe("if the item is in progress", () => {
@@ -943,52 +938,38 @@ describe("query-history", () => {
             }),
           });
 
-          try {
-            await (queryHistoryManager as any).findOtherQueryToCompare(
+          await expect(
+            (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [
               thisQuery,
-              [thisQuery, allHistory[0]],
-            );
-            fail("Should have thrown");
-          } catch (e) {
-            expect(getErrorMessage(e)).toBe(
-              "Please select a successful query.",
-            );
-          }
+              allHistory[0],
+            ]),
+          ).rejects.toThrow("Please select a successful query.");
         });
 
         it("should throw an error when a databases are not the same", async () => {
           queryHistoryManager = await createMockQueryHistory(allHistory);
 
-          try {
-            // localQueryHistory[0] is database a
-            // localQueryHistory[1] is database b
-            await (queryHistoryManager as any).findOtherQueryToCompare(
+          // localQueryHistory[0] is database a
+          // localQueryHistory[1] is database b
+          await expect(
+            (queryHistoryManager as any).findOtherQueryToCompare(
               localQueryHistory[0],
               [localQueryHistory[0], localQueryHistory[1]],
-            );
-            fail("Should have thrown");
-          } catch (e) {
-            expect(getErrorMessage(e)).toBe(
-              "Query databases must be the same.",
-            );
-          }
+            ),
+          ).rejects.toThrow("Query databases must be the same.");
         });
 
         it("should throw an error when more than 2 queries selected", async () => {
           const thisQuery = localQueryHistory[3];
           queryHistoryManager = await createMockQueryHistory(allHistory);
 
-          try {
-            await (queryHistoryManager as any).findOtherQueryToCompare(
+          await expect(
+            (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [
               thisQuery,
-              [thisQuery, localQueryHistory[0], localQueryHistory[1]],
-            );
-            fail("Should have thrown");
-          } catch (e) {
-            expect(getErrorMessage(e)).toBe(
-              "Please select no more than 2 queries.",
-            );
-          }
+              localQueryHistory[0],
+              localQueryHistory[1],
+            ]),
+          ).rejects.toThrow("Please select no more than 2 queries.");
         });
       });
 

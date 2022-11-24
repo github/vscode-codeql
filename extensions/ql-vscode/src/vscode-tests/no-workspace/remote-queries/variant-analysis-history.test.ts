@@ -77,10 +77,6 @@ describe("Variant Analyses and QueryHistoryManager", () => {
 
     disposables = new DisposableBucket();
 
-    rehydrateVariantAnalysisStub.mockReset();
-    removeVariantAnalysisStub.mockReset();
-    showViewStub.mockReset();
-
     rawQueryHistory = fs.readJSONSync(
       path.join(STORAGE_DIR, "workspace-query-history.json"),
     ).queries;
