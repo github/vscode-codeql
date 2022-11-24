@@ -61,6 +61,7 @@ describe("Variant Analysis Manager", () => {
   let pathExistsStub: jest.SpiedFunction<typeof fs.pathExists>;
   let readJsonStub: jest.SpiedFunction<typeof fs.readJson>;
   let outputJsonStub: jest.SpiedFunction<typeof fs.outputJson>;
+  let writeFileStub: jest.SpiedFunction<typeof fs.writeFile>;
   let cli: CodeQLCliServer;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
@@ -72,13 +73,13 @@ describe("Variant Analysis Manager", () => {
     pathExistsStub = jest.spyOn(fs, "pathExists");
     readJsonStub = jest.spyOn(fs, "readJson");
     outputJsonStub = jest.spyOn(fs, "outputJson").mockReturnValue(undefined);
+    writeFileStub = jest.spyOn(fs, "writeFile").mockReturnValue(undefined);
 
     jest.spyOn(logger, "log").mockResolvedValue(undefined);
     jest
       .spyOn(config, "isVariantAnalysisLiveResultsEnabled")
       .mockReturnValue(false);
     jest.spyOn(fs, "mkdirSync").mockReturnValue(undefined);
-    jest.spyOn(fs, "writeFile").mockReturnValue(undefined);
 
     cancellationTokenSource = new CancellationTokenSource();
 
@@ -132,6 +133,8 @@ describe("Variant Analysis Manager", () => {
     }
 
     beforeEach(async () => {
+      writeFileStub.mockRestore();
+
       // Should not have asked for a language
       showQuickPickSpy = jest
         .spyOn(window, "showQuickPick")
@@ -293,7 +296,6 @@ describe("Variant Analysis Manager", () => {
           await variantAnalysisManager.getVariantAnalysis(variantAnalysis.id),
         ).toEqual(variantAnalysis);
 
-        expect(pathExistsStub).toHaveBeenCalledTimes(1);
         expect(pathExistsStub).toBeCalledWith(
           path.join(storagePath, variantAnalysis.id.toString()),
         );
@@ -630,7 +632,7 @@ describe("Variant Analysis Manager", () => {
           // The actual tests for these are in rehydrateVariantAnalysis, so we can just mock them here and test that
           // the methods are called.
 
-          pathExistsStub.mockImplementation(() => false);
+          pathExistsStub.mockImplementation(() => true);
           // This will read in the correct repo states
           readJsonStub.mockImplementation(() =>
             Promise.resolve({
@@ -651,7 +653,6 @@ describe("Variant Analysis Manager", () => {
             variantAnalysis,
           );
 
-          expect(pathExistsStub).toHaveBeenCalledTimes(1);
           expect(pathExistsStub).toBeCalledWith(
             path.join(storagePath, variantAnalysis.id.toString()),
           );
@@ -663,6 +664,8 @@ describe("Variant Analysis Manager", () => {
               "repo_states.json",
             ),
           );
+
+          pathExistsStub.mockRestore();
 
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],

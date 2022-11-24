@@ -193,7 +193,8 @@ describe("Remote queries", () => {
       const packNames = packFS.directoryContents(libraryDir).sort();
 
       // check dependencies.
-      expect(packNames).toEqual(["javascript-all"]);
+      expect(packNames).toContain("javascript-all");
+      expect(packNames.length).toBeLessThan(3);
     });
 
     it("should run a remote query that is not part of a qlpack", async () => {
@@ -249,7 +250,8 @@ describe("Remote queries", () => {
       const packNames = packFS.directoryContents(libraryDir).sort();
 
       // check dependencies.
-      expect(packNames).toEqual(["javascript-all"]);
+      expect(packNames).toContain("javascript-all");
+      expect(packNames.length).toBeLessThan(3);
     });
 
     it("should run a remote query that is nested inside a qlpack", async () => {
@@ -308,7 +310,8 @@ describe("Remote queries", () => {
       const packNames = packFS.directoryContents(libraryDir).sort();
 
       // check dependencies.
-      expect(packNames).toEqual(["javascript-all"]);
+      expect(packNames).toContain("javascript-all");
+      expect(packNames.length).toBeLessThan(3);
     });
 
     it("should cancel a run before uploading", async () => {
