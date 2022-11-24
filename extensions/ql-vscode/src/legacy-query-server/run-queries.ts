@@ -177,7 +177,6 @@ export class QueryInProgress {
         compilationOptions: {
           computeNoLocationUrls: true,
           failOnWarnings: false,
-          fastCompilation: false,
           includeDilInQlo: true,
           localChecking: false,
           noComputeGetUrl: false,

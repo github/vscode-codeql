@@ -97,11 +97,6 @@ export interface CompilationOptions {
    */
   failOnWarnings: boolean;
   /**
-   * Whether to compile as fast as possible, at the expense
-   * of optimization.
-   */
-  fastCompilation: boolean;
-  /**
    * Whether to include dil within qlos.
    */
   includeDilInQlo: boolean;
@@ -150,11 +145,6 @@ export interface ExtraOptions {
  * The DIL compilation options
  */
 export interface DilCompilationOptions {
-  /**
-   * Whether to compile as fast as possible, at the expense
-   * of optimization.
-   */
-  fastCompilation: boolean;
   /**
    * Whether to include dil within qlos.
    */
