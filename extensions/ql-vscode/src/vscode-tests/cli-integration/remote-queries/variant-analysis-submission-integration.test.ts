@@ -50,11 +50,11 @@ describe("Variant Analysis Submission Integration", () => {
 
     await config.setRemoteControllerRepo("github/vscode-codeql");
 
-    quickPickSpy.mockReset().mockResolvedValue(undefined);
-    inputBoxSpy.mockReset().mockResolvedValue(undefined);
+    quickPickSpy.mockResolvedValue(undefined);
+    inputBoxSpy.mockResolvedValue(undefined);
 
     executeCommandSpy.mockRestore();
-    showErrorMessageSpy.mockReset().mockResolvedValue(undefined);
+    showErrorMessageSpy.mockResolvedValue(undefined);
 
     await extensions
       .getExtension<CodeQLExtensionInterface | Record<string, never>>(

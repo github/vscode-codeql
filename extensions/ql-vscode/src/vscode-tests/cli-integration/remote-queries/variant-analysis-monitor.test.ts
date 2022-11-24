@@ -72,9 +72,7 @@ describe("Variant Analysis Monitor", () => {
       .spyOn(variantAnalysisManager, "autoDownloadVariantAnalysisResult")
       .mockResolvedValue(undefined);
 
-    mockGetVariantAnalysis
-      .mockReset()
-      .mockRejectedValue(new Error("Not mocked"));
+    mockGetVariantAnalysis.mockRejectedValue(new Error("Not mocked"));
 
     limitNumberOfAttemptsToMonitor();
   });

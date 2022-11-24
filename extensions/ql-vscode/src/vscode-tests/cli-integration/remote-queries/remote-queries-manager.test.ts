@@ -86,11 +86,8 @@ describe("Remote queries", () => {
 
     cancellationTokenSource = new CancellationTokenSource();
 
-    progress.mockReset();
-
     // Should not have asked for a language
     showQuickPickSpy
-      .mockReset()
       .mockResolvedValueOnce({
         repositories: ["github/vscode-codeql"],
       } as unknown as QuickPickItem)
@@ -102,7 +99,7 @@ describe("Remote queries", () => {
       full_name: "github/vscode-codeql",
       private: false,
     };
-    getRepositoryFromNwoStub.mockReset().mockResolvedValue(dummyRepository);
+    getRepositoryFromNwoStub.mockResolvedValue(dummyRepository);
 
     // always run in the vscode-codeql repo
     await setRemoteControllerRepo("github/vscode-codeql");
@@ -137,7 +134,7 @@ describe("Remote queries", () => {
     const executeCommandSpy = jest.spyOn(commands, "executeCommand");
 
     beforeEach(() => {
-      mockSubmitRemoteQueries.mockReset().mockResolvedValue({
+      mockSubmitRemoteQueries.mockResolvedValue({
         workflow_run_id: 20,
         repositories_queried: ["octodemo/hello-world-1"],
       });

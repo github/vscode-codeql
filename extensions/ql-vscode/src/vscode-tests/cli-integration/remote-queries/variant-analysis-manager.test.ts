@@ -136,10 +136,9 @@ describe("Variant Analysis Manager", () => {
     beforeEach(async () => {
       writeFileStub.mockRestore();
 
-      progress.mockReset();
       // Should not have asked for a language
       showQuickPickSpy
-        .mockReset()
+
         .mockResolvedValueOnce({
           repositories: ["github/vscode-codeql"],
         } as unknown as QuickPickItem)
@@ -155,10 +154,10 @@ describe("Variant Analysis Manager", () => {
         full_name: "github/vscode-codeql",
         private: false,
       };
-      mockGetRepositoryFromNwo.mockReset().mockResolvedValue(dummyRepository);
+      mockGetRepositoryFromNwo.mockResolvedValue(dummyRepository);
 
       mockApiResponse = createMockApiResponse("in_progress");
-      mockSubmitVariantAnalysis.mockReset().mockResolvedValue(mockApiResponse);
+      mockSubmitVariantAnalysis.mockResolvedValue(mockApiResponse);
 
       // always run in the vscode-codeql repo
       await setRemoteControllerRepo("github/vscode-codeql");
@@ -266,7 +265,7 @@ describe("Variant Analysis Manager", () => {
     describe("when the directory does not exist", () => {
       beforeEach(() => {
         const originalFs = jest.requireActual<typeof fs>("fs-extras");
-        pathExistsStub.mockReset().mockImplementation((...args) => {
+        pathExistsStub.mockImplementation((...args) => {
           if (
             args[0] === path.join(storagePath, variantAnalysis.id.toString())
           ) {
@@ -292,7 +291,7 @@ describe("Variant Analysis Manager", () => {
     describe("when the directory exists", () => {
       beforeEach(() => {
         const originalFs = jest.requireActual<typeof fs>("fs-extras");
-        pathExistsStub.mockReset().mockImplementation((...args) => {
+        pathExistsStub.mockImplementation((...args) => {
           if (
             args[0] === path.join(storagePath, variantAnalysis.id.toString())
           ) {
@@ -443,8 +442,8 @@ describe("Variant Analysis Manager", () => {
       );
       arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
 
-      getVariantAnalysisRepoStub.mockReset();
-      getVariantAnalysisRepoResultStub.mockReset();
+      getVariantAnalysisRepoStub;
+      getVariantAnalysisRepoResultStub;
     });
 
     describe("when the artifact_url is missing", () => {
@@ -658,7 +657,7 @@ describe("Variant Analysis Manager", () => {
           // the methods are called.
 
           const originalFs = jest.requireActual<typeof fs>("fs-extras");
-          pathExistsStub.mockReset().mockImplementation((...args) => {
+          pathExistsStub.mockImplementation((...args) => {
             if (
               args[0] === path.join(storagePath, variantAnalysis.id.toString())
             ) {
@@ -774,8 +773,8 @@ describe("Variant Analysis Manager", () => {
 
         beforeEach(async () => {
           dummyVariantAnalysis = createMockVariantAnalysis({});
-          removeAnalysisResultsStub.mockReset().mockReturnValue(undefined);
-          removeStorageStub.mockReset().mockReturnValue(undefined);
+          removeAnalysisResultsStub.mockReturnValue(undefined);
+          removeStorageStub.mockReturnValue(undefined);
         });
 
         it("should remove variant analysis", async () => {
@@ -804,12 +803,12 @@ describe("Variant Analysis Manager", () => {
     beforeEach(() => {
       variantAnalysis = createMockVariantAnalysis({});
 
-      variantAnalysisRemovedSpy.mockReset();
+      variantAnalysisRemovedSpy;
       variantAnalysisManager.onVariantAnalysisRemoved(
         variantAnalysisRemovedSpy,
       );
 
-      executeCommandSpy.mockReset().mockResolvedValue(undefined);
+      executeCommandSpy.mockResolvedValue(undefined);
     });
 
     describe("when variant analysis record doesn't exist", () => {
@@ -900,7 +899,7 @@ describe("Variant Analysis Manager", () => {
     beforeEach(async () => {
       variantAnalysis = createMockVariantAnalysis({});
 
-      mockCancelVariantAnalysis.mockReset().mockResolvedValue(undefined);
+      mockCancelVariantAnalysis.mockResolvedValue(undefined);
 
       variantAnalysisStorageLocation =
         variantAnalysisManager.getVariantAnalysisStorageLocation(
@@ -1003,7 +1002,7 @@ describe("Variant Analysis Manager", () => {
       await createTimestampFile(variantAnalysisStorageLocation);
       await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
-      writeTextStub.mockReset();
+      writeTextStub;
       jest.spyOn(env, "clipboard", "get").mockReturnValue({
         readText: jest.fn(),
         writeText: writeTextStub,

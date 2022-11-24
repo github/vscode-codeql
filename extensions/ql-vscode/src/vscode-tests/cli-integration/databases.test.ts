@@ -29,8 +29,7 @@ describe("Databases", () => {
   jest.spyOn(window, "showInformationMessage").mockResolvedValue(undefined);
 
   beforeEach(async () => {
-    inputBoxStub.mockReset().mockResolvedValue(undefined);
-    progressCallback.mockReset();
+    inputBoxStub.mockResolvedValue(undefined);
 
     const extension = await extensions
       .getExtension<CodeQLExtensionInterface | Record<string, never>>(

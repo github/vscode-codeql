@@ -64,7 +64,6 @@ describeWithCodeQL()("Queries", () => {
     safeDel(qlFile);
     safeDel(qlpackFile);
 
-    progress.mockReset();
     token = {} as CancellationToken;
 
     // Add a database, but make sure the database manager is empty first

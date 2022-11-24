@@ -29,11 +29,10 @@ describe("Packaging commands", () => {
   );
 
   beforeEach(async () => {
-    progress.mockReset();
-    quickPickSpy.mockReset().mockResolvedValue(undefined);
-    inputBoxSpy.mockReset().mockResolvedValue(undefined);
-    showAndLogErrorMessageSpy.mockReset().mockResolvedValue(undefined);
-    showAndLogInformationMessageSpy.mockReset().mockResolvedValue(undefined);
+    quickPickSpy.mockResolvedValue(undefined);
+    inputBoxSpy.mockResolvedValue(undefined);
+    showAndLogErrorMessageSpy.mockResolvedValue(undefined);
+    showAndLogInformationMessageSpy.mockResolvedValue(undefined);
 
     const extension = await extensions
       .getExtension<CodeQLExtensionInterface | Record<string, never>>(
