@@ -9,5 +9,6 @@ module.exports = {
     "<rootDir>/src/view",
     "<rootDir>/test",
     "<rootDir>/out/vscode-tests/no-workspace",
+    "<rootDir>/out/vscode-tests/minimal-workspace",
   ],
 };
