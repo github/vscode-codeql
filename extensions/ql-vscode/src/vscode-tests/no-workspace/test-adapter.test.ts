@@ -42,12 +42,12 @@ describe("test-adapter", () => {
 
   beforeEach(() => {
     mockRunTests();
-    openDatabaseSpy.mockReset().mockResolvedValue(postTestDatabaseItem);
-    removeDatabaseItemSpy.mockReset().mockResolvedValue(undefined);
-    renameDatabaseItemSpy.mockReset().mockResolvedValue(undefined);
-    setCurrentDatabaseItemSpy.mockReset().mockResolvedValue(undefined);
-    resolveQlpacksSpy.mockReset().mockResolvedValue({});
-    resolveTestsSpy.mockReset().mockResolvedValue([]);
+    openDatabaseSpy.mockResolvedValue(postTestDatabaseItem);
+    removeDatabaseItemSpy.mockResolvedValue(undefined);
+    renameDatabaseItemSpy.mockResolvedValue(undefined);
+    setCurrentDatabaseItemSpy.mockResolvedValue(undefined);
+    resolveQlpacksSpy.mockResolvedValue({});
+    resolveTestsSpy.mockResolvedValue([]);
     fakeDatabaseManager = {
       openDatabase: openDatabaseSpy,
       removeDatabaseItem: removeDatabaseItemSpy,
@@ -124,7 +124,7 @@ describe("test-adapter", () => {
     databaseItems = [preTestDatabaseItem];
     await adapter.run(["/path/to/test/dir"]);
 
-    expect(removeDatabaseItemSpy.mock.invocationCallOrder[0]).toBeGreaterThan(
+    expect(removeDatabaseItemSpy.mock.invocationCallOrder[0]).toBeLessThan(
       runTestsSpy.mock.invocationCallOrder[0],
     );
     expect(openDatabaseSpy.mock.invocationCallOrder[0]).toBeGreaterThan(

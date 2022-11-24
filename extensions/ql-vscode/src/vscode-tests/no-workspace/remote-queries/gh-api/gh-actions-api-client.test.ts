@@ -20,10 +20,6 @@ describe("gh-actions-api-client mock responses", () => {
       }),
   } as unknown as Credentials;
 
-  beforeEach(() => {
-    mockRequest.mockReset();
-  });
-
   describe("cancelRemoteQuery", () => {
     it("should cancel a remote query", async () => {
       mockRequest.mockReturnValue({ status: 202 });

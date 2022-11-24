@@ -190,7 +190,7 @@ describe("query-results", () => {
     const sourceInfo = {};
 
     beforeEach(() => {
-      spy.mockReset().mockReturnValue({ a: "1234" });
+      spy.mockReturnValue({ a: "1234" });
 
       mockServer = {
         interpretBqrsSarif: spy,

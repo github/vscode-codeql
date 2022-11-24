@@ -74,16 +74,12 @@ describe("query-history", () => {
   let variantAnalysisHistory: VariantAnalysisHistoryItem[];
 
   beforeEach(() => {
-    showTextDocumentSpy
-      .mockClear()
-      .mockResolvedValue(undefined as unknown as TextEditor);
+    showTextDocumentSpy.mockResolvedValue(undefined as unknown as TextEditor);
 
-    showInformationMessageSpy.mockClear().mockResolvedValue(undefined);
-    showQuickPickSpy.mockClear().mockResolvedValue(undefined);
-    executeCommandSpy.mockClear().mockResolvedValue(undefined);
-    logSpy.mockClear().mockResolvedValue(undefined);
-
-    doCompareCallback.mockReset();
+    showInformationMessageSpy.mockResolvedValue(undefined);
+    showQuickPickSpy.mockResolvedValue(undefined);
+    executeCommandSpy.mockResolvedValue(undefined);
+    logSpy.mockResolvedValue(undefined);
 
     tryOpenExternalFile = (QueryHistoryManager.prototype as any)
       .tryOpenExternalFile;
@@ -478,10 +474,10 @@ describe("query-history", () => {
               request: getOctokitStub,
             }),
         } as unknown as Credentials;
-        credentialsSpy.mockReset().mockResolvedValue(mockCredentials);
+        credentialsSpy.mockResolvedValue(mockCredentials);
 
-        mockCancelRemoteQuery.mockClear().mockResolvedValue();
-        getOctokitStub.mockClear();
+        mockCancelRemoteQuery.mockResolvedValue();
+        getOctokitStub;
       });
 
       describe("if the item is in progress", () => {

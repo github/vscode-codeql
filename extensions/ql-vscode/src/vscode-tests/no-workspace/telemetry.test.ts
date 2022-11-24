@@ -50,11 +50,11 @@ describe("telemetry reporting", () => {
 
       ctx = createMockExtensionContext();
 
-      sendTelemetryEventSpy.mockReset().mockReturnValue(undefined);
-      sendTelemetryExceptionSpy.mockReset().mockReturnValue(undefined);
-      disposeSpy.mockReset().mockResolvedValue(undefined);
+      sendTelemetryEventSpy.mockReturnValue(undefined);
+      sendTelemetryExceptionSpy.mockReturnValue(undefined);
+      disposeSpy.mockResolvedValue(undefined);
 
-      showInformationMessageSpy.mockReset().mockResolvedValue(undefined);
+      showInformationMessageSpy.mockResolvedValue(undefined);
 
       originalTelemetryExtension = workspace
         .getConfiguration()

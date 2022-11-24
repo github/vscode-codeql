@@ -25,9 +25,7 @@ describe("databaseFetcher", () => {
     } as unknown as Octokit.Octokit;
 
     beforeEach(() => {
-      quickPickSpy.mockReset().mockResolvedValue(undefined);
-      progressSpy.mockReset();
-      mockRequest.mockReset();
+      quickPickSpy.mockResolvedValue(undefined);
     });
 
     it("should convert a GitHub nwo to a database url", async () => {
@@ -135,8 +133,7 @@ describe("databaseFetcher", () => {
     const progressSpy = jest.fn();
 
     beforeEach(() => {
-      quickPickSpy.mockReset().mockResolvedValue(undefined);
-      progressSpy.mockReset();
+      quickPickSpy.mockResolvedValue(undefined);
     });
 
     it("should convert a project url to a database url", async () => {

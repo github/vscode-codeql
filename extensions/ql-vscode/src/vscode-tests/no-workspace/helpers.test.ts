@@ -401,7 +401,7 @@ describe("helpers", () => {
     );
 
     beforeEach(() => {
-      showInformationMessageSpy.mockClear().mockResolvedValue(undefined);
+      showInformationMessageSpy.mockResolvedValue(undefined);
     });
 
     const resolveArg =

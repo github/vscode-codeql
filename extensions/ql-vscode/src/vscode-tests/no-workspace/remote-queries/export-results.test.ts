@@ -10,8 +10,10 @@ describe("export results", () => {
   describe("exportRemoteQueryAnalysisResults", () => {
     const mockCredentials = {} as unknown as Credentials;
 
-    jest.spyOn(markdownGenerator, "generateMarkdown").mockReturnValue([]);
-    jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
+    beforeEach(() => {
+      jest.spyOn(markdownGenerator, "generateMarkdown").mockReturnValue([]);
+      jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
+    });
 
     it("should call the GitHub Actions API with the correct gist title", async function () {
       const mockCreateGist = jest

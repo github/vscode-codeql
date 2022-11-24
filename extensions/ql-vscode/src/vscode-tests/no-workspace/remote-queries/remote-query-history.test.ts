@@ -80,10 +80,6 @@ describe("Remote queries and query history manager", () => {
 
     disposables = new DisposableBucket();
 
-    rehydrateRemoteQueryStub.mockReset();
-    removeRemoteQueryStub.mockReset();
-    openRemoteQueryResultsStub.mockReset();
-
     rawQueryHistory = fs.readJSONSync(
       path.join(STORAGE_DIR, "workspace-query-history.json"),
     ).queries;

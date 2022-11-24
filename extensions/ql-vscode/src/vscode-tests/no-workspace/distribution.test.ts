@@ -206,13 +206,13 @@ describe("Launcher path", () => {
   let launcherThatExists = "";
 
   beforeEach(() => {
-    warnSpy.mockClear().mockResolvedValue(undefined);
-    errorSpy.mockClear().mockResolvedValue(undefined);
-    logSpy.mockClear().mockResolvedValue(undefined);
-    pathExistsSpy.mockClear().mockImplementation(async (path: string) => {
+    warnSpy.mockResolvedValue(undefined);
+    errorSpy.mockResolvedValue(undefined);
+    logSpy.mockResolvedValue(undefined);
+    pathExistsSpy.mockImplementation(async (path: string) => {
       return path.endsWith(launcherThatExists);
     });
-    platformSpy.mockClear().mockReturnValue("win32");
+    platformSpy.mockReturnValue("win32");
   });
 
   it("should not warn with proper launcher name", async () => {

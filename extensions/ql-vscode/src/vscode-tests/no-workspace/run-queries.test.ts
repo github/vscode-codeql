@@ -21,7 +21,7 @@ describe("run-queries", () => {
   const isCanarySpy = jest.spyOn(config, "isCanary");
 
   beforeEach(() => {
-    isCanarySpy.mockReset().mockReturnValue(false);
+    isCanarySpy.mockReturnValue(false);
   });
 
   it("should create a QueryEvaluationInfo", () => {
