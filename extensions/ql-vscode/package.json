@@ -1343,8 +1343,6 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^12.1.5",
     "@testing-library/user-event": "^14.4.3",
-    "@types/chai": "^4.1.7",
-    "@types/chai-as-promised": "~7.1.2",
     "@types/child-process-promise": "^2.2.1",
     "@types/classnames": "~2.2.9",
     "@types/d3": "^7.4.0",
@@ -1359,17 +1357,13 @@
     "@types/jest": "^29.0.2",
     "@types/js-yaml": "^3.12.5",
     "@types/jszip": "~3.1.6",
-    "@types/mocha": "^9.0.0",
     "@types/nanoid": "^3.0.0",
     "@types/node": "^16.11.25",
     "@types/node-fetch": "~2.5.2",
-    "@types/proxyquire": "~1.3.28",
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.2",
     "@types/sarif": "~2.1.2",
     "@types/semver": "~7.2.0",
-    "@types/sinon": "~7.5.2",
-    "@types/sinon-chai": "~3.2.3",
     "@types/stream-chain": "~2.0.1",
     "@types/stream-json": "~1.7.1",
     "@types/tar-stream": "^2.2.2",
@@ -1386,8 +1380,6 @@
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.3.5",
     "babel-loader": "^8.2.5",
-    "chai": "^4.2.0",
-    "chai-as-promised": "~7.1.1",
     "css-loader": "~3.1.0",
     "del": "^6.0.0",
     "eslint": "^8.23.1",
@@ -1409,13 +1401,8 @@
     "jest-runner-vscode": "^3.0.1",
     "lint-staged": "~10.2.2",
     "mini-css-extract-plugin": "^2.6.1",
-    "mocha": "^10.0.0",
-    "mocha-sinon": "~2.1.2",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.7.1",
-    "proxyquire": "~2.1.3",
-    "sinon": "~14.0.0",
-    "sinon-chai": "~3.5.0",
     "tar-stream": "^2.2.0",
     "through2": "^4.0.2",
     "ts-jest": "^29.0.1",
@@ -1431,7 +1418,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run format-staged",
-      "pre-push": "npm run lint && scripts/forbid-mocha-only"
+      "pre-push": "npm run lint && scripts/forbid-test-only"
     }
   },
   "lint-staged": {

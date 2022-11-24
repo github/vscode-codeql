@@ -2,9 +2,6 @@ import * as path from "path";
 import * as vscode from "vscode";
 import * as determiningSelectedQueryTest from "./determining-selected-query-test";
 
-// Temporary until Mocha is fully removed. This is necessary for passing timeouts to `it`.
-declare let it: jest.It;
-
 describe("launching with a minimal workspace", () => {
   const ext = vscode.extensions.getExtension("GitHub.vscode-codeql");
   it("should install the extension", () => {

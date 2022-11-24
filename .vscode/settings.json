@@ -37,7 +37,7 @@
   "javascript.preferences.quoteStyle": "single",
   "editor.wordWrapColumn": 100,
   "jest.rootPath": "./extensions/ql-vscode",
-  "jest.autoRun": "watch",
+  "jest.autoRun": "off",
   "jest.nodeEnv": {
     "LANG": "en-US",
     "TZ": "UTC"

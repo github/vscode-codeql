@@ -70,7 +70,6 @@ export function createMockQueryWithResults({
   hasInterpretedResults = true,
   hasMetadata = undefined,
 }: {
-  sandbox?: sinon.SinonSandbox;
   didRunSuccessfully?: boolean;
   hasInterpretedResults?: boolean;
   hasMetadata?: boolean;
