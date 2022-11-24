@@ -1275,7 +1275,7 @@
     "integration": "npm-run-all integration:*",
     "integration:no-workspace": "jest --projects out/vscode-tests/no-workspace",
     "integration:minimal-workspace": "node ./out/vscode-tests/run-integration-tests.js minimal-workspace",
-    "cli-integration": "jest --config=out/vscode-tests/cli-integration/jest.config.js out/vscode-tests/cli-integration",
+    "cli-integration": "jest --projects out/vscode-tests/cli-integration",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "format": "prettier --write **/*.{ts,tsx} && eslint . --ext .ts,.tsx --fix",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",

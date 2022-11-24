@@ -764,16 +764,20 @@ describe("Variant Analysis Manager", () => {
       });
 
       describe("removeVariantAnalysis", () => {
-        const removeAnalysisResultsStub = jest.spyOn(
-          variantAnalysisResultsManager,
-          "removeAnalysisResults",
-        );
+        let removeAnalysisResultsStub: jest.SpyInstance<
+          void,
+          [variantAnalysis: VariantAnalysisModule.VariantAnalysis]
+        >;
         const removeStorageStub = jest.spyOn(fs, "remove");
         let dummyVariantAnalysis: VariantAnalysis;
 
         beforeEach(async () => {
           dummyVariantAnalysis = createMockVariantAnalysis({});
-          removeAnalysisResultsStub.mockReturnValue(undefined);
+
+          removeAnalysisResultsStub = jest
+            .spyOn(variantAnalysisResultsManager, "removeAnalysisResults")
+            .mockReturnValue(undefined);
+
           removeStorageStub.mockReturnValue(undefined);
         });
 
