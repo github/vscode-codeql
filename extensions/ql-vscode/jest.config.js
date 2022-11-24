@@ -10,5 +10,6 @@ module.exports = {
     "<rootDir>/test",
     "<rootDir>/out/vscode-tests/cli-integration",
     "<rootDir>/out/vscode-tests/no-workspace",
+    "<rootDir>/out/vscode-tests/minimal-workspace",
   ],
 };
