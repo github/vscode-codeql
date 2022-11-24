@@ -250,7 +250,7 @@ describeWithCodeQL()("using the legacy query server", () => {
 
     it(`should have correct results for query ${queryName}`, async () => {
       await parsedResults.done();
-      expect(actualResultSets!).not.toHaveLength(0);
+      expect(actualResultSets).not.toEqual({});
       expect(Object.keys(actualResultSets!).sort()).toEqual(
         Object.keys(queryTestCase.expectedResultSets).sort(),
       );
