@@ -8,7 +8,6 @@ import {
   Uri,
   window,
 } from "vscode";
-import * as os from "os";
 import * as yaml from "js-yaml";
 
 import { QlPack } from "../../../remote-queries/run-remote-query";
@@ -20,7 +19,6 @@ import {
 } from "../../../config";
 import { UserCancellationException } from "../../../commandRunner";
 import * as ghApiClient from "../../../remote-queries/gh-api/gh-api-client";
-import { lte } from "semver";
 import { Repository } from "../../../remote-queries/gh-api/repository";
 import { createMockExtensionContext } from "../../no-workspace";
 import { OutputChannelLogger } from "../../../logging";
@@ -138,8 +136,6 @@ describe("Remote queries", () => {
         workflow_run_id: 20,
         repositories_queried: ["octodemo/hello-world-1"],
       });
-
-      executeCommandSpy.mockRestore();
     });
 
     it("should run a remote query that is part of a qlpack", async () => {
@@ -186,21 +182,13 @@ describe("Remote queries", () => {
       );
       expect(qlpackContents.name).toBe("codeql-remote/query");
 
-      verifyQlPack(
-        "in-pack.ql",
-        packFS.fileContents("qlpack.yml"),
-        "0.0.0",
-        await pathSerializationBroken(),
-      );
+      verifyQlPack("in-pack.ql", packFS.fileContents("qlpack.yml"), "0.0.0");
 
       const libraryDir = ".codeql/libraries/codeql";
       const packNames = packFS.directoryContents(libraryDir).sort();
 
       // check dependencies.
-      // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
-      // later only have ['javascript-all']. ensure this test can handle either
-      expect(packNames.length).to.be.lessThan(3).toBeGreaterThan(0);
-      expect(packNames[0]).toEqual("javascript-all");
+      expect(packNames).toEqual(["javascript-all"]);
     });
 
     it("should run a remote query that is not part of a qlpack", async () => {
@@ -242,12 +230,7 @@ describe("Remote queries", () => {
       expect(packFS.fileExists("not-in-pack.ql")).toBe(false);
 
       // the compiled pack
-      verifyQlPack(
-        "in-pack.ql",
-        packFS.fileContents("qlpack.yml"),
-        "0.0.0",
-        await pathSerializationBroken(),
-      );
+      verifyQlPack("in-pack.ql", packFS.fileContents("qlpack.yml"), "0.0.0");
 
       // should have generated a correct qlpack file
       const qlpackContents: any = yaml.load(
@@ -261,10 +244,7 @@ describe("Remote queries", () => {
       const packNames = packFS.directoryContents(libraryDir).sort();
 
       // check dependencies.
-      // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
-      // later only have ['javascript-all']. ensure this test can handle either
-      expect(packNames.length).to.be.lessThan(3).toBeGreaterThan(0);
-      expect(packNames[0]).toEqual("javascript-all");
+      expect(packNames).toEqual(["javascript-all"]);
     });
 
     it("should run a remote query that is nested inside a qlpack", async () => {
@@ -309,7 +289,6 @@ describe("Remote queries", () => {
         "subfolder/in-pack.ql",
         packFS.fileContents("qlpack.yml"),
         "0.0.0",
-        await pathSerializationBroken(),
       );
 
       // should have generated a correct qlpack file
@@ -324,10 +303,7 @@ describe("Remote queries", () => {
       const packNames = packFS.directoryContents(libraryDir).sort();
 
       // check dependencies.
-      // 2.7.4 and earlier have ['javascript-all', 'javascript-upgrades']
-      // later only have ['javascript-all']. ensure this test can handle either
-      expect(packNames.length).to.be.lessThan(3).toBeGreaterThan(0);
-      expect(packNames[0]).toEqual("javascript-all");
+      expect(packNames).toEqual(["javascript-all"]);
     });
 
     it("should cancel a run before uploading", async () => {
@@ -349,14 +325,8 @@ describe("Remote queries", () => {
     queryPath: string,
     contents: Buffer,
     packVersion: string,
-    pathSerializationBroken: boolean,
   ) {
     const qlPack = yaml.load(contents.toString("utf-8")) as QlPack;
-
-    if (pathSerializationBroken) {
-      // the path serialization is broken, so we force it to be the path in the pack to be same as the query path
-      qlPack.defaultSuite![1].query = queryPath;
-    }
 
     // don't check the build metadata since it is variable
     delete (qlPack as any).buildMetadata;
@@ -379,15 +349,6 @@ describe("Remote queries", () => {
     });
   }
 
-  /**
-   * In version 2.7.2 and earlier, relative paths were not serialized correctly inside the qlpack.yml file.
-   * So, ignore part of the test for these versions.
-   *
-   * @returns true if path serialization is broken in this run
-   */
-  async function pathSerializationBroken() {
-    return lte(await cli.getVersion(), "2.7.2") && os.platform() === "win32";
-  }
   function getFile(file: string): Uri {
     return Uri.file(path.join(baseDir, file));
   }
