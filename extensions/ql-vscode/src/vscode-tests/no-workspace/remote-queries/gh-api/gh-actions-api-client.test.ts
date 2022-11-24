@@ -1,4 +1,3 @@
-import { fail } from "assert";
 import { Credentials } from "../../../../authentication";
 import {
   cancelRemoteQuery,
@@ -124,7 +123,7 @@ describe("gh-actions-api-client real responses", () => {
   function skip() {
     if (!process.env.VSCODE_CODEQL_GITHUB_TOKEN) {
       if (process.env.CI) {
-        fail(
+        throw new Error(
           "The VSCODE_CODEQL_GITHUB_TOKEN must be set to a valid GITHUB token on CI",
         );
       } else {

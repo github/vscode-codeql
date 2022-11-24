@@ -20,7 +20,6 @@ import { RemoteQueryResult } from "../../../remote-queries/shared/remote-query-r
 import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";
 import { walkDirectory } from "../../../helpers";
-import { getErrorMessage } from "../../../pure/helpers-pure";
 import { HistoryItemLabelProvider } from "../../../history-item-label-provider";
 import { RemoteQueriesManager } from "../../../remote-queries/remote-queries-manager";
 import { ResultsView } from "../../../interface";
@@ -394,18 +393,15 @@ describe("Remote queries and query history manager", () => {
       const publisher = jest.fn();
       const analysisSummaries = [...remoteQueryResult0.analysisSummaries];
 
-      try {
-        await arm.loadAnalysesResults(
+      await expect(
+        arm.loadAnalysesResults(
           analysisSummaries,
           {
             isCancellationRequested: true,
           } as CancellationToken,
           publisher,
-        );
-        fail("Should have thrown");
-      } catch (e) {
-        expect(getErrorMessage(e)).toContain("cancelled");
-      }
+        ),
+      ).rejects.toThrow(/cancelled/);
 
       expect(publisher).not.toBeCalled();
     });
