@@ -17,22 +17,28 @@ jest.setTimeout(3 * 60 * 1000);
 describe("Packaging commands", () => {
   let cli: CodeQLCliServer;
   const progress = jest.fn();
-  const quickPickSpy = jest.spyOn(window, "showQuickPick");
-  const inputBoxSpy = jest.spyOn(window, "showInputBox");
-  const showAndLogErrorMessageSpy = jest.spyOn(
-    helpers,
-    "showAndLogErrorMessage",
-  );
-  const showAndLogInformationMessageSpy = jest.spyOn(
-    helpers,
-    "showAndLogInformationMessage",
-  );
+  let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
+  let inputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
+  let showAndLogErrorMessageSpy: jest.SpiedFunction<
+    typeof helpers.showAndLogErrorMessage
+  >;
+  let showAndLogInformationMessageSpy: jest.SpiedFunction<
+    typeof helpers.showAndLogInformationMessage
+  >;
 
   beforeEach(async () => {
-    quickPickSpy.mockResolvedValue(undefined);
-    inputBoxSpy.mockResolvedValue(undefined);
-    showAndLogErrorMessageSpy.mockResolvedValue(undefined);
-    showAndLogInformationMessageSpy.mockResolvedValue(undefined);
+    quickPickSpy = jest
+      .spyOn(window, "showQuickPick")
+      .mockResolvedValue(undefined);
+    inputBoxSpy = jest
+      .spyOn(window, "showInputBox")
+      .mockResolvedValue(undefined);
+    showAndLogErrorMessageSpy = jest
+      .spyOn(helpers, "showAndLogErrorMessage")
+      .mockResolvedValue(undefined);
+    showAndLogInformationMessageSpy = jest
+      .spyOn(helpers, "showAndLogInformationMessage")
+      .mockResolvedValue(undefined);
 
     const extension = await extensions
       .getExtension<CodeQLExtensionInterface | Record<string, never>>(

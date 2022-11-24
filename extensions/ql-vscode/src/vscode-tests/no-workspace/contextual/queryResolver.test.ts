@@ -13,12 +13,14 @@ import { CodeQLCliServer } from "../../../cli";
 import { DatabaseItem } from "../../../databases";
 
 describe("queryResolver", () => {
-  const writeFileSpy = jest.spyOn(fs, "writeFile");
+  let writeFileSpy: jest.SpiedFunction<typeof fs.writeFile>;
 
-  const getQlPackForDbschemeSpy = jest.spyOn(helpers, "getQlPackForDbscheme");
-  const getPrimaryDbschemeSpy = jest.spyOn(helpers, "getPrimaryDbscheme");
-  jest.spyOn(helpers, "getOnDiskWorkspaceFolders").mockReturnValue([]);
-  jest.spyOn(helpers, "showAndLogErrorMessage").mockResolvedValue(undefined);
+  let getQlPackForDbschemeSpy: jest.SpiedFunction<
+    typeof helpers.getQlPackForDbscheme
+  >;
+  let getPrimaryDbschemeSpy: jest.SpiedFunction<
+    typeof helpers.getPrimaryDbscheme
+  >;
 
   const mockCli = {
     resolveQueriesInSuite: jest.fn(),
@@ -28,15 +30,23 @@ describe("queryResolver", () => {
   };
 
   beforeEach(() => {
-    writeFileSpy.mockImplementation(() => Promise.resolve());
+    writeFileSpy = jest
+      .spyOn(fs, "writeFile")
+      .mockImplementation(() => Promise.resolve());
 
-    getQlPackForDbschemeSpy.mockResolvedValue({
-      dbschemePack: "dbschemePack",
-      dbschemePackIsLibraryPack: false,
-    });
-    getPrimaryDbschemeSpy.mockResolvedValue("primaryDbscheme");
+    getQlPackForDbschemeSpy = jest
+      .spyOn(helpers, "getQlPackForDbscheme")
+      .mockResolvedValue({
+        dbschemePack: "dbschemePack",
+        dbschemePackIsLibraryPack: false,
+      });
+    getPrimaryDbschemeSpy = jest
+      .spyOn(helpers, "getPrimaryDbscheme")
+      .mockResolvedValue("primaryDbscheme");
 
-    mockCli.resolveQueriesInSuite;
+    jest.spyOn(helpers, "getOnDiskWorkspaceFolders").mockReturnValue([]);
+    jest.spyOn(helpers, "showAndLogErrorMessage").mockResolvedValue(undefined);
+
     mockCli.cliConstraints.supportsAllowLibraryPacksInResolveQueries.mockReturnValue(
       true,
     );

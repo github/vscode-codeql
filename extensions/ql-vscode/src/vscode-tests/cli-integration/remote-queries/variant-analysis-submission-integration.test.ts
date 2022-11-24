@@ -32,10 +32,10 @@ async function showQlDocument(name: string): Promise<TextDocument> {
 }
 
 describe("Variant Analysis Submission Integration", () => {
-  const quickPickSpy = jest.spyOn(window, "showQuickPick");
-  const inputBoxSpy = jest.spyOn(window, "showInputBox");
-  const executeCommandSpy = jest.spyOn(commands, "executeCommand");
-  const showErrorMessageSpy = jest.spyOn(window, "showErrorMessage");
+  let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
+  let inputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
+  let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
+  let showErrorMessageSpy: jest.SpiedFunction<typeof window.showErrorMessage>;
 
   beforeEach(async () => {
     jest.spyOn(config, "isCanary").mockReturnValue(true);
@@ -50,11 +50,16 @@ describe("Variant Analysis Submission Integration", () => {
 
     await config.setRemoteControllerRepo("github/vscode-codeql");
 
-    quickPickSpy.mockResolvedValue(undefined);
-    inputBoxSpy.mockResolvedValue(undefined);
-
-    executeCommandSpy.mockRestore();
-    showErrorMessageSpy.mockResolvedValue(undefined);
+    quickPickSpy = jest
+      .spyOn(window, "showQuickPick")
+      .mockResolvedValue(undefined);
+    inputBoxSpy = jest
+      .spyOn(window, "showInputBox")
+      .mockResolvedValue(undefined);
+    executeCommandSpy = jest.spyOn(commands, "executeCommand");
+    showErrorMessageSpy = jest
+      .spyOn(window, "showErrorMessage")
+      .mockResolvedValue(undefined);
 
     await extensions
       .getExtension<CodeQLExtensionInterface | Record<string, never>>(

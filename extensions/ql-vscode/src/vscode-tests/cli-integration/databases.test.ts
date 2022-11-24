@@ -21,15 +21,17 @@ describe("Databases", () => {
     "https://lgtm.com/projects/g/aeisenberg/angular-bind-notifier/";
 
   let databaseManager: DatabaseManager;
-  const inputBoxStub = jest.spyOn(window, "showInputBox");
+  let inputBoxStub: jest.SpiedFunction<typeof window.showInputBox>;
   let cli: CodeQLCliServer;
   const progressCallback = jest.fn();
 
-  jest.spyOn(window, "showErrorMessage").mockResolvedValue(undefined);
-  jest.spyOn(window, "showInformationMessage").mockResolvedValue(undefined);
-
   beforeEach(async () => {
-    inputBoxStub.mockResolvedValue(undefined);
+    inputBoxStub = jest
+      .spyOn(window, "showInputBox")
+      .mockResolvedValue(undefined);
+
+    jest.spyOn(window, "showErrorMessage").mockResolvedValue(undefined);
+    jest.spyOn(window, "showInformationMessage").mockResolvedValue(undefined);
 
     const extension = await extensions
       .getExtension<CodeQLExtensionInterface | Record<string, never>>(

@@ -1,9 +1,4 @@
-import {
-  CancellationToken,
-  CancellationTokenSource,
-  commands,
-  extensions,
-} from "vscode";
+import { CancellationTokenSource, commands, extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../../extension";
 import * as config from "../../../config";
 
@@ -20,7 +15,6 @@ import {
 } from "../../factories/remote-queries/gh-api/variant-analysis-api-response";
 import {
   VariantAnalysis,
-  VariantAnalysisScannedRepository,
   VariantAnalysisStatus,
 } from "../../../remote-queries/shared/variant-analysis";
 import { createMockScannedRepos } from "../../factories/remote-queries/gh-api/scanned-repositories";
@@ -37,18 +31,15 @@ jest.setTimeout(60_000);
 
 describe("Variant Analysis Monitor", () => {
   let extension: CodeQLExtensionInterface | Record<string, never>;
-  const mockGetVariantAnalysis = jest.spyOn(ghApiClient, "getVariantAnalysis");
+  let mockGetVariantAnalysis: jest.SpiedFunction<
+    typeof ghApiClient.getVariantAnalysis
+  >;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
   let variantAnalysis: VariantAnalysis;
   let variantAnalysisManager: VariantAnalysisManager;
-  let mockGetDownloadResult: jest.SpyInstance<
-    Promise<void>,
-    [
-      scannedRepo: VariantAnalysisScannedRepository,
-      variantAnalysis: VariantAnalysis,
-      cancellationToken: CancellationToken,
-    ]
+  let mockGetDownloadResult: jest.SpiedFunction<
+    typeof variantAnalysisManager.autoDownloadVariantAnalysisResult
   >;
 
   beforeEach(async () => {
@@ -72,7 +63,9 @@ describe("Variant Analysis Monitor", () => {
       .spyOn(variantAnalysisManager, "autoDownloadVariantAnalysisResult")
       .mockResolvedValue(undefined);
 
-    mockGetVariantAnalysis.mockRejectedValue(new Error("Not mocked"));
+    mockGetVariantAnalysis = jest
+      .spyOn(ghApiClient, "getVariantAnalysis")
+      .mockRejectedValue(new Error("Not mocked"));
 
     limitNumberOfAttemptsToMonitor();
   });

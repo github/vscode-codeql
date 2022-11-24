@@ -49,14 +49,16 @@ describe("query-history", () => {
     "mock-extension-location",
   );
   let configListener: QueryHistoryConfigListener;
-  const showTextDocumentSpy = jest.spyOn(vscode.window, "showTextDocument");
-  const showInformationMessageSpy = jest.spyOn(
-    vscode.window,
-    "showInformationMessage",
-  );
-  const showQuickPickSpy = jest.spyOn(vscode.window, "showQuickPick");
-  const executeCommandSpy = jest.spyOn(vscode.commands, "executeCommand");
-  const logSpy = jest.spyOn(logger, "log");
+  let showTextDocumentSpy: jest.SpiedFunction<
+    typeof vscode.window.showTextDocument
+  >;
+  let showInformationMessageSpy: jest.SpiedFunction<
+    typeof vscode.window.showInformationMessage
+  >;
+  let showQuickPickSpy: jest.SpiedFunction<typeof vscode.window.showQuickPick>;
+  let executeCommandSpy: jest.SpiedFunction<
+    typeof vscode.commands.executeCommand
+  >;
   const doCompareCallback = jest.fn();
 
   let queryHistoryManager: QueryHistoryManager | undefined;
@@ -73,12 +75,20 @@ describe("query-history", () => {
   let variantAnalysisHistory: VariantAnalysisHistoryItem[];
 
   beforeEach(() => {
-    showTextDocumentSpy.mockResolvedValue(undefined as unknown as TextEditor);
+    showTextDocumentSpy = jest
+      .spyOn(vscode.window, "showTextDocument")
+      .mockResolvedValue(undefined as unknown as TextEditor);
+    showInformationMessageSpy = jest
+      .spyOn(vscode.window, "showInformationMessage")
+      .mockResolvedValue(undefined);
+    showQuickPickSpy = jest
+      .spyOn(vscode.window, "showQuickPick")
+      .mockResolvedValue(undefined);
+    executeCommandSpy = jest
+      .spyOn(vscode.commands, "executeCommand")
+      .mockResolvedValue(undefined);
 
-    showInformationMessageSpy.mockResolvedValue(undefined);
-    showQuickPickSpy.mockResolvedValue(undefined);
-    executeCommandSpy.mockResolvedValue(undefined);
-    logSpy.mockResolvedValue(undefined);
+    jest.spyOn(logger, "log").mockResolvedValue(undefined);
 
     tryOpenExternalFile = (QueryHistoryManager.prototype as any)
       .tryOpenExternalFile;
@@ -459,11 +469,9 @@ describe("query-history", () => {
 
     describe("handleCancel", () => {
       let mockCredentials: Credentials;
-      const credentialsSpy = jest.spyOn(Credentials, "initialize");
-      const mockCancelRemoteQuery = jest.spyOn(
-        ghActionsApiClient,
-        "cancelRemoteQuery",
-      );
+      let mockCancelRemoteQuery: jest.SpiedFunction<
+        typeof ghActionsApiClient.cancelRemoteQuery
+      >;
       const getOctokitStub = jest.fn();
 
       beforeEach(async () => {
@@ -473,10 +481,13 @@ describe("query-history", () => {
               request: getOctokitStub,
             }),
         } as unknown as Credentials;
-        credentialsSpy.mockResolvedValue(mockCredentials);
+        jest
+          .spyOn(Credentials, "initialize")
+          .mockResolvedValue(mockCredentials);
 
-        mockCancelRemoteQuery.mockResolvedValue();
-        getOctokitStub;
+        mockCancelRemoteQuery = jest
+          .spyOn(ghActionsApiClient, "cancelRemoteQuery")
+          .mockResolvedValue();
       });
 
       describe("if the item is in progress", () => {

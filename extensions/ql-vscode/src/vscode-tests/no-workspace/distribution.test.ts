@@ -197,22 +197,28 @@ describe("Launcher path", () => {
   const pathToCmd = `abc${path.sep}codeql.cmd`;
   const pathToExe = `abc${path.sep}codeql.exe`;
 
-  const warnSpy = jest.spyOn(helpers, "showAndLogWarningMessage");
-  const errorSpy = jest.spyOn(helpers, "showAndLogErrorMessage");
-  const logSpy = jest.spyOn(logger, "log");
-  const pathExistsSpy = jest.spyOn(fs, "pathExists");
-  const platformSpy = jest.spyOn(os, "platform");
+  let warnSpy: jest.SpiedFunction<typeof helpers.showAndLogWarningMessage>;
+  let errorSpy: jest.SpiedFunction<typeof helpers.showAndLogErrorMessage>;
+  let logSpy: jest.SpiedFunction<typeof logger.log>;
+  let pathExistsSpy: jest.SpiedFunction<typeof fs.pathExists>;
 
   let launcherThatExists = "";
 
   beforeEach(() => {
-    warnSpy.mockResolvedValue(undefined);
-    errorSpy.mockResolvedValue(undefined);
-    logSpy.mockResolvedValue(undefined);
-    pathExistsSpy.mockImplementation(async (path: string) => {
-      return path.endsWith(launcherThatExists);
-    });
-    platformSpy.mockReturnValue("win32");
+    warnSpy = jest
+      .spyOn(helpers, "showAndLogWarningMessage")
+      .mockResolvedValue(undefined);
+    errorSpy = jest
+      .spyOn(helpers, "showAndLogErrorMessage")
+      .mockResolvedValue(undefined);
+    logSpy = jest.spyOn(logger, "log").mockResolvedValue(undefined);
+    pathExistsSpy = jest
+      .spyOn(fs, "pathExists")
+      .mockImplementation(async (path: string) => {
+        return path.endsWith(launcherThatExists);
+      });
+
+    jest.spyOn(os, "platform").mockReturnValue("win32");
   });
 
   it("should not warn with proper launcher name", async () => {

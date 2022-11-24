@@ -47,11 +47,10 @@ describe("Remote queries", () => {
   let cli: CodeQLCliServer;
   let cancellationTokenSource: CancellationTokenSource;
   const progress = jest.fn();
-  const showQuickPickSpy = jest.spyOn(window, "showQuickPick");
-  const getRepositoryFromNwoStub = jest.spyOn(
-    ghApiClient,
-    "getRepositoryFromNwo",
-  );
+  let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
+  let getRepositoryFromNwoStub: jest.SpiedFunction<
+    typeof ghApiClient.getRepositoryFromNwo
+  >;
   let ctx: ExtensionContext;
   let logger: any;
   let remoteQueriesManager: RemoteQueriesManager;
@@ -59,6 +58,9 @@ describe("Remote queries", () => {
   let originalDeps: Record<string, string> | undefined;
 
   beforeEach(async () => {
+    showQuickPickSpy = jest.spyOn(window, "showQuickPick");
+    getRepositoryFromNwoStub = jest.spyOn(ghApiClient, "getRepositoryFromNwo");
+
     const extension = await extensions
       .getExtension<CodeQLExtensionInterface | Record<string, never>>(
         "GitHub.vscode-codeql",
@@ -125,17 +127,20 @@ describe("Remote queries", () => {
   });
 
   describe("runRemoteQuery", () => {
-    const mockSubmitRemoteQueries = jest.spyOn(
-      ghApiClient,
-      "submitRemoteQueries",
-    );
-    const executeCommandSpy = jest.spyOn(commands, "executeCommand");
+    let mockSubmitRemoteQueries: jest.SpiedFunction<
+      typeof ghApiClient.submitRemoteQueries
+    >;
+    let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
 
     beforeEach(() => {
-      mockSubmitRemoteQueries.mockResolvedValue({
-        workflow_run_id: 20,
-        repositories_queried: ["octodemo/hello-world-1"],
-      });
+      mockSubmitRemoteQueries = jest
+        .spyOn(ghApiClient, "submitRemoteQueries")
+        .mockResolvedValue({
+          workflow_run_id: 20,
+          repositories_queried: ["octodemo/hello-world-1"],
+        });
+
+      executeCommandSpy = jest.spyOn(commands, "executeCommand");
     });
 
     it("should run a remote query that is part of a qlpack", async () => {

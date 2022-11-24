@@ -58,10 +58,9 @@ import {
 jest.setTimeout(3 * 60 * 1000);
 
 describe("Variant Analysis Manager", () => {
-  const pathExistsStub = jest.spyOn(fs, "pathExists");
-  const readJsonStub = jest.spyOn(fs, "readJson");
-  const outputJsonStub = jest.spyOn(fs, "outputJson");
-  const writeFileStub = jest.spyOn(fs, "writeFile");
+  let pathExistsStub: jest.SpiedFunction<typeof fs.pathExists>;
+  let readJsonStub: jest.SpiedFunction<typeof fs.readJson>;
+  let outputJsonStub: jest.SpiedFunction<typeof fs.outputJson>;
   let cli: CodeQLCliServer;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
@@ -70,15 +69,16 @@ describe("Variant Analysis Manager", () => {
   let scannedRepos: VariantAnalysisScannedRepository[];
 
   beforeEach(async () => {
+    pathExistsStub = jest.spyOn(fs, "pathExists");
+    readJsonStub = jest.spyOn(fs, "readJson");
+    outputJsonStub = jest.spyOn(fs, "outputJson").mockReturnValue(undefined);
+
     jest.spyOn(logger, "log").mockResolvedValue(undefined);
     jest
       .spyOn(config, "isVariantAnalysisLiveResultsEnabled")
       .mockReturnValue(false);
     jest.spyOn(fs, "mkdirSync").mockReturnValue(undefined);
-    writeFileStub.mockReturnValue(undefined);
-    pathExistsStub.mockRestore();
-    readJsonStub.mockRestore();
-    outputJsonStub.mockReturnValue(undefined);
+    jest.spyOn(fs, "writeFile").mockReturnValue(undefined);
 
     cancellationTokenSource = new CancellationTokenSource();
 
@@ -108,18 +108,16 @@ describe("Variant Analysis Manager", () => {
 
   describe("runVariantAnalysis", () => {
     const progress = jest.fn();
-    const showQuickPickSpy = jest.spyOn(window, "showQuickPick");
-    const mockGetRepositoryFromNwo = jest.spyOn(
-      ghApiClient,
-      "getRepositoryFromNwo",
-    );
-    const mockSubmitVariantAnalysis = jest.spyOn(
-      ghApiClient,
-      "submitVariantAnalysis",
-    );
+    let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
+    let mockGetRepositoryFromNwo: jest.SpiedFunction<
+      typeof ghApiClient.getRepositoryFromNwo
+    >;
+    let mockSubmitVariantAnalysis: jest.SpiedFunction<
+      typeof ghApiClient.submitVariantAnalysis
+    >;
     let mockApiResponse: VariantAnalysisApiResponse;
     let originalDeps: Record<string, string> | undefined;
-    const executeCommandSpy = jest.spyOn(commands, "executeCommand");
+    let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
 
     const baseDir = path.join(
       __dirname,
@@ -134,17 +132,13 @@ describe("Variant Analysis Manager", () => {
     }
 
     beforeEach(async () => {
-      writeFileStub.mockRestore();
-
       // Should not have asked for a language
-      showQuickPickSpy
-
+      showQuickPickSpy = jest
+        .spyOn(window, "showQuickPick")
         .mockResolvedValueOnce({
           repositories: ["github/vscode-codeql"],
         } as unknown as QuickPickItem)
         .mockResolvedValueOnce("javascript" as unknown as QuickPickItem);
-
-      executeCommandSpy.mockRestore();
 
       cancellationTokenSource = new CancellationTokenSource();
 
@@ -154,10 +148,16 @@ describe("Variant Analysis Manager", () => {
         full_name: "github/vscode-codeql",
         private: false,
       };
-      mockGetRepositoryFromNwo.mockResolvedValue(dummyRepository);
+      mockGetRepositoryFromNwo = jest
+        .spyOn(ghApiClient, "getRepositoryFromNwo")
+        .mockResolvedValue(dummyRepository);
 
       mockApiResponse = createMockApiResponse("in_progress");
-      mockSubmitVariantAnalysis.mockResolvedValue(mockApiResponse);
+      mockSubmitVariantAnalysis = jest
+        .spyOn(ghApiClient, "submitVariantAnalysis")
+        .mockResolvedValue(mockApiResponse);
+
+      executeCommandSpy = jest.spyOn(commands, "executeCommand");
 
       // always run in the vscode-codeql repo
       await setRemoteControllerRepo("github/vscode-codeql");
@@ -264,15 +264,7 @@ describe("Variant Analysis Manager", () => {
 
     describe("when the directory does not exist", () => {
       beforeEach(() => {
-        const originalFs = jest.requireActual<typeof fs>("fs-extras");
-        pathExistsStub.mockImplementation((...args) => {
-          if (
-            args[0] === path.join(storagePath, variantAnalysis.id.toString())
-          ) {
-            return false;
-          }
-          return originalFs.pathExists(...args);
-        });
+        pathExistsStub.mockImplementation(() => false);
       });
 
       it("should fire the removed event if the file does not exist", async () => {
@@ -282,6 +274,7 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(stub).toBeCalledTimes(1);
+        expect(pathExistsStub).toHaveBeenCalledTimes(1);
         expect(pathExistsStub).toBeCalledWith(
           path.join(storagePath, variantAnalysis.id.toString()),
         );
@@ -290,15 +283,7 @@ describe("Variant Analysis Manager", () => {
 
     describe("when the directory exists", () => {
       beforeEach(() => {
-        const originalFs = jest.requireActual<typeof fs>("fs-extras");
-        pathExistsStub.mockImplementation((...args) => {
-          if (
-            args[0] === path.join(storagePath, variantAnalysis.id.toString())
-          ) {
-            return true;
-          }
-          return originalFs.pathExists(...args);
-        });
+        pathExistsStub.mockImplementation(() => true);
       });
 
       it("should store the variant analysis", async () => {
@@ -307,26 +292,21 @@ describe("Variant Analysis Manager", () => {
         expect(
           await variantAnalysisManager.getVariantAnalysis(variantAnalysis.id),
         ).toEqual(variantAnalysis);
+
+        expect(pathExistsStub).toHaveBeenCalledTimes(1);
+        expect(pathExistsStub).toBeCalledWith(
+          path.join(storagePath, variantAnalysis.id.toString()),
+        );
       });
 
       it("should not error if the repo states file does not exist", async () => {
-        const originalFs = jest.requireActual<typeof fs>("fs-extras");
-        readJsonStub.mockImplementation((...args) => {
-          if (
-            args[0] ===
-            path.join(
-              storagePath,
-              variantAnalysis.id.toString(),
-              "repo_states.json",
-            )
-          ) {
-            return Promise.reject(new Error("File does not exist"));
-          }
-          return originalFs.readJson(...args);
-        });
+        readJsonStub.mockImplementation(() =>
+          Promise.reject(new Error("File does not exist")),
+        );
 
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
+        expect(readJsonStub).toHaveBeenCalledTimes(1);
         expect(readJsonStub).toHaveBeenCalledWith(
           path.join(
             storagePath,
@@ -340,34 +320,24 @@ describe("Variant Analysis Manager", () => {
       });
 
       it("should read in the repo states if it exists", async () => {
-        const originalFs = jest.requireActual<typeof fs>("fs-extras");
-        readJsonStub.mockImplementation((...args) => {
-          if (
-            args[0] ===
-            path.join(
-              storagePath,
-              variantAnalysis.id.toString(),
-              "repo_states.json",
-            )
-          ) {
-            return Promise.resolve({
-              [scannedRepos[0].repository.id]: {
-                repositoryId: scannedRepos[0].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
-              [scannedRepos[1].repository.id]: {
-                repositoryId: scannedRepos[1].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
-              },
-            });
-          }
-          return originalFs.readJson(...args);
-        });
+        readJsonStub.mockImplementation(() =>
+          Promise.resolve({
+            [scannedRepos[0].repository.id]: {
+              repositoryId: scannedRepos[0].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+            },
+            [scannedRepos[1].repository.id]: {
+              repositoryId: scannedRepos[1].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
+            },
+          }),
+        );
 
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
+        expect(readJsonStub).toHaveBeenCalledTimes(1);
         expect(readJsonStub).toHaveBeenCalledWith(
           path.join(
             storagePath,
@@ -418,14 +388,12 @@ describe("Variant Analysis Manager", () => {
   describe("when credentials are valid", () => {
     let arrayBuffer: ArrayBuffer;
 
-    const getVariantAnalysisRepoStub = jest.spyOn(
-      ghApiClient,
-      "getVariantAnalysisRepo",
-    );
-    const getVariantAnalysisRepoResultStub = jest.spyOn(
-      ghApiClient,
-      "getVariantAnalysisRepoResult",
-    );
+    let getVariantAnalysisRepoStub: jest.SpiedFunction<
+      typeof ghApiClient.getVariantAnalysisRepo
+    >;
+    let getVariantAnalysisRepoResultStub: jest.SpiedFunction<
+      typeof ghApiClient.getVariantAnalysisRepoResult
+    >;
 
     beforeEach(async () => {
       const mockCredentials = {
@@ -442,8 +410,14 @@ describe("Variant Analysis Manager", () => {
       );
       arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
 
-      getVariantAnalysisRepoStub;
-      getVariantAnalysisRepoResultStub;
+      getVariantAnalysisRepoStub = jest.spyOn(
+        ghApiClient,
+        "getVariantAnalysisRepo",
+      );
+      getVariantAnalysisRepoResultStub = jest.spyOn(
+        ghApiClient,
+        "getVariantAnalysisRepoResult",
+      );
     });
 
     describe("when the artifact_url is missing", () => {
@@ -656,44 +630,32 @@ describe("Variant Analysis Manager", () => {
           // The actual tests for these are in rehydrateVariantAnalysis, so we can just mock them here and test that
           // the methods are called.
 
-          const originalFs = jest.requireActual<typeof fs>("fs-extras");
-          pathExistsStub.mockImplementation((...args) => {
-            if (
-              args[0] === path.join(storagePath, variantAnalysis.id.toString())
-            ) {
-              return false;
-            }
-            return originalFs.pathExists(...args);
-          });
+          pathExistsStub.mockImplementation(() => false);
           // This will read in the correct repo states
-          readJsonStub.mockImplementation((...args) => {
-            if (
-              args[0] ===
-              path.join(
-                storagePath,
-                variantAnalysis.id.toString(),
-                "repo_states.json",
-              )
-            ) {
-              return Promise.resolve({
-                [scannedRepos[1].repository.id]: {
-                  repositoryId: scannedRepos[1].repository.id,
-                  downloadStatus:
-                    VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-                },
-                [scannedRepos[2].repository.id]: {
-                  repositoryId: scannedRepos[2].repository.id,
-                  downloadStatus:
-                    VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
-                },
-              });
-            }
-            return originalFs.readJson(...args);
-          });
+          readJsonStub.mockImplementation(() =>
+            Promise.resolve({
+              [scannedRepos[1].repository.id]: {
+                repositoryId: scannedRepos[1].repository.id,
+                downloadStatus:
+                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+              },
+              [scannedRepos[2].repository.id]: {
+                repositoryId: scannedRepos[2].repository.id,
+                downloadStatus:
+                  VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
+              },
+            }),
+          );
 
           await variantAnalysisManager.rehydrateVariantAnalysis(
             variantAnalysis,
           );
+
+          expect(pathExistsStub).toHaveBeenCalledTimes(1);
+          expect(pathExistsStub).toBeCalledWith(
+            path.join(storagePath, variantAnalysis.id.toString()),
+          );
+          expect(readJsonStub).toHaveBeenCalledTimes(1);
           expect(readJsonStub).toHaveBeenCalledWith(
             path.join(
               storagePath,
@@ -764,11 +726,10 @@ describe("Variant Analysis Manager", () => {
       });
 
       describe("removeVariantAnalysis", () => {
-        let removeAnalysisResultsStub: jest.SpyInstance<
-          void,
-          [variantAnalysis: VariantAnalysisModule.VariantAnalysis]
+        let removeAnalysisResultsStub: jest.SpiedFunction<
+          typeof variantAnalysisResultsManager.removeAnalysisResults
         >;
-        const removeStorageStub = jest.spyOn(fs, "remove");
+        let removeStorageStub: jest.SpiedFunction<typeof fs.remove>;
         let dummyVariantAnalysis: VariantAnalysis;
 
         beforeEach(async () => {
@@ -778,7 +739,9 @@ describe("Variant Analysis Manager", () => {
             .spyOn(variantAnalysisResultsManager, "removeAnalysisResults")
             .mockReturnValue(undefined);
 
-          removeStorageStub.mockReturnValue(undefined);
+          removeStorageStub = jest
+            .spyOn(fs, "remove")
+            .mockReturnValue(undefined);
         });
 
         it("should remove variant analysis", async () => {
@@ -802,17 +765,18 @@ describe("Variant Analysis Manager", () => {
   describe("when rehydrating a query", () => {
     let variantAnalysis: VariantAnalysis;
     const variantAnalysisRemovedSpy = jest.fn();
-    const executeCommandSpy = jest.spyOn(commands, "executeCommand");
+    let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
 
     beforeEach(() => {
       variantAnalysis = createMockVariantAnalysis({});
 
-      variantAnalysisRemovedSpy;
       variantAnalysisManager.onVariantAnalysisRemoved(
         variantAnalysisRemovedSpy,
       );
 
-      executeCommandSpy.mockResolvedValue(undefined);
+      executeCommandSpy = jest
+        .spyOn(commands, "executeCommand")
+        .mockResolvedValue(undefined);
     });
 
     describe("when variant analysis record doesn't exist", () => {
@@ -893,17 +857,18 @@ describe("Variant Analysis Manager", () => {
 
   describe("cancelVariantAnalysis", () => {
     let variantAnalysis: VariantAnalysis;
-    const mockCancelVariantAnalysis = jest.spyOn(
-      ghActionsApiClient,
-      "cancelVariantAnalysis",
-    );
+    let mockCancelVariantAnalysis: jest.SpiedFunction<
+      typeof ghActionsApiClient.cancelVariantAnalysis
+    >;
 
     let variantAnalysisStorageLocation: string;
 
     beforeEach(async () => {
       variantAnalysis = createMockVariantAnalysis({});
 
-      mockCancelVariantAnalysis.mockResolvedValue(undefined);
+      mockCancelVariantAnalysis = jest
+        .spyOn(ghActionsApiClient, "cancelVariantAnalysis")
+        .mockResolvedValue(undefined);
 
       variantAnalysisStorageLocation =
         variantAnalysisManager.getVariantAnalysisStorageLocation(
@@ -1006,7 +971,6 @@ describe("Variant Analysis Manager", () => {
       await createTimestampFile(variantAnalysisStorageLocation);
       await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
-      writeTextStub;
       jest.spyOn(env, "clipboard", "get").mockReturnValue({
         readText: jest.fn(),
         writeText: writeTextStub,

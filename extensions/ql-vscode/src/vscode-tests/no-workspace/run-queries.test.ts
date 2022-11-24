@@ -18,10 +18,10 @@ import { LegacyQueryRunner } from "../../legacy-query-server/legacyRunner";
 import { DatabaseItem } from "../../databases";
 
 describe("run-queries", () => {
-  const isCanarySpy = jest.spyOn(config, "isCanary");
+  let isCanarySpy: jest.SpiedFunction<typeof config.isCanary>;
 
   beforeEach(() => {
-    isCanarySpy.mockReturnValue(false);
+    isCanarySpy = jest.spyOn(config, "isCanary").mockReturnValue(false);
   });
 
   it("should create a QueryEvaluationInfo", () => {

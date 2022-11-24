@@ -17,7 +17,8 @@ jest.setTimeout(10000);
 
 describe("databaseFetcher", () => {
   describe("convertGithubNwoToDatabaseUrl", () => {
-    const quickPickSpy = jest.spyOn(window, "showQuickPick");
+    let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
+
     const progressSpy = jest.fn();
     const mockRequest = jest.fn();
     const octokit: Octokit.Octokit = {
@@ -25,7 +26,9 @@ describe("databaseFetcher", () => {
     } as unknown as Octokit.Octokit;
 
     beforeEach(() => {
-      quickPickSpy.mockResolvedValue(undefined);
+      quickPickSpy = jest
+        .spyOn(window, "showQuickPick")
+        .mockResolvedValue(undefined);
     });
 
     it("should convert a GitHub nwo to a database url", async () => {
@@ -129,11 +132,13 @@ describe("databaseFetcher", () => {
   });
 
   describe("convertLgtmUrlToDatabaseUrl", () => {
-    const quickPickSpy = jest.spyOn(window, "showQuickPick");
+    let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
     const progressSpy = jest.fn();
 
     beforeEach(() => {
-      quickPickSpy.mockResolvedValue(undefined);
+      quickPickSpy = jest
+        .spyOn(window, "showQuickPick")
+        .mockResolvedValue(undefined);
     });
 
     it("should convert a project url to a database url", async () => {

@@ -100,10 +100,9 @@ describe(VariantAnalysisResultsManager.name, () => {
     describe("when the artifact_url is present", () => {
       let arrayBuffer: ArrayBuffer;
 
-      const getVariantAnalysisRepoResultStub = jest.spyOn(
-        ghApiClient,
-        "getVariantAnalysisRepoResult",
-      );
+      let getVariantAnalysisRepoResultStub: jest.SpiedFunction<
+        typeof ghApiClient.getVariantAnalysisRepoResult
+      >;
 
       beforeEach(async () => {
         const sourceFilePath = path.join(
@@ -112,14 +111,16 @@ describe(VariantAnalysisResultsManager.name, () => {
         );
         arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
 
-        getVariantAnalysisRepoResultStub.mockImplementation(
-          (_credentials: Credentials, downloadUrl: string) => {
-            if (downloadUrl === dummyRepoTask.artifactUrl) {
-              return Promise.resolve(arrayBuffer);
-            }
-            return Promise.reject(new Error("Unexpected artifact URL"));
-          },
-        );
+        getVariantAnalysisRepoResultStub = jest
+          .spyOn(ghApiClient, "getVariantAnalysisRepoResult")
+          .mockImplementation(
+            (_credentials: Credentials, downloadUrl: string) => {
+              if (downloadUrl === dummyRepoTask.artifactUrl) {
+                return Promise.resolve(arrayBuffer);
+              }
+              return Promise.reject(new Error("Unexpected artifact URL"));
+            },
+          );
       });
 
       it("should call the API to download the results", async () => {

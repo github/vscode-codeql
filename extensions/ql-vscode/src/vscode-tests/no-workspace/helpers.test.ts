@@ -395,13 +395,14 @@ describe("helpers", () => {
   });
 
   describe("open dialog", () => {
-    const showInformationMessageSpy = jest.spyOn(
-      window,
-      "showInformationMessage",
-    );
+    let showInformationMessageSpy: jest.SpiedFunction<
+      typeof window.showInformationMessage
+    >;
 
     beforeEach(() => {
-      showInformationMessageSpy.mockResolvedValue(undefined);
+      showInformationMessageSpy = jest
+        .spyOn(window, "showInformationMessage")
+        .mockResolvedValue(undefined);
     });
 
     const resolveArg =
