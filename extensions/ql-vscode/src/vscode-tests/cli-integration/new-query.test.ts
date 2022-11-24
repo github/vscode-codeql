@@ -242,7 +242,7 @@ describeWithCodeQL()("using the new query server", () => {
       }
 
       await parsedResults.done();
-      expect(actualResultSets!).not.toHaveLength(0);
+      expect(actualResultSets).not.toEqual({});
       expect(Object.keys(actualResultSets!).sort()).toEqual(
         Object.keys(queryTestCase.expectedResultSets).sort(),
       );
