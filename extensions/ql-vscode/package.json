@@ -1282,7 +1282,8 @@
     "format-staged": "lint-staged",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "lint:scenarios": "ts-node scripts/lint-scenarios.ts"
+    "lint:scenarios": "ts-node scripts/lint-scenarios.ts",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@octokit/plugin-retry": "^3.0.9",
@@ -1402,6 +1403,7 @@
     "lint-staged": "~10.2.2",
     "mini-css-extract-plugin": "^2.6.1",
     "npm-run-all": "^4.1.5",
+    "patch-package": "^6.5.0",
     "prettier": "^2.7.1",
     "tar-stream": "^2.2.0",
     "through2": "^4.0.2",

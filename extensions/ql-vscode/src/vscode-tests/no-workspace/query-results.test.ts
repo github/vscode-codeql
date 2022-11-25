@@ -186,8 +186,10 @@ describe("query-results", () => {
     const interpretedResultsPath = path.join(tmpDir.name, "interpreted.json");
     const sourceInfo = {};
 
-    beforeEach(() => {
+    beforeEach(async () => {
       spy.mockReturnValue({ a: "1234" });
+
+      await fs.ensureDir(path.basename(interpretedResultsPath));
 
       mockServer = {
         interpretBqrsSarif: spy,

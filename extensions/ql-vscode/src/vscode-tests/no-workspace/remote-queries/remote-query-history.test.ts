@@ -129,8 +129,8 @@ describe("Remote queries and query history manager", () => {
       .mockResolvedValue(undefined as unknown as TextDocument);
   });
 
-  afterEach(() => {
-    deleteHistoryState();
+  afterEach(async () => {
+    await deleteHistoryState();
     disposables.dispose(testDisposeHandler);
   });
 
@@ -505,8 +505,9 @@ describe("Remote queries and query history manager", () => {
   });
 
   async function copyHistoryState() {
-    fs.ensureDirSync(STORAGE_DIR);
-    fs.copySync(
+    await fs.ensureDir(STORAGE_DIR);
+    await fs.ensureDir(path.join(tmpDir.name, "remote-queries"));
+    await fs.copy(
       path.join(__dirname, "../data/remote-queries/"),
       path.join(tmpDir.name, "remote-queries"),
     );
@@ -517,13 +518,8 @@ describe("Remote queries and query history manager", () => {
     }
   }
 
-  function deleteHistoryState() {
-    fs.rmSync(STORAGE_DIR, {
-      recursive: true,
-      force: true,
-      maxRetries: 10,
-      retryDelay: 100,
-    });
+  async function deleteHistoryState() {
+    await fs.remove(STORAGE_DIR);
   }
 
   function replacePlaceholder(filePath: string) {
