@@ -94,7 +94,7 @@ const queryTestCases: QueryTestCase[] = [
 ];
 
 const db: messages.Dataset = {
-  dbDir: path.join(__dirname, "../test-db"),
+  dbDir: path.join(__dirname, "../../../.vscode-test/test-db"),
   workingSet: "default",
 };
 
