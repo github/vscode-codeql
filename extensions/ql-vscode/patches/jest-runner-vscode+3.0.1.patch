@@ -1,0 +1,19 @@
+diff --git a/node_modules/jest-runner-vscode/dist/child/runner.js b/node_modules/jest-runner-vscode/dist/child/runner.js
+index 0663c5c..4991663 100644
+--- a/node_modules/jest-runner-vscode/dist/child/runner.js
++++ b/node_modules/jest-runner-vscode/dist/child/runner.js
+@@ -18,10 +18,13 @@ async function run() {
+     const ipc = new ipc_client_1.default('child');
+     const disconnected = new Promise(resolve => ipc.on('disconnect', resolve));
+     try {
+-        const { PARENT_JEST_OPTIONS } = process_1.default.env;
++        const { PARENT_JEST_OPTIONS, PARENT_CWD } = process_1.default.env;
+         if (!PARENT_JEST_OPTIONS) {
+             throw new Error('PARENT_JEST_OPTIONS is not defined');
+         }
++        if (PARENT_CWD) {
++            process_1.default.chdir(PARENT_CWD);
++        }
+         const options = JSON.parse(PARENT_JEST_OPTIONS);
+         const jestOptions = [
+             ...options.args,
