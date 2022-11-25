@@ -5,7 +5,6 @@ import {
   Position,
   window,
   ViewColumn,
-  Uri,
   WebviewPanel,
 } from "vscode";
 import { basename } from "path";
