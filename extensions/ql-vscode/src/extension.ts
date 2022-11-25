@@ -1424,7 +1424,9 @@ async function activateWithInstalledDistribution(
   void logger.log("Starting language server.");
   await client.start();
   ctx.subscriptions.push({
-    dispose: () => { void client.stop(); }
+    dispose: () => { 
+      void client.stop(); 
+  }
   });
   // Jump-to-definition and find-references
   void logger.log("Registering jump-to-definition handlers.");
