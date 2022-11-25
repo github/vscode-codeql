@@ -85,7 +85,7 @@ import {
 } from "./common";
 import { QueryHistoryManager } from "./query-history";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "./query-results";
-import { QueryServerClient } from "./legacy-query-server/queryserver-client";
+import { QueryServerClient as LegacyQueryServerClient } from "./legacy-query-server/queryserver-client";
 import { QueryServerClient } from "./query-server/queryserver-client";
 import { displayQuickQuery } from "./quick-query";
 import { QLTestAdapterFactory } from "./test-adapter";
@@ -1604,7 +1604,7 @@ async function createQueryServer(
     await qs.startQueryServer();
     return new NewQueryRunner(qs);
   } else {
-    const qs = new QueryServerClient(
+    const qs = new LegacyQueryServerClient(
       qlConfigurationListener,
       cliServer,
       qsOpts,
