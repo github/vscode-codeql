@@ -17,7 +17,11 @@ const config = {
 };
 
 if (process.env.VSCODE_INSPECTOR_OPTIONS) {
-  config.launchArgs?.push("--inspect-extensions", "9223");
+  if (process.env.VSCODE_WAIT_FOR_DEBUGGER === "true") {
+    config.launchArgs?.push("--inspect-brk-extensions", "9223");
+  } else {
+    config.launchArgs?.push("--inspect-extensions", "9223");
+  }
 }
 
 module.exports = {
